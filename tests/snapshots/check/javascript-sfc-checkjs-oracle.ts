@@ -95,8 +95,8 @@ const vueTscAppDiagnostics = (file: string, line: number): string =>
   ].join("\n");
 
 const helperDiagnostic = "error:5:7 [TS2322] Type 'string' is not assignable to type 'number'.";
-// vue-tsc reports in program order, and `writeProject` pins `include` to
-// `["**/*.vue", "**/*.ts"]`, so every SFC precedes `helper.ts` in its output.
+// vue-tsc may report files in host-dependent program order. Keep the diagnostic
+// text exact, but compare it independent of file traversal order.
 const vueTscHelperDiagnostic =
   "helper.ts(5,7): error TS2322: Type 'string' is not assignable to type 'number'.\n";
 
@@ -181,7 +181,11 @@ test("vize check matches vue-tsc on JavaScript SFCs under checkJs", async (t) =>
         assert.equal(second.stdout, first.stdout, "diagnostics must be byte-stable");
 
         const vueTsc = runVueTsc(workspaceDir, vueTscPath);
-        assert.equal(vueTsc.stdout, testCase.vueTscOutput, vueTsc.stderr);
+        assert.deepEqual(
+          diagnosticLines(vueTsc.stdout),
+          diagnosticLines(testCase.vueTscOutput),
+          vueTsc.stderr,
+        );
       } finally {
         fs.rmSync(workspaceDir, { recursive: true, force: true });
       }
@@ -209,6 +213,14 @@ function writeProject(workspaceDir: string, testCase: Case): void {
     path.join(workspaceDir, "package.json"),
     JSON.stringify({ name: "vize-javascript-sfc-checkjs", private: true, type: "module" }),
   );
+}
+
+function diagnosticLines(output: string): string[] {
+  return output
+    .trimEnd()
+    .split("\n")
+    .filter((line) => line.length > 0)
+    .sort();
 }
 
 function expectedReport(diagnostics: Record<string, string[]>): unknown {
