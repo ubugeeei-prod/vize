@@ -29,14 +29,15 @@ import {
 import {
   LINT_ONLY_CONFIGURATION_UPDATES,
   createDocumentSelector,
-  createHostTestCommands,
   describeCapabilities,
   getInitializationOptions,
   hasAnyEnabledCapability,
   hasExplicitConfigurationValue,
+  parseVizeVersion,
   shouldStartFromConfiguration,
   type LspInitializationOptions,
 } from "./extension-core";
+import { registerHostTestCommands } from "./host-test-commands";
 import { registerTypeScriptContentMapperDiscovery } from "./content-mapper-discovery";
 import { createAutoInsertMiddleware } from "./auto-insert";
 
@@ -159,19 +160,11 @@ export async function activate(context: ExtensionContext): Promise<void> {
         await commands.executeCommand("editor.action.referenceSearch.trigger");
       }
     }),
+
+    ...registerHostTestCommands(() => client),
   );
-  registerHostTestCommands(context);
 
   await syncClientToConfiguration(context, "initial activation");
-}
-
-function registerHostTestCommands(context: ExtensionContext): void {
-  for (const { command, handler } of createHostTestCommands({
-    environment: process.env,
-    getClient: () => client,
-  })) {
-    context.subscriptions.push(commands.registerCommand(command, handler));
-  }
 }
 
 function scheduleClientSync(context: ExtensionContext, reason: string): void {
@@ -814,11 +807,6 @@ async function inspectServerCandidate(
       versionError: String(error),
     };
   }
-}
-
-function parseVizeVersion(output: string): string | undefined {
-  const match = output.match(/\bvize\s+([0-9]+\.[0-9]+\.[0-9]+(?:[-+][^\s]+)?)/);
-  return match?.[1];
 }
 
 function getExtensionVersion(context: ExtensionContext): string | undefined {

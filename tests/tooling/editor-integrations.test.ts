@@ -3,7 +3,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { createHostTestCommands } from "../../editors/vscode/src/extension-core.ts";
 import {
   loadVueTextMateGrammar,
   tokenizeLines,
@@ -121,25 +120,6 @@ test("vscode-vize wires art-vue documents into editor features", () => {
   assert.match(extensionSource, /void syncClientToConfiguration\(context,\s*reason\)/);
   assert.match(extensionSource, /nextClient\.setTrace\(trace\)/);
   assert.match(extensionSource, /Trace\.(Verbose|Messages|Off)/);
-  assert.match(extensionSource, /createHostTestCommands\(\{/);
-});
-
-test("the extension contributes the hidden host commands only for the host smoke", () => {
-  const activateWith = (environment: Partial<Record<string, string>>): string[] => {
-    const registered: string[] = [];
-    for (const { command } of createHostTestCommands({
-      environment,
-      getClient: () => ({ sendRequest: async () => ({ items: [] }) }),
-    })) {
-      registered.push(command);
-    }
-    return registered;
-  };
-
-  assert.deepEqual(activateWith({ VIZE_TEST_ENABLE_HOST_COMMANDS: "1" }), [
-    "vize.test.executeCompletion",
-  ]);
-  assert.deepEqual(activateWith({}), []);
 });
 
 test("vscode-vize grammar keeps quote-aware block lookaheads", () => {

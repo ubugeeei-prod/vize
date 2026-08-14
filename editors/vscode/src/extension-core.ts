@@ -172,6 +172,11 @@ function assertTestCompletionRequest(request: TestCompletionRequest): void {
   }
 }
 
+export function parseVizeVersion(output: string): string | undefined {
+  const match = output.match(/\bvize\s+([0-9]+\.[0-9]+\.[0-9]+(?:[-+][^\s]+)?)/);
+  return match?.[1];
+}
+
 export function hasExplicitConfigurationValue(config: VizeConfigurationLike, key: string): boolean {
   const inspected = config.inspect(key);
 

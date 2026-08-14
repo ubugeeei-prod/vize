@@ -96,9 +96,8 @@ async function runRealDiagnosticSmoke(mismatchDocument, cleanDocument) {
 }
 
 async function runRealCompletionSmoke(mismatchDocument) {
-  const { HOST_TEST_COMPLETION_COMMAND, assertRealHostCompletionLabels } = await import(
-    "../real-host-completion-oracle.mjs"
-  );
+  const { HOST_TEST_COMPLETION_COMMAND, assertRealHostCompletionLabels } =
+    await import("../real-host-completion-oracle.mjs");
   const position = positionAfter(mismatchDocument, "{{ label }}", "{{ label");
   const completions = await vscode.commands.executeCommand(HOST_TEST_COMPLETION_COMMAND, {
     uri: mismatchDocument.uri.toString(),
