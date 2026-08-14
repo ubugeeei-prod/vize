@@ -40,7 +40,7 @@ export const frontendPhpconVisualRoutes: FrontendPhpconVisualRouteConfig[] = [
     path: "/news/2026-05-06-social-gathering-ticket",
     maxDiffRatio: NEWS_ROUTE_MAX_DIFF_RATIO,
   },
-  { name: "timetable", path: "/timetable" },
+  { name: "timetable", path: "/timetable", maxDiffRatio: STRICT_ROUTE_MAX_DIFF_RATIO },
   { name: "job-board", path: "/job-board", maxDiffRatio: STRICT_ROUTE_MAX_DIFF_RATIO },
   { name: "english-home", path: "/en", maxDiffRatio: STRICT_ROUTE_MAX_DIFF_RATIO },
   { name: "english-about", path: "/en/about" },

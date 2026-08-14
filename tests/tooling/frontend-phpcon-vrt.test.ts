@@ -27,6 +27,12 @@ test("frontend-phpcon preview mobile visual budget is mode-scoped", () => {
   assert.equal(maxDiffPixelsForFrontendPhpconMode(mobileMenu, "dev"), undefined);
 });
 
+test("frontend-phpcon timetable route budgets preview text antialiasing", () => {
+  // Preview builds render identical timetable content with sub-pixel text
+  // antialiasing drift (~0.0027 measured), above the helper default of 0.002.
+  assert.equal(route("timetable").maxDiffRatio, STRICT_ROUTE_MAX_DIFF_RATIO);
+});
+
 test("frontend-phpcon news routes have article-specific visual tolerance", () => {
   assert.equal(route("news").maxDiffRatio, NEWS_ROUTE_MAX_DIFF_RATIO);
   assert.equal(route("english-news").maxDiffRatio, NEWS_ROUTE_MAX_DIFF_RATIO);
