@@ -290,7 +290,9 @@ function addPnpmOverrides(packageJsonPath: string, overrides: Record<string, str
     fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, "\t") + "\n");
   }
 }
-
+export function applyElkRuntimePnpmOverrides(packageJsonPath: string): void {
+  addPnpmOverrides(packageJsonPath, { "@nuxtjs/i18n": "10.1.0", vite: "^8.0.0" });
+}
 function patchVuefesVisualFixture(vuefesDir: string): void {
   const configPath = path.join(vuefesDir, "nuxt.config.ts");
   const configSource = fs.readFileSync(configPath, "utf-8");
@@ -670,10 +672,7 @@ function setupElkWorktree(opts?: { enableVize?: boolean; variant?: string }): st
     ensureLocalVizePackagesBuilt();
   }
 
-  addPnpmOverrides(path.join(elkDir, "package.json"), {
-    "@nuxtjs/i18n": "10.1.0",
-    vite: "^8.0.0",
-  });
+  applyElkRuntimePnpmOverrides(path.join(elkDir, "package.json"));
   patchElkBuildEnvTime(path.join(elkDir, "modules", "build-env.ts"));
   patchNuxtPrerenderForE2E(path.join(elkDir, "nuxt.config.ts"));
 

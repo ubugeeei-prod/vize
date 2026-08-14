@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { applyElkRuntimePnpmOverrides } from "../_helpers/apps.ts";
 import {
   assertElkRenderRouteAnchors,
   ELK_RENDER_ROUTE,
@@ -53,9 +55,6 @@ test("elk dev and visual app-e2e are wired to the deterministic rendered fixture
     devSpec,
     /ELK_RENDER_ROUTE_LINKS = \["\/settings\/interface", "\/settings\/about"\]/,
   );
-  const appHelpers = fs.readFileSync(path.join(root, "tests/_helpers/apps.ts"), "utf8");
-  assert.match(appHelpers, /"@nuxtjs\/i18n": "10\.1\.0"/);
-  assert.match(appHelpers, /vite: "\^8\.0\.0"/);
   assert.doesNotMatch(devSpec, /\b(?:warmupPage|page)\.goto\(app\.url\b/);
   assert.doesNotMatch(devSpec, /verifySSRContent\(page,\s*app\.url\)/);
   assert.match(visualSpec, /readElkRenderRouteSourceEvidence\(app\.cwd\)/);
@@ -65,6 +64,40 @@ test("elk dev and visual app-e2e are wired to the deterministic rendered fixture
   assert.match(packageJson.scripts?.["test:dev:elk"] ?? "", /app\/dev\/elk\.spec\.ts/);
   assert.match(packageJson.scripts?.["test:dev:ci"] ?? "", /app\/dev\/elk\.spec\.ts/);
   assert.match(packageJson.scripts?.["test:vrt:elk"] ?? "", /app\/vrt\/elk\.spec\.ts/);
+});
+
+test("elk setup pins runtime overrides in the generated package manifest", (t) => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-elk-overrides-"));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+
+  const packageJsonPath = path.join(tempDir, "package.json");
+  fs.writeFileSync(
+    packageJsonPath,
+    JSON.stringify(
+      {
+        name: "elk",
+        pnpm: {
+          overrides: {
+            "@existing/package": "1.0.0",
+            vite: "^7.0.0",
+          },
+        },
+      },
+      null,
+      2,
+    ) + "\n",
+  );
+
+  applyElkRuntimePnpmOverrides(packageJsonPath);
+
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8")) as {
+    pnpm?: { overrides?: Record<string, string> };
+  };
+  assert.deepEqual(packageJson.pnpm?.overrides, {
+    "@existing/package": "1.0.0",
+    "@nuxtjs/i18n": "10.1.0",
+    vite: "^8.0.0",
+  });
 });
 
 function escapeRegExp(source: string): string {
