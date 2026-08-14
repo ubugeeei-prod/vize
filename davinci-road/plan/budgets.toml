@@ -1,11 +1,12 @@
 # Davinci budgets — the normative definition of every performance/quality gate.
 # Ratchet rule (assurance doctrine): numbers only tighten. Loosening any value
 # requires a reviewed PR whose description references a charter decision.
+# ratchet: numbers may only tighten; loosening requires budget-loosen: <charter ref> in the commit body
 #
-# This file is seeded with the one gate that exists today (the end-to-end
-# compile envelope, from the committed Blacksmith snapshot). Per-crate bench
-# budgets land via plan task P0-4; mutation scores via P0-12; walk counts via
-# P2-12; source-map coverage via P3-9; resource ceilings via P5-11.
+# This file is seeded with the end-to-end compile envelope (from the committed
+# Blacksmith snapshot) and the per-bench budget entries for every davinci
+# microbench that exists (P0-4). Mutation scores land via P0-12; walk counts
+# via P2-12; source-map coverage via P3-9; resource ceilings via P5-11.
 
 schema_version = 1
 
@@ -27,8 +28,133 @@ baseline_ms = 329.2
 tolerance = 0.05
 
 [bench]
-# Per-crate microbench budgets: {wall_p50_ns, allocs, rss_peak_bytes} per
-# bench id. Populated by P0-4 from the recorded baselines.
+# Per-crate microbench budgets, one `<bench_id> = { … }` inline table per
+# davinci bench id (one line per bench: the entries are uniform four-field
+# records, and the registry grows with every new bench).
+# Bench ids are the exact strings the benches export to
+# `bench/results/davinci/<bench_id>.json` (see the `cstr!` id construction in
+# `crates/*/benches/davinci.rs` and the literal id in
+# `benchmarks/davinci_harness/benches/selfcheck.rs`); the registry here and
+# the bench sources must reconcile exactly — a bench without a budget entry,
+# or an entry without a bench, fails `tests/tooling/davinci-budgets.test.ts`
+# and `tools/davinci/bench-compare.mjs`. New benches (the P0-3 atelier
+# core/dom/vapor/ssr stages) append their entries in the same shape.
+#
+# Fields, all mandatory:
+#   wall_p50_ns    — median wall time per iteration in nanoseconds, as
+#                    recorded on the Blacksmith reference runner
+#                    (blacksmith-32vcpu-ubuntu-2404, same machine as the
+#                    compile envelope above). 0 means "baseline not yet
+#                    recorded on the reference runner": bench-compare treats
+#                    the entry as report-only until the recorded number lands
+#                    together with its committed baseline JSON.
+#   allocs         — allocation-like calls (alloc + alloc_zeroed + successful
+#                    realloc) during one instrumented run. Deterministic, so
+#                    the gate is exact: any change from the committed baseline
+#                    fails, with no tolerance. 0 carries the same "not yet
+#                    recorded" meaning as wall_p50_ns while that field is 0.
+#   rss_peak_bytes — peak-RSS growth in bytes over the process baseline.
+#                    Report-only for now (process-wide peaks are too noisy to
+#                    gate until the resident-tier work in P5-11 defines the
+#                    methodology); recorded here so drift is visible.
+#   wall_tolerance — relative headroom for the wall-p50 gate: a current run
+#                    fails when its p50 exceeds the committed baseline report
+#                    (not this budget number) by more than this fraction.
+#                    0.05 for whole-routine benches. Stage-window benches
+#                    (ids containing `_transform_`, where P0-3 wraps harness
+#                    timers around a stage inside a larger routine instead of
+#                    timing one whole call) get 0.10: the narrower window is
+#                    measurably noisier.
+
+armature_tokenize_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+armature_tokenize_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+armature_tokenize_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+armature_tokenize_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+armature_tokenize_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+armature_tokenize_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+armature_parse_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+armature_parse_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+armature_parse_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+armature_parse_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+armature_parse_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+armature_parse_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_full_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_full_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_full_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_full_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_full_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_full_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_for_compile_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_for_compile_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_for_compile_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_for_compile_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_for_compile_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_for_compile_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+harness-selfcheck = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+
+# Atelier per-stage benches (P0-3). Stage-window cases (transform / lower /
+# ssr codegen, per the phase-0.md measured note) carry the 0.10 tolerance;
+# loop-style cases hold 0.05.
+atelier_core_transform_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_core_transform_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_core_transform_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_core_transform_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_core_transform_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_core_transform_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_dom_transform_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_dom_transform_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_dom_transform_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_dom_transform_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_dom_transform_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_dom_transform_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_dom_codegen_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_codegen_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_codegen_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_codegen_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_codegen_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_codegen_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_compile_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_compile_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_compile_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_compile_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_compile_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_compile_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_transform_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_transform_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_transform_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_transform_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_transform_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_transform_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_lower_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_lower_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_lower_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_lower_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_lower_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_lower_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_generate_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_generate_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_generate_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_generate_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_generate_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_generate_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_compile_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_compile_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_compile_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_compile_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_compile_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_compile_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_ssr_codegen_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_ssr_codegen_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_ssr_codegen_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_ssr_codegen_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_ssr_codegen_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_ssr_codegen_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_ssr_compile_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_ssr_compile_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_ssr_compile_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_ssr_compile_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_ssr_compile_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_ssr_compile_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 
 [mutation]
 # cargo-mutants minimum scores per crate. Populated by P0-12.

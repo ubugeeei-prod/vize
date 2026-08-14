@@ -33,6 +33,7 @@ pub mod alloc;
 pub mod fixtures;
 pub mod report;
 pub mod rss;
+pub mod stage;
 
 use core::cell::RefCell;
 use std::time::Instant;

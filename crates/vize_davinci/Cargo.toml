@@ -1,0 +1,23 @@
+[package]
+name = "vize_davinci"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Davinci - dump/round-trip substrate (Folio) for the Vize compiler rearchitecture"
+publish = false
+metadata.vize.stability = "experimental"
+
+[dependencies]
+vize_carton = { workspace = true }
+
+[dev-dependencies]
+insta = { workspace = true }
+vize_atelier_core = { workspace = true }
+vize_atelier_sfc = { workspace = true }
+vize_croquis = { workspace = true }
+
+[[bin]]
+name = "davinci-opt"
+path = "src/bin/davinci-opt.rs"

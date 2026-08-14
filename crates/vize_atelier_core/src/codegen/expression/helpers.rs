@@ -91,7 +91,6 @@ fn rewrite_props_aliases(code: String, ctx: &CodegenContext) -> String {
 /// Prefix identifiers in expression with appropriate prefix based on binding metadata.
 /// This is a context-aware version that uses `$setup.` for setup bindings in function mode.
 pub(crate) fn prefix_identifiers_with_context(content: &str, ctx: &CodegenContext) -> String {
-    use oxc_allocator::Allocator as OxcAllocator;
     use oxc_ast_visit::Visit;
     use oxc_ast_visit::walk::{
         walk_assignment_expression, walk_object_property, walk_update_expression,
@@ -416,7 +415,7 @@ pub(crate) fn prefix_identifiers_with_context(content: &str, ctx: &CodegenContex
         result
     }
 
-    let allocator = OxcAllocator::default();
+    let allocator = crate::expr_parse_probe::parse_arena();
     let source_type = SourceType::default().with_module(true);
 
     // First try: wrap in parentheses to parse as a single expression
@@ -446,7 +445,7 @@ pub(crate) fn prefix_identifiers_with_context(content: &str, ctx: &CodegenContex
         }
         Err(_) => {
             // Expression parsing failed -- try parsing as a program
-            let allocator2 = OxcAllocator::default();
+            let allocator2 = crate::expr_parse_probe::parse_arena();
             let parser2 = Parser::new(&allocator2, content, source_type);
             let parse_result2 = parser2.parse();
             if parse_result2.diagnostics.is_empty() {

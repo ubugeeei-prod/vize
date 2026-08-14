@@ -3,7 +3,6 @@
 //! Parses expressions with OXC, walks the AST to collect identifiers,
 //! and applies prefix/suffix rewrites for proper context binding.
 
-use oxc_allocator::Allocator as OxcAllocator;
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
@@ -126,7 +125,7 @@ pub(super) fn report_invalid_expression(
 fn parses_as_typescript(content: &str) -> bool {
     let source_type = SourceType::ts().with_module(true);
 
-    let expr_allocator = OxcAllocator::default();
+    let expr_allocator = crate::expr_parse_probe::parse_arena();
     let mut wrapped = String::with_capacity(content.len() + 2);
     wrapped.push('(');
     wrapped.push_str(content);
@@ -138,7 +137,7 @@ fn parses_as_typescript(content: &str) -> bool {
         return true;
     }
 
-    let program_allocator = OxcAllocator::default();
+    let program_allocator = crate::expr_parse_probe::parse_arena();
     Parser::new(&program_allocator, content, source_type)
         .parse()
         .diagnostics
@@ -146,7 +145,7 @@ fn parses_as_typescript(content: &str) -> bool {
 }
 
 fn parse_as_params(content: &str, source_type: SourceType) -> Result<(), String> {
-    let allocator = OxcAllocator::default();
+    let allocator = crate::expr_parse_probe::parse_arena();
     let mut wrapped = String::with_capacity(content.len() + 12);
     wrapped.push('(');
     wrapped.push_str(content);
@@ -208,7 +207,7 @@ pub(crate) fn rewrite_expression(
     }
 
     // Try to parse as a JavaScript expression
-    let oxc_allocator = OxcAllocator::default();
+    let oxc_allocator = crate::expr_parse_probe::parse_arena();
     let source_type = SourceType::default().with_module(true);
 
     // Wrap in parentheses to make it a valid expression statement
@@ -268,7 +267,7 @@ pub(crate) fn rewrite_expression(
         }
         Err(expression_errors) => {
             // Expression parsing failed - try parsing as a program (multi-statement handlers)
-            let oxc_allocator2 = OxcAllocator::default();
+            let oxc_allocator2 = crate::expr_parse_probe::parse_arena();
             let parser2 = Parser::new(&oxc_allocator2, &js_content, source_type);
             let parse_result2 = parser2.parse();
 

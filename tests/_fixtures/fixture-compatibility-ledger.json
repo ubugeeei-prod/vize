@@ -76,6 +76,10 @@
       "memberships": ["ecosystem"]
     },
     {
+      "fixturePath": "tests/_fixtures/_git/dho-web-client",
+      "memberships": ["ecosystem"]
+    },
+    {
       "fixturePath": "tests/_fixtures/_git/directus",
       "memberships": ["ecosystem", "app"]
     },
@@ -244,6 +248,10 @@
       "memberships": ["app"]
     },
     {
+      "fixturePath": "tests/_fixtures/_git/petite-vue",
+      "memberships": ["ecosystem"]
+    },
+    {
       "fixturePath": "tests/_fixtures/_git/piclist",
       "memberships": ["ecosystem"]
     },
@@ -380,6 +388,10 @@
       "memberships": ["ecosystem"]
     },
     {
+      "fixturePath": "tests/_fixtures/_git/vue-core-vapor",
+      "memberships": ["ecosystem"]
+    },
+    {
       "fixturePath": "tests/_fixtures/_git/vue-cropper",
       "memberships": ["ecosystem"]
     },
@@ -437,6 +449,10 @@
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-js-modal",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-jsx-vapor",
       "memberships": ["ecosystem"]
     },
     {
@@ -512,6 +528,14 @@
       "memberships": ["ecosystem"]
     },
     {
+      "fixturePath": "tests/_fixtures/_git/vue3-admin-design",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue3-antd-admin",
+      "memberships": ["ecosystem"]
+    },
+    {
       "fixturePath": "tests/_fixtures/_git/vuefes-2025",
       "memberships": ["app"]
     },
@@ -549,6 +573,14 @@
     },
     {
       "fixturePath": "tests/_fixtures/_git/vux",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/wakapi",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/wave-ui",
       "memberships": ["ecosystem"]
     },
     {

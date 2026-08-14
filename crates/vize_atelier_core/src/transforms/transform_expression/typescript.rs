@@ -3,7 +3,6 @@
 //! Handles removing TypeScript type annotations (e.g., `as` assertions,
 //! parameter type annotations) from template expressions before codegen.
 
-use oxc_allocator::Allocator as OxcAllocator;
 use oxc_codegen::Codegen;
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
@@ -220,7 +219,7 @@ pub fn strip_typescript_from_expression(content: &str) -> String {
         return String::new(content);
     }
 
-    let allocator = OxcAllocator::default();
+    let allocator = crate::expr_parse_probe::parse_arena();
     let source_type = SourceType::ts();
 
     // Wrap in a dummy statement to make it parseable

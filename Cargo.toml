@@ -20,6 +20,7 @@ members = [
   "crates/vize_musea",
   "crates/vize_maestro",
   "crates/vize_curator",
+  "crates/vize_davinci",
   "crates/vize_fresco",
   "crates/vize_marquette",
   "crates/vize_doctor",
@@ -61,6 +62,7 @@ vize_vitrine = { path = "crates/vize_vitrine", default-features = false }
 vize_glyph = { path = "crates/vize_glyph" }
 vize_maestro = { path = "crates/vize_maestro" }
 vize_curator = { path = "crates/vize_curator" }
+vize_davinci = { path = "crates/vize_davinci" }
 
 # OXC dependencies (pinned to a specific upstream revision for reproducibility)
 oxc_parser = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }

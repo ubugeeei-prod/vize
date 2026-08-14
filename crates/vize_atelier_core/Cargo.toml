@@ -44,4 +44,10 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]
+criterion = { workspace = true }
+davinci_harness = { workspace = true }
 insta = { workspace = true }
+
+[[bench]]
+name = "davinci"
+harness = false

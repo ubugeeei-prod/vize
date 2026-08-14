@@ -3,9 +3,9 @@
 //!
 //! Run with: cargo bench -p vize_croquis --bench davinci
 //!
-//! The measured entry point is `vize_atelier_sfc::croquis::analyze_sfc_descriptor`
-//! - the exact orchestration the compiler, linter, and type checker call - in
-//! its `SfcCroquisOptions::full()` and `::for_compile()` presets. SFC block
+//! The measured entry point is the exact orchestration the compiler, linter,
+//! and type checker call: `vize_atelier_sfc::croquis::analyze_sfc_descriptor`
+//! in its `SfcCroquisOptions::full()` and `::for_compile()` presets. SFC block
 //! splitting and template parsing happen once per fixture outside the timed
 //! window, so the numbers isolate analysis cost (script analysis + template
 //! scope walk + finish), not parsing. The default dialect flags apply

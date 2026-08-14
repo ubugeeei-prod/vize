@@ -306,7 +306,13 @@ pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsVal
             },
         },
         "diagnostics": [],
-        "vir": vir,
+        // `vir` is deprecated in favor of the folio alias below; both carry
+        // the same croquis folio text for now (Davinci P0-10). Consumers
+        // should migrate to `folio.croquis`.
+        "vir": vir.as_str(),
+        "folio": {
+            "croquis": vir.as_str(),
+        },
     });
 
     to_js_value(&result)

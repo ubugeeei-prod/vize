@@ -11,14 +11,14 @@
 
 - [x] P0-1 Bench harness with memory metrics
 - [x] P0-2 Template-pipeline microbenches, front half (armature, croquis)
-- [ ] P0-3 Template-pipeline microbenches, back half (atelier core/dom/vapor/ssr)
-- [ ] P0-4 Bench baselines and CI gating (`budgets.toml`)
+- [x] P0-3 Template-pipeline microbenches, back half (atelier core/dom/vapor/ssr)
+- [ ] P0-4 Bench baselines and CI gating (`budgets.toml`) — budget registry, compare gate, and tests landed; reference-runner baseline recording + CI lane pending
 - [ ] P0-5 Corpus baseline snapshot + diff tool
 - [ ] P0-6 Corpus expansion round 1 (pug/JSX/Vapor/petite-vue)
 - [x] P0-7 Croquis consumption matrix as tracked artifact — resolution is `use`-declaration-based with a grep cross-check lane (rustdoc-JSON upgrade possible later)
 - [x] P0-8 Rule-parity matrix (SFC × JSX) — surfaces derived from trait impls + overridden hooks per rule file; SFC/JSX membership derived from the registration sites and the `lint_jsx` three-lane partition (`as_markup_rule` / `jsx_needs_lowering` / legacy fallback), with drift asserts on the dispatch source
 - [ ] P0-9 `Span` type + `SourceLocation` consumer inventory
-- [ ] P0-10 Folio harness skeleton + VIR absorption
+- [x] P0-10 Folio harness skeleton + VIR absorption — the `vir` payload key lives in `vize_vitrine`, not `vize_curator`; alias added at the real site
 - [ ] P0-11 Profiler source-level attribution + stable export
 - [ ] P0-12 Assurance harness (assertion lint, mutation baseline, taxonomy)
 - [ ] P0-13 Seeded-defect + suppression-telemetry pilots (FP/FN oracles)
@@ -71,13 +71,20 @@ criterion with allocation and RSS metrics, used by every later bench.
 
 **Steps:**
 
-- [ ] `crates/vize_atelier_core/benches/davinci.rs`: `transform` (lane only, pre-parsed AST input) per fixture
-- [ ] `crates/vize_atelier_dom/benches/davinci.rs`: `compile_template` split into `transform` vs `codegen` timings (wrap stages with harness timers, not one blob)
-- [ ] `crates/vize_atelier_vapor/benches/davinci.rs`: `lower` and `generate` separately — this pins the cost of today's run-then-discard double transform as a number
-- [ ] `crates/vize_atelier_ssr/benches/davinci.rs`: `codegen`
-- [ ] Record the current expression re-parse count per fixture (temporary counter hook; becomes the `davinci.expr.parses` baseline for P1-13)
+- [x] `crates/vize_atelier_core/benches/davinci.rs`: `transform` (lane only, pre-parsed AST input) per fixture — via the `davinci_harness::stage` window (transform mutates in place, so setup is rebuilt per iteration outside the measured section)
+- [x] `crates/vize_atelier_dom/benches/davinci.rs`: `compile_template` split into `transform` vs `codegen` timings (wrap stages with harness timers, not one blob) — plus a fused `compile` case pinning the end-to-end number
+- [x] `crates/vize_atelier_vapor/benches/davinci.rs`: `lower` and `generate` separately — plus `transform` (the VDOM lane on the vapor path), pinning the cost of today's run-then-discard double transform as a number
+- [x] `crates/vize_atelier_ssr/benches/davinci.rs`: `codegen`
+- [x] Record the current expression re-parse count per fixture (temporary counter hook `vize_atelier_core::expr_parse_probe`, 18 sites; baseline committed at [expr-reparse-baseline.md](./expr-reparse-baseline.md); becomes the `davinci.expr.parses` baseline for P1-13)
 
 **Acceptance:** as P0-2, for four crates; vapor bench JSON shows `transform`/`lower`/`generate` as separate entries; expr-reparse baseline committed.
+Measured note (2026-08-13, macOS M-series): loop-style cases hold the < 5%
+run-to-run bar; **stage-windowed cases (µs-scale transforms with
+per-iteration setup) show a 5–7% noise floor with rotating outliers across
+three consecutive runs**, while allocation counts are identical across all
+runs and cases. P0-4 budgets therefore gate stage-window wall at 10%
+tolerance and lean on the deterministic alloc counts for tight regression
+detection.
 
 **Deps:** P0-1.
 
@@ -87,11 +94,11 @@ criterion with allocation and RSS metrics, used by every later bench.
 
 **Steps:**
 
-- [ ] `davinci-road/plan/budgets.toml`: per-bench budgets `{wall_p50_ns, allocs, rss_peak_bytes}` + global `traversal_count` placeholder (filled in P2) + mutation-score section (filled by P0-12)
-- [ ] Baseline JSONs recorded on the Blacksmith reference runner, committed under `bench/results/davinci/baseline/`
-- [ ] Compare script `tools/davinci/bench-compare.mjs`: baseline vs current, applying `budgets.toml` thresholds; exit non-zero on breach; `--update-baseline` flag gated behind an env var so refresh is always deliberate
-- [ ] CI job (extend the existing bench workflow lane) running P0-2/3 benches + compare on PRs touching `crates/**`
-- [ ] Ratchet rule enforced in review tooling: a PR that raises any number in `budgets.toml` must reference a charter decision in its description (checked by a `tests/tooling/davinci-budgets.test.ts` that parses git blame provenance — or, simpler, a CI message requiring the string `budget-loosen:` in the commit body)
+- [x] `davinci-road/plan/budgets.toml`: per-bench budgets `{wall_p50_ns, allocs, rss_peak_bytes}` + global `traversal_count` placeholder (filled in P2) + mutation-score section (filled by P0-12) _(landed with a `wall_tolerance` field per entry — 0.05 whole-routine, 0.10 for `_transform_` stage windows — and every entry seeded at 0, meaning "reference-runner baseline not yet recorded"; bench-compare treats 0-seeded entries as report-only, and `tests/tooling/davinci-budgets.test.ts` reconciles the registry against the bench sources exactly, both directions)_
+- [ ] Baseline JSONs recorded on the Blacksmith reference runner, committed under `bench/results/davinci/baseline/` _(pending: reference-runner recording once Blacksmith lanes drain; wiring lands with the recorded baselines)_
+- [x] Compare script `tools/davinci/bench-compare.mjs`: baseline vs current, applying `budgets.toml` thresholds; exit non-zero on breach; `--update-baseline` flag gated behind an env var so refresh is always deliberate _(wall p50 gated per-bench-tolerance vs the baseline report, allocs gated exactly, RSS report-only; registry drift fails both directions — "bench disappeared" / "unregistered bench"; refresh requires `DAVINCI_BASELINE_REFRESH=1`; exact-stdout oracles over committed fixture pairs in `tests/_fixtures/davinci-bench-compare/`)_
+- [ ] CI job (extend the existing bench workflow lane) running P0-2/3 benches + compare on PRs touching `crates/**` _(pending: reference-runner recording once Blacksmith lanes drain; wiring lands with the recorded baselines)_
+- [x] Ratchet rule enforced in review tooling: a PR that raises any number in `budgets.toml` must reference a charter decision in its description (checked by a `tests/tooling/davinci-budgets.test.ts` that parses git blame provenance — or, simpler, a CI message requiring the string `budget-loosen:` in the commit body) _(implemented as the documented-in-file variant, not git-blame provenance: `budgets.toml` carries the exact `# ratchet: numbers may only tighten; loosening requires budget-loosen: <charter ref> in the commit body` header, and the budgets test asserts the header plus the tolerance ceilings)_
 
 **Acceptance:**
 
@@ -125,11 +132,11 @@ criterion with allocation and RSS metrics, used by every later bench.
 
 **Steps:**
 
-- [ ] `tools/davinci/corpus-coverage.mjs`: scans corpus `.vue`/`.jsx`/`.tsx` sources for the construct taxonomy dimensions (P0-12's `taxonomy.toml`) and emits counts per construct per project
-- [ ] Committed report `davinci-road/plan/corpus-coverage.md` (generated, with a staleness header)
-- [ ] Candidate list of real projects filling the gaps (pug-using Vue apps, JSX/TSX Vue apps, Vapor early adopters, petite-vue sites) with license + size + rationale — **review point: maintainer approves the list before submodules land**
-- [ ] Approved projects added as pinned submodules under `tests/_fixtures/_git/` following existing conventions (`--depth 1`, license recorded in the fixtures manifest)
-- [ ] Re-run P0-5 baseline to include them
+- [x] `tools/davinci/corpus-coverage.mjs`: scans corpus `.vue`/`.jsx`/`.tsx` sources for the construct taxonomy dimensions (P0-12's `taxonomy.toml`) and emits counts per construct per project _(landed with `--write`/`--check`; also scans the petite-vue entries' `.html`/`.js` via the manifest's `petiteVueGlobs`; the report carries a scope-proof footer — hydrated-project count vs manifest total — so a partially hydrated run says so loudly. The `--check` staleness gate joins `tests/tooling/davinci-matrices.test.ts` only once CI hydrates the full corpus)_
+- [ ] Committed report `davinci-road/plan/corpus-coverage.md` (generated, with a staleness header) — the committed report currently covers the 8 round-1 projects only (8/142 hydrated, scope proof in the footer) (pending: full corpus hydration + P0-5 baseline — disk)
+- [x] Candidate list of real projects filling the gaps (pug-using Vue apps, JSX/TSX Vue apps, Vapor early adopters, petite-vue sites) with license + size + rationale — **review point: maintainer approves the list before submodules land** _(maintainer approval received 2026-08-14 via the recommended-picks review)_
+- [x] Approved projects added as pinned submodules under `tests/_fixtures/_git/` following existing conventions (`--depth 1`, license recorded in the fixtures manifest) _(round 1: `wave-ui`, `dho-web-client`, `vue3-admin-design`, `vue3-antd-admin`, `vue-core-vapor` (vuejs/core @ v3.6.0-rc.3, vapor suites), `vue-jsx-vapor`, `wakapi`, `petite-vue` — licenses verified at clone time; the two petite-vue entries pin `expectedVueFileCount: 0` and record their HTML corpus in `petiteVueGlobs` because SFC tool lanes glob `vueGlobs` directly)_
+- [ ] Re-run P0-5 baseline to include them (pending: full corpus hydration + P0-5 baseline — disk)
 
 **Acceptance:** coverage report regenerates identically; every taxonomy dimension has ≥1 real-project instance or a recorded "not represented — matrix fixtures only" note; baseline updated in the same PR.
 
@@ -184,16 +191,16 @@ criterion with allocation and RSS metrics, used by every later bench.
 
 **Steps:**
 
-- [ ] `crates/vize_davinci/` crate skeleton (workspace member, `no_std + alloc`, `experimental`): only `folio` module for now — `trait Folio { fn print(&self, w: &mut W, mode: FolioMode) -> fmt::Result; fn parse(input: &str) -> Result<Self, FolioError>; }` with `FolioMode { Full, Display }`. **Equality laws are mode-explicit:** `Full` is the injective, parseable form (round-trip laws apply); `Display` elides spans/defaults for humans and carries **no** round-trip law. Normalization (stable sequential ids, sorted map iteration) applies to both
-- [ ] Normalization rules documented in `davinci-road/plan/folio-format.md` (the "test-mode printer" contract: what is elided, what is stable)
-- [ ] `crates/vize_davinci/src/bin/davinci-opt.rs` (or a `tools/` binary if binary-in-lib is awkward): `davinci-opt --roundtrip <file>` — parse → print → byte-compare; `--stage croquis` initially
-- [ ] Croquis folio: implement `Folio` for the existing VIR dump content (`crates/vize_croquis/src/croquis/vir.rs`) — print delegates to the current renderer, parse added; VIR's "display-only" doc updated to point at Folio
-- [ ] Deprecation alias: `crates/vize_curator/src/inspector/payload.rs` keeps the `vir` payload key, adds `folio.croquis`; playground consumes either (no playground change required this task)
-- [ ] insta helper: `assert_folio_snapshot!(value)` using the normalized printer (allowed `#[allow(clippy::disallowed_macros)]` per existing insta convention)
+- [x] `crates/vize_davinci/` crate skeleton (workspace member, `no_std + alloc`, `experimental`): only `folio` module for now — `trait Folio { fn print(&self, w: &mut W, mode: FolioMode) -> fmt::Result; fn parse(input: &str) -> Result<Self, FolioError>; }` with `FolioMode { Full, Display }`. **Equality laws are mode-explicit:** `Full` is the injective, parseable form (round-trip laws apply); `Display` elides spans/defaults for humans and carries **no** round-trip law. Normalization (stable sequential ids, sorted map iteration) applies to both — _landed with a provided `print_to_string(mode)` convenience on the trait; no `std` feature was needed (host-only code lives in the binary)_
+- [x] Normalization rules documented in `davinci-road/plan/folio-format.md` (the "test-mode printer" contract: what is elided, what is stable)
+- [x] `crates/vize_davinci/src/bin/davinci-opt.rs` (or a `tools/` binary if binary-in-lib is awkward): `davinci-opt --roundtrip <file>` — parse → print → byte-compare; `--stage croquis` initially — _binary-in-lib worked; the bin also compiles under `wasm32-wasip2` (wasip2 has `std`)_
+- [x] Croquis folio: implement `Folio` for the existing VIR dump content (`crates/vize_croquis/src/croquis/vir.rs`) — print delegates to the current renderer, parse added; VIR's "display-only" doc updated to point at Folio — _"delegates" is by contract, not by call: `CroquisFolio` is a document model of the dump; the fixture harness (`crates/vize_davinci/tests/croquis_folio.rs`) pins parser and renderer together, keeping `vize_davinci` free of a `vize_croquis` dependency (dev-dep only). Discovered en route: `[macros]` entries can span physical lines (multi-line type args), handled by the parser_
+- [x] Deprecation alias: ~~`crates/vize_curator/src/inspector/payload.rs`~~ the `vir` payload key actually lives in `crates/vize_vitrine/src/wasm/analyze.rs` (curator's inspector payload never carried it); that site keeps `vir` and adds nested `folio.croquis` with the same content; playground consumes either (no playground change required this task)
+- [x] insta helper: `assert_folio_snapshot!(value)` using the normalized printer (allowed `#[allow(clippy::disallowed_macros)]` per existing insta convention)
 
 **Acceptance:**
 
-- `davinci-opt --roundtrip` is identity on ≥10 committed croquis-folio fixtures (drawn from the P0-2 fixture ladder). **Folio identity is defined post-normalization:** the round-trip law is `print(parse(t)) == t` for canonical (normalized) text `t`, plus structural equality `parse(print(v)) == v` for values — non-canonical input is normalized by the first print, by design
+- `davinci-opt --roundtrip` is identity on ≥10 committed croquis-folio fixtures (drawn from the P0-2 fixture ladder — _the ladder had not landed, so the 14 fixtures come from the e2e project fixtures plus two written for section coverage; provenance table in `folio-format.md`_). **Folio identity is defined post-normalization:** the round-trip law is `print(parse(t)) == t` for canonical (normalized) text `t`, plus structural equality `parse(print(v)) == v` for values — non-canonical input is normalized by the first print, by design
 - Existing VIR consumers' tests pass untouched
 - `wasm32-wasip2` target compiles for `vize_davinci` (`cargo build -p vize_davinci --target wasm32-wasip2`)
 
@@ -254,7 +261,7 @@ criterion with allocation and RSS metrics, used by every later bench.
 - [ ] Corpus baseline + diff tool reproducible; expansion round 1 merged (P0-5..6)
 - [ ] Consumption + rule-parity matrices committed with staleness checks (P0-7..8)
 - [ ] `Span` landed unused; `SourceLocation` inventory committed (P0-9)
-- [ ] `davinci-opt --roundtrip` identity on croquis folio; VIR alias live; `vize_davinci` builds for wasm32-wasip2 (P0-10)
+- [x] `davinci-opt --roundtrip` identity on croquis folio; VIR alias live; `vize_davinci` builds for wasm32-wasip2 (P0-10)
 - [ ] Profiler export schema validating; zero overhead when off (P0-11)
 - [ ] Assertion lint + mutation baseline + taxonomy signed off (P0-12)
 - [ ] FP/FN pilot oracles running with committed ledgers (P0-13)

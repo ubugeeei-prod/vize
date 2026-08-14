@@ -2,6 +2,12 @@
 //!
 //! Generates a TOML-like human-readable representation of a croquis
 //! for debugging and inspection purposes.
+//!
+//! VIR is absorbed into Davinci as the **croquis folio**: the parsing
+//! side and the format contract live in
+//! `vize_davinci::folio::croquis` (see
+//! `davinci-road/plan/folio-format.md`). Changes here must keep the folio
+//! round-trip green (`cargo test -p vize_davinci --test croquis_folio`).
 
 use super::{Croquis, TypeExportKind};
 use std::fmt::Write;
@@ -18,11 +24,16 @@ impl Croquis {
     ///
     /// # Important
     ///
-    /// **VIR is a display format only, not a portable representation.**
+    /// **VIR is the croquis folio.** The format contract (grammar,
+    /// normalization, round-trip laws) lives in
+    /// `vize_davinci::folio::croquis::CroquisFolio` and is documented in
+    /// `davinci-road/plan/folio-format.md`; `davinci-opt --roundtrip`
+    /// verifies canonical dumps. This renderer stays the producing side and
+    /// must not drift from the folio parser - the fixture harness in
+    /// `crates/vize_davinci/tests/croquis_folio.rs` pins the two together.
     ///
-    /// - VIR output is intended for debugging and human inspection
-    /// - The format may change between versions without notice
-    /// - Do not parse VIR output or use it as a stable interface
+    /// - Raw renderer output is near-canonical: the folio's first print
+    ///   normalizes it (sorted map-derived name lists)
     /// - For programmatic access, use the `Croquis` struct fields directly
     ///
     /// Performance: Pre-allocates buffer, uses write! macro for zero-copy formatting.

@@ -1,4 +1,3 @@
-use oxc_allocator::Allocator as OxcAllocator;
 use oxc_ast::ast as oxc_ast_types;
 use oxc_ast_visit::{
     Visit,
@@ -37,7 +36,7 @@ pub(super) fn resolve_expression(ctx: &GenerateContext<'_>, expr: &str) -> Strin
 }
 
 fn resolve_with_oxc(ctx: &GenerateContext<'_>, expr: &str) -> Option<String> {
-    let allocator = OxcAllocator::default();
+    let allocator = vize_atelier_core::expr_parse_probe::parse_arena();
     let source_type = SourceType::default()
         .with_module(true)
         .with_typescript(true);
@@ -54,7 +53,7 @@ fn resolve_with_oxc(ctx: &GenerateContext<'_>, expr: &str) -> Option<String> {
         return Some(apply_rewrites(expr, collector.rewrites, 1));
     }
 
-    let allocator = OxcAllocator::default();
+    let allocator = vize_atelier_core::expr_parse_probe::parse_arena();
     let parser = Parser::new(&allocator, expr, source_type);
     let parsed = parser.parse();
     if parsed.diagnostics.is_empty() {

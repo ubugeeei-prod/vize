@@ -1,0 +1,29 @@
+[vir]
+script_setup=true
+scopes=9
+bindings=6
+
+[reactivity]
+showPanel=st
+canLoadMore=st
+
+[extern]
+vue {ref}
+./FixturePanel.vue {FixturePanel}
+
+[bindings]
+c:FixturePanel,fetchMore
+st:canLoadMore,showPanel
+st?:currentPanel,ref
+
+[scopes]
+~0 univ @0:0 [AggregateError,Array,ArrayBuffer,AsyncFunction,AsyncGenerator,AsyncGeneratorFunction,AsyncIterator,Atomics,BigInt,BigInt64Array,BigUint64Array,Boolean,DataView,Date,Error,EvalError,Float32Array,Float64Array,Function,Generator,GeneratorFunction,Infinity,Int16Array,Int32Array,Int8Array,Intl,Iterator,JSON,Map,Math,NaN,Number,Object,Promise,Proxy,RangeError,ReferenceError,Reflect,RegExp,Set,SharedArrayBuffer,String,Symbol,SyntaxError,TypeError,URIError,Uint16Array,Uint32Array,Uint8Array,Uint8ClampedArray,WeakMap,WeakSet,arguments,console,decodeURI,decodeURIComponent,encodeURI,encodeURIComponent,eval,globalThis,isFinite,isNaN,parseFloat,parseInt,this,undefined]
+!0 client @0:0 [Audio,CanvasRenderingContext2D,Document,DocumentFragment,Element,FocusEvent,HTMLElement,Image,InputEvent,IntersectionObserver,KeyboardEvent,MediaQueryList,MouseEvent,MutationObserver,Node,NodeList,PerformanceObserver,PointerEvent,ResizeObserver,ShadowRoot,TouchEvent,WebGL2RenderingContext,WebGLRenderingContext,WebSocket,XMLHttpRequest,alert,cancelAnimationFrame,cancelIdleCallback,clearInterval,clearTimeout,close,confirm,customElements,document,getComputedStyle,getSelection,history,indexedDB,localStorage,location,matchMedia,navigator,open,print,prompt,queueMicrotask,requestAnimationFrame,requestIdleCallback,screen,self,sessionStorage,setInterval,setTimeout,window] < ~0
+#0 server @0:0 [Buffer,clearImmediate,process,setImmediate] < ~0
+~1 vue @0:0 [$attrs,$data,$el,$emit,$forceUpdate,$nextTick,$options,$parent,$props,$refs,$root,$slots,$watch] < ~0
+~2 mod @0:227 < ~0
+~3 setup @0:227 < ~2
+~4 extern @1:27 [ref] < ~3
+~5 extern @28:74 [FixturePanel] < ~3
+~6 closure @173:226 < ~3
+

@@ -429,7 +429,7 @@ pub fn is_constant_simple_expression(
     wrapped.push_str(content);
     wrapped.push(')');
 
-    let allocator = oxc_allocator::Allocator::default();
+    let allocator = crate::expr_parse_probe::parse_arena();
     let parser = Parser::new(
         &allocator,
         &wrapped,

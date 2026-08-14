@@ -1,7 +1,6 @@
 //! Slot parameter helpers (scoped slot props parsing and prefixing).
 
 use crate::{DirectiveNode, ExpressionNode};
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{BindingPattern, Expression};
 use oxc_ast_visit::{
     Visit,
@@ -33,7 +32,7 @@ pub(super) fn prefix_slot_defaults(source: &str) -> String {
     wrapped.push_str(source);
     wrapped.push_str(") => null");
 
-    let allocator = Allocator::default();
+    let allocator = crate::expr_parse_probe::parse_arena();
     let parser = Parser::new(&allocator, &wrapped, SourceType::ts().with_module(true));
     let Ok(Expression::ArrowFunctionExpression(arrow)) = parser.parse_expression() else {
         return String::new(source);

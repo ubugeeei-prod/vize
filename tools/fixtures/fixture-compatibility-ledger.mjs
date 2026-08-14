@@ -301,8 +301,8 @@ function validateUnresolved(unresolved) {
 }
 
 function validateRatchets(oracles, fixtureMap, context) {
-  equal(fixtureMap.size, 138, "gitlink count drifted");
-  equal(countMembership(fixtureMap, "ecosystem"), 134, "ecosystem fixture count drifted");
+  equal(fixtureMap.size, 146, "gitlink count drifted");
+  equal(countMembership(fixtureMap, "ecosystem"), 142, "ecosystem fixture count drifted");
   equal(countMembership(fixtureMap, "app"), 16, "App fixture count drifted");
   const appOnly = [...fixtureMap.values()].filter(
     (fixture) => fixture.memberships.length === 1 && fixture.memberships[0] === "app",
@@ -318,7 +318,7 @@ function validateRatchets(oracles, fixtureMap, context) {
     "App-only fixture membership drifted",
   );
   for (const kind of ["compiler", "formatter-idempotency", "linter", "typechecker"]) {
-    equal(oracles.get(kind).size, 134, `${kind} oracle count drifted`);
+    equal(oracles.get(kind).size, 142, `${kind} oracle count drifted`);
   }
   equal(oracles.get("authored-lsp").size, 3, "authored LSP oracle count drifted");
   equal(oracles.get("vue-tsc-parity").size, 11, "vue-tsc parity count drifted");

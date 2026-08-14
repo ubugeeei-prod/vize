@@ -1,0 +1,26 @@
+[vir]
+script_setup=true
+scopes=10
+bindings=6
+
+[reactivity]
+dragging=st
+
+[bindings]
+c:items,resetDragging,startDrag
+st:dragging
+st?:ref
+let:dropCallback
+
+[scopes]
+~0 univ @0:0 [AggregateError,Array,ArrayBuffer,AsyncFunction,AsyncGenerator,AsyncGeneratorFunction,AsyncIterator,Atomics,BigInt,BigInt64Array,BigUint64Array,Boolean,DataView,Date,Error,EvalError,Float32Array,Float64Array,Function,Generator,GeneratorFunction,Infinity,Int16Array,Int32Array,Int8Array,Intl,Iterator,JSON,Map,Math,NaN,Number,Object,Promise,Proxy,RangeError,ReferenceError,Reflect,RegExp,Set,SharedArrayBuffer,String,Symbol,SyntaxError,TypeError,URIError,Uint16Array,Uint32Array,Uint8Array,Uint8ClampedArray,WeakMap,WeakSet,arguments,console,decodeURI,decodeURIComponent,encodeURI,encodeURIComponent,eval,globalThis,isFinite,isNaN,parseFloat,parseInt,this,undefined]
+!0 client @0:0 [Audio,CanvasRenderingContext2D,Document,DocumentFragment,Element,FocusEvent,HTMLElement,Image,InputEvent,IntersectionObserver,KeyboardEvent,MediaQueryList,MouseEvent,MutationObserver,Node,NodeList,PerformanceObserver,PointerEvent,ResizeObserver,ShadowRoot,TouchEvent,WebGL2RenderingContext,WebGLRenderingContext,WebSocket,XMLHttpRequest,alert,cancelAnimationFrame,cancelIdleCallback,clearInterval,clearTimeout,close,confirm,customElements,document,getComputedStyle,getSelection,history,indexedDB,localStorage,location,matchMedia,navigator,open,print,prompt,queueMicrotask,requestAnimationFrame,requestIdleCallback,screen,self,sessionStorage,setInterval,setTimeout,window] < ~0
+#0 server @0:0 [Buffer,clearImmediate,process,setImmediate] < ~0
+~1 vue @0:0 [$attrs,$data,$el,$emit,$forceUpdate,$nextTick,$options,$parent,$props,$refs,$root,$slots,$watch] < ~0
+~2 mod @161:294 < ~0
+~3 setup @161:294 < ~2
+~4 closure @212:293 < ~3
+~5 plain @0:160 < ~3
+~6 v-for @35:119 [item] < ~3, ~1
+~7 event @80:98 [$event] < ~6, ~1
+

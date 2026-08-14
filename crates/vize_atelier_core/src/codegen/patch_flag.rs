@@ -81,7 +81,7 @@ fn is_static_object_or_array_literal(content: &str) -> bool {
     wrapped.push_str(content);
     wrapped.push(')');
 
-    let allocator = oxc_allocator::Allocator::default();
+    let allocator = crate::expr_parse_probe::parse_arena();
     let parser = Parser::new(
         &allocator,
         &wrapped,

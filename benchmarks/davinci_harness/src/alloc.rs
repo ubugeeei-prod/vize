@@ -168,8 +168,18 @@ pub struct AllocMetrics {
 /// thread, so in practice the window covers the routine plus anything it
 /// spawns itself.
 pub fn measure<T>(routine: impl FnOnce() -> T) -> Option<AllocMetrics> {
+    let (value, metrics) = measure_returning(routine);
+    drop(value);
+    metrics
+}
+
+/// Like [`measure`], but hands the routine's value back so callers that need
+/// it (stage windows) can keep it alive past the measured window. Metrics are
+/// captured before the value drops either way, so the two entry points report
+/// identical numbers.
+pub fn measure_returning<T>(routine: impl FnOnce() -> T) -> (T, Option<AllocMetrics>) {
     if !is_installed() {
-        return None;
+        return (routine(), None);
     }
     let live_start = LIVE_BYTES.load(Ordering::Relaxed);
     PEAK_BYTES.store(live_start, Ordering::Relaxed);
@@ -183,8 +193,7 @@ pub fn measure<T>(routine: impl FnOnce() -> T) -> Option<AllocMetrics> {
             .load(Ordering::Relaxed)
             .saturating_sub(live_start),
     };
-    drop(value);
-    Some(metrics)
+    (value, Some(metrics))
 }
 
 #[cfg(test)]
