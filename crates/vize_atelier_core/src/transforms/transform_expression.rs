@@ -12,12 +12,16 @@ pub(crate) mod nesting;
 mod parse_checks;
 #[path = "transform_expression/prefix.rs"]
 pub(crate) mod prefix;
+#[path = "transform_expression/reparse.rs"]
+mod reparse;
 #[path = "transform_expression/retained_rewrite.rs"]
 mod retained_rewrite;
 #[path = "transform_expression/rewrite.rs"]
 mod rewrite;
 #[path = "transform_expression/shape_checks.rs"]
 mod shape_checks;
+#[path = "transform_expression/splice.rs"]
+mod splice;
 #[path = "transform_expression/typescript.rs"]
 mod typescript;
 

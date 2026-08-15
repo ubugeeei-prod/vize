@@ -131,17 +131,8 @@ pub fn prefix_identifiers_in_expression(content: &str) -> String {
                 return String::new(content);
             }
 
-            // Sort by position (descending) to apply replacements from end to start
-            rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
-
-            let mut result = String::new(content);
-            for (start, end, replacement) in rewrites {
-                if start < result.len() && end <= result.len() {
-                    result.replace_range(start..end, &replacement);
-                }
-            }
-
-            result
+            // Span-splice the replacements into the original text (P1-9).
+            super::splice::splice_replacements(content, rewrites)
         }
         Err(_) => String::new(content),
     }

@@ -38,8 +38,11 @@
 //! is armed and must not disturb the production re-parse floor the P1-7
 //! acceptance pins.
 //!
-//! Temporary like the probe: P1-8/P1-9 collapse the legacy sites and this
-//! module shrinks with them.
+//! Temporary like the probe: P1-9 already drives the transform prefixer
+//! from the retained AST on admitted inputs (span splicing, guard re-scans
+//! skipped); the gates and the remaining legacy chains collapse together
+//! once the recorded residual classes shrink, and this module shrinks with
+//! them.
 
 use oxc_ast::ast as oxc_ast_types;
 use oxc_ast_visit::{Visit, walk};
@@ -254,64 +257,10 @@ impl<'a> Visit<'a> for JsModuleCompatScan {
     }
 }
 
-/// Dual-run instrumentation for the P1-7 differential lane (see module
-/// docs). Counter pattern mirrors `vize_croquis::drawer::differential`.
-///
-/// Compiled unconditionally (a few atomics, dead in production) so the
-/// cfg-gated comparators in this crate *and* in `vize_atelier_vapor` can
-/// record into one set of counters regardless of which crate's `test` cfg
-/// or `davinci-differential` feature armed them.
-pub mod differential {
-    use core::sync::atomic::{AtomicU64, Ordering};
-
-    static TRANSFORM_REWRITE_COMPARISONS: AtomicU64 = AtomicU64::new(0);
-    static CODEGEN_REWRITE_COMPARISONS: AtomicU64 = AtomicU64::new(0);
-    static VAPOR_RESOLVE_COMPARISONS: AtomicU64 = AtomicU64::new(0);
-    static SHAPE_COMPARISONS: AtomicU64 = AtomicU64::new(0);
-
-    /// One retained-vs-legacy `rewrite_expression` output comparison passed.
-    pub fn record_transform_rewrite_comparison() {
-        TRANSFORM_REWRITE_COMPARISONS.fetch_add(1, Ordering::Relaxed);
-    }
-
-    /// One retained-vs-legacy codegen prefixer output comparison passed.
-    pub fn record_codegen_rewrite_comparison() {
-        CODEGEN_REWRITE_COMPARISONS.fetch_add(1, Ordering::Relaxed);
-    }
-
-    /// One retained-vs-legacy vapor resolve output comparison passed.
-    pub fn record_vapor_resolve_comparison() {
-        VAPOR_RESOLVE_COMPARISONS.fetch_add(1, Ordering::Relaxed);
-    }
-
-    /// One retained-vs-legacy boolean shape-check comparison passed.
-    pub fn record_shape_comparison() {
-        SHAPE_COMPARISONS.fetch_add(1, Ordering::Relaxed);
-    }
-
-    /// Snapshot of the process-global monotone counters.
-    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-    pub struct DifferentialStats {
-        /// Retained identifier-rewrite walks dual-run in the transform lane.
-        pub transform_rewrite_comparisons: u64,
-        /// Retained identifier-rewrite walks dual-run in the codegen lane.
-        pub codegen_rewrite_comparisons: u64,
-        /// Retained resolve walks dual-run in the vapor generate lane.
-        pub vapor_resolve_comparisons: u64,
-        /// Retained boolean shape checks dual-run against a legacy parse.
-        pub shape_comparisons: u64,
-    }
-
-    /// Read the current counter snapshot.
-    pub fn stats() -> DifferentialStats {
-        DifferentialStats {
-            transform_rewrite_comparisons: TRANSFORM_REWRITE_COMPARISONS.load(Ordering::Relaxed),
-            codegen_rewrite_comparisons: CODEGEN_REWRITE_COMPARISONS.load(Ordering::Relaxed),
-            vapor_resolve_comparisons: VAPOR_RESOLVE_COMPARISONS.load(Ordering::Relaxed),
-            shape_comparisons: SHAPE_COMPARISONS.load(Ordering::Relaxed),
-        }
-    }
-}
+/// Dual-run instrumentation for the differential lane (see module docs);
+/// P1-9 adds the transform-lane legacy classification counters there.
+#[path = "retained/differential.rs"]
+pub mod differential;
 
 #[cfg(test)]
 #[path = "retained/tests.rs"]

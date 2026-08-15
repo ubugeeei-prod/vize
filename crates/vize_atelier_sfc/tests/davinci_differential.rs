@@ -144,6 +144,16 @@ fn differential_lane_body() {
         },
         "the lane binary must own its counters from zero"
     );
+    assert_eq!(
+        differential::transform_rewrite_legacy_stats(),
+        differential::TransformRewriteLegacyStats {
+            params: 0,
+            unretained: 0,
+            dialect_rejected: 0,
+            ts_strip_rewrote: 0,
+        },
+        "the lane binary must own the P1-9 legacy counters from zero"
+    );
 
     // -- committed battery, pinned counts ---------------------------------
     compile_source_all_lanes(BATTERY_SOURCE);
@@ -157,6 +167,23 @@ fn differential_lane_body() {
             shape_comparisons: 8,
         },
         "battery comparison counts moved: dispatch, retention, or lane routing changed — re-derive the pin deliberately"
+    );
+    // The P1-9 residual: the battery's fallback plants stay legacy — the
+    // multi-statement `@focus` handler and the synthesized v-for source
+    // sub-expression carry no whole-expression retained AST (the P1-5
+    // completeness contract), and the TS-cast `:title` binding's retained
+    // AST fails the dialect gate on its `TSAsExpression`. The dom and ssr
+    // lanes route their shares here; vapor prefixes in its own resolver,
+    // never through `rewrite_expression`.
+    assert_eq!(
+        differential::transform_rewrite_legacy_stats(),
+        differential::TransformRewriteLegacyStats {
+            params: 0,
+            unretained: 4,
+            dialect_rejected: 2,
+            ts_strip_rewrote: 0,
+        },
+        "battery legacy-class counts moved: the P1-9 admission split changed — re-derive the pin deliberately"
     );
 
     // -- P0-2 fixture ladder, pinned counts -------------------------------
@@ -173,6 +200,23 @@ fn differential_lane_body() {
             shape_comparisons: 252,
         },
         "ladder comparison counts moved: dispatch, retention, or fixture content changed — re-derive the pin deliberately"
+    );
+    // Cumulative like the snapshot above it. Ladder-only residual: 16
+    // params-position validations (slot params on `large.vue`) and 8 more
+    // unretained rewrites (multi-statement handlers and v-for source
+    // sub-expressions); every other transform rewrite across battery plus
+    // ladder — 1408 of 1438 calls (97.9%) — was served by the AST-driven
+    // splice.
+    let after_ladder_legacy = differential::transform_rewrite_legacy_stats();
+    assert_eq!(
+        after_ladder_legacy,
+        differential::TransformRewriteLegacyStats {
+            params: 16,
+            unretained: 12,
+            dialect_rejected: 2,
+            ts_strip_rewrote: 0,
+        },
+        "ladder legacy-class counts moved: the P1-9 admission split changed — re-derive the pin deliberately"
     );
 
     // -- optional corpus sweep --------------------------------------------
@@ -216,6 +260,27 @@ fn differential_lane_body() {
             end.codegen_rewrite_comparisons - after_ladder.codegen_rewrite_comparisons,
             end.vapor_resolve_comparisons - after_ladder.vapor_resolve_comparisons,
             end.shape_comparisons - after_ladder.shape_comparisons,
+        );
+        // P1-9 admitted/legacy split for the transform prefixer over the
+        // sweep: admitted == the transform_rewrite comparisons above.
+        let sweep_admitted =
+            end.transform_rewrite_comparisons - after_ladder.transform_rewrite_comparisons;
+        let end_legacy = differential::transform_rewrite_legacy_stats();
+        let sweep_legacy = differential::TransformRewriteLegacyStats {
+            params: end_legacy.params - after_ladder_legacy.params,
+            unretained: end_legacy.unretained - after_ladder_legacy.unretained,
+            dialect_rejected: end_legacy.dialect_rejected - after_ladder_legacy.dialect_rejected,
+            ts_strip_rewrote: end_legacy.ts_strip_rewrote - after_ladder_legacy.ts_strip_rewrote,
+        };
+        eprintln!(
+            "davinci-differential corpus prefixer split: admitted={} legacy_total={} legacy_params={} legacy_unretained={} legacy_dialect_rejected={} legacy_ts_strip_rewrote={} admitted_pct={:.2}",
+            sweep_admitted,
+            sweep_legacy.total(),
+            sweep_legacy.params,
+            sweep_legacy.unretained,
+            sweep_legacy.dialect_rejected,
+            sweep_legacy.ts_strip_rewrote,
+            100.0 * sweep_admitted as f64 / (sweep_admitted + sweep_legacy.total()) as f64,
         );
         assert!(
             end.transform_rewrite_comparisons > after_ladder.transform_rewrite_comparisons,
