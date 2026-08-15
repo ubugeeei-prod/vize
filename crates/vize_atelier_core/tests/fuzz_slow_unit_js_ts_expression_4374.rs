@@ -12,6 +12,7 @@ const REPRODUCER_HEX: &str = "\
 4c74796c6173716c773c285c5c5c3e32675c065c293d505c26355c75626567653c5c423c4c74796c6173716c753c285c5c5c3e32675c065c293d505c26355c7562656765743c64734c3c5c75355c75626561793c5c6f6e616d6573706163653c\
 285c5c5c3e32675c065c293d505c755c3562266567653c5c423c4c74796c6173716c773c285c5c5c3e32675c065c293d505c26355c7562656765743c64734c3c5c75355c75626561793c5c6f646573423c44444144446c656c44446362656179\
 3c5c6f646573423c44444144446c656c4444636f6e7344444444686e44440000336373456d7070753c6144";
+const OUT_OF_RANGE_IDENTIFIER_ESCAPE: &str = "\\u{110000}";
 
 fn decode_hex(hex: &str) -> Vec<u8> {
     let bytes = hex.as_bytes();
@@ -60,7 +61,9 @@ fn closed_malformed_identifier_escapes_do_not_accumulate_across_expressions() {
 #[test]
 fn invalid_identifier_escapes_count_as_malformed_recovery_cost() {
     let count = (MAX_EXPRESSION_NESTING_DEPTH / 2) + 1;
-    let invalid_scalar = "root<\\u{110000}".repeat(count);
+    let invalid_scalar = ["root<", OUT_OF_RANGE_IDENTIFIER_ESCAPE]
+        .concat()
+        .repeat(count);
     assert_malformed_identifier_escape_rejected(&invalid_scalar, count);
 
     let non_identifier_start = "root<\\u0030".repeat(count);
