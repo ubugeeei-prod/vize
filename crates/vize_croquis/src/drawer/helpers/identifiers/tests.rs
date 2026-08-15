@@ -21,6 +21,9 @@ fn test_extract_identifiers_oxc() {
     let ids = to_strings(extract_identifiers_oxc("{ foo }"));
     assert_eq!(ids, vec!["foo"]);
 
+    let ids = to_strings(extract_identifiers_oxc("[...menu]"));
+    assert_eq!(ids, vec!["menu"]);
+
     let ids = to_strings(extract_identifiers_oxc("cond ? a : b"));
     assert_eq!(ids, vec!["cond", "a", "b"]);
 }
