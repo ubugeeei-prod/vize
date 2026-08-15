@@ -58,7 +58,28 @@ fn closed_malformed_identifier_escapes_do_not_accumulate_across_expressions() {
 }
 
 #[test]
+fn invalid_identifier_escapes_count_as_malformed_recovery_cost() {
+    let count = (MAX_EXPRESSION_NESTING_DEPTH / 2) + 1;
+    let invalid_scalar = "root<\\u{110000}".repeat(count);
+    assert_malformed_identifier_escape_rejected(&invalid_scalar, count);
+
+    let non_identifier_start = "root<\\u0030".repeat(count);
+    assert_malformed_identifier_escape_rejected(&non_identifier_start, count);
+}
+
+#[test]
 fn valid_identifier_escapes_count_like_normal_type_identifiers() {
     assert!(expression_is_safe_to_parse("factory<\\u0061>()"));
     assert!(expression_is_safe_to_parse("factory<\\u{61}>()"));
+}
+
+fn assert_malformed_identifier_escape_rejected(source: &str, type_angle_count: usize) {
+    assert_eq!(source.matches('<').count(), type_angle_count);
+    assert!(
+        type_angle_count <= MAX_EXPRESSION_NESTING_DEPTH,
+        "the test must rely on malformed escape cost, not angle count alone"
+    );
+    assert!(expression_has_balanced_delimiters(source));
+    assert!(expression_nesting_depth(source) > MAX_EXPRESSION_NESTING_DEPTH);
+    assert!(!expression_is_safe_to_parse(source));
 }

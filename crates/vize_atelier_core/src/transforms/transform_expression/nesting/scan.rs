@@ -7,6 +7,8 @@
 //! stop exactly where the lexer stops, or hidden brackets slip past the guard
 //! while OXC still recurses into the overflow path.
 
+use oxc_syntax::identifier::is_identifier_start;
+
 pub(crate) fn skip_quoted(bytes: &[u8], mut i: usize, quote: u8) -> usize {
     while i < bytes.len() {
         match bytes[i] {
@@ -89,21 +91,51 @@ pub(super) fn speculative_type_angle_open_kind(
 }
 
 fn starts_valid_identifier_escape(bytes: &[u8], marker: usize) -> bool {
+    decode_identifier_escape(bytes, marker).is_some_and(is_identifier_start)
+}
+
+fn decode_identifier_escape(bytes: &[u8], marker: usize) -> Option<char> {
     if bytes.get(marker) != Some(&b'\\') || bytes.get(marker + 1) != Some(&b'u') {
-        return false;
+        return None;
     }
     if bytes.get(marker + 2) == Some(&b'{') {
-        let mut i = marker + 3;
-        let mut digits = 0usize;
-        while digits < 6 && bytes.get(i).is_some_and(|b| b.is_ascii_hexdigit()) {
-            i += 1;
-            digits += 1;
-        }
-        digits > 0 && bytes.get(i) == Some(&b'}')
+        decode_braced_identifier_escape(bytes, marker + 3)
     } else {
-        bytes
-            .get(marker + 2..marker + 6)
-            .is_some_and(|digits| digits.iter().all(u8::is_ascii_hexdigit))
+        decode_fixed_identifier_escape(bytes, marker + 2)
+    }
+}
+
+fn decode_braced_identifier_escape(bytes: &[u8], mut i: usize) -> Option<char> {
+    let mut code_point = 0u32;
+    let mut digits = 0usize;
+    while digits < 6 {
+        let Some(value) = bytes.get(i).and_then(|byte| hex_value(*byte)) else {
+            break;
+        };
+        code_point = (code_point << 4) | value;
+        i += 1;
+        digits += 1;
+    }
+    if digits == 0 || bytes.get(i) != Some(&b'}') {
+        return None;
+    }
+    char::from_u32(code_point)
+}
+
+fn decode_fixed_identifier_escape(bytes: &[u8], start: usize) -> Option<char> {
+    let mut code_point = 0u32;
+    for byte in bytes.get(start..start + 4)? {
+        code_point = (code_point << 4) | hex_value(*byte)?;
+    }
+    char::from_u32(code_point)
+}
+
+fn hex_value(byte: u8) -> Option<u32> {
+    match byte {
+        b'0'..=b'9' => Some(u32::from(byte - b'0')),
+        b'a'..=b'f' => Some(u32::from(byte - b'a' + 10)),
+        b'A'..=b'F' => Some(u32::from(byte - b'A' + 10)),
+        _ => None,
     }
 }
 
