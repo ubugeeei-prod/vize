@@ -66,6 +66,8 @@ export type FixtureOptions = {
   vizeDiagnostics?: string[];
   /** Raw stdout the fake `vue-tsc` writes before exiting with a diagnostic status. */
   baselineOutput?: string;
+  /** Stream the fake `vue-tsc` writes diagnostics and `--listFiles` evidence to. */
+  baselineOutputStream?: "stdout" | "stderr";
   /** Exit code for the fake `vue-tsc` baseline run. */
   baselineExitCode?: number;
   /** Vue source files emitted by the fake `vue-tsc --listFiles` run. */
@@ -207,6 +209,7 @@ export function setup(options: FixtureOptions = {}) {
     vueTsc,
     {
       baselineOutput,
+      baselineOutputStream: options.baselineOutputStream,
       exitCode: options.baselineExitCode,
       files: options.baselineFiles ?? ["src/App.vue"],
       fixtureRoot,

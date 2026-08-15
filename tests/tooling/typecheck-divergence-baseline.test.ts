@@ -147,6 +147,24 @@ test("zero diagnostics on both sides passes when both checked the same Vue files
   }
 });
 
+test("vue-tsc listFiles evidence on stderr still proves baseline coverage", () => {
+  const fixture = setup({
+    baselineOutputStream: "stderr",
+    vizeDiagnostics: [],
+    baselineOutput: "",
+  });
+  try {
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    const artifact = readJson(artifactPath(fixture, "json"));
+    assert.equal(artifact.baseline.coverage.baselineVueFileCount, 1);
+    assert.equal(artifact.baseline.coverage.sharedVueFileCount, 1);
+    assert.equal(artifact.budget.verdict, "passed");
+  } finally {
+    cleanup(fixture);
+  }
+});
+
 test("seeded mutation oracle tries the next deterministic candidate when a probe is invisible", () => {
   const fixture = setup({
     baselineFiles: ["src/App.vue", "src/Other.vue"],

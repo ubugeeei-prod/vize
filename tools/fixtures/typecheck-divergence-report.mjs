@@ -91,11 +91,7 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
     vueTscOutput: baselineOutput,
     documentedDifferences,
   });
-  const coverage = evaluateVueProgramCoverage(
-    vizeRun.payload.parsed,
-    baseline.stdout ?? "",
-    fixtureRoot,
-  );
+  const coverage = evaluateVueProgramCoverage(vizeRun.payload.parsed, baselineOutput, fixtureRoot);
   const configuration = evaluateBaselineConfiguration(baselineOutput);
   const mutationOracle = createSeededMutationOracle({
     project,

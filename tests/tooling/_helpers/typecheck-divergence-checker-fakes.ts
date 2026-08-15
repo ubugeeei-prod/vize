@@ -56,6 +56,7 @@ export function writeVueTscFixture(
   pathname: string,
   options: {
     baselineOutput: string;
+    baselineOutputStream?: "stdout" | "stderr";
     exitCode?: number;
     files: string[];
     fixtureRoot: string;
@@ -78,7 +79,7 @@ for (const { file, sourcePath } of ${JSON.stringify(sourceFiles)}) {
   if (mutation != null) output += mutation;
 }
 output += ${JSON.stringify(files)};
-process.stdout.write(output);
+process.${options.baselineOutputStream === "stderr" ? "stderr" : "stdout"}.write(output);
 process.exit(${JSON.stringify(options.exitCode ?? 2)});
 `;
   writeVueTsc(pathname, runBody, invocationPath);
