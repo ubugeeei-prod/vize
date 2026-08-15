@@ -60,7 +60,7 @@ impl MarkupRule for NoTemplateTargetBlank {
         let Some(target) = element.static_attribute("target") else {
             return;
         };
-        if !target.value().is_some_and(|value| value.trim() == "_blank") {
+        if target.value().is_none_or(|value| value.trim() != "_blank") {
             return;
         }
         // The reverse-tabnabbing risk only applies to links that navigate.
