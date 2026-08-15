@@ -29,7 +29,11 @@ test(
     const fixtureRoot = path.join(temp, "fixture");
     const reportDir = path.join(temp, "report");
     fs.mkdirSync(path.join(fixtureRoot, "src"), { recursive: true });
+    fs.mkdirSync(path.join(fixtureRoot, "docs/examples"), { recursive: true });
     fs.mkdirSync(path.join(fixtureRoot, "docs/.vitepress/vitepress/components/common"), {
+      recursive: true,
+    });
+    fs.mkdirSync(path.join(fixtureRoot, "docs/.vitepress/vitepress/components/globals"), {
       recursive: true,
     });
     fs.mkdirSync(path.join(fixtureRoot, "docs/.vitepress/vitepress/utils"), {
@@ -43,6 +47,7 @@ test(
           allowJs: true,
           composite: true,
           noEmit: true,
+          resolveJsonModule: true,
           strict: true,
         },
       })}\n`,
@@ -53,6 +58,10 @@ test(
       '<script setup lang="ts">import { value } from "./value"; const label: string = value</script>\n',
     );
     fs.writeFileSync(
+      path.join(fixtureRoot, "docs/examples/basic.vue"),
+      '<script setup lang="ts">import VpLink from "../.vitepress/vitepress/components/common/vp-link.vue"; const link = VpLink</script>\n',
+    );
+    fs.writeFileSync(
       path.join(fixtureRoot, "docs/.vitepress/vitepress/utils/index.ts"),
       "export const linkLabel = 'ok';\n",
     );
@@ -61,8 +70,12 @@ test(
       "export const jsLabel = 'ok';\n",
     );
     fs.writeFileSync(
+      path.join(fixtureRoot, "docs/.vitepress/vitepress/components/globals/icons-categories.json"),
+      '["ok"]\n',
+    );
+    fs.writeFileSync(
       path.join(fixtureRoot, "docs/.vitepress/vitepress/components/common/vp-link.vue"),
-      '<script setup lang="ts">import { linkLabel } from "../../utils"; import { jsLabel } from "../../utils/label"; const labels: string[] = [linkLabel, jsLabel]</script>\n',
+      '<script setup lang="ts">import { linkLabel } from "../../utils"; import { jsLabel } from "../../utils/label"; import categories from "../globals/icons-categories.json"; const labels: string[] = [linkLabel, jsLabel, ...categories]</script>\n',
     );
 
     try {
@@ -76,10 +89,7 @@ test(
         },
         {
           fileCount: 2,
-          files: [
-            { file: "docs/.vitepress/vitepress/components/common/vp-link.vue" },
-            { file: "src/App.vue" },
-          ],
+          files: [{ file: "docs/examples/basic.vue" }, { file: "src/App.vue" }],
         },
       );
       const config = JSON.parse(project.source);
@@ -87,6 +97,8 @@ test(
       assert.equal(config.include.includes("../docs/**/*.ts"), true);
       assert.equal(config.include.includes("../docs/.vitepress/**/*.ts"), true);
       assert.equal(config.include.includes("../docs/.vitepress/**/*.js"), true);
+      assert.equal(config.include.includes("../docs/.vitepress/**/*.json"), true);
+      assert.equal(config.include.includes("../docs/.vitepress/**/*.vue"), true);
       const result = runVueTsc(project.path, fixtureRoot);
       const diagnostics = result.stdout.split("\n").filter((line) => /: error TS\d+: /u.test(line));
       assert.deepEqual(diagnostics, []);
@@ -99,6 +111,12 @@ test(
       );
       assert.equal(
         program.includes(path.join(fixtureRoot, "docs/.vitepress/vitepress/utils/label.js")),
+        true,
+      );
+      assert.equal(
+        program.includes(
+          path.join(fixtureRoot, "docs/.vitepress/vitepress/components/common/vp-link.vue"),
+        ),
         true,
       );
     } finally {

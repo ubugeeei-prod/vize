@@ -36,12 +36,14 @@ export function collectVizeDiagnostics(report, cwd) {
   return partitionVueDiagnostics(diagnostics);
 }
 
-export function collectVueTscDiagnostics(output, cwd) {
+export function collectVueTscDiagnostics(output, cwd, options = {}) {
   if (typeof output !== "string") invalid("vue-tsc output must be a string");
   const diagnostics = [];
   let excludedNonVueCount = 0;
   let excludedProjectCount = 0;
   let excludedExternalCount = 0;
+  let excludedSupportVueCount = 0;
+  const comparableVueFiles = options.comparableVueFiles;
   for (const line of output.replaceAll("\r\n", "\n").split("\n")) {
     const match = /^(.+)\((\d+),(\d+)\): (error|warning) TS(\d+): (.+)$/.exec(line);
     const projectMatch = /^(error|warning) TS(\d+): (.+)$/.exec(line);
@@ -49,7 +51,13 @@ export function collectVueTscDiagnostics(output, cwd) {
       const file = normalizeBaselinePath(match[1], cwd);
       if (file == null) excludedExternalCount += 1;
       else if (!file.endsWith(".vue")) excludedNonVueCount += 1;
-      else diagnostics.push(record(file, match[4], match[2], match[3], match[5], match[6]));
+      else if (
+        comparableVueFiles instanceof Set &&
+        !comparableVueFiles.has(file) &&
+        isSupportVueFile(file)
+      ) {
+        excludedSupportVueCount += 1;
+      } else diagnostics.push(record(file, match[4], match[2], match[3], match[5], match[6]));
     } else if (projectMatch != null) {
       // Validated for shape only: a project-level diagnostic has no file or
       // position to compare, so the normalized record is discarded and the line
@@ -60,7 +68,13 @@ export function collectVueTscDiagnostics(output, cwd) {
       invalid(`unparseable vue-tsc diagnostic: ${line}`);
     }
   }
-  return { diagnostics, excludedNonVueCount, excludedProjectCount, excludedExternalCount };
+  return {
+    diagnostics,
+    excludedNonVueCount,
+    excludedProjectCount,
+    excludedExternalCount,
+    excludedSupportVueCount,
+  };
 }
 
 export function normalizePath(value, cwd, label) {
@@ -102,6 +116,10 @@ function normalizeBaselinePath(value, cwd) {
     return null;
   }
   return normalized;
+}
+
+function isSupportVueFile(file) {
+  return file.split("/").some((segment) => segment.startsWith("."));
 }
 
 function record(file, severity, line, column, code, message) {

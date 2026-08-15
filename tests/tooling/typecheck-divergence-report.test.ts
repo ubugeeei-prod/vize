@@ -108,6 +108,8 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       baselineVueFilesSha256: createHash("sha256").update("src/App.vue\n").digest("hex"),
       ignoredDependencyVueFileCount: 0,
       ignoredDependencyVueFilesSha256: createHash("sha256").update("").digest("hex"),
+      ignoredSupportVueFileCount: 0,
+      ignoredSupportVueFilesSha256: createHash("sha256").update("").digest("hex"),
       missingVueFiles: [],
       sharedVueFileCount: 1,
       unexpectedVueFiles: [],
@@ -189,6 +191,7 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
         `${sourceBase}/**/*.jsx`,
         `${sourceBase}/**/*.mjs`,
         `${sourceBase}/**/*.cjs`,
+        `${sourceBase}/**/*.json`,
       ],
       exclude: [
         `${fixtureBase}/**/node_modules/**`,

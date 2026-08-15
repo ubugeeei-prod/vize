@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 
 /**
@@ -59,7 +59,13 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
     `${project.id}-vue-tsc.tsconfig.json`,
   );
   const configDir = dirname(outputPath);
-  const dotRoots = dotDirectoryIncludeRoots(fixtureRoot, vizeReport);
+  const globRoots = vueGlobSourceRoots(fixtureRoot, project);
+  const dotRoots = [
+    ...new Set([
+      ...dotDirectoryIncludeRoots(fixtureRoot, vizeReport),
+      ...discoverDotDirectoryIncludeRoots(globRoots),
+    ]),
+  ];
   const ambientRoots = [
     ...new Set(
       [fixtureRoot, dirname(sourcePath), ...dotRoots].map((root) =>
@@ -68,11 +74,7 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
     ),
   ];
   const sourceRoots = [
-    ...new Set(
-      [...vueGlobSourceRoots(fixtureRoot, project), ...dotRoots].map((root) =>
-        configRelativePath(configDir, root),
-      ),
-    ),
+    ...new Set([...globRoots, ...dotRoots].map((root) => configRelativePath(configDir, root))),
   ];
   const config = {
     extends: configRelativePath(configDir, sourcePath),
@@ -94,6 +96,7 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
     include: [
       ...ambientRoots.map((root) => `${root}/**/*.d.ts`),
       ...sourceRoots.flatMap((root) => sourceIncludeGlobs(root)),
+      ...dotRoots.map((root) => `${configRelativePath(configDir, root)}/**/*.vue`),
     ],
     exclude: ambientRoots.flatMap((root) => [`${root}/**/node_modules/**`, `${root}/**/dist/**`]),
     references: [],
@@ -142,6 +145,31 @@ function dotDirectoryIncludeRoots(fixtureRoot, vizeReport) {
   return roots;
 }
 
+function discoverDotDirectoryIncludeRoots(sourceRoots) {
+  const roots = [];
+  for (const sourceRoot of sourceRoots) collectDotDirectories(sourceRoot, roots);
+  return roots;
+}
+
+function collectDotDirectories(directory, roots) {
+  if (!existsSync(directory)) return;
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    if (ignoredDirectory(entry.name)) continue;
+    const child = resolve(directory, entry.name);
+    if (isDotDirectory(entry.name)) roots.push(child);
+    collectDotDirectories(child, roots);
+  }
+}
+
+function ignoredDirectory(name) {
+  return name === "node_modules" || name === "dist" || name === ".git" || name === ".vize-baseline";
+}
+
+function isDotDirectory(name) {
+  return name.startsWith(".") && name !== "." && name !== "..";
+}
+
 function sourceIncludeGlobs(root) {
   return [
     `${root}/**/*.ts`,
@@ -152,5 +180,6 @@ function sourceIncludeGlobs(root) {
     `${root}/**/*.jsx`,
     `${root}/**/*.mjs`,
     `${root}/**/*.cjs`,
+    `${root}/**/*.json`,
   ];
 }

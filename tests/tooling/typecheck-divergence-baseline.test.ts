@@ -12,6 +12,7 @@ import {
   root,
   run,
   setup,
+  sharedBaselineOutput,
   sharedVizeDiagnostic,
   unusableFailure,
   updateVizeOutput,
@@ -68,6 +69,7 @@ test("an empty vue-tsc baseline is unusable, not a false-positive breach", () =>
         "False negatives: 0 (0)",
         "Vize excluded non-Vue: 0",
         "vue-tsc excluded non-Vue: 0",
+        "vue-tsc excluded support Vue: 0",
         "vue-tsc excluded project-level: 0",
         "vue-tsc excluded external: 0",
         "vue-tsc configuration errors: 0",
@@ -77,6 +79,7 @@ test("an empty vue-tsc baseline is unusable, not a false-positive breach", () =>
         "Missing Vue files: 1",
         "Unexpected Vue files: 0",
         "Ignored dependency Vue files: 0",
+        "Ignored support Vue files: 0",
         `Seeded mutation oracle: unusable (${emptyBaselineReason})`,
         `Budget verdict: unusable (${emptyBaselineReason})`,
         `Classification: ${instrumentClassification}`,
@@ -291,6 +294,30 @@ test("transitive Vue dependencies do not expand the authored fixture corpus", ()
     assert.equal(coverage.verdict, "usable");
     assert.equal(coverage.baselineVueFileCount, 1);
     assert.equal(coverage.ignoredDependencyVueFileCount, 1);
+    assert.deepEqual(coverage.missingVueFiles, []);
+    assert.deepEqual(coverage.unexpectedVueFiles, []);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("transitive dot-directory Vue support does not expand the authored fixture corpus", () => {
+  const fixture = setup({
+    baselineFiles: ["src/App.vue", "docs/.vitepress/components/Support.vue"],
+    baselineOutput:
+      `${sharedBaselineOutput}` +
+      "docs/.vitepress/components/Support.vue(1,1): error TS2322: support only\n",
+  });
+  try {
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    const artifact = readJson(artifactPath(fixture, "json"));
+    assert.equal(artifact.divergence.summary.falseNegativeCount, 0);
+    assert.equal(artifact.divergence.summary.baselineExcludedSupportVueCount, 1);
+    const coverage = artifact.baseline.coverage;
+    assert.equal(coverage.verdict, "usable");
+    assert.equal(coverage.baselineVueFileCount, 1);
+    assert.equal(coverage.ignoredSupportVueFileCount, 1);
     assert.deepEqual(coverage.missingVueFiles, []);
     assert.deepEqual(coverage.unexpectedVueFiles, []);
   } finally {

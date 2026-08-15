@@ -15,8 +15,11 @@ export function evaluateVueProgramCoverage(vizeReport, vueTscOutput, cwd) {
     .map((entry) => entry.file)
     .filter((file) => file.endsWith(".vue"))
     .sort(byteOrder);
-  const { authoredFiles: baselineVueFiles, dependencyFiles: baselineDependencyVueFiles } =
-    collectVueTscProgramFiles(vueTscOutput, cwd);
+  const {
+    authoredFiles: baselineVueFiles,
+    dependencyFiles: baselineDependencyVueFiles,
+    supportFiles: baselineSupportVueFiles,
+  } = collectVueTscProgramFiles(vueTscOutput, cwd, new Set(vizeVueFiles));
   const vizeSet = new Set(vizeVueFiles);
   const baselineSet = new Set(baselineVueFiles);
   const missingVueFiles = vizeVueFiles.filter((file) => !baselineSet.has(file));
@@ -33,6 +36,8 @@ export function evaluateVueProgramCoverage(vizeReport, vueTscOutput, cwd) {
     baselineVueFilesSha256: fileListHash(baselineVueFiles),
     ignoredDependencyVueFileCount: baselineDependencyVueFiles.length,
     ignoredDependencyVueFilesSha256: fileListHash(baselineDependencyVueFiles),
+    ignoredSupportVueFileCount: baselineSupportVueFiles.length,
+    ignoredSupportVueFilesSha256: fileListHash(baselineSupportVueFiles),
     missingVueFiles,
     sharedVueFileCount,
     unexpectedVueFiles,
@@ -43,9 +48,10 @@ export function evaluateVueProgramCoverage(vizeReport, vueTscOutput, cwd) {
   };
 }
 
-function collectVueTscProgramFiles(output, cwd) {
+function collectVueTscProgramFiles(output, cwd, comparableVueFiles) {
   const files = new Set();
   const dependencyFiles = new Set();
+  const supportFiles = new Set();
   for (const rawLine of output.replaceAll("\r\n", "\n").split("\n")) {
     const line = rawLine.trimEnd();
     // `--listFiles` paths are absolute. Requiring that shape keeps diagnostic
@@ -62,6 +68,8 @@ function collectVueTscProgramFiles(output, cwd) {
     }
     if (file.split("/").includes("node_modules")) {
       dependencyFiles.add(file);
+    } else if (!comparableVueFiles.has(file) && isSupportVueFile(file)) {
+      supportFiles.add(file);
     } else {
       files.add(file);
     }
@@ -69,7 +77,12 @@ function collectVueTscProgramFiles(output, cwd) {
   return {
     authoredFiles: [...files].sort(byteOrder),
     dependencyFiles: [...dependencyFiles].sort(byteOrder),
+    supportFiles: [...supportFiles].sort(byteOrder),
   };
+}
+
+function isSupportVueFile(file) {
+  return file.split("/").some((segment) => segment.startsWith("."));
 }
 
 function fileListHash(files) {
