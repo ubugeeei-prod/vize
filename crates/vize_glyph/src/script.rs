@@ -141,7 +141,7 @@ thread_local! {
     /// Per-thread scratch reused across template-expression formats. A single
     /// template can call `format_js_expression` thousands of times (once per
     /// interpolation / directive value); reusing the arena (reset between calls)
-    /// avoids a bumpalo chunk alloc+teardown per call, and reusing the `void (…)`
+    /// avoids an arena chunk alloc+teardown per call, and reusing the `void (…)`
     /// wrapper buffer avoids a heap allocation per call. The CLI formats files in
     /// parallel, so per-thread state keeps each worker independent and lock-free.
     static EXPR_SCRATCH: core::cell::RefCell<(OxcAllocator, String)> =

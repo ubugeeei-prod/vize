@@ -51,8 +51,19 @@ tolerance = 0.05
 #   allocs         — allocation-like calls (alloc + alloc_zeroed + successful
 #                    realloc) during one instrumented run. Deterministic, so
 #                    the gate is exact: any change from the committed baseline
-#                    fails, with no tolerance. 0 carries the same "not yet
-#                    recorded" meaning as wall_p50_ns while that field is 0.
+#                    fails, with no tolerance. **Recorded at Davinci P1-13**
+#                    from a local `cargo bench --bench davinci -- --quick`
+#                    sweep: unlike wall times, alloc counts are
+#                    machine-independent, so they do not wait for the
+#                    reference runner. `0` therefore means a *measured* zero
+#                    here (the `armature_tokenize_*` lanes allocate nothing),
+#                    never "unrecorded" — the unrecorded state is carried by
+#                    wall_p50_ns = 0 alone. These numbers are the phase-1
+#                    ratchet record and are **not enforced yet**:
+#                    bench-compare short-circuits an entry to report-only
+#                    while wall_p50_ns = 0, and its alloc gate compares the
+#                    current report against the committed baseline report
+#                    rather than against this field. See phase-1.md P1-13.
 #   rss_peak_bytes — peak-RSS growth in bytes over the process baseline.
 #                    Report-only for now (process-wide peaks are too noisy to
 #                    gate until the resident-tier work in P5-11 defines the
@@ -72,89 +83,89 @@ armature_tokenize_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wal
 armature_tokenize_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 armature_tokenize_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 armature_tokenize_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-armature_parse_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-armature_parse_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-armature_parse_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-armature_parse_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-armature_parse_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-armature_parse_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-croquis_analyze_full_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-croquis_analyze_full_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-croquis_analyze_full_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-croquis_analyze_full_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-croquis_analyze_full_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-croquis_analyze_full_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-croquis_analyze_for_compile_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-croquis_analyze_for_compile_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-croquis_analyze_for_compile_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-croquis_analyze_for_compile_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-croquis_analyze_for_compile_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-croquis_analyze_for_compile_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-harness-selfcheck = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+armature_parse_small = { wall_p50_ns = 0, allocs = 9, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+armature_parse_medium = { wall_p50_ns = 0, allocs = 107, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+armature_parse_large = { wall_p50_ns = 0, allocs = 272, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+armature_parse_stress-deep = { wall_p50_ns = 0, allocs = 155, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+armature_parse_stress-wide = { wall_p50_ns = 0, allocs = 204, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+armature_parse_stress-interp = { wall_p50_ns = 0, allocs = 105, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_full_small = { wall_p50_ns = 0, allocs = 72, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_full_medium = { wall_p50_ns = 0, allocs = 102, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_full_large = { wall_p50_ns = 0, allocs = 592, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_full_stress-deep = { wall_p50_ns = 0, allocs = 147, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_full_stress-wide = { wall_p50_ns = 0, allocs = 276, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_full_stress-interp = { wall_p50_ns = 0, allocs = 1025, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_for_compile_small = { wall_p50_ns = 0, allocs = 61, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_for_compile_medium = { wall_p50_ns = 0, allocs = 53, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_for_compile_large = { wall_p50_ns = 0, allocs = 296, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_for_compile_stress-deep = { wall_p50_ns = 0, allocs = 46, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_for_compile_stress-wide = { wall_p50_ns = 0, allocs = 64, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_analyze_for_compile_stress-interp = { wall_p50_ns = 0, allocs = 8, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+harness-selfcheck = { wall_p50_ns = 0, allocs = 1, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 
 # Atelier per-stage benches (P0-3). Stage-window cases (transform / lower /
 # ssr codegen, per the phase-0.md measured note) carry the 0.10 tolerance;
 # loop-style cases hold 0.05.
-atelier_core_transform_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_core_transform_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_core_transform_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_core_transform_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_core_transform_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_core_transform_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_dom_transform_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_dom_transform_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_dom_transform_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_dom_transform_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_dom_transform_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_dom_transform_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_dom_codegen_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_dom_codegen_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_dom_codegen_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_dom_codegen_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_dom_codegen_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_dom_codegen_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_dom_compile_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_dom_compile_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_dom_compile_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_dom_compile_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_dom_compile_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_dom_compile_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_vapor_transform_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_vapor_transform_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_vapor_transform_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_vapor_transform_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_vapor_transform_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_vapor_transform_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_vapor_lower_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_vapor_lower_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_vapor_lower_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_vapor_lower_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_vapor_lower_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_vapor_lower_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_vapor_generate_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_vapor_generate_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_vapor_generate_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_vapor_generate_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_vapor_generate_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_vapor_generate_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_vapor_compile_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_vapor_compile_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_vapor_compile_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_vapor_compile_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_vapor_compile_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_vapor_compile_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_ssr_codegen_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_ssr_codegen_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_ssr_codegen_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_ssr_codegen_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_ssr_codegen_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_ssr_codegen_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.10 }
-atelier_ssr_compile_small = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_ssr_compile_medium = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_ssr_compile_large = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_ssr_compile_stress-deep = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_ssr_compile_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_ssr_compile_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_core_transform_small = { wall_p50_ns = 0, allocs = 9, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_core_transform_medium = { wall_p50_ns = 0, allocs = 25, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_core_transform_large = { wall_p50_ns = 0, allocs = 69, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_core_transform_stress-deep = { wall_p50_ns = 0, allocs = 10, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_core_transform_stress-wide = { wall_p50_ns = 0, allocs = 9, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_core_transform_stress-interp = { wall_p50_ns = 0, allocs = 9, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_dom_transform_small = { wall_p50_ns = 0, allocs = 9, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_dom_transform_medium = { wall_p50_ns = 0, allocs = 54, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_dom_transform_large = { wall_p50_ns = 0, allocs = 80, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_dom_transform_stress-deep = { wall_p50_ns = 0, allocs = 11, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_dom_transform_stress-wide = { wall_p50_ns = 0, allocs = 11, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_dom_transform_stress-interp = { wall_p50_ns = 0, allocs = 9, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_dom_codegen_small = { wall_p50_ns = 0, allocs = 21, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_codegen_medium = { wall_p50_ns = 0, allocs = 113, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_codegen_large = { wall_p50_ns = 0, allocs = 223, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_codegen_stress-deep = { wall_p50_ns = 0, allocs = 260, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_codegen_stress-wide = { wall_p50_ns = 0, allocs = 30, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_codegen_stress-interp = { wall_p50_ns = 0, allocs = 422, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_compile_small = { wall_p50_ns = 0, allocs = 39, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_compile_medium = { wall_p50_ns = 0, allocs = 264, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_compile_large = { wall_p50_ns = 0, allocs = 573, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_compile_stress-deep = { wall_p50_ns = 0, allocs = 426, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_compile_stress-wide = { wall_p50_ns = 0, allocs = 245, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_dom_compile_stress-interp = { wall_p50_ns = 0, allocs = 536, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_transform_small = { wall_p50_ns = 0, allocs = 9, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_transform_medium = { wall_p50_ns = 0, allocs = 25, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_transform_large = { wall_p50_ns = 0, allocs = 69, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_transform_stress-deep = { wall_p50_ns = 0, allocs = 10, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_transform_stress-wide = { wall_p50_ns = 0, allocs = 9, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_transform_stress-interp = { wall_p50_ns = 0, allocs = 9, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_lower_small = { wall_p50_ns = 0, allocs = 11, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_lower_medium = { wall_p50_ns = 0, allocs = 63, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_lower_large = { wall_p50_ns = 0, allocs = 33, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_lower_stress-deep = { wall_p50_ns = 0, allocs = 185, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_lower_stress-wide = { wall_p50_ns = 0, allocs = 19, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_lower_stress-interp = { wall_p50_ns = 0, allocs = 15, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_vapor_generate_small = { wall_p50_ns = 0, allocs = 44, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_generate_medium = { wall_p50_ns = 0, allocs = 330, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_generate_large = { wall_p50_ns = 0, allocs = 631, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_generate_stress-deep = { wall_p50_ns = 0, allocs = 164, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_generate_stress-wide = { wall_p50_ns = 0, allocs = 29, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_generate_stress-interp = { wall_p50_ns = 0, allocs = 845, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_compile_small = { wall_p50_ns = 0, allocs = 73, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_compile_medium = { wall_p50_ns = 0, allocs = 515, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_compile_large = { wall_p50_ns = 0, allocs = 1003, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_compile_stress-deep = { wall_p50_ns = 0, allocs = 514, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_compile_stress-wide = { wall_p50_ns = 0, allocs = 261, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_compile_stress-interp = { wall_p50_ns = 0, allocs = 974, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_ssr_codegen_small = { wall_p50_ns = 0, allocs = 33, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_ssr_codegen_medium = { wall_p50_ns = 0, allocs = 863, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_ssr_codegen_large = { wall_p50_ns = 0, allocs = 364, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_ssr_codegen_stress-deep = { wall_p50_ns = 0, allocs = 116, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_ssr_codegen_stress-wide = { wall_p50_ns = 0, allocs = 42, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_ssr_codegen_stress-interp = { wall_p50_ns = 0, allocs = 1022, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+atelier_ssr_compile_small = { wall_p50_ns = 0, allocs = 60, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_ssr_compile_medium = { wall_p50_ns = 0, allocs = 1030, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_ssr_compile_large = { wall_p50_ns = 0, allocs = 983, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_ssr_compile_stress-deep = { wall_p50_ns = 0, allocs = 369, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_ssr_compile_stress-wide = { wall_p50_ns = 0, allocs = 405, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_ssr_compile_stress-interp = { wall_p50_ns = 0, allocs = 2637, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 
 [mutation]
 # cargo-mutants minimum scores per crate (P0-12). score = caught / viable,

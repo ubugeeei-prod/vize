@@ -113,4 +113,4 @@ pub fn generate_if_branch_key(
 
 // Note: v-if directive behavior is tested via SFC snapshot tests
 // in tests/fixtures/sfc/patches.pkl. Unit tests for AST-based functions
-// require bumpalo allocation which adds complexity without significant benefit.
+// require an arena allocator which adds complexity without significant benefit.
