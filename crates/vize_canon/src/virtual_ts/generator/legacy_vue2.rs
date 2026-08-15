@@ -29,7 +29,7 @@ type __VizeComponentProps<T> = T extends unknown ? T & Partial<__VizeKebabProps<
 type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
 type __VizeVue2LooseEventArg<T> = __VizeIsAny<T> extends true ? any : [T] extends [Object] ? ([Object] extends [T] ? any : T) : T;
 declare type __VizeVue2LooseEmitArgs<A extends readonly unknown[]> = { [K in keyof A]: __VizeVue2LooseEventArg<A[K]> };
-type __VForEntry<T> = __VizeIsAny<T> extends true ? [item: any, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : T extends object ? [item: T[keyof T], key: keyof T, index: number] : [item: any, key: number, index: number];
+type __VForEntry<T> = T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number];
 declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];"#;
 const LEGACY_REF_UNWRAP_HELPER: &str =
     "    type __U<T> = T extends { value: infer __V } ? __V : T;\n";

@@ -228,7 +228,10 @@
         "error:3:35 [TS2307] Cannot find module 'virtua/vue' or its corresponding type declarations.",
         "error:53:29 [TS2554] Expected 2 arguments, but got 1.",
         "error:66:39 [TS7006] Parameter 'i' implicitly has an 'any' type.",
-        "error:72:36 [TS7006] Parameter 'i' implicitly has an 'any' type."
+        "error:72:36 [TS7006] Parameter 'i' implicitly has an 'any' type.",
+        "error:99:25 [TS2365] Operator '+' cannot be applied to types 'string | number' and 'number'.",
+        "error:100:25 [TS2362] The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.",
+        "error:101:12 [TS2322] Type 'string | number' is not assignable to type 'number'.\nType 'string' is not assignable to type 'number'."
       ]
     },
     {
@@ -633,7 +636,9 @@
         "error:69:20 [TS2554] Expected 2 arguments, but got 1.",
         "error:95:76 [TS7006] Parameter 'option' implicitly has an 'any' type.",
         "error:250:67 [TS7006] Parameter 'i' implicitly has an 'any' type.",
-        "error:364:24 [TS2304] Cannot find name 'useDebounceFn'."
+        "error:364:24 [TS2304] Cannot find name 'useDebounceFn'.",
+        "error:451:30 [TS2365] Operator '+' cannot be applied to types 'string | number' and 'number'.",
+        "error:477:30 [TS2365] Operator '+' cannot be applied to types 'string | number' and 'number'."
       ]
     },
     {
@@ -645,7 +650,9 @@
     {
       "file": "app/components/publish/PublishWidgetList.vue",
       "diagnostics": [
-        "error:3:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
+        "error:3:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
+        "error:39:30 [TS2345] Argument of type 'string | number' is not assignable to parameter of type 'number'.\nType 'string' is not assignable to type 'number'.",
+        "error:42:36 [TS2345] Argument of type 'string | number' is not assignable to parameter of type 'number'.\nType 'string' is not assignable to type 'number'."
       ]
     },
     {
@@ -729,10 +736,7 @@
       "diagnostics": [
         "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
         "error:16:66 [TS7006] Parameter 'f' implicitly has an 'any' type.",
-        "error:55:33 [TS2367] This comparison appears to be unintentional because the types 'number' and 'string' have no overlap.",
-        "error:56:66 [TS2367] This comparison appears to be unintentional because the types 'number' and 'string' have no overlap.",
-        "error:56:83 [TS2345] Argument of type 'number' is not assignable to parameter of type 'string'.",
-        "error:57:43 [TS2367] This comparison appears to be unintentional because the types 'number' and 'string' have no overlap."
+        "error:56:83 [TS2345] Argument of type 'string | number' is not assignable to parameter of type 'string'.\nType 'number' is not assignable to type 'string'."
       ]
     },
     {
@@ -1470,7 +1474,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 282,
+  "errorCount": 286,
   "warningCount": 0,
   "fileCount": 262
 }
