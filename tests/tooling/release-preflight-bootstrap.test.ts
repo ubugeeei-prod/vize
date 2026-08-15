@@ -190,7 +190,7 @@ test("Real Project Matrix dispatch identifies its immutable target", () => {
   }
   assert.equal(dispatchInputs.core_tools_timeout_ms?.default, "2400000");
   assert.equal(dispatchInputs.core_tools_timeout_ms?.type, "string");
-  assert.match(matrix["run-name"] ?? "", /^Real Project Matrix @ .*github\.sha/);
+  assert.equal(matrix["run-name"], "Real Project Matrix @ ${{ github.sha }}");
 });
 
 test("on-demand gates correlate expanded display titles, never workflow names", () => {
