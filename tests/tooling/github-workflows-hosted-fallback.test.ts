@@ -6,7 +6,12 @@ import {
   cliReleasePlatforms,
   nativeReleasePlatforms,
 } from "../../tools/github/release-platforms.mjs";
-import { readRepoFile, workflowJobField, workflowJobRunsOn } from "./support/github-workflows.ts";
+import {
+  readRepoFile,
+  workflowJobBody,
+  workflowJobField,
+  workflowJobRunsOn,
+} from "./support/github-workflows.ts";
 
 const TEMPORARY_HOSTED_RUNNER = "ubuntu-24.04";
 const RESTORE_BLACKSMITH_RUNNER = "blacksmith-32vcpu-ubuntu-2404";
@@ -44,8 +49,10 @@ const HOSTED_FALLBACK_JOBS: Record<string, string[]> = {
   ],
   "criterion-bench.yml": ["criterion-ab", "dialect-guard"],
   "e2e.yml": ["app-readiness-producer", "app-e2e-producer"],
+  "fuzz.yml": ["fuzz"],
   "miri.yml": ["miri"],
   "pkg-pr-new.yml": ["publish-preview"],
+  "real-project-matrix.yml": ["real-project-matrix"],
   "release-preflight.yml": ["verify", "validate-crates"],
   "release.yml": [
     "plan-release-platforms",
@@ -65,6 +72,10 @@ const HOSTED_FALLBACK_JOBS: Record<string, string[]> = {
   ],
 };
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 test("temporary hosted runner fallback keeps Blacksmith restore labels per job", () => {
   for (const [workflowName, expectedJobs] of Object.entries(HOSTED_FALLBACK_JOBS)) {
     const source = readRepoFile(".github", "workflows", workflowName);
@@ -82,6 +93,27 @@ test("temporary hosted runner fallback keeps Blacksmith restore labels per job",
       expectedJobs,
       `${workflowName} annotates a different set of jobs than the hosted fallback covers`,
     );
+  }
+});
+
+test("temporary native smoke hosted fallback keeps matrix restore labels", () => {
+  const source = readRepoFile(".github", "workflows", "native-smoke.yml");
+  for (const jobName of ["host-native-smoke", "fresh-install-smoke"]) {
+    const job = workflowJobBody(source, jobName);
+    for (const [runner, restore, target] of [
+      ["ubuntu-24.04", "blacksmith-32vcpu-ubuntu-2404", "linux-x64-gnu"],
+      ["ubuntu-24.04-arm", "blacksmith-32vcpu-ubuntu-2404-arm", "linux-arm64-gnu"],
+      ["macos-15", "blacksmith-12vcpu-macos-15", "darwin-arm64"],
+      ["windows-2025", "blacksmith-32vcpu-windows-2025", "win32-x64-msvc"],
+    ] as const) {
+      assert.match(
+        job,
+        new RegExp(
+          `runner:\\s*${escapeRegExp(runner)}\\s*# restore: ${escapeRegExp(restore)}\\s*\\n\\s*target:\\s*${escapeRegExp(target)}`,
+        ),
+        `${jobName} ${target} must keep its Blacksmith restore label`,
+      );
+    }
   }
 });
 
@@ -115,13 +147,11 @@ test("tool benchmark metadata records the hosted runner and its restore label", 
 
 test("release platform metadata keeps the Blacksmith restore mapping on its tables", () => {
   const source = readRepoFile("tools", "github", "release-platforms.mjs");
-  const restoreNotice =
-    "// Temporary hosted-runner fallback:\n" +
-    "// - restore macos-15-intel/macos-15 to blacksmith-12vcpu-macos-15\n" +
-    "// - restore ubuntu-24.04/ubuntu-24.04-arm to blacksmith-32vcpu-ubuntu-2404/blacksmith-32vcpu-ubuntu-2404-arm\n";
+  const cliTableStart = source.indexOf("export const cliReleasePlatforms = [");
+  assert.notEqual(cliTableStart, -1, "missing CLI release platform table");
   assert.ok(
-    source.includes(`${restoreNotice}export const cliReleasePlatforms = [`),
-    "the restore mapping must sit on the migrated platform tables, not float as a stray comment",
+    source.slice(0, cliTableStart).includes("restore macos-15 to blacksmith-12vcpu-macos-15"),
+    "the macOS hosted fallback must keep the Blacksmith restore mapping on the platform table",
   );
 
   // Each migrated host has to remain reachable from a real platform entry;
@@ -131,15 +161,19 @@ test("release platform metadata keeps the Blacksmith restore mapping on its tabl
   const nativeByTarget = new Map(
     nativeReleasePlatforms.map((platform) => [platform.target, platform]),
   );
-  assert.equal(cliByTarget.get("x86_64-apple-darwin")?.host, "macos-15-intel");
+  assert.equal(cliByTarget.get("x86_64-apple-darwin")?.host, "macos-15");
   assert.equal(nativeByTarget.get("x86_64-apple-darwin")?.host, "macos-15");
   assert.equal(nativeByTarget.get("aarch64-apple-darwin")?.host, "macos-15");
-  for (const host of ["macos-15-intel", "macos-15", "ubuntu-24.04", "ubuntu-24.04-arm"]) {
+  for (const host of ["macos-15", "ubuntu-24.04", "ubuntu-24.04-arm"]) {
     assert.ok(
       platforms.some((platform: { host: string }) => platform.host === host),
       `no release platform entry uses the temporary hosted runner ${host}`,
     );
   }
+  assert.ok(
+    !platforms.some((platform: { host: string }) => platform.host === "macos-15-intel"),
+    "MoonBit release scripts do not run on macOS Intel hosted runners",
+  );
   for (const restored of [
     "blacksmith-12vcpu-macos-15",
     RESTORE_BLACKSMITH_RUNNER,

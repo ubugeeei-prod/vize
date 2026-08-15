@@ -38,6 +38,9 @@ const checkFixtures = [
 ];
 const lintFixtures = checkFixtures.filter((id) => id !== "frontend-phpcon-do-website");
 const readinessFixtures = ["elk", "misskey", "npmx.dev", "nuxt-ui", "reka-ui"];
+// Temporary hosted-runner fallback while Blacksmith is degraded.
+// Restore full VRT rows to 15m with blacksmith-32vcpu-ubuntu-2404.
+const hostedFullVrtTimeout = "30m";
 
 export const fullAppE2eRows = [
   row("full", "dev", "elk", "test:dev:elk", ["elk"], true, "12m"),
@@ -45,7 +48,7 @@ export const fullAppE2eRows = [
   row("full", "dev", "npmx", "test:dev:npmx", ["npmx.dev"], true, "12m"),
   row("full", "dev", "nuxt-ui", "test:dev:nuxt-ui", ["nuxt-ui"], true, "15m"),
   row("full", "dev", "vuefes", "test:dev:vuefes", ["vuefes-2025"], true, "12m"),
-  row("full", "vrt", "elk", "test:vrt:elk", ["elk"], true, "15m"),
+  row("full", "vrt", "elk", "test:vrt:elk", ["elk"], true, hostedFullVrtTimeout),
   row(
     "full",
     "vrt",
@@ -53,11 +56,11 @@ export const fullAppE2eRows = [
     "test:vrt:frontend-phpcon",
     ["frontend-phpcon-do-website"],
     true,
-    "15m",
+    hostedFullVrtTimeout,
   ),
-  row("full", "vrt", "misskey", "test:vrt:misskey", ["misskey"], true, "15m"),
-  row("full", "vrt", "npmx", "test:vrt:npmx", ["npmx.dev"], true, "15m"),
-  row("full", "vrt", "vuefes", "test:vrt:vuefes", ["vuefes-2025"], true, "15m"),
+  row("full", "vrt", "misskey", "test:vrt:misskey", ["misskey"], true, hostedFullVrtTimeout),
+  row("full", "vrt", "npmx", "test:vrt:npmx", ["npmx.dev"], true, hostedFullVrtTimeout),
+  row("full", "vrt", "vuefes", "test:vrt:vuefes", ["vuefes-2025"], true, hostedFullVrtTimeout),
   row("full", "preview", "elk", "test:preview:elk", ["elk"], false, "10m"),
   row("full", "preview", "misskey", "test:preview:misskey", ["misskey"], false, "10m"),
   row("full", "preview", "npmx", "test:preview:npmx", ["npmx.dev"], false, "10m"),

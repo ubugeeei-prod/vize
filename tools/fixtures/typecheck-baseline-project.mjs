@@ -1,4 +1,4 @@
-import { writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 
 /**
@@ -28,23 +28,56 @@ import { dirname, isAbsolute, join, relative, resolve } from "node:path";
  * must not reach into installed or built output. It cannot narrow the compared
  * corpus, because `exclude` never applies to `files`.
  *
- * The source config's own directory is globbed as well as the fixture root,
- * because a TypeScript wildcard segment never descends into a dot-directory:
- * `<fixture>/**\/*.d.ts` misses `.nuxt/imports.d.ts` while `<fixture>/.nuxt/**`
- * matches it, the segment being literal. That is the whole of elk's generated
- * type environment, and every project whose baseline config is generated into a
- * dot-directory has the same shape. For the rest the second root is already
- * inside the first and adds nothing.
+ * The generated baseline lives beside the source config rather than at fixture
+ * root. Several workspace fixtures, including vue-vben-admin, resolve
+ * `compilerOptions.types` through package-local `node_modules` entries such as
+ * `playground/node_modules/@vben/types`; moving the config to a root-level
+ * `.vize-baseline` directory makes TypeScript skip those package-local links and
+ * turns a usable baseline into a configuration failure.
+ *
+ * The baseline also has to list non-Vue authored scripts that the compared SFCs
+ * import. Composite projects reject imported files that are not in the project
+ * file list (`TS6307`), and that is an instrument failure rather than a Vize
+ * diagnostic. These support globs deliberately exclude `.vue`, so `files` still
+ * fixes the comparable SFC corpus while TypeScript can build the same project
+ * graph around it.
+ *
+ * Dot-directories need literal include roots, because a TypeScript wildcard
+ * segment never descends into one: `<fixture>/**\/*.d.ts` misses
+ * `.nuxt/imports.d.ts` and `docs/.vitepress/utils.ts`, while literal
+ * `<fixture>/.nuxt/**` or `<fixture>/docs/.vitepress/**` matches them. The
+ * source config's own directory and every checked-file dot ancestor are therefore
+ * globbed by name.
  */
 export function materializeBaselineProject(fixtureRoot, reportDir, project, vizeReport) {
-  const outputPath = join(reportDir, `${project.id}-vue-tsc.tsconfig.json`);
-  const configDir = dirname(outputPath);
   const sourceProject = project.typecheckPerformance?.baseline?.tsconfig ?? project.tsconfig;
   const sourcePath = resolve(fixtureRoot, sourceProject);
+  const artifactPath = join(reportDir, `${project.id}-vue-tsc.tsconfig.json`);
+  const outputPath = join(
+    dirname(sourcePath),
+    ".vize-baseline",
+    `${project.id}-vue-tsc.tsconfig.json`,
+  );
+  const configDir = dirname(outputPath);
+  const globRoots = vueGlobSourceRoots(fixtureRoot, project);
+  // `readdirSync` order is filesystem-dependent and `Set` keeps insertion order,
+  // so the discovered roots are sorted to keep the generated config byte-stable
+  // for the same fixture.
+  const dotRoots = [
+    ...new Set([
+      ...dotDirectoryIncludeRoots(fixtureRoot, vizeReport),
+      ...discoverDotDirectoryIncludeRoots(globRoots),
+    ]),
+  ].sort((a, b) => a.localeCompare(b));
   const ambientRoots = [
     ...new Set(
-      [fixtureRoot, dirname(sourcePath)].map((root) => configRelativePath(configDir, root)),
+      [fixtureRoot, dirname(sourcePath), ...dotRoots].map((root) =>
+        configRelativePath(configDir, root),
+      ),
     ),
+  ];
+  const sourceRoots = [
+    ...new Set([...globRoots, ...dotRoots].map((root) => configRelativePath(configDir, root))),
   ];
   const config = {
     extends: configRelativePath(configDir, sourcePath),
@@ -54,16 +87,27 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
       // project diagnostics, and without this the baseline aborts before it can
       // measure the same SFC corpus as Vize.
       ignoreDeprecations: "6.0",
+      // The generated config is the measurement harness, not a source root. If
+      // TypeScript infers `rootDir` from `.vize-baseline`, every file outside
+      // that directory becomes TS6059 noise and the baseline stops measuring
+      // Vize. Pin it to the fixture corpus root instead.
+      rootDir: configRelativePath(configDir, fixtureRoot),
     },
     files: vizeReport.files
       .slice(0, vizeReport.fileCount)
       .map((entry) => configRelativePath(configDir, resolve(fixtureRoot, entry.file))),
-    include: ambientRoots.map((root) => `${root}/**/*.d.ts`),
+    include: [
+      ...ambientRoots.map((root) => `${root}/**/*.d.ts`),
+      ...sourceRoots.flatMap((root) => sourceIncludeGlobs(root)),
+      ...dotRoots.map((root) => `${configRelativePath(configDir, root)}/**/*.vue`),
+    ],
     exclude: ambientRoots.flatMap((root) => [`${root}/**/node_modules/**`, `${root}/**/dist/**`]),
     references: [],
   };
   const source = `${JSON.stringify(config, null, 2)}\n`;
+  mkdirSync(configDir, { recursive: true });
   writeFileSync(outputPath, source);
+  writeFileSync(artifactPath, source);
   return { path: outputPath, source, sourceProject };
 }
 
@@ -71,4 +115,74 @@ function configRelativePath(from, to) {
   const path = relative(from, to).replaceAll("\\", "/");
   if (isAbsolute(path) || /^[A-Za-z]:\//u.test(path)) return path;
   return path.startsWith(".") ? path : `./${path}`;
+}
+
+function vueGlobSourceRoots(fixtureRoot, project) {
+  if (!Array.isArray(project.vueGlobs)) return [];
+  return project.vueGlobs.map((glob) => resolve(fixtureRoot, literalGlobRoot(glob)));
+}
+
+function literalGlobRoot(glob) {
+  if (typeof glob !== "string" || glob.length === 0) return ".";
+  const firstMagic = glob.search(/[*?[\]{}]/u);
+  const prefix = firstMagic < 0 ? glob : glob.slice(0, firstMagic);
+  const slash = prefix.lastIndexOf("/");
+  const root = slash < 0 ? "" : prefix.slice(0, slash);
+  return root.length === 0 ? "." : root;
+}
+
+function dotDirectoryIncludeRoots(fixtureRoot, vizeReport) {
+  const roots = [];
+  const files = Array.isArray(vizeReport.files)
+    ? vizeReport.files.slice(0, vizeReport.fileCount)
+    : [];
+  for (const entry of files) {
+    if (typeof entry?.file !== "string") continue;
+    const segments = entry.file.replaceAll("\\", "/").split("/");
+    for (let index = 0; index < segments.length - 1; index += 1) {
+      const segment = segments[index];
+      if (!segment.startsWith(".") || segment === "." || segment === "..") continue;
+      roots.push(resolve(fixtureRoot, ...segments.slice(0, index + 1)));
+    }
+  }
+  return roots;
+}
+
+function discoverDotDirectoryIncludeRoots(sourceRoots) {
+  const roots = [];
+  for (const sourceRoot of sourceRoots) collectDotDirectories(sourceRoot, roots);
+  return roots;
+}
+
+function collectDotDirectories(directory, roots) {
+  if (!existsSync(directory)) return;
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    if (ignoredDirectory(entry.name)) continue;
+    const child = resolve(directory, entry.name);
+    if (isDotDirectory(entry.name)) roots.push(child);
+    collectDotDirectories(child, roots);
+  }
+}
+
+function ignoredDirectory(name) {
+  return name === "node_modules" || name === "dist" || name === ".git" || name === ".vize-baseline";
+}
+
+function isDotDirectory(name) {
+  return name.startsWith(".") && name !== "." && name !== "..";
+}
+
+function sourceIncludeGlobs(root) {
+  return [
+    `${root}/**/*.ts`,
+    `${root}/**/*.tsx`,
+    `${root}/**/*.mts`,
+    `${root}/**/*.cts`,
+    `${root}/**/*.js`,
+    `${root}/**/*.jsx`,
+    `${root}/**/*.mjs`,
+    `${root}/**/*.cjs`,
+    `${root}/**/*.json`,
+  ];
 }

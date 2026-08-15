@@ -132,7 +132,9 @@ fn extract_identifier_refs_fast_with_base(expr: &str, base_offset: u32) -> Vec<I
                 i += 1;
             }
 
-            // Check if preceded by '.' (property access)
+            // Check if preceded by '.' (property access). A spread token
+            // (`...menu`) also puts a dot immediately before the identifier,
+            // but it is a real read and must not be filtered out.
             let is_property_access = if start > 0 {
                 let mut j = start - 1;
                 loop {
@@ -142,8 +144,10 @@ fn extract_identifier_refs_fast_with_base(expr: &str, base_offset: u32) -> Vec<I
                             break false;
                         }
                         j -= 1;
+                    } else if prev == b'.' {
+                        break !is_spread_before_identifier(bytes, j);
                     } else {
-                        break prev == b'.';
+                        break false;
                     }
                 }
             } else {
@@ -162,4 +166,8 @@ fn extract_identifier_refs_fast_with_base(expr: &str, base_offset: u32) -> Vec<I
     }
 
     identifiers
+}
+
+fn is_spread_before_identifier(bytes: &[u8], dot_index: usize) -> bool {
+    dot_index >= 2 && bytes[dot_index - 1] == b'.' && bytes[dot_index - 2] == b'.'
 }

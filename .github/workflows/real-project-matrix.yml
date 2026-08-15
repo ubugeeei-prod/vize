@@ -52,7 +52,7 @@ env:
 jobs:
   real-project-matrix:
     name: real projects (${{ matrix.shard }}/11)
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 120
     strategy:
       fail-fast: false

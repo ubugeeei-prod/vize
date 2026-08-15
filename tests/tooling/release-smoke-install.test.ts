@@ -40,6 +40,36 @@ test("release install smoke packs and installs local package tarballs", () => {
   }
 });
 
+test("release install smoke canonicalizes symlinked temp directories", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-smoke-test-"));
+  try {
+    const realTemp = path.join(tempDir, "real-temp");
+    const linkedTemp = path.join(tempDir, "linked-temp");
+    fs.mkdirSync(realTemp, { recursive: true });
+    fs.symlinkSync(realTemp, linkedTemp, process.platform === "win32" ? "junction" : "dir");
+    const packageDir = writePackage(tempDir, "package", {
+      name: "@vizejs/smoke-package",
+      version: "1.0.0",
+    });
+
+    const result = runSmokeArgs(["--keep-temp", packageDir], {
+      env: { TEMP: linkedTemp, TMP: linkedTemp, TMPDIR: linkedTemp },
+    });
+
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    const keptTemp = /^kept (.+)$/m.exec(result.stdout)?.[1];
+    assert.ok(keptTemp, "release smoke did not report a kept temp directory");
+    assert.equal(keptTemp, fs.realpathSync.native(keptTemp));
+    const relativeToRealTemp = path.relative(fs.realpathSync.native(realTemp), keptTemp);
+    assert.ok(relativeToRealTemp !== "");
+    assert.ok(!relativeToRealTemp.startsWith(".."));
+    assert.ok(!path.isAbsolute(relativeToRealTemp));
+    fs.rmSync(keptTemp, { force: true, recursive: true });
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true });
+  }
+});
+
 test("release install smoke rejects unresolved workspace protocols", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-smoke-test-"));
   try {
@@ -275,16 +305,21 @@ function runSmoke(...packageDirs: string[]): SmokeResult {
   return runSmokeArgs(packageDirs);
 }
 
+type SmokeOptions = {
+  env?: NodeJS.ProcessEnv;
+};
+
 type SmokeResult = {
   status: number | null;
   stderr: string;
   stdout: string;
 };
 
-function runSmokeArgs(args: string[]): SmokeResult {
+function runSmokeArgs(args: string[], options: SmokeOptions = {}): SmokeResult {
   const result = spawnSync(process.execPath, [smokeScript, ...args], {
     cwd: root,
     encoding: "utf8",
+    env: { ...process.env, ...options.env },
   });
 
   if (result.error != null) {

@@ -116,6 +116,40 @@ test("release preflight rejects record-only and non-zero typecheck parity artifa
   }
 });
 
+test("release preflight requires exact lint divergence evidence", async () => {
+  for (const [label, mutate, message] of [
+    [
+      "missing",
+      (entries: Record<string, string>) => delete entries["lint-divergence-summary.json"],
+      /lint-divergence-summary\.json/,
+    ],
+    [
+      "foreign commit",
+      (entries: Record<string, string>) => {
+        const summary = JSON.parse(entries["lint-divergence-summary.json"]);
+        summary.evidence.commitSha = "b".repeat(40);
+        entries["lint-divergence-summary.json"] = `${JSON.stringify(summary, null, 2)}\n`;
+      },
+      /lint divergence summary is not exact release evidence/,
+    ],
+  ] as const) {
+    const run = successfulReleaseRun("Real Project Matrix", 520);
+    await assert.rejects(
+      assertRealProjectMatrixReleaseArtifacts({
+        run,
+        artifacts: realProjectArtifacts(run),
+        readArtifactEntries: async (artifact) => {
+          const entries = shardEntries(Number(artifact.name.split("-").pop()));
+          if (artifact.name === "real-project-matrix-0") mutate(entries);
+          return entries;
+        },
+      }),
+      message,
+      label,
+    );
+  }
+});
+
 test("release preflight requires a selected Real Project Matrix run", () => {
   const run = successfulReleaseRun("Real Project Matrix", 530);
   assert.equal(requireRealProjectMatrixRun(new Map([["Real Project Matrix", run]])), run);

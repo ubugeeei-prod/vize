@@ -7,7 +7,7 @@
  *
  * 1. `evaluateBudget` returns three verdicts, not two (#3513, the #3222 parity
  *    ledger). The baseline is unusable when `vue-tsc` could not load the
- *    fixture's project configuration, when `vue-tsc --listFiles` proves the two
+ *    fixture's project configuration, when `vue-tsc --listFilesOnly` proves the two
  *    tools checked different Vue corpora, or when two non-empty diagnostic
  *    streams have no mapped position in common.
  * 2. `assertBudgetPassed` enforces by default. `record-only` exists only for

@@ -23,6 +23,16 @@ const explicitPatinaAliases = new Map([
   ["vue/block-order", "vue/sfc-element-order"],
   ["vue/no-async-in-computed-properties", "script/no-async-in-computed"],
 ]);
+const intentionalDivergenceOverrides = new Map([
+  [
+    "vue/component-definition-name-casing",
+    "Patina's rule checks SFC file-name casing; eslint-plugin-vue checks the component definition name, so their findings are not comparable.",
+  ],
+  [
+    "vue/no-unused-properties",
+    "Patina intentionally checks defineProps declarations only; eslint-plugin-vue also checks Options API props, so the surfaces are not comparable.",
+  ],
+]);
 
 function loadUpstream() {
   const requireFromBench = createRequire(path.join(repoRoot, "bench", "package.json"));
@@ -102,8 +112,19 @@ export async function generateRuleMap() {
   const patinaRules = await loadPatinaRules();
   const entries = {};
   let mapped = 0;
+  let intentionalDivergence = 0;
 
   for (const ruleId of upstream.ruleIds) {
+    const divergenceReason = intentionalDivergenceOverrides.get(ruleId);
+    if (divergenceReason != null) {
+      entries[ruleId] = {
+        status: "intentional-divergence",
+        reason: divergenceReason,
+      };
+      intentionalDivergence += 1;
+      continue;
+    }
+
     const patinaRule = patinaTargetFor(ruleId, patinaRules);
     if (patinaRule == null) {
       entries[ruleId] = { status: "unimplemented", issue: trackingIssue };
@@ -128,7 +149,8 @@ export async function generateRuleMap() {
     },
     summary: {
       mapped,
-      unimplemented: upstream.ruleIds.length - mapped,
+      unimplemented: upstream.ruleIds.length - mapped - intentionalDivergence,
+      intentionalDivergence,
     },
     entries,
   };
@@ -155,6 +177,7 @@ export function validateRuleMap(ruleMap = readRuleMap()) {
 
   let mapped = 0;
   let unimplemented = 0;
+  let intentionalDivergence = 0;
   for (const [ruleId, entry] of Object.entries(ruleMap.entries)) {
     assert.equal(typeof entry, "object", `${ruleId} must have a structured map entry`);
     if (entry.status === "mapped") {
@@ -191,14 +214,15 @@ export function validateRuleMap(ruleMap = readRuleMap()) {
     if (entry.status === "intentional-divergence") {
       assert.match(entry.reason, /\S/u, `${ruleId} needs a non-empty divergence reason`);
       assert.deepEqual(Object.keys(entry).sort(), ["reason", "status"]);
+      intentionalDivergence += 1;
       continue;
     }
     assert.fail(`${ruleId} has unsupported status ${JSON.stringify(entry.status)}`);
   }
 
-  assert.deepEqual(ruleMap.summary, { mapped, unimplemented });
+  assert.deepEqual(ruleMap.summary, { mapped, unimplemented, intentionalDivergence });
   assert.equal(
-    mapped + unimplemented,
+    mapped + unimplemented + intentionalDivergence,
     upstream.ruleIds.length,
     "the initial scorecard may not hide rules behind an uncounted status",
   );

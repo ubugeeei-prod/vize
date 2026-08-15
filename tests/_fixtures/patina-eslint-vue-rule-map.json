@@ -6,8 +6,9 @@
     "ruleCount": 252
   },
   "summary": {
-    "mapped": 123,
-    "unimplemented": 129
+    "mapped": 121,
+    "unimplemented": 129,
+    "intentionalDivergence": 2
   },
   "entries": {
     "vue/array-bracket-newline": {
@@ -100,15 +101,8 @@
       "issue": 3223
     },
     "vue/component-definition-name-casing": {
-      "status": "mapped",
-      "patinaRule": "vue/component-definition-name-casing",
-      "patinaSeverity": "warning",
-      "patinaPresets": [
-        "ecosystem",
-        "general-recommended",
-        "nuxt",
-        "opinionated"
-      ]
+      "status": "intentional-divergence",
+      "reason": "Patina's rule checks SFC file-name casing; eslint-plugin-vue checks the component definition name, so their findings are not comparable."
     },
     "vue/component-name-in-template-casing": {
       "status": "mapped",
@@ -907,15 +901,8 @@
       ]
     },
     "vue/no-unused-properties": {
-      "status": "mapped",
-      "patinaRule": "vue/no-unused-properties",
-      "patinaSeverity": "warning",
-      "patinaPresets": [
-        "ecosystem",
-        "general-recommended",
-        "nuxt",
-        "opinionated"
-      ]
+      "status": "intentional-divergence",
+      "reason": "Patina intentionally checks defineProps declarations only; eslint-plugin-vue also checks Options API props, so the surfaces are not comparable."
     },
     "vue/no-unused-refs": {
       "status": "mapped",

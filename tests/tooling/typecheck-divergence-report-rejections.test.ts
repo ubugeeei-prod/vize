@@ -193,7 +193,7 @@ test("typecheck divergence report rejects invalid performance budgets", () => {
 
 test("typecheck divergence report rejects unsupported baseline exits and output", () => {
   for (const [body, message] of [
-    ["process.exit(1);", /unsupported status 1/],
+    ["process.exit(3);", /unsupported status 3/],
     ["process.stderr.write('prefix error TS1: bad\\n'); process.exit(2);", /unparseable/],
   ] as const) {
     const fixture = setup();

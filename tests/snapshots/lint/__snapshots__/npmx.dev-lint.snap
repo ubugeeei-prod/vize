@@ -158,6 +158,17 @@
     "file": "app/components/AppFooter.vue",
     "messages": [
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 164,
+        "column": 17,
+        "endLine": 164,
+        "endColumn": 28,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -173,10 +184,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 164,
-        "column": 17,
-        "endLine": 164,
-        "endColumn": 28,
+        "line": 195,
+        "column": 7,
+        "endLine": 195,
+        "endColumn": 52,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -189,17 +200,6 @@
         "endLine": 195,
         "endColumn": 52,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 195,
-        "column": 7,
-        "endLine": 195,
-        "endColumn": 52,
-        "help": "Use kebab-case for attribute names"
       }
     ],
     "errorCount": 0,
@@ -220,17 +220,6 @@
         "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
       },
       {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'inputClass' should be 'input-class' (kebab-case)",
-        "line": 296,
-        "column": 11,
-        "endLine": 296,
-        "endColumn": 57,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -240,6 +229,17 @@
         "endLine": 296,
         "endColumn": 57,
         "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'inputClass' should be 'input-class' (kebab-case)",
+        "line": 296,
+        "column": 11,
+        "endLine": 296,
+        "endColumn": 57,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       }
     ],
     "errorCount": 0,
@@ -685,17 +685,6 @@
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       },
       {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'selectedIndex' should be 'selected-index' (kebab-case)",
-        "line": 224,
-        "column": 11,
-        "endLine": 224,
-        "endColumn": 25,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -705,6 +694,17 @@
         "endLine": 224,
         "endColumn": 25,
         "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'selectedIndex' should be 'selected-index' (kebab-case)",
+        "line": 224,
+        "column": 11,
+        "endLine": 224,
+        "endColumn": 25,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       }
     ],
     "errorCount": 0,
@@ -836,17 +836,6 @@
     "file": "app/components/ColorScheme/Img.vue",
     "messages": [
       {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 9,
-        "column": 3,
-        "endLine": 13,
-        "endColumn": 5,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
-      },
-      {
         "ruleId": "a11y/alt-text",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -856,6 +845,17 @@
         "endLine": 13,
         "endColumn": 5,
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 9,
+        "column": 3,
+        "endLine": 13,
+        "endColumn": 5,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -893,6 +893,17 @@
     "file": "app/components/CommandPalette.client.vue",
     "messages": [
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 292,
+        "column": 7,
+        "endLine": 292,
+        "endColumn": 48,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -904,6 +915,17 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 293,
+        "column": 7,
+        "endLine": 293,
+        "endColumn": 41,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -913,28 +935,6 @@
         "endLine": 293,
         "endColumn": 41,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 292,
-        "column": 7,
-        "endLine": 292,
-        "endColumn": 48,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 293,
-        "column": 7,
-        "endLine": 293,
-        "endColumn": 41,
-        "help": "Use kebab-case for attribute names"
       }
     ],
     "errorCount": 0,
@@ -1328,17 +1328,6 @@
     "file": "app/components/Header/AuthModal.client.vue",
     "messages": [
       {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'modalTitle' should be 'modal-title' (kebab-case)",
-        "line": 74,
-        "column": 5,
-        "endLine": 74,
-        "endColumn": 41,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1348,6 +1337,17 @@
         "endLine": 74,
         "endColumn": 41,
         "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'modalTitle' should be 'modal-title' (kebab-case)",
+        "line": 74,
+        "column": 5,
+        "endLine": 74,
+        "endColumn": 41,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
         "ruleId": "vue/attribute-order",
@@ -1368,17 +1368,6 @@
     "file": "app/components/Header/ConnectorModal.vue",
     "messages": [
       {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'modalTitle' should be 'modal-title' (kebab-case)",
-        "line": 70,
-        "column": 5,
-        "endLine": 70,
-        "endColumn": 46,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1388,6 +1377,17 @@
         "endLine": 70,
         "endColumn": 46,
         "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'modalTitle' should be 'modal-title' (kebab-case)",
+        "line": 70,
+        "column": 5,
+        "endLine": 70,
+        "endColumn": 46,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
         "ruleId": "vue/permitted-contents",
@@ -1527,17 +1527,6 @@
         "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
       },
       {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'ariaKeyshortcuts' should be 'aria-keyshortcuts' (kebab-case)",
-        "line": 77,
-        "column": 13,
-        "endLine": 77,
-        "endColumn": 33,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1547,6 +1536,17 @@
         "endLine": 77,
         "endColumn": 33,
         "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'ariaKeyshortcuts' should be 'aria-keyshortcuts' (kebab-case)",
+        "line": 77,
+        "column": 13,
+        "endLine": 77,
+        "endColumn": 33,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
         "ruleId": "a11y/no-aria-hidden-on-focusable",
@@ -1663,17 +1663,6 @@
     "file": "app/components/Noodle/EmojiDay/Logo.vue",
     "messages": [
       {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'emojiSets' should be 'emoji-sets' (kebab-case)",
-        "line": 3,
-        "column": 51,
-        "endLine": 3,
-        "endColumn": 73,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1689,10 +1678,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'emojiSets' should be 'emoji-sets' (kebab-case)",
-        "line": 4,
-        "column": 24,
-        "endLine": 4,
-        "endColumn": 47,
+        "line": 3,
+        "column": 51,
+        "endLine": 3,
+        "endColumn": 73,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
@@ -1705,6 +1694,17 @@
         "endLine": 4,
         "endColumn": 47,
         "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'emojiSets' should be 'emoji-sets' (kebab-case)",
+        "line": 4,
+        "column": 24,
+        "endLine": 4,
+        "endColumn": 47,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       }
     ],
     "errorCount": 0,
@@ -1927,17 +1927,6 @@
         "endColumn": 15
       },
       {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 380,
-        "column": 5,
-        "endLine": 385,
-        "endColumn": 7,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
-      },
-      {
         "ruleId": "a11y/alt-text",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -1947,6 +1936,17 @@
         "endLine": 385,
         "endColumn": 7,
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 380,
+        "column": 5,
+        "endLine": 385,
+        "endColumn": 7,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -2107,17 +2107,6 @@
     "file": "app/components/Package/Card.vue",
     "messages": [
       {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'isExactMatch' should be 'is-exact-match' (kebab-case)",
-        "line": 47,
-        "column": 36,
-        "endLine": 47,
-        "endColumn": 64,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2127,6 +2116,17 @@
         "endLine": 47,
         "endColumn": 64,
         "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'isExactMatch' should be 'is-exact-match' (kebab-case)",
+        "line": 47,
+        "column": 36,
+        "endLine": 47,
+        "endColumn": 64,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
         "ruleId": "vue/no-v-html",
@@ -2158,17 +2158,6 @@
     "file": "app/components/Package/ClaimPackageModal.vue",
     "messages": [
       {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'modalTitle' should be 'modal-title' (kebab-case)",
-        "line": 149,
-        "column": 5,
-        "endLine": 149,
-        "endColumn": 42,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2178,6 +2167,17 @@
         "endLine": 149,
         "endColumn": 42,
         "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'modalTitle' should be 'modal-title' (kebab-case)",
+        "line": 149,
+        "column": 5,
+        "endLine": 149,
+        "endColumn": 42,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       }
     ],
     "errorCount": 0,
@@ -2229,17 +2229,6 @@
     "file": "app/components/Package/Header.vue",
     "messages": [
       {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'packageName' should be 'package-name' (kebab-case)",
-        "line": 261,
-        "column": 23,
-        "endLine": 261,
-        "endColumn": 35,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2249,6 +2238,17 @@
         "endLine": 261,
         "endColumn": 35,
         "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'packageName' should be 'package-name' (kebab-case)",
+        "line": 261,
+        "column": 23,
+        "endLine": 261,
+        "endColumn": 35,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       }
     ],
     "errorCount": 0,
@@ -2353,17 +2353,6 @@
         "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
       },
       {
-        "ruleId": "a11y/mouse-events-have-key-events",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/mouse-events-have-key-events] @mouseenter/@mouseover must be paired with @focus for keyboard accessibility",
-        "line": 157,
-        "column": 9,
-        "endLine": 170,
-        "endColumn": 10,
-        "help": "Why: Keyboard and touch users cannot trigger mouse events.\nFix:\n  <div\n  @mouseenter=\"show\"\n  @mouseleave=\"hide\"\n  @focus=\"show\"\n  @blur=\"hide\"\n  tabindex=\"0\"\n  >\n  Hover or focus me\n  </div>"
-      },
-      {
         "ruleId": "a11y/interactive-supports-focus",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -2373,6 +2362,17 @@
         "endLine": 170,
         "endColumn": 10,
         "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+      },
+      {
+        "ruleId": "a11y/mouse-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/mouse-events-have-key-events] @mouseenter/@mouseover must be paired with @focus for keyboard accessibility",
+        "line": 157,
+        "column": 9,
+        "endLine": 170,
+        "endColumn": 10,
+        "help": "Why: Keyboard and touch users cannot trigger mouse events.\nFix:\n  <div\n  @mouseenter=\"show\"\n  @mouseleave=\"hide\"\n  @focus=\"show\"\n  @blur=\"hide\"\n  tabindex=\"0\"\n  >\n  Hover or focus me\n  </div>"
       },
       {
         "ruleId": "vue/require-scoped-style",
@@ -2640,6 +2640,17 @@
     "file": "app/components/Package/TimelineChart.vue",
     "messages": [
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 907,
+        "column": 22,
+        "endLine": 907,
+        "endColumn": 78,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2655,10 +2666,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 907,
-        "column": 22,
-        "endLine": 907,
-        "endColumn": 78,
+        "line": 950,
+        "column": 13,
+        "endLine": 950,
+        "endColumn": 23,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -2673,6 +2684,17 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 954,
+        "column": 13,
+        "endLine": 954,
+        "endColumn": 23,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2684,6 +2706,17 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 955,
+        "column": 13,
+        "endLine": 957,
+        "endColumn": 14,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2693,6 +2726,17 @@
         "endLine": 957,
         "endColumn": 14,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 958,
+        "column": 13,
+        "endLine": 962,
+        "endColumn": 14,
+        "help": "Use kebab-case for attribute names"
       },
       {
         "ruleId": "vue/prop-name-casing",
@@ -2710,43 +2754,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 950,
+        "line": 982,
         "column": 13,
-        "endLine": 950,
-        "endColumn": 23,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 954,
-        "column": 13,
-        "endLine": 954,
-        "endColumn": 23,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 955,
-        "column": 13,
-        "endLine": 957,
-        "endColumn": 14,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 958,
-        "column": 13,
-        "endLine": 962,
-        "endColumn": 14,
+        "endLine": 982,
+        "endColumn": 94,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -2759,6 +2770,17 @@
         "endLine": 982,
         "endColumn": 94,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 990,
+        "column": 13,
+        "endLine": 990,
+        "endColumn": 88,
+        "help": "Use kebab-case for attribute names"
       },
       {
         "ruleId": "vue/prop-name-casing",
@@ -2772,6 +2794,17 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 991,
+        "column": 13,
+        "endLine": 991,
+        "endColumn": 88,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2781,6 +2814,17 @@
         "endLine": 991,
         "endColumn": 88,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 993,
+        "column": 13,
+        "endLine": 993,
+        "endColumn": 51,
+        "help": "Use kebab-case for attribute names"
       },
       {
         "ruleId": "vue/prop-name-casing",
@@ -2794,6 +2838,17 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 994,
+        "column": 13,
+        "endLine": 994,
+        "endColumn": 69,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2803,6 +2858,17 @@
         "endLine": 994,
         "endColumn": 69,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 995,
+        "column": 13,
+        "endLine": 995,
+        "endColumn": 26,
+        "help": "Use kebab-case for attribute names"
       },
       {
         "ruleId": "vue/prop-name-casing",
@@ -2820,65 +2886,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 982,
+        "line": 1091,
         "column": 13,
-        "endLine": 982,
-        "endColumn": 94,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 990,
-        "column": 13,
-        "endLine": 990,
-        "endColumn": 88,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 991,
-        "column": 13,
-        "endLine": 991,
-        "endColumn": 88,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 993,
-        "column": 13,
-        "endLine": 993,
-        "endColumn": 51,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 994,
-        "column": 13,
-        "endLine": 994,
-        "endColumn": 69,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 995,
-        "column": 13,
-        "endLine": 995,
-        "endColumn": 26,
+        "endLine": 1091,
+        "endColumn": 86,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -2893,6 +2904,17 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 1093,
+        "column": 13,
+        "endLine": 1093,
+        "endColumn": 69,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2902,6 +2924,17 @@
         "endLine": 1093,
         "endColumn": 69,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 1094,
+        "column": 13,
+        "endLine": 1094,
+        "endColumn": 26,
+        "help": "Use kebab-case for attribute names"
       },
       {
         "ruleId": "vue/prop-name-casing",
@@ -2919,32 +2952,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 1091,
+        "line": 1102,
         "column": 13,
-        "endLine": 1091,
-        "endColumn": 86,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 1093,
-        "column": 13,
-        "endLine": 1093,
-        "endColumn": 69,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 1094,
-        "column": 13,
-        "endLine": 1094,
-        "endColumn": 26,
+        "endLine": 1102,
+        "endColumn": 23,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -2957,17 +2968,6 @@
         "endLine": 1102,
         "endColumn": 23,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 1102,
-        "column": 13,
-        "endLine": 1102,
-        "endColumn": 23,
-        "help": "Use kebab-case for attribute names"
       }
     ],
     "errorCount": 0,
@@ -3036,17 +3036,6 @@
         "help": "Reorder attributes to follow the recommended order"
       },
       {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'ariaLabel' should be 'aria-label' (kebab-case)",
-        "line": 1411,
-        "column": 16,
-        "endLine": 1411,
-        "endColumn": 67,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3058,6 +3047,17 @@
         "help": "Use kebab-case for attribute names"
       },
       {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'ariaLabel' should be 'aria-label' (kebab-case)",
+        "line": 1411,
+        "column": 16,
+        "endLine": 1411,
+        "endColumn": 67,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3067,6 +3067,17 @@
         "endLine": 1510,
         "endColumn": 42,
         "help": "Reorder attributes to follow the recommended order"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 1681,
+        "column": 13,
+        "endLine": 1681,
+        "endColumn": 38,
+        "help": "Use kebab-case for attribute names"
       },
       {
         "ruleId": "vue/prop-name-casing",
@@ -3084,10 +3095,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 1681,
+        "line": 1682,
         "column": 13,
-        "endLine": 1681,
-        "endColumn": 38,
+        "endLine": 1682,
+        "endColumn": 98,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -3100,17 +3111,6 @@
         "endLine": 1682,
         "endColumn": 98,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 1682,
-        "column": 13,
-        "endLine": 1682,
-        "endColumn": 98,
-        "help": "Use kebab-case for attribute names"
       },
       {
         "ruleId": "vue/no-v-html",
@@ -3298,17 +3298,6 @@
         "help": "Why: ID reference attributes like for, aria-labelledby, aria-describedby, etc. must point to an existing element with that id. A broken reference silently breaks the association.\nFix: Ensure the referenced ID exists in the template:\n  <label for=\"name\">Name:</label>\n  <input id=\"name\" type=\"text\">"
       },
       {
-        "ruleId": "a11y/no-refer-to-non-existent-id",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/no-refer-to-non-existent-id] The aria-reference attribute references id=\"vuln-tree-error\" which does not exist in the template",
-        "line": 216,
-        "column": 43,
-        "endLine": 216,
-        "endColumn": 76,
-        "help": "Why: ID reference attributes like for, aria-labelledby, aria-describedby, etc. must point to an existing element with that id. A broken reference silently breaks the association.\nFix: Ensure the referenced ID exists in the template:\n  <label for=\"name\">Name:</label>\n  <input id=\"name\" type=\"text\">"
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3318,6 +3307,17 @@
         "endLine": 155,
         "endColumn": 35,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "a11y/no-refer-to-non-existent-id",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-refer-to-non-existent-id] The aria-reference attribute references id=\"vuln-tree-error\" which does not exist in the template",
+        "line": 216,
+        "column": 43,
+        "endLine": 216,
+        "endColumn": 76,
+        "help": "Why: ID reference attributes like for, aria-labelledby, aria-describedby, etc. must point to an existing element with that id. A broken reference silently breaks the association.\nFix: Ensure the referenced ID exists in the template:\n  <label for=\"name\">Name:</label>\n  <input id=\"name\" type=\"text\">"
       }
     ],
     "errorCount": 0,
@@ -3514,17 +3514,6 @@
     "file": "app/components/SearchSuggestionCard.vue",
     "messages": [
       {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'isExactMatch' should be 'is-exact-match' (kebab-case)",
-        "line": 15,
-        "column": 13,
-        "endLine": 15,
-        "endColumn": 41,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3534,6 +3523,17 @@
         "endLine": 15,
         "endColumn": 41,
         "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'isExactMatch' should be 'is-exact-match' (kebab-case)",
+        "line": 15,
+        "column": 13,
+        "endLine": 15,
+        "endColumn": 41,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       }
     ],
     "errorCount": 0,
@@ -3710,17 +3710,6 @@
     "file": "app/components/Tooltip/Announce.vue",
     "messages": [
       {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'isVisible' should be 'is-visible' (kebab-case)",
-        "line": 13,
-        "column": 22,
-        "endLine": 13,
-        "endColumn": 32,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3730,6 +3719,17 @@
         "endLine": 13,
         "endColumn": 32,
         "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'isVisible' should be 'is-visible' (kebab-case)",
+        "line": 13,
+        "column": 22,
+        "endLine": 13,
+        "endColumn": 32,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       }
     ],
     "errorCount": 0,
@@ -3739,17 +3739,6 @@
     "file": "app/components/Tooltip/App.vue",
     "messages": [
       {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'isVisible' should be 'is-visible' (kebab-case)",
-        "line": 55,
-        "column": 5,
-        "endLine": 55,
-        "endColumn": 15,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3759,6 +3748,17 @@
         "endLine": 55,
         "endColumn": 15,
         "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'isVisible' should be 'is-visible' (kebab-case)",
+        "line": 55,
+        "column": 5,
+        "endLine": 55,
+        "endColumn": 15,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       }
     ],
     "errorCount": 0,
@@ -3809,17 +3809,6 @@
         "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
       },
       {
-        "ruleId": "a11y/mouse-events-have-key-events",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/mouse-events-have-key-events] @mouseenter/@mouseover must be paired with @focus for keyboard accessibility",
-        "line": 182,
-        "column": 9,
-        "endLine": 196,
-        "endColumn": 10,
-        "help": "Why: Keyboard and touch users cannot trigger mouse events.\nFix:\n  <div\n  @mouseenter=\"show\"\n  @mouseleave=\"hide\"\n  @focus=\"show\"\n  @blur=\"hide\"\n  tabindex=\"0\"\n  >\n  Hover or focus me\n  </div>"
-      },
-      {
         "ruleId": "a11y/interactive-supports-focus",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -3829,6 +3818,17 @@
         "endLine": 196,
         "endColumn": 10,
         "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+      },
+      {
+        "ruleId": "a11y/mouse-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/mouse-events-have-key-events] @mouseenter/@mouseover must be paired with @focus for keyboard accessibility",
+        "line": 182,
+        "column": 9,
+        "endLine": 196,
+        "endColumn": 10,
+        "help": "Why: Keyboard and touch users cannot trigger mouse events.\nFix:\n  <div\n  @mouseenter=\"show\"\n  @mouseleave=\"hide\"\n  @focus=\"show\"\n  @blur=\"hide\"\n  tabindex=\"0\"\n  >\n  Hover or focus me\n  </div>"
       }
     ],
     "errorCount": 0,
@@ -3981,17 +3981,6 @@
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'playsInline' should be 'plays-inline' (kebab-case)",
-        "line": 215,
-        "column": 11,
-        "endLine": 215,
-        "endColumn": 22,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -4001,6 +3990,17 @@
         "endLine": 215,
         "endColumn": 22,
         "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'playsInline' should be 'plays-inline' (kebab-case)",
+        "line": 215,
+        "column": 11,
+        "endLine": 215,
+        "endColumn": 22,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -4130,17 +4130,6 @@
     "file": "app/pages/compare.vue",
     "messages": [
       {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'ariaLabel' should be 'aria-label' (kebab-case)",
-        "line": 383,
-        "column": 22,
-        "endLine": 383,
-        "endColumn": 76,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -4150,6 +4139,17 @@
         "endLine": 383,
         "endColumn": 76,
         "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'ariaLabel' should be 'aria-label' (kebab-case)",
+        "line": 383,
+        "column": 22,
+        "endLine": 383,
+        "endColumn": 76,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       }
     ],
     "errorCount": 0,
@@ -4176,17 +4176,6 @@
         "help": "Why: ID reference attributes like for, aria-labelledby, aria-describedby, etc. must point to an existing element with that id. A broken reference silently breaks the association.\nFix: Ensure the referenced ID exists in the template:\n  <label for=\"name\">Name:</label>\n  <input id=\"name\" type=\"text\">"
       },
       {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'ariaKeyshortcuts' should be 'aria-keyshortcuts' (kebab-case)",
-        "line": 70,
-        "column": 19,
-        "endLine": 70,
-        "endColumn": 39,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -4196,6 +4185,17 @@
         "endLine": 70,
         "endColumn": 39,
         "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'ariaKeyshortcuts' should be 'aria-keyshortcuts' (kebab-case)",
+        "line": 70,
+        "column": 19,
+        "endLine": 70,
+        "endColumn": 39,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       }
     ],
     "errorCount": 0,
@@ -4295,177 +4295,19 @@
     "warningCount": 1
   },
   {
-    "file": "app/pages/package/[[org]]/[name]/index.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "app/pages/package/[[org]]/[name]/v/[version].vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "app/pages/package/[[org]]/[name]/versions.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "app/pages/package/[[org]]/[name].vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-v-html",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 547,
-        "column": 7,
-        "endLine": 547,
-        "endColumn": 34,
-        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
-      },
-      {
-        "ruleId": "vue/no-v-html",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 568,
-        "column": 23,
-        "endLine": 568,
-        "endColumn": 46,
-        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
-      },
-      {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'jsrInfo' should be 'jsr-info' (kebab-case)",
-        "line": 575,
-        "column": 40,
-        "endLine": 575,
-        "endColumn": 48,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 575,
-        "column": 40,
-        "endLine": 575,
-        "endColumn": 48,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/no-v-html",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 597,
-        "column": 21,
-        "endLine": 597,
-        "endColumn": 54,
-        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
-      },
-      {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'packageName' should be 'package-name' (kebab-case)",
-        "line": 967,
-        "column": 15,
-        "endLine": 967,
-        "endColumn": 38,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'createdIso' should be 'created-iso' (kebab-case)",
-        "line": 969,
-        "column": 15,
-        "endLine": 969,
-        "endColumn": 55,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'repoRef' should be 'repo-ref' (kebab-case)",
-        "line": 970,
-        "column": 15,
-        "endLine": 970,
-        "endColumn": 33,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 967,
-        "column": 15,
-        "endLine": 967,
-        "endColumn": 38,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 969,
-        "column": 15,
-        "endLine": 969,
-        "endColumn": 55,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 970,
-        "column": 15,
-        "endLine": 970,
-        "endColumn": 33,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 1079,
-        "column": 15,
-        "endLine": 1079,
-        "endColumn": 36,
-        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
-      }
-    ],
-    "errorCount": 0,
-    "warningCount": 12
-  },
-  {
-    "file": "app/pages/package-changelog/[[org]]/[name]/index.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "app/pages/package-changelog/[[org]]/[name]/v/[version].vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
     "file": "app/pages/package-changelog/[[org]]/[name].vue",
     "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 112,
+        "column": 7,
+        "endLine": 112,
+        "endColumn": 25,
+        "help": "Use kebab-case for attribute names"
+      },
       {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -4476,6 +4318,17 @@
         "endLine": 112,
         "endColumn": 25,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 114,
+        "column": 7,
+        "endLine": 114,
+        "endColumn": 21,
+        "help": "Use kebab-case for attribute names"
       },
       {
         "ruleId": "vue/prop-name-casing",
@@ -4493,21 +4346,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 112,
-        "column": 7,
-        "endLine": 112,
-        "endColumn": 25,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 114,
-        "column": 7,
-        "endLine": 114,
-        "endColumn": 21,
+        "line": 145,
+        "column": 9,
+        "endLine": 145,
+        "endColumn": 51,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -4522,6 +4364,17 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 146,
+        "column": 9,
+        "endLine": 146,
+        "endColumn": 50,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -4531,28 +4384,6 @@
         "endLine": 146,
         "endColumn": 50,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 145,
-        "column": 9,
-        "endLine": 145,
-        "endColumn": 51,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 146,
-        "column": 9,
-        "endLine": 146,
-        "endColumn": 50,
-        "help": "Use kebab-case for attribute names"
       },
       {
         "ruleId": "vue/valid-v-slot",
@@ -4566,6 +4397,17 @@
         "help": "Use v-slot on a component or a template element inside a component"
       },
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 150,
+        "column": 11,
+        "endLine": 150,
+        "endColumn": 31,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -4575,6 +4417,17 @@
         "endLine": 150,
         "endColumn": 31,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 152,
+        "column": 11,
+        "endLine": 152,
+        "endColumn": 38,
+        "help": "Use kebab-case for attribute names"
       },
       {
         "ruleId": "vue/prop-name-casing",
@@ -4592,21 +4445,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 150,
-        "column": 11,
-        "endLine": 150,
-        "endColumn": 31,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 152,
-        "column": 11,
-        "endLine": 152,
-        "endColumn": 38,
+        "line": 158,
+        "column": 9,
+        "endLine": 158,
+        "endColumn": 26,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -4621,6 +4463,17 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 159,
+        "column": 9,
+        "endLine": 159,
+        "endColumn": 51,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -4630,6 +4483,17 @@
         "endLine": 159,
         "endColumn": 51,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 160,
+        "column": 9,
+        "endLine": 160,
+        "endColumn": 50,
+        "help": "Use kebab-case for attribute names"
       },
       {
         "ruleId": "vue/prop-name-casing",
@@ -4643,39 +4507,6 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 158,
-        "column": 9,
-        "endLine": 158,
-        "endColumn": 26,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 159,
-        "column": 9,
-        "endLine": 159,
-        "endColumn": 51,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 160,
-        "column": 9,
-        "endLine": 160,
-        "endColumn": 50,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
         "ruleId": "vue/valid-v-slot",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -4685,6 +4516,17 @@
         "endLine": 161,
         "endColumn": 15,
         "help": "Use v-slot on a component or a template element inside a component"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 164,
+        "column": 11,
+        "endLine": 164,
+        "endColumn": 31,
+        "help": "Use kebab-case for attribute names"
       },
       {
         "ruleId": "vue/prop-name-casing",
@@ -4698,6 +4540,17 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 166,
+        "column": 11,
+        "endLine": 166,
+        "endColumn": 38,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -4707,32 +4560,22 @@
         "endLine": 166,
         "endColumn": 38,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 164,
-        "column": 11,
-        "endLine": 164,
-        "endColumn": 31,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 166,
-        "column": 11,
-        "endLine": 166,
-        "endColumn": 38,
-        "help": "Use kebab-case for attribute names"
       }
     ],
     "errorCount": 2,
     "warningCount": 22
+  },
+  {
+    "file": "app/pages/package-changelog/[[org]]/[name]/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/package-changelog/[[org]]/[name]/v/[version].vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
   },
   {
     "file": "app/pages/package-code/[[org]]/[packageName]/v/[version]/[...filePath].vue",
@@ -4780,6 +4623,17 @@
     "file": "app/pages/package-timeline/[[org]]/[packageName].vue",
     "messages": [
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 358,
+        "column": 13,
+        "endLine": 358,
+        "endColumn": 23,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -4789,6 +4643,17 @@
         "endLine": 358,
         "endColumn": 23,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 359,
+        "column": 13,
+        "endLine": 359,
+        "endColumn": 30,
+        "help": "Use kebab-case for attribute names"
       },
       {
         "ruleId": "vue/prop-name-casing",
@@ -4802,6 +4667,17 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 360,
+        "column": 13,
+        "endLine": 360,
+        "endColumn": 29,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -4813,6 +4689,17 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 361,
+        "column": 13,
+        "endLine": 361,
+        "endColumn": 29,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -4822,54 +4709,167 @@
         "endLine": 361,
         "endColumn": 29,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 358,
-        "column": 13,
-        "endLine": 358,
-        "endColumn": 23,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 359,
-        "column": 13,
-        "endLine": 359,
-        "endColumn": 30,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 360,
-        "column": 13,
-        "endLine": 360,
-        "endColumn": 29,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 361,
-        "column": 13,
-        "endLine": 361,
-        "endColumn": 29,
-        "help": "Use kebab-case for attribute names"
       }
     ],
     "errorCount": 0,
     "warningCount": 8
+  },
+  {
+    "file": "app/pages/package/[[org]]/[name].vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "line": 547,
+        "column": 7,
+        "endLine": 547,
+        "endColumn": 34,
+        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
+      },
+      {
+        "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "line": 568,
+        "column": 23,
+        "endLine": 568,
+        "endColumn": 46,
+        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 575,
+        "column": 40,
+        "endLine": 575,
+        "endColumn": 48,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'jsrInfo' should be 'jsr-info' (kebab-case)",
+        "line": 575,
+        "column": 40,
+        "endLine": 575,
+        "endColumn": 48,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "line": 597,
+        "column": 21,
+        "endLine": 597,
+        "endColumn": 54,
+        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 967,
+        "column": 15,
+        "endLine": 967,
+        "endColumn": 38,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'packageName' should be 'package-name' (kebab-case)",
+        "line": 967,
+        "column": 15,
+        "endLine": 967,
+        "endColumn": 38,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 969,
+        "column": 15,
+        "endLine": 969,
+        "endColumn": 55,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'createdIso' should be 'created-iso' (kebab-case)",
+        "line": 969,
+        "column": 15,
+        "endLine": 969,
+        "endColumn": 55,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 970,
+        "column": 15,
+        "endLine": 970,
+        "endColumn": 33,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'repoRef' should be 'repo-ref' (kebab-case)",
+        "line": 970,
+        "column": 15,
+        "endLine": 970,
+        "endColumn": 33,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+        "line": 1079,
+        "column": 15,
+        "endLine": 1079,
+        "endColumn": 36,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 12
+  },
+  {
+    "file": "app/pages/package/[[org]]/[name]/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/package/[[org]]/[name]/v/[version].vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/package/[[org]]/[name]/versions.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
   },
   {
     "file": "app/pages/pds.vue",
@@ -4943,17 +4943,6 @@
         "help": "Why: ID reference attributes like for, aria-labelledby, aria-describedby, etc. must point to an existing element with that id. A broken reference silently breaks the association.\nFix: Ensure the referenced ID exists in the template:\n  <label for=\"name\">Name:</label>\n  <input id=\"name\" type=\"text\">"
       },
       {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'packageUrl' should be 'package-url' (kebab-case)",
-        "line": 280,
-        "column": 30,
-        "endLine": 280,
-        "endColumn": 48,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -4963,6 +4952,17 @@
         "endLine": 280,
         "endColumn": 48,
         "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'packageUrl' should be 'package-url' (kebab-case)",
+        "line": 280,
+        "column": 30,
+        "endLine": 280,
+        "endColumn": 48,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       }
     ],
     "errorCount": 0,
@@ -4984,6 +4984,28 @@
     "file": "app/pages/settings.vue",
     "messages": [
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 172,
+        "column": 15,
+        "endLine": 172,
+        "endColumn": 51,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'modelValue' should be 'model-value' (kebab-case)",
+        "line": 172,
+        "column": 15,
+        "endLine": 172,
+        "endColumn": 51,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
         "ruleId": "html/id-duplication",
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 2,
@@ -5004,28 +5026,6 @@
         "endLine": 281,
         "endColumn": 41,
         "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
-      },
-      {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'modelValue' should be 'model-value' (kebab-case)",
-        "line": 172,
-        "column": 15,
-        "endLine": 172,
-        "endColumn": 51,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 172,
-        "column": 15,
-        "endLine": 172,
-        "endColumn": 51,
-        "help": "Use kebab-case for attribute names"
       }
     ],
     "errorCount": 2,

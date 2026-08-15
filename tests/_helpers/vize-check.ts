@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import {
+  spawnSync,
+  type SpawnSyncOptionsWithStringEncoding,
+  type SpawnSyncReturns,
+} from "node:child_process";
 
 import { CORSA_BIN, VIZE_BIN } from "./apps.ts";
 
@@ -21,24 +25,29 @@ type RunVizeCheckJsonOptions = {
   corsaPath?: string;
   maxBufferBytes?: number;
   showVirtualTs?: boolean;
+  spawnSync?: VizeCheckSpawnSync;
   timeoutMs?: number;
+  tsconfig?: string;
 };
 
 const DEFAULT_ALLOWED_EXIT_CODES = [0, 1] as const;
+
+type VizeCheckSpawnSync = (
+  command: string,
+  args: readonly string[],
+  options: SpawnSyncOptionsWithStringEncoding,
+) => SpawnSyncReturns<string>;
 
 export function runVizeCheckJson(
   cwd: string,
   patterns: readonly string[],
   options: RunVizeCheckJsonOptions = {},
 ): VizeCheckJson {
-  const args = ["check", ...patterns, "--format", "json", "--quiet"];
-  if (options.showVirtualTs) {
-    args.push("--show-virtual-ts");
-  }
-  args.push("--corsa-path", options.corsaPath ?? CORSA_BIN);
+  const args = buildVizeCheckArgs(patterns, options);
   console.log(`Running: ${formatCommand(VIZE_BIN, args)}`);
 
-  const result = spawnSync(VIZE_BIN, args, {
+  const spawn = options.spawnSync ?? spawnSync;
+  const result = spawn(VIZE_BIN, args, {
     cwd,
     encoding: "utf8",
     env: { ...process.env, LANG: "C", LC_ALL: "C" },
@@ -61,6 +70,21 @@ export function runVizeCheckJson(
     `vize check should print JSON on stdout; stderr was:\n${result.stderr}`,
   );
   return JSON.parse(result.stdout) as VizeCheckJson;
+}
+
+export function buildVizeCheckArgs(
+  patterns: readonly string[],
+  options: RunVizeCheckJsonOptions = {},
+): string[] {
+  const args = ["check", ...patterns, "--format", "json", "--quiet"];
+  if (options.showVirtualTs) {
+    args.push("--show-virtual-ts");
+  }
+  if (options.tsconfig != null) {
+    args.push("--tsconfig", options.tsconfig);
+  }
+  args.push("--corsa-path", options.corsaPath ?? CORSA_BIN);
+  return args;
 }
 
 function formatCommand(command: string, args: readonly string[]): string {

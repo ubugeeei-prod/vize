@@ -83,6 +83,7 @@ test("release gate plans bind exact SHAs to expected evidence titles", () => {
         inputs: {
           core_tools_mode: "record-only",
           core_tools_timeout_ms: "600000",
+          lint_divergence_mode: "record-only",
           lsp_mode: "record-only",
         },
         expectedRunName: `Real Project Matrix @ ${releaseSha}`,
@@ -189,8 +190,7 @@ test("Real Project Matrix dispatch identifies its immutable target", () => {
   }
   assert.equal(dispatchInputs.core_tools_timeout_ms?.default, "2400000");
   assert.equal(dispatchInputs.core_tools_timeout_ms?.type, "string");
-  assert.match(matrix["run-name"] ?? "", /^Real Project Matrix @ /);
-  assert.match(matrix["run-name"] ?? "", /github\.sha/);
+  assert.equal(matrix["run-name"], "Real Project Matrix @ ${{ github.sha }}");
 });
 
 test("on-demand gates correlate expanded display titles, never workflow names", () => {

@@ -52,6 +52,7 @@ test("typecheck divergence classifies exact diagnostics deterministically", () =
     baselineExcludedNonVueCount: 0,
     baselineExcludedProjectCount: 0,
     baselineExcludedExternalCount: 0,
+    baselineExcludedSupportVueCount: 0,
   });
   assert.deepEqual(
     result.shared.map((diagnostic: { file: string }) => diagnostic.file),
@@ -96,6 +97,7 @@ test("typecheck divergence separates false positives and false negatives", () =>
     baselineExcludedNonVueCount: 0,
     baselineExcludedProjectCount: 0,
     baselineExcludedExternalCount: 0,
+    baselineExcludedSupportVueCount: 0,
   });
   assert.deepEqual(
     result.falsePositives.map((entry: { code: number }) => entry.code),
@@ -209,6 +211,7 @@ test("typecheck divergence records non-Vue diagnostics outside the comparison su
   assert.equal(result.summary.baselineExcludedNonVueCount, 2);
   assert.equal(result.summary.baselineExcludedProjectCount, 0);
   assert.equal(result.summary.baselineExcludedExternalCount, 0);
+  assert.equal(result.summary.baselineExcludedSupportVueCount, 0);
   assert.deepEqual(result.falsePositives, []);
   assert.deepEqual(result.falseNegatives, []);
 });
@@ -225,7 +228,46 @@ test("typecheck divergence records project-level and external baseline diagnosti
   assert.equal(result.summary.baselineDiagnosticCount, 0);
   assert.equal(result.summary.baselineExcludedProjectCount, 1);
   assert.equal(result.summary.baselineExcludedExternalCount, 2);
+  assert.equal(result.summary.baselineExcludedSupportVueCount, 0);
   assert.deepEqual(result.falseNegatives, []);
+});
+
+test("typecheck divergence excludes dot-directory support Vue diagnostics", () => {
+  const result = compare(
+    [{ file: "src/App.vue", diagnostics: ["error:1:1 [TS2322] shared"] }],
+    [
+      "src/App.vue(1,1): error TS2322: shared",
+      "docs/.vitepress/components/Support.vue(2,3): error TS2345: support only",
+    ].join("\n"),
+  );
+  assert.equal(result.summary.baselineDiagnosticCount, 1);
+  assert.equal(result.summary.baselineExcludedSupportVueCount, 1);
+  assert.equal(result.summary.falseNegativeCount, 0);
+  assert.deepEqual(result.falseNegatives, []);
+});
+
+test("typecheck divergence keeps a dot-prefixed Vue filename in the comparison", () => {
+  const result = compare(
+    [{ file: "src/App.vue", diagnostics: [] }],
+    "src/.Local.vue(1,1): error TS2345: dot-prefixed filename\n",
+  );
+  assert.equal(result.summary.baselineExcludedSupportVueCount, 0);
+  assert.equal(result.summary.falseNegativeCount, 1);
+});
+
+test("typecheck divergence compares dot-directory Vue files Vize itself checked", () => {
+  const result = compare(
+    [
+      {
+        file: "docs/.vitepress/components/Support.vue",
+        diagnostics: ["error:2:3 [TS2345] shared"],
+      },
+    ],
+    "docs/.vitepress/components/Support.vue(2,3): error TS2345: shared\n",
+  );
+  assert.equal(result.summary.baselineExcludedSupportVueCount, 0);
+  assert.equal(result.summary.sharedCount, 1);
+  assert.equal(result.summary.falseNegativeCount, 0);
 });
 
 test("typecheck divergence uses UTF-8 byte order for Unicode paths", () => {

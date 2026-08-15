@@ -35,6 +35,15 @@ function writeProjectFile(projectDir, filename, source) {
   fs.writeFileSync(target, source);
 }
 
+export function isPathInsideOrEqual(parent, candidate, pathApi = path) {
+  const relative = pathApi.relative(parent, candidate);
+  if (relative === "") return true;
+  // Compare ".." as a path segment so names such as "..cache" stay inside.
+  if (relative === ".." || relative.startsWith(`..${pathApi.sep}`)) return false;
+  // On Windows, paths on different drives produce an absolute relative path.
+  return !pathApi.isAbsolute(relative);
+}
+
 function initTypecheckAppSource(language, failure = null) {
   const scriptLanguage = language === "typescript" ? ' lang="ts"' : "";
   const countDeclaration =
@@ -276,9 +285,8 @@ export function runInitTypecheckChecks(
   runtimePeerDependencies,
 ) {
   const installedVizeRoot = fs.realpathSync(path.dirname(path.dirname(vizeBin)));
-  const relativeToRepository = path.relative(repositoryRoot, installedVizeRoot);
   assert.ok(
-    relativeToRepository.startsWith("..") && !path.isAbsolute(relativeToRepository),
+    !isPathInsideOrEqual(repositoryRoot, installedVizeRoot),
     `runtime resolved repository-local vize package: ${installedVizeRoot}`,
   );
   for (const language of ["typescript", "javascript"]) {

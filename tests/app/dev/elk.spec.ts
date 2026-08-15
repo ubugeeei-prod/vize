@@ -21,14 +21,15 @@ import {
 } from "../../_helpers/assertions";
 import {
   ELK_RENDER_ROUTE,
+  elkRouteReadinessExpectation,
+  elkRouteReadinessState,
   readElkRenderRouteSourceEvidence,
   type ElkRenderRouteSourceEvidence,
 } from "./elk-route-contract";
 
 const app = elkApp;
 const ELK_RENDER_URL = `${app.url}${ELK_RENDER_ROUTE}`;
-const ELK_MIN_RENDER_ROUTE_ELEMENTS = 100;
-const ELK_RENDER_ROUTE_LINKS = ["/settings/interface", "/settings/about"] as const;
+const ELK_RENDER_READINESS = elkRouteReadinessExpectation(ELK_RENDER_ROUTE);
 
 test.describe("elk dev", () => {
   let devServer: ChildProcess;
@@ -93,7 +94,7 @@ test.describe("elk dev", () => {
     const mountEl = page.locator(app.mountSelector);
     await expect(mountEl).toBeAttached({ timeout: 15_000 });
     await waitForElkPageContent(page);
-    for (const href of ELK_RENDER_ROUTE_LINKS) {
+    for (const href of ELK_RENDER_READINESS.links) {
       await expect(page.locator(`a[href="${href}"]`).first()).toBeAttached();
     }
   });
@@ -231,25 +232,24 @@ async function waitForElkPageContent(page: Page): Promise<void> {
 }
 
 async function elkRenderRouteContentState(page: Page): Promise<string> {
-  return page.evaluate(
-    ({ links, minElements, selector }) => {
+  const observation = await page.evaluate(
+    ({ links, selector }) => {
       const root = document.querySelector(selector);
       if (!root) {
-        return "missing-root";
+        return { elementCount: 0, missingLinks: links, rootFound: false };
       }
 
-      const elementCount = root.querySelectorAll("*").length;
-      const missingLinks = links.filter((href) => !root.querySelector(`a[href="${href}"]`));
-      if (elementCount >= minElements && missingLinks.length === 0) {
-        return "ready";
-      }
-
-      return `incomplete:elements=${elementCount}:missing=${missingLinks.join(",")}`;
+      return {
+        elementCount: root.querySelectorAll("*").length,
+        missingLinks: links.filter((href) => !root.querySelector(`a[href="${href}"]`)),
+        rootFound: true,
+      };
     },
     {
-      links: [...ELK_RENDER_ROUTE_LINKS],
-      minElements: ELK_MIN_RENDER_ROUTE_ELEMENTS,
+      links: ELK_RENDER_READINESS.links,
       selector: app.mountSelector,
     },
   );
+
+  return elkRouteReadinessState(ELK_RENDER_ROUTE, observation);
 }

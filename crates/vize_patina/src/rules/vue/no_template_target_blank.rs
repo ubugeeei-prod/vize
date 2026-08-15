@@ -57,11 +57,12 @@ impl MarkupRule for NoTemplateTargetBlank {
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         // Only static `target="_blank"`; a dynamic `:target` cannot be checked.
-        let is_blank = element
-            .static_attribute("target")
-            .and_then(|attr| attr.value())
-            .is_some_and(|value| value.trim() == "_blank");
-        if !is_blank {
+        let Some(target) = element.static_attribute("target") else {
+            return;
+        };
+        // Exact match, like the eslint-plugin-vue baseline: a padded
+        // `target=" _blank "` is a browsing-context name, not the keyword.
+        if target.value().is_none_or(|value| value != "_blank") {
             return;
         }
         // The reverse-tabnabbing risk only applies to links that navigate.
@@ -77,7 +78,7 @@ impl MarkupRule for NoTemplateTargetBlank {
         }
         let message = ctx.lint().t("vue/no-template-target-blank.message");
         let help = ctx.lint().t("vue/no-template-target-blank.help");
-        ctx.lint().warn_at_with_help(message, element.range(), help);
+        ctx.lint().warn_at_with_help(message, target.range(), help);
     }
 }
 
@@ -91,9 +92,10 @@ impl Rule for NoTemplateTargetBlank {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        let is_blank =
-            static_attribute_value(element, "target").is_some_and(|value| value.trim() == "_blank");
-        if !is_blank {
+        let Some(target) = static_attribute(element, "target") else {
+            return;
+        };
+        if attribute_value(target) != "_blank" {
             return;
         }
         if !has_attribute_or_binding(element, "href") {
@@ -104,21 +106,30 @@ impl Rule for NoTemplateTargetBlank {
         }
         ctx.warn_with_help(
             ctx.t("vue/no-template-target-blank.message"),
-            &element.loc,
+            &target.loc,
             ctx.t("vue/no-template-target-blank.help"),
         );
     }
 }
 
-/// The value of a static `name` attribute (empty string when valueless), or
-/// `None` when no such static attribute exists.
-fn static_attribute_value<'a>(element: &'a ElementNode<'a>, name: &str) -> Option<&'a str> {
+fn static_attribute<'a>(
+    element: &'a ElementNode<'a>,
+    name: &str,
+) -> Option<&'a vize_relief::AttributeNode<'a>> {
     element.props.iter().find_map(|prop| match prop {
-        PropNode::Attribute(attr) if attr.name == name => {
-            Some(attr.value.as_ref().map(|v| v.content).unwrap_or(""))
-        }
+        PropNode::Attribute(attr) if attr.name == name => Some(&**attr),
         _ => None,
     })
+}
+
+/// The value of a static attribute, or empty string when it is valueless.
+fn attribute_value<'a>(attr: &'a vize_relief::AttributeNode<'a>) -> &'a str {
+    attr.value.as_ref().map(|v| v.content).unwrap_or("")
+}
+
+/// The value of a static `name` attribute, or empty string when valueless.
+fn static_attribute_value<'a>(element: &'a ElementNode<'a>, name: &str) -> Option<&'a str> {
+    static_attribute(element, name).map(attribute_value)
 }
 
 /// Whether `element` has a static `name` attribute or a `v-bind:name` directive.
@@ -143,6 +154,23 @@ mod tests {
         let mut registry = RuleRegistry::new();
         registry.register(Box::new(NoTemplateTargetBlank));
         Linter::with_registry(registry)
+    }
+
+    fn assert_single_diagnostic_covers(source: &str, needle: &str, result: crate::LintResult) {
+        assert_eq!(
+            result.warning_count, 1,
+            "expected one warning for source: {source}"
+        );
+        assert_eq!(
+            result.diagnostics.len(),
+            1,
+            "expected one diagnostic for source: {source}"
+        );
+        let diagnostic = &result.diagnostics[0];
+        let start = source.find(needle).expect("needle must exist") as u32;
+        let end = start + needle.len() as u32;
+        assert_eq!(diagnostic.start, start);
+        assert_eq!(diagnostic.end, end);
     }
 
     #[test]
@@ -183,6 +211,40 @@ mod tests {
     }
 
     #[test]
+    fn test_invalid_missing_rel_reports_target_attribute_range() {
+        // The non-ASCII label keeps the reported range honest about byte
+        // offsets: a code-point or UTF-16 based span would drift here.
+        let source = r#"<a aria-label="日本語" href="https://example.com" target="_blank">x</a>"#;
+        let linter = create_linter();
+        let result = linter.lint_template(source, "test.vue");
+        assert_single_diagnostic_covers(source, r#"target="_blank""#, result);
+    }
+
+    #[test]
+    fn test_valid_padded_target_value() {
+        // Only the exact `_blank` keyword opens a new browsing context; a
+        // padded value is a context name, and the eslint-plugin-vue baseline
+        // compares exactly too.
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<a href="https://example.com" target=" _blank ">x</a>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_padded_target_value_jsx() {
+        let linter = create_linter();
+        let result = linter.lint_jsx(
+            r#"const A = () => <a href="https://example.com" target=" _blank ">x</a>;"#,
+            "test.jsx",
+            JsxLang::Jsx,
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
     fn test_invalid_bound_href() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<a :href="url" target="_blank">x</a>"#, "test.vue");
@@ -198,6 +260,14 @@ mod tests {
             JsxLang::Jsx,
         );
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_jsx_missing_rel_reports_target_attribute_range() {
+        let source = r#"const A = () => <a aria-label="日本語" href="https://example.com" target="_blank">x</a>;"#;
+        let linter = create_linter();
+        let result = linter.lint_jsx(source, "test.jsx", JsxLang::Jsx);
+        assert_single_diagnostic_covers(source, r#"target="_blank""#, result);
     }
 
     #[test]

@@ -42,7 +42,8 @@ export function compareTypecheckDiagnostics({
   if (typeof cwd !== "string" || !isAbsolute(cwd)) invalid("cwd must be absolute");
   const expectedDifferences = selectDocumentedDifferences(documentedDifferences, projectId, cwd);
   const vizeInput = collectVizeDiagnostics(vizeReport, cwd);
-  const baselineInput = collectVueTscDiagnostics(vueTscOutput, cwd);
+  const comparableVueFiles = comparableVueFileSet(vizeReport, cwd);
+  const baselineInput = collectVueTscDiagnostics(vueTscOutput, cwd, { comparableVueFiles });
   const vize = vizeInput.diagnostics;
   const baseline = baselineInput.diagnostics;
   const vizeGroups = groupByIdentity(vize);
@@ -106,6 +107,7 @@ export function compareTypecheckDiagnostics({
     baselineExcludedNonVueCount: baselineInput.excludedNonVueCount,
     baselineExcludedProjectCount: baselineInput.excludedProjectCount,
     baselineExcludedExternalCount: baselineInput.excludedExternalCount,
+    baselineExcludedSupportVueCount: baselineInput.excludedSupportVueCount,
   };
   return {
     schema: "vize.fixtureTypecheckDivergence",
@@ -117,6 +119,17 @@ export function compareTypecheckDiagnostics({
       .update(JSON.stringify({ summary, ...classified }))
       .digest("hex"),
   };
+}
+
+function comparableVueFileSet(vizeReport, cwd) {
+  const files = Array.isArray(vizeReport.files) ? vizeReport.files : [];
+  const count = Number.isSafeInteger(vizeReport.fileCount) ? vizeReport.fileCount : files.length;
+  return new Set(
+    files
+      .slice(0, count)
+      .map((entry, index) => normalizePath(entry?.file, cwd, `Vize files[${index}].file`))
+      .filter((file) => file.endsWith(".vue")),
+  );
 }
 function selectDocumentedDifferences(values, projectId, cwd) {
   if (!Array.isArray(values)) invalid("documented differences must be an array");

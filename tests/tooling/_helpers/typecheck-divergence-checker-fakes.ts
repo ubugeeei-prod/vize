@@ -56,6 +56,10 @@ export function writeVueTscFixture(
   pathname: string,
   options: {
     baselineOutput: string;
+    baselineOutputStream?: "stdout" | "stderr";
+    coverageExitCode?: number;
+    coverageOutputStream?: "stdout" | "stderr";
+    exitCode?: number;
     files: string[];
     fixtureRoot: string;
     mutation: MutationDiagnosticMode;
@@ -68,6 +72,10 @@ export function writeVueTscFixture(
   }));
   const files = options.files.map((file) => `${path.join(options.fixtureRoot, file)}\n`).join("");
   const runBody = `
+if (process.argv.includes("--listFilesOnly")) {
+  process.${options.coverageOutputStream === "stderr" ? "stderr" : "stdout"}.write(${JSON.stringify(files)});
+  process.exit(${JSON.stringify(options.coverageExitCode ?? 0)});
+}
 let output = ${JSON.stringify(options.baselineOutput)};
 ${mutationScript()}
 for (const { file, sourcePath } of ${JSON.stringify(sourceFiles)}) {
@@ -76,9 +84,8 @@ for (const { file, sourcePath } of ${JSON.stringify(sourceFiles)}) {
   const mutation = mutationDiagnostic(source, ${JSON.stringify(options.mutation)}, "vue-tsc", file);
   if (mutation != null) output += mutation;
 }
-output += ${JSON.stringify(files)};
-process.stdout.write(output);
-process.exit(2);
+process.${options.baselineOutputStream === "stderr" ? "stderr" : "stdout"}.write(output);
+process.exit(${JSON.stringify(options.exitCode ?? 2)});
 `;
   writeVueTsc(pathname, runBody, invocationPath);
 }

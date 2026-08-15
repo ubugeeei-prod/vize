@@ -26,3 +26,15 @@ fn test_lint_template_marks_v_for_alias_used_without_script_block() {
 
     assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
 }
+
+#[test]
+fn test_lint_template_marks_v_for_alias_used_by_spread_expression() {
+    let linter =
+        Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-vars".to_compact_string()]));
+    let source = r#"<template>
+  <el-cascader-menu v-for="(menu, index) in menus" :key="index" :nodes="[...menu]" />
+</template>"#;
+    let result = linter.lint_sfc(source, "test.vue");
+
+    assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+}
