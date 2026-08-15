@@ -117,11 +117,13 @@ test("remaining release blocker fallback covers each targeted workflow", () => {
     REMAINING_RELEASE_BLOCKER_FALLBACK_JOBS,
   )) {
     const source = readRepoFile(".github", "workflows", workflowName);
-    assert.deepEqual(
-      expectedJobs.map((jobName) => activeRunnerLabel(source, jobName)),
-      expectedJobs.map(() => TEMPORARY_HOSTED_RUNNER),
-      `${workflowName} must keep every targeted job on the temporary hosted runner`,
-    );
+    for (const jobName of expectedJobs) {
+      assert.equal(
+        activeRunnerLabel(source, jobName),
+        TEMPORARY_HOSTED_RUNNER,
+        `${workflowName} job ${jobName} must use the temporary hosted runner`,
+      );
+    }
   }
 });
 
