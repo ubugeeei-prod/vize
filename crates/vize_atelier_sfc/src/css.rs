@@ -21,7 +21,6 @@ mod tests;
 mod transform;
 
 use serde::{Deserialize, Serialize};
-use vize_carton::Allocator;
 
 use crate::types::SfcStyleBlock;
 
@@ -30,7 +29,7 @@ use self::transform::extract_and_transform_v_bind_with_scope;
 pub(crate) use self::transform::{prod_scoped_v_bind_name, scoped_v_bind_name};
 
 pub(crate) fn transform_css_v_bind(css: &str, scope_id: Option<&str>) -> (String, Vec<String>) {
-    let bump = Allocator::new();
+    let bump = vize_carton::pool::acquire();
     let (code, css_vars) = extract_and_transform_v_bind_with_scope(&bump, css, scope_id);
     (String::from(code), css_vars)
 }
@@ -215,7 +214,7 @@ pub fn print_css_ast(_ast: serde_json::Value, _options: &CssCompileOptions) -> C
 /// Compile CSS using LightningCSS (native feature enabled)
 #[cfg(feature = "native")]
 pub fn compile_css(css: &str, options: &CssCompileOptions) -> CssCompileResult {
-    let bump = Allocator::new();
+    let bump = vize_carton::pool::acquire();
     let filename = options.filename.as_deref().unwrap_or("style.css");
 
     // Extract v-bind() expressions before parsing
@@ -263,7 +262,7 @@ pub fn compile_css(css: &str, options: &CssCompileOptions) -> CssCompileResult {
 /// Compile CSS (wasm fallback - no LightningCSS)
 #[cfg(not(feature = "native"))]
 pub fn compile_css(css: &str, options: &CssCompileOptions) -> CssCompileResult {
-    let bump = Allocator::new();
+    let bump = vize_carton::pool::acquire();
 
     // Extract v-bind() expressions before parsing
     let (processed_css, css_vars) =

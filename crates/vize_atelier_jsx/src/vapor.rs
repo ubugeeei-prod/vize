@@ -78,8 +78,8 @@ pub fn compile_to_vapor(
     let lowered = lower_source(allocator, allocator.as_oxc(), source, lang);
     let mut diagnostics = lowered.diagnostics;
 
-    // Move the analysis into the arena so the transform can borrow it.
-    let analysis: &Croquis = &*allocator.alloc_owned(lowered.analysis);
+    // Park the analysis on the allocator so the transform can borrow it.
+    let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
 
     let backend = if options.ssr {
         SlotsForwardingBackend::Ssr

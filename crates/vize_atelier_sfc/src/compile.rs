@@ -333,7 +333,7 @@ fn compile_sfc_inner(
         // Compile template if present
         if has_template {
             let template = descriptor.template.as_ref().unwrap();
-            let template_allocator = vize_carton::Allocator::new();
+            let template_allocator = vize_carton::pool::acquire();
             let template_result = if is_vapor {
                 profile!(
                     "atelier.sfc.template.vapor",
@@ -655,7 +655,7 @@ fn compile_sfc_inner(
 
     // Compile template with bindings (if present) to get the render function
     let template_result = if let Some(template) = &descriptor.template {
-        let template_allocator = vize_carton::Allocator::new();
+        let template_allocator = vize_carton::pool::acquire();
         if is_vapor {
             Some(profile!(
                 "atelier.sfc.template.vapor",

@@ -1,4 +1,10 @@
 //! Content-addressed cache for `vize build --format stats` compiles.
+//!
+//! This is the batch's one resident structure: it is populated per file and
+//! read for the whole run, so it is where the P1-11 arena/cache contract bites
+//! — entries hold owned values (counts and a `String` message), never a
+//! reference into the arena that produced them, which the pool resets and
+//! hands to the next file. `cache/tests.rs` pins both halves.
 
 use std::sync::Mutex;
 
@@ -105,3 +111,6 @@ fn component_name_to_kebab_case(component_name: &str) -> String {
     }
     out
 }
+
+#[cfg(test)]
+mod tests;

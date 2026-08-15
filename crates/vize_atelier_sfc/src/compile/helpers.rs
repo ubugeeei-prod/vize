@@ -4,7 +4,6 @@ use oxc_allocator::Allocator as OxcAllocator;
 use oxc_ast::ast::{BindingPattern, Expression, Statement, VariableDeclarationKind};
 use oxc_parser::Parser as OxcParser;
 use oxc_span::SourceType;
-use vize_atelier_core::Allocator as TemplateAllocator;
 use vize_carton::{String, ToCompactString};
 
 use crate::script::{ScriptCompileContext, resolve_template_v_model_identifiers};
@@ -72,7 +71,8 @@ pub(super) fn demote_v_model_reactive_const_bindings(
         return None;
     }
 
-    let template_allocator = TemplateAllocator::default();
+    // P1-11: this worker's arena, reset and reused between files.
+    let template_allocator = vize_carton::pool::acquire();
     let (root, _) = vize_atelier_core::parse(&template_allocator, template_content);
     let v_model_ids = resolve_template_v_model_identifiers(&root);
 

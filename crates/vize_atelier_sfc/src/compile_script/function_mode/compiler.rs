@@ -51,9 +51,9 @@ pub fn compile_script_setup(
     ctx.analyze();
     validate_macro_scope_and_props(&ctx, 0, content)?;
 
-    // Use arena-allocated Vec for better performance
-    let bump = vize_carton::Allocator::new();
-    let mut output: vize_carton::Vec<u8> = vize_carton::Vec::with_capacity_in(4096, &&bump);
+    // Arena-allocated Vec on this worker's pooled arena (P1-11), not a fresh one.
+    let bump = vize_carton::pool::acquire();
+    let mut output: vize_carton::Vec<u8> = vize_carton::Vec::with_capacity_in(4096, &&*bump);
 
     // Check if we have props destructure
     let has_props_destructure = ctx.macros.props_destructure.is_some();

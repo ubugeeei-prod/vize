@@ -119,9 +119,9 @@ pub(crate) fn compile_script_setup_inline_with_context(
     );
     let setup_code: String = setup_lines.join("\n").into();
 
-    // Use arena-allocated Vec for better performance
-    let bump = vize_carton::Allocator::new();
-    let mut output: vize_carton::Vec<u8> = vize_carton::Vec::with_capacity_in(4096, &&bump);
+    // Arena-allocated Vec on this worker's pooled arena (P1-11), not a fresh one.
+    let bump = vize_carton::pool::acquire();
+    let mut output: vize_carton::Vec<u8> = vize_carton::Vec::with_capacity_in(4096, &&*bump);
 
     // Store normal script content to add AFTER TypeScript transformation
     // This preserves type definitions that would otherwise be stripped

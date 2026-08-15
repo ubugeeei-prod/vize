@@ -58,6 +58,7 @@ pub mod interner;
 pub mod line_index;
 pub mod lsp;
 pub mod path;
+pub mod pool;
 pub mod profiler;
 pub mod recursion;
 pub mod source_range;
@@ -66,7 +67,7 @@ pub mod string_builder;
 pub mod telegraph;
 
 // Re-export allocator types
-pub use allocator::Allocator;
+pub use allocator::{Allocator, ArenaStamp};
 pub use boxed::Box;
 pub use clone_in::CloneIn;
 pub use vec::Vec;

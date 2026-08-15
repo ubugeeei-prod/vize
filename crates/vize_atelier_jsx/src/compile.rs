@@ -190,8 +190,8 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
         &mut diagnostics,
     );
 
-    // Move the analysis into the arena so the transforms can borrow it.
-    let analysis: &Croquis = &*allocator.alloc_owned(lowered.analysis);
+    // Park the analysis on the allocator so the transforms can borrow it.
+    let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
 
     let mut components = Vec::with_capacity(lowered.roots.len());
     for lowered_root in lowered.roots {

@@ -215,6 +215,15 @@ pub(super) fn compile_file_stats_with_cache(
         stats.add_compile_time(compile_time);
     }
 
+    // P1-11 file boundary: the compile is done and the cache entry stored
+    // below is owned, so this worker must be holding no arena.
+    debug_assert_eq!(
+        vize_carton::pool::checked_out(),
+        0,
+        "a pooled arena is still checked out after compiling {}",
+        path.display()
+    );
+
     let output_bytes = result.code.len();
     let cache_status = if cache_key.is_some() {
         StatsCacheStatus::Miss

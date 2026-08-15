@@ -46,3 +46,13 @@ jobs:
 
       - name: Test SFC transform with Miri
         run: cargo +nightly miri test -p vize_atelier_sfc --test setup_component_unref --no-default-features
+
+      # Davinci P1-11: the batch pool hands one arena to file after file, so a
+      # value that outlived its compile would read recycled bytes. Miri is the
+      # lane that reports that for real — it caught a Stacked Borrows violation
+      # in the first draft of `Allocator::alloc_owned`.
+      - name: Test the batch arena pool with Miri
+        run: cargo +nightly miri test -p vize_carton --lib -- allocator pool
+
+      - name: Test pooled SFC compiles with Miri
+        run: cargo +nightly miri test -p vize_atelier_sfc --test davinci_arena_pool --no-default-features

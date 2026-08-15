@@ -62,11 +62,11 @@ fn transform_css_var_expression(
     var_expr: &str,
     source_is_ts: bool,
 ) -> String {
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_carton::pool::acquire();
     let loc = SourceLocation::new(0, var_expr.len() as u32);
     let exp = ExpressionNode::Simple(CoreBox::new_in(
         SimpleExpressionNode::new(var_expr, false, loc),
-        &&allocator,
+        &&*allocator,
     ));
     let mut transform_ctx = TransformContext::new(
         &allocator,

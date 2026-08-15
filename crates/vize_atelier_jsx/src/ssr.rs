@@ -65,7 +65,7 @@ pub fn compile_to_ssr(
     let lowered = lower_source(allocator, allocator.as_oxc(), source, lang);
     let mut diagnostics = lowered.diagnostics;
 
-    let analysis: &Croquis = &*allocator.alloc_owned(lowered.analysis);
+    let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
 
     let mut components = Vec::with_capacity(lowered.roots.len());
     for lowered_root in lowered.roots {

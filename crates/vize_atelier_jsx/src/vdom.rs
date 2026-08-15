@@ -116,8 +116,8 @@ pub fn compile_to_vdom(
     let mut diagnostics = lowered.diagnostics;
     let is_ts = lang.is_typescript();
 
-    // Move the analysis into the arena so the transform can borrow it for `'a`.
-    let analysis: &Croquis = &*allocator.alloc_owned(lowered.analysis);
+    // Park the analysis on the allocator so the transform can borrow it for `'a`.
+    let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
 
     let mut components = Vec::with_capacity(lowered.roots.len());
     for lowered_root in lowered.roots {

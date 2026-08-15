@@ -1,4 +1,28 @@
 //! Per-file compilation with profiling for the build command.
+//!
+//! # Arena reuse across files (Davinci P1-11)
+//!
+//! The batch is file-parallel over rayon and every compile allocates from an
+//! arena, which is no longer built per file: the compiler takes it from
+//! `vize_carton::pool`, a per-worker free list, and returns it — reset, not
+//! freed — when the compile ends. Rayon worker threads outlive the batch, so
+//! one arena serves every file a worker takes, and the next file bumps into
+//! memory that is already mapped.
+//!
+//! The pool is acquired where the arena is born (the template/script/style
+//! entry points inside `vize_atelier_sfc`), not passed down from here: the
+//! birth site is several layers below this function, a `thread_local` is
+//! already per rayon worker, and routing a handle through the CLI would pool
+//! the CLI's callers only. What the build path owns is the **file boundary**:
+//!
+//! - every value that crosses it is in its owned form — [`CompileOutput`],
+//!   [`CompileError`], [`FileProfile`], the stats cache entries — so nothing
+//!   here borrows an arena, and the resident cache in `super::cache` keeps
+//!   data that outlives the arena that produced it;
+//! - `vize_carton::pool::checked_out()` is asserted to be zero once a file's
+//!   artifacts are in hand, here and in `super::compile_stats`. That is the
+//!   runtime half of the contract: a pool guard parked anywhere it must not be
+//!   would keep an arena pinned across files.
 
 use std::{fs, path::PathBuf, sync::atomic::Ordering, time::Instant};
 
@@ -150,6 +174,16 @@ pub(super) fn compile_file_with_profile(
     }
 
     let total_time = file_start.elapsed();
+
+    // P1-11 file boundary: the compile is done and everything below is owned,
+    // so this worker must be holding no arena. A non-zero count means a pool
+    // guard was parked somewhere it outlives one file.
+    debug_assert_eq!(
+        vize_carton::pool::checked_out(),
+        0,
+        "a pooled arena is still checked out after compiling {}",
+        path.display()
+    );
 
     let profile = profile_facts::file_profile(
         path,

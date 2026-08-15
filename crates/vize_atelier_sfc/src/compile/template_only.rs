@@ -41,7 +41,8 @@ pub(super) fn compile_template_only(
     macro_artifacts: Vec<SfcMacroArtifact>,
 ) -> Result<SfcCompileResult, SfcError> {
     let template = input.descriptor.template.as_ref().unwrap();
-    let template_allocator = vize_carton::Allocator::new();
+    // P1-11: this worker's arena, reset and reused between files.
+    let template_allocator = vize_carton::pool::acquire();
     let template_result = if input.is_vapor {
         profile!(
             "atelier.sfc.template.vapor",
