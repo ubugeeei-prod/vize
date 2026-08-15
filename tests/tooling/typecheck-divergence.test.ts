@@ -246,6 +246,15 @@ test("typecheck divergence excludes dot-directory support Vue diagnostics", () =
   assert.deepEqual(result.falseNegatives, []);
 });
 
+test("typecheck divergence keeps a dot-prefixed Vue filename in the comparison", () => {
+  const result = compare(
+    [{ file: "src/App.vue", diagnostics: [] }],
+    "src/.Local.vue(1,1): error TS2345: dot-prefixed filename\n",
+  );
+  assert.equal(result.summary.baselineExcludedSupportVueCount, 0);
+  assert.equal(result.summary.falseNegativeCount, 1);
+});
+
 test("typecheck divergence compares dot-directory Vue files Vize itself checked", () => {
   const result = compare(
     [

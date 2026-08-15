@@ -125,7 +125,11 @@ function normalizeBaselinePath(value, cwd) {
  * must agree on that rule, so this predicate is the single classifier both use.
  */
 export function isSupportVueFile(file) {
-  return file.split("/").some((segment) => segment.startsWith("."));
+  // Only a dot *directory* makes an SFC support: a dot-prefixed filename such as
+  // `.Local.vue` is authored fixture source, and treating it as support would
+  // silently drop it from the compared corpus.
+  const segments = file.split("/");
+  return segments.slice(0, -1).some((segment) => segment.startsWith("."));
 }
 
 function record(file, severity, line, column, code, message) {
