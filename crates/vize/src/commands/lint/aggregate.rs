@@ -61,6 +61,14 @@ pub(super) fn totals(
     })
 }
 
+pub(super) fn sorted_totals(
+    quiet_totals: Option<(usize, usize)>,
+    results: &mut [CliLintFileResult],
+) -> (usize, usize) {
+    sort_details_for_output(results);
+    totals(quiet_totals, results)
+}
+
 pub(super) fn sort_details_for_output(results: &mut [CliLintFileResult]) {
     results.sort_by(compare_file_result);
     for (_, _, _, result) in results {
