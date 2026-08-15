@@ -90,9 +90,11 @@ fn slow_unit_reproducer_is_rejected_by_the_expression_guard() {
 
     // Delimiters are balanced, so the guard's other rejection reason is not what
     // is doing the work: the verdict rests entirely on the angle budget. Every
-    // one of the 837 unclosed angles now counts.
+    // one of the 837 unclosed angles now counts. The reproducer also carries
+    // 29 malformed escaped identifier starts, which add recovery cost in the
+    // same speculative chain.
     assert!(expression_has_balanced_delimiters(REPRODUCER));
-    assert_eq!(expression_nesting_depth(REPRODUCER), 837);
+    assert_eq!(expression_nesting_depth(REPRODUCER), 866);
     assert!(!expression_is_safe_to_parse(REPRODUCER));
     assert_eq!(classify(REPRODUCER), Outcome::RejectedByGuard);
 

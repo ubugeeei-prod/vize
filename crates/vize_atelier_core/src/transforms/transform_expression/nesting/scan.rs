@@ -49,7 +49,16 @@ pub(super) fn skip_template_text(bytes: &[u8], mut i: usize) -> (usize, bool) {
     (i, false)
 }
 
-pub(super) fn is_speculative_type_angle_open(content: &str, open: usize) -> bool {
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(super) enum SpeculativeTypeAngleOpen {
+    Regular,
+    MalformedIdentifierEscape,
+}
+
+pub(super) fn speculative_type_angle_open_kind(
+    content: &str,
+    open: usize,
+) -> Option<SpeculativeTypeAngleOpen> {
     // The `<` is ASCII, so `open + 1` is a valid char boundary.
     let after = &content[open + 1..];
     let marker = skip_type_angle_trivia(after);
@@ -65,11 +74,36 @@ pub(super) fn is_speculative_type_angle_open(content: &str, open: usize) -> bool
     match after.as_bytes().get(marker) {
         // `\` starts a `\uXXXX` identifier escape, which OXC lexes as an
         // identifier start just like a bare letter.
-        Some(b'{' | b'[' | b'!' | b'(' | b'a'..=b'z' | b'A'..=b'Z' | b'_' | b'$' | b'\\') => true,
+        Some(b'{' | b'[' | b'!' | b'(' | b'a'..=b'z' | b'A'..=b'Z' | b'_' | b'$') => {
+            Some(SpeculativeTypeAngleOpen::Regular)
+        }
+        Some(b'\\') if starts_valid_identifier_escape(after.as_bytes(), marker) => {
+            Some(SpeculativeTypeAngleOpen::Regular)
+        }
+        Some(b'\\') => Some(SpeculativeTypeAngleOpen::MalformedIdentifierEscape),
         // Trivia is already skipped, so a remaining non-ASCII lead byte begins a
         // Unicode identifier (`f<日本語>`) rather than whitespace.
-        Some(byte) => !byte.is_ascii(),
-        None => false,
+        Some(byte) if !byte.is_ascii() => Some(SpeculativeTypeAngleOpen::Regular),
+        Some(_) | None => None,
+    }
+}
+
+fn starts_valid_identifier_escape(bytes: &[u8], marker: usize) -> bool {
+    if bytes.get(marker) != Some(&b'\\') || bytes.get(marker + 1) != Some(&b'u') {
+        return false;
+    }
+    if bytes.get(marker + 2) == Some(&b'{') {
+        let mut i = marker + 3;
+        let mut digits = 0usize;
+        while digits < 6 && bytes.get(i).is_some_and(|b| b.is_ascii_hexdigit()) {
+            i += 1;
+            digits += 1;
+        }
+        digits > 0 && bytes.get(i) == Some(&b'}')
+    } else {
+        bytes
+            .get(marker + 2..marker + 6)
+            .is_some_and(|digits| digits.iter().all(u8::is_ascii_hexdigit))
     }
 }
 
