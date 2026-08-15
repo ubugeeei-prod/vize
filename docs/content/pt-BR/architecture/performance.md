@@ -12,110 +12,166 @@ O Vize alcança melhorias significativas de desempenho em relação ao compilado
 
 ## Ambiente de Benchmark
 
-Os números históricos abaixo foram capturados em uma estação de trabalho local. Para números
-reprodutíveis hospedados por CI adequados para notas de lançamento e atualizações de documentação, use o
-[Blacksmith benchmark snapshot](./performance-blacksmith) gerado pelo fluxo de trabalho Tool Benchmark.
+Dois ambientes de medição aparecem nesta página, e cada número abaixo diz de qual deles veio.
 
-|             |                                                |
-| ----------- | ---------------------------------------------- |
-| **Máquina** | MacBook Pro (M2 Max, 12 núcleos, 96 GB de RAM) |
-| **OS**      | macOS 15.3.2 (Darwin 24.3.0)                   |
-| **Node.js** | v24.14.0                                       |
-| **Vite**    | v8.0.0 (Rolamento)                             |
-| **Vue**     | v3.6.0-beta.10                                 |
+**Runner de referência.** As comparações entre ferramentas são medidas pelo workflow Tool Benchmark
+e versionadas em `bench/results/tool-benchmark-latest.json`. Esse artefato é a fonte citável, e o
+[snapshot de benchmark do Blacksmith](./performance-blacksmith) o publica na íntegra.
+
+|              |                                                      |
+| ------------ | ---------------------------------------------------- |
+| **Máquina**  | `blacksmith-32vcpu-ubuntu-2404` (32 vCPU, AMD EPYC)  |
+| **Snapshot** | commit `1511788d96ea`, 2026-07-30                    |
+| **Método**   | mediana de 5 execuções medidas após 1 de aquecimento |
+| **Versões**  | vize 0.303.0 · vue 3.6.0-beta.10 · Node v24.14.0     |
+
+**Estação de trabalho local.** As tabelas do linter, do formatador e do verificador de tipos mais
+adiante ainda são mantidas à mão a partir de benches locais (`bench/lint.ts`, `bench/fmt.ts`,
+`bench/check.ts`) e foram medidas aqui. Elas ainda não são reproduzíveis no runner de referência,
+portanto leia-as como indicativas.
+
+|             |                                             |
+| ----------- | ------------------------------------------- |
+| **Máquina** | MacBook Pro (M2 Max, 12 núcleos, 96 GB RAM) |
+| **SO**      | macOS 15.3.2 (Darwin 24.3.0)                |
+| **Node.js** | v24.14.0                                    |
+| **Vite**    | v8.0.0 (Rolldown)                           |
+| **Vue**     | v3.6.0-beta.10                              |
 
 ## Benchmark: 15.000 arquivos SFC
 
-Compilando **15.000 arquivos SFC do Vue** (36,9 MB no total):
+Compilando **15.000 arquivos Vue SFC gerados** (58,7 MB no total) no runner de referência:
 
-|                                  | @vue/compilador-sfc | Vize  | Aceleração |
-| -------------------------------- | ------------------- | ----- | ---------- |
-| **Fio Único**                    | 9,35s               | 3,47s | **2,7x**   |
-| **Multi Thread**                 | 4,08s               | 353ms | **11,6x**  |
-| **compilador-sfc ST vs Vize MT** | 9,35s               | 353ms | **26,0x**  |
+|                                | @vue/compiler-sfc | Vize    | Aceleração |
+| ------------------------------ | ----------------- | ------- | ---------- |
+| **Thread única**               | 17,15s            | 3,95s   | **4,3x**   |
+| **Todos os núcleos (32 vCPU)** | 6,08s             | 329,2ms | **18,5x**  |
+| **compiler-sfc 1T vs max**     | 17,15s            | 329,2ms | **52,1x**  |
 
-A melhoria single-threaded vem das abstrações de custo zero da Rust (sem GC, sem aquecimento JIT, layout de memória compatível com cache). A melhoria multithread vem do pool de threads da Rayon, que rouba trabalho, e escala quase linearmente com a contagem de núcleos da CPU.
+Fonte: a superfície `compile` do snapshot versionado `bench/results/tool-benchmark-latest.json`
+([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) — o mesmo
+artefato que `README.md` e o [snapshot de benchmark do Blacksmith](./performance-blacksmith)
+publicam.
 
-### Comportamento Nativo de Escalonamento por Lote
+A melhoria em thread única vem das abstrações de custo zero do Rust (sem GC, sem aquecimento JIT, layout de memória amigável ao cache). A melhoria multithread vem do pool de threads com roubo de trabalho do Rayon, que escala com a contagem de núcleos da CPU.
 
-| Arquivos | Lote Vize (1 thread) | Lote Vize (12 threads) | Aceleração paralela |
-| -------- | -------------------- | ---------------------- | ------------------- |
-| 100      | 25ms                 | 3ms                    | 8,5x                |
-| 1,000    | 243ms                | 26ms                   | 9,4x                |
-| 5,000    | 1,25s                | 128ms                  | 9,7x                |
-| 15,000   | 3,75s                | 373ms                  | 10,1x               |
+> **Nota:** este snapshot foi tirado na vize 0.303.0, antes do trabalho de arena e de expressões descrito em "Escolhas de Arquitetura para Desempenho". Ele é datado e reproduzível, mas não é uma medição da árvore atual. A regravação das superfícies entre ferramentas no runner de referência está pendente.
 
-Esses números nativos de lote incluem leituras de arquivos. Pequenos lotes são dominados por custos fixos; lotes maiores se estabelecem em torno de 10x a velocidade paralela nessa máquina de 12 núcleos.
-
-## Por que ferrugem?
+## Por que Rust?
 
 ### Abstrações de custo zero
 
-O modelo de propriedade da Rust elimina pausas na coleta de lixo. O compilador processa nós AST por meio da alocação arena (`vize_carton`), evitando alocações por nó de heap. Isso significa:
+O modelo de propriedade do Rust elimina pausas de coleta de lixo. Os nós da AST do template vivem em uma arena por compilação (`vize_carton`) e tomam emprestado seu texto do código-fonte do template, de modo que um nó é dado puro, sem alocações de heap próprias (`crates/vize_relief/src/relief/elements.rs`). Isso significa:
 
-- **Sem pausas no GC** — Em compiladores baseados em V8, a coleta de lixo pode causar picos imprevisíveis de latência. Vize não tem nenhuma overhead de GC.
-- **Sem aquecimento JIT** — o compilador JIT do V8 precisa de tempo para otimizar os caminhos quentes. Vize roda em velocidade máxima desde a primeira instrução.
-- **Desempenho previsível** — A compilação antecipada do Rust significa que o desempenho é consistente entre as execuções, não depende das heurísticas de otimização do V8.
+- **Sem pausas de GC** — Em compiladores baseados em V8, a coleta de lixo pode causar picos imprevisíveis de latência. O Vize não tem overhead de GC.
+- **Sem aquecimento JIT** — O compilador JIT do V8 precisa de tempo para otimizar os caminhos quentes. O Vize roda em velocidade máxima desde a primeira instrução.
+- **Desempenho previsível** — A compilação antecipada do Rust significa que o desempenho é consistente entre execuções, sem depender das heurísticas de otimização do V8.
 
-### Multithreading Nativo
+### Multithreading nativo
 
-O Vize utiliza [Rayon](https://docs.rs/rayon) para compilação paralela de dados. Cada arquivo SFC é compilado independentemente, tornando a carga de trabalho embaraçosamente paralela. O agendador de roubo de trabalho da Rayon garante a utilização ótima dos núcleos:
+O Vize usa [Rayon](https://docs.rs/rayon) para compilação paralela de dados. Cada arquivo SFC é compilado de forma independente, tornando a carga de trabalho trivialmente paralela, e o driver de lote em `crates/vize/src/commands/build/runner.rs` distribui as entradas planejadas pelo pool:
 
 ```rust
-// Simplified: parallel compilation of all .vue files
-files.par_iter().map(|file| {
-    let arena = Bump::new();
-    let ast = parse(file, &arena);
-    let analyzed = analyze(ast, &arena);
-    compile(analyzed, &arena)
-}).collect()
+// crates/vize/src/commands/build/runner.rs — o driver de lote
+planned_inputs
+    .par_iter()
+    .map(|input| compile_file_with_profile(&input.source, compile_settings, &stats))
+    .collect()
+```
+
+A arena não é criada aqui. Ela é adquirida onde nasce — nos pontos de entrada de template, script e estilo dentro de `vize_atelier_sfc` — a partir de um pool por worker:
+
+```rust
+// por exemplo, crates/vize_atelier_sfc/src/compile.rs
+let allocator = vize_carton::pool::acquire();
 ```
 
 A abordagem de roubo de trabalho significa que, se um arquivo for significativamente maior que os outros, threads ociosas vão roubar trabalho da fila da thread ocupada, mantendo um balanceamento de carga quase perfeito.
 
-### Disposição eficiente da memória
+### Layout de memória eficiente
 
-O layout de estruturas e os discriminantes de enum da Rust são compactos. A representação AST em `vize_relief` é amigável ao cache, reduzindo gargalos de largura de banda de memória:
+O layout de structs e os discriminantes de enum do Rust são compactos. A representação da AST em `vize_relief` é amigável ao cache, reduzindo gargalos de largura de banda de memória:
 
-- **Discriminantes de enum** — Os enums de ferrugem são dimensionados no menor tipo que se encaixe no discriminante. Um `NodeKind` com 20 variantes usa um único byte, não uma string alocada ao heap.
-- **Empacotamento de struct** — O Rust reordena automaticamente os campos de sstrut para alinhamento ideal, minimizando bytes de preenchimento (padding bytes).
-- **Sem cabeçalhos de objeto** — Ao contrário dos objetos JavaScript (que carregam chains de protótipo, mapas de propriedades e ponteiros de classe ocultos), structs Rust são dados puros com zero overhead.
+- **Discriminantes de um byte** — `NodeType` é um `#[repr(u8)]` com 27 variantes (`crates/vize_relief/src/relief/core.rs`), então o tipo de um nó custa um byte, não uma string alocada no heap.
+- **Tamanhos de nó fixados** — cada nó de template carrega uma asserção `const` de tamanho, de modo que um campo que faz o nó crescer quebra a build em vez do orçamento. `ElementNode` tem 104 bytes, `SimpleExpressionNode` 88, `AttributeNode` 56, `TextNode` 24 e `SourceLocation` 8 (`crates/vize_relief/src/relief/{elements,expressions,control_flow,nodes}.rs`).
+- **Sem cabeçalhos de objeto** — Ao contrário dos objetos JavaScript (que carregam cadeias de protótipos, mapas de propriedades e ponteiros de classe oculta), structs Rust são dados puros com overhead zero.
 
 ### Sem overhead de tempo de execução
 
-Diferente dos compiladores baseados em JavaScript que rodam na V8, o Vize compila diretamente para código nativo. Não há aquecimento JIT, nem coletor de lixo, nem contenção de loop de eventos. O binário do compilador é um único executável estaticamente ligado que inicia e roda em velocidade máxima.
+Diferente dos compiladores baseados em JavaScript que rodam na V8, o Vize compila diretamente para código nativo. Não há aquecimento JIT, nem coletor de lixo, nem contenção de loop de eventos. A CLI é distribuída como um executável nativo autocontido por plataforma — totalmente estático nos alvos Linux musl, o que a CI verifica (`tools/github/verify-musl-cli-binary.sh`), e ligado dinamicamente à biblioteca C do sistema nos alvos glibc, macOS e Windows. O plugin do Vite carrega o mesmo compilador como um addon nativo do Node (`@vizejs/native`), e não como um processo separado.
 
 ## Escolhas de Arquitetura para Desempenho
 
-### Alocação de Arenas
+### Alocação em Arena
 
-`vize_carton` fornece um alocador de bump para nós AST usando [bumpalo](https://docs.rs/bumpalo). Isso significa:
+`vize_carton::Allocator` é um alocador de bump para nós da AST que encapsula o [`oxc_allocator`](https://docs.rs/oxc_allocator), de modo que os nós de template e as expressões JavaScript retidas compartilham uma arena e um tempo de vida (`crates/vize_carton/src/allocator.rs`). Isso significa:
 
-- **A alocação é O(1)** — Basta avançar um ponteiro. Sem percurso livre de listas, sem gerenciamento de fragmentação.
-- **A deslocação é O(1)** — Descarte toda a arena de uma vez quando a compilação estiver concluída. Sem sobrecarga de realocação por nó.
-- **A localidade da memória é excelente** — os nós são empacotados contíguos na memória, maximizando os impactos no cache L1/L2 durante a travessia da árvore.
+- **A alocação é O(1)** — Basta avançar um ponteiro. Sem percorrer listas livres, sem gerenciamento de fragmentação.
+- **A recuperação é O(1) e reutilizada** — Ao fim de uma compilação a arena sofre `reset()`, não é descartada: o ponteiro de bump volta ao início do bloco e a arena retorna a uma lista livre por worker (`crates/vize_carton/src/pool.rs`, limitada a 4 arenas ociosas por worker). O arquivo seguinte reutiliza a mesma memória em vez de pedir mais ao sistema operacional.
+- **A localidade de memória é excelente** — Os nós são empacotados de forma contígua na memória, maximizando os acertos de cache L1/L2 durante a travessia da árvore.
 
-Essa é uma vantagem fundamental sobre o coletor de lixo geracional do V8, que precisa rastrear objetos acessíveis e compactar a memória periodicamente.
+Valores apoiados na arena não podem sobreviver à sua compilação. Esse contrato é imposto pelo compilador (`reset` recebe `&mut self`, e o guard do pool é dono da sua arena) e, em builds de depuração, por um carimbo de geração que causa panic se um valor for lido depois que sua arena foi reciclada (`crates/vize_carton/src/allocator/generation.rs`).
 
-### Tokenizador de Streaming
+Nada na AST implementa `Drop` — os tipos de contêiner da arena rejeitam payloads que precisem ser destruídos, então isso é um erro de compilação, e não uma convenção.
 
-O tokenizer do `vize_armature`processa a entrada como um fluxo de bytes, evitando a necessidade de construir arrays intermediários de tokens. O analisador consome tokens preguiçosamente — cada token é produzido sob demanda e imediatamente consumido. Isso reduz o uso máximo de memória e melhora o comportamento do cache.
+### Tokenizador de passagem única
 
-### Estágio de cordas
+O tokenizador do `vize_armature` é uma máquina de estados orientada a bytes sobre `&[u8]` (`crates/vize_armature/src/tokenizer.rs`). Ele nunca materializa um token: não existe tipo `Token` nem vetor de tokens em lugar algum do compilador. Em vez disso, `tokenize()` executa uma passagem até o fim da entrada e envia eventos a um receptor `Callbacks`, que o parser implementa — assim cada evento é tratado de forma síncrona conforme é produzido, e o array intermediário que um projeto de duas fases exigiria simplesmente nunca existe.
 
-Strings comuns (nomes de diretivas, nomes de atributos, nomes de tags HTML) são internadas via tabelas de hash `compact_str` e perfeitas (`phf`). Isso significa:
+Note que isso é baseado em push, não em uma leitura preguiçosa: o parser não pede tokens e não pode interromper o laço no meio.
 
-- A comparação de strings é comparação de ponteiros (O(1)) em vez de comparação caractere por caractere (O(n))
-- Cadeias duplicadas compartilham uma única alocação
-- As buscas de hash para strings conhecidas são calculadas em tempo de compilação
+### Internação de strings
+
+Nomes que se repetem dentro de uma compilação — nomes de diretiva normalizados, nomes de assets, nomes de argumento em camelCase — são internados em átomos apoiados na arena por `vize_carton::interner`, com um conjunto [`phf`](https://docs.rs/phf) de tempo de compilação com 181 nomes bem conhecidos (tags HTML/SVG/MathML, componentes embutidos do Vue, nomes de diretiva e os atributos que as transformações tratam de forma especial) que resolvem para literais `'static` sem tocar a arena. Isso significa:
+
+- Nomes computados repetidos compartilham uma única alocação na arena
+- As buscas por nomes bem conhecidos são um hash perfeito de tempo de compilação, sem alocação
+
+A internação é o caminho de fallback, não o caso comum. A maioria dos nomes nunca é copiada: um nome de tag, um nome de atributo e a maior parte do conteúdo de expressões são fatias `&'a str` emprestadas diretamente do código-fonte do template, então o caminho comum não aloca nada (`crates/vize_carton/src/interner.rs` documenta a política campo a campo).
+
+Átomos são `&'a str` comuns, então comparações de nome são comparações de conteúdo, não de identidade de ponteiro. A internação compra economia de alocação e localidade de cache — ela não é um atalho rápido para `==`.
 
 ### Compilação Incremental
 
-O plugin Vite (`@vizejs/vite-plugin`) usa cache em nível de arquivo. Apenas arquivos modificados são recompilados durante o desenvolvimento, minimizando a latência do HMR. A chave de cache é o hash do conteúdo do arquivo, garantindo que arquivos não alterados nunca sejam recompilados.
+O plugin do Vite (`@vizejs/vite-plugin`) faz cache em nível de arquivo, em duas camadas com chaves diferentes:
+
+- **Em memória, para dev e HMR** — indexado pelo caminho resolvido do arquivo (`npm/builder/vite/src/plugin/compiled-module-cache.ts`). As entradas são removidas explicitamente em hot update, em vez de reindexadas, de modo que um arquivo alterado é recompilado e seus vizinhos não.
+- **Detecção de mudança na pré-compilação** — indexada por `mtime` + tamanho, comparados em Rust (`crates/vize_atelier_sfc/src/vite_plugin/precompile.rs`). É esse portão que decide quais arquivos um lote recompila.
+- **Em disco, entre processos** — `node_modules/.vize/vite-precompile`, indexado por um hash SHA-256 do código-fonte mais uma chave de manifesto que cobre a identidade do binário do compilador e as opções resolvidas (`npm/builder/vite/src/plugin/precompile-cache-key.ts`). O hash de conteúdo é usado aqui justamente porque `mtime` não é confiável entre máquinas e checkouts.
+
+## Medido: trabalho de arena e de expressões
+
+O trabalho interno do compilador descrito acima é medido por um harness de microbenchmarks por crate (`cargo bench --bench davinci`) sobre uma escada fixa de seis fixtures, `benchmarks/davinci_harness/fixtures/{small,medium,large,stress-deep,stress-wide,stress-interp}.vue`.
+
+**Como ler estes números.** As contagens de alocação são determinísticas e independentes de máquina, portanto são fatos exatos e servem como catraca de regressão. Os tempos de parede foram tomados em uma máquina de desenvolvimento compartilhada com amostragem `--quick` e são **apenas indicativos** — as gravações no runner de referência (Blacksmith) ainda estão pendentes, e é por isso que cada entrada `wall_p50_ns` e `allocs` em `davinci-road/plan/budgets.toml` continua em `0`, significando "ainda não gravado, apenas informativo". Os arquivos de resultado de cada execução caem em `bench/results/davinci/` e são artefatos locais, não baselines versionadas.
+
+Chamadas de alocação por compilação, antes e depois do trabalho de strings e arena (exatas, mesmas fixtures):
+
+| Fixture         | Parse     | Compilação DOM | Compilação SSR | Compilação Vapor |
+| --------------- | --------- | -------------- | -------------- | ---------------- |
+| `small`         | 21 → 9    | 52 → 39        | 73 → 60        | 90 → 73          |
+| `medium`        | 171 → 107 | 329 → 264      | 1.099 → 1.030  | 588 → 515        |
+| `large`         | 350 → 272 | 656 → 573      | 1.106 → 983    | 1.136 → 1.003    |
+| `stress-deep`   | 397 → 155 | 669 → 426      | 612 → 369      | 764 → 514        |
+| `stress-wide`   | 213 → 204 | 255 → 245      | 416 → 405      | 280 → 261        |
+| `stress-interp` | 616 → 105 | 1.048 → 536    | 3.149 → 2.637  | 1.495 → 974      |
+
+Os tamanhos dos nós encolheram junto, e os novos tamanhos estão fixados por asserções `const`: `RootNode` 296 → 224 bytes, `DirectiveNode` 208 → 176, `ElementNode` 128 → 104, `SimpleExpressionNode` 120 → 88, `AttributeNode` 80 → 56, `TextNode` 32 → 24.
+
+**Pico de memória residente.** A reutilização da arena entre arquivos é o maior ganho isolado, e é um resultado de memória, não de velocidade. Compilando todos os 36.541 SFCs do corpus versionado (`vize build "tests/_fixtures/_git/**/*.vue" --format stats`, binários `ci-opt`, tamanho máximo do conjunto residente via `/usr/bin/time -l`, mesma máquina antes e depois):
+
+| Workers | Antes    | Depois   | Variação   | Execuções cada |
+| ------- | -------- | -------- | ---------- | -------------- |
+| 12      | 766,5 MB | 171,1 MB | **−77,7%** | 5              |
+| 1       | 717,0 MB | 88,2 MB  | **−87,7%** | 3              |
+
+O número com um único worker é o sinal de acumulação: ele independe de escalonamento, mostrando que o pico antigo vinha de vazamento por arquivo, e não das arenas por worker. O tempo de parede ficou inalterado dentro do ruído, e todos os 36.541 arquivos emitidos foram idênticos byte a byte (manifestos SHA-256 comparados).
+
+**Reanálise de expressões.** As expressões de template agora são analisadas uma única vez, durante a análise do template, e retidas no nó. Os consumidores leem a AST retida em vez de reanalisar o texto. Na trilha SSR, a fixture `stress-interp` passou de 500 reanálises redundantes de expressão por compilação para zero, e essa trilha fundida está **−13,6%** líquidos em tempo de parede em relação à árvore anterior à retenção (346,8µs → 299,8µs) — a análise agora custa mais e os consumidores custam muito menos. As trilhas DOM e Vapor não tinham reanálises a excluir nessa fixture, então ainda carregam o custo de análise adicionado; fechar essa lacuna é rastreado como trabalho restante da fase, não como um ganho já entregue.
 
 ## Benchmark: Linter — patina vs eslint-plugin-vue
 
-- \*Linting 15.000 arquivos Vue SFC\*\*:
+Analisando **15.000 arquivos Vue SFC**, estação de trabalho local:
 
 |           | eslint-plugin-vue (ST) | Pátina Vize (ST) | Aceleração | eslint-plugin-vue (MT) | Pátina Vize (MT) | Aceleração | **eslint ST vs Vize MT** |
 | --------- | ---------------------- | ---------------- | ---------- | ---------------------- | ---------------- | ---------- | ------------------------ |
@@ -140,7 +196,7 @@ ou picos máximos/médios.
 
 ## Benchmark: Formatter — glifo vs Pretier
 
-Formatação **de 15.000 arquivos Vue SFC**:
+Formatação de **15.000 arquivos Vue SFC**, estação de trabalho local:
 
 |           | Mais bonita (CLI) | Glifo Vize (ST) | Aceleração | Glifo Vize (MT) | **Cli mais bonito vs Vize MT** |
 | --------- | ----------------- | --------------- | ---------- | --------------- | ------------------------------ |
@@ -150,7 +206,7 @@ Correr `vp run --workspace-root bench:fmt` para se reproduzir.
 
 ## Benchmark: Type Checker — cânone vs vue-tsc
 
-Verificação de tipos **de 500 arquivos SFC gerados no Vue** com o caminho de diagnóstico atual respaldado pela Corsa:
+Verificação de tipos de **500 arquivos Vue SFC gerados** com o caminho de diagnóstico atual respaldado pela Corsa, estação de trabalho local:
 
 |           | vue-tsc (ST)   | Cânone Vize (ST) | Aceleração         | vue-tsc (MT)   | Cânone Vize (MT) | Aceleração         | **vue-tsc ST vs Vize MT** |
 | --------- | -------------- | ---------------- | ------------------ | -------------- | ---------------- | ------------------ | ------------------------- |
