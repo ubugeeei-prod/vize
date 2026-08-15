@@ -296,6 +296,6 @@ export function updateJson(pathname: string, update: (value: any) => void) {
   writeJson(pathname, value);
 }
 
-function sha256(value: string | Buffer) {
+export function sha256(value: string | Buffer) {
   return createHash("sha256").update(value).digest("hex");
 }
