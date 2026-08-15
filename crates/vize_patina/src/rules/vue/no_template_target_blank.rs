@@ -122,7 +122,10 @@ fn static_attribute<'a>(
 
 /// The value of a static attribute, or empty string when it is valueless.
 fn attribute_value(attr: &vize_relief::AttributeNode) -> &str {
-    attr.value.as_ref().map(|v| v.content.as_str()).unwrap_or("")
+    attr.value
+        .as_ref()
+        .map(|v| v.content.as_str())
+        .unwrap_or("")
 }
 
 /// The value of a static `name` attribute, or empty string when valueless.
@@ -210,7 +213,9 @@ mod tests {
 
     #[test]
     fn test_invalid_missing_rel_reports_target_attribute_range() {
-        let source = r#"<a href="https://example.com" target="_blank">x</a>"#;
+        // The non-ASCII label keeps the reported range honest about byte
+        // offsets: a code-point or UTF-16 based span would drift here.
+        let source = r#"<a aria-label="日本語" href="https://example.com" target="_blank">x</a>"#;
         let linter = create_linter();
         let result = linter.lint_template(source, "test.vue");
         assert_single_diagnostic_covers(source, r#"target="_blank""#, result);
@@ -236,7 +241,7 @@ mod tests {
 
     #[test]
     fn test_jsx_missing_rel_reports_target_attribute_range() {
-        let source = r#"const A = () => <a href="https://example.com" target="_blank">x</a>;"#;
+        let source = r#"const A = () => <a aria-label="日本語" href="https://example.com" target="_blank">x</a>;"#;
         let linter = create_linter();
         let result = linter.lint_jsx(source, "test.jsx", JsxLang::Jsx);
         assert_single_diagnostic_covers(source, r#"target="_blank""#, result);
