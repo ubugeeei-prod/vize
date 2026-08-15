@@ -215,6 +215,8 @@ pub fn run(args: LintArgs) {
         .map(|start| start.elapsed())
         .unwrap_or(Duration::ZERO);
 
+    aggregate::sort_details_for_output(&mut results);
+
     let (lint_error_count, total_warnings) = aggregate::totals(quiet_totals, &results);
     let total_errors = lint_error_count + write_failures.load(Ordering::Relaxed);
 

@@ -1,7 +1,8 @@
 //! Result retention and summary aggregation for parallel lint runs.
 
 use super::cross_file::CliLintFileResult;
-use vize_patina::OutputFormat;
+use std::cmp::Ordering;
+use vize_patina::{LintDiagnostic, OutputFormat, Severity};
 
 pub(super) struct LintRunAccumulator {
     error_count: usize,
@@ -60,6 +61,34 @@ pub(super) fn totals(
     })
 }
 
+pub(super) fn sort_details_for_output(results: &mut [CliLintFileResult]) {
+    results.sort_by(compare_file_result);
+    for (_, _, _, result) in results {
+        result.diagnostics.sort_by(compare_diagnostic);
+    }
+}
+
+fn compare_file_result(left: &CliLintFileResult, right: &CliLintFileResult) -> Ordering {
+    left.1.cmp(&right.1).then_with(|| left.0.cmp(&right.0))
+}
+
+fn compare_diagnostic(left: &LintDiagnostic, right: &LintDiagnostic) -> Ordering {
+    left.start
+        .cmp(&right.start)
+        .then_with(|| left.end.cmp(&right.end))
+        .then_with(|| severity_rank(left.severity).cmp(&severity_rank(right.severity)))
+        .then_with(|| left.rule_name.cmp(right.rule_name))
+        .then_with(|| left.message.cmp(&right.message))
+        .then_with(|| left.help.cmp(&right.help))
+}
+
+fn severity_rank(severity: Severity) -> u8 {
+    match severity {
+        Severity::Error => 0,
+        Severity::Warning => 1,
+    }
+}
+
 #[inline]
 pub(super) fn should_retain_file_results(render_details: bool, cross_file_enabled: bool) -> bool {
     render_details || cross_file_enabled
@@ -72,9 +101,11 @@ pub(super) fn should_render_details(format: OutputFormat, quiet: bool) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{CliLintFileResult, LintRunAccumulator, should_retain_file_results};
+    use super::{
+        CliLintFileResult, LintRunAccumulator, should_retain_file_results, sort_details_for_output,
+    };
     use std::path::PathBuf;
-    use vize_patina::LintResult;
+    use vize_patina::{LintDiagnostic, LintResult};
 
     #[test]
     fn quiet_text_uses_summary_only_collection_without_cross_file_analysis() {
@@ -91,6 +122,56 @@ mod tests {
 
         assert_eq!(totals, Some((7, 10)));
         assert!(results.is_empty());
+    }
+
+    #[test]
+    fn output_details_are_sorted_by_report_filename() {
+        let mut results = vec![
+            file_result("src/zeta.vue", 0, 1),
+            file_result("src/app.vue", 1, 0),
+            file_result("src/components/button.vue", 0, 1),
+        ];
+
+        sort_details_for_output(&mut results);
+
+        let filenames: Vec<_> = results
+            .iter()
+            .map(|(_, filename, _, _)| filename.as_str())
+            .collect();
+        assert_eq!(
+            filenames,
+            vec!["src/app.vue", "src/components/button.vue", "src/zeta.vue"]
+        );
+    }
+
+    #[test]
+    fn output_details_are_sorted_by_diagnostic_location_then_identity() {
+        let mut result = file_result("App.vue", 2, 3);
+        result.3.diagnostics = vec![
+            LintDiagnostic::warn("vue/later", "later", 20, 24),
+            LintDiagnostic::warn("vue/tie-warning", "warning", 10, 12),
+            LintDiagnostic::error("vue/tie-error", "error", 10, 12),
+            LintDiagnostic::warn("a11y/earliest", "earliest", 5, 8),
+        ];
+        let mut results = vec![result];
+
+        sort_details_for_output(&mut results);
+
+        let rule_names: Vec<_> = results[0]
+            .3
+            .diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.rule_name)
+            .collect();
+        assert_eq!(
+            rule_names,
+            vec![
+                "a11y/earliest",
+                "vue/tie-error",
+                "vue/tie-warning",
+                "vue/later"
+            ]
+        );
     }
 
     fn file_result(filename: &str, error_count: usize, warning_count: usize) -> CliLintFileResult {

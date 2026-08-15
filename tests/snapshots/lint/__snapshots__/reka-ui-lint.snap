@@ -1368,17 +1368,6 @@
     "file": "packages/core/src/Combobox/story/ComboboxCustom.story.vue",
     "messages": [
       {
-        "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 61,
-        "column": 19,
-        "endLine": 61,
-        "endColumn": 34,
-        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1388,6 +1377,17 @@
         "endLine": 60,
         "endColumn": 38,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 61,
+        "column": 19,
+        "endLine": 61,
+        "endColumn": 34,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
     ],
     "errorCount": 0,
@@ -1821,39 +1821,6 @@
     "file": "packages/core/src/DateField/story/DateFieldGranular.story.vue",
     "messages": [
       {
-        "ruleId": "html/id-duplication",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 2,
-        "message": "[vize:html/id-duplication] Duplicate id=\"date-field\" found in template",
-        "line": 53,
-        "column": 11,
-        "endLine": 53,
-        "endColumn": 26,
-        "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
-      },
-      {
-        "ruleId": "html/id-duplication",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 2,
-        "message": "[vize:html/id-duplication] Duplicate id=\"date-field\" found in template",
-        "line": 88,
-        "column": 11,
-        "endLine": 88,
-        "endColumn": 26,
-        "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
-      },
-      {
-        "ruleId": "html/id-duplication",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 2,
-        "message": "[vize:html/id-duplication] Duplicate id=\"date-field\" found in template",
-        "line": 123,
-        "column": 11,
-        "endLine": 123,
-        "endColumn": 26,
-        "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1863,6 +1830,17 @@
         "endLine": 19,
         "endColumn": 32,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      },
+      {
+        "ruleId": "html/id-duplication",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 2,
+        "message": "[vize:html/id-duplication] Duplicate id=\"date-field\" found in template",
+        "line": 53,
+        "column": 11,
+        "endLine": 53,
+        "endColumn": 26,
+        "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
       },
       {
         "ruleId": "vue/v-slot-style",
@@ -1876,6 +1854,17 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
+        "ruleId": "html/id-duplication",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 2,
+        "message": "[vize:html/id-duplication] Duplicate id=\"date-field\" found in template",
+        "line": 88,
+        "column": 11,
+        "endLine": 88,
+        "endColumn": 26,
+        "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
+      },
+      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1885,6 +1874,17 @@
         "endLine": 89,
         "endColumn": 32,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      },
+      {
+        "ruleId": "html/id-duplication",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 2,
+        "message": "[vize:html/id-duplication] Duplicate id=\"date-field\" found in template",
+        "line": 123,
+        "column": 11,
+        "endLine": 123,
+        "endColumn": 26,
+        "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
       },
       {
         "ruleId": "vue/v-slot-style",
@@ -4173,7 +4173,7 @@
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 69,
         "column": 5,
         "endLine": 84,
@@ -4184,7 +4184,7 @@
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
         "line": 69,
         "column": 5,
         "endLine": 84,
@@ -4291,29 +4291,29 @@
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
+        "line": 80,
+        "column": 7,
+        "endLine": 98,
+        "endColumn": 9,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
+        "line": 80,
+        "column": 7,
+        "endLine": 98,
+        "endColumn": 9,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
-        "line": 80,
-        "column": 7,
-        "endLine": 98,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 80,
-        "column": 7,
-        "endLine": 98,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 80,
         "column": 7,
         "endLine": 98,
@@ -4342,7 +4342,7 @@
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'MouseEvent' is a browser-only global and is not available in SSR",
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 147,
         "column": 7,
         "endLine": 158,
@@ -4353,7 +4353,7 @@
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'MouseEvent' is a browser-only global and is not available in SSR",
         "line": 147,
         "column": 7,
         "endLine": 158,
@@ -4960,17 +4960,6 @@
     "file": "packages/core/src/NavigationMenu/story/NavigationMenuDemo.story.vue",
     "messages": [
       {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 51,
-        "column": 25,
-        "endLine": 54,
-        "endColumn": 26,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
-      },
-      {
         "ruleId": "a11y/alt-text",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -4980,6 +4969,17 @@
         "endLine": 54,
         "endColumn": 26,
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 51,
+        "column": 25,
+        "endLine": 54,
+        "endColumn": 26,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       }
     ],
     "errorCount": 0,
@@ -7456,28 +7456,6 @@
     "file": "packages/core/src/TimeField/story/TimeFieldGranular.story.vue",
     "messages": [
       {
-        "ruleId": "html/id-duplication",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 2,
-        "message": "[vize:html/id-duplication] Duplicate id=\"time-field\" found in template",
-        "line": 56,
-        "column": 11,
-        "endLine": 56,
-        "endColumn": 26,
-        "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
-      },
-      {
-        "ruleId": "html/id-duplication",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 2,
-        "message": "[vize:html/id-duplication] Duplicate id=\"time-field\" found in template",
-        "line": 92,
-        "column": 11,
-        "endLine": 92,
-        "endColumn": 26,
-        "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -7489,6 +7467,17 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
+        "ruleId": "html/id-duplication",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 2,
+        "message": "[vize:html/id-duplication] Duplicate id=\"time-field\" found in template",
+        "line": 56,
+        "column": 11,
+        "endLine": 56,
+        "endColumn": 26,
+        "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
+      },
+      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -7498,6 +7487,17 @@
         "endLine": 57,
         "endColumn": 32,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      },
+      {
+        "ruleId": "html/id-duplication",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 2,
+        "message": "[vize:html/id-duplication] Duplicate id=\"time-field\" found in template",
+        "line": 92,
+        "column": 11,
+        "endLine": 92,
+        "endColumn": 26,
+        "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
       },
       {
         "ruleId": "vue/v-slot-style",
@@ -8116,7 +8116,7 @@
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 24,
         "column": 7,
         "endLine": 26,
@@ -8127,7 +8127,7 @@
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
         "line": 24,
         "column": 7,
         "endLine": 26,
@@ -8771,6 +8771,17 @@
     "file": "packages/core/src/shared/component/Arrow.vue",
     "messages": [
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 44,
+        "column": 5,
+        "endLine": 44,
+        "endColumn": 48,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -8782,6 +8793,17 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 45,
+        "column": 5,
+        "endLine": 45,
+        "endColumn": 56,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -8791,28 +8813,6 @@
         "endLine": 45,
         "endColumn": 56,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 44,
-        "column": 5,
-        "endLine": 44,
-        "endColumn": 48,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 45,
-        "column": 5,
-        "endLine": 45,
-        "endColumn": 56,
-        "help": "Use kebab-case for attribute names"
       }
     ],
     "errorCount": 0,

@@ -779,17 +779,6 @@
     "file": "components/calendar/demo/customize-header.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-vars",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-vars] Slot prop 'onChange' from slot 'headerRender' is defined but never used",
-        "line": 22,
-        "column": 17,
-        "endLine": 22,
-        "endColumn": 25,
-        "help": "Consider removing unused slot props or prefix with underscore"
-      },
-      {
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -799,6 +788,17 @@
         "endLine": 19,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      },
+      {
+        "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-vars] Slot prop 'onChange' from slot 'headerRender' is defined but never used",
+        "line": 22,
+        "column": 17,
+        "endLine": 22,
+        "endColumn": 25,
+        "help": "Consider removing unused slot props or prefix with underscore"
       }
     ],
     "errorCount": 0,
@@ -1084,17 +1084,6 @@
         "help": "Fix:\n  <!-- Use a valid URL -->\n  <a href=\"/about\">About</a>\n  \n  <!-- For click handlers, use <button> -->\n  <button @click=\"handleClick\">Action</button>\n  \n  <!-- For dynamic URLs -->\n  <a :href=\"url\">Link</a>"
       },
       {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 23,
-        "column": 9,
-        "endLine": 23,
-        "endColumn": 42,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
-      },
-      {
         "ruleId": "a11y/alt-text",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -1104,6 +1093,17 @@
         "endLine": 23,
         "endColumn": 42,
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 23,
+        "column": 9,
+        "endLine": 23,
+        "endColumn": 42,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -1117,17 +1117,6 @@
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 27,
-        "column": 7,
-        "endLine": 27,
-        "endColumn": 41,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
-      },
-      {
         "ruleId": "a11y/alt-text",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -1137,6 +1126,17 @@
         "endLine": 27,
         "endColumn": 41,
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 27,
+        "column": 7,
+        "endLine": 27,
+        "endColumn": 41,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -2187,17 +2187,6 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       },
       {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
-        "line": 27,
-        "column": 18,
-        "endLine": 27,
-        "endColumn": 37,
-        "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
-      },
-      {
         "ruleId": "a11y/anchor-is-valid",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -2213,9 +2202,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
-        "line": 30,
+        "line": 27,
         "column": 18,
-        "endLine": 30,
+        "endLine": 27,
         "endColumn": 37,
         "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
       },
@@ -2235,9 +2224,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
-        "line": 33,
+        "line": 30,
         "column": 18,
-        "endLine": 33,
+        "endLine": 30,
         "endColumn": 37,
         "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
       },
@@ -2251,6 +2240,17 @@
         "endLine": 33,
         "endColumn": 37,
         "help": "Fix:\n  <!-- Use a valid URL -->\n  <a href=\"/about\">About</a>\n  \n  <!-- For click handlers, use <button> -->\n  <button @click=\"handleClick\">Action</button>\n  \n  <!-- For dynamic URLs -->\n  <a :href=\"url\">Link</a>"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
+        "line": 33,
+        "column": 18,
+        "endLine": 33,
+        "endColumn": 37,
+        "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
       }
     ],
     "errorCount": 0,
@@ -2260,17 +2260,6 @@
     "file": "components/dropdown/demo/arrow.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
-        "line": 27,
-        "column": 18,
-        "endLine": 27,
-        "endColumn": 37,
-        "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
-      },
-      {
         "ruleId": "a11y/anchor-is-valid",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -2286,9 +2275,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
-        "line": 30,
+        "line": 27,
         "column": 18,
-        "endLine": 30,
+        "endLine": 27,
         "endColumn": 37,
         "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
       },
@@ -2308,9 +2297,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
-        "line": 33,
+        "line": 30,
         "column": 18,
-        "endLine": 33,
+        "endLine": 30,
         "endColumn": 37,
         "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
       },
@@ -2324,6 +2313,17 @@
         "endLine": 33,
         "endColumn": 37,
         "help": "Fix:\n  <!-- Use a valid URL -->\n  <a href=\"/about\">About</a>\n  \n  <!-- For click handlers, use <button> -->\n  <button @click=\"handleClick\">Action</button>\n  \n  <!-- For dynamic URLs -->\n  <a :href=\"url\">Link</a>"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
+        "line": 33,
+        "column": 18,
+        "endLine": 33,
+        "endColumn": 37,
+        "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
       }
     ],
     "errorCount": 0,
@@ -2344,17 +2344,6 @@
         "help": "Fix:\n  <!-- Use a valid URL -->\n  <a href=\"/about\">About</a>\n  \n  <!-- For click handlers, use <button> -->\n  <button @click=\"handleClick\">Action</button>\n  \n  <!-- For dynamic URLs -->\n  <a :href=\"url\">Link</a>"
       },
       {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
-        "line": 28,
-        "column": 14,
-        "endLine": 28,
-        "endColumn": 33,
-        "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
-      },
-      {
         "ruleId": "a11y/anchor-is-valid",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -2370,9 +2359,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
-        "line": 31,
+        "line": 28,
         "column": 14,
-        "endLine": 31,
+        "endLine": 28,
         "endColumn": 33,
         "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
       },
@@ -2392,9 +2381,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
-        "line": 34,
+        "line": 31,
         "column": 14,
-        "endLine": 34,
+        "endLine": 31,
         "endColumn": 33,
         "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
       },
@@ -2408,6 +2397,17 @@
         "endLine": 34,
         "endColumn": 33,
         "help": "Fix:\n  <!-- Use a valid URL -->\n  <a href=\"/about\">About</a>\n  \n  <!-- For click handlers, use <button> -->\n  <button @click=\"handleClick\">Action</button>\n  \n  <!-- For dynamic URLs -->\n  <a :href=\"url\">Link</a>"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
+        "line": 34,
+        "column": 14,
+        "endLine": 34,
+        "endColumn": 33,
+        "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
       }
     ],
     "errorCount": 0,
@@ -3631,6 +3631,96 @@
     "warningCount": 1
   },
   {
+    "file": "components/input-number/demo/addon.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/input-number/demo/basic.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/input-number/demo/borderless.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/input-number/demo/digit.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/input-number/demo/disabled.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/input-number/demo/formatter.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/input-number/demo/icon.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/input-number/demo/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/input-number/demo/keyboard.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/input-number/demo/out-of-range.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'out-of-range' should be PascalCase",
+        "line": 19,
+        "column": 11,
+        "endLine": 19,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "components/input-number/demo/prefix.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/input-number/demo/size.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/input-number/demo/status.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
     "file": "components/input/demo/addon.vue",
     "messages": [],
     "errorCount": 0,
@@ -3867,96 +3957,6 @@
     ],
     "errorCount": 0,
     "warningCount": 1
-  },
-  {
-    "file": "components/input-number/demo/addon.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/input-number/demo/basic.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/input-number/demo/borderless.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/input-number/demo/digit.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/input-number/demo/disabled.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/input-number/demo/formatter.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/input-number/demo/icon.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/input-number/demo/index.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/input-number/demo/keyboard.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/input-number/demo/out-of-range.vue",
-    "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'out-of-range' should be PascalCase",
-        "line": 19,
-        "column": 11,
-        "endLine": 19,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      }
-    ],
-    "errorCount": 0,
-    "warningCount": 1
-  },
-  {
-    "file": "components/input-number/demo/prefix.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/input-number/demo/size.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/input-number/demo/status.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
   },
   {
     "file": "components/layout/demo/basic.vue",
@@ -5025,17 +5025,6 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       },
       {
-        "ruleId": "html/no-consecutive-br",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/no-consecutive-br] Consecutive <br> elements detected",
-        "line": 33,
-        "column": 5,
-        "endLine": 33,
-        "endColumn": 11,
-        "help": "Use <p> elements or CSS margin/padding for spacing instead of multiple <br> tags."
-      },
-      {
         "ruleId": "a11y/anchor-is-valid",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -5045,6 +5034,17 @@
         "endLine": 30,
         "endColumn": 18,
         "help": "Fix:\n  <!-- Use a valid URL -->\n  <a href=\"/about\">About</a>\n  \n  <!-- For click handlers, use <button> -->\n  <button @click=\"handleClick\">Action</button>\n  \n  <!-- For dynamic URLs -->\n  <a :href=\"url\">Link</a>"
+      },
+      {
+        "ruleId": "html/no-consecutive-br",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-consecutive-br] Consecutive <br> elements detected",
+        "line": 33,
+        "column": 5,
+        "endLine": 33,
+        "endColumn": 11,
+        "help": "Use <p> elements or CSS margin/padding for spacing instead of multiple <br> tags."
       }
     ],
     "errorCount": 0,
@@ -5513,17 +5513,6 @@
     "file": "components/qrcode/demo/popover.vue",
     "messages": [
       {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 22,
-        "column": 5,
-        "endLine": 22,
-        "endColumn": 74,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
-      },
-      {
         "ruleId": "a11y/alt-text",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -5533,6 +5522,17 @@
         "endLine": 22,
         "endColumn": 74,
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 22,
+        "column": 5,
+        "endLine": 22,
+        "endColumn": 74,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       }
     ],
     "errorCount": 0,
@@ -6429,17 +6429,6 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       },
       {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
-        "line": 60,
-        "column": 18,
-        "endLine": 60,
-        "endColumn": 37,
-        "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
-      },
-      {
         "ruleId": "a11y/anchor-is-valid",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -6455,9 +6444,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
-        "line": 63,
+        "line": 60,
         "column": 18,
-        "endLine": 63,
+        "endLine": 60,
         "endColumn": 37,
         "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
       },
@@ -6477,9 +6466,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
-        "line": 66,
+        "line": 63,
         "column": 18,
-        "endLine": 66,
+        "endLine": 63,
         "endColumn": 37,
         "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
       },
@@ -6499,9 +6488,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
-        "line": 113,
+        "line": 66,
         "column": 18,
-        "endLine": 113,
+        "endLine": 66,
         "endColumn": 37,
         "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
       },
@@ -6521,9 +6510,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
-        "line": 116,
+        "line": 113,
         "column": 18,
-        "endLine": 116,
+        "endLine": 113,
         "endColumn": 37,
         "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
       },
@@ -6543,9 +6532,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
-        "line": 119,
+        "line": 116,
         "column": 18,
-        "endLine": 119,
+        "endLine": 116,
         "endColumn": 37,
         "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
       },
@@ -6559,6 +6548,17 @@
         "endLine": 119,
         "endColumn": 37,
         "help": "Fix:\n  <!-- Use a valid URL -->\n  <a href=\"/about\">About</a>\n  \n  <!-- For click handlers, use <button> -->\n  <button @click=\"handleClick\">Action</button>\n  \n  <!-- For dynamic URLs -->\n  <a :href=\"url\">Link</a>"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
+        "line": 119,
+        "column": 18,
+        "endLine": 119,
+        "endColumn": 37,
+        "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
       }
     ],
     "errorCount": 0,
@@ -7008,17 +7008,6 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       },
       {
-        "ruleId": "vue/no-unsandboxed-iframe",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsandboxed-iframe] <iframe> is missing a sandbox attribute",
-        "line": 22,
-        "column": 3,
-        "endLine": 22,
-        "endColumn": 69,
-        "help": "Add a sandbox attribute (e.g. sandbox=\"\" for the most restrictive policy) and re-grant only the capabilities the embedded content needs"
-      },
-      {
         "ruleId": "a11y/iframe-has-title",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -7028,6 +7017,17 @@
         "endLine": 22,
         "endColumn": 69,
         "help": "Why: Screen readers announce the title to help users understand the iframe content.\nFix:\n  <iframe\n  src=\"https://example.com/video\"\n  title=\"Product demo video\"\n  ></iframe>\nNote: The title should describe the content, not the source."
+      },
+      {
+        "ruleId": "vue/no-unsandboxed-iframe",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsandboxed-iframe] <iframe> is missing a sandbox attribute",
+        "line": 22,
+        "column": 3,
+        "endLine": 22,
+        "endColumn": 69,
+        "help": "Add a sandbox attribute (e.g. sandbox=\"\" for the most restrictive policy) and re-grant only the capabilities the embedded content needs"
       },
       {
         "ruleId": "a11y/anchor-has-content",
@@ -7077,17 +7077,6 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       },
       {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
-        "line": 25,
-        "column": 12,
-        "endLine": 25,
-        "endColumn": 31,
-        "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
-      },
-      {
         "ruleId": "a11y/anchor-is-valid",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -7097,6 +7086,17 @@
         "endLine": 25,
         "endColumn": 31,
         "help": "Fix:\n  <!-- Use a valid URL -->\n  <a href=\"/about\">About</a>\n  \n  <!-- For click handlers, use <button> -->\n  <button @click=\"handleClick\">Action</button>\n  \n  <!-- For dynamic URLs -->\n  <a :href=\"url\">Link</a>"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
+        "line": 25,
+        "column": 12,
+        "endLine": 25,
+        "endColumn": 31,
+        "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
       }
     ],
     "errorCount": 0,
@@ -8374,17 +8374,6 @@
     "file": "components/transfer/demo/tree-transfer.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-vars",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-vars] Slot prop 'onItemSelect' from slot 'children' is defined but never used",
-        "line": 28,
-        "column": 17,
-        "endLine": 28,
-        "endColumn": 29,
-        "help": "Consider removing unused slot props or prefix with underscore"
-      },
-      {
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -8394,10 +8383,147 @@
         "endLine": 19,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      },
+      {
+        "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-vars] Slot prop 'onItemSelect' from slot 'children' is defined but never used",
+        "line": 28,
+        "column": 17,
+        "endLine": 28,
+        "endColumn": 29,
+        "help": "Consider removing unused slot props or prefix with underscore"
       }
     ],
     "errorCount": 0,
     "warningCount": 2
+  },
+  {
+    "file": "components/tree-select/demo/async.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/tree-select/demo/basic.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/tree-select/demo/checkable.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/tree-select/demo/custom-tag-render.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'custom-tag-render' should be PascalCase",
+        "line": 19,
+        "column": 11,
+        "endLine": 19,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "components/tree-select/demo/highlight.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/tree-select/demo/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/tree-select/demo/multiple.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/tree-select/demo/placement.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/tree-select/demo/replaceFields.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'replaceFields' should be PascalCase",
+        "line": 19,
+        "column": 11,
+        "endLine": 19,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "components/tree-select/demo/status.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/tree-select/demo/suffix.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "components/tree-select/demo/tree-line.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'tree-line' should be PascalCase",
+        "line": 19,
+        "column": 11,
+        "endLine": 19,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "components/tree-select/demo/virtual-scroll.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'virtual-scroll' should be PascalCase",
+        "line": 18,
+        "column": 11,
+        "endLine": 18,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
   },
   {
     "file": "components/tree/demo/accordion.vue",
@@ -8562,132 +8688,6 @@
     "warningCount": 1
   },
   {
-    "file": "components/tree-select/demo/async.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/tree-select/demo/basic.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/tree-select/demo/checkable.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/tree-select/demo/custom-tag-render.vue",
-    "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'custom-tag-render' should be PascalCase",
-        "line": 19,
-        "column": 11,
-        "endLine": 19,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      }
-    ],
-    "errorCount": 0,
-    "warningCount": 1
-  },
-  {
-    "file": "components/tree-select/demo/highlight.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/tree-select/demo/index.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/tree-select/demo/multiple.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/tree-select/demo/placement.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/tree-select/demo/replaceFields.vue",
-    "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'replaceFields' should be PascalCase",
-        "line": 19,
-        "column": 11,
-        "endLine": 19,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      }
-    ],
-    "errorCount": 0,
-    "warningCount": 1
-  },
-  {
-    "file": "components/tree-select/demo/status.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/tree-select/demo/suffix.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "components/tree-select/demo/tree-line.vue",
-    "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'tree-line' should be PascalCase",
-        "line": 19,
-        "column": 11,
-        "endLine": 19,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      }
-    ],
-    "errorCount": 0,
-    "warningCount": 1
-  },
-  {
-    "file": "components/tree-select/demo/virtual-scroll.vue",
-    "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'virtual-scroll' should be PascalCase",
-        "line": 18,
-        "column": 11,
-        "endLine": 18,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      }
-    ],
-    "errorCount": 0,
-    "warningCount": 1
-  },
-  {
     "file": "components/typography/demo/basic.vue",
     "messages": [],
     "errorCount": 0,
@@ -8780,17 +8780,6 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       },
       {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
-        "line": 33,
-        "column": 12,
-        "endLine": 33,
-        "endColumn": 31,
-        "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
-      },
-      {
         "ruleId": "a11y/anchor-is-valid",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -8806,9 +8795,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
-        "line": 34,
+        "line": 33,
         "column": 12,
-        "endLine": 34,
+        "endLine": 33,
         "endColumn": 31,
         "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
       },
@@ -8822,6 +8811,17 @@
         "endLine": 34,
         "endColumn": 31,
         "help": "Fix:\n  <!-- Use a valid URL -->\n  <a href=\"/about\">About</a>\n  \n  <!-- For click handlers, use <button> -->\n  <button @click=\"handleClick\">Action</button>\n  \n  <!-- For dynamic URLs -->\n  <a :href=\"url\">Link</a>"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Static URL attribute uses a potentially unsafe protocol or active data URL",
+        "line": 34,
+        "column": 12,
+        "endLine": 34,
+        "endColumn": 31,
+        "help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs"
       }
     ],
     "errorCount": 0,
@@ -9152,17 +9152,6 @@
     "file": "site/src/components/Contributors/index.vue",
     "messages": [
       {
-        "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 59,
-        "column": 31,
-        "endLine": 59,
-        "endColumn": 46,
-        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
         "ruleId": "a11y/anchor-has-content",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -9185,6 +9174,17 @@
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       },
       {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 59,
+        "column": 31,
+        "endLine": 59,
+        "endColumn": 46,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
+      },
+      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -9203,17 +9203,6 @@
     "file": "site/src/components/DemoBox.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unsandboxed-iframe",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsandboxed-iframe] <iframe> is missing a sandbox attribute",
-        "line": 9,
-        "column": 11,
-        "endLine": 9,
-        "endColumn": 77,
-        "help": "Add a sandbox attribute (e.g. sandbox=\"\" for the most restrictive policy) and re-grant only the capabilities the embedded content needs"
-      },
-      {
         "ruleId": "a11y/iframe-has-title",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -9223,6 +9212,17 @@
         "endLine": 9,
         "endColumn": 77,
         "help": "Why: Screen readers announce the title to help users understand the iframe content.\nFix:\n  <iframe\n  src=\"https://example.com/video\"\n  title=\"Product demo video\"\n  ></iframe>\nNote: The title should describe the content, not the source."
+      },
+      {
+        "ruleId": "vue/no-unsandboxed-iframe",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsandboxed-iframe] <iframe> is missing a sandbox attribute",
+        "line": 9,
+        "column": 11,
+        "endLine": 9,
+        "endColumn": 77,
+        "help": "Add a sandbox attribute (e.g. sandbox=\"\" for the most restrictive policy) and re-grant only the capabilities the embedded content needs"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -9485,17 +9485,6 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       },
       {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 3,
-        "column": 5,
-        "endLine": 3,
-        "endColumn": 91,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
-      },
-      {
         "ruleId": "a11y/alt-text",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -9505,6 +9494,17 @@
         "endLine": 3,
         "endColumn": 91,
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 3,
+        "column": 5,
+        "endLine": 3,
+        "endColumn": 91,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -9657,17 +9657,6 @@
     "file": "site/src/layouts/Footer.vue",
     "messages": [
       {
-        "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 9,
-        "column": 72,
-        "endLine": 9,
-        "endColumn": 88,
-        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
         "ruleId": "a11y/no-i-for-icon",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -9705,17 +9694,6 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 28,
-        "column": 76,
-        "endLine": 28,
-        "endColumn": 92,
-        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
-        "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 43,
         "column": 67,
         "endLine": 43,
@@ -9746,7 +9724,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 8
+    "warningCount": 6
   },
   {
     "file": "site/src/layouts/Iframe.vue",
@@ -9866,17 +9844,6 @@
     "file": "site/src/layouts/header/Github.vue",
     "messages": [
       {
-        "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 5,
-        "column": 79,
-        "endLine": 5,
-        "endColumn": 94,
-        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
         "ruleId": "a11y/anchor-has-content",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -9886,6 +9853,17 @@
         "endLine": 5,
         "endColumn": 95,
         "help": "Fix options:\n1. Add text content:\n  <a href=\"/about\">About Us</a>\n2. Add aria-label for icon-only links:\n  <a href=\"/settings\" aria-label=\"Settings\">\n  <IconSettings />\n  </a>\n3. Include image with alt:\n  <a href=\"/\"><img src=\"logo.png\" alt=\"Home\"></a>"
+      },
+      {
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 5,
+        "column": 79,
+        "endLine": 5,
+        "endColumn": 94,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
     ],
     "errorCount": 0,
@@ -9994,17 +9972,6 @@
     "file": "site/src/layouts/index.vue",
     "messages": [
       {
-        "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 11,
-        "column": 59,
-        "endLine": 11,
-        "endColumn": 74,
-        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
         "ruleId": "a11y/anchor-has-content",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -10027,15 +9994,15 @@
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       },
       {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleId": "vue/no-template-target-blank",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 12,
-        "column": 7,
-        "endLine": 15,
-        "endColumn": 9,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
+        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
+        "line": 11,
+        "column": 59,
+        "endLine": 11,
+        "endColumn": 74,
+        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
         "ruleId": "a11y/alt-text",
@@ -10047,6 +10014,17 @@
         "endLine": 15,
         "endColumn": 9,
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 12,
+        "column": 7,
+        "endLine": 15,
+        "endColumn": 9,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       },
       {
         "ruleId": "vue/no-unsafe-url",
