@@ -64,8 +64,10 @@ export function breachFailure(sharedVueFileCount: number, breaches: string) {
 export type FixtureOptions = {
   /** Diagnostics the fake `vize check` artifact reports for `src/App.vue`. */
   vizeDiagnostics?: string[];
-  /** Raw stdout the fake `vue-tsc` writes before exiting with status 2. */
+  /** Raw stdout the fake `vue-tsc` writes before exiting with a diagnostic status. */
   baselineOutput?: string;
+  /** Exit code for the fake `vue-tsc` baseline run. */
+  baselineExitCode?: number;
   /** Vue source files emitted by the fake `vue-tsc --listFiles` run. */
   baselineFiles?: string[];
   /** How the fake Vize binary reports the seeded mutation during oracle runs. */
@@ -205,6 +207,7 @@ export function setup(options: FixtureOptions = {}) {
     vueTsc,
     {
       baselineOutput,
+      exitCode: options.baselineExitCode,
       files: options.baselineFiles ?? ["src/App.vue"],
       fixtureRoot,
       mutation: baselineMutation,

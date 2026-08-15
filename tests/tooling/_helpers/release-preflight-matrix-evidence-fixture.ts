@@ -45,6 +45,14 @@ export function shardEntries(shard: number): Record<string, string> {
       command: { shardIndex: shard, shardCount: requiredRealProjectMatrixShardCount },
     }),
     "surface-verdict.json": json({ status: "success" }),
+    "lint-divergence-summary.json": json({
+      schema: "vize.fixtureLintDivergenceIndex",
+      version: 1,
+      evidence: { commitSha: releaseSha },
+      projectCount: 1,
+      projects: [{ project: "fixture" }],
+      budget: { status: "failure", passed: false },
+    }),
     "fixture-typecheck-dependencies.json": dependencyText,
     "fixture-typecheck-divergence.json": json({
       schema: "vize.fixtureTypecheckDivergenceRun",

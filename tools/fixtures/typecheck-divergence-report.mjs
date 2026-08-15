@@ -78,7 +78,7 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
   const durationMs = Date.now() - startedAt;
   if (baseline.error != null)
     throw new Error(`vue-tsc failed to run: ${errorMessage(baseline.error)}`);
-  if (baseline.status !== 0 && baseline.status !== 2) {
+  if (![0, 1, 2].includes(baseline.status)) {
     throw new Error(`vue-tsc exited with unsupported status ${baseline.status}`);
   }
 

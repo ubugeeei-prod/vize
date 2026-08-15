@@ -226,3 +226,16 @@ test("typecheck divergence report requires a false-negative budget", () => {
     cleanup(fixture);
   }
 });
+
+test("typecheck divergence report accepts vue-tsc diagnostic status 1", () => {
+  const fixture = setup({ baselineExitCode: 1 });
+  try {
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    const artifact = readJson(path.join(fixture.reportDir, "fixture-typecheck-divergence.json"));
+    assert.equal(artifact.baseline.exitCode, 1);
+    assert.equal(artifact.budget.verdict, "passed");
+  } finally {
+    cleanup(fixture);
+  }
+});

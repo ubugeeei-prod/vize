@@ -74,6 +74,11 @@ function assertRealProjectShardArtifact({ run, artifactName, shard, entries }) {
   if (surface.status !== "success") {
     throw new Error(`${artifactName} surface verdict is ${String(surface.status)}`);
   }
+  assertReleaseLintDivergenceSummary({
+    artifactName,
+    run,
+    summary: readJsonEntry(entries, "lint-divergence-summary.json", artifactName),
+  });
 
   const [divergenceEntry] = exactMatchingEntries(
     entries,
@@ -132,6 +137,20 @@ function assertReleaseTypecheckDivergenceArtifact({
   assertReleaseVueCoverage(artifactName, divergence.baseline?.coverage);
   assertReleaseMutationOracle(artifactName, divergence.mutationOracle);
   assertReleaseDependencyLink({ artifactName, divergence, dependency, dependencySha256 });
+}
+
+function assertReleaseLintDivergenceSummary({ artifactName, run, summary }) {
+  if (
+    summary.schema !== "vize.fixtureLintDivergenceIndex" ||
+    summary.version !== 1 ||
+    summary.evidence?.commitSha !== run.head_sha ||
+    !Number.isSafeInteger(summary.projectCount) ||
+    summary.projectCount <= 0 ||
+    !Array.isArray(summary.projects) ||
+    summary.projects.length !== summary.projectCount
+  ) {
+    throw new Error(`${artifactName} lint divergence summary is not exact release evidence`);
+  }
 }
 
 function assertReleaseVueCoverage(artifactName, coverage) {
