@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -32,6 +33,10 @@ const emptyBaselineReason =
 
 function artifactPath(fixture: ReturnType<typeof setup>, extension: string) {
   return path.join(fixture.reportDir, `fixture-typecheck-divergence.${extension}`);
+}
+
+function sha256(value: string) {
+  return createHash("sha256").update(value).digest("hex");
 }
 
 test("an empty vue-tsc baseline is unusable, not a false-positive breach", () => {
@@ -157,6 +162,14 @@ test("vue-tsc listFiles evidence on stderr still proves baseline coverage", () =
     const result = run(fixture);
     assert.equal(result.status, 0, result.stderr);
     const artifact = readJson(artifactPath(fixture, "json"));
+    // The stream digests are the only proof that the coverage came from stderr:
+    // the report concatenates both streams, so a fixture that ignored the option
+    // and wrote to stdout would still report the same coverage numbers.
+    assert.equal(artifact.baseline.stdoutSha256, sha256(""));
+    assert.equal(
+      artifact.baseline.stderrSha256,
+      sha256(`${path.join(fixture.fixtureRoot, "src", "App.vue")}\n`),
+    );
     assert.equal(artifact.baseline.coverage.baselineVueFileCount, 1);
     assert.equal(artifact.baseline.coverage.sharedVueFileCount, 1);
     assert.equal(artifact.budget.verdict, "passed");
