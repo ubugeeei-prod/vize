@@ -63,7 +63,7 @@ pub(crate) fn generate_operation_inline(
                         cstr!("\"{}\"", escape_js_string_literal(v.content.as_str()))
                     } else {
                         ctx.use_helper("toDisplayString");
-                        let resolved = ctx.resolve_expression(&v.content);
+                        let resolved = ctx.resolve_expression_node(v);
                         cstr!("_toDisplayString({})", resolved)
                     }
                 })
@@ -136,7 +136,7 @@ fn build_prop_value(
                 if v.is_static {
                     cstr!("\"{}\"", escape_js_string_literal(v.content.as_str()))
                 } else {
-                    ctx.resolve_expression(&v.content)
+                    ctx.resolve_expression_node(v)
                 }
             })
             .collect();
@@ -145,7 +145,7 @@ fn build_prop_value(
         if first.is_static {
             cstr!("\"{}\"", escape_js_string_literal(first.content.as_str()))
         } else {
-            ctx.resolve_expression(&first.content)
+            ctx.resolve_expression_node(first)
         }
     } else {
         vize_carton::CompactString::from("undefined")
@@ -162,7 +162,7 @@ fn generate_set_dynamic_props_inline(
     if set_props.is_event {
         ctx.use_helper("setDynamicEvents");
         if let Some(first) = set_props.props.first() {
-            let resolved = ctx.resolve_expression(&first.content);
+            let resolved = ctx.resolve_expression_node(first);
             cstr!("_setDynamicEvents({element}, {resolved})")
         } else {
             cstr!("_setDynamicEvents({element})")
@@ -176,7 +176,7 @@ fn generate_set_dynamic_props_inline(
                 if p.is_static {
                     cstr!("\"{}\"", escape_js_string_literal(p.content.as_str()))
                 } else {
-                    ctx.resolve_expression(&p.content)
+                    ctx.resolve_expression_node(p)
                 }
             })
             .collect();

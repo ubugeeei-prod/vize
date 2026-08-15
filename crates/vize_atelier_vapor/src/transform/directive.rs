@@ -94,11 +94,7 @@ pub(crate) fn transform_directive<'a>(
                     let values = if let Some(ref exp) = dir.exp {
                         if let ExpressionNode::Simple(val_exp) = exp {
                             let mut v = Vec::new_in(ctx.allocator);
-                            let val_node = SimpleExpressionNode::new(
-                                val_exp.content.clone(),
-                                val_exp.is_static,
-                                val_exp.loc.clone(),
-                            );
+                            let val_node = SimpleExpressionNode::from_node(val_exp);
                             v.push(Box::new_in(val_node, ctx.allocator));
                             v
                         } else {
@@ -136,11 +132,7 @@ pub(crate) fn transform_directive<'a>(
                     && let ExpressionNode::Simple(val_exp) = exp
                 {
                     let mut props = Vec::new_in(ctx.allocator);
-                    let val_node = SimpleExpressionNode::new(
-                        val_exp.content.clone(),
-                        val_exp.is_static,
-                        val_exp.loc.clone(),
-                    );
+                    let val_node = SimpleExpressionNode::from_node(val_exp);
                     props.push(Box::new_in(val_node, ctx.allocator));
 
                     let set_dynamic = crate::ir::SetDynamicPropsIRNode {
@@ -155,20 +147,12 @@ pub(crate) fn transform_directive<'a>(
         "on" => {
             if let Some(ref arg) = dir.arg {
                 if let ExpressionNode::Simple(key_exp) = arg {
-                    let key_node = SimpleExpressionNode::new(
-                        key_exp.content.clone(),
-                        key_exp.is_static,
-                        key_exp.loc.clone(),
-                    );
+                    let key_node = SimpleExpressionNode::from_node(key_exp);
                     let key = Box::new_in(key_node, ctx.allocator);
 
                     let value = if let Some(ref exp) = dir.exp {
                         if let ExpressionNode::Simple(val_exp) = exp {
-                            let val_node = SimpleExpressionNode::new(
-                                val_exp.content.clone(),
-                                val_exp.is_static,
-                                val_exp.loc.clone(),
-                            );
+                            let val_node = SimpleExpressionNode::from_node(val_exp);
                             Some(Box::new_in(val_node, ctx.allocator))
                         } else {
                             None
@@ -224,11 +208,7 @@ pub(crate) fn transform_directive<'a>(
                     && let ExpressionNode::Simple(val_exp) = exp
                 {
                     let mut values = Vec::new_in(ctx.allocator);
-                    let val_node = SimpleExpressionNode::new(
-                        val_exp.content.clone(),
-                        val_exp.is_static,
-                        val_exp.loc.clone(),
-                    );
+                    let val_node = SimpleExpressionNode::from_node(val_exp);
                     values.push(Box::new_in(val_node, ctx.allocator));
 
                     let set_dynamic = crate::ir::SetDynamicPropsIRNode {
@@ -245,11 +225,7 @@ pub(crate) fn transform_directive<'a>(
             if let Some(ref exp) = dir.exp
                 && let ExpressionNode::Simple(cond_exp) = exp
             {
-                let cond_node = SimpleExpressionNode::new(
-                    cond_exp.content.clone(),
-                    cond_exp.is_static,
-                    cond_exp.loc.clone(),
-                );
+                let cond_node = SimpleExpressionNode::from_node(cond_exp);
                 let condition = Box::new_in(cond_node, ctx.allocator);
                 let positive = transform_children(ctx, &el.children);
 
@@ -273,11 +249,7 @@ pub(crate) fn transform_directive<'a>(
             if let Some(ref exp) = dir.exp
                 && let ExpressionNode::Simple(source_exp) = exp
             {
-                let source_node = SimpleExpressionNode::new(
-                    source_exp.content.clone(),
-                    source_exp.is_static,
-                    source_exp.loc.clone(),
-                );
+                let source_node = SimpleExpressionNode::from_node(source_exp);
                 let source = Box::new_in(source_node, ctx.allocator);
                 let render = transform_children(ctx, &el.children);
 
@@ -306,11 +278,7 @@ pub(crate) fn transform_directive<'a>(
             if let Some(ref exp) = dir.exp
                 && let ExpressionNode::Simple(val_exp) = exp
             {
-                let val_node = SimpleExpressionNode::new(
-                    val_exp.content.clone(),
-                    val_exp.is_static,
-                    val_exp.loc.clone(),
-                );
+                let val_node = SimpleExpressionNode::from_node(val_exp);
                 let value = Box::new_in(val_node, ctx.allocator);
                 let set_html = SetHtmlIRNode {
                     element: element_id,
@@ -326,11 +294,7 @@ pub(crate) fn transform_directive<'a>(
                 && let ExpressionNode::Simple(val_exp) = exp
             {
                 let mut values = Vec::new_in(ctx.allocator);
-                let val_node = SimpleExpressionNode::new(
-                    val_exp.content.clone(),
-                    val_exp.is_static,
-                    val_exp.loc.clone(),
-                );
+                let val_node = SimpleExpressionNode::from_node(val_exp);
                 values.push(Box::new_in(val_node, ctx.allocator));
 
                 let set_text = SetTextIRNode {
@@ -413,11 +377,9 @@ fn clone_directive<'a>(ctx: &TransformContext<'a>, dir: &DirectiveNode<'a>) -> D
     new_dir.arg = clone_expression(ctx, dir.arg.as_ref());
 
     for modifier in dir.modifiers.iter() {
-        new_dir.modifiers.push(SimpleExpressionNode::new(
-            modifier.content.clone(),
-            modifier.is_static,
-            modifier.loc.clone(),
-        ));
+        new_dir
+            .modifiers
+            .push(SimpleExpressionNode::from_node(modifier));
     }
 
     new_dir
@@ -431,11 +393,7 @@ fn clone_expression<'a>(
 
     Some(match expr {
         ExpressionNode::Simple(simple) => {
-            let cloned = SimpleExpressionNode::new(
-                simple.content.clone(),
-                simple.is_static,
-                simple.loc.clone(),
-            );
+            let cloned = SimpleExpressionNode::from_node(simple);
             ExpressionNode::Simple(Box::new_in(cloned, ctx.allocator))
         }
         ExpressionNode::Compound(compound) => {

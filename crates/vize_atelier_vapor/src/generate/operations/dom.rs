@@ -22,7 +22,7 @@ pub(super) fn generate_set_prop(ctx: &mut GenerateContext, set_prop: &SetPropIRN
                 if v.is_static {
                     cstr!("\"{}\"", escape_js_string_literal(v.content.as_str()))
                 } else {
-                    ctx.resolve_expression(&v.content)
+                    ctx.resolve_expression_node(v)
                 }
             })
             .collect();
@@ -31,7 +31,7 @@ pub(super) fn generate_set_prop(ctx: &mut GenerateContext, set_prop: &SetPropIRN
         if first.is_static {
             cstr!("\"{}\"", escape_js_string_literal(first.content.as_str()))
         } else {
-            ctx.resolve_expression(&first.content)
+            ctx.resolve_expression_node(first)
         }
     } else {
         vize_carton::CompactString::from("undefined")
@@ -78,7 +78,7 @@ pub(super) fn generate_set_dynamic_props(
         // v-on="handlers" → _setDynamicEvents
         ctx.use_helper("setDynamicEvents");
         for prop in set_props.props.iter() {
-            let resolved = ctx.resolve_expression(&prop.content);
+            let resolved = ctx.resolve_expression_node(prop);
             ctx.push_line_fmt(format_args!("_setDynamicEvents({}, {})", element, resolved));
         }
     } else {
@@ -90,7 +90,7 @@ pub(super) fn generate_set_dynamic_props(
                 if p.is_static {
                     cstr!("\"{}\"", escape_js_string_literal(p.content.as_str()))
                 } else {
-                    ctx.resolve_expression(&p.content)
+                    ctx.resolve_expression_node(p)
                 }
             })
             .collect();
@@ -121,7 +121,7 @@ pub(super) fn generate_set_text(ctx: &mut GenerateContext, set_text: &SetTextIRN
                 cstr!("\"{}\"", escape_js_string_literal(v.content.as_str()))
             } else {
                 ctx.use_helper("toDisplayString");
-                let resolved = ctx.resolve_expression(&v.content);
+                let resolved = ctx.resolve_expression_node(v);
                 cstr!("_toDisplayString({})", resolved)
             }
         })
@@ -148,7 +148,7 @@ pub(super) fn generate_set_html(ctx: &mut GenerateContext, set_html: &SetHtmlIRN
             escape_js_string_literal(set_html.value.content.as_str())
         )
     } else {
-        ctx.resolve_expression(set_html.value.content.as_str())
+        ctx.resolve_expression_node(&set_html.value)
     };
 
     ctx.push_line_fmt(format_args!("{}.innerHTML = {}", element, value));

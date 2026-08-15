@@ -16,7 +16,7 @@ pub(super) fn generate_set_template_ref(
     let value = if set_ref.value.is_static {
         cstr!("\"{}\"", set_ref.value.content)
     } else {
-        ctx.resolve_expression(set_ref.value.content.as_str())
+        ctx.resolve_expression_node(&set_ref.value)
     };
 
     if set_ref.ref_for {

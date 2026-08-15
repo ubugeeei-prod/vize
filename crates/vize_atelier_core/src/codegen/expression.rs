@@ -7,6 +7,8 @@
 mod comment_rewrite;
 mod generate;
 pub(crate) mod helpers;
+pub(crate) mod prefix_context;
+mod prefix_visitor;
 pub(crate) mod scope_prefix;
 
 use crate::{

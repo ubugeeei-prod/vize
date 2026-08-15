@@ -1,11 +1,12 @@
 //! Patch flag calculation and naming functions.
 
+#[path = "patch_flag/static_literal.rs"]
+mod static_literal;
+
+use self::static_literal::{is_static_object_or_array_literal_node, is_string_literal};
 use super::helpers::camelize;
 use crate::options::{BindingMetadata, BindingType};
 use crate::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
-use oxc_ast::ast as oxc_ast_types;
-use oxc_parser::Parser;
-use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String, ToCompactString, is_builtin_directive};
 
 /// Check whether an interpolation only references bindings constant at runtime.
@@ -63,81 +64,8 @@ fn is_static_bound_expression(dir: &DirectiveNode<'_>) -> bool {
     matches!(content, "true" | "false" | "null")
         || is_string_literal(content)
         || content.parse::<f64>().is_ok()
-        || is_static_object_or_array_literal(content)
+        || is_static_object_or_array_literal_node(simple, content)
         || (content.starts_with('`') && content.ends_with('`') && !content.contains("${"))
-}
-
-fn is_string_literal(content: &str) -> bool {
-    (content.starts_with('\'') && content.ends_with('\''))
-        || (content.starts_with('"') && content.ends_with('"'))
-}
-
-fn is_static_object_or_array_literal(content: &str) -> bool {
-    if !crate::steps::expression::expression_is_safe_to_parse(content) {
-        return false;
-    }
-    let mut wrapped = String::with_capacity(content.len() + 2);
-    wrapped.push('(');
-    wrapped.push_str(content);
-    wrapped.push(')');
-
-    let allocator = crate::expr_parse_probe::parse_arena();
-    let parser = Parser::new(
-        &allocator,
-        &wrapped,
-        SourceType::default().with_module(true),
-    );
-    let Ok(expr) = parser.parse_expression() else {
-        return false;
-    };
-
-    is_static_oxc_expression(&expr)
-}
-
-fn is_static_oxc_expression(expr: &oxc_ast_types::Expression<'_>) -> bool {
-    match expr {
-        oxc_ast_types::Expression::StringLiteral(_)
-        | oxc_ast_types::Expression::NumericLiteral(_)
-        | oxc_ast_types::Expression::BooleanLiteral(_)
-        | oxc_ast_types::Expression::NullLiteral(_)
-        | oxc_ast_types::Expression::BigIntLiteral(_)
-        | oxc_ast_types::Expression::RegExpLiteral(_) => true,
-        oxc_ast_types::Expression::TemplateLiteral(template) => template.expressions.is_empty(),
-        oxc_ast_types::Expression::UnaryExpression(unary) => {
-            is_static_oxc_expression(&unary.argument)
-        }
-        oxc_ast_types::Expression::ParenthesizedExpression(paren) => {
-            is_static_oxc_expression(&paren.expression)
-        }
-        oxc_ast_types::Expression::CallExpression(call)
-            if matches!(
-                &call.callee,
-                oxc_ast_types::Expression::Identifier(ident)
-                    if matches!(ident.name.as_str(), "_normalizeClass" | "_normalizeStyle")
-            ) =>
-        {
-            call.arguments.iter().all(|arg| match arg {
-                oxc_ast_types::Argument::SpreadElement(_) => false,
-                _ => arg.as_expression().is_some_and(is_static_oxc_expression),
-            })
-        }
-        oxc_ast_types::Expression::ObjectExpression(obj) => {
-            obj.properties.iter().all(|prop| match prop {
-                oxc_ast_types::ObjectPropertyKind::ObjectProperty(prop) => {
-                    is_static_oxc_expression(&prop.value)
-                }
-                oxc_ast_types::ObjectPropertyKind::SpreadProperty(_) => false,
-            })
-        }
-        oxc_ast_types::Expression::ArrayExpression(arr) => {
-            arr.elements.iter().all(|elem| match elem {
-                oxc_ast_types::ArrayExpressionElement::SpreadElement(_) => false,
-                oxc_ast_types::ArrayExpressionElement::Elision(_) => true,
-                _ => elem.as_expression().is_some_and(is_static_oxc_expression),
-            })
-        }
-        _ => false,
-    }
 }
 
 /// Calculate patch flag and dynamic props for an element.

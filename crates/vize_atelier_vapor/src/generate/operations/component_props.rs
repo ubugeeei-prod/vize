@@ -49,7 +49,7 @@ fn generate_component_spread_props_str(ctx: &GenerateContext, props: &[IRProp<'_
         if prop.key.content.as_str() == "$" {
             push_component_static_prop_group(ctx, &mut sources, &mut static_group);
             if let Some(first) = prop.values.first() {
-                let resolved = ctx.resolve_expression(first.content.as_str());
+                let resolved = ctx.resolve_expression_node(first);
                 sources.push(cstr!("() => ({})", resolved));
             }
         } else {
@@ -187,7 +187,7 @@ fn component_prop_getter_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> Stri
         if first.is_static {
             return cstr!("() => (\"{}\")", first.content);
         }
-        let resolved = ctx.resolve_expression(first.content.as_str());
+        let resolved = ctx.resolve_expression_node(first);
         if is_event {
             if is_inline_statement_block(first.content.as_str()) {
                 cstr!("() => ($event => {{ {} }})", resolved)
@@ -215,7 +215,7 @@ fn component_prop_expression_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> 
         if first.is_static {
             return cstr!("\"{}\"", first.content);
         }
-        ctx.resolve_expression(first.content.as_str())
+        ctx.resolve_expression_node(first)
     } else {
         cstr!("\"\"")
     }

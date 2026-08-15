@@ -284,9 +284,19 @@ impl SsrCodegenContext<'_> {
         if matches!(exp, ExpressionNode::Simple(simple) if simple.is_static) {
             return rendered;
         }
-        if vize_atelier_core::steps::expression::is_function_expression(&rendered)
-            || vize_atelier_core::steps::is_event_handler_reference_expression(&rendered)
-        {
+        // Node-aware shape checks when the rendered text is still the node's
+        // own bytes (P1-7); rewritten handler text keeps the string parse.
+        let passthrough = match exp {
+            ExpressionNode::Simple(simple) if rendered.as_str() == simple.content.as_str() => {
+                vize_atelier_core::steps::expression::is_function_expression_node(simple)
+                    || vize_atelier_core::steps::expression::is_event_handler_reference_node(simple)
+            }
+            _ => {
+                vize_atelier_core::steps::expression::is_function_expression(&rendered)
+                    || vize_atelier_core::steps::is_event_handler_reference_expression(&rendered)
+            }
+        };
+        if passthrough {
             return rendered;
         }
 

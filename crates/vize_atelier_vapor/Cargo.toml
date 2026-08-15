@@ -23,6 +23,11 @@ oxc_syntax = { workspace = true }
 serde = { workspace = true }
 thiserror = { workspace = true }
 
+[features]
+# Arms the Davinci P1-7 differential lane in this crate's retained resolve
+# path and in vize_atelier_core's migrated sites. Off in production builds.
+davinci-differential = ["vize_atelier_core/davinci-differential"]
+
 [dev-dependencies]
 criterion = { workspace = true }
 davinci_harness = { workspace = true }

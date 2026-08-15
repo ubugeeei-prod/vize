@@ -35,7 +35,7 @@ pub(super) fn resolve_expression(ctx: &GenerateContext<'_>, expr: &str) -> Strin
     ctx.resolve_complex_expression_fallback(trimmed)
 }
 
-fn resolve_with_oxc(ctx: &GenerateContext<'_>, expr: &str) -> Option<String> {
+pub(super) fn resolve_with_oxc(ctx: &GenerateContext<'_>, expr: &str) -> Option<String> {
     let allocator = vize_atelier_core::expr_parse_probe::parse_arena();
     let source_type = SourceType::default()
         .with_module(true)
@@ -67,7 +67,11 @@ fn resolve_with_oxc(ctx: &GenerateContext<'_>, expr: &str) -> Option<String> {
     None
 }
 
-fn apply_rewrites(expr: &str, mut rewrites: std::vec::Vec<Rewrite>, offset: usize) -> String {
+pub(super) fn apply_rewrites(
+    expr: &str,
+    mut rewrites: std::vec::Vec<Rewrite>,
+    offset: usize,
+) -> String {
     if rewrites.is_empty() {
         return expr.to_compact_string();
     }
@@ -90,14 +94,14 @@ fn apply_rewrites(expr: &str, mut rewrites: std::vec::Vec<Rewrite>, offset: usiz
     result
 }
 
-fn is_literal_expression(expr: &str) -> bool {
+pub(super) fn is_literal_expression(expr: &str) -> bool {
     expr.parse::<f64>().is_ok()
         || matches!(expr, "true" | "false" | "null" | "undefined")
         || ((expr.starts_with('"') && expr.ends_with('"'))
             || (expr.starts_with('\'') && expr.ends_with('\'')))
 }
 
-fn is_simple_path_expression(expr: &str) -> bool {
+pub(super) fn is_simple_path_expression(expr: &str) -> bool {
     let mut has_segment = false;
     for segment in expr.split('.') {
         if segment.is_empty() || !is_simple_identifier(segment) {
@@ -125,20 +129,20 @@ fn is_simple_identifier(name: &str) -> bool {
     chars.all(|ch| ch.is_alphanumeric() || ch == '_' || ch == '$')
 }
 
-struct Rewrite {
+pub(super) struct Rewrite {
     start: usize,
     end: usize,
     replacement: String,
 }
 
-struct ExpressionRewriteCollector<'a, 'ctx> {
+pub(super) struct ExpressionRewriteCollector<'a, 'ctx> {
     ctx: &'a GenerateContext<'ctx>,
-    rewrites: std::vec::Vec<Rewrite>,
+    pub(super) rewrites: std::vec::Vec<Rewrite>,
     local_scopes: std::vec::Vec<FxHashSet<String>>,
 }
 
 impl<'a, 'ctx> ExpressionRewriteCollector<'a, 'ctx> {
-    fn new(ctx: &'a GenerateContext<'ctx>) -> Self {
+    pub(super) fn new(ctx: &'a GenerateContext<'ctx>) -> Self {
         Self {
             ctx,
             rewrites: std::vec::Vec::new(),

@@ -41,11 +41,7 @@ pub(crate) fn transform_interpolation<'a>(
     let values = match &interp.content {
         ExpressionNode::Simple(simple) => {
             let mut v = Vec::new_in(ctx.allocator);
-            let exp = SimpleExpressionNode::new(
-                simple.content.clone(),
-                simple.is_static,
-                simple.loc.clone(),
-            );
+            let exp = SimpleExpressionNode::from_node(simple);
             v.push(Box::new_in(exp, ctx.allocator));
             v
         }
@@ -116,11 +112,7 @@ fn collect_text_runs<'a>(
                 begin_text_run(run_index, rendered_index);
                 // Dynamic interpolation
                 if let ExpressionNode::Simple(simple) = &interp.content {
-                    let exp = SimpleExpressionNode::new(
-                        simple.content.clone(),
-                        simple.is_static,
-                        simple.loc.clone(),
-                    );
+                    let exp = SimpleExpressionNode::from_node(simple);
                     values.push(Box::new_in(exp, ctx.allocator));
                     *has_interpolation = true;
                 }

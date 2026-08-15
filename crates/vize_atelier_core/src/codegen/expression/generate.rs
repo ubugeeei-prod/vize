@@ -8,7 +8,7 @@ use crate::{CompoundExpressionChild, ExpressionNode};
 use super::{
     super::context::CodegenContext,
     generate_simple_expression,
-    helpers::prefix_identifiers_with_context,
+    prefix_context::{prefix_identifiers_with_context, prefix_identifiers_with_context_node},
     scope_prefix::{contains_slot_param_scope_prefix, strip_scope_prefixes_for_slot_params},
 };
 use vize_carton::String;
@@ -82,9 +82,15 @@ pub fn generate_event_handler(
                     content.clone()
                 };
 
-                // Step 2: Prefix identifiers if needed
+                // Step 2: Prefix identifiers if needed. When the checked
+                // text is still the node's own bytes, the retained AST
+                // applies (P1-7); TS-stripped text that changed falls back.
                 if ctx.options.prefix_identifiers {
-                    prefix_identifiers_with_context(&ts_stripped, ctx)
+                    if ts_stripped.as_str() == simple.content.as_str() {
+                        prefix_identifiers_with_context_node(simple, ctx)
+                    } else {
+                        prefix_identifiers_with_context(&ts_stripped, ctx)
+                    }
                 } else {
                     ts_stripped
                 }
@@ -96,16 +102,27 @@ pub fn generate_event_handler(
                 processed
             };
 
-            // Check if it's already an arrow function or function expression
-            if crate::steps::expression::is_function_expression(&processed) {
+            // Check if it's already an arrow function or function expression.
+            // When `processed` is still the node's own bytes the retained AST
+            // applies (P1-7); rewritten text keeps the legacy string parse.
+            let is_node_text = processed.as_str() == simple.content.as_str();
+            let is_function = if is_node_text {
+                crate::steps::expression::is_function_expression_node(simple)
+            } else {
+                crate::steps::expression::is_function_expression(&processed)
+            };
+            if is_function {
                 ctx.push(&processed);
                 return;
             }
 
             // Check if it's a simple identifier or member expression (method name/reference)
-            if crate::steps::is_simple_identifier(&processed)
-                || is_simple_member_expression(&processed)
-            {
+            let is_member_ref = if is_node_text {
+                crate::steps::expression::is_event_handler_reference_node(simple)
+            } else {
+                is_simple_member_expression(&processed)
+            };
+            if crate::steps::is_simple_identifier(&processed) || is_member_ref {
                 if for_caching {
                     ctx.push("(...args) => (");
                     ctx.push(&processed);

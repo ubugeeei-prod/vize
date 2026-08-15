@@ -45,7 +45,8 @@ pub use element::{
     build_props, resolve_element_type,
 };
 pub use expression::{
-    is_event_handler_reference_expression, is_simple_identifier, prefix_identifiers_in_expression,
+    is_event_handler_reference_expression, is_event_handler_reference_node,
+    is_function_expression_node, is_simple_identifier, prefix_identifiers_in_expression,
     process_expression, process_inline_handler, strip_typescript_from_expression,
 };
 pub use hoist_static::{

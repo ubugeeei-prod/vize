@@ -20,6 +20,10 @@ pub mod steps;
 // Davinci P0-3 instrumentation; deleted when phase 1 retains parsed expressions.
 #[doc(hidden)]
 pub mod expr_parse_probe;
+// Davinci P1-7 retained-expression consumption gates; shrinks away with the
+// legacy re-parse sites at P1-8/P1-9.
+#[doc(hidden)]
+pub mod retained;
 
 // Re-export from vize_relief (AST, errors, options)
 pub use vize_relief::errors::{CompilerError, CompilerErrorWithSource, CompilerResult, ErrorCode};

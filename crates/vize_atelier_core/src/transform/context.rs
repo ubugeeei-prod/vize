@@ -517,7 +517,7 @@ pub(super) fn clone_expression<'a>(
                 is_static: s.is_static,
                 const_type: s.const_type,
                 loc: s.loc.clone(),
-                js_ast: None,
+                js_ast: s.js_ast,
                 hoisted: None,
                 identifiers: None,
                 is_handler_key: s.is_handler_key,

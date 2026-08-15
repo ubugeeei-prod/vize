@@ -101,6 +101,15 @@ impl<'a> GenerateContext<'a> {
         expression::resolve_expression(self, expr)
     }
 
+    /// Node-aware [`Self::resolve_expression`] (P1-7): reads the retained
+    /// AST instead of re-parsing when it still describes the node's bytes.
+    pub(crate) fn resolve_expression_node(
+        &self,
+        node: &vize_atelier_core::SimpleExpressionNode<'_>,
+    ) -> String {
+        super::expression_retained::resolve_expression_node(self, node)
+    }
+
     /// Resolve complex expressions (object/array literals) by prefixing identifiers inside
     pub(super) fn resolve_complex_expression_fallback(&self, expr: &str) -> String {
         complex_expression::resolve_complex_expression_fallback(self, expr)

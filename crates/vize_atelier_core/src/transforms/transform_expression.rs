@@ -2,18 +2,25 @@
 
 #[path = "transform_expression/collector.rs"]
 mod collector;
+#[path = "transform_expression/collector_targets.rs"]
+mod collector_targets;
 #[path = "transform_expression/inline_handler.rs"]
 mod inline_handler;
 #[path = "transform_expression/nesting.rs"]
 pub(crate) mod nesting;
+#[path = "transform_expression/parse_checks.rs"]
+mod parse_checks;
 #[path = "transform_expression/prefix.rs"]
 pub(crate) mod prefix;
+#[path = "transform_expression/retained_rewrite.rs"]
+mod retained_rewrite;
 #[path = "transform_expression/rewrite.rs"]
 mod rewrite;
+#[path = "transform_expression/shape_checks.rs"]
+mod shape_checks;
 #[path = "transform_expression/typescript.rs"]
 mod typescript;
 
-use oxc_ast::ast::{ChainElement, Expression};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{Box, Bump, String};
@@ -27,6 +34,8 @@ pub use nesting::{
 };
 pub use prefix::{is_simple_identifier, prefix_identifiers_in_expression};
 use rewrite::rewrite_expression;
+pub use shape_checks::{is_event_handler_reference_node, is_function_expression_node};
+use shape_checks::{is_function_shape, is_handler_reference_shape};
 pub use typescript::strip_typescript_from_expression;
 
 /// Returns true if an expression is a callable reference that should be passed
@@ -40,18 +49,7 @@ pub fn is_event_handler_reference_expression(content: &str) -> bool {
     let Ok(expr) = parser.parse_expression() else {
         return false;
     };
-
-    match expr {
-        Expression::Identifier(_)
-        | Expression::StaticMemberExpression(_)
-        | Expression::ComputedMemberExpression(_)
-        | Expression::PrivateFieldExpression(_) => true,
-        Expression::ChainExpression(chain) => matches!(
-            chain.expression,
-            ChainElement::StaticMemberExpression(_) | ChainElement::ComputedMemberExpression(_)
-        ),
-        _ => false,
-    }
+    is_handler_reference_shape(&expr)
 }
 
 /// Returns true if the whole expression is a function / arrow function expression.
@@ -64,11 +62,7 @@ pub fn is_function_expression(content: &str) -> bool {
     let Ok(expr) = parser.parse_expression() else {
         return false;
     };
-
-    matches!(
-        expr,
-        Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_)
-    )
+    is_function_shape(&expr)
 }
 
 /// Rewrite Vue 2 pipe filters in `exp` in place, mirroring
@@ -178,8 +172,10 @@ pub fn process_expression<'a>(
 
     // Strip TypeScript if needed, then optionally prefix identifiers
     let processed = if ctx.options.prefix_identifiers {
-        // rewrite_expression handles both TS stripping and prefixing
-        let result = rewrite_expression(content, ctx, as_params);
+        // rewrite_expression handles both TS stripping and prefixing; the
+        // retained AST rides along when it still describes these bytes (P1-7).
+        let retained = crate::retained::retained_whole_expression(&normalized);
+        let result = rewrite_expression(content, ctx, as_params, retained);
         if result.used_unref {
             ctx.helper(crate::RuntimeHelper::Unref);
         }
@@ -232,7 +228,8 @@ pub(crate) fn clone_expression<'a>(
                 is_static: simple.is_static,
                 const_type: simple.const_type,
                 loc: simple.loc.clone(),
-                js_ast: None,
+                // Byte-identical clone: the retained parse still applies (P1-7).
+                js_ast: simple.js_ast,
                 hoisted: None,
                 identifiers: None,
                 is_handler_key: simple.is_handler_key,
@@ -269,7 +266,8 @@ pub(crate) fn normalize_expression<'a>(
                 is_static: simple.is_static,
                 const_type: simple.const_type,
                 loc: simple.loc.clone(),
-                js_ast: None,
+                // Byte-identical clone: the retained parse still applies (P1-7).
+                js_ast: simple.js_ast,
                 hoisted: None,
                 identifiers: None,
                 is_handler_key: simple.is_handler_key,

@@ -60,11 +60,7 @@ fn transform_if_node_with_options<'a>(
     let condition = if let Some(ref cond) = first_branch.condition {
         match cond {
             ExpressionNode::Simple(simple) => {
-                let cond_node = SimpleExpressionNode::new(
-                    simple.content.clone(),
-                    simple.is_static,
-                    simple.loc.clone(),
-                );
+                let cond_node = SimpleExpressionNode::from_node(simple);
                 Box::new_in(cond_node, ctx.allocator)
             }
             ExpressionNode::Compound(compound) => {
@@ -138,11 +134,7 @@ pub(crate) fn transform_remaining_branches<'a>(
 
         let condition = match cond {
             ExpressionNode::Simple(simple) => {
-                let cond_node = SimpleExpressionNode::new(
-                    simple.content.clone(),
-                    simple.is_static,
-                    simple.loc.clone(),
-                );
+                let cond_node = SimpleExpressionNode::from_node(simple);
                 Box::new_in(cond_node, ctx.allocator)
             }
             ExpressionNode::Compound(compound) => {
@@ -288,11 +280,7 @@ fn clone_simple_expr<'a>(
 ) -> Box<'a, SimpleExpressionNode<'a>> {
     match expr {
         ExpressionNode::Simple(simple) => {
-            let node = SimpleExpressionNode::new(
-                simple.content.clone(),
-                simple.is_static,
-                simple.loc.clone(),
-            );
+            let node = SimpleExpressionNode::from_node(simple);
             Box::new_in(node, ctx.allocator)
         }
         ExpressionNode::Compound(compound) => {
@@ -323,8 +311,7 @@ fn extract_key_prop<'a>(
                     && let Some(ref exp) = dir.exp
                     && let ExpressionNode::Simple(s) = exp
                 {
-                    let node =
-                        SimpleExpressionNode::new(s.content.clone(), s.is_static, s.loc.clone());
+                    let node = SimpleExpressionNode::from_node(s);
                     return Some(Box::new_in(node, ctx.allocator));
                 }
             }

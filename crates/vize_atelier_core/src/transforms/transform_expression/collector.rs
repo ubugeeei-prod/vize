@@ -25,8 +25,14 @@ use super::prefix::get_identifier_prefix;
 /// Visitor to collect identifiers that need prefixing
 pub(crate) struct IdentifierCollector<'a, 'ctx> {
     pub(crate) ctx: &'a TransformContext<'ctx>,
-    /// The wrapped source text (for scanning paren positions)
+    /// The source text (for scanning paren positions): the `(content)`
+    /// wrapper on the legacy parse path, the bare content on the retained
+    /// path (P1-7).
     pub(crate) source: &'a str,
+    /// False when `source` is the bare content: spans are content-relative
+    /// and the legacy wrapper-paren overshoot is emulated (see the
+    /// assignment-target scan below).
+    wrapped: bool,
     /// Lexical scopes for inline handler locals.
     pub(crate) local_scopes: Vec<FxHashSet<String>>,
     /// (position, prefix) pairs for rewrites
@@ -44,11 +50,20 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
         Self {
             ctx,
             source,
+            wrapped: true,
             local_scopes: vec![FxHashSet::default()],
             rewrites: FxHashSet::default(),
             suffix_rewrites: Vec::new(),
             assignment_targets: FxHashSet::default(),
             used_unref: false,
+        }
+    }
+
+    /// Collector over the bare (unwrapped) content — the retained-AST walk.
+    pub(crate) fn new_unwrapped(ctx: &'a TransformContext<'ctx>, source: &'a str) -> Self {
+        Self {
+            wrapped: false,
+            ..Self::new(ctx, source)
         }
     }
 
@@ -154,30 +169,18 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
         }
     }
 
-    fn collect_assignment_targets(&mut self, target: &oxc_ast_types::AssignmentTarget<'_>) {
-        use oxc_ast_types::{AssignmentTarget, AssignmentTargetProperty};
+    pub(super) fn collect_assignment_targets(
+        &mut self,
+        target: &oxc_ast_types::AssignmentTarget<'_>,
+    ) {
+        use oxc_ast_types::AssignmentTarget;
 
         match target {
             AssignmentTarget::AssignmentTargetIdentifier(ident) => {
                 self.assignment_targets.insert(ident.span.start as usize);
             }
             AssignmentTarget::ObjectAssignmentTarget(obj) => {
-                for prop in &obj.properties {
-                    match prop {
-                        AssignmentTargetProperty::AssignmentTargetPropertyIdentifier(
-                            prop_ident,
-                        ) => {
-                            self.assignment_targets
-                                .insert(prop_ident.binding.span.start as usize);
-                        }
-                        AssignmentTargetProperty::AssignmentTargetPropertyProperty(prop_prop) => {
-                            self.collect_assignment_targets_maybe_default(&prop_prop.binding);
-                        }
-                    }
-                }
-                if let Some(rest) = &obj.rest {
-                    self.collect_assignment_targets(&rest.target);
-                }
+                self.collect_object_assignment_target(obj);
             }
             AssignmentTarget::ArrayAssignmentTarget(arr) => {
                 for elem in arr.elements.iter().flatten() {
@@ -188,60 +191,6 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
                 }
             }
             _ => {}
-        }
-    }
-
-    fn collect_assignment_targets_maybe_default(
-        &mut self,
-        target: &oxc_ast_types::AssignmentTargetMaybeDefault<'_>,
-    ) {
-        use oxc_ast_types::{AssignmentTargetMaybeDefault, AssignmentTargetProperty};
-
-        match target {
-            AssignmentTargetMaybeDefault::AssignmentTargetWithDefault(def) => {
-                self.collect_assignment_targets(&def.binding);
-            }
-            AssignmentTargetMaybeDefault::AssignmentTargetIdentifier(ident) => {
-                self.assignment_targets.insert(ident.span.start as usize);
-            }
-            AssignmentTargetMaybeDefault::ObjectAssignmentTarget(obj) => {
-                for prop in &obj.properties {
-                    match prop {
-                        AssignmentTargetProperty::AssignmentTargetPropertyIdentifier(
-                            prop_ident,
-                        ) => {
-                            self.assignment_targets
-                                .insert(prop_ident.binding.span.start as usize);
-                        }
-                        AssignmentTargetProperty::AssignmentTargetPropertyProperty(prop_prop) => {
-                            self.collect_assignment_targets_maybe_default(&prop_prop.binding);
-                        }
-                    }
-                }
-                if let Some(rest) = &obj.rest {
-                    self.collect_assignment_targets(&rest.target);
-                }
-            }
-            AssignmentTargetMaybeDefault::ArrayAssignmentTarget(arr) => {
-                for elem in arr.elements.iter().flatten() {
-                    self.collect_assignment_targets_maybe_default(elem);
-                }
-                if let Some(rest) = &arr.rest {
-                    self.collect_assignment_targets(&rest.target);
-                }
-            }
-            _ => {}
-        }
-    }
-
-    fn collect_simple_assignment_targets(
-        &mut self,
-        target: &oxc_ast_types::SimpleAssignmentTarget<'_>,
-    ) {
-        use oxc_ast_types::SimpleAssignmentTarget;
-
-        if let SimpleAssignmentTarget::AssignmentTargetIdentifier(ident) = target {
-            self.assignment_targets.insert(ident.span.start as usize);
         }
     }
 }
@@ -282,7 +231,13 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
                 while pos < source_bytes.len() && source_bytes[pos] == b')' {
                     pos += 1;
                 }
-                self.suffix_rewrites.push((pos, String::new(".value")));
+                // Legacy parses `(content)`: a scan reaching the end of the
+                // bare content would there continue through the wrapper `)`
+                // and the apply loop drops the suffix as out of range.
+                // Byte parity requires reproducing that drop (P1-7).
+                if self.wrapped || pos < source_bytes.len() {
+                    self.suffix_rewrites.push((pos, String::new(".value")));
+                }
             }
             return;
         }

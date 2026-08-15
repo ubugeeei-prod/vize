@@ -65,11 +65,7 @@ pub(super) fn transform_component<'a>(
                     if let Some(ref exp) = dir.exp
                         && let ExpressionNode::Simple(s) = exp
                     {
-                        let node = SimpleExpressionNode::new(
-                            s.content.clone(),
-                            s.is_static,
-                            s.loc.clone(),
-                        );
+                        let node = SimpleExpressionNode::from_node(s);
                         v_show_exp = Some(Box::new_in(node, ctx.allocator));
                     }
                     continue;
@@ -81,30 +77,18 @@ pub(super) fn transform_component<'a>(
                                 if let Some(ref exp) = dir.exp
                                     && let ExpressionNode::Simple(val_exp) = exp
                                 {
-                                    let node = SimpleExpressionNode::new(
-                                        val_exp.content.clone(),
-                                        val_exp.is_static,
-                                        val_exp.loc.clone(),
-                                    );
+                                    let node = SimpleExpressionNode::from_node(val_exp);
                                     is_expr = Some(Box::new_in(node, ctx.allocator));
                                 }
                                 continue;
                             }
-                            let key_node = SimpleExpressionNode::new(
-                                key_exp.content.clone(),
-                                key_exp.is_static,
-                                key_exp.loc.clone(),
-                            );
+                            let key_node = SimpleExpressionNode::from_node(key_exp);
                             let key = Box::new_in(key_node, ctx.allocator);
                             let mut values = Vec::new_in(ctx.allocator);
                             if let Some(ref exp) = dir.exp
                                 && let ExpressionNode::Simple(val_exp) = exp
                             {
-                                let val_node = SimpleExpressionNode::new(
-                                    val_exp.content.clone(),
-                                    val_exp.is_static,
-                                    val_exp.loc.clone(),
-                                );
+                                let val_node = SimpleExpressionNode::from_node(val_exp);
                                 values.push(Box::new_in(val_node, ctx.allocator));
                             }
                             props.push(IRProp {
@@ -119,11 +103,7 @@ pub(super) fn transform_component<'a>(
                         let key_node = SimpleExpressionNode::new("$", true, SourceLocation::STUB);
                         let key = Box::new_in(key_node, ctx.allocator);
                         let mut values = Vec::new_in(ctx.allocator);
-                        let val_node = SimpleExpressionNode::new(
-                            val_exp.content.clone(),
-                            val_exp.is_static,
-                            val_exp.loc.clone(),
-                        );
+                        let val_node = SimpleExpressionNode::from_node(val_exp);
                         values.push(Box::new_in(val_node, ctx.allocator));
                         props.push(IRProp {
                             key,
@@ -156,11 +136,7 @@ pub(super) fn transform_component<'a>(
                         if let Some(ref exp) = dir.exp
                             && let ExpressionNode::Simple(val_exp) = exp
                         {
-                            let val_node = SimpleExpressionNode::new(
-                                val_exp.content.clone(),
-                                val_exp.is_static,
-                                val_exp.loc.clone(),
-                            );
+                            let val_node = SimpleExpressionNode::from_node(val_exp);
                             values.push(Box::new_in(val_node, ctx.allocator));
                         }
                         props.push(IRProp {

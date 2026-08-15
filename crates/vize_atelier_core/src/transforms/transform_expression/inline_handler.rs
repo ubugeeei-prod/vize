@@ -8,12 +8,14 @@ use vize_carton::{Box, String};
 use crate::{ConstantType, ExpressionNode, SimpleExpressionNode, lane::TransformContext};
 
 use super::{
-    clone_expression, is_event_handler_reference_expression, is_function_expression,
-    normalize_expression,
+    clone_expression, is_function_expression, normalize_expression,
     prefix::{get_identifier_prefix, is_simple_identifier},
     rewrite::{report_invalid_expression, rewrite_expression, rewrite_props_aliases},
+    shape_checks::{is_event_handler_reference_node, is_function_expression_node},
     typescript::strip_typescript_from_expression,
 };
+
+use vize_relief::JsExpression;
 
 /// Process inline handler expression
 pub fn process_inline_handler<'a>(
@@ -43,12 +45,21 @@ pub fn process_inline_handler<'a>(
         .as_ref()
         .map(|s| s.as_str())
         .unwrap_or(content.as_str());
+    // The retained AST applies wherever the checked text is still the node's
+    // own bytes (P1-7); TS-stripped text that changed falls back.
+    let retained: Option<&JsExpression<'_>> =
+        crate::retained::retained_whole_expression(&normalized);
+    let is_function = if function_check_source == content.as_str() {
+        is_function_expression_node(&normalized)
+    } else {
+        is_function_expression(function_check_source)
+    };
 
     // Check if it's an inline function expression
-    if is_function_expression(function_check_source) {
+    if is_function {
         // Process identifiers in the handler
         if ctx.options.prefix_identifiers {
-            let result = rewrite_expression(content, ctx, false);
+            let result = rewrite_expression(content, ctx, false, retained);
             if result.used_unref {
                 ctx.helper(crate::RuntimeHelper::Unref);
             }
@@ -91,7 +102,7 @@ pub fn process_inline_handler<'a>(
 
     // Check if it's an identifier/member-expression handler reference.
     // Vue passes these directly without wrapping them in `$event => (...)`.
-    if is_simple_identifier(content) || is_event_handler_reference_expression(content) {
+    if is_simple_identifier(content) || is_event_handler_reference_node(&normalized) {
         let new_content: String = if ctx.options.prefix_identifiers {
             if is_simple_identifier(content) {
                 if let Some(prefix) = get_identifier_prefix(content, ctx) {
@@ -103,7 +114,7 @@ pub fn process_inline_handler<'a>(
                     content.clone()
                 }
             } else {
-                let result = rewrite_expression(content, ctx, false);
+                let result = rewrite_expression(content, ctx, false, retained);
                 if result.used_unref {
                     ctx.helper(crate::RuntimeHelper::Unref);
                 }
@@ -138,7 +149,7 @@ pub fn process_inline_handler<'a>(
 
     // Compound expression - rewrite and wrap in arrow function
     let rewritten: String = if ctx.options.prefix_identifiers {
-        let result = rewrite_expression(content, ctx, false);
+        let result = rewrite_expression(content, ctx, false, retained);
         if result.used_unref {
             ctx.helper(crate::RuntimeHelper::Unref);
         }

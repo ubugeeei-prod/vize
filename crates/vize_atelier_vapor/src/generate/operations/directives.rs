@@ -24,7 +24,7 @@ fn directive_arg(ctx: &GenerateContext, directive: &DirectiveIRNode<'_>) -> Stri
                 if exp.is_static {
                     cstr!("\"{}\"", exp.content)
                 } else {
-                    ctx.resolve_expression(exp.content.as_str())
+                    ctx.resolve_expression_node(exp)
                 }
             }
             ExpressionNode::Compound(compound) => {
@@ -43,7 +43,7 @@ fn directive_value(ctx: &GenerateContext, directive: &DirectiveIRNode<'_>) -> St
                 if e.is_static {
                     cstr!("\"{}\"", e.content)
                 } else {
-                    ctx.resolve_expression(e.content.as_str())
+                    ctx.resolve_expression_node(e)
                 }
             }
             ExpressionNode::Compound(compound) => {
@@ -84,7 +84,7 @@ pub(super) fn generate_directive(ctx: &mut GenerateContext, directive: &Directiv
                     if e.is_static {
                         cstr!("\"{}\"", e.content)
                     } else {
-                        ctx.resolve_expression(&e.content)
+                        ctx.resolve_expression_node(e)
                     }
                 }
                 _ => vize_carton::CompactString::from("undefined"),

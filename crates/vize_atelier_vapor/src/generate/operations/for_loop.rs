@@ -23,7 +23,7 @@ pub(super) fn generate_for(
     let source = if for_node.source.is_static {
         ["(", for_node.source.content.as_str(), ")"].concat()
     } else {
-        let resolved = ctx.resolve_expression(&for_node.source.content);
+        let resolved = ctx.resolve_expression_node(&for_node.source);
         ["(", &resolved, ")"].concat()
     };
 

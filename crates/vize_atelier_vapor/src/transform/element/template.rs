@@ -180,8 +180,7 @@ fn extract_template_ref_value<'a>(
                 let Some(ExpressionNode::Simple(exp)) = dir.exp.as_ref() else {
                     continue;
                 };
-                let node =
-                    SimpleExpressionNode::new(exp.content.clone(), exp.is_static, exp.loc.clone());
+                let node = SimpleExpressionNode::from_node(exp);
                 return Some(Box::new_in(node, ctx.allocator));
             }
             _ => {}

@@ -16,6 +16,12 @@ metadata.vize.stability = "alpha-supported"
 # (`vize_relief`) and dialect-capability (`vize_armature`) crates.
 legacy = ["vize_relief/_legacy", "vize_armature/legacy"]
 
+# Arms the Davinci P1-7 differential lane: every retained-AST consumption in
+# the atelier transform/codegen sites dual-runs the legacy re-parse and panics
+# on divergence. `cfg(test)` arms it for this crate's own unit tests; this
+# feature arms it for integration/corpus binaries. Off in production builds.
+davinci-differential = []
+
 [dependencies]
 vize_carton = { workspace = true }
 vize_croquis = { workspace = true }

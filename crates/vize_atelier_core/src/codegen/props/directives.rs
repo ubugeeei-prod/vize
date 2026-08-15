@@ -168,13 +168,12 @@ fn generate_vbind_prop(
                     || content.contains('(')
                 {
                     // Template literal or already prefixed expression
-                    // For template literals, wrap with parens and prefix inner identifiers
+                    // For template literals, wrap with parens and prefix inner
+                    // identifiers (retained-AST aware, P1-7).
                     if content.starts_with('`') {
                         ctx.push("(");
-                        let prefixed =
-                            super::super::expression::generate_simple_expression_with_prefix(
-                                ctx, content,
-                            );
+                        let prefixed = super::super::expression::prefix_context::
+                            prefix_identifiers_with_context_node(exp, ctx);
                         ctx.push(&prefixed);
                         ctx.push(")");
                     } else {

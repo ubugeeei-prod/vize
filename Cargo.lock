@@ -3688,6 +3688,7 @@ name = "vize_atelier_sfc"
 version = "0.348.0"
 dependencies = [
  "criterion",
+ "davinci_harness",
  "insta",
  "lightningcss",
  "memchr",

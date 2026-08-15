@@ -23,10 +23,7 @@ pub(super) fn generate_slot_outlet(ctx: &mut GenerateContext, slot: &SlotOutletI
             escape_js_string_literal(slot.name.content.as_str())
         )
     } else {
-        cstr!(
-            "() => ({})",
-            ctx.resolve_expression(slot.name.content.as_str())
-        )
+        cstr!("() => ({})", ctx.resolve_expression_node(&slot.name))
     };
 
     let slot_props = build_slot_props(ctx, slot);
@@ -76,7 +73,7 @@ fn build_slot_props(ctx: &GenerateContext, slot: &SlotOutletIRNode<'_>) -> Optio
         if prop.key.content == "$" {
             let source = first.map_or_else(
                 || String::from("undefined"),
-                |first| cstr!("() => ({})", ctx.resolve_expression(first.content.as_str())),
+                |first| cstr!("() => ({})", ctx.resolve_expression_node(first)),
             );
             spreads.push(source);
             continue;
@@ -90,7 +87,7 @@ fn build_slot_props(ctx: &GenerateContext, slot: &SlotOutletIRNode<'_>) -> Optio
                 if first.is_static {
                     cstr!("\"{}\"", escape_js_string_literal(first.content.as_str()))
                 } else {
-                    cstr!("() => ({})", ctx.resolve_expression(first.content.as_str()))
+                    cstr!("() => ({})", ctx.resolve_expression_node(first))
                 }
             },
         );
@@ -98,7 +95,7 @@ fn build_slot_props(ctx: &GenerateContext, slot: &SlotOutletIRNode<'_>) -> Optio
         if prop.key.is_static {
             entries.push(cstr!("{}: {value}", quote_key(prop.key.content.as_str())));
         } else {
-            let key = ctx.resolve_expression(prop.key.content.as_str());
+            let key = ctx.resolve_expression_node(&prop.key);
             entries.push(cstr!("[{key}]: {value}"));
         }
     }

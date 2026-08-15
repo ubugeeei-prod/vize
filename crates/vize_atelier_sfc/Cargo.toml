@@ -11,6 +11,14 @@ metadata.vize.stability = "alpha-supported"
 [features]
 default = ["native"]
 native = ["dep:lightningcss", "lightningcss/serde", "dep:parcel_selectors"]
+# Arms the Davinci P1-7 differential lane across the atelier crates: every
+# retained-AST consumption dual-runs the legacy re-parse and panics on
+# divergence. Off in production builds; the corpus-runnable entry below
+# requires it.
+davinci-differential = [
+  "vize_atelier_core/davinci-differential",
+  "vize_atelier_vapor/davinci-differential",
+]
 
 [dependencies]
 vize_carton = { workspace = true }
@@ -41,6 +49,7 @@ regex = { workspace = true }
 sha2 = { workspace = true }
 
 [dev-dependencies]
+davinci_harness = { workspace = true }
 insta = { workspace = true }
 criterion = { workspace = true }
 pklrust = { workspace = true }
@@ -53,3 +62,7 @@ harness = false
 [[bench]]
 name = "sfc_compile"
 harness = false
+
+[[test]]
+name = "davinci_differential"
+required-features = ["davinci-differential"]

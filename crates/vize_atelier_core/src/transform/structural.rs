@@ -14,10 +14,12 @@ use super::traverse::traverse_children;
 use super::{ExitFns, ParentNode, TransformContext};
 
 /// Simple expression content for passing between functions
-pub struct SimpleExpressionContent {
+pub struct SimpleExpressionContent<'a> {
     pub content: String,
     pub is_static: bool,
     pub loc: SourceLocation,
+    /// Retained parse of `content` when the source node carried one (P1-7).
+    pub js_ast: Option<vize_relief::JsExpression<'a>>,
 }
 
 #[derive(Clone, Copy)]
@@ -28,7 +30,10 @@ pub enum StructuralDirectiveKind {
     For,
 }
 
-fn directive_expression_to_content(exp: ExpressionNode<'_>, src: &str) -> SimpleExpressionContent {
+fn directive_expression_to_content<'a>(
+    exp: ExpressionNode<'a>,
+    src: &str,
+) -> SimpleExpressionContent<'a> {
     match exp {
         ExpressionNode::Simple(s) => {
             let s = Box::into_inner(s);
@@ -36,6 +41,7 @@ fn directive_expression_to_content(exp: ExpressionNode<'_>, src: &str) -> Simple
                 content: s.content,
                 is_static: s.is_static,
                 loc: s.loc,
+                js_ast: s.js_ast,
             }
         }
         ExpressionNode::Compound(c) => {
@@ -44,6 +50,7 @@ fn directive_expression_to_content(exp: ExpressionNode<'_>, src: &str) -> Simple
                 content: String::new(loc.span.slice(src)),
                 is_static: false,
                 loc,
+                js_ast: None,
             }
         }
     }
@@ -58,7 +65,7 @@ pub fn take_structural_directive<'a>(
     src: &str,
 ) -> Option<(
     StructuralDirectiveKind,
-    Option<SimpleExpressionContent>,
+    Option<SimpleExpressionContent<'a>>,
     SourceLocation,
 )> {
     let mut selected_if = None;
@@ -131,7 +138,7 @@ pub fn extract_key_prop<'a>(el: &mut ElementNode<'a>) -> Option<PropNode<'a>> {
 /// Transform v-if directive
 pub fn transform_v_if<'a>(
     ctx: &mut TransformContext<'a>,
-    exp: Option<&SimpleExpressionContent>,
+    exp: Option<&SimpleExpressionContent<'a>>,
     is_root: bool,
 ) -> Option<ExitFns<'a>> {
     let directive_loc = exp
@@ -147,10 +154,43 @@ pub fn transform_v_if<'a>(
     )
 }
 
+/// Build the v-if/v-else-if condition node from the taken directive
+/// expression and run identifier prefixing over it. The retained parse rides
+/// along (P1-7): the content is the source node's own bytes.
+fn condition_expression<'a>(
+    ctx: &mut TransformContext<'a>,
+    e: &SimpleExpressionContent<'a>,
+) -> ExpressionNode<'a> {
+    let raw_exp = ExpressionNode::Simple(Box::new_in(
+        SimpleExpressionNode {
+            content: e.content.clone(),
+            is_static: e.is_static,
+            const_type: if e.is_static {
+                ConstantType::CanStringify
+            } else {
+                ConstantType::NotConstant
+            },
+            loc: e.loc.clone(),
+            js_ast: e.js_ast,
+            hoisted: None,
+            identifiers: None,
+            is_handler_key: false,
+            is_ref_transformed: false,
+        },
+        ctx.allocator,
+    ));
+    // Process expression to add $setup. prefix
+    if ctx.options.prefix_identifiers || ctx.options.is_ts {
+        crate::steps::expression::process_expression(ctx, &raw_exp, false)
+    } else {
+        raw_exp
+    }
+}
+
 pub(crate) fn transform_v_if_with_directive<'a>(
     ctx: &mut TransformContext<'a>,
     directive_kind: StructuralDirectiveKind,
-    exp: Option<&SimpleExpressionContent>,
+    exp: Option<&SimpleExpressionContent<'a>>,
     directive_loc: &SourceLocation,
     is_root: bool,
 ) -> Option<ExitFns<'a>> {
@@ -179,32 +219,7 @@ pub(crate) fn transform_v_if_with_directive<'a>(
         };
 
         // Create condition expression and process it for identifier prefixing
-        let condition = exp.map(|e| {
-            let raw_exp = ExpressionNode::Simple(Box::new_in(
-                SimpleExpressionNode {
-                    content: e.content.clone(),
-                    is_static: e.is_static,
-                    const_type: if e.is_static {
-                        ConstantType::CanStringify
-                    } else {
-                        ConstantType::NotConstant
-                    },
-                    loc: e.loc.clone(),
-                    js_ast: None,
-                    hoisted: None,
-                    identifiers: None,
-                    is_handler_key: false,
-                    is_ref_transformed: false,
-                },
-                allocator,
-            ));
-            // Process expression to add $setup. prefix
-            if ctx.options.prefix_identifiers || ctx.options.is_ts {
-                crate::steps::expression::process_expression(ctx, &raw_exp, false)
-            } else {
-                raw_exp
-            }
-        });
+        let condition = exp.map(|e| condition_expression(ctx, e));
 
         // Extract user key from the element if present,
         // but NOT if the element also has v-for (the key belongs to v-for in that case)
@@ -301,32 +316,7 @@ pub(crate) fn transform_v_if_with_directive<'a>(
             };
 
             // Create condition for else-if, None for else
-            let condition = exp.map(|e| {
-                let raw_exp = ExpressionNode::Simple(Box::new_in(
-                    SimpleExpressionNode {
-                        content: e.content.clone(),
-                        is_static: e.is_static,
-                        const_type: if e.is_static {
-                            ConstantType::CanStringify
-                        } else {
-                            ConstantType::NotConstant
-                        },
-                        loc: e.loc.clone(),
-                        js_ast: None,
-                        hoisted: None,
-                        identifiers: None,
-                        is_handler_key: false,
-                        is_ref_transformed: false,
-                    },
-                    allocator,
-                ));
-                // Process expression to add $setup. prefix
-                if ctx.options.prefix_identifiers || ctx.options.is_ts {
-                    crate::steps::expression::process_expression(ctx, &raw_exp, false)
-                } else {
-                    raw_exp
-                }
-            });
+            let condition = exp.map(|e| condition_expression(ctx, e));
 
             // Extract user key from the element if present,
             // but NOT if the element also has v-for (the key belongs to v-for in that case)
@@ -432,7 +422,7 @@ pub(crate) fn transform_v_if_with_directive<'a>(
 /// Transform v-for directive
 pub fn transform_v_for<'a>(
     ctx: &mut TransformContext<'a>,
-    exp: Option<&SimpleExpressionContent>,
+    exp: Option<&SimpleExpressionContent<'a>>,
 ) -> Option<ExitFns<'a>> {
     let allocator = ctx.allocator;
 

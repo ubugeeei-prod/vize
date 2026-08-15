@@ -160,22 +160,14 @@ pub(crate) fn transform_element<'a>(
                             // v-bind -> prop, v-bind="obj" -> ordered spread source
                             if let Some(ref arg) = dir.arg {
                                 if let ExpressionNode::Simple(key_exp) = arg {
-                                    let key_node = SimpleExpressionNode::new(
-                                        key_exp.content.clone(),
-                                        key_exp.is_static,
-                                        key_exp.loc.clone(),
-                                    );
+                                    let key_node = SimpleExpressionNode::from_node(key_exp);
                                     let key = Box::new_in(key_node, ctx.allocator);
 
                                     let mut values = Vec::new_in(ctx.allocator);
                                     if let Some(ref exp) = dir.exp
                                         && let ExpressionNode::Simple(val_exp) = exp
                                     {
-                                        let val_node = SimpleExpressionNode::new(
-                                            val_exp.content.clone(),
-                                            val_exp.is_static,
-                                            val_exp.loc.clone(),
-                                        );
+                                        let val_node = SimpleExpressionNode::from_node(val_exp);
                                         values.push(Box::new_in(val_node, ctx.allocator));
                                     }
 
@@ -192,11 +184,7 @@ pub(crate) fn transform_element<'a>(
                                     SimpleExpressionNode::new("$", true, SourceLocation::STUB);
                                 let key = Box::new_in(key_node, ctx.allocator);
                                 let mut values = Vec::new_in(ctx.allocator);
-                                let val_node = SimpleExpressionNode::new(
-                                    val_exp.content.clone(),
-                                    val_exp.is_static,
-                                    val_exp.loc.clone(),
-                                );
+                                let val_node = SimpleExpressionNode::from_node(val_exp);
                                 values.push(Box::new_in(val_node, ctx.allocator));
 
                                 props.push(IRProp {
@@ -233,11 +221,7 @@ pub(crate) fn transform_element<'a>(
                                 if let Some(ref exp) = dir.exp
                                     && let ExpressionNode::Simple(val_exp) = exp
                                 {
-                                    let val_node = SimpleExpressionNode::new(
-                                        val_exp.content.clone(),
-                                        val_exp.is_static,
-                                        val_exp.loc.clone(),
-                                    );
+                                    let val_node = SimpleExpressionNode::from_node(val_exp);
                                     values.push(Box::new_in(val_node, ctx.allocator));
                                 }
 
@@ -515,14 +499,7 @@ fn get_slot_outlet_name<'a>(
                     && arg.content == "name"
                     && let Some(ExpressionNode::Simple(exp)) = dir.exp.as_ref()
                 {
-                    return Box::new_in(
-                        SimpleExpressionNode::new(
-                            exp.content.clone(),
-                            exp.is_static,
-                            exp.loc.clone(),
-                        ),
-                        ctx.allocator,
-                    );
+                    return Box::new_in(SimpleExpressionNode::from_node(exp), ctx.allocator);
                 }
             }
         }
@@ -580,21 +557,10 @@ fn get_slot_outlet_props<'a>(
                             continue;
                         }
 
-                        let key = Box::new_in(
-                            SimpleExpressionNode::new(
-                                arg.content.clone(),
-                                arg.is_static,
-                                arg.loc.clone(),
-                            ),
-                            ctx.allocator,
-                        );
+                        let key = Box::new_in(SimpleExpressionNode::from_node(arg), ctx.allocator);
                         let mut values = Vec::new_in(ctx.allocator);
                         values.push(Box::new_in(
-                            SimpleExpressionNode::new(
-                                exp.content.clone(),
-                                exp.is_static,
-                                exp.loc.clone(),
-                            ),
+                            SimpleExpressionNode::from_node(exp),
                             ctx.allocator,
                         ));
 
@@ -611,11 +577,7 @@ fn get_slot_outlet_props<'a>(
                         );
                         let mut values = Vec::new_in(ctx.allocator);
                         values.push(Box::new_in(
-                            SimpleExpressionNode::new(
-                                exp.content.clone(),
-                                exp.is_static,
-                                exp.loc.clone(),
-                            ),
+                            SimpleExpressionNode::from_node(exp),
                             ctx.allocator,
                         ));
 

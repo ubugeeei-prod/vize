@@ -71,7 +71,7 @@ pub(super) fn generate_create_component(
         ComponentKind::Dynamic => {
             ctx.use_helper("createDynamicComponent");
             let is_arg = if let Some(ref is_exp) = component.is_expr {
-                let resolved = ctx.resolve_expression(is_exp.content.as_str());
+                let resolved = ctx.resolve_expression_node(is_exp);
                 cstr!("() => ({})", resolved)
             } else {
                 "null".to_compact_string()
@@ -167,7 +167,7 @@ pub(super) fn generate_create_component(
                 ctx.push_indent();
                 ctx.push("() => ({\n");
                 ctx.indent();
-                let name_resolved = ctx.resolve_expression(slot.name.content.as_str());
+                let name_resolved = ctx.resolve_expression_node(&slot.name);
                 ctx.push_line(&cstr!("name: {},", name_resolved));
                 ctx.push_indent();
                 ctx.push("fn:");
@@ -196,7 +196,7 @@ pub(super) fn generate_create_component(
     // v-show after component creation
     if let Some(ref v_show) = component.v_show {
         ctx.use_helper("applyVShow");
-        let resolved = ctx.resolve_expression(v_show.content.as_str());
+        let resolved = ctx.resolve_expression_node(v_show);
         ctx.push_line(&cstr!(
             "_applyVShow(n{}, () => ({}))",
             component.id,

@@ -16,7 +16,13 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
         String::from("() => {}")
     };
 
-    let resolved_handler = ctx.resolve_expression(&handler);
+    // Node-aware resolve (P1-7): `handler` is a verbatim copy of the value
+    // node's content, so the retained AST applies through the node entry.
+    let resolved_handler = if let Some(ref value) = set_event.value {
+        ctx.resolve_expression_node(value)
+    } else {
+        ctx.resolve_expression(&handler)
+    };
     // Determine handler format based on content
     let invoker_body: String = if is_inline_statement_block(&handler) {
         if handler.contains("$event") {
@@ -69,7 +75,7 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
         // Dynamic event - use renderEffect + _on
         ctx.use_helper("on");
         ctx.use_helper("renderEffect");
-        let event_expr = ctx.resolve_expression(event_name.as_str());
+        let event_expr = ctx.resolve_expression_node(&set_event.key);
         ctx.push_line("_renderEffect(() => {");
         ctx.indent();
         ctx.push_line("");

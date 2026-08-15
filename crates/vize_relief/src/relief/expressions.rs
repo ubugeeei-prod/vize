@@ -66,6 +66,17 @@ impl<'a> SimpleExpressionNode<'a> {
         }
     }
 
+    /// Clone `node`'s content/staticness/location exactly as
+    /// [`SimpleExpressionNode::new`] would, carrying the retained AST along
+    /// (Davinci P1-7): the clone's content is byte-identical to the
+    /// original's, so the parse-once `js_ast` describes it verbatim.
+    pub fn from_node(node: &SimpleExpressionNode<'a>) -> Self {
+        Self {
+            js_ast: node.js_ast,
+            ..Self::new(node.content.clone(), node.is_static, node.loc.clone())
+        }
+    }
+
     pub fn node_type(&self) -> NodeType {
         NodeType::SimpleExpression
     }
@@ -85,7 +96,11 @@ impl<'a> SimpleExpressionNode<'a> {
 /// references are per-compile ephemera. Anything crossing a compile boundary
 /// (caches, folios, summaries) must convert to an owned form (the expression
 /// text) first — the arena/cache contract; never store this reference.
-#[derive(Debug)]
+///
+/// `Copy`: both fields are shared references, so consumers (P1-6/P1-7) can
+/// propagate the retained parse through byte-identical clones of a node
+/// without touching the arena.
+#[derive(Debug, Clone, Copy)]
 pub struct JsExpression<'a> {
     /// Retained oxc AST, allocated in the compile's oxc arena pool.
     pub ast: &'a oxc_ast::ast::Expression<'a>,

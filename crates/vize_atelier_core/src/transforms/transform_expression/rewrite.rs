@@ -1,12 +1,17 @@
 //! Expression rewriting with identifier prefixing.
 //!
 //! Parses expressions with OXC, walks the AST to collect identifiers,
-//! and applies prefix/suffix rewrites for proper context binding.
+//! and applies prefix/suffix rewrites for proper context binding. When the
+//! node carries a still-valid retained AST (Davinci P1-5/P1-7), the walk
+//! reads it directly and the parse below is skipped — see
+//! `retained_rewrite.rs`.
 
+use oxc_ast::ast::Expression;
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::String;
+use vize_relief::JsExpression;
 
 use crate::SourceLocation;
 use crate::errors::ErrorCode;
@@ -14,7 +19,9 @@ use crate::lane::TransformContext;
 
 use super::{
     collector::IdentifierCollector,
+    parse_checks::{parse_as_params, parses_as_typescript},
     prefix::{get_identifier_prefix, is_ref_binding_simple, is_simple_identifier},
+    retained_rewrite::rewrite_retained,
     typescript::strip_typescript_from_expression,
 };
 
@@ -114,50 +121,58 @@ pub(super) fn report_invalid_expression(
     ctx.on_error_with_message(ErrorCode::InvalidExpression, message, Some(loc.clone()));
 }
 
-/// Returns true when `content` parses as a TypeScript expression or program.
-///
-/// Only consulted on the parse-failure path for `is_ts` templates: when the
-/// TypeScript-stripping step falls back to the original source, the plain-JS
-/// parse below can fail even though the expression is valid TypeScript that
-/// the official compiler (babel with the `typescript` plugin) accepts. The
-/// parity rule is that vize must not reject what the official compiler
-/// accepts, so such expressions keep the silent passthrough behavior.
-fn parses_as_typescript(content: &str) -> bool {
-    let source_type = SourceType::ts().with_module(true);
+/// Rewrite a successfully parsed `(js_content)` expression: walk the AST,
+/// collect prefix/suffix rewrites (spans are wrapped-text relative, hence
+/// the `-1` adjustment), and apply them to `js_content`.
+pub(super) fn rewrite_from_wrapped_expr(
+    expr: &Expression<'_>,
+    wrapped: &str,
+    js_content: &str,
+    ctx: &TransformContext<'_>,
+) -> RewriteResult {
+    let mut collector = IdentifierCollector::new(ctx, wrapped);
+    collector.visit_expression(expr);
 
-    let expr_allocator = crate::expr_parse_probe::parse_arena();
-    let mut wrapped = String::with_capacity(content.len() + 2);
-    wrapped.push('(');
-    wrapped.push_str(content);
-    wrapped.push(')');
-    if Parser::new(&expr_allocator, &wrapped, source_type)
-        .parse_expression()
-        .is_ok()
-    {
-        return true;
+    let used_unref = collector.used_unref;
+
+    // Combine prefix rewrites (from HashSet) with suffix rewrites
+    // Each rewrite is (position, prefix, suffix)
+    let mut all_rewrites: Vec<(usize, String, String)> = collector
+        .rewrites
+        .into_iter()
+        .map(|(pos, prefix)| (pos, prefix, String::default()))
+        .collect();
+
+    // Add suffix rewrites (suffixes come after the identifier)
+    for (pos, suffix) in collector.suffix_rewrites {
+        all_rewrites.push((pos, String::default(), suffix));
     }
 
-    let program_allocator = crate::expr_parse_probe::parse_arena();
-    Parser::new(&program_allocator, content, source_type)
-        .parse()
-        .diagnostics
-        .is_empty()
-}
+    // Sort by position descending so we can replace from end to start
+    all_rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
 
-fn parse_as_params(content: &str, source_type: SourceType) -> Result<(), String> {
-    let allocator = crate::expr_parse_probe::parse_arena();
-    let mut wrapped = String::with_capacity(content.len() + 12);
-    wrapped.push('(');
-    wrapped.push_str(content);
-    wrapped.push_str(") => null");
+    // Apply rewrites
+    let mut result = String::new(js_content);
+    for (pos, prefix, suffix) in all_rewrites {
+        // Adjust position for the wrapping parenthesis we added
+        let adjusted_pos = pos.saturating_sub(1);
+        if adjusted_pos <= result.len() {
+            if !suffix.is_empty() {
+                // Insert suffix at the end of identifier
+                result.insert_str(adjusted_pos, &suffix);
+            }
+            if !prefix.is_empty() {
+                // Insert prefix at the start of identifier
+                result.insert_str(adjusted_pos, &prefix);
+            }
+        }
+    }
 
-    let parser = Parser::new(&allocator, &wrapped, source_type);
-    parser.parse_expression().map(|_| ()).map_err(|errors| {
-        errors
-            .first()
-            .map(|error| String::new(error.message.as_ref()))
-            .unwrap_or_else(|| String::new("invalid parameters"))
-    })
+    RewriteResult {
+        code: rewrite_props_aliases(result, ctx),
+        used_unref,
+        parse_error: None,
+    }
 }
 
 /// Rewrite an expression string, prefixing identifiers with `_ctx.` where needed
@@ -165,6 +180,7 @@ pub(crate) fn rewrite_expression(
     content: &str,
     ctx: &TransformContext<'_>,
     as_params: bool,
+    retained: Option<&JsExpression<'_>>,
 ) -> RewriteResult {
     // Pass raw content through instead of aborting: depth overflow keeps the
     // silent passthrough (#956); mismatched delimiters surface a diagnostic.
@@ -206,6 +222,17 @@ pub(crate) fn rewrite_expression(
         };
     }
 
+    // Retained fast path (P1-7): the parse-once AST still describes these
+    // exact bytes (caller gated `raw == content`; TS stripping changed
+    // nothing) and the dialect gate holds, so the wrapped re-parse below is
+    // provably the same parse. Walk the retained AST instead.
+    if let Some(js) = retained
+        && js_content.as_str() == content
+        && crate::retained::js_module_compatible(js)
+    {
+        return rewrite_retained(js, ctx, as_params);
+    }
+
     // Try to parse as a JavaScript expression
     let oxc_allocator = crate::expr_parse_probe::parse_arena();
     let source_type = SourceType::default().with_module(true);
@@ -219,52 +246,7 @@ pub(crate) fn rewrite_expression(
     let parse_result = parser.parse_expression();
 
     match parse_result {
-        Ok(expr) => {
-            // Successfully parsed - walk the AST and collect identifiers to rewrite
-            let mut collector = IdentifierCollector::new(ctx, &wrapped);
-            collector.visit_expression(&expr);
-
-            let used_unref = collector.used_unref;
-
-            // Combine prefix rewrites (from HashSet) with suffix rewrites
-            // Each rewrite is (position, prefix, suffix)
-            let mut all_rewrites: Vec<(usize, String, String)> = collector
-                .rewrites
-                .into_iter()
-                .map(|(pos, prefix)| (pos, prefix, String::default()))
-                .collect();
-
-            // Add suffix rewrites (suffixes come after the identifier)
-            for (pos, suffix) in collector.suffix_rewrites {
-                all_rewrites.push((pos, String::default(), suffix));
-            }
-
-            // Sort by position descending so we can replace from end to start
-            all_rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
-
-            // Apply rewrites
-            let mut result = js_content.clone();
-            for (pos, prefix, suffix) in all_rewrites {
-                // Adjust position for the wrapping parenthesis we added
-                let adjusted_pos = pos.saturating_sub(1);
-                if adjusted_pos <= result.len() {
-                    if !suffix.is_empty() {
-                        // Insert suffix at the end of identifier
-                        result.insert_str(adjusted_pos, &suffix);
-                    }
-                    if !prefix.is_empty() {
-                        // Insert prefix at the start of identifier
-                        result.insert_str(adjusted_pos, &prefix);
-                    }
-                }
-            }
-
-            RewriteResult {
-                code: rewrite_props_aliases(result, ctx),
-                used_unref,
-                parse_error: None,
-            }
-        }
+        Ok(expr) => rewrite_from_wrapped_expr(&expr, &wrapped, &js_content, ctx),
         Err(expression_errors) => {
             // Expression parsing failed - try parsing as a program (multi-statement handlers)
             let oxc_allocator2 = crate::expr_parse_probe::parse_arena();
@@ -337,8 +319,13 @@ pub(crate) fn rewrite_expression(
                 // parser detail for the caller to emit a diagnostic — unless
                 // the original source is valid TypeScript that only vize's
                 // TS-stripping fallback failed to lower (the official compiler
-                // accepts it, so vize must not reject it).
-                if !ctx.options.is_ts || !parses_as_typescript(content) {
+                // accepts it, so vize must not reject it). A retained AST that
+                // passed the dialect gate is itself proof the original parses
+                // as TypeScript (P1-7), so the re-check is skipped.
+                let ts_accepts = ctx.options.is_ts
+                    && (retained.is_some_and(crate::retained::js_module_compatible)
+                        || parses_as_typescript(content));
+                if !ts_accepts {
                     parse_error = Some(
                         expression_errors
                             .first()

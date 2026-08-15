@@ -21,6 +21,8 @@ pub mod steps;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
+mod tests_davinci_differential;
+#[cfg(test)]
 mod tests_dotted_slots;
 #[cfg(test)]
 mod tests_setup_components;
