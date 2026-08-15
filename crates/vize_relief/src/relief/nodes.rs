@@ -46,9 +46,9 @@ pub struct RootNode<'a> {
 
 /// 296 -> 224: eight arena vectors at -8 bytes each plus `source`. The
 /// legacy build carries one more arena vector (`filters`), 320 -> 248.
-#[cfg(not(feature = "_legacy"))]
+#[cfg(all(target_pointer_width = "64", not(feature = "_legacy")))]
 const _: () = assert!(size_of::<RootNode<'_>>() == 224);
-#[cfg(feature = "_legacy")]
+#[cfg(all(target_pointer_width = "64", feature = "_legacy"))]
 const _: () = assert!(size_of::<RootNode<'_>>() == 248);
 
 impl<'a> RootNode<'a> {

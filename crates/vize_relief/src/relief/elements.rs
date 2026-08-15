@@ -31,6 +31,10 @@ pub struct ElementNode<'a> {
 /// Node footprints are pinned: the P1-10 string diet traded every owned
 /// `CompactString` field (24 bytes) for an `&'a str` (16) and every arena
 /// container for oxc's (32 -> 24 bytes per `Vec`). `ElementNode` 128 -> 104.
+///
+/// Every pinned figure in this crate is a 64-bit footprint, so the assertions
+/// only apply where pointers are 8 bytes wide (the wasm32 build is 32-bit).
+#[cfg(target_pointer_width = "64")]
 const _: () = assert!(size_of::<ElementNode<'_>>() == 104);
 
 impl<'a> ElementNode<'a> {
@@ -80,6 +84,7 @@ pub struct AttributeNode<'a> {
 }
 
 /// 80 -> 56 (name + the nested text node's content).
+#[cfg(target_pointer_width = "64")]
 const _: () = assert!(size_of::<AttributeNode<'_>>() == 56);
 
 impl<'a> AttributeNode<'a> {
@@ -121,6 +126,7 @@ pub struct DirectiveNode<'a> {
 }
 
 /// 208 -> 176 (`name`, `raw_name`, and the modifiers vector).
+#[cfg(target_pointer_width = "64")]
 const _: () = assert!(size_of::<DirectiveNode<'_>>() == 176);
 
 impl<'a> DirectiveNode<'a> {
@@ -152,6 +158,7 @@ pub struct TextNode<'a> {
 }
 
 /// 32 -> 24.
+#[cfg(target_pointer_width = "64")]
 const _: () = assert!(size_of::<TextNode<'_>>() == 24);
 
 impl<'a> TextNode<'a> {
@@ -183,6 +190,7 @@ pub enum CommentKind {
 }
 
 /// 40 -> 32.
+#[cfg(target_pointer_width = "64")]
 const _: () = assert!(size_of::<CommentNode<'_>>() == 32);
 
 impl<'a> CommentNode<'a> {

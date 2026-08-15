@@ -43,7 +43,9 @@ pub struct IfBranchNode<'a> {
 }
 
 /// 80 -> 72 and 176 -> 168: one arena vector each.
+#[cfg(target_pointer_width = "64")]
 const _: () = assert!(size_of::<IfBranchNode<'_>>() == 72);
+#[cfg(target_pointer_width = "64")]
 const _: () = assert!(size_of::<ForNode<'_>>() == 168);
 
 impl<'a> IfBranchNode<'a> {

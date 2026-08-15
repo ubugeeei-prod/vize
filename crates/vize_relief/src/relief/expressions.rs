@@ -50,6 +50,7 @@ pub struct SimpleExpressionNode<'a> {
 }
 
 /// 120 -> 88: `content` and the `identifiers` vector both shrank.
+#[cfg(target_pointer_width = "64")]
 const _: () = assert!(size_of::<SimpleExpressionNode<'_>>() == 88);
 
 impl<'a> SimpleExpressionNode<'a> {
@@ -126,6 +127,7 @@ pub struct CompoundExpressionNode<'a> {
 }
 
 /// 88 -> 64.
+#[cfg(target_pointer_width = "64")]
 const _: () = assert!(size_of::<CompoundExpressionNode<'_>>() == 64);
 
 impl<'a> CompoundExpressionNode<'a> {
