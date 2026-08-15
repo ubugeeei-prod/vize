@@ -67,7 +67,7 @@ impl Rule for NoDupeStyleProperties {
             };
 
             let mut seen: FxHashMap<String, ()> = FxHashMap::default();
-            for declaration in value.content.as_str().split(';') {
+            for declaration in value.content.split(';') {
                 // A declaration is `property: value`; the property name is the
                 // text before the first colon.
                 let property = match declaration.split_once(':') {

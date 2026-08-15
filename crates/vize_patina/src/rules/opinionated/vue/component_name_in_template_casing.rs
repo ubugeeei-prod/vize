@@ -103,7 +103,7 @@ fn check_element<'a>(
     casing: ComponentCasing,
     allow_vuetify_tags: bool,
 ) {
-    let tag = element.tag.as_str();
+    let tag = element.tag;
 
     // Skip HTML elements, SVG elements, and Vue built-ins.
     //

@@ -231,17 +231,17 @@ impl Rule for AriaRole {
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         // Skip non-DOM elements if configured
-        if self.ignore_non_dom && !Self::is_dom_element(element.tag.as_str()) {
+        if self.ignore_non_dom && !Self::is_dom_element(element.tag) {
             return;
         }
 
         for prop in &element.props {
             match prop {
                 PropNode::Attribute(attr) => {
-                    if attr.name.as_str() == "role"
+                    if attr.name == "role"
                         && let Some(value) = &attr.value
                     {
-                        self.check_role(ctx, value.content.as_str(), &attr.loc);
+                        self.check_role(ctx, value.content, &attr.loc);
                     }
                 }
                 PropNode::Directive(dir) => {
@@ -249,12 +249,12 @@ impl Rule for AriaRole {
                     if dir.name == "bind"
                         && let Some(vize_relief::ExpressionNode::Simple(arg)) = &dir.arg
                         && arg.is_static
-                        && arg.content.as_str() == "role"
+                        && arg.content == "role"
                     {
                         // For dynamic roles, we can only check if the entire
                         // expression is a single string/template literal.
                         if let Some(vize_relief::ExpressionNode::Simple(expr)) = &dir.exp
-                            && let Some(role) = string_literal_value(expr.content.as_str())
+                            && let Some(role) = string_literal_value(expr.content)
                         {
                             self.check_role(ctx, role, &dir.loc);
                         }

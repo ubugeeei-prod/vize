@@ -15,8 +15,8 @@ fn multiple_top_level_roots_are_each_lowered() {
     let out = lower_all(&bump, "const A = () => <a/>;\nconst B = () => <b/>;");
     assert!(!out.has_errors(), "{:?}", out.diagnostics);
     assert_eq!(out.roots.len(), 2);
-    assert_eq!(root_element(&out.roots[0].root).tag.as_str(), "a");
-    assert_eq!(root_element(&out.roots[1].root).tag.as_str(), "b");
+    assert_eq!(root_element(&out.roots[0].root).tag, "a");
+    assert_eq!(root_element(&out.roots[1].root).tag, "b");
 }
 
 #[test]
@@ -24,9 +24,9 @@ fn component_with_element_children() {
     let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <Card><h1>Title</h1></Card>;");
     let card = root_element(&root);
-    assert_eq!(card.tag.as_str(), "Card");
+    assert_eq!(card.tag, "Card");
     assert_eq!(card.tag_type, ElementType::Component);
-    assert_eq!(as_element(&card.children[0]).tag.as_str(), "h1");
+    assert_eq!(as_element(&card.children[0]).tag, "h1");
 }
 
 #[test]
@@ -38,7 +38,7 @@ fn object_slot_children_become_slot_templates() {
     let root = lower_one(&bump, "const a = <Comp>{{ default: () => <p/> }}</Comp>;");
     let comp = root_element(&root);
     let template = as_element(&comp.children[0]);
-    assert_eq!(template.tag.as_str(), "template");
+    assert_eq!(template.tag, "template");
     assert_eq!(template.tag_type, ElementType::Template);
     let slot = find_directive(template, "slot").expect("template carries a `slot` directive");
     let arg = slot
@@ -46,7 +46,7 @@ fn object_slot_children_become_slot_templates() {
         .as_ref()
         .expect("slot directive has a static name arg");
     assert!(is_static(arg), "slot name is static");
-    assert_eq!(as_element(&template.children[0]).tag.as_str(), "p");
+    assert_eq!(as_element(&template.children[0]).tag, "p");
 }
 
 #[test]
@@ -56,11 +56,11 @@ fn render_prop_child_becomes_default_slot_template() {
     let root = lower_one(&bump, "const a = <List>{(item) => <li/>}</List>;");
     let list = root_element(&root);
     let template = as_element(&list.children[0]);
-    assert_eq!(template.tag.as_str(), "template");
+    assert_eq!(template.tag, "template");
     assert_eq!(template.tag_type, ElementType::Template);
     let slot = find_directive(template, "slot").expect("template carries a `slot` directive");
     assert!(slot.exp.is_some(), "scoped slot carries the param pattern");
-    assert_eq!(as_element(&template.children[0]).tag.as_str(), "li");
+    assert_eq!(as_element(&template.children[0]).tag, "li");
 }
 
 #[test]
@@ -78,7 +78,7 @@ fn nested_components_and_intrinsics_mix() {
     );
     let main = as_element(&layout.children[1]);
     assert_eq!(main.tag_type, ElementType::Element);
-    assert_eq!(as_element(&main.children[0]).tag.as_str(), "Content");
+    assert_eq!(as_element(&main.children[0]).tag, "Content");
 }
 
 #[test]
@@ -86,7 +86,7 @@ fn jsx_in_return_statement_is_found() {
     let bump = Allocator::new();
     let out = lower_all(&bump, "function App() {\n  return <div>ok</div>;\n}");
     assert_eq!(out.roots.len(), 1);
-    assert_eq!(root_element(&out.roots[0].root).tag.as_str(), "div");
+    assert_eq!(root_element(&out.roots[0].root).tag, "div");
 }
 
 #[test]
@@ -105,9 +105,9 @@ fn render_prop_child_with_a_plain_body_keeps_its_value() {
     let root = lower_one(&bump, "const a = <B>{() => 'foo'}</B>;");
     let component = root_element(&root);
     let template = as_element(&component.children[0]);
-    assert_eq!(template.tag.as_str(), "template");
+    assert_eq!(template.tag, "template");
     assert_eq!(template.children.len(), 1);
-    assert_eq!(as_text(&template.children[0]).content.as_str(), "foo");
+    assert_eq!(as_text(&template.children[0]).content, "foo");
 }
 
 #[test]

@@ -9,7 +9,7 @@
 //!
 //! ```ignore
 //! davinci_harness::stage::bench_stage_with_metrics(c, "core_transform_small", path, |window| {
-//!     let allocator = Bump::new();                       // setup: not measured
+//!     let allocator = Allocator::new();                  // setup: not measured
 //!     let (mut root, _) = parse(&allocator, template);   // setup: not measured
 //!     window.measure(|| transform(&allocator, &mut root, options, None))
 //! });

@@ -2,7 +2,7 @@
 //!
 //! Transforms v-bind (: shorthand) directives into SetPropIRNode.
 
-use vize_carton::{Box, Bump, Vec, camelize};
+use vize_carton::{Allocator, Box, Vec, camelize};
 
 use crate::ir::{IRProp, OperationNode, SetPropIRNode};
 use vize_atelier_core::{
@@ -11,11 +11,11 @@ use vize_atelier_core::{
 
 /// Transform v-bind directive to IR
 pub fn transform_v_bind<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     dir: &DirectiveNode<'a>,
     el: &ElementNode<'a>,
     element_id: usize,
-    source: &str,
+    source: &'a str,
 ) -> Option<OperationNode<'a>> {
     let key = extract_prop_key(allocator, dir, source)?;
     let values = extract_prop_values(allocator, dir, source);
@@ -27,7 +27,7 @@ pub fn transform_v_bind<'a>(
             values,
             is_component: el.tag_type == ElementType::Component,
         },
-        tag: el.tag.clone(),
+        tag: el.tag,
         camel: has_modifier(dir, "camel"),
         prop_modifier: has_modifier(dir, "prop"),
     };
@@ -37,19 +37,18 @@ pub fn transform_v_bind<'a>(
 
 /// Transform v-bind without argument (v-bind="obj")
 pub fn transform_v_bind_dynamic<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     dir: &DirectiveNode<'a>,
     element_id: usize,
 ) -> Option<OperationNode<'a>> {
     // v-bind without argument requires merging props
-    let mut props = Vec::new_in(allocator);
+    let mut props = Vec::new_in(&allocator);
 
     if let Some(ref exp) = dir.exp
         && let ExpressionNode::Simple(simple) = exp
     {
-        let node =
-            SimpleExpressionNode::new(simple.content.clone(), simple.is_static, simple.loc.clone());
-        props.push(Box::new_in(node, allocator));
+        let node = SimpleExpressionNode::new(simple.content, simple.is_static, simple.loc.clone());
+        props.push(Box::new_in(node, &allocator));
     }
 
     Some(OperationNode::SetDynamicProps(
@@ -63,21 +62,21 @@ pub fn transform_v_bind_dynamic<'a>(
 
 /// Extract prop key from directive argument
 fn extract_prop_key<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     dir: &DirectiveNode<'a>,
-    source: &str,
+    source: &'a str,
 ) -> Option<Box<'a, SimpleExpressionNode<'a>>> {
     dir.arg.as_ref().map(|arg| match arg {
         ExpressionNode::Simple(exp) => {
             // Apply camel modifier if present
-            let content = if has_modifier(dir, "camel") {
-                camelize(&exp.content)
+            let content: &'a str = if has_modifier(dir, "camel") {
+                allocator.alloc_str(&camelize(exp.content))
             } else {
-                exp.content.clone()
+                exp.content
             };
 
             let node = SimpleExpressionNode::new(content, exp.is_static, exp.loc.clone());
-            Box::new_in(node, allocator)
+            Box::new_in(node, &allocator)
         }
         ExpressionNode::Compound(compound) => {
             let node = SimpleExpressionNode::new(
@@ -85,28 +84,25 @@ fn extract_prop_key<'a>(
                 false,
                 compound.loc.clone(),
             );
-            Box::new_in(node, allocator)
+            Box::new_in(node, &allocator)
         }
     })
 }
 
 /// Extract prop values from directive expression
 fn extract_prop_values<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     dir: &DirectiveNode<'a>,
-    source: &str,
+    source: &'a str,
 ) -> Vec<'a, Box<'a, SimpleExpressionNode<'a>>> {
-    let mut values = Vec::new_in(allocator);
+    let mut values = Vec::new_in(&allocator);
 
     if let Some(ref exp) = dir.exp {
         match exp {
             ExpressionNode::Simple(simple) => {
-                let node = SimpleExpressionNode::new(
-                    simple.content.clone(),
-                    simple.is_static,
-                    simple.loc.clone(),
-                );
-                values.push(Box::new_in(node, allocator));
+                let node =
+                    SimpleExpressionNode::new(simple.content, simple.is_static, simple.loc.clone());
+                values.push(Box::new_in(node, &allocator));
             }
             ExpressionNode::Compound(compound) => {
                 let node = SimpleExpressionNode::new(
@@ -114,7 +110,7 @@ fn extract_prop_values<'a>(
                     false,
                     compound.loc.clone(),
                 );
-                values.push(Box::new_in(node, allocator));
+                values.push(Box::new_in(node, &allocator));
             }
         }
     }

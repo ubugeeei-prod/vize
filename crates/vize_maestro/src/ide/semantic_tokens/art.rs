@@ -291,7 +291,7 @@ impl SemanticTokensService {
         tokens: &mut Vec<AbsoluteToken>,
         line_index: &LineIndex<'_>,
     ) {
-        let allocator = vize_carton::Bump::new();
+        let allocator = vize_carton::Allocator::new();
         let Ok(art_desc) =
             vize_musea::parse_art(&allocator, content, vize_musea::ArtParseOptions::default())
         else {
@@ -559,7 +559,7 @@ impl SemanticTokensService {
             }
         }
 
-        let allocator = vize_carton::Bump::new();
+        let allocator = vize_carton::Allocator::new();
         let Ok(art_desc) =
             vize_musea::parse_art(&allocator, slice, vize_musea::ArtParseOptions::default())
         else {

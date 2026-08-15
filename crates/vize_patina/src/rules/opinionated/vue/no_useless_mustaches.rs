@@ -55,7 +55,7 @@ impl Rule for NoUselessMustaches {
         let ExpressionNode::Simple(s) = &interpolation.content else {
             return;
         };
-        if !is_static_string_literal(s.content.as_str()) {
+        if !is_static_string_literal(s.content) {
             return;
         }
         ctx.warn_with_help(

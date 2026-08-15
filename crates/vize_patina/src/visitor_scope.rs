@@ -19,7 +19,7 @@ use vize_relief::ExpressionNode;
 #[inline]
 pub fn parse_v_for_variables(exp: &ExpressionNode) -> Vec<CompactString> {
     let content = match exp {
-        ExpressionNode::Simple(s) => s.content.as_str(),
+        ExpressionNode::Simple(s) => s.content,
         ExpressionNode::Compound(_) => return Vec::new(),
     };
 
@@ -33,7 +33,7 @@ pub fn parse_v_for_variables(exp: &ExpressionNode) -> Vec<CompactString> {
 #[inline]
 pub fn parse_slot_scope_variables(exp: &ExpressionNode) -> Vec<CompactString> {
     let content = match exp {
-        ExpressionNode::Simple(s) => s.content.as_str(),
+        ExpressionNode::Simple(s) => s.content,
         ExpressionNode::Compound(_) => return Vec::new(),
     };
 
@@ -43,23 +43,19 @@ pub fn parse_slot_scope_variables(exp: &ExpressionNode) -> Vec<CompactString> {
 #[cfg(test)]
 mod tests {
     use super::{CompactString, ExpressionNode, parse_slot_scope_variables, parse_v_for_variables};
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
     use vize_relief::SimpleExpressionNode;
 
-    fn make_simple_exp<'a>(allocator: &'a Bump, content: &str) -> ExpressionNode<'a> {
+    fn make_simple_exp<'a>(allocator: &'a Allocator, content: &'a str) -> ExpressionNode<'a> {
         ExpressionNode::Simple(vize_carton::Box::new_in(
-            SimpleExpressionNode::new(
-                vize_carton::String::from(content),
-                false,
-                vize_relief::SourceLocation::STUB,
-            ),
-            allocator,
+            SimpleExpressionNode::new(content, false, vize_relief::SourceLocation::STUB),
+            &allocator,
         ))
     }
 
     #[test]
     fn test_parse_v_for_simple() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let exp = make_simple_exp(&allocator, "item in items");
         let vars = parse_v_for_variables(&exp);
         assert_eq!(vars, vec![CompactString::from("item")]);
@@ -67,7 +63,7 @@ mod tests {
 
     #[test]
     fn test_parse_v_for_with_index() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let exp = make_simple_exp(&allocator, "(item, index) in items");
         let vars = parse_v_for_variables(&exp);
         assert_eq!(
@@ -78,7 +74,7 @@ mod tests {
 
     #[test]
     fn test_parse_v_for_object() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let exp = make_simple_exp(&allocator, "(value, key, index) in object");
         let vars = parse_v_for_variables(&exp);
         assert_eq!(
@@ -93,7 +89,7 @@ mod tests {
 
     #[test]
     fn test_parse_v_for_object_destructuring() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let exp = make_simple_exp(&allocator, "{ id } in items");
         let vars = parse_v_for_variables(&exp);
         assert_eq!(vars, vec![CompactString::from("id")]);
@@ -101,7 +97,7 @@ mod tests {
 
     #[test]
     fn test_parse_v_for_object_destructuring_multiple() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let exp = make_simple_exp(&allocator, "{ id, name } in items");
         let vars = parse_v_for_variables(&exp);
         assert_eq!(
@@ -112,7 +108,7 @@ mod tests {
 
     #[test]
     fn test_parse_v_for_object_destructuring_with_rename() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let exp = make_simple_exp(&allocator, "{ id: itemId, name: itemName } in items");
         let vars = parse_v_for_variables(&exp);
         assert_eq!(
@@ -126,7 +122,7 @@ mod tests {
 
     #[test]
     fn test_parse_v_for_array_destructuring() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let exp = make_simple_exp(&allocator, "[first, second] in items");
         let vars = parse_v_for_variables(&exp);
         assert_eq!(
@@ -137,7 +133,7 @@ mod tests {
 
     #[test]
     fn test_parse_slot_scope_object_destructuring() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let exp = make_simple_exp(&allocator, "{ open, item: slotItem }");
         let vars = parse_slot_scope_variables(&exp);
         assert_eq!(
@@ -148,7 +144,7 @@ mod tests {
 
     #[test]
     fn test_parse_slot_scope_default_and_rest_bindings() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let exp = make_simple_exp(&allocator, "{ open = false, ...rest }");
         let vars = parse_slot_scope_variables(&exp);
         assert_eq!(

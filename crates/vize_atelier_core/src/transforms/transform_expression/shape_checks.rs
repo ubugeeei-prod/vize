@@ -51,7 +51,7 @@ pub fn is_event_handler_reference_node(node: &SimpleExpressionNode<'_>) -> bool 
             differential_shape_check(js.raw, result, is_handler_reference_shape);
             result
         }
-        _ => is_event_handler_reference_expression(node.content.as_str()),
+        _ => is_event_handler_reference_expression(node.content),
     }
 }
 
@@ -64,7 +64,7 @@ pub fn is_function_expression_node(node: &SimpleExpressionNode<'_>) -> bool {
             differential_shape_check(js.raw, result, is_function_shape);
             result
         }
-        _ => is_function_expression(node.content.as_str()),
+        _ => is_function_expression(node.content),
     }
 }
 

@@ -17,11 +17,11 @@ pub fn resolve_element_type<'a>(
     // Check if it's a component
     if is_component(ctx, tag, el) {
         ctx.helper(RuntimeHelper::ResolveComponent);
-        ctx.add_component(tag.clone());
+        ctx.add_component(*tag);
         ElementType::Component
-    } else if tag == "slot" {
+    } else if *tag == "slot" {
         ElementType::Slot
-    } else if tag == "template" {
+    } else if *tag == "template" {
         ElementType::Template
     } else {
         ElementType::Element
@@ -115,23 +115,26 @@ pub fn build_props<'a>(
     for prop in el.props.iter() {
         match prop {
             PropNode::Attribute(attr) => {
-                if seen_attr_names.contains(attr.name.as_str()) {
+                if seen_attr_names.contains(attr.name) {
                     continue;
                 }
-                seen_attr_names.insert(attr.name.clone());
+                seen_attr_names.insert(attr.name.into());
                 // Static attribute
-                let key = attr.name.clone();
-                let value = attr.value.as_ref().map(|v| v.content.clone());
-                properties.push(PropItem::Static { key, value });
+                let key = attr.name;
+                let value = attr.value.as_ref().map(|v| String::new(v.content));
+                properties.push(PropItem::Static {
+                    key: key.into(),
+                    value,
+                });
             }
             PropNode::Directive(dir) => {
-                match dir.name.as_str() {
+                match dir.name {
                     "bind" => {
                         has_runtime_props = true;
                         if let Some(ExpressionNode::Simple(exp)) = &dir.arg
                             && !exp.is_static
                         {
-                            dynamic_prop_names.push(exp.content.clone());
+                            dynamic_prop_names.push(exp.content.into());
                         }
                     }
                     "on" => {
@@ -139,7 +142,7 @@ pub fn build_props<'a>(
                         if let Some(ExpressionNode::Simple(exp)) = &dir.arg
                             && !exp.is_static
                         {
-                            let cap = capitalize(&exp.content);
+                            let cap = capitalize(exp.content);
                             let mut name = String::with_capacity(2 + cap.len());
                             name.push_str("on");
                             name.push_str(&cap);
@@ -197,7 +200,7 @@ pub fn build_element_codegen<'a>(
             {
                 let mut name = String::with_capacity(el.tag.len() + 2);
                 name.push('"');
-                name.push_str(&el.tag);
+                name.push_str(el.tag);
                 name.push('"');
                 name
             }
@@ -208,7 +211,7 @@ pub fn build_element_codegen<'a>(
             {
                 let mut name = String::with_capacity(11 + el.tag.len());
                 name.push_str("_component_");
-                name.push_str(&el.tag);
+                name.push_str(el.tag);
                 name
             }
         }
@@ -240,10 +243,10 @@ fn calculate_patch_flag(el: &ElementNode<'_>) -> Option<i32> {
 
     for prop in el.props.iter() {
         if let PropNode::Directive(dir) = prop {
-            match dir.name.as_str() {
+            match dir.name {
                 "bind" => match &dir.arg {
                     Some(ExpressionNode::Simple(exp)) => {
-                        match exp.content.as_str() {
+                        match exp.content {
                             "class" => flag |= 2, // CLASS
                             "style" => flag |= 4, // STYLE
                             _ => flag |= 8,       // PROPS
@@ -302,7 +305,7 @@ mod tests {
     #[test]
     fn test_resolve_element_type() {
         let allocator = Allocator::new();
-        let mut ctx = TransformContext::new(&allocator, "".into(), Default::default());
+        let mut ctx = TransformContext::new(&allocator, "", Default::default());
 
         let (root, _) = parse(&allocator, r#"<div>test</div>"#);
         if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -313,7 +316,7 @@ mod tests {
     #[test]
     fn test_resolve_component_type() {
         let allocator = Allocator::new();
-        let mut ctx = TransformContext::new(&allocator, "".into(), Default::default());
+        let mut ctx = TransformContext::new(&allocator, "", Default::default());
 
         let (root, _) = parse(&allocator, r#"<MyComponent></MyComponent>"#);
         if let TemplateChildNode::Element(el) = &root.children[0] {

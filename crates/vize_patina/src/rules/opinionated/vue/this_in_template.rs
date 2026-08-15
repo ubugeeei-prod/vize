@@ -115,7 +115,7 @@ impl ThisInTemplate {
 
     fn check_expression(ctx: &mut LintContext<'_>, exp: &ExpressionNode<'_>) {
         let content = match exp {
-            ExpressionNode::Simple(s) => s.content.as_str(),
+            ExpressionNode::Simple(s) => s.content,
             ExpressionNode::Compound(_) => return,
         };
 

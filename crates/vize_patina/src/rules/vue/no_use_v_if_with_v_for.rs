@@ -55,7 +55,7 @@ impl Rule for NoUseVIfWithVFor {
         // Collect v-if and v-for info
         for prop in element.props.iter() {
             if let PropNode::Directive(dir) = prop {
-                match dir.name.as_str() {
+                match dir.name {
                     "if" => {
                         v_if_info = Some((dir.loc.clone(), dir.exp.as_ref()));
                     }
@@ -86,7 +86,7 @@ impl Rule for NoUseVIfWithVFor {
             // as a reference to `item`. (#968)
             let v_if_uses_v_for_var = if let Some(exp) = v_if_exp {
                 let v_if_content = match exp {
-                    ExpressionNode::Simple(s) => s.content.as_str(),
+                    ExpressionNode::Simple(s) => s.content,
                     ExpressionNode::Compound(_) => "",
                 };
                 v_for_vars

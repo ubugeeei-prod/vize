@@ -24,7 +24,7 @@ pub fn process_inline_handler<'a>(
 ) -> ExpressionNode<'a> {
     let allocator = ctx.allocator;
 
-    let normalized = normalize_expression(exp, allocator, &ctx.source);
+    let normalized = normalize_expression(exp, allocator, ctx.source);
 
     if normalized.is_static {
         return ExpressionNode::Simple(normalized);
@@ -44,12 +44,12 @@ pub fn process_inline_handler<'a>(
     let function_check_source = ts_stripped_content
         .as_ref()
         .map(|s| s.as_str())
-        .unwrap_or(content.as_str());
+        .unwrap_or(content);
     // The retained AST applies wherever the checked text is still the node's
     // own bytes (P1-7); TS-stripped text that changed falls back.
     let retained: Option<&JsExpression<'_>> =
         crate::retained::retained_whole_expression(&normalized);
-    let is_function = if function_check_source == content.as_str() {
+    let is_function = if function_check_source == *content {
         is_function_expression_node(&normalized)
     } else {
         is_function_expression(function_check_source)
@@ -68,7 +68,7 @@ pub fn process_inline_handler<'a>(
             }
             return ExpressionNode::Simple(Box::new_in(
                 SimpleExpressionNode {
-                    content: String::new(&result.code),
+                    content: allocator.alloc_str(&result.code),
                     is_static: false,
                     const_type: ConstantType::NotConstant,
                     loc: normalized.loc.clone(),
@@ -78,13 +78,13 @@ pub fn process_inline_handler<'a>(
                     is_handler_key: true,
                     is_ref_transformed: true,
                 },
-                allocator,
+                &allocator,
             ));
         } else if let Some(ts_stripped_content) = &ts_stripped_content {
             // Strip TypeScript type annotations even without prefix_identifiers
             return ExpressionNode::Simple(Box::new_in(
                 SimpleExpressionNode {
-                    content: String::new(ts_stripped_content),
+                    content: allocator.alloc_str(ts_stripped_content),
                     is_static: false,
                     const_type: ConstantType::NotConstant,
                     loc: normalized.loc.clone(),
@@ -94,10 +94,10 @@ pub fn process_inline_handler<'a>(
                     is_handler_key: true,
                     is_ref_transformed: true,
                 },
-                allocator,
+                &allocator,
             ));
         }
-        return clone_expression(exp, allocator, &ctx.source);
+        return clone_expression(exp, allocator, ctx.source);
     }
 
     // Check if it's an identifier/member-expression handler reference.
@@ -111,7 +111,7 @@ pub fn process_inline_handler<'a>(
                     s.push_str(content);
                     s
                 } else {
-                    content.clone()
+                    (*content).into()
                 }
             } else {
                 let result = rewrite_expression(content, ctx, false, retained);
@@ -126,14 +126,14 @@ pub fn process_inline_handler<'a>(
         } else if ctx.options.is_ts {
             strip_typescript_from_expression(content)
         } else {
-            content.clone()
+            (*content).into()
         };
 
         let new_content = rewrite_props_aliases(new_content, ctx);
 
         return ExpressionNode::Simple(Box::new_in(
             SimpleExpressionNode {
-                content: new_content,
+                content: allocator.alloc_str(&new_content),
                 is_static: false,
                 const_type: ConstantType::NotConstant,
                 loc: normalized.loc.clone(),
@@ -143,7 +143,7 @@ pub fn process_inline_handler<'a>(
                 is_handler_key: true,
                 is_ref_transformed: true,
             },
-            allocator,
+            &allocator,
         ));
     }
 
@@ -161,7 +161,7 @@ pub fn process_inline_handler<'a>(
         // Strip TypeScript type annotations even without prefix_identifiers
         strip_typescript_from_expression(content)
     } else {
-        content.clone()
+        (*content).into()
     };
     // Use block body {...} for multi-statement handlers (semicolons),
     // concise body ( ... ) for single expressions. Vue emits the block body
@@ -182,7 +182,7 @@ pub fn process_inline_handler<'a>(
 
     ExpressionNode::Simple(Box::new_in(
         SimpleExpressionNode {
-            content: new_content,
+            content: allocator.alloc_str(&new_content),
             is_static: false,
             const_type: ConstantType::NotConstant,
             loc: normalized.loc.clone(),
@@ -192,7 +192,7 @@ pub fn process_inline_handler<'a>(
             is_handler_key: true,
             is_ref_transformed: true,
         },
-        allocator,
+        &allocator,
     ))
 }
 
@@ -204,9 +204,9 @@ mod tests {
         lane::TransformContext,
         options::{BindingMetadata, BindingType, TransformOptions},
     };
-    use vize_carton::{Allocator, Box, Bump, FxHashMap};
+    use vize_carton::{Allocator, Box, FxHashMap};
 
-    fn test_context<'a>(allocator: &'a Allocator, source: &str) -> TransformContext<'a> {
+    fn test_context<'a>(allocator: &'a Allocator, source: &'a str) -> TransformContext<'a> {
         let mut bindings = FxHashMap::default();
         bindings.insert("selectedFolders".into(), BindingType::SetupRef);
         bindings.insert("folder".into(), BindingType::SetupRef);
@@ -215,7 +215,7 @@ mod tests {
 
         TransformContext::new(
             allocator,
-            source.into(),
+            source,
             TransformOptions {
                 prefix_identifiers: true,
                 inline: true,
@@ -230,12 +230,12 @@ mod tests {
         )
     }
 
-    fn compound_expression<'a>(allocator: &'a Bump, source: &str) -> ExpressionNode<'a> {
+    fn compound_expression<'a>(allocator: &'a Allocator, source: &str) -> ExpressionNode<'a> {
         let loc = SourceLocation::new(0, source.len() as u32);
 
         ExpressionNode::Compound(Box::new_in(
             CompoundExpressionNode::new(allocator, loc),
-            allocator,
+            &allocator,
         ))
     }
 

@@ -23,7 +23,7 @@ impl VirtualTsGenerator {
     ) -> VirtualTsOutput {
         self.reset();
         self.block_offset = block_offset;
-        self.template_source = ast.source.clone();
+        self.template_source = ast.source.into();
 
         if emit_context {
             self.write_line("// Virtual TypeScript for template type checking");
@@ -182,7 +182,7 @@ impl VirtualTsGenerator {
                 for prop in &element.props {
                     if let PropNode::Directive(dir) = prop
                         && dir.name != "for"
-                        && !is_control_flow_directive(&dir.name)
+                        && !is_control_flow_directive(dir.name)
                     {
                         profile!(
                             "croquis.virtual_ts.template.directive",
@@ -198,7 +198,7 @@ impl VirtualTsGenerator {
         } else {
             for prop in &element.props {
                 if let PropNode::Directive(dir) = prop
-                    && !is_control_flow_directive(&dir.name)
+                    && !is_control_flow_directive(dir.name)
                 {
                     profile!(
                         "croquis.virtual_ts.template.directive",
@@ -249,7 +249,7 @@ impl VirtualTsGenerator {
     /// Visit a directive.
     fn visit_directive(&mut self, directive: &DirectiveNode) {
         if let Some(ref exp) = directive.exp {
-            self.emit_expression(exp, &directive.name);
+            self.emit_expression(exp, directive.name);
         }
     }
 
@@ -509,7 +509,7 @@ impl VirtualTsGenerator {
 
         self.emit_generated_line(|output| {
             output.push_str(prefix);
-            output.push_str(simple.content.as_str());
+            output.push_str(simple.content);
             output.push_str(suffix);
         });
         true
@@ -532,7 +532,7 @@ fn element_control_flow_condition<'a>(
         let PropNode::Directive(dir) = prop else {
             return None;
         };
-        matches!(dir.name.as_str(), "if" | "else-if")
+        matches!(dir.name, "if" | "else-if")
             .then_some(dir.exp.as_ref())
             .flatten()
     })

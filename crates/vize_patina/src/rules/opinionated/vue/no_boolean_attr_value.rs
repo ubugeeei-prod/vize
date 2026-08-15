@@ -48,13 +48,13 @@ impl Rule for NoBooleanAttrValue {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if !is_native_tag(element.tag.as_str()) {
+        if !is_native_tag(element.tag) {
             return;
         }
 
         for prop in &element.props {
             if let PropNode::Attribute(attr) = prop {
-                let name = attr.name.as_str();
+                let name = attr.name;
                 if !BOOLEAN_ATTRIBUTES.contains(&name) {
                     continue;
                 }
@@ -63,7 +63,7 @@ impl Rule for NoBooleanAttrValue {
                     // Has an explicit value — warn
                     let message = ctx.t_fmt(
                         "vue/no-boolean-attr-value.message",
-                        &[("attr", name), ("value", value.content.as_str())],
+                        &[("attr", name), ("value", value.content)],
                     );
                     let help = ctx.t_fmt("vue/no-boolean-attr-value.help", &[("attr", name)]);
                     ctx.warn_with_help(message, &attr.loc, help);

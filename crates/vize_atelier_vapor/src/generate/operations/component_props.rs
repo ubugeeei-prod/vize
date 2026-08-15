@@ -14,10 +14,7 @@ pub(super) fn generate_component_props_str(
     if component.props.is_empty() {
         return "null".to_compact_string();
     }
-    let has_spreads = component
-        .props
-        .iter()
-        .any(|p| p.key.content.as_str() == "$");
+    let has_spreads = component.props.iter().any(|p| p.key.content == "$");
     if has_spreads {
         return generate_component_spread_props_str(ctx, &component.props);
     }
@@ -46,7 +43,7 @@ fn generate_component_spread_props_str(ctx: &GenerateContext, props: &[IRProp<'_
     let mut static_group: std::vec::Vec<&IRProp<'_>> = std::vec::Vec::new();
 
     for prop in props {
-        if prop.key.content.as_str() == "$" {
+        if prop.key.content == "$" {
             push_component_static_prop_group(ctx, &mut sources, &mut static_group);
             if let Some(first) = prop.values.first() {
                 let resolved = ctx.resolve_expression_node(first);
@@ -112,12 +109,12 @@ fn generate_component_prop_entries(
 ) -> std::vec::Vec<String> {
     let class_values = collect_component_prop_values(ctx, props, "class");
     let style_values = collect_component_prop_values(ctx, props, "style");
-    let first_class_index = props.iter().position(|p| p.key.content.as_str() == "class");
-    let first_style_index = props.iter().position(|p| p.key.content.as_str() == "style");
+    let first_class_index = props.iter().position(|p| p.key.content == "class");
+    let first_style_index = props.iter().position(|p| p.key.content == "style");
     let mut entries = std::vec::Vec::new();
 
     for (i, prop) in props.iter().enumerate() {
-        let key = prop.key.content.as_str();
+        let key = prop.key.content;
         if key == "class" {
             if Some(i) == first_class_index {
                 entries.push(format_component_prop_entry(
@@ -152,7 +149,7 @@ fn collect_component_prop_values(
 ) -> std::vec::Vec<String> {
     props
         .iter()
-        .filter(|p| p.key.content.as_str() == key)
+        .filter(|p| p.key.content == key)
         .map(|p| component_prop_expression_value(ctx, p))
         .collect()
 }
@@ -166,7 +163,7 @@ fn merge_component_prop_values(values: &[String]) -> String {
 }
 
 fn format_component_prop_entry(prop: &IRProp<'_>, value: String) -> String {
-    let key = prop.key.content.as_str();
+    let key = prop.key.content;
     if !prop.key.is_static {
         return cstr!("[{}]: {}", key, value);
     }
@@ -178,20 +175,20 @@ fn format_component_prop_entry(prop: &IRProp<'_>, value: String) -> String {
 }
 
 fn component_prop_getter_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> String {
-    let key = prop.key.content.as_str();
+    let key = prop.key.content;
     let is_event = key.starts_with("on") && key.len() > 2;
     if let Some(first) = prop.values.first() {
         if first.content.starts_with("__RAW__") {
-            return String::from(&first.content.as_str()[7..]);
+            return String::from(&first.content[7..]);
         }
         if first.is_static {
             return cstr!("() => (\"{}\")", first.content);
         }
         let resolved = ctx.resolve_expression_node(first);
         if is_event {
-            if is_inline_statement_block(first.content.as_str()) {
+            if is_inline_statement_block(first.content) {
                 cstr!("() => ($event => {{ {} }})", resolved)
-            } else if is_inline_statement(first.content.as_str()) {
+            } else if is_inline_statement(first.content) {
                 cstr!("() => ($event => ({}))", resolved)
             } else {
                 cstr!("() => {}", resolved)
@@ -210,7 +207,7 @@ fn component_prop_getter_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> Stri
 fn component_prop_expression_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> String {
     if let Some(first) = prop.values.first() {
         if first.content.starts_with("__RAW__") {
-            return String::from(&first.content.as_str()[7..]);
+            return String::from(&first.content[7..]);
         }
         if first.is_static {
             return cstr!("\"{}\"", first.content);

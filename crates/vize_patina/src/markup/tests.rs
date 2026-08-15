@@ -35,12 +35,8 @@ mod markup_ir_tests {
     /// `v-for`/`:key`). Returns the diagnostic count.
     fn run_over_jsx_lowered<R: MarkupRule>(rule: &R, source: &str) -> usize {
         let allocator = Allocator::with_capacity(source.len() * 4 + 1024);
-        let lowered = vize_atelier_jsx::lower_source(
-            allocator.as_bump(),
-            allocator.as_oxc(),
-            source,
-            JsxLang::Jsx,
-        );
+        let lowered =
+            vize_atelier_jsx::lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
 
         let mut total = 0;
         for lowered_root in &lowered.roots {

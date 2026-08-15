@@ -48,7 +48,7 @@ pub(super) fn generate_create_slots(ctx: &mut CodegenContext, el: &ElementNode<'
                 generate_looped_slot(ctx, for_node);
             }
             TemplateChildNode::Element(template_el)
-                if template_el.tag.as_str() == "template" && has_v_slot(template_el) =>
+                if template_el.tag == "template" && has_v_slot(template_el) =>
             {
                 // Regular named slot (no v-if/v-for)
                 if !first {
@@ -149,7 +149,7 @@ fn generate_conditional_slot(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
         // Find the slot template in this branch
         let slot_template = branch.children.iter().find_map(|child| {
             if let TemplateChildNode::Element(el) = child
-                && el.tag.as_str() == "template"
+                && el.tag == "template"
                 && has_v_slot(el)
             {
                 return Some(el.as_ref());
@@ -213,7 +213,7 @@ fn generate_looped_slot(ctx: &mut CodegenContext, for_node: &ForNode<'_>) {
     // Find the slot template in the for body
     let slot_template = for_node.children.iter().find_map(|child| {
         if let TemplateChildNode::Element(el) = child
-            && el.tag.as_str() == "template"
+            && el.tag == "template"
             && has_v_slot(el)
         {
             return Some(el.as_ref());
@@ -240,7 +240,7 @@ fn generate_slot_object_entry(
 ) {
     let slot_dir = template_el.props.iter().find_map(|p| {
         if let PropNode::Directive(dir) = p
-            && dir.name.as_str() == "slot"
+            && dir.name == "slot"
         {
             return Some(dir.as_ref());
         }

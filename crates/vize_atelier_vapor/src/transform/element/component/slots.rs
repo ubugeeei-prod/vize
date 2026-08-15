@@ -12,10 +12,10 @@ use vize_carton::String;
 pub(super) fn resolve_named_slot(dir: &DirectiveNode<'_>) -> (String, bool) {
     match dir.arg.as_ref() {
         Some(ExpressionNode::Simple(exp)) if exp.is_static => (
-            static_slot_name_with_modifiers(exp.content.clone(), dir),
+            static_slot_name_with_modifiers(exp.content.into(), dir),
             true,
         ),
-        Some(ExpressionNode::Simple(exp)) => (exp.content.clone(), exp.is_static),
+        Some(ExpressionNode::Simple(exp)) => (exp.content.into(), exp.is_static),
         _ => (String::from("default"), true),
     }
 }
@@ -23,7 +23,7 @@ pub(super) fn resolve_named_slot(dir: &DirectiveNode<'_>) -> (String, bool) {
 fn static_slot_name_with_modifiers(mut name: String, dir: &DirectiveNode<'_>) -> String {
     for modifier in dir.modifiers.iter() {
         name.push('.');
-        name.push_str(modifier.content.as_str());
+        name.push_str(modifier.content);
     }
     name
 }

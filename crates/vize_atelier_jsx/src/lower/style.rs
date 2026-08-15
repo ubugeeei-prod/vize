@@ -56,7 +56,7 @@ pub(crate) struct ScopedStyleExpr {
     pub end: u32,
 }
 
-impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
+impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// If `element` is an intrinsic `<style>` carrying a `scoped` attribute,
     /// capture its CSS into the pending-styles buffer and return `true` so the
     /// caller drops it from the rendered children. Returns `false` for any other

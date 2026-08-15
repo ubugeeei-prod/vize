@@ -1,5 +1,7 @@
 //! Arena-allocated Vec type.
 //!
-//! This module re-exports `bumpalo::collections::Vec` for unified type usage across all crates.
+//! Re-exports [`oxc_allocator::Vec`] for unified type usage across all crates.
+//! Its const assertion rejects `Drop` payloads, which is what keeps every
+//! arena-resident node in the compiler string-free (Davinci P1-10).
 
-pub use bumpalo::collections::Vec;
+pub use oxc_allocator::Vec;

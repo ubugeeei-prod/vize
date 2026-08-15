@@ -56,7 +56,7 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     // Check for v-slot on component root (shorthand for default slot)
     let root_slot = el.props.iter().find_map(|p| {
         if let PropNode::Directive(dir) = p
-            && dir.name.as_str() == "slot"
+            && dir.name == "slot"
         {
             return Some(dir.as_ref());
         }
@@ -117,13 +117,13 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 
         for child in &el.children {
             if let TemplateChildNode::Element(template_el) = child
-                && template_el.tag.as_str() == "template"
+                && template_el.tag == "template"
                 && has_v_slot(template_el)
             {
                 // This is a named slot template
                 if let Some(slot_dir) = template_el.props.iter().find_map(|p| {
                     if let PropNode::Directive(dir) = p
-                        && dir.name.as_str() == "slot"
+                        && dir.name == "slot"
                     {
                         return Some(dir.as_ref());
                     }
@@ -211,7 +211,7 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             .iter()
             .filter(|child| {
                 if let TemplateChildNode::Element(template_el) = child {
-                    !(template_el.tag.as_str() == "template" && has_v_slot(template_el))
+                    !(template_el.tag == "template" && has_v_slot(template_el))
                 } else {
                     true
                 }
@@ -290,7 +290,7 @@ pub(super) fn generate_slot_children(ctx: &mut CodegenContext, children: &[Templ
             match child {
                 TemplateChildNode::Text(text) => {
                     ctx.push("\"");
-                    ctx.push(&super::super::helpers::escape_js_string(&text.content));
+                    ctx.push(&super::super::helpers::escape_js_string(text.content));
                     ctx.push("\"");
                 }
                 TemplateChildNode::Interpolation(interp) => {
@@ -336,7 +336,7 @@ pub(super) fn generate_slot_child_node(ctx: &mut CodegenContext, child: &Templat
             ctx.use_helper(RuntimeHelper::CreateText);
             ctx.push(ctx.helper(RuntimeHelper::CreateText));
             ctx.push("(\"");
-            ctx.push(&super::super::helpers::escape_js_string(&text.content));
+            ctx.push(&super::super::helpers::escape_js_string(text.content));
             ctx.push("\")");
         }
         TemplateChildNode::Interpolation(interp) => {
@@ -373,11 +373,11 @@ fn generate_slot_expression(ctx: &mut CodegenContext, expr: &ExpressionNode<'_>)
         ExpressionNode::Simple(exp) => {
             if exp.is_static {
                 ctx.push("\"");
-                ctx.push(&exp.content);
+                ctx.push(exp.content);
                 ctx.push("\"");
             } else {
                 // Strip _ctx. prefix for slot parameters
-                let content = strip_ctx_prefix_for_slot_params(ctx, &exp.content);
+                let content = strip_ctx_prefix_for_slot_params(ctx, exp.content);
                 ctx.push(&content);
             }
         }
@@ -387,10 +387,10 @@ fn generate_slot_expression(ctx: &mut CodegenContext, expr: &ExpressionNode<'_>)
                     crate::CompoundExpressionChild::Simple(exp) => {
                         if exp.is_static {
                             ctx.push("\"");
-                            ctx.push(&exp.content);
+                            ctx.push(exp.content);
                             ctx.push("\"");
                         } else {
-                            let content = strip_ctx_prefix_for_slot_params(ctx, &exp.content);
+                            let content = strip_ctx_prefix_for_slot_params(ctx, exp.content);
                             ctx.push(&content);
                         }
                     }

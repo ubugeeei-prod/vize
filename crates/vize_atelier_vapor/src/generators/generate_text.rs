@@ -13,7 +13,7 @@ pub fn generate_set_text(ctx: &mut GenerateContext, set_text: &SetTextIRNode<'_>
         .iter()
         .map(|v| {
             if v.is_static {
-                cstr!("\"{}\"", escape_text(&v.content))
+                cstr!("\"{}\"", escape_text(v.content))
             } else {
                 v.content.to_compact_string()
             }

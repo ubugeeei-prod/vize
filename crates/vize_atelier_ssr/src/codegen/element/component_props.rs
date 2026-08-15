@@ -24,7 +24,7 @@ fn flush_entries(
 }
 
 fn is_dynamic_prop_boundary(dir: &DirectiveNode) -> bool {
-    match dir.name.as_str() {
+    match dir.name {
         "bind" | "on" => !matches!(
             &dir.arg,
             Some(ExpressionNode::Simple(arg)) if arg.is_static
@@ -97,9 +97,9 @@ impl SsrCodegenContext<'_> {
                     let value = attr
                         .value
                         .as_ref()
-                        .map(|value| quoted_js_string(&value.content))
+                        .map(|value| quoted_js_string(value.content))
                         .unwrap_or_else(|| "\"\"".to_compact_string());
-                    entries.push(component_prop_entry(&attr.name, &value, false));
+                    entries.push(component_prop_entry(attr.name, &value, false));
                 }
                 PropNode::Directive(dir) => {
                     let is_boundary = is_dynamic_prop_boundary(dir);
@@ -174,7 +174,7 @@ impl SsrCodegenContext<'_> {
         dir: &DirectiveNode,
         entries: &mut std::vec::Vec<VNodePropEntry>,
     ) -> Option<String> {
-        match dir.name.as_str() {
+        match dir.name {
             "bind" => {
                 let value = dir
                     .exp
@@ -223,7 +223,7 @@ impl SsrCodegenContext<'_> {
             .unwrap_or_else(|| "undefined".to_compact_string());
         let (key, update_key, dynamic) = match &dir.arg {
             Some(ExpressionNode::Simple(arg)) if arg.is_static => {
-                let key = vize_carton::camelize(&arg.content);
+                let key = vize_carton::camelize(arg.content);
                 let update_key = cstr!("onUpdate:{key}");
                 (key, update_key, false)
             }
@@ -266,7 +266,7 @@ impl SsrCodegenContext<'_> {
             .unwrap_or_else(|| "() => {}".to_compact_string());
         match arg {
             ExpressionNode::Simple(arg) if arg.is_static => {
-                let key = vize_atelier_core::steps::create_on_name(&arg.content);
+                let key = vize_atelier_core::steps::create_on_name(arg.content);
                 entries.push(component_prop_entry(&key, &handler, false));
             }
             _ => {
@@ -287,7 +287,7 @@ impl SsrCodegenContext<'_> {
         // Node-aware shape checks when the rendered text is still the node's
         // own bytes (P1-7); rewritten handler text keeps the string parse.
         let passthrough = match exp {
-            ExpressionNode::Simple(simple) if rendered.as_str() == simple.content.as_str() => {
+            ExpressionNode::Simple(simple) if rendered.as_str() == simple.content => {
                 vize_atelier_core::steps::expression::is_function_expression_node(simple)
                     || vize_atelier_core::steps::expression::is_event_handler_reference_node(simple)
             }

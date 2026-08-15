@@ -49,11 +49,11 @@ pub(super) fn root_attrs_spread(root: &RootNode<'_>) -> Option<AttrsSpread> {
     let element = single_root_element(root)?;
     // A root `<template v-if>` / `<template v-for>` renders its children, so
     // the element that receives the fallthrough attributes is not this node.
-    if element.tag.as_str() == "template" {
+    if element.tag == "template" {
         return None;
     }
     element.props.iter().find_map(|prop| match prop {
-        PropNode::Directive(directive) if is_attrs_spread(directive, &root.source) => {
+        PropNode::Directive(directive) if is_attrs_spread(directive, root.source) => {
             Some(AttrsSpread {
                 start: directive.loc.span.start,
                 end: directive.loc.span.end,
@@ -92,7 +92,7 @@ fn single_root_element<'a, 'ast>(root: &'a RootNode<'ast>) -> Option<&'a Element
 /// expression, so equality is exact, and anything richer
 /// (`v-bind="{ ...$attrs }"`) is deliberately not matched.
 fn is_attrs_spread(directive: &DirectiveNode<'_>, source: &str) -> bool {
-    if directive.name.as_str() != "bind" || directive.arg.is_some() {
+    if directive.name != "bind" || directive.arg.is_some() {
         return false;
     }
     directive
@@ -103,7 +103,7 @@ fn is_attrs_spread(directive: &DirectiveNode<'_>, source: &str) -> bool {
 
 fn expression_source<'a>(exp: &'a ExpressionNode<'a>, source: &'a str) -> &'a str {
     match exp {
-        ExpressionNode::Simple(simple) => simple.content.as_str(),
+        ExpressionNode::Simple(simple) => simple.content,
         ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
     }
 }

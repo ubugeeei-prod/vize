@@ -102,7 +102,7 @@ fn template_parse_retains_each_expression_ast_exactly_once() {
     };
     let click = simple(on_click.exp.as_ref().expect("@click has a value"));
     assert!(click.js_ast.is_none());
-    assert_eq!(click.content.as_str(), "count++; other++");
+    assert_eq!(click.content, "count++; other++");
 
     // `v-if="ok"`.
     let PropNode::Directive(v_if) = &div.props[3] else {
@@ -132,7 +132,7 @@ fn template_parse_retains_each_expression_ast_exactly_once() {
     };
     let for_value = simple(v_for.exp.as_ref().expect("v-for has a value"));
     assert!(for_value.js_ast.is_none());
-    assert_eq!(for_value.content.as_str(), "item of items");
+    assert_eq!(for_value.content, "item of items");
 
     // `:title` same-name shorthand synthesizes the value expression.
     let PropNode::Directive(bind_title) = &span.props[1] else {

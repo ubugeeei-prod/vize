@@ -176,7 +176,7 @@ pub fn is_constant_simple_expression(
     }
 
     // Expressions that already reference runtime context/setup/props are dynamic.
-    let content = exp.content.as_str();
+    let content = exp.content;
     if !crate::steps::expression::expression_is_safe_to_parse(content) {
         return false;
     }

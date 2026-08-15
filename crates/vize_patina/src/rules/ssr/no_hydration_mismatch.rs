@@ -355,7 +355,7 @@ impl Rule for NoHydrationMismatch {
         }
 
         let content = match &interpolation.content {
-            ExpressionNode::Simple(s) => s.content.as_str(),
+            ExpressionNode::Simple(s) => s.content,
             ExpressionNode::Compound(_) => return, // Skip compound expressions
         };
 
@@ -382,7 +382,7 @@ impl Rule for NoHydrationMismatch {
         // Check directive expressions
         if let Some(exp) = &directive.exp {
             let content = match exp {
-                ExpressionNode::Simple(s) => s.content.as_str(),
+                ExpressionNode::Simple(s) => s.content,
                 ExpressionNode::Compound(_) => return, // Skip compound expressions
             };
 

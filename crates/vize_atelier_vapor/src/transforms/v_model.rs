@@ -2,14 +2,14 @@
 //!
 //! Transforms v-model directives for two-way binding.
 
-use vize_carton::{Box, Bump, String, ToCompactString, cstr};
+use vize_carton::{Allocator, Box, String, ToCompactString, cstr};
 
 use crate::ir::{DirectiveIRNode, OperationNode};
 use vize_atelier_core::{DirectiveNode, ElementNode, ExpressionNode};
 
 /// Transform v-model directive to IR
 pub fn transform_v_model<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     dir: &DirectiveNode<'a>,
     _el: &ElementNode<'a>,
     element_id: usize,
@@ -24,11 +24,11 @@ pub fn transform_v_model<'a>(
 
     let dir_ir = DirectiveIRNode {
         element: element_id,
-        dir: Box::new_in(new_dir, allocator),
-        name: String::new("model"),
+        dir: Box::new_in(new_dir, &allocator),
+        name: "model",
         builtin: true,
-        tag: String::new(""),
-        input_type: String::new(""),
+        tag: "",
+        input_type: "",
     };
 
     operations.push(OperationNode::Directive(dir_ir));
@@ -39,7 +39,7 @@ pub fn transform_v_model<'a>(
 /// Get v-model binding expression
 pub fn get_model_value(dir: &DirectiveNode<'_>, source: &str) -> Option<String> {
     dir.exp.as_ref().map(|exp| match exp {
-        ExpressionNode::Simple(s) => s.content.clone(),
+        ExpressionNode::Simple(s) => String::new(s.content),
         ExpressionNode::Compound(c) => String::new(c.loc.span.slice(source)),
     })
 }
@@ -49,7 +49,7 @@ pub fn get_model_arg(dir: &DirectiveNode<'_>, source: &str) -> String {
     dir.arg
         .as_ref()
         .map(|arg| match arg {
-            ExpressionNode::Simple(s) => s.content.clone(),
+            ExpressionNode::Simple(s) => String::new(s.content),
             ExpressionNode::Compound(c) => String::new(c.loc.span.slice(source)),
         })
         .unwrap_or_else(|| String::new("modelValue"))
@@ -57,7 +57,10 @@ pub fn get_model_arg(dir: &DirectiveNode<'_>, source: &str) -> String {
 
 /// Get v-model modifiers
 pub fn get_model_modifiers(dir: &DirectiveNode<'_>) -> Vec<String> {
-    dir.modifiers.iter().map(|m| m.content.clone()).collect()
+    dir.modifiers
+        .iter()
+        .map(|m| String::new(m.content))
+        .collect()
 }
 
 /// Check if v-model has .lazy modifier
@@ -77,7 +80,7 @@ pub fn has_trim_modifier(dir: &DirectiveNode<'_>) -> bool {
 
 /// Generate event name for v-model based on element type
 pub fn get_model_event(el: &ElementNode<'_>) -> &'static str {
-    match el.tag.as_str() {
+    match el.tag {
         "input" => {
             // Check for type attribute to determine event
             "input"

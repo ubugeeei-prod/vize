@@ -112,7 +112,7 @@ impl TemplateCodeGenerator {
         // Process directives
         for prop in &element.props {
             if let PropNode::Directive(dir) = prop {
-                self.visit_directive(dir, &element.tag);
+                self.visit_directive(dir, element.tag);
             }
         }
 
@@ -184,7 +184,7 @@ impl TemplateCodeGenerator {
         let var_name = cstr!("__VIZE_{}", self.expr_counter);
         self.expr_counter += 1;
 
-        let (generated_expr, mapping_prefix_len) = generate_template_expression(&expr.content);
+        let (generated_expr, mapping_prefix_len) = generate_template_expression(expr.content);
         let line = cstr!("const {var_name} = {generated_expr};\n");
 
         // Calculate positions
@@ -390,7 +390,7 @@ fn extract_from_directive<'a>(
     expressions: &mut Vec<TemplateExpression>,
 ) {
     if let Some(ref exp) = dir.exp {
-        let kind = match dir.name.as_str() {
+        let kind = match dir.name {
             "bind" => ExpressionKind::VBind,
             "on" => ExpressionKind::VOn,
             "if" | "else-if" => ExpressionKind::VIf,

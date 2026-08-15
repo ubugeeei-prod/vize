@@ -36,7 +36,7 @@ pub(super) fn should_skip_prop_for_if(
                 return true;
             }
             // Skip v-if/v-else-if/v-else directives
-            if matches!(dir.name.as_str(), "if" | "else-if" | "else") {
+            if matches!(dir.name, "if" | "else-if" | "else") {
                 return true;
             }
             false
@@ -61,7 +61,7 @@ pub(super) fn generate_single_prop_for_if(
                 ctx.options
                     .binding_metadata
                     .as_ref()
-                    .and_then(|m| m.bindings.get(v.content.as_str()).copied())
+                    .and_then(|m| m.bindings.get(v.content).copied())
             });
             let should_ref_runtime_binding = matches!(
                 ref_binding_type,
@@ -88,21 +88,21 @@ pub(super) fn generate_single_prop_for_if(
             if needs_ref_for {
                 ctx.push("ref_for: true, ");
             }
-            let needs_quotes = !is_valid_js_identifier(&attr.name);
+            let needs_quotes = !is_valid_js_identifier(attr.name);
             if needs_quotes {
                 ctx.push("\"");
             }
-            ctx.push(&attr.name);
+            ctx.push(attr.name);
             if needs_quotes {
                 ctx.push("\"");
             }
             ctx.push(": ");
             if let Some(value) = &attr.value {
                 if should_ref_runtime_binding {
-                    ctx.push(&value.content);
+                    ctx.push(value.content);
                 } else {
                     ctx.push("\"");
-                    ctx.push(&escape_js_string(value.content.as_str()));
+                    ctx.push(&escape_js_string(value.content));
                     ctx.push("\"");
                 }
             } else {

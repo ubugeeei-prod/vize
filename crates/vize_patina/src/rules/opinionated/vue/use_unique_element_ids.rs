@@ -117,7 +117,7 @@ fn classify_element(tag: &str) -> IdWarningTier {
 fn has_aria_reference_attr(element: &ElementNode) -> bool {
     element.props.iter().any(|prop| {
         if let PropNode::Attribute(attr) = prop {
-            ARIA_REFERENCE_ATTRIBUTES.contains(&attr.name.as_str())
+            ARIA_REFERENCE_ATTRIBUTES.contains(&attr.name)
         } else {
             false
         }
@@ -159,12 +159,12 @@ impl Rule for UseUniqueElementIds {
             return;
         }
 
-        let tag = element.tag.as_str();
+        let tag = element.tag;
         let tier = classify_element(tag);
 
         for prop in &element.props {
             if let PropNode::Attribute(attr) = prop {
-                let name = attr.name.as_str();
+                let name = attr.name;
 
                 // Check for static id attribute
                 if name == "id" {
@@ -179,7 +179,7 @@ impl Rule for UseUniqueElementIds {
                                     self.report_static_id_tiered(
                                         ctx,
                                         &attr.loc,
-                                        value.content.as_str(),
+                                        value.content,
                                         false,
                                         "message_form",
                                     );
@@ -190,7 +190,7 @@ impl Rule for UseUniqueElementIds {
                                         self.report_static_id_tiered(
                                             ctx,
                                             &attr.loc,
-                                            value.content.as_str(),
+                                            value.content,
                                             false,
                                             "message_aria_ref",
                                         );
@@ -198,7 +198,7 @@ impl Rule for UseUniqueElementIds {
                                 }
                             }
                         } else {
-                            self.report_static_id(ctx, &attr.loc, value.content.as_str(), false);
+                            self.report_static_id(ctx, &attr.loc, value.content, false);
                         }
                     }
                 }
@@ -206,7 +206,7 @@ impl Rule for UseUniqueElementIds {
                 else if Self::is_id_reference_attr(name)
                     && let Some(value) = &attr.value
                 {
-                    self.report_static_id(ctx, &attr.loc, value.content.as_str(), true);
+                    self.report_static_id(ctx, &attr.loc, value.content, true);
                 }
             }
         }

@@ -50,7 +50,7 @@ impl Rule for NoEmptyPalpableContent {
             return;
         }
 
-        let tag = element.tag.as_str();
+        let tag = element.tag;
         if !PALPABLE_CONTENT_ELEMENTS.contains(&tag) {
             return;
         }

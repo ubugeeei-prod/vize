@@ -143,7 +143,7 @@ fn collect_prop(prop: &PropNode<'_>, out: &mut Vec<JsxEmit>, preserve_components
         // Static `class="a"` style attributes carry only literal text.
         PropNode::Attribute(_) => {}
         PropNode::Directive(directive) => {
-            match directive.name.as_str() {
+            match directive.name {
                 "model" => {
                     if let Some(exp) = &directive.exp
                         && let Some(target) = expr_of(exp)
@@ -178,7 +178,7 @@ fn collect_expression(expression: &ExpressionNode<'_>, out: &mut Vec<JsxEmit>) {
             if simple.is_static {
                 return;
             }
-            push_expr(&simple.content, &simple.loc, out);
+            push_expr(simple.content, &simple.loc, out);
         }
         ExpressionNode::Compound(compound) => collect_compound(compound, out),
     }
@@ -189,7 +189,7 @@ fn collect_compound(compound: &CompoundExpressionNode<'_>, out: &mut Vec<JsxEmit
         match child {
             CompoundExpressionChild::Simple(simple) => {
                 if !simple.is_static {
-                    push_expr(&simple.content, &simple.loc, out);
+                    push_expr(simple.content, &simple.loc, out);
                 }
             }
             CompoundExpressionChild::Compound(compound) => collect_compound(compound, out),
@@ -212,7 +212,7 @@ fn push_expr(content: &str, loc: &vize_relief::SourceLocation, out: &mut Vec<Jsx
 pub(super) fn expr_of(expression: &ExpressionNode<'_>) -> Option<JsxExpr> {
     match expression {
         ExpressionNode::Simple(simple) if !simple.is_static => {
-            jsx_expr(&simple.content, simple.loc.span.start, simple.loc.span.end)
+            jsx_expr(simple.content, simple.loc.span.start, simple.loc.span.end)
         }
         _ => None,
     }

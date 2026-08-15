@@ -76,7 +76,7 @@ pub(super) fn generate_directive(ctx: &mut GenerateContext, directive: &Directiv
     let element = cstr!("n{}", directive.element);
 
     // Handle v-show
-    if directive.name.as_str() == "vShow" {
+    if directive.name == "vShow" {
         ctx.use_helper("applyVShow");
         let value = if let Some(ref exp) = directive.dir.exp {
             match exp {
@@ -96,13 +96,13 @@ pub(super) fn generate_directive(ctx: &mut GenerateContext, directive: &Directiv
         return;
     }
 
-    if directive.name.as_str() == "vCloak" {
+    if directive.name == "vCloak" {
         ctx.push_line_fmt(format_args!("{element}.removeAttribute(\"v-cloak\")"));
         return;
     }
 
     // Handle v-model on elements
-    if directive.name.as_str() == "model" {
+    if directive.name == "model" {
         generate_v_model(ctx, directive);
         return;
     }
@@ -127,7 +127,7 @@ pub(super) fn generate_directive(ctx: &mut GenerateContext, directive: &Directiv
     }
 
     ctx.use_helper("withDirectives");
-    let resolved = directive_resolution_var(directive.name.as_str());
+    let resolved = directive_resolution_var(directive.name);
     match modifiers {
         Some(modifiers) => ctx.push_line_fmt(format_args!(
             "_withDirectives({}, [[{}, {}, {}, {}]])",
@@ -146,19 +146,19 @@ fn generate_v_model(ctx: &mut GenerateContext, directive: &DirectiveIRNode<'_>) 
 
     let binding = if let Some(ref exp) = directive.dir.exp {
         match exp {
-            ExpressionNode::Simple(e) => e.content.clone(),
+            ExpressionNode::Simple(e) => String::new(e.content),
             _ => vize_carton::String::from(""),
         }
     } else {
         vize_carton::String::from("")
     };
 
-    let helper = if directive.tag.as_str() == "select" {
+    let helper = if directive.tag == "select" {
         "applySelectModel"
-    } else if directive.tag.as_str() == "textarea" {
+    } else if directive.tag == "textarea" {
         "applyTextModel"
-    } else if directive.tag.as_str() == "input" {
-        match directive.input_type.as_str() {
+    } else if directive.tag == "input" {
+        match directive.input_type {
             "checkbox" => "applyCheckboxModel",
             "radio" => "applyRadioModel",
             _ => "applyTextModel",
@@ -173,7 +173,7 @@ fn generate_v_model(ctx: &mut GenerateContext, directive: &DirectiveIRNode<'_>) 
     let modifiers = &directive.dir.modifiers;
     let mut mod_parts: std::vec::Vec<String> = std::vec::Vec::new();
     for m in modifiers.iter() {
-        match m.content.as_str() {
+        match m.content {
             "lazy" => mod_parts.push("lazy: true".into()),
             "number" => mod_parts.push("number: true".into()),
             "trim" => mod_parts.push("trim: true".into()),

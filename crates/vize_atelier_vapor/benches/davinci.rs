@@ -26,9 +26,7 @@ use vize_atelier_core::expr_parse_probe;
 use vize_atelier_core::lane::transform;
 use vize_atelier_core::options::TransformOptions;
 use vize_atelier_core::parser::Parser;
-use vize_atelier_vapor::{
-    VaporCompilerOptions, compile_vapor, drop_ir_stack_safe, generate_vapor, transform_to_ir,
-};
+use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor, generate_vapor, transform_to_ir};
 use vize_carton::{Allocator, cstr};
 
 fn vapor_transform_options() -> TransformOptions {
@@ -55,8 +53,7 @@ fn davinci(criterion: &mut Criterion) {
             let allocator = Allocator::new();
             let (mut root, _errors) = Parser::new(&allocator, template).parse();
             transform(&allocator, &mut root, vapor_transform_options(), None);
-            let ir = window.measure(|| transform_to_ir(&allocator, &root, template));
-            drop_ir_stack_safe(ir);
+            let _ir = window.measure(|| transform_to_ir(&allocator, &root, template));
         });
 
         let allocator = Allocator::new();
@@ -68,7 +65,6 @@ fn davinci(criterion: &mut Criterion) {
         davinci_harness::bench_with_metrics(criterion, &generate_id, fixture.relative_path, || {
             generate_vapor(&ir, None)
         });
-        drop_ir_stack_safe(ir);
 
         let fused_id = cstr!("atelier_vapor_compile_{}", fixture.name);
         davinci_harness::bench_with_metrics(criterion, &fused_id, fixture.relative_path, || {

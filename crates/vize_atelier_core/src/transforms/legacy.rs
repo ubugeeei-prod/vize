@@ -43,7 +43,7 @@
 //! dialect (its call site is guarded by `supports_v2_event_sugar`).
 
 use vize_armature::legacy::LegacyDialectCapabilities;
-use vize_carton::{Box, Bump, String, Vec, ensure_sufficient_stack};
+use vize_carton::{Allocator, Box, String, Vec, ensure_sufficient_stack};
 
 use crate::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, SimpleExpressionNode,
@@ -56,7 +56,7 @@ use crate::{
 /// whose capability set does not request the sugar (notably Vue 3), keeping the
 /// default path zero-cost.
 pub fn desugar_legacy_template<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     root: &mut RootNode<'a>,
     caps: LegacyDialectCapabilities,
 ) {
@@ -66,14 +66,14 @@ pub fn desugar_legacy_template<'a>(
     if !caps.scoped_slot_attrs {
         return;
     }
-    let source = root.source.clone();
-    desugar_children(allocator, &mut root.children, &source);
+    let source = root.source;
+    desugar_children(allocator, &mut root.children, source);
 }
 
 fn desugar_children<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     children: &mut Vec<'a, TemplateChildNode<'a>>,
-    source: &str,
+    source: &'a str,
 ) {
     for child in children.iter_mut() {
         if let TemplateChildNode::Element(el) = child {
@@ -83,7 +83,7 @@ fn desugar_children<'a>(
     }
 }
 
-fn desugar_element<'a>(allocator: &'a Bump, el: &mut ElementNode<'a>, source: &str) {
+fn desugar_element<'a>(allocator: &'a Allocator, el: &mut ElementNode<'a>, source: &'a str) {
     desugar_sync_modifiers(allocator, el, source);
     desugar_scoped_slot_attrs(allocator, el);
 }
@@ -91,11 +91,11 @@ fn desugar_element<'a>(allocator: &'a Bump, el: &mut ElementNode<'a>, source: &s
 /// Expand every `:foo.sync="bar"` bind directive on `el` into a plain
 /// `:foo="bar"` (the `sync` modifier stripped) plus an `@update:foo="bar = $event"`
 /// listener, matching Vue 2's `.sync` semantics.
-fn desugar_sync_modifiers<'a>(allocator: &'a Bump, el: &mut ElementNode<'a>, source: &str) {
+fn desugar_sync_modifiers<'a>(allocator: &'a Allocator, el: &mut ElementNode<'a>, source: &'a str) {
     // Collect the listeners to append after the walk to avoid mutating while
     // borrowing. Most elements have no `.sync`, so the common case allocates
     // nothing.
-    let mut appended: Vec<'a, PropNode<'a>> = Vec::new_in(allocator);
+    let mut appended: Vec<'a, PropNode<'a>> = Vec::new_in(&allocator);
 
     for prop in el.props.iter_mut() {
         let PropNode::Directive(dir) = prop else {
@@ -104,24 +104,20 @@ fn desugar_sync_modifiers<'a>(allocator: &'a Bump, el: &mut ElementNode<'a>, sou
         if dir.name != "bind" {
             continue;
         }
-        let Some(sync_idx) = dir
-            .modifiers
-            .iter()
-            .position(|m| m.content.as_str() == "sync")
-        else {
+        let Some(sync_idx) = dir.modifiers.iter().position(|m| m.content == "sync") else {
             continue;
         };
 
         // The argument must be a static prop name (`:foo` / `:[foo]` dynamic
         // args are not part of the bounded `.sync` subset).
         let arg_name = match &dir.arg {
-            Some(ExpressionNode::Simple(arg)) if arg.is_static => arg.content.clone(),
+            Some(ExpressionNode::Simple(arg)) if arg.is_static => arg.content,
             _ => continue,
         };
         // Need an expression to assign back into.
         let value_exp = match &dir.exp {
-            Some(ExpressionNode::Simple(s)) => s.content.clone(),
-            Some(ExpressionNode::Compound(c)) => String::new(c.loc.span.slice(source)),
+            Some(ExpressionNode::Simple(s)) => s.content,
+            Some(ExpressionNode::Compound(c)) => c.loc.span.slice(source),
             None => continue,
         };
 
@@ -131,33 +127,35 @@ fn desugar_sync_modifiers<'a>(allocator: &'a Bump, el: &mut ElementNode<'a>, sou
         // Build `@update:<arg>` event name.
         let mut event_name = String::with_capacity(7 + arg_name.len());
         event_name.push_str("update:");
-        event_name.push_str(arg_name.as_str());
+        event_name.push_str(arg_name);
+        let event_name = allocator.alloc_str(&event_name);
 
         // Build the assignment handler, matching the v-model transform's shape so
         // codegen treats it identically: `$event => ((bar) = $event)`.
         let mut handler = String::with_capacity(value_exp.len() + 20);
         handler.push_str("$event => ((");
-        handler.push_str(value_exp.as_str());
+        handler.push_str(value_exp);
         handler.push_str(") = $event)");
+        let handler = allocator.alloc_str(&handler);
 
         let listener = PropNode::Directive(Box::new_in(
             DirectiveNode {
-                name: String::new("on"),
+                name: "on",
                 raw_name: None,
                 arg: Some(ExpressionNode::Simple(Box::new_in(
-                    SimpleExpressionNode::new(event_name.as_str(), true, dir.loc.clone()),
-                    allocator,
+                    SimpleExpressionNode::new(event_name, true, dir.loc.clone()),
+                    &allocator,
                 ))),
                 exp: Some(ExpressionNode::Simple(Box::new_in(
-                    SimpleExpressionNode::new(handler.as_str(), false, dir.loc.clone()),
-                    allocator,
+                    SimpleExpressionNode::new(handler, false, dir.loc.clone()),
+                    &allocator,
                 ))),
-                modifiers: Vec::new_in(allocator),
+                modifiers: Vec::new_in(&allocator),
                 for_parse_result: None,
                 shorthand: false,
                 loc: dir.loc.clone(),
             },
-            allocator,
+            &allocator,
         ));
         appended.push(listener);
     }
@@ -170,12 +168,12 @@ fn desugar_sync_modifiers<'a>(allocator: &'a Bump, el: &mut ElementNode<'a>, sou
 /// Convert a Vue 2 `slot-scope` / `scope` scoped-slot attribute on `el` into a
 /// `v-slot` directive, consuming the companion `slot="name"` static attribute as
 /// the slot argument. No-op when neither attribute is present.
-fn desugar_scoped_slot_attrs<'a>(allocator: &'a Bump, el: &mut ElementNode<'a>) {
+fn desugar_scoped_slot_attrs<'a>(allocator: &'a Allocator, el: &mut ElementNode<'a>) {
     // Locate the scoped-slot value attribute (`slot-scope` preferred; `scope` is
     // the older 2.1 alias). Vue 2.6 treated both identically.
     let scope_idx = el.props.iter().position(|prop| {
         matches!(prop, PropNode::Attribute(attr)
-            if attr.name.as_str() == "slot-scope" || attr.name.as_str() == "scope")
+            if attr.name == "slot-scope" || attr.name == "scope")
     });
     let Some(scope_idx) = scope_idx else {
         return;
@@ -197,7 +195,7 @@ fn desugar_scoped_slot_attrs<'a>(allocator: &'a Bump, el: &mut ElementNode<'a>) 
     let slot_props = scope_attr
         .value
         .as_ref()
-        .map(|value| (value.content.clone(), value.loc.clone()));
+        .map(|value| (value.content, value.loc.clone()));
     let scope_loc = scope_attr.loc.clone();
 
     // The companion `slot="name"` static attribute names the target slot. Its
@@ -205,12 +203,12 @@ fn desugar_scoped_slot_attrs<'a>(allocator: &'a Bump, el: &mut ElementNode<'a>) 
     let slot_name_idx = el
         .props
         .iter()
-        .position(|prop| matches!(prop, PropNode::Attribute(attr) if attr.name.as_str() == "slot"));
+        .position(|prop| matches!(prop, PropNode::Attribute(attr) if attr.name == "slot"));
     let slot_name = slot_name_idx.and_then(|idx| {
         if let PropNode::Attribute(attr) = &el.props[idx] {
             attr.value
                 .as_ref()
-                .map(|value| (value.content.clone(), value.loc.clone()))
+                .map(|value| (value.content, value.loc.clone()))
         } else {
             None
         }
@@ -219,29 +217,29 @@ fn desugar_scoped_slot_attrs<'a>(allocator: &'a Bump, el: &mut ElementNode<'a>) 
     // Build the v-slot directive: name="slot", arg=<slot name> (static), exp=<slot props>.
     let arg = slot_name.map(|(name, loc)| {
         ExpressionNode::Simple(Box::new_in(
-            SimpleExpressionNode::new(name.as_str(), true, loc),
-            allocator,
+            SimpleExpressionNode::new(name, true, loc),
+            &allocator,
         ))
     });
     let exp = slot_props.map(|(props, loc)| {
         ExpressionNode::Simple(Box::new_in(
-            SimpleExpressionNode::new(props.as_str(), false, loc),
-            allocator,
+            SimpleExpressionNode::new(props, false, loc),
+            &allocator,
         ))
     });
 
     let v_slot = PropNode::Directive(Box::new_in(
         DirectiveNode {
-            name: String::new("slot"),
+            name: "slot",
             raw_name: None,
             arg,
             exp,
-            modifiers: Vec::new_in(allocator),
+            modifiers: Vec::new_in(&allocator),
             for_parse_result: None,
             shorthand: false,
             loc: scope_loc,
         },
-        allocator,
+        &allocator,
     ));
 
     // Remove the consumed attributes (highest index first so the lower index
@@ -292,11 +290,11 @@ pub(crate) fn desugar_v2_v_on_modifiers(dir: &mut DirectiveNode<'_>) {
     // `.native` is removed wholesale; everything else is kept (with numeric
     // keycodes rewritten in place). `retain_mut` keeps the arena `Vec` order.
     dir.modifiers.retain_mut(|modifier| {
-        if modifier.content.as_str() == "native" {
+        if modifier.content == "native" {
             return false;
         }
-        if let Some(name) = keycode_to_key_name(modifier.content.as_str()) {
-            modifier.content = String::new(name);
+        if let Some(name) = keycode_to_key_name(modifier.content) {
+            modifier.content = name;
         }
         true
     });

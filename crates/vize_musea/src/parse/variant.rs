@@ -5,19 +5,21 @@
 use super::{calculate_location_fast, extract_attr, has_attr};
 use crate::types::{ArtParseError, ArtVariant, ViewportConfig};
 use memchr::{memchr, memmem};
-use vize_carton::{Bump, FxHashMap, ToCompactString};
+use vize_carton::{Allocator, FxHashMap, ToCompactString};
 
 /// Parse all `<variant>` blocks from art content.
-/// Uses arena allocation for the variants vector.
+///
+/// The vector is a heap one: [`ArtVariant::args`] owns `serde_json` values, so
+/// it cannot live in an arena container (Davinci P1-10).
 #[inline]
 pub(crate) fn parse_variants<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     content: &'a str,
     full_source: &'a str,
     content_offset: usize,
-) -> Result<vize_carton::Vec<'a, ArtVariant<'a>>, ArtParseError> {
+) -> Result<std::vec::Vec<ArtVariant<'a>>, ArtParseError> {
     let bytes = content.as_bytes();
-    let mut variants = vize_carton::Vec::new_in(allocator);
+    let mut variants = std::vec::Vec::new();
     let mut pos = 0;
 
     // Use memmem finder for repeated <variant searches
@@ -56,7 +58,7 @@ pub(crate) fn parse_variants<'a>(
 /// All strings are borrowed from source - zero allocations except for args JSON.
 #[inline]
 fn parse_single_variant<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     content: &'a str,
     start: usize,
     full_source: &'a str,
@@ -131,7 +133,7 @@ fn parse_single_variant<'a>(
 /// HTML entities are decoded before parsing.
 #[inline]
 fn parse_args_json<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     s: &str,
 ) -> Result<FxHashMap<&'a str, serde_json::Value>, serde_json::Error> {
     // Check if we need to decode HTML entities
@@ -229,11 +231,11 @@ fn count_lines_fast(bytes: &[u8], pos: usize) -> u32 {
 mod tests {
     use super::{parse_variants, parse_viewport};
     use crate::types::ArtParseError;
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
     #[test]
     fn test_parse_single_variant() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let content = r#"
   <variant name="Primary" default>
     <Button variant="primary">Click</Button>
@@ -252,7 +254,7 @@ mod tests {
 
     #[test]
     fn test_parse_multiple_variants() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let content = r#"
   <variant name="Primary" default>
     <Button variant="primary">Primary</Button>
@@ -275,7 +277,7 @@ mod tests {
 
     #[test]
     fn test_parse_variant_with_args() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let content = r#"
   <variant name="Custom" args='{"size":"lg","disabled":true}'>
     <Button>Custom</Button>
@@ -314,7 +316,7 @@ mod tests {
 
     #[test]
     fn test_parse_skip_vrt() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let content = r#"<variant name="Test" skip-vrt><div></div></variant>"#;
         let result = parse_variants(&allocator, content, content, 0);
         assert!(result.is_ok());
@@ -323,7 +325,7 @@ mod tests {
 
     #[test]
     fn test_missing_name_error() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let content = r#"<variant default><div></div></variant>"#;
         let result = parse_variants(&allocator, content, content, 0);
         assert!(matches!(

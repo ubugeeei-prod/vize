@@ -165,10 +165,7 @@ fn v_slots_never_becomes_a_resolved_directive() {
     let root = common::lower_one(&bump, "const A = () => <B class=\"c\" v-slots={slots}/>;");
     let element = common::root_element(&root);
     assert_eq!(element.props.len(), 2);
-    assert_eq!(
-        common::as_attribute(&element.props[0]).name.as_str(),
-        "class"
-    );
+    assert_eq!(common::as_attribute(&element.props[0]).name, "class");
     let forwarded =
         common::find_directive(element, "slots").expect("v-slots lowers to a directive");
     assert!(forwarded.arg.is_none());

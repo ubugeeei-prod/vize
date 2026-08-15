@@ -74,7 +74,7 @@ impl Rule for NoBareStringsInTemplate {
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         // The content of <script>/<style> is code/CSS, never user-facing copy.
-        if is_raw_text_element(element.tag.as_str()) {
+        if is_raw_text_element(element.tag) {
             return;
         }
 
@@ -82,7 +82,7 @@ impl Rule for NoBareStringsInTemplate {
         // elements are visited on their own).
         for child in element.children.iter() {
             if let TemplateChildNode::Text(text) = child
-                && has_bare_string(text.content.as_str())
+                && has_bare_string(text.content)
             {
                 ctx.warn_with_help(
                     ctx.t("vue/no-bare-strings-in-template.message"),
@@ -96,9 +96,9 @@ impl Rule for NoBareStringsInTemplate {
         // (`:title="..."`) are directives, so they are skipped here.
         for prop in element.props.iter() {
             if let PropNode::Attribute(attr) = prop
-                && is_target_attribute(attr.name.as_str())
+                && is_target_attribute(attr.name)
                 && let Some(value) = &attr.value
-                && has_bare_string(value.content.as_str())
+                && has_bare_string(value.content)
             {
                 ctx.warn_with_help(
                     ctx.t("vue/no-bare-strings-in-template.message"),

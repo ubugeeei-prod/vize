@@ -40,7 +40,7 @@ pub struct ValidVSlot;
 
 impl ValidVSlot {
     fn is_custom_component(element: &ElementNode) -> bool {
-        Self::is_custom_component_tag(element.tag.as_str(), Some(element.tag_type))
+        Self::is_custom_component_tag(element.tag, Some(element.tag_type))
     }
 
     fn is_custom_component_tag(tag: &str, tag_type: Option<ElementType>) -> bool {
@@ -63,7 +63,7 @@ impl ValidVSlot {
 
         for prop in &element.props {
             if let PropNode::Directive(dir) = prop
-                && dir.name.as_str() == "slot"
+                && dir.name == "slot"
             {
                 if dir.arg.is_some() {
                     named_count += 1;
@@ -79,7 +79,7 @@ impl ValidVSlot {
     fn is_named_slot(directive: &DirectiveNode) -> bool {
         match &directive.arg {
             None => false,
-            Some(ExpressionNode::Simple(arg)) => arg.content.as_str() != "default",
+            Some(ExpressionNode::Simple(arg)) => arg.content != "default",
             Some(ExpressionNode::Compound(_)) => true,
         }
     }
@@ -102,11 +102,11 @@ impl Rule for ValidVSlot {
         element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name.as_str() != "slot" {
+        if directive.name != "slot" {
             return;
         }
 
-        let tag = element.tag.as_str();
+        let tag = element.tag;
 
         // v-slot can only be used on components or <template>
         if tag != "template" && !Self::is_custom_component(element) {
@@ -229,9 +229,7 @@ fn finish_slot_group(seen_slots: &mut FxHashSet<String>, group_slots: &mut FxHas
 
 fn owner_default_slot_directive<'a>(element: &'a ElementNode<'a>) -> Option<&'a DirectiveNode<'a>> {
     element.props.iter().find_map(|prop| match prop {
-        PropNode::Directive(dir)
-            if dir.name.as_str() == "slot" && !ValidVSlot::is_named_slot(dir) =>
-        {
+        PropNode::Directive(dir) if dir.name == "slot" && !ValidVSlot::is_named_slot(dir) => {
             Some(dir.as_ref())
         }
         _ => None,
@@ -239,12 +237,12 @@ fn owner_default_slot_directive<'a>(element: &'a ElementNode<'a>) -> Option<&'a 
 }
 
 fn child_slot_directive<'a>(element: &'a ElementNode<'a>) -> Option<&'a DirectiveNode<'a>> {
-    if element.tag.as_str() != "template" {
+    if element.tag != "template" {
         return None;
     }
 
     element.props.iter().find_map(|prop| match prop {
-        PropNode::Directive(dir) if dir.name.as_str() == "slot" => Some(dir.as_ref()),
+        PropNode::Directive(dir) if dir.name == "slot" => Some(dir.as_ref()),
         _ => None,
     })
 }
@@ -253,7 +251,7 @@ fn has_directive(element: &ElementNode, name: &str) -> bool {
     element
         .props
         .iter()
-        .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name.as_str() == name))
+        .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == name))
 }
 
 fn has_component_parent(ctx: &LintContext) -> bool {
@@ -273,7 +271,7 @@ fn static_slot_name(directive: &DirectiveNode) -> Option<String> {
             let mut name = arg.content.to_compact_string();
             for modifier in &directive.modifiers {
                 name.push('.');
-                name.push_str(modifier.content.as_str());
+                name.push_str(modifier.content);
             }
             Some(name)
         }

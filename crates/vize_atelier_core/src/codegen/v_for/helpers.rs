@@ -12,7 +12,7 @@ use vize_carton::{SmallVec, String, ToCompactString};
 /// and array destructuring ("[first, second]").
 pub(crate) fn extract_for_params(expr: &ExpressionNode<'_>, params: &mut Vec<String>) {
     let content = match expr {
-        ExpressionNode::Simple(exp) => exp.content.as_str(),
+        ExpressionNode::Simple(exp) => exp.content,
         _ => return,
     };
     extract_destructure_params(content.trim(), params);
@@ -174,7 +174,7 @@ pub(crate) fn is_numeric_content(content: &str) -> bool {
 /// Check if source is a numeric literal (for v-for range)
 pub fn is_numeric_source(source: &ExpressionNode<'_>) -> bool {
     if let ExpressionNode::Simple(exp) = source {
-        is_numeric_content(exp.content.as_str())
+        is_numeric_content(exp.content)
     } else {
         false
     }

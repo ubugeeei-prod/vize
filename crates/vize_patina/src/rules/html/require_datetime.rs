@@ -77,7 +77,7 @@ impl Rule for RequireDatetime {
         for child in &element.children {
             match child {
                 TemplateChildNode::Text(text) => {
-                    text_content.push_str(text.content.as_str());
+                    text_content.push_str(text.content);
                 }
                 TemplateChildNode::Interpolation(_) => {
                     has_dynamic_content = true;

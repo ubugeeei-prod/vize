@@ -7,7 +7,7 @@ use vize_carton::{String, ToCompactString};
 
 /// Check if directive is v-html
 pub fn is_v_html(dir: &DirectiveNode<'_>) -> bool {
-    dir.name.as_str() == "html"
+    dir.name == "html"
 }
 
 /// Generate innerHTML prop for v-html
@@ -30,26 +30,30 @@ pub fn generate_html_warning() -> &'static str {
 mod tests {
     use super::{generate_html_prop, generate_html_warning, is_v_html};
     use vize_atelier_core::{DirectiveNode, ExpressionNode, SimpleExpressionNode, SourceLocation};
-    use vize_carton::{Box, Bump};
+    use vize_carton::{Allocator, Box};
 
-    fn create_test_directive<'a>(allocator: &'a Bump, name: &str, exp: &str) -> DirectiveNode<'a> {
+    fn create_test_directive<'a>(
+        allocator: &'a Allocator,
+        name: &'a str,
+        exp: &'a str,
+    ) -> DirectiveNode<'a> {
         let mut dir = DirectiveNode::new(allocator, name, SourceLocation::STUB);
         let exp_node = SimpleExpressionNode::new(exp, false, SourceLocation::STUB);
-        let boxed = Box::new_in(exp_node, allocator);
+        let boxed = Box::new_in(exp_node, &allocator);
         dir.exp = Some(ExpressionNode::Simple(boxed));
         dir
     }
 
     #[test]
     fn test_is_v_html() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let dir = create_test_directive(&allocator, "html", "content");
         assert!(is_v_html(&dir));
     }
 
     #[test]
     fn test_generate_html_prop() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let dir = create_test_directive(&allocator, "html", "content");
         let result = generate_html_prop(&dir);
         assert!(result.is_some());
@@ -60,14 +64,14 @@ mod tests {
 
     #[test]
     fn test_is_v_html_false() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let dir = create_test_directive(&allocator, "text", "content");
         assert!(!is_v_html(&dir));
     }
 
     #[test]
     fn test_generate_html_prop_no_exp() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let dir = DirectiveNode::new(&allocator, "html", SourceLocation::STUB);
         assert!(generate_html_prop(&dir).is_none());
     }

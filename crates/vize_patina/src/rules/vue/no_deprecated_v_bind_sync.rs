@@ -68,15 +68,11 @@ impl Rule for NoDeprecatedVBindSync {
         }
 
         // Only `v-bind` / `:` carries the `.sync` modifier.
-        if directive.name.as_str() != "bind" {
+        if directive.name != "bind" {
             return;
         }
 
-        let Some(sync) = directive
-            .modifiers
-            .iter()
-            .find(|m| m.content.as_str() == "sync")
-        else {
+        let Some(sync) = directive.modifiers.iter().find(|m| m.content == "sync") else {
             return;
         };
 

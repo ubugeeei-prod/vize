@@ -53,7 +53,7 @@ fn has_interactive_event(element: &ElementNode) -> bool {
             && dir.name == "on"
             && let Some(ExpressionNode::Simple(arg)) = &dir.arg
             && arg.is_static
-            && INTERACTIVE_EVENTS.contains(&arg.content.as_ref())
+            && INTERACTIVE_EVENTS.contains(&arg.content)
         {
             return true;
         }
@@ -72,7 +72,7 @@ impl Rule for NoStaticElementInteractions {
         }
 
         // Skip natively interactive elements
-        if is_interactive_element(&element.tag) {
+        if is_interactive_element(element.tag) {
             return;
         }
 
@@ -86,7 +86,7 @@ impl Rule for NoStaticElementInteractions {
             ctx.warn_with_help(
                 ctx.t_fmt(
                     "a11y/no-static-element-interactions.message",
-                    &[("tag", element.tag.as_str())],
+                    &[("tag", element.tag)],
                 ),
                 &element.loc,
                 ctx.t("a11y/no-static-element-interactions.help"),

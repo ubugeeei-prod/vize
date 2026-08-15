@@ -46,7 +46,7 @@ impl NoLoneTemplate {
     fn has_valid_directive(element: &ElementNode) -> bool {
         for prop in &element.props {
             if let PropNode::Directive(dir) = prop {
-                let name = dir.name.as_str();
+                let name = dir.name;
                 // Template is valid if it has v-if, v-else-if, v-else, v-for, v-slot, or #slot
                 if matches!(name, "if" | "else-if" | "else" | "for" | "slot") {
                     return true;
@@ -63,7 +63,7 @@ impl Rule for NoLoneTemplate {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag.as_str() != "template" {
+        if element.tag != "template" {
             return;
         }
 

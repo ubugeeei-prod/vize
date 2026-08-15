@@ -3,7 +3,7 @@
 //! Contains if (v-if/v-else-if/v-else), for (v-for),
 //! and text call node definitions.
 
-use vize_carton::{Box, Bump, Vec, ensure_sufficient_stack};
+use vize_carton::{Allocator, Box, Vec};
 
 use super::{
     core::{NodeType, SourceLocation},
@@ -20,9 +20,9 @@ pub struct IfNode<'a> {
 }
 
 impl<'a> IfNode<'a> {
-    pub fn new(allocator: &'a Bump, loc: SourceLocation) -> Self {
+    pub fn new(allocator: &'a Allocator, loc: SourceLocation) -> Self {
         Self {
-            branches: Vec::new_in(allocator),
+            branches: Vec::new_in(&allocator),
             loc,
         }
     }
@@ -42,15 +42,19 @@ pub struct IfBranchNode<'a> {
     pub loc: SourceLocation,
 }
 
+/// 80 -> 72 and 176 -> 168: one arena vector each.
+const _: () = assert!(size_of::<IfBranchNode<'_>>() == 72);
+const _: () = assert!(size_of::<ForNode<'_>>() == 168);
+
 impl<'a> IfBranchNode<'a> {
     pub fn new(
-        allocator: &'a Bump,
+        allocator: &'a Allocator,
         condition: Option<ExpressionNode<'a>>,
         loc: SourceLocation,
     ) -> Self {
         Self {
             condition,
-            children: Vec::new_in(allocator),
+            children: Vec::new_in(&allocator),
             user_key: None,
             is_template_if: false,
             loc,
@@ -59,16 +63,6 @@ impl<'a> IfBranchNode<'a> {
 
     pub fn node_type(&self) -> NodeType {
         NodeType::IfBranch
-    }
-}
-
-/// Keep teardown of nested structural nodes under the same stack guard as the
-/// compiler passes that traverse them.
-impl Drop for IfBranchNode<'_> {
-    fn drop(&mut self) {
-        if !self.children.is_empty() {
-            ensure_sufficient_stack(|| self.children.clear());
-        }
     }
 }
 
@@ -87,16 +81,6 @@ pub struct ForNode<'a> {
 impl<'a> ForNode<'a> {
     pub fn node_type(&self) -> NodeType {
         NodeType::For
-    }
-}
-
-/// A transformed `v-for` can directly contain another control-flow node, so
-/// its compiler-generated field drop would otherwise recurse without a guard.
-impl Drop for ForNode<'_> {
-    fn drop(&mut self) {
-        if !self.children.is_empty() {
-            ensure_sufficient_stack(|| self.children.clear());
-        }
     }
 }
 
@@ -126,7 +110,7 @@ impl<'a> TextCallNode<'a> {
 /// Text call content
 #[derive(Debug)]
 pub enum TextCallContent<'a> {
-    Text(Box<'a, super::elements::TextNode>),
+    Text(Box<'a, super::elements::TextNode<'a>>),
     Interpolation(Box<'a, super::elements::InterpolationNode<'a>>),
     Compound(Box<'a, CompoundExpressionNode<'a>>),
 }

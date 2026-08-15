@@ -12,7 +12,8 @@ use crate::{Allocator, Box, Vec};
 /// use vize_carton::{Allocator, Box, CloneIn};
 ///
 /// let allocator = Allocator::default();
-/// let original = Box::new_in(42, allocator.as_bump());
+/// let allocator = &allocator;
+/// let original = Box::new_in(42, &allocator);
 /// let cloned = original.clone_in(&allocator);
 /// assert_eq!(*original, *cloned);
 /// ```
@@ -83,7 +84,7 @@ where
 
     #[inline]
     fn clone_in(&self, allocator: &'new Allocator) -> Self::Cloned {
-        Box::new_in((**self).clone_in(allocator), allocator.as_bump())
+        Box::new_in((**self).clone_in(allocator), &allocator)
     }
 }
 
@@ -96,7 +97,7 @@ where
 
     #[inline]
     fn clone_in(&self, allocator: &'new Allocator) -> Self::Cloned {
-        let mut new_vec = Vec::with_capacity_in(self.len(), allocator.as_bump());
+        let mut new_vec = Vec::with_capacity_in(self.len(), &allocator);
         for item in self.iter() {
             new_vec.push(item.clone_in(allocator));
         }
@@ -150,7 +151,8 @@ mod tests {
     #[test]
     fn test_clone_in_box() {
         let allocator = Allocator::default();
-        let boxed = Box::new_in(42, allocator.as_bump());
+        let allocator = &allocator;
+        let boxed = Box::new_in(42, &allocator);
         let cloned = boxed.clone_in(&allocator);
         assert_eq!(*cloned, 42);
     }
@@ -158,7 +160,8 @@ mod tests {
     #[test]
     fn test_clone_in_vec() {
         let allocator = Allocator::default();
-        let mut vec = Vec::new_in(allocator.as_bump());
+        let allocator = &allocator;
+        let mut vec = Vec::new_in(&allocator);
         vec.push(1);
         vec.push(2);
         vec.push(3);

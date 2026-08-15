@@ -6,7 +6,7 @@
 //! All types are designed for zero-copy parsing with arena allocation.
 
 use serde::{Deserialize, Serialize};
-use vize_carton::{Bump, FxHashMap, String, ToCompactString, Vec as BumpVec};
+use vize_carton::{Allocator, FxHashMap, String, ToCompactString, Vec as ArenaVec};
 
 /// Parsed Art file descriptor.
 ///
@@ -23,8 +23,8 @@ pub struct ArtDescriptor<'a> {
     /// Art metadata from `<art>` block attributes
     pub metadata: ArtMetadata<'a>,
 
-    /// Variant definitions from `<variant>` blocks (arena-allocated)
-    pub variants: BumpVec<'a, ArtVariant<'a>>,
+    /// Variant definitions. A heap vector: `args` owns JSON (P1-10).
+    pub variants: std::vec::Vec<ArtVariant<'a>>,
 
     /// Script setup block (if present)
     pub script_setup: Option<ArtScriptBlock<'a>>,
@@ -33,7 +33,7 @@ pub struct ArtDescriptor<'a> {
     pub script: Option<ArtScriptBlock<'a>>,
 
     /// Style blocks (arena-allocated)
-    pub styles: BumpVec<'a, ArtStyleBlock<'a>>,
+    pub styles: ArenaVec<'a, ArtStyleBlock<'a>>,
 }
 
 /// Art metadata extracted from `<art>` block attributes.
@@ -52,7 +52,7 @@ pub struct ArtMetadata<'a> {
     pub category: Option<&'a str>,
 
     /// Tags for filtering/searching (arena-allocated)
-    pub tags: BumpVec<'a, &'a str>,
+    pub tags: ArenaVec<'a, &'a str>,
 
     /// Status indicator
     pub status: ArtStatus,
@@ -198,15 +198,15 @@ pub struct CsfOutput {
 impl<'a> ArtDescriptor<'a> {
     /// Create a new descriptor with arena allocation.
     #[inline]
-    pub fn new(allocator: &'a Bump, filename: &'a str, source: &'a str) -> Self {
+    pub fn new(allocator: &'a Allocator, filename: &'a str, source: &'a str) -> Self {
         Self {
             filename,
             source,
             metadata: ArtMetadata::new(allocator),
-            variants: BumpVec::new_in(allocator),
+            variants: std::vec::Vec::new(),
             script_setup: None,
             script: None,
-            styles: BumpVec::new_in(allocator),
+            styles: ArenaVec::new_in(&allocator),
         }
     }
 
@@ -223,13 +223,13 @@ impl<'a> ArtDescriptor<'a> {
 impl<'a> ArtMetadata<'a> {
     /// Create default metadata with arena allocation.
     #[inline]
-    pub fn new(allocator: &'a Bump) -> Self {
+    pub fn new(allocator: &'a Allocator) -> Self {
         Self {
             title: "",
             description: None,
             component: None,
             category: None,
-            tags: BumpVec::new_in(allocator),
+            tags: ArenaVec::new_in(&allocator),
             status: ArtStatus::default(),
             order: None,
         }
@@ -415,11 +415,11 @@ impl<'a> ArtStyleBlock<'a> {
 #[cfg(test)]
 mod tests {
     use super::{ArtDescriptor, ArtStatus, ViewportConfig};
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
     #[test]
     fn test_art_descriptor_new() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let desc = ArtDescriptor::new(&allocator, "test.art.vue", "<art></art>");
         assert_eq!(desc.filename, "test.art.vue");
         assert!(desc.variants.is_empty());

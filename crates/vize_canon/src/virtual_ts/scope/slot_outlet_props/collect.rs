@@ -16,7 +16,7 @@ pub(super) fn collect_slot_outlets_by_scope(
         return FxHashMap::default();
     };
     for child in &root.children {
-        collect_child_outlets(summary, child, &mut outlets, &root.source);
+        collect_child_outlets(summary, child, &mut outlets, root.source);
     }
 
     let mut by_scope: FxHashMap<u32, Vec<SlotOutlet>> = FxHashMap::default();
@@ -128,20 +128,20 @@ fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>, source: &str) -> Op
             PropNode::Attribute(attr) => {
                 if attr.name == "name" {
                     if let Some(value) = attr.value.as_ref() {
-                        name = value.content.clone();
+                        name = value.content.into();
                     }
                     continue;
                 }
                 props.push(PassedProp {
-                    name: attr.name.clone(),
+                    name: attr.name.into(),
                     name_is_dynamic: false,
-                    value: attr.value.as_ref().map(|value| value.content.clone()),
+                    value: attr.value.as_ref().map(|value| value.content.into()),
                     start: attr.loc.span.start,
                     end: attr.loc.span.end,
                     is_dynamic: false,
                 });
             }
-            PropNode::Directive(directive) if directive.name.as_str() == "bind" => {
+            PropNode::Directive(directive) if directive.name == "bind" => {
                 if let Some(ref arg) = directive.arg {
                     let (prop_name, prop_name_is_dynamic) = directive_argument(arg, source);
                     let value = directive
@@ -196,7 +196,7 @@ fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>, source: &str) -> Op
 
 fn directive_argument(arg: &ExpressionNode<'_>, source: &str) -> (CompactString, bool) {
     match arg {
-        ExpressionNode::Simple(simple) => (simple.content.clone(), !simple.is_static),
+        ExpressionNode::Simple(simple) => (simple.content.into(), !simple.is_static),
         ExpressionNode::Compound(compound) => {
             (CompactString::new(compound.loc.span.slice(source)), true)
         }
@@ -229,7 +229,7 @@ fn template_expression(summary: &Croquis, start: u32, end: u32) -> Option<&Templ
 
 fn expression_content<'a>(exp: &'a ExpressionNode<'_>, source: &'a str) -> &'a str {
     match exp {
-        ExpressionNode::Simple(simple) => simple.content.as_str(),
+        ExpressionNode::Simple(simple) => simple.content,
         ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
     }
 }

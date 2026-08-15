@@ -6,7 +6,7 @@
 //! whitespace alphabet is the ASCII set `[ \t\n\f\r]`, so this module uses
 //! `is_vue_whitespace` rather than the full-Unicode `char::is_whitespace`.
 
-use vize_carton::{String, Vec, ensure_sufficient_stack};
+use vize_carton::{Allocator, StringBuilder, Vec, ensure_sufficient_stack};
 use vize_relief::TemplateChildNode;
 
 /// Per Vue: only `[ \t\n\f\r]` is whitespace for the condense strategy.
@@ -16,7 +16,10 @@ fn is_vue_whitespace(c: char) -> bool {
 }
 
 /// Collapse every maximal run of `[ \t\n\f\r]` in `text` to a single U+0020.
-fn condense_internal_whitespace(text: &str) -> Option<String> {
+///
+/// Returns `None` when the text already satisfies the condense strategy, so
+/// the untouched node keeps borrowing the template source.
+fn condense_internal_whitespace<'a>(allocator: &'a Allocator, text: &str) -> Option<&'a str> {
     let needs_condense = {
         let mut prev_ws = false;
         let mut any_run = false;
@@ -41,7 +44,7 @@ fn condense_internal_whitespace(text: &str) -> Option<String> {
         return None;
     }
 
-    let mut out = String::with_capacity(text.len());
+    let mut out = StringBuilder::with_capacity_in(text.len(), allocator);
     let mut prev_ws = false;
     for c in text.chars() {
         if is_vue_whitespace(c) {
@@ -54,7 +57,7 @@ fn condense_internal_whitespace(text: &str) -> Option<String> {
             prev_ws = false;
         }
     }
-    Some(out)
+    Some(out.into_str())
 }
 
 /// Condense whitespace in children
@@ -64,6 +67,7 @@ fn condense_internal_whitespace(text: &str) -> Option<String> {
 /// place where parsing costs a frame per nesting level. Its descent is therefore
 /// guarded (`vize_carton::recursion`).
 pub(super) fn condense_whitespace<'a>(
+    allocator: &'a Allocator,
     children: &mut Vec<'a, TemplateChildNode<'a>>,
     is_pre_tag: fn(&str) -> bool,
 ) {
@@ -127,7 +131,7 @@ pub(super) fn condense_whitespace<'a>(
             WhitespaceAction::Condense(len) => {
                 // Condense whitespace runs to a single space.
                 if let TemplateChildNode::Text(ref mut text) = children[i] {
-                    text.content = " ".into();
+                    text.content = " ";
                 }
                 for _ in 1..len {
                     children.remove(i + 1);
@@ -140,7 +144,7 @@ pub(super) fn condense_whitespace<'a>(
                 // z` would keep its raw whitespace and diverge from
                 // `@vue/compiler-sfc`. (#960)
                 if let TemplateChildNode::Text(ref mut text) = children[i]
-                    && let Some(condensed) = condense_internal_whitespace(text.content.as_str())
+                    && let Some(condensed) = condense_internal_whitespace(allocator, text.content)
                 {
                     text.content = condensed;
                 }
@@ -149,9 +153,11 @@ pub(super) fn condense_whitespace<'a>(
 
         // Recurse into elements
         if let TemplateChildNode::Element(ref mut el) = children[i]
-            && !is_pre_tag(el.tag.as_str())
+            && !is_pre_tag(el.tag)
         {
-            ensure_sufficient_stack(|| condense_whitespace(&mut el.children, is_pre_tag));
+            ensure_sufficient_stack(|| {
+                condense_whitespace(allocator, &mut el.children, is_pre_tag)
+            });
         }
 
         i += 1;

@@ -106,12 +106,12 @@ impl SlotCollector<'_> {
             match prop {
                 // `<slot name>` with no value renders the default slot, so an
                 // attribute without a value contributes nothing.
-                PropNode::Attribute(attribute) if attribute.name.as_str() == "name" => {
+                PropNode::Attribute(attribute) if attribute.name == "name" => {
                     if let Some(value) = attribute.value.as_ref() {
-                        name = Some(value.content.as_str());
+                        name = Some(value.content);
                     }
                 }
-                PropNode::Directive(directive) if directive.name.as_str() == "bind" => {
+                PropNode::Directive(directive) if directive.name == "bind" => {
                     match directive.arg.as_ref() {
                         // `:name="x"` names the outlet with an expression.
                         Some(arg) if argument_name(arg) == Some("name") => self.dynamic = true,
@@ -137,7 +137,7 @@ impl SlotCollector<'_> {
 /// The static name of a directive argument, when it has one.
 fn argument_name<'a>(arg: &'a ExpressionNode<'a>) -> Option<&'a str> {
     match arg {
-        ExpressionNode::Simple(simple) if simple.is_static => Some(simple.content.as_str()),
+        ExpressionNode::Simple(simple) if simple.is_static => Some(simple.content),
         _ => None,
     }
 }

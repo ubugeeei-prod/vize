@@ -52,7 +52,7 @@ impl Rule for VOnHandlerStyle {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name.as_str() != "on" {
+        if directive.name != "on" {
             return;
         }
 

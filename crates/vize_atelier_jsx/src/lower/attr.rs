@@ -15,7 +15,7 @@ use oxc_ast::ast::{
     JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXSpreadAttribute,
 };
 use oxc_span::{GetSpan, Span};
-use vize_carton::{Box, String, Vec, is_builtin_directive};
+use vize_carton::{Box, Vec, is_builtin_directive};
 use vize_relief::{
     AttributeNode, DirectiveNode, PropNode, SimpleExpressionNode, SourceLocation, TextNode,
 };
@@ -32,7 +32,7 @@ enum DirectiveAttributeLowering<'a> {
     Rejected,
 }
 
-impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
+impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// Lower a JSX opening element's attribute list into Vize props.
     ///
     /// `on_component` is whether the owning tag renders as a component; the
@@ -42,7 +42,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         items: &[JSXAttributeItem<'_>],
         on_component: bool,
     ) -> Vec<'a, PropNode<'a>> {
-        let mut props = Vec::new_in(self.bump());
+        let mut props = self.vec();
         for item in items {
             let prop = match item {
                 JSXAttributeItem::Attribute(attr) => {
@@ -72,7 +72,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         let loc = self.mapper().location(spread.span);
         let mut directive = DirectiveNode::new(self.bump(), "bind", loc);
         directive.exp = Some(self.dyn_expr(spread.argument.span()));
-        PropNode::Directive(Box::new_in(directive, self.bump()))
+        PropNode::Directive(self.boxed(directive))
     }
 
     /// Lower one attribute, or `None` when it was rejected with a diagnostic.
@@ -108,13 +108,13 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             return Some(prop);
         }
 
-        let name = self.compat_attribute_name(attr.name.span());
+        let name: &'a str = self.intern_attr_name(attr.name.span());
         let name_loc = self.mapper().location(attr.name.span());
         let prop = match attr.value.as_ref() {
             None => self.valueless_attr(name, attr.name.span(), name_loc, loc),
             Some(JSXAttributeValue::StringLiteral(string)) => {
-                let value =
-                    TextNode::new(string.value.as_str(), self.mapper().location(string.span));
+                let txt = self.bump().alloc_str(string.value.as_str());
+                let value = TextNode::new(txt, self.mapper().location(string.span));
                 PropNode::Attribute(Box::new_in(
                     AttributeNode {
                         name,
@@ -122,7 +122,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
                         value: Some(value),
                         loc,
                     },
-                    self.bump(),
+                    &self.bump(),
                 ))
             }
             Some(JSXAttributeValue::ExpressionContainer(container)) => {
@@ -134,19 +134,19 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
                         // a `v-on` directive so core codegen emits the suffixed
                         // listener key. Plain `onClick={h}` has no recognized
                         // suffix and stays a `v-bind` like before.
-                        if let Some((event, mods)) = split_on_event_modifiers(&name) {
-                            self.von_modifier_prop(&event, attr.name.span(), span, &mods, loc)
+                        if let Some((ev, mods)) = split_on_event_modifiers(name) {
+                            self.von_modifier_prop(&ev, attr.name.span(), span, &mods, loc)
                         } else {
-                            self.bind_prop(&name, attr.name.span(), span, loc)
+                            self.bind_prop(name, attr.name.span(), span, loc)
                         }
                     }
                 }
             }
-            Some(JSXAttributeValue::Element(element)) => {
-                self.bind_prop(&name, attr.name.span(), element.span(), loc)
+            Some(JSXAttributeValue::Element(el)) => {
+                self.bind_prop(name, attr.name.span(), el.span(), loc)
             }
-            Some(JSXAttributeValue::Fragment(fragment)) => {
-                self.bind_prop(&name, attr.name.span(), fragment.span(), loc)
+            Some(JSXAttributeValue::Fragment(f)) => {
+                self.bind_prop(name, attr.name.span(), f.span(), loc)
             }
         };
         Some(prop)
@@ -154,7 +154,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
 
     fn boolean_attr(
         &self,
-        name: String,
+        name: &'a str,
         name_loc: SourceLocation,
         loc: SourceLocation,
     ) -> PropNode<'a> {
@@ -165,14 +165,14 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
                 value: None,
                 loc,
             },
-            self.bump(),
+            &self.bump(),
         ))
     }
 
     /// `name={expr}` -> `v-bind:name="expr"`.
     fn bind_prop(
         &self,
-        name: &str,
+        name: &'a str,
         name_span: Span,
         value_span: Span,
         loc: SourceLocation,
@@ -180,7 +180,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         let mut directive = DirectiveNode::new(self.bump(), "bind", loc);
         directive.arg = Some(self.static_expr(name, name_span));
         directive.exp = Some(self.dyn_expr(value_span));
-        PropNode::Directive(Box::new_in(directive, self.bump()))
+        PropNode::Directive(self.boxed(directive))
     }
 
     /// `onClickCapture={expr}` -> `v-on:click.capture="expr"`.
@@ -193,16 +193,16 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         loc: SourceLocation,
     ) -> PropNode<'a> {
         let mut directive = DirectiveNode::new(self.bump(), "on", loc);
-        directive.arg = Some(self.static_expr(event, name_span));
+        directive.arg = Some(self.static_expr(self.bump().alloc_str(event), name_span));
         directive.exp = Some(self.dyn_expr(value_span));
         for modifier in mods {
             directive.modifiers.push(SimpleExpressionNode::new(
-                *modifier,
+                self.bump().alloc_str(modifier),
                 false,
                 self.mapper().location(name_span),
             ));
         }
-        PropNode::Directive(Box::new_in(directive, self.bump()))
+        PropNode::Directive(self.boxed(directive))
     }
 
     fn try_directive_attribute(
@@ -251,7 +251,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             }
             return DirectiveAttributeLowering::Lowered(PropNode::Directive(Box::new_in(
                 directive,
-                self.bump(),
+                &self.bump(),
             )));
         }
 
@@ -272,7 +272,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             }
             return DirectiveAttributeLowering::Lowered(PropNode::Directive(Box::new_in(
                 directive,
-                self.bump(),
+                &self.bump(),
             )));
         }
 
@@ -328,7 +328,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         directive.exp = self.directive_value_expr(attr.value.as_ref());
         DirectiveAttributeLowering::Lowered(PropNode::Directive(Box::new_in(
             directive,
-            self.bump(),
+            &self.bump(),
         )))
     }
 
@@ -338,7 +338,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     ) -> Option<vize_relief::ExpressionNode<'a>> {
         match value? {
             JSXAttributeValue::StringLiteral(string) => {
-                Some(self.static_expr(string.value.as_str(), string.span))
+                Some(self.static_expr(self.bump().alloc_str(string.value.as_str()), string.span))
             }
             JSXAttributeValue::ExpressionContainer(container) => {
                 container_expr_span(container).map(|span| self.dyn_expr(span))

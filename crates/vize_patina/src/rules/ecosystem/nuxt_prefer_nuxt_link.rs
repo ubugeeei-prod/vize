@@ -27,7 +27,7 @@ impl Rule for NuxtPreferNuxtLink {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag.as_str() != "a" || has_anchor_escape_hatch(element) {
+        if element.tag != "a" || has_anchor_escape_hatch(element) {
             return;
         }
 
@@ -35,13 +35,13 @@ impl Rule for NuxtPreferNuxtLink {
             let PropNode::Attribute(attr) = prop else {
                 continue;
             };
-            if attr.name.as_str() != "href" {
+            if attr.name != "href" {
                 continue;
             }
             let Some(value) = &attr.value else {
                 continue;
             };
-            if !is_internal_href(value.content.as_str()) {
+            if !is_internal_href(value.content) {
                 continue;
             }
 
@@ -56,11 +56,11 @@ impl Rule for NuxtPreferNuxtLink {
 
 fn has_anchor_escape_hatch(element: &ElementNode<'_>) -> bool {
     element.props.iter().any(|prop| match prop {
-        PropNode::Attribute(attr) if attr.name.as_str() == "download" => true,
-        PropNode::Attribute(attr) if attr.name.as_str() == "target" => attr
+        PropNode::Attribute(attr) if attr.name == "download" => true,
+        PropNode::Attribute(attr) if attr.name == "target" => attr
             .value
             .as_ref()
-            .is_some_and(|value| value.content.as_str() == "_blank"),
+            .is_some_and(|value| value.content == "_blank"),
         _ => false,
     })
 }

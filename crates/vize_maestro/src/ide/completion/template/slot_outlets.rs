@@ -55,7 +55,7 @@ fn collect_element_slot_outlets(
     names: &mut Vec<String>,
     seen: &mut BTreeSet<String>,
 ) {
-    if el.tag.as_str() == "slot" {
+    if el.tag == "slot" {
         let name = static_slot_outlet_name(el);
         if seen.insert(name.clone()) {
             names.push(name);

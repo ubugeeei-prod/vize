@@ -12,8 +12,7 @@ fn transform_errors(source: &str) -> std::vec::Vec<CompilerError> {
     let (mut root, errors) = parse(&allocator, source);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
-    let mut ctx =
-        TransformContext::new(&allocator, root.source.clone(), TransformOptions::default());
+    let mut ctx = TransformContext::new(&allocator, root.source, TransformOptions::default());
     traverse_children(&mut ctx, ParentNode::Root(&mut root as *mut _));
     ctx.errors
 }

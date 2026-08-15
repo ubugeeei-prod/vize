@@ -55,17 +55,16 @@ impl Rule for UseVOnExact {
                 }
 
                 let event_name = match &dir.arg {
-                    Some(ExpressionNode::Simple(arg)) if arg.is_static => arg.content.as_str(),
+                    Some(ExpressionNode::Simple(arg)) if arg.is_static => arg.content,
                     _ => continue,
                 };
 
                 let has_system_modifier = dir
                     .modifiers
                     .iter()
-                    .any(|m| SYSTEM_MODIFIERS.contains(&m.content.as_str()));
+                    .any(|m| SYSTEM_MODIFIERS.contains(&m.content));
 
-                let has_exact_modifier =
-                    dir.modifiers.iter().any(|m| m.content.as_str() == "exact");
+                let has_exact_modifier = dir.modifiers.iter().any(|m| m.content == "exact");
 
                 handlers.push((event_name, has_system_modifier, has_exact_modifier, idx));
             }

@@ -76,7 +76,7 @@ fn collect_child<'b>(child: &'b TemplateChildNode<'_>, out: &mut Vec<&'b SourceL
 fn collect_element<'b>(el: &'b ElementNode<'_>, out: &mut Vec<&'b SourceLocation>) {
     for prop in el.props.iter() {
         if let PropNode::Directive(dir) = prop
-            && dir.name.as_str() == "slots"
+            && dir.name == "slots"
             && dir.arg.is_none()
             && dir.exp.is_some()
         {

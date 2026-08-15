@@ -23,7 +23,7 @@ use vize_relief::{ElementNode, ExpressionNode, SimpleExpressionNode};
 use super::Lowerer;
 use super::slot::is_whitespace_child;
 
-impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
+impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// Lower a component's sole expression child the way Babel does, reporting
     /// whether it consumed the child. `false` leaves ordinary child lowering to
     /// the caller.
@@ -138,8 +138,12 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
 
     fn generated_slot_expression(&self, content: String, span: Span) -> ExpressionNode<'a> {
         ExpressionNode::Simple(Box::new_in(
-            SimpleExpressionNode::new(content, false, self.mapper().location(span)),
-            self.bump(),
+            SimpleExpressionNode::new(
+                self.bump().alloc_str(&content),
+                false,
+                self.mapper().location(span),
+            ),
+            &self.bump(),
         ))
     }
 }

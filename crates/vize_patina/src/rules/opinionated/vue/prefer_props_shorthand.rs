@@ -51,7 +51,7 @@ impl Rule for PreferPropsShorthand {
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         // Only check on component elements (PascalCase or kebab-case with -)
-        let tag = element.tag.as_str();
+        let tag = element.tag;
         let is_component =
             tag.contains('-') || tag.chars().next().is_some_and(|c| c.is_uppercase());
 
@@ -67,7 +67,7 @@ impl Rule for PreferPropsShorthand {
             {
                 // Get the prop name
                 let prop_name = match arg {
-                    ExpressionNode::Simple(s) => s.content.as_str(),
+                    ExpressionNode::Simple(s) => s.content,
                     _ => continue,
                 };
 

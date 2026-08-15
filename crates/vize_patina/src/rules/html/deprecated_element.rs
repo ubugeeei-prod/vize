@@ -82,7 +82,7 @@ impl Rule for DeprecatedElement {
             return;
         }
 
-        let tag = element.tag.as_str();
+        let tag = element.tag;
         if DEPRECATED_ELEMENTS.contains(&tag) {
             let message = ctx.t_fmt("html/deprecated-element.message", &[("tag", tag)]);
             let help = ctx.t("html/deprecated-element.help");

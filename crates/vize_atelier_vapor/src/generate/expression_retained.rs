@@ -31,7 +31,7 @@ pub(super) fn resolve_expression_node(
     ctx: &GenerateContext<'_>,
     node: &SimpleExpressionNode<'_>,
 ) -> String {
-    let expr = node.content.as_str();
+    let expr = node.content;
     let trimmed = expr.trim();
     if trimmed.is_empty() {
         return String::default();

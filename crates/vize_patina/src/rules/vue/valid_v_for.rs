@@ -51,7 +51,7 @@ impl Rule for ValidVFor {
         directive: &DirectiveNode<'a>,
     ) {
         // Only check v-for directives
-        if directive.name.as_str() != "for" {
+        if directive.name != "for" {
             return;
         }
 
@@ -87,7 +87,7 @@ impl Rule for ValidVFor {
             Some(exp) => {
                 // Validate the expression format
                 let content = match exp {
-                    ExpressionNode::Simple(s) => s.content.as_str(),
+                    ExpressionNode::Simple(s) => s.content,
                     ExpressionNode::Compound(_) => return, // Complex expressions are harder to validate
                 };
 
@@ -186,7 +186,7 @@ fn check_key_uses_v_for_variables(
     }
     if vars
         .iter()
-        .any(|var| expression_references_identifier(key_expression.content.as_str(), var.as_str()))
+        .any(|var| expression_references_identifier(key_expression.content, var.as_str()))
     {
         return;
     }
@@ -201,10 +201,10 @@ fn check_key_uses_v_for_variables(
 fn bound_key_directive<'a>(element: &'a ElementNode<'a>) -> Option<&'a DirectiveNode<'a>> {
     element.props.iter().find_map(|prop| match prop {
         PropNode::Directive(dir)
-            if dir.name.as_str() == "bind"
+            if dir.name == "bind"
                 && matches!(
                     dir.arg.as_ref(),
-                    Some(ExpressionNode::Simple(arg)) if arg.content.as_str() == "key"
+                    Some(ExpressionNode::Simple(arg)) if arg.content == "key"
                 ) =>
         {
             Some(dir.as_ref())

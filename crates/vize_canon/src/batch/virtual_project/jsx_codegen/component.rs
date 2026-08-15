@@ -79,8 +79,8 @@ pub(super) fn collect(element: &ElementNode<'_>) -> Option<JsxComponent> {
 /// expression collector so directive/model expressions are never lost.
 pub(super) fn captures_prop(element: &ElementNode<'_>, prop: &PropNode<'_>) -> bool {
     match prop {
-        PropNode::Attribute(attribute) => !is_reserved_prop(attribute.name.as_str()),
-        PropNode::Directive(directive) if directive.name.as_str() == "bind" => {
+        PropNode::Attribute(attribute) => !is_reserved_prop(attribute.name),
+        PropNode::Directive(directive) if directive.name == "bind" => {
             if directive.exp.is_none() {
                 return false;
             }
@@ -206,21 +206,20 @@ fn render_name(
 }
 
 fn component_tag(element: &ElementNode<'_>) -> Option<JsxExpr> {
-    if element.tag.as_str() == "component" {
+    if element.tag == "component" {
         return element.props.iter().find_map(|prop| {
             let PropNode::Directive(directive) = prop else {
                 return None;
             };
-            (directive.name.as_str() == "bind"
-                && directive.arg.as_ref().and_then(static_name) == Some("is"))
-            .then(|| directive.exp.as_ref().and_then(super::expr_of))
-            .flatten()
+            (directive.name == "bind" && directive.arg.as_ref().and_then(static_name) == Some("is"))
+                .then(|| directive.exp.as_ref().and_then(super::expr_of))
+                .flatten()
         });
     }
 
     let start = element.loc.span.start.saturating_add(1);
     Some(JsxExpr {
-        content: element.tag.as_str().to_compact_string(),
+        content: element.tag.to_compact_string(),
         start,
         end: start.saturating_add(element.tag.len() as u32),
     })
@@ -228,10 +227,10 @@ fn component_tag(element: &ElementNode<'_>) -> Option<JsxExpr> {
 
 fn component_prop(element: &ElementNode<'_>, prop: &PropNode<'_>) -> Option<JsxComponentProp> {
     match prop {
-        PropNode::Attribute(attribute) if !is_reserved_prop(attribute.name.as_str()) => {
+        PropNode::Attribute(attribute) if !is_reserved_prop(attribute.name) => {
             let value = match attribute.value.as_ref() {
                 Some(value) => PropValue::Expression(JsxExpr {
-                    content: json_string(value.content.as_str()),
+                    content: json_string(value.content),
                     start: value.loc.span.start,
                     end: value.loc.span.end,
                 }),
@@ -239,7 +238,7 @@ fn component_prop(element: &ElementNode<'_>, prop: &PropNode<'_>) -> Option<JsxC
             };
             Some(JsxComponentProp::Property {
                 name: PropName::Static {
-                    content: canonical_prop_name(attribute.name.as_str()),
+                    content: canonical_prop_name(attribute.name),
                     start: attribute.name_loc.span.start,
                     end: attribute.name_loc.span.end,
                 },
@@ -249,7 +248,7 @@ fn component_prop(element: &ElementNode<'_>, prop: &PropNode<'_>) -> Option<JsxC
             })
         }
         PropNode::Attribute(_) => None,
-        PropNode::Directive(directive) if directive.name.as_str() == "bind" => {
+        PropNode::Directive(directive) if directive.name == "bind" => {
             let value = directive.exp.as_ref().and_then(super::expr_of)?;
             let Some(arg) = directive.arg.as_ref() else {
                 return Some(JsxComponentProp::Spread {
@@ -260,13 +259,13 @@ fn component_prop(element: &ElementNode<'_>, prop: &PropNode<'_>) -> Option<JsxC
             };
             let name = match arg {
                 ExpressionNode::Simple(simple) if simple.is_static => {
-                    if is_dynamic_component_tag_prop(element, simple.content.as_str())
-                        || is_reserved_prop(simple.content.as_str())
+                    if is_dynamic_component_tag_prop(element, simple.content)
+                        || is_reserved_prop(simple.content)
                     {
                         return None;
                     }
                     PropName::Static {
-                        content: canonical_prop_name(simple.content.as_str()),
+                        content: canonical_prop_name(simple.content),
                         start: simple.loc.span.start,
                         end: simple.loc.span.end,
                     }
@@ -286,13 +285,13 @@ fn component_prop(element: &ElementNode<'_>, prop: &PropNode<'_>) -> Option<JsxC
 
 fn static_name<'e>(expression: &'e ExpressionNode<'_>) -> Option<&'e str> {
     match expression {
-        ExpressionNode::Simple(simple) if simple.is_static => Some(simple.content.as_str()),
+        ExpressionNode::Simple(simple) if simple.is_static => Some(simple.content),
         ExpressionNode::Simple(_) | ExpressionNode::Compound(_) => None,
     }
 }
 
 fn is_dynamic_component_tag_prop(element: &ElementNode<'_>, name: &str) -> bool {
-    element.tag.as_str() == "component" && name == "is"
+    element.tag == "component" && name == "is"
 }
 
 fn is_reserved_prop(name: &str) -> bool {

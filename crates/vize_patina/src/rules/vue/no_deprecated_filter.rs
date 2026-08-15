@@ -73,7 +73,7 @@ impl Rule for NoDeprecatedFilter {
             return;
         };
 
-        if has_filter_pipe(exp.content.as_str()) {
+        if has_filter_pipe(exp.content) {
             ctx.error_with_help(
                 ctx.t("vue/no-deprecated-filter.message"),
                 &interpolation.loc,
@@ -95,7 +95,7 @@ impl Rule for NoDeprecatedFilter {
         // Filters only live in `v-bind` / `:` expression values. Other
         // directives (`v-on`, `v-if`, …) are out of scope for this rule, just
         // like eslint-plugin-vue.
-        if directive.name.as_str() != "bind" {
+        if directive.name != "bind" {
             return;
         }
 
@@ -103,7 +103,7 @@ impl Rule for NoDeprecatedFilter {
             return;
         };
 
-        if has_filter_pipe(exp.content.as_str()) {
+        if has_filter_pipe(exp.content) {
             ctx.error_with_help(
                 ctx.t("vue/no-deprecated-filter.message"),
                 &exp.loc,

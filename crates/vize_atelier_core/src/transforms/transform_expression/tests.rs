@@ -14,16 +14,16 @@ mod transform_expression_tests {
         lane::TransformContext,
         options::{BindingMetadata, BindingType, TransformOptions},
     };
-    use vize_carton::{Allocator, Box, Bump, FxHashMap};
+    use vize_carton::{Allocator, Box, FxHashMap};
 
-    fn test_context<'a>(allocator: &'a Allocator, source: &str) -> TransformContext<'a> {
+    fn test_context<'a>(allocator: &'a Allocator, source: &'a str) -> TransformContext<'a> {
         let mut bindings = FxHashMap::default();
         bindings.insert("selectedFolders".into(), BindingType::SetupRef);
         bindings.insert("folder".into(), BindingType::SetupRef);
 
         TransformContext::new(
             allocator,
-            source.into(),
+            source,
             TransformOptions {
                 prefix_identifiers: true,
                 inline: true,
@@ -38,12 +38,12 @@ mod transform_expression_tests {
         )
     }
 
-    fn compound_expression<'a>(allocator: &'a Bump, source: &str) -> ExpressionNode<'a> {
+    fn compound_expression<'a>(allocator: &'a Allocator, source: &str) -> ExpressionNode<'a> {
         let loc = SourceLocation::new(0, source.len() as u32);
 
         ExpressionNode::Compound(Box::new_in(
             CompoundExpressionNode::new(allocator, loc),
-            allocator,
+            &allocator,
         ))
     }
 
@@ -72,7 +72,7 @@ mod transform_expression_tests {
         let source = "isExternal && isExternal.value";
         let mut ctx = TransformContext::new(
             &allocator,
-            source.into(),
+            source,
             TransformOptions {
                 prefix_identifiers: true,
                 inline: false,
@@ -93,7 +93,7 @@ mod transform_expression_tests {
         };
 
         assert_eq!(
-            result.content.as_str(),
+            result.content,
             "$setup.isExternal && $setup.isExternal.value"
         );
         assert!(!ctx.has_helper(RuntimeHelper::Unref));
@@ -158,7 +158,7 @@ mod transform_expression_tests {
 
         // Raw passthrough (matches vue-core, which returns the node
         // unchanged), but with a compile diagnostic instead of silence.
-        assert_eq!(result.content.as_str(), "foo(");
+        assert_eq!(result.content, "foo(");
         assert_eq!(ctx.errors.len(), 1, "errors: {:?}", ctx.errors);
         assert_eq!(
             ctx.errors[0].code,
@@ -189,7 +189,7 @@ mod transform_expression_tests {
             panic!("expected simple expression");
         };
 
-        assert_eq!(result.content.as_str(), "_ctx.class");
+        assert_eq!(result.content, "_ctx.class");
         assert!(ctx.errors.is_empty(), "errors: {:?}", ctx.errors);
     }
 
@@ -220,7 +220,7 @@ mod transform_expression_tests {
             panic!("expected simple expression");
         };
 
-        assert_eq!(result.content.as_str(), source);
+        assert_eq!(result.content, source);
         assert!(ctx.errors.is_empty(), "errors: {:?}", ctx.errors);
     }
 
@@ -235,6 +235,6 @@ mod transform_expression_tests {
             panic!("expected clone_expression to flatten Compound to Simple");
         };
 
-        assert_eq!(simple.content.as_str(), source);
+        assert_eq!(simple.content, source);
     }
 }

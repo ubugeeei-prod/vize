@@ -16,28 +16,28 @@ pub(super) fn build_ast_json(root: &RootNode<'_>) -> serde_json::Value {
                     .map(|prop| match prop {
                         PropNode::Attribute(attribute) => serde_json::json!({
                             "type": "ATTRIBUTE",
-                            "name": attribute.name.as_str(),
-                            "value": attribute.value.as_ref().map(|value| value.content.as_str()),
+                            "name": attribute.name,
+                            "value": attribute.value.as_ref().map(|value| value.content),
                         }),
                         PropNode::Directive(directive) => serde_json::json!({
                             "type": "DIRECTIVE",
-                            "name": directive.name.as_str(),
+                            "name": directive.name,
                             "arg": directive.arg.as_ref().map(|argument| match argument {
-                                vize_atelier_core::ExpressionNode::Simple(expression) => expression.content.as_str().to_string(),
+                                vize_atelier_core::ExpressionNode::Simple(expression) => expression.content.to_string(),
                                 _ => "<compound>".to_string(),
                             }),
                             "exp": directive.exp.as_ref().map(|expression| match expression {
-                                vize_atelier_core::ExpressionNode::Simple(expression) => expression.content.as_str().to_string(),
+                                vize_atelier_core::ExpressionNode::Simple(expression) => expression.content.to_string(),
                                 _ => "<compound>".to_string(),
                             }),
-                            "modifiers": directive.modifiers.iter().map(|modifier| modifier.content.as_str()).collect::<Vec<_>>(),
+                            "modifiers": directive.modifiers.iter().map(|modifier| modifier.content).collect::<Vec<_>>(),
                         }),
                     })
                     .collect();
 
                 serde_json::json!({
                     "type": "ELEMENT",
-                    "tag": element.tag.as_str(),
+                    "tag": element.tag,
                     "tagType": format!("{:?}", element.tag_type),
                     "props": props,
                     "children": build_children(&element.children),
@@ -46,16 +46,16 @@ pub(super) fn build_ast_json(root: &RootNode<'_>) -> serde_json::Value {
             }
             TemplateChildNode::Text(text) => serde_json::json!({
                 "type": "TEXT",
-                "content": text.content.as_str(),
+                "content": text.content,
             }),
             TemplateChildNode::Comment(comment) => serde_json::json!({
                 "type": "COMMENT",
-                "content": comment.content.as_str(),
+                "content": comment.content,
             }),
             TemplateChildNode::Interpolation(interpolation) => serde_json::json!({
                 "type": "INTERPOLATION",
                 "content": match &interpolation.content {
-                    vize_atelier_core::ExpressionNode::Simple(expression) => expression.content.as_str(),
+                    vize_atelier_core::ExpressionNode::Simple(expression) => expression.content,
                     _ => "<compound>",
                 }
             }),
@@ -71,7 +71,7 @@ pub(super) fn build_ast_json(root: &RootNode<'_>) -> serde_json::Value {
         "type": "ROOT",
         "children": children,
         "helpers": root.helpers.iter().map(|helper| helper.name()).collect::<Vec<_>>(),
-        "components": root.components.iter().map(|component| component.as_str()).collect::<Vec<_>>(),
-        "directives": root.directives.iter().map(|directive| directive.as_str()).collect::<Vec<_>>(),
+        "components": root.components.iter().map(|component| component).collect::<Vec<_>>(),
+        "directives": root.directives.iter().map(|directive| directive).collect::<Vec<_>>(),
     })
 }

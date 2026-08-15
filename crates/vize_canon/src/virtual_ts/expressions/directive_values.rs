@@ -115,11 +115,11 @@ fn directive_value_binding(
     directive: &DirectiveNode<'_>,
     bindings: &BindingMetadata,
 ) -> Option<((u32, u32), DirectiveValueBinding)> {
-    if vize_carton::is_builtin_directive(directive.name.as_str()) {
+    if vize_carton::is_builtin_directive(directive.name) {
         return None;
     }
     let expression = directive.exp.as_ref()?;
-    let variable = directive_binding_name(directive.name.as_str());
+    let variable = directive_binding_name(directive.name);
     if !bindings.bindings.contains_key(variable.as_str()) {
         return None;
     }

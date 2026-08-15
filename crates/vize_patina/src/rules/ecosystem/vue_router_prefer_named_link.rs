@@ -28,7 +28,7 @@ impl Rule for VueRouterPreferNamedLink {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if !is_router_link_tag(element.tag.as_str()) {
+        if !is_router_link_tag(element.tag) {
             return;
         }
 
@@ -49,23 +49,23 @@ impl Rule for VueRouterPreferNamedLink {
 fn is_static_path_to_prop(prop: &PropNode<'_>) -> bool {
     match prop {
         PropNode::Attribute(attr) => {
-            attr.name.as_str() == "to"
+            attr.name == "to"
                 && attr
                     .value
                     .as_ref()
-                    .is_some_and(|value| is_internal_path(value.content.as_str()))
+                    .is_some_and(|value| is_internal_path(value.content))
         }
         PropNode::Directive(directive) => is_static_path_to_bind(directive),
     }
 }
 
 fn is_static_path_to_bind(directive: &DirectiveNode<'_>) -> bool {
-    if directive.name.as_str() != "bind" {
+    if directive.name != "bind" {
         return false;
     }
     if !matches!(
         directive.arg.as_ref(),
-        Some(ExpressionNode::Simple(arg)) if arg.content.as_str() == "to"
+        Some(ExpressionNode::Simple(arg)) if arg.content == "to"
     ) {
         return false;
     }

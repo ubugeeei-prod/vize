@@ -3,7 +3,7 @@
 //! Contains the top-level AST nodes including RootNode and
 //! the TemplateChildNode enum that represents all template children.
 
-use vize_carton::{Box, Bump, String, Vec};
+use vize_carton::{Allocator, Box, Vec};
 
 use super::{
     ForNode, IfBranchNode, IfNode, ImportItem, JsChildNode, RuntimeHelper, TextCallNode,
@@ -17,10 +17,10 @@ use super::{
 #[derive(Debug)]
 pub struct RootNode<'a> {
     pub children: Vec<'a, TemplateChildNode<'a>>,
-    pub comments: Vec<'a, CommentNode>,
+    pub comments: Vec<'a, CommentNode<'a>>,
     pub helpers: Vec<'a, RuntimeHelper>,
-    pub components: Vec<'a, String>,
-    pub directives: Vec<'a, String>,
+    pub components: Vec<'a, &'a str>,
+    pub directives: Vec<'a, &'a str>,
     /// Vue 2 pipe filters referenced by the template (e.g. `capitalize` in
     /// `{{ msg | capitalize }}`), in first-seen order. Each becomes a
     /// `const _filter_<name> = _resolveFilter("<name>")` asset declaration in
@@ -33,31 +33,39 @@ pub struct RootNode<'a> {
     /// keeping the public AST surface — and `cargo-semver-checks`, whose
     /// feature heuristic skips `_`-prefixed features — byte-identical.
     #[cfg(feature = "_legacy")]
-    pub filters: Vec<'a, String>,
+    pub filters: Vec<'a, &'a str>,
     pub hoists: Vec<'a, Option<JsChildNode<'a>>>,
     pub imports: Vec<'a, ImportItem<'a>>,
     pub cached: Vec<'a, Option<Box<'a, CacheExpression<'a>>>>,
     pub temps: u32,
-    pub source: String,
+    /// The template text this tree was parsed from.
+    pub source: &'a str,
     pub loc: SourceLocation,
     pub transformed: bool,
 }
 
+/// 296 -> 224: eight arena vectors at -8 bytes each plus `source`. The
+/// legacy build carries one more arena vector (`filters`), 320 -> 248.
+#[cfg(not(feature = "_legacy"))]
+const _: () = assert!(size_of::<RootNode<'_>>() == 224);
+#[cfg(feature = "_legacy")]
+const _: () = assert!(size_of::<RootNode<'_>>() == 248);
+
 impl<'a> RootNode<'a> {
-    pub fn new(allocator: &'a Bump, source: impl Into<String>) -> Self {
+    pub fn new(allocator: &'a Allocator, source: &'a str) -> Self {
         Self {
-            children: Vec::new_in(allocator),
-            comments: Vec::new_in(allocator),
-            helpers: Vec::new_in(allocator),
-            components: Vec::new_in(allocator),
-            directives: Vec::new_in(allocator),
+            children: Vec::new_in(&allocator),
+            comments: Vec::new_in(&allocator),
+            helpers: Vec::new_in(&allocator),
+            components: Vec::new_in(&allocator),
+            directives: Vec::new_in(&allocator),
             #[cfg(feature = "_legacy")]
-            filters: Vec::new_in(allocator),
-            hoists: Vec::new_in(allocator),
-            imports: Vec::new_in(allocator),
-            cached: Vec::new_in(allocator),
+            filters: Vec::new_in(&allocator),
+            hoists: Vec::new_in(&allocator),
+            imports: Vec::new_in(&allocator),
+            cached: Vec::new_in(&allocator),
             temps: 0,
-            source: source.into(),
+            source,
             loc: SourceLocation::STUB,
             transformed: false,
         }
@@ -72,8 +80,8 @@ impl<'a> RootNode<'a> {
 #[derive(Debug)]
 pub enum TemplateChildNode<'a> {
     Element(Box<'a, ElementNode<'a>>),
-    Text(Box<'a, TextNode>),
-    Comment(Box<'a, CommentNode>),
+    Text(Box<'a, TextNode<'a>>),
+    Comment(Box<'a, CommentNode<'a>>),
     Interpolation(Box<'a, InterpolationNode<'a>>),
     If(Box<'a, IfNode<'a>>),
     IfBranch(Box<'a, IfBranchNode<'a>>),

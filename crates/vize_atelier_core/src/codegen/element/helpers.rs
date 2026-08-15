@@ -17,7 +17,7 @@ use super::super::{
 pub fn has_v_once(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|prop| {
         if let PropNode::Directive(dir) = prop {
-            dir.name.as_str() == "once"
+            dir.name == "once"
         } else {
             false
         }
@@ -38,7 +38,7 @@ pub(crate) fn is_whitespace_or_comment(child: &TemplateChildNode<'_>) -> bool {
 pub fn has_vshow_directive(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|prop| {
         if let PropNode::Directive(dir) = prop {
-            dir.name.as_str() == "show" && dir.exp.is_some()
+            dir.name == "show" && dir.exp.is_some()
         } else {
             false
         }
@@ -49,7 +49,7 @@ pub fn has_vshow_directive(el: &ElementNode<'_>) -> bool {
 pub fn has_custom_directives(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|prop| {
         if let PropNode::Directive(dir) = prop {
-            !is_builtin_directive(&dir.name)
+            !is_builtin_directive(dir.name)
         } else {
             false
         }
@@ -62,7 +62,7 @@ pub fn get_custom_directives<'a, 'b>(el: &'b ElementNode<'a>) -> Vec<&'b Directi
         .iter()
         .filter_map(|prop| {
             if let PropNode::Directive(dir) = prop
-                && !is_builtin_directive(&dir.name)
+                && !is_builtin_directive(dir.name)
             {
                 return Some(dir.as_ref());
             }
@@ -78,12 +78,12 @@ pub fn has_vmodel_directive(el: &ElementNode<'_>) -> bool {
         return false;
     }
     // Only input, textarea, select support v-model
-    if !matches!(el.tag.as_str(), "input" | "textarea" | "select") {
+    if !matches!(el.tag, "input" | "textarea" | "select") {
         return false;
     }
     el.props.iter().any(|prop| {
         if let PropNode::Directive(dir) = prop {
-            dir.name.as_str() == "model"
+            dir.name == "model"
         } else {
             false
         }
@@ -96,7 +96,7 @@ pub(crate) fn get_vmodel_directive<'a, 'b>(
 ) -> Option<&'b DirectiveNode<'a>> {
     el.props.iter().find_map(|prop| {
         if let PropNode::Directive(dir) = prop
-            && dir.name.as_str() == "model"
+            && dir.name == "model"
         {
             return Some(dir.as_ref());
         }
@@ -126,7 +126,7 @@ pub(crate) fn is_dynamic_component_tag(tag: &str) -> bool {
 
 /// Check if an element should compile through resolveDynamicComponent().
 pub(crate) fn is_dynamic_component(el: &ElementNode<'_>) -> bool {
-    is_dynamic_component_tag(&el.tag) || (el.tag == "Component" && el.props.iter().any(is_is_prop))
+    is_dynamic_component_tag(el.tag) || (el.tag == "Component" && el.props.iter().any(is_is_prop))
 }
 
 /// Check if a single prop is renderable (not v-show or unsupported directive)
@@ -153,7 +153,7 @@ pub(crate) fn has_dynamic_key_binding(el: &ElementNode<'_>) -> bool {
                     && matches!(
                         dir.arg.as_ref(),
                         Some(ExpressionNode::Simple(arg))
-                            if arg.is_static && arg.content.as_str() == "key"
+                            if arg.is_static && arg.content == "key"
                     )
         )
     })
@@ -169,12 +169,10 @@ pub(crate) fn crosses_namespace_boundary(ctx: &CodegenContext, el: &ElementNode<
 
 pub(crate) fn child_namespace(el: &ElementNode<'_>) -> Namespace {
     match el.ns {
-        Namespace::Svg if matches!(el.tag.as_str(), "foreignObject" | "desc" | "title") => {
-            Namespace::Html
-        }
+        Namespace::Svg if matches!(el.tag, "foreignObject" | "desc" | "title") => Namespace::Html,
         Namespace::MathMl
             if matches!(
-                el.tag.as_str(),
+                el.tag,
                 "annotation-xml" | "mi" | "mo" | "mn" | "ms" | "mtext"
             ) =>
         {

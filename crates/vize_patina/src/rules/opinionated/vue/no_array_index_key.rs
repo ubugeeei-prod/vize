@@ -54,20 +54,20 @@ impl Rule for NoArrayIndexKey {
             let PropNode::Directive(dir) = prop else {
                 continue;
             };
-            match dir.name.as_str() {
+            match dir.name {
                 "for" => {
                     if let Some(ExpressionNode::Simple(exp)) = &dir.exp {
-                        index_alias = v_for_index_alias(exp.content.as_str());
+                        index_alias = v_for_index_alias(exp.content);
                     }
                 }
                 "bind" => {
                     // `:key` / `v-bind:key` with a dynamic expression.
                     if let Some(ExpressionNode::Simple(arg)) = &dir.arg
                         && arg.is_static
-                        && arg.content.as_str() == "key"
+                        && arg.content == "key"
                         && let Some(ExpressionNode::Simple(exp)) = &dir.exp
                     {
-                        key_binding = Some((exp.content.as_str(), &dir.loc));
+                        key_binding = Some((exp.content, &dir.loc));
                     }
                 }
                 _ => {}

@@ -91,7 +91,7 @@ fn get_text_content(element: &ElementNode) -> String {
     let mut text = String::default();
     for child in &element.children {
         if let TemplateChildNode::Text(t) = child {
-            text.push_str(t.content.as_str());
+            text.push_str(t.content);
         }
     }
     text

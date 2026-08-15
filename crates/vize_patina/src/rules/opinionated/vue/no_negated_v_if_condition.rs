@@ -120,7 +120,7 @@ fn check_children(ctx: &mut LintContext, children: &[TemplateChildNode]) {
 fn branch_kind(el: &ElementNode) -> BranchKind {
     for prop in el.props.iter() {
         if let PropNode::Directive(dir) = prop {
-            match dir.name.as_str() {
+            match dir.name {
                 "if" => {
                     let negated = dir.exp.as_ref().map(expression_is_negated).unwrap_or(false);
                     return BranchKind::If {
@@ -141,7 +141,7 @@ fn branch_kind(el: &ElementNode) -> BranchKind {
 /// leading `!` from the inequality operators `!=` and `!==`.
 fn expression_is_negated(exp: &ExpressionNode) -> bool {
     let content = match exp {
-        ExpressionNode::Simple(s) => s.content.as_str(),
+        ExpressionNode::Simple(s) => s.content,
         // Compound expressions (e.g. with interpolation) are not a simple
         // negation we can reason about; leave them alone.
         ExpressionNode::Compound(_) => return false,

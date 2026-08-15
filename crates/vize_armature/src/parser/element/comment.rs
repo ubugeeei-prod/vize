@@ -8,7 +8,7 @@ use super::super::Parser;
 impl<'a> Parser<'a> {
     /// Process comment
     pub(in crate::parser) fn on_comment_impl(&mut self, start: usize, end: usize) {
-        let content = self.get_source(start, end);
+        let content = self.get_source_retained(start, end);
         let loc_start = start.saturating_sub(4);
         let loc_end = self.comment_loc_end(start, end);
         let loc = self.create_loc(loc_start, loc_end); // Include <!-- and --> when present.
@@ -28,7 +28,7 @@ impl<'a> Parser<'a> {
 
         let mut comment = CommentNode::new(content, loc);
         comment.directive = directive.map(|d| d.kind);
-        let boxed = Box::new_in(comment, self.allocator);
+        let boxed = Box::new_in(comment, &self.allocator);
         self.add_child(TemplateChildNode::Comment(boxed));
     }
 
@@ -36,7 +36,7 @@ impl<'a> Parser<'a> {
     pub(in crate::parser) fn on_in_tag_comment_impl(&mut self, start: usize, end: usize) {
         let content_start = start.saturating_add(2).min(end);
         let comment = CommentNode::new_in_tag(
-            self.get_source(content_start, end),
+            self.get_source_retained(content_start, end),
             self.create_loc(start, end),
         );
         if let Some(root) = self.root.as_mut() {

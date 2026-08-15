@@ -238,9 +238,10 @@ fn can_coexist(left: &IdEntry, right: &IdEntry) -> bool {
 }
 
 fn element_has_directive(element: &ElementNode, name: &str) -> bool {
-    element.props.iter().any(
-        |prop| matches!(prop, PropNode::Directive(directive) if directive.name.as_str() == name),
-    )
+    element
+        .props
+        .iter()
+        .any(|prop| matches!(prop, PropNode::Directive(directive) if directive.name == name))
 }
 
 fn loc_info(loc: &SourceLocation) -> LocInfo {

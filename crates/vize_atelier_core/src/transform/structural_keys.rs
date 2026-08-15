@@ -11,14 +11,14 @@ pub(super) fn extract_key_value_str(
     source: &str,
 ) -> Option<String> {
     match prop {
-        PropNode::Attribute(attr) => attr.value.as_ref().map(|value| value.content.clone()),
+        PropNode::Attribute(attr) => attr.value.as_ref().map(|value| value.content.into()),
         PropNode::Directive(dir) => {
             let expression = dir.exp.as_ref()?;
             if template_syntax_quirks && !is_stable_quirks_key(expression) {
                 return None;
             }
             Some(match expression {
-                ExpressionNode::Simple(simple) => simple.content.clone(),
+                ExpressionNode::Simple(simple) => simple.content.into(),
                 ExpressionNode::Compound(compound) => String::new(compound.loc.span.slice(source)),
             })
         }

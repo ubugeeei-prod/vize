@@ -20,7 +20,7 @@ pub fn generate_element_template(el: &ElementNode<'_>) -> String {
                     template,
                     " {}=\"{}\"",
                     attr.name,
-                    escape_attr(&value.content)
+                    escape_attr(value.content)
                 );
             } else {
                 append!(template, " {}", attr.name);
@@ -37,7 +37,7 @@ pub fn generate_element_template(el: &ElementNode<'_>) -> String {
         for child in el.children.iter() {
             match child {
                 TemplateChildNode::Text(text) => {
-                    template.push_str(&escape_html(&text.content));
+                    template.push_str(&escape_html(text.content));
                 }
                 TemplateChildNode::Element(child_el) => {
                     // Recursively generate child element template
@@ -108,7 +108,7 @@ pub fn is_template_wrapper(el: &ElementNode<'_>) -> bool {
 
 /// Get element tag name
 pub fn get_tag_name(el: &ElementNode<'_>) -> String {
-    el.tag.clone()
+    el.tag.into()
 }
 
 /// Escape HTML special characters

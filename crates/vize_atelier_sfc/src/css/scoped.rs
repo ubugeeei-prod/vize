@@ -3,7 +3,7 @@
 //! Applies Vue-style scoped CSS by adding attribute selectors (e.g., `[data-v-xxx]`)
 //! to CSS selectors. Handles special pseudo-selectors: `:deep()`, `:slotted()`, `:global()`.
 
-use vize_carton::{Bump, BumpVec};
+use vize_carton::{Allocator, Vec as ArenaVec};
 
 use super::scoped_selector::{
     find_top_level_pseudo, leading_universal_selector_end,
@@ -12,17 +12,17 @@ use super::scoped_selector::{
 use super::transform::find_matching_paren;
 
 /// Apply scoped CSS transformation
-pub(crate) fn apply_scoped_css<'a>(bump: &'a Bump, css: &str, scope_id: &str) -> &'a str {
+pub(crate) fn apply_scoped_css<'a>(bump: &'a Allocator, css: &str, scope_id: &str) -> &'a str {
     let css_bytes = css.as_bytes();
 
     // Build attr_selector: [scope_id]
-    let mut attr_selector = BumpVec::with_capacity_in(scope_id.len() + 2, bump);
+    let mut attr_selector = ArenaVec::with_capacity_in(scope_id.len() + 2, &bump);
     attr_selector.push(b'[');
     attr_selector.extend_from_slice(scope_id.as_bytes());
     attr_selector.push(b']');
     let attr_selector = bump.alloc_slice_copy(&attr_selector);
 
-    let mut output = BumpVec::with_capacity_in(css_bytes.len() * 2, bump);
+    let mut output = ArenaVec::with_capacity_in(css_bytes.len() * 2, &bump);
     let mut chars = css.char_indices().peekable();
     let mut in_selector = true;
     let mut in_string = false;
@@ -193,7 +193,7 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Bump, css: &str, scope_id: &str) ->
 
 /// Add scope to selector text while preserving leading CSS comments verbatim.
 fn scope_selector_with_leading_comments(
-    out: &mut BumpVec<u8>,
+    out: &mut ArenaVec<u8>,
     selector: &str,
     attr_selector: &[u8],
 ) {
@@ -234,7 +234,7 @@ fn leading_css_comment_trivia_end(value: &str) -> Option<usize> {
 }
 
 /// Add scope attribute to a selector
-fn scope_selector(out: &mut BumpVec<u8>, selector: &str, attr_selector: &[u8]) {
+fn scope_selector(out: &mut ArenaVec<u8>, selector: &str, attr_selector: &[u8]) {
     if selector.is_empty() {
         return;
     }
@@ -282,7 +282,7 @@ fn split_top_level_commas(s: &str) -> Vec<&str> {
 }
 
 /// Add scope attribute to a single selector
-fn scope_single_selector(out: &mut BumpVec<u8>, selector: &str, attr_selector: &[u8]) {
+fn scope_single_selector(out: &mut ArenaVec<u8>, selector: &str, attr_selector: &[u8]) {
     if selector.is_empty() {
         return;
     }
@@ -373,7 +373,7 @@ fn split_top_level_whitespace(s: &str) -> Vec<&str> {
 }
 
 /// Add scope attribute to an element selector
-pub(super) fn add_scope_to_element(out: &mut BumpVec<u8>, selector: &str, attr_selector: &[u8]) {
+pub(super) fn add_scope_to_element(out: &mut ArenaVec<u8>, selector: &str, attr_selector: &[u8]) {
     let selector = if let Some(end) = leading_universal_selector_end(selector) {
         &selector[end..]
     } else {
@@ -398,7 +398,7 @@ pub(super) fn add_scope_to_element(out: &mut BumpVec<u8>, selector: &str, attr_s
 
 /// Transform :deep() to descendant selector
 pub(super) fn transform_deep(
-    out: &mut BumpVec<u8>,
+    out: &mut ArenaVec<u8>,
     selector: &str,
     start: usize,
     attr_selector: &[u8],
@@ -419,7 +419,7 @@ pub(super) fn transform_deep(
     }
 }
 
-fn push_deep_scope_prefix(out: &mut BumpVec<u8>, before: &str, attr_selector: &[u8]) {
+fn push_deep_scope_prefix(out: &mut ArenaVec<u8>, before: &str, attr_selector: &[u8]) {
     let before = before.trim_end();
     if before.is_empty() {
         out.extend_from_slice(attr_selector);
@@ -453,7 +453,7 @@ fn trailing_combinator_start(value: &str) -> Option<usize> {
 
 /// Transform :slotted() for slot content
 pub(super) fn transform_slotted(
-    out: &mut BumpVec<u8>,
+    out: &mut ArenaVec<u8>,
     selector: &str,
     start: usize,
     attr_selector: &[u8],
@@ -480,7 +480,7 @@ pub(super) fn transform_slotted(
 }
 
 /// Transform :global() to unscoped
-pub(super) fn transform_global(out: &mut BumpVec<u8>, selector: &str, start: usize) {
+pub(super) fn transform_global(out: &mut ArenaVec<u8>, selector: &str, start: usize) {
     let before = &selector[..start];
     let after = &selector[start + 8..];
 

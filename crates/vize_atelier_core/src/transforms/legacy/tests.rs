@@ -71,14 +71,14 @@ mod legacy_desugar_tests {
         let on = dirs.iter().find(|d| d.name == "on").unwrap();
         assert_eq!(
             match on.arg.as_ref().unwrap() {
-                ExpressionNode::Simple(s) => s.content.as_str(),
+                ExpressionNode::Simple(s) => s.content,
                 _ => panic!(),
             },
             "update:foo"
         );
         assert_eq!(
             match on.exp.as_ref().unwrap() {
-                ExpressionNode::Simple(s) => s.content.as_str(),
+                ExpressionNode::Simple(s) => s.content,
                 _ => panic!(),
             },
             "$event => ((bar) = $event)"
@@ -97,7 +97,7 @@ mod legacy_desugar_tests {
             .find(|d| d.name == "bind")
             .unwrap();
         assert_eq!(bind.modifiers.len(), 1);
-        assert_eq!(bind.modifiers[0].content.as_str(), "camel");
+        assert_eq!(bind.modifiers[0].content, "camel");
     }
 
     #[test]
@@ -121,19 +121,19 @@ mod legacy_desugar_tests {
         let dirs = directives(tmpl);
         assert_eq!(dirs.len(), 1);
         let v_slot = dirs[0];
-        assert_eq!(v_slot.name.as_str(), "slot");
+        assert_eq!(v_slot.name, "slot");
         let arg = match v_slot.arg.as_ref().unwrap() {
             ExpressionNode::Simple(s) => s,
             _ => panic!(),
         };
-        assert_eq!(arg.content.as_str(), "header");
+        assert_eq!(arg.content, "header");
         assert_eq!(arg.loc.span.slice(source), "header");
 
         let exp = match v_slot.exp.as_ref().unwrap() {
             ExpressionNode::Simple(s) => s,
             _ => panic!(),
         };
-        assert_eq!(exp.content.as_str(), "props");
+        assert_eq!(exp.content, "props");
         assert_eq!(exp.loc.span.slice(source), "props");
     }
 
@@ -151,13 +151,13 @@ mod legacy_desugar_tests {
         };
         let dirs = directives(tmpl);
         assert_eq!(dirs.len(), 1);
-        assert_eq!(dirs[0].name.as_str(), "slot");
+        assert_eq!(dirs[0].name, "slot");
         assert!(dirs[0].arg.is_none(), "no slot= means default slot");
         let exp = match dirs[0].exp.as_ref().unwrap() {
             ExpressionNode::Simple(s) => s,
             _ => panic!(),
         };
-        assert_eq!(exp.content.as_str(), "props");
+        assert_eq!(exp.content, "props");
         assert_eq!(exp.loc.span.slice(source), "props");
     }
 
@@ -181,7 +181,7 @@ mod legacy_desugar_tests {
             .unwrap();
         // sync modifier still present, no update listener added.
         assert_eq!(bind.modifiers.len(), 1);
-        assert_eq!(bind.modifiers[0].content.as_str(), "sync");
+        assert_eq!(bind.modifiers[0].content, "sync");
         assert!(
             !directives(comp).iter().any(|d| d.name == "on"),
             "no listener added under Vue 3"
@@ -245,11 +245,14 @@ mod legacy_desugar_tests {
 
     // --- v-on event-modifier sugar (`.native`, numeric keycodes) ---
 
-    fn directive_with_modifiers<'a>(allocator: &'a Bump, modifiers: &[&str]) -> DirectiveNode<'a> {
+    fn directive_with_modifiers<'a>(
+        allocator: &'a Allocator,
+        modifiers: &[&'a str],
+    ) -> DirectiveNode<'a> {
         let mut dir = DirectiveNode::new(allocator, "on", SourceLocation::STUB);
-        let mut mods = ArenaVec::new_in(allocator);
+        let mut mods = ArenaVec::new_in(&allocator);
         for m in modifiers {
-            mods.push(SimpleExpressionNode::new(*m, false, SourceLocation::STUB));
+            mods.push(SimpleExpressionNode::new(m, false, SourceLocation::STUB));
         }
         dir.modifiers = mods;
         dir
@@ -261,13 +264,13 @@ mod legacy_desugar_tests {
     fn assert_modifiers(dir: &DirectiveNode<'_>, expected: &[&str]) {
         assert_eq!(dir.modifiers.len(), expected.len());
         for (got, want) in dir.modifiers.iter().zip(expected) {
-            assert_eq!(got.content.as_str(), *want);
+            assert_eq!(got.content, *want);
         }
     }
 
     #[test]
     fn strips_native_modifier() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let mut dir = directive_with_modifiers(&allocator, &["native"]);
         desugar_v2_v_on_modifiers(&mut dir);
         assert!(dir.modifiers.is_empty());
@@ -275,7 +278,7 @@ mod legacy_desugar_tests {
 
     #[test]
     fn strips_native_keeps_other_modifiers() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let mut dir = directive_with_modifiers(&allocator, &["native", "stop"]);
         desugar_v2_v_on_modifiers(&mut dir);
         assert_modifiers(&dir, &["stop"]);
@@ -283,7 +286,7 @@ mod legacy_desugar_tests {
 
     #[test]
     fn maps_common_numeric_keycodes() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         for (code, name) in [
             ("8", "delete"),
             ("9", "tab"),
@@ -304,7 +307,7 @@ mod legacy_desugar_tests {
 
     #[test]
     fn leaves_unmapped_numeric_keycode_untouched() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let mut dir = directive_with_modifiers(&allocator, &["65"]);
         desugar_v2_v_on_modifiers(&mut dir);
         assert_modifiers(&dir, &["65"]);
@@ -312,7 +315,7 @@ mod legacy_desugar_tests {
 
     #[test]
     fn leaves_named_modifiers_untouched() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let mut dir = directive_with_modifiers(&allocator, &["stop", "prevent", "enter"]);
         desugar_v2_v_on_modifiers(&mut dir);
         assert_modifiers(&dir, &["stop", "prevent", "enter"]);
@@ -320,7 +323,7 @@ mod legacy_desugar_tests {
 
     #[test]
     fn combined_native_and_keycode() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let mut dir = directive_with_modifiers(&allocator, &["native", "13"]);
         desugar_v2_v_on_modifiers(&mut dir);
         assert_modifiers(&dir, &["enter"]);
@@ -328,7 +331,7 @@ mod legacy_desugar_tests {
 
     #[test]
     fn no_modifiers_is_noop() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let mut dir = directive_with_modifiers(&allocator, &[]);
         desugar_v2_v_on_modifiers(&mut dir);
         assert!(dir.modifiers.is_empty());

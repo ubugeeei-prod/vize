@@ -103,13 +103,13 @@ impl RequireToggleInsideTransition {
             let PropNode::Directive(dir) = prop else {
                 continue;
             };
-            match dir.name.as_str() {
+            match dir.name {
                 // Conditional rendering toggles the element's presence.
                 "if" | "else" | "else-if" | "show" => return true,
                 // A bound `:key` (`v-bind:key`) forces a re-mount on change.
                 "bind" => {
                     if let Some(ExpressionNode::Simple(arg)) = &dir.arg
-                        && arg.content.as_str() == "key"
+                        && arg.content == "key"
                     {
                         return true;
                     }
@@ -124,12 +124,12 @@ impl RequireToggleInsideTransition {
     /// toggled by `v-if`, `v-show`, or a changing key.
     fn has_appear(element: &ElementNode) -> bool {
         element.props.iter().any(|prop| match prop {
-            PropNode::Attribute(attr) => attr.name.as_str() == "appear",
+            PropNode::Attribute(attr) => attr.name == "appear",
             PropNode::Directive(dir) => {
-                dir.name.as_str() == "bind"
+                dir.name == "bind"
                     && matches!(
                         dir.arg.as_ref(),
-                        Some(ExpressionNode::Simple(arg)) if arg.content.as_str() == "appear"
+                        Some(ExpressionNode::Simple(arg)) if arg.content == "appear"
                     )
             }
         })
@@ -144,7 +144,7 @@ impl Rule for RequireToggleInsideTransition {
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         // Built-in `<transition>` / `<Transition>` wrapper (case-insensitive,
         // matching how Vue resolves the built-in component name).
-        if !element.tag.as_str().eq_ignore_ascii_case("transition") {
+        if !element.tag.eq_ignore_ascii_case("transition") {
             return;
         }
 
@@ -165,7 +165,7 @@ impl Rule for RequireToggleInsideTransition {
 
         // `<component :is="...">` is a dynamic component: swapping `is` is itself
         // an enter/leave, so it always animates.
-        if child.tag.as_str() == "component" {
+        if child.tag == "component" {
             return;
         }
 

@@ -35,7 +35,7 @@ pub fn is_supported_directive(dir: &DirectiveNode<'_>) -> bool {
             ExpressionNode::Compound(_) => true,
         });
     }
-    matches!(dir.name.as_str(), "bind" | "on" | "html" | "text")
+    matches!(dir.name, "bind" | "on" | "html" | "text")
 }
 
 /// Generate directive as prop with optional static class/style merging
@@ -80,7 +80,7 @@ fn generate_directive_prop_with_static_key_casing(
     static_merge: StaticMerge<'_>,
     static_key_casing: StaticBindKeyCasing,
 ) {
-    match dir.name.as_str() {
+    match dir.name {
         "bind" => {
             generate_vbind_prop(ctx, dir, static_merge, static_key_casing);
         }
@@ -155,7 +155,7 @@ fn generate_vbind_prop(
             //   .attr   -> [`^${<expr> || ""}`]
             let emit_key_expr = |ctx: &mut CodegenContext| {
                 // If the expression doesn't already have a prefix, add _ctx.
-                let content = exp.content.as_str();
+                let content = exp.content;
                 if let Some(local) = content
                     .strip_prefix("_ctx.")
                     .filter(|local| ctx.is_slot_param(local))
@@ -210,8 +210,8 @@ fn generate_vbind_prop(
             ctx.push("]: ");
         } else {
             let key = &exp.content;
-            is_class = key == "class";
-            is_style = key == "style";
+            is_class = *key == "class";
+            is_style = *key == "style";
 
             // Transform key based on modifiers
             let base_key: vize_carton::String =
@@ -244,7 +244,7 @@ fn generate_vbind_prop(
             // Anchor the generated prop key back to the v-bind argument in
             // source, recording the original (untransformed) symbol so it lands
             // in the v3 `names` array. No-op without `source_map`.
-            ctx.record_mapping_named(exp.loc.span.start, &exp.content);
+            ctx.record_mapping_named(exp.loc.span.start, exp.content);
             ctx.push(&transformed_key);
             if needs_quotes {
                 ctx.push("\"");
@@ -399,7 +399,7 @@ fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
             ctx.push("[");
             ctx.push(ctx.helper(RuntimeHelper::ToHandlerKey));
             ctx.push("(");
-            let content = exp.content.as_str();
+            let content = exp.content;
             if let Some(local) = content
                 .strip_prefix("_ctx.")
                 .filter(|local| ctx.is_slot_param(local))
@@ -424,9 +424,9 @@ fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
             // like v-model's `update:modelValue` always camelize.
             let on_plain_element = ctx.props_is_plain_element && dir.raw_name.is_some();
             let event_name = super::events::von_event_key_for(
-                exp.content.as_str(),
+                exp.content,
                 on_plain_element,
-                dir.modifiers.iter().map(|m| m.content.as_str()),
+                dir.modifiers.iter().map(|m| m.content),
             );
 
             let needs_quotes = !is_valid_js_identifier(&event_name);
@@ -436,7 +436,7 @@ fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
             // Anchor the generated event-handler key back to the v-on argument
             // in source, recording the original event name so it lands in the
             // v3 `names` array. No-op without `source_map`.
-            ctx.record_mapping_named(exp.loc.span.start, &exp.content);
+            ctx.record_mapping_named(exp.loc.span.start, exp.content);
             ctx.push(&event_name);
             if needs_quotes {
                 ctx.push("\"");

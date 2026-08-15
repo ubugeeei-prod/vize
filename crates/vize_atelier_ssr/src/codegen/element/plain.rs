@@ -39,7 +39,7 @@ impl<'a> SsrCodegenContext<'a> {
         // `selected` injection. The option's `value` (a static attribute
         // here — dynamic `:value` falls through and gets `selected`
         // emitted via the bind path). (#962)
-        if tag.as_str() == "option"
+        if *tag == "option"
             && let Some(model_exp) = self.select_v_model_stack.last().cloned()
         {
             self.use_ssr_helper(RuntimeHelper::SsrIncludeBooleanAttr);
@@ -72,7 +72,7 @@ impl<'a> SsrCodegenContext<'a> {
             self.use_ssr_helper(RuntimeHelper::SsrInterpolate);
             let exp = self.expression_to_string(exp);
             self.push_string_part_dynamic(&cstr!("_ssrInterpolate({exp})"));
-        } else if tag.as_str() == "textarea"
+        } else if *tag == "textarea"
             && let Some(exp) = crate::get_v_model_exp(el)
         {
             // SSR `<textarea v-model>` renders the bound value as escaped
@@ -82,7 +82,7 @@ impl<'a> SsrCodegenContext<'a> {
             self.use_ssr_helper(RuntimeHelper::SsrInterpolate);
             let exp = self.expression_to_string(exp);
             self.push_string_part_dynamic(&cstr!("_ssrInterpolate({exp})"));
-        } else if tag.as_str() == "select"
+        } else if *tag == "select"
             && let Some(exp) = crate::get_v_model_exp(el)
         {
             // SSR `<select v-model>` marks the matching `<option>` as
@@ -127,11 +127,11 @@ impl<'a> SsrCodegenContext<'a> {
                         continue;
                     }
                     self.push_string_part_static(" ");
-                    self.push_string_part_static(&attr.name);
+                    self.push_string_part_static(attr.name);
                     if let Some(value) = &attr.value {
                         self.push_string_part_static("=\"");
                         // Escape HTML attribute value
-                        self.push_string_part_static(&escape_html_attr(&value.content));
+                        self.push_string_part_static(&escape_html_attr(value.content));
                         self.push_string_part_static("\"");
                     }
                 }
@@ -154,9 +154,9 @@ impl<'a> SsrCodegenContext<'a> {
                     let value = attr
                         .value
                         .as_ref()
-                        .map(|value| quoted_js_string(&value.content))
+                        .map(|value| quoted_js_string(value.content))
                         .unwrap_or_else(|| "\"\"".to_compact_string());
-                    entries.push(component_prop_entry(&attr.name, &value, false));
+                    entries.push(component_prop_entry(attr.name, &value, false));
                 }
                 PropNode::Directive(dir) => {
                     self.collect_element_directive_attr(
@@ -256,7 +256,7 @@ impl<'a> SsrCodegenContext<'a> {
         needs_normalize: &mut bool,
         dynamic_model_exp: &mut Option<String>,
     ) {
-        match dir.name.as_str() {
+        match dir.name {
             "bind" => {
                 let value = dir
                     .exp
@@ -354,7 +354,7 @@ impl<'a> SsrCodegenContext<'a> {
         el: &ElementNode,
         dir: &vize_atelier_core::DirectiveNode,
     ) {
-        match dir.name.as_str() {
+        match dir.name {
             "bind" => {
                 self.process_v_bind_on_element(el, dir);
             }
@@ -390,9 +390,7 @@ impl<'a> SsrCodegenContext<'a> {
 
         // Get the argument (attribute name)
         let arg_name = match &dir.arg {
-            Some(ExpressionNode::Simple(simple)) if simple.is_static => {
-                Some(simple.content.clone())
-            }
+            Some(ExpressionNode::Simple(simple)) if simple.is_static => Some(simple.content),
             _ => None,
         };
 
@@ -402,7 +400,7 @@ impl<'a> SsrCodegenContext<'a> {
             None => return,
         };
 
-        match arg_name.as_deref() {
+        match arg_name {
             Some("class") => {
                 self.use_ssr_helper(RuntimeHelper::SsrRenderClass);
                 self.push_string_part_static(" class=\"");
@@ -461,7 +459,7 @@ impl<'a> SsrCodegenContext<'a> {
             None => return,
         };
 
-        let tag = el.tag.as_str();
+        let tag = el.tag;
 
         match tag {
             "input" => {
@@ -552,7 +550,7 @@ impl<'a> SsrCodegenContext<'a> {
         let static_style = attr
             .value
             .as_ref()
-            .map(|value| quoted_js_string(&value.content))
+            .map(|value| quoted_js_string(value.content))
             .unwrap_or_else(|| "\"\"".to_compact_string());
         let style_exp = merge_prop_values(vec![static_style, v_show_style]);
 

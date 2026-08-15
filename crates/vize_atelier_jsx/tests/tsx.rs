@@ -16,7 +16,7 @@ fn typed_arrow_component_lowers() {
         "const App = (props: { id: number }): JSX.Element => <div id={props.id}/>;",
     );
     let element = root_element(&root);
-    assert_eq!(element.tag.as_str(), "div");
+    assert_eq!(element.tag, "div");
 }
 
 #[test]
@@ -24,7 +24,7 @@ fn generic_component_call_is_a_component() {
     let bump = Allocator::new();
     let root = lower_one_tsx(&bump, "const a = <List<number> items={xs}/>;");
     let element = root_element(&root);
-    assert_eq!(element.tag.as_str(), "List");
+    assert_eq!(element.tag, "List");
     assert_eq!(element.tag_type, ElementType::Component);
 }
 

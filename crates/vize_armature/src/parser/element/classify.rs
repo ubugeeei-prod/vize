@@ -8,8 +8,8 @@ impl<'a> Parser<'a> {
     pub(super) fn is_invalid_html_self_closing(&self, element: &ElementNode<'a>) -> bool {
         element.ns == Namespace::Html
             && element.tag_type == ElementType::Element
-            && (!self.options.custom_renderer || vize_carton::is_html_tag(element.tag.as_str()))
-            && !(self.options.is_void_tag)(element.tag.as_str())
+            && (!self.options.custom_renderer || vize_carton::is_html_tag(element.tag))
+            && !(self.options.is_void_tag)(element.tag)
     }
 
     /// Determine element type (element, component, slot, template)
@@ -17,7 +17,7 @@ impl<'a> Parser<'a> {
         &self,
         element: &ElementNode<'a>,
     ) -> ElementType {
-        let tag = element.tag.as_str();
+        let tag = element.tag;
 
         // Check for slot
         if tag == "slot" {
@@ -28,7 +28,7 @@ impl<'a> Parser<'a> {
         if tag == "template" {
             // Template with v-if, v-for, or v-slot is a template element
             let has_structural_directive = element.props.iter().any(|p| {
-                matches!(p, PropNode::Directive(d) if matches!(d.name.as_str(), "if" | "else-if" | "else" | "for" | "slot"))
+                matches!(p, PropNode::Directive(d) if matches!(d.name, "if" | "else-if" | "else" | "for" | "slot"))
             });
             if has_structural_directive {
                 return ElementType::Template;
@@ -102,7 +102,7 @@ impl<'a> Parser<'a> {
         }
 
         let parent = self.stack.last()?;
-        let parent_tag = parent.element.tag.as_str();
+        let parent_tag = parent.element.tag;
         match parent.element.ns {
             Namespace::Svg => {
                 let svg_to_html = matches!(parent_tag, "foreignObject" | "desc" | "title");

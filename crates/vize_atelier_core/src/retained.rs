@@ -59,7 +59,7 @@ pub fn retained_whole_expression<'n, 'a>(
     node: &'n SimpleExpressionNode<'a>,
 ) -> Option<&'n JsExpression<'a>> {
     let js = node.js_ast.as_ref()?;
-    (js.raw == node.content.as_str()).then_some(js)
+    (js.raw == node.content).then_some(js)
 }
 
 /// True when the retained TS/unambiguous parse of `js.raw` is provably the

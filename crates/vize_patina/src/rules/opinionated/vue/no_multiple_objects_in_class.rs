@@ -48,7 +48,7 @@ impl Rule for NoMultipleObjectsInClass {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name.as_str() != "bind" {
+        if directive.name != "bind" {
             return;
         }
         // Only a static `:class` argument, not `v-bind="obj"`.
@@ -58,13 +58,13 @@ impl Rule for NoMultipleObjectsInClass {
         if !arg.is_static {
             return;
         }
-        if arg.content.as_str() != "class" {
+        if arg.content != "class" {
             return;
         }
         let Some(ExpressionNode::Simple(exp)) = &directive.exp else {
             return;
         };
-        if count_top_level_objects_in_array(exp.content.as_str()) >= 2 {
+        if count_top_level_objects_in_array(exp.content) >= 2 {
             ctx.warn_with_help(
                 ctx.t("vue/no-multiple-objects-in-class.message"),
                 &directive.loc,

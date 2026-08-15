@@ -37,9 +37,10 @@ pub struct NoMultipleTemplateRoot;
 
 #[inline]
 fn has_directive(element: &ElementNode<'_>, name: &str) -> bool {
-    element.props.iter().any(
-        |prop| matches!(prop, PropNode::Directive(directive) if directive.name.as_str() == name),
-    )
+    element
+        .props
+        .iter()
+        .any(|prop| matches!(prop, PropNode::Directive(directive) if directive.name == name))
 }
 
 /// Recover the start-tag range, matching vue-eslint-parser's reported span.
@@ -210,7 +211,7 @@ impl Rule for NoMultipleTemplateRoot {
                 continue;
             };
             let loc = start_tag_loc(ctx.source, element);
-            let tag = element.tag.as_str();
+            let tag = element.tag;
 
             if matches!(tag, "template" | "slot") {
                 ctx.error_with_help(

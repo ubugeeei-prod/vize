@@ -1,136 +1,150 @@
-//! Arena allocator: the unified per-compile allocation handle.
+//! Arena allocator: the per-compile allocation handle.
 //!
-//! One `Allocator` value carries the compile's two memory pools under a single
-//! lifetime and a single reset point (Davinci P1-1, transitional per charter
-//! #26 until P1-10):
+//! One `Allocator` value carries the whole compile — the template tree, the
+//! retained oxc ASTs P1-5 parses, and every arena-resident string — in a
+//! single pool with a single reset point.
 //!
-//! - a [`bumpalo::Bump`] pool backing the template-side arena containers
-//!   (`vize_carton::Box` / `vize_carton::Vec`), which still run element
-//!   destructors — required while nodes own heap strings;
-//! - an [`oxc_allocator::Allocator`] pool for retained oxc ASTs (expressions
-//!   parsed once, P1-5). oxc's arena types reject `Drop` payloads at compile
-//!   time, which is why the container aliases cannot move there until the
-//!   string diet (P1-3/P1-10) lands.
-//!
-//! At the pinned oxc revision, `oxc_allocator` is backed by oxc's own `Arena`
-//! (not bumpalo), so the two pools cannot physically alias; the handle is the
-//! unification. P1-10 deletes the bump pool and flips the aliases, collapsing
-//! to one physical pool.
+//! Davinci P1-1 introduced this handle as a *pair* of pools (a `bumpalo::Bump`
+//! for the template containers plus an [`oxc_allocator::Allocator`] for
+//! retained ASTs) because oxc's arena containers reject `Drop` payloads at
+//! compile time and the template nodes still owned heap strings. P1-10's
+//! string diet removed the last of those owners, so the bump pool is gone and
+//! `Allocator` is a transparent wrapper over the oxc arena: one physical pool,
+//! and the const assertion inside [`crate::Box`] / [`crate::Vec`] now stands
+//! guard over every arena-resident type in the compiler.
 
-use bumpalo::Bump;
 use std::ops::Deref;
+
+use oxc_allocator::GetAllocator;
 
 /// Arena allocator for Vize.
 ///
-/// A per-compile allocation handle: template structures allocate from the
-/// bump pool (via [`Deref`] to [`Bump`] and the `vize_carton::Box`/`Vec`
-/// containers), retained oxc ASTs from the oxc pool (via [`Allocator::as_oxc`]).
-/// Both pools share the handle's lifetime — a `&'a Allocator` hands out `&'a`
-/// references from either pool — and [`Allocator::reset`] clears both, so
-/// nothing allocated here survives a compile boundary.
+/// A per-compile allocation handle. Template structures, retained oxc ASTs and
+/// arena strings all allocate from the same pool, so a `&'a Allocator` hands
+/// out `&'a` references that share one lifetime, and [`Allocator::reset`]
+/// clears all of them at once — nothing allocated here survives a compile
+/// boundary.
 ///
 /// # Example
 ///
 /// ```
-/// use vize_carton::Allocator;
+/// use vize_carton::{Allocator, Box, Vec};
 ///
 /// let allocator = Allocator::default();
+/// let allocator = &allocator;
+///
 /// let s = allocator.alloc_str("hello");
-/// let t = allocator.as_oxc().alloc_str("world");
 /// assert_eq!(s, "hello");
-/// assert_eq!(t, "world");
+///
+/// let boxed = Box::new_in(42, &allocator);
+/// assert_eq!(*boxed, 42);
+///
+/// let mut vec = Vec::new_in(&allocator);
+/// vec.push(1);
+/// assert_eq!(vec.len(), 1);
 /// ```
 #[derive(Default)]
 pub struct Allocator {
-    bump: Bump,
     oxc: oxc_allocator::Allocator,
 }
 
 impl Allocator {
-    /// Creates a new allocator. Both pools start empty and reserve lazily.
+    /// Creates a new allocator. The pool starts empty and reserves lazily.
     #[inline]
     pub fn new() -> Self {
         Self {
-            bump: Bump::new(),
             oxc: oxc_allocator::Allocator::new(),
         }
     }
 
-    /// Creates a new allocator with the specified capacity.
-    ///
-    /// The capacity is reserved in the bump pool (today's dominant load: the
-    /// template tree). The oxc pool reserves lazily on first retained-AST
-    /// allocation.
+    /// Creates a new allocator with the specified capacity reserved.
     #[inline]
     pub fn with_capacity(capacity: usize) -> Self {
         Self {
-            bump: Bump::with_capacity(capacity),
-            oxc: oxc_allocator::Allocator::new(),
+            oxc: oxc_allocator::Allocator::with_capacity(capacity),
         }
     }
 
-    /// Allocates a string slice in the bump pool.
+    /// Allocates a string slice in the arena.
     #[inline]
     pub fn alloc_str(&self, s: &str) -> &str {
-        self.bump.alloc_str(s)
+        self.oxc.alloc_str(s)
     }
 
-    /// Returns a reference to the underlying bumpalo allocator.
+    /// Parks an owned value in the arena so it can be borrowed for the whole
+    /// compile.
     ///
-    /// This is useful for interoperability with code that expects a raw `Bump`.
+    /// The arena never runs destructors, so `value`'s own heap allocations are
+    /// not released when the arena is — exactly the contract `bumpalo`'s
+    /// `alloc` had before P1-10 collapsed the pools. This is deliberately
+    /// narrow: the only callers are the compile entry points that receive an
+    /// owned cross-compile summary (`Croquis`) by value and must hand the
+    /// transform a reference at the arena's lifetime. Arena-resident *nodes*
+    /// stay `Drop`-free, and the container const assertions in
+    /// [`crate::Box`] / [`crate::Vec`] keep them that way — this escape hatch
+    /// does not widen for them. Decoupling the summary's lifetime from the
+    /// arena is P1-11's lifetime-contract work.
     #[inline]
-    pub fn as_bump(&self) -> &Bump {
-        &self.bump
+    pub fn alloc_owned<T>(&self, value: T) -> &mut T {
+        let parked = self.oxc.alloc(std::mem::ManuallyDrop::new(value));
+        &mut *parked
     }
 
-    /// Returns the oxc arena for retained ASTs parsed with `oxc_parser`.
+    /// Returns the arena oxc parses retained ASTs into.
     ///
-    /// References allocated here live exactly as long as references from the
-    /// bump pool: until this handle is reset or dropped. Values crossing a
-    /// compile boundary (caches, folios, summaries) must be converted to
-    /// their owned form first — the arena/cache contract.
+    /// Identical to the pool everything else uses; the accessor is kept
+    /// because `oxc_parser` takes `&oxc_allocator::Allocator` by name.
     #[inline]
     pub fn as_oxc(&self) -> &oxc_allocator::Allocator {
         &self.oxc
     }
 
-    /// Resets the allocator, freeing all allocated memory in both pools.
+    /// Resets the allocator, freeing all allocated memory.
     ///
     /// This allows reusing the allocator for a new compilation without
     /// deallocating the underlying memory.
     #[inline]
     pub fn reset(&mut self) {
-        self.bump.reset();
         self.oxc.reset();
     }
 
-    /// Returns the number of bytes currently allocated across both pools.
+    /// Returns the number of bytes currently allocated.
     #[inline]
     pub fn allocated_bytes(&self) -> usize {
-        self.bump.allocated_bytes() + self.oxc.used_bytes()
+        self.oxc.used_bytes()
     }
 }
 
 impl Deref for Allocator {
-    type Target = Bump;
+    type Target = oxc_allocator::Allocator;
 
     #[inline]
     fn deref(&self) -> &Self::Target {
-        &self.bump
+        &self.oxc
     }
 }
 
-// Allow using Allocator where Bump is expected via AsRef
-impl AsRef<Bump> for Allocator {
+impl AsRef<oxc_allocator::Allocator> for Allocator {
     #[inline]
-    fn as_ref(&self) -> &Bump {
-        &self.bump
+    fn as_ref(&self) -> &oxc_allocator::Allocator {
+        &self.oxc
+    }
+}
+
+/// Lets `&Allocator` stand in wherever oxc's arena containers want an arena,
+/// so `Box::new_in(value, &allocator)` / `Vec::new_in(&allocator)` accept the
+/// Vize handle directly.
+impl<'a> GetAllocator<'a> for &'a Allocator {
+    #[inline]
+    fn allocator(&self) -> &'a oxc_allocator::Allocator {
+        &self.oxc
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::Allocator;
+    use crate::{Box, Vec};
 
     #[test]
     fn test_allocator_new() {
@@ -160,25 +174,31 @@ mod tests {
     }
 
     #[test]
-    fn test_pools_share_the_handle_lifetime() {
+    fn test_containers_and_strings_share_the_handle_lifetime() {
         let allocator = Allocator::new();
-        let from_bump = allocator.alloc_str("bump side");
-        let from_oxc = allocator.as_oxc().alloc_str("oxc side");
-        // Both references are alive together under the same borrow of
+        let allocator = &allocator;
+        let from_str = allocator.alloc_str("string side");
+        let from_oxc = allocator.as_oxc().alloc_str("retained side");
+        let boxed = Box::new_in(7_u32, &allocator);
+        // All three references are alive together under the same borrow of
         // `allocator` — the single-lifetime contract P1-5 builds on.
-        assert_eq!((from_bump, from_oxc), ("bump side", "oxc side"));
+        assert_eq!(
+            (from_str, from_oxc, *boxed),
+            ("string side", "retained side", 7)
+        );
     }
 
     #[test]
-    fn test_reset_clears_both_pools() {
+    fn test_reset_clears_the_pool() {
         let mut allocator = Allocator::new();
-        let _ = allocator.alloc_str("hello");
-        let _ = allocator.as_oxc().alloc_str("world");
+        {
+            let alloc = &allocator;
+            let _ = alloc.alloc_str("hello");
+            let mut v: Vec<'_, u32> = Vec::new_in(&alloc);
+            v.push(1);
+        }
         assert!(allocator.allocated_bytes() > 0);
         allocator.reset();
-        // oxc's used_bytes drops to zero on reset; bumpalo may retain its
-        // largest chunk but reports it as free, so only assert the oxc side
-        // and that nothing panics.
-        assert_eq!(allocator.as_oxc().used_bytes(), 0);
+        assert_eq!(allocator.allocated_bytes(), 0);
     }
 }

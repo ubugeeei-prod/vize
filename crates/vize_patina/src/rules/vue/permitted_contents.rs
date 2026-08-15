@@ -172,7 +172,7 @@ impl Rule for PermittedContents {
             return;
         }
 
-        let raw_tag = element.tag.as_str();
+        let raw_tag = element.tag;
         let tag = content_model_tag(raw_tag);
         let has_intrinsic_mapping = tag != raw_tag;
         let is_unknown_component =

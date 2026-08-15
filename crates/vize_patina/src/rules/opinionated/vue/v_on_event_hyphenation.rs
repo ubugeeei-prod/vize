@@ -54,7 +54,6 @@ impl VOnEventHyphenation {
         element.tag_type == ElementType::Component
             || element
                 .tag
-                .as_str()
                 .chars()
                 .next()
                 .is_some_and(|c| c.is_ascii_uppercase())
@@ -73,7 +72,7 @@ impl Rule for VOnEventHyphenation {
         directive: &DirectiveNode<'a>,
     ) {
         // Only v-on listeners.
-        if directive.name.as_str() != "on" {
+        if directive.name != "on" {
             return;
         }
 
@@ -86,7 +85,7 @@ impl Rule for VOnEventHyphenation {
         // Read the static event-name argument. Dynamic arguments (`@[evt]`)
         // and object syntax (`v-on="..."`) cannot be checked statically.
         let event_name = match &directive.arg {
-            Some(ExpressionNode::Simple(s)) if s.is_static => s.content.as_str(),
+            Some(ExpressionNode::Simple(s)) if s.is_static => s.content,
             _ => return,
         };
 

@@ -46,7 +46,7 @@ impl Rule for ValidVOnce {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name.as_str() != "once" {
+        if directive.name != "once" {
             return;
         }
 

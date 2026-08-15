@@ -42,7 +42,7 @@ impl NoVForTemplateKeyOnChild {
     /// Whether `element` carries a `v-for` directive.
     fn has_v_for(element: &ElementNode) -> bool {
         element.props.iter().any(|prop| match prop {
-            PropNode::Directive(dir) => dir.name.as_str() == "for",
+            PropNode::Directive(dir) => dir.name == "for",
             PropNode::Attribute(_) => false,
         })
     }
@@ -53,7 +53,7 @@ impl NoVForTemplateKeyOnChild {
     fn has_child_control_flow(element: &ElementNode) -> bool {
         element.props.iter().any(|prop| match prop {
             PropNode::Directive(dir) => {
-                matches!(dir.name.as_str(), "if" | "else" | "else-if" | "for")
+                matches!(dir.name, "if" | "else" | "else-if" | "for")
             }
             PropNode::Attribute(_) => false,
         })
@@ -66,10 +66,10 @@ impl NoVForTemplateKeyOnChild {
     fn key_binding<'a, 'b>(element: &'b ElementNode<'a>) -> Option<&'b PropNode<'a>> {
         element.props.iter().find(|prop| match prop {
             PropNode::Directive(dir) => {
-                dir.name.as_str() == "bind"
+                dir.name == "bind"
                     && matches!(
                         dir.arg.as_ref(),
-                        Some(ExpressionNode::Simple(s)) if s.content.as_str() == "key"
+                        Some(ExpressionNode::Simple(s)) if s.content == "key"
                     )
             }
             PropNode::Attribute(_) => false,
@@ -85,7 +85,7 @@ impl Rule for NoVForTemplateKeyOnChild {
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         // Only `<template v-for>` carries its key on itself; everything else is
         // free to key its children however it likes.
-        if element.tag.as_str() != "template" || !Self::has_v_for(element) {
+        if element.tag != "template" || !Self::has_v_for(element) {
             return;
         }
 

@@ -21,9 +21,9 @@ impl<'a> Parser<'a> {
         }
 
         let delimiter_open: Vec<'a, u8> =
-            Vec::from_iter_in(self.options.delimiters.0.bytes(), self.allocator);
+            Vec::from_iter_in(self.options.delimiters.0.bytes(), &self.allocator);
         let delimiter_close: Vec<'a, u8> =
-            Vec::from_iter_in(self.options.delimiters.1.bytes(), self.allocator);
+            Vec::from_iter_in(self.options.delimiters.1.bytes(), &self.allocator);
         let document = self.document;
         let in_tag_comments = self.options.experimental_in_tag_comments;
         #[cfg(feature = "legacy")]
@@ -42,7 +42,7 @@ impl<'a> Parser<'a> {
         true
     }
 
-    pub(super) fn into_result(mut self) -> (RootNode<'a>, Vec<'a, CompilerError>) {
+    pub(super) fn into_result(mut self) -> (RootNode<'a>, std::vec::Vec<CompilerError>) {
         let root = self
             .root
             .take()

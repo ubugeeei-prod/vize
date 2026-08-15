@@ -250,10 +250,10 @@ fn try_generate_static_attrs(
     let mut unique_props: Vec<&PropNode<'_>> = Vec::with_capacity(props.len());
     for prop in props {
         if let PropNode::Attribute(attr) = prop {
-            if seen.contains(attr.name.as_str()) {
+            if seen.contains(attr.name) {
                 continue;
             }
-            seen.insert(attr.name.clone());
+            seen.insert(attr.name.into());
         }
         unique_props.push(prop);
     }
@@ -286,15 +286,15 @@ fn try_generate_static_attrs(
         }
         first = false;
 
-        let needs_quotes = !is_valid_js_identifier(&attr.name);
+        let needs_quotes = !is_valid_js_identifier(attr.name);
         if needs_quotes {
             ctx.push("\"");
         }
         // Anchor the generated prop key back to the attribute name in source,
         // recording the symbol so it lands in the v3 `names` array. No-op
         // without `source_map`.
-        ctx.record_mapping_named(attr.name_loc.span.start, &attr.name);
-        ctx.push(&attr.name);
+        ctx.record_mapping_named(attr.name_loc.span.start, attr.name);
+        ctx.push(attr.name);
         if needs_quotes {
             ctx.push("\"");
         }
@@ -304,7 +304,7 @@ fn try_generate_static_attrs(
             // Anchor the generated value literal back to the attribute value in
             // source, just inside the opening quote. No-op without `source_map`.
             ctx.record_mapping(value.loc.span.start);
-            ctx.push(&escape_js_string(&value.content));
+            ctx.push(&escape_js_string(value.content));
             ctx.push("\"");
         } else {
             ctx.push("\"\"");
@@ -437,7 +437,7 @@ fn generate_props_object_inner(
                     ctx.options
                         .binding_metadata
                         .as_ref()
-                        .and_then(|m| m.bindings.get(value.content.as_str()).copied())
+                        .and_then(|m| m.bindings.get(value.content).copied())
                 } else {
                     None
                 };
@@ -466,15 +466,15 @@ fn generate_props_object_inner(
                         ctx.push("ref_for: true, ");
                     }
                     // Normal attribute output
-                    let needs_quotes = !is_valid_js_identifier(&attr.name);
+                    let needs_quotes = !is_valid_js_identifier(attr.name);
                     if needs_quotes {
                         ctx.push("\"");
                     }
                     // Anchor the generated prop key back to the attribute name in
                     // source, recording the symbol so it lands in the v3 `names`
                     // array. No-op without `source_map`.
-                    ctx.record_mapping_named(attr.name_loc.span.start, &attr.name);
-                    ctx.push(&attr.name);
+                    ctx.record_mapping_named(attr.name_loc.span.start, attr.name);
+                    ctx.push(attr.name);
                     if needs_quotes {
                         ctx.push("\"");
                     }
@@ -483,14 +483,14 @@ fn generate_props_object_inner(
                         // In inline mode, ref="refName" should reference a mutable/setup-ref
                         // binding. Other bindings (notably props) are still string refs.
                         if should_ref_runtime_binding {
-                            ctx.push(&value.content);
+                            ctx.push(value.content);
                         } else {
                             ctx.push("\"");
                             // Anchor the generated value literal back to the
                             // attribute value, just inside the opening quote.
                             // No-op without `source_map`.
                             ctx.record_mapping(value.loc.span.start);
-                            ctx.push(&escape_js_string(&value.content));
+                            ctx.push(&escape_js_string(value.content));
                             ctx.push("\"");
                         }
                     } else {

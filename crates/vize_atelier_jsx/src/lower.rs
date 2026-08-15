@@ -3,7 +3,7 @@
 //! The [`Lowerer`] walks OXC JSX/TSX nodes and produces
 //! [`vize_relief::RootNode`]s. Owned strings are copied out of the OXC
 //! arena (Vize uses `CompactString`), and the tree structure is built in the
-//! caller-supplied [`Bump`] arena, so the lowered IR does not borrow the OXC
+//! caller-supplied [`Allocator`] arena, so the lowered IR does not borrow the OXC
 //! allocator and outlives parsing.
 
 mod attr;
@@ -26,7 +26,7 @@ pub(crate) use style::{RawScopedStyle, ScopedStyleExpr};
 use oxc_ast::ast::{JSXElement, JSXElementName, JSXFragment};
 use oxc_semantic::Scoping;
 use oxc_span::Span;
-use vize_carton::{Box, Bump, String, ToCompactString};
+use vize_carton::{Allocator, Box, String, ToCompactString, Vec};
 use vize_relief::{RootNode, TemplateChildNode};
 
 use crate::BabelIsCustomElement;
@@ -57,9 +57,15 @@ pub(crate) struct BabelLoweringOptions<'m> {
     pub vdom_lane: bool,
 }
 
+/// Arena box, for call sites that cannot hold a `&self` borrow across the
+/// value they are boxing. The arena containers take `&&Allocator` (P1-10).
+pub(crate) fn boxed_in<T>(allocator: &Allocator, value: T) -> Box<'_, T> {
+    Box::new_in(value, &allocator)
+}
+
 /// Lowers OXC JSX nodes into Vize IR against a single source text.
-pub struct Lowerer<'a, 'm, 's> {
-    bump: &'a Bump,
+pub struct Lowerer<'a, 'm, 's: 'a> {
+    bump: &'a Allocator,
     mapper: &'m SpanMapper<'s>,
     compat: JsxCompatMode,
     is_custom_element: Option<&'m BabelIsCustomElement>,
@@ -77,9 +83,9 @@ pub struct Lowerer<'a, 'm, 's> {
     pending_styles: std::vec::Vec<RawScopedStyle>,
 }
 
-impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
+impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// Build a lowerer that allocates IR in `bump` and maps spans via `mapper`.
-    pub fn new(bump: &'a Bump, mapper: &'m SpanMapper<'s>) -> Self {
+    pub fn new(bump: &'a Allocator, mapper: &'m SpanMapper<'s>) -> Self {
         Self::with_compat(
             bump,
             mapper,
@@ -91,7 +97,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
 
     /// Build a lowerer using the requested project-level JSX semantics.
     pub(crate) fn with_compat(
-        bump: &'a Bump,
+        bump: &'a Allocator,
         mapper: &'m SpanMapper<'s>,
         compat: JsxCompatMode,
         babel: BabelLoweringOptions<'m>,
@@ -190,7 +196,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         root.loc = self.mapper.location(element.span);
         let node = self.lower_element_node(element);
         root.children
-            .push(TemplateChildNode::Element(Box::new_in(node, self.bump)));
+            .push(TemplateChildNode::Element(Box::new_in(node, &self.bump)));
         root
     }
 
@@ -204,8 +210,18 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     }
 
     /// Shared accessor used by sibling lowering modules.
-    pub(crate) fn bump(&self) -> &'a Bump {
+    pub(crate) fn bump(&self) -> &'a Allocator {
         self.bump
+    }
+
+    /// Arena box; the arena containers take `&&Allocator` (Davinci P1-10).
+    pub(crate) fn boxed<T>(&self, value: T) -> Box<'a, T> {
+        boxed_in(self.bump, value)
+    }
+
+    /// Empty arena vector.
+    pub(crate) fn vec<T>(&self) -> Vec<'a, T> {
+        Vec::new_in(&self.bump)
     }
 
     /// Shared accessor used by sibling lowering modules.

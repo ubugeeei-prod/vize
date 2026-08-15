@@ -2,7 +2,7 @@
 
 use oxc_ast::ast::{JSXChild, JSXExpression, JSXExpressionContainer, JSXSpreadChild};
 use oxc_span::GetSpan;
-use vize_carton::{Box, String, Vec};
+use vize_carton::{Box, Vec};
 use vize_relief::{
     CompoundExpressionChild, CompoundExpressionNode, ExpressionNode, InterpolationNode,
     TemplateChildNode, TextNode,
@@ -15,7 +15,7 @@ use super::Lowerer;
 /// stringified into a single text node through `toDisplayString`.
 const SPREAD_CHILD_UNSUPPORTED: &str = "spread children (`{...items}`) are not supported; the value would be stringified instead of spread";
 
-impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
+impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// Lower children of an intrinsic element, preserving Babel's raw value
     /// semantics for a lone expression child in opt-in VDOM compatibility mode.
     ///
@@ -39,7 +39,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
                 self.lower_children(children)
             }
             expression => {
-                let mut out = Vec::new_in(self.bump());
+                let mut out = self.vec();
                 if let Some(control_flow) =
                     self.lower_control_flow_child(expression, container.span)
                 {
@@ -57,7 +57,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         &mut self,
         children: &[JSXChild<'_>],
     ) -> Vec<'a, TemplateChildNode<'a>> {
-        let mut out = Vec::new_in(self.bump());
+        let mut out = self.vec();
         for child in children {
             self.push_child(child, &mut out);
         }
@@ -90,7 +90,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
                     return;
                 }
                 let node = self.lower_element_node(element);
-                out.push(TemplateChildNode::Element(Box::new_in(node, self.bump())));
+                out.push(TemplateChildNode::Element(self.boxed(node)));
             }
             JSXChild::ExpressionContainer(container) => {
                 out.extend(self.lower_child_container(container));
@@ -112,8 +112,11 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             // `{'literal'}` lowers to plain text, covering the explicit-space
             // idiom `{' '}`.
             JSXExpression::StringLiteral(string) => Some(TemplateChildNode::Text(Box::new_in(
-                TextNode::new(string.value.as_str(), self.mapper().location(string.span)),
-                self.bump(),
+                TextNode::new(
+                    self.bump().alloc_str(string.value.as_str()),
+                    self.mapper().location(string.span),
+                ),
+                &self.bump(),
             ))),
             expression => {
                 // Recognize JSX control-flow idioms (`cond && <X/>`,
@@ -140,11 +143,11 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
                 CompoundExpressionNode::new(self.bump(), self.mapper().location(spread.span));
             compound
                 .children
-                .push(CompoundExpressionChild::String(String::from("...")));
+                .push(CompoundExpressionChild::String("..."));
             compound
                 .children
                 .push(CompoundExpressionChild::Simple(expression));
-            return TemplateChildNode::CompoundExpression(Box::new_in(compound, self.bump()));
+            return TemplateChildNode::CompoundExpression(self.boxed(compound));
         }
 
         self.reject(spread.span, SPREAD_CHILD_UNSUPPORTED);
@@ -165,7 +168,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             #[cfg(feature = "legacy")]
             raw: false,
         };
-        TemplateChildNode::Interpolation(Box::new_in(node, self.bump()))
+        TemplateChildNode::Interpolation(self.boxed(node))
     }
 
     /// Represent a JSX child value as an unescaped expression rather than a
@@ -186,6 +189,6 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         compound
             .children
             .push(CompoundExpressionChild::Simple(expression));
-        TemplateChildNode::CompoundExpression(Box::new_in(compound, self.bump()))
+        TemplateChildNode::CompoundExpression(self.boxed(compound))
     }
 }

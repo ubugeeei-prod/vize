@@ -68,7 +68,7 @@ impl Rule for UseList {
             return;
         }
 
-        let tag = element.tag.as_str();
+        let tag = element.tag;
 
         // Skip if already in list context
         if LIST_CONTEXT_TAGS.contains(&tag) {

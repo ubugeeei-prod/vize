@@ -74,7 +74,7 @@ fn has_fragment_directive(element: &ElementNode) -> bool {
         matches!(
             prop,
             PropNode::Directive(directive)
-                if matches!(directive.name.as_str(), "if" | "else-if" | "else" | "for")
+                if matches!(directive.name, "if" | "else-if" | "else" | "for")
         )
     })
 }
@@ -107,7 +107,7 @@ impl Rule for ValidTemplateRoot {
             // structural directive: an inert wrapper that only nests its
             // children one level deeper for no effect.
             if let TemplateChildNode::Element(element) = child {
-                let tag = element.tag.as_str();
+                let tag = element.tag;
                 if tag == "template" && !has_fragment_directive(element) {
                     ctx.error_with_help(
                         ctx.t_fmt("vue/valid-template-root.disallowed_root", &[("tag", tag)]),

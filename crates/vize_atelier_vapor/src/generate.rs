@@ -54,7 +54,7 @@ pub fn generate_vapor_with_options(
         &ir.element_template_map,
         &ir.standalone_text_elements,
         binding_metadata,
-        &ir.source,
+        ir.source,
     );
     ctx.jsx_closure = options.jsx_closure;
 
@@ -178,7 +178,7 @@ pub fn generate_vapor_with_options(
 
     VaporGenerateResult {
         code: final_code,
-        templates: ir.templates.iter().cloned().collect(),
+        templates: ir.templates.iter().map(|t| String::new(t)).collect(),
     }
 }
 
@@ -276,7 +276,7 @@ fn collect_custom_directives_from_operation(
 ) {
     match operation {
         OperationNode::Directive(directive) if !directive.builtin => {
-            directives.insert(directive.name.clone());
+            directives.insert(String::new(directive.name));
         }
         OperationNode::If(if_node) => {
             collect_custom_directives_from_block(&if_node.positive, directives);

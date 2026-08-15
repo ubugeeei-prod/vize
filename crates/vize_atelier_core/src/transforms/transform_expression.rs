@@ -27,7 +27,7 @@ mod typescript;
 
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{Box, Bump, String};
+use vize_carton::{Allocator, Box, String};
 
 use crate::{ConstantType, ExpressionNode, SimpleExpressionNode, lane::TransformContext};
 
@@ -89,7 +89,7 @@ fn rewrite_filters_in_place<'a>(
         return false;
     }
 
-    let Some(parsed) = parse_filters(exp.content.as_str()) else {
+    let Some(parsed) = parse_filters(exp.content) else {
         return false;
     };
 
@@ -117,7 +117,7 @@ fn rewrite_filters_in_place<'a>(
     }
 
     ctx.helper(crate::RuntimeHelper::ResolveFilter);
-    exp.content = wrapped;
+    exp.content = ctx.allocator.alloc_str(&wrapped);
     // The content was rewritten from source text, so any cached parse is stale.
     exp.js_ast = None;
     exp.is_ref_transformed = false;
@@ -135,7 +135,7 @@ pub fn process_expression<'a>(
     // `mut` is only consumed by the legacy filter rewrite below; without the
     // `legacy` feature that block is cfg'd out and the binding is never mutated.
     #[cfg_attr(not(feature = "legacy"), allow(unused_mut))]
-    let mut normalized = normalize_expression(exp, allocator, &ctx.source);
+    let mut normalized = normalize_expression(exp, allocator, ctx.source);
 
     // Vue 2 pipe filters (`{{ msg | capitalize }}`): split the top-level `|`
     // chain into an unprefixed `_filter_<name>(base,args)` rewrite, register
@@ -199,7 +199,7 @@ pub fn process_expression<'a>(
 
     ExpressionNode::Simple(Box::new_in(
         SimpleExpressionNode {
-            content: processed,
+            content: allocator.alloc_str(&processed),
             is_static: false,
             const_type: normalized.const_type,
             loc: normalized.loc.clone(),
@@ -209,7 +209,7 @@ pub fn process_expression<'a>(
             is_handler_key: normalized.is_handler_key,
             is_ref_transformed: true,
         },
-        allocator,
+        &allocator,
     ))
 }
 
@@ -222,13 +222,13 @@ pub fn process_expression<'a>(
 /// an empty `children` list (which silently dropped the expression).
 pub(crate) fn clone_expression<'a>(
     exp: &ExpressionNode<'a>,
-    allocator: &'a Bump,
-    source: &str,
+    allocator: &'a Allocator,
+    source: &'a str,
 ) -> ExpressionNode<'a> {
     match exp {
         ExpressionNode::Simple(simple) => ExpressionNode::Simple(Box::new_in(
             SimpleExpressionNode {
-                content: simple.content.clone(),
+                content: simple.content,
                 is_static: simple.is_static,
                 const_type: simple.const_type,
                 loc: simple.loc.clone(),
@@ -239,11 +239,11 @@ pub(crate) fn clone_expression<'a>(
                 is_handler_key: simple.is_handler_key,
                 is_ref_transformed: simple.is_ref_transformed,
             },
-            allocator,
+            &allocator,
         )),
         ExpressionNode::Compound(compound) => ExpressionNode::Simple(Box::new_in(
             SimpleExpressionNode {
-                content: String::new(compound.loc.span.slice(source)),
+                content: compound.loc.span.slice(source),
                 is_static: false,
                 const_type: ConstantType::NotConstant,
                 loc: compound.loc.clone(),
@@ -253,20 +253,20 @@ pub(crate) fn clone_expression<'a>(
                 is_handler_key: compound.is_handler_key,
                 is_ref_transformed: false,
             },
-            allocator,
+            &allocator,
         )),
     }
 }
 
 pub(crate) fn normalize_expression<'a>(
     exp: &ExpressionNode<'a>,
-    allocator: &'a Bump,
-    source: &str,
+    allocator: &'a Allocator,
+    source: &'a str,
 ) -> Box<'a, SimpleExpressionNode<'a>> {
     match exp {
         ExpressionNode::Simple(simple) => Box::new_in(
             SimpleExpressionNode {
-                content: simple.content.clone(),
+                content: simple.content,
                 is_static: simple.is_static,
                 const_type: simple.const_type,
                 loc: simple.loc.clone(),
@@ -277,11 +277,11 @@ pub(crate) fn normalize_expression<'a>(
                 is_handler_key: simple.is_handler_key,
                 is_ref_transformed: simple.is_ref_transformed,
             },
-            allocator,
+            &allocator,
         ),
         ExpressionNode::Compound(compound) => Box::new_in(
             SimpleExpressionNode {
-                content: String::new(compound.loc.span.slice(source)),
+                content: compound.loc.span.slice(source),
                 is_static: false,
                 const_type: ConstantType::NotConstant,
                 loc: compound.loc.clone(),
@@ -291,7 +291,7 @@ pub(crate) fn normalize_expression<'a>(
                 is_handler_key: compound.is_handler_key,
                 is_ref_transformed: false,
             },
-            allocator,
+            &allocator,
         ),
     }
 }

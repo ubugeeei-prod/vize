@@ -83,7 +83,7 @@ impl NoMutatingProps {
         directive: &DirectiveNode<'a>,
         scope: &PropScope<'_>,
     ) {
-        if directive.name.as_str() != "model" {
+        if directive.name != "model" {
             return;
         }
 
@@ -116,7 +116,7 @@ impl NoMutatingProps {
         directive: &DirectiveNode<'a>,
         scope: &PropScope<'_>,
     ) {
-        if directive.name.as_str() != "on" {
+        if directive.name != "on" {
             return;
         }
         let Some(exp) = directive.exp.as_ref() else {
@@ -206,7 +206,7 @@ impl NoMutatingProps {
         // the transform stage, so both spellings are handled.
         for prop in element.props.iter() {
             if let PropNode::Directive(dir) = prop
-                && dir.name.as_str() == "for"
+                && dir.name == "for"
             {
                 push_for_aliases(dir, &mut scope.shadowed, ctx.source);
             }
@@ -223,7 +223,7 @@ impl NoMutatingProps {
         // collected only after this element's own directives are checked.
         for prop in element.props.iter() {
             if let PropNode::Directive(dir) = prop
-                && dir.name.as_str() == "slot"
+                && dir.name == "slot"
                 && let Some(exp) = dir.exp.as_ref()
             {
                 push_identifier_tokens(expression_source(exp, ctx.source), &mut scope.shadowed);

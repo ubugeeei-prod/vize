@@ -66,7 +66,7 @@ impl Rule for RequireComponentIs {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag.as_str() != "component" {
+        if element.tag != "component" {
             return;
         }
 

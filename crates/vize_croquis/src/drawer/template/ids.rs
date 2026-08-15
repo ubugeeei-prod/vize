@@ -59,12 +59,12 @@ impl Drawer {
         for prop in &el.props {
             match prop {
                 PropNode::Attribute(attr) => {
-                    let attr_name = attr.name.as_str();
+                    let attr_name = attr.name;
                     if let Some(kind) = get_id_kind(attr_name)
                         && let Some(value) = &attr.value
                     {
                         self.croquis.element_ids.push(ElementIdInfo {
-                            value: value.content.clone(),
+                            value: value.content.into(),
                             start: attr.loc.span.start,
                             end: attr.loc.span.end,
                             is_static: true,
@@ -80,7 +80,7 @@ impl Drawer {
                     {
                         let compound_arg;
                         let arg_name = match arg {
-                            ExpressionNode::Simple(s) => s.content.as_str(),
+                            ExpressionNode::Simple(s) => s.content,
                             ExpressionNode::Compound(c) => {
                                 compound_arg =
                                     CompactString::new(c.loc.span.slice(&self.template_source));
@@ -92,7 +92,7 @@ impl Drawer {
                             && let Some(ref exp) = dir.exp
                         {
                             let content = match exp {
-                                ExpressionNode::Simple(s) => s.content.clone(),
+                                ExpressionNode::Simple(s) => s.content.into(),
                                 ExpressionNode::Compound(c) => {
                                     CompactString::new(c.loc.span.slice(&self.template_source))
                                 }
@@ -159,7 +159,7 @@ impl Drawer {
     ) {
         let compound_content;
         let (content, retained) = match expr {
-            ExpressionNode::Simple(s) => (s.content.as_str(), s.js_ast.as_ref()),
+            ExpressionNode::Simple(s) => (s.content, s.js_ast.as_ref()),
             ExpressionNode::Compound(c) => {
                 compound_content = CompactString::new(c.loc.span.slice(&self.template_source));
                 (compound_content.as_str(), None)

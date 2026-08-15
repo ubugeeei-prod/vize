@@ -26,10 +26,10 @@ impl<'a> StaticMerge<'a> {
             match prop {
                 PropNode::Attribute(attr) => {
                     if attr.name == "class" && merge.class.is_none() {
-                        merge.class = attr.value.as_ref().map(|v| v.content.as_str());
+                        merge.class = attr.value.as_ref().map(|v| v.content);
                         class_index = Some(index);
                     } else if attr.name == "style" && merge.style.is_none() {
-                        merge.style = attr.value.as_ref().map(|v| v.content.as_str());
+                        merge.style = attr.value.as_ref().map(|v| v.content);
                         style_index = Some(index);
                     }
                 }

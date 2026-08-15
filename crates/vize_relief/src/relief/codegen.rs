@@ -3,7 +3,7 @@
 //! Contains VNodeCall, JavaScript expression nodes, SSR codegen nodes,
 //! and all types used during code generation from the template AST.
 
-use vize_carton::{Box, Bump, PatchFlags, String, Vec};
+use vize_carton::{Allocator, Box, PatchFlags, Vec};
 
 use super::{
     RuntimeHelper,
@@ -36,7 +36,7 @@ impl<'a> VNodeCall<'a> {
 /// VNode tag type
 #[derive(Debug)]
 pub enum VNodeTag<'a> {
-    String(String),
+    String(&'a str),
     Symbol(RuntimeHelper),
     Call(Box<'a, CallExpression<'a>>),
 }
@@ -55,7 +55,7 @@ pub enum VNodeChildren<'a> {
 /// Template text child node
 #[derive(Debug)]
 pub enum TemplateTextChildNode<'a> {
-    Text(Box<'a, super::elements::TextNode>),
+    Text(Box<'a, super::elements::TextNode<'a>>),
     Interpolation(Box<'a, super::elements::InterpolationNode<'a>>),
     Compound(Box<'a, CompoundExpressionNode<'a>>),
 }
@@ -71,7 +71,7 @@ pub enum PropsExpression<'a> {
 /// Dynamic props type
 #[derive(Debug)]
 pub enum DynamicProps<'a> {
-    String(String),
+    String(&'a str),
     Simple(Box<'a, SimpleExpressionNode<'a>>),
 }
 
@@ -85,7 +85,7 @@ pub struct DirectiveArguments<'a> {
 /// Single directive argument
 #[derive(Debug)]
 pub struct DirectiveArgumentNode<'a> {
-    pub directive: String,
+    pub directive: &'a str,
     pub exp: Option<ExpressionNode<'a>>,
     pub arg: Option<ExpressionNode<'a>>,
     pub modifiers: Option<Box<'a, ObjectExpression<'a>>>,
@@ -121,16 +121,16 @@ pub enum JsChildNode<'a> {
 /// Call expression
 #[derive(Debug)]
 pub struct CallExpression<'a> {
-    pub callee: Callee,
+    pub callee: Callee<'a>,
     pub arguments: Vec<'a, CallArgument<'a>>,
     pub loc: SourceLocation,
 }
 
 impl<'a> CallExpression<'a> {
-    pub fn new(allocator: &'a Bump, callee: Callee, loc: SourceLocation) -> Self {
+    pub fn new(allocator: &'a Allocator, callee: Callee<'a>, loc: SourceLocation) -> Self {
         Self {
             callee,
-            arguments: Vec::new_in(allocator),
+            arguments: Vec::new_in(&allocator),
             loc,
         }
     }
@@ -142,15 +142,15 @@ impl<'a> CallExpression<'a> {
 
 /// Callee type
 #[derive(Debug)]
-pub enum Callee {
-    String(String),
+pub enum Callee<'a> {
+    String(&'a str),
     Symbol(RuntimeHelper),
 }
 
 /// Call argument type
 #[derive(Debug)]
 pub enum CallArgument<'a> {
-    String(String),
+    String(&'a str),
     Symbol(RuntimeHelper),
     JsChild(JsChildNode<'a>),
     TemplateChild(TemplateChildNode<'a>),
@@ -165,9 +165,9 @@ pub struct ObjectExpression<'a> {
 }
 
 impl<'a> ObjectExpression<'a> {
-    pub fn new(allocator: &'a Bump, loc: SourceLocation) -> Self {
+    pub fn new(allocator: &'a Allocator, loc: SourceLocation) -> Self {
         Self {
-            properties: Vec::new_in(allocator),
+            properties: Vec::new_in(&allocator),
             loc,
         }
     }
@@ -199,9 +199,9 @@ pub struct ArrayExpression<'a> {
 }
 
 impl<'a> ArrayExpression<'a> {
-    pub fn new(allocator: &'a Bump, loc: SourceLocation) -> Self {
+    pub fn new(allocator: &'a Allocator, loc: SourceLocation) -> Self {
         Self {
-            elements: Vec::new_in(allocator),
+            elements: Vec::new_in(&allocator),
             loc,
         }
     }
@@ -214,7 +214,7 @@ impl<'a> ArrayExpression<'a> {
 /// Array element type
 #[derive(Debug)]
 pub enum ArrayElement<'a> {
-    String(String),
+    String(&'a str),
     Node(JsChildNode<'a>),
 }
 
@@ -240,7 +240,7 @@ impl<'a> FunctionExpression<'a> {
 #[derive(Debug)]
 pub enum FunctionParams<'a> {
     Single(ExpressionNode<'a>),
-    String(String),
+    String(&'a str),
     Multiple(Vec<'a, FunctionParam<'a>>),
 }
 
@@ -248,7 +248,7 @@ pub enum FunctionParams<'a> {
 #[derive(Debug)]
 pub enum FunctionParam<'a> {
     Expression(ExpressionNode<'a>),
-    String(String),
+    String(&'a str),
 }
 
 /// Function returns
@@ -311,9 +311,9 @@ pub struct BlockStatement<'a> {
 }
 
 impl<'a> BlockStatement<'a> {
-    pub fn new(allocator: &'a Bump, loc: SourceLocation) -> Self {
+    pub fn new(allocator: &'a Allocator, loc: SourceLocation) -> Self {
         Self {
-            body: Vec::new_in(allocator),
+            body: Vec::new_in(&allocator),
             loc,
         }
     }
@@ -346,7 +346,7 @@ impl<'a> TemplateLiteral<'a> {
 /// Template literal element
 #[derive(Debug)]
 pub enum TemplateLiteralElement<'a> {
-    String(String),
+    String(&'a str),
     JsChild(JsChildNode<'a>),
 }
 

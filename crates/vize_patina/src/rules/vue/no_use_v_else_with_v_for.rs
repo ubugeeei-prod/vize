@@ -60,9 +60,10 @@ impl Rule for NoUseVElseWithVFor {
 
 #[inline]
 fn has_directive(element: &ElementNode<'_>, name: &str) -> bool {
-    element.props.iter().any(
-        |prop| matches!(prop, PropNode::Directive(directive) if directive.name.as_str() == name),
-    )
+    element
+        .props
+        .iter()
+        .any(|prop| matches!(prop, PropNode::Directive(directive) if directive.name == name))
 }
 
 /// Relief stores the start tag in `ElementNode::loc`. Recover the closing tag

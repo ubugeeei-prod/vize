@@ -70,7 +70,7 @@ impl Drawer {
                         "croquis.template.directive.v_on",
                         self.handle_v_on_directive(dir, scope_vars, event_target_component.clone())
                     );
-                } else if !is_builtin_directive(dir.name.as_str()) {
+                } else if !is_builtin_directive(dir.name) {
                     // A custom directive's value is an ordinary template
                     // expression; collecting it here is what lets it reach the
                     // type checker, and gives it the enclosing scope id and
@@ -223,7 +223,7 @@ fn is_bind_is_directive(dir: &DirectiveNode<'_>) -> bool {
 
 fn expression_identifier(exp: &ExpressionNode<'_>, template_source: &str) -> Option<CompactString> {
     let (source, retained) = match exp {
-        ExpressionNode::Simple(simple) => (simple.content.as_str(), simple.js_ast.as_ref()),
+        ExpressionNode::Simple(simple) => (simple.content, simple.js_ast.as_ref()),
         ExpressionNode::Compound(compound) => (compound.loc.span.slice(template_source), None),
     };
     component_reference_expression(source, retained)
@@ -283,7 +283,7 @@ fn parse_component_reference_expression(source: &str) -> Option<CompactString> {
 
 fn expression_content<'a>(exp: &'a ExpressionNode<'_>, source: &'a str) -> &'a str {
     match exp {
-        ExpressionNode::Simple(s) => s.content.as_str(),
+        ExpressionNode::Simple(s) => s.content,
         ExpressionNode::Compound(c) => c.loc.span.slice(source),
     }
 }

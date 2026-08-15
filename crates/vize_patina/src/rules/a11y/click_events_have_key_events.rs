@@ -50,7 +50,7 @@ impl ClickEventsHaveKeyEvents {
                 && let Some(value) = &attr.value
             {
                 return matches!(
-                    value.content.as_ref(),
+                    value.content,
                     "button"
                         | "link"
                         | "checkbox"
@@ -93,7 +93,7 @@ impl ClickEventsHaveKeyEvents {
                 && dir.name == "on"
                 && let Some(ExpressionNode::Simple(arg)) = &dir.arg
                 && arg.is_static
-                && matches!(arg.content.as_ref(), "keydown" | "keyup" | "keypress")
+                && matches!(arg.content, "keydown" | "keyup" | "keypress")
             {
                 return true;
             }
@@ -115,7 +115,7 @@ impl Rule for ClickEventsHaveKeyEvents {
         }
 
         // Skip interactive elements - they have native keyboard support
-        if Self::is_interactive_element(&element.tag) {
+        if Self::is_interactive_element(element.tag) {
             return;
         }
 

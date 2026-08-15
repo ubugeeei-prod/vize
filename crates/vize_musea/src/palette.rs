@@ -6,11 +6,11 @@
 //! # Example
 //!
 //! ```rust
-//! use vize_carton::Bump;
+//! use vize_carton::Allocator;
 //! use vize_musea::{parse_art, ArtParseOptions};
 //! use vize_musea::palette::{generate_palette, PaletteOptions};
 //!
-//! let allocator = Bump::new();
+//! let allocator = Allocator::new();
 //! let source = r#"
 //! <art title="Button">
 //!   <variant name="Primary" args='{"variant":"primary","size":"md","disabled":false}'>

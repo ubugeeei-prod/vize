@@ -61,7 +61,7 @@ impl Rule for ValidVModel {
         element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name.as_str() != "model" {
+        if directive.name != "model" {
             return;
         }
 
@@ -89,7 +89,7 @@ impl Rule for ValidVModel {
         }
 
         // Check 2: v-model must be on valid elements
-        let tag = element.tag.as_str().to_lowercase();
+        let tag = element.tag.to_lowercase();
         let is_component = is_component_like_tag(element);
         let is_valid_element = VALID_V_MODEL_ELEMENTS.contains(&tag.as_str()) || is_component;
 
@@ -127,7 +127,7 @@ impl Rule for ValidVModel {
         // Check 5: Validate modifiers (only for native elements)
         if !is_component {
             for modifier in directive.modifiers.iter() {
-                let mod_name = modifier.content.as_str();
+                let mod_name = modifier.content;
                 if !VALID_MODIFIERS.contains(&mod_name) {
                     ctx.error_with_help(
                         ctx.t("vue/valid-v-model.missing_expression"),
@@ -145,12 +145,12 @@ fn is_component_like_tag(element: &ElementNode<'_>) -> bool {
         return true;
     }
 
-    let tag = element.tag.as_str();
+    let tag = element.tag;
     tag == "component" || (tag.contains('-') && !is_html_tag(tag))
 }
 
 fn is_static_file_input(element: &ElementNode<'_>) -> bool {
-    if !element.tag.as_str().eq_ignore_ascii_case("input") {
+    if !element.tag.eq_ignore_ascii_case("input") {
         return false;
     }
 
@@ -158,7 +158,7 @@ fn is_static_file_input(element: &ElementNode<'_>) -> bool {
         let PropNode::Attribute(attr) = prop else {
             return false;
         };
-        attr.name.as_str().eq_ignore_ascii_case("type")
+        attr.name.eq_ignore_ascii_case("type")
             && attr
                 .value
                 .as_ref()

@@ -27,7 +27,7 @@ impl Rule for VoidLinkValidMethod {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if !is_void_link_in_context(ctx, element.tag.as_str()) {
+        if !is_void_link_in_context(ctx, element.tag) {
             return;
         }
 

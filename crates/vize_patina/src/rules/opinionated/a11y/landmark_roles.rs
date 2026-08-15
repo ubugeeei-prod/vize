@@ -69,9 +69,9 @@ fn get_landmark_role<'a>(element: &ElementNode<'a>) -> Option<&'static str> {
             && attr.name == "role"
             && let Some(value) = &attr.value
         {
-            return match value.content.as_str() {
+            return match value.content {
                 "banner" | "complementary" | "contentinfo" | "form" | "main" | "navigation"
-                | "region" | "search" => Some(match value.content.as_str() {
+                | "region" | "search" => Some(match value.content {
                     "banner" => "banner",
                     "complementary" => "complementary",
                     "contentinfo" => "contentinfo",
@@ -88,7 +88,7 @@ fn get_landmark_role<'a>(element: &ElementNode<'a>) -> Option<&'static str> {
     }
 
     // Implicit roles from tags
-    match element.tag.as_str() {
+    match element.tag {
         "main" => Some("main"),
         "nav" => Some("navigation"),
         "aside" => Some("complementary"),

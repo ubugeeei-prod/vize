@@ -25,7 +25,7 @@ impl Drawer {
                 };
 
                 if self.options.track_usage {
-                    let name = dir.name.as_str();
+                    let name = dir.name;
                     if !is_builtin_directive(name) {
                         self.croquis
                             .used_directives
@@ -74,7 +74,7 @@ impl Drawer {
                     let condition = dir.exp.as_ref().map(|exp| {
                         CompactString::new(expression_content(exp, &self.template_source))
                     });
-                    let kind = match dir.name.as_str() {
+                    let kind = match dir.name {
                         "if" => ConditionalKind::If,
                         "else-if" => ConditionalKind::ElseIf,
                         _ => ConditionalKind::Else,
@@ -163,13 +163,13 @@ fn legacy_slot_scope(el: &ElementNode<'_>) -> Option<super::scopes::SlotScopeInf
             })
         })?;
     let value = scope_attr.value.as_ref()?;
-    let pattern = value.content.as_str();
+    let pattern = value.content;
     let slot_name = el
         .props
         .iter()
         .find_map(|prop| match prop {
             PropNode::Attribute(attr) if attr.name == "slot" => {
-                attr.value.as_ref().map(|value| value.content.clone())
+                attr.value.as_ref().map(|value| value.content.into())
             }
             _ => None,
         })
@@ -186,7 +186,7 @@ fn legacy_slot_scope(el: &ElementNode<'_>) -> Option<super::scopes::SlotScopeInf
 
 fn expression_content<'a>(exp: &'a ExpressionNode<'_>, source: &'a str) -> &'a str {
     match exp {
-        ExpressionNode::Simple(s) => s.content.as_str(),
+        ExpressionNode::Simple(s) => s.content,
         ExpressionNode::Compound(c) => c.loc.span.slice(source),
     }
 }

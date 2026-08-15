@@ -65,7 +65,7 @@ impl Rule for MustacheInterpolationSpacing {
         interpolation: &InterpolationNode<'a>,
     ) {
         let _content = match &interpolation.content {
-            ExpressionNode::Simple(s) => s.content.as_str(),
+            ExpressionNode::Simple(s) => s.content,
             ExpressionNode::Compound(_) => return,
         };
 

@@ -11,8 +11,8 @@ fn top_level_fragment_lifts_children_to_root() {
     let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <><span/><b/></>;");
     assert_eq!(root.children.len(), 2);
-    assert_eq!(as_element(&root.children[0]).tag.as_str(), "span");
-    assert_eq!(as_element(&root.children[1]).tag.as_str(), "b");
+    assert_eq!(as_element(&root.children[0]).tag, "span");
+    assert_eq!(as_element(&root.children[1]).tag, "b");
 }
 
 #[test]
@@ -20,8 +20,8 @@ fn fragment_with_text_and_elements() {
     let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <>hi<b/></>;");
     assert_eq!(root.children.len(), 2);
-    assert_eq!(as_text(&root.children[0]).content.as_str(), "hi");
-    assert_eq!(as_element(&root.children[1]).tag.as_str(), "b");
+    assert_eq!(as_text(&root.children[0]).content, "hi");
+    assert_eq!(as_element(&root.children[1]).tag, "b");
 }
 
 /// A nested fragment used to become an element tagged `Fragment`, which the DOM
@@ -35,8 +35,8 @@ fn nested_fragment_children_are_spliced_into_the_parent() {
     let out = lower_all(&bump, "const a = <div>{lead}<><p/><i/></>{tail}</div>;");
     let div = root_element(&out.roots[0].root);
     assert_eq!(div.children.len(), 4);
-    assert_eq!(as_element(&div.children[1]).tag.as_str(), "p");
-    assert_eq!(as_element(&div.children[2]).tag.as_str(), "i");
+    assert_eq!(as_element(&div.children[1]).tag, "p");
+    assert_eq!(as_element(&div.children[2]).tag, "i");
     assert_eq!(
         out.diagnostics
             .iter()
@@ -54,7 +54,7 @@ fn doubly_nested_fragments_collapse() {
     let root = lower_one(&bump, "const a = <div><><><i/></></></div>;");
     let div = root_element(&root);
     assert_eq!(div.children.len(), 1);
-    assert_eq!(as_element(&div.children[0]).tag.as_str(), "i");
+    assert_eq!(as_element(&div.children[0]).tag, "i");
 }
 
 /// The whole emitted module. `@vue/babel-plugin-jsx` renders this as

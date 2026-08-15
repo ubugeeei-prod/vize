@@ -3,7 +3,7 @@
 //! Contains element, attribute, directive, text, comment,
 //! and interpolation node definitions.
 
-use vize_carton::{Box, Bump, String, Vec, directive::DirectiveKind, ensure_sufficient_stack};
+use vize_carton::{Allocator, Box, Vec, directive::DirectiveKind};
 
 use super::{
     control_flow::ForParseResult,
@@ -15,7 +15,9 @@ use super::{
 #[derive(Debug)]
 pub struct ElementNode<'a> {
     pub ns: Namespace,
-    pub tag: String,
+    /// Tag text exactly as authored: a slice of the template source, so the
+    /// common case allocates nothing (Davinci P1-10).
+    pub tag: &'a str,
     pub tag_type: ElementType,
     pub props: Vec<'a, PropNode<'a>>,
     pub children: Vec<'a, super::TemplateChildNode<'a>>,
@@ -26,14 +28,19 @@ pub struct ElementNode<'a> {
     pub hoisted_props_index: Option<usize>,
 }
 
+/// Node footprints are pinned: the P1-10 string diet traded every owned
+/// `CompactString` field (24 bytes) for an `&'a str` (16) and every arena
+/// container for oxc's (32 -> 24 bytes per `Vec`). `ElementNode` 128 -> 104.
+const _: () = assert!(size_of::<ElementNode<'_>>() == 104);
+
 impl<'a> ElementNode<'a> {
-    pub fn new(allocator: &'a Bump, tag: impl Into<String>, loc: SourceLocation) -> Self {
+    pub fn new(allocator: &'a Allocator, tag: &'a str, loc: SourceLocation) -> Self {
         Self {
             ns: Namespace::Html,
-            tag: tag.into(),
+            tag,
             tag_type: ElementType::Element,
-            props: Vec::new_in(allocator),
-            children: Vec::new_in(allocator),
+            props: Vec::new_in(&allocator),
+            children: Vec::new_in(&allocator),
             is_self_closing: false,
             loc,
             inner_loc: None,
@@ -46,33 +53,10 @@ impl<'a> ElementNode<'a> {
     }
 }
 
-/// Tearing an element down is itself a recursive walk of its subtree.
-///
-/// Without this, the compiler-generated drop glue chains
-/// `Vec<TemplateChildNode>` -> `Box<ElementNode>` -> `Vec<TemplateChildNode>`
-/// once per nesting level, on the machine stack, with no guard — so a template
-/// deep enough would abort the process on the way *out* of a compile that had
-/// just succeeded. Dropping the children here, inside a checked frame, puts the
-/// teardown under the same stack-growth guarantee as the passes that built the
-/// tree (`vize_carton::recursion`).
-///
-/// Leaf elements — the overwhelming majority — pay one branch and nothing else.
-impl Drop for ElementNode<'_> {
-    fn drop(&mut self) {
-        if self.children.is_empty() {
-            return;
-        }
-        // `clear` runs the children's destructors here; the implicit field drop
-        // that follows this function then sees an empty vector and recurses no
-        // further.
-        ensure_sufficient_stack(|| self.children.clear());
-    }
-}
-
 /// Prop node (attribute or directive)
 #[derive(Debug)]
 pub enum PropNode<'a> {
-    Attribute(Box<'a, AttributeNode>),
+    Attribute(Box<'a, AttributeNode<'a>>),
     Directive(Box<'a, DirectiveNode<'a>>),
 }
 
@@ -87,17 +71,21 @@ impl<'a> PropNode<'a> {
 
 /// Attribute node
 #[derive(Debug)]
-pub struct AttributeNode {
-    pub name: String,
+pub struct AttributeNode<'a> {
+    /// Attribute name exactly as authored: a slice of the template source.
+    pub name: &'a str,
     pub name_loc: SourceLocation,
-    pub value: Option<TextNode>,
+    pub value: Option<TextNode<'a>>,
     pub loc: SourceLocation,
 }
 
-impl AttributeNode {
-    pub fn new(name: impl Into<String>, loc: SourceLocation) -> Self {
+/// 80 -> 56 (name + the nested text node's content).
+const _: () = assert!(size_of::<AttributeNode<'_>>() == 56);
+
+impl<'a> AttributeNode<'a> {
+    pub fn new(name: &'a str, loc: SourceLocation) -> Self {
         Self {
-            name: name.into(),
+            name,
             name_loc: SourceLocation::default(),
             value: None,
             loc,
@@ -112,10 +100,13 @@ impl AttributeNode {
 /// Directive node (v-if, v-for, v-bind, etc.)
 #[derive(Debug)]
 pub struct DirectiveNode<'a> {
-    /// Normalized directive name without prefix (e.g., "if", "for", "bind")
-    pub name: String,
-    /// Raw attribute name including shorthand (e.g., "@click", ":class")
-    pub raw_name: Option<String>,
+    /// Normalized directive name without prefix (e.g., "if", "for", "bind").
+    /// An atom: the shorthand forms normalize to `'static` names and `v-x`
+    /// forms slice the source, so this never allocates (Davinci P1-10).
+    pub name: &'a str,
+    /// Raw attribute name including shorthand (e.g., "@click", ":class"):
+    /// a slice of the template source.
+    pub raw_name: Option<&'a str>,
     /// Directive expression
     pub exp: Option<ExpressionNode<'a>>,
     /// Directive argument (e.g., "click" in @click)
@@ -129,14 +120,17 @@ pub struct DirectiveNode<'a> {
     pub loc: SourceLocation,
 }
 
+/// 208 -> 176 (`name`, `raw_name`, and the modifiers vector).
+const _: () = assert!(size_of::<DirectiveNode<'_>>() == 176);
+
 impl<'a> DirectiveNode<'a> {
-    pub fn new(allocator: &'a Bump, name: impl Into<String>, loc: SourceLocation) -> Self {
+    pub fn new(allocator: &'a Allocator, name: &'a str, loc: SourceLocation) -> Self {
         Self {
-            name: name.into(),
+            name,
             raw_name: None,
             exp: None,
             arg: None,
-            modifiers: Vec::new_in(allocator),
+            modifiers: Vec::new_in(&allocator),
             for_parse_result: None,
             shorthand: false,
             loc,
@@ -150,17 +144,19 @@ impl<'a> DirectiveNode<'a> {
 
 /// Text node
 #[derive(Debug)]
-pub struct TextNode {
-    pub content: String,
+pub struct TextNode<'a> {
+    /// Text content: the template source slice when the run is verbatim, an
+    /// arena copy when entity decoding or whitespace condensing rewrote it.
+    pub content: &'a str,
     pub loc: SourceLocation,
 }
 
-impl TextNode {
-    pub fn new(content: impl Into<String>, loc: SourceLocation) -> Self {
-        Self {
-            content: content.into(),
-            loc,
-        }
+/// 32 -> 24.
+const _: () = assert!(size_of::<TextNode<'_>>() == 24);
+
+impl<'a> TextNode<'a> {
+    pub fn new(content: &'a str, loc: SourceLocation) -> Self {
+        Self { content, loc }
     }
 
     pub fn node_type(&self) -> NodeType {
@@ -170,8 +166,9 @@ impl TextNode {
 
 /// Comment node
 #[derive(Debug)]
-pub struct CommentNode {
-    pub content: String,
+pub struct CommentNode<'a> {
+    /// Comment body: a slice of the template source.
+    pub content: &'a str,
     pub loc: SourceLocation,
     pub kind: CommentKind,
     /// Parsed `@vize:` directive, if this comment contains one.
@@ -185,19 +182,22 @@ pub enum CommentKind {
     InTag,
 }
 
-impl CommentNode {
-    pub fn new(content: impl Into<String>, loc: SourceLocation) -> Self {
+/// 40 -> 32.
+const _: () = assert!(size_of::<CommentNode<'_>>() == 32);
+
+impl<'a> CommentNode<'a> {
+    pub fn new(content: &'a str, loc: SourceLocation) -> Self {
         Self {
-            content: content.into(),
+            content,
             loc,
             kind: CommentKind::Html,
             directive: None,
         }
     }
 
-    pub fn new_in_tag(content: impl Into<String>, loc: SourceLocation) -> Self {
+    pub fn new_in_tag(content: &'a str, loc: SourceLocation) -> Self {
         Self {
-            content: content.into(),
+            content,
             loc,
             kind: CommentKind::InTag,
             directive: None,

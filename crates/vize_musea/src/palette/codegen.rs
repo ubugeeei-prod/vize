@@ -281,11 +281,11 @@ mod tests {
         Palette, PropControl, generate_palette, generate_storybook_argtypes,
         generate_typescript_interface, to_pascal_case,
     };
-    use crate::{ArtParseOptions, Bump, parse_art};
+    use crate::{Allocator, ArtParseOptions, parse_art};
 
     #[test]
     fn test_generate_palette_basic() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let source = r#"
 <art title="Button">
   <variant name="Primary" args='{"variant":"primary","size":"md","disabled":false}'>

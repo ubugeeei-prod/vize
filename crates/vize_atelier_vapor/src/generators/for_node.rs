@@ -12,17 +12,17 @@ where
     let source = if for_node.source.is_static {
         cstr!("\"{}\"", for_node.source.content)
     } else {
-        vize_carton::CompactString::from(for_node.source.content.as_str())
+        vize_carton::CompactString::from(for_node.source.content)
     };
 
     let value_name = for_node
         .value
         .as_ref()
-        .map(|v| v.content.as_str())
+        .map(|v| v.content)
         .unwrap_or("_item");
 
-    let key_name = for_node.key.as_ref().map(|k| k.content.as_str());
-    let index_name = for_node.index.as_ref().map(|i| i.content.as_str());
+    let key_name = for_node.key.as_ref().map(|k| k.content);
+    let index_name = for_node.index.as_ref().map(|i| i.content);
 
     let params = build_params(value_name, key_name, index_name);
 
@@ -36,7 +36,7 @@ where
         let key_expr = if key_prop.is_static {
             cstr!("\"{}\"", key_prop.content)
         } else {
-            vize_carton::CompactString::from(key_prop.content.as_str())
+            vize_carton::CompactString::from(key_prop.content)
         };
         ctx.push_line_fmt(format_args!("}}, ({params}) => {key_expr})"));
     } else {
@@ -61,19 +61,19 @@ where
     let source = if for_node.source.is_static {
         cstr!("\"{}\"", for_node.source.content)
     } else {
-        vize_carton::CompactString::from(for_node.source.content.as_str())
+        vize_carton::CompactString::from(for_node.source.content)
     };
 
     let value_name = for_node
         .value
         .as_ref()
-        .map(|v| v.content.as_str())
+        .map(|v| v.content)
         .unwrap_or("_item");
 
     let params = build_params(
         value_name,
-        for_node.key.as_ref().map(|k| k.content.as_str()),
-        for_node.index.as_ref().map(|i| i.content.as_str()),
+        for_node.key.as_ref().map(|k| k.content),
+        for_node.index.as_ref().map(|i| i.content),
     );
 
     if for_node.once {

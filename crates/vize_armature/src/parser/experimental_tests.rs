@@ -21,10 +21,7 @@ fn test_parse_experimental_in_tag_comments() {
     assert!(errors.is_empty());
     assert_eq!(root.comments.len(), 1);
     assert_eq!(root.comments[0].kind, CommentKind::InTag);
-    assert_eq!(
-        root.comments[0].content.as_str(),
-        " @vue-expect-error legacy API"
-    );
+    assert_eq!(root.comments[0].content, " @vue-expect-error legacy API");
 
     let TemplateChildNode::Element(el) = &root.children[0] else {
         panic!("Expected element");
@@ -88,7 +85,7 @@ fn test_parse_slash_slash_inside_attribute_value_is_not_in_tag_comment() {
         panic!("Expected attribute");
     };
     assert_eq!(
-        attr.value.as_ref().map(|value| value.content.as_str()),
+        attr.value.as_ref().map(|value| value.content),
         Some("not // a comment")
     );
 }

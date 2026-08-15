@@ -90,7 +90,7 @@ Cargo メタデータが公開を許可しているもの (リリースによっ
 
 | 木箱                 | 階層             | 対象読者                                     | パブリック エントリポイント                     | 削除/非推奨                                          |
 | -------------------- | ---------------- | -------------------------------------------- | ----------------------------------------------- | ---------------------------------------------------- |
-| `vize_carton`        | アルファ版対応   | Vize コンパイラとライブラリの作者            | `vize_carton::{Allocator, Bump, FxHashMap}`     | `#[deprecated]` の未成年者 1 人                      |
+| `vize_carton`        | アルファ版対応   | Vize コンパイラとライブラリの作者            | `vize_carton::{Allocator, Box, FxHashMap}`      | `#[deprecated]` の未成年者 1 人                      |
 | `vize_relief`        | アルファ版対応   | AST とコンパイラ統合の著者                   | `vize_relief::{RootNode, CompilerOptions}`      | `#[deprecated]` の未成年者 1 名                      |
 | `vize_armature`      | アルファ版対応   | Vue テンプレートを解析するツール             | `vize_armature::{parse, Parser, Tokenizer}`     | `#[deprecated]` の未成年者 1 人                      |
 | `vize_croquis`       | 互換性プレビュー | セマンティックおよびタイプ認識ツールの作成者 | `vize_croquis::{Croquis, Drawer}`               | `#[deprecated]` の未成年者 1 人                      |

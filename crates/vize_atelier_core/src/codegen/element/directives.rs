@@ -22,7 +22,7 @@ fn generate_vmodel_entry(
     let helper = get_vmodel_helper(el);
     ctx.use_helper(helper);
 
-    let modifiers: Vec<_> = dir.modifiers.iter().map(|m| m.content.as_str()).collect();
+    let modifiers: Vec<_> = dir.modifiers.iter().map(|m| m.content).collect();
     let parsed_mods = parse_model_modifiers(&dir.modifiers);
     let active_modifiers: Vec<_> = modifiers
         .iter()
@@ -110,7 +110,7 @@ fn generate_vshow_entry(ctx: &mut CodegenContext, dir: &crate::DirectiveNode<'_>
 
 fn generate_custom_directive_entry(ctx: &mut CodegenContext, dir: &crate::DirectiveNode<'_>) {
     ctx.push("  [");
-    ctx.push(&to_valid_asset_identifier("directive", &dir.name));
+    ctx.push(&to_valid_asset_identifier("directive", dir.name));
 
     if let Some(exp) = &dir.exp {
         ctx.push(", ");
@@ -126,10 +126,10 @@ fn generate_custom_directive_entry(ctx: &mut CodegenContext, dir: &crate::Direct
             ExpressionNode::Simple(simple) => {
                 if simple.is_static {
                     ctx.push("\"");
-                    ctx.push(&simple.content);
+                    ctx.push(simple.content);
                     ctx.push("\"");
                 } else {
-                    ctx.push(&simple.content);
+                    ctx.push(simple.content);
                 }
             }
             ExpressionNode::Compound(compound) => {
@@ -150,7 +150,7 @@ fn generate_custom_directive_entry(ctx: &mut CodegenContext, dir: &crate::Direct
             if j > 0 {
                 ctx.push(", ");
             }
-            ctx.push(&modifier.content);
+            ctx.push(modifier.content);
             ctx.push(": true");
         }
         ctx.push(" }");
@@ -171,7 +171,7 @@ pub fn generate_vmodel_closing(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 
     for prop in &el.props {
         if let PropNode::Directive(show_dir) = prop
-            && show_dir.name.as_str() == "show"
+            && show_dir.name == "show"
             && show_dir.exp.is_some()
         {
             ctx.push(",");
@@ -189,7 +189,7 @@ pub fn generate_vmodel_closing(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 pub fn generate_vshow_closing(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     for prop in &el.props {
         if let PropNode::Directive(dir) = prop
-            && dir.name.as_str() == "show"
+            && dir.name == "show"
             && dir.exp.is_some()
         {
             ctx.push(", [");
@@ -232,7 +232,7 @@ pub fn generate_custom_directives_closing(ctx: &mut CodegenContext, el: &Element
     if has_vshow_directive(el) {
         for prop in &el.props {
             if let PropNode::Directive(dir) = prop
-                && dir.name.as_str() == "show"
+                && dir.name == "show"
                 && dir.exp.is_some()
             {
                 if emitted {

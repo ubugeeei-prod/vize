@@ -16,7 +16,7 @@ pub fn is_component_like_element(element: &ElementNode) -> bool {
     matches!(
         element.tag_type,
         ElementType::Component | ElementType::Slot | ElementType::Template
-    ) || !is_native_tag(element.tag.as_str())
+    ) || !is_native_tag(element.tag)
 }
 
 /// Check if an element represents a Vue slot outlet.
@@ -75,7 +75,7 @@ pub fn is_interactive_role(role: &str) -> bool {
 
 /// Check if an element is focusable (natively or via tabindex)
 pub fn is_focusable_element(element: &ElementNode) -> bool {
-    let tag = element.tag.as_str();
+    let tag = element.tag;
 
     if matches!(tag, "a" | "area") && has_named_prop(element, "href") {
         return true;
@@ -125,7 +125,7 @@ pub fn get_static_attribute_value<'a>(element: &'a ElementNode, name: &str) -> O
         if let PropNode::Attribute(attr) = prop
             && attr.name == name
         {
-            return attr.value.as_ref().map(|v| v.content.as_ref());
+            return attr.value.as_ref().map(|v| v.content);
         }
     }
     None
@@ -142,7 +142,7 @@ pub fn get_static_or_bound_literal_attribute_value<'a>(
     for prop in &element.props {
         match prop {
             PropNode::Attribute(attr) if attr.name == name => {
-                return attr.value.as_ref().map(|v| v.content.as_ref());
+                return attr.value.as_ref().map(|v| v.content);
             }
             PropNode::Directive(dir) if dir.name == "bind" => {
                 let Some(ExpressionNode::Simple(arg)) = &dir.arg else {
@@ -154,7 +154,7 @@ pub fn get_static_or_bound_literal_attribute_value<'a>(
                 let Some(ExpressionNode::Simple(exp)) = &dir.exp else {
                     continue;
                 };
-                if let Some(value) = string_literal_value(exp.content.as_ref()) {
+                if let Some(value) = string_literal_value(exp.content) {
                     return Some(value);
                 }
             }

@@ -187,7 +187,7 @@ fn generate_if_branch_component(
             if let PropNode::Attribute(attr) = p
                 && attr.name == "is"
             {
-                return attr.value.as_ref().map(|v| v.content.as_str());
+                return attr.value.as_ref().map(|v| v.content);
             }
             None
         });
@@ -206,12 +206,12 @@ fn generate_if_branch_component(
         } else {
             ctx.push("_component_component");
         }
-    } else if let Some(builtin) = is_builtin_component(&el.tag) {
+    } else if let Some(builtin) = is_builtin_component(el.tag) {
         ctx.use_helper(builtin);
         ctx.push(ctx.helper(builtin));
-    } else if ctx.push_component_binding_tag(&el.tag) {
+    } else if ctx.push_component_binding_tag(el.tag) {
     } else {
-        ctx.push(&to_valid_asset_identifier("component", &el.tag));
+        ctx.push(&to_valid_asset_identifier("component", el.tag));
     }
 
     let (mut patch_flag, dynamic_props) = if is_dynamic {
@@ -345,7 +345,7 @@ fn generate_if_branch_element(
     ctx.push("(), ");
     ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
     ctx.push("(\"");
-    ctx.push(el.tag.as_str());
+    ctx.push(el.tag);
     ctx.push("\"");
 
     ctx.push(", ");
@@ -357,7 +357,7 @@ fn generate_if_branch_element(
         if el.children.len() == 1 {
             if let TemplateChildNode::Text(text) = &el.children[0] {
                 ctx.push("\"");
-                ctx.push(&escape_js_string(text.content.as_str()));
+                ctx.push(&escape_js_string(text.content));
                 ctx.push("\"");
             } else {
                 ctx.with_parent_namespace(child_namespace(el), |ctx| {
@@ -477,7 +477,7 @@ fn generate_if_branch_children(ctx: &mut CodegenContext, children: &[TemplateChi
                 }
                 TemplateChildNode::Text(text) => {
                     ctx.push("\"");
-                    ctx.push(&escape_js_string(text.content.as_str()));
+                    ctx.push(&escape_js_string(text.content));
                     ctx.push("\"");
                 }
                 _ => {}

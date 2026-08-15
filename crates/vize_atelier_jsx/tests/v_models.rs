@@ -118,20 +118,20 @@ fn every_entry_lowers_to_its_own_model_directive() {
     assert_eq!(element.props.len(), 2);
 
     let first = common::as_directive(&element.props[0]);
-    assert_eq!(first.name.as_str(), "model");
+    assert_eq!(first.name, "model");
     assert!(first.arg.is_none());
     assert_eq!(simple_content(first.exp.as_ref().unwrap()), "foo");
     assert_eq!(first.modifiers.len(), 0);
 
     let second = common::as_directive(&element.props[1]);
-    assert_eq!(second.name.as_str(), "model");
+    assert_eq!(second.name, "model");
     assert_eq!(simple_content(second.arg.as_ref().unwrap()), "bar");
     assert_eq!(simple_content(second.exp.as_ref().unwrap()), "bar");
     assert_eq!(
         second
             .modifiers
             .iter()
-            .map(|modifier| modifier.content.as_str())
+            .map(|modifier| modifier.content)
             .collect::<Vec<_>>(),
         vec!["trim"]
     );

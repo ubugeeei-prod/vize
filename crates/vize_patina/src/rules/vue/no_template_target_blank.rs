@@ -114,12 +114,9 @@ impl Rule for NoTemplateTargetBlank {
 /// `None` when no such static attribute exists.
 fn static_attribute_value<'a>(element: &'a ElementNode<'a>, name: &str) -> Option<&'a str> {
     element.props.iter().find_map(|prop| match prop {
-        PropNode::Attribute(attr) if attr.name == name => Some(
-            attr.value
-                .as_ref()
-                .map(|v| v.content.as_str())
-                .unwrap_or(""),
-        ),
+        PropNode::Attribute(attr) if attr.name == name => {
+            Some(attr.value.as_ref().map(|v| v.content).unwrap_or(""))
+        }
         _ => None,
     })
 }

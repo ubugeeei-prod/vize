@@ -10,7 +10,7 @@ pub(crate) fn collect_delegate_events(ctx: &mut GenerateContext, block: &BlockIR
         if let OperationNode::SetEvent(set_event) = op
             && set_event.delegate
         {
-            ctx.add_delegate_event(&set_event.key.content);
+            ctx.add_delegate_event(set_event.key.content);
         }
     }
 }

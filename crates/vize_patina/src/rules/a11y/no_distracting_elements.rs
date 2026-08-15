@@ -68,11 +68,11 @@ impl Rule for NoDistractingElements {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if Self::is_distracting(&element.tag) {
+        if Self::is_distracting(element.tag) {
             ctx.warn_with_help(
                 ctx.t_fmt(
                     "a11y/no-distracting-elements.message",
-                    &[("tag", element.tag.as_str())],
+                    &[("tag", element.tag)],
                 ),
                 &element.loc,
                 ctx.t("a11y/no-distracting-elements.help"),

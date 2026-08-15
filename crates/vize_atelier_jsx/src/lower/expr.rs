@@ -7,7 +7,7 @@ use vize_relief::{ExpressionNode, SimpleExpressionNode};
 
 use super::Lowerer;
 
-impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
+impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// A dynamic (non-static) simple expression whose content is the source
     /// slice covered by `span`. Vize's later transform steps parse and prefix
     /// the identifiers; the lowering layer only needs the raw text + location.
@@ -16,26 +16,26 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         let content = self.mapper().slice(span);
         ExpressionNode::Simple(Box::new_in(
             SimpleExpressionNode::new(content, false, loc),
-            self.bump(),
+            &self.bump(),
         ))
     }
 
     /// A static simple expression with explicit `content` at `span` (used for
     /// directive arguments and bound attribute names).
-    pub(crate) fn static_expr(&self, content: &str, span: Span) -> ExpressionNode<'a> {
+    pub(crate) fn static_expr(&self, content: &'a str, span: Span) -> ExpressionNode<'a> {
         let loc = self.mapper().location(span);
         ExpressionNode::Simple(Box::new_in(
             SimpleExpressionNode::new(content, true, loc),
-            self.bump(),
+            &self.bump(),
         ))
     }
 
     /// A generated JavaScript constant anchored to an authored token.
-    pub(crate) fn constant_expr(&self, content: &str, span: Span) -> ExpressionNode<'a> {
+    pub(crate) fn constant_expr(&self, content: &'a str, span: Span) -> ExpressionNode<'a> {
         let loc = self.mapper().location(span);
         ExpressionNode::Simple(Box::new_in(
             SimpleExpressionNode::new(content, false, loc),
-            self.bump(),
+            &self.bump(),
         ))
     }
 }

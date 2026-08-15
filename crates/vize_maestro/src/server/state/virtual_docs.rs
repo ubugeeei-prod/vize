@@ -106,7 +106,7 @@ impl ServerState {
     fn update_art_virtual_docs(&self, uri: &Url, content: &str) {
         use crate::virtual_code::{ScriptCodeGenerator, TemplateCodeGenerator, VirtualDocuments};
 
-        let allocator = vize_carton::Bump::new();
+        let allocator = vize_carton::Allocator::new();
         let Ok(art_desc) =
             vize_musea::parse_art(&allocator, content, vize_musea::ArtParseOptions::default())
         else {

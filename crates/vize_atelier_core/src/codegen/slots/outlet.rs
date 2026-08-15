@@ -17,19 +17,19 @@ pub(crate) enum SlotOutletName<'a> {
 }
 
 fn is_slot_name_bind(dir: &DirectiveNode<'_>) -> bool {
-    if dir.name.as_str() != "bind" {
+    if dir.name != "bind" {
         return false;
     }
 
     match dir.arg.as_ref() {
-        Some(ExpressionNode::Simple(exp)) => exp.is_static && exp.content.as_str() == "name",
+        Some(ExpressionNode::Simple(exp)) => exp.is_static && exp.content == "name",
         _ => false,
     }
 }
 
 fn is_slot_name_prop(prop: &PropNode<'_>) -> bool {
     match prop {
-        PropNode::Attribute(attr) => attr.name.as_str() == "name",
+        PropNode::Attribute(attr) => attr.name == "name",
         PropNode::Directive(dir) => is_slot_name_bind(dir),
     }
 }
@@ -38,7 +38,7 @@ fn is_slot_outlet_object_spread(prop: &PropNode<'_>) -> bool {
     matches!(
         prop,
         PropNode::Directive(dir)
-            if (dir.name.as_str() == "bind" || dir.name.as_str() == "on")
+            if (dir.name == "bind" || dir.name == "on")
                 && dir.arg.is_none()
                 && dir.exp.is_some()
     )
@@ -52,7 +52,7 @@ fn slot_outlet_prop_generates_output(prop: &PropNode<'_>) -> bool {
     match prop {
         PropNode::Attribute(_) => true,
         PropNode::Directive(dir) => {
-            if (dir.name.as_str() == "bind" || dir.name.as_str() == "on") && dir.arg.is_none() {
+            if (dir.name == "bind" || dir.name == "on") && dir.arg.is_none() {
                 return dir.exp.is_some();
             }
             is_supported_directive(dir)
@@ -65,7 +65,7 @@ fn has_slot_outlet_vbind_object(el: &ElementNode<'_>) -> bool {
         matches!(
             prop,
             PropNode::Directive(dir)
-                if dir.name.as_str() == "bind" && dir.arg.is_none() && dir.exp.is_some()
+                if dir.name == "bind" && dir.arg.is_none() && dir.exp.is_some()
         )
     })
 }
@@ -75,7 +75,7 @@ fn has_slot_outlet_von_object(el: &ElementNode<'_>) -> bool {
         matches!(
             prop,
             PropNode::Directive(dir)
-                if dir.name.as_str() == "on" && dir.arg.is_none() && dir.exp.is_some()
+                if dir.name == "on" && dir.arg.is_none() && dir.exp.is_some()
         )
     })
 }
@@ -89,13 +89,9 @@ fn has_slot_outlet_entry_props(el: &ElementNode<'_>) -> bool {
 pub(crate) fn get_slot_outlet_name<'a>(el: &'a ElementNode<'a>) -> SlotOutletName<'a> {
     for prop in &el.props {
         match prop {
-            PropNode::Attribute(attr) if attr.name.as_str() == "name" => {
-                let name = attr
-                    .value
-                    .as_ref()
-                    .map(|v| v.content.clone())
-                    .unwrap_or_else(|| String::new("default"));
-                return SlotOutletName::Static(name);
+            PropNode::Attribute(attr) if attr.name == "name" => {
+                let name = attr.value.as_ref().map(|v| v.content).unwrap_or("default");
+                return SlotOutletName::Static(name.into());
             }
             PropNode::Directive(dir) if is_slot_name_bind(dir) => {
                 if let Some(exp) = dir.exp.as_ref() {
@@ -128,22 +124,22 @@ pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &
     let static_merge = crate::codegen::props::StaticMerge::from_props(&el.props);
 
     let has_dynamic_class = el.props.iter().any(|prop| match prop {
-        PropNode::Directive(dir) if !is_slot_name_bind(dir) && dir.name.as_str() == "bind" => {
+        PropNode::Directive(dir) if !is_slot_name_bind(dir) && dir.name == "bind" => {
             matches!(
                 dir.arg.as_ref(),
                 Some(ExpressionNode::Simple(exp))
-                    if exp.is_static && exp.content.as_str() == "class"
+                    if exp.is_static && exp.content == "class"
             )
         }
         _ => false,
     });
 
     let has_dynamic_style = el.props.iter().any(|prop| match prop {
-        PropNode::Directive(dir) if !is_slot_name_bind(dir) && dir.name.as_str() == "bind" => {
+        PropNode::Directive(dir) if !is_slot_name_bind(dir) && dir.name == "bind" => {
             matches!(
                 dir.arg.as_ref(),
                 Some(ExpressionNode::Simple(exp))
-                    if exp.is_static && exp.content.as_str() == "style"
+                    if exp.is_static && exp.content == "style"
             )
         }
         _ => false,
@@ -157,8 +153,8 @@ pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &
 
         match prop {
             PropNode::Attribute(attr) => {
-                if (attr.name.as_str() == "class" && has_dynamic_class)
-                    || (attr.name.as_str() == "style" && has_dynamic_style)
+                if (attr.name == "class" && has_dynamic_class)
+                    || (attr.name == "style" && has_dynamic_style)
                 {
                     continue;
                 }
@@ -167,7 +163,7 @@ pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &
                     ctx.push(", ");
                 }
 
-                let key = camelize(&attr.name);
+                let key = camelize(attr.name);
                 if is_valid_js_identifier(&key) {
                     ctx.push(&key);
                 } else {
@@ -178,7 +174,7 @@ pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &
                 ctx.push(": ");
                 if let Some(value) = &attr.value {
                     ctx.push("\"");
-                    ctx.push(&escape_js_string(value.content.as_str()));
+                    ctx.push(&escape_js_string(value.content));
                     ctx.push("\"");
                 } else {
                     ctx.push("\"\"");
@@ -187,8 +183,7 @@ pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &
             }
             PropNode::Directive(dir) => {
                 if !is_supported_directive(dir)
-                    || (dir.arg.is_none()
-                        && (dir.name.as_str() == "bind" || dir.name.as_str() == "on"))
+                    || (dir.arg.is_none() && (dir.name == "bind" || dir.name == "on"))
                 {
                     continue;
                 }

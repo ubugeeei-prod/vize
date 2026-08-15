@@ -47,7 +47,7 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
             .modifiers
             .non_keys
             .iter()
-            .map(|m| ["\"", m.as_str(), "\""].concat())
+            .map(|m| ["\"", m, "\""].concat())
             .collect::<std::vec::Vec<_>>()
             .join(",");
         cstr!("_withModifiers({}, [{}])", invoker_body, mods)
@@ -57,7 +57,7 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
             .modifiers
             .keys
             .iter()
-            .map(|k| ["\"", k.as_str(), "\""].concat())
+            .map(|k| ["\"", k, "\""].concat())
             .collect::<std::vec::Vec<_>>()
             .join(",");
         cstr!("_withKeys({}, [{}])", invoker_body, keys)

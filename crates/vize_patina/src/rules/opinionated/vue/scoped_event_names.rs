@@ -86,13 +86,13 @@ impl Rule for ScopedEventNames {
         directive: &DirectiveNode<'a>,
     ) {
         // Only check v-on directives
-        if directive.name.as_str() != "on" {
+        if directive.name != "on" {
             return;
         }
 
         // Get the event name from the argument
         let event_name = match &directive.arg {
-            Some(ExpressionNode::Simple(s)) => s.content.as_str(),
+            Some(ExpressionNode::Simple(s)) => s.content,
             _ => return,
         };
 

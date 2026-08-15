@@ -127,7 +127,7 @@ fn get_if_directive_info(el: &ElementNode) -> IfDirectiveInfo {
 
     for prop in el.props.iter() {
         if let PropNode::Directive(dir) = prop {
-            match dir.name.as_str() {
+            match dir.name {
                 "if" => {
                     info.has_v_if = true;
                     if let Some(ref exp) = dir.exp {

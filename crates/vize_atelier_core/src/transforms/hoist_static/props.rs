@@ -1,6 +1,6 @@
 //! Static property detection and hoisting.
 
-use vize_carton::{Box, Bump, String, ToCompactString, Vec, camelize};
+use vize_carton::{Allocator, Box, String, ToCompactString, Vec, camelize};
 
 use crate::codegen::is_constant_simple_expression;
 use crate::lane::TransformContext;
@@ -10,31 +10,31 @@ use crate::{
 };
 
 pub(super) fn create_props_expression<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     props: &[PropNode<'a>],
-    scope_id: Option<&String>,
+    scope_id: Option<&'a str>,
 ) -> Option<PropsExpression<'a>> {
-    let mut obj_props = Vec::new_in(allocator);
+    let mut obj_props = Vec::new_in(&allocator);
     let mut seen: vize_carton::FxHashSet<String> = vize_carton::FxHashSet::default();
 
     for prop in props {
         match prop {
             PropNode::Attribute(attr) => {
-                if seen.contains(attr.name.as_str()) {
+                if seen.contains(attr.name) {
                     continue;
                 }
-                seen.insert(attr.name.clone());
+                seen.insert(attr.name.into());
 
                 let key = ExpressionNode::Simple(Box::new_in(
-                    SimpleExpressionNode::new(attr.name.clone(), true, attr.loc.clone()),
-                    allocator,
+                    SimpleExpressionNode::new(attr.name, true, attr.loc.clone()),
+                    &allocator,
                 ));
                 let value_exp = if let Some(value) = &attr.value {
-                    SimpleExpressionNode::new(value.content.clone(), true, value.loc.clone())
+                    SimpleExpressionNode::new(value.content, true, value.loc.clone())
                 } else {
                     SimpleExpressionNode::new("", true, attr.loc.clone())
                 };
-                let value = JsChildNode::SimpleExpression(Box::new_in(value_exp, allocator));
+                let value = JsChildNode::SimpleExpression(Box::new_in(value_exp, &allocator));
                 obj_props.push(Property {
                     key,
                     value,
@@ -51,12 +51,12 @@ pub(super) fn create_props_expression<'a>(
                 seen.insert(name.clone());
 
                 let key = ExpressionNode::Simple(Box::new_in(
-                    SimpleExpressionNode::new(name, true, dir.loc.clone()),
-                    allocator,
+                    SimpleExpressionNode::new(allocator.alloc_str(&name), true, dir.loc.clone()),
+                    &allocator,
                 ));
                 let value = JsChildNode::SimpleExpression(Box::new_in(
                     clone_expression_for_hoist(exp),
-                    allocator,
+                    &allocator,
                 ));
                 obj_props.push(Property {
                     key,
@@ -69,12 +69,12 @@ pub(super) fn create_props_expression<'a>(
 
     if let Some(scope_id) = scope_id {
         let key = ExpressionNode::Simple(Box::new_in(
-            SimpleExpressionNode::new(scope_id.clone(), true, SourceLocation::STUB),
-            allocator,
+            SimpleExpressionNode::new(scope_id, true, SourceLocation::STUB),
+            &allocator,
         ));
         let value = JsChildNode::SimpleExpression(Box::new_in(
             SimpleExpressionNode::new("", true, SourceLocation::STUB),
-            allocator,
+            &allocator,
         ));
         obj_props.push(Property {
             key,
@@ -92,7 +92,7 @@ pub(super) fn create_props_expression<'a>(
             properties: obj_props,
             loc: SourceLocation::STUB,
         },
-        allocator,
+        &allocator,
     )))
 }
 
@@ -138,17 +138,17 @@ fn hoistable_static_bind_parts<'a, 'b>(
     if dir
         .modifiers
         .iter()
-        .any(|modifier| !matches!(modifier.content.as_str(), "camel" | "prop" | "attr"))
+        .any(|modifier| !matches!(modifier.content, "camel" | "prop" | "attr"))
     {
         return None;
     }
 
     let key = if has_camel {
-        camelize(&arg.content)
+        camelize(arg.content)
     } else if has_prop {
-        prefixed_name('.', &arg.content)
+        prefixed_name('.', arg.content)
     } else if has_attr {
-        prefixed_name('^', &arg.content)
+        prefixed_name('^', arg.content)
     } else {
         arg.content.to_compact_string()
     };
@@ -172,11 +172,16 @@ fn prefixed_name(prefix: char, name: &str) -> String {
 pub(super) fn hoist_element_props<'a>(
     ctx: &mut TransformContext<'a>,
     el: &mut ElementNode<'a>,
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
 ) {
-    let Some(PropsExpression::Object(obj_expr)) =
-        create_props_expression(allocator, &el.props, ctx.options.scope_id.as_ref())
-    else {
+    let Some(PropsExpression::Object(obj_expr)) = create_props_expression(
+        allocator,
+        &el.props,
+        ctx.options
+            .scope_id
+            .as_deref()
+            .map(|id| allocator.alloc_str(id)),
+    ) else {
         return;
     };
 
@@ -187,7 +192,7 @@ pub(super) fn hoist_element_props<'a>(
 
 fn clone_expression_for_hoist<'a>(exp: &SimpleExpressionNode<'a>) -> SimpleExpressionNode<'a> {
     SimpleExpressionNode {
-        content: exp.content.clone(),
+        content: exp.content,
         is_static: false,
         const_type: exp.const_type,
         loc: exp.loc.clone(),

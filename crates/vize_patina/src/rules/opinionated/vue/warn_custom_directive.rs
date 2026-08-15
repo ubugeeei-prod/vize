@@ -66,7 +66,7 @@ impl Rule for WarnCustomDirective {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        let name = directive.name.as_str();
+        let name = directive.name;
 
         // Check if this is a custom directive (not built-in)
         if !BUILTIN_DIRECTIVES.contains(&name) {

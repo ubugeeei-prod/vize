@@ -168,7 +168,7 @@ impl Rule for AriaProps {
         for prop in &element.props {
             match prop {
                 PropNode::Attribute(attr) => {
-                    let name = attr.name.as_str();
+                    let name = attr.name;
                     if Self::is_aria_attr(name) && !Self::is_valid_aria_attr(name) {
                         self.report_invalid_aria(ctx, name, &attr.loc);
                     }
@@ -179,7 +179,7 @@ impl Rule for AriaProps {
                         && let Some(vize_relief::ExpressionNode::Simple(arg)) = &dir.arg
                         && arg.is_static
                     {
-                        let name = arg.content.as_str();
+                        let name = arg.content;
                         if Self::is_aria_attr(name) && !Self::is_valid_aria_attr(name) {
                             self.report_invalid_aria(ctx, name, &dir.loc);
                         }

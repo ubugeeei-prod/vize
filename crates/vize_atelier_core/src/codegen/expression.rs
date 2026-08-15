@@ -68,12 +68,12 @@ pub fn generate_compound_expression(
 pub fn generate_simple_expression(ctx: &mut CodegenContext, exp: &SimpleExpressionNode<'_>) {
     if exp.is_static {
         ctx.push("\"");
-        ctx.push(&escape_js_string(exp.content.as_str()));
+        ctx.push(&escape_js_string(exp.content));
         ctx.push("\"");
     } else {
         // Strip TypeScript if needed
         let mut content: String = if ctx.options.is_ts && exp.content.contains(" as ") {
-            crate::steps::strip_typescript_from_expression(&exp.content)
+            crate::steps::strip_typescript_from_expression(exp.content)
         } else {
             exp.content.to_compact_string()
         };

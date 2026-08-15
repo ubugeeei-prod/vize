@@ -4,7 +4,7 @@
 //! node type discriminants, source locations, and constant types.
 
 use serde::{Deserialize, Serialize};
-use vize_carton::{Span, String};
+use vize_carton::Span;
 
 /// Node type discriminant
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -325,5 +325,7 @@ impl RuntimeHelper {
 #[derive(Debug)]
 pub struct ImportItem<'a> {
     pub exp: vize_carton::Box<'a, super::SimpleExpressionNode<'a>>,
-    pub path: String,
+    /// Module specifier, arena-resident: an atom when it repeats across the
+    /// file's imports, an arena copy otherwise (Davinci P1-10).
+    pub path: &'a str,
 }

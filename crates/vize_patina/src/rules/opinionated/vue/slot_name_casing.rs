@@ -61,7 +61,7 @@ impl Rule for SlotNameCasing {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name.as_str() != "slot" {
+        if directive.name != "slot" {
             return;
         }
 
@@ -79,7 +79,7 @@ impl Rule for SlotNameCasing {
             return;
         }
 
-        let name = arg.content.as_str();
+        let name = arg.content;
         if name.is_empty() || Self::is_kebab_case_name(name) {
             return;
         }

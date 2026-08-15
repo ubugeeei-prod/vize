@@ -7,13 +7,12 @@
 
 use oxc_ast::ast::{ArrayExpressionElement, Expression};
 use oxc_span::GetSpan;
-use vize_carton::Box;
 use vize_relief::SourceLocation;
 use vize_relief::{DirectiveNode, PropNode, SimpleExpressionNode};
 
 use super::Lowerer;
 
-impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
+impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// Unpack babel-plugin-jsx's array encoding for a custom directive.
     ///
     /// Babel places the elements positionally, so `[val, 'arg', ['a','b']]`
@@ -35,7 +34,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     pub(crate) fn lower_custom_directive_array(
         &self,
         array: &oxc_ast::ast::ArrayExpression<'_>,
-        name: &str,
+        name: &'a str,
         loc: &SourceLocation,
     ) -> Option<PropNode<'a>> {
         let mut elements = std::vec::Vec::new();
@@ -83,13 +82,18 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         let mut directive = DirectiveNode::new(self.bump(), name, loc.clone());
         directive.exp = Some(self.dyn_expr(value_expr.span()));
         if let Some(argument) = arg {
-            directive.arg = Some(self.static_expr(argument.value.as_str(), argument.span));
+            directive.arg = Some(self.static_expr(
+                self.bump().alloc_str(argument.value.as_str()),
+                argument.span,
+            ));
         }
         for modifier in modifier_names {
-            directive
-                .modifiers
-                .push(SimpleExpressionNode::new(modifier, false, loc.clone()));
+            directive.modifiers.push(SimpleExpressionNode::new(
+                self.bump().alloc_str(modifier),
+                false,
+                loc.clone(),
+            ));
         }
-        Some(PropNode::Directive(Box::new_in(directive, self.bump())))
+        Some(PropNode::Directive(self.boxed(directive)))
     }
 }

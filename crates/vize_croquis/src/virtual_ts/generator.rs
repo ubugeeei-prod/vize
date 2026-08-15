@@ -171,7 +171,7 @@ impl Default for VirtualTsGenerator {
 /// the span-sliced source for compounds.
 fn expression_source<'a>(expr: &'a vize_relief::ExpressionNode<'a>, source: &'a str) -> &'a str {
     match expr {
-        vize_relief::ExpressionNode::Simple(simple) => simple.content.as_str(),
+        vize_relief::ExpressionNode::Simple(simple) => simple.content,
         vize_relief::ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
     }
 }

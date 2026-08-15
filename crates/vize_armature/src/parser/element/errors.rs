@@ -54,8 +54,8 @@ impl<'a> Parser<'a> {
                 let name = self
                     .current_attr
                     .as_ref()
-                    .map(|attr| attr.name.as_str())
-                    .or_else(|| self.current_dir.as_ref().map(|dir| dir.raw_name.as_str()))
+                    .map(|attr| attr.name)
+                    .or_else(|| self.current_dir.as_ref().map(|dir| dir.raw_name))
                     .unwrap_or("attribute");
                 let mut message = String::with_capacity(name.len() + 70);
                 appends!(

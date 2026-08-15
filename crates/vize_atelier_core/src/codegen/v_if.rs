@@ -91,7 +91,7 @@ pub fn generate_if_branch_key(
                 // Static key attribute
                 if let Some(ref value) = attr.value {
                     ctx.push("\"");
-                    ctx.push(&escape_js_string(value.content.as_str()));
+                    ctx.push(&escape_js_string(value.content));
                     ctx.push("\"");
                 } else {
                     ctx.push(&branch_index.to_compact_string());

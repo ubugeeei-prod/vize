@@ -26,7 +26,7 @@ pub(super) fn collect_template_query_sets(
     let mut template_queries = Vec::new();
     let mut template_promise_queries = Vec::new();
     let mut sinks = TemplateQuerySinks {
-        source: &template_ast.source,
+        source: template_ast.source,
         template_queries: include_template_queries.then_some(&mut template_queries),
         template_promise_queries: include_template_promise_queries
             .then_some(&mut template_promise_queries),
@@ -343,7 +343,7 @@ fn collect_directive(
     let Some(expression) = &directive.exp else {
         return;
     };
-    let context = match directive.name.as_str() {
+    let context = match directive.name {
         "bind" => TemplateContext::Binding,
         "on" => TemplateContext::Event,
         _ => TemplateContext::Directive,

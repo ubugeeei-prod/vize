@@ -14,9 +14,7 @@
 
 use vize_atelier_core::lane::transform_with_source_text;
 use vize_atelier_core::options::TransformOptions;
-use vize_atelier_vapor::{
-    VaporGenerateOptions, drop_ir_stack_safe, generate_vapor_with_options, transform_to_ir,
-};
+use vize_atelier_vapor::{VaporGenerateOptions, generate_vapor_with_options, transform_to_ir};
 use vize_carton::{Allocator, String};
 use vize_croquis::Croquis;
 
@@ -77,11 +75,11 @@ pub fn compile_to_vapor(
     lang: JsxLang,
     options: VaporCompileOptions,
 ) -> VaporOutput {
-    let lowered = lower_source(allocator.as_bump(), allocator.as_oxc(), source, lang);
+    let lowered = lower_source(allocator, allocator.as_oxc(), source, lang);
     let mut diagnostics = lowered.diagnostics;
 
     // Move the analysis into the arena so the transform can borrow it.
-    let analysis: &Croquis = &*allocator.alloc(lowered.analysis);
+    let analysis: &Croquis = &*allocator.alloc_owned(lowered.analysis);
 
     let backend = if options.ssr {
         SlotsForwardingBackend::Ssr
@@ -169,7 +167,6 @@ pub(crate) fn compile_root_to_vapor(
     let ir = transform_to_ir(allocator, &root, source);
     let generated =
         generate_vapor_with_options(&ir, None, VaporGenerateOptions { jsx_closure: true });
-    drop_ir_stack_safe(ir);
 
     let (code, templates) = if let Some(style) = scoped_style.as_ref() {
         inject_scope_id(&generated.code, &generated.templates, &style.scope_id)

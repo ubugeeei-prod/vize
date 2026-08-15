@@ -1,9 +1,9 @@
-use vize_carton::Bump;
+use vize_carton::Allocator;
 use vize_musea::{ArtParseOptions, ArtStatus, parse_art};
 
 #[test]
 fn parse_define_art_metadata_matrix() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let source = r#"
 <script>
 export const localKind = "mixed";

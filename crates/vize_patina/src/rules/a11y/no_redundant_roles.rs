@@ -53,7 +53,7 @@ impl Rule for NoRedundantRoles {
             None => return,
         };
 
-        let implicit_role = get_implicit_role(&element.tag, element);
+        let implicit_role = get_implicit_role(element.tag, element);
 
         if let Some(implicit) = implicit_role
             && implicit == role_value
@@ -61,7 +61,7 @@ impl Rule for NoRedundantRoles {
             ctx.warn_with_help(
                 ctx.t_fmt(
                     "a11y/no-redundant-roles.message",
-                    &[("tag", &element.tag), ("role", role_value)],
+                    &[("tag", element.tag), ("role", role_value)],
                 ),
                 &element.loc,
                 ctx.t("a11y/no-redundant-roles.help"),

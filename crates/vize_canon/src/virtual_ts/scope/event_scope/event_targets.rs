@@ -151,7 +151,7 @@ fn element_event_host_tag<'root, 'arena>(
             PropNode::Directive(directive) if directive.loc.span.start == directive_start
         )
     }) {
-        return Some(element.tag.as_str());
+        return Some(element.tag);
     }
     element
         .children

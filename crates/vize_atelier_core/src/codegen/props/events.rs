@@ -94,9 +94,9 @@ pub(crate) fn get_von_event_key(dir: &DirectiveNode<'_>, is_plain_element: bool)
             // directives (those carry a `raw_name`).
             let on_plain_element = is_plain_element && dir.raw_name.is_some();
             Some(von_event_key_for(
-                exp.content.as_str(),
+                exp.content,
                 on_plain_element,
-                dir.modifiers.iter().map(|m| m.content.as_str()),
+                dir.modifiers.iter().map(|m| m.content),
             ))
         } else {
             None // Dynamic events can't be merged
@@ -171,7 +171,7 @@ pub(crate) fn generate_merged_event_handlers(
 pub(super) fn generate_von_handler_value(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
     // Classify modifiers (same logic as in generate_directive_prop_with_static)
     let event_name = if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
-        exp.content.as_str()
+        exp.content
     } else {
         ""
     };
@@ -181,7 +181,7 @@ pub(super) fn generate_von_handler_value(ctx: &mut CodegenContext, dir: &Directi
     let mut key_modifiers: Vec<&str> = Vec::new();
 
     for modifier in dir.modifiers.iter() {
-        let mod_name = modifier.content.as_str();
+        let mod_name = modifier.content;
         match mod_name {
             "capture" | "once" | "passive" | "native" => {}
             "left" | "right" => {

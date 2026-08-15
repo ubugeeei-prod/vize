@@ -101,7 +101,7 @@ pub fn transform_with_source_text<'a>(
     root: &mut RootNode<'a>,
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
-    source_text: &str,
+    source_text: &'a str,
 ) -> std::vec::Vec<CompilerError> {
     transform_inner(
         allocator,
@@ -124,7 +124,7 @@ pub fn transform_with_jsx_compatibility<'a>(
     analysis: Option<&'a Croquis>,
     allow_static_v_model_arg_on_element: bool,
     custom_element_spans: &[(u32, u32)],
-    source_text: Option<&str>,
+    source_text: Option<&'a str>,
 ) -> std::vec::Vec<CompilerError> {
     let mut jsx_compat = JsxTransformCompat {
         allow_static_v_model_arg_on_element,

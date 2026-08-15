@@ -26,7 +26,7 @@ impl Rule for VoidLinkRequireHref {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if !is_void_link_in_context(ctx, element.tag.as_str()) || has_named_prop(element, "href") {
+        if !is_void_link_in_context(ctx, element.tag) || has_named_prop(element, "href") {
             return;
         }
 
@@ -52,28 +52,28 @@ pub(super) fn is_void_link_in_context(ctx: &LintContext<'_>, tag: &str) -> bool 
 
 pub(super) fn has_named_prop(element: &ElementNode<'_>, name: &str) -> bool {
     element.props.iter().any(|prop| match prop {
-        PropNode::Attribute(attr) => attr.name.as_str() == name,
+        PropNode::Attribute(attr) => attr.name == name,
         PropNode::Directive(directive) => is_named_bind_directive(directive, name),
     })
 }
 
 pub(super) fn static_attr_value<'a>(element: &'a ElementNode<'a>, name: &str) -> Option<&'a str> {
     element.props.iter().find_map(|prop| match prop {
-        PropNode::Attribute(attr) if attr.name.as_str() == name => {
-            attr.value.as_ref().map(|value| value.content.as_str())
+        PropNode::Attribute(attr) if attr.name == name => {
+            attr.value.as_ref().map(|value| value.content)
         }
         _ => None,
     })
 }
 
 fn is_named_bind_directive(directive: &DirectiveNode<'_>, name: &str) -> bool {
-    if directive.name.as_str() != "bind" {
+    if directive.name != "bind" {
         return false;
     }
 
     matches!(
         directive.arg.as_ref(),
-        Some(ExpressionNode::Simple(arg)) if arg.is_static && arg.content.as_str() == name
+        Some(ExpressionNode::Simple(arg)) if arg.is_static && arg.content == name
     )
 }
 

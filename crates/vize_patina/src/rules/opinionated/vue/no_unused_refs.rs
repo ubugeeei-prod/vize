@@ -186,7 +186,7 @@ fn static_ref_of(element: &ElementNode<'_>) -> Option<TemplateRef> {
             && attr.name == "ref"
         {
             let value = attr.value.as_ref()?;
-            let name = value.content.as_str();
+            let name = value.content;
             if name.is_empty() {
                 return None;
             }

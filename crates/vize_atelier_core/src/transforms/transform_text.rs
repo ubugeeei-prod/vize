@@ -91,29 +91,27 @@ pub fn condense_whitespace(text: &str) -> String {
 /// Build text call expression
 pub fn build_text_call<'a>(
     ctx: &mut TransformContext<'a>,
-    nodes: &[TemplateChildNode<'_>],
+    nodes: &[TemplateChildNode<'a>],
 ) -> Option<TextCallExpression<'a>> {
     if nodes.is_empty() {
         return None;
     }
 
-    let mut parts: Vec<'a, TextPart> = Vec::new_in(ctx.allocator);
+    let mut parts: Vec<'a, TextPart<'a>> = Vec::new_in(&ctx.allocator);
 
     for node in nodes {
         match node {
             TemplateChildNode::Text(text) => {
-                parts.push(TextPart::Static(text.content.clone()));
+                parts.push(TextPart::Static(text.content));
             }
             TemplateChildNode::Interpolation(interp) => {
                 ctx.helper(RuntimeHelper::ToDisplayString);
                 match &interp.content {
                     ExpressionNode::Simple(exp) => {
-                        parts.push(TextPart::Dynamic(exp.content.clone()));
+                        parts.push(TextPart::Dynamic(exp.content));
                     }
                     ExpressionNode::Compound(exp) => {
-                        parts.push(TextPart::Dynamic(String::new(
-                            exp.loc.span.slice(&ctx.source),
-                        )));
+                        parts.push(TextPart::Dynamic(exp.loc.span.slice(ctx.source)));
                     }
                 }
             }
@@ -131,17 +129,17 @@ pub fn build_text_call<'a>(
 /// Text call expression for codegen
 #[derive(Debug)]
 pub struct TextCallExpression<'a> {
-    pub parts: Vec<'a, TextPart>,
+    pub parts: Vec<'a, TextPart<'a>>,
 }
 
 /// Part of a text expression
 #[derive(Debug)]
-pub enum TextPart {
-    Static(String),
-    Dynamic(String),
+pub enum TextPart<'a> {
+    Static(&'a str),
+    Dynamic(&'a str),
 }
 
-impl TextPart {
+impl TextPart<'_> {
     pub fn to_code(&self) -> String {
         match self {
             TextPart::Static(s) => {
@@ -193,10 +191,10 @@ mod tests {
 
     #[test]
     fn test_text_part_code() {
-        let static_part = TextPart::Static("hello".into());
+        let static_part = TextPart::Static("hello");
         assert_eq!(static_part.to_code(), "\"hello\"");
 
-        let dynamic_part = TextPart::Dynamic("msg".into());
+        let dynamic_part = TextPart::Dynamic("msg");
         assert_eq!(dynamic_part.to_code(), "_toDisplayString(msg)");
     }
 }

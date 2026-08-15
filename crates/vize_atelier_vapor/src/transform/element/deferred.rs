@@ -285,7 +285,7 @@ fn transform_slot_outlet_child<'a>(
     block
         .operation
         .push(OperationNode::InsertNode(InsertNodeIRNode {
-            elements: std::vec![element_id],
+            elements: vize_carton::Vec::from_array_in([element_id], &ctx.allocator),
             parent: parent_id,
             anchor: None,
         }));

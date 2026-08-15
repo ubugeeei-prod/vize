@@ -28,7 +28,7 @@ any read — or any deleted carrier — comes back.
 - Reads of `span.start` / `span.end` are **not** inventoried: they are
   the surviving offset representation — the pre-migration
   `start.offset` / `end.offset` reads moved to them verbatim
-  (293 loc-shaped span-read sites across
+  (295 loc-shaped span-read sites across
   8 crates at generation time).
 - `#[cfg(test)]` code inside `src/` is included and reported in the
   "in test code" column: a site counts as test code when its file is a test
@@ -68,7 +68,7 @@ sites:
 - `crates/vize_croquis/src/drawer/template/components.rs:43` — croquis captures component/expression text into
   analysis products
 - `crates/vize_patina/src/rules/script/template_scan.rs:193` — lint rule matches against raw expression text
-- `crates/vize_atelier_vapor/src/transforms/v_on.rs:47` — vapor transform re-wraps an expression from the covered
+- `crates/vize_atelier_vapor/src/transforms/v_on.rs:46` — vapor transform re-wraps an expression from the covered
   text (the owned copy the pre-span node stored is gone; see also group 3)
 
 ### Group 2 — line/column reads moved to offset-derived rendering (migrated by P1-4: 3 direct sites + 4 known-missed at P0-9, 0 remain)
@@ -114,4 +114,4 @@ representation:
 - `crates/vize_relief/src/relief/expressions.rs:33` — `SimpleExpressionNode` stored `content: String`
   **and** `loc.source` duplicating it; since P1-3 the node keeps one span
   next to `content`, and every group-1 site that cloned `loc.source` to
-  build another node (e.g. `crates/vize_atelier_vapor/src/transforms/v_on.rs:47`) slices on demand instead
+  build another node (e.g. `crates/vize_atelier_vapor/src/transforms/v_on.rs:46`) slices on demand instead

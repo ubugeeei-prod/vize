@@ -23,24 +23,24 @@ pub(crate) fn transform_directive<'a>(
     el: &ElementNode<'a>,
     block: &mut BlockIRNode<'a>,
 ) {
-    match dir.name.as_str() {
+    match dir.name {
         "bind" => {
             // Skip :key - handled by v-for key function
             if let Some(ref arg) = dir.arg
                 && let ExpressionNode::Simple(key_exp) = arg
-                && key_exp.content.as_str() == "key"
+                && key_exp.content == "key"
             {
                 return;
             }
 
             // Check modifiers
-            let has_camel = dir.modifiers.iter().any(|m| m.content.as_str() == "camel");
-            let has_prop = dir.modifiers.iter().any(|m| m.content.as_str() == "prop");
+            let has_camel = dir.modifiers.iter().any(|m| m.content == "camel");
+            let has_prop = dir.modifiers.iter().any(|m| m.content == "prop");
 
             if let Some(ref arg) = dir.arg {
                 if let ExpressionNode::Simple(key_exp) = arg {
                     if el.tag_type == ElementType::Element
-                        && matches!(key_exp.content.as_str(), "ref" | "ref_for" | "ref_key")
+                        && matches!(key_exp.content, "ref" | "ref_for" | "ref_key")
                     {
                         return;
                     }
@@ -50,19 +50,19 @@ pub(crate) fn transform_directive<'a>(
                         if let Some(ref exp) = dir.exp
                             && let ExpressionNode::Simple(val_exp) = exp
                         {
-                            let mut props = Vec::new_in(ctx.allocator);
+                            let mut props = Vec::new_in(&ctx.allocator);
                             // Create an expression that represents { [key]: value }
                             let obj_content = {
                                 let mut s = vize_carton::String::from("{ [");
-                                s.push_str(key_exp.content.as_str());
+                                s.push_str(key_exp.content);
                                 s.push_str("]: ");
-                                s.push_str(val_exp.content.as_str());
+                                s.push_str(val_exp.content);
                                 s.push_str(" }");
                                 s
                             };
-                            let obj_node =
-                                SimpleExpressionNode::new(obj_content, false, key_exp.loc.clone());
-                            props.push(Box::new_in(obj_node, ctx.allocator));
+                            let obj = ctx.allocator.alloc_str(&obj_content);
+                            let node = SimpleExpressionNode::new(obj, false, key_exp.loc.clone());
+                            props.push(Box::new_in(node, &ctx.allocator));
 
                             let set_dynamic = crate::ir::SetDynamicPropsIRNode {
                                 element: element_id,
@@ -79,9 +79,9 @@ pub(crate) fn transform_directive<'a>(
 
                     // Apply .camel modifier: camelize the key
                     let key_content = if has_camel {
-                        camelize(&key_exp.content)
+                        ctx.interner.intern(&camelize(key_exp.content))
                     } else {
-                        key_exp.content.clone()
+                        key_exp.content
                     };
 
                     let key_node = SimpleExpressionNode::new(
@@ -89,23 +89,23 @@ pub(crate) fn transform_directive<'a>(
                         key_exp.is_static,
                         key_exp.loc.clone(),
                     );
-                    let key = Box::new_in(key_node, ctx.allocator);
+                    let key = Box::new_in(key_node, &ctx.allocator);
 
                     let values = if let Some(ref exp) = dir.exp {
                         if let ExpressionNode::Simple(val_exp) = exp {
-                            let mut v = Vec::new_in(ctx.allocator);
+                            let mut v = Vec::new_in(&ctx.allocator);
                             let val_node = SimpleExpressionNode::from_node(val_exp);
-                            v.push(Box::new_in(val_node, ctx.allocator));
+                            v.push(Box::new_in(val_node, &ctx.allocator));
                             v
                         } else {
-                            Vec::new_in(ctx.allocator)
+                            Vec::new_in(&ctx.allocator)
                         }
                     } else {
-                        Vec::new_in(ctx.allocator)
+                        Vec::new_in(&ctx.allocator)
                     };
 
                     // Check for static class attribute to merge
-                    let final_values = if key_exp.content.as_str() == "class" {
+                    let final_values = if key_exp.content == "class" {
                         merge_static_class(ctx, el, values)
                     } else {
                         values
@@ -118,7 +118,7 @@ pub(crate) fn transform_directive<'a>(
                             values: final_values,
                             is_component: el.tag_type == ElementType::Component,
                         },
-                        tag: el.tag.clone(),
+                        tag: el.tag,
                         camel: has_camel,
                         prop_modifier: has_prop,
                     };
@@ -131,9 +131,9 @@ pub(crate) fn transform_directive<'a>(
                 if let Some(ref exp) = dir.exp
                     && let ExpressionNode::Simple(val_exp) = exp
                 {
-                    let mut props = Vec::new_in(ctx.allocator);
+                    let mut props = Vec::new_in(&ctx.allocator);
                     let val_node = SimpleExpressionNode::from_node(val_exp);
-                    props.push(Box::new_in(val_node, ctx.allocator));
+                    props.push(Box::new_in(val_node, &ctx.allocator));
 
                     let set_dynamic = crate::ir::SetDynamicPropsIRNode {
                         element: element_id,
@@ -148,12 +148,12 @@ pub(crate) fn transform_directive<'a>(
             if let Some(ref arg) = dir.arg {
                 if let ExpressionNode::Simple(key_exp) = arg {
                     let key_node = SimpleExpressionNode::from_node(key_exp);
-                    let key = Box::new_in(key_node, ctx.allocator);
+                    let key = Box::new_in(key_node, &ctx.allocator);
 
                     let value = if let Some(ref exp) = dir.exp {
                         if let ExpressionNode::Simple(val_exp) = exp {
                             let val_node = SimpleExpressionNode::from_node(val_exp);
-                            Some(Box::new_in(val_node, ctx.allocator))
+                            Some(Box::new_in(val_node, &ctx.allocator))
                         } else {
                             None
                         }
@@ -162,24 +162,24 @@ pub(crate) fn transform_directive<'a>(
                     };
 
                     // Parse modifiers
-                    let mut modifiers = crate::ir::EventModifiers::default();
-                    let event_name = key_exp.content.as_str();
+                    let mut modifiers = crate::ir::EventModifiers::new(ctx.allocator);
+                    let event_name = key_exp.content;
                     let is_dynamic = !key_exp.is_static;
 
                     for m in dir.modifiers.iter() {
-                        match m.content.as_str() {
+                        match m.content {
                             "once" => modifiers.options.once = true,
                             "capture" => modifiers.options.capture = true,
                             "passive" => modifiers.options.passive = true,
                             "stop" | "prevent" | "self" => {
-                                modifiers.non_keys.push(m.content.clone());
+                                modifiers.non_keys.push(m.content);
                             }
                             "enter" | "tab" | "delete" | "esc" | "space" | "up" | "down"
                             | "left" | "right" => {
-                                modifiers.keys.push(m.content.clone());
+                                modifiers.keys.push(m.content);
                             }
                             _ => {
-                                modifiers.non_keys.push(m.content.clone());
+                                modifiers.non_keys.push(m.content);
                             }
                         }
                     }
@@ -207,9 +207,9 @@ pub(crate) fn transform_directive<'a>(
                 if let Some(ref exp) = dir.exp
                     && let ExpressionNode::Simple(val_exp) = exp
                 {
-                    let mut values = Vec::new_in(ctx.allocator);
+                    let mut values = Vec::new_in(&ctx.allocator);
                     let val_node = SimpleExpressionNode::from_node(val_exp);
-                    values.push(Box::new_in(val_node, ctx.allocator));
+                    values.push(Box::new_in(val_node, &ctx.allocator));
 
                     let set_dynamic = crate::ir::SetDynamicPropsIRNode {
                         element: element_id,
@@ -226,7 +226,7 @@ pub(crate) fn transform_directive<'a>(
                 && let ExpressionNode::Simple(cond_exp) = exp
             {
                 let cond_node = SimpleExpressionNode::from_node(cond_exp);
-                let condition = Box::new_in(cond_node, ctx.allocator);
+                let condition = Box::new_in(cond_node, &ctx.allocator);
                 let positive = transform_children(ctx, &el.children);
 
                 let if_node = IfIRNode {
@@ -241,7 +241,7 @@ pub(crate) fn transform_directive<'a>(
 
                 block
                     .operation
-                    .push(OperationNode::If(Box::new_in(if_node, ctx.allocator)));
+                    .push(OperationNode::If(Box::new_in(if_node, &ctx.allocator)));
             }
         }
         "for" => {
@@ -250,7 +250,7 @@ pub(crate) fn transform_directive<'a>(
                 && let ExpressionNode::Simple(source_exp) = exp
             {
                 let source_node = SimpleExpressionNode::from_node(source_exp);
-                let source = Box::new_in(source_node, ctx.allocator);
+                let source = Box::new_in(source_node, &ctx.allocator);
                 let render = transform_children(ctx, &el.children);
 
                 let for_node = ForIRNode {
@@ -270,7 +270,7 @@ pub(crate) fn transform_directive<'a>(
 
                 block
                     .operation
-                    .push(OperationNode::For(Box::new_in(for_node, ctx.allocator)));
+                    .push(OperationNode::For(Box::new_in(for_node, &ctx.allocator)));
             }
         }
         "html" => {
@@ -279,7 +279,7 @@ pub(crate) fn transform_directive<'a>(
                 && let ExpressionNode::Simple(val_exp) = exp
             {
                 let val_node = SimpleExpressionNode::from_node(val_exp);
-                let value = Box::new_in(val_node, ctx.allocator);
+                let value = Box::new_in(val_node, &ctx.allocator);
                 let set_html = SetHtmlIRNode {
                     element: element_id,
                     value,
@@ -293,9 +293,9 @@ pub(crate) fn transform_directive<'a>(
             if let Some(ref exp) = dir.exp
                 && let ExpressionNode::Simple(val_exp) = exp
             {
-                let mut values = Vec::new_in(ctx.allocator);
+                let mut values = Vec::new_in(&ctx.allocator);
                 let val_node = SimpleExpressionNode::from_node(val_exp);
-                values.push(Box::new_in(val_node, ctx.allocator));
+                values.push(Box::new_in(val_node, &ctx.allocator));
 
                 let set_text = SetTextIRNode {
                     element: element_id,
@@ -313,10 +313,10 @@ pub(crate) fn transform_directive<'a>(
 
             let dir_node = DirectiveIRNode {
                 element: element_id,
-                dir: Box::new_in(new_dir, ctx.allocator),
-                name: vize_carton::String::from("vShow"),
+                dir: Box::new_in(new_dir, &ctx.allocator),
+                name: "vShow",
                 builtin: true,
-                tag: el.tag.clone(),
+                tag: el.tag,
                 input_type: get_static_attr(el, "type"),
             };
 
@@ -327,10 +327,10 @@ pub(crate) fn transform_directive<'a>(
 
             let dir_node = DirectiveIRNode {
                 element: element_id,
-                dir: Box::new_in(new_dir, ctx.allocator),
-                name: vize_carton::String::from("vCloak"),
+                dir: Box::new_in(new_dir, &ctx.allocator),
+                name: "vCloak",
                 builtin: true,
-                tag: el.tag.clone(),
+                tag: el.tag,
                 input_type: get_static_attr(el, "type"),
             };
 
@@ -342,10 +342,10 @@ pub(crate) fn transform_directive<'a>(
 
             let dir_node = DirectiveIRNode {
                 element: element_id,
-                dir: Box::new_in(new_dir, ctx.allocator),
-                name: vize_carton::String::from("model"),
+                dir: Box::new_in(new_dir, &ctx.allocator),
+                name: "model",
                 builtin: true,
-                tag: el.tag.clone(),
+                tag: el.tag,
                 input_type: get_static_attr(el, "type"),
             };
 
@@ -357,11 +357,11 @@ pub(crate) fn transform_directive<'a>(
 
             let dir_node = DirectiveIRNode {
                 element: element_id,
-                dir: Box::new_in(new_dir, ctx.allocator),
-                name: dir.name.clone(),
+                dir: Box::new_in(new_dir, &ctx.allocator),
+                name: dir.name,
                 builtin: false,
-                tag: el.tag.clone(),
-                input_type: vize_carton::String::from(""),
+                tag: el.tag,
+                input_type: "",
             };
 
             block.operation.push(OperationNode::Directive(dir_node));
@@ -370,8 +370,8 @@ pub(crate) fn transform_directive<'a>(
 }
 
 fn clone_directive<'a>(ctx: &TransformContext<'a>, dir: &DirectiveNode<'a>) -> DirectiveNode<'a> {
-    let mut new_dir = DirectiveNode::new(ctx.allocator, dir.name.clone(), dir.loc.clone());
-    new_dir.raw_name = dir.raw_name.clone();
+    let mut new_dir = DirectiveNode::new(ctx.allocator, dir.name, dir.loc.clone());
+    new_dir.raw_name = dir.raw_name;
     new_dir.shorthand = dir.shorthand;
     new_dir.exp = clone_expression(ctx, dir.exp.as_ref());
     new_dir.arg = clone_expression(ctx, dir.arg.as_ref());
@@ -394,12 +394,12 @@ fn clone_expression<'a>(
     Some(match expr {
         ExpressionNode::Simple(simple) => {
             let cloned = SimpleExpressionNode::from_node(simple);
-            ExpressionNode::Simple(Box::new_in(cloned, ctx.allocator))
+            ExpressionNode::Simple(Box::new_in(cloned, &ctx.allocator))
         }
         ExpressionNode::Compound(compound) => {
             let text = compound.loc.span.slice(ctx.source);
             let cloned = SimpleExpressionNode::new(text, false, compound.loc.clone());
-            ExpressionNode::Simple(Box::new_in(cloned, ctx.allocator))
+            ExpressionNode::Simple(Box::new_in(cloned, &ctx.allocator))
         }
     })
 }
@@ -473,19 +473,19 @@ fn merge_static_class<'a>(
     // Look for a static class="..." attribute
     let static_class = el.props.iter().find_map(|p| {
         if let PropNode::Attribute(attr) = p
-            && attr.name.as_str() == "class"
+            && attr.name == "class"
             && let Some(ref value) = attr.value
         {
-            return Some(value.content.clone());
+            return Some(value.content);
         }
         None
     });
 
     if let Some(static_val) = static_class {
         // Create a merged values list: the static class as the first entry
-        let mut merged = Vec::new_in(ctx.allocator);
+        let mut merged = Vec::new_in(&ctx.allocator);
         let static_node = SimpleExpressionNode::new(static_val, true, SourceLocation::STUB);
-        merged.push(Box::new_in(static_node, ctx.allocator));
+        merged.push(Box::new_in(static_node, &ctx.allocator));
         for v in dynamic_values.into_iter() {
             merged.push(v);
         }
@@ -496,14 +496,14 @@ fn merge_static_class<'a>(
 }
 
 /// Get a static attribute value from an element
-fn get_static_attr(el: &ElementNode<'_>, attr_name: &str) -> vize_carton::String {
+fn get_static_attr<'a>(el: &ElementNode<'a>, attr_name: &str) -> &'a str {
     for prop in el.props.iter() {
         if let PropNode::Attribute(attr) = prop
-            && attr.name.as_str() == attr_name
+            && attr.name == attr_name
             && let Some(ref value) = attr.value
         {
-            return value.content.clone();
+            return value.content;
         }
     }
-    vize_carton::String::from("")
+    ""
 }

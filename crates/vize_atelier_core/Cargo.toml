@@ -29,7 +29,6 @@ vize_relief = { workspace = true }
 vize_armature = { workspace = true }
 
 memoffset = { workspace = true }
-bumpalo = { workspace = true }
 compact_str = { workspace = true }
 
 # OXC

@@ -161,7 +161,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
         None
     };
     let (lowered, custom_element_spans) = lower_source_with_compat(
-        allocator.as_bump(),
+        allocator,
         allocator.as_oxc(),
         source,
         lang,
@@ -191,7 +191,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
     );
 
     // Move the analysis into the arena so the transforms can borrow it.
-    let analysis: &Croquis = &*allocator.alloc(lowered.analysis);
+    let analysis: &Croquis = &*allocator.alloc_owned(lowered.analysis);
 
     let mut components = Vec::with_capacity(lowered.roots.len());
     for lowered_root in lowered.roots {

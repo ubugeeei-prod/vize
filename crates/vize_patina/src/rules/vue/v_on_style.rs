@@ -65,7 +65,7 @@ impl Rule for VOnStyle {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name.as_str() != "on" {
+        if directive.name != "on" {
             return;
         }
 
@@ -74,7 +74,7 @@ impl Rule for VOnStyle {
             return;
         }
 
-        let raw_name = directive.raw_name.as_deref().unwrap_or("");
+        let raw_name = directive.raw_name.unwrap_or("");
         let is_shorthand = raw_name.starts_with('@');
 
         match self.style {
@@ -139,7 +139,7 @@ fn replacement_text<'a>(
     directive: &DirectiveNode<'a>,
     target: VOnStyleOption,
 ) -> Option<String> {
-    let raw_name = directive.raw_name.as_deref()?;
+    let raw_name = directive.raw_name?;
     let start = directive.loc.span.start as usize;
     let end = directive.loc.span.end as usize;
     let suffix_start = start.checked_add(raw_name.len())?;

@@ -390,7 +390,7 @@ impl Linter {
         if needs_lowering {
             let lowered = profile!(
                 "patina.jsx.lower",
-                vize_atelier_jsx::lower_source(allocator.as_bump(), &oxc_allocator, source, lang)
+                vize_atelier_jsx::lower_source(&allocator, &oxc_allocator, source, lang)
             );
             // Lowering re-parses, so its diagnostic set is a superset of the IR
             // parse's; keep only the ones the IR parse did not already report.

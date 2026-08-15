@@ -68,7 +68,7 @@ impl Rule for VBindStyle {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name.as_str() != "bind" {
+        if directive.name != "bind" {
             return;
         }
 
@@ -77,7 +77,7 @@ impl Rule for VBindStyle {
             return;
         }
 
-        let raw_name = directive.raw_name.as_deref().unwrap_or("");
+        let raw_name = directive.raw_name.unwrap_or("");
         let is_shorthand = raw_name.starts_with(':');
 
         match self.style {

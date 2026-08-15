@@ -40,7 +40,10 @@ fn dom_output(source: &str) -> std::string::String {
     );
     format!(
         "errors={:?}\ncomponents={:?}\npreamble=\n{}\ncode=\n{}",
-        errors, root.components, result.preamble, result.code
+        errors,
+        root.components.as_slice(),
+        result.preamble,
+        result.code
     )
 }
 

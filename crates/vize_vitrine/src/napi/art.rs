@@ -215,9 +215,9 @@ pub fn parse_art(
     source: String,
     options: Option<ArtParseOptionsNapi>,
 ) -> Result<ArtDescriptorNapi> {
-    use vize_musea::{ArtParseOptions, ArtStatus, Bump, parse_art as musea_parse};
+    use vize_musea::{Allocator, ArtParseOptions, ArtStatus, parse_art as musea_parse};
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let opts = options.unwrap_or_default();
     let parse_opts = ArtParseOptions {
         filename: opts
@@ -276,9 +276,9 @@ pub fn parse_art(
 /// Transform Art to Storybook CSF 3.0
 #[napi(js_name = "artToCsf")]
 pub fn art_to_csf(source: String, options: Option<ArtParseOptionsNapi>) -> Result<CsfOutputNapi> {
-    use vize_musea::{ArtParseOptions, Bump, parse_art as musea_parse, transform_to_csf};
+    use vize_musea::{Allocator, ArtParseOptions, parse_art as musea_parse, transform_to_csf};
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let opts = options.unwrap_or_default();
     let parse_opts = ArtParseOptions {
         filename: opts
@@ -310,9 +310,9 @@ pub fn generate_art_doc(
     doc_options: Option<DocOptionsNapi>,
 ) -> Result<DocOutputNapi> {
     use vize_musea::docs::{DocOptions, generate_component_doc};
-    use vize_musea::{ArtParseOptions, Bump, parse_art as musea_parse};
+    use vize_musea::{Allocator, ArtParseOptions, parse_art as musea_parse};
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let art_opts = art_options.unwrap_or_default();
     let parse_opts = ArtParseOptions {
         filename: art_opts
@@ -354,10 +354,10 @@ pub fn generate_art_catalog(
     doc_options: Option<DocOptionsNapi>,
 ) -> Result<CatalogOutputNapi> {
     use vize_musea::docs::{CatalogEntry, DocOptions, generate_catalog};
-    use vize_musea::{ArtParseOptions, Bump, parse_art as musea_parse};
+    use vize_musea::{Allocator, ArtParseOptions, parse_art as musea_parse};
 
     // Single allocator for all parses - efficient memory usage
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
 
     // Parse all sources and collect entries
     let mut entries = Vec::with_capacity(sources.len());
@@ -401,7 +401,7 @@ pub fn generate_art_docs_batch(
     doc_options: Option<DocOptionsNapi>,
 ) -> Result<Vec<DocOutputNapi>> {
     use vize_musea::docs::{DocOptions, generate_component_doc};
-    use vize_musea::{ArtParseOptions, Bump, parse_art as musea_parse};
+    use vize_musea::{Allocator, ArtParseOptions, parse_art as musea_parse};
 
     let doc_opts = doc_options.unwrap_or_default();
     let opts = DocOptions {
@@ -420,7 +420,7 @@ pub fn generate_art_docs_batch(
         .par_iter()
         .enumerate()
         .filter_map(|(idx, source)| {
-            let allocator = Bump::new();
+            let allocator = Allocator::new();
             let parse_opts = ArtParseOptions {
                 filename: cstr!("component_{idx}.art.vue"),
             };
@@ -451,9 +451,9 @@ pub fn generate_art_palette(
     palette_options: Option<PaletteOptionsNapi>,
 ) -> Result<PaletteOutputNapi> {
     use vize_musea::palette::{ControlKind, PaletteOptions, generate_palette};
-    use vize_musea::{ArtParseOptions, Bump, parse_art as musea_parse};
+    use vize_musea::{Allocator, ArtParseOptions, parse_art as musea_parse};
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let art_opts = art_options.unwrap_or_default();
     let parse_opts = ArtParseOptions {
         filename: art_opts

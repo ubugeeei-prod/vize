@@ -63,7 +63,7 @@ impl EventModifiers {
         let mut modifiers = Self::default();
 
         for modifier in dir.modifiers.iter() {
-            let m = modifier.content.as_str();
+            let m = modifier.content;
             match m {
                 // Event options
                 "passive" => modifiers.options.passive = true,

@@ -53,7 +53,7 @@ mod forwarded_slots;
 pub use analyze::analyze_program as analyze_jsx_program;
 
 use oxc_semantic::SemanticBuilder;
-use vize_carton::{Bump, String};
+use vize_carton::{Allocator, String};
 use vize_croquis::Croquis;
 use vize_croquis::croquis::BindingMetadata;
 use vize_relief::RootNode;
@@ -204,9 +204,9 @@ impl<'a> LowerOutput<'a> {
 /// caller-provided `allocator` only backs the OXC parse, and nothing in the
 /// result borrows it, so the result only borrows `bump`.
 pub fn lower_source<'a>(
-    bump: &'a Bump,
+    bump: &'a Allocator,
     allocator: &oxc_allocator::Allocator,
-    source: &str,
+    source: &'a str,
     lang: JsxLang,
 ) -> LowerOutput<'a> {
     lower_source_with_compat(
@@ -227,9 +227,9 @@ pub fn lower_source<'a>(
 /// retain native semantics; the configured compatibility switch is consumed by
 /// the mode-aware compiler.
 fn lower_source_with_compat<'a>(
-    bump: &'a Bump,
+    bump: &'a Allocator,
     allocator: &oxc_allocator::Allocator,
-    source: &str,
+    source: &'a str,
     lang: JsxLang,
     compat: JsxCompatMode,
     default_mode: JsxOutputMode,

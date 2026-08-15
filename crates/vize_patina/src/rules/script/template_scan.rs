@@ -57,7 +57,7 @@ pub(super) const DOLLAR_EMIT: &str = "$emit";
 /// binding, not the component's own.
 pub(super) fn for_each_template_call(root: &RootNode<'_>, mut visit: impl FnMut(TemplateCall<'_>)) {
     let mut walker = Walker {
-        source: &root.source,
+        source: root.source,
         shadowed: Vec::new(),
     };
     walker.walk(&root.children, &mut visit);
@@ -116,7 +116,7 @@ impl Walker<'_> {
         // scanned.
         for prop in element.props.iter() {
             if let PropNode::Directive(directive) = prop
-                && directive.name.as_str() == "for"
+                && directive.name == "for"
             {
                 push_for_aliases(directive, &mut self.shadowed, self.source);
             }
@@ -127,7 +127,7 @@ impl Walker<'_> {
                 && let Some(exp) = directive.exp.as_ref()
                 // `v-for`'s expression is `item in items`, not JavaScript, and
                 // `v-slot`'s is a binding pattern rather than a reference.
-                && !matches!(directive.name.as_str(), "for" | "slot")
+                && !matches!(directive.name, "for" | "slot")
             {
                 self.scan(exp, visit);
             }
@@ -137,7 +137,7 @@ impl Walker<'_> {
         // collected only after this element's own directives are scanned.
         for prop in element.props.iter() {
             if let PropNode::Directive(directive) = prop
-                && directive.name.as_str() == "slot"
+                && directive.name == "slot"
                 && let Some(exp) = directive.exp.as_ref()
             {
                 push_identifier_tokens(expression_source(exp, self.source), &mut self.shadowed);
@@ -189,7 +189,7 @@ fn push_for_aliases(directive: &DirectiveNode<'_>, out: &mut Vec<String>, source
 
 fn expression_source<'a>(exp: &'a ExpressionNode<'a>, source: &'a str) -> &'a str {
     match exp {
-        ExpressionNode::Simple(simple) => simple.content.as_str(),
+        ExpressionNode::Simple(simple) => simple.content,
         ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
     }
 }

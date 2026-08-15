@@ -287,7 +287,7 @@ fn compile_template_inner_with_sections<'a>(
     };
     let template_syntax_quirks = template_syntax.is_quirks();
     // Allocate Croquis in the arena so it shares the allocator lifetime
-    let analysis: Option<&Croquis> = options.croquis.map(|c| &*allocator.alloc(*c));
+    let analysis: Option<&Croquis> = options.croquis.map(|c| &*allocator.alloc_owned(*c));
     let transform_errors = profile!(
         "atelier.dom.template.transform",
         if template_syntax_quirks {

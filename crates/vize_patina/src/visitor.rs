@@ -157,7 +157,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                         }
                         DirectiveKind::Level => {
                             if let Some(d) =
-                                parse_vize_directive(&comment.content, line, comment.loc.span.start)
+                                parse_vize_directive(comment.content, line, comment.loc.span.start)
                                 && let Some(severity) = parse_level_severity(&d.payload)
                             {
                                 self.ctx.set_severity_override_next_line(line, severity);
@@ -304,7 +304,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         match kind {
             DirectiveKind::Todo => {
                 // Parse the payload from the comment content
-                if let Some(d) = parse_vize_directive(&comment.content, line, loc.span.start) {
+                if let Some(d) = parse_vize_directive(comment.content, line, loc.span.start) {
                     let msg = if d.payload.is_empty() {
                         CompactString::from("TODO")
                     } else {
@@ -315,7 +315,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 }
             }
             DirectiveKind::Fixme => {
-                if let Some(d) = parse_vize_directive(&comment.content, line, loc.span.start) {
+                if let Some(d) = parse_vize_directive(comment.content, line, loc.span.start) {
                     let msg = if d.payload.is_empty() {
                         CompactString::from("FIXME")
                     } else {
@@ -335,14 +335,14 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 self.ctx.pop_ignore_region(line);
             }
             DirectiveKind::Level => {
-                if let Some(d) = parse_vize_directive(&comment.content, line, loc.span.start)
+                if let Some(d) = parse_vize_directive(comment.content, line, loc.span.start)
                     && let Some(severity) = parse_level_severity(&d.payload)
                 {
                     self.ctx.set_severity_override_next_line(line, severity);
                 }
             }
             DirectiveKind::Deprecated => {
-                if let Some(d) = parse_vize_directive(&comment.content, line, loc.span.start) {
+                if let Some(d) = parse_vize_directive(comment.content, line, loc.span.start) {
                     let msg = if d.payload.is_empty() {
                         CompactString::from("Deprecated")
                     } else {
@@ -353,7 +353,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 }
             }
             DirectiveKind::Forget => {
-                if let Some(d) = parse_vize_directive(&comment.content, line, loc.span.start) {
+                if let Some(d) = parse_vize_directive(comment.content, line, loc.span.start) {
                     if d.payload.is_empty() {
                         self.ctx.current_rule = "vize/forget";
                         self.ctx
@@ -372,15 +372,15 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         let has_v_for = el
             .props
             .iter()
-            .any(|p| matches!(p, PropNode::Directive(d) if d.name.as_str() == "for"));
+            .any(|p| matches!(p, PropNode::Directive(d) if d.name == "for"));
         let has_v_if = el
             .props
             .iter()
-            .any(|p| matches!(p, PropNode::Directive(d) if d.name.as_str() == "if" || d.name.as_str() == "else-if"));
+            .any(|p| matches!(p, PropNode::Directive(d) if d.name == "if" || d.name == "else-if"));
         let has_v_slot = el
             .props
             .iter()
-            .any(|p| matches!(p, PropNode::Directive(d) if d.name.as_str() == "slot"));
+            .any(|p| matches!(p, PropNode::Directive(d) if d.name == "slot"));
 
         // Extract scope variables (only allocates if directives exist).
         let mut v_for_vars = if has_v_for {
@@ -394,7 +394,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
 
         // Build element context with CompactString tag (efficient for small strings)
         let elem_ctx = ElementContext {
-            tag: CompactString::from(el.tag.as_str()),
+            tag: CompactString::from(el.tag),
             has_v_for,
             has_v_if,
             v_for_vars,
@@ -524,7 +524,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     fn extract_v_for_vars(&self, el: &ElementNode<'a>) -> Vec<CompactString> {
         for prop in el.props.iter() {
             if let PropNode::Directive(dir) = prop
-                && dir.name.as_str() == "for"
+                && dir.name == "for"
                 && let Some(exp) = &dir.exp
             {
                 return parse_v_for_variables(exp);
@@ -537,7 +537,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     fn extract_slot_scope_vars(&self, el: &ElementNode<'a>) -> Vec<CompactString> {
         for prop in el.props.iter() {
             if let PropNode::Directive(dir) = prop
-                && dir.name.as_str() == "slot"
+                && dir.name == "slot"
                 && let Some(exp) = &dir.exp
             {
                 return parse_slot_scope_variables(exp);
@@ -550,5 +550,5 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
 fn element_has_directive(el: &ElementNode, name: &str) -> bool {
     el.props
         .iter()
-        .any(|p| matches!(p, PropNode::Directive(d) if d.name.as_str() == name))
+        .any(|p| matches!(p, PropNode::Directive(d) if d.name == name))
 }

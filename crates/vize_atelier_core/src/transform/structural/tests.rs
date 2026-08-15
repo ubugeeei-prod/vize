@@ -18,8 +18,7 @@ mod structural_transform_tests {
         let (mut root, errors) = parse(&allocator, source);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
-        let mut ctx =
-            TransformContext::new(&allocator, root.source.clone(), TransformOptions::default());
+        let mut ctx = TransformContext::new(&allocator, root.source, TransformOptions::default());
         traverse_children(&mut ctx, ParentNode::Root(&mut root as *mut _));
         ctx.errors
     }

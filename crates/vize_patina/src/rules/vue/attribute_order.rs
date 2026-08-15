@@ -59,7 +59,7 @@ enum AttrCategory {
 impl AttrCategory {
     fn from_prop(prop: &PropNode) -> Self {
         match prop {
-            PropNode::Attribute(attr) => match attr.name.as_str() {
+            PropNode::Attribute(attr) => match attr.name {
                 "is" => AttrCategory::Definition,
                 "id" => AttrCategory::GlobalAwareness,
                 "ref" | "key" => AttrCategory::UniqueAttrs,
@@ -67,11 +67,11 @@ impl AttrCategory {
             },
             PropNode::Directive(dir) => {
                 let arg = dir.arg.as_ref().and_then(|arg| match arg {
-                    ExpressionNode::Simple(simple) => Some(simple.content.as_str()),
+                    ExpressionNode::Simple(simple) => Some(simple.content),
                     _ => None,
                 });
 
-                match dir.name.as_str() {
+                match dir.name {
                     "for" => AttrCategory::ListRendering,
                     "if" | "else-if" | "else" | "show" | "cloak" => AttrCategory::Conditionals,
                     "pre" | "once" => AttrCategory::RenderModifiers,

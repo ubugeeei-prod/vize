@@ -26,7 +26,7 @@ pub(super) fn generate_vmodel_prop(ctx: &mut CodegenContext, dir: &DirectiveNode
         .exp
         .as_ref()
         .map(|e| match e {
-            ExpressionNode::Simple(s) => s.content.clone(),
+            ExpressionNode::Simple(s) => vize_carton::String::new(s.content),
             ExpressionNode::Compound(c) => vize_carton::String::new(c.loc.span.slice(&ctx.source)),
         })
         .unwrap_or_else(|| vize_carton::String::new("undefined"));
@@ -57,7 +57,7 @@ pub(super) fn generate_vmodel_prop(ctx: &mut CodegenContext, dir: &DirectiveNode
             if i > 0 {
                 ctx.push(", ");
             }
-            ctx.push(&modifier.content);
+            ctx.push(modifier.content);
             ctx.push(": true");
         }
         ctx.push(" }");

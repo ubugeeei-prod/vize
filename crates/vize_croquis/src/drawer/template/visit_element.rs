@@ -25,7 +25,7 @@ impl Drawer {
         el: &ElementNode<'_>,
         scope_vars: &mut Vec<CompactString>,
     ) {
-        let tag = el.tag.as_str();
+        let tag = el.tag;
         let is_component = is_component_tag(tag);
         let mut subtree_end = None;
 

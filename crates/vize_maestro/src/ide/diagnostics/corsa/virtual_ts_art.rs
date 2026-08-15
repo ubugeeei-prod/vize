@@ -59,7 +59,7 @@ impl DiagnosticService {
         content: &str,
         base_options: &VirtualTsOptions,
     ) -> Option<ArtVirtualTsResult> {
-        let art_allocator = vize_carton::Bump::new();
+        let art_allocator = vize_carton::Allocator::new();
         let art_desc = vize_musea::parse_art(
             &art_allocator,
             content,

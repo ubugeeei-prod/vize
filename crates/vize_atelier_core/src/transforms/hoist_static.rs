@@ -16,7 +16,7 @@ use props::{
 pub use static_type::{StaticType, get_static_type, is_static_node};
 use static_type::{has_only_native_element_descendants, has_only_static_nested_children};
 
-use vize_carton::{Box, Bump, String, Vec, ensure_sufficient_stack};
+use vize_carton::{Allocator, Box, String, Vec, ensure_sufficient_stack};
 
 use crate::lane::TransformContext;
 use crate::{
@@ -63,12 +63,14 @@ fn hoist_static_inner<'a>(
                 } else if hoist_static_vnodes
                     && let TemplateChildNode::Element(el) = &mut children[i]
                 {
+                    // Scope ids are computed once per compile and repeat on
+                    // every hoisted element, so they land in the arena as atoms.
                     let scope_id = ctx
                         .hoisted_scope_id
-                        .clone()
-                        .or_else(|| ctx.options.scope_id.clone());
-                    let vnode_call =
-                        create_vnode_call_from_element(allocator, el, scope_id.as_ref());
+                        .as_deref()
+                        .or(ctx.options.scope_id.as_deref())
+                        .map(|id| allocator.alloc_str(id));
+                    let vnode_call = create_vnode_call_from_element(allocator, el, scope_id);
                     let hoist_index = ctx.hoist(vnode_call);
                     children[i] = TemplateChildNode::Hoisted(hoist_index);
                     ctx.helper(RuntimeHelper::CreateElementVNode);
@@ -144,11 +146,11 @@ fn hoist_static_inner<'a>(
 /// case move the (already fully-static) child subtree into the VNodeCall
 /// instead of deep-cloning it.
 fn create_vnode_call_from_element<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     el: &mut ElementNode<'a>,
-    scope_id: Option<&vize_carton::String>,
+    scope_id: Option<&'a str>,
 ) -> JsChildNode<'a> {
-    let tag = VNodeTag::String(el.tag.clone());
+    let tag = VNodeTag::String(el.tag);
     let props = create_props_expression(allocator, &el.props, scope_id);
     let children = create_children_expression(allocator, &mut el.children, scope_id);
 
@@ -165,7 +167,7 @@ fn create_vnode_call_from_element<'a>(
         loc: el.loc.clone(),
     };
 
-    JsChildNode::VNodeCall(Box::new_in(vnode_call, allocator))
+    JsChildNode::VNodeCall(Box::new_in(vnode_call, &allocator))
 }
 
 /// Create children expression from template children.
@@ -173,9 +175,9 @@ fn create_vnode_call_from_element<'a>(
 /// `scope_id` is threaded so nested hoisted elements carry the same scoped-CSS
 /// attribute their parent does.
 fn create_children_expression<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     children: &mut Vec<'a, TemplateChildNode<'a>>,
-    scope_id: Option<&vize_carton::String>,
+    scope_id: Option<&'a str>,
 ) -> Option<VNodeChildren<'a>> {
     if children.is_empty() {
         return None;
@@ -185,9 +187,9 @@ fn create_children_expression<'a>(
     if children.len() == 1
         && let TemplateChildNode::Text(text) = &children[0]
     {
-        let text_node = TextNode::new(text.content.clone(), text.loc.clone());
+        let text_node = TextNode::new(text.content, text.loc.clone());
         return Some(VNodeChildren::Single(TemplateTextChildNode::Text(
-            Box::new_in(text_node, allocator),
+            Box::new_in(text_node, &allocator),
         )));
     }
 
@@ -199,13 +201,13 @@ fn create_children_expression<'a>(
         let mut text_content = String::default();
         for child in children.iter() {
             if let TemplateChildNode::Text(text) = child {
-                text_content.push_str(&text.content);
+                text_content.push_str(text.content);
             }
         }
         if !text_content.is_empty() {
-            let text_node = TextNode::new(text_content, SourceLocation::STUB);
+            let text_node = TextNode::new(allocator.alloc_str(&text_content), SourceLocation::STUB);
             return Some(VNodeChildren::Single(TemplateTextChildNode::Text(
-                Box::new_in(text_node, allocator),
+                Box::new_in(text_node, &allocator),
             )));
         }
     }
@@ -218,7 +220,7 @@ fn create_children_expression<'a>(
     // element child recursively as a nested `createElementVNode`. Moving rather
     // than cloning is sound because the caller replaces this element with a
     // `Hoisted` reference right after, so the original children are unreachable.
-    let mut moved = std::mem::replace(children, Vec::new_in(allocator));
+    let mut moved = std::mem::replace(children, Vec::new_in(&allocator));
 
     // Scoped CSS: every native element in the hoisted subtree needs the
     // `data-v-xxxxxxxx` attribute, so inject it into each nested element.
@@ -234,24 +236,24 @@ fn create_children_expression<'a>(
 /// Recursively add the scoped-CSS attribute to a static element subtree so
 /// hoisted nested vnodes carry `data-v-xxxxxxxx` like their parent.
 fn inject_scope_id<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     node: &mut TemplateChildNode<'a>,
-    scope_id: &vize_carton::String,
+    scope_id: &'a str,
 ) {
     if let TemplateChildNode::Element(el) = node {
         let already = el.props.iter().any(|p| match p {
-            PropNode::Attribute(a) => a.name == *scope_id,
+            PropNode::Attribute(a) => a.name == scope_id,
             PropNode::Directive(_) => false,
         });
         if !already {
             el.props.push(PropNode::Attribute(Box::new_in(
                 AttributeNode {
-                    name: scope_id.clone(),
+                    name: scope_id,
                     name_loc: SourceLocation::STUB,
                     value: None,
                     loc: SourceLocation::STUB,
                 },
-                allocator,
+                &allocator,
             )));
         }
         // Guarded: one frame per nesting level of the hoisted subtree.

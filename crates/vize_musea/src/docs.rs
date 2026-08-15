@@ -6,11 +6,11 @@
 //! # Example
 //!
 //! ```rust
-//! use vize_carton::Bump;
+//! use vize_carton::Allocator;
 //! use vize_musea::{parse_art, ArtParseOptions};
 //! use vize_musea::docs::{generate_component_doc, DocOptions};
 //!
-//! let allocator = Bump::new();
+//! let allocator = Allocator::new();
 //! let source = r#"
 //! <art title="Button" description="A button component" category="atoms">
 //!   <variant name="Primary" default>
@@ -122,11 +122,11 @@ pub struct CatalogOutput {
 mod tests {
     use super::{CatalogEntry, DocOptions, generate_catalog, generate_component_doc};
     use crate::{ArtParseOptions, parse_art};
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
     #[test]
     fn test_generate_component_doc() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let source = r#"
 <art title="Button" description="A versatile button" category="atoms" tags="ui,input">
   <variant name="Primary" default>
@@ -146,7 +146,7 @@ mod tests {
 
     #[test]
     fn test_generate_catalog() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let sources = [
             r#"<art title="Button" category="atoms"><variant name="Default"><div></div></variant></art>"#,
             r#"<art title="Card" category="molecules"><variant name="Default"><div></div></variant></art>"#,

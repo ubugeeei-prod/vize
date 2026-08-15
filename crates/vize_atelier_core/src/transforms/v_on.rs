@@ -28,7 +28,7 @@ pub fn parse_event_modifiers(modifiers: &[SimpleExpressionNode<'_>]) -> EventMod
     let mut result = EventModifiers::default();
 
     for modifier in modifiers {
-        match modifier.content.as_str() {
+        match modifier.content {
             "stop" => result.stop = true,
             "prevent" => result.prevent = true,
             "self" => result.self_ = true,
@@ -39,7 +39,7 @@ pub fn parse_event_modifiers(modifiers: &[SimpleExpressionNode<'_>]) -> EventMod
             "right" => result.right = true,
             "middle" => result.middle = true,
             "exact" => result.exact = true,
-            _ => result.keys.push(modifier.content.clone()),
+            _ => result.keys.push(modifier.content.into()),
         }
     }
 
@@ -71,7 +71,7 @@ pub fn process_v_on(_ctx: &mut TransformContext<'_>, dir: &DirectiveNode<'_>) {
 /// Get event name from v-on directive
 pub fn get_event_name(dir: &DirectiveNode<'_>, source: &str) -> Option<String> {
     dir.arg.as_ref().map(|arg| match arg {
-        ExpressionNode::Simple(exp) => exp.content.clone(),
+        ExpressionNode::Simple(exp) => String::new(exp.content),
         ExpressionNode::Compound(exp) => String::new(exp.loc.span.slice(source)),
     })
 }

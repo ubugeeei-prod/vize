@@ -40,7 +40,7 @@ impl Rule for NoTextareaMustache {
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         // Only check <textarea> elements
-        if element.tag.as_str() != "textarea" {
+        if element.tag != "textarea" {
             return;
         }
 

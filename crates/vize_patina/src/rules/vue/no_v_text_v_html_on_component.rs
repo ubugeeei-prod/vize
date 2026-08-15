@@ -60,10 +60,7 @@ impl Rule for NoVTextVHtmlOnComponent {
         ctx.error_with_help(
             ctx.t_fmt(
                 "vue/no-v-text-v-html-on-component.message",
-                &[
-                    ("directive", directive.name.as_str()),
-                    ("tag", element.tag.as_str()),
-                ],
+                &[("directive", directive.name), ("tag", element.tag)],
             ),
             &directive.loc,
             ctx.t("vue/no-v-text-v-html-on-component.help"),
@@ -86,7 +83,7 @@ fn is_component_like_tag(element: &ElementNode<'_>) -> bool {
         return true;
     }
 
-    let tag = element.tag.as_str();
+    let tag = element.tag;
     tag.contains('-') && !is_html_tag(tag)
 }
 
@@ -136,7 +133,7 @@ fn resolves_to_static_native_tag(element: &ElementNode<'_>) -> bool {
             PropNode::Directive(dir) if is_bind_is(dir) => return false,
             // Duplicate `is` attributes: codegen keeps the first.
             PropNode::Attribute(attr) if attr.name == "is" && static_is.is_none() => {
-                static_is = attr.value.as_ref().map(|v| v.content.as_str());
+                static_is = attr.value.as_ref().map(|v| v.content);
             }
             _ => {}
         }

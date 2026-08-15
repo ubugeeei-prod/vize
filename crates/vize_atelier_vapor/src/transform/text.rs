@@ -19,7 +19,7 @@ pub(crate) fn transform_text<'a>(
     block: &mut BlockIRNode<'a>,
 ) {
     let element_id = ctx.next_id();
-    let template: vize_carton::String = text.content.clone();
+    let template: vize_carton::String = text.content.into();
     ctx.add_template(element_id, template);
     block.returns.push(element_id);
 }
@@ -40,12 +40,12 @@ pub(crate) fn transform_interpolation<'a>(
     // Create SetText operation
     let values = match &interp.content {
         ExpressionNode::Simple(simple) => {
-            let mut v = Vec::new_in(ctx.allocator);
+            let mut v = Vec::new_in(&ctx.allocator);
             let exp = SimpleExpressionNode::from_node(simple);
-            v.push(Box::new_in(exp, ctx.allocator));
+            v.push(Box::new_in(exp, &ctx.allocator));
             v
         }
-        _ => Vec::new_in(ctx.allocator),
+        _ => Vec::new_in(&ctx.allocator),
     };
 
     let set_text = SetTextIRNode {
@@ -65,7 +65,7 @@ pub(crate) fn transform_text_children<'a>(
     parent_element_id: usize,
     block: &mut BlockIRNode<'a>,
 ) {
-    let mut values = Vec::new_in(ctx.allocator);
+    let mut values = Vec::new_in(&ctx.allocator);
     let mut has_interpolation = false;
     let mut run_index = None;
     let mut rendered_index = 0usize;
@@ -104,16 +104,15 @@ fn collect_text_runs<'a>(
         match child {
             TemplateChildNode::Text(text) => {
                 begin_text_run(run_index, rendered_index);
-                let exp =
-                    SimpleExpressionNode::new(text.content.clone(), true, SourceLocation::STUB);
-                values.push(Box::new_in(exp, ctx.allocator));
+                let exp = SimpleExpressionNode::new(text.content, true, SourceLocation::STUB);
+                values.push(Box::new_in(exp, &ctx.allocator));
             }
             TemplateChildNode::Interpolation(interp) => {
                 begin_text_run(run_index, rendered_index);
                 // Dynamic interpolation
                 if let ExpressionNode::Simple(simple) = &interp.content {
                     let exp = SimpleExpressionNode::from_node(simple);
-                    values.push(Box::new_in(exp, ctx.allocator));
+                    values.push(Box::new_in(exp, &ctx.allocator));
                     *has_interpolation = true;
                 }
             }
@@ -180,7 +179,7 @@ fn flush_text_run<'a>(
             ctx.standalone_text_elements.insert(text_id);
             text_id
         };
-        let run_values = std::mem::replace(values, Vec::new_in(ctx.allocator));
+        let run_values = std::mem::replace(values, Vec::new_in(&ctx.allocator));
         ctx.push_dynamic_operation(
             block,
             OperationNode::SetText(SetTextIRNode {

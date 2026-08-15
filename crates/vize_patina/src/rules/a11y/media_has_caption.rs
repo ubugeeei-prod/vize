@@ -95,10 +95,7 @@ impl Rule for MediaHasCaption {
         }
 
         ctx.warn_with_help(
-            ctx.t_fmt(
-                "a11y/media-has-caption.message",
-                &[("tag", element.tag.as_str())],
-            ),
+            ctx.t_fmt("a11y/media-has-caption.message", &[("tag", element.tag)]),
             &element.loc,
             ctx.t("a11y/media-has-caption.help"),
         );

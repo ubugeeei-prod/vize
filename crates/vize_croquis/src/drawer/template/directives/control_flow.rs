@@ -42,7 +42,7 @@ impl Drawer {
 
             let compound_condition;
             let current_condition = match branch.condition.as_ref() {
-                Some(ExpressionNode::Simple(s)) => Some(s.content.as_str()),
+                Some(ExpressionNode::Simple(s)) => Some(s.content),
                 Some(ExpressionNode::Compound(c)) => {
                     compound_condition =
                         CompactString::new(c.loc.span.slice(&self.template_source));
@@ -96,7 +96,7 @@ impl Drawer {
 
         if self.options.analyze_template_scopes && !vars_added.is_empty() {
             let source_content = match &for_node.source {
-                ExpressionNode::Simple(s) => CompactString::new(s.content.as_str()),
+                ExpressionNode::Simple(s) => CompactString::new(s.content),
                 ExpressionNode::Compound(c) => {
                     CompactString::new(c.loc.span.slice(&self.template_source))
                 }
@@ -164,15 +164,15 @@ impl Drawer {
         let mut vars = Vec::new();
 
         if let Some(ExpressionNode::Simple(exp)) = &for_node.value_alias {
-            vars.push(exp.content.clone());
+            vars.push(exp.content.into());
         }
 
         if let Some(ExpressionNode::Simple(exp)) = &for_node.key_alias {
-            vars.push(exp.content.clone());
+            vars.push(exp.content.into());
         }
 
         if let Some(ExpressionNode::Simple(exp)) = &for_node.object_index_alias {
-            vars.push(exp.content.clone());
+            vars.push(exp.content.into());
         }
 
         vars

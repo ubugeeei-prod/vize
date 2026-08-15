@@ -79,7 +79,6 @@ use oxc_ast::ast::{
     ObjectExpression,
 };
 use oxc_span::{GetSpan, Span};
-use vize_carton::Box;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
 use super::Lowerer;
@@ -105,7 +104,7 @@ enum SlotsValue<'e> {
     Rejected(Span, &'static str),
 }
 
-impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
+impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// Whether `attr` is a `v-slots` attribute in any spelling.
     ///
     /// `lower_attribute` uses this to drop the attribute instead of turning it
@@ -222,8 +221,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         let loc = expression.loc().clone();
         let mut directive = DirectiveNode::new(self.bump(), "slots", loc);
         directive.exp = Some(expression);
-        node.props
-            .push(PropNode::Directive(Box::new_in(directive, self.bump())));
+        node.props.push(PropNode::Directive(self.boxed(directive)));
     }
 
     /// The span of the `v-slots` name itself, for any spelling, or `None` when

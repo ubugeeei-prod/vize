@@ -10,7 +10,7 @@ mod scope_prefix;
 
 use crate::options::SsrCompilerOptions;
 use vize_atelier_core::{RootNode, RuntimeHelper, TemplateChildNode};
-use vize_carton::{Bump, FxHashSet, SmallVec, String, ToCompactString, camelize, capitalize};
+use vize_carton::{Allocator, FxHashSet, SmallVec, String, ToCompactString, camelize, capitalize};
 
 /// SSR codegen result
 #[derive(Debug, Default)]
@@ -33,7 +33,7 @@ pub(crate) enum TemplatePart {
 /// SSR codegen context
 pub struct SsrCodegenContext<'a> {
     #[allow(dead_code)]
-    pub(crate) allocator: &'a Bump,
+    pub(crate) allocator: &'a Allocator,
     pub(crate) options: &'a SsrCompilerOptions,
     /// Output buffer
     pub(crate) code: Vec<u8>,
@@ -64,7 +64,7 @@ pub struct SsrCodegenContext<'a> {
 }
 
 impl<'a> SsrCodegenContext<'a> {
-    pub fn new(allocator: &'a Bump, options: &'a SsrCompilerOptions, source: &'a str) -> Self {
+    pub fn new(allocator: &'a Allocator, options: &'a SsrCompilerOptions, source: &'a str) -> Self {
         Self {
             allocator,
             options,

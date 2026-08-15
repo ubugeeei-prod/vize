@@ -44,8 +44,7 @@ fn capture_modifier_lowers_to_a_v_on_directive() {
 
     assert_eq!(directive.modifiers.len(), 1, "one modifier");
     assert_eq!(
-        directive.modifiers[0].content.as_str(),
-        "capture",
+        directive.modifiers[0].content, "capture",
         "modifier content"
     );
 }

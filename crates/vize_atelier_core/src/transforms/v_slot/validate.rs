@@ -16,15 +16,15 @@ pub(crate) fn validate_v_slot_usage(ctx: &mut TransformContext<'_>, el: &Element
 
     if let Some(dir) = own_slot
         && el.tag_type != ElementType::Component
-        && el.tag.as_str() != "template"
+        && el.tag != "template"
     {
         ctx.on_error(ErrorCode::VSlotMisplaced, Some(dir.loc.clone()));
     }
 
-    if el.tag_type == ElementType::Slot || el.tag.as_str() == "slot" {
+    if el.tag_type == ElementType::Slot || el.tag == "slot" {
         for prop in el.props.iter() {
             if let PropNode::Directive(dir) = prop
-                && !is_builtin_directive(dir.name.as_str())
+                && !is_builtin_directive(dir.name)
             {
                 ctx.on_error(
                     ErrorCode::VSlotUnexpectedDirectiveOnSlotOutlet,
@@ -58,7 +58,7 @@ pub(crate) fn validate_v_slot_usage(ctx: &mut TransformContext<'_>, el: &Element
             continue;
         };
 
-        if child_el.tag.as_str() != "template" {
+        if child_el.tag != "template" {
             continue;
         }
 
@@ -70,7 +70,7 @@ pub(crate) fn validate_v_slot_usage(ctx: &mut TransformContext<'_>, el: &Element
         has_template_slots = true;
 
         if !has_structural_slot_directive(child_el) && slot_name_is_static(slot_dir) {
-            let slot_name = get_slot_name(slot_dir, &ctx.source);
+            let slot_name = get_slot_name(slot_dir, ctx.source);
             if seen_static_slots
                 .iter()
                 .any(|seen| seen.as_str() == slot_name.as_str())

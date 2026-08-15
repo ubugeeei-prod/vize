@@ -46,7 +46,7 @@ impl<'a> Parser<'a> {
             }
 
             if entry.insertion == StackInsertion::Fostered
-                || Self::tag_in(entry.element.tag.as_str(), &["caption", "td", "th"])
+                || Self::tag_in(entry.element.tag, &["caption", "td", "th"])
             {
                 return false;
             }
@@ -56,7 +56,7 @@ impl<'a> Parser<'a> {
     }
 
     fn is_allowed_in_table_insertion_context(&self, tag: &str) -> bool {
-        let current = self.stack.last().map(|entry| entry.element.tag.as_str());
+        let current = self.stack.last().map(|entry| entry.element.tag);
         match current {
             Some(current) if Self::tag_in(current, &["tbody", "thead", "tfoot"]) => {
                 Self::tag_in(tag, &["tr", "script", "style", "template"])
@@ -84,9 +84,10 @@ impl<'a> Parser<'a> {
         }
 
         if Self::tag_in(tag, &["tbody", "thead", "tfoot"])
-            && self.stack.last().is_some_and(|entry| {
-                Self::tag_in(entry.element.tag.as_str(), &["tbody", "thead", "tfoot"])
-            })
+            && self
+                .stack
+                .last()
+                .is_some_and(|entry| Self::tag_in(entry.element.tag, &["tbody", "thead", "tfoot"]))
         {
             let last = self.stack.len() - 1;
             self.close_stack_element_at(last, false);
@@ -106,7 +107,7 @@ impl<'a> Parser<'a> {
             if self
                 .stack
                 .last()
-                .is_some_and(|entry| Self::tag_in(entry.element.tag.as_str(), &["td", "th"]))
+                .is_some_and(|entry| Self::tag_in(entry.element.tag, &["td", "th"]))
             {
                 let last = self.stack.len() - 1;
                 self.close_stack_element_at(last, false);
@@ -124,7 +125,7 @@ impl<'a> Parser<'a> {
             .stack
             .iter()
             .skip(table_index + 1)
-            .any(|entry| Self::tag_in(entry.element.tag.as_str(), &["tbody", "thead", "tfoot"]))
+            .any(|entry| Self::tag_in(entry.element.tag, &["tbody", "thead", "tfoot"]))
         {
             return;
         }
@@ -142,7 +143,7 @@ impl<'a> Parser<'a> {
         self.push_implicit_element("tr", offset);
     }
 
-    fn push_implicit_element(&mut self, tag: &str, offset: usize) {
+    fn push_implicit_element(&mut self, tag: &'a str, offset: usize) {
         let loc = self.create_loc(offset, offset);
         let mut element = ElementNode::new(self.allocator, tag, loc);
         element.tag_type = self.determine_element_type(&element);
@@ -152,7 +153,7 @@ impl<'a> Parser<'a> {
             in_v_pre: self.in_v_pre,
             insertion: StackInsertion::Normal,
             implicit: true,
-            fostered_before: Vec::new_in(self.allocator),
+            fostered_before: Vec::new_in(&self.allocator),
         });
     }
 }

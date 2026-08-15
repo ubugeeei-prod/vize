@@ -23,7 +23,7 @@ pub fn get_memo_deps(el: &ElementNode<'_>, source: &str) -> Option<String> {
             && let Some(exp) = &dir.exp
         {
             return Some(match exp {
-                ExpressionNode::Simple(s) => s.content.clone(),
+                ExpressionNode::Simple(s) => s.content.into(),
                 ExpressionNode::Compound(c) => String::new(c.loc.span.slice(source)),
             });
         }

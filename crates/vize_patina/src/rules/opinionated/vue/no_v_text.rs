@@ -50,7 +50,7 @@ impl Rule for NoVText {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name.as_str() != "text" {
+        if directive.name != "text" {
             return;
         }
 

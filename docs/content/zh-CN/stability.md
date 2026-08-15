@@ -90,7 +90,7 @@ Tarball 在 NPM 包发布前安装烟雾。运行时烟雾检查`vize --version`
 
 | 箱子                 | 等级       | 目标观众                  | 公共入口                                        | 移除/废弃                 |
 | -------------------- | ---------- | ------------------------- | ----------------------------------------------- | ------------------------- |
-| `vize_carton`        | Alpha支持  | Vize 编译器和库作者       | `vize_carton::{Allocator, Bump, FxHashMap}`     | 一个辅修`#[deprecated]`   |
+| `vize_carton`        | Alpha支持  | Vize 编译器和库作者       | `vize_carton::{Allocator, Box, FxHashMap}`      | 一个辅修`#[deprecated]`   |
 | `vize_relief`        | Alpha支持  | AST 与编译器集成作者      | `vize_relief::{RootNode, CompilerOptions}`      | 一个辅修`#[deprecated]`   |
 | `vize_armature`      | Alpha支持  | 解析 Vue 模板的工具       | `vize_armature::{parse, Parser, Tokenizer}`     | 一个辅修`#[deprecated]`   |
 | `vize_croquis`       | 兼容性预览 | 语义与类型感知工具作者    | `vize_croquis::{Croquis, Drawer}`               | 一个小调，`#[deprecated]` |

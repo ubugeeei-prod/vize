@@ -93,12 +93,12 @@ impl Rule for NoVueLifecycleEvents {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name.as_str() != "on" {
+        if directive.name != "on" {
             return;
         }
 
         let event_name = match &directive.arg {
-            Some(ExpressionNode::Simple(s)) => s.content.as_str(),
+            Some(ExpressionNode::Simple(s)) => s.content,
             _ => return,
         };
 

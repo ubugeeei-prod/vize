@@ -48,7 +48,7 @@ impl Rule for ValidVIf {
         element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name.as_str() != "if" {
+        if directive.name != "if" {
             return;
         }
 
@@ -89,9 +89,9 @@ impl Rule for ValidVIf {
         }
 
         // Check 4: v-if should not be used with v-else or v-else-if
-        let has_v_else = element.props.iter().any(|p| {
-            matches!(p, PropNode::Directive(d) if d.name.as_str() == "else" || d.name.as_str() == "else-if")
-        });
+        let has_v_else = element.props.iter().any(
+            |p| matches!(p, PropNode::Directive(d) if d.name == "else" || d.name == "else-if"),
+        );
         if has_v_else {
             ctx.error_with_help(
                 ctx.t("vue/valid-v-if.missing_expression"),

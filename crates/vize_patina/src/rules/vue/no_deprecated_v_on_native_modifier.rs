@@ -69,15 +69,11 @@ impl Rule for NoDeprecatedVOnNativeModifier {
         }
 
         // Only `v-on` / `@` carries the `.native` modifier.
-        if directive.name.as_str() != "on" {
+        if directive.name != "on" {
             return;
         }
 
-        let Some(native) = directive
-            .modifiers
-            .iter()
-            .find(|m| m.content.as_str() == "native")
-        else {
+        let Some(native) = directive.modifiers.iter().find(|m| m.content == "native") else {
             return;
         };
 

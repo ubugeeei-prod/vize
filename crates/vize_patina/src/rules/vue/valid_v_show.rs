@@ -47,7 +47,7 @@ impl Rule for ValidVShow {
         element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name.as_str() != "show" {
+        if directive.name != "show" {
             return;
         }
 
@@ -89,7 +89,7 @@ impl Rule for ValidVShow {
         }
 
         // Check 4: v-show cannot be used on <template>
-        if element.tag.as_str() == "template" {
+        if element.tag == "template" {
             ctx.error_with_help(
                 ctx.t("vue/valid-v-show.on_template"),
                 &directive.loc,

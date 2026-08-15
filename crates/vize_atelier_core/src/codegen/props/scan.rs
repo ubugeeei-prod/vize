@@ -135,7 +135,7 @@ impl<'props> PropsScan<'props> {
                 PropNode::Attribute(attr) => {
                     if attr.name == "class" {
                         if scan.static_class.is_none() {
-                            scan.static_class = attr.value.as_ref().map(|v| v.content.as_str());
+                            scan.static_class = attr.value.as_ref().map(|v| v.content);
                             scan.static_class_index = Some(index);
                         }
                         if visible {
@@ -143,7 +143,7 @@ impl<'props> PropsScan<'props> {
                         }
                     } else if attr.name == "style" {
                         if scan.static_style.is_none() {
-                            scan.static_style = attr.value.as_ref().map(|v| v.content.as_str());
+                            scan.static_style = attr.value.as_ref().map(|v| v.content);
                             scan.static_style_index = Some(index);
                         }
                         if visible {
@@ -234,7 +234,7 @@ impl<'props> PropsScan<'props> {
     }
 
     fn observe_directive(&mut self, ctx: &CodegenContext, dir: &DirectiveNode<'_>) {
-        match dir.name.as_str() {
+        match dir.name {
             "bind" => {
                 if dir.arg.is_none() {
                     self.has_vbind_obj = true;
@@ -299,7 +299,7 @@ fn has_inline_handler(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {
     }
 
     if dir.modifiers.iter().any(|m| {
-        let name = m.content.as_str();
+        let name = m.content;
         !matches!(name, "capture" | "once" | "passive")
     }) {
         return true;
@@ -307,7 +307,7 @@ fn has_inline_handler(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {
 
     dir.exp.as_ref().is_some_and(|exp| {
         if let ExpressionNode::Simple(simple) = exp {
-            let content = simple.content.as_str();
+            let content = simple.content;
             content.contains('(')
                 || content.contains('+')
                 || content.contains('-')

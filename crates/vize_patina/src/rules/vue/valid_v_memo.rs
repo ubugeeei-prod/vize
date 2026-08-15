@@ -46,7 +46,7 @@ impl Rule for ValidVMemo {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name.as_str() != "memo" {
+        if directive.name != "memo" {
             return;
         }
 

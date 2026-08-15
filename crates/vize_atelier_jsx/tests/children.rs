@@ -12,7 +12,7 @@ fn plain_text_child_is_lowered() {
     let root = lower_one(&bump, "const a = <p>Hello</p>;");
     let p = root_element(&root);
     assert_eq!(p.children.len(), 1);
-    assert_eq!(as_text(&p.children[0]).content.as_str(), "Hello");
+    assert_eq!(as_text(&p.children[0]).content, "Hello");
 }
 
 #[test]
@@ -55,7 +55,7 @@ fn string_literal_container_becomes_text() {
     let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <p>{'literal'}</p>;");
     let p = root_element(&root);
-    assert_eq!(as_text(&p.children[0]).content.as_str(), "literal");
+    assert_eq!(as_text(&p.children[0]).content, "literal");
 }
 
 #[test]
@@ -67,7 +67,7 @@ fn explicit_space_idiom_is_text() {
         .children
         .iter()
         .filter_map(|c| match c {
-            TemplateChildNode::Text(t) => Some(t.content.as_str()),
+            TemplateChildNode::Text(t) => Some(t.content),
             _ => None,
         })
         .collect();
@@ -89,10 +89,10 @@ fn mixed_text_and_expression_children() {
     let p = root_element(&root);
     // "Hi " text, {name} interpolation, "!" text.
     assert_eq!(p.children.len(), 3);
-    assert_eq!(as_text(&p.children[0]).content.as_str(), "Hi ");
+    assert_eq!(as_text(&p.children[0]).content, "Hi ");
     assert!(matches!(
         &p.children[1],
         TemplateChildNode::Interpolation(_)
     ));
-    assert_eq!(as_text(&p.children[2]).content.as_str(), "!");
+    assert_eq!(as_text(&p.children[2]).content, "!");
 }

@@ -53,7 +53,7 @@ impl Rule for NoTemplateShadow {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name.as_str() != "for" {
+        if directive.name != "for" {
             return;
         }
 

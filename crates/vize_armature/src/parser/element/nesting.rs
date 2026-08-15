@@ -57,7 +57,7 @@ impl<'a> Parser<'a> {
                 Some(element.loc.clone()),
             ));
         }
-        self.flattened_tags.push(element.tag.clone());
+        self.flattened_tags.push(element.tag);
     }
 
     /// Consume the end tag of a flattened element, if this tag closes one.

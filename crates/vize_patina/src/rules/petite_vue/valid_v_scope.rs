@@ -70,7 +70,7 @@ impl Rule for ValidVScope {
             return;
         }
 
-        if directive.name.as_str() != "scope" {
+        if directive.name != "scope" {
             return;
         }
 

@@ -63,7 +63,7 @@ impl NoRootVIf {
     fn v_if_location<'e>(element: &'e ElementNode<'_>) -> Option<&'e vize_relief::SourceLocation> {
         for prop in &element.props {
             if let PropNode::Directive(dir) = prop
-                && dir.name.as_str() == "if"
+                && dir.name == "if"
             {
                 return Some(&dir.loc);
             }

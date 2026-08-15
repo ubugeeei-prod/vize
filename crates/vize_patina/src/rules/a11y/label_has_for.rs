@@ -58,7 +58,7 @@ fn has_nested_form_control(children: &[TemplateChildNode]) -> bool {
     for child in children {
         match child {
             TemplateChildNode::Element(el) => {
-                if FORM_CONTROL_TAGS.contains(&el.tag.as_str()) {
+                if FORM_CONTROL_TAGS.contains(&el.tag) {
                     return true;
                 }
                 if has_nested_form_control(&el.children) {

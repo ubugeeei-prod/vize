@@ -14,8 +14,8 @@ use super::nesting::MAX_ELEMENT_NESTING_DEPTH;
 impl<'a> Parser<'a> {
     /// Process open tag name
     pub(in crate::parser) fn on_open_tag_name_impl(&mut self, start: usize, end: usize) {
-        let tag = self.get_source(start, end);
-        let parent = self.stack.last().map(|e| e.element.tag.as_str());
+        let tag = self.get_source_retained(start, end);
+        let parent = self.stack.last().map(|e| e.element.tag);
         let ns = if self.should_force_html_namespace(tag) {
             Namespace::Html
         } else {
@@ -36,12 +36,12 @@ impl<'a> Parser<'a> {
         };
 
         self.current_element = Some(CurrentElement {
-            tag: tag.into(),
+            tag,
             tag_start: start,
             tag_end: end,
             ns,
             is_self_closing: false,
-            props: vize_carton::Vec::new_in(self.allocator),
+            props: vize_carton::Vec::new_in(&self.allocator),
         });
     }
 
@@ -51,7 +51,7 @@ impl<'a> Parser<'a> {
             let tag_start = current.tag_start;
             let loc = self.create_loc(tag_start.saturating_sub(1), end + 1); // Include < and >
 
-            let mut element = ElementNode::new(self.allocator, current.tag.clone(), loc);
+            let mut element = ElementNode::new(self.allocator, current.tag, loc);
             element.ns = current.ns;
             element.is_self_closing = current.is_self_closing;
             element.props = current.props;
@@ -69,12 +69,12 @@ impl<'a> Parser<'a> {
 
             let is_html_tree_element = is_html_tree_element(&element);
             if is_html_tree_element {
-                self.handle_in_body_start_tag(element.tag.as_str(), tag_start);
-                self.handle_in_table_start_tag(element.tag.as_str(), tag_start);
+                self.handle_in_body_start_tag(element.tag, tag_start);
+                self.handle_in_table_start_tag(element.tag, tag_start);
             }
 
             // Check for pre tags
-            let is_pre = (self.options.is_pre_tag)(element.tag.as_str());
+            let is_pre = (self.options.is_pre_tag)(element.tag);
             let has_v_pre = element
                 .props
                 .iter()
@@ -95,19 +95,23 @@ impl<'a> Parser<'a> {
                         // Convert directive back to attribute using its raw_name + arg
                         // to reconstruct the original attribute name (e.g., ":id", "@click")
                         let attr_name = {
-                            let prefix = dir.raw_name.as_deref().unwrap_or(&dir.name);
+                            let prefix = dir.raw_name.unwrap_or(dir.name);
                             let arg_str = dir.arg.as_ref().map(|a| match a {
-                                ExpressionNode::Simple(s) => s.content.as_str(),
+                                ExpressionNode::Simple(s) => s.content,
                                 ExpressionNode::Compound(c) => c.loc.span.slice(self.source),
                             });
-                            if let Some(arg) = arg_str {
-                                let mut name =
-                                    vize_carton::String::with_capacity(prefix.len() + arg.len());
-                                name.push_str(prefix);
-                                name.push_str(arg);
-                                name
-                            } else {
-                                vize_carton::String::from(prefix)
+                            match arg_str {
+                                // Reconstructed name: computed, and the same
+                                // `v-pre` shape recurs, so it interns.
+                                Some(arg) => {
+                                    let mut name = vize_carton::String::with_capacity(
+                                        prefix.len() + arg.len(),
+                                    );
+                                    name.push_str(prefix);
+                                    name.push_str(arg);
+                                    self.interner.intern(&name)
+                                }
+                                None => prefix,
                             }
                         };
                         let attr_value = dir.exp.as_ref().map(|e| {
@@ -116,7 +120,7 @@ impl<'a> Parser<'a> {
                                 ExpressionNode::Compound(c) => c.loc.span.slice(self.source),
                             };
                             TextNode {
-                                content: content.into(),
+                                content,
                                 loc: dir.loc.clone(),
                             }
                         });
@@ -127,7 +131,7 @@ impl<'a> Parser<'a> {
                                 value: attr_value,
                                 loc: dir.loc.clone(),
                             },
-                            allocator,
+                            &allocator,
                         ));
                         element.props[i] = attr;
                     }
@@ -168,11 +172,11 @@ impl<'a> Parser<'a> {
                 }
             }
 
-            if current.is_self_closing || (self.options.is_void_tag)(element.tag.as_str()) {
+            if current.is_self_closing || (self.options.is_void_tag)(element.tag) {
                 let should_foster_direct =
-                    self.should_foster_start_tag(element.tag.as_str(), is_html_tree_element);
+                    self.should_foster_start_tag(element.tag, is_html_tree_element);
                 // Self-closing or void tag, add directly
-                let boxed = Box::new_in(element, self.allocator);
+                let boxed = Box::new_in(element, &self.allocator);
                 let child = TemplateChildNode::Element(boxed);
                 if should_foster_direct {
                     self.add_fostered_child(child);
@@ -186,19 +190,18 @@ impl<'a> Parser<'a> {
                 // `nesting` for the diagnostic and for how its end tag is
                 // matched even though it never reaches the stack.
                 self.record_flattened_element(&element);
-                let boxed = Box::new_in(element, self.allocator);
+                let boxed = Box::new_in(element, &self.allocator);
                 self.add_child(TemplateChildNode::Element(boxed));
             } else {
-                let insertion =
-                    if self.should_foster_start_tag(element.tag.as_str(), is_html_tree_element) {
-                        self.report_tree_construction_recovery(
-                            &element.loc,
-                            "Foster parenting moved this element before the nearest open table.",
-                        );
-                        StackInsertion::Fostered
-                    } else {
-                        StackInsertion::Normal
-                    };
+                let insertion = if self.should_foster_start_tag(element.tag, is_html_tree_element) {
+                    self.report_tree_construction_recovery(
+                        &element.loc,
+                        "Foster parenting moved this element before the nearest open table.",
+                    );
+                    StackInsertion::Fostered
+                } else {
+                    StackInsertion::Normal
+                };
                 // Push to stack
                 self.push_stack_entry(ParserStackEntry {
                     element,
@@ -206,7 +209,7 @@ impl<'a> Parser<'a> {
                     in_v_pre: self.in_v_pre,
                     insertion,
                     implicit: false,
-                    fostered_before: Vec::new_in(self.allocator),
+                    fostered_before: Vec::new_in(&self.allocator),
                 });
                 self.in_pre = is_pre || self.in_pre;
                 self.in_v_pre = has_v_pre || self.in_v_pre;
@@ -253,7 +256,7 @@ impl<'a> Parser<'a> {
     pub(in crate::parser) fn emit_stack_entry(&mut self, entry: ParserStackEntry<'a>) {
         let insertion = entry.insertion;
         let mut nodes = entry.fostered_before;
-        let boxed = Box::new_in(entry.element, self.allocator);
+        let boxed = Box::new_in(entry.element, &self.allocator);
         nodes.push(TemplateChildNode::Element(boxed));
 
         for node in nodes {
@@ -267,7 +270,7 @@ impl<'a> Parser<'a> {
 
     pub(super) fn close_stack_element_at(&mut self, index: usize, report_unclosed: bool) {
         self.clear_flattened_elements();
-        let mut entries = Vec::new_in(self.allocator);
+        let mut entries = Vec::new_in(&self.allocator);
         while self.stack.len() > index {
             if let Some(entry) = self.pop_stack_entry() {
                 entries.push(entry);
@@ -282,7 +285,7 @@ impl<'a> Parser<'a> {
 
         if report_unclosed {
             for entry in entries.iter().take(entries.len().saturating_sub(1)) {
-                if !entry.implicit && !Self::can_omit_end_tag(entry.element.tag.as_str()) {
+                if !entry.implicit && !Self::can_omit_end_tag(entry.element.tag) {
                     let loc = entry.element.loc.clone();
                     self.errors
                         .push(CompilerError::new(ErrorCode::MissingEndTag, Some(loc)));
@@ -314,7 +317,7 @@ impl<'a> Parser<'a> {
         for node in entry.fostered_before {
             children.push(node);
         }
-        let boxed = Box::new_in(entry.element, self.allocator);
+        let boxed = Box::new_in(entry.element, &self.allocator);
         children.push(TemplateChildNode::Element(boxed));
     }
 

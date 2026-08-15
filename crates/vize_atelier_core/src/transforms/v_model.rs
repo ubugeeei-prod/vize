@@ -82,7 +82,7 @@ pub fn parse_model_modifiers(modifiers: &Vec<'_, SimpleExpressionNode<'_>>) -> V
     let mut result = VModelModifiers::default();
 
     for modifier in modifiers.iter() {
-        match modifier.content.as_str() {
+        match modifier.content {
             "lazy" => result.lazy = true,
             "number" => result.number = true,
             "trim" => result.trim = true,
@@ -95,7 +95,7 @@ pub fn parse_model_modifiers(modifiers: &Vec<'_, SimpleExpressionNode<'_>>) -> V
 
 /// Get the appropriate vModel runtime helper based on element type
 pub fn get_vmodel_helper(el: &ElementNode<'_>) -> RuntimeHelper {
-    match el.tag.as_str() {
+    match el.tag {
         "select" => RuntimeHelper::VModelSelect,
         "textarea" => RuntimeHelper::VModelText,
         "input" => {
@@ -105,7 +105,7 @@ pub fn get_vmodel_helper(el: &ElementNode<'_>) -> RuntimeHelper {
                     && attr.name == "type"
                     && let Some(value) = &attr.value
                 {
-                    match value.content.as_str() {
+                    match value.content {
                         "checkbox" => return RuntimeHelper::VModelCheckbox,
                         "radio" => return RuntimeHelper::VModelRadio,
                         _ => {}
@@ -127,12 +127,12 @@ pub fn transform_v_model<'a>(
     el: &ElementNode<'a>,
 ) -> Vec<'a, PropNode<'a>> {
     let allocator = ctx.allocator;
-    let mut props = Vec::new_in(allocator);
+    let mut props = Vec::new_in(&allocator);
 
     let value_exp = match &dir.exp {
         Some(exp) => match exp {
-            ExpressionNode::Simple(s) => s.content.clone(),
-            ExpressionNode::Compound(c) => String::new(c.loc.span.slice(&ctx.source)),
+            ExpressionNode::Simple(s) => String::new(s.content),
+            ExpressionNode::Compound(c) => String::new(c.loc.span.slice(ctx.source)),
         },
         None => return props,
     };
@@ -144,30 +144,38 @@ pub fn transform_v_model<'a>(
             .arg
             .as_ref()
             .map(|arg| match arg {
-                ExpressionNode::Simple(exp) => exp.content.clone(),
-                ExpressionNode::Compound(exp) => String::new(exp.loc.span.slice(&ctx.source)),
+                ExpressionNode::Simple(exp) => String::new(exp.content),
+                ExpressionNode::Compound(exp) => String::new(exp.loc.span.slice(ctx.source)),
             })
             .unwrap_or_else(|| String::new("modelValue"));
 
         // Create :propName binding
         let value_prop = PropNode::Directive(Box::new_in(
             DirectiveNode {
-                name: String::new("bind"),
+                name: "bind",
                 raw_name: None,
                 arg: Some(ExpressionNode::Simple(Box::new_in(
-                    SimpleExpressionNode::new(prop_name.clone(), true, dir.loc.clone()),
-                    allocator,
+                    SimpleExpressionNode::new(
+                        allocator.alloc_str(&prop_name.clone()),
+                        true,
+                        dir.loc.clone(),
+                    ),
+                    &allocator,
                 ))),
                 exp: Some(ExpressionNode::Simple(Box::new_in(
-                    SimpleExpressionNode::new(value_exp.clone(), false, dir.loc.clone()),
-                    allocator,
+                    SimpleExpressionNode::new(
+                        allocator.alloc_str(&value_exp.clone()),
+                        false,
+                        dir.loc.clone(),
+                    ),
+                    &allocator,
                 ))),
-                modifiers: Vec::new_in(allocator),
+                modifiers: Vec::new_in(&allocator),
                 for_parse_result: None,
                 shorthand: false,
                 loc: dir.loc.clone(),
             },
-            allocator,
+            &allocator,
         ));
         props.push(value_prop);
 
@@ -183,22 +191,30 @@ pub fn transform_v_model<'a>(
 
         let event_prop = PropNode::Directive(Box::new_in(
             DirectiveNode {
-                name: String::new("on"),
+                name: "on",
                 raw_name: None,
                 arg: Some(ExpressionNode::Simple(Box::new_in(
-                    SimpleExpressionNode::new(event_name.as_str(), true, dir.loc.clone()),
-                    allocator,
+                    SimpleExpressionNode::new(
+                        allocator.alloc_str(&event_name),
+                        true,
+                        dir.loc.clone(),
+                    ),
+                    &allocator,
                 ))),
                 exp: Some(ExpressionNode::Simple(Box::new_in(
-                    SimpleExpressionNode::new(handler.as_str(), false, dir.loc.clone()),
-                    allocator,
+                    SimpleExpressionNode::new(
+                        allocator.alloc_str(&handler),
+                        false,
+                        dir.loc.clone(),
+                    ),
+                    &allocator,
                 ))),
-                modifiers: Vec::new_in(allocator),
+                modifiers: Vec::new_in(&allocator),
                 for_parse_result: None,
                 shorthand: false,
                 loc: dir.loc.clone(),
             },
-            allocator,
+            &allocator,
         ));
         props.push(event_prop);
     } else {
@@ -211,22 +227,26 @@ pub fn transform_v_model<'a>(
 
         let event_prop = PropNode::Directive(Box::new_in(
             DirectiveNode {
-                name: String::new("on"),
+                name: "on",
                 raw_name: None,
                 arg: Some(ExpressionNode::Simple(Box::new_in(
                     SimpleExpressionNode::new("update:modelValue", true, dir.loc.clone()),
-                    allocator,
+                    &allocator,
                 ))),
                 exp: Some(ExpressionNode::Simple(Box::new_in(
-                    SimpleExpressionNode::new(handler.as_str(), false, dir.loc.clone()),
-                    allocator,
+                    SimpleExpressionNode::new(
+                        allocator.alloc_str(&handler),
+                        false,
+                        dir.loc.clone(),
+                    ),
+                    &allocator,
                 ))),
-                modifiers: Vec::new_in(allocator),
+                modifiers: Vec::new_in(&allocator),
                 for_parse_result: None,
                 shorthand: false,
                 loc: dir.loc.clone(),
             },
-            allocator,
+            &allocator,
         ));
         props.push(event_prop);
     }
@@ -244,7 +264,7 @@ pub fn get_model_event_prop(el: &ElementNode<'_>) -> (&'static str, &'static str
     if el.tag_type == ElementType::Component {
         ("update:modelValue", "modelValue")
     } else {
-        match el.tag.as_str() {
+        match el.tag {
             "select" | "textarea" => ("change", "value"),
             "input" => {
                 // Check input type
@@ -253,7 +273,7 @@ pub fn get_model_event_prop(el: &ElementNode<'_>) -> (&'static str, &'static str
                         && attr.name == "type"
                         && let Some(value) = &attr.value
                     {
-                        match value.content.as_str() {
+                        match value.content {
                             "checkbox" => return ("change", "checked"),
                             "radio" => return ("change", "checked"),
                             _ => {}
@@ -269,21 +289,21 @@ pub fn get_model_event_prop(el: &ElementNode<'_>) -> (&'static str, &'static str
 
 #[cfg(test)]
 mod tests {
-    use super::{SimpleExpressionNode, String, Vec, parse_model_modifiers, supports_v_model};
+    use super::{SimpleExpressionNode, Vec, parse_model_modifiers, supports_v_model};
     use crate::SourceLocation;
     use vize_carton::Allocator;
 
     #[test]
     fn test_parse_modifiers() {
         let allocator = Allocator::default();
-        let mut modifiers = Vec::new_in(&allocator);
+        let mut modifiers = Vec::new_in(&&allocator);
         modifiers.push(SimpleExpressionNode::new(
-            String::new("lazy"),
+            "lazy",
             true,
             SourceLocation::STUB,
         ));
         modifiers.push(SimpleExpressionNode::new(
-            String::new("trim"),
+            "trim",
             true,
             SourceLocation::STUB,
         ));

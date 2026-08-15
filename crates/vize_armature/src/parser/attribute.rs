@@ -17,9 +17,9 @@ use super::{CurrentAttribute, CurrentDirective, Parser};
 impl<'a> Parser<'a> {
     /// Process attribute name
     pub(super) fn on_attrib_name_impl(&mut self, start: usize, end: usize) {
-        let name = self.get_source(start, end);
+        let name = self.get_source_retained(start, end);
         self.current_attr = Some(CurrentAttribute {
-            name: name.into(),
+            name,
             name_start: start,
             name_end: end,
             value_start: None,
@@ -42,16 +42,16 @@ impl<'a> Parser<'a> {
 
     /// Process directive name
     pub(super) fn on_dir_name_impl(&mut self, start: usize, end: usize) {
-        let raw_name = self.get_source(start, end);
+        let raw_name = self.get_source_retained(start, end);
         let name = super::callbacks::parse_directive_name(raw_name);
 
         self.current_dir = Some(CurrentDirective {
-            name: name.into(),
-            raw_name: raw_name.into(),
+            name,
+            raw_name,
             name_start: start,
             name_end: end,
             arg: None,
-            modifiers: Vec::new_in(self.allocator),
+            modifiers: Vec::new_in(&self.allocator),
             value_start: None,
             value_end: None,
             value_content: None,
@@ -61,7 +61,7 @@ impl<'a> Parser<'a> {
 
     /// Process directive argument
     pub(super) fn on_dir_arg_impl(&mut self, start: usize, end: usize) {
-        let arg: String = self.get_source(start, end).into();
+        let arg = self.get_source_retained(start, end);
         // Check if dynamic arg (was inside [ ])
         let is_dynamic = start > 0 && self.source.as_bytes().get(start - 1) == Some(&b'[');
         if let Some(ref mut dir) = self.current_dir {
@@ -80,7 +80,7 @@ impl<'a> Parser<'a> {
             return;
         }
 
-        let modifier: String = self.get_source(start, end).into();
+        let modifier = self.get_source_retained(start, end);
         if let Some(ref mut dir) = self.current_dir {
             dir.modifiers.push((modifier, start, end));
         }
@@ -171,10 +171,22 @@ impl<'a> Parser<'a> {
                 matches!(
                     prop,
                     PropNode::Attribute(existing)
-                        if existing.name.as_str().eq_ignore_ascii_case(name)
+                        if existing.name.eq_ignore_ascii_case(name)
                 )
             })
         })
+    }
+
+    /// Freeze an accumulated attribute/directive value into arena-resident
+    /// text: the source slice when decoding left the run verbatim (the common
+    /// case, copy-free), an arena copy when an entity rewrote it.
+    fn freeze_value(&self, content: &str, start: usize, end: usize) -> &'a str {
+        let slice = self.get_source_retained(start, end);
+        if slice == content {
+            slice
+        } else {
+            self.allocator.alloc_str(content)
+        }
     }
 
     /// Finish building an attribute node
@@ -183,7 +195,7 @@ impl<'a> Parser<'a> {
         let loc = self.create_loc(attr.name_start, loc_end);
         let name_loc = self.create_loc(attr.name_start, attr.name_end);
 
-        if self.has_duplicate_attribute(attr.name.as_str()) {
+        if self.has_duplicate_attribute(attr.name) {
             // Vue recovers from duplicate attributes — codegen ignores
             // repeats and keeps the first occurrence — but linters still
             // want to see both in the AST so they can warn about the
@@ -195,7 +207,7 @@ impl<'a> Parser<'a> {
             appends!(
                 message,
                 "Duplicate attribute `",
-                attr.name.as_str(),
+                attr.name,
                 "`. Keeping the repeated attribute so parsing can continue."
             );
             self.errors.push(CompilerError::with_message(
@@ -205,7 +217,7 @@ impl<'a> Parser<'a> {
             ));
         }
 
-        let mut attr_node = AttributeNode::new(attr.name.clone(), loc);
+        let mut attr_node = AttributeNode::new(attr.name, loc);
         attr_node.name_loc = name_loc;
 
         // Add value if present
@@ -213,7 +225,8 @@ impl<'a> Parser<'a> {
             (attr.value_start, attr.value_end, attr.value_content)
         {
             let value_loc = self.create_loc(v_start, v_end);
-            attr_node.value = Some(TextNode::new(v_content, value_loc));
+            let content = self.freeze_value(&v_content, v_start, v_end);
+            attr_node.value = Some(TextNode::new(content, value_loc));
         } else if matches!(
             quote,
             QuoteType::Double | QuoteType::Single | QuoteType::Unquoted
@@ -225,7 +238,7 @@ impl<'a> Parser<'a> {
         }
 
         if let Some(ref mut current) = self.current_element {
-            let boxed = Box::new_in(attr_node, self.allocator);
+            let boxed = Box::new_in(attr_node, &self.allocator);
             current.props.push(PropNode::Attribute(boxed));
         }
     }
@@ -240,7 +253,7 @@ impl<'a> Parser<'a> {
             appends!(
                 message,
                 "Directive `",
-                dir.raw_name.as_str(),
+                dir.raw_name,
                 "` is missing a name. Ignoring it so the rest of the tag can be parsed."
             );
             self.errors.push(CompilerError::with_message(
@@ -257,16 +270,20 @@ impl<'a> Parser<'a> {
             && !dir
                 .modifiers
                 .iter()
-                .any(|(content, _, _)| content == "prop");
+                .any(|(content, _, _)| *content == "prop");
 
-        let mut dir_node = DirectiveNode::new(self.allocator, dir.name.clone(), loc);
+        let mut dir_node = DirectiveNode::new(self.allocator, dir.name, loc);
         dir_node.raw_name = Some(dir.raw_name);
 
         // Vue 3.4+ same-name shorthand: `:foo` without a value is `:foo="foo"`
         // Pre-compute the shorthand expression before moving dir.arg
         let shorthand_exp = if dir.name == "bind" && dir.value_start.is_none() {
-            if let Some((ref arg_content, arg_start, arg_end, false)) = dir.arg {
-                Some((vize_carton::camelize(arg_content), arg_start, arg_end))
+            if let Some((arg_content, arg_start, arg_end, false)) = dir.arg {
+                // Camelization computes a new name that recurs across a file
+                // (`:foo-bar` on many elements), so it interns rather than
+                // copying per occurrence.
+                let camelized = vize_carton::camelize(arg_content);
+                Some((self.interner.intern(&camelized), arg_start, arg_end))
             } else {
                 None
             }
@@ -282,7 +299,7 @@ impl<'a> Parser<'a> {
                 arg_expr.const_type = ConstantType::NotConstant;
                 self.retain_expression_ast(&mut arg_expr, arg_start, arg_end);
             }
-            let arg_boxed = Box::new_in(arg_expr, self.allocator);
+            let arg_boxed = Box::new_in(arg_expr, &self.allocator);
             dir_node.arg = Some(ExpressionNode::Simple(arg_boxed));
         }
 
@@ -307,22 +324,23 @@ impl<'a> Parser<'a> {
             (dir.value_start, dir.value_end, dir.value_content)
         {
             let exp_loc = self.create_loc(v_start, v_end);
-            let mut exp_node = SimpleExpressionNode::new(v_content, false, exp_loc);
+            let content = self.freeze_value(&v_content, v_start, v_end);
+            let mut exp_node = SimpleExpressionNode::new(content, false, exp_loc);
             self.retain_expression_ast(&mut exp_node, v_start, v_end);
-            let exp_boxed = Box::new_in(exp_node, self.allocator);
+            let exp_boxed = Box::new_in(exp_node, &self.allocator);
             dir_node.exp = Some(ExpressionNode::Simple(exp_boxed));
         } else if let Some((camelized, s_start, s_end)) = shorthand_exp {
             // Apply same-name shorthand: synthesize expression from arg name
             let exp_loc = self.create_loc(s_start, s_end);
-            let mut exp_node = SimpleExpressionNode::new(&*camelized, false, exp_loc);
+            let mut exp_node = SimpleExpressionNode::new(camelized, false, exp_loc);
             self.retain_expression_ast(&mut exp_node, s_start, s_end);
-            let exp_boxed = Box::new_in(exp_node, self.allocator);
+            let exp_boxed = Box::new_in(exp_node, &self.allocator);
             dir_node.exp = Some(ExpressionNode::Simple(exp_boxed));
             dir_node.shorthand = true;
         }
 
         if let Some(ref mut current) = self.current_element {
-            let boxed = Box::new_in(dir_node, self.allocator);
+            let boxed = Box::new_in(dir_node, &self.allocator);
             current.props.push(PropNode::Directive(boxed));
         }
     }

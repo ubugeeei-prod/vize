@@ -16,7 +16,7 @@ mod structural_keys;
 #[path = "transform/traverse.rs"]
 pub mod traverse;
 
-use vize_carton::{Allocator, Box, FxHashSet, SmallVec, String, Vec, profile};
+use vize_carton::{Allocator, Box, FxHashSet, SmallVec, String, Vec, interner::Interner, profile};
 use vize_croquis::{Croquis, ScopeChain};
 
 use crate::errors::CompilerError;
@@ -78,8 +78,10 @@ pub struct TransformContext<'a> {
     pub allocator: &'a Allocator,
     /// Transform options
     pub options: TransformOptions,
-    /// Source code
-    pub source: String,
+    /// Template source the spans index into, at the arena lifetime (P1-10).
+    pub source: &'a str,
+    /// Atoms for names this pass synthesizes rather than slices (P1-10).
+    pub interner: Interner<'a>,
     /// Root node reference
     pub root: Option<*mut RootNode<'a>>,
     /// Parent node stack
@@ -244,12 +246,9 @@ pub(crate) fn transform_inner<'a>(
     template_syntax_quirks: bool,
     hoisted_scope_id: Option<String>,
     jsx_compat: JsxTransformCompat,
-    source_text: Option<&str>,
+    source_text: Option<&'a str>,
 ) -> std::vec::Vec<CompilerError> {
-    let source = match source_text {
-        Some(text) => String::new(text),
-        None => root.source.clone(),
-    };
+    let source = source_text.unwrap_or(root.source);
     let mut ctx = if let Some(analysis) = analysis {
         TransformContext::with_analysis_and_template_syntax_quirks(
             allocator,
@@ -309,16 +308,20 @@ pub(crate) fn transform_inner<'a>(
     for helper in ctx.helpers.iter() {
         root.helpers.push(helper);
     }
-    for component in ctx.components.into_iter() {
-        root.components.push(component);
+    // Asset names are computed and recur, so they land in the arena as atoms.
+    for component in ctx.components.iter() {
+        let atom = ctx.interner.intern(component);
+        root.components.push(atom);
     }
-    for directive in ctx.directives.into_iter() {
-        root.directives.push(directive);
+    for directive in ctx.directives.iter() {
+        let atom = ctx.interner.intern(directive);
+        root.directives.push(atom);
     }
     // Transfer Vue 2 pipe filters (legacy-only; empty for Vue 3).
     #[cfg(feature = "legacy")]
-    for filter in ctx.filters.into_iter() {
-        root.filters.push(filter);
+    for filter in ctx.filters.iter() {
+        let atom = ctx.interner.intern(filter);
+        root.filters.push(atom);
     }
     // Transfer hoisted nodes to root
     for hoist in ctx.hoists.into_iter() {

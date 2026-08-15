@@ -2,12 +2,12 @@
 
 use oxc_ast::ast::{JSXAttribute, JSXAttributeName, JSXAttributeValue};
 use oxc_span::{GetSpan, Span};
-use vize_carton::{Box, String};
+use vize_carton::String;
 use vize_relief::{DirectiveNode, PropNode, SourceLocation};
 
 use crate::lower::Lowerer;
 
-impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
+impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// Babel's `v-text` transform passes the authored value directly to the
     /// DOM `textContent` prop. Native Vize keeps its established template-style
     /// `_toDisplayString` normalization, so this rewrite is compatibility-only.
@@ -23,7 +23,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         let mut directive = DirectiveNode::new(self.bump(), "bind", loc);
         directive.arg = Some(self.static_expr("textContent", attr.name.span()));
         directive.exp = self.directive_value_expr(attr.value.as_ref());
-        Some(PropNode::Directive(Box::new_in(directive, self.bump())))
+        Some(PropNode::Directive(self.boxed(directive)))
     }
 
     /// Apply Babel's `transformOn: true` option to the two exact prop names the
@@ -61,8 +61,8 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         expression.push(')');
 
         let mut directive = DirectiveNode::new(self.bump(), "bind", loc);
-        directive.exp = Some(self.constant_expr(&expression, attr.span));
-        Some(PropNode::Directive(Box::new_in(directive, self.bump())))
+        directive.exp = Some(self.constant_expr(self.bump().alloc_str(&expression), attr.span));
+        Some(PropNode::Directive(self.boxed(directive)))
     }
 
     /// Normalize the camel-cased SVG prop exactly as Babel does (#3391).
@@ -78,9 +78,14 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// A valueless JSX attribute is a boolean `true` in Babel's JSX
     /// semantics. Native Vize lowering deliberately keeps its established
     /// template-style empty-string value.
+    /// Freeze the compat-rewritten attribute name into the compile arena.
+    pub(super) fn intern_attr_name(&self, span: oxc_span::Span) -> &'a str {
+        self.bump().alloc_str(&self.compat_attribute_name(span))
+    }
+
     pub(super) fn valueless_attr(
         &self,
-        name: String,
+        name: &'a str,
         name_span: Span,
         name_loc: SourceLocation,
         loc: SourceLocation,
@@ -90,9 +95,9 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         }
 
         let mut directive = DirectiveNode::new(self.bump(), "bind", loc);
-        directive.arg = Some(self.static_expr(&name, name_span));
+        directive.arg = Some(self.static_expr(name, name_span));
         directive.exp = Some(self.constant_expr("true", name_span));
-        PropNode::Directive(Box::new_in(directive, self.bump()))
+        PropNode::Directive(self.boxed(directive))
     }
 }
 

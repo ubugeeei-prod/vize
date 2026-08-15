@@ -17,7 +17,7 @@ pub(super) fn process_directive_expressions<'a>(
 ) {
     for prop in el.props.iter_mut() {
         if let PropNode::Directive(dir) = prop {
-            match dir.name.as_str() {
+            match dir.name {
                 "bind" | "show" | "if" | "else-if" | "for" | "memo" => {
                     // Process value expression
                     if let Some(exp) = &dir.exp {

@@ -65,13 +65,13 @@ pub fn generate_event_handler(
         ExpressionNode::Simple(simple) => {
             if simple.is_static {
                 ctx.push("\"");
-                ctx.push(&simple.content);
+                ctx.push(simple.content);
                 ctx.push("\"");
                 return;
             }
 
             let processed: String = if simple.is_ref_transformed {
-                simple.content.clone()
+                simple.content.into()
             } else {
                 let content = &simple.content;
 
@@ -79,14 +79,14 @@ pub fn generate_event_handler(
                 let ts_stripped: String = if ctx.options.is_ts && content.contains(" as ") {
                     crate::steps::strip_typescript_from_expression(content)
                 } else {
-                    content.clone()
+                    (*content).into()
                 };
 
                 // Step 2: Prefix identifiers if needed. When the checked
                 // text is still the node's own bytes, the retained AST
                 // applies (P1-7); TS-stripped text that changed falls back.
                 if ctx.options.prefix_identifiers {
-                    if ts_stripped.as_str() == simple.content.as_str() {
+                    if ts_stripped.as_str() == simple.content {
                         prefix_identifiers_with_context_node(simple, ctx)
                     } else {
                         prefix_identifiers_with_context(&ts_stripped, ctx)
@@ -105,7 +105,7 @@ pub fn generate_event_handler(
             // Check if it's already an arrow function or function expression.
             // When `processed` is still the node's own bytes the retained AST
             // applies (P1-7); rewritten text keeps the legacy string parse.
-            let is_node_text = processed.as_str() == simple.content.as_str();
+            let is_node_text = processed.as_str() == simple.content;
             let is_function = if is_node_text {
                 crate::steps::expression::is_function_expression_node(simple)
             } else {
@@ -174,7 +174,7 @@ mod tests {
     use crate::codegen::expression::{generate_event_handler, generate_simple_expression};
     use crate::options::{BindingMetadata, BindingType, CodegenOptions};
     use crate::{ExpressionNode, SimpleExpressionNode, SourceLocation};
-    use vize_carton::{Bump, FxHashMap};
+    use vize_carton::{Allocator, FxHashMap};
 
     #[test]
     fn test_shorthand_property_expansion() {
@@ -292,11 +292,11 @@ mod tests {
             ..Default::default()
         };
 
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let mut ctx = CodegenContext::new(options);
         let exp = ExpressionNode::Simple(vize_carton::Box::new_in(
             SimpleExpressionNode {
-                content: "$event => (selectedFolders.value = selectedFolders.value.filter((f) => f.id !== folder.value.id))".into(),
+                content: "$event => (selectedFolders.value = selectedFolders.value.filter((f) => f.id !== folder.value.id))",
                 is_static: false,
                 const_type: crate::ConstantType::NotConstant,
                 loc: SourceLocation::STUB,
@@ -306,7 +306,7 @@ mod tests {
                 is_handler_key: true,
                 is_ref_transformed: true,
             },
-            &allocator,
+            &&allocator,
         ));
 
         generate_event_handler(&mut ctx, &exp, true);

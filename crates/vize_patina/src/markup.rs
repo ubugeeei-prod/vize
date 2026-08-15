@@ -226,7 +226,7 @@ impl<'a> MarkupElement<'a> {
     /// Tag name.
     pub fn tag(&self) -> &str {
         match self.inner {
-            MarkupElementInner::Relief(node) => node.tag.as_str(),
+            MarkupElementInner::Relief(node) => node.tag,
             MarkupElementInner::JsxElement { node, .. } => {
                 jsx_element_name(&jsx_element_ref(node).opening_element.name)
             }
@@ -469,7 +469,7 @@ impl<'a> MarkupElement<'a> {
 
 #[derive(Clone, Copy)]
 enum MarkupAttributeInner<'a> {
-    Relief(&'a AttributeNode),
+    Relief(&'a AttributeNode<'a>),
     Jsx {
         node: *const JSXAttribute<'a>,
         offset: u32,
@@ -501,7 +501,7 @@ impl<'a> MarkupAttribute<'a> {
     /// Attribute name as written in source.
     pub fn name(&self) -> &str {
         match self.inner {
-            MarkupAttributeInner::Relief(node) => node.name.as_str(),
+            MarkupAttributeInner::Relief(node) => node.name,
             MarkupAttributeInner::Jsx { node, .. } => {
                 jsx_attribute_name(&jsx_attribute_ref(node).name)
             }
@@ -516,9 +516,7 @@ impl<'a> MarkupAttribute<'a> {
     /// Attribute value when statically present.
     pub fn value(&self) -> Option<&'a str> {
         match self.inner {
-            MarkupAttributeInner::Relief(node) => {
-                node.value.as_ref().map(|value| value.content.as_str())
-            }
+            MarkupAttributeInner::Relief(node) => node.value.as_ref().map(|value| value.content),
             MarkupAttributeInner::Jsx { node, .. } => {
                 match jsx_attribute_ref(node).value.as_ref() {
                     Some(JSXAttributeValue::StringLiteral(value)) => Some(value.value.as_str()),
@@ -614,7 +612,7 @@ impl<'a> MarkupDirective<'a> {
     /// attribute such as `class={…}` it is `bind`.
     pub fn name(&self) -> &str {
         match self.inner {
-            MarkupDirectiveInner::Relief(node) => node.name.as_str(),
+            MarkupDirectiveInner::Relief(node) => node.name,
             MarkupDirectiveInner::Jsx { node, .. } => {
                 match jsx_attribute_directive_kind(jsx_attribute_ref(node)) {
                     Some(MarkupBindingKind::On) => "on",
@@ -645,7 +643,7 @@ impl<'a> MarkupDirective<'a> {
     pub fn arg_name(&self) -> Option<&'a str> {
         match self.inner {
             MarkupDirectiveInner::Relief(node) => match node.arg.as_ref() {
-                Some(ExpressionNode::Simple(simple)) => Some(simple.content.as_str()),
+                Some(ExpressionNode::Simple(simple)) => Some(simple.content),
                 _ => None,
             },
             MarkupDirectiveInner::Jsx { node, .. } => {
@@ -666,7 +664,7 @@ impl<'a> MarkupDirective<'a> {
     pub fn walk_modifiers(&self, visitor: &mut impl FnMut(&'a str)) {
         if let MarkupDirectiveInner::Relief(node) = self.inner {
             for modifier in node.modifiers.iter() {
-                visitor(modifier.content.as_str());
+                visitor(modifier.content);
             }
         }
     }
@@ -695,7 +693,7 @@ impl<'a> MarkupDirective<'a> {
 
 #[derive(Clone, Copy)]
 enum MarkupBindingInner<'a> {
-    ReliefAttribute(&'a AttributeNode),
+    ReliefAttribute(&'a AttributeNode<'a>),
     ReliefDirective(&'a DirectiveNode<'a>),
     Jsx {
         node: *const JSXAttribute<'a>,
@@ -760,11 +758,11 @@ impl<'a> MarkupBinding<'a> {
     /// - `Custom`: the directive name (`show` for `v-show`).
     pub fn arg_name(&self) -> Option<&'a str> {
         match self.inner {
-            MarkupBindingInner::ReliefAttribute(node) => Some(node.name.as_str()),
+            MarkupBindingInner::ReliefAttribute(node) => Some(node.name),
             MarkupBindingInner::ReliefDirective(node) => match relief_directive_kind(node) {
-                MarkupBindingKind::Custom => Some(node.name.as_str()),
+                MarkupBindingKind::Custom => Some(node.name),
                 _ => match node.arg.as_ref() {
-                    Some(ExpressionNode::Simple(simple)) => Some(simple.content.as_str()),
+                    Some(ExpressionNode::Simple(simple)) => Some(simple.content),
                     _ => None,
                 },
             },
@@ -815,7 +813,7 @@ impl<'a> MarkupBinding<'a> {
     pub fn static_value(&self) -> Option<&'a str> {
         match self.inner {
             MarkupBindingInner::ReliefAttribute(node) => {
-                node.value.as_ref().map(|value| value.content.as_str())
+                node.value.as_ref().map(|value| value.content)
             }
             MarkupBindingInner::ReliefDirective(_) => None,
             MarkupBindingInner::Jsx { node, .. } => match jsx_attribute_ref(node).value.as_ref() {
@@ -848,7 +846,7 @@ impl<'a> MarkupBinding<'a> {
     pub fn walk_modifiers(&self, visitor: &mut impl FnMut(&'a str)) {
         if let MarkupBindingInner::ReliefDirective(node) = self.inner {
             for modifier in node.modifiers.iter() {
-                visitor(modifier.content.as_str());
+                visitor(modifier.content);
             }
         }
     }
@@ -878,14 +876,14 @@ impl<'a> MarkupBinding<'a> {
 
 #[derive(Clone, Copy)]
 enum MarkupTextInner<'a> {
-    Relief(&'a TextNode),
+    Relief(&'a TextNode<'a>),
     Jsx {
         node: *const JSXText<'a>,
         offset: u32,
     },
 }
 
-/// Text node view.
+///<'a> Text node view.
 #[derive(Clone, Copy)]
 pub struct MarkupText<'a> {
     inner: MarkupTextInner<'a>,
@@ -910,7 +908,7 @@ impl<'a> MarkupText<'a> {
     /// Raw text content.
     pub fn content(&self) -> &'a str {
         match self.inner {
-            MarkupTextInner::Relief(node) => node.content.as_str(),
+            MarkupTextInner::Relief(node) => node.content,
             MarkupTextInner::Jsx { node, .. } => jsx_text_ref(node).value.as_str(),
         }
     }
@@ -1167,7 +1165,7 @@ fn jsx_attribute_name<'a>(name: &'a JSXAttributeName<'a>) -> &'a str {
 /// Classify a `vize_relief` directive into a normalized [`MarkupBindingKind`].
 #[inline]
 fn relief_directive_kind(node: &DirectiveNode<'_>) -> MarkupBindingKind {
-    match node.name.as_str() {
+    match node.name {
         "bind" => MarkupBindingKind::Bind,
         "on" => MarkupBindingKind::On,
         "model" => MarkupBindingKind::Model,
@@ -1301,7 +1299,7 @@ impl<'a> MarkupList<'a> {
     /// The source iterable expression text (`items` in `item in items`).
     pub fn source_expression(&self) -> Option<&'a str> {
         match &self.node.source {
-            ExpressionNode::Simple(simple) => Some(simple.content.as_str()),
+            ExpressionNode::Simple(simple) => Some(simple.content),
             ExpressionNode::Compound(_) => None,
         }
     }
@@ -1333,7 +1331,7 @@ impl<'a> MarkupList<'a> {
 #[inline]
 fn simple_expression_text<'a>(exp: Option<&'a ExpressionNode<'a>>) -> Option<&'a str> {
     match exp {
-        Some(ExpressionNode::Simple(simple)) => Some(simple.content.as_str()),
+        Some(ExpressionNode::Simple(simple)) => Some(simple.content),
         _ => None,
     }
 }

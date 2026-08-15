@@ -64,7 +64,7 @@ pub(super) fn push_for_aliases(directive: &DirectiveNode<'_>, out: &mut Vec<Stri
 
 pub(super) fn expression_source<'a>(exp: &'a ExpressionNode<'a>, source: &'a str) -> &'a str {
     match exp {
-        ExpressionNode::Simple(simple) => simple.content.as_str(),
+        ExpressionNode::Simple(simple) => simple.content,
         ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
     }
 }

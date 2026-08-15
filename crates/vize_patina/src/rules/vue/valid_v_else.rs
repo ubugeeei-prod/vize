@@ -59,7 +59,7 @@ impl Rule for ValidVElse {
         element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name.as_str() != "else" {
+        if directive.name != "else" {
             return;
         }
 
@@ -82,9 +82,10 @@ impl Rule for ValidVElse {
         }
 
         // Check 2: v-else should not be used with v-if or v-else-if
-        let has_v_if = element.props.iter().any(|p| {
-            matches!(p, PropNode::Directive(d) if d.name.as_str() == "if" || d.name.as_str() == "else-if")
-        });
+        let has_v_if = element
+            .props
+            .iter()
+            .any(|p| matches!(p, PropNode::Directive(d) if d.name == "if" || d.name == "else-if"));
         if has_v_if {
             ctx.error_with_help(
                 ctx.t("vue/valid-v-else.missing_v_if"),
@@ -149,7 +150,7 @@ fn get_if_chain_directive_info(element: &ElementNode) -> IfChainDirectiveInfo {
 
     for prop in element.props.iter() {
         if let PropNode::Directive(dir) = prop {
-            match dir.name.as_str() {
+            match dir.name {
                 "if" => info.has_v_if = true,
                 "else-if" => info.else_if_loc = Some(dir.loc.clone()),
                 "else" => info.else_loc = Some(dir.loc.clone()),

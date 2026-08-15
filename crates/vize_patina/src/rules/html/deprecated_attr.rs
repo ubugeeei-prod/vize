@@ -49,11 +49,11 @@ impl Rule for DeprecatedAttr {
             return;
         }
 
-        let tag = element.tag.as_str();
+        let tag = element.tag;
 
         for prop in &element.props {
             if let PropNode::Attribute(attr) = prop {
-                let name = attr.name.as_str();
+                let name = attr.name;
                 if let Some(suggestion) = deprecated_attr_suggestion(tag, name) {
                     let message = ctx.t_fmt(
                         "html/deprecated-attr.message",

@@ -6,7 +6,7 @@ use super::DefineArtMetadata;
 use super::{BlockInfo, extract_attr, has_attr};
 use crate::types::{ArtMetadata, ArtParseError, ArtStatus};
 use memchr::{memchr, memmem};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 /// Find the `<art>` block in the source.
 /// Returns the block info with attributes and content.
@@ -64,7 +64,7 @@ pub(crate) fn find_art_block<'a>(
 /// Uses arena allocation for tags vector.
 #[inline]
 pub(crate) fn parse_metadata<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     block: &BlockInfo<'a>,
     define_art: Option<&DefineArtMetadata<'a>>,
 ) -> Result<ArtMetadata<'a>, ArtParseError> {
@@ -84,7 +84,7 @@ pub(crate) fn parse_metadata<'a>(
         .or_else(|| define_art.and_then(|metadata| metadata.category));
 
     // Parse tags (comma-separated) into arena-allocated vec
-    let mut tags = vize_carton::Vec::new_in(allocator);
+    let mut tags = vize_carton::Vec::new_in(&allocator);
     if let Some(tags_str) = extract_attr(attrs, "tags") {
         // Split by comma, trim each tag - no allocations, just slices
         for tag in tags_str.split(',') {
@@ -145,7 +145,7 @@ fn parse_status(attrs: &str) -> Option<ArtStatus> {
 mod tests {
     use super::{find_art_block, parse_metadata, parse_status};
     use crate::types::ArtStatus;
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
     #[test]
     fn test_find_art_block() {
@@ -159,7 +159,7 @@ mod tests {
 
     #[test]
     fn test_parse_metadata_minimal() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let source = r#"<art title="Button"></art>"#;
         let block = find_art_block(source.as_bytes(), source).unwrap();
         let metadata = parse_metadata(&allocator, &block, None).unwrap();
@@ -171,7 +171,7 @@ mod tests {
 
     #[test]
     fn test_parse_metadata_full() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let source = r#"<art title="Button" description="A button" category="atoms" tags="ui,input" status="draft"></art>"#;
         let block = find_art_block(source.as_bytes(), source).unwrap();
         let metadata = parse_metadata(&allocator, &block, None).unwrap();

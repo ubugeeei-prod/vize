@@ -132,7 +132,7 @@ pub(crate) fn generate_scope_closures(
     }
     let props_ctx = ComponentPropsContext {
         summary,
-        template_source: options.template_ast.map(|root| root.source.as_str()),
+        template_source: options.template_ast.map(|root| root.source),
         children_map: &children_map,
         vfor_enclosing_guards: &vfor_enclosing_guards,
         template_prop_names,
@@ -158,7 +158,7 @@ pub(crate) fn generate_scope_closures(
             template_prop_names,
             checks,
             template_ast: options.template_ast,
-            template_source: options.template_ast.map(|root| root.source.as_str()),
+            template_source: options.template_ast.map(|root| root.source),
             template_offset,
             check_options,
             legacy_vue2: options.legacy_vue2,

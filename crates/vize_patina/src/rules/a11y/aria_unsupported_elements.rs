@@ -37,22 +37,22 @@ impl Rule for AriaUnsupportedElements {
             return;
         }
 
-        if !helpers::ARIA_UNSUPPORTED_ELEMENTS.contains(&element.tag.as_str()) {
+        if !helpers::ARIA_UNSUPPORTED_ELEMENTS.contains(&element.tag) {
             return;
         }
 
         for prop in &element.props {
             match prop {
-                PropNode::Attribute(attr) if Self::is_aria_or_role(attr.name.as_str()) => {
-                    self.report_unsupported_attr(ctx, element, attr.name.as_str(), &attr.loc);
+                PropNode::Attribute(attr) if Self::is_aria_or_role(attr.name) => {
+                    self.report_unsupported_attr(ctx, element, attr.name, &attr.loc);
                 }
                 PropNode::Directive(dir)
                     if dir.name == "bind"
                         && let Some(ExpressionNode::Simple(arg)) = &dir.arg
                         && arg.is_static
-                        && Self::is_aria_or_role(arg.content.as_str()) =>
+                        && Self::is_aria_or_role(arg.content) =>
                 {
-                    self.report_unsupported_attr(ctx, element, arg.content.as_str(), &dir.loc);
+                    self.report_unsupported_attr(ctx, element, arg.content, &dir.loc);
                 }
                 _ => {}
             }
@@ -75,7 +75,7 @@ impl AriaUnsupportedElements {
         ctx.error_with_help(
             ctx.t_fmt(
                 "a11y/aria-unsupported-elements.message",
-                &[("tag", element.tag.as_str()), ("attr", attr)],
+                &[("tag", element.tag), ("attr", attr)],
             ),
             loc,
             ctx.t("a11y/aria-unsupported-elements.help"),

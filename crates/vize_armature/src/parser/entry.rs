@@ -4,7 +4,7 @@
 //! live in their own module so `parser.rs` stays within the repository's
 //! per-file source budget.
 
-use vize_carton::{Allocator, Vec};
+use vize_carton::Allocator;
 use vize_relief::{
     RootNode,
     errors::CompilerError,
@@ -17,7 +17,7 @@ use super::Parser;
 pub fn parse<'a>(
     allocator: &'a Allocator,
     source: &'a str,
-) -> (RootNode<'a>, Vec<'a, CompilerError>) {
+) -> (RootNode<'a>, std::vec::Vec<CompilerError>) {
     Parser::new(allocator, source).parse()
 }
 
@@ -32,7 +32,7 @@ pub fn parse<'a>(
 pub fn parse_document<'a>(
     allocator: &'a Allocator,
     source: &'a str,
-) -> (RootNode<'a>, Vec<'a, CompilerError>) {
+) -> (RootNode<'a>, std::vec::Vec<CompilerError>) {
     Parser::new_document(allocator, source).parse()
 }
 
@@ -41,7 +41,7 @@ pub fn parse_document_with_options<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     options: ParserOptions,
-) -> (RootNode<'a>, Vec<'a, CompilerError>) {
+) -> (RootNode<'a>, std::vec::Vec<CompilerError>) {
     Parser::document_with_options(allocator, source, options).parse()
 }
 
@@ -50,7 +50,7 @@ pub fn parse_with_options<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     options: ParserOptions,
-) -> (RootNode<'a>, Vec<'a, CompilerError>) {
+) -> (RootNode<'a>, std::vec::Vec<CompilerError>) {
     Parser::with_options(allocator, source, options).parse()
 }
 
@@ -61,7 +61,7 @@ pub fn parse_with_options_and_invalid_html_self_closing<'a>(
     source: &'a str,
     options: ParserOptions,
     allow_invalid_html_self_closing: bool,
-) -> (RootNode<'a>, Vec<'a, CompilerError>) {
+) -> (RootNode<'a>, std::vec::Vec<CompilerError>) {
     Parser::with_options_and_template_syntax(
         allocator,
         source,
@@ -81,6 +81,6 @@ pub fn parse_with_options_and_template_syntax<'a>(
     source: &'a str,
     options: ParserOptions,
     template_syntax: TemplateSyntaxMode,
-) -> (RootNode<'a>, Vec<'a, CompilerError>) {
+) -> (RootNode<'a>, std::vec::Vec<CompilerError>) {
     Parser::with_options_and_template_syntax(allocator, source, options, template_syntax).parse()
 }

@@ -14,7 +14,7 @@ use oxc_ast::ast::{
     ArrayExpressionElement, Expression, JSXAttribute, JSXAttributeName, JSXAttributeValue,
 };
 use oxc_span::GetSpan;
-use vize_carton::{Box, ToCompactString};
+use vize_carton::ToCompactString;
 use vize_relief::SourceLocation;
 use vize_relief::{DirectiveNode, PropNode, SimpleExpressionNode};
 
@@ -31,7 +31,7 @@ pub(crate) enum ModelArrayLowering<'a> {
     Rejected,
 }
 
-impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
+impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// Reject a `v-model` whose bound target cannot be assigned to.
     ///
     /// `v-model` compiles to `$event => (target = $event)`, so a target that is
@@ -191,7 +191,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         if let Some(argument) = arg {
             directive.arg = Some(match argument {
                 Expression::StringLiteral(string) => {
-                    self.static_expr(string.value.as_str(), string.span)
+                    self.static_expr(self.bump().alloc_str(string.value.as_str()), string.span)
                 }
                 expression => self.dyn_expr(expression.span()),
             });
@@ -205,14 +205,14 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
                     continue;
                 };
                 directive.modifiers.push(SimpleExpressionNode::new(
-                    s.value.as_str(),
+                    self.bump().alloc_str(s.value.as_str()),
                     false,
                     loc.clone(),
                 ));
             }
         }
 
-        ModelArrayLowering::Lowered(PropNode::Directive(Box::new_in(directive, self.bump())))
+        ModelArrayLowering::Lowered(PropNode::Directive(self.boxed(directive)))
     }
 }
 

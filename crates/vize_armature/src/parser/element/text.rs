@@ -1,11 +1,11 @@
 //! Text, fostered text, and interpolation processing.
 
-use vize_carton::Box;
+use vize_carton::{Box, String};
 use vize_relief::{
     ExpressionNode, InterpolationNode, SimpleExpressionNode, TemplateChildNode, TextNode,
 };
 
-use super::super::Parser;
+use super::super::{Parser, PendingText, TextSlot};
 
 impl<'a> Parser<'a> {
     /// Process text content
@@ -14,23 +14,25 @@ impl<'a> Parser<'a> {
             return;
         }
 
-        let source = self.get_source(start, end).to_owned();
-        self.append_or_merge_text(&source, start, end);
+        let content = self.get_source_retained(start, end);
+        self.append_or_merge_text(content, start, end);
     }
 
     /// Process text entity content
     pub(in crate::parser) fn on_text_entity_impl(&mut self, ch: char, start: usize, end: usize) {
-        let mut content = [0_u8; 4];
-        self.append_or_merge_text(ch.encode_utf8(&mut content), start, end);
+        let mut buf = [0_u8; 4];
+        let decoded: &'a str = self.allocator.alloc_str(ch.encode_utf8(&mut buf));
+        self.append_or_merge_text(decoded, start, end);
     }
 
     /// Append or merge text node
-    fn append_or_merge_text(&mut self, content: &str, start: usize, end: usize) {
+    fn append_or_merge_text(&mut self, content: &'a str, start: usize, end: usize) {
         if self.should_foster_text(content) {
             self.append_or_merge_fostered_text(content, start, end);
             return;
         }
 
+        let slot = self.current_text_slot();
         let can_merge = if let Some(entry) = self.stack.last() {
             matches!(
                 entry.element.children.last(),
@@ -43,27 +45,27 @@ impl<'a> Parser<'a> {
             )
         };
 
-        if can_merge {
-            if let Some(entry) = self.stack.last_mut()
-                && let Some(TemplateChildNode::Text(text_node)) = entry.element.children.last_mut()
-            {
-                text_node.content.push_str(content);
-                text_node.loc.set_end(end as u32);
-            } else if let Some(root) = self.root.as_mut()
-                && let Some(TemplateChildNode::Text(text_node)) = root.children.last_mut()
-            {
-                text_node.content.push_str(content);
-                text_node.loc.set_end(end as u32);
-            }
-        } else {
+        if !can_merge {
             let loc = self.create_loc(start, end);
             let text_node = TextNode::new(content, loc);
-            let boxed = Box::new_in(text_node, self.allocator);
+            let boxed = Box::new_in(text_node, &self.allocator);
             self.add_child(TemplateChildNode::Text(boxed));
+            return;
+        }
+
+        self.merge_into_pending(slot, content);
+        if let Some(entry) = self.stack.last_mut()
+            && let Some(TemplateChildNode::Text(text_node)) = entry.element.children.last_mut()
+        {
+            text_node.loc.set_end(end as u32);
+        } else if let Some(root) = self.root.as_mut()
+            && let Some(TemplateChildNode::Text(text_node)) = root.children.last_mut()
+        {
+            text_node.loc.set_end(end as u32);
         }
     }
 
-    fn append_or_merge_fostered_text(&mut self, content: &str, start: usize, end: usize) {
+    fn append_or_merge_fostered_text(&mut self, content: &'a str, start: usize, end: usize) {
         let Some(table_index) = self.nearest_table_index() else {
             self.append_or_merge_text(content, start, end);
             return;
@@ -74,21 +76,65 @@ impl<'a> Parser<'a> {
             Some(TemplateChildNode::Text(_))
         );
 
-        if can_merge {
-            if let Some(TemplateChildNode::Text(text_node)) =
-                self.stack[table_index].fostered_before.last_mut()
-            {
-                text_node.content.push_str(content);
-                text_node.loc.set_end(end as u32);
-            }
-        } else {
+        if !can_merge {
             let loc = self.create_loc(start, end);
             let text_node = TextNode::new(content, loc);
-            let boxed = Box::new_in(text_node, self.allocator);
+            let boxed = Box::new_in(text_node, &self.allocator);
+            self.flush_pending_text();
             self.stack[table_index]
                 .fostered_before
                 .push(TemplateChildNode::Text(boxed));
+            return;
         }
+
+        self.merge_into_pending(TextSlot::Fostered(table_index), content);
+        if let Some(TemplateChildNode::Text(text_node)) =
+            self.stack[table_index].fostered_before.last_mut()
+        {
+            text_node.loc.set_end(end as u32);
+        }
+    }
+
+    /// Accumulate `chunk` into the buffered run for `slot`, seeding the buffer
+    /// from the node's current content the first time a run needs one.
+    ///
+    /// The node's `content` is deliberately left stale until
+    /// [`Parser::flush_pending_text`] runs: that keeps a run of N entities
+    /// linear instead of recopying the whole run once per entity, and the
+    /// flush at every non-text callback boundary means nothing can read it in
+    /// between.
+    fn merge_into_pending(&mut self, slot: TextSlot, chunk: &str) {
+        if let Some(pending) = self.pending_text.as_mut()
+            && pending.slot == slot
+        {
+            pending.buf.push_str(chunk);
+            return;
+        }
+
+        self.flush_pending_text();
+
+        let existing = match slot {
+            TextSlot::Stack(index) => self
+                .stack
+                .get(index)
+                .and_then(|entry| entry.element.children.last()),
+            TextSlot::Fostered(index) => self
+                .stack
+                .get(index)
+                .and_then(|entry| entry.fostered_before.last()),
+            TextSlot::Root => self.root.as_ref().and_then(|root| root.children.last()),
+        };
+        let Some(TemplateChildNode::Text(node)) = existing else {
+            return;
+        };
+        let mut buf = String::with_capacity(node.content.len() + chunk.len());
+        buf.push_str(node.content);
+        buf.push_str(chunk);
+        self.pending_text = Some(PendingText {
+            buf,
+            slot,
+            start: node.loc.span.start as usize,
+        });
     }
 
     /// Process interpolation
@@ -111,7 +157,7 @@ impl<'a> Parser<'a> {
     }
 
     fn build_interpolation(&mut self, start: usize, end: usize, raw: bool) {
-        let raw_content = self.get_source(start, end);
+        let raw_content = self.get_source_retained(start, end);
         let content = raw_content.trim();
 
         // Calculate trimmed positions for accurate source mapping
@@ -138,7 +184,7 @@ impl<'a> Parser<'a> {
         // Create expression node
         let mut expr = SimpleExpressionNode::new(content, false, inner_loc);
         self.retain_expression_ast(&mut expr, trimmed_start, trimmed_end);
-        let expr_boxed = Box::new_in(expr, self.allocator);
+        let expr_boxed = Box::new_in(expr, &self.allocator);
 
         let interp = InterpolationNode {
             content: ExpressionNode::Simple(expr_boxed),
@@ -148,7 +194,7 @@ impl<'a> Parser<'a> {
             #[cfg(feature = "legacy")]
             raw,
         };
-        let boxed = Box::new_in(interp, self.allocator);
+        let boxed = Box::new_in(interp, &self.allocator);
         self.add_child(TemplateChildNode::Interpolation(boxed));
     }
 }

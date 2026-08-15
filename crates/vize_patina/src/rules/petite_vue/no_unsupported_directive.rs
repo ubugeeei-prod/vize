@@ -79,7 +79,7 @@ impl Rule for NoUnsupportedDirective {
             return;
         }
 
-        let name = directive.name.as_str();
+        let name = directive.name;
         if SUPPORTED_DIRECTIVES.contains(&name) {
             return;
         }

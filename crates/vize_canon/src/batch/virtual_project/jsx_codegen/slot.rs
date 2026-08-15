@@ -57,7 +57,7 @@ pub(super) fn collect(element: &ElementNode<'_>, host: &JsxExpr) -> Option<JsxSl
         return None;
     }
     let directive = element.props.iter().find_map(|prop| match prop {
-        PropNode::Directive(directive) if directive.name.as_str() == "slot" => Some(directive),
+        PropNode::Directive(directive) if directive.name == "slot" => Some(directive),
         _ => None,
     })?;
     let params = collect::alias_expr(directive.exp.as_ref()?)?;

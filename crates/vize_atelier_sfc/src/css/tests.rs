@@ -4,7 +4,7 @@ mod scoped_regressions;
 
 #[cfg(feature = "native")]
 use std::{fs, path::PathBuf};
-use vize_carton::{Bump, BumpVec, ToCompactString};
+use vize_carton::{Allocator, ToCompactString, Vec as ArenaVec};
 
 #[cfg(feature = "native")]
 use super::CssTargets;
@@ -176,7 +176,7 @@ fn test_compile_minified_css() {
 
 #[test]
 fn test_v_bind_extraction() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let css = ".foo { color: v-bind(color); background: v-bind('bgColor'); }";
     let (transformed, vars) = extract_and_transform_v_bind(&bump, css);
     insta::assert_snapshot!("v_bind_extraction", v_bind_snapshot(&transformed, &vars));
@@ -207,7 +207,7 @@ fn test_prod_scoped_v_bind_name_matches_vue_hash_sum() {
 
 #[test]
 fn test_v_bind_extraction_handles_quoted_expressions_with_parentheses() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let css = r#"
 .header {
   background-color: color(from v-bind("parentBg ?? 'var(--bg)'") srgb r g b / 0.85);
@@ -232,7 +232,7 @@ fn test_v_bind_extraction_handles_quoted_expressions_with_parentheses() {
 
 #[test]
 fn test_v_bind_extraction_ignores_strings_and_comments() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let css = r#"
 .icon::before {
   content: "v-bind(icon)";
@@ -257,7 +257,7 @@ fn test_v_bind_extraction_ignores_strings_and_comments() {
 
 #[test]
 fn test_v_bind_extraction_requires_left_boundary() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let css =
         ".foo { transition: my-v-bind(x); animation: -webkit-v-bind(y); color: v-bind(color); }";
 
@@ -276,8 +276,8 @@ fn test_v_bind_extraction_requires_left_boundary() {
 
 #[test]
 fn test_scope_deep() {
-    let bump = Bump::new();
-    let mut out = BumpVec::new_in(&bump);
+    let bump = Allocator::new();
+    let mut out = ArenaVec::new_in(&&bump);
     transform_deep(&mut out, ":deep(.child)", 0, b"[data-v-123]");
     let result = test_utf8(&out);
     assert_eq!(result, "[data-v-123] .child");
@@ -285,7 +285,7 @@ fn test_scope_deep() {
 
 #[test]
 fn test_scope_deep_after_child_combinator() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let css = ".sponsors__item > :deep(.sponsor) { width: 100%; }";
     let result = apply_scoped_css(&bump, css, "data-v-123");
     assert_eq!(
@@ -296,7 +296,7 @@ fn test_scope_deep_after_child_combinator() {
 
 #[test]
 fn test_apply_scoped_css_preserves_deep_comment_before_selector() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let css = "/* override :deep(p) from the parent */\n.foo { color: red; }";
     let result = apply_scoped_css(&bump, css, "data-v-123");
 
@@ -308,7 +308,7 @@ fn test_apply_scoped_css_preserves_deep_comment_before_selector() {
 
 #[test]
 fn test_apply_scoped_css_preserves_deep_comment_inside_at_rule() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let css = "@media (min-width: 1px) { /* A <span>, not a <p>; ignore :deep(p). */\n.conferences__venue { display: block; } }";
     let result = apply_scoped_css(&bump, css, "data-v-abc");
 
@@ -320,8 +320,8 @@ fn test_apply_scoped_css_preserves_deep_comment_inside_at_rule() {
 
 #[test]
 fn test_scope_global() {
-    let bump = Bump::new();
-    let mut out = BumpVec::new_in(&bump);
+    let bump = Allocator::new();
+    let mut out = ArenaVec::new_in(&&bump);
     transform_global(&mut out, ":global(.foo)", 0);
     let result = test_utf8(&out);
     assert_eq!(result, ".foo");
@@ -329,8 +329,8 @@ fn test_scope_global() {
 
 #[test]
 fn test_scope_slotted() {
-    let bump = Bump::new();
-    let mut out = BumpVec::new_in(&bump);
+    let bump = Allocator::new();
+    let mut out = ArenaVec::new_in(&&bump);
     transform_slotted(&mut out, ":slotted(.child)", 0, b"[data-v-123]");
     let result = test_utf8(&out);
     assert_eq!(result, ".child[data-v-123-s]");
@@ -338,8 +338,8 @@ fn test_scope_slotted() {
 
 #[test]
 fn test_scope_slotted_with_pseudo() {
-    let bump = Bump::new();
-    let mut out = BumpVec::new_in(&bump);
+    let bump = Allocator::new();
+    let mut out = ArenaVec::new_in(&&bump);
     transform_slotted(&mut out, ":slotted(.child):hover", 0, b"[data-v-abc]");
     let result = test_utf8(&out);
     assert_eq!(result, ".child[data-v-abc-s]:hover");
@@ -347,8 +347,8 @@ fn test_scope_slotted_with_pseudo() {
 
 #[test]
 fn test_scope_slotted_complex() {
-    let bump = Bump::new();
-    let mut out = BumpVec::new_in(&bump);
+    let bump = Allocator::new();
+    let mut out = ArenaVec::new_in(&&bump);
     transform_slotted(&mut out, ":slotted(div.foo)", 0, b"[data-v-12345678]");
     let result = test_utf8(&out);
     assert_eq!(result, "div.foo[data-v-12345678-s]");
@@ -356,8 +356,8 @@ fn test_scope_slotted_complex() {
 
 #[test]
 fn test_scope_with_pseudo_element() {
-    let bump = Bump::new();
-    let mut out = BumpVec::new_in(&bump);
+    let bump = Allocator::new();
+    let mut out = ArenaVec::new_in(&&bump);
     add_scope_to_element(&mut out, ".foo::before", b"[data-v-123]");
     let result = test_utf8(&out);
     assert_eq!(result, ".foo[data-v-123]::before");
@@ -365,8 +365,8 @@ fn test_scope_with_pseudo_element() {
 
 #[test]
 fn test_scope_with_pseudo_class() {
-    let bump = Bump::new();
-    let mut out = BumpVec::new_in(&bump);
+    let bump = Allocator::new();
+    let mut out = ArenaVec::new_in(&&bump);
     add_scope_to_element(&mut out, ".foo:hover", b"[data-v-123]");
     let result = test_utf8(&out);
     assert_eq!(result, ".foo[data-v-123]:hover");
@@ -463,7 +463,7 @@ fn test_scoped_css_with_quoted_font_family() {
 
 #[test]
 fn test_apply_scoped_css_at_media() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     // Root-level @media with selectors inside
     let css = ".foo { color: red; }\n@media (max-width: 768px) { .foo { color: blue; } }";
     let result = apply_scoped_css(&bump, css, "data-v-123");
@@ -473,7 +473,7 @@ fn test_apply_scoped_css_at_media() {
 
 #[test]
 fn test_apply_scoped_css_at_media_custom_media() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     // @media with custom media queries (like --mobile)
     let css = ".a { color: red; }\n@media (--mobile) { .a { font-size: 12px; } }";
     let result = apply_scoped_css(&bump, css, "data-v-abc");
@@ -483,7 +483,7 @@ fn test_apply_scoped_css_at_media_custom_media() {
 
 #[test]
 fn test_apply_scoped_css_multiple_selectors_in_media() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     // Multiple selectors inside @media
     let css = "@media (--mobile) { .a { color: red; } .b { color: blue; } }";
     let result = apply_scoped_css(&bump, css, "data-v-xyz");
@@ -493,7 +493,7 @@ fn test_apply_scoped_css_multiple_selectors_in_media() {
 
 #[test]
 fn test_apply_scoped_css_with_quoted_string() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     // Test the raw scoping function without LightningCSS
     let css = ".foo { font-family: 'JetBrains Mono', monospace; }";
     let result = apply_scoped_css(&bump, css, "data-v-123");
@@ -503,7 +503,7 @@ fn test_apply_scoped_css_with_quoted_string() {
 
 #[test]
 fn test_apply_scoped_css_at_import() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     // @import should be preserved and not treated as a block at-rule
     let css = "@import \"~/assets/styles/custom-media-query.css\";\n\nfooter { width: 100%; }";
     let result = apply_scoped_css(&bump, css, "data-v-123");
@@ -513,7 +513,7 @@ fn test_apply_scoped_css_at_import() {
 
 #[test]
 fn test_apply_scoped_css_at_import_with_nested_css() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     // @import followed by CSS nesting with @media
     let css = "@import \"custom.css\";\n\nfooter {\n  width: 100%;\n  @media (--mobile) {\n    padding: 1rem;\n  }\n}";
     let result = apply_scoped_css(&bump, css, "data-v-abc");

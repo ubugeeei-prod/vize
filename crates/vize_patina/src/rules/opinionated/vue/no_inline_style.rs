@@ -66,7 +66,7 @@ impl Rule for NoInlineStyle {
                 && let Some(arg) = &dir.arg
             {
                 let arg_content = match arg {
-                    ExpressionNode::Simple(s) => s.content.as_str(),
+                    ExpressionNode::Simple(s) => s.content,
                     _ => "",
                 };
                 if arg_content == "style" {

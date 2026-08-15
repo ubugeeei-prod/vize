@@ -6,7 +6,7 @@ use super::{
     IfNode, Namespace, NodeType, ObjectExpression, RootNode, RuntimeHelper, SimpleExpressionNode,
     SourceLocation, TemplateChildNode, TextNode,
 };
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 // ========================================================================
 // Enum discriminant tests
@@ -187,9 +187,9 @@ fn runtime_helper_core_not_ssr() {
 
 #[test]
 fn root_node_new() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let root = RootNode::new(&allocator, "test");
-    assert_eq!(root.source.as_str(), "test");
+    assert_eq!(root.source, "test");
     assert!(root.children.is_empty());
     assert!(root.helpers.is_empty());
     assert!(root.components.is_empty());
@@ -200,9 +200,9 @@ fn root_node_new() {
 
 #[test]
 fn element_node_new() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let el = ElementNode::new(&allocator, "div", SourceLocation::STUB);
-    assert_eq!(el.tag.as_str(), "div");
+    assert_eq!(el.tag, "div");
     assert_eq!(el.ns, Namespace::Html);
     assert_eq!(el.tag_type, ElementType::Element);
     assert!(el.props.is_empty());
@@ -214,22 +214,22 @@ fn element_node_new() {
 #[test]
 fn text_node_new() {
     let node = TextNode::new("hello", SourceLocation::STUB);
-    assert_eq!(node.content.as_str(), "hello");
+    assert_eq!(node.content, "hello");
     assert_eq!(node.node_type(), NodeType::Text);
 }
 
 #[test]
 fn comment_node_new() {
     let node = CommentNode::new("a comment", SourceLocation::STUB);
-    assert_eq!(node.content.as_str(), "a comment");
+    assert_eq!(node.content, "a comment");
     assert_eq!(node.node_type(), NodeType::Comment);
 }
 
 #[test]
 fn directive_node_new() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let dir = DirectiveNode::new(&allocator, "if", SourceLocation::STUB);
-    assert_eq!(dir.name.as_str(), "if");
+    assert_eq!(dir.name, "if");
     assert!(dir.raw_name.is_none());
     assert!(dir.exp.is_none());
     assert!(dir.arg.is_none());
@@ -241,7 +241,7 @@ fn directive_node_new() {
 #[test]
 fn attribute_node_new() {
     let attr = AttributeNode::new("id", SourceLocation::STUB);
-    assert_eq!(attr.name.as_str(), "id");
+    assert_eq!(attr.name, "id");
     assert!(attr.value.is_none());
     assert_eq!(attr.node_type(), NodeType::Attribute);
 }
@@ -249,7 +249,7 @@ fn attribute_node_new() {
 #[test]
 fn simple_expression_static() {
     let expr = SimpleExpressionNode::new("hello", true, SourceLocation::STUB);
-    assert_eq!(expr.content.as_str(), "hello");
+    assert_eq!(expr.content, "hello");
     assert!(expr.is_static);
     assert_eq!(expr.const_type, ConstantType::CanStringify);
     assert!(expr.js_ast.is_none());
@@ -267,7 +267,7 @@ fn simple_expression_dynamic() {
 
 #[test]
 fn compound_expression_new() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let compound = CompoundExpressionNode::new(&allocator, SourceLocation::STUB);
     assert!(compound.children.is_empty());
     assert!(compound.identifiers.is_none());
@@ -277,7 +277,7 @@ fn compound_expression_new() {
 
 #[test]
 fn if_node_new() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let if_node = IfNode::new(&allocator, SourceLocation::STUB);
     assert!(if_node.branches.is_empty());
     assert_eq!(if_node.node_type(), NodeType::If);
@@ -285,7 +285,7 @@ fn if_node_new() {
 
 #[test]
 fn if_branch_node_new() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let branch = IfBranchNode::new(&allocator, None, SourceLocation::STUB);
     assert!(branch.condition.is_none());
     assert!(branch.children.is_empty());
@@ -296,7 +296,7 @@ fn if_branch_node_new() {
 
 #[test]
 fn call_expression_new() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let call = CallExpression::new(
         &allocator,
         Callee::Symbol(RuntimeHelper::CreateVNode),
@@ -308,7 +308,7 @@ fn call_expression_new() {
 
 #[test]
 fn object_expression_new() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let obj = ObjectExpression::new(&allocator, SourceLocation::STUB);
     assert!(obj.properties.is_empty());
     assert_eq!(obj.node_type(), NodeType::JsObjectExpression);
@@ -316,7 +316,7 @@ fn object_expression_new() {
 
 #[test]
 fn array_expression_new() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let arr = ArrayExpression::new(&allocator, SourceLocation::STUB);
     assert!(arr.elements.is_empty());
     assert_eq!(arr.node_type(), NodeType::JsArrayExpression);
@@ -324,7 +324,7 @@ fn array_expression_new() {
 
 #[test]
 fn block_statement_new() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let block = BlockStatement::new(&allocator, SourceLocation::STUB);
     assert!(block.body.is_empty());
     assert_eq!(block.node_type(), NodeType::JsBlockStatement);
@@ -336,10 +336,10 @@ fn block_statement_new() {
 
 #[test]
 fn template_child_text_loc() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let loc = SourceLocation::new(5, 10);
     let text = TextNode::new("hello", loc.clone());
-    let child = TemplateChildNode::Text(vize_carton::Box::new_in(text, &allocator));
+    let child = TemplateChildNode::Text(vize_carton::Box::new_in(text, &&allocator));
     assert_eq!(*child.loc(), loc);
     assert_eq!(child.node_type(), NodeType::Text);
 }

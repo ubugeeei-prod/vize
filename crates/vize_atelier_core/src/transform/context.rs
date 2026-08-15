@@ -1,28 +1,28 @@
 //! TransformContext implementation.
 
-use vize_carton::{Allocator, Box, CompactString, String};
+use vize_carton::{Allocator, Box, CompactString, String, interner::Interner};
 use vize_croquis::reactivity::ReactiveKind;
 use vize_croquis::{BindingType, Croquis, ScopeBinding, ScopeKind, VForScopeData, VSlotScopeData};
 
 use crate::errors::{CompilerError, ErrorCode};
 use crate::options::TransformOptions;
 use crate::{
-    CacheExpression, CommentNode, ConstantType, ExpressionNode, JsChildNode, RuntimeHelper,
-    SimpleExpressionNode, SourceLocation, TemplateChildNode,
+    CacheExpression, CommentNode, ExpressionNode, JsChildNode, RuntimeHelper, SimpleExpressionNode,
+    SourceLocation, TemplateChildNode,
 };
 
 use super::TransformContext;
 
 impl<'a> TransformContext<'a> {
     /// Create a new transform context
-    pub fn new(allocator: &'a Allocator, source: String, options: TransformOptions) -> Self {
+    pub fn new(allocator: &'a Allocator, source: &'a str, options: TransformOptions) -> Self {
         Self::new_with_template_syntax_quirks(allocator, source, options, false)
     }
 
     /// Create a new transform context with template syntax quirk compatibility.
     pub fn new_with_template_syntax_quirks(
         allocator: &'a Allocator,
-        source: String,
+        source: &'a str,
         options: TransformOptions,
         template_syntax_quirks: bool,
     ) -> Self {
@@ -30,6 +30,7 @@ impl<'a> TransformContext<'a> {
         Self {
             allocator,
             source,
+            interner: Interner::new(allocator),
             options,
             root: None,
             parent: None,
@@ -41,8 +42,8 @@ impl<'a> TransformContext<'a> {
             directives: std::vec::Vec::new(),
             #[cfg(feature = "legacy")]
             filters: std::vec::Vec::new(),
-            hoists: vize_carton::Vec::new_in(allocator),
-            cached: vize_carton::Vec::new_in(allocator),
+            hoists: vize_carton::Vec::new_in(&allocator),
+            cached: vize_carton::Vec::new_in(&allocator),
             temps: 0,
             scope_chain: vize_croquis::ScopeChain::new(),
             scoped_slots: 0,
@@ -61,7 +62,7 @@ impl<'a> TransformContext<'a> {
     #[deprecated(note = "use new_with_template_syntax_quirks instead")]
     pub fn new_with_vue_parser_quirks(
         allocator: &'a Allocator,
-        source: String,
+        source: &'a str,
         options: TransformOptions,
         vue_parser_quirks: bool,
     ) -> Self {
@@ -71,7 +72,7 @@ impl<'a> TransformContext<'a> {
     /// Create a new transform context with semantic analysis data
     pub fn with_analysis(
         allocator: &'a Allocator,
-        source: String,
+        source: &'a str,
         options: TransformOptions,
         analysis: &'a Croquis,
     ) -> Self {
@@ -81,7 +82,7 @@ impl<'a> TransformContext<'a> {
     /// Create a new transform context with semantic analysis data and template syntax quirks.
     pub fn with_analysis_and_template_syntax_quirks(
         allocator: &'a Allocator,
-        source: String,
+        source: &'a str,
         options: TransformOptions,
         analysis: &'a Croquis,
         template_syntax_quirks: bool,
@@ -100,7 +101,7 @@ impl<'a> TransformContext<'a> {
     #[deprecated(note = "use with_analysis_and_template_syntax_quirks instead")]
     pub fn with_analysis_and_vue_parser_quirks(
         allocator: &'a Allocator,
-        source: String,
+        source: &'a str,
         options: TransformOptions,
         analysis: &'a Croquis,
         vue_parser_quirks: bool,
@@ -423,7 +424,7 @@ impl<'a> TransformContext<'a> {
     /// Cache an expression
     pub fn cache(&mut self, exp: CacheExpression<'a>) -> usize {
         let index = self.cached.len();
-        let boxed = Box::new_in(exp, self.allocator);
+        let boxed = Box::new_in(exp, &self.allocator);
         self.cached.push(Some(boxed));
         index
     }
@@ -463,7 +464,7 @@ impl<'a> TransformContext<'a> {
         if let Some(current) = self.current_node {
             let placeholder = TemplateChildNode::Comment(Box::new_in(
                 CommentNode::new("", SourceLocation::STUB),
-                self.allocator,
+                &self.allocator,
             ));
             // SAFETY: see `replace_node`. The pointer is derived from the
             // active traversal slot, so this replacement does not create an
@@ -508,12 +509,12 @@ impl<'a> TransformContext<'a> {
 pub(super) fn clone_expression<'a>(
     allocator: &'a Allocator,
     exp: &ExpressionNode<'a>,
-    source: &str,
+    source: &'a str,
 ) -> ExpressionNode<'a> {
     match exp {
         ExpressionNode::Simple(s) => ExpressionNode::Simple(Box::new_in(
             SimpleExpressionNode {
-                content: s.content.clone(),
+                content: s.content,
                 is_static: s.is_static,
                 const_type: s.const_type,
                 loc: s.loc.clone(),
@@ -523,21 +524,14 @@ pub(super) fn clone_expression<'a>(
                 is_handler_key: s.is_handler_key,
                 is_ref_transformed: s.is_ref_transformed,
             },
-            allocator,
+            &allocator,
         )),
         ExpressionNode::Compound(c) => ExpressionNode::Simple(Box::new_in(
             SimpleExpressionNode {
-                content: String::new(c.loc.span.slice(source)),
-                is_static: false,
-                const_type: ConstantType::NotConstant,
-                loc: c.loc.clone(),
-                js_ast: None,
-                hoisted: None,
-                identifiers: None,
                 is_handler_key: c.is_handler_key,
-                is_ref_transformed: false,
+                ..SimpleExpressionNode::new(c.loc.span.slice(source), false, c.loc.clone())
             },
-            allocator,
+            &allocator,
         )),
     }
 }

@@ -16,7 +16,7 @@ pub(super) fn generate_static_element_to_bytes(
 ) {
     out.push_str(ctx.vnode_helper(RuntimeHelper::CreateElementVNode));
     out.push_str("(\"");
-    out.push_str(el.tag.as_str());
+    out.push_str(el.tag);
     out.push('"');
 
     let props = build_static_props(el);
@@ -40,7 +40,7 @@ fn generate_static_children_to_bytes(ctx: &CodegenContext, el: &ElementNode<'_>,
         && let TemplateChildNode::Text(text) = &el.children[0]
     {
         out.push('"');
-        out.push_str(escape_js_string(&text.content).as_str());
+        out.push_str(escape_js_string(text.content).as_str());
         out.push('"');
     } else if el
         .children
@@ -50,7 +50,7 @@ fn generate_static_children_to_bytes(ctx: &CodegenContext, el: &ElementNode<'_>,
         let mut combined = String::default();
         for child in el.children.iter() {
             if let TemplateChildNode::Text(text) = child {
-                combined.push_str(text.content.as_str());
+                combined.push_str(text.content);
             }
         }
         out.push('"');
@@ -86,7 +86,7 @@ fn generate_static_child_array_to_bytes(
                 emitted += 1;
                 out.push_str(ctx.helper(RuntimeHelper::CreateText));
                 out.push_str("(\"");
-                out.push_str(escape_js_string(&text.content).as_str());
+                out.push_str(escape_js_string(text.content).as_str());
                 out.push_str("\")");
             }
             _ => {}
@@ -106,25 +106,25 @@ fn build_static_props(el: &ElementNode<'_>) -> Option<String> {
 
     for prop in el.props.iter() {
         if let PropNode::Attribute(attr) = prop {
-            if attr.name == "ref" || seen.contains(attr.name.as_str()) {
+            if attr.name == "ref" || seen.contains(attr.name) {
                 continue;
             }
-            seen.insert(attr.name.clone());
+            seen.insert(attr.name.into());
             if emitted > 0 {
                 buf.push_str(", ");
             }
             emitted += 1;
-            let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(&attr.name);
+            let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(attr.name);
             if needs_quote {
                 buf.push('"');
-                buf.push_str(attr.name.as_str());
+                buf.push_str(attr.name);
                 buf.push('"');
             } else {
-                buf.push_str(attr.name.as_str());
+                buf.push_str(attr.name);
             }
             buf.push_str(": \"");
             if let Some(value) = &attr.value {
-                buf.push_str(escape_js_string(&value.content).as_str());
+                buf.push_str(escape_js_string(value.content).as_str());
             }
             buf.push('"');
         }

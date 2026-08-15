@@ -3618,7 +3618,6 @@ dependencies = [
 name = "vize_atelier_core"
 version = "0.348.0"
 dependencies = [
- "bumpalo",
  "compact_str 0.9.0",
  "criterion",
  "davinci_harness",
@@ -3806,7 +3805,6 @@ name = "vize_carton"
 version = "0.348.0"
 dependencies = [
  "bitflags 2.13.1",
- "bumpalo",
  "compact_str 0.9.0",
  "insta",
  "once_cell",

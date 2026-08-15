@@ -12,7 +12,7 @@
 )]
 use criterion::{Criterion, Throughput, criterion_group, criterion_main};
 use std::hint::black_box;
-use vize_carton::Bump;
+use vize_carton::Allocator;
 use vize_carton::append;
 use vize_musea::{ArtParseOptions, parse_art, transform_to_csf, transform_to_vue};
 
@@ -215,7 +215,7 @@ fn bench_parse_simple(c: &mut Criterion) {
 
     group.bench_function("simple", |b| {
         b.iter(|| {
-            let allocator = Bump::new();
+            let allocator = Allocator::new();
             let descriptor = parse_art(
                 &allocator,
                 black_box(SIMPLE_ART),
@@ -236,7 +236,7 @@ fn bench_parse_medium(c: &mut Criterion) {
 
     group.bench_function("medium", |b| {
         b.iter(|| {
-            let allocator = Bump::new();
+            let allocator = Allocator::new();
             let descriptor = parse_art(
                 &allocator,
                 black_box(MEDIUM_ART),
@@ -256,7 +256,7 @@ fn bench_parse_complex(c: &mut Criterion) {
 
     group.bench_function("complex", |b| {
         b.iter(|| {
-            let allocator = Bump::new();
+            let allocator = Allocator::new();
             let descriptor = parse_art(
                 &allocator,
                 black_box(COMPLEX_ART),
@@ -277,7 +277,7 @@ fn bench_parse_massive(c: &mut Criterion) {
 
     group.bench_function("massive_50_variants", |b| {
         b.iter(|| {
-            let allocator = Bump::new();
+            let allocator = Allocator::new();
             let descriptor =
                 parse_art(&allocator, black_box(&massive), ArtParseOptions::default()).unwrap();
             black_box(descriptor.variants.len());
@@ -298,7 +298,7 @@ fn bench_arena_reuse(c: &mut Criterion) {
     group.bench_function("fresh_allocator", |b| {
         b.iter(|| {
             for source in &sources {
-                let allocator = Bump::new();
+                let allocator = Allocator::new();
                 parse_art(&allocator, black_box(*source), ArtParseOptions::default()).unwrap();
             }
         })
@@ -307,7 +307,7 @@ fn bench_arena_reuse(c: &mut Criterion) {
     // Benchmark with shared allocator (reset between parses)
     group.bench_function("shared_allocator", |b| {
         b.iter(|| {
-            let allocator = Bump::new();
+            let allocator = Allocator::new();
             for source in &sources {
                 parse_art(&allocator, black_box(*source), ArtParseOptions::default()).unwrap();
                 // Note: In real usage, you'd reset or let descriptors go out of scope
@@ -322,7 +322,7 @@ fn bench_transform_csf(c: &mut Criterion) {
     let mut group = c.benchmark_group("art_transform");
 
     // Parse once outside the benchmark
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let descriptor = parse_art(&allocator, COMPLEX_ART, ArtParseOptions::default()).unwrap();
 
     group.bench_function("to_csf", |b| {
@@ -336,7 +336,7 @@ fn bench_transform_vue(c: &mut Criterion) {
     let mut group = c.benchmark_group("art_transform");
 
     // Parse once outside the benchmark
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let descriptor = parse_art(&allocator, COMPLEX_ART, ArtParseOptions::default()).unwrap();
 
     group.bench_function("to_vue", |b| {
@@ -352,7 +352,7 @@ fn bench_full_pipeline(c: &mut Criterion) {
 
     group.bench_function("parse_and_transform_csf", |b| {
         b.iter(|| {
-            let allocator = Bump::new();
+            let allocator = Allocator::new();
             let descriptor = parse_art(
                 &allocator,
                 black_box(COMPLEX_ART),
@@ -365,7 +365,7 @@ fn bench_full_pipeline(c: &mut Criterion) {
 
     group.bench_function("parse_and_transform_vue", |b| {
         b.iter(|| {
-            let allocator = Bump::new();
+            let allocator = Allocator::new();
             let descriptor = parse_art(
                 &allocator,
                 black_box(COMPLEX_ART),
@@ -406,7 +406,7 @@ fn bench_throughput(c: &mut Criterion) {
 
     group.bench_function("100_files", |b| {
         b.iter(|| {
-            let allocator = Bump::new();
+            let allocator = Allocator::new();
             for art in &arts {
                 parse_art(&allocator, black_box(art), ArtParseOptions::default()).unwrap();
             }

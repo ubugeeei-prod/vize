@@ -25,18 +25,18 @@
 //!
 //! This crate is optimized for high performance:
 //! - **Zero-copy parsing**: All strings are borrowed from source
-//! - **Arena allocation**: Uses `vize_carton::Bump` for fast allocation
+//! - **Arena allocation**: Uses `vize_carton::Allocator` for fast allocation
 //! - **Minimal allocations**: Only allocates when absolutely necessary
 //! - **Fast byte-level parsing**: Uses `memchr` and `memmem` for O(n) search
 //!
 //! ## Usage
 //!
 //! ```rust
-//! use vize_carton::Bump;
+//! use vize_carton::Allocator;
 //! use vize_musea::{parse_art, transform_to_csf};
 //! use vize_musea::types::ArtParseOptions;
 //!
-//! let allocator = Bump::new();
+//! let allocator = Allocator::new();
 //! let source = r#"
 //! <script setup lang="ts">
 //! defineArt("./Button.vue", { title: "Button" });
@@ -91,8 +91,8 @@ pub use types::{
     ArtStyleBlockOwned, ArtVariant, ArtVariantOwned, CsfOutput, SourceLocation, ViewportConfig,
 };
 
-// Re-export vize_carton::Bump for convenience
-pub use vize_carton::Bump;
+// Re-export vize_carton::Allocator for convenience
+pub use vize_carton::Allocator;
 
 /// Start the Musea component gallery server.
 ///
@@ -104,12 +104,13 @@ pub fn serve() {
 #[cfg(test)]
 mod tests {
     use super::{
-        ArtDescriptorOwned, ArtParseOptions, Bump, parse_art, transform_to_csf, transform_to_vue,
+        Allocator, ArtDescriptorOwned, ArtParseOptions, parse_art, transform_to_csf,
+        transform_to_vue,
     };
 
     #[test]
     fn test_full_workflow() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let source = r#"
 <script setup lang="ts">
 defineArt("./Button.vue", {
@@ -171,7 +172,7 @@ defineArt("./Button.vue", {
 
     #[test]
     fn test_default_variant() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let source = r#"
 <art title="Test">
   <variant name="First">
@@ -190,7 +191,7 @@ defineArt("./Button.vue", {
 
     #[test]
     fn test_into_owned() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let source = r#"
 <art title="Button" component="./Button.vue">
   <variant name="Primary">
@@ -209,7 +210,7 @@ defineArt("./Button.vue", {
     #[test]
     fn test_arena_efficiency() {
         // Test that multiple parses can share an allocator
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
 
         let sources = [
             r#"<art title="A"><variant name="V1"><div>1</div></variant></art>"#,

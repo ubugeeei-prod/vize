@@ -1,8 +1,9 @@
 //! Vapor Intermediate Representation (IR) types.
+mod constructors;
 
 use serde::{Deserialize, Serialize};
 use vize_atelier_core::{Namespace, RootNode, SimpleExpressionNode, TemplateChildNode};
-use vize_carton::{Box, Bump, FxHashMap, FxHashSet, String, Vec};
+use vize_carton::{Allocator, Box, FxHashMap, FxHashSet, String, Vec};
 
 /// IR node type discriminant
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -43,17 +44,17 @@ pub enum DynamicFlag {
 #[derive(Debug)]
 pub struct RootIRNode<'a> {
     pub node: RootNode<'a>,
-    pub source: String,
+    pub source: &'a str,
     pub template: FxHashMap<String, Namespace>,
     pub template_index_map: FxHashMap<String, usize>,
     pub root_template_indexes: Vec<'a, usize>,
-    pub component: Vec<'a, String>,
-    pub directive: Vec<'a, String>,
+    pub component: Vec<'a, &'a str>,
+    pub directive: Vec<'a, &'a str>,
     pub block: BlockIRNode<'a>,
     pub has_template_ref: bool,
     pub has_deferred_v_show: bool,
-    /// Template strings for static parts
-    pub templates: Vec<'a, String>,
+    /// Template strings for static parts, frozen into the arena (P1-10).
+    pub templates: Vec<'a, &'a str>,
     /// Mapping from element ID to template index
     pub element_template_map: FxHashMap<usize, usize>,
     /// Element IDs that are standalone text nodes (interpolations with their own template)
@@ -64,7 +65,7 @@ pub struct RootIRNode<'a> {
 #[derive(Debug)]
 pub struct BlockIRNode<'a> {
     pub node: Option<TemplateChildNode<'a>>,
-    pub dynamic: IRDynamicInfo,
+    pub dynamic: IRDynamicInfo<'a>,
     pub temp_id: usize,
     pub effect: Vec<'a, IREffect<'a>>,
     pub operation: Vec<'a, OperationNode<'a>>,
@@ -72,23 +73,23 @@ pub struct BlockIRNode<'a> {
 }
 
 impl<'a> BlockIRNode<'a> {
-    pub fn new(allocator: &'a Bump) -> Self {
+    pub fn new(allocator: &'a Allocator) -> Self {
         Self {
             node: None,
-            dynamic: IRDynamicInfo::default(),
+            dynamic: IRDynamicInfo::new(allocator),
             temp_id: 0,
-            effect: Vec::new_in(allocator),
-            operation: Vec::new_in(allocator),
-            returns: Vec::new_in(allocator),
+            effect: Vec::new_in(&allocator),
+            operation: Vec::new_in(&allocator),
+            returns: Vec::new_in(&allocator),
         }
     }
 }
 
 /// Dynamic info for IR nodes
-#[derive(Debug, Default)]
-pub struct IRDynamicInfo {
+#[derive(Debug)]
+pub struct IRDynamicInfo<'a> {
     pub flags: u8,
-    pub children: std::vec::Vec<IRDynamicInfo>,
+    pub children: Vec<'a, IRDynamicInfo<'a>>,
     pub id: Option<usize>,
 }
 
@@ -107,8 +108,8 @@ pub enum OperationNode<'a> {
     SetEvent(SetEventIRNode<'a>),
     SetHtml(SetHtmlIRNode<'a>),
     SetTemplateRef(SetTemplateRefIRNode<'a>),
-    InsertNode(InsertNodeIRNode),
-    PrependNode(PrependNodeIRNode),
+    InsertNode(InsertNodeIRNode<'a>),
+    PrependNode(PrependNodeIRNode<'a>),
     Directive(DirectiveIRNode<'a>),
     If(Box<'a, IfIRNode<'a>>),
     For(Box<'a, ForIRNode<'a>>),
@@ -124,7 +125,7 @@ pub enum OperationNode<'a> {
 pub struct SetPropIRNode<'a> {
     pub element: usize,
     pub prop: IRProp<'a>,
-    pub tag: String,
+    pub tag: &'a str,
     /// `.camel` modifier was used
     pub camel: bool,
     /// `.prop` modifier was used
@@ -160,16 +161,16 @@ pub struct SetEventIRNode<'a> {
     pub element: usize,
     pub key: Box<'a, SimpleExpressionNode<'a>>,
     pub value: Option<Box<'a, SimpleExpressionNode<'a>>>,
-    pub modifiers: EventModifiers,
+    pub modifiers: EventModifiers<'a>,
     pub delegate: bool,
     pub effect: bool,
 }
 
 /// Event modifiers
-#[derive(Debug, Default)]
-pub struct EventModifiers {
-    pub keys: std::vec::Vec<String>,
-    pub non_keys: std::vec::Vec<String>,
+#[derive(Debug)]
+pub struct EventModifiers<'a> {
+    pub keys: Vec<'a, &'a str>,
+    pub non_keys: Vec<'a, &'a str>,
     pub options: EventOptions,
 }
 
@@ -198,16 +199,16 @@ pub struct SetTemplateRefIRNode<'a> {
 
 /// Insert node operation
 #[derive(Debug)]
-pub struct InsertNodeIRNode {
-    pub elements: std::vec::Vec<usize>,
+pub struct InsertNodeIRNode<'a> {
+    pub elements: Vec<'a, usize>,
     pub parent: usize,
     pub anchor: Option<usize>,
 }
 
 /// Prepend node operation
 #[derive(Debug)]
-pub struct PrependNodeIRNode {
-    pub elements: std::vec::Vec<usize>,
+pub struct PrependNodeIRNode<'a> {
+    pub elements: Vec<'a, usize>,
     pub parent: usize,
 }
 
@@ -216,12 +217,12 @@ pub struct PrependNodeIRNode {
 pub struct DirectiveIRNode<'a> {
     pub element: usize,
     pub dir: Box<'a, vize_atelier_core::DirectiveNode<'a>>,
-    pub name: String,
+    pub name: &'a str,
     pub builtin: bool,
     /// Element tag name (for v-model type detection)
-    pub tag: String,
+    pub tag: &'a str,
     /// Input type attribute (for v-model checkbox/radio detection)
-    pub input_type: String,
+    pub input_type: &'a str,
 }
 
 /// If operation
@@ -279,7 +280,7 @@ pub enum ComponentKind {
 #[derive(Debug)]
 pub struct CreateComponentIRNode<'a> {
     pub id: usize,
-    pub tag: String,
+    pub tag: &'a str,
     pub props: Vec<'a, IRProp<'a>>,
     pub slots: Vec<'a, IRSlot<'a>>,
     pub asset: bool,

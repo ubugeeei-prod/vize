@@ -87,7 +87,7 @@ impl<'a> Parser<'a> {
     pub(super) fn find_last_open_element_index(&self, tags: &[&str]) -> Option<usize> {
         (0..self.stack.len()).rev().find(|&i| {
             is_html_tree_element(&self.stack[i].element)
-                && Self::tag_in(self.stack[i].element.tag.as_str(), tags)
+                && Self::tag_in(self.stack[i].element.tag, tags)
         })
     }
 
@@ -97,7 +97,7 @@ impl<'a> Parser<'a> {
                 return None;
             }
 
-            let tag = self.stack[i].element.tag.as_str();
+            let tag = self.stack[i].element.tag;
             if tag.eq_ignore_ascii_case("li") {
                 return Some(i);
             }
@@ -115,7 +115,7 @@ impl<'a> Parser<'a> {
                 return None;
             }
 
-            let tag = self.stack[i].element.tag.as_str();
+            let tag = self.stack[i].element.tag;
             if tag.eq_ignore_ascii_case("p") {
                 return Some(i);
             }

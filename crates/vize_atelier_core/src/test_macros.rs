@@ -40,7 +40,7 @@ macro_rules! assert_parse {
         assert_eq!(root.children.len(), 1, "Expected 1 child");
         match &root.children[0] {
             $crate::TemplateChildNode::Element(el) => {
-                assert_eq!(el.tag.as_str(), $tag, "Tag mismatch");
+                assert_eq!(el.tag, $tag, "Tag mismatch");
             }
             other => panic!("Expected Element, got {:?}", other.node_type()),
         }
@@ -53,7 +53,7 @@ macro_rules! assert_parse {
         assert_eq!(root.children.len(), 1, "Expected 1 root child");
         match &root.children[0] {
             $crate::TemplateChildNode::Element(el) => {
-                assert_eq!(el.tag.as_str(), $tag, "Tag mismatch");
+                assert_eq!(el.tag, $tag, "Tag mismatch");
                 assert_eq!(el.children.len(), $count, "Children count mismatch");
             }
             other => panic!("Expected Element, got {:?}", other.node_type()),
@@ -84,7 +84,7 @@ macro_rules! assert_parse {
         assert_eq!(root.children.len(), 1, "Expected 1 child");
         match &root.children[0] {
             $crate::TemplateChildNode::Text(text) => {
-                assert_eq!(text.content.as_str(), $content, "Text content mismatch");
+                assert_eq!(text.content, $content, "Text content mismatch");
             }
             other => panic!("Expected Text, got {:?}", other.node_type()),
         }
@@ -99,7 +99,7 @@ macro_rules! assert_parse {
             $crate::TemplateChildNode::Interpolation(interp) => {
                 match &interp.content {
                     $crate::ExpressionNode::Simple(exp) => {
-                        assert_eq!(exp.content.as_str(), $content, "Expression content mismatch");
+                        assert_eq!(exp.content, $content, "Expression content mismatch");
                     }
                     _ => panic!("Expected SimpleExpression"),
                 }
@@ -226,7 +226,7 @@ macro_rules! assert_transform {
         $crate::lane::transform(&allocator, &mut root, $crate::options::TransformOptions::default(), None);
         $(
             assert!(
-                root.components.iter().any(|c| c.as_str() == $comp),
+                root.components.iter().any(|c| *c == $comp),
                 concat!("Expected component: ", $comp)
             );
         )*

@@ -161,7 +161,7 @@ pub(super) fn collect_prop(prop: &PropNode<'_>, out: &mut Vec<JsxEmit>) {
             // an assignment so a `const`/`readonly`/non-lvalue binding is reported
             // at the binding. Other directive values (`v-show`, `v-if`, custom
             // `v-x:arg={…}`, `v-on` handlers, bound attributes) are plain reads.
-            match directive.name.as_str() {
+            match directive.name {
                 "model" => {
                     if let Some(exp) = &directive.exp
                         && let Some(target) = expr_of(exp)
@@ -195,7 +195,7 @@ pub(super) fn collect_expression(expression: &ExpressionNode<'_>, out: &mut Vec<
             if simple.is_static {
                 return;
             }
-            push_expr(&simple.content, &simple.loc, out);
+            push_expr(simple.content, &simple.loc, out);
         }
         ExpressionNode::Compound(compound) => collect_compound(compound, out),
     }
@@ -206,7 +206,7 @@ fn collect_compound(compound: &CompoundExpressionNode<'_>, out: &mut Vec<JsxEmit
         match child {
             CompoundExpressionChild::Simple(simple) => {
                 if !simple.is_static {
-                    push_expr(&simple.content, &simple.loc, out);
+                    push_expr(simple.content, &simple.loc, out);
                 }
             }
             CompoundExpressionChild::Compound(compound) => collect_compound(compound, out),
@@ -231,7 +231,7 @@ fn push_expr(content: &str, loc: &vize_relief::SourceLocation, out: &mut Vec<Jsx
 pub(super) fn expr_of(expression: &ExpressionNode<'_>) -> Option<JsxExpr> {
     match expression {
         ExpressionNode::Simple(simple) if !simple.is_static => {
-            jsx_expr(&simple.content, simple.loc.span.start, simple.loc.span.end)
+            jsx_expr(simple.content, simple.loc.span.start, simple.loc.span.end)
         }
         _ => None,
     }
@@ -257,7 +257,7 @@ pub(super) fn alias_expr(alias: &ExpressionNode<'_>) -> Option<JsxExpr> {
 pub(super) fn static_text(expression: &ExpressionNode<'_>) -> Option<CompactString> {
     match expression {
         ExpressionNode::Simple(simple) if simple.is_static => {
-            Some(simple.content.as_str().to_compact_string())
+            Some(simple.content.to_compact_string())
         }
         _ => None,
     }

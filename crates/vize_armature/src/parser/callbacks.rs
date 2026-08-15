@@ -34,6 +34,9 @@ pub(super) struct ParserCallbacks<'a, 'p> {
     pub(super) parser: &'p mut Parser<'a>,
 }
 
+/// Every callback except the two text ones freezes the buffered text run
+/// first: a run is only ever extended by consecutive text callbacks, so this
+/// boundary is exactly where a node's `content` must stop being stale.
 impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
     fn on_text(&mut self, start: usize, end: usize) {
         self.parser.on_text_impl(start, end);
@@ -44,84 +47,104 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
     }
 
     fn on_interpolation(&mut self, start: usize, end: usize) {
+        self.parser.flush_pending_text();
         self.parser.on_interpolation_impl(start, end);
     }
 
     #[cfg(feature = "legacy")]
     fn on_raw_interpolation(&mut self, start: usize, end: usize) {
+        self.parser.flush_pending_text();
         self.parser.on_raw_interpolation_impl(start, end);
     }
 
     fn on_open_tag_name(&mut self, start: usize, end: usize) {
+        self.parser.flush_pending_text();
         self.parser.on_open_tag_name_impl(start, end);
     }
 
     fn on_open_tag_end(&mut self, end: usize) {
+        self.parser.flush_pending_text();
         self.parser.on_open_tag_end_impl(end);
     }
 
     fn on_self_closing_tag(&mut self, end: usize) {
+        self.parser.flush_pending_text();
         self.parser.on_self_closing_tag_impl(end);
         self.parser.on_open_tag_end_impl(end);
     }
 
     fn on_close_tag(&mut self, start: usize, end: usize) {
+        self.parser.flush_pending_text();
         self.parser.on_close_tag_impl(start, end);
     }
 
     fn on_attrib_data(&mut self, start: usize, end: usize) {
+        self.parser.flush_pending_text();
         self.parser.on_attrib_data_impl(start, end);
     }
 
     fn on_attrib_entity(&mut self, ch: char, start: usize, end: usize) {
+        self.parser.flush_pending_text();
         self.parser.on_attrib_entity_impl(ch, start, end);
     }
 
     fn on_attrib_end(&mut self, quote: QuoteType, end: usize) {
+        self.parser.flush_pending_text();
         self.parser.on_attrib_end_impl(quote, end);
     }
 
     fn on_attrib_name(&mut self, start: usize, end: usize) {
+        self.parser.flush_pending_text();
         self.parser.on_attrib_name_impl(start, end);
     }
 
     fn on_attrib_name_end(&mut self, end: usize) {
+        self.parser.flush_pending_text();
         self.parser.on_attrib_name_end_impl(end);
     }
 
     fn on_dir_name(&mut self, start: usize, end: usize) {
+        self.parser.flush_pending_text();
         self.parser.on_dir_name_impl(start, end);
     }
 
     fn on_dir_arg(&mut self, start: usize, end: usize) {
+        self.parser.flush_pending_text();
         self.parser.on_dir_arg_impl(start, end);
     }
 
     fn on_dir_modifier(&mut self, start: usize, end: usize) {
+        self.parser.flush_pending_text();
         self.parser.on_dir_modifier_impl(start, end);
     }
 
     fn on_comment(&mut self, start: usize, end: usize) {
+        self.parser.flush_pending_text();
         self.parser.on_comment_impl(start, end);
     }
 
     fn on_in_tag_comment(&mut self, start: usize, end: usize) {
+        self.parser.flush_pending_text();
         self.parser.on_in_tag_comment_impl(start, end);
     }
 
     fn on_cdata(&mut self, start: usize, end: usize) {
+        self.parser.flush_pending_text();
         self.parser.on_cdata_impl(start, end);
     }
 
     fn on_processing_instruction(&mut self, _start: usize, _end: usize) {
+        self.parser.flush_pending_text();
         // Processing instruction handling
     }
 
     fn on_end(&mut self) {
+        self.parser.flush_pending_text();
         // End of input
     }
 
     fn on_error(&mut self, code: ErrorCode, index: usize) {
+        self.parser.flush_pending_text();
         self.parser.on_error_impl(code, index);
     }
 

@@ -61,7 +61,7 @@ fn transform_if_node_with_options<'a>(
         match cond {
             ExpressionNode::Simple(simple) => {
                 let cond_node = SimpleExpressionNode::from_node(simple);
-                Box::new_in(cond_node, ctx.allocator)
+                Box::new_in(cond_node, &ctx.allocator)
             }
             ExpressionNode::Compound(compound) => {
                 let cond_node = SimpleExpressionNode::new(
@@ -69,13 +69,13 @@ fn transform_if_node_with_options<'a>(
                     false,
                     compound.loc.clone(),
                 );
-                Box::new_in(cond_node, ctx.allocator)
+                Box::new_in(cond_node, &ctx.allocator)
             }
         }
     } else {
         // No condition means v-else, which shouldn't be the first branch
         let cond_node = SimpleExpressionNode::new("true", false, SourceLocation::STUB);
-        Box::new_in(cond_node, ctx.allocator)
+        Box::new_in(cond_node, &ctx.allocator)
     };
 
     // Consume an ID for the positive branch block
@@ -108,7 +108,7 @@ fn transform_if_node_with_options<'a>(
 
     block
         .operation
-        .push(OperationNode::If(Box::new_in(ir_if, ctx.allocator)));
+        .push(OperationNode::If(Box::new_in(ir_if, &ctx.allocator)));
     if add_return {
         block.returns.push(if_id);
     }
@@ -135,7 +135,7 @@ pub(crate) fn transform_remaining_branches<'a>(
         let condition = match cond {
             ExpressionNode::Simple(simple) => {
                 let cond_node = SimpleExpressionNode::from_node(simple);
-                Box::new_in(cond_node, ctx.allocator)
+                Box::new_in(cond_node, &ctx.allocator)
             }
             ExpressionNode::Compound(compound) => {
                 let cond_node = SimpleExpressionNode::new(
@@ -143,7 +143,7 @@ pub(crate) fn transform_remaining_branches<'a>(
                     false,
                     compound.loc.clone(),
                 );
-                Box::new_in(cond_node, ctx.allocator)
+                Box::new_in(cond_node, &ctx.allocator)
             }
         };
 
@@ -175,7 +175,7 @@ pub(crate) fn transform_remaining_branches<'a>(
             anchor,
         };
 
-        NegativeBranch::If(Box::new_in(nested_if, ctx.allocator))
+        NegativeBranch::If(Box::new_in(nested_if, &ctx.allocator))
     } else {
         // v-else: consume ID for the else branch block
         let _else_branch_id = ctx.next_id();
@@ -267,7 +267,7 @@ fn transform_for_node_with_options<'a>(
 
     block
         .operation
-        .push(OperationNode::For(Box::new_in(ir_for, ctx.allocator)));
+        .push(OperationNode::For(Box::new_in(ir_for, &ctx.allocator)));
     if add_return {
         block.returns.push(for_id);
     }
@@ -281,7 +281,7 @@ fn clone_simple_expr<'a>(
     match expr {
         ExpressionNode::Simple(simple) => {
             let node = SimpleExpressionNode::from_node(simple);
-            Box::new_in(node, ctx.allocator)
+            Box::new_in(node, &ctx.allocator)
         }
         ExpressionNode::Compound(compound) => {
             let node = SimpleExpressionNode::new(
@@ -289,7 +289,7 @@ fn clone_simple_expr<'a>(
                 false,
                 compound.loc.clone(),
             );
-            Box::new_in(node, ctx.allocator)
+            Box::new_in(node, &ctx.allocator)
         }
     }
 }
@@ -304,15 +304,15 @@ fn extract_key_prop<'a>(
         if let TemplateChildNode::Element(el) = child {
             for prop in el.props.iter() {
                 if let PropNode::Directive(dir) = prop
-                    && dir.name.as_str() == "bind"
+                    && dir.name == "bind"
                     && let Some(ref arg) = dir.arg
                     && let ExpressionNode::Simple(key_arg) = arg
-                    && key_arg.content.as_str() == "key"
+                    && key_arg.content == "key"
                     && let Some(ref exp) = dir.exp
                     && let ExpressionNode::Simple(s) = exp
                 {
                     let node = SimpleExpressionNode::from_node(s);
-                    return Some(Box::new_in(node, ctx.allocator));
+                    return Some(Box::new_in(node, &ctx.allocator));
                 }
             }
         }

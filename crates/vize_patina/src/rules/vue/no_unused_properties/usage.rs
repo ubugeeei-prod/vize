@@ -71,7 +71,7 @@ pub(super) fn classify_props_access(script: &str, span: (u32, u32)) -> PropsAcce
 /// Every identifier-shaped token referenced by a compiled template expression.
 pub(super) fn template_references(root: &RootNode<'_>) -> FxHashSet<CompactString> {
     let mut names = FxHashSet::default();
-    collect_children(&root.children, &mut names, &root.source);
+    collect_children(&root.children, &mut names, root.source);
     names
 }
 
@@ -123,7 +123,7 @@ fn collect_children(
 
 fn expression_source<'a>(exp: &'a ExpressionNode<'a>, source: &'a str) -> &'a str {
     match exp {
-        ExpressionNode::Simple(simple) => simple.content.as_str(),
+        ExpressionNode::Simple(simple) => simple.content,
         ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
     }
 }

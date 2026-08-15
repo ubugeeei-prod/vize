@@ -130,7 +130,7 @@ fn check_element<'a>(
     element: &ElementNode<'a>,
     allow_vuetify_tags: bool,
 ) {
-    let tag = element.tag.as_str();
+    let tag = element.tag;
     if allow_vuetify_tags && is_vuetify_tag(tag) {
         return;
     }

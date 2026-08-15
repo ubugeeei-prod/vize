@@ -4,7 +4,6 @@
 //! code generation behind the public `compile_vapor*` functions.
 
 use crate::generate::generate_vapor;
-use crate::ir_drop::drop_ir_stack_safe;
 use crate::lower as vapor_lower;
 use vize_atelier_core::{
     CompilerError, Namespace,
@@ -173,8 +172,6 @@ fn compile_vapor_inner_with_stack<'a>(
 
     // Generate Vapor code
     let result = generate_vapor(&ir, binding_metadata.as_ref());
-    drop_ir_stack_safe(ir);
-    drop(root);
 
     (
         VaporCompileResult {

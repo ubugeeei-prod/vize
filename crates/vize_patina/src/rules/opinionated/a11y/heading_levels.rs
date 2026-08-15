@@ -69,7 +69,7 @@ impl Rule for HeadingLevels {
         let mut headings: Vec<HeadingInfo> = Vec::new();
 
         walk_elements(&root.children, &mut |element| {
-            if let Some(level) = heading_level(element.tag.as_str()) {
+            if let Some(level) = heading_level(element.tag) {
                 headings.push(HeadingInfo {
                     level,
                     start: element.loc.span.start,

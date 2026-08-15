@@ -316,11 +316,11 @@ mod tests {
     use super::{escape_template_literal, to_pascal_case, transform_to_vue};
     use crate::parse::parse_art;
     use crate::types::ArtParseOptions;
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
     #[test]
     fn test_transform_to_vue_basic() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let source = r#"
 <art title="Button" component="./Button.vue">
   <variant name="Primary" default>
@@ -337,7 +337,7 @@ mod tests {
 
     #[test]
     fn test_transform_multiple_variants() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let source = r#"
 <art title="Button" component="./Button.vue">
   <variant name="Primary" default>

@@ -18,7 +18,7 @@ impl VModelModifiers {
     pub fn from_directive(dir: &DirectiveNode<'_>) -> Self {
         let mut modifiers = Self::default();
         for modifier in dir.modifiers.iter() {
-            match modifier.content.as_str() {
+            match modifier.content {
                 "lazy" => modifiers.lazy = true,
                 "number" => modifiers.number = true,
                 "trim" => modifiers.trim = true,
@@ -100,10 +100,10 @@ pub fn generate_model_props(
     if let Some(ref exp) = dir.exp
         && let vize_atelier_core::ExpressionNode::Simple(simple) = exp
     {
-        let model_value = simple.content.clone();
+        let model_value = simple.content;
 
         // Add value binding
-        props.push((String::from("value"), model_value.clone()));
+        props.push((String::from("value"), String::from(model_value)));
 
         // Build event handler expression
         let mut handler = cstr!("$event => (({model_value}) = $event.target.value)");
@@ -188,14 +188,14 @@ mod tests {
         use vize_atelier_core::{
             ElementNode, ExpressionNode, SimpleExpressionNode, SourceLocation,
         };
-        use vize_carton::{Box, Bump};
+        use vize_carton::{Allocator, Box};
 
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let element = ElementNode::new(&allocator, "input", SourceLocation::STUB);
         let mut dir =
             vize_atelier_core::DirectiveNode::new(&allocator, "model", SourceLocation::STUB);
         let exp_node = SimpleExpressionNode::new("modelValue", false, SourceLocation::STUB);
-        let boxed = Box::new_in(exp_node, &allocator);
+        let boxed = Box::new_in(exp_node, &&allocator);
         dir.exp = Some(ExpressionNode::Simple(boxed));
 
         let props = generate_model_props(&element, &dir);
@@ -211,14 +211,14 @@ mod tests {
         use vize_atelier_core::{
             ElementNode, ExpressionNode, SimpleExpressionNode, SourceLocation,
         };
-        use vize_carton::{Box, Bump};
+        use vize_carton::{Allocator, Box};
 
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let element = ElementNode::new(&allocator, "input", SourceLocation::STUB);
         let mut dir =
             vize_atelier_core::DirectiveNode::new(&allocator, "model", SourceLocation::STUB);
         let exp_node = SimpleExpressionNode::new("msg", false, SourceLocation::STUB);
-        let boxed = Box::new_in(exp_node, &allocator);
+        let boxed = Box::new_in(exp_node, &&allocator);
         dir.exp = Some(ExpressionNode::Simple(boxed));
 
         // Add lazy modifier

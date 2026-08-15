@@ -34,7 +34,7 @@ fn test_transform_pascal_case_dynamic_component() {
         !root
             .components
             .iter()
-            .any(|component| component.as_str() == "Component"),
+            .any(|component| *component == "Component"),
         "Dynamic component special tag should not be tracked as a resolved component"
     );
     assert!(
@@ -81,7 +81,7 @@ fn test_transform_v_for_template_syntax_quirks_accepts_unmatched_edge_parens() {
     match &root.children[0] {
         crate::TemplateChildNode::For(for_node) => match &for_node.value_alias {
             Some(crate::ExpressionNode::Simple(value)) => {
-                assert_eq!(value.content.as_str(), "item");
+                assert_eq!(value.content, "item");
             }
             _ => panic!("expected value alias"),
         },
@@ -175,7 +175,7 @@ fn test_v_for_creates_for_node() {
             // Check source is "items"
             match &for_node.source {
                 crate::ExpressionNode::Simple(exp) => {
-                    assert_eq!(exp.content.as_str(), "items", "Source should be 'items'");
+                    assert_eq!(exp.content, "items", "Source should be 'items'");
                 }
                 _ => panic!("Expected Simple expression for source"),
             }
@@ -183,7 +183,7 @@ fn test_v_for_creates_for_node() {
             assert!(for_node.value_alias.is_some(), "Should have value alias");
             match for_node.value_alias.as_ref().unwrap() {
                 crate::ExpressionNode::Simple(exp) => {
-                    assert_eq!(exp.content.as_str(), "item", "Value alias should be 'item'");
+                    assert_eq!(exp.content, "item", "Value alias should be 'item'");
                 }
                 _ => panic!("Expected Simple expression for value alias"),
             }

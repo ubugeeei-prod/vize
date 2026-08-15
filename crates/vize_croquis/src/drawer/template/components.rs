@@ -21,15 +21,15 @@ impl Drawer {
             match prop {
                 PropNode::Attribute(attr) => {
                     usage.props.push(PassedProp {
-                        name: attr.name.clone(),
+                        name: attr.name.into(),
                         name_is_dynamic: false,
-                        value: attr.value.as_ref().map(|v| v.content.clone()),
+                        value: attr.value.as_ref().map(|v| v.content.into()),
                         start: attr.loc.span.start,
                         end: attr.loc.span.end,
                         is_dynamic: false,
                     });
                 }
-                PropNode::Directive(dir) => match dir.name.as_str() {
+                PropNode::Directive(dir) => match dir.name {
                     "bind" => {
                         if let Some(ref arg) = dir.arg {
                             let (prop_name, name_is_dynamic) =
@@ -38,7 +38,7 @@ impl Drawer {
                                 .exp
                                 .as_ref()
                                 .map(|e| match e {
-                                    ExpressionNode::Simple(s) => s.content.clone(),
+                                    ExpressionNode::Simple(s) => s.content.into(),
                                     ExpressionNode::Compound(c) => {
                                         CompactString::new(c.loc.span.slice(&self.template_source))
                                     }
@@ -56,7 +56,7 @@ impl Drawer {
                             usage.has_spread_attrs = true;
                             usage.spread_props.push(SpreadProp {
                                 expression: match exp {
-                                    ExpressionNode::Simple(s) => s.content.clone(),
+                                    ExpressionNode::Simple(s) => s.content.into(),
                                     ExpressionNode::Compound(c) => {
                                         CompactString::new(c.loc.span.slice(&self.template_source))
                                     }
@@ -71,13 +71,13 @@ impl Drawer {
                             let (event_name, name_is_dynamic) =
                                 directive_argument(arg, &self.template_source);
                             let handler = dir.exp.as_ref().map(|e| match e {
-                                ExpressionNode::Simple(s) => s.content.clone(),
+                                ExpressionNode::Simple(s) => s.content.into(),
                                 ExpressionNode::Compound(c) => {
                                     CompactString::new(c.loc.span.slice(&self.template_source))
                                 }
                             });
                             let modifiers: SmallVec<[CompactString; 4]> =
-                                dir.modifiers.iter().map(|m| m.content.clone()).collect();
+                                dir.modifiers.iter().map(|m| m.content.into()).collect();
                             usage.events.push(EventListener {
                                 name: event_name,
                                 name_is_dynamic,
@@ -96,7 +96,7 @@ impl Drawer {
                             .unwrap_or_else(|| (CompactString::const_new("modelValue"), false));
 
                         let value = dir.exp.as_ref().map(|e| match e {
-                            ExpressionNode::Simple(s) => s.content.clone(),
+                            ExpressionNode::Simple(s) => s.content.into(),
                             ExpressionNode::Compound(c) => {
                                 CompactString::new(c.loc.span.slice(&self.template_source))
                             }
@@ -172,7 +172,7 @@ impl Drawer {
 
 fn directive_argument(arg: &ExpressionNode<'_>, source: &str) -> (CompactString, bool) {
     match arg {
-        ExpressionNode::Simple(simple) => (simple.content.clone(), !simple.is_static),
+        ExpressionNode::Simple(simple) => (simple.content.into(), !simple.is_static),
         ExpressionNode::Compound(compound) => {
             (CompactString::new(compound.loc.span.slice(source)), true)
         }
@@ -232,7 +232,7 @@ fn is_default_slot_child(child: &TemplateChildNode<'_>) -> bool {
 
 fn expression_content<'a>(exp: &'a ExpressionNode<'_>, source: &'a str) -> &'a str {
     match exp {
-        ExpressionNode::Simple(s) => s.content.as_str(),
+        ExpressionNode::Simple(s) => s.content,
         ExpressionNode::Compound(c) => c.loc.span.slice(source),
     }
 }

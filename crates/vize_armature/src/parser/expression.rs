@@ -50,10 +50,10 @@ impl<'a> Parser<'a> {
     ) {
         debug_assert!(!node.is_static);
         let slice = self.get_source_retained(start, end);
-        let raw: &'a str = if slice == node.content.as_str() {
+        let raw: &'a str = if slice == node.content {
             slice
         } else {
-            self.oxc_allocator.alloc_str(node.content.as_str())
+            self.oxc_allocator.alloc_str(node.content)
         };
         node.js_ast = parse_retained(self.oxc_allocator, raw);
     }

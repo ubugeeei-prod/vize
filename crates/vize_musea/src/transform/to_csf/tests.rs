@@ -1,11 +1,11 @@
 use super::{escape_string, escape_template, to_pascal_case, transform_to_csf};
 use crate::parse::parse_art;
 use crate::types::ArtParseOptions;
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 #[test]
 fn test_transform_simple() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let source = r#"
 <art title="Button" component="./Button.vue">
   <variant name="Primary" default>
@@ -22,7 +22,7 @@ fn test_transform_simple() {
 
 #[test]
 fn test_transform_with_category() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let source = r#"
 <art title="Button" category="atoms" component="./Button.vue">
   <variant name="Default">
@@ -39,7 +39,7 @@ fn test_transform_with_category() {
 
 #[test]
 fn test_transform_multiple_variants() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let source = r#"
 <art title="Button" component="./Button.vue">
   <variant name="Primary">
@@ -59,7 +59,7 @@ fn test_transform_multiple_variants() {
 
 #[test]
 fn test_transform_preserves_script_setup_fixtures() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let source = r#"
 <script setup lang="ts">
 import MoshiDetailCard from './MoshiDetailCard.vue';

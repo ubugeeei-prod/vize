@@ -25,7 +25,7 @@ impl Drawer {
         if let Some(ref exp) = dir.exp {
             let compound_content;
             let content = match exp {
-                ExpressionNode::Simple(s) => s.content.as_str(),
+                ExpressionNode::Simple(s) => s.content,
                 ExpressionNode::Compound(c) => {
                     compound_content = CompactString::new(c.loc.span.slice(&self.template_source));
                     compound_content.as_str()
@@ -67,7 +67,7 @@ impl Drawer {
                     .arg
                     .as_ref()
                     .map(|arg| match arg {
-                        ExpressionNode::Simple(s) => CompactString::new(s.content.as_str()),
+                        ExpressionNode::Simple(s) => CompactString::new(s.content),
                         ExpressionNode::Compound(c) => {
                             CompactString::new(c.loc.span.slice(&self.template_source))
                         }
@@ -141,9 +141,7 @@ impl Drawer {
                                 .arg
                                 .as_ref()
                                 .map(|arg| match arg {
-                                    ExpressionNode::Simple(s) => {
-                                        CompactString::new(s.content.as_str())
-                                    }
+                                    ExpressionNode::Simple(s) => CompactString::new(s.content),
                                     ExpressionNode::Compound(c) => {
                                         CompactString::new(c.loc.span.slice(&self.template_source))
                                     }

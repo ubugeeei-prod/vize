@@ -134,7 +134,7 @@ fn compile_ssr_inner<'a>(
         dialect: codegen_options.dialect,
         ..Default::default()
     };
-    let analysis = options.croquis.map(|c| &*allocator.alloc(*c));
+    let analysis = options.croquis.map(|c| &*allocator.alloc_owned(*c));
     let template_syntax_quirks = template_syntax.is_quirks();
     let transform_errors = profile!(
         "atelier.ssr.template.transform",

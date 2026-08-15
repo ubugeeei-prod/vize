@@ -35,10 +35,10 @@ impl<'a> Parser<'a> {
             "Misnested formatting end tag was repaired using the adoption agency recovery path.",
         );
 
-        let mut reopened = Vec::new_in(self.allocator);
+        let mut reopened = Vec::new_in(&self.allocator);
         while self.stack.len() > index + 1 {
             if let Some(entry) = self.pop_stack_entry() {
-                if Self::is_formatting_tag(entry.element.tag.as_str()) {
+                if Self::is_formatting_tag(entry.element.tag) {
                     reopened.push(Self::formatting_shell(
                         self.allocator,
                         &entry.element,
@@ -67,12 +67,12 @@ impl<'a> Parser<'a> {
     }
 
     fn formatting_shell(
-        allocator: &'a vize_carton::Bump,
+        allocator: &'a vize_carton::Allocator,
         element: &ElementNode<'a>,
         in_pre: bool,
         in_v_pre: bool,
     ) -> ParserStackEntry<'a> {
-        let mut reopened = ElementNode::new(allocator, element.tag.clone(), element.loc.clone());
+        let mut reopened = ElementNode::new(allocator, element.tag, element.loc.clone());
         reopened.ns = element.ns;
         reopened.tag_type = element.tag_type;
         ParserStackEntry {
@@ -81,7 +81,7 @@ impl<'a> Parser<'a> {
             in_v_pre,
             insertion: StackInsertion::Normal,
             implicit: true,
-            fostered_before: Vec::new_in(allocator),
+            fostered_before: Vec::new_in(&allocator),
         }
     }
 

@@ -52,7 +52,7 @@ fn is_dynamic_is_prop(prop: &PropNode<'_>) -> bool {
     let PropNode::Directive(directive) = prop else {
         return false;
     };
-    if directive.name.as_str() != "bind" {
+    if directive.name != "bind" {
         return false;
     }
     // A dynamic argument (`:[name]="x"`) can resolve to `is`, so it counts.
@@ -62,12 +62,12 @@ fn is_dynamic_is_prop(prop: &PropNode<'_>) -> bool {
     if !argument.is_static {
         return true;
     }
-    if argument.content.as_str() != "is" {
+    if argument.content != "is" {
         return false;
     }
     !matches!(
         directive.exp.as_ref(),
-        Some(ExpressionNode::Simple(expression)) if names_a_component(expression.content.as_str())
+        Some(ExpressionNode::Simple(expression)) if names_a_component(expression.content)
     )
 }
 

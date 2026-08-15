@@ -58,7 +58,7 @@ fn expression_content_and_offset<'a>(
 ) -> (&'a str, u32) {
     let loc = exp.loc();
     let content = match exp {
-        ExpressionNode::Simple(simple) => simple.content.as_str(),
+        ExpressionNode::Simple(simple) => simple.content,
         ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
     };
     (content, loc.span.start)

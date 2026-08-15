@@ -2,14 +2,14 @@
 //!
 //! Transforms v-show directive for toggling display.
 
-use vize_carton::{Box, Bump, String, cstr};
+use vize_carton::{Allocator, Box, String, cstr};
 
 use crate::ir::{DirectiveIRNode, OperationNode};
 use vize_atelier_core::{DirectiveNode, ExpressionNode};
 
 /// Transform v-show directive to IR
 pub fn transform_v_show<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     dir: &DirectiveNode<'a>,
     element_id: usize,
 ) -> OperationNode<'a> {
@@ -18,11 +18,11 @@ pub fn transform_v_show<'a>(
 
     let dir_ir = DirectiveIRNode {
         element: element_id,
-        dir: Box::new_in(new_dir, allocator),
-        name: String::new("show"),
+        dir: Box::new_in(new_dir, &allocator),
+        name: "show",
         builtin: true,
-        tag: String::new(""),
-        input_type: String::new(""),
+        tag: "",
+        input_type: "",
     };
 
     OperationNode::Directive(dir_ir)
@@ -31,7 +31,7 @@ pub fn transform_v_show<'a>(
 /// Get v-show condition expression
 pub fn get_show_condition(dir: &DirectiveNode<'_>, source: &str) -> Option<String> {
     dir.exp.as_ref().map(|exp| match exp {
-        ExpressionNode::Simple(s) => s.content.clone(),
+        ExpressionNode::Simple(s) => String::new(s.content),
         ExpressionNode::Compound(c) => String::new(c.loc.span.slice(source)),
     })
 }

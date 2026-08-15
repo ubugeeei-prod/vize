@@ -4,12 +4,12 @@
 //! into CSS custom properties (variables). Also provides low-level byte search
 //! utilities used by both this module and the scoped CSS module.
 
-use vize_carton::{Bump, BumpVec, String, ToCompactString};
+use vize_carton::{Allocator, String, ToCompactString, Vec as ArenaVec};
 
 /// Extract v-bind() expressions and transform them to CSS variables
 #[cfg(test)]
 pub(crate) fn extract_and_transform_v_bind<'a>(
-    bump: &'a Bump,
+    bump: &'a Allocator,
     css: &str,
 ) -> (&'a str, Vec<String>) {
     extract_and_transform_v_bind_with_scope(bump, css, None)
@@ -17,13 +17,13 @@ pub(crate) fn extract_and_transform_v_bind<'a>(
 
 /// Extract v-bind() expressions and transform them using a Vue SFC scope id.
 pub(crate) fn extract_and_transform_v_bind_with_scope<'a>(
-    bump: &'a Bump,
+    bump: &'a Allocator,
     css: &str,
     scope_id: Option<&str>,
 ) -> (&'a str, Vec<String>) {
     let css_bytes = css.as_bytes();
     let mut vars = Vec::new();
-    let mut result = BumpVec::with_capacity_in(css_bytes.len() * 2, bump);
+    let mut result = ArenaVec::with_capacity_in(css_bytes.len() * 2, &bump);
     let mut pos = 0;
 
     while pos < css_bytes.len() {
@@ -197,7 +197,7 @@ fn normalize_hash_sum_i32(hash: u32) -> u64 {
 }
 
 /// Write v-bind variable hash to output
-fn write_v_bind_hash(out: &mut BumpVec<u8>, expr: &str) {
+fn write_v_bind_hash(out: &mut ArenaVec<u8>, expr: &str) {
     let hash: u32 = expr
         .bytes()
         .fold(0u32, |acc, b| acc.wrapping_mul(31).wrapping_add(b as u32));
@@ -216,7 +216,7 @@ fn write_v_bind_hash(out: &mut BumpVec<u8>, expr: &str) {
 }
 
 /// Write u32 as 8-digit hex
-fn write_hex_u32(out: &mut BumpVec<u8>, val: u32) {
+fn write_hex_u32(out: &mut ArenaVec<u8>, val: u32) {
     const HEX: &[u8; 16] = b"0123456789abcdef";
     out.push(HEX[((val >> 28) & 0xF) as usize]);
     out.push(HEX[((val >> 24) & 0xF) as usize]);

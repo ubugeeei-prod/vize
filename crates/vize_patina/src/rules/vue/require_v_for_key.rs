@@ -193,7 +193,7 @@ impl Rule for RequireVForKey {
         directive: &DirectiveNode<'a>,
     ) {
         // Only check v-for directives
-        if directive.name.as_str() != "for" {
+        if directive.name != "for" {
             return;
         }
 
@@ -205,7 +205,7 @@ impl Rule for RequireVForKey {
 
         // Skip <template> tags - key should be on children instead
         // (though on <template v-for>, the key can be on the template itself)
-        if element.tag.as_str() == "template" {
+        if element.tag == "template" {
             // For <template v-for>, we still require a key if it has meaningful content
             // But we'll be lenient here since the pattern varies
             return;
@@ -213,26 +213,23 @@ impl Rule for RequireVForKey {
 
         // Check if element has :key or key attribute
         let has_key = element.props.iter().any(|prop| match prop {
-            PropNode::Attribute(attr) => attr.name.as_str() == "key",
+            PropNode::Attribute(attr) => attr.name == "key",
             PropNode::Directive(dir) => {
                 // Check for v-bind:key or :key
-                if dir.name.as_str() == "bind"
+                if dir.name == "bind"
                     && let Some(ExpressionNode::Simple(s)) = &dir.arg
                 {
-                    return s.content.as_str() == "key";
+                    return s.content == "key";
                 }
-                dir.name.as_str() == "bind"
+                dir.name == "bind"
                     && dir.arg.is_none()
-                    && matches!(&dir.exp, Some(ExpressionNode::Simple(expression)) if object_has_static_key(expression.content.as_str()))
+                    && matches!(&dir.exp, Some(ExpressionNode::Simple(expression)) if object_has_static_key(expression.content))
             }
         });
 
         if !has_key {
             ctx.error_with_help(
-                ctx.t_fmt(
-                    "vue/require-v-for-key.message",
-                    &[("tag", element.tag.as_str())],
-                ),
+                ctx.t_fmt("vue/require-v-for-key.message", &[("tag", element.tag)]),
                 &directive.loc,
                 ctx.t("vue/require-v-for-key.help"),
             );

@@ -2,7 +2,7 @@
 //!
 //! Transforms v-for directive into ForIRNode.
 
-use vize_carton::{Box, Bump, String, ToCompactString};
+use vize_carton::{Allocator, Box, String, ToCompactString};
 
 use crate::ir::{BlockIRNode, ForIRNode, OperationNode};
 use vize_atelier_core::{
@@ -12,19 +12,19 @@ use vize_atelier_core::{
 
 /// Transform v-for directive to IR
 pub fn transform_v_for<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     dir: &DirectiveNode<'a>,
     el: &ElementNode<'a>,
     render_block: BlockIRNode<'a>,
     id: usize,
-    source_text: &str,
+    source_text: &'a str,
 ) -> OperationNode<'a> {
     let source = if let Some(ref exp) = dir.exp {
         extract_expression(allocator, exp, source_text)
     } else {
         Box::new_in(
             SimpleExpressionNode::new("[]", false, SourceLocation::STUB),
-            allocator,
+            &allocator,
         )
     };
 
@@ -43,16 +43,16 @@ pub fn transform_v_for<'a>(
         anchor: None,
     };
 
-    OperationNode::For(Box::new_in(for_node, allocator))
+    OperationNode::For(Box::new_in(for_node, &allocator))
 }
 
 /// Transform ForNode (from compiler-core) to ForIRNode
 pub fn transform_for_node<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     for_node: &ForNode<'a>,
     render_block: BlockIRNode<'a>,
     id: usize,
-    source_text: &str,
+    source_text: &'a str,
 ) -> OperationNode<'a> {
     let source = extract_expression(allocator, &for_node.source, source_text);
 
@@ -84,23 +84,20 @@ pub fn transform_for_node<'a>(
         anchor: None,
     };
 
-    OperationNode::For(Box::new_in(for_ir, allocator))
+    OperationNode::For(Box::new_in(for_ir, &allocator))
 }
 
 /// Extract expression from ExpressionNode
 fn extract_expression<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     exp: &ExpressionNode<'a>,
-    source: &str,
+    source: &'a str,
 ) -> Box<'a, SimpleExpressionNode<'a>> {
     match exp {
         ExpressionNode::Simple(simple) => {
-            let node = SimpleExpressionNode::new(
-                simple.content.clone(),
-                simple.is_static,
-                simple.loc.clone(),
-            );
-            Box::new_in(node, allocator)
+            let node =
+                SimpleExpressionNode::new(simple.content, simple.is_static, simple.loc.clone());
+            Box::new_in(node, &allocator)
         }
         ExpressionNode::Compound(compound) => {
             let node = SimpleExpressionNode::new(
@@ -108,7 +105,7 @@ fn extract_expression<'a>(
                 false,
                 compound.loc.clone(),
             );
-            Box::new_in(node, allocator)
+            Box::new_in(node, &allocator)
         }
     }
 }

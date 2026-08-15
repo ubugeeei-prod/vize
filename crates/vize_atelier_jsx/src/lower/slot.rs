@@ -26,7 +26,7 @@ use super::Lowerer;
 use super::babel_slot::sole_expression_container;
 use crate::diagnostics::JsxDiagnostic;
 
-impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
+impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// Lower the children of a component element.
     ///
     /// When the component's sole meaningful child (ignoring whitespace text) is
@@ -94,7 +94,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         &mut self,
         object: &oxc_ast::ast::ObjectExpression<'_>,
     ) -> Vec<'a, TemplateChildNode<'a>> {
-        let mut out = Vec::new_in(self.bump());
+        let mut out = self.vec();
         for prop in object.properties.iter() {
             let ObjectPropertyKind::ObjectProperty(property) = prop else {
                 self.report(JsxDiagnostic::warning(
@@ -132,10 +132,13 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
                 continue;
             };
 
+            // Slot names come out of the parsed module, so they are copied
+            // into the compile arena before reaching the node.
+            let slot_name = self.bump().alloc_str(slot_name);
             let template = self.build_slot_template(slot_name, name_span, &slot_fn);
             out.push(TemplateChildNode::Element(Box::new_in(
                 template,
-                self.bump(),
+                &self.bump(),
             )));
         }
         out
@@ -147,11 +150,11 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         &mut self,
         slot_fn: SlotFn<'_>,
     ) -> Vec<'a, TemplateChildNode<'a>> {
-        let mut out = Vec::new_in(self.bump());
+        let mut out = self.vec();
         let template = self.build_slot_template("default", slot_fn.span, &slot_fn);
         out.push(TemplateChildNode::Element(Box::new_in(
             template,
-            self.bump(),
+            &self.bump(),
         )));
         out
     }
@@ -161,7 +164,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// raw param-pattern source, with the lowered slot body as its children.
     fn build_slot_template(
         &mut self,
-        slot_name: &str,
+        slot_name: &'a str,
         name_span: Span,
         slot_fn: &SlotFn<'_>,
     ) -> ElementNode<'a> {
@@ -178,8 +181,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             // `item`); `dyn_expr` slices exactly that span.
             directive.exp = Some(self.dyn_expr(param_span));
         }
-        node.props
-            .push(PropNode::Directive(Box::new_in(directive, self.bump())));
+        node.props.push(PropNode::Directive(self.boxed(directive)));
 
         node.children = self.extract_fn_slot_body(slot_fn);
         node
@@ -198,7 +200,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// expression would be as an ordinary child. This used to produce an empty
     /// body instead, so `<B>{() => 'foo'}</B>` silently rendered nothing.
     fn extract_fn_slot_body(&mut self, slot_fn: &SlotFn<'_>) -> Vec<'a, TemplateChildNode<'a>> {
-        let mut out = Vec::new_in(self.bump());
+        let mut out = self.vec();
         let Some(expr) = slot_fn.return_expr else {
             return out;
         };
@@ -206,7 +208,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             Expression::JSXElement(element) => {
                 out.push(TemplateChildNode::Element(Box::new_in(
                     self.lower_element_node(element),
-                    self.bump(),
+                    &self.bump(),
                 )));
             }
             // A slot body is already a child *list*, so a fragment body splices
@@ -233,8 +235,11 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     fn slot_body_value(&mut self, expr: &Expression<'_>) -> TemplateChildNode<'a> {
         if let Expression::StringLiteral(string) = expr {
             return TemplateChildNode::Text(Box::new_in(
-                TextNode::new(string.value.as_str(), self.mapper().location(string.span)),
-                self.bump(),
+                TextNode::new(
+                    self.bump().alloc_str(string.value.as_str()),
+                    self.mapper().location(string.span),
+                ),
+                &self.bump(),
             ));
         }
         let content = self.dyn_expr(expr.span());

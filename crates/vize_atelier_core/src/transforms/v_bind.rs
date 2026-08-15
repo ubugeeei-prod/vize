@@ -11,8 +11,8 @@ use crate::{DirectiveNode, ExpressionNode, RuntimeHelper};
 pub fn process_v_bind(ctx: &mut TransformContext<'_>, dir: &DirectiveNode<'_>) {
     // Get prop name
     let prop_name = dir.arg.as_ref().map(|arg| match arg {
-        ExpressionNode::Simple(exp) => exp.content.clone(),
-        ExpressionNode::Compound(exp) => String::new(exp.loc.span.slice(&ctx.source)),
+        ExpressionNode::Simple(exp) => String::new(exp.content),
+        ExpressionNode::Compound(exp) => String::new(exp.loc.span.slice(ctx.source)),
     });
 
     // Handle v-bind without argument (v-bind="obj")
@@ -46,7 +46,7 @@ pub fn process_v_bind(ctx: &mut TransformContext<'_>, dir: &DirectiveNode<'_>) {
 /// Get binding name from v-bind directive
 pub fn get_bind_name(dir: &DirectiveNode<'_>, source: &str) -> Option<String> {
     dir.arg.as_ref().map(|arg| match arg {
-        ExpressionNode::Simple(exp) => exp.content.clone(),
+        ExpressionNode::Simple(exp) => String::new(exp.content),
         ExpressionNode::Compound(exp) => String::new(exp.loc.span.slice(source)),
     })
 }

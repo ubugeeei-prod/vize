@@ -13,7 +13,7 @@ mod element;
 #[path = "transform/text.rs"]
 mod text;
 
-use vize_carton::{Bump, String, Vec};
+use vize_carton::{Allocator, String, Vec};
 
 use crate::ir::{BlockIRNode, RootIRNode};
 use vize_atelier_core::{RootNode, TemplateChildNode};
@@ -25,7 +25,7 @@ use text::{transform_interpolation, transform_text};
 
 /// Transform AST to Vapor IR
 pub fn transform_to_ir<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     root: &RootNode<'a>,
     source: &'a str,
 ) -> RootIRNode<'a> {
@@ -33,7 +33,7 @@ pub fn transform_to_ir<'a>(
 }
 
 pub(crate) fn transform_to_ir_with_diagnostics<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     root: &RootNode<'a>,
     source: &'a str,
 ) -> (RootIRNode<'a>, std::vec::Vec<String>) {
@@ -45,12 +45,12 @@ pub(crate) fn transform_to_ir_with_diagnostics<'a>(
     (
         RootIRNode {
             node: RootNode::new(allocator, ""),
-            source: String::from(source),
+            source,
             template: Default::default(),
             template_index_map: Default::default(),
-            root_template_indexes: Vec::new_in(allocator),
-            component: Vec::new_in(allocator),
-            directive: Vec::new_in(allocator),
+            root_template_indexes: Vec::new_in(&allocator),
+            component: Vec::new_in(&allocator),
+            directive: Vec::new_in(&allocator),
             block,
             has_template_ref: false,
             has_deferred_v_show: false,
@@ -140,22 +140,21 @@ fn transform_combined_block_text<'a>(
     ctx.standalone_text_elements.insert(element_id);
 
     // Collect all text values
-    let mut values = Vec::new_in(ctx.allocator);
+    let mut values = Vec::new_in(&ctx.allocator);
     for child in children.iter() {
         match child {
             TemplateChildNode::Text(text) => {
-                let exp =
-                    SimpleExpressionNode::new(text.content.clone(), true, SourceLocation::STUB);
-                values.push(Box::new_in(exp, ctx.allocator));
+                let exp = SimpleExpressionNode::new(text.content, true, SourceLocation::STUB);
+                values.push(Box::new_in(exp, &ctx.allocator));
             }
             TemplateChildNode::Interpolation(interp) => {
                 if let ExpressionNode::Simple(simple) = &interp.content {
                     let exp = SimpleExpressionNode::new(
-                        simple.content.clone(),
+                        simple.content,
                         simple.is_static,
                         simple.loc.clone(),
                     );
-                    values.push(Box::new_in(exp, ctx.allocator));
+                    values.push(Box::new_in(exp, &ctx.allocator));
                 }
             }
             _ => {}

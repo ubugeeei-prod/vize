@@ -70,14 +70,14 @@ impl Rule for NoDeprecatedVOnNumberModifiers {
         }
 
         // Only `v-on` / `@` carries key-filter modifiers.
-        if directive.name.as_str() != "on" {
+        if directive.name != "on" {
             return;
         }
 
         // A numeric `keyCode` modifier is a modifier whose content is entirely
         // ASCII digits (e.g. "13", "27"). Report each one on its own location.
         for modifier in directive.modifiers.iter() {
-            let content = modifier.content.as_str();
+            let content = modifier.content;
             if !content.is_empty() && content.bytes().all(|b| b.is_ascii_digit()) {
                 ctx.error_with_help(
                     ctx.t_fmt(

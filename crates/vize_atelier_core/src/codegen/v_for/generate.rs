@@ -100,7 +100,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     ctx.push_vnode_helper(RuntimeHelper::CreateElementVNode);
                     ctx.push("(\"");
                     let node_el = unwrapped_child.unwrap_or(el);
-                    ctx.push(&node_el.tag);
+                    ctx.push(node_el.tag);
                     ctx.push("\"");
                 }
 
@@ -200,7 +200,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                             if let PropNode::Attribute(attr) = p
                                 && attr.name == "is"
                             {
-                                return attr.value.as_ref().map(|v| v.content.as_str());
+                                return attr.value.as_ref().map(|v| v.content);
                             }
                             None
                         });
@@ -219,12 +219,12 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                         } else {
                             ctx.push("_component_component");
                         }
-                    } else if let Some(builtin) = is_builtin_component(&el.tag) {
+                    } else if let Some(builtin) = is_builtin_component(el.tag) {
                         ctx.use_helper(builtin);
                         ctx.push(ctx.helper(builtin));
-                    } else if ctx.push_component_binding_tag(&el.tag) {
+                    } else if ctx.push_component_binding_tag(el.tag) {
                     } else {
-                        ctx.push(&to_valid_asset_identifier("component", &el.tag));
+                        ctx.push(&to_valid_asset_identifier("component", el.tag));
                     }
                 } else if gen_is_template {
                     // Template with multiple children: use Fragment
@@ -238,14 +238,14 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     ctx.use_helper(RuntimeHelper::CreateElementBlock);
                     ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
                     ctx.push("(\"");
-                    ctx.push(&child_el.tag);
+                    ctx.push(child_el.tag);
                     ctx.push("\"");
                 } else {
                     // Regular element
                     ctx.use_helper(RuntimeHelper::CreateElementBlock);
                     ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
                     ctx.push("(\"");
-                    ctx.push(&el.tag);
+                    ctx.push(el.tag);
                     ctx.push("\"");
                 }
 
@@ -325,7 +325,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     }
                     // KeepAlive always gets DYNAMIC_SLOTS, and component
                     // slots inside v-for are dynamic by construction.
-                    if matches!(el.tag.as_str(), "KeepAlive" | "keep-alive")
+                    if matches!(el.tag, "KeepAlive" | "keep-alive")
                         || (ctx.in_v_for && has_slot_children(el))
                         || has_dynamic_slots_flag(el, &ctx.source)
                     {
@@ -514,7 +514,7 @@ pub(crate) fn generate_for_item_props(
         if let PropNode::Attribute(attr) = p
             && attr.name == "class"
         {
-            return attr.value.as_ref().map(|v| v.content.as_str());
+            return attr.value.as_ref().map(|v| v.content);
         }
         None
     });
@@ -523,7 +523,7 @@ pub(crate) fn generate_for_item_props(
         if let PropNode::Attribute(attr) = p
             && attr.name == "style"
         {
-            return attr.value.as_ref().map(|v| v.content.as_str());
+            return attr.value.as_ref().map(|v| v.content);
         }
         None
     });
@@ -865,7 +865,7 @@ pub(super) fn generate_single_prop(
                 ctx.options
                     .binding_metadata
                     .as_ref()
-                    .and_then(|m| m.bindings.get(v.content.as_str()).copied())
+                    .and_then(|m| m.bindings.get(v.content).copied())
             });
             let should_ref_runtime_binding = matches!(
                 ref_binding_type,
@@ -892,21 +892,21 @@ pub(super) fn generate_single_prop(
             if needs_ref_for {
                 ctx.push("ref_for: true, ");
             }
-            let needs_quotes = !super::super::helpers::is_valid_js_identifier(&attr.name);
+            let needs_quotes = !super::super::helpers::is_valid_js_identifier(attr.name);
             if needs_quotes {
                 ctx.push("\"");
             }
-            ctx.push(&attr.name);
+            ctx.push(attr.name);
             if needs_quotes {
                 ctx.push("\"");
             }
             ctx.push(": ");
             if let Some(value) = &attr.value {
                 if should_ref_runtime_binding {
-                    ctx.push(&value.content);
+                    ctx.push(value.content);
                 } else {
                     ctx.push("\"");
-                    ctx.push(&escape_js_string(&value.content));
+                    ctx.push(&escape_js_string(value.content));
                     ctx.push("\"");
                 }
             } else {

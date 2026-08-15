@@ -21,15 +21,15 @@ pub(super) fn generate_for(
 
     let depth = ctx.for_scopes.len();
     let source = if for_node.source.is_static {
-        ["(", for_node.source.content.as_str(), ")"].concat()
+        ["(", for_node.source.content, ")"].concat()
     } else {
         let resolved = ctx.resolve_expression_node(&for_node.source);
         ["(", &resolved, ")"].concat()
     };
 
-    let value_alias = for_node.value.as_ref().map(|v| v.content.clone());
-    let key_alias = for_node.key.as_ref().map(|k| k.content.clone());
-    let index_alias = for_node.index.as_ref().map(|i| i.content.clone());
+    let value_alias = for_node.value.as_ref().map(|v| v.content);
+    let key_alias = for_node.key.as_ref().map(|k| k.content);
+    let index_alias = for_node.index.as_ref().map(|i| i.content);
 
     // Build parameter list using _for_item0, _for_key0 naming
     let for_item_var = cstr!("_for_item{}", depth);
@@ -48,9 +48,9 @@ pub(super) fn generate_for(
 
     // Push for scope before generating body
     let scope = ForScope {
-        value_alias: value_alias.clone(),
-        key_alias: key_alias.clone(),
-        index_alias: index_alias.clone(),
+        value_alias: value_alias.map(String::new),
+        key_alias: key_alias.map(String::new),
+        index_alias: index_alias.map(String::new),
         depth,
     };
     ctx.for_scopes.push(scope);
@@ -84,7 +84,7 @@ pub(super) fn generate_for(
     let key_func = generate_for_key_function(ctx, for_node);
 
     // Check if this is a range-based for (source is a number literal)
-    let is_range = for_node.source.content.as_str().parse::<f64>().is_ok();
+    let is_range = for_node.source.content.parse::<f64>().is_ok();
 
     // Determine memo flag: 4 = range, 1 = only child of parent (nested v-for)
     let memo_flag = if is_range {
@@ -116,15 +116,15 @@ fn generate_for_key_function(
     for_node: &ForIRNode<'_>,
 ) -> Option<String> {
     if let Some(ref key_prop) = for_node.key_prop {
-        let key_expr = resolve_key_expression(ctx, for_node, key_prop.content.as_str());
+        let key_expr = resolve_key_expression(ctx, for_node, key_prop.content);
         // Build params: (value_alias) or (value_alias, key_alias)
         let value_name = for_node
             .value
             .as_ref()
-            .map(|v| v.content.as_str())
+            .map(|v| v.content)
             .unwrap_or("_item");
-        let key_name = for_node.key.as_ref().map(|k| k.content.as_str());
-        let index_name = for_node.index.as_ref().map(|i| i.content.as_str());
+        let key_name = for_node.key.as_ref().map(|k| k.content);
+        let index_name = for_node.index.as_ref().map(|i| i.content);
 
         let mut params = value_name.to_compact_string();
         if key_name.is_some() || index_name.is_some() {
@@ -156,21 +156,21 @@ fn resolve_key_expression(
         restore_current_alias_reference(
             &mut resolved,
             &cstr!("_for_item{}.value", current_scope.depth),
-            value.content.as_str(),
+            value.content,
         );
     }
     if let Some(key) = for_node.key.as_ref() {
         restore_current_alias_reference(
             &mut resolved,
             &cstr!("_for_key{}.value", current_scope.depth),
-            key.content.as_str(),
+            key.content,
         );
     }
     if let Some(index) = for_node.index.as_ref() {
         restore_current_alias_reference(
             &mut resolved,
             &cstr!("_for_index{}.value", current_scope.depth),
-            index.content.as_str(),
+            index.content,
         );
     }
 

@@ -105,10 +105,12 @@ pub fn capitalize_event_name(event: &str) -> String {
 mod tests {
     use super::{apply_modifiers, capitalize_event_name, generate_event_options};
     use crate::ir::EventModifiers;
+    use vize_carton::Allocator;
 
     #[test]
     fn test_apply_modifiers_none() {
-        let modifiers = EventModifiers::default();
+        let allocator = Allocator::new();
+        let modifiers = EventModifiers::new(&allocator);
         let result = apply_modifiers("handleClick", &modifiers);
         assert_eq!(result, "handleClick");
     }
@@ -121,7 +123,8 @@ mod tests {
 
     #[test]
     fn test_generate_event_options_none() {
-        let modifiers = EventModifiers::default();
+        let allocator = Allocator::new();
+        let modifiers = EventModifiers::new(&allocator);
         assert_eq!(generate_event_options(&modifiers), None);
     }
 }

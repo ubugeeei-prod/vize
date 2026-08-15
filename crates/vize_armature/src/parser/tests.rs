@@ -31,7 +31,7 @@ fn test_parse_simple_element() {
     assert_eq!(root.children.len(), 1);
 
     if let TemplateChildNode::Element(el) = &root.children[0] {
-        assert_eq!(el.tag.as_str(), "div");
+        assert_eq!(el.tag, "div");
         assert!(!el.is_self_closing);
     } else {
         panic!("Expected element node");
@@ -47,7 +47,7 @@ fn test_parse_text() {
     assert_eq!(root.children.len(), 1);
 
     if let TemplateChildNode::Text(text) = &root.children[0] {
-        assert_eq!(text.content.as_str(), "hello");
+        assert_eq!(text.content, "hello");
     } else {
         panic!("Expected text node");
     }
@@ -62,7 +62,7 @@ fn test_parse_less_than_before_non_tag_start_keeps_root_text_merged() {
         assert!(errors.is_empty(), "{source}: {errors:?}");
         assert_eq!(root.children.len(), 1, "{source}");
         if let TemplateChildNode::Text(text) = &root.children[0] {
-            assert_eq!(text.content.as_str(), source);
+            assert_eq!(text.content, source);
         } else {
             panic!("{source}: expected text node");
         }
@@ -78,7 +78,7 @@ fn test_parse_less_than_before_non_tag_start_inside_element_has_no_error() {
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.children.len(), 1);
         if let TemplateChildNode::Text(text) = &el.children[0] {
-            assert_eq!(text.content.as_str(), "price < 100");
+            assert_eq!(text.content, "price < 100");
         } else {
             panic!("expected text child, got {:?}", el.children[0]);
         }
@@ -100,7 +100,7 @@ fn test_parse_condense_whitespace_collapses_runs_inside_text_nodes() {
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.children.len(), 1);
         if let TemplateChildNode::Text(text) = &el.children[0] {
-            assert_eq!(text.content.as_str(), "x y z");
+            assert_eq!(text.content, "x y z");
         } else {
             panic!("expected text child, got {:?}", el.children[0]);
         }
@@ -119,7 +119,7 @@ fn test_parse_text_with_entities_preserves_raw_source() {
         .children
         .iter()
         .filter_map(|child| match child {
-            TemplateChildNode::Text(text) => Some(text.content.as_str()),
+            TemplateChildNode::Text(text) => Some(text.content),
             _ => None,
         })
         .collect::<std::vec::Vec<_>>()
@@ -137,7 +137,7 @@ fn test_parse_interpolation() {
 
     if let TemplateChildNode::Interpolation(interp) = &root.children[0] {
         if let ExpressionNode::Simple(expr) = &interp.content {
-            assert_eq!(expr.content.as_str(), "msg");
+            assert_eq!(expr.content, "msg");
         } else {
             panic!("Expected simple expression");
         }
@@ -157,9 +157,9 @@ fn test_parse_directive() {
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.props.len(), 1);
         if let PropNode::Directive(dir) = &el.props[0] {
-            assert_eq!(dir.name.as_str(), "if");
+            assert_eq!(dir.name, "if");
             if let Some(ExpressionNode::Simple(exp)) = &dir.exp {
-                assert_eq!(exp.content.as_str(), "ok");
+                assert_eq!(exp.content, "ok");
             }
         } else {
             panic!("Expected directive");
@@ -178,9 +178,9 @@ fn test_parse_shorthand_bind() {
 
     if let TemplateChildNode::Element(el) = &root.children[0] {
         if let PropNode::Directive(dir) = &el.props[0] {
-            assert_eq!(dir.name.as_str(), "bind");
+            assert_eq!(dir.name, "bind");
             if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
-                assert_eq!(arg.content.as_str(), "class");
+                assert_eq!(arg.content, "class");
             }
         } else {
             panic!("Expected directive");
@@ -197,9 +197,9 @@ fn test_parse_shorthand_on() {
 
     if let TemplateChildNode::Element(el) = &root.children[0] {
         if let PropNode::Directive(dir) = &el.props[0] {
-            assert_eq!(dir.name.as_str(), "on");
+            assert_eq!(dir.name, "on");
             if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
-                assert_eq!(arg.content.as_str(), "click");
+                assert_eq!(arg.content, "click");
             }
         } else {
             panic!("Expected directive");
@@ -216,11 +216,11 @@ fn test_parse_nested_elements() {
     assert_eq!(root.children.len(), 1);
 
     if let TemplateChildNode::Element(el) = &root.children[0] {
-        assert_eq!(el.tag.as_str(), "div");
+        assert_eq!(el.tag, "div");
         assert_eq!(el.children.len(), 1);
 
         if let TemplateChildNode::Element(span) = &el.children[0] {
-            assert_eq!(span.tag.as_str(), "span");
+            assert_eq!(span.tag, "span");
         }
     }
 }
@@ -234,7 +234,7 @@ fn test_parse_self_closing() {
     assert_eq!(root.children.len(), 1);
 
     if let TemplateChildNode::Element(el) = &root.children[0] {
-        assert_eq!(el.tag.as_str(), "input");
+        assert_eq!(el.tag, "input");
         assert!(el.is_self_closing);
     }
 }
@@ -255,22 +255,18 @@ fn test_parse_self_closing_textarea_warns_and_rewrites() {
     assert_eq!(root.children.len(), 1);
 
     if let TemplateChildNode::Element(el) = &root.children[0] {
-        assert_eq!(el.tag.as_str(), "Primitive");
+        assert_eq!(el.tag, "Primitive");
         assert_eq!(el.children.len(), 3);
 
         if let TemplateChildNode::Element(textarea) = &el.children[0] {
-            assert_eq!(textarea.tag.as_str(), "textarea");
+            assert_eq!(textarea.tag, "textarea");
             assert!(!textarea.is_self_closing);
             assert!(textarea.children.is_empty());
         } else {
             panic!("Expected textarea element");
         }
-        assert!(
-            matches!(&el.children[1], TemplateChildNode::Element(slot) if slot.tag.as_str() == "slot")
-        );
-        assert!(
-            matches!(&el.children[2], TemplateChildNode::Element(span) if span.tag.as_str() == "span")
-        );
+        assert!(matches!(&el.children[1], TemplateChildNode::Element(slot) if slot.tag == "slot"));
+        assert!(matches!(&el.children[2], TemplateChildNode::Element(span) if span.tag == "span"));
     } else {
         panic!("Expected Primitive element");
     }
@@ -287,7 +283,7 @@ fn test_parse_comment() {
     assert!(errors.is_empty());
     assert_eq!(root.children.len(), 1);
     if let TemplateChildNode::Comment(c) = &root.children[0] {
-        assert_eq!(c.content.as_str(), " hello ");
+        assert_eq!(c.content, " hello ");
     } else {
         panic!("Expected comment node");
     }
@@ -344,11 +340,11 @@ fn test_parse_cdata_in_svg_as_text() {
     assert!(errors.is_empty());
     assert_eq!(root.children.len(), 1);
     if let TemplateChildNode::Element(svg) = &root.children[0] {
-        assert_eq!(svg.tag.as_str(), "svg");
+        assert_eq!(svg.tag, "svg");
         assert_eq!(svg.ns, Namespace::Svg);
         assert_eq!(svg.children.len(), 1);
         if let TemplateChildNode::Text(t) = &svg.children[0] {
-            assert_eq!(t.content.as_str(), "hi");
+            assert_eq!(t.content, "hi");
         } else {
             panic!("expected text node for CDATA body");
         }
@@ -364,7 +360,7 @@ fn test_parse_void_element() {
     assert!(errors.is_empty());
     assert_eq!(root.children.len(), 1);
     if let TemplateChildNode::Element(el) = &root.children[0] {
-        assert_eq!(el.tag.as_str(), "input");
+        assert_eq!(el.tag, "input");
     } else {
         panic!("Expected element node");
     }
@@ -377,10 +373,10 @@ fn test_parse_multiple_root_children() {
     assert!(errors.is_empty());
     assert_eq!(root.children.len(), 2);
     if let TemplateChildNode::Element(el) = &root.children[0] {
-        assert_eq!(el.tag.as_str(), "div");
+        assert_eq!(el.tag, "div");
     }
     if let TemplateChildNode::Element(el) = &root.children[1] {
-        assert_eq!(el.tag.as_str(), "span");
+        assert_eq!(el.tag, "span");
     }
 }
 
@@ -392,8 +388,8 @@ fn test_parse_attribute_with_value() {
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.props.len(), 1);
         if let PropNode::Attribute(attr) = &el.props[0] {
-            assert_eq!(attr.name.as_str(), "id");
-            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "foo");
+            assert_eq!(attr.name, "id");
+            assert_eq!(attr.value.as_ref().unwrap().content, "foo");
         } else {
             panic!("Expected attribute");
         }
@@ -408,11 +404,8 @@ fn test_parse_attribute_with_trailing_entity() {
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.props.len(), 1);
         if let PropNode::Attribute(attr) = &el.props[0] {
-            assert_eq!(attr.name.as_str(), "title");
-            assert_eq!(
-                attr.value.as_ref().unwrap().content.as_str(),
-                "Hello \"World\""
-            );
+            assert_eq!(attr.name, "title");
+            assert_eq!(attr.value.as_ref().unwrap().content, "Hello \"World\"");
         } else {
             panic!("Expected attribute");
         }
@@ -427,8 +420,8 @@ fn test_parse_attribute_value_with_only_entity() {
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.props.len(), 1);
         if let PropNode::Attribute(attr) = &el.props[0] {
-            assert_eq!(attr.name.as_str(), "title");
-            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "\"");
+            assert_eq!(attr.name, "title");
+            assert_eq!(attr.value.as_ref().unwrap().content, "\"");
         } else {
             panic!("Expected attribute");
         }
@@ -443,7 +436,7 @@ fn test_parse_boolean_attribute() {
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.props.len(), 1);
         if let PropNode::Attribute(attr) = &el.props[0] {
-            assert_eq!(attr.name.as_str(), "disabled");
+            assert_eq!(attr.name, "disabled");
             assert!(attr.value.is_none());
         } else {
             panic!("Expected attribute");
@@ -458,10 +451,10 @@ fn test_parse_directive_modifiers() {
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
         if let PropNode::Directive(dir) = &el.props[0] {
-            assert_eq!(dir.name.as_str(), "on");
+            assert_eq!(dir.name, "on");
             assert_eq!(dir.modifiers.len(), 2);
-            assert_eq!(dir.modifiers[0].content.as_str(), "stop");
-            assert_eq!(dir.modifiers[1].content.as_str(), "prevent");
+            assert_eq!(dir.modifiers[0].content, "stop");
+            assert_eq!(dir.modifiers[1].content, "prevent");
         } else {
             panic!("Expected directive");
         }
@@ -476,9 +469,9 @@ fn test_parse_dynamic_directive_arg() {
     if let TemplateChildNode::Element(el) = &root.children[0]
         && let PropNode::Directive(dir) = &el.props[0]
     {
-        assert_eq!(dir.name.as_str(), "bind");
+        assert_eq!(dir.name, "bind");
         if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
-            assert_eq!(arg.content.as_str(), "attr");
+            assert_eq!(arg.content, "attr");
             assert!(!arg.is_static); // dynamic args are not static
         } else {
             panic!("Expected arg");
@@ -493,9 +486,9 @@ fn test_parse_shorthand_slot() {
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
         if let PropNode::Directive(dir) = &el.props[0] {
-            assert_eq!(dir.name.as_str(), "slot");
+            assert_eq!(dir.name, "slot");
             if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
-                assert_eq!(arg.content.as_str(), "default");
+                assert_eq!(arg.content, "default");
             }
         } else {
             panic!("Expected directive");
@@ -510,9 +503,9 @@ fn test_parse_v_for() {
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
         if let PropNode::Directive(dir) = &el.props[0] {
-            assert_eq!(dir.name.as_str(), "for");
+            assert_eq!(dir.name, "for");
             if let Some(ExpressionNode::Simple(exp)) = &dir.exp {
-                assert_eq!(exp.content.as_str(), "item in items");
+                assert_eq!(exp.content, "item in items");
             }
         } else {
             panic!("Expected directive");
@@ -545,7 +538,7 @@ fn test_quoted_attribute_loc_includes_closing_quote_with_spaced_equals() {
     if let TemplateChildNode::Element(el) = &root.children[0] {
         if let PropNode::Attribute(attr) = &el.props[0] {
             assert_eq!(attr.loc.span.slice(source), r#"class ="w-100""#);
-            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "w-100");
+            assert_eq!(attr.value.as_ref().unwrap().content, "w-100");
             assert_eq!(attr.value.as_ref().unwrap().loc.span.slice(source), "w-100");
         } else {
             panic!("Expected attribute");
@@ -564,7 +557,7 @@ fn test_quoted_directive_loc_includes_closing_quote_with_spaced_equals() {
         if let PropNode::Directive(dir) = &el.props[0] {
             assert_eq!(dir.loc.span.slice(source), r#"v-if ="ok""#);
             if let Some(ExpressionNode::Simple(exp)) = &dir.exp {
-                assert_eq!(exp.content.as_str(), "ok");
+                assert_eq!(exp.content, "ok");
                 assert_eq!(exp.loc.span.slice(source), "ok");
             } else {
                 panic!("Expected expression");
@@ -641,7 +634,7 @@ fn test_parse_whitespace_condense_preserves_pre_children() {
         assert_eq!(el.children.len(), 1);
         match &el.children[0] {
             TemplateChildNode::Text(text) => {
-                assert_eq!(text.content.as_str(), "\n  hello\n  world\n");
+                assert_eq!(text.content, "\n  hello\n  world\n");
             }
             _ => panic!("expected preserved text node"),
         }
@@ -699,15 +692,15 @@ fn test_parse_deep_nesting() {
     assert!(errors.is_empty());
     // Traverse 5 levels deep
     if let TemplateChildNode::Element(div) = &root.children[0] {
-        assert_eq!(div.tag.as_str(), "div");
+        assert_eq!(div.tag, "div");
         if let TemplateChildNode::Element(span) = &div.children[0] {
-            assert_eq!(span.tag.as_str(), "span");
+            assert_eq!(span.tag, "span");
             if let TemplateChildNode::Element(p) = &span.children[0] {
-                assert_eq!(p.tag.as_str(), "p");
+                assert_eq!(p.tag, "p");
                 if let TemplateChildNode::Element(em) = &p.children[0] {
-                    assert_eq!(em.tag.as_str(), "em");
+                    assert_eq!(em.tag, "em");
                     if let TemplateChildNode::Element(strong) = &em.children[0] {
-                        assert_eq!(strong.tag.as_str(), "strong");
+                        assert_eq!(strong.tag, "strong");
                     }
                 }
             }
@@ -759,7 +752,7 @@ fn test_parse_component() {
     let (root, errors) = parse(&allocator, "<MyComponent></MyComponent>");
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
-        assert_eq!(el.tag.as_str(), "MyComponent");
+        assert_eq!(el.tag, "MyComponent");
         assert_eq!(el.tag_type, ElementType::Component);
     }
 }
@@ -772,11 +765,10 @@ fn test_empty_quoted_attribute_double() {
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.props.len(), 1);
         if let PropNode::Attribute(attr) = &el.props[0] {
-            assert_eq!(attr.name.as_str(), "alt");
+            assert_eq!(attr.name, "alt");
             let value = attr.value.as_ref().expect("alt=\"\" should have a value");
             assert_eq!(
-                value.content.as_str(),
-                "",
+                value.content, "",
                 "alt=\"\" should be empty string, not boolean"
             );
         } else {
@@ -793,11 +785,10 @@ fn test_empty_quoted_attribute_single() {
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.props.len(), 1);
         if let PropNode::Attribute(attr) = &el.props[0] {
-            assert_eq!(attr.name.as_str(), "alt");
+            assert_eq!(attr.name, "alt");
             let value = attr.value.as_ref().expect("alt='' should have a value");
             assert_eq!(
-                value.content.as_str(),
-                "",
+                value.content, "",
                 "alt='' should be empty string, not boolean"
             );
         } else {
@@ -814,12 +805,12 @@ fn test_empty_quoted_attribute_disabled() {
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.props.len(), 1);
         if let PropNode::Attribute(attr) = &el.props[0] {
-            assert_eq!(attr.name.as_str(), "disabled");
+            assert_eq!(attr.name, "disabled");
             let value = attr
                 .value
                 .as_ref()
                 .expect("disabled=\"\" should have a value");
-            assert_eq!(value.content.as_str(), "");
+            assert_eq!(value.content, "");
         } else {
             panic!("Expected attribute prop");
         }
@@ -859,10 +850,10 @@ fn test_parse_recovers_open_tag_at_eof() {
     assert_eq!(root.children.len(), 1);
 
     if let TemplateChildNode::Element(el) = &root.children[0] {
-        assert_eq!(el.tag.as_str(), "div");
+        assert_eq!(el.tag, "div");
         if let PropNode::Attribute(attr) = &el.props[0] {
-            assert_eq!(attr.name.as_str(), "class");
-            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "a");
+            assert_eq!(attr.name, "class");
+            assert_eq!(attr.value.as_ref().unwrap().content, "a");
         } else {
             panic!("Expected recovered attribute");
         }
@@ -883,8 +874,8 @@ fn test_parse_recovers_missing_attribute_value() {
     );
     if let TemplateChildNode::Element(el) = &root.children[0] {
         if let PropNode::Attribute(attr) = &el.props[0] {
-            assert_eq!(attr.name.as_str(), "id");
-            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "");
+            assert_eq!(attr.name, "id");
+            assert_eq!(attr.value.as_ref().unwrap().content, "");
         } else {
             panic!("Expected recovered attribute");
         }
@@ -905,8 +896,8 @@ fn test_parse_recovers_missing_equals_before_quoted_attribute_value() {
     );
     if let TemplateChildNode::Element(el) = &root.children[0] {
         if let PropNode::Attribute(attr) = &el.props[0] {
-            assert_eq!(attr.name.as_str(), "id");
-            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "foo");
+            assert_eq!(attr.name, "id");
+            assert_eq!(attr.value.as_ref().unwrap().content, "foo");
         } else {
             panic!("Expected recovered attribute");
         }
@@ -928,8 +919,8 @@ fn test_parse_reports_missing_whitespace_between_attributes_and_continues() {
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.props.len(), 2);
         if let PropNode::Attribute(attr) = &el.props[1] {
-            assert_eq!(attr.name.as_str(), "class");
-            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "b");
+            assert_eq!(attr.name, "class");
+            assert_eq!(attr.value.as_ref().unwrap().content, "b");
         } else {
             panic!("Expected recovered second attribute");
         }
@@ -950,9 +941,9 @@ fn test_parse_recovers_missing_dynamic_directive_argument_end() {
     );
     if let TemplateChildNode::Element(el) = &root.children[0] {
         if let PropNode::Directive(dir) = &el.props[0] {
-            assert_eq!(dir.name.as_str(), "bind");
+            assert_eq!(dir.name, "bind");
             if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
-                assert_eq!(arg.content.as_str(), "foo");
+                assert_eq!(arg.content, "foo");
                 assert!(!arg.is_static);
             } else {
                 panic!("Expected recovered directive argument");
@@ -995,7 +986,7 @@ fn test_parse_unfinished_interpolation_reports_error_but_keeps_text() {
     );
     assert_eq!(root.children.len(), 1);
     if let TemplateChildNode::Text(text) = &root.children[0] {
-        assert_eq!(text.content.as_str(), "{{ unfinished");
+        assert_eq!(text.content, "{{ unfinished");
     } else {
         panic!("Expected recovered text");
     }
@@ -1012,9 +1003,9 @@ fn test_parse_invalid_closing_tag_name_reports_error_and_continues() {
             .any(|e| e.code == ErrorCode::InvalidFirstCharacterOfTagName)
     );
     assert!(
-        root.children.iter().any(
-            |child| matches!(child, TemplateChildNode::Element(el) if el.tag.as_str() == "span")
-        )
+        root.children
+            .iter()
+            .any(|child| matches!(child, TemplateChildNode::Element(el) if el.tag == "span"))
     );
 }
 
@@ -1052,11 +1043,11 @@ fn test_parse_mixed_broken_input_keeps_later_nodes() {
     let TemplateChildNode::Element(div) = &root.children[0] else {
         panic!("Expected recovered div element");
     };
-    assert_eq!(div.tag.as_str(), "div");
+    assert_eq!(div.tag, "div");
     assert!(
-        div.children.iter().any(
-            |child| matches!(child, TemplateChildNode::Element(el) if el.tag.as_str() == "span")
-        )
+        div.children
+            .iter()
+            .any(|child| matches!(child, TemplateChildNode::Element(el) if el.tag == "span"))
     );
 }
 
@@ -1089,7 +1080,7 @@ fn test_parse_abrupt_empty_comment_reports_error_and_continues() {
         );
         assert_eq!(root.children.len(), 2);
         if let TemplateChildNode::Comment(comment) = &root.children[0] {
-            assert_eq!(comment.content.as_str(), "");
+            assert_eq!(comment.content, "");
             assert_eq!(comment.loc.span.slice(&source), comment_source);
         } else {
             panic!("Expected recovered comment");
@@ -1106,12 +1097,12 @@ fn test_parse_nested_comment_reports_error_and_closes_at_first_end() {
     assert!(errors.iter().any(|e| e.code == ErrorCode::NestedComment));
     assert_eq!(root.children.len(), 2);
     if let TemplateChildNode::Comment(comment) = &root.children[0] {
-        assert_eq!(comment.content.as_str(), " <!-- nested ");
+        assert_eq!(comment.content, " <!-- nested ");
     } else {
         panic!("Expected first node to be the recovered comment");
     }
     if let TemplateChildNode::Text(text) = &root.children[1] {
-        assert_eq!(text.content.as_str(), " -->");
+        assert_eq!(text.content, " -->");
     } else {
         panic!("Expected trailing close marker text");
     }
@@ -1128,9 +1119,9 @@ fn test_parse_processing_instruction_reports_error_and_continues() {
             .any(|e| e.code == ErrorCode::UnexpectedQuestionMarkInsteadOfTagName)
     );
     assert!(
-        root.children.iter().any(
-            |child| matches!(child, TemplateChildNode::Element(el) if el.tag.as_str() == "div")
-        )
+        root.children
+            .iter()
+            .any(|child| matches!(child, TemplateChildNode::Element(el) if el.tag == "div"))
     );
 }
 
@@ -1147,8 +1138,8 @@ fn test_parse_unexpected_solidus_before_attribute_reports_error_and_continues() 
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert!(!el.is_self_closing);
         if let PropNode::Attribute(attr) = &el.props[0] {
-            assert_eq!(attr.name.as_str(), "id");
-            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "foo");
+            assert_eq!(attr.name, "id");
+            assert_eq!(attr.value.as_ref().unwrap().content, "foo");
         } else {
             panic!("Expected recovered attribute");
         }
@@ -1170,15 +1161,13 @@ fn test_parse_self_closing_non_void_html_element_warns_and_rewrites() {
     assert!(errors.iter().all(CompilerError::is_recoverable));
     assert_eq!(root.children.len(), 2);
     if let TemplateChildNode::Element(div) = &root.children[0] {
-        assert_eq!(div.tag.as_str(), "div");
+        assert_eq!(div.tag, "div");
         assert!(!div.is_self_closing);
         assert!(div.children.is_empty());
     } else {
         panic!("Expected div");
     }
-    assert!(
-        matches!(&root.children[1], TemplateChildNode::Element(span) if span.tag.as_str() == "span")
-    );
+    assert!(matches!(&root.children[1], TemplateChildNode::Element(span) if span.tag == "span"));
 }
 
 #[test]
@@ -1199,15 +1188,13 @@ fn test_parse_self_closing_non_void_html_element_strict_errors_and_rewrites() {
     assert!(errors.iter().any(|e| !e.is_recoverable()));
     assert_eq!(root.children.len(), 2);
     if let TemplateChildNode::Element(div) = &root.children[0] {
-        assert_eq!(div.tag.as_str(), "div");
+        assert_eq!(div.tag, "div");
         assert!(!div.is_self_closing);
         assert!(div.children.is_empty());
     } else {
         panic!("Expected div");
     }
-    assert!(
-        matches!(&root.children[1], TemplateChildNode::Element(span) if span.tag.as_str() == "span")
-    );
+    assert!(matches!(&root.children[1], TemplateChildNode::Element(span) if span.tag == "span"));
 }
 
 #[test]
@@ -1223,15 +1210,13 @@ fn test_parse_self_closing_non_void_html_element_quirk_keeps_flag() {
     assert!(errors.is_empty(), "unexpected errors: {errors:?}");
     assert_eq!(root.children.len(), 2);
     if let TemplateChildNode::Element(div) = &root.children[0] {
-        assert_eq!(div.tag.as_str(), "div");
+        assert_eq!(div.tag, "div");
         assert!(div.is_self_closing);
         assert!(div.children.is_empty());
     } else {
         panic!("Expected div");
     }
-    assert!(
-        matches!(&root.children[1], TemplateChildNode::Element(span) if span.tag.as_str() == "span")
-    );
+    assert!(matches!(&root.children[1], TemplateChildNode::Element(span) if span.tag == "span"));
 }
 
 #[test]
@@ -1249,7 +1234,7 @@ fn test_parse_custom_renderer_non_html_element_keeps_self_closing_flag() {
     assert!(errors.is_empty(), "unexpected errors: {errors:?}");
     assert_eq!(root.children.len(), 1);
     if let TemplateChildNode::Element(primitive) = &root.children[0] {
-        assert_eq!(primitive.tag.as_str(), "primitive");
+        assert_eq!(primitive.tag, "primitive");
         assert_eq!(primitive.tag_type, ElementType::Element);
         assert!(primitive.is_self_closing);
     } else {
@@ -1270,16 +1255,14 @@ fn test_parse_table_inserts_implicit_tbody() {
     let TemplateChildNode::Element(tbody) = &table.children[0] else {
         panic!("Expected implicit tbody");
     };
-    assert_eq!(tbody.tag.as_str(), "tbody");
+    assert_eq!(tbody.tag, "tbody");
     let TemplateChildNode::Element(tr) = &tbody.children[0] else {
         panic!("Expected tr");
     };
     let TemplateChildNode::Element(td) = &tr.children[0] else {
         panic!("Expected td");
     };
-    assert!(
-        matches!(&td.children[0], TemplateChildNode::Text(text) if text.content.as_str() == "x")
-    );
+    assert!(matches!(&td.children[0], TemplateChildNode::Text(text) if text.content == "x"));
 }
 
 #[test]
@@ -1293,12 +1276,8 @@ fn test_parse_table_foster_parents_unexpected_element() {
             .any(|e| e.code == ErrorCode::ExtendPoint && e.message.contains("Foster parenting"))
     );
     assert_eq!(root.children.len(), 2);
-    assert!(
-        matches!(&root.children[0], TemplateChildNode::Element(div) if div.tag.as_str() == "div")
-    );
-    assert!(
-        matches!(&root.children[1], TemplateChildNode::Element(table) if table.tag.as_str() == "table")
-    );
+    assert!(matches!(&root.children[0], TemplateChildNode::Element(div) if div.tag == "div"));
+    assert!(matches!(&root.children[1], TemplateChildNode::Element(table) if table.tag == "table"));
 }
 
 #[test]
@@ -1319,9 +1298,7 @@ fn test_parse_table_cell_keeps_normal_body_content() {
     let TemplateChildNode::Element(td) = &tr.children[0] else {
         panic!("Expected td");
     };
-    assert!(
-        matches!(&td.children[0], TemplateChildNode::Element(div) if div.tag.as_str() == "div")
-    );
+    assert!(matches!(&td.children[0], TemplateChildNode::Element(div) if div.tag == "div"));
 }
 
 #[test]
@@ -1338,24 +1315,20 @@ fn test_parse_adoption_agency_repairs_misnested_formatting() {
     let TemplateChildNode::Element(b) = &root.children[0] else {
         panic!("Expected b");
     };
-    assert_eq!(b.tag.as_str(), "b");
-    assert!(
-        matches!(&b.children[0], TemplateChildNode::Text(text) if text.content.as_str() == "aaa")
-    );
+    assert_eq!(b.tag, "b");
+    assert!(matches!(&b.children[0], TemplateChildNode::Text(text) if text.content == "aaa"));
     let TemplateChildNode::Element(inner_i) = &b.children[1] else {
         panic!("Expected nested i");
     };
-    assert_eq!(inner_i.tag.as_str(), "i");
-    assert!(
-        matches!(&inner_i.children[0], TemplateChildNode::Text(text) if text.content.as_str() == "bbb")
-    );
+    assert_eq!(inner_i.tag, "i");
+    assert!(matches!(&inner_i.children[0], TemplateChildNode::Text(text) if text.content == "bbb"));
 
     let TemplateChildNode::Element(reopened_i) = &root.children[1] else {
         panic!("Expected reopened i");
     };
-    assert_eq!(reopened_i.tag.as_str(), "i");
+    assert_eq!(reopened_i.tag, "i");
     assert!(
-        matches!(&reopened_i.children[0], TemplateChildNode::Text(text) if text.content.as_str() == "ccc")
+        matches!(&reopened_i.children[0], TemplateChildNode::Text(text) if text.content == "ccc")
     );
 }
 
@@ -1366,14 +1339,14 @@ fn test_parse_in_body_omits_p_and_li_end_tags() {
 
     assert!(errors.is_empty(), "unexpected errors: {errors:?}");
     assert_eq!(root.children.len(), 3);
-    assert!(matches!(&root.children[0], TemplateChildNode::Element(p) if p.tag.as_str() == "p"));
-    assert!(matches!(&root.children[1], TemplateChildNode::Element(p) if p.tag.as_str() == "p"));
+    assert!(matches!(&root.children[0], TemplateChildNode::Element(p) if p.tag == "p"));
+    assert!(matches!(&root.children[1], TemplateChildNode::Element(p) if p.tag == "p"));
     let TemplateChildNode::Element(ul) = &root.children[2] else {
         panic!("Expected ul");
     };
     assert_eq!(ul.children.len(), 2);
-    assert!(matches!(&ul.children[0], TemplateChildNode::Element(li) if li.tag.as_str() == "li"));
-    assert!(matches!(&ul.children[1], TemplateChildNode::Element(li) if li.tag.as_str() == "li"));
+    assert!(matches!(&ul.children[0], TemplateChildNode::Element(li) if li.tag == "li"));
+    assert!(matches!(&ul.children[1], TemplateChildNode::Element(li) if li.tag == "li"));
 }
 
 #[test]
@@ -1393,25 +1366,25 @@ fn test_parse_nested_list_items_respect_list_item_scope() {
         let TemplateChildNode::Element(list) = &root.children[0] else {
             panic!("Expected {list_tag}");
         };
-        assert_eq!(list.tag.as_str(), list_tag);
+        assert_eq!(list.tag, list_tag);
         assert_eq!(list.children.len(), 1);
 
         let TemplateChildNode::Element(outer_li) = &list.children[0] else {
             panic!("Expected outer li");
         };
-        assert_eq!(outer_li.tag.as_str(), "li");
+        assert_eq!(outer_li.tag, "li");
         assert_eq!(outer_li.children.len(), 2);
         assert!(
-            matches!(&outer_li.children[0], TemplateChildNode::Element(span) if span.tag.as_str() == "span")
+            matches!(&outer_li.children[0], TemplateChildNode::Element(span) if span.tag == "span")
         );
 
         let TemplateChildNode::Element(inner_list) = &outer_li.children[1] else {
             panic!("Expected nested {list_tag}");
         };
-        assert_eq!(inner_list.tag.as_str(), list_tag);
+        assert_eq!(inner_list.tag, list_tag);
         assert_eq!(inner_list.children.len(), 1);
         assert!(
-            matches!(&inner_list.children[0], TemplateChildNode::Element(li) if li.tag.as_str() == "li")
+            matches!(&inner_list.children[0], TemplateChildNode::Element(li) if li.tag == "li")
         );
     }
 }
@@ -1430,12 +1403,8 @@ fn test_parse_nested_anchor_and_button_are_split() {
             .any(|e| e.code == ErrorCode::ExtendPoint && e.message.contains("Nested anchor"))
     );
     assert_eq!(anchor_root.children.len(), 2);
-    assert!(
-        matches!(&anchor_root.children[0], TemplateChildNode::Element(a) if a.tag.as_str() == "a")
-    );
-    assert!(
-        matches!(&anchor_root.children[1], TemplateChildNode::Element(a) if a.tag.as_str() == "a")
-    );
+    assert!(matches!(&anchor_root.children[0], TemplateChildNode::Element(a) if a.tag == "a"));
+    assert!(matches!(&anchor_root.children[1], TemplateChildNode::Element(a) if a.tag == "a"));
 
     let (button_root, button_errors) =
         parse(&allocator, "<button>aaa<button>bbb</button></button>");
@@ -1446,10 +1415,10 @@ fn test_parse_nested_anchor_and_button_are_split() {
     );
     assert_eq!(button_root.children.len(), 2);
     assert!(
-        matches!(&button_root.children[0], TemplateChildNode::Element(button) if button.tag.as_str() == "button")
+        matches!(&button_root.children[0], TemplateChildNode::Element(button) if button.tag == "button")
     );
     assert!(
-        matches!(&button_root.children[1], TemplateChildNode::Element(button) if button.tag.as_str() == "button")
+        matches!(&button_root.children[1], TemplateChildNode::Element(button) if button.tag == "button")
     );
 }
 
@@ -1468,11 +1437,13 @@ fn test_parse_nested_form_start_tag_is_ignored() {
     let TemplateChildNode::Element(form) = &root.children[0] else {
         panic!("Expected form");
     };
-    assert_eq!(form.tag.as_str(), "form");
+    assert_eq!(form.tag, "form");
     assert_eq!(form.children.len(), 2);
-    assert!(form.children.iter().all(
-        |child| matches!(child, TemplateChildNode::Element(input) if input.tag.as_str() == "input")
-    ));
+    assert!(
+        form.children.iter().all(
+            |child| matches!(child, TemplateChildNode::Element(input) if input.tag == "input")
+        )
+    );
 }
 
 #[test]
@@ -1492,7 +1463,7 @@ fn test_parse_unclosed_comment_reports_error_without_losing_comment() {
     assert_eq!(root.children.len(), 2);
     assert!(matches!(&root.children[0], TemplateChildNode::Text(_)));
     if let TemplateChildNode::Comment(comment) = &root.children[1] {
-        assert_eq!(comment.content.as_str(), " open");
+        assert_eq!(comment.content, " open");
         assert_eq!(comment.loc.span.slice("before<!-- open"), "<!-- open");
     } else {
         panic!("Expected recovered comment");
@@ -1507,7 +1478,7 @@ fn test_boolean_attribute_no_value() {
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.props.len(), 1);
         if let PropNode::Attribute(attr) = &el.props[0] {
-            assert_eq!(attr.name.as_str(), "disabled");
+            assert_eq!(attr.name, "disabled");
             assert!(
                 attr.value.is_none(),
                 "disabled without value should be boolean (None)"
@@ -1530,7 +1501,7 @@ fn test_parse_text_entity_named_amp_between_literals() {
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.children.len(), 1);
         if let TemplateChildNode::Text(t) = &el.children[0] {
-            assert_eq!(t.content.as_str(), "a&b");
+            assert_eq!(t.content, "a&b");
             assert_eq!(t.loc.span.slice("<div>a&amp;b</div>"), "a&amp;b");
         } else {
             panic!("expected text");
@@ -1548,7 +1519,7 @@ fn test_parse_text_entity_lt_only() {
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.children.len(), 1);
         if let TemplateChildNode::Text(t) = &el.children[0] {
-            assert_eq!(t.content.as_str(), "<");
+            assert_eq!(t.content, "<");
         } else {
             panic!("expected text");
         }
@@ -1563,7 +1534,7 @@ fn test_parse_text_entity_numeric_dec() {
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.children.len(), 1);
         if let TemplateChildNode::Text(t) = &el.children[0] {
-            assert_eq!(t.content.as_str(), "&x");
+            assert_eq!(t.content, "&x");
             assert_eq!(t.loc.span.slice("<div>&#38;x</div>"), "&#38;x");
         } else {
             panic!("expected text");
@@ -1579,7 +1550,7 @@ fn test_parse_text_entity_1_lt_2() {
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.children.len(), 1);
         if let TemplateChildNode::Text(t) = &el.children[0] {
-            assert_eq!(t.content.as_str(), "1<2");
+            assert_eq!(t.content, "1<2");
             assert_eq!(t.loc.span.slice("<div>1&lt;2</div>"), "1&lt;2");
         } else {
             panic!("expected text");
@@ -1594,7 +1565,7 @@ fn test_parse_attribute_entity_single_quoted_numeric() {
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
         if let PropNode::Attribute(attr) = &el.props[0] {
-            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "&");
+            assert_eq!(attr.value.as_ref().unwrap().content, "&");
         } else {
             panic!("Expected attribute");
         }
@@ -1608,8 +1579,8 @@ fn test_parse_attribute_entity_quot_in_double_quotes() {
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
         if let PropNode::Attribute(attr) = &el.props[0] {
-            assert_eq!(attr.name.as_str(), "class");
-            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "a \" b");
+            assert_eq!(attr.name, "class");
+            assert_eq!(attr.value.as_ref().unwrap().content, "a \" b");
         } else {
             panic!("Expected attribute");
         }
@@ -1623,7 +1594,7 @@ fn test_parse_attribute_entity_lt_gt() {
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
         if let PropNode::Attribute(attr) = &el.props[0] {
-            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "<tag>");
+            assert_eq!(attr.value.as_ref().unwrap().content, "<tag>");
         } else {
             panic!("Expected attribute");
         }
@@ -1639,7 +1610,7 @@ fn test_parse_directive_value_entity_is_decoded() {
     if let TemplateChildNode::Element(el) = &root.children[0] {
         if let PropNode::Directive(dir) = &el.props[0] {
             if let Some(ExpressionNode::Simple(exp)) = &dir.exp {
-                assert_eq!(exp.content.as_str(), "a&&b");
+                assert_eq!(exp.content, "a&&b");
             } else {
                 panic!("Expected simple expression");
             }
@@ -1670,12 +1641,12 @@ fn test_parse_self_closing_svg_path_inside_svg_is_not_flagged() {
     let TemplateChildNode::Element(svg) = &root.children[0] else {
         panic!("expected svg element");
     };
-    assert_eq!(svg.tag.as_str(), "svg");
+    assert_eq!(svg.tag, "svg");
     assert_eq!(svg.ns, Namespace::Svg);
     let TemplateChildNode::Element(path) = &svg.children[0] else {
         panic!("expected path child");
     };
-    assert_eq!(path.tag.as_str(), "path");
+    assert_eq!(path.tag, "path");
     assert_eq!(path.ns, Namespace::Svg);
     // The element stays self-closing; it was never rewritten as an invalid
     // non-void HTML element.
@@ -1724,12 +1695,12 @@ fn test_parse_p_auto_close_does_not_cross_template_boundary() {
     let TemplateChildNode::Element(outer_p) = &root.children[0] else {
         panic!("expected outer <p>");
     };
-    assert_eq!(outer_p.tag.as_str(), "p");
+    assert_eq!(outer_p.tag, "p");
     assert!(
         outer_p
             .children
             .iter()
-            .any(|c| matches!(c, TemplateChildNode::Element(t) if t.tag.as_str() == "template")),
+            .any(|c| matches!(c, TemplateChildNode::Element(t) if t.tag == "template")),
         "outer <p> should still contain the <template>: {:?}",
         outer_p.children
     );
@@ -1752,11 +1723,11 @@ fn test_parse_nested_p_without_boundary_still_auto_closes() {
     assert_eq!(root.children.len(), 2);
     assert!(matches!(
         &root.children[0],
-        TemplateChildNode::Element(p) if p.tag.as_str() == "p"
+        TemplateChildNode::Element(p) if p.tag == "p"
     ));
     assert!(matches!(
         &root.children[1],
-        TemplateChildNode::Element(p) if p.tag.as_str() == "p"
+        TemplateChildNode::Element(p) if p.tag == "p"
     ));
 }
 
@@ -1769,7 +1740,7 @@ fn find_element<'a, 'b>(
 ) -> Option<&'b vize_relief::ElementNode<'a>> {
     for child in children {
         if let TemplateChildNode::Element(el) = child {
-            if el.tag.as_str() == tag {
+            if el.tag == tag {
                 return Some(el);
             }
             if let Some(found) = find_element(&el.children, tag) {
@@ -1836,11 +1807,11 @@ fn test_document_mode_parses_petite_directives() {
     let mut saw_effect = false;
     for prop in &div.props {
         if let PropNode::Directive(dir) = prop {
-            match dir.name.as_str() {
+            match dir.name {
                 "scope" => {
                     saw_scope = true;
                     if let Some(ExpressionNode::Simple(exp)) = &dir.exp {
-                        assert_eq!(exp.content.as_str(), "{ count: 0 }");
+                        assert_eq!(exp.content, "{ count: 0 }");
                     }
                 }
                 "effect" => saw_effect = true,
@@ -1853,12 +1824,12 @@ fn test_document_mode_parses_petite_directives() {
 
     let button = find_element(&root.children, "button").expect("button present");
     let on = button.props.iter().find_map(|p| match p {
-        PropNode::Directive(d) if d.name.as_str() == "on" => Some(d),
+        PropNode::Directive(d) if d.name == "on" => Some(d),
         _ => None,
     });
     let on = on.expect("@click should parse as v-on");
     if let Some(ExpressionNode::Simple(arg)) = &on.arg {
-        assert_eq!(arg.content.as_str(), "click");
+        assert_eq!(arg.content, "click");
     }
 }
 
@@ -1967,7 +1938,7 @@ fn triple_mustache_is_a_braced_mustache_outside_legacy_v1() {
                     panic!("expected simple expression");
                 };
                 // The leading brace stays inside the expression, exactly as today.
-                assert_eq!(expr.content.as_str(), "{ rawHtml");
+                assert_eq!(expr.content, "{ rawHtml");
             }
             other => panic!(
                 "{dialect:?}: expected interpolation, got {:?}",
@@ -1975,7 +1946,7 @@ fn triple_mustache_is_a_braced_mustache_outside_legacy_v1() {
             ),
         }
         match &root.children[1] {
-            TemplateChildNode::Text(text) => assert_eq!(text.content.as_str(), "}"),
+            TemplateChildNode::Text(text) => assert_eq!(text.content, "}"),
             other => panic!(
                 "{dialect:?}: expected trailing text, got {:?}",
                 other.node_type()

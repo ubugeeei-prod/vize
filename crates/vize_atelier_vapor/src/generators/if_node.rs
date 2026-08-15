@@ -12,7 +12,7 @@ where
     let condition = if if_node.condition.is_static {
         cstr!("\"{}\"", if_node.condition.content)
     } else {
-        vize_carton::CompactString::from(if_node.condition.content.as_str())
+        vize_carton::CompactString::from(if_node.condition.content)
     };
 
     ctx.push_line_fmt(format_args!("_createIf(() => {condition}, () => {{"));

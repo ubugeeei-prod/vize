@@ -46,12 +46,12 @@ impl Rule for NoTemplateKey {
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         // Only check <template> elements
-        if element.tag.as_str() != "template" {
+        if element.tag != "template" {
             return;
         }
 
         let has_v_for = element.props.iter().any(|prop| match prop {
-            PropNode::Directive(dir) => dir.name.as_str() == "for",
+            PropNode::Directive(dir) => dir.name == "for",
             _ => false,
         });
 
@@ -59,7 +59,7 @@ impl Rule for NoTemplateKey {
         for prop in element.props.iter() {
             match prop {
                 PropNode::Attribute(attr) => {
-                    if attr.name.as_str() == "key" && !has_v_for {
+                    if attr.name == "key" && !has_v_for {
                         ctx.error_with_help(
                             ctx.t("vue/no-template-key.message"),
                             &attr.loc,
@@ -68,7 +68,7 @@ impl Rule for NoTemplateKey {
                     }
                 }
                 PropNode::Directive(dir) => {
-                    if dir.name.as_str() == "bind"
+                    if dir.name == "bind"
                         && let Some(ref arg) = dir.arg
                         && get_expression_content(arg) == "key"
                         && !has_v_for

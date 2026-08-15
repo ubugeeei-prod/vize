@@ -10,7 +10,7 @@ pub const V_SHOW: RuntimeHelper = RuntimeHelper::WithDirectives;
 
 /// Check if directive is v-show
 pub fn is_v_show(dir: &DirectiveNode<'_>) -> bool {
-    dir.name.as_str() == "show"
+    dir.name == "show"
 }
 
 /// Generate v-show style expression
@@ -33,12 +33,12 @@ pub fn generate_show_directive(dir: &DirectiveNode<'_>) -> String {
 mod tests {
     use super::{RuntimeHelper, V_SHOW, generate_show_directive, generate_show_style, is_v_show};
     use vize_atelier_core::{DirectiveNode, ExpressionNode, SimpleExpressionNode, SourceLocation};
-    use vize_carton::{Box, Bump};
+    use vize_carton::{Allocator, Box};
 
-    fn create_show_directive<'a>(allocator: &'a Bump, exp: &str) -> DirectiveNode<'a> {
+    fn create_show_directive<'a>(allocator: &'a Allocator, exp: &'a str) -> DirectiveNode<'a> {
         let mut dir = DirectiveNode::new(allocator, "show", SourceLocation::STUB);
         let exp_node = SimpleExpressionNode::new(exp, false, SourceLocation::STUB);
-        let boxed = Box::new_in(exp_node, allocator);
+        let boxed = Box::new_in(exp_node, &allocator);
         dir.exp = Some(ExpressionNode::Simple(boxed));
         dir
     }
@@ -50,21 +50,21 @@ mod tests {
 
     #[test]
     fn test_is_v_show_true() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let dir = create_show_directive(&allocator, "visible");
         assert!(is_v_show(&dir));
     }
 
     #[test]
     fn test_is_v_show_false() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let dir = DirectiveNode::new(&allocator, "if", SourceLocation::STUB);
         assert!(!is_v_show(&dir));
     }
 
     #[test]
     fn test_generate_show_style() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let dir = create_show_directive(&allocator, "visible");
         let style = generate_show_style(&dir);
         assert_eq!(style, "display: (visible) ? '' : 'none'");
@@ -72,7 +72,7 @@ mod tests {
 
     #[test]
     fn test_generate_show_directive() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let dir = create_show_directive(&allocator, "isActive");
         let result = generate_show_directive(&dir);
         assert_eq!(result, "[vShow, isActive]");

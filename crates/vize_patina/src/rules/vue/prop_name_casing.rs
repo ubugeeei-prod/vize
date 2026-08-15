@@ -50,7 +50,7 @@ impl Rule for PropNameCasing {
         for prop in &element.props {
             match prop {
                 PropNode::Attribute(attr) => {
-                    let name = attr.name.as_str();
+                    let name = attr.name;
                     // Skip standard HTML attributes
                     if name == "class"
                         || name == "style"
@@ -77,7 +77,7 @@ impl Rule for PropNameCasing {
                         && let Some(ExpressionNode::Simple(arg)) = &dir.arg
                         && arg.is_static
                     {
-                        let name = arg.content.as_ref();
+                        let name = arg.content;
                         // Skip standard bindings
                         if name == "class"
                             || name == "style"
@@ -110,7 +110,7 @@ fn is_component_like_tag(element: &ElementNode<'_>) -> bool {
         return true;
     }
 
-    let tag = element.tag.as_str();
+    let tag = element.tag;
     tag == "component" || (tag.contains('-') && !is_html_tag(tag))
 }
 

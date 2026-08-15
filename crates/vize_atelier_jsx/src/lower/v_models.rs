@@ -60,7 +60,7 @@ enum Form {
     UnderscoreModifiers,
 }
 
-impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
+impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// Lower a `v-models` attribute into one `model` directive per entry,
     /// appending them to `props`.
     ///

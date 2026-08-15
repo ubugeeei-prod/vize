@@ -75,7 +75,7 @@ impl Rule for HeadingHasContent {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if !Self::is_heading(&element.tag) {
+        if !Self::is_heading(element.tag) {
             return;
         }
 
@@ -92,10 +92,7 @@ impl Rule for HeadingHasContent {
 
         if !Self::has_accessible_content(element) {
             ctx.warn_with_help(
-                ctx.t_fmt(
-                    "a11y/heading-has-content.message",
-                    &[("tag", element.tag.as_str())],
-                ),
+                ctx.t_fmt("a11y/heading-has-content.message", &[("tag", element.tag)]),
                 &element.loc,
                 ctx.t("a11y/heading-has-content.help"),
             );

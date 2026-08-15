@@ -68,7 +68,7 @@ impl Rule for AltText {
             return;
         }
 
-        match element.tag.as_str() {
+        match element.tag {
             "img" if !has_attribute_or_binding(element, "alt") => {
                 ctx.warn_with_help(
                     ctx.t("a11y/alt-text.message_img"),

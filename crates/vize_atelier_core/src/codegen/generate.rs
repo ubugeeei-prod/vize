@@ -61,12 +61,12 @@ fn generate_js_child_node_to_bytes_guarded(
             if exp.is_static {
                 out.push('"');
                 // Escape special characters in static string values (newlines, quotes, etc.)
-                let escaped = escape_js_string(&exp.content);
+                let escaped = escape_js_string(exp.content);
                 out.push_str(escaped.as_str());
                 out.push('"');
             } else {
                 // Expression should already be processed by transform
-                out.push_str(exp.content.as_str());
+                out.push_str(exp.content);
             }
         }
         JsChildNode::Object(obj) => {
@@ -82,10 +82,10 @@ fn generate_js_child_node_to_bytes_guarded(
                         let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(key);
                         if needs_quote {
                             out.push('"');
-                            out.push_str(key.as_str());
+                            out.push_str(key);
                             out.push('"');
                         } else {
-                            out.push_str(key.as_str());
+                            out.push_str(key);
                         }
                         out.push_str(": ");
                     }
@@ -123,7 +123,7 @@ fn generate_vnode_call_to_bytes(ctx: &CodegenContext, vnode: &VNodeCall<'_>, out
     match &vnode.tag {
         VNodeTag::String(s) => {
             out.push('"');
-            out.push_str(s.as_str());
+            out.push_str(s);
             out.push('"');
         }
         VNodeTag::Symbol(helper) => out.push_str(ctx.helper(*helper)),
@@ -163,10 +163,10 @@ fn generate_vnode_call_to_bytes(ctx: &CodegenContext, vnode: &VNodeCall<'_>, out
         out.push_str(", ");
         match dynamic_props {
             DynamicProps::String(s) => {
-                out.push_str(s.as_str());
+                out.push_str(s);
             }
             DynamicProps::Simple(exp) => {
-                out.push_str(exp.content.as_str());
+                out.push_str(exp.content);
             }
         }
     }
@@ -197,14 +197,14 @@ fn generate_props_expression_to_bytes(
             let mut emitted = 0usize;
             for prop in obj.properties.iter() {
                 let key_string = match &prop.key {
-                    ExpressionNode::Simple(exp) if exp.is_static => Some(exp.content.clone()),
+                    ExpressionNode::Simple(exp) if exp.is_static => Some(exp.content),
                     _ => None,
                 };
                 if let Some(key) = &key_string {
-                    if seen.contains(key.as_str()) {
+                    if seen.contains(*key) {
                         continue;
                     }
-                    seen.insert(key.clone());
+                    seen.insert((*key).into());
                 }
                 if emitted > 0 {
                     out.push_str(", ");
@@ -217,10 +217,10 @@ fn generate_props_expression_to_bytes(
                         let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(key);
                         if needs_quote {
                             out.push('"');
-                            out.push_str(key.as_str());
+                            out.push_str(key);
                             out.push('"');
                         } else {
-                            out.push_str(key.as_str());
+                            out.push_str(key);
                         }
                         out.push_str(": ");
                     }
@@ -234,11 +234,11 @@ fn generate_props_expression_to_bytes(
         PropsExpression::Simple(exp) => {
             if exp.is_static {
                 out.push('"');
-                out.push_str(exp.content.as_str());
+                out.push_str(exp.content);
                 out.push('"');
             } else {
                 // Expression should already be processed by transform
-                out.push_str(exp.content.as_str());
+                out.push_str(exp.content);
             }
         }
         PropsExpression::Call(_) => out.push_str("null"),
@@ -255,7 +255,7 @@ fn generate_vnode_children_to_bytes(
         VNodeChildren::Single(text_child) => match text_child {
             TemplateTextChildNode::Text(text) => {
                 out.push('"');
-                out.push_str(escape_js_string(&text.content).as_str());
+                out.push_str(escape_js_string(text.content).as_str());
                 out.push('"');
             }
             TemplateTextChildNode::Interpolation(_) => out.push_str("null"),
@@ -264,11 +264,11 @@ fn generate_vnode_children_to_bytes(
         VNodeChildren::Simple(exp) => {
             if exp.is_static {
                 out.push('"');
-                out.push_str(escape_js_string(&exp.content).as_str());
+                out.push_str(escape_js_string(exp.content).as_str());
                 out.push('"');
             } else {
                 // Expression should already be processed by transform
-                out.push_str(exp.content.as_str());
+                out.push_str(exp.content);
             }
         }
         // A fully-static nested subtree hoisted as one recursive VNodeCall:
@@ -293,7 +293,7 @@ fn generate_vnode_children_to_bytes(
                         let helper = ctx.helper(RuntimeHelper::CreateText);
                         out.push_str(helper);
                         out.push_str("(\"");
-                        out.push_str(escape_js_string(&text.content).as_str());
+                        out.push_str(escape_js_string(text.content).as_str());
                         out.push_str("\")");
                     }
                     _ => {}

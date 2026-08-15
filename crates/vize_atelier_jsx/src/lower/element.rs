@@ -2,7 +2,7 @@
 
 use oxc_ast::ast::{JSXAttributeItem, JSXElement, JSXElementName, JSXFragment};
 use oxc_span::{GetSpan, Span};
-use vize_carton::{Box, String};
+use vize_carton::String;
 use vize_relief::{DirectiveNode, ElementNode, ElementType, PropNode};
 
 use super::{Lowerer, name};
@@ -18,7 +18,7 @@ use super::{Lowerer, name};
 /// registered, which resolves to nothing at runtime (#3421).
 const DYNAMIC_COMPONENT_TAG: &str = "component";
 
-impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
+impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// Lower a JSX element into an [`ElementNode`] (tag, kind, props, children).
     pub(crate) fn lower_element_node(&mut self, element: &JSXElement<'_>) -> ElementNode<'a> {
         let opening = &element.opening_element;
@@ -39,7 +39,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             None => name::element_tag(&opening.name),
         };
         let loc = self.mapper().location(element.span);
-        let mut node = ElementNode::new(self.bump(), tag, loc);
+        let mut node = ElementNode::new(self.bump(), self.bump().alloc_str(&tag), loc);
         let is_custom_element = custom_element_tag.is_some();
         if is_custom_element && !bound_custom_element {
             self.custom_element_spans
@@ -109,7 +109,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         let mut directive = DirectiveNode::new(self.bump(), "bind", loc);
         directive.arg = Some(self.static_expr("is", span));
         directive.exp = Some(self.dyn_expr(span));
-        PropNode::Directive(Box::new_in(directive, self.bump()))
+        PropNode::Directive(self.boxed(directive))
     }
 
     /// Report a JSX tag carrying a namespace no backend can resolve.

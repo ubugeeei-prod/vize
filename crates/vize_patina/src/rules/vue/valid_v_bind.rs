@@ -51,12 +51,12 @@ impl Rule for ValidVBind {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name.as_str() != "bind" {
+        if directive.name != "bind" {
             return;
         }
 
         for modifier in directive.modifiers.iter() {
-            if !VALID_MODIFIERS.contains(&modifier.content.as_str()) {
+            if !VALID_MODIFIERS.contains(&modifier.content) {
                 ctx.error_with_help(
                     ctx.t("vue/valid-v-bind.unsupported_modifier"),
                     &modifier.loc,

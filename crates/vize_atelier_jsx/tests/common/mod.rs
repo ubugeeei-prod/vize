@@ -16,18 +16,18 @@ use vize_relief::{
 };
 
 /// Lower JSX source, asserting a single error-free render root, and return it.
-pub fn lower_one<'a>(allocator: &'a Allocator, source: &str) -> vize_relief::RootNode<'a> {
+pub fn lower_one<'a>(allocator: &'a Allocator, source: &'a str) -> vize_relief::RootNode<'a> {
     lower_one_in(allocator, source, JsxLang::Jsx)
 }
 
 /// Lower TSX source, asserting a single error-free render root, and return it.
-pub fn lower_one_tsx<'a>(allocator: &'a Allocator, source: &str) -> vize_relief::RootNode<'a> {
+pub fn lower_one_tsx<'a>(allocator: &'a Allocator, source: &'a str) -> vize_relief::RootNode<'a> {
     lower_one_in(allocator, source, JsxLang::Tsx)
 }
 
 fn lower_one_in<'a>(
     allocator: &'a Allocator,
-    source: &str,
+    source: &'a str,
     lang: JsxLang,
 ) -> vize_relief::RootNode<'a> {
     lower_single(allocator, source, lang).root
@@ -37,10 +37,10 @@ fn lower_one_in<'a>(
 /// [`LoweredRoot`] (including mode/name metadata).
 pub fn lower_single<'a>(
     allocator: &'a Allocator,
-    source: &str,
+    source: &'a str,
     lang: JsxLang,
 ) -> vize_atelier_jsx::LoweredRoot<'a> {
-    let out = lower_source(allocator.as_bump(), allocator.as_oxc(), source, lang);
+    let out = lower_source(allocator, allocator.as_oxc(), source, lang);
     assert!(
         !out.has_errors(),
         "unexpected diagnostics: {:?}",
@@ -51,13 +51,8 @@ pub fn lower_single<'a>(
 }
 
 /// Lower JSX source and return the full output (roots + diagnostics).
-pub fn lower_all<'a>(allocator: &'a Allocator, source: &str) -> LowerOutput<'a> {
-    lower_source(
-        allocator.as_bump(),
-        allocator.as_oxc(),
-        source,
-        JsxLang::Jsx,
-    )
+pub fn lower_all<'a>(allocator: &'a Allocator, source: &'a str) -> LowerOutput<'a> {
+    lower_source(allocator, allocator.as_oxc(), source, JsxLang::Jsx)
 }
 
 /// Compile one component to VDOM render code.
@@ -147,7 +142,7 @@ pub fn as_element<'a>(child: &'a TemplateChildNode<'a>) -> &'a ElementNode<'a> {
 }
 
 /// Borrow a child as a text node, panicking otherwise.
-pub fn as_text<'a>(child: &'a TemplateChildNode<'a>) -> &'a TextNode {
+pub fn as_text<'a>(child: &'a TemplateChildNode<'a>) -> &'a TextNode<'a> {
     match child {
         TemplateChildNode::Text(text) => text,
         other => panic!("expected text child, got {:?}", other.node_type()),
@@ -160,7 +155,7 @@ pub fn root_element<'a>(root: &'a vize_relief::RootNode<'a>) -> &'a ElementNode<
 }
 
 /// Borrow a prop as a static attribute.
-pub fn as_attribute<'a>(prop: &'a PropNode<'a>) -> &'a AttributeNode {
+pub fn as_attribute<'a>(prop: &'a PropNode<'a>) -> &'a AttributeNode<'a> {
     match prop {
         PropNode::Attribute(attr) => attr,
         PropNode::Directive(dir) => panic!("expected attribute, got directive {:?}", dir.name),
@@ -178,7 +173,7 @@ pub fn as_directive<'a>(prop: &'a PropNode<'a>) -> &'a DirectiveNode<'a> {
 /// The textual content of a simple expression.
 pub fn simple_content<'a>(expr: &'a ExpressionNode<'a>) -> &'a str {
     match expr {
-        ExpressionNode::Simple(simple) => simple.content.as_str(),
+        ExpressionNode::Simple(simple) => simple.content,
         ExpressionNode::Compound(_) => panic!("expected simple expression, got compound"),
     }
 }

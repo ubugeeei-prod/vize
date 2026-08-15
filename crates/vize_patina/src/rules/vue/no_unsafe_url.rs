@@ -165,7 +165,7 @@ impl Rule for NoUnsafeUrl {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if is_router_link_tag(element.tag.as_str()) {
+        if is_router_link_tag(element.tag) {
             return;
         }
 
@@ -174,8 +174,8 @@ impl Rule for NoUnsafeUrl {
                 continue;
             };
 
-            let attr_name = attr.name.as_str();
-            if !is_url_attr_on(attr_name, element.tag.as_str()) {
+            let attr_name = attr.name;
+            if !is_url_attr_on(attr_name, element.tag) {
                 continue;
             }
 
@@ -183,7 +183,7 @@ impl Rule for NoUnsafeUrl {
                 continue;
             };
 
-            if !is_unsafe_static_attr_value(attr_name, value.content.as_str()) {
+            if !is_unsafe_static_attr_value(attr_name, value.content) {
                 continue;
             }
 
@@ -207,23 +207,23 @@ impl Rule for NoUnsafeUrl {
         }
 
         // Bindings on <slot> are slot props, not URL-bearing DOM attributes.
-        if is_slot_tag(element.tag.as_str()) {
+        if is_slot_tag(element.tag) {
             return;
         }
 
         // Get the attribute name
         let attr_name = match &directive.arg {
-            Some(ExpressionNode::Simple(s)) if s.is_static => s.content.as_str(),
+            Some(ExpressionNode::Simple(s)) if s.is_static => s.content,
             _ => return,
         };
 
         // Check if this is a potentially unsafe attribute
-        if !is_url_attr_on(attr_name, element.tag.as_str()) {
+        if !is_url_attr_on(attr_name, element.tag) {
             return;
         }
 
         // Skip if the element is router-link (it handles routing safely)
-        if is_router_link_tag(element.tag.as_str()) {
+        if is_router_link_tag(element.tag) {
             return;
         }
 

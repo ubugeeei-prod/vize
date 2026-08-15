@@ -27,14 +27,13 @@ use oxc_ast::ast::{
     JSXElement, JSXExpression, JSXFragment, LogicalOperator, Statement,
 };
 use oxc_span::{GetSpan, Span};
-use vize_carton::{Box, Vec};
 use vize_relief::{
     ExpressionNode, ForNode, ForParseResult, IfBranchNode, IfNode, TemplateChildNode,
 };
 
-use super::Lowerer;
+use super::{Lowerer, boxed_in};
 
-impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
+impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// Try to lower an expression child as JSX control flow (`&&`, `?:`, or
     /// `.map(...)`). Returns `Some` when a pattern is recognized, otherwise
     /// `None` so the caller falls back to plain interpolation.
@@ -77,7 +76,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
                 );
                 branch.children.push(branch_child);
                 if_node.branches.push(branch);
-                Some(TemplateChildNode::If(Box::new_in(if_node, self.bump())))
+                Some(TemplateChildNode::If(self.boxed(if_node)))
             }
             Expression::ConditionalExpression(conditional) => {
                 self.lower_conditional(conditional, container_span)
@@ -110,7 +109,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
 
         let mut if_node = IfNode::new(self.bump(), self.mapper().location(container_span));
         self.push_conditional_branches(&mut if_node, conditional);
-        Some(TemplateChildNode::If(Box::new_in(if_node, self.bump())))
+        Some(TemplateChildNode::If(self.boxed(if_node)))
     }
 
     /// Whether a conditional renders JSX in either arm (recursing through a
@@ -218,7 +217,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             finalized: false,
         };
 
-        let mut children = Vec::new_in(self.bump());
+        let mut children = self.vec();
         children.push(body_jsx_child);
 
         let for_node = ForNode {
@@ -230,7 +229,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             children,
             loc: self.mapper().location(container_span),
         };
-        Some(TemplateChildNode::For(Box::new_in(for_node, self.bump())))
+        Some(TemplateChildNode::For(self.boxed(for_node)))
     }
 
     /// Returned JSX of an expression-body arrow (`() => <li/>`) or a block-body
@@ -323,12 +322,12 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         }
     }
 
-    fn element_child(&mut self, element: &JSXElement<'_>) -> TemplateChildNode<'a> {
-        TemplateChildNode::Element(Box::new_in(self.lower_element_node(element), self.bump()))
+    fn element_child(&mut self, el: &JSXElement<'_>) -> TemplateChildNode<'a> {
+        TemplateChildNode::Element(boxed_in(self.bump(), self.lower_element_node(el)))
     }
 
-    fn fragment_child(&mut self, fragment: &JSXFragment<'_>) -> TemplateChildNode<'a> {
-        TemplateChildNode::Element(Box::new_in(self.lower_fragment_node(fragment), self.bump()))
+    fn fragment_child(&mut self, f: &JSXFragment<'_>) -> TemplateChildNode<'a> {
+        TemplateChildNode::Element(boxed_in(self.bump(), self.lower_fragment_node(f)))
     }
 
     fn interpolation_child(
@@ -342,7 +341,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             #[cfg(feature = "legacy")]
             raw: false,
         };
-        TemplateChildNode::Interpolation(Box::new_in(node, self.bump()))
+        TemplateChildNode::Interpolation(self.boxed(node))
     }
 }
 

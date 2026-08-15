@@ -50,7 +50,7 @@ impl Rule for InteractiveSupportsFocus {
         }
 
         // Skip natively interactive elements - they're already focusable
-        if is_interactive_element(&element.tag) {
+        if is_interactive_element(element.tag) {
             return;
         }
 

@@ -81,7 +81,7 @@ fn generate_with_sections_and_options(
         CodegenContext::new_with_vnode_factory_and_merge_props(options, vnode_factory, merge_props);
     ctx.source = match source_text {
         Some(text) => vize_carton::String::new(text),
-        None => root.source.clone(),
+        None => root.source.into(),
     };
     ctx.static_cache = ctx.options.inline || !root.hoists.is_empty();
     let root_children: std::vec::Vec<&TemplateChildNode<'_>> = root
@@ -215,7 +215,7 @@ fn generate_with_sections_and_options(
     // string itself is unchanged whether or not a map is produced.
     let map = ctx.take_map_builder().map(|builder| {
         let filename = ctx.options.filename.as_str();
-        builder.finish(ctx.code_as_str(), filename, root.source.as_str())
+        builder.finish(ctx.code_as_str(), filename, root.source)
     });
 
     CodegenResultWithSections {

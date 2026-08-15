@@ -144,7 +144,7 @@ fn find_element<'a, 'b>(
     for child in children {
         match child {
             TemplateChildNode::Element(el) => {
-                if el.tag.as_str() == tag {
+                if el.tag == tag {
                     return Some(el);
                 }
                 if let Some(found) = find_element(&el.children, tag) {

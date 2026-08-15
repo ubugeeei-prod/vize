@@ -142,7 +142,7 @@ impl Rule for FormControlHasLabel {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if !Self::is_form_control(&element.tag) {
+        if !Self::is_form_control(element.tag) {
             return;
         }
 
@@ -167,7 +167,7 @@ impl Rule for FormControlHasLabel {
             ctx.warn_with_help(
                 ctx.t_fmt(
                     "a11y/form-control-has-label.message",
-                    &[("tag", element.tag.as_str())],
+                    &[("tag", element.tag)],
                 ),
                 &element.loc,
                 help,

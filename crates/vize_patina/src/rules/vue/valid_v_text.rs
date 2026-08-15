@@ -46,7 +46,7 @@ impl Rule for ValidVText {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name.as_str() != "text" {
+        if directive.name != "text" {
             return;
         }
 

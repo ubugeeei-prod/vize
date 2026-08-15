@@ -12,7 +12,7 @@ fn lowers_a_single_intrinsic_element() {
     let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <div></div>;");
     let element = root_element(&root);
-    assert_eq!(element.tag.as_str(), "div");
+    assert_eq!(element.tag, "div");
     assert_eq!(element.tag_type, ElementType::Element);
 }
 
@@ -21,7 +21,7 @@ fn self_closing_element_is_flagged() {
     let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <img/>;");
     let element = root_element(&root);
-    assert_eq!(element.tag.as_str(), "img");
+    assert_eq!(element.tag, "img");
     assert!(element.is_self_closing);
 }
 
@@ -37,7 +37,7 @@ fn capitalized_tag_is_a_component() {
     let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <MyComp/>;");
     let element = root_element(&root);
-    assert_eq!(element.tag.as_str(), "MyComp");
+    assert_eq!(element.tag, "MyComp");
     assert_eq!(element.tag_type, ElementType::Component);
 }
 
@@ -50,11 +50,11 @@ fn member_expression_tag_lowers_to_a_dynamic_component() {
     let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <Foo.Bar.Baz/>;");
     let element = root_element(&root);
-    assert_eq!(element.tag.as_str(), "component");
+    assert_eq!(element.tag, "component");
     assert_eq!(element.tag_type, ElementType::Component);
     assert_eq!(element.props.len(), 1);
     let is_binding = as_directive(&element.props[0]);
-    assert_eq!(is_binding.name.as_str(), "bind");
+    assert_eq!(is_binding.name, "bind");
     assert_eq!(simple_content(is_binding.arg.as_ref().unwrap()), "is");
     assert_eq!(
         simple_content(is_binding.exp.as_ref().unwrap()),
@@ -67,7 +67,7 @@ fn this_member_tag_lowers_to_a_dynamic_component() {
     let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <this.Dynamic/>;");
     let element = root_element(&root);
-    assert_eq!(element.tag.as_str(), "component");
+    assert_eq!(element.tag, "component");
     assert_eq!(element.tag_type, ElementType::Component);
     assert_eq!(element.props.len(), 1);
     assert_eq!(
@@ -109,10 +109,10 @@ fn nested_elements_are_lowered_recursively() {
     let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <ul><li></li><li></li></ul>;");
     let ul = root_element(&root);
-    assert_eq!(ul.tag.as_str(), "ul");
+    assert_eq!(ul.tag, "ul");
     assert_eq!(ul.children.len(), 2);
     for child in &ul.children {
-        assert_eq!(as_element(child).tag.as_str(), "li");
+        assert_eq!(as_element(child).tag, "li");
     }
 }
 
@@ -127,7 +127,7 @@ fn deeply_nested_tree_preserves_structure() {
     let section = as_element(&div.children[0]);
     let p = as_element(&section.children[0]);
     let span = as_element(&p.children[0]);
-    assert_eq!(span.tag.as_str(), "span");
+    assert_eq!(span.tag, "span");
     assert!(span.is_self_closing);
 }
 
@@ -143,7 +143,7 @@ fn known_namespaced_element_names_are_preserved() {
         let bump = Allocator::new();
         let root = lower_one(&bump, source);
         let element = root_element(&root);
-        assert_eq!(element.tag.as_str(), tag);
+        assert_eq!(element.tag, tag);
         // The local name starts lowercase -> intrinsic.
         assert_eq!(element.tag_type, ElementType::Element);
     }

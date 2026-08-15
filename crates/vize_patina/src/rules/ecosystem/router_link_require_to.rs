@@ -27,7 +27,7 @@ impl Rule for RouterLinkRequireTo {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        let tag = element.tag.as_str();
+        let tag = element.tag;
         if !is_router_link_tag(tag)
             || has_navigation_target(element, is_nuxt_link_tag(tag))
             || can_inherit_root_navigation_target(ctx)
@@ -67,22 +67,20 @@ fn can_inherit_root_navigation_target(ctx: &LintContext<'_>) -> bool {
 
 fn has_navigation_target(element: &ElementNode<'_>, allow_href: bool) -> bool {
     element.props.iter().any(|prop| match prop {
-        PropNode::Attribute(attr) => {
-            attr.name.as_str() == "to" || (allow_href && attr.name.as_str() == "href")
-        }
+        PropNode::Attribute(attr) => attr.name == "to" || (allow_href && attr.name == "href"),
         PropNode::Directive(directive) => is_navigation_bind_directive(directive, allow_href),
     })
 }
 
 fn is_navigation_bind_directive(directive: &DirectiveNode<'_>, allow_href: bool) -> bool {
-    if directive.name.as_str() != "bind" {
+    if directive.name != "bind" {
         return false;
     }
 
     match directive.arg.as_ref() {
         None => true,
         Some(ExpressionNode::Simple(arg)) if arg.is_static => {
-            arg.content.as_str() == "to" || (allow_href && arg.content.as_str() == "href")
+            arg.content == "to" || (allow_href && arg.content == "href")
         }
         _ => false,
     }

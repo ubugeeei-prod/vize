@@ -15,6 +15,7 @@ mod entry;
 #[cfg(test)]
 mod experimental_tests;
 mod expression;
+mod pending_text;
 mod whitespace;
 
 pub use entry::*;
@@ -22,7 +23,7 @@ pub use entry::*;
 #[cfg(test)]
 mod tests;
 
-use vize_carton::{Allocator, Bump, String, Vec};
+use vize_carton::{Allocator, String, Vec, interner::Interner};
 use vize_relief::{
     ElementNode, Namespace, PropNode, RootNode, SourceLocation, TemplateChildNode,
     errors::{CompilerError, ErrorCode},
@@ -30,10 +31,11 @@ use vize_relief::{
 };
 
 use element::{note_html_tree_element_close, note_html_tree_element_open};
+pub(in crate::parser) use pending_text::{PendingText, TextSlot};
 use whitespace::condense_whitespace;
 
 pub struct Parser<'a> {
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     /// The compile's oxc arena pool: retained expression ASTs (Davinci P1-5)
     /// are parsed into it so they share the template tree's lifetime.
     oxc_allocator: &'a oxc_allocator::Allocator,
@@ -41,13 +43,23 @@ pub struct Parser<'a> {
     options: ParserOptions,
     /// Template syntax compatibility mode.
     template_syntax: TemplateSyntaxMode,
+    /// Per-compile atoms for the computed names the parser synthesizes
+    /// (camelized shorthand arguments, reconstructed `v-pre` attribute
+    /// names). Verbatim names are source slices and never reach it.
+    interner: Interner<'a>,
+    /// Text run whose decoded bytes diverge from the source (entities), being
+    /// accumulated before it is frozen into the node's `&'a str`. Buffering
+    /// here keeps a run of N entities linear instead of recopying the run per
+    /// entity; [`Parser::flush_pending_text`] runs at every tokenizer callback
+    /// boundary that is not itself text, so nothing ever observes a stale node.
+    pending_text: Option<PendingText>,
     /// Current node stack
     stack: Vec<'a, ParserStackEntry<'a>>,
     /// Tags of the elements the nesting limit refused to descend into, in source
     /// order. They are attached to the tree as leaves instead of being pushed
     /// onto `stack`, so without this their end tags would find nothing to close
     /// and be reported as `InvalidEndTag` even though the source is correct.
-    flattened_tags: Vec<'a, String>,
+    flattened_tags: Vec<'a, &'a str>,
     /// Root node
     root: Option<RootNode<'a>>,
     /// Current element being parsed
@@ -56,8 +68,11 @@ pub struct Parser<'a> {
     current_attr: Option<CurrentAttribute<'a>>,
     /// Current directive being parsed
     current_dir: Option<CurrentDirective<'a>>,
-    /// Errors collected during parsing
-    errors: Vec<'a, CompilerError>,
+    /// Errors collected during parsing.
+    ///
+    /// Diagnostics own their message text (the arena/cache contract keeps
+    /// owned strings out of arena containers), so this is a plain heap vector.
+    errors: std::vec::Vec<CompilerError>,
     /// Whether in pre block
     in_pre: bool,
     /// Whether in v-pre block
@@ -93,7 +108,7 @@ pub(super) enum StackInsertion {
 
 /// Current element being parsed
 pub(super) struct CurrentElement<'a> {
-    pub(super) tag: String,
+    pub(super) tag: &'a str,
     pub(super) tag_start: usize,
     #[allow(dead_code)]
     pub(super) tag_end: usize,
@@ -104,7 +119,7 @@ pub(super) struct CurrentElement<'a> {
 
 /// Current attribute being parsed
 pub(super) struct CurrentAttribute<'a> {
-    pub(super) name: String,
+    pub(super) name: &'a str,
     pub(super) name_start: usize,
     pub(super) name_end: usize,
     pub(super) value_start: Option<usize>,
@@ -115,13 +130,13 @@ pub(super) struct CurrentAttribute<'a> {
 
 /// Current directive being parsed
 pub(super) struct CurrentDirective<'a> {
-    pub(super) name: String,
-    pub(super) raw_name: String,
+    pub(super) name: &'a str,
+    pub(super) raw_name: &'a str,
     pub(super) name_start: usize,
     #[allow(dead_code)]
     pub(super) name_end: usize,
-    pub(super) arg: Option<(String, usize, usize, bool)>, // (content, start, end, is_dynamic)
-    pub(super) modifiers: Vec<'a, (String, usize, usize)>,
+    pub(super) arg: Option<(&'a str, usize, usize, bool)>, // (content, start, end, is_dynamic)
+    pub(super) modifiers: Vec<'a, (&'a str, usize, usize)>,
     pub(super) value_start: Option<usize>,
     pub(super) value_end: Option<usize>,
     pub(super) value_content: Option<String>,
@@ -171,20 +186,21 @@ impl<'a> Parser<'a> {
         options: ParserOptions,
         template_syntax: TemplateSyntaxMode,
     ) -> Self {
-        let bump = allocator.as_bump();
         Self {
-            allocator: bump,
+            allocator,
             oxc_allocator: allocator.as_oxc(),
             source,
             options,
             template_syntax,
-            stack: Vec::new_in(bump),
-            flattened_tags: Vec::new_in(bump),
+            interner: Interner::new(allocator),
+            pending_text: None,
+            stack: Vec::new_in(&allocator),
+            flattened_tags: Vec::new_in(&allocator),
             root: None,
             current_element: None,
             current_attr: None,
             current_dir: None,
-            errors: Vec::new_in(bump),
+            errors: std::vec::Vec::new(),
             in_pre: false,
             in_v_pre: false,
             open_table_count: 0,
@@ -226,14 +242,18 @@ impl<'a> Parser<'a> {
     }
 
     /// Parse the source and return the AST
-    pub fn parse(mut self) -> (RootNode<'a>, Vec<'a, CompilerError>) {
+    pub fn parse(mut self) -> (RootNode<'a>, std::vec::Vec<CompilerError>) {
         // Initialize root node
-        let root = RootNode::new(self.allocator, self.source);
+        let allocator = self.allocator;
+        let root = RootNode::new(allocator, self.source);
         self.root = Some(root);
 
         if !self.tokenize_template() {
             return self.into_result();
         }
+
+        // Freeze the last text run before anything walks the finished tree.
+        self.flush_pending_text();
 
         // Handle any unclosed elements
         self.handle_unclosed_elements();
@@ -242,7 +262,7 @@ impl<'a> Parser<'a> {
         if let Some(ref mut root) = self.root
             && self.options.whitespace == WhitespaceStrategy::Condense
         {
-            condense_whitespace(&mut root.children, self.options.is_pre_tag);
+            condense_whitespace(allocator, &mut root.children, self.options.is_pre_tag);
         }
 
         self.into_result()
@@ -315,7 +335,7 @@ impl<'a> Parser<'a> {
     /// Handle unclosed elements at end of parsing
     fn handle_unclosed_elements(&mut self) {
         while let Some(entry) = self.pop_stack_entry() {
-            if !entry.implicit && !Self::can_omit_end_tag(entry.element.tag.as_str()) {
+            if !entry.implicit && !Self::can_omit_end_tag(entry.element.tag) {
                 let loc = entry.element.loc.clone();
                 self.errors
                     .push(CompilerError::new(ErrorCode::MissingEndTag, Some(loc)));

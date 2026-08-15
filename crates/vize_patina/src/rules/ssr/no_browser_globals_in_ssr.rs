@@ -409,7 +409,7 @@ impl Rule for NoBrowserGlobalsInSsr {
         }
 
         let content = match &interpolation.content {
-            ExpressionNode::Simple(s) => s.content.as_str(),
+            ExpressionNode::Simple(s) => s.content,
             ExpressionNode::Compound(_) => return, // Skip compound expressions for now
         };
         let identifiers = Self::extract_identifiers(content);
@@ -446,7 +446,7 @@ impl Rule for NoBrowserGlobalsInSsr {
         // Check directive expressions
         if let Some(exp) = &directive.exp {
             let content = match exp {
-                ExpressionNode::Simple(s) => s.content.as_str(),
+                ExpressionNode::Simple(s) => s.content,
                 ExpressionNode::Compound(_) => return, // Skip compound expressions
             };
             let identifiers = Self::extract_identifiers(content);

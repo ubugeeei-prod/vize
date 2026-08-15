@@ -75,8 +75,8 @@ fn directive_and_plain_attributes_coexist() {
     assert!(find_directive(element, "model").is_some());
     assert_eq!(element.props.len(), 2);
     let attr = common::as_attribute(&element.props[0]);
-    assert_eq!(attr.name.as_str(), "class");
-    assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "f");
+    assert_eq!(attr.name, "class");
+    assert_eq!(attr.value.as_ref().unwrap().content, "f");
 }
 
 // -- custom directive array form (#3421) -------------------------------------
@@ -95,7 +95,7 @@ fn modifier_names<'a>(directive: &'a vize_relief::DirectiveNode<'a>) -> Vec<&'a 
     directive
         .modifiers
         .iter()
-        .map(|modifier| modifier.content.as_str())
+        .map(|modifier| modifier.content)
         .collect()
 }
 

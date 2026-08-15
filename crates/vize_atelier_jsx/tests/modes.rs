@@ -6,7 +6,7 @@ use common::lower_single;
 use vize_atelier_jsx::{JsxLang, JsxOutputMode, lower_source};
 use vize_carton::Allocator;
 
-fn jsx<'a>(bump: &'a Allocator, src: &str) -> vize_atelier_jsx::LoweredRoot<'a> {
+fn jsx<'a>(bump: &'a Allocator, src: &'a str) -> vize_atelier_jsx::LoweredRoot<'a> {
     lower_single(bump, src, JsxLang::Jsx)
 }
 

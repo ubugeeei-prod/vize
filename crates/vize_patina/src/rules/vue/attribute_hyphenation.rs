@@ -100,7 +100,7 @@ impl Rule for AttributeHyphenation {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        let tag = element.tag.as_str();
+        let tag = element.tag;
 
         // Only check custom components
         if !Self::is_custom_component(tag) {
@@ -109,14 +109,14 @@ impl Rule for AttributeHyphenation {
 
         for prop in &element.props {
             let (name, loc) = match prop {
-                PropNode::Attribute(attr) => (attr.name.as_str(), &attr.loc),
+                PropNode::Attribute(attr) => (attr.name, &attr.loc),
                 PropNode::Directive(dir) => {
                     // Check v-bind argument (:my-prop)
-                    if dir.name.as_str() == "bind" {
+                    if dir.name == "bind" {
                         if let Some(arg) = &dir.arg {
                             match arg {
                                 vize_relief::ExpressionNode::Simple(s) if s.is_static => {
-                                    (s.content.as_str(), &dir.loc)
+                                    (s.content, &dir.loc)
                                 }
                                 _ => continue,
                             }

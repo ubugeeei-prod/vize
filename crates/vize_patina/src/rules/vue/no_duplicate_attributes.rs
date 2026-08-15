@@ -63,7 +63,7 @@ impl Rule for NoDuplicateAttributes {
         for prop in element.props.iter() {
             match prop {
                 PropNode::Attribute(attr) => {
-                    let name = attr.name.as_str().to_lowercase();
+                    let name = attr.name.to_lowercase();
 
                     // Check for duplicate static attributes
                     if seen_attrs.contains(name.as_str()) {
@@ -91,7 +91,7 @@ impl Rule for NoDuplicateAttributes {
                 }
                 PropNode::Directive(dir) => {
                     // Handle v-bind directives
-                    if dir.name.as_str() == "bind" {
+                    if dir.name == "bind" {
                         if let Some(ref arg) = dir.arg {
                             let Some(arg_name) = get_static_expression_content(arg) else {
                                 continue;
@@ -128,14 +128,14 @@ impl Rule for NoDuplicateAttributes {
                         }
                     }
                     // Handle v-on directives
-                    else if dir.name.as_str() == "on" {
+                    else if dir.name == "on" {
                         if let Some(ref arg) = dir.arg {
                             let Some(event_name) = get_static_expression_content(arg) else {
                                 continue;
                             };
                             // Include modifiers in the key to allow @keydown.left and @keydown.right
                             let modifiers: Vec<&str> =
-                                dir.modifiers.iter().map(|m| m.content.as_str()).collect();
+                                dir.modifiers.iter().map(|m| m.content).collect();
                             let event_key = if modifiers.is_empty() {
                                 format!("on:{}", event_name)
                             } else {
@@ -161,7 +161,7 @@ impl Rule for NoDuplicateAttributes {
                         }
                     }
                     // Handle v-model
-                    else if dir.name.as_str() == "model" {
+                    else if dir.name == "model" {
                         let model_key = if let Some(ref arg) = dir.arg {
                             let Some(arg_name) = get_static_expression_content(arg) else {
                                 continue;

@@ -96,7 +96,7 @@ fn collect_child_bindings(child: &TemplateChildNode<'_>, bindings: &mut NativePr
 }
 
 fn collect_element_bindings(element: &ElementNode<'_>, bindings: &mut NativePropBindings) {
-    if is_native_tag(element.tag.as_str()) && !renders_as_fragment(element) {
+    if is_native_tag(element.tag) && !renders_as_fragment(element) {
         for prop in &element.props {
             let PropNode::Directive(directive) = prop else {
                 continue;
@@ -135,10 +135,9 @@ fn collect_element_bindings(element: &ElementNode<'_>, bindings: &mut NativeProp
 fn renders_as_fragment(element: &ElementNode<'_>) -> bool {
     element.tag == "template"
         && element.props.iter().any(|prop| match prop {
-            PropNode::Directive(directive) => matches!(
-                directive.name.as_str(),
-                "for" | "if" | "else-if" | "else" | "slot"
-            ),
+            PropNode::Directive(directive) => {
+                matches!(directive.name, "for" | "if" | "else-if" | "else" | "slot")
+            }
             PropNode::Attribute(_) => false,
         })
 }
@@ -172,8 +171,8 @@ fn native_prop_binding(
     Some((
         (expression_location.span.start, expression_location.span.end),
         NativePropBinding {
-            tag: element.tag.clone(),
-            name: argument.content.clone(),
+            tag: element.tag.into(),
+            name: argument.content.into(),
             name_start: argument.loc.span.start,
             name_end: argument.loc.span.end,
         },

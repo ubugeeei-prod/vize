@@ -88,7 +88,7 @@ details are not compatibility surfaces.
 
 | Crate                | Tier                  | Intended audience                         | Public entrypoint                               | Removal / deprecation                  |
 | -------------------- | --------------------- | ----------------------------------------- | ----------------------------------------------- | -------------------------------------- |
-| `vize_carton`        | Alpha-supported       | Vize compiler and library authors         | `vize_carton::{Allocator, Bump, FxHashMap}`     | One minor with `#[deprecated]`         |
+| `vize_carton`        | Alpha-supported       | Vize compiler and library authors         | `vize_carton::{Allocator, Box, FxHashMap}`      | One minor with `#[deprecated]`         |
 | `vize_relief`        | Alpha-supported       | AST and compiler integration authors      | `vize_relief::{RootNode, CompilerOptions}`      | One minor with `#[deprecated]`         |
 | `vize_armature`      | Alpha-supported       | Tools that parse Vue templates            | `vize_armature::{parse, Parser, Tokenizer}`     | One minor with `#[deprecated]`         |
 | `vize_croquis`       | Compatibility preview | Semantic and type-aware tooling authors   | `vize_croquis::{Croquis, Drawer}`               | One minor with `#[deprecated]`         |

@@ -12,7 +12,7 @@ use vize_relief::{TemplateChildNode, TextNode};
 
 use super::Lowerer;
 
-impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
+impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// Lower a JSX text child, returning `None` if it cleans to nothing.
     pub(crate) fn lower_text(&mut self, text: &JSXText<'_>) -> Option<TemplateChildNode<'a>> {
         let cleaned = clean_jsx_text(text.value.as_str());
@@ -21,8 +21,8 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         }
         let loc = self.mapper().location(text.span);
         Some(TemplateChildNode::Text(Box::new_in(
-            TextNode::new(cleaned, loc),
-            self.bump(),
+            TextNode::new(self.bump().alloc_str(&cleaned), loc),
+            &self.bump(),
         )))
     }
 }

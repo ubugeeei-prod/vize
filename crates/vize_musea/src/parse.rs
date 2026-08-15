@@ -11,7 +11,7 @@ use crate::types::{
     ArtStyleBlock, SourceLocation,
 };
 use memchr::{memchr, memmem};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 /// Result type for parsing SFC blocks: (script_setup, script, styles)
 type SfcBlocksParseResult<'a> = Result<
@@ -31,11 +31,11 @@ type SfcBlocksParseResult<'a> = Result<
 /// # Example
 ///
 /// ```
-/// use vize_carton::Bump;
+/// use vize_carton::Allocator;
 /// use vize_musea::parse::parse_art;
 /// use vize_musea::types::ArtParseOptions;
 ///
-/// let allocator = Bump::new();
+/// let allocator = Allocator::new();
 /// let source = r#"
 /// <art title="Button" component="./Button.vue">
 ///   <variant name="Primary" default>
@@ -49,7 +49,7 @@ type SfcBlocksParseResult<'a> = Result<
 /// ```
 #[inline]
 pub fn parse_art<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: ArtParseOptions,
 ) -> ArtParseResult<'a> {
@@ -117,14 +117,14 @@ pub(crate) struct DefineArtMetadata<'a> {
 }
 
 impl<'a> DefineArtMetadata<'a> {
-    fn new(allocator: &'a Bump) -> Self {
+    fn new(allocator: &'a Allocator) -> Self {
         Self {
             component_name: None,
             component: None,
             title: None,
             description: None,
             category: None,
-            tags: vize_carton::Vec::new_in(allocator),
+            tags: vize_carton::Vec::new_in(&allocator),
             status: None,
             order: None,
         }
@@ -133,11 +133,11 @@ impl<'a> DefineArtMetadata<'a> {
 
 /// Parse SFC blocks (script, style) from source.
 #[inline]
-fn parse_sfc_blocks<'a>(allocator: &'a Bump, source: &'a str) -> SfcBlocksParseResult<'a> {
+fn parse_sfc_blocks<'a>(allocator: &'a Allocator, source: &'a str) -> SfcBlocksParseResult<'a> {
     let bytes = source.as_bytes();
     let mut script_setup: Option<ArtScriptBlock<'a>> = None;
     let mut script: Option<ArtScriptBlock<'a>> = None;
-    let mut styles = vize_carton::Vec::new_in(allocator);
+    let mut styles = vize_carton::Vec::new_in(&allocator);
 
     // Use memmem finder for repeated searches (amortized O(n))
     let script_finder = memmem::Finder::new(b"<script");
@@ -199,7 +199,7 @@ fn parse_sfc_blocks<'a>(allocator: &'a Bump, source: &'a str) -> SfcBlocksParseR
 }
 
 fn parse_define_art_metadata<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     script: &'a str,
 ) -> Option<DefineArtMetadata<'a>> {
     // Cheap pre-check: defineArt() can only return Some if the literal token
@@ -215,19 +215,19 @@ fn parse_define_art_metadata<'a>(
     meta.component = art
         .component_source
         .as_ref()
-        .map(|source| &*allocator.alloc_str(source.as_str()));
+        .map(|source| allocator.alloc_str(source.as_str()));
     meta.title = art
         .title
         .as_ref()
-        .map(|value| &*allocator.alloc_str(value.as_str()));
+        .map(|value| allocator.alloc_str(value.as_str()));
     meta.description = art
         .description
         .as_ref()
-        .map(|value| &*allocator.alloc_str(value.as_str()));
+        .map(|value| allocator.alloc_str(value.as_str()));
     meta.category = art
         .category
         .as_ref()
-        .map(|value| &*allocator.alloc_str(value.as_str()));
+        .map(|value| allocator.alloc_str(value.as_str()));
     meta.status = art
         .status
         .as_ref()
@@ -459,11 +459,11 @@ pub(crate) fn calculate_location_fast(source: &str, start: u32, end: u32) -> Sou
 mod tests {
     use super::{extract_attr, has_attr, parse_art};
     use crate::types::{ArtParseError, ArtParseOptions};
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
     #[test]
     fn test_parse_simple_art() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let source = r#"
 <art title="Button" component="./Button.vue">
   <variant name="Primary" default>
@@ -490,7 +490,7 @@ import Button from "./Button.vue";
 
     #[test]
     fn test_parse_multiple_variants() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let source = r#"
 <art title="Button">
   <variant name="Primary" default>
@@ -517,7 +517,7 @@ import Button from "./Button.vue";
 
     #[test]
     fn test_parse_define_art_metadata() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let source = r#"
 <script setup lang="ts">
 import Button from "./Button.vue";
@@ -552,7 +552,7 @@ defineArt(Button, {
 
     #[test]
     fn test_parse_define_art_source_literal_metadata() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let source = r#"
 <script setup lang="ts">
 defineArt("./base-button.vue", {
@@ -593,7 +593,7 @@ defineArt("./base-button.vue", {
 
     #[test]
     fn test_missing_title_error() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let source = r#"<art><variant name="Test"></variant></art>"#;
         let result = parse_art(&allocator, source, ArtParseOptions::default());
         assert!(matches!(result, Err(ArtParseError::MissingTitle)));
@@ -601,7 +601,7 @@ defineArt("./base-button.vue", {
 
     #[test]
     fn test_no_art_block_error() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let source = r#"<template><div>Hello</div></template>"#;
         let result = parse_art(&allocator, source, ArtParseOptions::default());
         assert!(matches!(result, Err(ArtParseError::NoArtBlock)));

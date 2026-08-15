@@ -20,8 +20,7 @@ mod element_transform_tests {
         let (mut root, errors) = parse(&allocator, source);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
-        let mut ctx =
-            TransformContext::new(&allocator, root.source.clone(), TransformOptions::default());
+        let mut ctx = TransformContext::new(&allocator, root.source, TransformOptions::default());
         traverse_children(&mut ctx, ParentNode::Root(&mut root as *mut _));
         ctx.errors
     }
@@ -45,8 +44,7 @@ mod element_transform_tests {
         let (mut root, errors) = parse(&allocator, r#"<input v-model />"#);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
-        let mut ctx =
-            TransformContext::new(&allocator, root.source.clone(), TransformOptions::default());
+        let mut ctx = TransformContext::new(&allocator, root.source, TransformOptions::default());
         match &mut root.children[0] {
             TemplateChildNode::Element(el) => {
                 transform_element(&mut ctx, el);
@@ -72,8 +70,7 @@ mod element_transform_tests {
         let (mut root, errors) = parse(&allocator, r#"<MyComponent v-model />"#);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
-        let mut ctx =
-            TransformContext::new(&allocator, root.source.clone(), TransformOptions::default());
+        let mut ctx = TransformContext::new(&allocator, root.source, TransformOptions::default());
         match &mut root.children[0] {
             TemplateChildNode::Element(el) => {
                 transform_element(&mut ctx, el);
@@ -102,8 +99,7 @@ mod element_transform_tests {
         );
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
-        let mut ctx =
-            TransformContext::new(&allocator, root.source.clone(), TransformOptions::default());
+        let mut ctx = TransformContext::new(&allocator, root.source, TransformOptions::default());
         traverse_children(&mut ctx, ParentNode::Root(&mut root as *mut _));
 
         assert_eq!(ctx.errors.len(), 1);
@@ -150,8 +146,7 @@ mod element_transform_tests {
         let (mut root, errors) = parse(&allocator, source);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
-        let mut ctx =
-            TransformContext::new(&allocator, root.source.clone(), TransformOptions::default());
+        let mut ctx = TransformContext::new(&allocator, root.source, TransformOptions::default());
         match &mut root.children[0] {
             TemplateChildNode::Element(el) => {
                 transform_element(&mut ctx, el);

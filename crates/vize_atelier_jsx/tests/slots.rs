@@ -62,19 +62,19 @@ fn slot_lowers_to_template_with_slot_directive() {
     let TemplateChildNode::Element(comp) = &root.children[0] else {
         panic!("expected component element root");
     };
-    assert_eq!(comp.tag.as_str(), "Comp");
+    assert_eq!(comp.tag, "Comp");
 
     let TemplateChildNode::Element(template) = &comp.children[0] else {
         panic!("expected a synthetic <template> slot child");
     };
-    assert_eq!(template.tag.as_str(), "template");
+    assert_eq!(template.tag, "template");
     assert_eq!(template.tag_type, ElementType::Template);
 
     let slot_dir = template
         .props
         .iter()
         .find_map(|prop| match prop {
-            PropNode::Directive(dir) if dir.name.as_str() == "slot" => Some(&**dir),
+            PropNode::Directive(dir) if dir.name == "slot" => Some(&**dir),
             _ => None,
         })
         .expect("template carries a `slot` directive");
@@ -84,7 +84,7 @@ fn slot_lowers_to_template_with_slot_directive() {
     match arg {
         ExpressionNode::Simple(simple) => {
             assert!(simple.is_static, "slot name must be static");
-            assert_eq!(simple.content.as_str(), "header");
+            assert_eq!(simple.content, "header");
         }
         ExpressionNode::Compound(_) => panic!("slot name should be a simple static expression"),
     }
@@ -95,7 +95,7 @@ fn slot_lowers_to_template_with_slot_directive() {
     let TemplateChildNode::Element(body) = &template.children[0] else {
         panic!("expected lowered slot body element");
     };
-    assert_eq!(body.tag.as_str(), "h1");
+    assert_eq!(body.tag, "h1");
 }
 
 // Scoped-slot params carry the RAW pattern source on the directive `exp`.
@@ -120,7 +120,7 @@ fn scoped_slot_directive_carries_raw_param_pattern() {
         .props
         .iter()
         .find_map(|prop| match prop {
-            PropNode::Directive(dir) if dir.name.as_str() == "slot" => Some(&**dir),
+            PropNode::Directive(dir) if dir.name == "slot" => Some(&**dir),
             _ => None,
         })
         .expect("template carries a `slot` directive");
@@ -181,7 +181,7 @@ fn tsx_story_slot_object_with_kebab_update_handler_lowers() {
         .iter()
         .find_map(|prop| match prop {
             PropNode::Directive(dir)
-                if dir.name.as_str() == "bind"
+                if dir.name == "bind"
                     && dir.arg.as_ref().is_some_and(|arg| {
                         common::simple_content(arg) == "onUpdate:current-step-index"
                     }) =>
@@ -204,7 +204,7 @@ fn tsx_story_slot_object_with_kebab_update_handler_lowers() {
                 return None;
             };
             template.props.iter().find_map(|prop| match prop {
-                PropNode::Directive(dir) if dir.name.as_str() == "slot" => {
+                PropNode::Directive(dir) if dir.name == "slot" => {
                     dir.arg.as_ref().map(common::simple_content)
                 }
                 _ => None,

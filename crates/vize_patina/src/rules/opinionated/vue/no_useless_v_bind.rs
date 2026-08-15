@@ -48,7 +48,7 @@ impl Rule for NoUselessVBind {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name.as_str() != "bind" {
+        if directive.name != "bind" {
             return;
         }
         // Only a static argument (`:foo`), not `v-bind="obj"`.
@@ -64,14 +64,11 @@ impl Rule for NoUselessVBind {
         }
         let is_literal = matches!(
             &directive.exp,
-            Some(ExpressionNode::Simple(s)) if is_static_string_literal(s.content.as_str())
+            Some(ExpressionNode::Simple(s)) if is_static_string_literal(s.content)
         );
         if is_literal {
             ctx.warn_with_help(
-                ctx.t_fmt(
-                    "vue/no-useless-v-bind.message",
-                    &[("name", arg.content.as_str())],
-                ),
+                ctx.t_fmt("vue/no-useless-v-bind.message", &[("name", arg.content)]),
                 &directive.loc,
                 ctx.t("vue/no-useless-v-bind.help"),
             );

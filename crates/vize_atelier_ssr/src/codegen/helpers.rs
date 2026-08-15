@@ -131,13 +131,13 @@ impl<'a> SsrCodegenContext<'a> {
 
     /// Process a text node
     fn process_text(&mut self, text: &TextNode) {
-        self.push_string_part_static(&escape_html(&text.content));
+        self.push_string_part_static(&escape_html(text.content));
     }
 
     /// Process a comment node
     fn process_comment(&mut self, comment: &CommentNode) {
         self.push_string_part_static("<!--");
-        self.push_string_part_static(&comment.content);
+        self.push_string_part_static(comment.content);
         self.push_string_part_static("-->");
     }
 
@@ -148,7 +148,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.use_ssr_helper(RuntimeHelper::SsrInterpolate);
 
         let exp = match &interp.content {
-            ExpressionNode::Simple(simple) => self.strip_ctx_for_scoped_params(&simple.content),
+            ExpressionNode::Simple(simple) => self.strip_ctx_for_scoped_params(simple.content),
             ExpressionNode::Compound(_) => "_ctx.value".to_compact_string(), // placeholder
         };
 
@@ -284,7 +284,7 @@ impl<'a> SsrCodegenContext<'a> {
 
         match expr {
             ExpressionNode::Simple(simple) => {
-                let content = self.strip_ctx_for_scoped_params(&simple.content);
+                let content = self.strip_ctx_for_scoped_params(simple.content);
                 self.push(&content);
             }
             ExpressionNode::Compound(compound) => {
@@ -293,7 +293,7 @@ impl<'a> SsrCodegenContext<'a> {
                 for child in &compound.children {
                     use vize_atelier_core::CompoundExpressionChild;
                     match child {
-                        CompoundExpressionChild::Simple(s) => content.push_str(&s.content),
+                        CompoundExpressionChild::Simple(s) => content.push_str(s.content),
                         CompoundExpressionChild::String(s) => content.push_str(s),
                         CompoundExpressionChild::Symbol(helper) => {
                             content.push('_');

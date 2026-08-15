@@ -2,7 +2,7 @@
 //!
 //! Transforms elements with v-for directive into ForNode.
 
-use vize_carton::{Box, Bump};
+use vize_carton::{Allocator, Box};
 
 use crate::lane::TransformContext;
 use crate::{
@@ -45,8 +45,8 @@ pub fn remove_for_directive(el: &mut ElementNode<'_>) {
 
 /// Parse v-for expression into parts.
 pub fn parse_for_expression<'a>(
-    allocator: &'a Bump,
-    content: &str,
+    allocator: &'a Allocator,
+    content: &'a str,
     loc: &SourceLocation,
 ) -> Option<ForParseResult<'a>> {
     parse_for_expression_with_options(allocator, content, loc, false)
@@ -64,8 +64,8 @@ pub fn parse_for_expression<'a>(
 /// - https://github.com/vuejs/core/blob/main/packages/compiler-core/src/utils.ts#L571
 /// - https://github.com/vuejs/core/blob/main/packages/compiler-core/src/parser.ts#L493-L530
 pub fn parse_for_expression_with_options<'a>(
-    allocator: &'a Bump,
-    content: &str,
+    allocator: &'a Allocator,
+    content: &'a str,
     loc: &SourceLocation,
     template_syntax_quirks: bool,
 ) -> Option<ForParseResult<'a>> {
@@ -92,7 +92,7 @@ pub fn parse_for_expression_with_options<'a>(
 
     let source = ExpressionNode::Simple(Box::new_in(
         SimpleExpressionNode::new(source_str, false, source_loc),
-        allocator,
+        &allocator,
     ));
 
     let aliases = split_for_aliases(alias_str, template_syntax_quirks)?;
@@ -102,8 +102,8 @@ pub fn parse_for_expression_with_options<'a>(
             None
         } else {
             Some(ExpressionNode::Simple(Box::new_in(
-                SimpleExpressionNode::new(*alias, false, SourceLocation::default()),
-                allocator,
+                SimpleExpressionNode::new(alias, false, SourceLocation::default()),
+                &allocator,
             )))
         }
     });
@@ -113,8 +113,8 @@ pub fn parse_for_expression_with_options<'a>(
             None
         } else {
             Some(ExpressionNode::Simple(Box::new_in(
-                SimpleExpressionNode::new(*alias, false, SourceLocation::default()),
-                allocator,
+                SimpleExpressionNode::new(alias, false, SourceLocation::default()),
+                &allocator,
             )))
         }
     });
@@ -124,8 +124,8 @@ pub fn parse_for_expression_with_options<'a>(
             None
         } else {
             Some(ExpressionNode::Simple(Box::new_in(
-                SimpleExpressionNode::new(*alias, false, SourceLocation::default()),
-                allocator,
+                SimpleExpressionNode::new(alias, false, SourceLocation::default()),
+                &allocator,
             )))
         }
     });
@@ -273,9 +273,9 @@ mod tests {
     };
     use crate::TemplateChildNode;
     use crate::parser::parse;
-    use vize_carton::{Allocator, Bump};
+    use vize_carton::Allocator;
 
-    fn parse_for<'a>(allocator: &'a Bump, content: &str) -> ForParseResult<'a> {
+    fn parse_for<'a>(allocator: &'a Allocator, content: &'a str) -> ForParseResult<'a> {
         parse_for_expression(allocator, content, &SourceLocation::STUB)
             .expect("expected valid v-for expression")
     }
@@ -296,7 +296,7 @@ mod tests {
         let result = parse_for(&allocator, "item in items");
 
         if let ExpressionNode::Simple(source) = &result.source {
-            assert_eq!(source.content.as_str(), "items");
+            assert_eq!(source.content, "items");
         }
         assert!(result.value.is_some());
     }
@@ -307,7 +307,7 @@ mod tests {
         let result = parse_for(&allocator, "(item, index) in items");
 
         if let ExpressionNode::Simple(source) = &result.source {
-            assert_eq!(source.content.as_str(), "items");
+            assert_eq!(source.content, "items");
         }
         assert!(result.value.is_some());
         assert!(result.key.is_some());
@@ -319,14 +319,14 @@ mod tests {
         let result = parse_for(&allocator, "item, index in items");
 
         if let ExpressionNode::Simple(source) = &result.source {
-            assert_eq!(source.content.as_str(), "items");
+            assert_eq!(source.content, "items");
         }
         match result.value.as_ref() {
-            Some(ExpressionNode::Simple(value)) => assert_eq!(value.content.as_str(), "item"),
+            Some(ExpressionNode::Simple(value)) => assert_eq!(value.content, "item"),
             _ => panic!("expected value alias"),
         }
         match result.key.as_ref() {
-            Some(ExpressionNode::Simple(key)) => assert_eq!(key.content.as_str(), "index"),
+            Some(ExpressionNode::Simple(key)) => assert_eq!(key.content, "index"),
             _ => panic!("expected key alias"),
         }
     }
@@ -337,16 +337,16 @@ mod tests {
         let result = parse_for(&allocator, "{ id, name }, index of items");
 
         if let ExpressionNode::Simple(source) = &result.source {
-            assert_eq!(source.content.as_str(), "items");
+            assert_eq!(source.content, "items");
         }
         match result.value.as_ref() {
             Some(ExpressionNode::Simple(value)) => {
-                assert_eq!(value.content.as_str(), "{ id, name }")
+                assert_eq!(value.content, "{ id, name }")
             }
             _ => panic!("expected destructured value alias"),
         }
         match result.key.as_ref() {
-            Some(ExpressionNode::Simple(key)) => assert_eq!(key.content.as_str(), "index"),
+            Some(ExpressionNode::Simple(key)) => assert_eq!(key.content, "index"),
             _ => panic!("expected key alias"),
         }
     }
@@ -357,10 +357,10 @@ mod tests {
         let result = parse_for(&allocator, "item\nin\nitems");
 
         if let ExpressionNode::Simple(source) = &result.source {
-            assert_eq!(source.content.as_str(), "items");
+            assert_eq!(source.content, "items");
         }
         match result.value.as_ref() {
-            Some(ExpressionNode::Simple(value)) => assert_eq!(value.content.as_str(), "item"),
+            Some(ExpressionNode::Simple(value)) => assert_eq!(value.content, "item"),
             _ => panic!("expected value alias"),
         }
     }
@@ -397,7 +397,7 @@ mod tests {
         )
         .expect("template syntax quirk mode should strip trailing parens");
         match trailing.value.as_ref() {
-            Some(ExpressionNode::Simple(value)) => assert_eq!(value.content.as_str(), "item"),
+            Some(ExpressionNode::Simple(value)) => assert_eq!(value.content, "item"),
             _ => panic!("expected trailing-paren value alias"),
         }
 
@@ -409,7 +409,7 @@ mod tests {
         )
         .expect("template syntax quirk mode should strip leading parens");
         match leading.value.as_ref() {
-            Some(ExpressionNode::Simple(value)) => assert_eq!(value.content.as_str(), "item"),
+            Some(ExpressionNode::Simple(value)) => assert_eq!(value.content, "item"),
             _ => panic!("expected leading-paren value alias"),
         }
     }

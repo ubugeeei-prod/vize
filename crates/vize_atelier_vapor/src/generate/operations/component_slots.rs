@@ -13,7 +13,7 @@ pub(super) fn generate_slot_fn(
     let slot_props_var = slot
         .fn_exp
         .as_ref()
-        .map(|fn_exp| ctx.push_slot_scope(fn_exp.content.as_str()));
+        .map(|fn_exp| ctx.push_slot_scope(fn_exp.content));
     if use_with_vapor_ctx {
         ctx.use_helper("withVaporCtx");
         let param: String = slot_props_var

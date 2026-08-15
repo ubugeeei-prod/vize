@@ -55,11 +55,7 @@ impl Rule for AnchorIsValid {
         for prop in &element.props {
             match prop {
                 PropNode::Attribute(attr) if attr.name == "href" => {
-                    let value = attr
-                        .value
-                        .as_ref()
-                        .map(|v| v.content.as_ref())
-                        .unwrap_or("");
+                    let value = attr.value.as_ref().map(|v| v.content).unwrap_or("");
                     let trimmed = value.trim();
 
                     if trimmed.is_empty() {

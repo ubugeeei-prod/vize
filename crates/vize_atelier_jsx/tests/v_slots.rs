@@ -196,10 +196,7 @@ fn v_slots_is_never_a_prop() {
     let element = common::root_element(&root);
     assert!(common::find_directive(element, "slots").is_none());
     assert_eq!(element.props.len(), 1);
-    assert_eq!(
-        common::as_attribute(&element.props[0]).name.as_str(),
-        "class"
-    );
+    assert_eq!(common::as_attribute(&element.props[0]).name, "class");
 }
 
 #[test]

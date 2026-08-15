@@ -126,5 +126,5 @@ pub(crate) fn prefix_identifiers_with_context_node(
         }
         return result;
     }
-    prefix_identifiers_with_context(node.content.as_str(), ctx)
+    prefix_identifiers_with_context(node.content, ctx)
 }

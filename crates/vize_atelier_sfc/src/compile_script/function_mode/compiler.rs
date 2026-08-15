@@ -52,8 +52,8 @@ pub fn compile_script_setup(
     validate_macro_scope_and_props(&ctx, 0, content)?;
 
     // Use arena-allocated Vec for better performance
-    let bump = vize_carton::Bump::new();
-    let mut output: vize_carton::Vec<u8> = vize_carton::Vec::with_capacity_in(4096, &bump);
+    let bump = vize_carton::Allocator::new();
+    let mut output: vize_carton::Vec<u8> = vize_carton::Vec::with_capacity_in(4096, &&bump);
 
     // Check if we have props destructure
     let has_props_destructure = ctx.macros.props_destructure.is_some();

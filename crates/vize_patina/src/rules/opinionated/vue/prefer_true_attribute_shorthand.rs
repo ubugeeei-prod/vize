@@ -48,7 +48,7 @@ impl Rule for PreferTrueAttributeShorthand {
         element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name.as_str() != "bind" {
+        if directive.name != "bind" {
             return;
         }
         // Only a static argument (`:foo`), not `v-bind="obj"`.
@@ -58,8 +58,8 @@ impl Rule for PreferTrueAttributeShorthand {
         if !arg.is_static {
             return;
         }
-        let name = arg.content.as_str();
-        if is_native_tag(element.tag.as_str()) && !BOOLEAN_ATTRIBUTES.contains(&name) {
+        let name = arg.content;
+        if is_native_tag(element.tag) && !BOOLEAN_ATTRIBUTES.contains(&name) {
             return;
         }
         // Modifiers such as `.prop` change semantics; leave them alone.

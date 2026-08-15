@@ -49,7 +49,7 @@ impl NoUselessTemplateAttributes {
     fn has_structural_directive(element: &ElementNode) -> bool {
         for prop in &element.props {
             if let PropNode::Directive(dir) = prop
-                && STRUCTURAL_DIRECTIVES.contains(&dir.name.as_str())
+                && STRUCTURAL_DIRECTIVES.contains(&dir.name)
             {
                 return true;
             }
@@ -61,7 +61,7 @@ impl NoUselessTemplateAttributes {
     fn is_allowed_on_template(prop: &PropNode) -> bool {
         match prop {
             PropNode::Directive(dir) => {
-                let name = dir.name.as_str();
+                let name = dir.name;
                 // Structural directives and key binding are allowed
                 if STRUCTURAL_DIRECTIVES.contains(&name) {
                     return true;
@@ -89,7 +89,7 @@ impl Rule for NoUselessTemplateAttributes {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag.as_str() != "template" {
+        if element.tag != "template" {
             return;
         }
 

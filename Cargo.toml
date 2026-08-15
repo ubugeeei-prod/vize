@@ -119,9 +119,6 @@ js-sys = "=0.3.104"
 web-sys = { version = "=0.3.104", features = ["console"] }
 getrandom = { version = "=0.3.4", features = ["wasm_js"] }
 
-# Arena allocation
-bumpalo = { version = "=3.20.3", features = ["collections", "boxed"] }
-
 # Utilities
 thiserror = "=2.0.20"
 rustc-hash = "=2.1.3"

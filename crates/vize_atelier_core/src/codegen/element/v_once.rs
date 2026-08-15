@@ -44,16 +44,16 @@ pub fn generate_v_once_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         ctx.use_helper(RuntimeHelper::CreateVNode);
         ctx.push_vnode_helper(RuntimeHelper::CreateVNode);
         ctx.push("(");
-        if !ctx.push_component_binding_tag(&el.tag) {
+        if !ctx.push_component_binding_tag(el.tag) {
             ctx.use_helper(RuntimeHelper::ResolveComponent);
-            ctx.push(&to_valid_asset_identifier("component", &el.tag));
+            ctx.push(&to_valid_asset_identifier("component", el.tag));
         }
         ctx.push(")");
     } else {
         ctx.use_helper(RuntimeHelper::CreateElementVNode);
         ctx.push_vnode_helper(RuntimeHelper::CreateElementVNode);
         ctx.push("(\"");
-        ctx.push(&el.tag);
+        ctx.push(el.tag);
         ctx.push("\"");
 
         // Generate props (excluding v-once)
@@ -165,7 +165,7 @@ pub fn generate_v_once_props(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                         }
                         ctx.push(")");
                     } else {
-                        ctx.push(&arg.content);
+                        ctx.push(arg.content);
                         ctx.push(": ");
                         if let Some(exp) = &dir.exp {
                             generate_expression(ctx, exp);
@@ -179,11 +179,11 @@ pub fn generate_v_once_props(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 }
                 first = false;
                 ctx.newline();
-                ctx.push(&attr.name);
+                ctx.push(attr.name);
                 ctx.push(": ");
                 if let Some(value) = &attr.value {
                     ctx.push("\"");
-                    ctx.push(&escape_js_string(&value.content));
+                    ctx.push(&escape_js_string(value.content));
                     ctx.push("\"");
                 } else {
                     ctx.push("\"\"");
@@ -205,7 +205,7 @@ pub fn generate_v_once_child(ctx: &mut CodegenContext, node: &TemplateChildNode<
             ctx.use_helper(RuntimeHelper::CreateText);
             ctx.push(ctx.helper(RuntimeHelper::CreateText));
             ctx.push("(\"");
-            ctx.push(&escape_js_string(&text.content));
+            ctx.push(&escape_js_string(text.content));
             ctx.push("\")");
         }
         TemplateChildNode::Interpolation(interp) => {

@@ -65,7 +65,7 @@ impl Rule for NoDeprecatedHtmlElementIs {
         }
 
         // `<component is="...">` is the valid dynamic-component element.
-        if element.tag.as_str() == "component" {
+        if element.tag == "component" {
             return;
         }
 
@@ -78,7 +78,7 @@ impl Rule for NoDeprecatedHtmlElementIs {
                 let is_vue_prefixed = attr
                     .value
                     .as_ref()
-                    .is_some_and(|v| v.content.as_str().starts_with("vue:"));
+                    .is_some_and(|v| v.content.starts_with("vue:"));
                 if is_vue_prefixed {
                     continue;
                 }

@@ -125,11 +125,11 @@ fn collect_element(element: &ElementNode<'_>, in_v_for: bool, refs: &mut Vec<Reg
             let Some(value) = attribute.value.as_ref() else {
                 continue;
             };
-            let name = value.content.as_str();
+            let name = value.content;
             if !name.is_empty() {
                 refs.push(RegisteredRef {
                     name: String::from(name),
-                    tag: element.tag.clone(),
+                    tag: element.tag.into(),
                     is_svg: matches!(element.ns, Namespace::Svg),
                 });
             }
