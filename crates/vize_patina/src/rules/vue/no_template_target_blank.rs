@@ -60,7 +60,9 @@ impl MarkupRule for NoTemplateTargetBlank {
         let Some(target) = element.static_attribute("target") else {
             return;
         };
-        if target.value().is_none_or(|value| value.trim() != "_blank") {
+        // Exact match, like the eslint-plugin-vue baseline: a padded
+        // `target=" _blank "` is a browsing-context name, not the keyword.
+        if target.value().is_none_or(|value| value != "_blank") {
             return;
         }
         // The reverse-tabnabbing risk only applies to links that navigate.
@@ -93,7 +95,7 @@ impl Rule for NoTemplateTargetBlank {
         let Some(target) = static_attribute(element, "target") else {
             return;
         };
-        if attribute_value(target).trim() != "_blank" {
+        if attribute_value(target) != "_blank" {
             return;
         }
         if !has_attribute_or_binding(element, "href") {
@@ -219,6 +221,30 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(source, "test.vue");
         assert_single_diagnostic_covers(source, r#"target="_blank""#, result);
+    }
+
+    #[test]
+    fn test_valid_padded_target_value() {
+        // Only the exact `_blank` keyword opens a new browsing context; a
+        // padded value is a context name, and the eslint-plugin-vue baseline
+        // compares exactly too.
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<a href="https://example.com" target=" _blank ">x</a>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_padded_target_value_jsx() {
+        let linter = create_linter();
+        let result = linter.lint_jsx(
+            r#"const A = () => <a href="https://example.com" target=" _blank ">x</a>;"#,
+            "test.jsx",
+            JsxLang::Jsx,
+        );
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
