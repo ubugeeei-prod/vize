@@ -43,6 +43,7 @@ test("elk render route source contract fails closed for each fixture anchor", ()
     ["app/pages/settings.vue", 'to="/settings/about"'],
     ["app/layouts/default.vue", "<NavSide command"],
     ["app/pages/[[server]]/explore.vue", "disabled: !isHydrated.value || !currentUser.value"],
+    ["app/pages/share-target.vue", "if (!useAppConfig().pwaEnabled)"],
   ] as const) {
     const sources = validSyntheticSources();
     sources[relativePath] = sources[relativePath]!.replace(anchor, "removed");
@@ -78,6 +79,10 @@ test("elk dev and visual app-e2e are wired to the deterministic rendered fixture
   assert.deepEqual(
     elkVisualRoutes.filter((route) => route.viewport).map((route) => route.viewport),
     [MOBILE_VIEWPORT],
+  );
+  assert.deepEqual(
+    elkVisualRoutes.filter((route) => route.path.startsWith("/share-target")),
+    [],
   );
   assert.equal(new Set(elkVisualRoutes.map((route) => route.name)).size, elkVisualRoutes.length);
 
@@ -115,7 +120,7 @@ test("elk readiness gating consumes the route-specific links and thresholds", ()
 
   // Non-settings routes stay on the bounded default threshold and never gate on
   // the pinned settings navigation links.
-  for (const routePath of ["/public", "/settings/interface", "/share-target?text=hi"]) {
+  for (const routePath of ["/public", "/settings/interface"]) {
     assert.equal(
       elkRouteReadinessState(routePath, {
         elementCount: ELK_DEFAULT_ROUTE_MIN_ELEMENTS,
@@ -183,7 +188,7 @@ test("elk visual readiness requires route-specific stable links", () => {
     minElements: ELK_DEFAULT_ROUTE_MIN_ELEMENTS,
   });
 
-  for (const routePath of ["/public", "/settings/interface", "/share-target?text=hi"]) {
+  for (const routePath of ["/public", "/settings/interface"]) {
     assert.deepEqual(elkRequiredRouteLinks(routePath), []);
     assert.deepEqual(elkRouteReadinessExpectation(routePath), {
       links: [],
@@ -195,7 +200,7 @@ test("elk visual readiness requires route-specific stable links", () => {
 test("elk visual readiness uses route-specific element thresholds", () => {
   assert.equal(elkRouteMinElements(ELK_RENDER_ROUTE), ELK_RENDER_ROUTE_MIN_ELEMENTS);
 
-  for (const routePath of ["/explore", "/public", "/settings/interface", "/share-target?text=hi"]) {
+  for (const routePath of ["/explore", "/public", "/settings/interface"]) {
     assert.equal(elkRouteMinElements(routePath), ELK_DEFAULT_ROUTE_MIN_ELEMENTS);
   }
 });

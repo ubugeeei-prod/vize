@@ -28,5 +28,4 @@ export const elkVisualRoutes: ElkVisualRouteConfig[] = [
   { name: "settings-preferences", path: "/settings/preferences" },
   { name: "notifications", path: "/notifications" },
   { name: "compose", path: "/compose" },
-  { name: "share-target", path: "/share-target?text=hello" },
 ];

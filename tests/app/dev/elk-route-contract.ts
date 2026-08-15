@@ -90,6 +90,15 @@ export const ELK_RENDER_ROUTE_SOURCE_CONTRACTS = {
       "disabled: !isHydrated.value || !currentUser.value",
     ],
   },
+  "app/pages/share-target.vue": {
+    description: "share target is PWA-gated and not a stable unauthenticated VRT route",
+    anchors: [
+      "if (!useAppConfig().pwaEnabled)",
+      "return navigateTo('/')",
+      "useWebShareTarget()",
+      "<MainContent>",
+    ],
+  },
 } as const satisfies Record<string, { description: string; anchors: readonly string[] }>;
 
 export interface ElkRenderRouteSourceEvidence {
