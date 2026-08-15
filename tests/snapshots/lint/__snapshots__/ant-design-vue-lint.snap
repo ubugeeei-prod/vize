@@ -2671,9 +2671,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 33,
-        "column": 9,
+        "column": 59,
         "endLine": 33,
-        "endColumn": 75,
+        "endColumn": 74,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
     ],
@@ -8385,17 +8385,6 @@
         "help": "Consider removing unused slot props or prefix with underscore"
       },
       {
-        "ruleId": "vue/no-unused-vars",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-vars] Slot prop 'selectedKeys' from slot 'children' is defined but never used",
-        "line": 28,
-        "column": 17,
-        "endLine": 28,
-        "endColumn": 29,
-        "help": "Consider removing unused slot props or prefix with underscore"
-      },
-      {
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -8408,7 +8397,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "components/tree/demo/accordion.vue",
@@ -8737,9 +8726,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 31,
-        "column": 5,
+        "column": 49,
         "endLine": 31,
-        "endColumn": 65,
+        "endColumn": 64,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
     ],
@@ -9168,9 +9157,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 59,
-        "column": 11,
+        "column": 31,
         "endLine": 59,
-        "endColumn": 47,
+        "endColumn": 46,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -9580,9 +9569,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 5,
-        "column": 7,
+        "column": 40,
         "endLine": 5,
-        "endColumn": 79,
+        "endColumn": 55,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -9591,9 +9580,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 18,
-        "column": 7,
+        "column": 40,
         "endLine": 18,
-        "endColumn": 77,
+        "endColumn": 55,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
     ],
@@ -9620,9 +9609,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 4,
-        "column": 7,
+        "column": 74,
         "endLine": 4,
-        "endColumn": 90,
+        "endColumn": 89,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
     ],
@@ -9673,9 +9662,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 9,
-        "column": 15,
+        "column": 72,
         "endLine": 9,
-        "endColumn": 89,
+        "endColumn": 88,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -9695,9 +9684,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 18,
-        "column": 15,
+        "column": 68,
         "endLine": 18,
-        "endColumn": 84,
+        "endColumn": 83,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -9706,9 +9695,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 23,
-        "column": 15,
+        "column": 67,
         "endLine": 23,
-        "endColumn": 83,
+        "endColumn": 82,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -9717,9 +9706,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 28,
-        "column": 15,
+        "column": 76,
         "endLine": 28,
-        "endColumn": 93,
+        "endColumn": 92,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -9728,9 +9717,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 43,
-        "column": 15,
+        "column": 67,
         "endLine": 43,
-        "endColumn": 83,
+        "endColumn": 82,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -9739,9 +9728,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 48,
-        "column": 15,
+        "column": 81,
         "endLine": 48,
-        "endColumn": 97,
+        "endColumn": 96,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -9809,9 +9798,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 5,
-        "column": 9,
+        "column": 12,
         "endLine": 5,
-        "endColumn": 57,
+        "endColumn": 27,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -9820,9 +9809,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 8,
-        "column": 9,
+        "column": 12,
         "endLine": 8,
-        "endColumn": 63,
+        "endColumn": 27,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -9831,9 +9820,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 24,
-        "column": 9,
+        "column": 12,
         "endLine": 24,
-        "endColumn": 90,
+        "endColumn": 27,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -9882,9 +9871,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 5,
-        "column": 7,
+        "column": 79,
         "endLine": 5,
-        "endColumn": 95,
+        "endColumn": 94,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -9964,9 +9953,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 43,
-        "column": 11,
+        "column": 14,
         "endLine": 43,
-        "endColumn": 64,
+        "endColumn": 29,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -9975,9 +9964,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 48,
-        "column": 11,
+        "column": 14,
         "endLine": 48,
-        "endColumn": 83,
+        "endColumn": 29,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -10010,9 +9999,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 11,
-        "column": 5,
+        "column": 59,
         "endLine": 11,
-        "endColumn": 84,
+        "endColumn": 74,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
