@@ -66,11 +66,15 @@ export type FixtureOptions = {
   vizeDiagnostics?: string[];
   /** Raw stdout the fake `vue-tsc` writes before exiting with a diagnostic status. */
   baselineOutput?: string;
-  /** Stream the fake `vue-tsc` writes diagnostics and `--listFiles` evidence to. */
+  /** Stream the fake `vue-tsc` writes diagnostics to. */
   baselineOutputStream?: "stdout" | "stderr";
   /** Exit code for the fake `vue-tsc` baseline run. */
   baselineExitCode?: number;
-  /** Vue source files emitted by the fake `vue-tsc --listFiles` run. */
+  /** Stream the fake `vue-tsc --listFilesOnly` writes program-file evidence to. */
+  coverageOutputStream?: "stdout" | "stderr";
+  /** Exit code for the fake `vue-tsc --listFilesOnly` coverage run. */
+  coverageExitCode?: number;
+  /** Vue source files emitted by the fake `vue-tsc --listFilesOnly` run. */
   baselineFiles?: string[];
   /** How the fake Vize binary reports the seeded mutation during oracle runs. */
   vizeMutation?: MutationDiagnosticMode;
@@ -210,6 +214,8 @@ export function setup(options: FixtureOptions = {}) {
     {
       baselineOutput,
       baselineOutputStream: options.baselineOutputStream,
+      coverageExitCode: options.coverageExitCode,
+      coverageOutputStream: options.coverageOutputStream,
       exitCode: options.baselineExitCode,
       files: options.baselineFiles ?? ["src/App.vue"],
       fixtureRoot,

@@ -110,7 +110,7 @@ function assertReleaseTypecheckDivergenceArtifact({
 }) {
   if (
     divergence.schema !== "vize.fixtureTypecheckDivergenceRun" ||
-    divergence.version !== 4 ||
+    divergence.version !== 5 ||
     divergence.evidence?.commitSha !== run.head_sha
   ) {
     throw new Error(

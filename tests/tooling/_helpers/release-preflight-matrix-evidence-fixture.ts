@@ -56,7 +56,7 @@ export function shardEntries(shard: number): Record<string, string> {
     "fixture-typecheck-dependencies.json": dependencyText,
     "fixture-typecheck-divergence.json": json({
       schema: "vize.fixtureTypecheckDivergenceRun",
-      version: 4,
+      version: 5,
       project: "fixture",
       revision: "b".repeat(40),
       evidence: { commitSha: releaseSha },

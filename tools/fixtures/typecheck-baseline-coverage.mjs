@@ -6,7 +6,7 @@ import { isSupportVueFile, normalizePath } from "./typecheck-divergence-input.mj
 
 /**
  * Prove that the diagnostic comparator ran over the same Vue corpus on both
- * sides. `vue-tsc --listFiles` prints absolute program paths after diagnostics;
+ * sides. `vue-tsc --listFilesOnly` prints absolute program paths;
  * Vize's matrix artifact already carries its sorted checked-file list. That
  * list also carries the transitive authored TS/TSX sources Vize pulled into the
  * program, so only its `.vue` entries are comparable with the baseline set.
@@ -59,7 +59,7 @@ function collectVueTscProgramFiles(output, cwd, comparableVueFiles) {
   const supportFiles = new Set();
   for (const rawLine of output.replaceAll("\r\n", "\n").split("\n")) {
     const line = rawLine.trimEnd();
-    // `--listFiles` paths are absolute. Requiring that shape keeps diagnostic
+    // `--listFilesOnly` paths are absolute. Requiring that shape keeps diagnostic
     // messages which happen to end in ".vue" out of the coverage evidence.
     if (!line.endsWith(".vue") || !isAbsolute(line)) continue;
     const file = relative(cwd, line).replaceAll("\\", "/");

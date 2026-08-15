@@ -48,7 +48,7 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       "version",
     ]);
     assert.equal(artifact.schema, "vize.fixtureTypecheckDivergenceRun");
-    assert.equal(artifact.version, 4);
+    assert.equal(artifact.version, 5);
     assert.equal(artifact.tsconfig, ".generated/tsconfig.json");
     assert.equal(artifact.evidence.commitSha, commitSha);
     assert.deepEqual(artifact.enforcement, { budgetMode: "enforce" });
@@ -82,6 +82,11 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       "configSha256",
       "configuration",
       "coverage",
+      "coverageCommand",
+      "coverageDurationMs",
+      "coverageExitCode",
+      "coverageStderrSha256",
+      "coverageStdoutSha256",
       "durationMs",
       "exitCode",
       "sourceConfigSha256",
@@ -90,6 +95,7 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       "version",
     ]);
     assert.equal(artifact.baseline.exitCode, 2);
+    assert.equal(artifact.baseline.coverageExitCode, 0);
     assert.equal(artifact.baseline.version, "3.3.4");
     assert.equal(
       artifact.baseline.sourceConfigSha256,
@@ -120,6 +126,8 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
     });
     assert.match(artifact.baseline.stdoutSha256, /^[0-9a-f]{64}$/);
     assert.match(artifact.baseline.stderrSha256, /^[0-9a-f]{64}$/);
+    assert.match(artifact.baseline.coverageStdoutSha256, /^[0-9a-f]{64}$/);
+    assert.match(artifact.baseline.coverageStderrSha256, /^[0-9a-f]{64}$/);
     assert.deepEqual(artifact.budget, {
       maxFalsePositiveRatio: 0.05,
       maxFalseNegativeRatio: 0.05,
@@ -159,8 +167,9 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
     const baselineArtifact = path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json");
     assert.deepEqual(invocation, {
       cwd: fixture.fixtureRoot,
-      args: ["--noEmit", "--pretty", "false", "--listFiles", "-p", baselineProject],
+      args: ["--noEmit", "--pretty", "false", "-p", baselineProject],
     });
+    assert.match(artifact.baseline.coverageCommand, /--listFilesOnly/);
     assert.equal(
       fs.readFileSync(baselineArtifact, "utf8"),
       fs.readFileSync(baselineProject, "utf8"),

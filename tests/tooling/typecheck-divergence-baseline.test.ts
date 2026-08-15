@@ -23,8 +23,8 @@ import {
  * #3513: a divergence run only measures vize when the two tools checked the same
  * Vue files. Diagnostics cannot prove that: a correct program can be clean, and
  * a broken config can still emit unrelated diagnostics. The report therefore
- * captures `vue-tsc --listFiles` and compares that SFC set with Vize's checked
- * file set before interpreting the FP/FN result.
+ * captures `vue-tsc --listFilesOnly` and compares that SFC set with Vize's
+ * checked file set before interpreting the FP/FN result.
  */
 
 const vizeOnly = "error:2:1 [TS2345] vize only";
@@ -148,9 +148,9 @@ test("zero diagnostics on both sides passes when both checked the same Vue files
   }
 });
 
-test("vue-tsc listFiles evidence on stderr still proves baseline coverage", () => {
+test("vue-tsc listFilesOnly evidence on stderr still proves baseline coverage", () => {
   const fixture = setup({
-    baselineOutputStream: "stderr",
+    coverageOutputStream: "stderr",
     vizeDiagnostics: [],
     baselineOutput: "",
   });
@@ -161,7 +161,7 @@ test("vue-tsc listFiles evidence on stderr still proves baseline coverage", () =
     assert.equal(artifact.baseline.coverage.baselineVueFileCount, 1);
     assert.equal(artifact.baseline.coverage.sharedVueFileCount, 1);
     assert.equal(artifact.baseline.stdoutSha256, sha256(""));
-    assert.notEqual(artifact.baseline.stderrSha256, artifact.baseline.stdoutSha256);
+    assert.notEqual(artifact.baseline.coverageStderrSha256, artifact.baseline.stdoutSha256);
     assert.equal(artifact.budget.verdict, "passed");
   } finally {
     cleanup(fixture);

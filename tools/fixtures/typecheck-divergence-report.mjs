@@ -14,6 +14,7 @@ import {
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
 import { evaluateBaselineConfiguration } from "./typecheck-baseline-configuration.mjs";
 import { materializeBaselineProject } from "./typecheck-baseline-project.mjs";
+import { runVueTscBaseline } from "./typecheck-baseline-run.mjs";
 import { evaluateVueProgramCoverage } from "./typecheck-baseline-coverage.mjs";
 import { assertBudgetPassed, evaluateBudget } from "./typecheck-divergence-budget.mjs";
 import { renderMarkdown } from "./typecheck-divergence-markdown.mjs";
@@ -66,33 +67,44 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
     project,
     vizeRun.payload.parsed,
   );
-  const baselineArgs = ["--noEmit", "--pretty", "false", "--listFiles", "-p", baselineProject.path];
-  const startedAt = Date.now();
-  const baseline = spawnSync(vueTsc.path, baselineArgs, {
+  const baselineArgs = ["--noEmit", "--pretty", "false", "-p", baselineProject.path];
+  const coverageArgs = [
+    "--noEmit",
+    "--pretty",
+    "false",
+    "--listFilesOnly",
+    "-p",
+    baselineProject.path,
+  ];
+  const baseline = runVueTscBaseline({
+    vueTsc,
+    args: baselineArgs,
     cwd: fixtureRoot,
-    encoding: "utf8",
-    env: { ...process.env, LANG: "C", LC_ALL: "C" },
-    maxBuffer: 1024 * 1024 * 1024,
-    timeout: project.typecheckPerformance.hangTimeoutMs,
+    timeoutMs: project.typecheckPerformance.hangTimeoutMs,
+    label: "vue-tsc baseline",
   });
-  const durationMs = Date.now() - startedAt;
-  if (baseline.error != null)
-    throw new Error(`vue-tsc failed to run: ${errorMessage(baseline.error)}`);
-  if (![0, 1, 2].includes(baseline.status)) {
-    throw new Error(`vue-tsc exited with unsupported status ${baseline.status}`);
-  }
+  const coverageBaseline = runVueTscBaseline({
+    vueTsc,
+    args: coverageArgs,
+    cwd: fixtureRoot,
+    timeoutMs: project.typecheckPerformance.hangTimeoutMs,
+    label: "vue-tsc coverage baseline",
+  });
 
-  const baselineOutput = `${baseline.stdout ?? ""}\n${baseline.stderr ?? ""}`;
   const documentedDifferences = readDocumentedDifferences();
   const divergence = compareTypecheckDiagnostics({
     projectId: project.id,
     cwd: fixtureRoot,
     vizeReport: vizeRun.payload.parsed,
-    vueTscOutput: baselineOutput,
+    vueTscOutput: baseline.output,
     documentedDifferences,
   });
-  const coverage = evaluateVueProgramCoverage(vizeRun.payload.parsed, baselineOutput, fixtureRoot);
-  const configuration = evaluateBaselineConfiguration(baselineOutput);
+  const coverage = evaluateVueProgramCoverage(
+    vizeRun.payload.parsed,
+    coverageBaseline.output,
+    fixtureRoot,
+  );
+  const configuration = evaluateBaselineConfiguration(baseline.output);
   const mutationOracle = createSeededMutationOracle({
     project,
     fixtureRoot,
@@ -113,7 +125,7 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
   );
   const artifact = {
     schema: "vize.fixtureTypecheckDivergenceRun",
-    version: 4,
+    version: 5,
     project: project.id,
     revision: project.revision,
     tsconfig: baselineProject.sourceProject,
@@ -125,15 +137,20 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
     source: vizeRun.source,
     baseline: {
       command: displayCommand(vueTsc.path, baselineArgs),
+      coverageCommand: displayCommand(vueTsc.path, coverageArgs),
       configSha256: sha256(baselineProject.source),
       sourceConfigSha256: sha256(readFileSync(resolve(fixtureRoot, baselineProject.sourceProject))),
       version: vueTsc.version,
-      durationMs,
-      exitCode: baseline.status,
+      durationMs: baseline.durationMs,
+      coverageDurationMs: coverageBaseline.durationMs,
+      exitCode: baseline.exitCode,
+      coverageExitCode: coverageBaseline.exitCode,
       configuration,
       coverage,
-      stdoutSha256: sha256(baseline.stdout ?? ""),
-      stderrSha256: sha256(baseline.stderr ?? ""),
+      stdoutSha256: sha256(baseline.stdout),
+      stderrSha256: sha256(baseline.stderr),
+      coverageStdoutSha256: sha256(coverageBaseline.stdout),
+      coverageStderrSha256: sha256(coverageBaseline.stderr),
     },
     mutationOracle,
     budget,
