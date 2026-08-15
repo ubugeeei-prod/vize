@@ -51,15 +51,19 @@ env:
 
 jobs:
   real-project-matrix:
-    name: real projects (${{ matrix.shard }}/11)
+    name: real projects (${{ matrix.shard }}/22)
     runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 120
     strategy:
       fail-fast: false
+      # GitHub-hosted runners have less headroom than the Blacksmith runner
+      # kept above for restoration. Keep release fallback shards small without
+      # flooding the hosted runner pool.
+      max-parallel: 6
       matrix:
-        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
     env:
-      FIXTURE_SHARD_COUNT: "11"
+      FIXTURE_SHARD_COUNT: "22"
       FIXTURE_SHARD_INDEX: ${{ matrix.shard }}
       FIXTURE_REPORT_DIR: real-project-results/shard-${{ matrix.shard }}
     steps:

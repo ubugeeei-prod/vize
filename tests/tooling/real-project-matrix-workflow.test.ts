@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import { requiredRealProjectMatrixShardCount } from "../../tools/github/release-preflight-matrix-evidence.mjs";
 import {
   findStep,
   readRealProjectMatrixWorkflow,
@@ -10,6 +11,10 @@ import {
 test("real-project workflow schedules every balanced fixture shard", () => {
   const workflow = readRealProjectMatrixWorkflow();
   const job = workflow.jobs?.["real-project-matrix"];
+  const expectedShards = Array.from(
+    { length: requiredRealProjectMatrixShardCount },
+    (_, shard) => shard,
+  );
 
   assert.ok(job);
   assert.deepEqual(workflow.permissions, { contents: "read", issues: "read" });
@@ -55,10 +60,15 @@ test("real-project workflow schedules every balanced fixture shard", () => {
   });
   assert.equal(job["runs-on"], "ubuntu-24.04");
   assert.equal(job["timeout-minutes"], 120);
+  assert.equal(
+    job.name,
+    `real projects (\${{ matrix.shard }}/${requiredRealProjectMatrixShardCount})`,
+  );
   assert.equal(job.strategy?.["fail-fast"], false);
-  assert.deepEqual(job.strategy?.matrix?.shard, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  assert.equal(job.strategy?.["max-parallel"], 6);
+  assert.deepEqual(job.strategy?.matrix?.shard, expectedShards);
   assert.deepEqual(job.env, {
-    FIXTURE_SHARD_COUNT: "11",
+    FIXTURE_SHARD_COUNT: String(requiredRealProjectMatrixShardCount),
     FIXTURE_SHARD_INDEX: "${{ matrix.shard }}",
     FIXTURE_REPORT_DIR: "real-project-results/shard-${{ matrix.shard }}",
   });

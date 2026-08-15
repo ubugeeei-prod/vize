@@ -6,7 +6,7 @@ import {
   sha256,
 } from "./release-preflight-artifact-entries.mjs";
 
-export const requiredRealProjectMatrixShardCount = 11;
+export const requiredRealProjectMatrixShardCount = 22;
 export const realProjectMatrixWorkflowName = "Real Project Matrix";
 
 // Release evidence for the full corpus is mandatory: a selection that omits the

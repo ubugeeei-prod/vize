@@ -1,3 +1,5 @@
+import { requiredRealProjectMatrixShardCount } from "./release-preflight-matrix-evidence.mjs";
+
 export const requiredReleaseWorkflows = [
   "Check",
   "Benchmark",
@@ -90,7 +92,13 @@ const requiredJobNames = new Map([
       ),
     ],
   ],
-  ["Real Project Matrix", Array.from({ length: 11 }, (_, shard) => `real projects (${shard}/11)`)],
+  [
+    "Real Project Matrix",
+    Array.from(
+      { length: requiredRealProjectMatrixShardCount },
+      (_, shard) => `real projects (${shard}/${requiredRealProjectMatrixShardCount})`,
+    ),
+  ],
 ]);
 
 function compareRuns(left, right) {
