@@ -246,6 +246,21 @@ test("typecheck divergence excludes dot-directory support Vue diagnostics", () =
   assert.deepEqual(result.falseNegatives, []);
 });
 
+test("typecheck divergence compares dot-directory Vue files Vize itself checked", () => {
+  const result = compare(
+    [
+      {
+        file: "docs/.vitepress/components/Support.vue",
+        diagnostics: ["error:2:3 [TS2345] shared"],
+      },
+    ],
+    "docs/.vitepress/components/Support.vue(2,3): error TS2345: shared\n",
+  );
+  assert.equal(result.summary.baselineExcludedSupportVueCount, 0);
+  assert.equal(result.summary.sharedCount, 1);
+  assert.equal(result.summary.falseNegativeCount, 0);
+});
+
 test("typecheck divergence uses UTF-8 byte order for Unicode paths", () => {
   const paths = ["src/😀.vue", "src/é.vue", "src/z.vue", "src/Ω.vue"];
   const result = compare(

@@ -118,7 +118,13 @@ function normalizeBaselinePath(value, cwd) {
   return normalized;
 }
 
-function isSupportVueFile(file) {
+/**
+ * Support SFCs live under a dot-directory such as `docs/.vitepress`: they enter
+ * the vue-tsc program through the composite graph, but they are never part of
+ * the compared Vize corpus. The diagnostic collector and the coverage collector
+ * must agree on that rule, so this predicate is the single classifier both use.
+ */
+export function isSupportVueFile(file) {
   return file.split("/").some((segment) => segment.startsWith("."));
 }
 

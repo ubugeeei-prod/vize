@@ -2,6 +2,8 @@ import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
 import { isAbsolute, relative } from "node:path";
 
+import { isSupportVueFile, normalizePath } from "./typecheck-divergence-input.mjs";
+
 /**
  * Prove that the diagnostic comparator ran over the same Vue corpus on both
  * sides. `vue-tsc --listFiles` prints absolute program paths after diagnostics;
@@ -12,7 +14,10 @@ import { isAbsolute, relative } from "node:path";
 export function evaluateVueProgramCoverage(vizeReport, vueTscOutput, cwd) {
   const vizeVueFiles = vizeReport.files
     .slice(0, vizeReport.fileCount)
-    .map((entry) => entry.file)
+    // The compiled program paths below are cwd-relative and slash-normalized, so
+    // the Vize side has to go through the same normalization contract or an
+    // absolute or backslash-separated report path can never match it.
+    .map((entry, index) => normalizePath(entry?.file, cwd, `Vize files[${index}].file`))
     .filter((file) => file.endsWith(".vue"))
     .sort(byteOrder);
   const {
@@ -79,10 +84,6 @@ function collectVueTscProgramFiles(output, cwd, comparableVueFiles) {
     dependencyFiles: [...dependencyFiles].sort(byteOrder),
     supportFiles: [...supportFiles].sort(byteOrder),
   };
-}
-
-function isSupportVueFile(file) {
-  return file.split("/").some((segment) => segment.startsWith("."));
 }
 
 function fileListHash(files) {

@@ -320,6 +320,9 @@ test("transitive dot-directory Vue support does not expand the authored fixture 
     assert.equal(coverage.ignoredSupportVueFileCount, 1);
     assert.deepEqual(coverage.missingVueFiles, []);
     assert.deepEqual(coverage.unexpectedVueFiles, []);
+    const markdown = fs.readFileSync(artifactPath(fixture, "md"), "utf8");
+    assert.match(markdown, /^vue-tsc excluded support Vue: 1$/m);
+    assert.match(markdown, /^Ignored support Vue files: 1$/m);
   } finally {
     cleanup(fixture);
   }

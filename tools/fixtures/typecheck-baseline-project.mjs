@@ -60,12 +60,15 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
   );
   const configDir = dirname(outputPath);
   const globRoots = vueGlobSourceRoots(fixtureRoot, project);
+  // `readdirSync` order is filesystem-dependent and `Set` keeps insertion order,
+  // so the discovered roots are sorted to keep the generated config byte-stable
+  // for the same fixture.
   const dotRoots = [
     ...new Set([
       ...dotDirectoryIncludeRoots(fixtureRoot, vizeReport),
       ...discoverDotDirectoryIncludeRoots(globRoots),
     ]),
-  ];
+  ].sort();
   const ambientRoots = [
     ...new Set(
       [fixtureRoot, dirname(sourcePath), ...dotRoots].map((root) =>
