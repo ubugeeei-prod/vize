@@ -1980,7 +1980,7 @@ fn triple_mustache_under_v1_lowers_to_raw_html_interpolation() {
     };
     // The extra braces are stripped from the expression and the node spans the
     // full triple-mustache.
-    assert_eq!(expr.content.as_str(), "rawHtml");
+    assert_eq!(expr.content, "rawHtml");
     assert_eq!(interp.loc.span.slice("{{{ rawHtml }}}"), "{{{ rawHtml }}}");
 }
 

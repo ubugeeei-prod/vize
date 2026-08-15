@@ -186,7 +186,7 @@ fn build_ast_json(root: &vize_atelier_core::RootNode<'_>) -> serde_json::Value {
         .map(|child| match child {
             TemplateChildNode::Element(el) => serde_json::json!({
                 "type": "ELEMENT",
-                "tag": el.tag.as_str(),
+                "tag": el.tag,
                 "tagType": format!("{:?}", el.tag_type),
                 "props": el.props.len(),
                 "children": el.children.len(),
@@ -194,16 +194,16 @@ fn build_ast_json(root: &vize_atelier_core::RootNode<'_>) -> serde_json::Value {
             }),
             TemplateChildNode::Text(text) => serde_json::json!({
                 "type": "TEXT",
-                "content": text.content.as_str(),
+                "content": text.content,
             }),
             TemplateChildNode::Comment(comment) => serde_json::json!({
                 "type": "COMMENT",
-                "content": comment.content.as_str(),
+                "content": comment.content,
             }),
             TemplateChildNode::Interpolation(interp) => serde_json::json!({
                 "type": "INTERPOLATION",
                 "content": match &interp.content {
-                    vize_atelier_core::ExpressionNode::Simple(exp) => exp.content.as_str(),
+                    vize_atelier_core::ExpressionNode::Simple(exp) => exp.content,
                     _ => "<compound>",
                 }
             }),
@@ -219,10 +219,10 @@ fn build_ast_json(root: &vize_atelier_core::RootNode<'_>) -> serde_json::Value {
         "comments": root.comments.iter().map(|comment| serde_json::json!({
             "type": "COMMENT",
             "kind": format!("{:?}", comment.kind),
-            "content": comment.content.as_str(),
+            "content": comment.content,
         })).collect::<Vec<_>>(),
         "helpers": root.helpers.iter().map(|h| h.name()).collect::<Vec<_>>(),
-        "components": root.components.iter().map(|c| c.as_str()).collect::<Vec<_>>(),
-        "directives": root.directives.iter().map(|d| d.as_str()).collect::<Vec<_>>(),
+        "components": root.components.iter().copied().collect::<Vec<_>>(),
+        "directives": root.directives.iter().copied().collect::<Vec<_>>(),
     })
 }
