@@ -110,9 +110,9 @@ Corpus parity; benches hold or improve.
 
 **Steps:**
 
-- [ ] Pre-deletion differential run: byte-scanner (`identifiers/fast.rs`) vs retained-AST walk over the whole corpus — committed report proving agreement (or documenting scanner bugs the AST walk fixes; those are waiver-reviewed)
-- [ ] Delete `identifiers/{fast,slow}.rs` and the dispatch; single AST-walk implementation remains
-- [ ] Bench check: if the scanner was faster on `stress-*` fixtures, the walk must close the gap before deletion merges (measured, not assumed)
+- [x] Pre-deletion differential run: byte-scanner (`identifiers/fast.rs`) vs retained-AST walk over the whole corpus — committed report proving agreement (or documenting scanner bugs the AST walk fixes; those are waiver-reviewed) _(executed: **divergent — deletion blocked at this task's decision gate.** Over 41,580 corpus files: 327,806 fast-dispatch identifier comparisons, 12,607 divergent (3.85%), in 8 classes — the big items are scanner keyword-literal emission (consumer-inert by audit), assignment-target loss in the walk (2,450 texts, output-visible via mark-used/undefined-refs/TS6133), multi-statement tail loss (oxc `parse_expression` takes only the first expression), and two live scanner bugs the walk would fix (spread-argument drops; numeric-literal alpha tails inventing identifiers like `e22`). Full evidence: `scanner-parity-report.md`, incl. the two waiver-resolution options and their blast radii. The 314,108 retained-vs-one-parse crosschecks agreed everywhere)_
+- [ ] Delete `identifiers/{fast,slow}.rs` and the dispatch; single AST-walk implementation remains — **blocked on the waiver review** (maintainer decision between accepting the walk's semantics wholesale or first teaching `walk_expr` assignment targets + statement sequences; either path changes shipping behavior, so it cannot ride as a byte-neutral refactor)
+- [ ] Bench check: if the scanner was faster on `stress-*` fixtures, the walk must close the gap before deletion merges (measured, not assumed) — unmeasurable until a deletion variant exists (noted in the report; the P1-7-booked dom/vapor stress-interp payback rides the same follow-up)
 
 **Acceptance:** grep zero for the deleted modules; corpus parity; croquis benches hold or improve.
 **Deps:** P1-6, P1-7.
