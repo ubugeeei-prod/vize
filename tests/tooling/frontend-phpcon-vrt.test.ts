@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  JOB_BOARD_ROUTE_MAX_DIFF_RATIO,
   MOBILE_VIEWPORT,
   NEWS_ROUTE_MAX_DIFF_RATIO,
   PREVIEW_MOBILE_MAX_DIFF_PIXELS,
@@ -15,6 +16,7 @@ test("frontend-phpcon preview mobile visual budget is mode-scoped", () => {
   const mobileMenu = route("mobile-menu");
 
   assert.equal(STRICT_ROUTE_MAX_DIFF_RATIO, 0.004);
+  assert.equal(JOB_BOARD_ROUTE_MAX_DIFF_RATIO, 0.0042);
   assert.equal(NEWS_ROUTE_MAX_DIFF_RATIO, 0.009);
   assert.equal(PREVIEW_MOBILE_MAX_DIFF_PIXELS, 43_887);
   assert.deepEqual(homeMobile.viewport, MOBILE_VIEWPORT);
@@ -25,6 +27,15 @@ test("frontend-phpcon preview mobile visual budget is mode-scoped", () => {
   assert.equal(mobileMenu.maxDiffRatio, STRICT_ROUTE_MAX_DIFF_RATIO);
   assert.equal(maxDiffPixelsForFrontendPhpconMode(mobileMenu, "preview"), 43_887);
   assert.equal(maxDiffPixelsForFrontendPhpconMode(mobileMenu, "dev"), undefined);
+});
+
+test("frontend-phpcon job board routes have page-specific visual tolerance", () => {
+  // Preview builds render identical card/footer text with a tiny antialiasing
+  // drift above the strict route budget (~0.00403 measured on english-job-board).
+  assert.ok(JOB_BOARD_ROUTE_MAX_DIFF_RATIO > STRICT_ROUTE_MAX_DIFF_RATIO);
+  assert.ok(JOB_BOARD_ROUTE_MAX_DIFF_RATIO < NEWS_ROUTE_MAX_DIFF_RATIO);
+  assert.equal(route("job-board").maxDiffRatio, JOB_BOARD_ROUTE_MAX_DIFF_RATIO);
+  assert.equal(route("english-job-board").maxDiffRatio, JOB_BOARD_ROUTE_MAX_DIFF_RATIO);
 });
 
 test("frontend-phpcon timetable route budgets preview text antialiasing", () => {
