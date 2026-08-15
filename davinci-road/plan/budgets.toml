@@ -58,12 +58,13 @@ tolerance = 0.05
 #                    reference runner. `0` therefore means a *measured* zero
 #                    here (the `armature_tokenize_*` lanes allocate nothing),
 #                    never "unrecorded" — the unrecorded state is carried by
-#                    wall_p50_ns = 0 alone. These numbers are the phase-1
-#                    ratchet record and are **not enforced yet**:
-#                    bench-compare short-circuits an entry to report-only
-#                    while wall_p50_ns = 0, and its alloc gate compares the
-#                    current report against the committed baseline report
-#                    rather than against this field. See phase-1.md P1-13.
+#                    wall_p50_ns = 0 alone. **Enforced**: bench-compare gates
+#                    every current run against THIS field, independently of
+#                    the wall side, because alloc counts do not depend on the
+#                    machine — a bench whose wall baseline is still
+#                    unrecorded is reported as `alloc-gated`. A new bench must
+#                    therefore land with its measured alloc count; a seeded 0
+#                    fails loudly instead of going silently ungated.
 #   rss_peak_bytes — peak-RSS growth in bytes over the process baseline.
 #                    Report-only for now (process-wide peaks are too noisy to
 #                    gate until the resident-tier work in P5-11 defines the

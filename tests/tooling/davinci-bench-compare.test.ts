@@ -65,7 +65,7 @@ test("bench-compare exits 0 when the current run sits inside each bench's own to
       "allocs 42 rss 8192B\n" +
       "ok fixture_transform_medium wall_p50 216000ns (baseline 200000ns limit 220000ns) " +
       "allocs 1000 rss 16384B\n" +
-      "bench-compare: breaches=0 gated_ok=2 report_only=0 registered=2\n",
+      "bench-compare: breaches=0 gated_ok=2 alloc_gated=0 registered=2\n",
   );
 });
 
@@ -80,7 +80,7 @@ test("bench-compare exits 1 when wall p50 breaches the baseline tolerance", () =
       "(baseline 100000ns + 5% tolerance)\n" +
       "ok fixture_transform_medium wall_p50 216000ns (baseline 200000ns limit 220000ns) " +
       "allocs 1000 rss 16384B\n" +
-      "bench-compare: breaches=1 gated_ok=1 report_only=0 registered=2\n",
+      "bench-compare: breaches=1 gated_ok=1 alloc_gated=0 registered=2\n",
   );
 });
 
@@ -91,10 +91,11 @@ test("bench-compare exits 1 on any allocation-count change (exact gate)", () => 
   assert.equal(
     result.stdout,
     header("allocs-breach") +
-      "FAIL fixture_parse_small allocs 42 -> 43 (exact gate: allocs are deterministic)\n" +
+      "FAIL fixture_parse_small allocs 42 -> 43 " +
+      "(exact gate against budgets.toml: allocs are deterministic and machine-independent)\n" +
       "ok fixture_transform_medium wall_p50 216000ns (baseline 200000ns limit 220000ns) " +
       "allocs 1000 rss 16384B\n" +
-      "bench-compare: breaches=1 gated_ok=1 report_only=0 registered=2\n",
+      "bench-compare: breaches=1 gated_ok=1 alloc_gated=0 registered=2\n",
   );
 });
 
@@ -111,11 +112,11 @@ test("bench-compare exits 1 on registry drift in either direction", () => {
       "(budgets.toml entry has no current result)\n" +
       "FAIL fixture_unknown_new unregistered bench " +
       "(current result has no budgets.toml [bench] entry)\n" +
-      "bench-compare: breaches=2 gated_ok=1 report_only=0 registered=2\n",
+      "bench-compare: breaches=2 gated_ok=1 alloc_gated=0 registered=2\n",
   );
 });
 
-test("bench-compare lists missing-baseline benches as unbaselined and report-only", () => {
+test("bench-compare still gates allocs when no baseline report exists", () => {
   const overrides = { baseline: `${fixtureRel}/no-baseline` };
   const result = runCompare(compareArgs("within-tolerance", overrides));
   assert.equal(result.stderr, "");
@@ -123,14 +124,15 @@ test("bench-compare lists missing-baseline benches as unbaselined and report-onl
   assert.equal(
     result.stdout,
     header("within-tolerance", overrides) +
-      "unbaselined fixture_parse_small wall_p50 104000ns allocs 42 rss 8192B (report-only)\n" +
-      "unbaselined fixture_transform_medium wall_p50 216000ns allocs 1000 rss 16384B " +
-      "(report-only)\n" +
-      "bench-compare: breaches=0 gated_ok=0 report_only=2 registered=2\n",
+      "alloc-gated fixture_parse_small allocs 42 ok " +
+      "(wall_p50 104000ns report-only: no committed baseline report) rss 8192B\n" +
+      "alloc-gated fixture_transform_medium allocs 1000 ok " +
+      "(wall_p50 216000ns report-only: no committed baseline report) rss 16384B\n" +
+      "bench-compare: breaches=0 gated_ok=0 alloc_gated=2 registered=2\n",
   );
 });
 
-test("bench-compare treats all-zero (unrecorded) budget entries as report-only", () => {
+test("bench-compare reports the wall side but gates allocs when the wall baseline is unrecorded", () => {
   const overrides = { budgets: `${fixtureRel}/budgets-unrecorded.toml` };
   const result = runCompare(compareArgs("within-tolerance", overrides));
   assert.equal(result.stderr, "");
@@ -138,11 +140,29 @@ test("bench-compare treats all-zero (unrecorded) budget entries as report-only",
   assert.equal(
     result.stdout,
     header("within-tolerance", overrides) +
-      "unrecorded fixture_parse_small wall_p50 104000ns allocs 42 rss 8192B " +
-      "(report-only: budgets.toml baseline not yet recorded)\n" +
-      "unrecorded fixture_transform_medium wall_p50 216000ns allocs 1000 rss 16384B " +
-      "(report-only: budgets.toml baseline not yet recorded)\n" +
-      "bench-compare: breaches=0 gated_ok=0 report_only=2 registered=2\n",
+      "alloc-gated fixture_parse_small allocs 42 ok " +
+      "(wall_p50 104000ns report-only: budgets.toml wall baseline not yet recorded) rss 8192B\n" +
+      "alloc-gated fixture_transform_medium allocs 1000 ok " +
+      "(wall_p50 216000ns report-only: budgets.toml wall baseline not yet recorded) rss 16384B\n" +
+      "bench-compare: breaches=0 gated_ok=0 alloc_gated=2 registered=2\n",
+  );
+});
+
+test("the alloc gate bites before the reference runner records any wall baseline", () => {
+  // The state phase 1 exits in: wall numbers await Blacksmith, allocation
+  // counts are already the ratchet. An alloc regression must fail here.
+  const overrides = { budgets: `${fixtureRel}/budgets-unrecorded.toml` };
+  const result = runCompare(compareArgs("allocs-breach", overrides));
+  assert.equal(result.stderr, "");
+  assert.equal(result.status, 1, result.stdout);
+  assert.equal(
+    result.stdout,
+    header("allocs-breach", overrides) +
+      "FAIL fixture_parse_small allocs 42 -> 43 " +
+      "(exact gate against budgets.toml: allocs are deterministic and machine-independent)\n" +
+      "alloc-gated fixture_transform_medium allocs 1000 ok " +
+      "(wall_p50 216000ns report-only: budgets.toml wall baseline not yet recorded) rss 16384B\n" +
+      "bench-compare: breaches=1 gated_ok=0 alloc_gated=1 registered=2\n",
   );
 });
 

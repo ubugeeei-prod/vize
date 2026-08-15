@@ -1,18 +1,19 @@
-# Same registry as budgets.toml but with the all-zero seeds every entry
-# starts from before the Blacksmith reference runner records its baseline:
-# bench-compare must treat these entries as report-only even when baseline
-# reports exist.
+# The registry state every entry sits in until the Blacksmith reference runner
+# records its wall baseline: `wall_p50_ns = 0` makes the wall side report-only,
+# while `allocs` — deterministic and machine-independent — is already recorded
+# and still gates. bench-compare must report the wall side and enforce the
+# alloc side from these entries alone, with or without baseline reports.
 
 schema_version = 1
 
 [bench.fixture_parse_small]
 wall_p50_ns = 0
-allocs = 0
+allocs = 42
 rss_peak_bytes = 0
 wall_tolerance = 0.05
 
 [bench.fixture_transform_medium]
 wall_p50_ns = 0
-allocs = 0
+allocs = 1000
 rss_peak_bytes = 0
 wall_tolerance = 0.10

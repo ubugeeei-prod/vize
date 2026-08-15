@@ -123,11 +123,11 @@ function main() {
   }
 
   const baselineReports = loadReports(options.baseline, "baseline");
-  const { rows, breaches, gatedOk, reportOnly } = compare(budgets, baselineReports, currentReports);
+  const { rows, breaches, gatedOk, allocGated } = compare(budgets, baselineReports, currentReports);
   for (const row of rows) process.stdout.write(`${row}\n`);
   process.stdout.write(
     `bench-compare: breaches=${breaches} gated_ok=${gatedOk} ` +
-      `report_only=${reportOnly} registered=${budgets.size}\n`,
+      `alloc_gated=${allocGated} registered=${budgets.size}\n`,
   );
   return breaches > 0 ? 1 : 0;
 }
