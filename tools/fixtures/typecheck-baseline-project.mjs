@@ -68,7 +68,7 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
       ...dotDirectoryIncludeRoots(fixtureRoot, vizeReport),
       ...discoverDotDirectoryIncludeRoots(globRoots),
     ]),
-  ].sort();
+  ].sort((a, b) => a.localeCompare(b));
   const ambientRoots = [
     ...new Set(
       [fixtureRoot, dirname(sourcePath), ...dotRoots].map((root) =>
