@@ -1600,6 +1600,7 @@
       "fixturePath": "tests/_fixtures/_git/splayer",
       "repository": "https://github.com/SPlayer-Dev/SPlayer",
       "revision": "40d9ec606cc1e323c964ffea7bf0ab02f137e93b",
+      "tsconfig": "tsconfig.web.json",
       "license": {
         "spdx": "AGPL-3.0-only",
         "files": [

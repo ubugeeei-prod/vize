@@ -110,7 +110,6 @@ const KNOWN_SOLUTION_STYLE: Record<string, string> = {
   "mall-admin-web": "./tsconfig.app.json is the likely repoint; unverified",
   douyin: "./tsconfig.app.json is the likely repoint; unverified",
   "vue-fabric-editor": "only ./tsconfig.node.json is referenced; no app config in the pinned tree",
-  splayer: "./tsconfig.web.json is the likely repoint; unverified",
   "sigma-file-manager": "./tsconfig.app.json is the likely repoint; unverified",
   "vue-bits": "./tsconfig.app.json is the likely repoint; unverified",
   "portal-vue": "./tsconfig.app.json is the likely repoint; unverified",
@@ -160,5 +159,21 @@ test("no typechecked fixture pins a solution-style tsconfig", () => {
     [],
     `these fixtures no longer pin a solution-style tsconfig; drop them from ` +
       `KNOWN_SOLUTION_STYLE: ${resolved.join(", ")}`,
+  );
+});
+
+test("SPlayer pins the concrete web tsconfig used by Vue sources", () => {
+  const project = projects().find((candidate) => candidate.id === "splayer");
+  assert.ok(project, "SPlayer fixture must stay registered");
+  assert.equal(project.tsconfig, "tsconfig.web.json");
+
+  const configPath = path.join(REPO_ROOT, project.fixturePath, project.tsconfig);
+  if (!fs.existsSync(configPath)) return;
+
+  const config = readTsconfig(configPath);
+  assert.ok(config, "SPlayer web tsconfig must be readable when hydrated");
+  assert.ok(
+    Array.isArray(config.include) && config.include.some((entry) => entry.includes(".vue")),
+    "SPlayer web tsconfig must include Vue source globs",
   );
 });
