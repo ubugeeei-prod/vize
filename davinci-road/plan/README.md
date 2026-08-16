@@ -3,7 +3,9 @@
 > [!NOTE]
 > PR-granular decomposition of the [roadmap](../roadmap.md) phases, written
 > for the agent-implements / maintainer-reviews regime (charter #25). One file
-> per phase. This page defines the task format; the phase files are the plan.
+> per phase, plus a sibling `phase-N-tasks.md` once that phase's per-task
+> contracts outgrow the source-length budget (see **File split** below). This
+> page defines the task format; the phase files are the plan.
 
 ## Task format
 
@@ -27,31 +29,44 @@ fixtures before code (#21); every PR holds the standing gates that exist at
 its merge time; a task that discovers its own scope was wrong updates the
 plan file in the same PR (the plan is code).
 
-**Provisional exception:** phases marked provisional (2–6) carry compressed
+**Provisional exception:** phases marked provisional (3–6) carry compressed
 per-task blocks instead of the full format above. The full format becomes
 mandatory when a phase is re-cut at its predecessor's exit — a provisional
 task cannot be picked up for implementation until it has been expanded to
 carry the full contract.
 
+**File split:** a re-cut phase carries the full contract for every one of its
+tasks, and those contracts alone can exceed the repository's 350-line
+source-length budget (`tools/moon/cmd/source_file_lengths --max-lines 350`,
+which plan files are not exempt from). The phase then lives in two files:
+`phase-N.md` keeps the phase-level record — the re-cut note, the carry-ins
+from the previous phase, the TODO index whose entries link into the contracts,
+and the exit gate — while `phase-N-tasks.md` carries the per-task contracts
+themselves. The index stays in the phase file, so that file remains the entry
+point and the place a box gets checked. Phase 2 is the first phase in this
+shape; phases 3–6 take it as they are re-cut, since the re-cut is exactly what
+pushes a phase over the budget.
+
 ## Phase files
 
-| File                               | Phase                                                                                           | Status                                                                                                                                                                                                         |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [phase-0.md](./phase-0.md)         | Instrumentation and groundwork                                                                  | **Executed 2026-08-14** — all 13 tasks landed; reference-runner recordings pending (see exit gate)                                                                                                             |
-| [phase-1.md](./phase-1.md)         | One arena, real expressions                                                                     | **Executed 2026-08-14 → 2026-08-15, exit gate not clean** — 11 of 13 tasks landed, corpus byte-parity held; P1-8 blocked on a waiver decision, P1-12 awaiting sign-off; 2 of 6 gate lines tick (see exit gate) |
-| [phase-2.md](./phase-2.md)         | Disegno and the pass manager                                                                    | Drafted, provisional — re-cut at P1 exit                                                                                                                                                                       |
-| [phase-3.md](./phase-3.md)         | Impeto and backend convergence                                                                  | Drafted, provisional — re-cut at P2 exit                                                                                                                                                                       |
-| [phase-4.md](./phase-4.md)         | Consumer convergence                                                                            | Drafted, provisional — re-cut at P3 exit                                                                                                                                                                       |
-| [phase-5.md](./phase-5.md)         | Incrementality substrate                                                                        | Drafted, provisional — re-cut at P4 exit                                                                                                                                                                       |
-| [phase-6.md](./phase-6.md)         | Extension contracts GA                                                                          | Drafted, provisional — re-cut at P5 exit                                                                                                                                                                       |
-| [continuous.md](./continuous.md)   | Cross-phase workstreams (Spolvero, AI loop, corpus, assurance, formal)                          | Drafted — items trigger on their substrate                                                                                                                                                                     |
-| [test-suites.md](./test-suites.md) | The canonical suite registry (TS-1..51): commands, oracles, and the phase → mandatory-suite map | Drafted                                                                                                                                                                                                        |
+| File                                                                | Phase                                                                                           | Status                                                                                                                                                                                                                                              |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [phase-0.md](./phase-0.md)                                          | Instrumentation and groundwork                                                                  | **Executed 2026-08-14** — all 13 tasks landed; reference-runner recordings pending (see exit gate)                                                                                                                                                  |
+| [phase-1.md](./phase-1.md)                                          | One arena, real expressions                                                                     | **Executed 2026-08-14 → 2026-08-15, exit gate not clean** — 11 of 13 tasks landed, corpus byte-parity held; P1-8 blocked on a waiver decision, P1-12 awaiting sign-off; 2 of 6 gate lines tick (see exit gate)                                      |
+| [phase-2.md](./phase-2.md) + [phase-2-tasks.md](./phase-2-tasks.md) | Disegno and the pass manager                                                                    | **Re-cut 2026-08-17 at the P1 exit — ready to implement** — all 20 IDs expanded to the full contract (P2-5 and P2-12 split into a/b, 22 tasks) in the tasks file; the phase file carries the re-cut record, the linked TODO index and the exit gate |
+| [phase-3.md](./phase-3.md)                                          | Impeto and backend convergence                                                                  | Drafted, provisional — re-cut at P2 exit                                                                                                                                                                                                            |
+| [phase-4.md](./phase-4.md)                                          | Consumer convergence                                                                            | Drafted, provisional — re-cut at P3 exit                                                                                                                                                                                                            |
+| [phase-5.md](./phase-5.md)                                          | Incrementality substrate                                                                        | Drafted, provisional — re-cut at P4 exit                                                                                                                                                                                                            |
+| [phase-6.md](./phase-6.md)                                          | Extension contracts GA                                                                          | Drafted, provisional — re-cut at P5 exit                                                                                                                                                                                                            |
+| [continuous.md](./continuous.md)                                    | Cross-phase workstreams (Spolvero, AI loop, corpus, assurance, formal)                          | Drafted — items trigger on their substrate                                                                                                                                                                                                          |
+| [test-suites.md](./test-suites.md)                                  | The canonical suite registry (TS-1..51): commands, oracles, and the phase → mandatory-suite map | Drafted                                                                                                                                                                                                                                             |
 
-P0 and P1 carry full per-task **Steps** sub-checklists (concrete paths,
-commands, type names). P2–P6 are enumerated to maximum known detail as
-per-task blocks but marked **provisional**: each is re-cut when its
-predecessor exits, so measured reality — not today's guesses — sets the final
-task boundaries. Suites are referenced by TS-id from the registry — a gate
-naming an unregistered suite is a plan bug. Every phase file keeps a checkbox
-TODO index at the top; checking a box happens in the PR that satisfies the
-task's acceptance criteria, never before.
+P0, P1 and P2 carry full per-task **Steps** sub-checklists (concrete paths,
+commands, type names) — phase 2's in its tasks file, per the split above.
+P3–P6 are enumerated to maximum known detail as per-task blocks but marked
+**provisional**: each is re-cut when its predecessor exits, so measured
+reality — not today's guesses — sets the final task boundaries. Suites are
+referenced by TS-id from the registry — a gate naming an unregistered suite is
+a plan bug. Every phase file keeps a checkbox TODO index at the top; checking a
+box happens in the PR that satisfies the task's acceptance criteria, never
+before.
