@@ -62,8 +62,10 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
       inputs: {
         core_tools_mode: "record-only",
         core_tools_timeout_ms: releaseCoreToolsTimeoutMs,
+        typecheck_dependencies_mode: "record-only",
         lint_divergence_mode: "record-only",
         lsp_mode: "record-only",
+        typecheck_divergence_mode: "record-only",
       },
       expectedRunName: `Real Project Matrix @ ${headSha}`,
       acceptsScheduledEvidence: true,

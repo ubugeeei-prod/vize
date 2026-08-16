@@ -58,44 +58,41 @@ test("release gate plans bind exact SHAs to expected evidence titles", () => {
       {
         workflowName: "Benchmark",
         workflowId: "benchmark.yml",
-        ref: "v1.2.3",
         inputs: { base_sha: "b".repeat(40), head_sha: releaseSha },
         expectedRunName: `Benchmark ${"b".repeat(40)}...${releaseSha}`,
       },
       {
         workflowName: "App E2E",
         workflowId: "e2e.yml",
-        ref: "v1.2.3",
         inputs: { suite: "all", target_sha: releaseSha },
         expectedRunName: `App E2E all @ ${releaseSha}`,
       },
       {
         workflowName: "Native Smoke",
         workflowId: "native-smoke.yml",
-        ref: "v1.2.3",
         inputs: {},
         expectedRunName: "Native Smoke",
       },
       {
         workflowName: "Real Project Matrix",
         workflowId: "real-project-matrix.yml",
-        ref: "v1.2.3",
         inputs: {
           core_tools_mode: "record-only",
           core_tools_timeout_ms: "120000",
+          typecheck_dependencies_mode: "record-only",
           lint_divergence_mode: "record-only",
           lsp_mode: "record-only",
+          typecheck_divergence_mode: "record-only",
         },
         expectedRunName: `Real Project Matrix @ ${releaseSha}`,
       },
       {
         workflowName: "Fuzz",
         workflowId: "fuzz.yml",
-        ref: "v1.2.3",
         inputs: { mode: "replay" },
         expectedRunName: `Fuzz replay @ ${releaseSha}`,
       },
-    ],
+    ].map((plan) => ({ ref: "v1.2.3", ...plan })),
   );
 });
 
@@ -178,13 +175,15 @@ test("Real Project Matrix dispatch identifies its immutable target", () => {
   const matrix = readWorkflow(findReleasePlan("Real Project Matrix").workflowId);
   assert.equal(matrix.name, "Real Project Matrix");
   const dispatchInputs = matrix.on?.workflow_dispatch?.inputs ?? {};
-  assert.deepEqual(Object.keys(dispatchInputs), [
-    "core_tools_mode",
-    "core_tools_timeout_ms",
-    "lint_divergence_mode",
-    "lsp_mode",
-  ]);
-  for (const mode of ["core_tools_mode", "lint_divergence_mode", "lsp_mode"]) {
+  assert.deepEqual(
+    Object.keys(dispatchInputs).sort(),
+    "core_tools_mode core_tools_timeout_ms typecheck_dependencies_mode lint_divergence_mode lsp_mode typecheck_divergence_mode"
+      .split(" ")
+      .sort(),
+  );
+  for (const mode of "core_tools_mode typecheck_dependencies_mode lint_divergence_mode lsp_mode typecheck_divergence_mode".split(
+    " ",
+  )) {
     assert.equal(dispatchInputs[mode]?.default, "enforce");
     assert.deepEqual(dispatchInputs[mode]?.options, ["enforce", "record-only"]);
   }

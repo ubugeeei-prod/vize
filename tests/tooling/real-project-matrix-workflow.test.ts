@@ -24,8 +24,10 @@ test("real-project workflow schedules every balanced fixture shard", () => {
   assert.deepEqual(Object.keys(dispatch.inputs ?? {}), [
     "core_tools_mode",
     "core_tools_timeout_ms",
+    "typecheck_dependencies_mode",
     "lint_divergence_mode",
     "lsp_mode",
+    "typecheck_divergence_mode",
   ]);
   assert.deepEqual(dispatch.inputs?.core_tools_mode, {
     description: "Core tool surface handling",
@@ -40,6 +42,13 @@ test("real-project workflow schedules every balanced fixture shard", () => {
     default: "2400000",
     type: "string",
   });
+  assert.deepEqual(dispatch.inputs?.typecheck_dependencies_mode, {
+    description: "Typecheck baseline dependency preparation handling",
+    required: false,
+    default: "enforce",
+    type: "choice",
+    options: ["enforce", "record-only"],
+  });
   assert.deepEqual(dispatch.inputs?.lint_divergence_mode, {
     description: "Patina lint divergence gate handling",
     required: false,
@@ -49,6 +58,13 @@ test("real-project workflow schedules every balanced fixture shard", () => {
   });
   assert.deepEqual(dispatch.inputs?.lsp_mode, {
     description: "LSP lifecycle gate handling",
+    required: false,
+    default: "enforce",
+    type: "choice",
+    options: ["enforce", "record-only"],
+  });
+  assert.deepEqual(dispatch.inputs?.typecheck_divergence_mode, {
+    description: "Typechecker baseline divergence gate handling",
     required: false,
     default: "enforce",
     type: "choice",
@@ -243,7 +259,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(divergence.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);
   assert.match(divergence.run ?? "", /--budget-mode "\$BUDGET_MODE"/);
   assert.match(divergence.run ?? "", /--vue-tsc-bin tests\/node_modules\/\.bin\/vue-tsc/);
-  assert.equal(divergence.env?.BUDGET_MODE, "enforce");
+  assert.equal(divergence.env?.BUDGET_MODE, "${{ inputs.typecheck_divergence_mode || 'enforce' }}");
 
   const surfaceVerdict = findStep(steps, "Enforce all real-project surface verdicts");
   assert.match(
@@ -255,4 +271,28 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     /\$LINT_DIVERGENCE_MODE" == "record-only"[\s\S]*?lint_divergence_verdict=success/,
   );
   assert.match(surfaceVerdict.run ?? "", /--surface "lint-divergence=\$lint_divergence_verdict"/);
+  assert.match(
+    surfaceVerdict.run ?? "",
+    /typecheck_dependencies_verdict="\$VIZE_TYPECHECK_DEPENDENCIES_OUTCOME"/,
+  );
+  assert.match(
+    surfaceVerdict.run ?? "",
+    /\$TYPECHECK_DEPENDENCIES_MODE" == "record-only"[\s\S]*?typecheck_dependencies_verdict=success/,
+  );
+  assert.match(
+    surfaceVerdict.run ?? "",
+    /--surface "typecheck-dependencies=\$typecheck_dependencies_verdict"/,
+  );
+  assert.match(
+    surfaceVerdict.run ?? "",
+    /typecheck_divergence_verdict="\$VIZE_TYPECHECK_DIVERGENCE_OUTCOME"/,
+  );
+  assert.match(
+    surfaceVerdict.run ?? "",
+    /\$TYPECHECK_DIVERGENCE_MODE" == "record-only"[\s\S]*?typecheck_divergence_verdict=success/,
+  );
+  assert.match(
+    surfaceVerdict.run ?? "",
+    /--surface "typecheck-divergence=\$typecheck_divergence_verdict"/,
+  );
 });
