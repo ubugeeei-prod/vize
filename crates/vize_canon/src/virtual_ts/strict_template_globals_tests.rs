@@ -14,7 +14,10 @@ fn test_strict_template_context_keeps_router_but_not_unknown_plugin_globals() {
         false,
     );
 
-    assert!(ctx.contains("type __VizeStrictTemplateContext"));
+    assert!(ctx.contains("type __VizeStrictCoreTemplateContext"));
+    assert!(
+        ctx.contains("type __VizeStrictTemplateContext = __VizeStrictCoreTemplateContext & __Ctx;")
+    );
     assert!(ctx.contains("$route: any;"));
     assert!(ctx.contains("$router: any;"));
     assert!(!ctx.contains("$t:"));
@@ -160,4 +163,46 @@ fn test_strict_template_expression_reports_unknown_member_root() {
         "{}",
         output.code
     );
+}
+
+#[test]
+fn test_strict_template_expression_ignores_literals_and_builtins() {
+    let template =
+        r#"<div>{{ false }} {{ true }} {{ null }} {{ undefined }} {{ NaN }} {{ Infinity }}</div>"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts_with_offsets(
+        &summary,
+        None,
+        Some(&root),
+        0,
+        0,
+        &VirtualTsOptions {
+            strict_instance_globals: true,
+            ..Default::default()
+        },
+    );
+
+    for name in ["false", "true", "null", "undefined", "NaN", "Infinity"] {
+        assert!(
+            !output
+                .code
+                .contains(&format!("var {name}: any = undefined;")),
+            "{}",
+            output.code
+        );
+        assert!(
+            !output
+                .code
+                .contains(&format!("__vize_strict_template_context.{name}")),
+            "{}",
+            output.code
+        );
+    }
 }

@@ -51,7 +51,7 @@ pub(crate) fn generate_template_context(
     ctx.push_str("    const __ctx = undefined as unknown as __Ctx;\n");
     if options.strict_instance_globals {
         ctx.push_str(
-            "    type __VizeStrictTemplateContext = {\n      $attrs: __Ctx[\"$attrs\"];\n      $slots: __Ctx[\"$slots\"];\n      $refs: __Ctx[\"$refs\"];\n      $emit: __Ctx[\"$emit\"];\n      $route: any;\n      $router: any;\n    };\n    const __vize_strict_template_context = undefined as unknown as __VizeStrictTemplateContext;\n",
+            "    type __VizeStrictCoreTemplateContext = {\n      $attrs: __Ctx[\"$attrs\"];\n      $slots: __Ctx[\"$slots\"];\n      $refs: __Ctx[\"$refs\"];\n      $emit: __Ctx[\"$emit\"];\n      $route: any;\n      $router: any;\n    };\n    type __VizeStrictTemplateContext = __VizeStrictCoreTemplateContext & __Ctx;\n    const __vize_strict_template_context = undefined as unknown as __VizeStrictTemplateContext;\n",
         );
     }
 

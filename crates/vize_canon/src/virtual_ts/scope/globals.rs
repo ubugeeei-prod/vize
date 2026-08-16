@@ -4,10 +4,7 @@ use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
-use vize_carton::FxHashSet;
-use vize_carton::String;
-use vize_carton::append;
-use vize_carton::cstr;
+use vize_carton::{FxHashSet, String, append, cstr};
 
 use vize_croquis::{Croquis, ScopeKind, analyzer::extract_identifier_refs_oxc};
 
@@ -18,7 +15,10 @@ use super::context::ScopeGenerationOptions;
 mod instance;
 pub(super) use instance::generate_instance_global_refs;
 mod member_root;
-use member_root::is_member_root_occurrence;
+mod strict_candidate;
+use {
+    member_root::is_member_root_occurrence, strict_candidate::is_strict_template_context_candidate,
+};
 
 /// Handle undefined references from template.
 ///
@@ -69,7 +69,6 @@ pub(super) fn generate_undefined_refs(
         None
     };
 
-    // Collect type export names to exclude from undefined refs
     let type_export_names: FxHashSet<&str> = summary
         .type_exports
         .iter()
@@ -82,6 +81,9 @@ pub(super) fn generate_undefined_refs(
     let mut emitted_instance = false;
     for undef in &summary.undefined_refs {
         let name = undef.name.as_str();
+        if !is_strict_template_context_candidate(name) {
+            continue;
+        }
         if is_template_instance_global_name(undef.name.as_str()) {
             continue;
         }
@@ -208,6 +210,7 @@ fn generate_strict_expression_refs(
             let head = expr.content.as_str()[..ident.offset as usize].trim_end();
             let member_root = is_member_root_occurrence(summary, local_start, name);
             if is_template_instance_global_name(name)
+                || !is_strict_template_context_candidate(name)
                 || is_declared_template_context_name(name, options)
                 || type_export_names.contains(name)
                 || is_visible_template_binding(summary, name, local_start)
