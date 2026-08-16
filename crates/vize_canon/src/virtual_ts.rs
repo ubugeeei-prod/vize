@@ -30,6 +30,8 @@ mod props;
 mod scope;
 mod semantic_links;
 #[cfg(test)]
+mod strict_template_globals_tests;
+#[cfg(test)]
 mod tests;
 mod types;
 

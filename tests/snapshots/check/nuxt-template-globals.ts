@@ -17,7 +17,7 @@ const PATTERNS = ["pages/**/*.vue"];
 // file, the TypeScript code, and the authored line/column. The rendered type
 // inside a TS2339 message is the one part the two tools word differently —
 // `vue-tsc` prints the structural template context it synthesizes, Vize prints
-// Vue's `ComponentPublicInstance` — so message text is asserted separately,
+// its strict template context — so message text is asserted separately,
 // against Vize's own complete output.
 interface DiagnosticRow {
   code: string;
@@ -124,31 +124,13 @@ function diagnosticsFor(result: VizeCheckJson, file: string): string[] {
   return result.files.find((entry) => entry.file === file)?.diagnostics ?? [];
 }
 
-// The rendered instance type inside Vize's TS2339 text. Pinned so the message
-// keeps naming Vue's own public type and never leaks a generated helper name.
-//
-// Why the two tools word this differently, and why that is left alone: Vue
-// Language Tools builds an anonymous object type per component that inlines the
-// setup bindings and then spreads the public-instance members, so its message
-// names that structural type and the component's own bindings appear inside it.
-// Vize resolves a template instance global on
-// `import('vue').ComponentPublicInstance`, which already merges
-// `ComponentCustomProperties` (the interface Nuxt's generated types and
-// packages like vue-i18n augment), so the same missing property is reported
-// against Vue's own public type. Matching vue-tsc's wording would mean
-// synthesizing and naming a per-component structural clone of the instance
-// purely so an error message can quote it: it changes nothing about which names
-// resolve, and it would put a generated per-component type name in front of
-// users. This rendering applies to every TS2339 Vize reports on an undeclared
-// `$`-prefixed template global (#913). The code, severity, and authored range
-// agree, which is exactly what the vue-tsc comparisons above assert.
-const INSTANCE_TYPE =
-  "ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, " +
-  "any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>," +
-  " ... 4 more ..., any>";
+// The rendered strict-context type inside Vize's TS2339 text. The code,
+// severity, and authored range agree with vue-tsc; only the quoted synthetic
+// type name differs.
+const STRICT_TEMPLATE_CONTEXT_TYPE = "__VizeStrictTemplateContext";
 
 function missingProperty(name: string): string {
-  return `Property '${name}' does not exist on type '${INSTANCE_TYPE}'.`;
+  return `Property '${name}' does not exist on type '${STRICT_TEMPLATE_CONTEXT_TYPE}'.`;
 }
 
 const WRONG_ARGUMENT = "Argument of type 'number' is not assignable to parameter of type 'string'.";

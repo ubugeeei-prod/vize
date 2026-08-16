@@ -89,23 +89,6 @@ fn test_vue_template_context_v2_dialect_adds_vue2_members() {
 }
 
 #[test]
-fn test_strict_template_context_keeps_router_but_not_unknown_plugin_globals() {
-    let ctx = generate_template_context(
-        &VirtualTsOptions {
-            strict_instance_globals: true,
-            ..Default::default()
-        },
-        VueVersion::V3,
-        false,
-    );
-
-    assert!(ctx.contains("type __VizeStrictTemplateContext"));
-    assert!(ctx.contains("$route: any;"));
-    assert!(ctx.contains("$router: any;"));
-    assert!(!ctx.contains("$t:"));
-}
-
-#[test]
 fn test_vue_template_context_with_globals() {
     // Plugin globals should appear when configured
     let options = VirtualTsOptions {
@@ -752,76 +735,6 @@ fn test_template_instance_globals_delegate_to_component_public_instance() {
         configured_output
             .code
             .contains("const $t: __Global<'$t', (key: string) => string>")
-    );
-}
-
-#[test]
-fn test_strict_template_unknown_refs_read_context_without_shadowing_auto_imports() {
-    use vize_croquis::{Analyzer, AnalyzerOptions};
-
-    let template = r#"<div>{{ getPreferences() }} {{ getPreferences() }} {{ currentUser.name }} {{ $shout('ok') }}</div>"#;
-
-    let allocator = vize_carton::Bump::new();
-    let (root, _) = vize_armature::parse(&allocator, template);
-
-    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-    analyzer.analyze_template(&root);
-    let summary = analyzer.finish();
-
-    let output = generate_virtual_ts_with_offsets(
-        &summary,
-        None,
-        Some(&root),
-        0,
-        0,
-        &VirtualTsOptions {
-            auto_import_bindings: vec!["currentUser".into()],
-            strict_instance_globals: true,
-            template_globals: vec![TemplateGlobal {
-                name: "$shout".into(),
-                type_annotation: "(value: string) => string".into(),
-                default_value: "((value: string) => value) as any".into(),
-            }],
-            ..Default::default()
-        },
-    );
-
-    assert!(
-        output
-            .code
-            .contains("var getPreferences: any = undefined; void (getPreferences);"),
-        "{}",
-        output.code
-    );
-    assert_eq!(
-        output
-            .code
-            .matches("__vize_strict_template_context.getPreferences")
-            .count(),
-        2,
-        "{}",
-        output.code
-    );
-    assert!(
-        output
-            .code
-            .contains("var currentUser: __U<__R_currentUser> = undefined as any;"),
-        "{}",
-        output.code
-    );
-    assert!(
-        !output
-            .code
-            .contains("__vize_strict_template_context.currentUser"),
-        "{}",
-        output.code
-    );
-    assert!(
-        !output
-            .code
-            .contains("__vize_strict_template_context.$shout"),
-        "{}",
-        output.code
     );
 }
 
