@@ -17,6 +17,8 @@ use super::context::ScopeGenerationOptions;
 
 mod instance;
 pub(super) use instance::generate_instance_global_refs;
+mod member_root;
+use member_root::is_member_root_occurrence;
 
 /// Handle undefined references from template.
 ///
@@ -109,7 +111,8 @@ pub(super) fn generate_undefined_refs(
             if !seen_strict_occurrences.insert((undef.name.clone(), src_start)) {
                 continue;
             }
-            let already_declared = !seen_names.insert(String::from(name));
+            let member_root = is_member_root_occurrence(summary, undef.offset, name);
+            let already_declared = member_root || !seen_names.insert(String::from(name));
             emit_header(ts, &mut emitted_header);
             emit_strict_template_context_ref(
                 ts,
@@ -203,6 +206,7 @@ fn generate_strict_expression_refs(
             let name = ident.name.as_str();
             let local_start = expr.start + ident.offset;
             let head = expr.content.as_str()[..ident.offset as usize].trim_end();
+            let member_root = is_member_root_occurrence(summary, local_start, name);
             if is_template_instance_global_name(name)
                 || is_declared_template_context_name(name, options)
                 || type_export_names.contains(name)
@@ -216,7 +220,7 @@ fn generate_strict_expression_refs(
             if !seen_strict_occurrences.insert((String::from(name), src_start)) {
                 continue;
             }
-            let already_declared = !seen_names.insert(String::from(name));
+            let already_declared = member_root || !seen_names.insert(String::from(name));
             emit_header(ts, emitted_header);
             emit_strict_template_context_ref(
                 ts,

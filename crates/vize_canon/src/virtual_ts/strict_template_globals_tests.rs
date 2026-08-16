@@ -155,4 +155,9 @@ fn test_strict_template_expression_reports_unknown_member_root() {
         "{}",
         output.code
     );
+    assert!(
+        !output.code.contains("var plugin: any = undefined;"),
+        "{}",
+        output.code
+    );
 }
