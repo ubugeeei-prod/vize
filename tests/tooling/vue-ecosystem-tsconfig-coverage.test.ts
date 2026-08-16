@@ -84,7 +84,9 @@ function stripJsonc(text: string): string {
 }
 
 /** `null` when the config does not parse; this test is not about JSON hygiene. */
-function readTsconfig(file: string): { files?: unknown[]; references?: unknown[] } | null {
+function readTsconfig(
+  file: string,
+): { files?: unknown[]; include?: unknown[]; references?: unknown[] } | null {
   try {
     const value: unknown = JSON.parse(stripJsonc(fs.readFileSync(file, "utf8")));
     return typeof value === "object" && value !== null ? (value as never) : null;
@@ -165,15 +167,18 @@ test("no typechecked fixture pins a solution-style tsconfig", () => {
 test("SPlayer pins the concrete web tsconfig used by Vue sources", () => {
   const project = projects().find((candidate) => candidate.id === "splayer");
   assert.ok(project, "SPlayer fixture must stay registered");
-  assert.equal(project.tsconfig, "tsconfig.web.json");
+  const tsconfig = project.tsconfig;
+  assert.ok(tsconfig, "SPlayer tsconfig path must be set");
+  assert.equal(tsconfig, "tsconfig.web.json");
 
-  const configPath = path.join(REPO_ROOT, project.fixturePath, project.tsconfig);
+  const configPath = path.join(REPO_ROOT, project.fixturePath, tsconfig);
   if (!fs.existsSync(configPath)) return;
 
   const config = readTsconfig(configPath);
   assert.ok(config, "SPlayer web tsconfig must be readable when hydrated");
   assert.ok(
-    Array.isArray(config.include) && config.include.some((entry) => entry.includes(".vue")),
+    Array.isArray(config.include) &&
+      config.include.some((entry) => typeof entry === "string" && entry.includes(".vue")),
     "SPlayer web tsconfig must include Vue source globs",
   );
 });
