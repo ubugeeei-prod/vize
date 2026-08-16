@@ -11,6 +11,7 @@ export interface RepositoryGuardOptions {
   ancestor?: boolean;
   headSha?: string;
   remoteSha?: string;
+  parentLine?: string;
   localTagExists?: boolean;
   remoteTagExists?: boolean;
   pushFails?: boolean;
@@ -47,6 +48,7 @@ export function runRepositoryGuardFixture(options: RepositoryGuardOptions) {
       "if (args[0] === 'status') { if (process.env.TEST_DIRTY === 'true') console.log(' M Cargo.toml'); process.exit(0); }",
       "if (args[0] === 'fetch') process.exit(0);",
       "if (args[0] === 'merge-base') process.exit(process.env.TEST_ANCESTOR === 'false' ? 1 : 0);",
+      "if (args[0] === 'rev-list') { console.log(process.env.TEST_PARENT_LINE); process.exit(0); }",
       "if (args[0] === 'rev-parse' && args.includes('--verify')) process.exit(process.env.LOCAL_TAG_EXISTS === 'true' ? 0 : 1);",
       "if (args[0] === 'rev-parse') { console.log(args.at(-1) === 'HEAD' ? process.env.TEST_HEAD_SHA : process.env.TEST_REMOTE_SHA); process.exit(0); }",
       "if (args[0] === 'ls-remote' && process.env.REMOTE_TAG_EXISTS === 'true') { console.log('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\\t' + args.at(-1)); process.exit(0); }",
@@ -68,6 +70,9 @@ export function runRepositoryGuardFixture(options: RepositoryGuardOptions) {
       TEST_ANCESTOR: String(options.ancestor ?? true),
       TEST_HEAD_SHA: options.headSha ?? "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       TEST_REMOTE_SHA: options.remoteSha ?? "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      TEST_PARENT_LINE:
+        options.parentLine ??
+        `${options.headSha ?? "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"} bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`,
       LOCAL_TAG_EXISTS: String(options.localTagExists ?? false),
       REMOTE_TAG_EXISTS: String(options.remoteTagExists),
       TEST_PUSH_FAIL: String(options.pushFails ?? false),
