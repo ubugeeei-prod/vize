@@ -130,8 +130,7 @@ fn test_strict_template_expression_keeps_member_root_type() {
 
 #[test]
 fn test_strict_template_expression_reports_unknown_member_root() {
-    let template =
-        r#"<div>{{ plugin.translate }} {{ plugin["translate"] }} {{ plugin[key] }}</div>"#;
+    let template = r#"<div>{{ plugin.translate }} {{ plugin["translate"] }} {{ plugin[key] }} {{ (plugin).translate }} {{ plugin /* comment */.translate }}</div>"#;
 
     let allocator = vize_carton::Bump::new();
     let (root, _) = vize_armature::parse(&allocator, template);
@@ -164,7 +163,7 @@ fn test_strict_template_expression_reports_unknown_member_root() {
             .code
             .matches("__vize_strict_template_context.plugin")
             .count(),
-        3,
+        5,
         "{}",
         output.code
     );
