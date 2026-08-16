@@ -78,7 +78,7 @@ test("release gate plans bind exact SHAs to expected evidence titles", () => {
         workflowId: "real-project-matrix.yml",
         inputs: {
           core_tools_mode: "record-only",
-          core_tools_timeout_ms: "120000",
+          core_tools_timeout_ms: "90000",
           typecheck_dependencies_mode: "record-only",
           lint_divergence_mode: "record-only",
           lsp_mode: "record-only",

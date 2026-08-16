@@ -19,10 +19,10 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
 
   const appE2eSuite = "all";
   // Release evidence records core-tool regressions without blocking publish.
-  // Keep this below the hosted runner shutdown window observed during fallback
-  // releases so expensive fixtures can produce auditable timeout artifacts
-  // instead of losing the whole shard to runner termination.
-  const releaseCoreToolsTimeoutMs = "120000";
+  // Keep enough headroom below the hosted runner shutdown window observed
+  // during fallback releases so expensive fixtures can write auditable timeout
+  // artifacts instead of losing the whole shard to runner termination.
+  const releaseCoreToolsTimeoutMs = "90000";
   // Release evidence replays the known corpus instead of running a fresh
   // campaign. A campaign is a randomized search, so it can fail a tag over an
   // input it discovered minutes earlier that has nothing to do with the release;
