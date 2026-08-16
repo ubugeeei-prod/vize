@@ -130,7 +130,8 @@ fn test_strict_template_expression_keeps_member_root_type() {
 
 #[test]
 fn test_strict_template_expression_reports_unknown_member_root() {
-    let template = r#"<div>{{ plugin.translate }}</div>"#;
+    let template =
+        r#"<div>{{ plugin.translate }} {{ plugin["translate"] }} {{ plugin[key] }}</div>"#;
 
     let allocator = vize_carton::Bump::new();
     let (root, _) = vize_armature::parse(&allocator, template);
@@ -158,8 +159,22 @@ fn test_strict_template_expression_reports_unknown_member_root() {
         "{}",
         output.code
     );
+    assert_eq!(
+        output
+            .code
+            .matches("__vize_strict_template_context.plugin")
+            .count(),
+        3,
+        "{}",
+        output.code
+    );
     assert!(
         !output.code.contains("var plugin: any = undefined;"),
+        "{}",
+        output.code
+    );
+    assert!(
+        output.code.contains("__vize_strict_template_context.key"),
         "{}",
         output.code
     );
@@ -167,8 +182,7 @@ fn test_strict_template_expression_reports_unknown_member_root() {
 
 #[test]
 fn test_strict_template_expression_ignores_literals_and_builtins() {
-    let template =
-        r#"<div>{{ false }} {{ true }} {{ null }} {{ undefined }} {{ NaN }} {{ Infinity }}</div>"#;
+    let template = r#"<div>{{ false }} {{ true }} {{ null }} {{ undefined }} {{ NaN }} {{ Infinity }} {{ Math.max(1, 2) }} {{ Date.now() }} {{ JSON.stringify({}) }}</div>"#;
 
     let allocator = vize_carton::Bump::new();
     let (root, _) = vize_armature::parse(&allocator, template);
@@ -189,7 +203,17 @@ fn test_strict_template_expression_ignores_literals_and_builtins() {
         },
     );
 
-    for name in ["false", "true", "null", "undefined", "NaN", "Infinity"] {
+    for name in [
+        "false",
+        "true",
+        "null",
+        "undefined",
+        "NaN",
+        "Infinity",
+        "Math",
+        "Date",
+        "JSON",
+    ] {
         assert!(
             !output
                 .code

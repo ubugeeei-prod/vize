@@ -12,7 +12,7 @@ pub(super) fn is_member_root_occurrence(summary: &Croquis, offset: u32, name: &s
             continue;
         }
         let tail = source[local + name.len()..].trim_start();
-        if tail.starts_with('.') || tail.starts_with("?.") {
+        if tail.starts_with('.') || tail.starts_with("?.") || tail.starts_with('[') {
             return true;
         }
     }
