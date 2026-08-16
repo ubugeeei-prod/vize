@@ -17,26 +17,29 @@ export function realProjectArtifacts(run: ReturnType<typeof successfulReleaseRun
   }));
 }
 
-export function shardEntries(shard: number): Record<string, string> {
-  const dependency = {
-    schema: "vize.fixtureTypecheckDependencyInstall",
-    version: 2,
-    project: "fixture",
-    revision: "b".repeat(40),
-    evidence: { commitSha: releaseSha },
-    packageManager: { name: "pnpm", version: "10.0.0" },
-    lockfile: { path: "pnpm-lock.yaml", sizeBytes: 18, sha256: "1".repeat(64) },
-    install: {
-      command: ["pnpm", "install", "--frozen-lockfile", "--ignore-scripts", "--prefer-offline"],
-      durationMs: 1,
-      exitCode: 0,
-      stdoutSha256: "2".repeat(64),
-      stderrSha256: "3".repeat(64),
-    },
-    baselinePrepare: null,
-  };
-  const dependencyText = json(dependency);
+export function typecheckRegistry(projects = defaultTypecheckProjects()) {
   return {
+    projects: projects.map((id) => ({
+      id,
+      typecheckPerformance: { enabled: true },
+    })),
+  };
+}
+
+export function defaultTypecheckProjects() {
+  return Array.from(
+    { length: requiredRealProjectMatrixShardCount },
+    (_, shard) => `fixture-${shard}`,
+  );
+}
+
+export function shardEntries(
+  shard: number,
+  options: { typecheckProject?: string | null } = {},
+): Record<string, string> {
+  const projectId =
+    options.typecheckProject === undefined ? `fixture-${shard}` : options.typecheckProject;
+  const entries: Record<string, string> = {
     "selected-fixtures.txt": "tests/_fixtures/_git/fixture\n",
     "summary.json": json({
       schema: "vize.fixtureToolMatrixReport",
@@ -53,62 +56,84 @@ export function shardEntries(shard: number): Record<string, string> {
       projects: [{ project: "fixture" }],
       budget: { status: "failure", passed: false },
     }),
-    "fixture-typecheck-dependencies.json": dependencyText,
-    "fixture-typecheck-divergence.json": json({
-      schema: "vize.fixtureTypecheckDivergenceRun",
-      version: 5,
-      project: "fixture",
-      revision: "b".repeat(40),
-      evidence: { commitSha: releaseSha },
-      enforcement: { budgetMode: "enforce" },
-      preparation: {
-        schema: "vize.fixtureTypecheckPreparationEvidence",
-        version: 1,
-        payloadSha256: sha256(dependencyText),
-      },
-      baseline: {
-        coverage: {
-          verdict: "usable",
-          vizeVueFileCount: 1,
-          baselineVueFileCount: 1,
-          sharedVueFileCount: 1,
-          vizeVueFilesSha256: "4".repeat(64),
-          baselineVueFilesSha256: "4".repeat(64),
-          missingVueFiles: [],
-          unexpectedVueFiles: [],
-        },
-      },
-      mutationOracle: {
-        schema: "vize.fixtureTypecheckSeededMutationOracle",
-        version: 1,
-        verdict: "passed",
-        passed: true,
-        file: "src/App.vue",
-        span: { line: 3, column: 1 },
-        cleanExpectedDiagnosticPresent: false,
-        expectedDiagnosticMatched: true,
-        repairedExpectedDiagnosticPresent: false,
-        states: [
-          mutationState("clean", "5".repeat(64), 0, 0, 0),
-          mutationState("broken", "6".repeat(64), 1, 0, 0),
-          mutationState("repaired", "5".repeat(64), 0, 0, 0),
-        ],
-      },
-      budget: { passed: true, verdict: "passed" },
-      divergence: {
-        summary: {
-          falsePositiveCount: 0,
-          falseNegativeCount: 0,
-        },
-      },
-    }),
   };
+  if (projectId == null) return entries;
+  const dependency = {
+    schema: "vize.fixtureTypecheckDependencyInstall",
+    version: 2,
+    project: projectId,
+    revision: "b".repeat(40),
+    evidence: { commitSha: releaseSha },
+    packageManager: { name: "pnpm", version: "10.0.0" },
+    lockfile: { path: "pnpm-lock.yaml", sizeBytes: 18, sha256: "1".repeat(64) },
+    install: {
+      command: ["pnpm", "install", "--frozen-lockfile", "--ignore-scripts", "--prefer-offline"],
+      durationMs: 1,
+      exitCode: 0,
+      stdoutSha256: "2".repeat(64),
+      stderrSha256: "3".repeat(64),
+    },
+    baselinePrepare: null,
+  };
+  const dependencyText = json(dependency);
+  entries[`${projectId}-typecheck-dependencies.json`] = dependencyText;
+  entries[`${projectId}-typecheck-divergence.json`] = json({
+    schema: "vize.fixtureTypecheckDivergenceRun",
+    version: 5,
+    project: projectId,
+    revision: "b".repeat(40),
+    evidence: { commitSha: releaseSha },
+    enforcement: { budgetMode: "enforce" },
+    preparation: {
+      schema: "vize.fixtureTypecheckPreparationEvidence",
+      version: 1,
+      payloadSha256: sha256(dependencyText),
+    },
+    baseline: {
+      coverage: {
+        verdict: "usable",
+        vizeVueFileCount: 1,
+        baselineVueFileCount: 1,
+        sharedVueFileCount: 1,
+        vizeVueFilesSha256: "4".repeat(64),
+        baselineVueFilesSha256: "4".repeat(64),
+        missingVueFiles: [],
+        unexpectedVueFiles: [],
+      },
+    },
+    mutationOracle: {
+      schema: "vize.fixtureTypecheckSeededMutationOracle",
+      version: 1,
+      verdict: "passed",
+      passed: true,
+      file: "src/App.vue",
+      span: { line: 3, column: 1 },
+      cleanExpectedDiagnosticPresent: false,
+      expectedDiagnosticMatched: true,
+      repairedExpectedDiagnosticPresent: false,
+      states: [
+        mutationState("clean", "5".repeat(64), 0, 0, 0),
+        mutationState("broken", "6".repeat(64), 1, 0, 0),
+        mutationState("repaired", "5".repeat(64), 0, 0, 0),
+      ],
+    },
+    budget: { passed: true, verdict: "passed" },
+    divergence: {
+      summary: {
+        falsePositiveCount: 0,
+        falseNegativeCount: 0,
+      },
+    },
+  });
+  return entries;
 }
 
 export function mutateDivergence(entries: Record<string, string>, mutate: (artifact: any) => void) {
-  const artifact = JSON.parse(entries["fixture-typecheck-divergence.json"]);
+  const name = Object.keys(entries).find((entry) => entry.endsWith("-typecheck-divergence.json"));
+  if (name == null) throw new Error("No typecheck divergence artifact in fixture entries");
+  const artifact = JSON.parse(entries[name]);
   mutate(artifact);
-  entries["fixture-typecheck-divergence.json"] = json(artifact);
+  entries[name] = json(artifact);
 }
 
 export function json(value: unknown) {

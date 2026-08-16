@@ -12,6 +12,7 @@ import {
   validateTypecheckerOutput,
 } from "./tool-matrix-typechecker.mjs";
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
+import { selectTypecheckPerformanceProjects } from "./typecheck-performance-shard.mjs";
 import { evaluateBaselineConfiguration } from "./typecheck-baseline-configuration.mjs";
 import { materializeBaselineProject } from "./typecheck-baseline-project.mjs";
 import { runVueTscBaseline } from "./typecheck-baseline-run.mjs";
@@ -38,132 +39,135 @@ const documentedDifferencesPath = join(
 export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
   const args = parseArgs(argv, { repoRoot, defaultRegistry });
   const registry = readJson(args.registry);
-  const selected = registry.projects
-    .filter((_, index) => index % args.shardCount === args.shardIndex)
-    .filter((project) => project.typecheckPerformance?.enabled === true);
-  if (selected.length !== 1) {
-    throw new Error(
-      `Expected exactly one typecheck performance project in shard ${args.shardIndex}/${args.shardCount}, found ${selected.length}`,
+  const selected = selectTypecheckPerformanceProjects(registry, args);
+  if (selected.length === 0) {
+    process.stdout.write(
+      `No typecheck performance projects selected for shard ${args.shardIndex}/${args.shardCount}\n`,
     );
+    return [];
   }
-
-  const project = selected[0];
-  validatePerformanceConfig(project.typecheckPerformance);
-  const fixtureRoot = resolve(repoRoot, project.fixturePath);
-  validateTypecheckPerformanceTarget(project, fixtureRoot, { requireBaseline: true });
-  const summary = readAndValidateSummary(args.reportDir, project);
-  const preparation = readAndValidateDependencyPreparation({
-    reportDir: args.reportDir,
-    project,
-    fixtureRoot,
-    commitSha: summary.evidence.commitSha,
-  });
-  const vizeRun = readAndValidateVizeRun(args.reportDir, project, summary);
+  const artifacts = [];
+  const documentedDifferences = readDocumentedDifferences();
   const vizeLaunch = resolveVizeLaunch(args.vizeBin, false);
   const vueTsc = resolveVueTsc(args.vueTscBin);
-  const baselineProject = materializeBaselineProject(
-    fixtureRoot,
-    args.reportDir,
-    project,
-    vizeRun.payload.parsed,
-  );
-  const baselineArgs = ["--noEmit", "--pretty", "false", "-p", baselineProject.path];
-  const coverageArgs = [
-    "--noEmit",
-    "--pretty",
-    "false",
-    "--listFilesOnly",
-    "-p",
-    baselineProject.path,
-  ];
-  const baseline = runVueTscBaseline({
-    vueTsc,
-    args: baselineArgs,
-    cwd: fixtureRoot,
-    timeoutMs: project.typecheckPerformance.hangTimeoutMs,
-    label: "vue-tsc baseline",
-  });
-  const coverageBaseline = runVueTscBaseline({
-    vueTsc,
-    args: coverageArgs,
-    cwd: fixtureRoot,
-    timeoutMs: project.typecheckPerformance.hangTimeoutMs,
-    label: "vue-tsc coverage baseline",
-  });
+  for (const project of selected) {
+    validatePerformanceConfig(project.typecheckPerformance);
+    const fixtureRoot = resolve(repoRoot, project.fixturePath);
+    validateTypecheckPerformanceTarget(project, fixtureRoot, { requireBaseline: true });
+    const summary = readAndValidateSummary(args.reportDir, project);
+    const preparation = readAndValidateDependencyPreparation({
+      reportDir: args.reportDir,
+      project,
+      fixtureRoot,
+      commitSha: summary.evidence.commitSha,
+    });
+    const vizeRun = readAndValidateVizeRun(args.reportDir, project, summary);
+    const baselineProject = materializeBaselineProject(
+      fixtureRoot,
+      args.reportDir,
+      project,
+      vizeRun.payload.parsed,
+    );
+    const baselineArgs = ["--noEmit", "--pretty", "false", "-p", baselineProject.path];
+    const coverageArgs = [
+      "--noEmit",
+      "--pretty",
+      "false",
+      "--listFilesOnly",
+      "-p",
+      baselineProject.path,
+    ];
+    const baseline = runVueTscBaseline({
+      vueTsc,
+      args: baselineArgs,
+      cwd: fixtureRoot,
+      timeoutMs: project.typecheckPerformance.hangTimeoutMs,
+      label: "vue-tsc baseline",
+    });
+    const coverageBaseline = runVueTscBaseline({
+      vueTsc,
+      args: coverageArgs,
+      cwd: fixtureRoot,
+      timeoutMs: project.typecheckPerformance.hangTimeoutMs,
+      label: "vue-tsc coverage baseline",
+    });
 
-  const documentedDifferences = readDocumentedDifferences();
-  const divergence = compareTypecheckDiagnostics({
-    projectId: project.id,
-    cwd: fixtureRoot,
-    vizeReport: vizeRun.payload.parsed,
-    vueTscOutput: baseline.output,
-    documentedDifferences,
-  });
-  const coverage = evaluateVueProgramCoverage(
-    vizeRun.payload.parsed,
-    coverageBaseline.output,
-    fixtureRoot,
-  );
-  const configuration = evaluateBaselineConfiguration(baseline.output);
-  const mutationOracle = createSeededMutationOracle({
-    project,
-    fixtureRoot,
-    vizeReport: vizeRun.payload.parsed,
-    coverage,
-    configuration,
-    vizeLaunch,
-    vueTsc,
-    baselineArgs,
-    documentedDifferences,
-  });
-  const budget = evaluateBudget(
-    project.typecheckPerformance,
-    divergence.summary,
-    coverage,
-    configuration,
-    mutationOracle,
-  );
-  const artifact = {
-    schema: "vize.fixtureTypecheckDivergenceRun",
-    version: 5,
-    project: project.id,
-    revision: project.revision,
-    tsconfig: baselineProject.sourceProject,
-    evidence: summary.evidence,
-    enforcement: {
-      budgetMode: args.budgetMode,
-    },
-    preparation,
-    source: vizeRun.source,
-    baseline: {
-      command: displayCommand(vueTsc.path, baselineArgs),
-      coverageCommand: displayCommand(vueTsc.path, coverageArgs),
-      configSha256: sha256(baselineProject.source),
-      sourceConfigSha256: sha256(readFileSync(resolve(fixtureRoot, baselineProject.sourceProject))),
-      version: vueTsc.version,
-      durationMs: baseline.durationMs,
-      coverageDurationMs: coverageBaseline.durationMs,
-      exitCode: baseline.exitCode,
-      coverageExitCode: coverageBaseline.exitCode,
-      configuration,
+    const divergence = compareTypecheckDiagnostics({
+      projectId: project.id,
+      cwd: fixtureRoot,
+      vizeReport: vizeRun.payload.parsed,
+      vueTscOutput: baseline.output,
+      documentedDifferences,
+    });
+    const coverage = evaluateVueProgramCoverage(
+      vizeRun.payload.parsed,
+      coverageBaseline.output,
+      fixtureRoot,
+    );
+    const configuration = evaluateBaselineConfiguration(baseline.output);
+    const mutationOracle = createSeededMutationOracle({
+      project,
+      fixtureRoot,
+      vizeReport: vizeRun.payload.parsed,
       coverage,
-      stdoutSha256: sha256(baseline.stdout),
-      stderrSha256: sha256(baseline.stderr),
-      coverageStdoutSha256: sha256(coverageBaseline.stdout),
-      coverageStderrSha256: sha256(coverageBaseline.stderr),
-    },
-    mutationOracle,
-    budget,
-    divergence,
-  };
-  const jsonPath = join(args.reportDir, `${project.id}-typecheck-divergence.json`);
-  const markdownPath = join(args.reportDir, `${project.id}-typecheck-divergence.md`);
-  writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
-  writeFileSync(markdownPath, renderMarkdown(artifact));
-  process.stdout.write(`Wrote ${relative(repoRoot, jsonPath)}\n`);
-  process.stdout.write(`Wrote ${relative(repoRoot, markdownPath)}\n`);
-  assertBudgetPassed(artifact, args.budgetMode);
-  return artifact;
+      configuration,
+      vizeLaunch,
+      vueTsc,
+      baselineArgs,
+      documentedDifferences,
+    });
+    const budget = evaluateBudget(
+      project.typecheckPerformance,
+      divergence.summary,
+      coverage,
+      configuration,
+      mutationOracle,
+    );
+    const artifact = {
+      schema: "vize.fixtureTypecheckDivergenceRun",
+      version: 5,
+      project: project.id,
+      revision: project.revision,
+      tsconfig: baselineProject.sourceProject,
+      evidence: summary.evidence,
+      enforcement: {
+        budgetMode: args.budgetMode,
+      },
+      preparation,
+      source: vizeRun.source,
+      baseline: {
+        command: displayCommand(vueTsc.path, baselineArgs),
+        coverageCommand: displayCommand(vueTsc.path, coverageArgs),
+        configSha256: sha256(baselineProject.source),
+        sourceConfigSha256: sha256(
+          readFileSync(resolve(fixtureRoot, baselineProject.sourceProject)),
+        ),
+        version: vueTsc.version,
+        durationMs: baseline.durationMs,
+        coverageDurationMs: coverageBaseline.durationMs,
+        exitCode: baseline.exitCode,
+        coverageExitCode: coverageBaseline.exitCode,
+        configuration,
+        coverage,
+        stdoutSha256: sha256(baseline.stdout),
+        stderrSha256: sha256(baseline.stderr),
+        coverageStdoutSha256: sha256(coverageBaseline.stdout),
+        coverageStderrSha256: sha256(coverageBaseline.stderr),
+      },
+      mutationOracle,
+      budget,
+      divergence,
+    };
+    const jsonPath = join(args.reportDir, `${project.id}-typecheck-divergence.json`);
+    const markdownPath = join(args.reportDir, `${project.id}-typecheck-divergence.md`);
+    writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
+    writeFileSync(markdownPath, renderMarkdown(artifact));
+    process.stdout.write(`Wrote ${relative(repoRoot, jsonPath)}\n`);
+    process.stdout.write(`Wrote ${relative(repoRoot, markdownPath)}\n`);
+    assertBudgetPassed(artifact, args.budgetMode);
+    artifacts.push(artifact);
+  }
+  return artifacts;
 }
 
 function readDocumentedDifferences() {
@@ -332,18 +336,13 @@ function displayCommand(command, args) {
   return [command, ...args].join(" ");
 }
 
-function errorMessage(error) {
-  return error instanceof Error ? error.message : String(error);
-}
-
-const entrypoint = process.argv[1]
-  ? fileURLToPath(import.meta.url) === resolve(process.argv[1])
-  : false;
+const entrypoint =
+  process.argv[1] != null && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
 if (entrypoint) {
   try {
     runTypecheckDivergenceReport();
   } catch (error) {
-    process.stderr.write(`${errorMessage(error)}\n`);
+    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
     process.exit(1);
   }
 }

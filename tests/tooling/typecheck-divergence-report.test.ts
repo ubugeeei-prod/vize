@@ -222,6 +222,25 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
   }
 });
 
+test("typecheck divergence report skips shards without typecheck performance targets", () => {
+  const fixture = setup();
+  try {
+    updateJson(
+      fixture.registryPath,
+      (registry) => (registry.projects[0].typecheckPerformance.enabled = false),
+    );
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /No typecheck performance projects selected/);
+    assert.equal(
+      fs.existsSync(path.join(fixture.reportDir, "fixture-typecheck-divergence.json")),
+      false,
+    );
+  } finally {
+    cleanup(fixture);
+  }
+});
+
 test("typecheck divergence report requires a false-negative budget", () => {
   const fixture = setup();
   try {

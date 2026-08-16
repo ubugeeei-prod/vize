@@ -6,6 +6,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
+import { selectTypecheckPerformanceProjects } from "./typecheck-performance-shard.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..");
@@ -14,20 +15,21 @@ const defaultRegistry = join(repoRoot, "tests", "_fixtures", "vue-ecosystem-fixt
 export function runTypecheckDependencyPrepare(argv = process.argv.slice(2)) {
   const args = parseArgs(argv);
   const registry = readJson(args.registry);
-  const selected = registry.projects
-    .filter((_, index) => index % args.shardCount === args.shardIndex)
-    .filter((project) => project.typecheckPerformance?.enabled === true);
-  if (selected.length !== 1) {
-    throw new Error(
-      `Expected exactly one typecheck performance project in shard ${args.shardIndex}/${args.shardCount}, found ${selected.length}`,
+  const selected = selectTypecheckPerformanceProjects(registry, args);
+  const commitSha = requireCommitSha(process.env.GITHUB_SHA);
+  requireDirectory(args.outputDir);
+  if (selected.length === 0) {
+    process.stdout.write(
+      `No typecheck performance projects selected for shard ${args.shardIndex}/${args.shardCount}\n`,
     );
+    return [];
   }
+  return selected.map((project) => prepareProjectDependencies({ args, commitSha, project }));
+}
 
-  const project = selected[0];
+function prepareProjectDependencies({ args, commitSha, project }) {
   const fixtureRoot = resolve(repoRoot, project.fixturePath);
   validateTypecheckPerformanceTarget(project, fixtureRoot);
-  requireDirectory(args.outputDir);
-  const commitSha = requireCommitSha(process.env.GITHUB_SHA);
   const performance = project.typecheckPerformance;
   const lockfilePath = resolve(fixtureRoot, performance.lockfile);
   const lockfileBefore = readFileSync(lockfilePath);

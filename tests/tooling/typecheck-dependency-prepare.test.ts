@@ -213,19 +213,43 @@ test("dependency prepare rejects failed and timed-out installs", () => {
   }
 });
 
-test("dependency prepare requires one performance project and exact SHA evidence", () => {
+test("dependency prepare skips empty typecheck shards and prepares every selected target", () => {
+  const emptyFixture = setup();
+  try {
+    writeJson(emptyFixture.registryPath, {
+      projects: [{ ...emptyFixture.project, typecheckPerformance: { enabled: false } }],
+    });
+    const empty = run(emptyFixture);
+    assert.equal(empty.status, 0, empty.stderr);
+    assert.match(empty.stdout, /No typecheck performance projects selected/);
+    assert.equal(fs.existsSync(emptyFixture.invocationPath), false);
+    assert.equal(fs.existsSync(artifactPath(emptyFixture)), false);
+  } finally {
+    cleanup(emptyFixture);
+  }
+
+  const selectedFixture = setup();
+  try {
+    writeJson(selectedFixture.registryPath, {
+      projects: [selectedFixture.project, { ...selectedFixture.project, id: "duplicate" }],
+    });
+    git(selectedFixture.fixtureRoot, ["add", "registry.json"]);
+    commit(selectedFixture.fixtureRoot, "select duplicate target");
+    const selected = run(selectedFixture);
+    assert.equal(selected.status, 0, selected.stderr);
+    assert.equal(fs.existsSync(artifactPath(selectedFixture)), true);
+    assert.equal(
+      fs.existsSync(path.join(selectedFixture.outputDir, "duplicate-typecheck-dependencies.json")),
+      true,
+    );
+  } finally {
+    cleanup(selectedFixture);
+  }
+});
+
+test("dependency prepare requires exact SHA evidence for selected targets", () => {
   const fixture = setup();
   try {
-    writeJson(fixture.registryPath, { projects: [] });
-    const missing = run(fixture);
-    assert.equal(missing.status, 1);
-    assert.match(missing.stderr, /Expected exactly one.*found 0/);
-    writeJson(fixture.registryPath, {
-      projects: [fixture.project, { ...fixture.project, id: "duplicate" }],
-    });
-    const duplicate = run(fixture);
-    assert.equal(duplicate.status, 1);
-    assert.match(duplicate.stderr, /Expected exactly one.*found 2/);
     writeJson(fixture.registryPath, { projects: [fixture.project] });
     const malformedSha = spawnSync(
       process.execPath,
