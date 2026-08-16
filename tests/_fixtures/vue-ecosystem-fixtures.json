@@ -1186,6 +1186,7 @@
       "revision": "16167a4c7d1fb1b77fcafb3ca7e49560f489aecc",
       "license": { "spdx": "NONE", "files": [] },
       "vueGlobs": ["**/*.vue"],
+      "expectedVueFileCount": 0,
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
       "diff": "e2e-vrt"
     },
