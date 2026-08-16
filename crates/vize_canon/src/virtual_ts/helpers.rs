@@ -49,6 +49,11 @@ pub(crate) fn generate_template_context(
         ctx.push_str("    type __Global<K extends string, F = unknown> = K extends keyof __Ctx ? __Ctx[K] : F;\n");
     }
     ctx.push_str("    const __ctx = undefined as unknown as __Ctx;\n");
+    if options.strict_instance_globals {
+        ctx.push_str(
+            "    type __VizeStrictTemplateContext = {\n      $attrs: __Ctx[\"$attrs\"];\n      $slots: __Ctx[\"$slots\"];\n      $refs: __Ctx[\"$refs\"];\n      $emit: __Ctx[\"$emit\"];\n      $route: any;\n      $router: any;\n    };\n    const __vize_strict_template_context = undefined as unknown as __VizeStrictTemplateContext;\n",
+        );
+    }
 
     // Core Vue globals (always present on ComponentPublicInstance)
     ctx.push_str("    const $attrs = __ctx.$attrs;\n");
@@ -92,7 +97,11 @@ pub(crate) fn generate_template_context(
     }
 
     // Mark all as used
-    ctx.push_str("    void __ctx; void $attrs; void $slots; void $refs; void $emit;\n");
+    ctx.push_str("    void __ctx; void $attrs; void $slots; void $refs; void $emit;");
+    if options.strict_instance_globals {
+        ctx.push_str(" void __vize_strict_template_context;");
+    }
+    ctx.push('\n');
     if vue2_dialect {
         ctx.push_str("    ");
         for member in VUE2_INSTANCE_MEMBERS {
