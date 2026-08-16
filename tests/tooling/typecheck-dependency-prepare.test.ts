@@ -213,33 +213,35 @@ test("dependency prepare rejects failed and timed-out installs", () => {
   }
 });
 
-test("dependency prepare skips empty typecheck shards and prepares every selected target", () => {
-  const emptyFixture = setup();
+test("dependency prepare skips empty typecheck shards", () => {
+  const fixture = setup();
   try {
-    writeJson(emptyFixture.registryPath, {
-      projects: [{ ...emptyFixture.project, typecheckPerformance: { enabled: false } }],
+    writeJson(fixture.registryPath, {
+      projects: [{ ...fixture.project, typecheckPerformance: { enabled: false } }],
     });
-    const empty = run(emptyFixture);
+    const empty = run(fixture);
     assert.equal(empty.status, 0, empty.stderr);
     assert.match(empty.stdout, /No typecheck performance projects selected/);
-    assert.equal(fs.existsSync(emptyFixture.invocationPath), false);
-    assert.equal(fs.existsSync(artifactPath(emptyFixture)), false);
+    assert.equal(fs.existsSync(fixture.invocationPath), false);
+    assert.equal(fs.existsSync(artifactPath(fixture)), false);
   } finally {
-    cleanup(emptyFixture);
+    cleanup(fixture);
   }
+});
 
+test("dependency prepare prepares every selected typecheck target", () => {
   const selectedFixture = setup();
   try {
     writeJson(selectedFixture.registryPath, {
-      projects: [selectedFixture.project, { ...selectedFixture.project, id: "duplicate" }],
+      projects: [selectedFixture.project, { ...selectedFixture.project, id: "second" }],
     });
     git(selectedFixture.fixtureRoot, ["add", "registry.json"]);
-    commit(selectedFixture.fixtureRoot, "select duplicate target");
+    commit(selectedFixture.fixtureRoot, "select second target");
     const selected = run(selectedFixture);
     assert.equal(selected.status, 0, selected.stderr);
     assert.equal(fs.existsSync(artifactPath(selectedFixture)), true);
     assert.equal(
-      fs.existsSync(path.join(selectedFixture.outputDir, "duplicate-typecheck-dependencies.json")),
+      fs.existsSync(path.join(selectedFixture.outputDir, "second-typecheck-dependencies.json")),
       true,
     );
   } finally {

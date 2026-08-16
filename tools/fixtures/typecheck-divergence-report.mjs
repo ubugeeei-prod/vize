@@ -17,7 +17,7 @@ import { evaluateBaselineConfiguration } from "./typecheck-baseline-configuratio
 import { materializeBaselineProject } from "./typecheck-baseline-project.mjs";
 import { runVueTscBaseline } from "./typecheck-baseline-run.mjs";
 import { evaluateVueProgramCoverage } from "./typecheck-baseline-coverage.mjs";
-import { assertBudgetPassed, evaluateBudget } from "./typecheck-divergence-budget.mjs";
+import { assertBudgetsPassed, evaluateBudget } from "./typecheck-divergence-budget.mjs";
 import { renderMarkdown } from "./typecheck-divergence-markdown.mjs";
 import {
   createSeededMutationOracle,
@@ -164,9 +164,9 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
     writeFileSync(markdownPath, renderMarkdown(artifact));
     process.stdout.write(`Wrote ${relative(repoRoot, jsonPath)}\n`);
     process.stdout.write(`Wrote ${relative(repoRoot, markdownPath)}\n`);
-    assertBudgetPassed(artifact, args.budgetMode);
     artifacts.push(artifact);
   }
+  assertBudgetsPassed(artifacts, args.budgetMode);
   return artifacts;
 }
 

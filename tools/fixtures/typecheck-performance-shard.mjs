@@ -1,4 +1,14 @@
 export function selectTypecheckPerformanceProjects(registry, { shardIndex, shardCount }) {
+  if (!Number.isSafeInteger(shardCount) || shardCount <= 0) {
+    throw new Error(
+      `Typecheck performance shard count must be a positive integer, got ${String(shardCount)}`,
+    );
+  }
+  if (!Number.isSafeInteger(shardIndex) || shardIndex < 0 || shardIndex >= shardCount) {
+    throw new Error(
+      `Typecheck performance shard index must be in [0, ${shardCount}), got ${String(shardIndex)}`,
+    );
+  }
   return registryProjects(registry)
     .map((project, index) => ({ project, index }))
     .filter(({ index }) => index % shardCount === shardIndex)

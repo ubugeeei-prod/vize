@@ -119,7 +119,8 @@ test("release preflight requires same-corpus coverage, mutation oracle, and prep
         const name = Object.keys(entries).find((entry) =>
           entry.endsWith("-typecheck-dependencies.json"),
         );
-        if (name != null) delete entries[name];
+        if (name == null) throw new Error("No typecheck dependency artifact in fixture entries");
+        delete entries[name];
       },
       /typecheck dependency artifact/,
     ],

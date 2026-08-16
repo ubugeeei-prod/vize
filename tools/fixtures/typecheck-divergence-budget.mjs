@@ -93,26 +93,46 @@ function diagnosticMappingUnusableReason(summary) {
  * `enforce` mode and preflight rejects artifacts that were captured in
  * `record-only` mode.
  *
- * Either way this runs after both artifacts are written, so a breach is uploaded
- * and reviewable — the run fails with the evidence attached, not instead of it.
+ * Either way this runs after artifacts are written, so a breach is uploaded and
+ * reviewable — the run fails with the evidence attached, not instead of it.
  */
 export function assertBudgetPassed(artifact, budgetMode = "enforce") {
   // Validated before the passed-verdict return, so an unrecognised mode is
   // rejected on every run rather than only on the runs that breach.
   const mode = parseBudgetMode(budgetMode);
+  const failures = collectBudgetFailures([artifact], mode);
+  if (failures.length > 0) throw new Error(failures.join("\n"));
+}
+
+export function assertBudgetsPassed(artifacts, budgetMode = "enforce") {
+  const mode = parseBudgetMode(budgetMode);
+  const failures = collectBudgetFailures(artifacts, mode);
+  if (failures.length > 0) throw new Error(failures.join("\n"));
+}
+
+function collectBudgetFailures(artifacts, mode) {
+  const failures = [];
+  for (const artifact of artifacts) {
+    const detail = budgetFailureDetail(artifact);
+    if (detail == null) continue;
+    if (mode === "enforce") failures.push(detail);
+    else {
+      process.stdout.write(`::warning title=Typecheck divergence budget not enforced::${detail}\n`);
+    }
+  }
+  return failures;
+}
+
+function budgetFailureDetail(artifact) {
   const budget = artifact.budget;
-  if (budget.verdict === "passed") return;
-  const detail = `${
+  if (budget.verdict === "passed") return null;
+  return `${
     budget.verdict === "unusable"
       ? `Typecheck divergence baseline is unusable for ${artifact.project}`
       : `Typecheck divergence budget breached for ${artifact.project}`
   } — ${describeClassification(artifact)}: ${
     budget.verdict === "unusable" ? budget.unusableReason : describeBreaches(artifact).join("; ")
   }`;
-  if (mode === "enforce") throw new Error(detail);
-  // A GitHub workflow command, so a release run that records an unusable
-  // baseline still shows a warning on the run instead of a silent green tick.
-  process.stdout.write(`::warning title=Typecheck divergence budget not enforced::${detail}\n`);
 }
 
 /**
