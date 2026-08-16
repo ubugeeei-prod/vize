@@ -75,13 +75,13 @@ test("real-project workflow schedules every balanced fixture shard", () => {
     "cancel-in-progress": true,
   });
   assert.equal(job["runs-on"], "ubuntu-24.04");
-  assert.equal(job["timeout-minutes"], 120);
+  assert.equal(job["timeout-minutes"], 240);
   assert.equal(
     job.name,
     `real projects (\${{ matrix.shard }}/${requiredRealProjectMatrixShardCount})`,
   );
   assert.equal(job.strategy?.["fail-fast"], false);
-  assert.equal(job.strategy?.["max-parallel"], 6);
+  assert.equal(job.strategy?.["max-parallel"], 20);
   assert.deepEqual(job.strategy?.matrix?.shard, expectedShards);
   assert.deepEqual(job.env, {
     FIXTURE_SHARD_COUNT: String(requiredRealProjectMatrixShardCount),

@@ -92,6 +92,22 @@ function activeRunnerLabel(workflow: string, jobName: string): string {
   return runsOn.split(/\s+#\s*/)[0] ?? runsOn;
 }
 
+function parsedTimeoutMinutes(workflow: string, jobName: string): number | undefined {
+  const job = (parse(workflow) as { jobs?: Record<string, { "timeout-minutes"?: number }> }).jobs?.[
+    jobName
+  ];
+  assert.ok(job, `${jobName} is missing`);
+  return job["timeout-minutes"];
+}
+
+function parsedMaxParallel(workflow: string, jobName: string): number | undefined {
+  const job = (
+    parse(workflow) as { jobs?: Record<string, { strategy?: { "max-parallel"?: number } }> }
+  ).jobs?.[jobName];
+  assert.ok(job, `${jobName} is missing`);
+  return job.strategy?.["max-parallel"];
+}
+
 test("temporary hosted runner fallback keeps Blacksmith restore labels per job", () => {
   for (const [workflowName, expectedJobs] of Object.entries(HOSTED_FALLBACK_JOBS)) {
     const source = readRepoFile(".github", "workflows", workflowName);
@@ -154,6 +170,36 @@ test("hosted fallback keeps the restore contract on the budgets it widened", () 
     workflowJobField(source, "app-readiness-producer", "timeout-minutes"),
     `40 # restore: 30 with ${RESTORE_BLACKSMITH_RUNNER}`,
     "the hosted readiness budget must state the Blacksmith value it replaced",
+  );
+
+  const realProjectMatrix = readRepoFile(".github", "workflows", "real-project-matrix.yml");
+  assert.equal(parsedTimeoutMinutes(realProjectMatrix, "real-project-matrix"), 240);
+  const matrixTimeout = workflowJobField(
+    realProjectMatrix,
+    "real-project-matrix",
+    "timeout-minutes",
+  );
+  assert.ok(matrixTimeout, "missing real-project-matrix timeout-minutes");
+  assert.match(
+    matrixTimeout,
+    /^240\s+# restore:\s+120 with blacksmith-32vcpu-ubuntu-2404$/,
+    "the hosted Real Project Matrix budget must keep a Blacksmith restore annotation",
+  );
+  assert.equal(parsedMaxParallel(realProjectMatrix, "real-project-matrix"), 20);
+  assert.match(
+    workflowJobBody(realProjectMatrix, "real-project-matrix"),
+    /max-parallel:[^\n]*# restore:\s+6 with blacksmith-32vcpu-ubuntu-2404$/m,
+    "the hosted Real Project Matrix parallelism must keep a Blacksmith restore annotation",
+  );
+
+  const preflight = readRepoFile(".github", "workflows", "release-preflight.yml");
+  assert.equal(parsedTimeoutMinutes(preflight, "verify"), 540);
+  const preflightTimeout = workflowJobField(preflight, "verify", "timeout-minutes");
+  assert.ok(preflightTimeout, "missing verify timeout-minutes");
+  assert.match(
+    preflightTimeout,
+    /^540\s+# restore:\s+120 with blacksmith-32vcpu-ubuntu-2404$/,
+    "the hosted release preflight budget must keep a Blacksmith restore annotation",
   );
 });
 

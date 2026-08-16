@@ -82,7 +82,7 @@ test("release gate plans bind exact SHAs to expected evidence titles", () => {
           typecheck_dependencies_mode: "record-only",
           lint_divergence_mode: "record-only",
           lsp_mode: "record-only",
-          typecheck_divergence_mode: "record-only",
+          typecheck_divergence_mode: "enforce",
         },
         expectedRunName: `Real Project Matrix @ ${releaseSha}`,
       },

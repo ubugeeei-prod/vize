@@ -18,7 +18,9 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
   if (!ref) throw new Error("Release dispatch ref is required");
 
   const appE2eSuite = "all";
-  // Release evidence records core-tool regressions without blocking publish.
+  // Release evidence records most ecosystem surfaces without blocking publish.
+  // Typecheck divergence stays enforced because the release artifact verifier
+  // requires an enforcing zero-divergence budget and seeded mutation oracle.
   // Keep enough headroom below the hosted runner shutdown window observed
   // during fallback releases so expensive fixtures can write auditable timeout
   // artifacts instead of losing the whole shard to runner termination.
@@ -65,7 +67,7 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
         typecheck_dependencies_mode: "record-only",
         lint_divergence_mode: "record-only",
         lsp_mode: "record-only",
-        typecheck_divergence_mode: "record-only",
+        typecheck_divergence_mode: "enforce",
       },
       expectedRunName: `Real Project Matrix @ ${headSha}`,
       acceptsScheduledEvidence: true,
@@ -101,7 +103,10 @@ export async function bootstrapRequiredWorkflowRuns({
   dispatchWorkflow,
   sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
   now = Date.now,
-  timeoutMs = 105 * 60 * 1000,
+  // Hosted release fallback budget: Real Project Matrix has 22 shards and is
+  // capped to 20 standard hosted jobs, so the budget covers two 240-minute
+  // waves plus 30 minutes for workflow dispatch, queueing, polling, and setup.
+  timeoutMs = 510 * 60 * 1000,
   pollIntervalMs = 15_000,
   onWait = () => {},
 }) {
