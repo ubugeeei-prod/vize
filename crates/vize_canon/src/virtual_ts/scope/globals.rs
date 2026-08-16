@@ -203,15 +203,12 @@ fn generate_strict_expression_refs(
             let name = ident.name.as_str();
             let local_start = expr.start + ident.offset;
             let head = expr.content.as_str()[..ident.offset as usize].trim_end();
-            let tail = expr.content.as_str()[ident.offset as usize + name.len()..].trim_start();
             if is_template_instance_global_name(name)
                 || is_declared_template_context_name(name, options)
                 || type_export_names.contains(name)
                 || is_visible_template_binding(summary, name, local_start)
                 || head.ends_with('.')
                 || head.ends_with("?.")
-                || tail.starts_with('.')
-                || tail.starts_with("?.")
             {
                 continue;
             }

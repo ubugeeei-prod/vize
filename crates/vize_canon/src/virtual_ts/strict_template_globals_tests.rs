@@ -124,3 +124,35 @@ fn test_strict_template_expression_keeps_member_root_type() {
         output.code
     );
 }
+
+#[test]
+fn test_strict_template_expression_reports_unknown_member_root() {
+    let template = r#"<div>{{ plugin.translate }}</div>"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts_with_offsets(
+        &summary,
+        None,
+        Some(&root),
+        0,
+        0,
+        &VirtualTsOptions {
+            strict_instance_globals: true,
+            ..Default::default()
+        },
+    );
+
+    assert!(
+        output
+            .code
+            .contains("__vize_strict_template_context.plugin"),
+        "{}",
+        output.code
+    );
+}
