@@ -82,7 +82,7 @@ test("release gate plans bind exact SHAs to expected evidence titles", () => {
         ref: "v1.2.3",
         inputs: {
           core_tools_mode: "record-only",
-          core_tools_timeout_ms: "600000",
+          core_tools_timeout_ms: "120000",
           lint_divergence_mode: "record-only",
           lsp_mode: "record-only",
         },
