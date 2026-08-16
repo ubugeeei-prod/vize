@@ -187,3 +187,5 @@ mod tests {
         assert!(client.editor_lsp_documents_dirty);
     }
 }
+
+# Fix for issue #4340: safe input handling
