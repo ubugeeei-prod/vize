@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { bootstrapRequiredWorkflowRuns } from "../../tools/github/release-preflight-bootstrap.mjs";
+import {
+  bootstrapRequiredWorkflowRuns,
+  createReleaseGateDispatchPlans,
+} from "../../tools/github/release-preflight-bootstrap.mjs";
 import { releaseSha } from "./support/release-preflight.ts";
 
 test("release gate wait budget covers hosted Real Project Matrix fallback", async () => {
@@ -21,4 +24,15 @@ test("release gate wait budget covers hosted Real Project Matrix fallback", asyn
     /Timed out after 30600000ms waiting for release gates/,
   );
   assert.equal(elapsed, 510 * 60 * 1000);
+});
+
+test("release Real Project Matrix dispatch keeps core evidence alive", () => {
+  const matrix = createReleaseGateDispatchPlans({
+    ref: "v1.2.3",
+    headSha: releaseSha,
+    baseSha: "b".repeat(40),
+  }).find((plan) => plan.workflowName === "Real Project Matrix");
+
+  assert.equal(matrix?.inputs.core_tools_timeout_ms, "2400000");
+  assert.equal(matrix?.inputs.typecheck_divergence_mode, "enforce");
 });

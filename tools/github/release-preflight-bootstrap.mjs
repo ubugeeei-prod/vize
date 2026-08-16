@@ -21,10 +21,10 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
   // Release evidence records most ecosystem surfaces without blocking publish.
   // Typecheck divergence stays enforced because the release artifact verifier
   // requires an enforcing zero-divergence budget and seeded mutation oracle.
-  // Keep enough headroom below the hosted runner shutdown window observed
-  // during fallback releases so expensive fixtures can write auditable timeout
-  // artifacts instead of losing the whole shard to runner termination.
-  const releaseCoreToolsTimeoutMs = "90000";
+  // Keep the release dispatch aligned with the workflow default. Enforced
+  // typecheck divergence needs successful core typechecker evidence, and hosted
+  // release fallback runners can legitimately need the full per-project budget.
+  const releaseCoreToolsTimeoutMs = "2400000";
   // Release evidence replays the known corpus instead of running a fresh
   // campaign. A campaign is a randomized search, so it can fail a tag over an
   // input it discovered minutes earlier that has nothing to do with the release;
