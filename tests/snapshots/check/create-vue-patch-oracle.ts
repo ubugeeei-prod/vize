@@ -660,9 +660,12 @@ function assertBrokenLint(result: LintResult): void {
           severity: 2,
           message: "[vize:vue/html-quotes] Expected double quotes but found single quotes",
           line: 6,
-          column: 20,
+          // The reported range is the attribute value node, delimiters
+          // included, which is the span `eslint-plugin-vue` reports: line 6
+          // opens the value at column 19 and closes it at column 38.
+          column: 19,
           endLine: 6,
-          endColumn: 38,
+          endColumn: 39,
           help: "Use consistent quote style for HTML attribute values.",
         },
       ],
