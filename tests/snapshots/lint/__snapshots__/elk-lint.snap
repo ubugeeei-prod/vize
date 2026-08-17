@@ -636,21 +636,9 @@
   },
   {
     "file": "app/components/common/CommonPaginator.vue",
-    "messages": [
-      {
-        "ruleId": "vue/v-slot-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 83,
-        "column": 28,
-        "endLine": 83,
-        "endColumn": 52,
-        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/common/CommonPreviewPrompt.vue",
@@ -1555,21 +1543,9 @@
   },
   {
     "file": "app/components/nav/button/MoreMenu.vue",
-    "messages": [
-      {
-        "ruleId": "vue/v-slot-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 7,
-        "column": 5,
-        "endLine": 7,
-        "endColumn": 37,
-        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/nav/button/Notification.vue",
@@ -1721,17 +1697,6 @@
         "help": "Use kebab-case for attribute names"
       },
       {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'eventType' should be 'event-type' (kebab-case)",
-        "line": 179,
-        "column": 5,
-        "endLine": 179,
-        "endColumn": 29,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1741,17 +1706,6 @@
         "endLine": 180,
         "endColumn": 39,
         "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'virtualScroller' should be 'virtual-scroller' (kebab-case)",
-        "line": 180,
-        "column": 5,
-        "endLine": 180,
-        "endColumn": 39,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
         "ruleId": "vue/no-unused-vars",
@@ -1777,7 +1731,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 4
   },
   {
     "file": "app/components/notification/NotificationPreferences.client.vue",
@@ -3757,21 +3711,10 @@
         "endLine": 71,
         "endColumn": 47,
         "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "vue/v-slot-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 99,
-        "column": 15,
-        "endLine": 99,
-        "endColumn": 39,
-        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/pages/[[server]]/@[account]/index.vue",

@@ -450,7 +450,8 @@ const emailId = useId();
 `vue/prefer-props-shorthand`推荐道具用速记语法。默认值：`warning`。预设：
 `nuxt`，好，`opinionated`。
 
-`vue/prop-name-casing`在模板中强制使用kebab-case道具名称。默认值：`warning`。预设：
+`vue/prop-name-casing` 强制 `defineProps` 声明的 prop 名使用指定的命名风格（默认 `camelCase`）；模板一
+侧由 `vue/attribute-hyphenation` 负责。默认值：`warning`。预设：
 `happy-path`，`nuxt`，`opinionated`。
 
 `vue/require-component-registration`需要明确导入或注册组件。默认：

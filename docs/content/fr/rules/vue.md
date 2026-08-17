@@ -450,7 +450,9 @@ Presets : `happy-path`, `nuxt`, `opinionated`.
 `vue/prefer-props-shorthand` recommande une syntaxe abrégée pour les accessoires. Par défaut : `warning`. Préréglages :
 `nuxt`, `opinionated`.
 
-`vue/prop-name-casing` impose les noms des boîtiers de kebab dans les modèles. Par défaut : `warning`. Préréglages :
+`vue/prop-name-casing` impose une casse (`camelCase` par défaut) pour les noms de props déclarés
+via `defineProps` ; le côté modèle relève de `vue/attribute-hyphenation`. Par défaut : `warning`.
+Préréglages :
 `happy-path`, `nuxt`, `opinionated`.
 
 `vue/require-component-registration` nécessite une importation ou un enregistrement explicite de composants. Par défaut :

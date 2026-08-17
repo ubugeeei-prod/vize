@@ -2,6 +2,14 @@
 //!
 //! Enforce consistent spacing inside mustache interpolations.
 //!
+//! ## Reported spans
+//!
+//! Upstream checks the two delimiters independently and reports each on its own
+//! delimiter token, so `{{text}}` is two findings — one on `{{`, one on `}}` —
+//! not one finding spanning the interpolation. Under `never` the reported span
+//! also covers the offending whitespace, because that is the text the fix
+//! removes.
+//!
 //! ## Examples
 //!
 //! ### Invalid (default: always)
@@ -20,8 +28,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ExpressionNode, InterpolationNode};
+use vize_relief::InterpolationNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/mustache-interpolation-spacing",
@@ -64,94 +73,72 @@ impl Rule for MustacheInterpolationSpacing {
         ctx: &mut LintContext<'a>,
         interpolation: &InterpolationNode<'a>,
     ) {
-        let _content = match &interpolation.content {
-            ExpressionNode::Simple(s) => s.content.as_str(),
-            ExpressionNode::Compound(_) => return,
-        };
-
-        // Get the raw source to check spacing
         // Note: end.offset is exclusive (points to the character AFTER the last one)
         let start = interpolation.loc.start.offset as usize;
         let end = interpolation.loc.end.offset as usize;
-
         if end <= start || end > ctx.source.len() {
             return;
         }
-
         let raw = &ctx.source[start..end];
-
-        // Check if it starts with {{ and ends with }}
-        if !raw.starts_with("{{") || !raw.ends_with("}}") {
+        if raw.len() < 4 || !raw.starts_with("{{") || !raw.ends_with("}}") {
+            return;
+        }
+        // An interpolation holding only whitespace has no expression, and
+        // upstream's `VExpressionContainer[expression!=null]` selector skips it.
+        let inner = &raw[2..raw.len() - 2];
+        if inner.trim().is_empty() {
             return;
         }
 
-        // Extract the inner content (between {{ and }})
-        let inner = &raw[2..raw.len() - 2];
-
+        let opening = interpolation.loc.start.offset;
+        let closing = interpolation.loc.end.offset;
+        let leading = leading_whitespace(inner);
+        let trailing = trailing_whitespace(inner);
         match self.style {
             SpacingStyle::Always => {
-                let has_leading_space = inner.starts_with(' ') || inner.starts_with('\n');
-                let has_trailing_space = inner.ends_with(' ') || inner.ends_with('\n');
-
-                if !has_leading_space || !has_trailing_space {
-                    ctx.warn_with_help(
-                        ctx.t("vue/mustache-interpolation-spacing.expected"),
-                        &interpolation.loc,
-                        ctx.t("vue/mustache-interpolation-spacing.help_expected"),
-                    );
+                if leading == 0 {
+                    report(ctx, EXPECTED_AFTER, HELP_EXPECTED, opening, opening + 2);
+                }
+                if trailing == 0 {
+                    report(ctx, EXPECTED_BEFORE, HELP_EXPECTED, closing - 2, closing);
                 }
             }
             SpacingStyle::Never => {
-                let trimmed = inner.trim();
-                if inner != trimmed {
-                    ctx.warn_with_help(
-                        ctx.t("vue/mustache-interpolation-spacing.unexpected"),
-                        &interpolation.loc,
-                        ctx.t("vue/mustache-interpolation-spacing.help_unexpected"),
-                    );
+                if leading > 0 {
+                    let end = opening + 2 + leading;
+                    report(ctx, UNEXPECTED_AFTER, HELP_UNEXPECTED, opening, end);
+                }
+                if trailing > 0 {
+                    let start = closing - 2 - trailing;
+                    report(ctx, UNEXPECTED_BEFORE, HELP_UNEXPECTED, start, closing);
                 }
             }
         }
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::MustacheInterpolationSpacing;
-    use crate::linter::Linter;
-    use crate::rule::RuleRegistry;
+const EXPECTED_AFTER: &str = "vue/mustache-interpolation-spacing.expected_after";
+const EXPECTED_BEFORE: &str = "vue/mustache-interpolation-spacing.expected_before";
+const UNEXPECTED_AFTER: &str = "vue/mustache-interpolation-spacing.unexpected_after";
+const UNEXPECTED_BEFORE: &str = "vue/mustache-interpolation-spacing.unexpected_before";
+const HELP_EXPECTED: &str = "vue/mustache-interpolation-spacing.help_expected";
+const HELP_UNEXPECTED: &str = "vue/mustache-interpolation-spacing.help_unexpected";
 
-    fn create_linter() -> Linter {
-        let mut registry = RuleRegistry::new();
-        registry.register(Box::new(MustacheInterpolationSpacing::default()));
-        Linter::with_registry(registry)
-    }
-
-    #[test]
-    fn test_valid_with_spaces() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>{{ text }}</div>"#, "test.vue");
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_invalid_no_spaces() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>{{text}}</div>"#, "test.vue");
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn test_invalid_missing_leading_space() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>{{text }}</div>"#, "test.vue");
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn test_invalid_missing_trailing_space() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>{{ text}}</div>"#, "test.vue");
-        assert_eq!(result.warning_count, 1);
-    }
+fn report(ctx: &mut LintContext<'_>, message: &str, help: &str, start: u32, end: u32) {
+    let message = ctx.t(message);
+    let help = ctx.t(help);
+    ctx.warn_at_with_help(message, ByteRange::new(start, end), help);
 }
+
+fn leading_whitespace(inner: &str) -> u32 {
+    let trimmed = inner.trim_start();
+    u32::try_from(inner.len() - trimmed.len()).unwrap_or(0)
+}
+
+fn trailing_whitespace(inner: &str) -> u32 {
+    let trimmed = inner.trim_end();
+    u32::try_from(inner.len() - trimmed.len()).unwrap_or(0)
+}
+
+#[cfg(test)]
+mod tests;

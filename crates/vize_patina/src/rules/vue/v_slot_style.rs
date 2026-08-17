@@ -4,25 +4,38 @@
 //!
 //! ## Options
 //!
-//! - `"shorthand"` (default): Prefer `#name` over `v-slot:name`
-//! - `"longform"`: Prefer `v-slot:name` over `#name`
+//! The style is chosen per *position*, not once for the whole rule, because the
+//! default slot on a component reads best without any argument at all:
+//!
+//! - `at_component` (default `v-slot`): the default slot written directly on a
+//!   component, as in `<MyComponent v-slot="props">`.
+//! - `default_slot` (default `shorthand`): the default slot on a `<template>`,
+//!   as in `<template #default="props">`.
+//! - `named` (default `shorthand`): any named slot, as in `<template #header>`.
+//!   A dynamic argument (`#[name]`) is a named slot.
 //!
 //! ## Examples
 //!
-//! ### Invalid (with shorthand option)
+//! ### Invalid
 //! ```vue
 //! <template v-slot:header>...</template>
+//! <MyComponent #default="props">...</MyComponent>
 //! ```
 //!
-//! ### Valid (with shorthand option)
+//! ### Valid
 //! ```vue
 //! <template #header>...</template>
+//! <MyComponent v-slot="props">...</MyComponent>
 //! ```
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{DirectiveNode, ElementNode};
+use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
+
+mod position;
+
+use position::{SlotPosition, actual_style, argument_text, slot_argument, slot_position};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/v-slot-style",
@@ -32,23 +45,53 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Warning,
 };
 
-/// Style preference for v-slot
+/// Style preference for one `v-slot` position.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum VSlotStyleOption {
+    /// `#name`
     #[default]
     Shorthand,
+    /// `v-slot:name`
     Longform,
+    /// `v-slot`, with no argument at all
+    VSlot,
 }
 
 /// Enforce v-slot directive style
 pub struct VSlotStyle {
-    pub style: VSlotStyleOption,
+    /// Style for the default slot written on a component.
+    pub at_component: VSlotStyleOption,
+    /// Style for the default slot written on a `<template>`.
+    pub default_slot: VSlotStyleOption,
+    /// Style for a named slot.
+    pub named: VSlotStyleOption,
 }
 
 impl Default for VSlotStyle {
     fn default() -> Self {
         Self {
-            style: VSlotStyleOption::Shorthand,
+            at_component: VSlotStyleOption::VSlot,
+            default_slot: VSlotStyleOption::Shorthand,
+            named: VSlotStyleOption::Shorthand,
+        }
+    }
+}
+
+impl VSlotStyle {
+    /// One style for every position, the shape of the single-string option.
+    pub fn uniform(style: VSlotStyleOption) -> Self {
+        Self {
+            at_component: style,
+            default_slot: style,
+            named: style,
+        }
+    }
+
+    fn expected(&self, position: SlotPosition) -> VSlotStyleOption {
+        match position {
+            SlotPosition::AtComponent => self.at_component,
+            SlotPosition::DefaultOnTemplate => self.default_slot,
+            SlotPosition::Named => self.named,
         }
     }
 }
@@ -61,96 +104,41 @@ impl Rule for VSlotStyle {
     fn check_directive<'a>(
         &self,
         ctx: &mut LintContext<'a>,
-        _element: &ElementNode<'a>,
+        element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
         if directive.name.as_str() != "slot" {
             return;
         }
-
-        let raw_name = directive.raw_name.as_deref().unwrap_or("");
-        let is_shorthand = raw_name.starts_with('#');
-
-        match self.style {
-            VSlotStyleOption::Shorthand => {
-                if !is_shorthand && raw_name.starts_with("v-slot") {
-                    ctx.warn_with_help(
-                        ctx.t("vue/v-slot-style.message_shorthand"),
-                        &directive.loc,
-                        ctx.t("vue/v-slot-style.help"),
-                    );
-                }
-            }
-            VSlotStyleOption::Longform => {
-                if is_shorthand {
-                    ctx.warn_with_help(
-                        ctx.t("vue/v-slot-style.message_longform"),
-                        &directive.loc,
-                        ctx.t("vue/v-slot-style.help"),
-                    );
-                }
-            }
+        let argument = directive.arg.as_ref().and_then(|arg| match arg {
+            ExpressionNode::Simple(simple) if simple.is_static => Some(simple.content.as_str()),
+            _ => None,
+        });
+        let expected = self.expected(slot_position(element, &directive.arg, argument));
+        let actual = actual_style(ctx.source, directive);
+        if actual == expected {
+            return;
         }
+
+        let written = slot_argument(ctx.source, directive).unwrap_or("v-slot");
+        let name = argument_text(ctx.source, directive).unwrap_or("default");
+        let message = match expected {
+            VSlotStyleOption::Shorthand => ctx.t_fmt(
+                "vue/v-slot-style.message_shorthand",
+                &[("name", name), ("actual", written)],
+            ),
+            VSlotStyleOption::Longform => ctx.t_fmt(
+                "vue/v-slot-style.message_longform",
+                &[("name", name), ("actual", written)],
+            ),
+            VSlotStyleOption::VSlot => {
+                ctx.t_fmt("vue/v-slot-style.message_v_slot", &[("actual", written)])
+            }
+        };
+        let help = ctx.t("vue/v-slot-style.help");
+        ctx.warn_with_help(message, &directive.loc, help);
     }
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{VSlotStyle, VSlotStyleOption};
-    use crate::linter::Linter;
-    use crate::rule::RuleRegistry;
-
-    fn create_linter() -> Linter {
-        let mut registry = RuleRegistry::new();
-        registry.register(Box::new(VSlotStyle::default()));
-        Linter::with_registry(registry)
-    }
-
-    fn create_linter_longform() -> Linter {
-        let mut registry = RuleRegistry::new();
-        registry.register(Box::new(VSlotStyle {
-            style: VSlotStyleOption::Longform,
-        }));
-        Linter::with_registry(registry)
-    }
-
-    #[test]
-    fn test_valid_shorthand() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<MyComponent><template #header>Header</template></MyComponent>"#,
-            "test.vue",
-        );
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_invalid_longform_when_shorthand_preferred() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<MyComponent><template v-slot:header>Header</template></MyComponent>"#,
-            "test.vue",
-        );
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn test_valid_longform_when_longform_preferred() {
-        let linter = create_linter_longform();
-        let result = linter.lint_template(
-            r#"<MyComponent><template v-slot:header>Header</template></MyComponent>"#,
-            "test.vue",
-        );
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_invalid_shorthand_when_longform_preferred() {
-        let linter = create_linter_longform();
-        let result = linter.lint_template(
-            r#"<MyComponent><template #header>Header</template></MyComponent>"#,
-            "test.vue",
-        );
-        assert_eq!(result.warning_count, 1);
-    }
-}
+mod tests;

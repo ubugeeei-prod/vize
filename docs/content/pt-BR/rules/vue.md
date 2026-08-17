@@ -450,7 +450,9 @@ Presets: `happy-path`, `nuxt`, `opinionated`.
 `vue/prefer-props-shorthand` recomenda sintaxe abreviada para adereços. Padrão: `warning`. Presets:
 `nuxt`, `opinionated`.
 
-`vue/prop-name-casing` impõe nomes de adereços de caixas de kebab nos modelos. Padrão: `warning`. Presets:
+`vue/prop-name-casing` impõe uma capitalização (`camelCase` por padrão) para os nomes de props
+declarados via `defineProps`; o lado do modelo pertence a `vue/attribute-hyphenation`. Padrão:
+`warning`. Presets:
 `happy-path`, `nuxt`, `opinionated`.
 
 `vue/require-component-registration` requer importação ou registro explícito de componentes. Padrão:
