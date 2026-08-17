@@ -43,6 +43,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_carton::cstr;
 use vize_relief::{ElementNode, PropNode};
 
 mod value_range;
@@ -169,14 +170,14 @@ fn quote_fix(
             TextEdit::replace(range.start, inner_start, replacement),
             TextEdit::replace(inner_end, range.end, replacement),
         ],
-        None => vec![TextEdit::replace(
-            range.start,
-            range.end,
-            format!(
-                "{replacement}{}{replacement}",
-                core::str::from_utf8(inner).ok()?
-            ),
-        )],
+        None => {
+            let text = core::str::from_utf8(inner).ok()?;
+            vec![TextEdit::replace(
+                range.start,
+                range.end,
+                cstr!("{replacement}{text}{replacement}"),
+            )]
+        }
     };
     Some(Fix::with_edits(message, edits))
 }
