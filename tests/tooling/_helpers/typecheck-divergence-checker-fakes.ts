@@ -63,6 +63,13 @@ export function writeVueTscFixture(
     files: string[];
     fixtureRoot: string;
     mutation: MutationDiagnosticMode;
+    /**
+     * Non-Vue program entries the same `--listFilesOnly` run emitted, relative
+     * to the fixture or absolute. This is how a contaminated ambient environment
+     * looks from the outside: the `.vue` corpus is identical and the
+     * extra entries are packages the fixture never owned.
+     */
+    programFiles?: string[];
   },
   invocationPath: string,
 ) {
@@ -70,7 +77,9 @@ export function writeVueTscFixture(
     file,
     sourcePath: path.join(options.fixtureRoot, file),
   }));
-  const files = options.files.map((file) => `${path.join(options.fixtureRoot, file)}\n`).join("");
+  const files = [...options.files, ...(options.programFiles ?? [])]
+    .map((file) => `${path.resolve(options.fixtureRoot, file)}\n`)
+    .join("");
   const runBody = `
 if (process.argv.includes("--listFilesOnly")) {
   process.${options.coverageOutputStream === "stderr" ? "stderr" : "stdout"}.write(${JSON.stringify(files)});

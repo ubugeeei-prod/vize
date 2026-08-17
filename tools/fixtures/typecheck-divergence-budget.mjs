@@ -8,8 +8,10 @@
  * 1. `evaluateBudget` returns three verdicts, not two (#3513, the #3222 parity
  *    ledger). The baseline is unusable when `vue-tsc` could not load the
  *    fixture's project configuration, when `vue-tsc --listFilesOnly` proves the two
- *    tools checked different Vue corpora, or when two non-empty diagnostic
- *    streams have no mapped position in common.
+ *    tools checked different Vue corpora, when that same listing proves the
+ *    baseline resolved its Vue runtime outside the fixture (run 31979524200), or
+ *    when two
+ *    non-empty diagnostic streams have no mapped position in common.
  * 2. `assertBudgetPassed` enforces by default. `record-only` exists only for
  *    explicit ad hoc evidence capture, never for release evidence.
  */
@@ -31,14 +33,24 @@ export function parseBudgetMode(value) {
   return value;
 }
 
-export function evaluateBudget(performance, summary, coverage, configuration, mutationOracle) {
+export function evaluateBudget(
+  performance,
+  summary,
+  coverage,
+  configuration,
+  mutationOracle,
+  ambient,
+) {
   const falsePositivePassed = summary.falsePositiveRatio <= performance.maxFalsePositiveRatio;
   const falseNegativePassed = summary.falseNegativeRatio <= performance.maxFalseNegativeRatio;
   // Configuration first: it is the *cause* a coverage or mapping failure would
   // only be a symptom of, and it is the one reason that survives a run where
-  // both other checks look clean.
+  // both other checks look clean. The ambient environment sits directly after
+  // it, for the same reason: on run 31979524200 it was the cause and every other
+  // check was clean, so a symptom-ordered list would have buried it.
   const unusableReason =
     configuration.unusableReason ??
+    ambientUnusableReason(ambient) ??
     coverage.unusableReason ??
     mutationOracleUnusableReason(mutationOracle) ??
     diagnosticMappingUnusableReason(summary);
@@ -57,6 +69,16 @@ export function evaluateBudget(performance, summary, coverage, configuration, mu
     verdict,
     passed: verdict === "passed",
   };
+}
+
+/**
+ * A missing ambient evaluation is a missing gate, not a passing one: the failure
+ * it exists to catch is invisible in every other field of the artifact, so a
+ * caller that forgets to pass it must fail rather than inherit a silent pass.
+ */
+function ambientUnusableReason(ambient) {
+  if (ambient?.verdict === "isolated" && ambient.unusableReason == null) return null;
+  return ambient?.unusableReason ?? "baseline ambient environment evidence is missing";
 }
 
 function mutationOracleUnusableReason(mutationOracle) {
@@ -153,9 +175,12 @@ export function describeClassification(artifact) {
     return "instrument failure, the vue-tsc baseline did not measure Vize";
   }
   const coverage = artifact.baseline.coverage;
+  // The Vue-file count alone was the whole claim on run 31979524200, and it was
+  // true while the baseline typed those files against a foreign `vue`.
+  // So the environment the files were loaded in is stated beside their count.
   return (
     "Vize divergence, the vue-tsc baseline loaded cleanly over the same " +
-    `${coverage.sharedVueFileCount} Vue files`
+    `${coverage.sharedVueFileCount} Vue files, against the fixture's own Vue runtime`
   );
 }
 

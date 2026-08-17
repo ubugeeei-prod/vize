@@ -49,7 +49,7 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       "version",
     ]);
     assert.equal(artifact.schema, "vize.fixtureTypecheckDivergenceRun");
-    assert.equal(artifact.version, 5);
+    assert.equal(artifact.version, 6);
     assert.equal(artifact.tsconfig, ".generated/tsconfig.json");
     assert.equal(artifact.evidence.commitSha, commitSha);
     assert.deepEqual(artifact.enforcement, { budgetMode: "enforce" });
@@ -79,6 +79,7 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       fileCount: 1,
     });
     assert.deepEqual(Object.keys(artifact.baseline).sort(), [
+      "ambient",
       "command",
       "configSha256",
       "configuration",

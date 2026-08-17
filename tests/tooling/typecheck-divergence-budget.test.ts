@@ -93,6 +93,7 @@ test("a false-positive budget breach fails the divergence report", () => {
         "vue-tsc excluded project-level: 0",
         "vue-tsc excluded external: 0",
         "vue-tsc configuration errors: 0",
+        "vue-tsc ambient environment: isolated (no Vue runtime in program)",
         "Vize Vue files: 1",
         "vue-tsc Vue files: 1",
         "Shared Vue files: 1",

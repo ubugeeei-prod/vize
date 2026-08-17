@@ -2,17 +2,13 @@
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
-import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
+import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { collectTypecheckerAuthoredPaths, collectVueInputPaths } from "./tool-matrix-inputs.mjs";
 import { resolveVizeLaunch } from "./tool-matrix-run.mjs";
-import {
-  summarizeTypecheckerCoverage,
-  validateTypecheckerOutput,
-} from "./tool-matrix-typechecker.mjs";
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
 import { selectTypecheckPerformanceProjects } from "./typecheck-performance-shard.mjs";
+import { evaluateBaselineAmbientEnvironment } from "./typecheck-baseline-ambient.mjs";
 import { evaluateBaselineConfiguration } from "./typecheck-baseline-configuration.mjs";
 import { materializeBaselineProject } from "./typecheck-baseline-project.mjs";
 import { runVueTscBaseline } from "./typecheck-baseline-run.mjs";
@@ -24,6 +20,10 @@ import {
   readAndValidateDependencyPreparation,
 } from "./typecheck-divergence-provenance.mjs";
 import { parseArgs } from "./typecheck-divergence-report-args.mjs";
+import {
+  readAndValidateSummary,
+  readAndValidateVizeRun,
+} from "./typecheck-divergence-report-inputs.mjs";
 import { compareTypecheckDiagnostics } from "./typecheck-divergence.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -105,6 +105,9 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
       fixtureRoot,
     );
     const configuration = evaluateBaselineConfiguration(baseline.output);
+    // Coverage proves both tools loaded the same `.vue` files; this proves the
+    // baseline loaded them against the fixture's own type environment.
+    const ambient = evaluateBaselineAmbientEnvironment(coverageBaseline.output, fixtureRoot);
     const mutationOracle = createSeededMutationOracle({
       project,
       fixtureRoot,
@@ -122,10 +125,11 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
       coverage,
       configuration,
       mutationOracle,
+      ambient,
     );
     const artifact = {
       schema: "vize.fixtureTypecheckDivergenceRun",
-      version: 5,
+      version: 6,
       project: project.id,
       revision: project.revision,
       tsconfig: baselineProject.sourceProject,
@@ -147,6 +151,7 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
         coverageDurationMs: coverageBaseline.durationMs,
         exitCode: baseline.exitCode,
         coverageExitCode: coverageBaseline.exitCode,
+        ambient,
         configuration,
         coverage,
         stdoutSha256: sha256(baseline.stdout),
@@ -183,113 +188,6 @@ function readDocumentedDifferences() {
   return ledger.differences;
 }
 
-function readAndValidateSummary(reportDir, project) {
-  const summary = readJson(join(reportDir, "summary.json"));
-  if (summary.schema !== "vize.fixtureToolMatrixReport" || summary.version !== 3) {
-    throw new Error("Fixture matrix summary schema is unsupported");
-  }
-  if (!/^[0-9a-f]{40}$/.test(summary.evidence?.commitSha ?? "")) {
-    throw new Error("Fixture matrix summary is missing exact commit evidence");
-  }
-  if (process.env.GITHUB_SHA != null && summary.evidence.commitSha !== process.env.GITHUB_SHA) {
-    throw new Error("Fixture matrix summary commit does not match GITHUB_SHA");
-  }
-  const projectSummary = summary.projects?.filter((entry) => entry.id === project.id) ?? [];
-  if (projectSummary.length !== 1 || projectSummary[0].revision !== project.revision) {
-    throw new Error(`Fixture matrix summary does not contain pinned project ${project.id}`);
-  }
-  return summary;
-}
-
-function readAndValidateVizeRun(reportDir, project, summary) {
-  const projectSummary = summary.projects.find((entry) => entry.id === project.id);
-  const runs = projectSummary.runs.filter((run) => run.tool === "typechecker");
-  if (runs.length !== 1 || !["ok", "findings"].includes(runs[0].status)) {
-    throw new Error(`Fixture matrix summary has no successful typechecker run for ${project.id}`);
-  }
-  const expectedName = `${project.id}-typechecker.json`;
-  const reportedPath = runs[0].outputPath;
-  const artifactPath =
-    typeof reportedPath === "string" && !isAbsolute(reportedPath)
-      ? resolve(repoRoot, reportedPath)
-      : null;
-  if (
-    artifactPath !== resolve(reportDir, expectedName) ||
-    basename(reportedPath ?? "") !== expectedName
-  ) {
-    throw new Error(`Fixture matrix typechecker output path is invalid for ${project.id}`);
-  }
-  const rawPayload = readFileSync(artifactPath, "utf8");
-  const payload = JSON.parse(rawPayload);
-  const expectedKeys = [
-    "exitCode",
-    "parsed",
-    "project",
-    "schema",
-    "stderr",
-    "stdout",
-    "tool",
-    "typecheckerCoverage",
-    "version",
-  ];
-  if (JSON.stringify(Object.keys(payload).sort()) !== JSON.stringify(expectedKeys)) {
-    throw new Error(`Fixture matrix typechecker artifact keys are invalid for ${project.id}`);
-  }
-  if (
-    payload.schema !== "vize.fixtureToolRun" ||
-    payload.version !== 1 ||
-    payload.project !== project.id ||
-    payload.tool !== "typechecker" ||
-    payload.exitCode !== runs[0].exitCode
-  ) {
-    throw new Error(`Fixture matrix typechecker artifact identity is invalid for ${project.id}`);
-  }
-  let stdout;
-  try {
-    stdout = JSON.parse(payload.stdout);
-  } catch {
-    throw new Error(`Fixture matrix typechecker stdout is not JSON for ${project.id}`);
-  }
-  if (canonicalJson(stdout) !== canonicalJson(payload.parsed)) {
-    throw new Error(
-      `Fixture matrix typechecker stdout does not match parsed output for ${project.id}`,
-    );
-  }
-  const fixtureRoot = resolve(repoRoot, project.fixturePath);
-  const expectedCoverage = validateTypecheckerOutput(
-    project,
-    payload.parsed,
-    payload.exitCode,
-    collectVueInputPaths(fixtureRoot, project.vueGlobs),
-    collectTypecheckerAuthoredPaths(fixtureRoot),
-  );
-  if (canonicalJson(expectedCoverage) !== canonicalJson(payload.typecheckerCoverage)) {
-    throw new Error(`Fixture matrix typechecker coverage is inconsistent for ${project.id}`);
-  }
-  const expectedStatus = payload.exitCode === 0 ? "ok" : "findings";
-  if (runs[0].status !== expectedStatus) {
-    throw new Error(`Fixture matrix typechecker status is inconsistent for ${project.id}`);
-  }
-  if (runs[0].fileCount !== payload.parsed.fileCount) {
-    throw new Error(`Fixture matrix typechecker file count is inconsistent for ${project.id}`);
-  }
-  if (
-    canonicalJson(runs[0].coverage) !==
-    canonicalJson(summarizeTypecheckerCoverage(payload.typecheckerCoverage))
-  ) {
-    throw new Error(
-      `Fixture matrix typechecker summary coverage is inconsistent for ${project.id}`,
-    );
-  }
-  return {
-    payload,
-    source: {
-      payloadSha256: sha256(rawPayload),
-      fileCount: payload.parsed.fileCount,
-    },
-  };
-}
-
 function validatePerformanceConfig(performance) {
   if (!Number.isSafeInteger(performance.hangTimeoutMs) || performance.hangTimeoutMs <= 0) {
     throw new Error("typecheckPerformance.hangTimeoutMs must be a positive safe integer");
@@ -309,17 +207,6 @@ function resolveVueTsc(value) {
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
-}
-
-function canonicalJson(value) {
-  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
-  if (value != null && typeof value === "object") {
-    return `{${Object.keys(value)
-      .sort()
-      .map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`)
-      .join(",")}}`;
-  }
-  return JSON.stringify(value);
 }
 
 function ratio(value, name) {

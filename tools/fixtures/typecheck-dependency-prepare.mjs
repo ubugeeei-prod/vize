@@ -6,6 +6,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
+import { isolateFixtureTypePackages } from "./typecheck-baseline-isolation.mjs";
 import { selectTypecheckPerformanceProjects } from "./typecheck-performance-shard.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -83,6 +84,10 @@ function prepareProjectDependencies({ args, commitSha, project }) {
   requireCleanFixture(fixtureRoot, "after dependency installation");
   const baselinePrepare = runBaselinePrepare(project, fixtureRoot, args.timeoutMs, managerRunner);
   validateTypecheckPerformanceTarget(project, fixtureRoot, { requireBaseline: true });
+  // Both tools run against this tree, so the type environment is closed here
+  // rather than in the divergence report — a repair only the baseline saw would
+  // be a second way for the two sides to measure different programs.
+  isolateFixture(project, fixtureRoot);
   requireCleanFixture(fixtureRoot, "after baseline preparation");
   const artifact = {
     schema: "vize.fixtureTypecheckDependencyInstall",
@@ -112,6 +117,23 @@ function prepareProjectDependencies({ args, commitSha, project }) {
   writeFileSync(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`);
   process.stdout.write(`Wrote ${relative(repoRoot, artifactPath)}\n`);
   return artifact;
+}
+
+/**
+ * Link the packages the fixture's own config maps but its package manager did
+ * not hoist, so a `/// <reference types="..." />` inside the fixture cannot be
+ * answered by Vize's own `node_modules` further up the tree (run 31979524200).
+ * Reported on
+ * stdout rather than into the artifact: what the run has to prove is the
+ * outcome, and `typecheck-baseline-ambient.mjs` proves that from the program
+ * listing regardless of how the tree got there.
+ */
+function isolateFixture(project, fixtureRoot) {
+  const sourceProject = project.typecheckPerformance.baseline?.tsconfig ?? project.tsconfig;
+  const shadowed = isolateFixtureTypePackages(fixtureRoot, resolve(fixtureRoot, sourceProject));
+  for (const entry of shadowed) {
+    process.stdout.write(`Linked ${project.id} node_modules/${entry.name} -> ${entry.target}\n`);
+  }
 }
 
 function runBaselinePrepare(project, fixtureRoot, timeoutMs, managerRunner) {
