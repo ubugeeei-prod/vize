@@ -73,6 +73,7 @@ export const checkFixturePhases: readonly CheckFixturePhase[] = [
   "snapshots/check/nuxt-ui-ambient-oracle.ts",
   "snapshots/check/nuxt-no-tsconfig-oracle.ts",
   "snapshots/check/nuxt-template-globals.ts",
+  "snapshots/check/nuxt-vue-module-augmentations.ts",
   "snapshots/check/vitepress-theme-oracle.ts",
   "snapshots/check/vue-element-admin-legacy-oracle.ts",
   "snapshots/check/vue-element-admin-legacy-lsp-oracle.ts",

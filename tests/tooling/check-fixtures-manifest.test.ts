@@ -25,8 +25,9 @@ import { readRepoFile, root } from "./support/github-workflows.ts";
  * A fixture added to the lane on `main` after this branch was cut belongs here
  * in the position the shell string gave it, so the pin keeps meaning "every
  * fixture the lane runs" rather than drifting into a stale historical list:
- * `nuxt-template-globals` arrived that way with #4248, and
- * `template-ref-unwrap-oracle` with #4243.
+ * `nuxt-template-globals` arrived that way with #4248,
+ * `template-ref-unwrap-oracle` with #4243, and
+ * `nuxt-vue-module-augmentations` with the declaration-spelling fix.
  */
 const PHASE_FILES_BEFORE_SUPERVISION = [
   "snapshots/check/typecheck-errors.ts",
@@ -58,6 +59,7 @@ const PHASE_FILES_BEFORE_SUPERVISION = [
   "snapshots/check/nuxt-ui-ambient-oracle.ts",
   "snapshots/check/nuxt-no-tsconfig-oracle.ts",
   "snapshots/check/nuxt-template-globals.ts",
+  "snapshots/check/nuxt-vue-module-augmentations.ts",
   "snapshots/check/vitepress-theme-oracle.ts",
   "snapshots/check/vue-element-admin-legacy-oracle.ts",
   "snapshots/check/vue-element-admin-legacy-lsp-oracle.ts",
@@ -110,7 +112,7 @@ test("the phase manifest carries every fixture the shell string ran, in order", 
     checkFixturePhases.map((phase) => phase.file),
     PHASE_FILES_BEFORE_SUPERVISION,
   );
-  assert.equal(checkFixturePhases.length, 37);
+  assert.equal(checkFixturePhases.length, 38);
 });
 
 test("every phase has a unique id and a file that exists", () => {

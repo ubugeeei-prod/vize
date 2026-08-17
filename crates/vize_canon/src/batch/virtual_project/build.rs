@@ -242,7 +242,7 @@ pub(super) fn build_script_registered_file(
         }
     });
     let virtual_path =
-        super::paths::script_virtual_path(roots.0, roots.1, path, preserve_declaration_spelling)?;
+        super::paths::script_virtual_path(roots, path, content, preserve_declaration_spelling)?;
 
     Ok(RegisteredFile {
         file: VirtualFile {

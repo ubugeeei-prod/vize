@@ -225,18 +225,67 @@ fn an_editor_paths_declaration_is_mirrored_but_not_a_program_root() {
     let _ = fs::remove_dir_all(&root);
 }
 
+/// The batch mirror renames a declaration file to `.d.cts` only when the file
+/// uses a CommonJS-only form the virtual root's `"type": "module"` boundary
+/// rejects. Editor mirrors keep every declaration's spelling, and that
+/// difference is what this pins.
+///
+/// The spelling is load-bearing: a `.d.cts` resolves its specifiers under the
+/// `require` condition, so a `declare module "vue"` inside one binds to a
+/// different `vue` than the generated `.vue.ts` modules import, and the
+/// `ComponentCustomProperties` members it declares stop reaching the template
+/// context.
 #[test]
 fn batch_declaration_spelling_stays_isolated_from_editor_mirrors() {
     let root = case_dir("batch-declaration-spelling");
     fs::create_dir_all(root.join("src")).unwrap();
-    let declaration = root.join("src/globals.d.ts");
-    fs::write(&declaration, "declare const batchOnly: string;\n").unwrap();
+    let plain = root.join("src/globals.d.ts");
+    let plain_source = "declare const batchOnly: string;\n";
+    fs::write(&plain, plain_source).unwrap();
+    let commonjs = root.join("src/legacy.d.ts");
+    let commonjs_source = "declare function legacy(): void;\nexport = legacy;\n";
+    fs::write(&commonjs, commonjs_source).unwrap();
+
     let mut project = VirtualProject::new(&root).unwrap();
     project
-        .register_declaration_file(&declaration, "declare const batchOnly: string;\n")
+        .register_declaration_file(&plain, plain_source)
         .unwrap();
-    let virtual_path = &project.find_by_original(&declaration).unwrap().virtual_path;
-    assert_eq!(virtual_path.file_name().unwrap(), "globals.d.cts");
+    project
+        .register_declaration_file(&commonjs, commonjs_source)
+        .unwrap();
+    assert_eq!(
+        project
+            .find_by_original(&plain)
+            .unwrap()
+            .virtual_path
+            .file_name()
+            .unwrap(),
+        "globals.d.ts"
+    );
+    assert_eq!(
+        project
+            .find_by_original(&commonjs)
+            .unwrap()
+            .virtual_path
+            .file_name()
+            .unwrap(),
+        "legacy.d.cts"
+    );
+
+    let mut editor = VirtualProject::new(&root).unwrap();
+    editor.set_session_script_registration(true);
+    editor
+        .register_declaration_file(&commonjs, commonjs_source)
+        .unwrap();
+    assert_eq!(
+        editor
+            .find_by_original(&commonjs)
+            .unwrap()
+            .virtual_path
+            .file_name()
+            .unwrap(),
+        "legacy.d.ts"
+    );
     let _ = fs::remove_dir_all(&root);
 }
 
