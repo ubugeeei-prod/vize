@@ -29,6 +29,19 @@ function needsCssPipeline(block: StyleBlockInfo): boolean {
   return block.content.includes("@apply");
 }
 
+function styleVirtualSuffix(block: StyleBlockInfo): string {
+  const lang = block.lang ?? "css";
+  return block.module !== false ? `.module.${lang}` : `.${lang}`;
+}
+
+function createStyleImportUrl(
+  filePath: string,
+  params: URLSearchParams,
+  block: StyleBlockInfo,
+): string {
+  return `${filePath}?${params.toString()}${styleVirtualSuffix(block)}`;
+}
+
 /**
  * Check if any style blocks in the compiled module require delegation to
  * Vite's CSS pipeline (preprocessor, CSS Modules, or PostCSS transforms).
@@ -251,18 +264,18 @@ export function generateOutputWithMap(
         }
         params.set("inline", "");
         const bindingName = `_style_${block.index}`;
-        const importUrl = `${filePath}?${params.toString()}`;
+        const importUrl = createStyleImportUrl(filePath, params, block);
         styleImports.push(`import ${bindingName} from ${JSON.stringify(importUrl)};`);
         customElementStyleBindings.push(bindingName);
       } else if (isCssModule(block)) {
         // CSS Modules: import as a named binding
         const bindingName = typeof block.module === "string" ? block.module : "$style";
         params.set("module", typeof block.module === "string" ? block.module : "");
-        const importUrl = `${filePath}?${params.toString()}`;
+        const importUrl = createStyleImportUrl(filePath, params, block);
         cssModuleImports.push(`import ${bindingName} from ${JSON.stringify(importUrl)};`);
       } else {
         // Side-effect import: Vite will inject the CSS
-        const importUrl = `${filePath}?${params.toString()}`;
+        const importUrl = createStyleImportUrl(filePath, params, block);
         styleImports.push(`import ${JSON.stringify(importUrl)};`);
       }
     }

@@ -11,7 +11,7 @@ import.meta.vfFeatures.photoSectionEnabled
 `;
 
 exports[`generateOutput snapshots CSS Modules binding injection 1`] = `
-import buttonStyles from "/src/ModuleButton.vue?vue=&type=style&index=0&lang=css&module=buttonStyles";
+import buttonStyles from "/src/ModuleButton.vue?vue=&type=style&index=0&lang=css&module=buttonStyles.module.css";
 
 const _sfc_main = { name: "ModuleButton" }
 _sfc_main.__cssModules = _sfc_main.__cssModules || {};
@@ -36,7 +36,7 @@ exports[`generateOutput snapshots delegated style import order 1`] = `
 import { openBlock as _openBlock } from "vue"
 const _hoisted_1 = {}
 import Child from "./Child.vue"
-import $style from "/src/Parent.vue?vue=&type=style&index=0&lang=css&module=";
+import $style from "/src/Parent.vue?vue=&type=style&index=0&lang=css&module=.module.css";
 const _sfc_main = { name: "Parent" }
 _sfc_main.__cssModules = _sfc_main.__cssModules || {};
 _sfc_main.__cssModules["$style"] = $style;
@@ -92,14 +92,14 @@ if (import.meta.hot) {
 exports[`generateOutput snapshots production extracted plain CSS 1`] = `
 
 import { openBlock as _openBlock } from "vue"
-import "/src/ProdStyles.vue?vue=&type=style&index=0&lang=css";
+import "/src/ProdStyles.vue?vue=&type=style&index=0&lang=css.css";
 const _sfc_main = { name: "ProdStyles" }
 export default _sfc_main
 
 `;
 
 exports[`generateOutput snapshots production scoped CSS extraction 1`] = `
-import "/src/PlainCss.vue?vue=&type=style&index=0&scoped=data-v-plaincss&lang=css";
+import "/src/PlainCss.vue?vue=&type=style&index=0&scoped=data-v-plaincss&lang=css.css";
 
 const _sfc_main = { name: "PlainCss" }
 _sfc_main.__scopeId = "data-v-plaincss";
