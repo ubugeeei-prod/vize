@@ -233,7 +233,7 @@ const msg = 'hello'
   );
   assert.match(
     result.code,
-    /import "\/virtual\/Card\.setup\.ts\?vue=&type=style&index=0&lang=css";/,
+    /import "\/virtual\/Card\.setup\.ts\?vue=&type=style&index=0&lang=css\.css";/,
     "Production virtual SFC transforms should emit Vite-visible plain CSS imports",
   );
   assert.doesNotMatch(
@@ -248,7 +248,7 @@ const msg = 'hello'
   );
   assert.match(
     result.code,
-    /import ".*Card\.setup\.ts\?vue=&type=style&index=0&lang=css";/,
+    /import ".*Card\.setup\.ts\?vue=&type=style&index=0&lang=css\.css";/,
     "Production virtual SFC transforms should emit a virtual style import",
   );
 }
