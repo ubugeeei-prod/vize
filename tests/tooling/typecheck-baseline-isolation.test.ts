@@ -99,7 +99,9 @@ function diagnostics(stdout: string, fixtureRoot: string) {
 
 const declaredPaths = {
   "vue-router": ["../node_modules/.pnpm/vue-router@5.1.0/node_modules/vue-router"],
-  "@vue/runtime-core": ["../node_modules/.pnpm/@vue+runtime-core@3.5.30/node_modules/@vue/runtime-core"],
+  "@vue/runtime-core": [
+    "../node_modules/.pnpm/@vue+runtime-core@3.5.30/node_modules/@vue/runtime-core",
+  ],
   "~": ["../app"],
   "~/*": ["../app/*"],
   "#imports": ["./imports"],
@@ -200,71 +202,78 @@ test("a declared target that is not a package directory is never linked in", () 
  * name to the fixture's copy in both runs — the only thing that changes is
  * whether the fixture answers before the walk leaves it.
  */
-test("real vue-tsc leaves the fixture for a type reference until the link exists", vueTscOptions, () => {
-  const { outer, fixtureRoot } = scaffold();
-  try {
-    const reportDir = path.join(outer, "report");
-    fs.mkdirSync(reportDir);
-    // Same name, different declaration, so the diagnostic says which one won.
-    writePackage(path.join(outer, "node_modules", "vue-router"), "foreign");
-    writePackage(
-      path.join(fixtureRoot, "node_modules/.pnpm/vue-router@5.1.0/node_modules/vue-router"),
-      "fixture",
-    );
-    fs.writeFileSync(
-      path.join(fixtureRoot, ".nuxt", "nuxt.d.ts"),
-      '/// <reference types="vue-router" />\nexport {}\n',
-    );
-    const configPath = writeConfig(fixtureRoot, {
-      "vue-router": ["../node_modules/.pnpm/vue-router@5.1.0/node_modules/vue-router"],
-    });
-    fs.mkdirSync(path.join(fixtureRoot, "src"));
-    fs.writeFileSync(
-      path.join(fixtureRoot, "src/main.ts"),
-      'export const which: "fixture" = WHICH_COPY\n',
-    );
-    fs.writeFileSync(
-      configPath,
-      `${JSON.stringify({
-        compilerOptions: {
-          strict: true,
-          noEmit: true,
-          module: "preserve",
-          moduleResolution: "Bundler",
-          target: "ESNext",
-          paths: {
-            "vue-router": ["../node_modules/.pnpm/vue-router@5.1.0/node_modules/vue-router"],
+test(
+  "real vue-tsc leaves the fixture for a type reference until the link exists",
+  vueTscOptions,
+  () => {
+    const { outer, fixtureRoot } = scaffold();
+    try {
+      const reportDir = path.join(outer, "report");
+      fs.mkdirSync(reportDir);
+      // Same name, different declaration, so the diagnostic says which one won.
+      writePackage(path.join(outer, "node_modules", "vue-router"), "foreign");
+      writePackage(
+        path.join(fixtureRoot, "node_modules/.pnpm/vue-router@5.1.0/node_modules/vue-router"),
+        "fixture",
+      );
+      fs.writeFileSync(
+        path.join(fixtureRoot, ".nuxt", "nuxt.d.ts"),
+        '/// <reference types="vue-router" />\nexport {}\n',
+      );
+      const configPath = writeConfig(fixtureRoot, {
+        "vue-router": ["../node_modules/.pnpm/vue-router@5.1.0/node_modules/vue-router"],
+      });
+      fs.mkdirSync(path.join(fixtureRoot, "src"));
+      fs.writeFileSync(
+        path.join(fixtureRoot, "src/main.ts"),
+        'export const which: "fixture" = WHICH_COPY\n',
+      );
+      fs.writeFileSync(
+        configPath,
+        `${JSON.stringify({
+          compilerOptions: {
+            strict: true,
+            noEmit: true,
+            module: "preserve",
+            moduleResolution: "Bundler",
+            target: "ESNext",
+            paths: {
+              "vue-router": ["../node_modules/.pnpm/vue-router@5.1.0/node_modules/vue-router"],
+            },
           },
+          include: ["./nuxt.d.ts", "../src/**/*"],
+        })}\n`,
+      );
+      const project = materializeBaselineProject(
+        fixtureRoot,
+        reportDir,
+        {
+          id: "fixture",
+          tsconfig: "tsconfig.json",
+          typecheckPerformance: { baseline: { tsconfig: ".nuxt/tsconfig.app.json" } },
         },
-        include: ["./nuxt.d.ts", "../src/**/*"],
-      })}\n`,
-    );
-    const project = materializeBaselineProject(
-      fixtureRoot,
-      reportDir,
-      {
-        id: "fixture",
-        tsconfig: "tsconfig.json",
-        typecheckPerformance: { baseline: { tsconfig: ".nuxt/tsconfig.app.json" } },
-      },
-      { fileCount: 1, files: [{ file: "src/main.ts" }] },
-    );
+        { fileCount: 1, files: [{ file: "src/main.ts" }] },
+      );
 
-    const escaped = runVueTsc(project.path, fixtureRoot);
-    assert.deepEqual(diagnostics(escaped.stdout, fixtureRoot), [
-      `src/main.ts(1,14): error TS2322: Type '"foreign"' is not assignable to type '"fixture"'.`,
-    ]);
+      const escaped = runVueTsc(project.path, fixtureRoot);
+      assert.deepEqual(diagnostics(escaped.stdout, fixtureRoot), [
+        `src/main.ts(1,14): error TS2322: Type '"foreign"' is not assignable to type '"fixture"'.`,
+      ]);
 
-    assert.deepEqual(isolateFixtureTypePackages(fixtureRoot, configPath), [
-      { name: "vue-router", target: "node_modules/.pnpm/vue-router@5.1.0/node_modules/vue-router" },
-    ]);
-    const isolated = runVueTsc(project.path, fixtureRoot);
-    assert.deepEqual(diagnostics(isolated.stdout, fixtureRoot), []);
-    assert.equal(isolated.status, 0, isolated.stderr);
-  } finally {
-    fs.rmSync(outer, { recursive: true, force: true });
-  }
-});
+      assert.deepEqual(isolateFixtureTypePackages(fixtureRoot, configPath), [
+        {
+          name: "vue-router",
+          target: "node_modules/.pnpm/vue-router@5.1.0/node_modules/vue-router",
+        },
+      ]);
+      const isolated = runVueTsc(project.path, fixtureRoot);
+      assert.deepEqual(diagnostics(isolated.stdout, fixtureRoot), []);
+      assert.equal(isolated.status, 0, isolated.stderr);
+    } finally {
+      fs.rmSync(outer, { recursive: true, force: true });
+    }
+  },
+);
 
 test("a config that declares nothing, or cannot be read, links nothing", () => {
   const { outer, fixtureRoot } = scaffold();

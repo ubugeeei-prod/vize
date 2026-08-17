@@ -48,9 +48,7 @@ test("a fixture typed against its own Vue runtime is measured, not rejected", ()
   try {
     const result = run(fixture);
     assert.equal(result.status, 0, result.stderr);
-    const artifact = readJson(
-      path.join(fixture.reportDir, "fixture-typecheck-divergence.json"),
-    );
+    const artifact = readJson(path.join(fixture.reportDir, "fixture-typecheck-divergence.json"));
     assert.deepEqual(artifact.baseline.ambient, {
       externalFileCount: 0,
       externalPackages: [],
@@ -85,9 +83,7 @@ test("a second Vue runtime resolved above the fixture sinks the run", () => {
     assert.equal(result.status, 1);
     assert.equal(result.stderr, `${unusableFailure(reason)}\n`);
 
-    const artifact = readJson(
-      path.join(fixture.reportDir, "fixture-typecheck-divergence.json"),
-    );
+    const artifact = readJson(path.join(fixture.reportDir, "fixture-typecheck-divergence.json"));
     assert.deepEqual(artifact.baseline.ambient, {
       externalFileCount: 1,
       externalPackages: ["vue"],
