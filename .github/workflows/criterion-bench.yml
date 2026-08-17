@@ -105,7 +105,7 @@ jobs:
       # a single shared target disk is mounted (base and head compile into it).
       - name: Mount Criterion cache
         uses: ./head/.github/actions/setup-rust-sticky-cache
-        if: steps.impact.outputs.has_suites == 'true'
+        if: steps.impact.outputs.has_suites == 'true' && runner.environment != 'github-hosted'
         with:
           key: criterion-bench
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
@@ -162,6 +162,7 @@ jobs:
           wild-version: "0.9.0"
 
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: dialect-guard
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}

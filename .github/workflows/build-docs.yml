@@ -33,6 +33,7 @@ jobs:
           wild-version: "0.9.0"
 
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: docs-napi
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
@@ -79,6 +80,7 @@ jobs:
       - uses: ./.github/actions/setup-moonbit
 
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: docs-wasm
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}

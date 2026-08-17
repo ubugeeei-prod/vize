@@ -69,7 +69,7 @@ jobs:
         if: endsWith(matrix.settings.target, '-musl')
         run: bash tools/github/configure-zig-musl-linkers.sh
       - name: Mount Rust sticky disks (Linux)
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && runner.environment != 'github-hosted'
         uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: release-cli-${{ matrix.settings.target }}
@@ -121,6 +121,7 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with: { key: release-tools, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       # upload-artifact only fails when NO path matches, so every path it uploads needs a task here.
       - name: Package editor extensions
@@ -328,6 +329,7 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: release-wasm
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
@@ -389,7 +391,7 @@ jobs:
         with:
           wild-version: "0.9.0"
       - name: Mount Rust sticky disks (Linux)
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && runner.environment != 'github-hosted'
         uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: release-native-${{ matrix.settings.target }}
@@ -936,6 +938,7 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: release-crates
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}

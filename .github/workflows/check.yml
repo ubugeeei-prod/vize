@@ -113,6 +113,7 @@ jobs:
         with:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: semver-checks
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
@@ -200,6 +201,7 @@ jobs:
         with:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: check-vize-apps
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
@@ -229,6 +231,7 @@ jobs:
         with:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: vue-parity
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
@@ -259,6 +262,7 @@ jobs:
         with:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: test-scripts
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
@@ -303,6 +307,7 @@ jobs:
         with:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: build-js-packages
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
@@ -347,6 +352,7 @@ jobs:
         with:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: test-js-packages
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
@@ -373,6 +379,7 @@ jobs:
           node-version-file: ".node-version"
           run-install: true
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: clippy-test
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
@@ -396,6 +403,7 @@ jobs:
       - uses: ./.github/actions/setup-moonbit
 
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: coverage
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
@@ -440,6 +448,7 @@ jobs:
       - uses: ./.github/actions/setup-moonbit
 
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: coverage-source
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
@@ -498,6 +507,7 @@ jobs:
       - uses: ./.github/actions/setup-moonbit
 
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: coverage-branch
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
@@ -542,6 +552,7 @@ jobs:
           targets: wasm32-unknown-unknown
       - uses: ./.github/actions/setup-moonbit
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: playground-test
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}

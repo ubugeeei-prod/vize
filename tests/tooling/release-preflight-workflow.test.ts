@@ -81,6 +81,7 @@ test("reusable release preflight verifies evidence and crate plans without regis
     (step) => step.uses === "./.github/actions/setup-rust-sticky-cache",
   );
   assert.ok(stickyCache);
+  assert.equal(stickyCache.if, "runner.environment != 'github-hosted'");
   assert.equal(stickyCache.with?.key, "release-crates-dry-run");
   assert.equal(stickyCache.with?.["cache-key-suffix"], "${{ runner.os }}-${{ runner.arch }}");
 

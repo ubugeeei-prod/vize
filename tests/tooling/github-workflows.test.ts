@@ -86,6 +86,34 @@ test("Rust sticky cache skips Blacksmith disks on GitHub-hosted runners", () => 
   assert.equal(notice.if, "${{ runner.environment == 'github-hosted' }}");
 });
 
+test("Rust sticky cache callers skip the composite on GitHub-hosted runners", () => {
+  const guarded = "runner.environment != 'github-hosted'";
+
+  for (const { relativePath, content } of readGithubYamlFiles()) {
+    const document = parse(content) as {
+      jobs?: Record<string, { steps?: Array<{ if?: string; uses?: string }> }>;
+      runs?: { steps?: Array<{ if?: string; uses?: string }> };
+    };
+    const stepGroups: Array<{ label: string; steps: Array<{ if?: string; uses?: string }> }> = [];
+    for (const [jobName, job] of Object.entries(document.jobs ?? {})) {
+      stepGroups.push({ label: `${relativePath}:${jobName}`, steps: job.steps ?? [] });
+    }
+    if (document.runs?.steps != null) {
+      stepGroups.push({ label: relativePath, steps: document.runs.steps });
+    }
+
+    for (const { label, steps } of stepGroups) {
+      for (const step of steps) {
+        if (!step.uses?.includes("setup-rust-sticky-cache")) continue;
+        assert.ok(
+          step.if?.includes(guarded),
+          `${label} prepares setup-rust-sticky-cache on GitHub-hosted runners`,
+        );
+      }
+    }
+  }
+});
+
 test("GitHub workflows declare the expected cross-platform runner matrix", () => {
   // We use Blacksmith-hosted runners where compatible and intentionally let
   // any matching vCPU SKU pass — bumping vCPU shouldn't need a test change.

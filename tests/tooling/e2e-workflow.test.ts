@@ -255,11 +255,11 @@ test("shared row action validates the plan and never parallelizes fixture proces
   assert.match(String(upload.with?.name), /artifact-stem.*github\.run_id.*github\.run_attempt/);
   const browser = namedStep({ steps: action.runs?.steps }, "Cache Playwright browsers");
   assert.equal(browser.if, "inputs.needs-playwright == 'true'");
-  assert.equal(
-    action.runs?.steps?.find((step) => step.uses === "./.github/actions/setup-rust-sticky-cache")
-      ?.with?.key,
-    "${{ inputs.cache-key }}",
+  const stickyCache = action.runs?.steps?.find(
+    (step) => step.uses === "./.github/actions/setup-rust-sticky-cache",
   );
+  assert.equal(stickyCache?.if, "runner.environment != 'github-hosted'");
+  assert.equal(stickyCache?.with?.key, "${{ inputs.cache-key }}");
 });
 
 test("Testbox still hydrates the exact 16-fixture App inventory", () => {

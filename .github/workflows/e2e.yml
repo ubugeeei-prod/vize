@@ -227,6 +227,7 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: testbox
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}

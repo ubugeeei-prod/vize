@@ -111,6 +111,7 @@ jobs:
           components: rust-src
 
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: fuzz-${{ matrix.target }}
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}

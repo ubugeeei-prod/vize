@@ -30,6 +30,7 @@ jobs:
           components: miri,rust-src
 
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: miri
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}

@@ -118,6 +118,7 @@ jobs:
           wild-version: "0.9.0"
 
       - uses: ./head/.github/actions/setup-rust-sticky-cache
+        if: runner.environment != 'github-hosted'
         with:
           key: benchmark-head
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}

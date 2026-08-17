@@ -79,7 +79,7 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   assert.match(job, /uses: actions\/setup-go@[0-9a-f]{40}\s+# v6\.1\.0/);
   assert.match(
     job,
-    /uses: \.\/\.github\/actions\/setup-rust-sticky-cache\n\s+with:\n\s+key: content-mapper-conformance\n\s+cache-key-suffix: \$\{\{ runner\.os \}\}-\$\{\{ runner\.arch \}\}/,
+    /uses: \.\/\.github\/actions\/setup-rust-sticky-cache\n\s+if: runner\.environment != 'github-hosted'\n\s+with:\n\s+key: content-mapper-conformance\n\s+cache-key-suffix: \$\{\{ runner\.os \}\}-\$\{\{ runner\.arch \}\}/,
   );
   assert.match(job, /go-version-file: typescript-go-content-mapper\/go\.mod/);
   const watcherSteps = stepsRunning(steps, WATCHER_COMMAND);
