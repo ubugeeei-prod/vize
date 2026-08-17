@@ -26,12 +26,14 @@ import { relative } from "node:path";
  *     Type library referenced via 'vue-router' from file '.nuxt/nuxt.d.ts'
  *
  * That dragged Vize's `vue@3.6.0-beta.10` in beside elk's own `vue@3.5.30` — two
- * `vue` module identities, 229 foreign files. `declare module 'vue'` merges by
- * module identity, so every augmentation the fixture owns landed on one copy and
- * the compiled SFCs were typed against the other. The component instance type
- * collapsed from 680+ members to 21, and the ledger scored the wreckage against
- * Vize. Isolating the same fixture, with the byte-identical generated config and
- * the same `.nuxt`, takes the baseline from 902 diagnostics to 9.
+ * `vue` module identities, two `@vue/runtime-dom`, 229 foreign files. A
+ * `declare module 'vue'` augmentation only takes effect against the identity it
+ * resolves to, and with two of them in one program the fixture's own
+ * augmentations stopped reaching its components: the instance type collapsed
+ * from 680+ members to 21, the Nuxt auto-imports stopped being globals, and the
+ * ledger scored the wreckage against Vize. Removing the foreign copies — with
+ * the byte-identical generated config and the same `.nuxt` — takes the baseline
+ * from 902 diagnostics to 9.
  *
  * So this asserts the one invariant that failure violates and a corpus check
  * cannot see: the packages that own `ComponentCustomProperties` must resolve to

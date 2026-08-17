@@ -17,8 +17,8 @@ import { dirname, join, relative, resolve } from "node:path";
  * On run 31979524200 that was elk's `.nuxt/nuxt.d.ts` asking for `vue-router`.
  * pnpm keeps transitive dependencies out of the top level, so the walk reached
  * Vize's `vue-router@4.5.1`, which pulled in Vize's `vue@3.6.0-beta.10` beside
- * elk's own `vue@3.5.30`. Two `vue` identities means `declare module 'vue'`
- * merges twice into different modules, and elk's component instance type lost
+ * elk's own `vue@3.5.30`. With two identities in one program elk's own
+ * augmentations stopped reaching its components, and its instance type lost
  * every member Nuxt and vue-i18n contribute. The baseline reported 902
  * diagnostics; with the escape closed it reports 9.
  *
