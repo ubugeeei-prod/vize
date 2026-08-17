@@ -70,7 +70,7 @@ export function evaluateBaselineAmbientEnvironment(vueTscOutput, fixtureRoot) {
   const externalPackages = [...roots]
     .filter(([, copies]) => [...copies.values()].includes(false))
     .map(([name]) => name)
-    .sort();
+    .sort(codeUnitOrder);
   const unusableReason = firstAmbientFailure(vueRuntime);
   return {
     externalFileCount,
@@ -82,7 +82,7 @@ export function evaluateBaselineAmbientEnvironment(vueTscOutput, fixtureRoot) {
 }
 
 function describePackage(name, copies, fixtureRoot) {
-  const paths = [...copies.keys()].sort();
+  const paths = [...copies.keys()].sort(codeUnitOrder);
   return {
     name,
     copies: paths.map((root) => ({
@@ -139,6 +139,16 @@ function parsePackageRoot(file) {
     : segments[0];
   if (name == null) return null;
   return { name, root: `${file.slice(0, base)}${name}` };
+}
+
+/**
+ * The comparison `Array.prototype.sort` already performs on strings, written
+ * out. Spelled explicitly because these orderings are artifact content — a
+ * locale-sensitive comparator would make the same program hash differently on
+ * two runners — and because the workspace lint budget is zero warnings.
+ */
+function codeUnitOrder(left, right) {
+  return left < right ? -1 : left > right ? 1 : 0;
 }
 
 function isAbsoluteProgramPath(file) {
