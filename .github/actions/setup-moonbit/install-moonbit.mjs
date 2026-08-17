@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 // Nix development shell and CI can never resolve different compilers for the
 // same commit. Installing `latest` here is what let the two drift apart.
 const moonbitVersionFile = fileURLToPath(new URL("../../../.moonbit-version", import.meta.url));
-const moonbitVersion = fs.readFileSync(moonbitVersionFile, "utf8").trim();
+const moonbitVersion = readPinnedMoonbitVersion(moonbitVersionFile);
 
 const runnerTemp = process.env.RUNNER_TEMP;
 const githubPath = process.env.GITHUB_PATH;
@@ -45,6 +45,21 @@ function run(command, args, env) {
   if ((result.status ?? 1) !== 0) {
     process.exit(result.status ?? 1);
   }
+}
+
+function readPinnedMoonbitVersion(filePath) {
+  if (!fs.existsSync(filePath)) {
+    console.error(`MoonBit version file is required at ${filePath}`);
+    console.error("Sparse checkouts that use setup-moonbit must include .moonbit-version.");
+    process.exit(1);
+  }
+
+  const version = fs.readFileSync(filePath, "utf8").trim();
+  if (!version) {
+    console.error(`MoonBit version file is empty at ${filePath}`);
+    process.exit(1);
+  }
+  return version;
 }
 
 function sha256File(filePath) {
