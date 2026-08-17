@@ -32,6 +32,8 @@ mod semantic_links;
 #[cfg(test)]
 mod strict_template_globals_tests;
 #[cfg(test)]
+mod strict_template_scope_tests;
+#[cfg(test)]
 mod tests;
 mod types;
 

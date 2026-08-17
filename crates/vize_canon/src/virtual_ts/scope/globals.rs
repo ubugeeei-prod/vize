@@ -16,8 +16,10 @@ mod instance;
 pub(super) use instance::generate_instance_global_refs;
 mod member_root;
 mod strict_candidate;
+mod template_scope;
 use {
     member_root::is_member_root_occurrence, strict_candidate::is_strict_template_context_candidate,
+    template_scope::is_visible_template_binding,
 };
 
 /// Handle undefined references from template.
@@ -235,15 +237,6 @@ fn generate_strict_expression_refs(
             );
         }
     }
-}
-
-fn is_visible_template_binding(summary: &Croquis, name: &str, template_offset: u32) -> bool {
-    summary.bindings.contains(name)
-        || summary
-            .scopes
-            .bindings_visible_at(template_offset)
-            .iter()
-            .any(|(binding, _, _)| *binding == name)
 }
 
 fn emit_header(ts: &mut String, emitted_header: &mut bool) {
