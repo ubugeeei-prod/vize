@@ -59,24 +59,22 @@ test("benchmark workflow comments from trusted code after a read-only benchmark 
   assert.match(budgetJob, /needs:\n\s+- pr-benchmark\b/);
   assert.match(budgetJob, /actions:\s*read/);
   assert.match(budgetJob, /contents:\s*read/);
-  assert.match(budgetJob, /issues:\s*read/);
+  assert.doesNotMatch(budgetJob, /issues:\s*read/);
   assert.doesNotMatch(budgetJob, /issues:\s*write/);
   assert.doesNotMatch(budgetJob, /pull-requests:\s*write/);
   assert.match(budgetJob, /path:\s*head[\s\S]*ref:\s*\$\{\{\s*env\.BENCHMARK_HEAD_SHA\s*\}\}/);
   assert.match(budgetJob, /uses:\s*actions\/download-artifact@[0-9a-f]{40}\s*# v8\.0\.1/);
   assert.match(budgetJob, /name:\s*pr-benchmark/);
-  assert.match(budgetJob, /name:\s*Read current PR labels/);
-  assert.match(budgetJob, /if:\s*\$\{\{\s*github\.event_name == 'pull_request'\s*\}\}/);
-  assert.match(budgetJob, /GITHUB_TOKEN:\s*\$\{\{\s*github\.token\s*\}\}/);
-  assert.match(budgetJob, /process\.env\.GITHUB_API_URL \?\? "https:\/\/api\.github\.com"/);
-  assert.match(budgetJob, /labels\.map\(\(label\) => label\.name\)/);
+  assert.doesNotMatch(budgetJob, /name:\s*Read current PR labels/);
+  assert.doesNotMatch(budgetJob, /GITHUB_TOKEN:\s*\$\{\{\s*github\.token\s*\}\}/);
+  assert.doesNotMatch(budgetJob, /issues\/\$\{process\.env\.PR_NUMBER\}\/labels/);
   assert.match(
     budgetJob,
     /node head\/bench\/enforce-pr-budget\.mjs[\s\S]*--json benchmark-results\.json[\s\S]*--labels-json "\$PR_LABELS_JSON"/,
   );
   assert.match(
     budgetJob,
-    /PR_LABELS_JSON:\s*\$\{\{\s*github\.event_name == 'pull_request' && steps\.pr-labels\.outputs\.labels \|\| '\[\]'\s*\}\}/,
+    /PR_LABELS_JSON:\s*\$\{\{\s*github\.event_name == 'pull_request' && toJSON\(github\.event\.pull_request\.labels\.\*\.name\) \|\| '\[\]'\s*\}\}/,
   );
 
   assert.match(commentJob, /needs:\n\s+- pr-benchmark\b/);
@@ -217,14 +215,14 @@ test("benchmark schedule gates long-term drift against a fixed commit", () => {
     `provenance must be uploaded: ${uploadPaths.join(", ")}`,
   );
 
-  // Scheduled runs cannot opt out of a missing or unbuildable baseline: the
-  // label reader is PR-only and every other event supplies an empty label set.
+  // Scheduled runs cannot opt out of a missing or unbuildable baseline: only
+  // pull_request events provide label names, and every other event supplies an
+  // empty label set.
   const budgetHeader = budgetJob.slice(0, budgetJob.indexOf("\n    steps:"));
   assert.doesNotMatch(budgetHeader, /\n    if:/, "scheduled budget must always run");
-  assert.match(budgetJob, /if:\s*\$\{\{\s*github\.event_name == 'pull_request'\s*\}\}/);
   assert.match(
     budgetJob,
-    /github\.event_name == 'pull_request' && steps\.pr-labels\.outputs\.labels \|\| '\[\]'/,
+    /github\.event_name == 'pull_request' && toJSON\(github\.event\.pull_request\.labels\.\*\.name\) \|\| '\[\]'/,
   );
   // Commenting stays scoped to same-repo pull requests, so scheduled runs can
   // never reach the write-permission job regardless of how the guard is worded.
