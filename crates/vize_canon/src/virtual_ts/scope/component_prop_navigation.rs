@@ -3,7 +3,8 @@ use std::ops::Range;
 use vize_carton::{String, append, cstr};
 use vize_croquis::croquis::{ComponentUsage, PassedProp};
 
-use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier, to_safe_identifier_fragment};
+use crate::virtual_ts::component_reference::component_binding_reference;
+use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier_fragment};
 use crate::virtual_ts::types::VizeMapping;
 
 use super::component_navigation::{is_ts_identifier, push_ts_single_quoted_literal};
@@ -17,7 +18,12 @@ pub(super) fn emit_references(
 ) {
     ts.push_str("\n  // Component template navigation references\n");
     for &(idx, usage) in checkable_usages {
-        let component_ref = to_safe_identifier(usage.name.as_str());
+        let component_ref = component_binding_reference(
+            ctx.summary,
+            ctx.options,
+            ctx.syntactic_type_only_imported_names,
+            usage.name.as_str(),
+        );
         let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
         let tag_src_start = (ctx.template_offset + usage.start + 1) as usize;
         let tag_src_end = tag_src_start + usage.name.len();

@@ -9,6 +9,7 @@
 
 #[cfg(test)]
 mod class_component_props_tests;
+mod component_reference;
 #[cfg(test)]
 mod define_emits_usage_tests;
 #[cfg(test)]

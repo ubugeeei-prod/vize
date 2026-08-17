@@ -1,6 +1,17 @@
 use vize_croquis::Croquis;
 
 pub(super) fn is_member_root_occurrence(summary: &Croquis, offset: u32, name: &str) -> bool {
+    occurrence_tail(summary, offset, name).is_some_and(|tail| {
+        tail.starts_with('.') || tail.starts_with("?.") || tail.starts_with('[')
+    })
+}
+
+pub(super) fn is_call_root_occurrence(summary: &Croquis, offset: u32, name: &str) -> bool {
+    occurrence_tail(summary, offset, name)
+        .is_some_and(|tail| tail.starts_with('(') || tail.starts_with("?.("))
+}
+
+fn occurrence_tail<'a>(summary: &'a Croquis, offset: u32, name: &str) -> Option<&'a str> {
     for expr in &summary.template_expressions {
         if offset < expr.start {
             continue;
@@ -11,12 +22,9 @@ pub(super) fn is_member_root_occurrence(summary: &Croquis, offset: u32, name: &s
         {
             continue;
         }
-        let tail = &source[member_tail_start(source, local, name.len())..];
-        if tail.starts_with('.') || tail.starts_with("?.") || tail.starts_with('[') {
-            return true;
-        }
+        return Some(&source[member_tail_start(source, local, name.len())..]);
     }
-    false
+    None
 }
 
 fn member_tail_start(source: &str, local: usize, name_len: usize) -> usize {

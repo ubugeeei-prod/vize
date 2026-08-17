@@ -1,6 +1,6 @@
 //! Visibility of template-scope bindings at a template-relative offset.
 
-use vize_croquis::{Croquis, ScopeKind};
+use vize_croquis::{Croquis, Scope, ScopeKind};
 
 /// Whether `name` is already bound where a template expression uses it.
 ///
@@ -37,20 +37,38 @@ pub(super) fn is_visible_template_binding(
     template_offset: u32,
 ) -> bool {
     summary.bindings.contains(name)
-        || summary
-            .scopes
-            .bindings_visible_at(template_offset)
-            .iter()
-            .any(|(binding, _, _)| *binding == name)
         || binds_in_enclosing_template_scope(summary, name, template_offset)
+}
+
+pub(super) fn is_inside_template_scope(summary: &Croquis, template_offset: u32) -> bool {
+    summary
+        .scopes
+        .iter()
+        .any(|scope| is_active_template_scope(scope, template_offset))
 }
 
 fn binds_in_enclosing_template_scope(summary: &Croquis, name: &str, template_offset: u32) -> bool {
     summary.scopes.iter().any(|scope| {
-        is_template_introduced_scope(scope.kind)
-            && scope.span.contains(template_offset)
-            && scope.bindings().any(|(binding, _)| binding == name)
+        is_active_template_scope(scope, template_offset)
+            && scope.bindings().any(|(binding, data)| {
+                binding == name && data.declaration_offset <= template_offset
+            })
     })
+}
+
+fn is_active_template_scope(scope: &Scope, template_offset: u32) -> bool {
+    if !is_template_introduced_scope(scope.kind) || !scope.span.contains(template_offset) {
+        return false;
+    }
+
+    let mut has_bindings = false;
+    for (_, binding) in scope.bindings() {
+        has_bindings = true;
+        if binding.declaration_offset <= template_offset {
+            return true;
+        }
+    }
+    !has_bindings
 }
 
 /// Scope kinds a template — and only a template — introduces, so their spans are

@@ -241,6 +241,23 @@ fn batch_declaration_spelling_stays_isolated_from_editor_mirrors() {
 }
 
 #[test]
+fn external_esm_declaration_preserves_import_condition_spelling() {
+    let root = case_dir("external-esm-declaration-spelling");
+    fs::create_dir_all(root.join("src")).unwrap();
+    fs::write(root.join("package.json"), r#"{"type":"module"}"#).unwrap();
+    let declaration = root.join("src/globals.d.ts");
+    let content = "import 'dual-package';\ndeclare module 'dual-package/subpath.js' {}\n";
+    fs::write(&declaration, content).unwrap();
+    let mut project = VirtualProject::new(&root).unwrap();
+    project
+        .register_declaration_file(&declaration, content)
+        .unwrap();
+    let virtual_path = &project.find_by_original(&declaration).unwrap().virtual_path;
+    assert_eq!(virtual_path.file_name().unwrap(), "globals.d.ts");
+    let _ = fs::remove_dir_all(&root);
+}
+
+#[test]
 fn a_wildcard_alias_into_node_modules_is_kept() {
     // A pnpm workspace link lives under `node_modules/<scope>/<pkg>`, so a
     // wildcard target's entries can each canonicalize out and be first

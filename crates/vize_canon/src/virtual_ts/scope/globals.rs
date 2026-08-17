@@ -6,7 +6,7 @@ use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String, append, cstr};
 
-use vize_croquis::{Croquis, ScopeKind, analyzer::extract_identifier_refs_oxc};
+use vize_croquis::{Croquis, ScopeKind};
 
 use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
@@ -16,9 +16,12 @@ mod instance;
 pub(super) use instance::generate_instance_global_refs;
 mod member_root;
 mod strict_candidate;
+mod strict_expression;
 mod template_scope;
 use {
-    member_root::is_member_root_occurrence, strict_candidate::is_strict_template_context_candidate,
+    member_root::{is_call_root_occurrence, is_member_root_occurrence},
+    strict_candidate::is_strict_template_context_candidate,
+    strict_expression::generate_strict_expression_refs,
     template_scope::is_visible_template_binding,
 };
 
@@ -39,6 +42,7 @@ pub(super) fn generate_undefined_refs(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
+    template_prop_names: &FxHashSet<String>,
     template_offset: u32,
     options: &ScopeGenerationOptions<'_, '_>,
 ) {
@@ -89,6 +93,11 @@ pub(super) fn generate_undefined_refs(
         if is_template_instance_global_name(undef.name.as_str()) {
             continue;
         }
+        if template_prop_names.contains(name)
+            || is_visible_template_binding(summary, name, undef.offset)
+        {
+            continue;
+        }
         // Skip names that match type exports (these are type-level, not value-level)
         if type_export_names.contains(name) {
             continue;
@@ -106,16 +115,19 @@ pub(super) fn generate_undefined_refs(
         let on_instance = script_scope_names
             .as_ref()
             .is_some_and(|_| !script_declared && !context_declared);
+        let member_root = is_member_root_occurrence(summary, undef.offset, name);
+        let call_root = is_call_root_occurrence(summary, undef.offset, name);
+        let strict_ref_shape = member_root || call_root;
         let on_strict_template_context = options.virtual_ts_options.strict_instance_globals
             && !on_instance
             && !script_declared
-            && !context_declared;
+            && !context_declared
+            && strict_ref_shape;
 
         if on_strict_template_context {
             if !seen_strict_occurrences.insert((undef.name.clone(), src_start)) {
                 continue;
             }
-            let member_root = is_member_root_occurrence(summary, undef.offset, name);
             let already_declared = member_root || !seen_names.insert(String::from(name));
             emit_header(ts, &mut emitted_header);
             emit_strict_template_context_ref(
@@ -185,6 +197,7 @@ pub(super) fn generate_undefined_refs(
             summary,
             template_offset,
             options.virtual_ts_options,
+            template_prop_names,
             &type_export_names,
             &mut seen_names,
             &mut seen_strict_occurrences,
@@ -193,60 +206,14 @@ pub(super) fn generate_undefined_refs(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
-fn generate_strict_expression_refs(
-    ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
-    summary: &Croquis,
-    template_offset: u32,
-    options: &VirtualTsOptions,
-    type_export_names: &FxHashSet<&str>,
-    seen_names: &mut FxHashSet<String>,
-    seen_strict_occurrences: &mut FxHashSet<(String, usize)>,
-    emitted_header: &mut bool,
-) {
-    for expr in &summary.template_expressions {
-        for ident in extract_identifier_refs_oxc(expr.content.as_str()) {
-            let name = ident.name.as_str();
-            let local_start = expr.start + ident.offset;
-            let head = expr.content.as_str()[..ident.offset as usize].trim_end();
-            let member_root = is_member_root_occurrence(summary, local_start, name);
-            if is_template_instance_global_name(name)
-                || !is_strict_template_context_candidate(name)
-                || is_declared_template_context_name(name, options)
-                || type_export_names.contains(name)
-                || is_visible_template_binding(summary, name, local_start)
-                || head.ends_with('.')
-                || head.ends_with("?.")
-            {
-                continue;
-            }
-            let src_start = (template_offset + local_start) as usize;
-            if !seen_strict_occurrences.insert((String::from(name), src_start)) {
-                continue;
-            }
-            let already_declared = member_root || !seen_names.insert(String::from(name));
-            emit_header(ts, emitted_header);
-            emit_strict_template_context_ref(
-                ts,
-                mappings,
-                name,
-                src_start,
-                src_start + name.len(),
-                already_declared,
-            );
-        }
-    }
-}
-
-fn emit_header(ts: &mut String, emitted_header: &mut bool) {
+pub(super) fn emit_header(ts: &mut String, emitted_header: &mut bool) {
     if !*emitted_header {
         ts.push_str("\n  // Undefined references from template:\n");
         *emitted_header = true;
     }
 }
 
-fn emit_strict_template_context_ref(
+pub(super) fn emit_strict_template_context_ref(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     name: &str,
@@ -315,7 +282,7 @@ fn script_top_level_binding_names(script: &str) -> Option<FxHashSet<String>> {
     None
 }
 
-fn is_template_instance_global_name(name: &str) -> bool {
+pub(super) fn is_template_instance_global_name(name: &str) -> bool {
     let Some(rest) = name.strip_prefix('$') else {
         return false;
     };
@@ -325,7 +292,7 @@ fn is_template_instance_global_name(name: &str) -> bool {
             .all(|c| c == '_' || c == '$' || c.is_ascii_alphanumeric())
 }
 
-fn is_declared_template_context_name(name: &str, options: &VirtualTsOptions) -> bool {
+pub(super) fn is_declared_template_context_name(name: &str, options: &VirtualTsOptions) -> bool {
     matches!(name, "$attrs" | "$slots" | "$refs" | "$emit" | "$event")
         || options
             .template_globals

@@ -65,8 +65,10 @@ pub(super) fn generate_event_handler_scope(
             ts,
             ComponentEventTypeContext {
                 summary: ctx.summary,
+                virtual_ts_options: ctx.virtual_ts_options,
                 data,
                 scope,
+                syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
                 template_prop_names: ctx.template_prop_names,
                 legacy_vue2: ctx.legacy_vue2,
                 needs_typed_handler_assignment,

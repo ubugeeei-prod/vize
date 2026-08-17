@@ -22,6 +22,8 @@ pub(super) mod setup_scope;
 mod setup_type_exports;
 mod spans;
 mod template_refs;
+mod type_only_imports;
+mod unresolved_components;
 use self::anchors::emit_setup_binding_anchors;
 use self::auto_import_stubs::emit_auto_import_stubs;
 use self::component_constructors::{ComponentInstanceAliases, emit_component_constructors};
@@ -48,8 +50,10 @@ use self::setup_helpers::emit_setup_helpers;
 use self::setup_props::{generate_setup_props, prop_source};
 use self::setup_type_exports::SetupTypeExportsPlan;
 use self::spans::{DEFINE_COMPONENT_REF, rewrite_export_default_for_module_scope, template_usage};
+use self::type_only_imports::collect_syntactic_type_only_imported_names;
+use self::unresolved_components::emit_unresolved_components;
 use super::{
-    helpers::{SETUP_SCOPE_HELPER_NAMES, generate_template_context, to_safe_identifier},
+    helpers::{SETUP_SCOPE_HELPER_NAMES, generate_template_context},
     import_meta::emit_import_meta_augmentation,
     macro_type_mappings::MacroTypeMappings,
     props::{
@@ -353,14 +357,37 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     } else {
         FxHashSet::default()
     };
+    let syntactic_type_only_imported_names = if (global_components.enabled()
+        && !summary.component_usages.is_empty())
+        || !summary.used_components.is_empty()
+    {
+        profile!(
+            "canon.virtual_ts.extract_syntactic_type_only_imported_names",
+            collect_syntactic_type_only_imported_names(summary, script_content)
+        )
+    } else {
+        FxHashSet::default()
+    };
 
     if !options.auto_import_stubs.is_empty() {
         profile!(
             "canon.virtual_ts.emit_auto_import_stubs",
-            emit_auto_import_stubs(&mut ts, summary, options, &imported_names)
+            emit_auto_import_stubs(
+                &mut ts,
+                summary,
+                options,
+                &imported_names,
+                &syntactic_type_only_imported_names,
+            )
         );
     }
-    global_components.emit(&mut ts, summary, options, &imported_names);
+    global_components.emit(
+        &mut ts,
+        summary,
+        options,
+        &imported_names,
+        &syntactic_type_only_imported_names,
+    );
     ts.push('\n');
 
     // Derive a real cross-file `Props` type from macro or Options API input.
@@ -695,6 +722,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             check_options,
                             virtual_ts_options: options,
                             setup_spread_bindings: template_ref_unwraps.setup_spread_bindings(),
+                            syntactic_type_only_imported_names: &syntactic_type_only_imported_names,
                             template_ast,
                             check_unresolved_global_components: global_components.component_check(),
                             legacy_vue2,
@@ -706,41 +734,13 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     )
                 );
             }
-            // Declare unresolved components (auto-imported or built-in) as `any`.
-            // Names known to be provided by ambient project declarations stay
-            // unshadowed so their actual component prop types are preserved.
-            if !summary.used_components.is_empty() {
-                let external_template_bindings: FxHashSet<&str> = options
-                    .external_template_bindings
-                    .iter()
-                    .map(|name| name.as_str())
-                    .collect();
-                let mut has_unresolved = false;
-                for component in &summary.used_components {
-                    let name = component.as_str();
-                    // Skip if already declared via script bindings (import/const)
-                    if summary.bindings.bindings.contains_key(name)
-                        || external_template_bindings.contains(name)
-                        || global_components.keeps_unresolved_binding(name)
-                    {
-                        continue;
-                    }
-                    if !has_unresolved {
-                        ts.push_str(
-                            "\n  // Auto-imported/built-in components (not in script bindings)\n",
-                        );
-                        has_unresolved = true;
-                    }
-                    let safe = to_safe_identifier(name);
-                    append!(ts, "  const {safe}: any = undefined as any;\n");
-                }
-
-                ts.push_str("\n  // Mark used components as referenced\n");
-                for component in &summary.used_components {
-                    let safe = to_safe_identifier(component.as_str());
-                    append!(ts, "  void {safe};\n");
-                }
-            }
+            emit_unresolved_components(
+                &mut ts,
+                summary,
+                options,
+                &global_components,
+                &syntactic_type_only_imported_names,
+            );
 
             // In projects that opt into unused-local diagnostics, this list is
             // narrowed to template-referenced names so user TS6133 can surface.

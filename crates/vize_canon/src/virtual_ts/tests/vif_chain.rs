@@ -89,6 +89,41 @@ const aimAtReports: AimAtReport[] = []
 }
 
 #[test]
+fn same_element_v_if_does_not_see_v_for_alias() {
+    let script = r#"const menuList = [{ attributes: ["size"] }];"#;
+    let template = r#"<section v-for="foods in menuList">
+  <ul v-if="foods.attributes.length">
+    <li v-if="attribute" v-for="(attribute, index) in foods.attributes" :key="index">
+      {{ attribute }}
+    </li>
+  </ul>
+</section>"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    assert!(
+        output
+            .code
+            .contains("\n  // Undefined references from template:\n  void (attribute);\n"),
+        "same-element v-if must be checked before its v-for aliases exist:\n{}",
+        output.code
+    );
+    assert!(
+        output
+            .code
+            .contains("__vForList(foods.attributes).forEach(([attribute, index]) => {"),
+        "the v-for body should still bind aliases for descendants:\n{}",
+        output.code
+    );
+}
+
+#[test]
 fn nested_else_v_for_does_not_recheck_narrowed_discriminant() {
     let script = r#"interface BarItem { type: 'hunk-bar'; lines: number }
 interface LineItem { type: 'line'; text: string }

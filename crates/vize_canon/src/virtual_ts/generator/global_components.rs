@@ -1,6 +1,9 @@
-use vize_carton::{FxHashSet, String, append, camelize, capitalize};
+use vize_carton::{CompactString, FxHashSet, String, append, camelize, capitalize};
 use vize_croquis::{Croquis, ScopeData};
 
+use crate::virtual_ts::component_reference::{
+    component_reference_alias, contains_compact_name, has_type_only_component_candidate,
+};
 use crate::virtual_ts::helpers::to_safe_identifier;
 use crate::virtual_ts::scope::GlobalComponentCheck;
 use crate::virtual_ts::types::VirtualTsOptions;
@@ -61,6 +64,7 @@ impl<'a> GlobalComponentPlan<'a> {
         summary: &Croquis,
         options: &VirtualTsOptions,
         imported_names: &FxHashSet<&str>,
+        syntactic_type_only_imported_names: &FxHashSet<CompactString>,
     ) {
         if !self.enabled() || summary.component_usages.is_empty() {
             return;
@@ -88,15 +92,23 @@ impl<'a> GlobalComponentPlan<'a> {
             let pascal_name = capitalize(camel_name.as_str());
             let candidates = [name, camel_name.as_str(), pascal_name.as_str()];
             if candidates.iter().any(|candidate| {
-                summary.bindings.bindings.contains_key(*candidate)
-                    || imported_names.contains(candidate)
-                    || external_template_bindings.contains(candidate)
+                (summary.bindings.bindings.contains_key(*candidate)
+                    && !contains_compact_name(syntactic_type_only_imported_names, candidate))
+                    || (imported_names.contains(candidate)
+                        && !contains_compact_name(syntactic_type_only_imported_names, candidate))
+                    || (external_template_bindings.contains(candidate)
+                        && !contains_compact_name(syntactic_type_only_imported_names, candidate))
                     || auto_import_stub_names.contains(candidate)
             }) {
                 continue;
             }
 
-            let component_ref = to_safe_identifier(name);
+            let component_ref =
+                if has_type_only_component_candidate(syntactic_type_only_imported_names, name) {
+                    component_reference_alias(name)
+                } else {
+                    to_safe_identifier(name)
+                };
             if !emitted_refs.insert(component_ref.clone()) {
                 continue;
             }
@@ -106,18 +118,27 @@ impl<'a> GlobalComponentPlan<'a> {
                 has_header = true;
             }
 
-            append!(
-                *ts,
-                "declare const {component_ref}: import(\"vue\").GlobalComponents extends {{ \"{name}\": infer __C }} ? __C"
-            );
-            if pascal_name.as_str() == name {
-                ts.push_str(" : any;\n");
-            } else {
-                append!(
-                    *ts,
-                    " : import(\"vue\").GlobalComponents extends {{ \"{pascal_name}\": infer __C }} ? __C : any;\n"
-                );
-            }
+            append_global_component_stub(ts, component_ref.as_str(), name, pascal_name.as_str());
         }
+    }
+}
+
+fn append_global_component_stub(
+    ts: &mut String,
+    component_ref: &str,
+    name: &str,
+    pascal_name: &str,
+) {
+    append!(
+        *ts,
+        "declare const {component_ref}: import(\"vue\").GlobalComponents extends {{ \"{name}\": infer __C }} ? __C"
+    );
+    if pascal_name == name {
+        ts.push_str(" : any;\n");
+    } else {
+        append!(
+            *ts,
+            " : import(\"vue\").GlobalComponents extends {{ \"{pascal_name}\": infer __C }} ? __C : any;\n"
+        );
     }
 }

@@ -10,8 +10,9 @@ use vize_carton::profile;
 
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeKind, analysis::ComponentUsage};
 
-use crate::virtual_ts::expressions::generate_component_prop_checks;
-use crate::virtual_ts::helpers::{to_safe_identifier, to_safe_identifier_fragment};
+use crate::virtual_ts::component_reference::component_binding_reference;
+use crate::virtual_ts::expressions::{ComponentPropCheckContext, generate_component_prop_checks};
+use crate::virtual_ts::helpers::to_safe_identifier_fragment;
 use crate::virtual_ts::types::VizeMapping;
 
 use super::component_prop_checker::{
@@ -55,7 +56,12 @@ pub(super) fn generate_component_props(
     append_prop_check_helpers(ts, checkable_usages);
 
     for &(idx, usage) in checkable_usages {
-        let component_ref = to_safe_identifier(usage.name.as_str());
+        let component_ref = component_binding_reference(
+            summary,
+            ctx.options,
+            ctx.syntactic_type_only_imported_names,
+            usage.name.as_str(),
+        );
         let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
 
         let src_start = (ctx.template_offset + usage.start) as usize;
@@ -139,18 +145,22 @@ pub(super) fn generate_component_props(
         if is_empty_props_usage(usage) {
             continue;
         }
-        profile!(
-            "canon.virtual_ts.component_prop_checks",
-            generate_component_prop_checks(
+        let component_ref = component_binding_reference(
+            summary,
+            ctx.options,
+            ctx.syntactic_type_only_imported_names,
+            usage.name.as_str(),
+        );
+        profile!("canon.virtual_ts.component_prop_checks", {
+            let mut check_context = ComponentPropCheckContext::new(
                 ts,
                 mappings,
-                usage,
-                idx,
                 ctx.template_prop_names,
                 ctx.source_context(),
-                "  "
-            )
-        );
+                "  ",
+            );
+            generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str())
+        });
     }
 
     generate_empty_root_checks(ts, mappings, ctx, checkable_usages, &closure_scope_ids);
@@ -170,6 +180,7 @@ pub(super) fn generate_component_props(
             children_map: ctx.children_map,
             vfor_enclosing_guards: &vfor_enclosing_guards,
             template_prop_names: ctx.template_prop_names,
+            syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
             source_context: ctx.source_context(),
             preserve_event_navigation: ctx.preserve_event_navigation,
         };

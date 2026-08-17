@@ -1,13 +1,6 @@
-//! Top-level orchestration of scope-closure generation and the recursive
-//! v-for/v-slot/event-handler scope-node walker.
+//! Scope-closure generation and the recursive v-for/v-slot/event-handler walker.
 
-use vize_carton::FxHashMap;
-use vize_carton::FxHashSet;
-use vize_carton::String;
-use vize_carton::append;
-use vize_carton::cstr;
-use vize_carton::profile;
-
+use vize_carton::{FxHashMap, FxHashSet, String, append, cstr, profile};
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeId, ScopeKind};
 
 use crate::virtual_ts::expressions::{
@@ -136,6 +129,7 @@ pub(crate) fn generate_scope_closures(
         children_map: &children_map,
         vfor_enclosing_guards: &vfor_enclosing_guards,
         template_prop_names,
+        syntactic_type_only_imported_names: options.syntactic_type_only_imported_names,
         template_offset,
         options: virtual_ts_options,
         preserve_event_navigation: options.preserve_event_navigation,
@@ -156,6 +150,7 @@ pub(crate) fn generate_scope_closures(
             children_map: &children_map,
             slot_outlets: &slot_outlets,
             template_prop_names,
+            syntactic_type_only_imported_names: options.syntactic_type_only_imported_names,
             checks,
             template_ast: options.template_ast,
             template_source: options.template_ast.map(|root| root.source.as_str()),
@@ -202,10 +197,16 @@ pub(crate) fn generate_scope_closures(
     }
 
     if check_options.check_template_bindings {
-        profile!(
-            "canon.virtual_ts.undefined_refs",
-            generate_undefined_refs(ts, mappings, summary, template_offset, &options)
-        );
+        profile!("canon.virtual_ts.undefined_refs", {
+            generate_undefined_refs(
+                ts,
+                mappings,
+                summary,
+                template_prop_names,
+                template_offset,
+                &options,
+            )
+        });
     }
     if let Some(usages) = &usages {
         profile!(

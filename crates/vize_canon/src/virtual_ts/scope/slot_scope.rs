@@ -26,7 +26,9 @@ use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
 use super::children::generate_child_scopes;
 use super::context::{ScopeGenContext, VForPropsContext};
-use super::emit::{component_binding_reference, emit_slot_function_open, slot_props_type};
+use crate::virtual_ts::component_reference::component_binding_reference;
+
+use super::emit::{emit_slot_function_open, slot_props_type};
 use super::slot_outlet_props::generate_scope_slot_outlet_checks;
 
 /// The slot-payload aliases, emitted per file rather than hoisted into the
@@ -128,6 +130,7 @@ fn find_slot_host<'a>(
 struct SlotPayloadContext<'a> {
     summary: &'a Croquis,
     options: &'a VirtualTsOptions,
+    syntactic_type_only_imported_names: &'a FxHashSet<vize_carton::CompactString>,
     template_prop_names: &'a FxHashSet<String>,
     source_context: ComponentPropSource<'a>,
     /// Name prefix of the emitted host binding. The two emitters share a block
@@ -150,6 +153,7 @@ fn slot_payload_type(
         return slot_props_type(
             summary,
             ctx.options,
+            ctx.syntactic_type_only_imported_names,
             None,
             data.name.as_str(),
             name_is_static,
@@ -159,12 +163,18 @@ fn slot_payload_type(
         return slot_props_type(
             summary,
             ctx.options,
+            ctx.syntactic_type_only_imported_names,
             Some(component),
             data.name.as_str(),
             name_is_static,
         );
     };
-    let component_ref = component_binding_reference(summary, ctx.options, component);
+    let component_ref = component_binding_reference(
+        summary,
+        ctx.options,
+        ctx.syntactic_type_only_imported_names,
+        component,
+    );
     let binding = cstr!("{}{}", ctx.binding_prefix, scope.id.as_u32());
     generate_slot_host_binding(
         ts,
@@ -205,6 +215,7 @@ pub(super) fn generate_v_slot_scope(
         &SlotPayloadContext {
             summary: ctx.summary,
             options: ctx.virtual_ts_options,
+            syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
             template_prop_names: ctx.template_prop_names,
             source_context: ComponentPropSource::new(
                 ctx.template_source,
@@ -285,6 +296,7 @@ pub(super) fn generate_v_slot_props_scope(
         &SlotPayloadContext {
             summary: ctx.summary,
             options: ctx.options,
+            syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
             template_prop_names: ctx.template_prop_names,
             source_context: ctx.source_context,
             binding_prefix: "__vize_slot_props_host_",

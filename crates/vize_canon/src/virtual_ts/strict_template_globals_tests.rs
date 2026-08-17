@@ -14,13 +14,129 @@ fn test_strict_template_context_keeps_router_but_not_unknown_plugin_globals() {
         false,
     );
 
-    assert!(ctx.contains("type __VizeStrictCoreTemplateContext"));
-    assert!(
-        ctx.contains("type __VizeStrictTemplateContext = __VizeStrictCoreTemplateContext & __Ctx;")
-    );
-    assert!(ctx.contains("$route: any;"));
-    assert!(ctx.contains("$router: any;"));
+    assert!(ctx.contains("type __VizeStrictPublicInstanceGlobals = {"));
+    assert!(ctx.contains("string extends __Rest ? never"));
+    assert!(ctx.contains("__L extends \"$route\" ? never"));
+    assert!(ctx.contains("unknown extends T ? any : T"));
+    assert!(ctx.contains("type __VizeStrictTemplateContext = {"));
+    assert!(ctx.contains("} & __VizeStrictPublicInstanceGlobals;"));
+    assert!(!ctx.contains("& __Ctx"));
+    assert!(!ctx.contains("$route: any;"));
+    assert!(!ctx.contains("$router: any;"));
     assert!(!ctx.contains("$t:"));
+}
+
+#[test]
+fn test_strict_template_context_does_not_inherit_public_instance_unknowns() {
+    let template = r#"<div>{{ $t('account.follow') }}</div>"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts_with_offsets(
+        &summary,
+        None,
+        Some(&root),
+        0,
+        0,
+        &VirtualTsOptions {
+            strict_instance_globals: true,
+            ..Default::default()
+        },
+    );
+
+    assert!(
+        output
+            .code
+            .contains("const $t = __vize_strict_template_context.$t;"),
+        "{}",
+        output.code
+    );
+    assert!(
+        !output.code.contains("__VizeStrictTemplateContext & __Ctx"),
+        "{}",
+        output.code
+    );
+}
+
+#[test]
+fn test_strict_template_context_does_not_recheck_v_for_scope_bindings() {
+    let template = r#"<div v-for="(item, index) in items">{{ item.label }} {{ index }}</div>"#;
+    let script = r#"const items = [{ label: "ready" }];"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts_with_offsets(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &VirtualTsOptions {
+            strict_instance_globals: true,
+            ..Default::default()
+        },
+    );
+
+    assert!(
+        !output.code.contains("__vize_strict_template_context.item"),
+        "{}",
+        output.code
+    );
+    assert!(
+        !output.code.contains("__vize_strict_template_context.index"),
+        "{}",
+        output.code
+    );
+}
+
+#[test]
+fn test_strict_template_context_does_not_recheck_template_props() {
+    let template = r#"<section>{{ title }} {{ confirm }}</section>"#;
+    let script = "defineProps<{ title: string; confirm?: string }>();\n";
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts_with_offsets(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &VirtualTsOptions {
+            strict_instance_globals: true,
+            ..Default::default()
+        },
+    );
+
+    assert!(
+        !output.code.contains("__vize_strict_template_context.title"),
+        "{}",
+        output.code
+    );
+    assert!(
+        !output
+            .code
+            .contains("__vize_strict_template_context.confirm"),
+        "{}",
+        output.code
+    );
 }
 
 #[test]
@@ -173,7 +289,7 @@ fn test_strict_template_expression_reports_unknown_member_root() {
         output.code
     );
     assert!(
-        output.code.contains("__vize_strict_template_context.key"),
+        !output.code.contains("__vize_strict_template_context.key"),
         "{}",
         output.code
     );

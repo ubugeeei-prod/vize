@@ -47,6 +47,7 @@ pub use document::{
 // `import_rewriter_alias::AliasSpecifierResolver`, which is `pub(crate)`.
 pub(crate) use document::generate_vue_document_virtual_ts_with_options_and_alias_resolver;
 mod diagnostics;
+mod esm_declaration_spelling;
 mod external_mirror;
 pub use external_mirror::external_mirror_original_path;
 mod identity;

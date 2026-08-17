@@ -149,7 +149,7 @@ const result: string = window.welcomeRuntime.ping();
     .unwrap();
     let includes = generated["include"].as_array().unwrap();
     for expected in [
-        "src/type/globals.d.cts",
+        "src/type/globals.d.ts",
         "src/welcome/preloadType.ts",
         "src/welcome/runtimeContract.ts",
     ] {

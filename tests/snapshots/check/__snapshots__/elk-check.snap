@@ -1067,7 +1067,6 @@
     {
       "file": "app/components/timeline/TimelineScheduledPostsPaginator.vue",
       "diagnostics": [
-        "error:2:15 [TS2440] Import declaration conflicts with local declaration of 'CommonPaginator'.",
         "error:3:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
         "error:4:39 [TS2307] Cannot find module 'vue-component-type-helpers' or its corresponding type declarations."
       ]
@@ -1474,7 +1473,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 286,
+  "errorCount": 285,
   "warningCount": 0,
   "fileCount": 262
 }
