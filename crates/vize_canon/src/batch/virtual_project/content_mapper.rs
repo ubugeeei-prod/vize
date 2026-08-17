@@ -19,7 +19,8 @@ use alias::{is_alias_projection, is_synthetic_content_mapper_identifier};
 mod protocol;
 use protocol::protocol_semantic_links;
 pub use protocol::{
-    ContentMapperDiagnostic, ContentMapperSemanticLink, ContentMapperSpan, ContentMapperTransform,
+    CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperDiagnostic, ContentMapperSemanticLink,
+    ContentMapperSpan, ContentMapperTransform,
 };
 
 use super::build::{
@@ -118,6 +119,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
         Err(error) => {
             return Ok(ContentMapperTransform {
                 text: invalid_sfc_fallback_virtual_ts(),
+                extension: CONTENT_MAPPER_VIRTUAL_EXTENSION,
                 mappings: Vec::new(),
                 semantic_links: Vec::new(),
                 diagnostics: vec![sfc_parse_diagnostic(content, &error)],
@@ -159,6 +161,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
     }
 
     Ok(ContentMapperTransform {
+        extension: CONTENT_MAPPER_VIRTUAL_EXTENSION,
         mappings: protocol_spans(content, &code, &mappings),
         semantic_links: protocol_semantic_links(&semantic_links),
         diagnostics: diagnostics

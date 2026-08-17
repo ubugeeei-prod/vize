@@ -16,10 +16,11 @@ function withInstalledMapper(run: (installDir: string, packageRoot: string) => v
       path.join(packageRoot, "package.json"),
       JSON.stringify({
         name: "vize",
-        tsContentMapper: {
-          exec: ["node", "./bin/vize", "content-mapper"],
-          extensions: { ".vue": ".tsx" },
-          compilerOptions: ["noUnusedLocals"],
+        typescript: {
+          contentMapper: {
+            exec: ["node", "./bin/vize", "content-mapper"],
+            compilerOptions: ["noUnusedLocals"],
+          },
         },
       }),
     );
@@ -39,26 +40,64 @@ test("installed Content Mapper contract rejects a corrupted exec entry", () => {
   withInstalledMapper((installDir, packageRoot) => {
     const manifestPath = path.join(packageRoot, "package.json");
     const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-    manifest.tsContentMapper.exec = ["node", "./bin/missing", "content-mapper"];
+    manifest.typescript.contentMapper.exec = ["node", "./bin/missing", "content-mapper"];
     fs.writeFileSync(manifestPath, JSON.stringify(manifest));
 
     assert.throws(
       () => assertInstalledMapperContract(installDir),
-      /must expose the production tsContentMapper contract/,
+      /must expose the production typescript\.contentMapper contract/,
     );
   });
 });
 
-test("installed Content Mapper contract rejects a missing virtual extension", () => {
+// Upstream microsoft/typescript-go@e72cbeaaa moved the manifest block from the
+// top-level "tsContentMapper" key to "typescript.contentMapper". A package still
+// shipping the retired key resolves to no mapper at all (TS100035), so the
+// contract must fail closed rather than treat the old shape as equivalent.
+test("installed Content Mapper contract rejects the retired tsContentMapper key", () => {
   withInstalledMapper((installDir, packageRoot) => {
     const manifestPath = path.join(packageRoot, "package.json");
     const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-    delete manifest.tsContentMapper.extensions;
+    manifest.tsContentMapper = manifest.typescript.contentMapper;
+    delete manifest.typescript;
     fs.writeFileSync(manifestPath, JSON.stringify(manifest));
 
     assert.throws(
       () => assertInstalledMapperContract(installDir),
-      /must expose the production tsContentMapper contract/,
+      /must expose the production typescript\.contentMapper contract/,
+    );
+  });
+});
+
+// "compilerOptions" is the only channel that carries noUnusedLocals into the
+// transform; dropping it silently changes which TS6133 diagnostics Vize emits.
+test("installed Content Mapper contract rejects a dropped compilerOptions declaration", () => {
+  withInstalledMapper((installDir, packageRoot) => {
+    const manifestPath = path.join(packageRoot, "package.json");
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    delete manifest.typescript.contentMapper.compilerOptions;
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+
+    assert.throws(
+      () => assertInstalledMapperContract(installDir),
+      /must expose the production typescript\.contentMapper contract/,
+    );
+  });
+});
+
+// Upstream microsoft/typescript-go@08475bbcc removed manifest-declared extensions
+// in favour of a per-transform "extension" field, and the manifest parser no
+// longer reads the key. Shipping it would advertise a contract upstream ignores.
+test("installed Content Mapper contract rejects a retired extensions declaration", () => {
+  withInstalledMapper((installDir, packageRoot) => {
+    const manifestPath = path.join(packageRoot, "package.json");
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    manifest.typescript.contentMapper.extensions = { ".vue": ".tsx" };
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+
+    assert.throws(
+      () => assertInstalledMapperContract(installDir),
+      /must expose the production typescript\.contentMapper contract/,
     );
   });
 });

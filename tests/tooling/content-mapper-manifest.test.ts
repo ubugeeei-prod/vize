@@ -12,19 +12,25 @@ test("vize package exposes an executable TypeScript content mapper", () => {
   ) as {
     bin?: Record<string, string>;
     files?: string[];
-    tsContentMapper?: {
-      compilerOptions?: string[];
-      exec?: string[];
-      extensions?: Record<string, string>;
+    tsContentMapper?: unknown;
+    typescript?: {
+      contentMapper?: {
+        compilerOptions?: string[];
+        exec?: string[];
+      };
     };
   };
   const binPath = path.join(root, "npm/cli/bin/vize");
 
-  assert.deepEqual(packageJson.tsContentMapper, {
+  assert.deepEqual(packageJson.typescript?.contentMapper, {
     exec: ["node", "./bin/vize", "content-mapper"],
-    extensions: { ".vue": ".tsx" },
     compilerOptions: ["noUnusedLocals"],
   });
+  assert.equal(
+    packageJson.tsContentMapper,
+    undefined,
+    "the retired tsContentMapper key must not ship alongside typescript.contentMapper",
+  );
   assert.equal(packageJson.bin?.vize, "bin/vize");
   assert.ok(packageJson.files?.includes("bin"));
   assert.notEqual(
