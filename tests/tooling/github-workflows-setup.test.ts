@@ -124,6 +124,37 @@ test("setup-moonbit defines explicit Windows and Unix execution paths", () => {
   assert.match(action, /shell: bash/);
 });
 
+test("setup-moonbit installs the same pinned toolchain the Nix shell builds", () => {
+  const pinned = readRepoFile(".moonbit-version").trim();
+  assert.match(
+    pinned,
+    /^\d+\.\d+\.\d+\+[0-9a-f]+$/,
+    "`.moonbit-version` must hold one exact MoonBit release",
+  );
+
+  // `flake.nix` must derive the toolchain from the shared file rather than
+  // repeating it, so a bump cannot land on only one of the two consumers.
+  const flake = readRepoFile("flake.nix");
+  assert.match(flake, /moonbitVersion = builtins\.replaceStrings.*\.moonbit-version/);
+  assert.doesNotMatch(flake, /moonbitVersion = "/);
+
+  // CI must ask the upstream installer for that release. Falling back to
+  // `latest` is what let CI and the Nix shell drift onto different compilers.
+  const installer = readRepoFile(".github", "actions", "setup-moonbit", "install-moonbit.mjs");
+  assert.match(installer, /new URL\("\.\.\/\.\.\/\.\.\/\.moonbit-version", import\.meta\.url\)/);
+  assert.equal(
+    installer.match(/MOONBIT_INSTALL_VERSION: moonbitVersion,/g)?.length,
+    2,
+    "both the Windows and Unix installer calls must request the pinned release",
+  );
+  assert.match(installer, /installedMoonbitVersion\(\)/);
+  assert.doesNotMatch(installer, /moonbitVersion = "/);
+
+  // A restored cache from a previous pin must miss rather than win.
+  const action = readRepoFile(".github", "actions", "setup-moonbit", "action.yml");
+  assert.match(action, /key: moonbit-.*hashFiles\('\.moonbit-version',/);
+});
+
 test("setup-moonbit smoke test validates the native async process runtime", () => {
   const installer = readRepoFile(".github", "actions", "setup-moonbit", "install-moonbit.mjs");
 

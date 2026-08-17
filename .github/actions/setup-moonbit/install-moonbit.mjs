@@ -4,6 +4,13 @@ import path from "node:path";
 import process from "node:process";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
+import { fileURLToPath } from "node:url";
+
+// The pinned toolchain lives in one file that `flake.nix` also reads, so the
+// Nix development shell and CI can never resolve different compilers for the
+// same commit. Installing `latest` here is what let the two drift apart.
+const moonbitVersionFile = fileURLToPath(new URL("../../../.moonbit-version", import.meta.url));
+const moonbitVersion = fs.readFileSync(moonbitVersionFile, "utf8").trim();
 
 const runnerTemp = process.env.RUNNER_TEMP;
 const githubPath = process.env.GITHUB_PATH;
@@ -17,6 +24,7 @@ if (!runnerTemp || !githubPath || !githubEnv) {
 const moonHome = path.join(runnerTemp, "moonbit");
 const moonBin = path.join(moonHome, "bin");
 const moonExe = path.join(moonBin, os.type() === "Windows_NT" ? "moon.exe" : "moon");
+const mooncExe = path.join(moonBin, os.type() === "Windows_NT" ? "moonc.exe" : "moonc");
 const shimDir = path.join(runnerTemp, "moonbit-shims");
 const shimMoonCmd = path.join(shimDir, "moon.cmd");
 const shimMoonShell = path.join(shimDir, "moon");
@@ -147,8 +155,35 @@ async fn main {
   }
 }
 
+function installedMoonbitVersion() {
+  if (!fs.existsSync(mooncExe)) {
+    return undefined;
+  }
+  const result = spawnSync(mooncExe, ["-v"], {
+    encoding: "utf8",
+    env: { ...process.env, MOON_HOME: moonHome },
+  });
+  if ((result.status ?? 1) !== 0) {
+    return undefined;
+  }
+  // `moonc -v` prints `v<version> (<date>)`.
+  return (result.stdout ?? "").trim().split(/\s+/)[0]?.replace(/^v/, "");
+}
+
 function hasExistingMoonInstall() {
-  return fs.existsSync(moonExe);
+  if (!fs.existsSync(moonExe)) {
+    return false;
+  }
+  const installed = installedMoonbitVersion();
+  if (installed === moonbitVersion) {
+    return true;
+  }
+  // A restored cache that predates the pin must never be reused silently:
+  // that is exactly how CI kept building against a compiler the flake did
+  // not describe. Discard it and install the pinned toolchain instead.
+  console.log(`Discarding cached MoonBit ${installed ?? "(unknown)"}; expected ${moonbitVersion}`);
+  fs.rmSync(moonHome, { recursive: true, force: true });
+  return false;
 }
 
 if (!hasExistingMoonInstall()) {
@@ -171,6 +206,7 @@ if (!hasExistingMoonInstall()) {
     run("pwsh", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", moonInstallerScript], {
       ...process.env,
       MOON_HOME: moonHome,
+      MOONBIT_INSTALL_VERSION: moonbitVersion,
     });
   } else {
     run(
@@ -188,8 +224,16 @@ if (!hasExistingMoonInstall()) {
       ...process.env,
       HOME: runnerTemp,
       MOON_HOME: moonHome,
+      MOONBIT_INSTALL_VERSION: moonbitVersion,
       SHELL: process.env.SHELL ?? "/bin/bash",
     });
+  }
+
+  const installed = installedMoonbitVersion();
+  if (installed !== moonbitVersion) {
+    console.error(`MoonBit version mismatch: installed ${installed ?? "(unknown)"}`);
+    console.error(`Expected ${moonbitVersion} from ${moonbitVersionFile}`);
+    process.exit(1);
   }
 
   run(moonExe, ["update"], {

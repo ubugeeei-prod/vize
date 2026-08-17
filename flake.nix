@@ -41,23 +41,26 @@
         nixCargoLockContents = builtins.replaceStrings [ cratesIoIndex ] [ cratesIoNixIndex ] (
           builtins.readFile ./Cargo.lock
         );
-        moonbitVersion = "0.10.3+16975d007";
+        # Single source of truth for the MoonBit toolchain, shared with
+        # `.github/actions/setup-moonbit` so the Nix shell and CI can never
+        # install different compilers for the same commit.
+        moonbitVersion = builtins.replaceStrings [ "\n" ] [ "" ] (builtins.readFile ./.moonbit-version);
         moonbitUrlVersion = builtins.replaceStrings [ "+" ] [ "%2B" ] moonbitVersion;
         moonbitArtifacts = {
           aarch64-darwin = {
             version = moonbitVersion;
             url = "https://cli.moonbitlang.com/binaries/${moonbitUrlVersion}/moonbit-darwin-aarch64.tar.gz";
-            hash = "sha256-WDV4V3lmdDNeYL4KJ8/8SbzJ+KJJfgZo7BVNw6LcJOU=";
+            hash = "sha256-tHgaHjjIANH9ZWk7GXCy0kKfrvMdiTPSZqH24mk6lu8=";
           };
           x86_64-linux = {
             version = moonbitVersion;
             url = "https://cli.moonbitlang.com/binaries/${moonbitUrlVersion}/moonbit-linux-x86_64.tar.gz";
-            hash = "sha256-1F49AgHPOxNhIG6pxybNShx7jN+DLbKuCzX1zfKxwTY=";
+            hash = "sha256-NvXnzxVFWU4XzT8cC3V/5uhq0CGLyW9Bk2nLuFAuYro=";
           };
           aarch64-linux = {
             version = moonbitVersion;
             url = "https://cli.moonbitlang.com/binaries/${moonbitUrlVersion}/moonbit-linux-aarch64.tar.gz";
-            hash = "sha256-Vf0CZCXEVcLVa160aKZ5cEoxTyBoQ4uslLocPw83Ix4=";
+            hash = "sha256-4ZGoimZM9JQ3NoRtuJEIrHajpZK0QnpWYiGAwSoYrcU=";
           };
         };
         moonbit =
@@ -74,7 +77,7 @@
               coreSrc = pkgs.fetchurl {
                 name = "core-${moonbitVersion}.tar.gz";
                 url = "https://cli.moonbitlang.com/cores/core-${moonbitUrlVersion}.tar.gz";
-                hash = "sha256-PHPWerElUb0jNNM4nq99AzbxmsCKucOW8R4SfjdbPQY=";
+                hash = "sha256-BpItNd2U3Auup2gilf5ghPDYVO7TtJfNa1J/d9iZp/U=";
               };
               nativeBuildInputs = lib.optionals pkgs.stdenv.isLinux [ pkgs.patchelf ];
               dontUnpack = true;
