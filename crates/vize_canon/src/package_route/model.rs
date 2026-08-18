@@ -148,19 +148,31 @@ pub struct PackageRoute {
 
 impl PackageRoute {
     pub fn invalidation_paths(&self) -> Vec<PathBuf> {
-        let mut paths = self.source_paths.clone();
-        paths.extend(self.dependency_paths.iter().cloned());
-        paths.extend([
+        let mut paths = Vec::new();
+        self.collect_invalidation_paths(&mut paths);
+        paths.sort();
+        paths.dedup();
+        paths
+    }
+
+    /// Gather without ordering; the public entry sorts and dedups once.
+    ///
+    /// Sorting per level instead made the cost quadratic in the nesting depth:
+    /// every level sorted its own subtree and the parent then re-sorted the
+    /// union it had just built, with `Path`'s component-wise comparison doing
+    /// the work. A `workspace:*` chain nests one route per package, so a 130
+    /// package chain paid 130 sorts of a list that grew at every level (#4426).
+    fn collect_invalidation_paths(&self, out: &mut Vec<PathBuf>) {
+        out.extend(self.source_paths.iter().cloned());
+        out.extend(self.dependency_paths.iter().cloned());
+        out.extend([
             self.manifest_path.clone(),
             self.package_link_root.clone(),
             self.package_link_root.join("package.json"),
         ]);
         for route in &self.nested_routes {
-            paths.extend(route.invalidation_paths());
+            route.collect_invalidation_paths(out);
         }
-        paths.sort();
-        paths.dedup();
-        paths
     }
 
     /// Return a target only when the manifest topology has one source identity.
@@ -177,14 +189,21 @@ impl PackageRoute {
     }
 
     pub fn all_source_paths(&self) -> Vec<&PathBuf> {
-        let mut paths = self.source_paths.iter().collect::<Vec<_>>();
-        paths.extend(self.dependency_paths.iter());
-        for route in &self.nested_routes {
-            paths.extend(route.all_source_paths());
-        }
+        let mut paths = Vec::new();
+        self.collect_all_source_paths(&mut paths);
         paths.sort();
         paths.dedup();
         paths
+    }
+
+    /// See [`Self::collect_invalidation_paths`] for why the recursion does not
+    /// sort as it descends.
+    fn collect_all_source_paths<'a>(&'a self, out: &mut Vec<&'a PathBuf>) {
+        out.extend(self.source_paths.iter());
+        out.extend(self.dependency_paths.iter());
+        for route in &self.nested_routes {
+            route.collect_all_source_paths(out);
+        }
     }
 
     fn candidate_source_paths(&self) -> Vec<&PathBuf> {
