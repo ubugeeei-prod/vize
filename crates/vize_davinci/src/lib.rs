@@ -13,6 +13,8 @@
 //!   stored beside the tree rather than on fat nodes.
 //! - [`diagnostic`] — [`Diagnostic`](diagnostic::Diagnostic), the one channel
 //!   every renderer reads.
+//! - [`pass`] — the pass manager: pipelines as const data, classified and
+//!   fused at build time.
 //! - [`folio`] — the textual stage-dump contract (`trait Folio`).
 //!
 //! The stage IRs themselves land in their own crates (`vize_disegno` for S2);
@@ -29,4 +31,5 @@ extern crate alloc;
 pub mod diagnostic;
 pub mod folio;
 pub mod id;
+pub mod pass;
 pub mod side_table;

@@ -5,7 +5,7 @@
 
 ## P2-1 — `vize_davinci` core types
 
-**Landed 2026-08-19** — full record: [phase-2-records.md#p2-1](./phase-2-records.md#p2-1).
+**Landed 2026-08-19** — full record: [phase-2-records/p2-1.md](./phase-2-records/p2-1.md).
 
 **Deliverable:** the id / side-table / diagnostic substrate every later stage keys on, in the existing P0-10 crate, which today declares exactly one module (`folio`) and depends only on `vize_carton`.
 
@@ -22,17 +22,19 @@
 
 ## P2-2 — Pass manager
 
+**Landed 2026-08-19** — full record: [phase-2-records/p2-2.md](./phase-2-records/p2-2.md).
+
 **Deliverable:** `crates/vize_davinci/src/pass/` — pipelines as const data with SIL-style classification and build-time fusion grouping. This is greenfield: `PassObserver`, `PassManager` and a pass-`Pipeline` type have **zero** occurrences in `crates/` today.
 
 **Steps:**
 
-- [ ] `pass/mod.rs`: pass description as **const data** — no registry of trait objects, and dispatch resolved per pipeline, never per node (performance guardrail 1)
-- [ ] Classification enum `PassKind { MandatoryDiagnostic, MandatoryLowering, Optional }` (SIL import). Mandatory passes are unfusable barriers, run at every optimization level, and are the only passes that perform the raw→canonical transition
-- [ ] `Raw<S>` / `Canonical<S>` wrapper types so the transition is type-level: an optional pass cannot produce `Canonical<S>` because it cannot name the constructor
-- [ ] `Fusability { Fusable, Barrier }`; fusion computes the **preserved-set intersection at build time** (`const fn`), so a grouping regression is a compile error rather than a runtime surprise
-- [ ] `pass/pipeline.rs`: textual pipeline syntax `s2(a,b),s2-to-s3(c)` parsed into the same const shape for `davinci-opt --pipeline`; grammar in the module docs with every error message spelled out
+- [x] pass module root: pass description as **const data** — no registry of trait objects, and dispatch resolved per pipeline, never per node (performance guardrail 1) _(`src/pass.rs`; the crate has no `mod.rs` anywhere, per the workspace convention, so the root is `pass.rs` with `#[path]` submodules)_
+- [x] Classification enum `PassKind { MandatoryDiagnostic, MandatoryLowering, Optional }` (SIL import). Mandatory passes are unfusable barriers, run at every optimization level, and are the only passes that perform the raw→canonical transition _(the barrier law is asserted in the `const fn` constructor, so a violating `const DESC` does not compile — **verified by compiling one**)_
+- [x] `Raw<S>` / `Canonical<S>` wrapper types so the transition is type-level: an optional pass cannot produce `Canonical<S>` because it cannot name the constructor _(private field + a `produce::<P>` that forces a per-monomorphization `const` assertion; the optional case is a compile error, **verified by compiling one**)_
+- [x] `Fusability { Fusable, Barrier }`; fusion computes the **preserved-set intersection at build time** (`const fn`), so a grouping regression is a compile error rather than a runtime surprise _(every planning query is a `const fn`; the fixture plan is pinned in `const` items)_
+- [x] pipeline syntax `s2(a,b),s2-to-s3(c)` parsed into the same const shape for `davinci-opt --pipeline`; grammar in the module docs with every error message spelled out _(`src/pass/pipeline.rs`; ten documented rejections, each asserted on its full rendered message)_
 
-**Acceptance:** `cargo test -p vize_davinci` (TS-1) covering — pipeline-string round-trip is byte-exact for canonical strings (`print(parse(s)) == s`) and malformed input yields the **exact** documented error (no substring assertions, assurance §4, enforced by TS-13); a `const`-evaluated test pins the fused group boundaries of a fixture pipeline; a canary proves a mandatory pass never joins a fusion group. Any bench added here lands with its measured `allocs` in `budgets.toml [bench]` (TS-10 — a seeded `0` fails). **Deps:** P2-1. **Non-goals:** observer hooks (P2-3); running real passes (P2-9); optimization tiers scaling budgets rather than pass sets (P3-10); a JS/WASM plugin pass tier (phase 6).
+**Acceptance:** `cargo test -p vize_davinci` green (TS-1) — 61 tests, 25 new here — covering: pipeline-string round-trip byte-exact for canonical strings over an eight-string corpus, and every malformed input asserted on the **exact** documented message and variant (no substring assertions, assurance §4, TS-13 green with no allowlist entry added); the fixture pipeline's fused group boundaries pinned in `const` items; the mandatory-never-fuses canary proven over five arrangements rather than one. No bench was added, so TS-10 has nothing to record. **Deps:** P2-1. **Non-goals:** observer hooks (P2-3); running real passes (P2-9); optimization tiers scaling budgets rather than pass sets (P3-10); a JS/WASM plugin pass tier (phase 6).
 
 ## P2-3 — `PassObserver`
 
@@ -194,7 +196,7 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 
 ## P2-12a — Phase-start baselines and pinned targets
 
-**Landed 2026-08-19** — full record: [phase-2-records.md#p2-12a](./phase-2-records.md#p2-12a). One acceptance clause is carried rather than met (`corpus-coverage --check`); the record states why and where it goes.
+**Landed 2026-08-19** — full record: [phase-2-records/p2-12a.md](./phase-2-records/p2-12a.md). One acceptance clause is carried rather than met (`corpus-coverage --check`); the record states why and where it goes.
 
 **Deliverable:** the numbers phase 2 will be judged against, recorded **before** the work that could bias them.
 

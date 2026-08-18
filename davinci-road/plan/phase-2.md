@@ -40,10 +40,10 @@ Phase 1 exited with named blockers. Each is stated here with the phase-2 tasks i
 
 ## TODO index
 
-Each ID links to its contract in [phase-2-tasks.md](./phase-2-tasks.md); what a landed task measured, decided and left open goes in [phase-2-records.md](./phase-2-records.md). This index is the navigational entry point for the phase and the place a task's box gets checked — never before the PR that satisfies its acceptance criteria.
+Each ID links to its contract in [phase-2-tasks.md](./phase-2-tasks.md); what a landed task measured, decided and left open goes in [phase-2-records.md](./phase-2-records.md), one file per task. This index is the navigational entry point for the phase and the place a task's box gets checked — never before the PR that satisfies its acceptance criteria.
 
-- [x] [P2-1](./phase-2-tasks.md#p2-1--vize_davinci-core-types) `vize_davinci` core types (`NodeId`, side tables, `Diagnostic`) — landed 2026-08-19; `NonZeroU32` niche, sparse-only side table with the densification trigger written down, owned-message `Diagnostic` with the P4-6 witness slot ([record](./phase-2-records.md#p2-1))
-- [ ] [P2-2](./phase-2-tasks.md#p2-2--pass-manager) Pass manager (const pipelines, classification, fusion)
+- [x] [P2-1](./phase-2-tasks.md#p2-1--vize_davinci-core-types) `vize_davinci` core types (`NodeId`, side tables, `Diagnostic`) — landed 2026-08-19; `NonZeroU32` niche, sparse-only side table with the densification trigger written down, owned-message `Diagnostic` with the P4-6 witness slot ([record](./phase-2-records/p2-1.md))
+- [x] [P2-2](./phase-2-tasks.md#p2-2--pass-manager) Pass manager (const pipelines, classification, fusion) — landed 2026-08-19; every planning query is a `const fn`, both laws are compile errors and both were proven by compiling a violation ([record](./phase-2-records/p2-2.md))
 - [ ] [P2-3](./phase-2-tasks.md#p2-3--passobserver) `PassObserver` + the four in-tree observers
 - [ ] [P2-4](./phase-2-tasks.md#p2-4--folio-derive--davinci-opt-pipelines) `#[derive(Folio)]` + `davinci-opt --pipeline`
 - [ ] [P2-5a](./phase-2-tasks.md#p2-5a--vize_disegno-s2-op-and-type-family) `vize_disegno` S2 op and type family
@@ -54,7 +54,7 @@ Each ID links to its contract in [phase-2-tasks.md](./phase-2-tasks.md); what a 
 - [ ] [P2-9](./phase-2-tasks.md#p2-9--core-transforms-as-s2-passes) Core transforms as S2 passes (marked series)
 - [ ] [P2-10](./phase-2-tasks.md#p2-10--style-v-bind-ops) Style `v-bind()` ops
 - [ ] [P2-11](./phase-2-tasks.md#p2-11--dom-backend-on-s2) DOM backend on S2
-- [x] [P2-12a](./phase-2-tasks.md#p2-12a--phase-start-baselines-and-pinned-targets) Phase-start baselines and pinned targets — landed 2026-08-19 at rev `232870a8`; DOM/SSR/Vapor ladder pinned in `[traversal]`, `[target.phase-2]` set, `walk-baseline.md` committed. One clause carried: the corpus `--check` is not evaluable by CI or a working tree ([record](./phase-2-records.md#p2-12a))
+- [x] [P2-12a](./phase-2-tasks.md#p2-12a--phase-start-baselines-and-pinned-targets) Phase-start baselines and pinned targets — landed 2026-08-19 at rev `232870a8`; DOM/SSR/Vapor ladder pinned in `[traversal]`, `[target.phase-2]` set, `walk-baseline.md` committed. One clause carried: the corpus `--check` is not evaluable by CI or a working tree ([record](./phase-2-records/p2-12a.md))
 - [ ] [P2-12b](./phase-2-tasks.md#p2-12b--fused-build-path--walk-count-instrumentation) Fused build path + walk-count instrumentation
 - [ ] [P2-13](./phase-2-tasks.md#p2-13--folio-after-change-vize-repro-timing-json) Folio-after-change / `vize repro` / timing JSON
 - [ ] [P2-14](./phase-2-tasks.md#p2-14--no_std-boundary-audit--wasm32-wasip2-lanes) `no_std` boundary audit + wasm32-wasip2 lanes
