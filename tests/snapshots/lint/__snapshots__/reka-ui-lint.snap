@@ -143,12 +143,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Accordion' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Accordion' should be PascalCase or kebab-case",
         "line": 22,
         "column": 11,
         "endLine": 22,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -221,12 +221,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_AlertDialog' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_AlertDialog' should be PascalCase or kebab-case",
         "line": 18,
         "column": 11,
         "endLine": 18,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -269,12 +269,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Autocomplete' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Autocomplete' should be PascalCase or kebab-case",
         "line": 21,
         "column": 11,
         "endLine": 21,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -335,12 +335,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Avatar' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Avatar' should be PascalCase or kebab-case",
         "line": 7,
         "column": 11,
         "endLine": 7,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -536,12 +536,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Calendar' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Calendar' should be PascalCase or kebab-case",
         "line": 15,
         "column": 11,
         "endLine": 15,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -554,12 +554,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_CalendarMultiple' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_CalendarMultiple' should be PascalCase or kebab-case",
         "line": 9,
         "column": 11,
         "endLine": 9,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -572,12 +572,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_CalendarPopover' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_CalendarPopover' should be PascalCase or kebab-case",
         "line": 5,
         "column": 11,
         "endLine": 5,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -590,12 +590,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyCalendar' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyCalendar' should be PascalCase or kebab-case",
         "line": 13,
         "column": 11,
         "endLine": 13,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -706,12 +706,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Checkbox' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Checkbox' should be PascalCase or kebab-case",
         "line": 11,
         "column": 11,
         "endLine": 11,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       },
       {
         "ruleId": "a11y/no-refer-to-non-existent-id",
@@ -735,12 +735,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_CheckboxGroup' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_CheckboxGroup' should be PascalCase or kebab-case",
         "line": 13,
         "column": 11,
         "endLine": 13,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -753,12 +753,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_NoScopeCheckbox' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_NoScopeCheckbox' should be PascalCase or kebab-case",
         "line": 5,
         "column": 11,
         "endLine": 5,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -771,12 +771,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ScopedCheckbox' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ScopedCheckbox' should be PascalCase or kebab-case",
         "line": 5,
         "column": 11,
         "endLine": 5,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -813,12 +813,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Collapsible' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Collapsible' should be PascalCase or kebab-case",
         "line": 11,
         "column": 11,
         "endLine": 11,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -855,12 +855,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorArea' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorArea' should be PascalCase or kebab-case",
         "line": 21,
         "column": 11,
         "endLine": 21,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -903,12 +903,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorField' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorField' should be PascalCase or kebab-case",
         "line": 23,
         "column": 11,
         "endLine": 23,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -927,12 +927,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorPicker' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorPicker' should be PascalCase or kebab-case",
         "line": 39,
         "column": 11,
         "endLine": 39,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -969,12 +969,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorSlider' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorSlider' should be PascalCase or kebab-case",
         "line": 22,
         "column": 11,
         "endLine": 22,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -987,12 +987,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorSliderCompound' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorSliderCompound' should be PascalCase or kebab-case",
         "line": 38,
         "column": 11,
         "endLine": 38,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -1017,12 +1017,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorSwatch' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorSwatch' should be PascalCase or kebab-case",
         "line": 10,
         "column": 11,
         "endLine": 10,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -1065,12 +1065,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorSwatchPicker' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorSwatchPicker' should be PascalCase or kebab-case",
         "line": 23,
         "column": 11,
         "endLine": 23,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -1274,12 +1274,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Combobox' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Combobox' should be PascalCase or kebab-case",
         "line": 25,
         "column": 11,
         "endLine": 25,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -1292,12 +1292,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ComboboxManualFilter' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ComboboxManualFilter' should be PascalCase or kebab-case",
         "line": 24,
         "column": 11,
         "endLine": 24,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -1310,12 +1310,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ComboboxObject' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ComboboxObject' should be PascalCase or kebab-case",
         "line": 19,
         "column": 11,
         "endLine": 19,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -1328,12 +1328,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ComboboxTagsInput' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ComboboxTagsInput' should be PascalCase or kebab-case",
         "line": 22,
         "column": 11,
         "endLine": 22,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -1352,12 +1352,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ConfigProvider' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ConfigProvider' should be PascalCase or kebab-case",
         "line": 9,
         "column": 11,
         "endLine": 9,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -1472,12 +1472,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ContextMenu' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ContextMenu' should be PascalCase or kebab-case",
         "line": 32,
         "column": 11,
         "endLine": 32,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -1578,12 +1578,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_DateField' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_DateField' should be PascalCase or kebab-case",
         "line": 10,
         "column": 11,
         "endLine": 10,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -1764,12 +1764,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_DatePicker' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_DatePicker' should be PascalCase or kebab-case",
         "line": 28,
         "column": 11,
         "endLine": 28,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -1782,12 +1782,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyDatePicker' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyDatePicker' should be PascalCase or kebab-case",
         "line": 32,
         "column": 11,
         "endLine": 32,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -1848,12 +1848,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_DateRangeField' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_DateRangeField' should be PascalCase or kebab-case",
         "line": 10,
         "column": 11,
         "endLine": 10,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -1866,12 +1866,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyDateRangeField' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyDateRangeField' should be PascalCase or kebab-case",
         "line": 11,
         "column": 11,
         "endLine": 11,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -2052,12 +2052,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_DateRangePicker' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_DateRangePicker' should be PascalCase or kebab-case",
         "line": 28,
         "column": 11,
         "endLine": 28,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -2070,12 +2070,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyDateRangePicker' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyDateRangePicker' should be PascalCase or kebab-case",
         "line": 33,
         "column": 11,
         "endLine": 33,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -2202,12 +2202,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Dialog' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Dialog' should be PascalCase or kebab-case",
         "line": 18,
         "column": 11,
         "endLine": 18,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       },
       {
         "ruleId": "vue/require-scoped-style",
@@ -2341,12 +2341,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_DismissableBox' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_DismissableBox' should be PascalCase or kebab-case",
         "line": 10,
         "column": 11,
         "endLine": 10,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -2359,12 +2359,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_DismissableLayer' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_DismissableLayer' should be PascalCase or kebab-case",
         "line": 26,
         "column": 11,
         "endLine": 26,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -2377,12 +2377,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyDialog' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyDialog' should be PascalCase or kebab-case",
         "line": 15,
         "column": 11,
         "endLine": 15,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       },
       {
         "ruleId": "a11y/form-control-has-label",
@@ -2406,12 +2406,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyPopover' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyPopover' should be PascalCase or kebab-case",
         "line": 28,
         "column": 11,
         "endLine": 28,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       },
       {
         "ruleId": "a11y/form-control-has-label",
@@ -2583,12 +2583,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Drawer' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Drawer' should be PascalCase or kebab-case",
         "line": 24,
         "column": 11,
         "endLine": 24,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -2750,12 +2750,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_DropdownMenu' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_DropdownMenu' should be PascalCase or kebab-case",
         "line": 42,
         "column": 11,
         "endLine": 42,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -2768,12 +2768,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_DropdownMenuWithFilter' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_DropdownMenuWithFilter' should be PascalCase or kebab-case",
         "line": 40,
         "column": 11,
         "endLine": 40,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -2840,12 +2840,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyEditable' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyEditable' should be PascalCase or kebab-case",
         "line": 21,
         "column": 11,
         "endLine": 21,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -2858,12 +2858,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Editable' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Editable' should be PascalCase or kebab-case",
         "line": 8,
         "column": 11,
         "endLine": 8,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -3078,12 +3078,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_HoverCard' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_HoverCard' should be PascalCase or kebab-case",
         "line": 18,
         "column": 11,
         "endLine": 18,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -3216,12 +3216,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Listbox' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Listbox' should be PascalCase or kebab-case",
         "line": 20,
         "column": 11,
         "endLine": 20,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -3509,12 +3509,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Menu' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Menu' should be PascalCase or kebab-case",
         "line": 51,
         "column": 11,
         "endLine": 51,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -3527,12 +3527,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_MenuWithAnchor' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_MenuWithAnchor' should be PascalCase or kebab-case",
         "line": 20,
         "column": 11,
         "endLine": 20,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -3545,12 +3545,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_MenuWithSubmenu' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_MenuWithSubmenu' should be PascalCase or kebab-case",
         "line": 14,
         "column": 11,
         "endLine": 14,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -3563,12 +3563,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Submenu' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Submenu' should be PascalCase or kebab-case",
         "line": 14,
         "column": 11,
         "endLine": 14,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -3581,12 +3581,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_TickIcon' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_TickIcon' should be PascalCase or kebab-case",
         "line": 1,
         "column": 11,
         "endLine": 1,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -3731,12 +3731,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Menubar' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Menubar' should be PascalCase or kebab-case",
         "line": 33,
         "column": 11,
         "endLine": 33,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -3815,12 +3815,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_MonthPicker' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_MonthPicker' should be PascalCase or kebab-case",
         "line": 9,
         "column": 11,
         "endLine": 9,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -3899,12 +3899,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_MonthRangePicker' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_MonthRangePicker' should be PascalCase or kebab-case",
         "line": 9,
         "column": 11,
         "endLine": 9,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -4054,12 +4054,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_LinkGroup' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_LinkGroup' should be PascalCase or kebab-case",
         "line": 9,
         "column": 11,
         "endLine": 9,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -4072,12 +4072,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_NavigationMenu' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_NavigationMenu' should be PascalCase or kebab-case",
         "line": 30,
         "column": 11,
         "endLine": 30,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       },
       {
         "ruleId": "vue/no-template-target-blank",
@@ -4101,12 +4101,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_NavigationMenuListItem' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_NavigationMenuListItem' should be PascalCase or kebab-case",
         "line": 9,
         "column": 11,
         "endLine": 9,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       },
       {
         "ruleId": "a11y/anchor-is-valid",
@@ -4130,12 +4130,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_StoryFrame' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_StoryFrame' should be PascalCase or kebab-case",
         "line": 1,
         "column": 11,
         "endLine": 1,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -4184,12 +4184,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_NumberField' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_NumberField' should be PascalCase or kebab-case",
         "line": 9,
         "column": 11,
         "endLine": 9,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -4256,12 +4256,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Pagination' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Pagination' should be PascalCase or kebab-case",
         "line": 23,
         "column": 11,
         "endLine": 23,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -4298,12 +4298,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_PinInput' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_PinInput' should be PascalCase or kebab-case",
         "line": 14,
         "column": 11,
         "endLine": 14,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       },
       {
         "ruleId": "a11y/no-refer-to-non-existent-id",
@@ -4494,12 +4494,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Popover' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Popover' should be PascalCase or kebab-case",
         "line": 16,
         "column": 11,
         "endLine": 16,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -4559,12 +4559,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Popper' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Popper' should be PascalCase or kebab-case",
         "line": 8,
         "column": 11,
         "endLine": 8,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -4619,12 +4619,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Animation' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Animation' should be PascalCase or kebab-case",
         "line": 13,
         "column": 11,
         "endLine": 13,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -4637,12 +4637,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Toggle' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Toggle' should be PascalCase or kebab-case",
         "line": 19,
         "column": 11,
         "endLine": 19,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       },
       {
         "ruleId": "type/require-typed-props",
@@ -4718,12 +4718,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Progress' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Progress' should be PascalCase or kebab-case",
         "line": 12,
         "column": 11,
         "endLine": 12,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -4766,12 +4766,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Radio' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Radio' should be PascalCase or kebab-case",
         "line": 5,
         "column": 11,
         "endLine": 5,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -4784,12 +4784,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_RadioGroup' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_RadioGroup' should be PascalCase or kebab-case",
         "line": 11,
         "column": 11,
         "endLine": 11,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -4802,12 +4802,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ScopedRadioGroup' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ScopedRadioGroup' should be PascalCase or kebab-case",
         "line": 5,
         "column": 11,
         "endLine": 5,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -4973,12 +4973,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyRangeCalendar' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyRangeCalendar' should be PascalCase or kebab-case",
         "line": 13,
         "column": 11,
         "endLine": 13,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -4991,12 +4991,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_RangeCalendar' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_RangeCalendar' should be PascalCase or kebab-case",
         "line": 18,
         "column": 11,
         "endLine": 18,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -5039,12 +5039,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Rating' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Rating' should be PascalCase or kebab-case",
         "line": 9,
         "column": 11,
         "endLine": 9,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -5087,12 +5087,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Button' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Button' should be PascalCase or kebab-case",
         "line": 18,
         "column": 11,
         "endLine": 18,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
@@ -5116,12 +5116,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ButtonGroup' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ButtonGroup' should be PascalCase or kebab-case",
         "line": 18,
         "column": 11,
         "endLine": 18,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -5248,12 +5248,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ScrollArea' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ScrollArea' should be PascalCase or kebab-case",
         "line": 15,
         "column": 11,
         "endLine": 15,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -5266,12 +5266,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ScrollAreaCopy' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ScrollAreaCopy' should be PascalCase or kebab-case",
         "line": 1,
         "column": 11,
         "endLine": 1,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -5284,12 +5284,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ScrollAreaStory' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ScrollAreaStory' should be PascalCase or kebab-case",
         "line": 24,
         "column": 11,
         "endLine": 24,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -5574,12 +5574,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Select' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Select' should be PascalCase or kebab-case",
         "line": 29,
         "column": 11,
         "endLine": 29,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -5592,12 +5592,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_SelectItem' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_SelectItem' should be PascalCase or kebab-case",
         "line": 10,
         "column": 11,
         "endLine": 10,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -5610,12 +5610,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_SelectTest' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_SelectTest' should be PascalCase or kebab-case",
         "line": 28,
         "column": 11,
         "endLine": 28,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -5751,12 +5751,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Slider' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Slider' should be PascalCase or kebab-case",
         "line": 17,
         "column": 11,
         "endLine": 17,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -5841,12 +5841,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Splitter' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Splitter' should be PascalCase or kebab-case",
         "line": 5,
         "column": 11,
         "endLine": 5,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -5913,12 +5913,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyStepper' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyStepper' should be PascalCase or kebab-case",
         "line": 40,
         "column": 11,
         "endLine": 40,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -5931,12 +5931,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Stepper' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Stepper' should be PascalCase or kebab-case",
         "line": 34,
         "column": 11,
         "endLine": 34,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -5949,12 +5949,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_StepperDynamic' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_StepperDynamic' should be PascalCase or kebab-case",
         "line": 13,
         "column": 11,
         "endLine": 13,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -5985,12 +5985,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Switch' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Switch' should be PascalCase or kebab-case",
         "line": 9,
         "column": 11,
         "endLine": 9,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -6057,12 +6057,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Tabs' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Tabs' should be PascalCase or kebab-case",
         "line": 5,
         "column": 11,
         "endLine": 5,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -6129,12 +6129,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_TagsInput' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_TagsInput' should be PascalCase or kebab-case",
         "line": 19,
         "column": 11,
         "endLine": 19,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -6147,12 +6147,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_TagsInputDisabled' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_TagsInputDisabled' should be PascalCase or kebab-case",
         "line": 10,
         "column": 11,
         "endLine": 10,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -6165,12 +6165,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_TagsInputObject' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_TagsInputObject' should be PascalCase or kebab-case",
         "line": 15,
         "column": 11,
         "endLine": 15,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -6266,12 +6266,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_TimeField' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_TimeField' should be PascalCase or kebab-case",
         "line": 10,
         "column": 11,
         "endLine": 10,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -6332,12 +6332,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyTimeRangeField' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyTimeRangeField' should be PascalCase or kebab-case",
         "line": 11,
         "column": 11,
         "endLine": 11,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -6350,12 +6350,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_TimeRangeField' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_TimeRangeField' should be PascalCase or kebab-case",
         "line": 10,
         "column": 11,
         "endLine": 10,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -6600,12 +6600,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Toast' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Toast' should be PascalCase or kebab-case",
         "line": 29,
         "column": 11,
         "endLine": 29,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -6648,12 +6648,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ScopedToggleGroup' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ScopedToggleGroup' should be PascalCase or kebab-case",
         "line": 5,
         "column": 11,
         "endLine": 5,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -6666,12 +6666,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_ToggleGroup' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ToggleGroup' should be PascalCase or kebab-case",
         "line": 16,
         "column": 11,
         "endLine": 16,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -6761,12 +6761,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Toolbar' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Toolbar' should be PascalCase or kebab-case",
         "line": 17,
         "column": 11,
         "endLine": 17,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       },
       {
         "ruleId": "vue/no-template-target-blank",
@@ -6894,12 +6894,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Tooltip' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Tooltip' should be PascalCase or kebab-case",
         "line": 13,
         "column": 11,
         "endLine": 13,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -6995,12 +6995,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_Tree' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Tree' should be PascalCase or kebab-case",
         "line": 69,
         "column": 11,
         "endLine": 69,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -7013,12 +7013,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_TreeNested' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_TreeNested' should be PascalCase or kebab-case",
         "line": 20,
         "column": 11,
         "endLine": 20,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -7121,12 +7121,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_YearPicker' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_YearPicker' should be PascalCase or kebab-case",
         "line": 9,
         "column": 11,
         "endLine": 9,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -7205,12 +7205,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name '_YearRangePicker' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_YearRangePicker' should be PascalCase or kebab-case",
         "line": 9,
         "column": 11,
         "endLine": 9,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,

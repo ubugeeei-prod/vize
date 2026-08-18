@@ -194,7 +194,7 @@
           "importerFile": "packages/core/src/Toolbar/ToolbarToggleItem.vue",
           "componentFile": "packages/core/src/Toolbar/ToolbarButton.vue",
           "tagName": "ToolbarButton",
-          "tagAnchor": "<ToolbarButton ",
+          "tagAnchor": "<ToolbarButton\n",
           "completionItemCount": 31,
           "completionItems": [
             { "label": "v-if", "rank": 0 },

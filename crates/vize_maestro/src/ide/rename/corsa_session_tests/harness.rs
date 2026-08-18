@@ -265,10 +265,19 @@ impl RealCorsaRenameSession {
     }
 
     fn assert_platform_root_spelling(&self) -> Result<(), String> {
+        // macOS resolves both `/var` and `/tmp` through `/private`. The default
+        // TMPDIR lands under `/var/folders`, but the repository's own Nix dev
+        // shell points TMPDIR at `/tmp/nix-shell.*`, so accepting only the
+        // `/var` spelling fails this test for anyone running it the documented
+        // way on macOS.
         #[cfg(target_os = "macos")]
         if self.root.path() != self.canonical_root
-            && !(self.root.path().starts_with("/var")
-                && self.canonical_root.starts_with("/private/var"))
+            && !["/var", "/tmp"].iter().any(|logical_prefix| {
+                self.root.path().starts_with(logical_prefix)
+                    && self
+                        .canonical_root
+                        .starts_with(std::path::Path::new("/private").join(&logical_prefix[1..]))
+            })
         {
             return Err(cstr!(
                 "unexpected macOS temp root spellings: logical={}, canonical={}",

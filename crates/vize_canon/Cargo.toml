@@ -62,8 +62,13 @@ libc.workspace = true
 junction = "2"
 
 [dev-dependencies]
+criterion.workspace = true
 insta.workspace = true
 tempfile.workspace = true
+
+[[bench]]
+name = "package_route"
+harness = false
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage)'] }

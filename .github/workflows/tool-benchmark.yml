@@ -70,7 +70,7 @@ jobs:
   tool-benchmark-impact:
     name: tool-benchmark-impact
     if: ${{ github.event_name == 'pull_request' }}
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     permissions:
       contents: read
@@ -125,7 +125,7 @@ jobs:
     name: tool-benchmark
     needs: tool-benchmark-impact
     if: ${{ always() && !cancelled() && (github.event_name != 'pull_request' || needs.tool-benchmark-impact.outputs.runtime == 'true') }}
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 75
     permissions:
       contents: read
@@ -175,7 +175,6 @@ jobs:
       - name: Compare Vize with existing tools
         run: |
           # Restore benchmark metadata label with:
-          # --runner-label "blacksmith-32vcpu-ubuntu-2404"
           node bench/compare-tools.mjs \
             --input bench/__in__ \
             --vize-bin target/release/vize \
@@ -186,7 +185,7 @@ jobs:
             --nuxt-file-count "$VIZE_TOOL_BENCH_NUXT_FILE_COUNT" \
             --musea-file-count "$VIZE_TOOL_BENCH_MUSEA_FILE_COUNT" \
             --large-blocks "$VIZE_TOOL_BENCH_LARGE_BLOCKS" \
-            --runner-label "ubuntu-24.04" \
+            --runner-label "blacksmith-32vcpu-ubuntu-2404" \
             --commit "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}" \
             --ref "${{ github.ref_name }}" \
             --repository "${{ github.repository }}" \
@@ -211,7 +210,7 @@ jobs:
 
   tool-benchmark-comment:
     name: tool-benchmark-comment
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
     needs:
@@ -242,7 +241,7 @@ jobs:
 
   tool-benchmark-commit:
     name: tool-benchmark-commit
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.commit_results && startsWith(github.ref, 'refs/heads/') && github.ref_name != 'main' }}
     needs:

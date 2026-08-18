@@ -24,7 +24,7 @@ env:
 
 jobs:
   nix-flake:
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
     # Nix store cache restore + `nix flake check` was the second-slowest PR
     # gate after playground-test. The flake itself rarely changes between
@@ -43,7 +43,7 @@ jobs:
         run: nix flake check
 
   fmt-rust:
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -54,7 +54,7 @@ jobs:
         run: cargo fmt --all -- --check
 
   check-js:
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -73,7 +73,7 @@ jobs:
   semver-checks:
     name: cargo-semver-checks (${{ matrix.crate }})
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
     permissions:
       contents: read
@@ -137,7 +137,7 @@ jobs:
           fi
 
   security-audit:
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -161,7 +161,7 @@ jobs:
         run: cargo audit --deny warnings
 
   node-engine-compat:
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -184,7 +184,7 @@ jobs:
         run: node --test tests/tooling/node-engine-matrix.test.ts tests/tooling/package-manifests.test.ts
 
   check-vize-apps:
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -213,7 +213,7 @@ jobs:
         run: vp run --workspace-root check:ci:vize-apps
 
   vue-parity:
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -235,7 +235,7 @@ jobs:
       - uses: ./.github/actions/check-vue-parity
 
   test-scripts:
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     # Restoration of the original setup after the trim in #519 broke
     # main: lsp-smoke.test.ts launches `vize lsp` (falls back to
     # `cargo run -p vize` when no binary is staged), moonbit-*.test.ts
@@ -272,21 +272,21 @@ jobs:
         run: vp run --workspace-root test:scripts
 
   editor-extensions:
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/package-editor-extensions
 
   editor-host-smoke:
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/vscode-host-smoke
 
   build-js-packages:
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -330,7 +330,7 @@ jobs:
           retention-days: 7
 
   test-js-packages:
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -356,7 +356,7 @@ jobs:
         run: vp run --workspace-root test:js
 
   clippy-and-test:
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     env:
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
@@ -386,7 +386,7 @@ jobs:
         run: cargo test --workspace && cargo test -p vize --features legacy --test check_nuxt_tsconfig_isolation_cli && cargo test -p vize_vitrine --no-default-features --features wasm
 
   coverage:
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -413,7 +413,7 @@ jobs:
         run: moon run --target native tools/moon/cmd/github/write_coverage_summary --
 
   source-coverage:
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 40
     # Source coverage is a push/daily trend metric; fixture and compiler/lint gates stay per PR.
     if: ${{ github.event_name != 'pull_request' }}
@@ -471,7 +471,7 @@ jobs:
           retention-days: 14
 
   branch-coverage:
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     # Run the strict nightly gate before merge as well as on main. A main-only
     # gate allowed stale instrumented artifacts to distort metrics across many PRs.
@@ -529,7 +529,7 @@ jobs:
           retention-days: 14
 
   playground-test:
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     needs:
       - build-js-packages
@@ -625,7 +625,7 @@ jobs:
 
   test-report:
     name: test-report
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     if: ${{ always() && github.event_name == 'pull_request' }}
     needs:
@@ -666,7 +666,7 @@ jobs:
 
   test-report-comment:
     name: test-report-comment
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     if: ${{ always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
     needs:

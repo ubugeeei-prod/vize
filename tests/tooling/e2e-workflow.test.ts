@@ -4,8 +4,7 @@ import { parse } from "yaml";
 
 import { readRepoFile, workflowJobRunsOn } from "./support/github-workflows.ts";
 
-const TEMPORARY_HOSTED_RUNNER = "ubuntu-24.04";
-const RESTORE_BLACKSMITH_RUNNER = "blacksmith-32vcpu-ubuntu-2404";
+const BLACKSMITH_RUNNER = "blacksmith-32vcpu-ubuntu-2404";
 
 type Step = {
   continueOnError?: boolean;
@@ -103,7 +102,7 @@ test("PR readiness plans six isolated rows behind one stable aggregator", () => 
   assert.equal(producer.name, "app-readiness (${{ matrix.shard }})");
   assert.equal(producer.needs, "app-readiness-plan");
   assert.equal(producer.if, "needs.app-readiness-plan.outputs.run == 'true'");
-  assert.equal(producer["runs-on"], TEMPORARY_HOSTED_RUNNER);
+  assert.equal(producer["runs-on"], "${{ matrix.runner }}");
   assert.equal(producer.strategy?.["fail-fast"], false);
   assert.equal(
     producer.strategy?.matrix,
@@ -163,7 +162,7 @@ test("full App E2E uses a planner, isolated matrix producers, and stable release
 
   assert.equal(producer.name, "app-e2e (${{ matrix.suite }}:${{ matrix.shard }})");
   assert.equal(producer.needs, "app-e2e-plan");
-  assert.equal(producer["runs-on"], TEMPORARY_HOSTED_RUNNER);
+  assert.equal(producer["runs-on"], "${{ matrix.runner }}");
   assert.equal(producer.strategy?.["fail-fast"], false);
   assert.equal(producer.strategy?.matrix, "${{ fromJSON(needs.app-e2e-plan.outputs.matrix) }}");
   assert.ok(producer.steps?.some((step) => step.uses === "./.github/actions/app-e2e-row"));
@@ -197,19 +196,21 @@ test("every producer and aggregator checks out the exact event target", () => {
   );
 });
 
-test("temporary App E2E hosted fallback keeps Blacksmith restore labels", () => {
+test("App E2E producers take their runner from the plan; Testbox stays Blacksmith", () => {
   const source = readRepoFile(".github", "workflows", "e2e.yml");
+  // Which label each row gets is the planner's call and is asserted in
+  // app-e2e-plan.test.ts; the workflow only has to defer to it.
   for (const job of ["app-readiness-producer", "app-e2e-producer"]) {
     assert.equal(
       workflowJobRunsOn(source, job),
-      `${TEMPORARY_HOSTED_RUNNER} # restore: ${RESTORE_BLACKSMITH_RUNNER}`,
-      `${job} must keep the Blacksmith restore label while hosted fallback is active`,
+      "${{ matrix.runner }}",
+      `${job} must take its runner from the planned row`,
     );
   }
   assert.equal(
     workflowJobRunsOn(source, "testbox"),
-    RESTORE_BLACKSMITH_RUNNER,
-    "Blacksmith Testbox dispatch must keep its native Blacksmith runner",
+    BLACKSMITH_RUNNER,
+    "testbox must run on the Blacksmith runner",
   );
 });
 

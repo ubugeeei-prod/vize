@@ -49,7 +49,7 @@ env:
 jobs:
   criterion-ab:
     name: criterion-ab
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 120
     permissions:
       contents: read
@@ -84,10 +84,6 @@ jobs:
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          # Temporary hosted-runner fallback: CI-only Criterion infrastructure
-          # changes run a smoke-sized A/B on GitHub-hosted runners. Drop this
-          # env with the hosted runner labels to restore full infrastructure sweeps.
-          VIZE_CRITERION_HOSTED_FALLBACK: ${{ runner.environment == 'github-hosted' && '1' || '' }}
         run: |
           node head/bench/criterion-impact.mjs \
             --repo-dir "$GITHUB_WORKSPACE/head" \
@@ -145,7 +141,7 @@ jobs:
 
   dialect-guard:
     name: dialect-guard
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     permissions:
       contents: read

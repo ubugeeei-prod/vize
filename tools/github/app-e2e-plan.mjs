@@ -3,7 +3,18 @@ import { fileURLToPath } from "node:url";
 
 const fixture = (id) => `tests/_fixtures/_git/${id}`;
 
-function row(profile, suite, shard, task, fixtureIds, needsPlaywright, timeout) {
+const BLACKSMITH_RUNNER = "blacksmith-32vcpu-ubuntu-2404";
+// Not a fallback. The only rows carrying this are the two that run the nuxt-ui
+// dev suite, which drives Vize HMR through a real Nuxt dev server and asserts
+// the authored-source patch lands within 60s. That round trip does not fit on
+// Blacksmith and did not before the hosted fallback either: the row's last
+// Blacksmith run (2026-08-12) took 1.4m against hosted's 22.2s, and on the
+// restore it timed out 3/3 while hosted stayed green 5/5. Widening the probe
+// would hide that gap rather than measure it. `validateAppE2eRows` pins the
+// set so a third row cannot quietly join it.
+const HOSTED_RUNNER = "ubuntu-24.04";
+
+function row(profile, suite, shard, task, fixtureIds, needsPlaywright, timeout, runner) {
   return {
     profile,
     suite,
@@ -12,6 +23,7 @@ function row(profile, suite, shard, task, fixtureIds, needsPlaywright, timeout) 
     fixtures: fixtureIds.map(fixture),
     needsPlaywright,
     timeout,
+    runner: runner ?? BLACKSMITH_RUNNER,
     cacheKey: `app-e2e-${profile}-${suite}-${shard}`,
     worktreeId: `ci-app-e2e-${profile}-${suite}-${shard}`,
     artifactStem: `${profile}-${suite}-${shard}`,
@@ -46,7 +58,7 @@ export const fullAppE2eRows = [
   row("full", "dev", "elk", "test:dev:elk", ["elk"], true, "12m"),
   row("full", "dev", "misskey", "test:dev:misskey", ["misskey"], true, "12m"),
   row("full", "dev", "npmx", "test:dev:npmx", ["npmx.dev"], true, "12m"),
-  row("full", "dev", "nuxt-ui", "test:dev:nuxt-ui", ["nuxt-ui"], true, "15m"),
+  row("full", "dev", "nuxt-ui", "test:dev:nuxt-ui", ["nuxt-ui"], true, "15m", HOSTED_RUNNER),
   row("full", "dev", "vuefes", "test:dev:vuefes", ["vuefes-2025"], true, "12m"),
   row("full", "vrt", "elk", "test:vrt:elk", ["elk"], true, hostedFullVrtTimeout),
   row(
@@ -113,6 +125,7 @@ export const readinessRows = [
     // rebooting the dev server, so this budget has to absorb those extra
     // startups plus one Playwright retry of the whole fixture setup.
     "30m",
+    HOSTED_RUNNER,
   ),
 ];
 
@@ -151,6 +164,10 @@ export function validateAppE2eRows(rows) {
       (current.profile === "readiness" && current.shard.startsWith("dev-"));
     if (current.needsPlaywright !== expectedBrowser) {
       throw new Error(`${identity} Playwright requirement drifted`);
+    }
+    const expectedRunner = current.shard.includes("nuxt-ui") ? HOSTED_RUNNER : BLACKSMITH_RUNNER;
+    if (current.runner !== expectedRunner) {
+      throw new Error(`${identity} runner drifted: expected ${expectedRunner}`);
     }
     if (!Array.isArray(current.fixtures) || current.fixtures.length === 0) {
       throw new Error(`${identity} must hydrate at least one fixture`);

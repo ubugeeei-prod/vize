@@ -238,14 +238,24 @@ pub(super) fn collect_transitive_local_imports_with_resolver(
                     .as_ref()
                     .expect("a positive package route came from a package lookup");
                 let mut route = route.clone();
+                // Re-sort only when the extension actually added something. The
+                // route arrives sorted and deduped, and most occurrences in a
+                // workspace resolve to a package whose sources are already all
+                // known, so the common case is appending nothing and then paying
+                // a full sort of the package's whole dependency list — with
+                // `Path`'s component-wise comparison, over long pnpm paths, once
+                // per import occurrence (#4426).
+                let before = route.dependency_paths.len();
                 route.dependency_paths.extend(
                     discovery
                         .package_sources
                         .into_iter()
                         .filter(|path| path.starts_with(&route.package_root)),
                 );
-                route.dependency_paths.sort();
-                route.dependency_paths.dedup();
+                if route.dependency_paths.len() != before {
+                    route.dependency_paths.sort();
+                    route.dependency_paths.dedup();
+                }
                 package_routes.push(PackageRouteBinding {
                     importer_path: file.clone(),
                     specifier: specifier.clone(),
