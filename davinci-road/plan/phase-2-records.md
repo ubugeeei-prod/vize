@@ -9,6 +9,112 @@
 > source-length budget (`tools/moon/cmd/source_file_lengths --max-lines 350`),
 > which plan files are not exempt from, and a record grows with every task.
 
+## P2-1
+
+**`vize_davinci` core types. Landed 2026-08-19; every acceptance clause met,
+one contract step deviated from deliberately.**
+
+### `NodeId`: `NonZeroU32`, not a reserved sentinel
+
+Both give `Option<NodeId>` the required 4-byte layout — an S2 op holding
+several optional child references pays 4 bytes per slot, not 8. `NonZeroU32`
+wins on two counts: it makes "no such node" **unrepresentable inside `NodeId`
+itself** (with a reserved-sentinel `u32`, every consumer has to remember that
+`NodeId(0)` is not a node and nothing stops one from building it), and the
+niche is stable Rust — reserving a range on a plain `u32` needs
+`rustc_layout_scalar_valid_range`, which is not.
+
+The cost is that the raw value and the index differ by one. That arithmetic is
+single-sourced in `NodeId::from_index` / `NodeId::index` and appears nowhere
+else; `Debug` and `Display` print the **index** (`NodeId(0)`, `%0`) because
+that is what folio pages and diagnostics show. Exhaustion returns `None` rather
+than wrapping or panicking: a stage with more than `u32::MAX - 1` nodes in one
+artifact should emit a diagnostic, not abort.
+
+### `SideTable`: sparse only, with the trigger written down
+
+P1-10 proved the residency question is not free — `vize_carton::{Box, Vec}` are
+`oxc_allocator`'s, whose const assertion **rejects `Drop` payloads**, and that
+assertion caught two real violations during P1-10. So the two forms are not
+interchangeable, and P2-1 lands the sparse one:
+`vize_carton::FxHashMap<NodeId, T>`, an ordinary non-arena scratch structure
+free to hold a `T` that owns heap memory.
+
+The dense arena form (`vize_carton::Vec<'a, Option<T>>`) is **documented, not
+built**, per the contract. Its trigger is three conditions that must all hold,
+measured rather than assumed: high occupancy (a fact for a majority of nodes,
+below which the `Option<T>` slots cost more than hash entries), a `Drop`-free
+`T`, and a lookup-dominated access pattern. The measurement belongs to
+whichever pass proposes it, in its own PR — a blanket switch is not a valid
+form of that change.
+
+**Iteration order is a trap the API names.** Hash-map order is unspecified and
+folio pages require sorted map iteration (`folio-format.md`), so `iter()` says
+in its docs that it is not the printing path and `sorted_entries()` — which
+allocates, visibly, at the call site — is.
+
+**Naming:** the membership predicate is `contains_id`, not `contains`. A keyed
+table's membership question is about the id, the way `HashMap::contains_key`
+says so. This also clears TS-13's `contains` finding **at the source**, which
+is the only acceptable resolution: the allowlist's own header says new test
+code must never be added to it.
+
+### `Diagnostic`: owned, `'static`, with the witness slot real
+
+`Span` and nothing else for coordinates — `Position` does not exist since P1-4,
+and line/column are derived at rendering time from `LineIndex`. Every field is
+owned, enforced by a `const` block asserting `Diagnostic`, `DiagnosticPart` and
+`Witness` are `'static`: the P1-11 arena/cache contract, since diagnostics
+cross the compile boundary by definition — they outlive the compile, get
+collected across a batch, and get cached. Message text is owned, the deliberate
+P1-10 exception `CompilerError::message` already carries.
+
+The **witness slot is typed rather than absent**. `assurance.md`'s migration
+note is that legacy diagnostics are exempt "**by inventory**, never silently",
+so `Witness::LegacyExempt(String)` names the producer: the exemption is an
+entry in a list rather than a missing field. `satisfies_witness_law()` is the
+predicate P4-6 will gate on and an inventory can count today; nothing enforces
+it yet, by design.
+
+`Severity` is included although the contract did not name it, because
+`assurance.md`'s no-error-on-maybe rule and P4-6's law are both stated in terms
+of error severity — a diagnostic type that cannot express severity cannot carry
+either.
+
+### Deviation: which size asserts carry the pointer-width guard
+
+The contract says node-size asserts on all three types, "each guarded
+`#[cfg(target_pointer_width = "64")]`". **They are not all guarded, and the
+reason is the guard's own rationale.** That guard exists in `vize_relief`
+because those figures are 64-bit footprints of pointer-containing structs
+("the wasm32 build is 32-bit",
+`crates/vize_relief/src/relief/elements.rs:31-36`). `NodeId` holds a `u32` and
+no pointer; `Severity`, `Stage` and `PartKind` are single-byte tags. Their
+footprints are identical on every target, so guarding them would only stop the
+wasm32 lane **P2-14 makes required** from checking them — and the `NodeId`
+niche is the property most worth checking there.
+
+So: `NodeId`, `Option<NodeId>` and the three tag enums assert unconditionally;
+`Diagnostic` (88 bytes) and `DiagnosticPart` (40) carry the guard, because they
+contain pointers. The 88 bytes are `Span` (8) + the two tags + an owned
+`String` message (24) + the parts `Vec` (24) + the witness slot (24) — and that
+last number is why a real witness type must be boxed rather than inlined when
+P4-6 lands it.
+
+### Acceptance
+
+- `cargo test -p vize_davinci` green: 20 new unit tests (31 with the existing
+  folio suites).
+- `cargo build -p vize_davinci --target wasm32-wasip2` green — the P0-10
+  acceptance, kept; the *required* lane lands at P2-14.
+- TS-11 empty, **proved rather than argued**: `cargo tree -i vize_davinci
+  --workspace` lists no reverse dependencies, so no compile path can observe
+  these types and no output byte can move.
+- TS-13 green with **no allowlist entry added**.
+- `cargo clippy -p vize_davinci --all-targets` clean, including the
+  `disallowed_macros` rule that rejects `std::format` (the tests use
+  `vize_carton::cstr!`).
+
 ## P2-12a
 
 **Phase-start baselines and pinned targets. Landed 2026-08-19 at rev

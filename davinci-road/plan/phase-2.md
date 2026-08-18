@@ -42,7 +42,7 @@ Phase 1 exited with named blockers. Each is stated here with the phase-2 tasks i
 
 Each ID links to its contract in [phase-2-tasks.md](./phase-2-tasks.md); what a landed task measured, decided and left open goes in [phase-2-records.md](./phase-2-records.md). This index is the navigational entry point for the phase and the place a task's box gets checked — never before the PR that satisfies its acceptance criteria.
 
-- [ ] [P2-1](./phase-2-tasks.md#p2-1--vize_davinci-core-types) `vize_davinci` core types (`NodeId`, side tables, `Diagnostic`)
+- [x] [P2-1](./phase-2-tasks.md#p2-1--vize_davinci-core-types) `vize_davinci` core types (`NodeId`, side tables, `Diagnostic`) — landed 2026-08-19; `NonZeroU32` niche, sparse-only side table with the densification trigger written down, owned-message `Diagnostic` with the P4-6 witness slot ([record](./phase-2-records.md#p2-1))
 - [ ] [P2-2](./phase-2-tasks.md#p2-2--pass-manager) Pass manager (const pipelines, classification, fusion)
 - [ ] [P2-3](./phase-2-tasks.md#p2-3--passobserver) `PassObserver` + the four in-tree observers
 - [ ] [P2-4](./phase-2-tasks.md#p2-4--folio-derive--davinci-opt-pipelines) `#[derive(Folio)]` + `davinci-opt --pipeline`

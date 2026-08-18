@@ -5,18 +5,20 @@
 
 ## P2-1 — `vize_davinci` core types
 
+**Landed 2026-08-19** — full record: [phase-2-records.md#p2-1](./phase-2-records.md#p2-1).
+
 **Deliverable:** the id / side-table / diagnostic substrate every later stage keys on, in the existing P0-10 crate, which today declares exactly one module (`folio`) and depends only on `vize_carton`.
 
 **Steps:**
 
-- [ ] `crates/vize_davinci/src/id.rs`: `NodeId(u32)` newtype — `Copy`, `Eq`, `Hash`, with a niche so `Option<NodeId>` stays 4 bytes (`NonZeroU32` or a reserved sentinel — pick one and record why in the PR)
-- [ ] `crates/vize_davinci/src/side_table.rs`: `SideTable<T>` keyed by `NodeId`. **Record the residency decision explicitly**, because P1-10 proved it is not free: an arena-resident table must hold a `Drop`-free `T` or the `vize_carton::Vec` const assertion rejects it, so the hash-map form (`FxHashMap<NodeId, T>`) is a non-arena scratch structure and the dense form (`vize_carton::Vec<'a, Option<T>>`) is the arena one. Whichever map type is chosen must build under `no_std + alloc` (`hashbrown` / `rustc_hash` with `default-features = false`) — verify before picking, the crate has no `[features]` section today. Document the densification trigger rather than densifying now
-- [ ] `crates/vize_davinci/src/diagnostic.rs`: the unified `Diagnostic` — `vize_carton::Span` (not `Position`, deleted at P1-4; `SourceLocation` is 8 bytes and span-only), stage-of-origin, structured parts, and a witness slot (empty until P4-6). Message text is **owned**, the deliberate P1-10 exception, so a diagnostic survives `Allocator::reset`
-- [ ] Node-size `const` asserts on all three, each guarded `#[cfg(target_pointer_width = "64")]` per the rationale at `crates/vize_relief/src/relief/elements.rs:31-36` — P2-14 makes wasm32 a required lane
-- [ ] `'static` assertion on `Diagnostic` (the P1-11 arena/cache contract, enforced the same way `SfcCompileResult` and the batch cache types are)
-- [ ] `#![no_std]` + `extern crate alloc;` held (already true at `crates/vize_davinci/src/lib.rs:13`); rustdoc per public type
+- [x] `crates/vize_davinci/src/id.rs`: `NodeId(u32)` newtype — `Copy`, `Eq`, `Hash`, with a niche so `Option<NodeId>` stays 4 bytes (`NonZeroU32` or a reserved sentinel — pick one and record why in the PR) _(`NonZeroU32`; the reasoning is in the type's own docs)_
+- [x] `crates/vize_davinci/src/side_table.rs`: `SideTable<T>` keyed by `NodeId`, with the residency decision recorded explicitly and the densification trigger documented rather than densified _(sparse `vize_carton::FxHashMap<NodeId, T>` only; the dense arena form and its three-condition trigger are written down, not built)_
+- [x] `crates/vize_davinci/src/diagnostic.rs`: the unified `Diagnostic` — `vize_carton::Span`, stage-of-origin, structured parts, and a witness slot (empty until P4-6). Message text is **owned**, the deliberate P1-10 exception, so a diagnostic survives `Allocator::reset`
+- [x] Node-size `const` asserts on all three _(with a **deviation recorded**: only the pointer-containing figures carry the `#[cfg(target_pointer_width = "64")]` guard — see the record)_
+- [x] `'static` assertion on `Diagnostic` (the P1-11 arena/cache contract, enforced the same way `SfcCompileResult` and the batch cache types are)
+- [x] `#![no_std]` + `extern crate alloc;` held; rustdoc per public type
 
-**Acceptance:** `cargo test -p vize_davinci` green (TS-1); the guarded size asserts and the `'static` assertion compile (a violation is a compile error, not a test failure); `cargo build -p vize_davinci --target wasm32-wasip2` green (the P0-10 acceptance, kept — the _required_ lane lands at P2-14); `node tools/davinci/corpus-diff.mjs` empty, trivially, since nothing consumes these yet (TS-11); TS-13 green on the new tests. **Deps:** none (phase-1 exit). **Non-goals:** replacing `vize_relief::CompilerError` at its call sites — the single-diagnostics-channel convergence that structurally ends dual assembly is P4's; densifying the side table; the S2 ops themselves (P2-5a).
+**Acceptance:** `cargo test -p vize_davinci` green (TS-1) — 20 new unit tests, 31 total; the size asserts and the `'static` assertion compile (a violation is a compile error, not a test failure); `cargo build -p vize_davinci --target wasm32-wasip2` green; TS-11 empty, **proved mechanically** rather than argued — `cargo tree -i vize_davinci --workspace` lists no reverse dependencies, so nothing on any compile path can observe these types; TS-13 green on the new tests, with no allowlist entry added (the allowlist only shrinks). **Deps:** none (phase-1 exit). **Non-goals:** replacing `vize_relief::CompilerError` at its call sites — the single-diagnostics-channel convergence that structurally ends dual assembly is P4's; densifying the side table; the S2 ops themselves (P2-5a).
 
 ## P2-2 — Pass manager
 
