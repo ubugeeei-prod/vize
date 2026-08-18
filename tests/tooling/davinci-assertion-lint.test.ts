@@ -26,7 +26,11 @@ function allowlistPaths(): string[] {
   const allowlist = fs.readFileSync(allowlistPath, "utf8");
   const groups = allowlist.split("\n").filter((line) => line.trim() === "[[allow]]").length;
   assert.ok(groups > 0, "committed allowlist must declare [[allow]] groups");
-  return [...allowlist.matchAll(/^ {2}"([^"]+)",$/gm)].map(([, entry]) => entry);
+  // Both array styles have to parse: the TOML formatter collapses a group that
+  // lists a single path onto one line and expands the rest.
+  return [...allowlist.matchAll(/^paths = \[([^\]]*)\]/gm)].flatMap(([, body]) =>
+    [...body.matchAll(/"([^"]+)"/g)].map(([, entry]) => entry),
+  );
 }
 
 test("assertion lint flags every marked weak assertion in the bad fixture, and only those", () => {

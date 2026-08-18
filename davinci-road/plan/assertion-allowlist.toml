@@ -265,6 +265,4 @@ paths = [
 # forcing function to pair the sources upstream instead.
 justification = "landed on main after the P0-12 snapshot; pair each source with its expected output upstream"
 expires = "2026-10-31"
-paths = [
-  "crates/vize_glyph/src/style/stabilization.rs",
-]
+paths = ["crates/vize_glyph/src/style/stabilization.rs"]
