@@ -3639,6 +3639,7 @@ dependencies = [
  "vize_armature",
  "vize_carton",
  "vize_croquis",
+ "vize_davinci",
  "vize_relief",
 ]
 

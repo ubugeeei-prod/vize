@@ -28,6 +28,10 @@ pub mod retained;
 // counts walks through the pass manager instead.
 #[doc(hidden)]
 pub mod walk_probe;
+// The shipped template pipeline, declared as Davinci pass-manager plans. This
+// is Davinci's first production consumer: the plans are tied to the measured
+// walk counts by the per-backend `davinci_walk_baseline.rs` laws.
+pub mod davinci_plan;
 
 // Re-export from vize_relief (AST, errors, options)
 pub use vize_relief::errors::{CompilerError, CompilerErrorWithSource, CompilerResult, ErrorCode};

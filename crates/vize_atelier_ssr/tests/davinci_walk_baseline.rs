@@ -10,10 +10,16 @@
 //! its per-stage breakdown) and move the budget entry with a reviewed PR, per
 //! the ratchet rule at the top of `budgets.toml`.
 //!
+//! The same run also pins Davinci's side of the tie: the walks measured here
+//! must equal `vize_atelier_core::davinci_plan::SSR.group_count()`, so the
+//! pass-manager plan that *describes* the shipped pipeline cannot drift from
+//! it silently. That declaration is Davinci's first production consumer.
+//!
 //! The probe is process-global and monotone, so this file holds a single
 //! `#[test]` in its own binary - the `davinci_expr_reparse_floor.rs` shape.
 
 use davinci_harness::fixtures::{LADDER, template_block};
+use vize_atelier_core::davinci_plan;
 use vize_atelier_core::walk_probe::{WALK_STAGES, WalkCounts};
 use vize_atelier_ssr::compile_ssr;
 use vize_carton::Allocator;
@@ -58,6 +64,17 @@ fn ssr_walk_baseline_holds() {
             delta.total_walks(),
             delta.total_visits(),
             breakdown
+        );
+
+        // The Davinci plan and the pipeline it describes must agree on the
+        // walk count. A plan that drifts from the compiler fails here, which
+        // is why the plan is declared as data rather than written as a
+        // comment (`vize_atelier_core::davinci_plan`).
+        assert_eq!(
+            delta.total_walks() as usize,
+            davinci_plan::SSR.group_count(),
+            "ssr {}: the measured walks disagree with davinci_plan::SSR",
+            fixture.name
         );
 
         measured.push((fixture.name, delta.total_walks(), delta.total_visits()));

@@ -25,6 +25,7 @@ davinci-differential = []
 [dependencies]
 vize_carton = { workspace = true }
 vize_croquis = { workspace = true }
+vize_davinci = { workspace = true }
 vize_relief = { workspace = true }
 vize_armature = { workspace = true }
 
