@@ -71,9 +71,7 @@ jobs:
       - name: Mount Rust sticky disks (Linux)
         if: runner.os == 'Linux' && runner.environment != 'github-hosted'
         uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: release-cli-${{ matrix.settings.target }}
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: "release-cli-${{ matrix.settings.target }}", cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - name: Cache Rust (non-Linux)
         if: runner.os != 'Linux'
         uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
@@ -330,9 +328,7 @@ jobs:
           targets: wasm32-unknown-unknown
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: runner.environment != 'github-hosted'
-        with:
-          key: release-wasm
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: release-wasm, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - name: Cache WASM package build
         id: cache-wasm
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
@@ -393,9 +389,7 @@ jobs:
       - name: Mount Rust sticky disks (Linux)
         if: runner.os == 'Linux' && runner.environment != 'github-hosted'
         uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: release-native-${{ matrix.settings.target }}
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: "release-native-${{ matrix.settings.target }}", cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - name: Cache Rust (non-Linux)
         if: runner.os != 'Linux'
         uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
@@ -939,9 +933,7 @@ jobs:
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: runner.environment != 'github-hosted'
-        with:
-          key: release-crates
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: release-crates, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - name: Get crates.io token via Trusted Publishing
         id: crates-io-auth
         uses: rust-lang/crates-io-auth-action@b7e9a28eded4986ec6b1fa40eeee8f8f165559ec # v1

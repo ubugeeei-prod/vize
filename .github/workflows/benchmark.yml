@@ -120,12 +120,10 @@ jobs:
       - uses: ./head/.github/actions/setup-rust-sticky-cache
         if: runner.environment != 'github-hosted'
         with:
-          key: benchmark-head
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-          target-path: head/target
-          secondary-key: benchmark-base
-          secondary-target-path: base/target
-          secondary-cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+          { key: benchmark-head, target-path: head/target,
+            secondary-key: benchmark-base, secondary-target-path: base/target,
+            cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}",
+            secondary-cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
 
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:

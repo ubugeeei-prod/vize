@@ -114,9 +114,7 @@ jobs:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: runner.environment != 'github-hosted'
-        with:
-          key: semver-checks
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: semver-checks, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - name: Install cargo-semver-checks
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
@@ -202,9 +200,7 @@ jobs:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: runner.environment != 'github-hosted'
-        with:
-          key: check-vize-apps
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: check-vize-apps, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Build vize CLI
@@ -232,9 +228,7 @@ jobs:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: runner.environment != 'github-hosted'
-        with:
-          key: vue-parity
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: vue-parity, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - uses: ./.github/actions/check-vue-parity
 
   test-scripts:
@@ -263,9 +257,7 @@ jobs:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: runner.environment != 'github-hosted'
-        with:
-          key: test-scripts
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - name: Hydrate CLI diagnostic fixture and install JS dependencies
         run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue && vp install --frozen-lockfile --prefer-offline
       - name: Build vize CLI
@@ -308,9 +300,7 @@ jobs:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: runner.environment != 'github-hosted'
-        with:
-          key: build-js-packages
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: build-js-packages, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Verify declarations, build native package, and lint UI SFC packages
@@ -353,9 +343,7 @@ jobs:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: runner.environment != 'github-hosted'
-        with:
-          key: test-js-packages
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: test-js-packages, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Test JS packages
@@ -380,9 +368,7 @@ jobs:
           run-install: true
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: runner.environment != 'github-hosted'
-        with:
-          key: clippy-test
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: clippy-test, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
 
       - name: Clippy
         run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports && cargo clippy -p vize_maestro --tests -- -D warnings && bash tools/github/check-maestro-feature-contract.sh
@@ -404,9 +390,7 @@ jobs:
 
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: runner.environment != 'github-hosted'
-        with:
-          key: coverage
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: coverage, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
 
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -449,9 +433,7 @@ jobs:
 
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: runner.environment != 'github-hosted'
-        with:
-          key: coverage-source
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: coverage-source, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
 
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
@@ -508,9 +490,7 @@ jobs:
 
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: runner.environment != 'github-hosted'
-        with:
-          key: coverage-branch
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: coverage-branch, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
 
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
@@ -553,9 +533,7 @@ jobs:
       - uses: ./.github/actions/setup-moonbit
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: runner.environment != 'github-hosted'
-        with:
-          key: playground-test
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: playground-test, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
 
       - name: Cache WASM build
         id: cache-wasm
