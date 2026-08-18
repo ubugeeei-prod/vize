@@ -304,6 +304,14 @@ test("planned tasks, fixtures, and mutable identities are exact and unique", () 
 test("plan validation rejects drift instead of silently dropping coverage", () => {
   const valid = structuredClone([...fullAppE2eRows, ...readinessRows]);
   assert.doesNotThrow(() => validateAppE2eRows(valid));
+  // The nuxt-ui HMR probe measures a 60s authored-source patch, which only
+  // fits on hosted hardware; every other row belongs on Blacksmith.
+  for (const current of valid) {
+    const expected = current.shard.includes("nuxt-ui")
+      ? "ubuntu-24.04"
+      : "blacksmith-32vcpu-ubuntu-2404";
+    assert.equal(current.runner, expected, `${current.profile}:${current.shard} runner`);
+  }
   for (const [name, mutate, message] of [
     ["empty", (rows: typeof valid) => rows.splice(0), /must not be empty/],
     [
@@ -325,6 +333,7 @@ test("plan validation rejects drift instead of silently dropping coverage", () =
       (rows: typeof valid) => (rows[1]!.cacheKey = rows[0]!.cacheKey),
       /identity drifted/,
     ],
+    ["runner drift", (rows: typeof valid) => (rows[0]!.runner = "ubuntu-24.04"), /runner drifted/],
   ] as const) {
     const rows = structuredClone(valid);
     mutate(rows);
