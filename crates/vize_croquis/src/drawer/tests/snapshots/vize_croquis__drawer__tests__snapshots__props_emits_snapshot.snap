@@ -1,6 +1,5 @@
 ---
 source: crates/vize_croquis/src/drawer/tests/snapshots.rs
-assertion_line: 123
 expression: output
 ---
 === Props ===

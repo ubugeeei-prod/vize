@@ -1,6 +1,5 @@
 ---
 source: crates/vize_croquis/src/drawer/template/tests.rs
-assertion_line: 123
 expression: expressions
 ---
 [

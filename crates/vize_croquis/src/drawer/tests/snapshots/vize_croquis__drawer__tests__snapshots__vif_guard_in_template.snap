@@ -1,6 +1,5 @@
 ---
 source: crates/vize_croquis/src/drawer/tests/snapshots.rs
-assertion_line: 208
 expression: expressions
 ---
 [
