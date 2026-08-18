@@ -18,6 +18,7 @@ use vize_carton::{ToCompactString, ensure_sufficient_stack};
 /// stack overflow aborts the process instead of producing a diagnostic
 /// (`vize_carton::recursion`).
 pub fn generate_node(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>) {
+    crate::walk_probe::record_visit(crate::walk_probe::WalkStage::Codegen);
     ensure_sufficient_stack(|| match node {
         TemplateChildNode::Element(el) => generate_element(ctx, el),
         TemplateChildNode::Text(text) => generate_text(ctx, text),

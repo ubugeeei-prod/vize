@@ -84,6 +84,7 @@ pub fn traverse_children<'a>(ctx: &mut TransformContext<'a>, parent: ParentNode<
 /// aborts the process instead of producing a diagnostic
 /// (`vize_carton::recursion`).
 pub fn traverse_node<'a>(ctx: &mut TransformContext<'a>, node: &mut TemplateChildNode<'a>) {
+    crate::walk_probe::record_visit(crate::walk_probe::WalkStage::Transform);
     ensure_sufficient_stack(|| traverse_node_guarded(ctx, node));
 }
 

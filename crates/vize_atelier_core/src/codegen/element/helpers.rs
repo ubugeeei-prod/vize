@@ -209,10 +209,22 @@ fn child_crosses_namespace_boundary(ns: Namespace, child: &TemplateChildNode<'_>
 
 /// Generate root node (wrapped in block)
 pub fn generate_root_node(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>) {
+    // The three specialized arms are the codegen descent's head node, entered
+    // without passing through `generate_node`, so the P2-12a walk probe counts
+    // the visit here; the fallthrough arm is counted by `generate_node` itself.
     match node {
-        TemplateChildNode::Element(el) => super::block::generate_element_block(ctx, el),
-        TemplateChildNode::If(if_node) => generate_if(ctx, if_node),
-        TemplateChildNode::For(for_node) => generate_for(ctx, for_node),
+        TemplateChildNode::Element(el) => {
+            crate::walk_probe::record_visit(crate::walk_probe::WalkStage::Codegen);
+            super::block::generate_element_block(ctx, el)
+        }
+        TemplateChildNode::If(if_node) => {
+            crate::walk_probe::record_visit(crate::walk_probe::WalkStage::Codegen);
+            generate_if(ctx, if_node)
+        }
+        TemplateChildNode::For(for_node) => {
+            crate::walk_probe::record_visit(crate::walk_probe::WalkStage::Codegen);
+            generate_for(ctx, for_node)
+        }
         _ => generate_node(ctx, node),
     }
 }

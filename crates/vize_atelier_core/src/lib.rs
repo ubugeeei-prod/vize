@@ -24,6 +24,10 @@ pub mod expr_parse_probe;
 // legacy re-parse sites at P1-8/P1-9.
 #[doc(hidden)]
 pub mod retained;
+// Davinci P2-12a pre-S2 traversal baseline; deleted when P2-12b's observer
+// counts walks through the pass manager instead.
+#[doc(hidden)]
+pub mod walk_probe;
 
 // Re-export from vize_relief (AST, errors, options)
 pub use vize_relief::errors::{CompilerError, CompilerErrorWithSource, CompilerResult, ErrorCode};

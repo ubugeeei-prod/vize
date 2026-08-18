@@ -200,8 +200,12 @@ pub fn generate_v_once_props(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 
 /// Generate child node for v-once (uses createTextVNode instead of interpolation)
 pub fn generate_v_once_child(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>) {
+    // Both specialized arms emit a child without passing through
+    // `generate_node`, so the P2-12a walk probe counts them here; the
+    // fallthrough arm is counted by `generate_node` itself.
     match node {
         TemplateChildNode::Text(text) => {
+            crate::walk_probe::record_visit(crate::walk_probe::WalkStage::Codegen);
             ctx.use_helper(RuntimeHelper::CreateText);
             ctx.push(ctx.helper(RuntimeHelper::CreateText));
             ctx.push("(\"");
@@ -209,6 +213,7 @@ pub fn generate_v_once_child(ctx: &mut CodegenContext, node: &TemplateChildNode<
             ctx.push("\")");
         }
         TemplateChildNode::Interpolation(interp) => {
+            crate::walk_probe::record_visit(crate::walk_probe::WalkStage::Codegen);
             ctx.use_helper(RuntimeHelper::CreateText);
             ctx.push(ctx.helper(RuntimeHelper::CreateText));
             ctx.push("(");

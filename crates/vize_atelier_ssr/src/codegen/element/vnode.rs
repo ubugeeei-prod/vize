@@ -98,6 +98,12 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     fn vnode_child_expression(&mut self, child: &TemplateChildNode<'a>) -> Option<String> {
+        // SSR's second descent: component slot children are built as vnode
+        // expressions instead of pushed as template parts, so these visits
+        // never reach `process_child` and the P2-12a probe counts them here.
+        vize_atelier_core::walk_probe::record_visit(
+            vize_atelier_core::walk_probe::WalkStage::SsrCodegen,
+        );
         match child {
             TemplateChildNode::Element(el) => self.vnode_element_expression(el),
             TemplateChildNode::Text(text) => {

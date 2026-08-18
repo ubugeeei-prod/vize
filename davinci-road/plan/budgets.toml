@@ -178,7 +178,85 @@ carton_score = 0.4678
 relief_score = 0.8372
 
 [traversal]
-# Fused compile-path walk-count ceilings per fixture. Populated by P2-12.
+# Fused compile-path traversal ceilings per backend per ladder fixture,
+# recorded at Davinci P2-12a from `vize_atelier_core::walk_probe`. Ids are
+# `<backend>_<fixture>`; the full record, the reproducing command, the two-run
+# determinism proof and — crucially — the two classes the probe deliberately
+# does not count are in `walk-baseline.md`.
+#
+# Fields, both mandatory:
+#   walks  — stage traversals of the template tree entered during one fused
+#            compile. Two today on every backend: the transform lane, then the
+#            backend's own descent.
+#   visits — template nodes those traversals dispatched on.
+#
+# Both are **deterministic and machine-independent** — they depend on the
+# fixture and the pipeline shape, not on the machine — so this section gates
+# **exactly**, with no tolerance, from day one and does not wait for the
+# Blacksmith reference runner. That is the same reasoning that made the
+# `[bench] allocs` gate exact at P1-13, and unlike `wall_p50_ns` there is no
+# "0 means unrecorded" state here: an id is present with its measured numbers
+# or it fails reconciliation.
+#
+# `tests/tooling/davinci-traversal-budgets.test.ts` reconciles these ids
+# against the ladder x the backends that ship a `tests/davinci_walk_baseline.rs`
+# recorder, in both directions, and against the tables those recorders pin — so
+# a fixture without a ceiling, a ceiling without a fixture, and a ceiling that
+# disagrees with the Rust-side pin all fail.
+
+dom_small = { walks = 2, visits = 11 }
+dom_medium = { walks = 2, visits = 62 }
+dom_large = { walks = 2, visits = 86 }
+dom_stress-deep = { walks = 2, visits = 134 }
+dom_stress-wide = { walks = 2, visits = 3 }
+dom_stress-interp = { walks = 2, visits = 1102 }
+
+ssr_small = { walks = 2, visits = 16 }
+ssr_medium = { walks = 2, visits = 118 }
+ssr_large = { walks = 2, visits = 106 }
+ssr_stress-deep = { walks = 2, visits = 144 }
+ssr_stress-wide = { walks = 2, visits = 4 }
+ssr_stress-interp = { walks = 2, visits = 2002 }
+
+vapor_small = { walks = 2, visits = 25 }
+vapor_medium = { walks = 2, visits = 102 }
+vapor_large = { walks = 2, visits = 127 }
+vapor_stress-deep = { walks = 2, visits = 256 }
+vapor_stress-wide = { walks = 2, visits = 4 }
+vapor_stress-interp = { walks = 2, visits = 3102 }
+
+[target.phase-2]
+# The phase-2 improvement target, pinned at phase start per P2-12a, so the
+# exit gate has a defined "before" and cannot be scored against a number
+# chosen after the result is known (the P1-13 miss this task exists to
+# prevent). Quantities are the machine-independent ones only; wall time is
+# report-only until the Blacksmith recording lands (P0-4's open pending).
+#
+# **Review point:** the maintainer sets these numbers. CI checks that the
+# table exists, that every value is present and non-zero, and that the
+# phase-start rev names a real commit — never that the numbers are the right
+# ones.
+phase_start_rev = "232870a83506cf3312cc8ef02e91c8b73ac12d2b"
+phase_start_date = "2026-08-19"
+# The DOM backend is phase 2's strangler target (P2-11), so the target is
+# stated on the DOM lane: the transform lane and DOM codegen become fused S2
+# passes, which is one walk instead of two and drives node visits toward the
+# transform-only component recorded in walk-baseline.md.
+dom_walks_max = 1
+dom_visits_ratio_max = 0.80
+# `stress-wide` is the control row: one element with 100 attributes is 3
+# visits, which is attribute work rather than traversal work. It is excluded
+# from the ratio target because a change there is measuring something else.
+dom_visits_control_fixture = "stress-wide"
+# S2 must not be paid for in allocations: the `atelier_dom_compile_*` entries
+# in [bench] may not regress, which the exact alloc gate already enforces per
+# bench. Stated here as the phase-level commitment rather than a second gate.
+dom_compile_allocs_ratio_max = 1.00
+# SSR and Vapor stay on the legacy path this phase (P3), so their [traversal]
+# entries are held, not improved.
+ssr_visits_ratio_max = 1.00
+vapor_visits_ratio_max = 1.00
+wall_time = "report-only"
 
 [sourcemap]
 # Minimum coverage per backend and mapping category. Populated before P3-9

@@ -285,6 +285,7 @@ pub(crate) fn transform_inner<'a>(
     }
 
     // Transform the root children
+    crate::walk_probe::record_walk(crate::walk_probe::WalkStage::Transform);
     profile!(
         "atelier.transform.traverse_children",
         traverse_children(&mut ctx, ParentNode::Root(root as *mut _))

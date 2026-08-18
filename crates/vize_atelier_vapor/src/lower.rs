@@ -39,6 +39,8 @@ pub(crate) fn transform_to_ir_with_diagnostics<'a>(
 ) -> (RootIRNode<'a>, std::vec::Vec<String>) {
     let mut ctx = TransformContext::new(allocator, source);
 
+    vize_atelier_core::walk_probe::record_walk(vize_atelier_core::walk_probe::WalkStage::VaporLower);
+
     // Create block for root
     let block = transform_children(&mut ctx, &root.children);
 
@@ -67,6 +69,10 @@ pub(crate) fn transform_children<'a>(
     ctx: &mut TransformContext<'a>,
     children: &[TemplateChildNode<'a>],
 ) -> BlockIRNode<'a> {
+    vize_atelier_core::walk_probe::record_visits(
+        vize_atelier_core::walk_probe::WalkStage::VaporLower,
+        children.len(),
+    );
     let mut block = BlockIRNode::new(ctx.allocator);
     // Note: Don't consume an ID for the block itself - element IDs should start from 0
 

@@ -186,6 +186,10 @@ fn transform_dynamic_children_in_slice<'a>(
     in_text_run: &mut bool,
     prev_template_backed_child: &mut Option<(usize, usize)>,
 ) {
+    vize_atelier_core::walk_probe::record_visits(
+        vize_atelier_core::walk_probe::WalkStage::VaporLower,
+        children.len(),
+    );
     for child in children {
         let TemplateChildNode::Element(child_el) = child else {
             if matches!(
@@ -324,6 +328,10 @@ fn transform_control_flow_children_into_parent<'a>(
     parent_id: usize,
     block: &mut BlockIRNode<'a>,
 ) {
+    vize_atelier_core::walk_probe::record_visits(
+        vize_atelier_core::walk_probe::WalkStage::VaporLower,
+        children.len(),
+    );
     for child in children {
         match child {
             TemplateChildNode::If(if_node) => {
@@ -361,6 +369,10 @@ fn transform_deferred_parent_control_flow_children<'a>(
     el: &ElementNode<'a>,
     block: &mut BlockIRNode<'a>,
 ) {
+    vize_atelier_core::walk_probe::record_visits(
+        vize_atelier_core::walk_probe::WalkStage::VaporLower,
+        el.children.len(),
+    );
     for child in el.children.iter() {
         match child {
             TemplateChildNode::If(if_node) => {

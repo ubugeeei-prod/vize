@@ -83,6 +83,9 @@ impl<'a> SsrCodegenContext<'a> {
 
     /// Generate SSR code from the AST
     pub fn generate(mut self, root: &RootNode<'a>) -> SsrCodegenResult {
+        vize_atelier_core::walk_probe::record_walk(
+            vize_atelier_core::walk_probe::WalkStage::SsrCodegen,
+        );
         // Transforms can rewrite setup bindings to `_unref(...)` in SSR
         // expressions. SSR codegen does not walk helper symbols the same way as
         // DOM codegen, so carry the root helper through explicitly.

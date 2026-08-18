@@ -54,6 +54,12 @@ pub(crate) fn transform_element<'a>(
 
     // Template elements don't consume an ID - they just wrap children
     if el.tag_type == ElementType::Template {
+        // This child list is dispatched here instead of through
+        // `lower::transform_children`, so the P2-12a walk probe counts it here.
+        vize_atelier_core::walk_probe::record_visits(
+            vize_atelier_core::walk_probe::WalkStage::VaporLower,
+            el.children.len(),
+        );
         for child in el.children.iter() {
             match child {
                 TemplateChildNode::Element(child_el) => {

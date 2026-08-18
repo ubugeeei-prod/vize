@@ -91,6 +91,7 @@ fn generate_with_sections_and_options(
         .collect();
 
     // Generate function signature
+    crate::walk_probe::record_walk(crate::walk_probe::WalkStage::Codegen);
     profile!(
         "atelier.codegen.function_signature",
         generate_function_signature(&mut ctx)

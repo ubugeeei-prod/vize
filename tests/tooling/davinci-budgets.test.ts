@@ -168,8 +168,21 @@ test("every budget entry carries exactly the documented fields within the tolera
   }
 });
 
+// Inline-table entry lines belonging to one `[section]` header, in file order.
+// Exported shape is duplicated in davinci-traversal-budgets.test.ts rather
+// than shared: these are node:test files, not a module graph.
+function inlineTableLines(section: string): string[] {
+  const lines = budgetsText.split("\n");
+  const start = lines.indexOf(`[${section}]`);
+  assert.ok(start >= 0, `budgets.toml must declare a [${section}] section`);
+  const rest = lines.slice(start + 1);
+  const end = rest.findIndex((line) => /^\[/.test(line));
+  const body = end === -1 ? rest : rest.slice(0, end);
+  return body.filter((line) => /^[A-Za-z0-9._-]+ = \{/.test(line));
+}
+
 test("every bench entry is one single-line inline table", () => {
-  const entryLines = budgetsText.split("\n").filter((line) => /^[A-Za-z0-9._-]+ = \{/.test(line));
+  const entryLines = inlineTableLines("bench");
   assert.equal(
     entryLines.length,
     Object.keys(budgets.bench).length,

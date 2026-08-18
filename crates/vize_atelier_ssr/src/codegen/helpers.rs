@@ -87,6 +87,9 @@ impl<'a> SsrCodegenContext<'a> {
         disable_comment: bool,
         inherit_attrs: bool,
     ) {
+        vize_atelier_core::walk_probe::record_visit(
+            vize_atelier_core::walk_probe::WalkStage::SsrCodegen,
+        );
         match child {
             TemplateChildNode::Element(el) => {
                 self.process_element_with_fallthrough_attrs(
