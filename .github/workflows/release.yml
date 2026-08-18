@@ -18,7 +18,7 @@ env:
 jobs:
   plan-release-platforms:
     name: Plan release platforms
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     outputs:
       include_slow_platforms: ${{ steps.platforms.outputs.include_slow_platforms }}
@@ -109,7 +109,7 @@ jobs:
           compression-level: 0
   build-editor-extensions:
     name: Build Editor Extensions
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -147,7 +147,7 @@ jobs:
           compression-level: 0
   release-vscode-extension:
     name: Release VS Code extension
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     needs: [build-editor-extensions, release-preflight]
     timeout-minutes: 30
     environment: vscode-marketplace
@@ -178,7 +178,7 @@ jobs:
         run: moon run --target native tools/moon/cmd/publish_vscode_extension -- editor-extension-artifacts/editors/vscode/dist/vize.vsix
   build-release-packages:
     name: Build release npm packages
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -318,7 +318,7 @@ jobs:
           }
   build-wasm-package:
     name: Build @vizejs/wasm package
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -441,7 +441,7 @@ jobs:
           compression-level: 0
   smoke-release-packages:
     name: Smoke release npm package installs
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     needs: [plan-release-platforms, build-release-packages, build-native-all]
     timeout-minutes: 30
     steps:
@@ -925,7 +925,7 @@ jobs:
   # Publish crates to crates.io (using Trusted Publishing)
   release-crates:
     name: Release crates to crates.io
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     needs: release-preflight
     timeout-minutes: 30
     environment: crates-io
@@ -950,7 +950,7 @@ jobs:
   # Create GitHub Release with CLI binaries
   create-github-release:
     name: Create GitHub Release
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     needs:
       - build-cli
       - release-vscode-extension

@@ -32,7 +32,7 @@ env:
 jobs:
   replay-main:
     name: replay-main
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     permissions:
       contents: read
@@ -82,7 +82,7 @@ jobs:
 
   replay-release:
     name: replay-release
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     permissions:
       contents: read

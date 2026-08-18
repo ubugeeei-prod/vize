@@ -107,9 +107,8 @@ env:
 
 jobs:
   exact-tsgo-project:
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
-    # restore timeout-minutes: 20 when restoring Blacksmith runners.
-    timeout-minutes: 35
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
     steps:
       - name: Checkout Vize
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6

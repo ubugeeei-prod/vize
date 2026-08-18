@@ -68,13 +68,13 @@ env:
 jobs:
   real-project-matrix:
     name: real projects (${{ matrix.shard }}/22)
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 240 # restore: 120 with blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       # The hosted release fallback must fit the documented Free plan floor:
       # 20 concurrent standard hosted jobs, so 22 shards can take two waves.
-      max-parallel: 20 # restore: 6 with blacksmith-32vcpu-ubuntu-2404
+      max-parallel: 6
       matrix:
         shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
     env:

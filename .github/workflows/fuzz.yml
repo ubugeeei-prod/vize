@@ -58,7 +58,7 @@ jobs:
     # libFuzzer requires Linux or macOS; this matrix uses GitHub-hosted Ubuntu
     # for consistency. macOS coverage can be added in a
     # follow-up if platform-divergent panics ever appear in triage.
-    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
     # Pull-request fuzzing is advisory to keep the short readiness lane moving.
     # Scheduled and manually dispatched runs are release evidence and must fail
