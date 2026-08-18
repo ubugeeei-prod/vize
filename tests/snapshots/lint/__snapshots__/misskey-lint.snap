@@ -10579,12 +10579,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'page.block' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'page.block' should be PascalCase or kebab-case",
         "line": 6,
         "column": 11,
         "endLine": 6,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -10597,12 +10597,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'page.dynamic' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'page.dynamic' should be PascalCase or kebab-case",
         "line": 7,
         "column": 11,
         "endLine": 7,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -10626,12 +10626,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'page.image' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'page.image' should be PascalCase or kebab-case",
         "line": 6,
         "column": 11,
         "endLine": 6,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       },
       {
         "ruleId": "vue/attribute-hyphenation",
@@ -10655,12 +10655,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'page.note' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'page.note' should be PascalCase or kebab-case",
         "line": 6,
         "column": 11,
         "endLine": 6,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -10673,12 +10673,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'page.section' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'page.section' should be PascalCase or kebab-case",
         "line": 6,
         "column": 11,
         "endLine": 6,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -10691,12 +10691,12 @@
         "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'page.text' should be PascalCase",
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'page.text' should be PascalCase or kebab-case",
         "line": 6,
         "column": 11,
         "endLine": 6,
         "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       },
       {
         "ruleId": "vue/attribute-hyphenation",
@@ -21981,36 +21981,13 @@
   },
   {
     "file": "src/ui/_common_/mobile-footer-menu.vue",
-    "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'mobile-footer-menu' should be PascalCase",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "src/ui/_common_/navbar-h.vue",
     "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'navbar-h' should be PascalCase",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
       {
         "ruleId": "a11y/alt-text",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -22101,7 +22078,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 9
+    "warningCount": 8
   },
   {
     "file": "src/ui/_common_/navbar.vue",
@@ -22175,17 +22152,6 @@
     "file": "src/ui/_common_/statusbar-federation.vue",
     "messages": [
       {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'statusbar-federation' should be PascalCase",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -22242,22 +22208,11 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 5
   },
   {
     "file": "src/ui/_common_/statusbar-rss.vue",
     "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'statusbar-rss' should be PascalCase",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
       {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -22326,22 +22281,11 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 6
+    "warningCount": 5
   },
   {
     "file": "src/ui/_common_/statusbar-user-list.vue",
     "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'statusbar-user-list' should be PascalCase",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
       {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -22421,7 +22365,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 8
+    "warningCount": 7
   },
   {
     "file": "src/ui/_common_/statusbars.vue",
@@ -22544,17 +22488,6 @@
     "file": "src/ui/_common_/stream-indicator.vue",
     "messages": [
       {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'stream-indicator' should be PascalCase",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
-      {
         "ruleId": "a11y/click-events-have-key-events",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -22578,7 +22511,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "src/ui/_common_/titlebar.vue",
@@ -22626,17 +22559,6 @@
     "file": "src/ui/deck/antenna-column.vue",
     "messages": [
       {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'antenna-column' should be PascalCase",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -22649,23 +22571,12 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "src/ui/deck/channel-column.vue",
     "messages": [
       {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'channel-column' should be PascalCase",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -22678,22 +22589,11 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "src/ui/deck/chat-column.vue",
     "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'chat-column' should be PascalCase",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
       {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -22707,7 +22607,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "src/ui/deck/column.vue",
@@ -22742,17 +22642,6 @@
     "file": "src/ui/deck/direct-column.vue",
     "messages": [
       {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'direct-column' should be PascalCase",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -22765,22 +22654,11 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "src/ui/deck/list-column.vue",
     "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'list-column' should be PascalCase",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
       {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -22805,22 +22683,11 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "src/ui/deck/main-column.vue",
     "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'main-column' should be PascalCase",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
       {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -22845,22 +22712,11 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "src/ui/deck/mentions-column.vue",
     "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'mentions-column' should be PascalCase",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
       {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -22874,22 +22730,11 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "src/ui/deck/notifications-column.vue",
     "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'notifications-column' should be PascalCase",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
       {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -22914,22 +22759,11 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "src/ui/deck/role-timeline-column.vue",
     "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'role-timeline-column' should be PascalCase",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
       {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -22943,22 +22777,11 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "src/ui/deck/tl-column.vue",
     "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'tl-column' should be PascalCase",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
       {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -23027,22 +22850,11 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 7
+    "warningCount": 6
   },
   {
     "file": "src/ui/deck/widgets-column.vue",
     "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'widgets-column' should be PascalCase",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
       {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -23056,7 +22868,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "src/ui/minimum.vue",
@@ -23925,21 +23737,9 @@
   },
   {
     "file": "src/widgets/server-metric/cpu-mem.vue",
-    "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'cpu-mem' should be PascalCase",
-        "line": 6,
-        "column": 11,
-        "endLine": 6,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "src/widgets/server-metric/cpu.vue",
