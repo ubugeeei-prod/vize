@@ -5,6 +5,7 @@ export interface SfcCompileOptionsNapi {
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
+  customElements?: string[];
   templateSyntax?: VizeTemplateSyntax;
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
@@ -113,6 +114,7 @@ export interface VizeUnpluginOptions {
   /** JSX semantics; `"babel"` opts into @vue/babel-plugin-jsx compatibility. */
   jsxCompat?: "native" | "babel";
   customRenderer?: boolean;
+  customElements?: string[];
   templateSyntax?: VizeTemplateSyntax;
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
@@ -200,6 +202,7 @@ export interface NormalizedVizeUnpluginOptions {
   /** JSX semantics; `undefined` when unset (treated as native). */
   jsxCompat?: "native" | "babel";
   customRenderer: boolean;
+  customElements?: string[];
   templateSyntax: VizeTemplateSyntax;
   runtimeModuleName: string;
   runtimeGlobalName: string;

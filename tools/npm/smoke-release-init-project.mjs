@@ -11,6 +11,7 @@ import { createRequire } from "node:module";
 import fs from "node:fs";
 import path from "node:path";
 
+import { normalizeReportedFile } from "./smoke-release-init-paths.mjs";
 import { renderOutput, run, runResult } from "./smoke-process.mjs";
 
 /** Overrides that would let the host, not the installed package, pick Corsa. */
@@ -205,8 +206,6 @@ export function assertProjectLocalToolchain(context, projectRoot, shape) {
   const nodeModules = path.join(projectRoot, "node_modules");
   const realProjectRoot = fs.realpathSync(projectRoot);
   const installedRoots = new Map();
-  const binName = process.platform === "win32" ? "vize.cmd" : "vize";
-  assert.ok(fs.existsSync(path.join(nodeModules, ".bin", binName)), "no project-local vize bin");
   for (const name of shape.plannedDependencies) {
     const installed = path.join(nodeModules, ...name.split("/"));
     assert.ok(fs.existsSync(installed), `${name} is missing from the fresh project`);
@@ -222,6 +221,12 @@ export function assertProjectLocalToolchain(context, projectRoot, shape) {
   }
   const vizeRoot = installedRoots.get("vize");
   assert.equal(typeof vizeRoot, "string", "fresh project did not install vize");
+  const vizeBin = projectLocalVizeBin(projectRoot);
+  assert.ok(fs.existsSync(vizeBin), "fresh project did not install project-local vize bin");
+  assert.ok(
+    !isOutside(realProjectRoot, fs.realpathSync(vizeBin)),
+    `vize bin resolved outside the fresh project: ${vizeBin}`,
+  );
   const vizeRequire = createRequire(path.join(vizeRoot, "package.json"));
   const corsaManifest = vizeRequire.resolve("@typescript/native-preview/package.json");
   assert.ok(
@@ -277,29 +282,6 @@ export function checkReport(projectRoot) {
     });
   }
   return { rendered, report, status: result.status };
-}
-
-function normalizeReportedFile(file, projectRoot) {
-  const normalized = file.replaceAll("\\", "/");
-  const normalizedRoot = path.posix.normalize(projectRoot.replaceAll("\\", "/"));
-  const relativeToRoot = (target) => {
-    const relative = path.posix.relative(normalizedRoot, target);
-    if (relative === "" || (!relative.startsWith("../") && relative !== "..")) {
-      return relative;
-    }
-    return null;
-  };
-  if (path.posix.isAbsolute(normalized) || /^[A-Za-z]:\//u.test(normalized)) {
-    const relative = relativeToRoot(path.posix.normalize(normalized));
-    if (relative !== null) return relative.startsWith("./") ? relative.slice(2) : relative;
-  }
-  if (normalized === "." || normalized === ".." || /^[.]{1,2}\//u.test(normalized)) {
-    const relative = relativeToRoot(
-      path.posix.normalize(path.posix.join(normalizedRoot, normalized)),
-    );
-    if (relative !== null) return relative.startsWith("./") ? relative.slice(2) : relative;
-  }
-  return normalized.startsWith("./") ? normalized.slice(2) : normalized;
 }
 
 export function reportedDiagnostics(report, projectRoot) {

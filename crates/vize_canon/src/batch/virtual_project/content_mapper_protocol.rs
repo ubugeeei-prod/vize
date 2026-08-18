@@ -3,11 +3,21 @@
 use serde::Serialize;
 use vize_carton::String as CompactString;
 
+/// The virtual extension every Vize transform output is parsed as.
+///
+/// TypeScript resolves the virtual syntax per transform response rather than
+/// from the package manifest, so this travels on the wire. Vize always emits
+/// `.tsx` because the generated module can contain a JSX render expression even
+/// when the authored `<script>` block has no JSX of its own.
+pub const CONTENT_MAPPER_VIRTUAL_EXTENSION: &str = ".tsx";
+
 /// A TypeScript content-mapper transform result.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ContentMapperTransform {
     pub text: CompactString,
+    /// The virtual extension TypeScript parses `text` as.
+    pub extension: &'static str,
     pub mappings: Vec<ContentMapperSpan>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub semantic_links: Vec<ContentMapperSemanticLink>,

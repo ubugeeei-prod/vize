@@ -8,6 +8,7 @@ import {
   cleanup,
   commitSha,
   readJson,
+  root,
   run,
   setup,
   updateJson,
@@ -48,7 +49,7 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       "version",
     ]);
     assert.equal(artifact.schema, "vize.fixtureTypecheckDivergenceRun");
-    assert.equal(artifact.version, 4);
+    assert.equal(artifact.version, 6);
     assert.equal(artifact.tsconfig, ".generated/tsconfig.json");
     assert.equal(artifact.evidence.commitSha, commitSha);
     assert.deepEqual(artifact.enforcement, { budgetMode: "enforce" });
@@ -78,10 +79,16 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       fileCount: 1,
     });
     assert.deepEqual(Object.keys(artifact.baseline).sort(), [
+      "ambient",
       "command",
       "configSha256",
       "configuration",
       "coverage",
+      "coverageCommand",
+      "coverageDurationMs",
+      "coverageExitCode",
+      "coverageStderrSha256",
+      "coverageStdoutSha256",
       "durationMs",
       "exitCode",
       "sourceConfigSha256",
@@ -90,6 +97,7 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       "version",
     ]);
     assert.equal(artifact.baseline.exitCode, 2);
+    assert.equal(artifact.baseline.coverageExitCode, 0);
     assert.equal(artifact.baseline.version, "3.3.4");
     assert.equal(
       artifact.baseline.sourceConfigSha256,
@@ -108,6 +116,8 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       baselineVueFilesSha256: createHash("sha256").update("src/App.vue\n").digest("hex"),
       ignoredDependencyVueFileCount: 0,
       ignoredDependencyVueFilesSha256: createHash("sha256").update("").digest("hex"),
+      ignoredSupportVueFileCount: 0,
+      ignoredSupportVueFilesSha256: createHash("sha256").update("").digest("hex"),
       missingVueFiles: [],
       sharedVueFileCount: 1,
       unexpectedVueFiles: [],
@@ -118,6 +128,8 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
     });
     assert.match(artifact.baseline.stdoutSha256, /^[0-9a-f]{64}$/);
     assert.match(artifact.baseline.stderrSha256, /^[0-9a-f]{64}$/);
+    assert.match(artifact.baseline.coverageStdoutSha256, /^[0-9a-f]{64}$/);
+    assert.match(artifact.baseline.coverageStderrSha256, /^[0-9a-f]{64}$/);
     assert.deepEqual(artifact.budget, {
       maxFalsePositiveRatio: 0.05,
       maxFalseNegativeRatio: 0.05,
@@ -148,28 +160,50 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       artifact.mutationOracle.states[0].sourceSha256,
     );
     const invocation = readJson(fixture.invocationPath);
-    const baselineProject = path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json");
+    const baselineProject = path.join(
+      fixture.fixtureRoot,
+      ".generated",
+      ".vize-baseline",
+      "fixture-vue-tsc.tsconfig.json",
+    );
+    const baselineArtifact = path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json");
     assert.deepEqual(invocation, {
       cwd: fixture.fixtureRoot,
-      args: ["--noEmit", "--pretty", "false", "--listFiles", "-p", baselineProject],
+      args: ["--noEmit", "--pretty", "false", "-p", baselineProject],
     });
-    const fixtureBase = path.relative(fixture.reportDir, fixture.fixtureRoot).replaceAll("\\", "/");
+    assert.match(artifact.baseline.coverageCommand, /--listFilesOnly/);
+    assert.equal(
+      fs.readFileSync(baselineArtifact, "utf8"),
+      fs.readFileSync(baselineProject, "utf8"),
+    );
     // The elk shape: the baseline config is generated into a dot-directory, which
     // a TypeScript wildcard segment never descends into, so it is globbed by name.
-    const generatedBase = `${fixtureBase}/.generated`;
-    assert.deepEqual(readJson(baselineProject), {
-      extends: `${generatedBase}/tsconfig.json`,
+    // The src root carries non-Vue support files without expanding the Vue corpus.
+    const fixtureBase = "../..";
+    const generatedBase = "..";
+    const sourceBase = `${fixtureBase}/src`;
+    assert.deepEqual(readJson(baselineArtifact), {
+      extends: "../tsconfig.json",
       compilerOptions: {
         ignoreDeprecations: "6.0",
+        rootDir: fixtureBase,
       },
-      files: [
-        path
-          .relative(fixture.reportDir, path.join(fixture.fixtureRoot, "src/App.vue"))
-          .replaceAll("\\", "/"),
-      ],
+      files: [`${fixtureBase}/src/App.vue`],
       // #3738: ambient declarations are the fixture's type environment, and a
       // `files`-only program drops every one of them.
-      include: [`${fixtureBase}/**/*.d.ts`, `${generatedBase}/**/*.d.ts`],
+      include: [
+        `${fixtureBase}/**/*.d.ts`,
+        `${generatedBase}/**/*.d.ts`,
+        `${sourceBase}/**/*.ts`,
+        `${sourceBase}/**/*.tsx`,
+        `${sourceBase}/**/*.mts`,
+        `${sourceBase}/**/*.cts`,
+        `${sourceBase}/**/*.js`,
+        `${sourceBase}/**/*.jsx`,
+        `${sourceBase}/**/*.mjs`,
+        `${sourceBase}/**/*.cjs`,
+        `${sourceBase}/**/*.json`,
+      ],
       exclude: [
         `${fixtureBase}/**/node_modules/**`,
         `${fixtureBase}/**/dist/**`,
@@ -190,6 +224,73 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
   }
 });
 
+test("typecheck divergence report skips shards without typecheck performance targets", () => {
+  const fixture = setup();
+  try {
+    updateJson(
+      fixture.registryPath,
+      (registry) => (registry.projects[0].typecheckPerformance.enabled = false),
+    );
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /No typecheck performance projects selected/);
+    assert.equal(
+      fs.existsSync(path.join(fixture.reportDir, "fixture-typecheck-divergence.json")),
+      false,
+    );
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("typecheck divergence report writes all selected artifacts before enforcing budgets", () => {
+  const fixture = setup({
+    vizeDiagnostics: ["error:1:1 [TS2322] shared", "error:1:2 [TS2322] extra"],
+  });
+  try {
+    const registry = readJson(fixture.registryPath);
+    registry.projects.push({ ...registry.projects[0], id: "second" });
+    writeJson(fixture.registryPath, registry);
+
+    const summaryPath = path.join(fixture.reportDir, "summary.json");
+    const summary = readJson(summaryPath);
+    const secondOutput = path.join(fixture.reportDir, "second-typechecker.json");
+    summary.projects.push({
+      ...summary.projects[0],
+      id: "second",
+      runs: summary.projects[0].runs.map((run: any) => ({
+        ...run,
+        outputPath: path.relative(root, secondOutput),
+      })),
+    });
+    writeJson(summaryPath, summary);
+
+    const payload = readJson(fixture.outputPath);
+    payload.project = "second";
+    writeJson(secondOutput, payload);
+    const preparation = readJson(
+      path.join(fixture.reportDir, "fixture-typecheck-dependencies.json"),
+    );
+    preparation.project = "second";
+    writeJson(path.join(fixture.reportDir, "second-typecheck-dependencies.json"), preparation);
+
+    const result = run(fixture);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Typecheck divergence budget breached for fixture/);
+    assert.match(result.stderr, /Typecheck divergence budget breached for second/);
+    assert.equal(
+      fs.existsSync(path.join(fixture.reportDir, "fixture-typecheck-divergence.json")),
+      true,
+    );
+    assert.equal(
+      fs.existsSync(path.join(fixture.reportDir, "second-typecheck-divergence.json")),
+      true,
+    );
+  } finally {
+    cleanup(fixture);
+  }
+});
+
 test("typecheck divergence report requires a false-negative budget", () => {
   const fixture = setup();
   try {
@@ -199,6 +300,19 @@ test("typecheck divergence report requires a false-negative budget", () => {
     const result = run(fixture);
     assert.equal(result.status, 1);
     assert.match(result.stderr, /maxFalseNegativeRatio must be a finite number/);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("typecheck divergence report accepts vue-tsc diagnostic status 1", () => {
+  const fixture = setup({ baselineExitCode: 1 });
+  try {
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    const artifact = readJson(path.join(fixture.reportDir, "fixture-typecheck-divergence.json"));
+    assert.equal(artifact.baseline.exitCode, 1);
+    assert.equal(artifact.budget.verdict, "passed");
   } finally {
     cleanup(fixture);
   }

@@ -1,7 +1,26 @@
 use super::{
-    IdentifierRef, extract_identifier_refs_oxc, extract_identifiers_oxc, strip_js_comments,
+    IdentifierRef, extract_identifier_refs_fast, extract_identifier_refs_oxc,
+    extract_identifiers_oxc, strip_js_comments,
 };
 use vize_carton::CompactString;
+
+#[test]
+fn test_extract_identifier_refs_fast_treats_spread_as_read() {
+    let expr = "[...menu, item.id]";
+    assert_eq!(
+        extract_identifier_refs_fast(expr),
+        vec![
+            IdentifierRef {
+                name: "menu".into(),
+                offset: expr.find("menu").unwrap() as u32,
+            },
+            IdentifierRef {
+                name: "item".into(),
+                offset: expr.find("item").unwrap() as u32,
+            },
+        ]
+    );
+}
 
 #[test]
 fn test_extract_identifiers_oxc() {
@@ -20,6 +39,9 @@ fn test_extract_identifiers_oxc() {
 
     let ids = to_strings(extract_identifiers_oxc("{ foo }"));
     assert_eq!(ids, vec!["foo"]);
+
+    let ids = to_strings(extract_identifiers_oxc("[...menu]"));
+    assert_eq!(ids, vec!["menu"]);
 
     let ids = to_strings(extract_identifiers_oxc("cond ? a : b"));
     assert_eq!(ids, vec!["cond", "a", "b"]);

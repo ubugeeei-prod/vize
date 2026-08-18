@@ -26,8 +26,26 @@ interface ImageDimensions {
   width: number;
 }
 
+export interface VisualStabilityStyleOptions {
+  css: string;
+  sheetKey: string;
+  styleId: string;
+}
+
 const DEFAULT_MAX_DIFF_RATIO = 0.002;
 const DEFAULT_PIXEL_THRESHOLD = 0.1;
+const VISUAL_STABILITY_SHEET_KEY = "__vizeVisualStabilitySheet";
+const VISUAL_STABILITY_STYLE_ID = "vize-visual-stability";
+export const VISUAL_STABILITY_CSS = `
+  *, *::before, *::after {
+    animation-delay: 0s !important;
+    animation-duration: 0s !important;
+    caret-color: transparent !important;
+    scroll-behavior: auto !important;
+    transition-delay: 0s !important;
+    transition-duration: 0s !important;
+  }
+`;
 
 export async function installVisualStabilityHooks(page: Page): Promise<void> {
   await page.addInitScript(() => {
@@ -41,18 +59,38 @@ export async function installVisualStabilityHooks(page: Page): Promise<void> {
   });
 }
 
+// Runs inside the page: keep it self-contained so Playwright can serialize it,
+// and avoid `addStyleTag` so strict app CSPs cannot block the stability CSS.
+export function applyVisualStabilityStyles({
+  css,
+  sheetKey,
+  styleId,
+}: VisualStabilityStyleOptions): void {
+  if ("adoptedStyleSheets" in document && typeof CSSStyleSheet !== "undefined") {
+    const existing = Reflect.get(window, sheetKey);
+    const sheet = existing instanceof CSSStyleSheet ? existing : new CSSStyleSheet();
+    sheet.replaceSync(css);
+    if (!document.adoptedStyleSheets.includes(sheet)) {
+      document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+    }
+    Reflect.set(window, sheetKey, sheet);
+    return;
+  }
+
+  let style = document.getElementById(styleId);
+  if (!(style instanceof HTMLStyleElement)) {
+    style = document.createElement("style");
+    style.id = styleId;
+    document.head.append(style);
+  }
+  style.textContent = css;
+}
+
 export async function prepareStableVisualState(page: Page): Promise<void> {
-  await page.addStyleTag({
-    content: `
-      *, *::before, *::after {
-        animation-delay: 0s !important;
-        animation-duration: 0s !important;
-        caret-color: transparent !important;
-        scroll-behavior: auto !important;
-        transition-delay: 0s !important;
-        transition-duration: 0s !important;
-      }
-    `,
+  await page.evaluate(applyVisualStabilityStyles, {
+    css: VISUAL_STABILITY_CSS,
+    sheetKey: VISUAL_STABILITY_SHEET_KEY,
+    styleId: VISUAL_STABILITY_STYLE_ID,
   });
 
   await page.evaluate(async () => {

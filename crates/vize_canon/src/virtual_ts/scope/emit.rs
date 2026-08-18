@@ -4,11 +4,11 @@ use oxc_syntax::identifier::is_identifier_part;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::{FxHashSet, String};
-use vize_carton::{camelize, capitalize};
 use vize_croquis::{Croquis, Scope, ScopeData};
 
+use crate::virtual_ts::component_reference::component_binding_reference;
+use crate::virtual_ts::expressions::rewrite_reserved_template_prop;
 use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
-use crate::virtual_ts::{expressions::rewrite_reserved_template_prop, helpers::to_safe_identifier};
 
 /// Type annotation for a `v-slot` scope's props. When the slot is on a child
 /// component (`component` is `Some`), the props are inferred from that child's
@@ -21,13 +21,19 @@ use crate::virtual_ts::{expressions::rewrite_reserved_template_prop, helpers::to
 pub(super) fn slot_props_type(
     summary: &Croquis,
     options: &VirtualTsOptions,
+    syntactic_type_only_imported_names: &FxHashSet<vize_carton::CompactString>,
     component: Option<&str>,
     slot_name: &str,
     slot_name_is_static: bool,
 ) -> String {
     match component {
         Some(component) => {
-            let component_ref = component_binding_reference(summary, options, component);
+            let component_ref = component_binding_reference(
+                summary,
+                options,
+                syntactic_type_only_imported_names,
+                component,
+            );
             if slot_name_is_static {
                 cstr!(
                     "typeof {component_ref} extends {{ new (): {{ $slots: infer __S }} }} ? (\"{slot_name}\" extends keyof __S ? (NonNullable<__S[\"{slot_name}\"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : any"
@@ -40,26 +46,6 @@ pub(super) fn slot_props_type(
         }
         None => "any".into(),
     }
-}
-
-pub(super) fn component_binding_reference(
-    summary: &Croquis,
-    options: &VirtualTsOptions,
-    template_name: &str,
-) -> String {
-    let camel_name = camelize(template_name);
-    let pascal_name = capitalize(camel_name.as_str());
-    for candidate in [template_name, camel_name.as_str(), pascal_name.as_str()] {
-        if summary.bindings.bindings.contains_key(candidate)
-            || options
-                .external_template_bindings
-                .iter()
-                .any(|name| name.as_str() == candidate)
-        {
-            return to_safe_identifier(candidate);
-        }
-    }
-    to_safe_identifier(template_name)
 }
 
 /// Split a `v-slot` props expression that carries its own TypeScript

@@ -181,6 +181,25 @@ fn eslint_vue_rule_map_matches_registered_patina_rules() {
             continue;
         }
 
+        if entry["status"] == "intentional-divergence" {
+            // Patina ships a same-named rule on purpose, with semantics that
+            // deliberately differ from upstream, so a registered counterpart is
+            // expected here. Require the documented reason and the counterpart
+            // so the entry has to be revisited if either disappears.
+            let reason = entry["reason"].as_str().unwrap_or_default();
+            assert!(
+                !reason.trim().is_empty(),
+                "{eslint_rule} is marked intentional-divergence without a reason"
+            );
+            let script_rule = eslint_rule.replacen("vue/", "script/", 1);
+            assert!(
+                available.contains(eslint_rule.as_str())
+                    || available.contains(script_rule.as_str()),
+                "{eslint_rule} is marked intentional-divergence without a registered Patina counterpart"
+            );
+            continue;
+        }
+
         let script_rule = eslint_rule.replacen("vue/", "script/", 1);
         let alias = match eslint_rule.as_str() {
             "vue/attributes-order" => Some("vue/attribute-order"),

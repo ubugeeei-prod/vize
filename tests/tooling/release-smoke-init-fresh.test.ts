@@ -1,12 +1,17 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
 import {
+  assertProjectLocalToolchain,
   managerCommand,
   managerEnv,
   projectEnv,
   runManager,
+  writeFiles,
 } from "../../tools/npm/smoke-release-init-project.mjs";
 import { PACKAGE_MANAGERS } from "../../tools/npm/smoke-release-init-managers.mjs";
 import { FRESH_INIT_MATRIX, PROJECT_SHAPES } from "../../tools/npm/smoke-release-init-shapes.mjs";
@@ -95,6 +100,28 @@ test("fresh-project package managers use exact Corepack runners where needed", (
     assert.equal(managerEnv(manager).COREPACK_ENABLE_PROJECT_SPEC, undefined);
   }
   assert.match(runManager(PACKAGE_MANAGERS.npm, ["--version"], { cwd: process.cwd() }), /^\d+\./u);
+});
+
+test("fresh-project toolchain accepts package-local vize without manager shims", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-toolchain-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const projectRoot = path.join(root, "project");
+  writeFiles(path.join(projectRoot, "node_modules", "vize"), {
+    "bin/vize": "",
+    "package.json": `${JSON.stringify({ name: "vize", version: "0.0.0" })}\n`,
+  });
+  writeFiles(path.join(projectRoot, "node_modules", "@typescript", "native-preview"), {
+    "package.json": `${JSON.stringify({ name: "@typescript/native-preview", version: "0.0.0" })}\n`,
+  });
+  assertProjectLocalToolchain(
+    {
+      installDir: path.join(root, "install"),
+      repoRoot: path.join(root, "repo"),
+      versions: new Map([["vize", "0.0.0"]]),
+    },
+    projectRoot,
+    { plannedDependencies: ["vize"] },
+  );
 });
 
 test("every shape drives a clean, broken, and repaired check", () => {

@@ -16,6 +16,7 @@ interface GuardFixture {
   ancestor?: boolean;
   headSha?: string;
   remoteSha?: string;
+  parentLine?: string;
   localTagExists?: boolean;
   remoteTagExists?: boolean;
   hangs?: boolean;
@@ -44,6 +45,7 @@ function runGuard(
       "if (args[0] === 'status') { if (fixture.dirty) console.log(' M Cargo.toml'); process.exit(0); }",
       "if (args[0] === 'fetch') process.exit(0);",
       "if (args[0] === 'merge-base') process.exit(fixture.ancestor === false ? 1 : 0);",
+      `if (args[0] === 'rev-list') { console.log(fixture.parentLine ?? ((fixture.headSha ?? '${HEAD_SHA}') + ' ${OTHER_SHA}')); process.exit(0); }`,
       "if (args[0] === 'rev-parse' && args.includes('--verify')) process.exit(fixture.localTagExists ? 0 : 1);",
       `if (args[0] === 'rev-parse') { console.log(args.at(-1) === 'HEAD' ? (fixture.headSha ?? '${HEAD_SHA}') : (fixture.remoteSha ?? '${HEAD_SHA}')); process.exit(0); }`,
       `if (args[0] === 'ls-remote') { if (fixture.remoteTagExists) console.log('${OTHER_SHA}\\t' + args.at(-1)); process.exit(fixture.remoteTagExists ? 0 : 2); }`,
@@ -89,6 +91,11 @@ test("local release guard rejects unsafe repository states", () => {
     [{ dirty: true }, /uncommitted changes/],
     [{ ancestor: false }, /not reachable from the current origin\/main/],
     [{ remoteSha: OTHER_SHA }, /exactly match the current origin\/main/],
+    [{ parentLine: HEAD_SHA }, /exactly one parent/],
+    [
+      { parentLine: `${HEAD_SHA} ${OTHER_SHA} cccccccccccccccccccccccccccccccccccccccc` },
+      /exactly one parent/,
+    ],
     [{ localTagExists: true }, /already exists locally/],
     [{ remoteTagExists: true }, /already exists and release tags are immutable/],
   ];

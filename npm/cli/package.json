@@ -1,6 +1,6 @@
 {
   "name": "vize",
-  "version": "0.348.0",
+  "version": "0.349.0",
   "description": "Vize - High-performance Vue.js toolchain in Rust",
   "keywords": [
     "cli",
@@ -89,20 +89,19 @@
   "optionalDependencies": {
     "@typescript/native-preview": "catalog:typescript"
   },
+  "typescript": {
+    "contentMapper": {
+      "compilerOptions": [
+        "noUnusedLocals"
+      ],
+      "exec": [
+        "node",
+        "./bin/vize",
+        "content-mapper"
+      ]
+    }
+  },
   "engines": {
     "node": ">=22"
-  },
-  "tsContentMapper": {
-    "exec": [
-      "node",
-      "./bin/vize",
-      "content-mapper"
-    ],
-    "extensions": {
-      ".vue": ".tsx"
-    },
-    "compilerOptions": [
-      "noUnusedLocals"
-    ]
   }
 }

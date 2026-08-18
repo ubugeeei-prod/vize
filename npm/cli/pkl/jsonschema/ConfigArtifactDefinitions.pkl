@@ -90,6 +90,14 @@ compilerConfigDef: JsonSchema = new JsonSchema {
       description = "Treat lowercase non-HTML tags as custom renderer elements"
       default = false
     }
+    ["customElements"] = new JsonSchema {
+      type = "array"
+      items = new JsonSchema {
+        type = "string"
+      }
+      description = "Tag patterns that compile as custom elements instead of Vue components"
+      default = new Listing {}
+    }
     ["ssr"] = new JsonSchema {
       type = "boolean"
       description = "Enable SSR mode"

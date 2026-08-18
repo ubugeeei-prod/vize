@@ -1,8 +1,8 @@
 use super::{
-    load_compiler_host_compiler, load_compiler_template_syntax, load_compiler_vue_version,
-    load_config_and_linter_plan_with_lint_features_and_source, load_config_and_linter_with_source,
-    load_config_entry_files_with_source, load_config_entry_ignores_with_source,
-    load_config_with_source, load_linter_config, validate_explicit_config_path,
+    load_compiler_vue_version, load_config_and_linter_plan_with_lint_features_and_source,
+    load_config_and_linter_with_source, load_config_entry_files_with_source,
+    load_config_entry_ignores_with_source, load_config_with_source, load_linter_config,
+    validate_explicit_config_path,
 };
 use crate::config::{LintRuleSeverity, VueVersion};
 
@@ -101,23 +101,6 @@ fn load_config_defaults_dialect_to_unset() {
     assert_eq!(loaded.config.dialect, None);
 }
 
-#[test]
-fn load_config_reads_compiler_template_syntax() {
-    let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
-    std::fs::write(
-        &config_path,
-        r#"{ "compiler": { "templateSyntax": "quirks" } }"#,
-    )
-    .unwrap();
-
-    assert_eq!(
-        load_compiler_template_syntax(Some(&config_path)),
-        Some("quirks")
-    );
-}
-
-#[test]
 fn load_compiler_vue_version_reads_vue_version_key() {
     let dir = tempfile::tempdir().unwrap();
     let config_path = dir.path().join("vize.config.json");
@@ -143,19 +126,6 @@ fn load_compiler_vue_version_reads_compiler_compatibility_key() {
         load_compiler_vue_version(Some(&config_path)),
         Some(VueVersion::V2_7)
     );
-}
-
-#[test]
-fn load_compiler_host_compiler_reads_compiler_compatibility_key() {
-    let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
-    std::fs::write(
-        &config_path,
-        r#"{ "compiler": { "compatibility": { "hostCompiler": false } } }"#,
-    )
-    .unwrap();
-
-    assert_eq!(load_compiler_host_compiler(Some(&config_path)), Some(false));
 }
 
 #[test]

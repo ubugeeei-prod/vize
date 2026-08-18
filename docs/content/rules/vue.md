@@ -448,7 +448,7 @@ Presets: `happy-path`, `nuxt`, `opinionated`.
 `vue/prefer-props-shorthand` recommends shorthand syntax for props. Default: `warning`. Presets:
 `nuxt`, `opinionated`.
 
-`vue/prop-name-casing` enforces kebab-case prop names in templates. Default: `warning`. Presets:
+`vue/prop-name-casing` enforces a casing for declared prop names. Default: `warning`. Presets:
 `happy-path`, `nuxt`, `opinionated`.
 
 `vue/require-component-registration` requires explicit component import or registration. Default:

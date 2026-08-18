@@ -11,7 +11,9 @@ import {
   readJson,
   root,
   run,
+  sha256,
   setup,
+  sharedBaselineOutput,
   sharedVizeDiagnostic,
   unusableFailure,
   updateVizeOutput,
@@ -21,17 +23,16 @@ import {
  * #3513: a divergence run only measures vize when the two tools checked the same
  * Vue files. Diagnostics cannot prove that: a correct program can be clean, and
  * a broken config can still emit unrelated diagnostics. The report therefore
- * captures `vue-tsc --listFiles` and compares that SFC set with Vize's checked
- * file set before interpreting the FP/FN result.
+ * captures `vue-tsc --listFilesOnly` and compares that SFC set with Vize's
+ * checked file set before interpreting the FP/FN result.
  */
 
 const vizeOnly = "error:2:1 [TS2345] vize only";
 const emptyBaselineReason =
   "vue-tsc checked 0 Vue files while Vize checked 1 (missing 1, unexpected 0)";
 
-function artifactPath(fixture: ReturnType<typeof setup>, extension: string) {
-  return path.join(fixture.reportDir, `fixture-typecheck-divergence.${extension}`);
-}
+const artifactPath = (fixture: ReturnType<typeof setup>, extension: string) =>
+  path.join(fixture.reportDir, `fixture-typecheck-divergence.${extension}`);
 
 test("an empty vue-tsc baseline is unusable, not a false-positive breach", () => {
   const fixture = setup({
@@ -68,15 +69,18 @@ test("an empty vue-tsc baseline is unusable, not a false-positive breach", () =>
         "False negatives: 0 (0)",
         "Vize excluded non-Vue: 0",
         "vue-tsc excluded non-Vue: 0",
+        "vue-tsc excluded support Vue: 0",
         "vue-tsc excluded project-level: 0",
         "vue-tsc excluded external: 0",
         "vue-tsc configuration errors: 0",
+        "vue-tsc ambient environment: isolated (no Vue runtime in program)",
         "Vize Vue files: 1",
         "vue-tsc Vue files: 0",
         "Shared Vue files: 0",
         "Missing Vue files: 1",
         "Unexpected Vue files: 0",
         "Ignored dependency Vue files: 0",
+        "Ignored support Vue files: 0",
         `Seeded mutation oracle: unusable (${emptyBaselineReason})`,
         `Budget verdict: unusable (${emptyBaselineReason})`,
         `Classification: ${instrumentClassification}`,
@@ -139,6 +143,26 @@ test("zero diagnostics on both sides passes when both checked the same Vue files
     assert.equal(artifact.mutationOracle.states[1].sharedCount, 1);
     assert.equal(artifact.mutationOracle.states[1].falsePositiveCount, 0);
     assert.equal(artifact.mutationOracle.states[1].falseNegativeCount, 0);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("vue-tsc listFilesOnly evidence on stderr still proves baseline coverage", () => {
+  const fixture = setup({
+    coverageOutputStream: "stderr",
+    vizeDiagnostics: [],
+    baselineOutput: "",
+  });
+  try {
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    const artifact = readJson(artifactPath(fixture, "json"));
+    assert.equal(artifact.baseline.coverage.baselineVueFileCount, 1);
+    assert.equal(artifact.baseline.coverage.sharedVueFileCount, 1);
+    assert.equal(artifact.baseline.stdoutSha256, sha256(""));
+    assert.notEqual(artifact.baseline.coverageStderrSha256, artifact.baseline.stdoutSha256);
+    assert.equal(artifact.budget.verdict, "passed");
   } finally {
     cleanup(fixture);
   }
@@ -293,6 +317,33 @@ test("transitive Vue dependencies do not expand the authored fixture corpus", ()
     assert.equal(coverage.ignoredDependencyVueFileCount, 1);
     assert.deepEqual(coverage.missingVueFiles, []);
     assert.deepEqual(coverage.unexpectedVueFiles, []);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("transitive dot-directory Vue support does not expand the authored fixture corpus", () => {
+  const fixture = setup({
+    baselineFiles: ["src/App.vue", "docs/.vitepress/components/Support.vue"],
+    baselineOutput:
+      `${sharedBaselineOutput}` +
+      "docs/.vitepress/components/Support.vue(1,1): error TS2322: support only\n",
+  });
+  try {
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    const artifact = readJson(artifactPath(fixture, "json"));
+    assert.equal(artifact.divergence.summary.falseNegativeCount, 0);
+    assert.equal(artifact.divergence.summary.baselineExcludedSupportVueCount, 1);
+    const coverage = artifact.baseline.coverage;
+    assert.equal(coverage.verdict, "usable");
+    assert.equal(coverage.baselineVueFileCount, 1);
+    assert.equal(coverage.ignoredSupportVueFileCount, 1);
+    assert.deepEqual(coverage.missingVueFiles, []);
+    assert.deepEqual(coverage.unexpectedVueFiles, []);
+    const markdown = fs.readFileSync(artifactPath(fixture, "md"), "utf8");
+    assert.match(markdown, /^vue-tsc excluded support Vue: 1$/m);
+    assert.match(markdown, /^Ignored support Vue files: 1$/m);
   } finally {
     cleanup(fixture);
   }

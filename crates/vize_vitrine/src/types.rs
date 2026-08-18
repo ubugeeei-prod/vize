@@ -48,6 +48,9 @@ pub struct CompilerOptions {
     /// Whether the template targets a custom renderer instead of the DOM.
     #[serde(default)]
     pub custom_renderer: Option<bool>,
+    /// Tag patterns that compile as custom elements instead of Vue components.
+    #[serde(default)]
+    pub custom_elements: Option<Vec<String>>,
     /// Template syntax compatibility mode: "standard", "strict", or "quirks".
     #[serde(default)]
     pub template_syntax: Option<String>,
@@ -70,6 +73,19 @@ pub struct CompilerOptions {
     /// Defaults to "downcompile"
     #[serde(default)]
     pub script_ext: Option<String>,
+}
+
+/// Normalize FFI custom-element tag patterns into compiler-owned strings.
+///
+/// Only the NAPI and WASM bridges consume this, so it is gated to those builds
+/// to keep default-feature builds free of dead code.
+#[cfg(any(feature = "napi", feature = "wasm"))]
+pub(crate) fn custom_element_patterns(patterns: Option<&[String]>) -> Vec<vize_carton::String> {
+    patterns
+        .unwrap_or_default()
+        .iter()
+        .map(|pattern| pattern.as_str().into())
+        .collect()
 }
 
 /// Compile result

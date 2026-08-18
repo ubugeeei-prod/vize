@@ -11,7 +11,9 @@ runs:
         path: |
           ${{ runner.temp }}/moonbit
           ${{ runner.temp }}/moonbit-shims
-        key: moonbit-20260703-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('.github/actions/setup-moonbit/action.yml', '.github/actions/setup-moonbit/install-moonbit.mjs') }}
+        # `.moonbit-version` is part of the key so bumping the pinned toolchain
+        # always misses the cache instead of restoring the previous compiler.
+        key: moonbit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('.moonbit-version', '.github/actions/setup-moonbit/action.yml', '.github/actions/setup-moonbit/install-moonbit.mjs') }}
 
     - name: Setup MSVC toolchain (Windows)
       if: runner.os == 'Windows'

@@ -6,6 +6,8 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
+import { isolateFixtureTypePackages } from "./typecheck-baseline-isolation.mjs";
+import { selectTypecheckPerformanceProjects } from "./typecheck-performance-shard.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..");
@@ -14,20 +16,21 @@ const defaultRegistry = join(repoRoot, "tests", "_fixtures", "vue-ecosystem-fixt
 export function runTypecheckDependencyPrepare(argv = process.argv.slice(2)) {
   const args = parseArgs(argv);
   const registry = readJson(args.registry);
-  const selected = registry.projects
-    .filter((_, index) => index % args.shardCount === args.shardIndex)
-    .filter((project) => project.typecheckPerformance?.enabled === true);
-  if (selected.length !== 1) {
-    throw new Error(
-      `Expected exactly one typecheck performance project in shard ${args.shardIndex}/${args.shardCount}, found ${selected.length}`,
+  const selected = selectTypecheckPerformanceProjects(registry, args);
+  const commitSha = requireCommitSha(process.env.GITHUB_SHA);
+  requireDirectory(args.outputDir);
+  if (selected.length === 0) {
+    process.stdout.write(
+      `No typecheck performance projects selected for shard ${args.shardIndex}/${args.shardCount}\n`,
     );
+    return [];
   }
+  return selected.map((project) => prepareProjectDependencies({ args, commitSha, project }));
+}
 
-  const project = selected[0];
+function prepareProjectDependencies({ args, commitSha, project }) {
   const fixtureRoot = resolve(repoRoot, project.fixturePath);
   validateTypecheckPerformanceTarget(project, fixtureRoot);
-  requireDirectory(args.outputDir);
-  const commitSha = requireCommitSha(process.env.GITHUB_SHA);
   const performance = project.typecheckPerformance;
   const lockfilePath = resolve(fixtureRoot, performance.lockfile);
   const lockfileBefore = readFileSync(lockfilePath);
@@ -81,6 +84,10 @@ export function runTypecheckDependencyPrepare(argv = process.argv.slice(2)) {
   requireCleanFixture(fixtureRoot, "after dependency installation");
   const baselinePrepare = runBaselinePrepare(project, fixtureRoot, args.timeoutMs, managerRunner);
   validateTypecheckPerformanceTarget(project, fixtureRoot, { requireBaseline: true });
+  // Both tools run against this tree, so the type environment is closed here
+  // rather than in the divergence report — a repair only the baseline saw would
+  // be a second way for the two sides to measure different programs.
+  isolateFixture(project, fixtureRoot);
   requireCleanFixture(fixtureRoot, "after baseline preparation");
   const artifact = {
     schema: "vize.fixtureTypecheckDependencyInstall",
@@ -110,6 +117,23 @@ export function runTypecheckDependencyPrepare(argv = process.argv.slice(2)) {
   writeFileSync(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`);
   process.stdout.write(`Wrote ${relative(repoRoot, artifactPath)}\n`);
   return artifact;
+}
+
+/**
+ * Link the packages the fixture's own config maps but its package manager did
+ * not hoist, so a `/// <reference types="..." />` inside the fixture cannot be
+ * answered by Vize's own `node_modules` further up the tree (run 31979524200).
+ * Reported on
+ * stdout rather than into the artifact: what the run has to prove is the
+ * outcome, and `typecheck-baseline-ambient.mjs` proves that from the program
+ * listing regardless of how the tree got there.
+ */
+function isolateFixture(project, fixtureRoot) {
+  const sourceProject = project.typecheckPerformance.baseline?.tsconfig ?? project.tsconfig;
+  const shadowed = isolateFixtureTypePackages(fixtureRoot, resolve(fixtureRoot, sourceProject));
+  for (const entry of shadowed) {
+    process.stdout.write(`Linked ${project.id} node_modules/${entry.name} -> ${entry.target}\n`);
+  }
 }
 
 function runBaselinePrepare(project, fixtureRoot, timeoutMs, managerRunner) {

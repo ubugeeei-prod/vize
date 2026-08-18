@@ -36,7 +36,7 @@ use collect::{CollectedFiles, collect_files_or_exit};
 use compile::compile_file_with_profile;
 use compile_stats::compile_file_stats_with_cache;
 use output::{CompiledBuildOutput, plan_inputs, preflight_outputs, write_outputs};
-use settings::{CompileFileSettings, load_build_config, template_syntax_mode};
+use settings::{CompileFileSettings, load_build_config};
 
 /// Main entry point for the build command.
 pub(crate) fn run(args: BuildArgs) {
@@ -118,31 +118,17 @@ pub(crate) fn run(args: BuildArgs) {
         eprintln!();
     }
 
-    // Collect errors and slow files
     let errors: Mutex<Vec<CompileError>> = Mutex::new(Vec::new());
     let slow_files: Mutex<Vec<FileProfile>> = Mutex::new(Vec::new());
     let profiles: Mutex<Vec<FileProfile>> = Mutex::new(Vec::new());
 
     let compile_start = Instant::now();
-    let compile_settings = CompileFileSettings {
-        ssr: args.ssr,
-        vapor: args.vapor || build_config.vapor.unwrap_or(false),
-        custom_renderer: args.custom_renderer,
-        template_syntax: args
-            .template_syntax
-            .map(Into::into)
-            .unwrap_or_else(|| template_syntax_mode(build_config.compiler_template_syntax)),
-        experimental_in_tag_comments: build_config.features.experimental_in_tag_comments,
-        experimental_patterned_template: build_config.features.experimental_patterned_template,
-        dialect: build_config.dialect.unwrap_or_default(),
-        script_ext: args.script_ext,
-        record_profile_totals: args.profile,
-    };
+    let compile_settings = CompileFileSettings::resolve(&args, build_config);
 
     let results: Vec<_> = if stats_only {
         let compile_cache = StatsCompileCache::default();
         files.par_iter().for_each(|path| {
-            match compile_file_stats_with_cache(path, compile_settings, &stats, &compile_cache) {
+            match compile_file_stats_with_cache(path, &compile_settings, &stats, &compile_cache) {
                 Ok((output_bytes, profile)) => {
                     stats.success.fetch_add(1, Ordering::Relaxed);
                     stats
@@ -175,7 +161,7 @@ pub(crate) fn run(args: BuildArgs) {
         planned_inputs
             .par_iter()
             .map(|input| {
-                match compile_file_with_profile(&input.source, compile_settings, &stats) {
+                match compile_file_with_profile(&input.source, &compile_settings, &stats) {
                     Ok((output, profile)) => {
                         stats.success.fetch_add(1, Ordering::Relaxed);
                         stats

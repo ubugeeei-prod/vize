@@ -101,8 +101,8 @@ jobs:
         with:
           wild-version: "0.9.0"
 
-      # Both sides bench into head/target so critcmp can read both baselines, so
-      # a single shared target disk is mounted (base and head compile into it).
+      # Criterion stores base/head build artifacts in isolated subdirectories
+      # under head/target, while the surrounding cache keeps both sides warm.
       - name: Mount Criterion cache
         uses: ./head/.github/actions/setup-rust-sticky-cache
         if: steps.impact.outputs.has_suites == 'true'
@@ -123,8 +123,8 @@ jobs:
         if: steps.impact.outputs.has_suites == 'true' && steps.cache-critcmp.outputs.cache-hit != 'true'
         run: cargo install critcmp --version 0.1.8 --locked
 
-      # Both checkouts save their criterion baselines into the head checkout's
-      # shared target dir so critcmp can diff base against head in one pass.
+      # The runner compares exported baseline snapshots, so base/head builds do
+      # not share one Cargo target graph.
       - name: Run criterion A/B
         run: |
           node head/bench/criterion-ab.mjs \

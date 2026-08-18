@@ -1,4 +1,4 @@
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
   existsSync,
@@ -27,6 +27,45 @@ import {
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 export function runTool(project, tool, args, launch, outputDir) {
+  const prepared = prepareToolRun(project, tool, args, launch, outputDir);
+  if (prepared.run != null) return prepared.run;
+  try {
+    const startedAt = Date.now();
+    const result = spawnSync(launch.command, prepared.commandArgs, {
+      cwd: prepared.cwd,
+      encoding: "utf8",
+      env: { ...process.env, LANG: "C", LC_ALL: "C" },
+      maxBuffer: 1024 * 1024 * 1024,
+      timeout: args.timeoutMs,
+    });
+    return completeToolRun({ ...prepared, result, startedAt });
+  } finally {
+    cleanupToolRun(prepared);
+  }
+}
+
+export async function runToolWithHeartbeat(project, tool, args, launch, outputDir, progress = {}) {
+  const prepared = prepareToolRun(project, tool, args, launch, outputDir);
+  if (prepared.run != null) return prepared.run;
+  try {
+    const startedAt = Date.now();
+    const result = await spawnWithHeartbeat(launch.command, prepared.commandArgs, {
+      cwd: prepared.cwd,
+      env: { ...process.env, LANG: "C", LC_ALL: "C" },
+      heartbeatMs: args.heartbeatMs ?? 30_000,
+      maxBuffer: 1024 * 1024 * 1024,
+      projectId: project.id,
+      timeoutMs: args.timeoutMs,
+      tool,
+      write: progress.write ?? process.stderr.write.bind(process.stderr),
+    });
+    return completeToolRun({ ...prepared, result, startedAt });
+  } finally {
+    cleanupToolRun(prepared);
+  }
+}
+
+function prepareToolRun(project, tool, args, launch, outputDir) {
   const cwd = resolve(repoRoot, project.fixturePath);
   const fixtureExists = existsSync(cwd);
   const compilerOutputDir =
@@ -47,121 +86,280 @@ export function runTool(project, tool, args, launch, outputDir) {
     outputPath: null,
     coverage: null,
   };
-  if (args.dryRun) return { ...base, status: "planned" };
-  if (!fixtureExists) return { ...base, status: "missing-fixture" };
+  if (args.dryRun) return { run: { ...base, status: "planned" } };
+  if (!fixtureExists) return { run: { ...base, status: "missing-fixture" } };
   const formatterStateBefore =
     tool === "formatter" ? snapshotFormatterInputs(cwd, project.vueGlobs) : null;
   const expectedToolFiles =
     tool === "typechecker" || tool === "linter" || tool === "formatter"
       ? collectVueInputPaths(cwd, project.vueGlobs)
       : null;
-  try {
-    const startedAt = Date.now();
-    const result = spawnSync(launch.command, commandArgs, {
-      cwd,
-      encoding: "utf8",
-      env: { ...process.env, LANG: "C", LC_ALL: "C" },
-      maxBuffer: 1024 * 1024 * 1024,
-      timeout: args.timeoutMs,
-    });
-    const rawPath = join(outputDir, `${project.id}-${tool}.json`);
-    const completed = {
-      ...base,
-      durationMs: Date.now() - startedAt,
-      exitCode: result.status,
-      outputPath: relative(repoRoot, rawPath),
-    };
-    const payload = {
-      schema: "vize.fixtureToolRun",
-      version: 1,
-      project: project.id,
-      tool,
-      exitCode: result.status,
-      stdout: result.stdout ?? "",
-      stderr: result.stderr ?? "",
-    };
-    if (result.error != null) {
-      payload.spawnError = errorMessage(result.error);
-    } else if (tool === "compiler" && (result.status === 0 || result.status === 1)) {
-      try {
-        payload.compilerArtifacts = inspectCompilerArtifacts(
-          cwd,
-          project.vueGlobs,
-          project.expectedVueFileCount,
-          compilerOutputDir,
-        );
-      } catch (error) {
-        payload.validationError = errorMessage(error);
-      }
-    } else if (tool !== "formatter" && (result.status === 0 || result.status === 1)) {
-      try {
-        payload.parsed = JSON.parse(result.stdout);
-      } catch (error) {
-        payload.parseError = errorMessage(error);
-      }
-      if (tool === "typechecker" && payload.parseError == null) {
-        try {
-          payload.typecheckerCoverage = validateTypecheckerOutput(
-            project,
-            payload.parsed,
-            result.status,
-            expectedToolFiles,
-            collectTypecheckerAuthoredPaths(cwd),
-          );
-        } catch (error) {
-          payload.validationError = errorMessage(error);
-        }
-      }
-      if (tool === "linter" && payload.parseError == null) {
-        try {
-          validateLinterOutput(project, payload.parsed, result.status, expectedToolFiles);
-        } catch (error) {
-          payload.validationError = errorMessage(error);
-        }
-      }
-    } else if (tool === "formatter" && (result.status === 0 || result.status === 1)) {
-      try {
-        const formatterStateAfter = snapshotFormatterInputs(cwd, project.vueGlobs);
-        payload.formatterCheck = validateFormatterOutput(
-          project,
-          payload.stdout,
-          payload.stderr,
-          result.status,
-          formatterStateBefore,
-          formatterStateAfter,
-          expectedToolFiles,
-        );
-      } catch (error) {
-        payload.validationError = errorMessage(error);
-      }
-    }
-    writeFileSync(rawPath, `${JSON.stringify(payload, null, 2)}\n`);
+  return {
+    base,
+    commandArgs,
+    compilerOutputDir,
+    cwd,
+    expectedToolFiles,
+    formatterStateBefore,
+    outputDir,
+    project,
+    tool,
+  };
+}
 
-    if (result.error != null) {
-      return { ...completed, status: "failed", failure: errorMessage(result.error) };
+function cleanupToolRun(prepared) {
+  if (prepared.compilerOutputDir != null) {
+    rmSync(prepared.compilerOutputDir, { recursive: true, force: true });
+  }
+}
+
+function completeToolRun({
+  base,
+  compilerOutputDir,
+  cwd,
+  expectedToolFiles,
+  formatterStateBefore,
+  outputDir,
+  project,
+  result,
+  startedAt,
+  tool,
+}) {
+  const stdout = result.stdout ?? "";
+  const stderr = result.stderr ?? "";
+  const rawPath = join(outputDir, `${project.id}-${tool}.json`);
+  const completed = {
+    ...base,
+    durationMs: Date.now() - startedAt,
+    exitCode: result.status,
+    outputPath: relative(repoRoot, rawPath),
+  };
+  const payload = {
+    schema: "vize.fixtureToolRun",
+    version: 1,
+    project: project.id,
+    tool,
+    exitCode: result.status,
+    stdout,
+    stderr,
+  };
+  if (result.signal != null) payload.signal = result.signal;
+  if (result.error != null) {
+    payload.spawnError = errorMessage(result.error);
+  } else if (tool === "compiler" && (result.status === 0 || result.status === 1)) {
+    try {
+      payload.compilerArtifacts = inspectCompilerArtifacts(
+        cwd,
+        project.vueGlobs,
+        project.expectedVueFileCount,
+        compilerOutputDir,
+      );
+    } catch (error) {
+      payload.validationError = errorMessage(error);
     }
-    if (result.status !== 0 && result.status !== 1) {
-      return { ...completed, status: "failed", failure: failureOutput(result) };
+  } else if (tool !== "formatter" && (result.status === 0 || result.status === 1)) {
+    try {
+      payload.parsed = JSON.parse(stdout);
+    } catch (error) {
+      payload.parseError = errorMessage(error);
     }
-    if (payload.validationError != null) {
-      return { ...completed, status: "failed", failure: payload.validationError };
+    if (tool === "typechecker" && payload.parseError == null) {
+      try {
+        payload.typecheckerCoverage = validateTypecheckerOutput(
+          project,
+          payload.parsed,
+          result.status,
+          expectedToolFiles,
+          collectTypecheckerAuthoredPaths(cwd),
+        );
+      } catch (error) {
+        payload.validationError = errorMessage(error);
+      }
     }
-    if (payload.parseError != null) {
-      return {
-        ...completed,
-        status: "failed",
-        failure: `invalid JSON output: ${payload.parseError}`,
-      };
+    if (tool === "linter" && payload.parseError == null) {
+      try {
+        validateLinterOutput(project, payload.parsed, result.status, expectedToolFiles);
+      } catch (error) {
+        payload.validationError = errorMessage(error);
+      }
     }
+  } else if (tool === "formatter" && (result.status === 0 || result.status === 1)) {
+    try {
+      const formatterStateAfter = snapshotFormatterInputs(cwd, project.vueGlobs);
+      payload.formatterCheck = validateFormatterOutput(
+        project,
+        payload.stdout,
+        payload.stderr,
+        result.status,
+        formatterStateBefore,
+        formatterStateAfter,
+        expectedToolFiles,
+      );
+    } catch (error) {
+      payload.validationError = errorMessage(error);
+    }
+  }
+  writeFileSync(rawPath, `${JSON.stringify(payload, null, 2)}\n`);
+
+  if (result.error != null) {
+    return { ...completed, status: "failed", failure: errorMessage(result.error) };
+  }
+  if (result.status !== 0 && result.status !== 1) {
+    return { ...completed, status: "failed", failure: failureOutput(result) };
+  }
+  if (payload.validationError != null) {
+    return { ...completed, status: "failed", failure: payload.validationError };
+  }
+  if (payload.parseError != null) {
     return {
       ...completed,
-      fileCount: validatedFileCount(tool, payload),
-      coverage:
-        tool === "typechecker" ? summarizeTypecheckerCoverage(payload.typecheckerCoverage) : null,
-      status: result.status === 0 ? "ok" : "findings",
+      status: "failed",
+      failure: `invalid JSON output: ${payload.parseError}`,
     };
-  } finally {
-    if (compilerOutputDir != null) rmSync(compilerOutputDir, { recursive: true, force: true });
+  }
+  return {
+    ...completed,
+    fileCount: validatedFileCount(tool, payload),
+    coverage:
+      tool === "typechecker" ? summarizeTypecheckerCoverage(payload.typecheckerCoverage) : null,
+    status: result.status === 0 ? "ok" : "findings",
+  };
+}
+
+function spawnWithHeartbeat(command, commandArgs, options) {
+  const startedAt = Date.now();
+  const heartbeatMs = Math.max(1, options.heartbeatMs);
+  writeProgress(options.write, "start", {
+    projectId: options.projectId,
+    tool: options.tool,
+    timeoutMs: options.timeoutMs,
+  });
+  return new Promise((settle) => {
+    let stdout = "";
+    let stderr = "";
+    let stdoutBytes = 0;
+    let stderrBytes = 0;
+    let spawnError = null;
+    let timeoutError = null;
+    let maxBufferError = null;
+    let forceKillTimer = null;
+    let forceSettleTimer = null;
+    let terminating = false;
+    let settled = false;
+    const child = spawn(command, commandArgs, {
+      cwd: options.cwd,
+      detached: process.platform !== "win32",
+      env: options.env,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    const stopTimers = () => {
+      clearInterval(heartbeat);
+      clearTimeout(timeout);
+      clearTimeout(forceKillTimer);
+      clearTimeout(forceSettleTimer);
+    };
+    const settleResult = (status, signal) => {
+      if (settled) return;
+      settled = true;
+      stopTimers();
+      const normalizedStatus = spawnError == null ? status : null;
+      writeProgress(options.write, "finish", {
+        projectId: options.projectId,
+        tool: options.tool,
+        elapsedMs: Date.now() - startedAt,
+        status: normalizedStatus,
+        signal,
+      });
+      settle({
+        error: spawnError ?? timeoutError ?? maxBufferError,
+        signal,
+        status: normalizedStatus,
+        stderr,
+        stdout,
+      });
+    };
+    const signalChildTree = (signal) => {
+      if (child.pid == null) {
+        child.kill(signal);
+        return;
+      }
+      if (process.platform !== "win32") {
+        try {
+          process.kill(-child.pid, signal);
+          return;
+        } catch (error) {
+          if (error?.code === "ESRCH") return;
+        }
+      }
+      child.kill(signal);
+    };
+    const beginTermination = () => {
+      if (terminating) return;
+      terminating = true;
+      signalChildTree("SIGTERM");
+      forceKillTimer = setTimeout(() => signalChildTree("SIGKILL"), 5_000);
+      forceKillTimer.unref?.();
+      forceSettleTimer = setTimeout(() => settleResult(null, "SIGKILL"), 10_000);
+      forceSettleTimer.unref?.();
+    };
+    const killForMaxBuffer = (streamName) => {
+      if (maxBufferError == null) {
+        maxBufferError = new Error(`${streamName} maxBuffer exceeded`);
+        maxBufferError.code = "ENOBUFS";
+        beginTermination();
+      }
+    };
+    child.stdout?.setEncoding("utf8");
+    child.stderr?.setEncoding("utf8");
+    child.stdout?.on("data", (chunk) => {
+      stdoutBytes += Buffer.byteLength(chunk);
+      if (stdoutBytes > options.maxBuffer) killForMaxBuffer("stdout");
+      else stdout += chunk;
+    });
+    child.stderr?.on("data", (chunk) => {
+      stderrBytes += Buffer.byteLength(chunk);
+      if (stderrBytes > options.maxBuffer) killForMaxBuffer("stderr");
+      else stderr += chunk;
+    });
+    child.once("error", (error) => {
+      spawnError = error;
+    });
+    child.once("close", (status, signal) => {
+      settleResult(status, signal);
+    });
+    const heartbeat = setInterval(() => {
+      writeProgress(options.write, "still-running", {
+        projectId: options.projectId,
+        tool: options.tool,
+        elapsedMs: Date.now() - startedAt,
+      });
+    }, heartbeatMs);
+    heartbeat.unref?.();
+    const timeout = setTimeout(() => {
+      timeoutError = new Error(`spawn timed out after ${options.timeoutMs}ms`);
+      timeoutError.code = "ETIMEDOUT";
+      writeProgress(options.write, "timeout", {
+        projectId: options.projectId,
+        tool: options.tool,
+        elapsedMs: Date.now() - startedAt,
+        timeoutMs: options.timeoutMs,
+      });
+      beginTermination();
+    }, options.timeoutMs);
+    timeout.unref?.();
+  });
+}
+
+function writeProgress(write, event, fields) {
+  const parts = [`[tool-matrix] ${event}`];
+  for (const [key, value] of Object.entries(fields)) {
+    if (value == null) continue;
+    parts.push(`${key}=${value}`);
+  }
+  try {
+    write(`${parts.join(" ")}\n`);
+  } catch {
+    // Progress logging must never change the tool result.
   }
 }
 

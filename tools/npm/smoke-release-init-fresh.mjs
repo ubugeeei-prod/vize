@@ -80,11 +80,12 @@ function installPlannedDependencies(context, projectRoot, manager, shape) {
 function runFreshProjectCell(context, cell) {
   const manager = PACKAGE_MANAGERS[cell.packageManager];
   const shape = PROJECT_SHAPES[cell.shape];
-  const projectRoot = path.join(context.freshRoot, `${shape.id}-${manager.id}`);
+  const projectRootPath = path.join(context.freshRoot, `${shape.id}-${manager.id}`);
   const authored = { ...shape.files(context.peers), ...manager.projectFiles };
   const tracked = [...Object.keys(authored), ...shape.createdFiles, ...shape.updatedFiles];
 
-  fs.mkdirSync(projectRoot, { recursive: true });
+  fs.mkdirSync(projectRootPath, { recursive: true });
+  const projectRoot = fs.realpathSync.native(projectRootPath);
   writeFiles(projectRoot, authored);
   assertFreshProject(projectRoot, context);
   runManager(manager, manager.bootstrapArgs, { cwd: projectRoot });
@@ -164,8 +165,9 @@ function runFreshProjectCell(context, cell) {
  * failed, so the narrower native-only release job stays green.
  */
 export function runFreshProjectInitChecks(context) {
-  const freshRoot = path.join(context.tempDir, "fresh");
-  fs.mkdirSync(freshRoot, { recursive: true });
+  const freshRootPath = path.join(context.tempDir, "fresh");
+  fs.mkdirSync(freshRootPath, { recursive: true });
+  const freshRoot = fs.realpathSync.native(freshRootPath);
   let ran = 0;
   for (const cell of FRESH_INIT_MATRIX) {
     const shape = PROJECT_SHAPES[cell.shape];

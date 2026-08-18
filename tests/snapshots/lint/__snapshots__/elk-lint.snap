@@ -287,10 +287,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 32,
-        "column": 9,
-        "endLine": 36,
-        "endColumn": 10,
+        "line": 33,
+        "column": 32,
+        "endLine": 33,
+        "endColumn": 47,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
     ],
@@ -586,17 +586,6 @@
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       },
       {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 83,
-        "column": 5,
-        "endLine": 90,
-        "endColumn": 6,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
-      },
-      {
         "ruleId": "a11y/alt-text",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -606,6 +595,17 @@
         "endLine": 90,
         "endColumn": 6,
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 83,
+        "column": 5,
+        "endLine": 90,
+        "endColumn": 6,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -636,21 +636,9 @@
   },
   {
     "file": "app/components/common/CommonPaginator.vue",
-    "messages": [
-      {
-        "ruleId": "vue/v-slot-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 83,
-        "column": 28,
-        "endLine": 83,
-        "endColumn": 52,
-        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/common/CommonPreviewPrompt.vue",
@@ -661,9 +649,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 16,
-        "column": 9,
+        "column": 84,
         "endLine": 16,
-        "endColumn": 126,
+        "endColumn": 99,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
     ],
@@ -868,9 +856,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 28,
-        "column": 7,
+        "column": 79,
         "endLine": 28,
-        "endColumn": 95,
+        "endColumn": 94,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -879,9 +867,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 33,
-        "column": 5,
+        "column": 78,
         "endLine": 33,
-        "endColumn": 94,
+        "endColumn": 93,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -901,9 +889,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 38,
-        "column": 9,
+        "column": 37,
         "endLine": 38,
-        "endColumn": 155,
+        "endColumn": 52,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -923,9 +911,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 44,
-        "column": 7,
+        "column": 61,
         "endLine": 44,
-        "endColumn": 77,
+        "endColumn": 76,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
     ],
@@ -1169,17 +1157,6 @@
     "file": "app/components/modal/ModalMediaPreview.vue",
     "messages": [
       {
-        "ruleId": "type/require-typed-emits",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
-        "severity": 1,
-        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
-        "line": 40,
-        "column": 14,
-        "endLine": 40,
-        "endColumn": 36,
-        "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
-      },
-      {
         "ruleId": "a11y/click-events-have-key-events",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -1200,6 +1177,17 @@
         "endLine": 40,
         "endColumn": 59,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "type/require-typed-emits",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
+        "line": 40,
+        "column": 14,
+        "endLine": 40,
+        "endColumn": 36,
+        "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
       }
     ],
     "errorCount": 0,
@@ -1267,10 +1255,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 35,
-        "column": 9,
-        "endLine": 42,
-        "endColumn": 11,
+        "line": 41,
+        "column": 11,
+        "endLine": 41,
+        "endColumn": 26,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -1278,10 +1266,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 53,
-        "column": 7,
-        "endLine": 59,
-        "endColumn": 8,
+        "line": 57,
+        "column": 9,
+        "endLine": 57,
+        "endColumn": 24,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -1289,10 +1277,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 65,
-        "column": 9,
-        "endLine": 70,
-        "endColumn": 10,
+        "line": 68,
+        "column": 11,
+        "endLine": 68,
+        "endColumn": 26,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -1312,9 +1300,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 86,
-        "column": 7,
+        "column": 42,
         "endLine": 86,
-        "endColumn": 58,
+        "endColumn": 57,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -1323,9 +1311,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 90,
-        "column": 7,
+        "column": 46,
         "endLine": 90,
-        "endColumn": 71,
+        "endColumn": 61,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -1334,9 +1322,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 94,
-        "column": 7,
+        "column": 56,
         "endLine": 94,
-        "endColumn": 81,
+        "endColumn": 71,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
     ],
@@ -1555,21 +1543,9 @@
   },
   {
     "file": "app/components/nav/button/MoreMenu.vue",
-    "messages": [
-      {
-        "ruleId": "vue/v-slot-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 7,
-        "column": 5,
-        "endLine": 7,
-        "endColumn": 37,
-        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/nav/button/Notification.vue",
@@ -1710,6 +1686,28 @@
     "file": "app/components/notification/NotificationPaginator.vue",
     "messages": [
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 179,
+        "column": 5,
+        "endLine": 179,
+        "endColumn": 29,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 180,
+        "column": 5,
+        "endLine": 180,
+        "endColumn": 39,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "vue/no-unused-vars",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1719,50 +1717,6 @@
         "endLine": 182,
         "endColumn": 21,
         "help": "Consider removing unused slot props or prefix with underscore"
-      },
-      {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'eventType' should be 'event-type' (kebab-case)",
-        "line": 179,
-        "column": 5,
-        "endLine": 179,
-        "endColumn": 29,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'virtualScroller' should be 'virtual-scroller' (kebab-case)",
-        "line": 180,
-        "column": 5,
-        "endLine": 180,
-        "endColumn": 39,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 179,
-        "column": 5,
-        "endLine": 179,
-        "endColumn": 29,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 180,
-        "column": 5,
-        "endLine": 180,
-        "endColumn": 39,
-        "help": "Use kebab-case for attribute names"
       },
       {
         "ruleId": "html/deprecated-attr",
@@ -1777,7 +1731,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 4
   },
   {
     "file": "app/components/notification/NotificationPreferences.client.vue",
@@ -1839,9 +1793,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 39,
-        "column": 9,
+        "column": 66,
         "endLine": 39,
-        "endColumn": 123,
+        "endColumn": 81,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -1850,9 +1804,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 46,
-        "column": 7,
+        "column": 79,
         "endLine": 46,
-        "endColumn": 129,
+        "endColumn": 94,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
     ],
@@ -1979,17 +1933,6 @@
     "file": "app/components/publish/PublishWidget.vue",
     "messages": [
       {
-        "ruleId": "html/id-duplication",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 2,
-        "message": "[vize:html/id-duplication] Duplicate id=\"publish-failed\" found in template",
-        "line": 457,
-        "column": 23,
-        "endLine": 457,
-        "endColumn": 42,
-        "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
-      },
-      {
         "ruleId": "vue/no-unused-properties",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2043,6 +1986,17 @@
         "endLine": 430,
         "endColumn": 82,
         "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/id-duplication",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 2,
+        "message": "[vize:html/id-duplication] Duplicate id=\"publish-failed\" found in template",
+        "line": 457,
+        "column": 23,
+        "endLine": 457,
+        "endColumn": 42,
+        "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
       },
       {
         "ruleId": "ssr/no-hydration-mismatch",
@@ -2235,17 +2189,6 @@
     "file": "app/components/search/SearchEmojiInfo.vue",
     "messages": [
       {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 14,
-        "column": 5,
-        "endLine": 19,
-        "endColumn": 6,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
-      },
-      {
         "ruleId": "a11y/alt-text",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -2255,6 +2198,17 @@
         "endLine": 19,
         "endColumn": 6,
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 14,
+        "column": 5,
+        "endLine": 19,
+        "endColumn": 6,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -2445,9 +2399,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 3,
-        "column": 5,
+        "column": 43,
         "endLine": 3,
-        "endColumn": 59,
+        "endColumn": 58,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -2456,9 +2410,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 13,
-        "column": 5,
+        "column": 45,
         "endLine": 13,
-        "endColumn": 61,
+        "endColumn": 60,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
     ],
@@ -2778,9 +2732,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 35,
-        "column": 9,
+        "column": 85,
         "endLine": 35,
-        "endColumn": 119,
+        "endColumn": 100,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -2983,9 +2937,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 102,
-        "column": 11,
+        "column": 97,
         "endLine": 102,
-        "endColumn": 122,
+        "endColumn": 112,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -2994,9 +2948,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 108,
-        "column": 11,
+        "column": 49,
         "endLine": 108,
-        "endColumn": 74,
+        "endColumn": 64,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
@@ -3005,21 +2959,10 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 119,
-        "column": 11,
+        "column": 43,
         "endLine": 119,
-        "endColumn": 68,
+        "endColumn": 58,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
-      },
-      {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 120,
-        "column": 13,
-        "endLine": 120,
-        "endColumn": 93,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       },
       {
         "ruleId": "a11y/alt-text",
@@ -3031,6 +2974,17 @@
         "endLine": 120,
         "endColumn": 93,
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 120,
+        "column": 13,
+        "endLine": 120,
+        "endColumn": 93,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -3044,17 +2998,6 @@
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 127,
-        "column": 13,
-        "endLine": 127,
-        "endColumn": 99,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
-      },
-      {
         "ruleId": "a11y/alt-text",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -3064,6 +3007,17 @@
         "endLine": 127,
         "endColumn": 99,
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 127,
+        "column": 13,
+        "endLine": 127,
+        "endColumn": 99,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       },
       {
         "ruleId": "vue/no-unsafe-url",
@@ -3436,10 +3390,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 51,
-        "column": 11,
-        "endLine": 55,
-        "endColumn": 12,
+        "line": 52,
+        "column": 34,
+        "endLine": 52,
+        "endColumn": 49,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
     ],
@@ -3489,10 +3443,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 55,
-        "column": 11,
-        "endLine": 59,
-        "endColumn": 12,
+        "line": 56,
+        "column": 34,
+        "endLine": 56,
+        "endColumn": 49,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
     ],
@@ -3653,9 +3607,9 @@
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
         "line": 162,
-        "column": 11,
+        "column": 61,
         "endLine": 162,
-        "endColumn": 125,
+        "endColumn": 76,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
     ],
@@ -3757,21 +3711,16 @@
         "endLine": 71,
         "endColumn": 47,
         "help": "Use CSS border instead."
-      },
-      {
-        "ruleId": "vue/v-slot-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 99,
-        "column": 15,
-        "endLine": 99,
-        "endColumn": 39,
-        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
+  },
+  {
+    "file": "app/pages/[[server]]/@[account]/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
   },
   {
     "file": "app/pages/[[server]]/@[account]/index/collections.vue",
@@ -3810,7 +3759,7 @@
     "warningCount": 0
   },
   {
-    "file": "app/pages/[[server]]/@[account]/index.vue",
+    "file": "app/pages/[[server]]/collections.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
@@ -3840,7 +3789,7 @@
     "warningCount": 0
   },
   {
-    "file": "app/pages/[[server]]/collections.vue",
+    "file": "app/pages/[[server]]/explore.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
@@ -3870,12 +3819,6 @@
     "warningCount": 0
   },
   {
-    "file": "app/pages/[[server]]/explore.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
     "file": "app/pages/[[server]]/index.vue",
     "messages": [
       {
@@ -3892,6 +3835,12 @@
     ],
     "errorCount": 0,
     "warningCount": 1
+  },
+  {
+    "file": "app/pages/[[server]]/list/[list]/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
   },
   {
     "file": "app/pages/[[server]]/list/[list]/index/accounts.vue",
@@ -3962,7 +3911,7 @@
     "warningCount": 0
   },
   {
-    "file": "app/pages/[[server]]/list/[list]/index.vue",
+    "file": "app/pages/[[server]]/lists.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
@@ -4006,12 +3955,6 @@
     ],
     "errorCount": 0,
     "warningCount": 3
-  },
-  {
-    "file": "app/pages/[[server]]/lists.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
   },
   {
     "file": "app/pages/[[server]]/public/index.vue",
@@ -4080,13 +4023,13 @@
     "warningCount": 0
   },
   {
-    "file": "app/pages/hashtags/index.vue",
+    "file": "app/pages/hashtags.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
   },
   {
-    "file": "app/pages/hashtags.vue",
+    "file": "app/pages/hashtags/index.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
@@ -4140,18 +4083,6 @@
     "warningCount": 0
   },
   {
-    "file": "app/pages/notifications/[filter].vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "app/pages/notifications/index.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
     "file": "app/pages/notifications.vue",
     "messages": [
       {
@@ -4168,6 +4099,18 @@
     ],
     "errorCount": 0,
     "warningCount": 1
+  },
+  {
+    "file": "app/pages/notifications/[filter].vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/notifications/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
   },
   {
     "file": "app/pages/pinned.vue",
@@ -4188,6 +4131,24 @@
         "endLine": 16,
         "endColumn": 37,
         "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/pages/settings.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 20,
+        "column": 12,
+        "endLine": 20,
+        "endColumn": 27,
+        "help": "Use CSS border instead."
       }
     ],
     "errorCount": 0,
@@ -4242,10 +4203,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 33,
-        "column": 9,
-        "endLine": 37,
-        "endColumn": 10,
+        "line": 35,
+        "column": 11,
+        "endLine": 35,
+        "endColumn": 26,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
     ],
@@ -4337,24 +4298,6 @@
         "column": 18,
         "endLine": 82,
         "endColumn": 33,
-        "help": "Use CSS border instead."
-      }
-    ],
-    "errorCount": 0,
-    "warningCount": 1
-  },
-  {
-    "file": "app/pages/settings.vue",
-    "messages": [
-      {
-        "ruleId": "html/deprecated-attr",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 20,
-        "column": 12,
-        "endLine": 20,
-        "endColumn": 27,
         "help": "Use CSS border instead."
       }
     ],

@@ -193,7 +193,7 @@ test("typecheck divergence report rejects invalid performance budgets", () => {
 
 test("typecheck divergence report rejects unsupported baseline exits and output", () => {
   for (const [body, message] of [
-    ["process.exit(1);", /unsupported status 1/],
+    ["process.exit(3);", /unsupported status 3/],
     ["process.stderr.write('prefix error TS1: bad\\n'); process.exit(2);", /unparseable/],
   ] as const) {
     const fixture = setup();
@@ -249,13 +249,17 @@ test("seeded mutation oracle fails when either checker misses or mismatches the 
   }
 });
 
-test("typecheck divergence report requires one performance project per shard", () => {
+test("typecheck divergence report skips shards with no registered performance projects", () => {
   const fixture = setup();
   try {
     fs.writeFileSync(fixture.registryPath, '{"projects":[]}\n');
     const result = run(fixture);
-    assert.equal(result.status, 1);
-    assert.match(result.stderr, /Expected exactly one.*found 0/);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /No typecheck performance projects selected/);
+    assert.equal(
+      fs.existsSync(path.join(fixture.reportDir, "fixture-typecheck-divergence.json")),
+      false,
+    );
   } finally {
     cleanup(fixture);
   }

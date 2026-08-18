@@ -90,13 +90,12 @@ export function assertInstalledMapperContract(installDir) {
   assert.equal(fs.lstatSync(packageRoot).isSymbolicLink(), false);
   const manifest = JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json"), "utf8"));
   assert.deepEqual(
-    manifest.tsContentMapper,
+    manifest.typescript?.contentMapper,
     {
       exec: ["node", "./bin/vize", "content-mapper"],
-      extensions: { ".vue": ".tsx" },
       compilerOptions: ["noUnusedLocals"],
     },
-    `${path.join(packageRoot, "package.json")} must expose the production tsContentMapper contract`,
+    `${path.join(packageRoot, "package.json")} must expose the production typescript.contentMapper contract`,
   );
   const mapperPath = path.join(packageRoot, "bin", "vize");
   assert.ok(fs.existsSync(mapperPath), `${mapperPath} must exist`);
@@ -116,7 +115,7 @@ export function runInstalledContentMapperChecks(installDir, repoRoot, run) {
   fs.cpSync(path.join(repoRoot, "crates/vize/tests/fixtures/content_mapper_project"), projectDir, {
     recursive: true,
   });
-  const common = ["--loadExternalPlugins", "--pretty", "false"];
+  const common = ["--runExternalCode", "--pretty", "false"];
   run(tsgo, [...common, "--noEmit", "-p", "tsconfig.json"], { cwd: projectDir });
   const broken = spawnSync(tsgo, [...common, "--noEmit", "-p", "tsconfig.error.json"], {
     cwd: projectDir,

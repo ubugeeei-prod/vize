@@ -16,25 +16,24 @@ import {
   installVisualStabilityHooks,
   prepareStableVisualState,
 } from "../../_helpers/visual-parity";
-import { ELK_RENDER_ROUTE, readElkRenderRouteSourceEvidence } from "../dev/elk-route-contract";
+import {
+  elkRouteReadinessExpectation,
+  elkRouteReadinessState,
+  readElkRenderRouteSourceEvidence,
+} from "../dev/elk-route-contract";
+import {
+  DEFAULT_MAX_DIFF_RATIO,
+  DEFAULT_VIEWPORT,
+  elkVisualRoutes,
+  type ElkVisualRouteConfig,
+} from "./elk-routes";
 
-interface VisualRoute {
-  maxDiffRatio?: number;
-  name: string;
-  path: string;
-  storage?: Record<string, string>;
-  viewport?: { height: number; width: number };
-}
+type VisualRoute = ElkVisualRouteConfig;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR =
   process.env.VIZE_ELK_VRT_OUTPUT_DIR ??
   path.resolve(__dirname, "../../../.vize/artifacts/elk-vrt/artifacts");
-const DEFAULT_VIEWPORT = { width: 1280, height: 720 };
-const DEFAULT_MAX_DIFF_RATIO = 0.04;
-const ELK_MIN_RENDER_ROUTE_ELEMENTS = 100;
-const ELK_RENDER_ROUTE_LINKS = ["/settings/interface", "/settings/about"] as const;
-const MOBILE_VIEWPORT = { width: 390, height: 844 };
 const apps = createElkVisualParityApps();
 
 const defaultStorage = {
@@ -55,24 +54,7 @@ const defaultStorage = {
   }),
 } satisfies Record<string, string>;
 
-const routes: VisualRoute[] = [
-  { name: "settings-shell", path: ELK_RENDER_ROUTE },
-  { name: "settings-shell-mobile", path: ELK_RENDER_ROUTE, viewport: MOBILE_VIEWPORT },
-  { name: "explore", path: "/explore" },
-  { name: "explore-users", path: "/explore/users" },
-  { name: "explore-tags", path: "/explore/tags" },
-  { name: "explore-links", path: "/explore/links" },
-  { name: "public", path: "/public" },
-  { name: "public-local", path: "/public/local" },
-  { name: "search", path: "/search" },
-  { name: "hashtags", path: "/hashtags" },
-  { name: "settings-interface", path: "/settings/interface" },
-  { name: "settings-language", path: "/settings/language" },
-  { name: "settings-preferences", path: "/settings/preferences" },
-  { name: "notifications", path: "/notifications" },
-  { name: "compose", path: "/compose" },
-  { name: "share-target", path: "/share-target?text=hello" },
-];
+const routes: VisualRoute[] = elkVisualRoutes;
 
 test.describe("elk visual parity", () => {
   test.describe.configure({ mode: "serial" });
@@ -183,40 +165,44 @@ async function openRoute(page: Page, baseUrl: string, route: VisualRoute): Promi
   });
   expect(response?.status()).toBeLessThan(500);
   await expect(page.locator("#__nuxt")).toBeAttached({ timeout: 15_000 });
-  await waitForElkPageContent(page);
+  await waitForElkPageContent(page, route);
   await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => undefined);
   await page.waitForTimeout(1000);
 }
 
-async function waitForElkPageContent(page: Page): Promise<void> {
+async function waitForElkPageContent(page: Page, route: VisualRoute): Promise<void> {
+  const readiness = elkRouteReadinessExpectation(route.path);
   await expect
-    .poll(() => elkRenderRouteContentState(page), {
+    .poll(() => elkRouteContentState(page, route.path, readiness.links), {
       intervals: [250, 500, 1_000],
       timeout: 90_000,
     })
     .toBe("ready");
 }
 
-async function elkRenderRouteContentState(page: Page): Promise<string> {
-  return page.evaluate(
-    ({ links, minElements, selector }) => {
+async function elkRouteContentState(
+  page: Page,
+  routePath: string,
+  requiredLinks: readonly string[],
+): Promise<string> {
+  const observation = await page.evaluate(
+    ({ links, selector }) => {
       const root = document.querySelector(selector);
       if (!root) {
-        return "missing-root";
+        return { elementCount: 0, missingLinks: links, rootFound: false };
       }
 
-      const elementCount = root.querySelectorAll("*").length;
-      const missingLinks = links.filter((href) => !root.querySelector(`a[href="${href}"]`));
-      if (elementCount >= minElements && missingLinks.length === 0) {
-        return "ready";
-      }
-
-      return `incomplete:elements=${elementCount}:missing=${missingLinks.join(",")}`;
+      return {
+        elementCount: root.querySelectorAll("*").length,
+        missingLinks: links.filter((href) => !root.querySelector(`a[href="${href}"]`)),
+        rootFound: true,
+      };
     },
     {
-      links: [...ELK_RENDER_ROUTE_LINKS],
-      minElements: ELK_MIN_RENDER_ROUTE_ELEMENTS,
+      links: [...requiredLinks],
       selector: "#__nuxt",
     },
   );
+
+  return elkRouteReadinessState(routePath, observation);
 }

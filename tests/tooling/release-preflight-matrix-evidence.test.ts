@@ -9,6 +9,7 @@ import {
   mutateDivergence,
   realProjectArtifacts,
   shardEntries,
+  typecheckRegistry,
 } from "./_helpers/release-preflight-matrix-evidence-fixture.ts";
 import { successfulReleaseRun } from "./support/release-preflight.ts";
 
@@ -20,9 +21,67 @@ test("release preflight validates every real-project shard artifact", async () =
     assertRealProjectMatrixReleaseArtifacts({
       run,
       artifacts,
+      registry: typecheckRegistry(),
       readArtifactEntries: async (artifact) => shardEntries(Number(artifact.name.split("-").pop())),
     }),
   );
+});
+
+test("release preflight aggregates typecheck evidence across non-typecheck shards", async () => {
+  const run = successfulReleaseRun("Real Project Matrix", 505);
+  const artifacts = realProjectArtifacts(run);
+
+  await assert.doesNotReject(() =>
+    assertRealProjectMatrixReleaseArtifacts({
+      run,
+      artifacts,
+      registry: typecheckRegistry(["fixture-0", "fixture-9"]),
+      readArtifactEntries: async (artifact) => {
+        const shard = Number(artifact.name.split("-").pop());
+        return shardEntries(shard, {
+          typecheckProject: shard === 0 || shard === 9 ? `fixture-${shard}` : null,
+        });
+      },
+    }),
+  );
+});
+
+test("release preflight rejects incomplete or duplicate aggregate typecheck coverage", async () => {
+  for (const [label, registry, projectForShard, message] of [
+    [
+      "missing",
+      typecheckRegistry(["fixture-0", "fixture-9"]),
+      (shard: number) => (shard === 0 ? "fixture-0" : null),
+      /missing typecheck performance projects: fixture-9/,
+    ],
+    [
+      "duplicate",
+      typecheckRegistry(["fixture-0"]),
+      (shard: number) => (shard === 0 || shard === 9 ? "fixture-0" : null),
+      /duplicates typecheck performance release evidence for fixture-0/,
+    ],
+    [
+      "unexpected",
+      typecheckRegistry(["fixture-0"]),
+      (shard: number) => (shard === 0 ? "fixture-0" : shard === 9 ? "fixture-9" : null),
+      /unregistered typecheck performance project fixture-9/,
+    ],
+  ] as const) {
+    const run = successfulReleaseRun("Real Project Matrix", 506);
+    await assert.rejects(
+      assertRealProjectMatrixReleaseArtifacts({
+        run,
+        artifacts: realProjectArtifacts(run),
+        registry,
+        readArtifactEntries: async (artifact) => {
+          const shard = Number(artifact.name.split("-").pop());
+          return shardEntries(shard, { typecheckProject: projectForShard(shard) });
+        },
+      }),
+      message,
+      label,
+    );
+  }
 });
 
 test("release preflight rejects missing or foreign real-project shard artifacts", async () => {
@@ -33,6 +92,7 @@ test("release preflight rejects missing or foreign real-project shard artifacts"
       artifacts: realProjectArtifacts(run).filter(
         (artifact) => artifact.name !== "real-project-matrix-7",
       ),
+      registry: typecheckRegistry(),
       readArtifactEntries: async (artifact) => shardEntries(Number(artifact.name.split("-").pop())),
     }),
     /real-project-matrix-7 artifact; found 0/,
@@ -45,6 +105,7 @@ test("release preflight rejects missing or foreign real-project shard artifacts"
           ? { ...artifact, workflow_run: { ...artifact.workflow_run, head_sha: "b".repeat(40) } }
           : artifact,
       ),
+      registry: typecheckRegistry(),
       readArtifactEntries: async () => shardEntries(0),
     }),
     /not bound to run/,
@@ -57,6 +118,7 @@ test("release preflight rejects missing or foreign real-project shard artifacts"
           ? { ...artifact, workflow_run: undefined }
           : artifact,
       ),
+      registry: typecheckRegistry(),
       readArtifactEntries: async () => shardEntries(0),
     }),
     /not bound to run/,
@@ -104,6 +166,42 @@ test("release preflight rejects record-only and non-zero typecheck parity artifa
       assertRealProjectMatrixReleaseArtifacts({
         run,
         artifacts: realProjectArtifacts(run),
+        registry: typecheckRegistry(),
+        readArtifactEntries: async (artifact) => {
+          const entries = shardEntries(Number(artifact.name.split("-").pop()));
+          if (artifact.name === "real-project-matrix-0") mutate(entries);
+          return entries;
+        },
+      }),
+      message,
+      label,
+    );
+  }
+});
+
+test("release preflight requires exact lint divergence evidence", async () => {
+  for (const [label, mutate, message] of [
+    [
+      "missing",
+      (entries: Record<string, string>) => delete entries["lint-divergence-summary.json"],
+      /lint-divergence-summary\.json/,
+    ],
+    [
+      "foreign commit",
+      (entries: Record<string, string>) => {
+        const summary = JSON.parse(entries["lint-divergence-summary.json"]);
+        summary.evidence.commitSha = "b".repeat(40);
+        entries["lint-divergence-summary.json"] = `${JSON.stringify(summary, null, 2)}\n`;
+      },
+      /lint divergence summary is not exact release evidence/,
+    ],
+  ] as const) {
+    const run = successfulReleaseRun("Real Project Matrix", 520);
+    await assert.rejects(
+      assertRealProjectMatrixReleaseArtifacts({
+        run,
+        artifacts: realProjectArtifacts(run),
+        registry: typecheckRegistry(),
         readArtifactEntries: async (artifact) => {
           const entries = shardEntries(Number(artifact.name.split("-").pop()));
           if (artifact.name === "real-project-matrix-0") mutate(entries);

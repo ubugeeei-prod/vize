@@ -22,6 +22,7 @@ pub(super) use css_modules::virtual_ts_options_for_descriptor;
 
 use super::VirtualFile;
 use super::diagnostics::collect_sfc_block_ranges;
+use super::esm_declaration_spelling::should_preserve_esm_declaration_spelling;
 use super::javascript_sfc::descriptor_is_unchecked_javascript;
 pub(super) use super::javascript_sfc::descriptor_uses_jsx_script;
 use super::jsx_build::build_jsx_registered_file;
@@ -241,8 +242,10 @@ pub(super) fn build_script_registered_file(
             rewriter.rewrite_for_virtual_project(content, source_type, roots, path.parent())
         }
     });
+    let preserve_declaration_spelling =
+        preserve_declaration_spelling || should_preserve_esm_declaration_spelling(path, content);
     let virtual_path =
-        super::paths::script_virtual_path(roots.0, roots.1, path, preserve_declaration_spelling)?;
+        super::paths::script_virtual_path(roots, path, content, preserve_declaration_spelling)?;
 
     Ok(RegisteredFile {
         file: VirtualFile {

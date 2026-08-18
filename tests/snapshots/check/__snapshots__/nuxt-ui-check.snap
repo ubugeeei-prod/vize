@@ -688,6 +688,8 @@
         "error:312:56 [TS2345] Argument of type 'NonNullable<string | number | symbol | undefined>' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.",
         "error:327:52 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputMenu\"> | Record<string, never>) & { inputMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputMenu\"> & { inputMenu?: any; }'.",
         "error:653:62 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputMenu\"> | Record<string, never>) & { inputMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputMenu\"> & { inputMenu?: any; }'.",
+        "error:688:74 [TS2322] Type 'string | number' is not assignable to type 'number'.\nType 'string' is not assignable to type 'number'.",
+        "error:694:76 [TS2322] Type 'string | number' is not assignable to type 'number'.\nType 'string' is not assignable to type 'number'.",
         "error:695:62 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputMenu\"> | Record<string, never>) & { inputMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputMenu\"> & { inputMenu?: any; }'.",
         "error:740:54 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputMenu\"> | Record<string, never>) & { inputMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputMenu\"> & { inputMenu?: any; }'."
       ]
@@ -726,6 +728,8 @@
         "error:76:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:161:4 [TS2345] Argument of type '{ required?: boolean; addOnPaste?: boolean; addOnTab?: boolean; addOnBlur?: boolean; duplicate?: boolean; delimiter?: string | RegExp; max?: number; convertValue?: ((value: string) => T) | undefined; ... 8 more ...; disabled: boolean | undefined; }' is not assignable to parameter of type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 28 more ...; readonly onRemoveTag?: ((payload: AcceptableInputValue) => any) | undefined; } & Record<...>'.\nType '{ required?: boolean; addOnPaste?: boolean; addOnTab?: boolean; addOnBlur?: boolean; duplicate?: boolean; delimiter?: string | RegExp; max?: number; convertValue?: ((value: string) => T) | undefined; ... 8 more ...; disabled: boolean | undefined; }' is not assignable to type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 28 more ...; readonly onRemoveTag?: ((payload: AcceptableInputValue) => any) | undefined; }'.\nTypes of property 'displayValue' are incompatible.\nType '((value: T) => string) | undefined' is not assignable to type '((value: AcceptableInputValue) => string) | undefined'.\nType '(value: T) => string' is not assignable to type '(value: AcceptableInputValue) => string'.\nTypes of parameters 'value' and '<target>' are incompatible.\nType 'AcceptableInputValue' is not assignable to type 'T'.\n'AcceptableInputValue' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.\nType 'string' is not assignable to type 'T'.\n'string' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.",
         "error:171:6 [TS2322] Type '(value: T[]) => void' is not assignable to type '(payload: AcceptableInputValue[]) => any'.\nTypes of parameters 'value' and '<target>' are incompatible.\nType 'AcceptableInputValue[]' is not assignable to type 'T[]'.\nType 'AcceptableInputValue' is not assignable to type 'T'.\n'AcceptableInputValue' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.\nType 'string' is not assignable to type 'T'.\n'string' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.",
+        "error:181:81 [TS2322] Type 'string | number' is not assignable to type 'number'.\nType 'string' is not assignable to type 'number'.",
+        "error:189:55 [TS2322] Type 'string | number' is not assignable to type 'number'.\nType 'string' is not assignable to type 'number'.",
         "error:190:58 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputTags\"> | Record<string, never>) & { inputTags?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputTags\"> & { inputTags?: any; }'."
       ]
     },
@@ -1219,7 +1223,8 @@
         "error:201:54 [TS2345] Argument of type 'string | number | symbol' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.",
         "error:304:75 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"tree\"> | Record<string, never>) & { tree?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"tree\"> & { tree?: any; }'.",
         "error:304:132 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"tree\"> | Record<string, never>) & { tree?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"tree\"> & { tree?: any; }'.",
-        "error:342:63 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"tree\"> | Record<string, never>) & { tree?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"tree\"> & { tree?: any; }'."
+        "error:342:63 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"tree\"> | Record<string, never>) & { tree?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"tree\"> & { tree?: any; }'.",
+        "error:395:10 [TS2322] Type 'string | number' is not assignable to type 'number'.\nType 'string' is not assignable to type 'number'."
       ]
     },
     {
@@ -2558,7 +2563,7 @@
       ]
     }
   ],
-  "errorCount": 1429,
+  "errorCount": 1434,
   "warningCount": 0,
   "fileCount": 231
 }

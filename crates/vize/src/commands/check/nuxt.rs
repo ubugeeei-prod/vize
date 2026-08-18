@@ -11,6 +11,7 @@ mod fallback;
 mod generated;
 mod generated_ast;
 mod generated_dir;
+mod generated_values;
 mod legacy_template_globals;
 mod parsing;
 mod plugins;

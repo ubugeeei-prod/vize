@@ -1,21 +1,20 @@
 //! DOM template compilation: parse, transform, and codegen entry points.
 
+pub mod custom_elements;
+
 use vize_atelier_core::codegen::{CodegenResult, CodegenResultWithSections};
 use vize_atelier_core::{
     CompilerError, RootNode,
     codegen::generate_with_sections,
-    lane::{
-        transform as do_transform, transform_with_hoisted_scope_id,
-        transform_with_template_syntax_quirks,
-        transform_with_template_syntax_quirks_and_hoisted_scope_id,
-    },
-    options::{CodegenOptions, ParserOptions, TemplateSyntaxMode, TransformOptions},
-    parser::parse_with_options_and_template_syntax,
+    lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
+    options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode},
+    parser::parse_with_options_custom_elements_and_template_syntax,
 };
 use vize_carton::{Allocator, String, profile};
 use vize_croquis::Croquis;
 
-use crate::namespace::get_namespace;
+mod stage_options;
+
 use crate::options::DomCompilerOptions;
 
 /// Compile a Vue template for DOM with default options
@@ -38,6 +37,7 @@ pub fn compile_template_with_options<'a>(
         options,
         TemplateSyntaxMode::Standard,
         None,
+        CustomElementMatcher::default(),
         CodegenOptions::default(),
     )
 }
@@ -55,6 +55,7 @@ pub fn compile_template_with_vue_parser_quirks<'a>(
         options,
         TemplateSyntaxMode::Quirks,
         None,
+        CustomElementMatcher::default(),
         CodegenOptions::default(),
     )
 }
@@ -73,6 +74,7 @@ pub fn compile_template_with_template_syntax<'a>(
         options,
         template_syntax,
         None,
+        CustomElementMatcher::default(),
         CodegenOptions::default(),
     )
 }
@@ -97,6 +99,7 @@ pub fn compile_template_with_template_syntax_and_codegen_options<'a>(
         options,
         template_syntax,
         None,
+        CustomElementMatcher::default(),
         codegen_options,
     )
 }
@@ -115,6 +118,7 @@ pub fn compile_template_with_options_and_hoisted_scope_id<'a>(
         options,
         TemplateSyntaxMode::Standard,
         hoisted_scope_id,
+        CustomElementMatcher::default(),
         CodegenOptions::default(),
     )
 }
@@ -134,6 +138,7 @@ pub fn compile_template_with_vue_parser_quirks_and_hoisted_scope_id<'a>(
         options,
         TemplateSyntaxMode::Quirks,
         hoisted_scope_id,
+        CustomElementMatcher::default(),
         CodegenOptions::default(),
     )
 }
@@ -153,6 +158,7 @@ pub fn compile_template_with_template_syntax_and_hoisted_scope_id<'a>(
         options,
         template_syntax,
         hoisted_scope_id,
+        CustomElementMatcher::default(),
         CodegenOptions::default(),
     )
 }
@@ -173,6 +179,7 @@ pub fn compile_template_with_template_syntax_and_hoisted_scope_id_with_sections<
         options,
         template_syntax,
         hoisted_scope_id,
+        CustomElementMatcher::default(),
         CodegenOptions::default(),
     )
 }
@@ -196,6 +203,7 @@ pub fn compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_
         options,
         template_syntax,
         hoisted_scope_id,
+        CustomElementMatcher::default(),
         codegen_options,
     )
 }
@@ -206,6 +214,7 @@ fn compile_template_inner<'a>(
     options: DomCompilerOptions,
     template_syntax: TemplateSyntaxMode,
     hoisted_scope_id: Option<String>,
+    custom_elements: CustomElementMatcher,
     codegen_options: CodegenOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
     let (root, errors, codegen_result) = compile_template_inner_with_sections(
@@ -214,6 +223,7 @@ fn compile_template_inner<'a>(
         options,
         template_syntax,
         hoisted_scope_id,
+        custom_elements,
         codegen_options,
     );
     (root, errors, codegen_result.into_result())
@@ -225,25 +235,21 @@ fn compile_template_inner_with_sections<'a>(
     options: DomCompilerOptions,
     template_syntax: TemplateSyntaxMode,
     hoisted_scope_id: Option<String>,
+    custom_elements: CustomElementMatcher,
     codegen_options: CodegenOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResultWithSections) {
-    // Create parser options with DOM-specific settings
-    let parser_opts = ParserOptions {
-        is_void_tag: vize_carton::is_void_tag,
-        is_native_tag: Some(vize_carton::is_native_tag),
-        custom_renderer: options.custom_renderer,
-        is_pre_tag: |tag| tag == "pre",
-        get_namespace,
-        comments: options.comments,
-        experimental_in_tag_comments: options.experimental_in_tag_comments,
-        dialect: options.dialect,
-        ..ParserOptions::default()
-    };
+    let parser_opts = stage_options::parser_options(&options);
 
     // Parse
     let (mut root, errors) = profile!(
         "atelier.dom.template.parse",
-        parse_with_options_and_template_syntax(allocator, source, parser_opts, template_syntax)
+        parse_with_options_custom_elements_and_template_syntax(
+            allocator,
+            source,
+            parser_opts,
+            custom_elements.clone(),
+            template_syntax,
+        )
     );
 
     // Parser-level diagnostics that are recoverable (e.g. duplicate
@@ -269,55 +275,21 @@ fn compile_template_inner_with_sections<'a>(
         );
     }
 
-    // Transform with DOM-specific steps.
-    // BindingMetadata is passed directly (no string conversion needed)
-    let transform_opts = TransformOptions {
-        prefix_identifiers: options.prefix_identifiers,
-        hoist_static: options.hoist_static,
-        cache_handlers: options.cache_handlers,
-        scope_id: options.scope_id.clone(),
-        ssr: options.ssr,
-        is_ts: options.is_ts,
-        inline: options.inline,
-        custom_renderer: options.custom_renderer,
-        experimental_patterned_template: options.experimental_patterned_template,
-        binding_metadata: options.binding_metadata.clone(),
-        dialect: options.dialect,
-        ..Default::default()
-    };
+    let transform_opts = stage_options::transform_options(&options);
     let template_syntax_quirks = template_syntax.is_quirks();
     // Park the summary on the allocator so it shares the allocator lifetime.
     let analysis: Option<&Croquis> = options.croquis.map(|c| allocator.alloc_owned(*c));
     let transform_errors = profile!(
         "atelier.dom.template.transform",
-        if template_syntax_quirks {
-            if hoisted_scope_id.is_some() {
-                transform_with_template_syntax_quirks_and_hoisted_scope_id(
-                    allocator,
-                    &mut root,
-                    transform_opts,
-                    analysis,
-                    hoisted_scope_id,
-                )
-            } else {
-                transform_with_template_syntax_quirks(
-                    allocator,
-                    &mut root,
-                    transform_opts,
-                    analysis,
-                )
-            }
-        } else if hoisted_scope_id.is_some() {
-            transform_with_hoisted_scope_id(
-                allocator,
-                &mut root,
-                transform_opts,
-                analysis,
-                hoisted_scope_id,
-            )
-        } else {
-            do_transform(allocator, &mut root, transform_opts, analysis)
-        }
+        transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
+            allocator,
+            &mut root,
+            transform_opts,
+            analysis,
+            custom_elements,
+            template_syntax_quirks,
+            hoisted_scope_id,
+        )
     );
 
     // Surface transform diagnostics (e.g. invalid expressions) alongside

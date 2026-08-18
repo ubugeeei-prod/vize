@@ -144,6 +144,17 @@ impl VirtualTsOptions {
         names.dedup();
         names
     }
+
+    pub(crate) fn has_auto_import_binding_name(&self, name: &str) -> bool {
+        self.auto_import_bindings
+            .iter()
+            .any(|binding| binding.as_str() == name)
+            || self
+                .auto_import_stubs
+                .iter()
+                .filter_map(|stub| typed_value_binding(stub))
+                .any(|binding| binding == name)
+    }
 }
 
 /// The declared name of a stub that introduces a *value* binding carrying a

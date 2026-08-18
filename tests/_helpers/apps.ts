@@ -15,14 +15,14 @@ import {
   VUEFES_E2E_ENV,
   execNpxCommand,
   npmxGeneratorTaskArgs,
+  patchNpmxRegistryFixtures,
+  patchElkViteOptimizeDeps,
   patchNuxtPrerenderForE2E,
   readDotenvValue,
   writeFrontendPhpconStaffRoute,
 } from "./app-fixture-runtime.ts";
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 const TESTS_DIR = path.resolve(__dirname, "..");
 const GIT_DIR = path.join(TESTS_DIR, "_fixtures", "_git");
 const PROJECTS_DIR = path.join(TESTS_DIR, "_fixtures", "_projects");
@@ -290,7 +290,9 @@ function addPnpmOverrides(packageJsonPath: string, overrides: Record<string, str
     fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, "\t") + "\n");
   }
 }
-
+export function applyElkRuntimePnpmOverrides(packageJsonPath: string): void {
+  addPnpmOverrides(packageJsonPath, { "@nuxtjs/i18n": "10.1.0", vite: "^8.0.0" });
+}
 function patchVuefesVisualFixture(vuefesDir: string): void {
   const configPath = path.join(vuefesDir, "nuxt.config.ts");
   const configSource = fs.readFileSync(configPath, "utf-8");
@@ -666,15 +668,12 @@ function setupElkWorktree(opts?: { enableVize?: boolean; variant?: string }): st
   const enableVize = opts?.enableVize ?? true;
   const elkDir = syncGitFixtureWorktree("elk", opts?.variant);
 
-  if (enableVize) {
-    ensureLocalVizePackagesBuilt();
-  }
+  if (enableVize) ensureLocalVizePackagesBuilt();
 
-  addPnpmOverrides(path.join(elkDir, "package.json"), {
-    vite: "^8.0.0",
-  });
+  applyElkRuntimePnpmOverrides(path.join(elkDir, "package.json"));
   patchElkBuildEnvTime(path.join(elkDir, "modules", "build-env.ts"));
   patchNuxtPrerenderForE2E(path.join(elkDir, "nuxt.config.ts"));
+  patchElkViteOptimizeDeps(path.join(elkDir, "nuxt.config.ts"));
 
   installPnpmDependencies(elkDir, {
     timeout: 300_000,
@@ -1180,14 +1179,13 @@ function setupNpmxWorktree(opts?: { enableVize?: boolean; variant?: string }): s
     });
   }
 
-  if (enableVize) {
-    createVizeSymlinks(nmDir);
-  }
+  if (enableVize) createVizeSymlinks(nmDir);
 
   patchNuxtConfig(path.join(npmxDir, "nuxt.config.ts"), {
     enableVize,
-    removeModules: ["@nuxtjs/html-validator"],
+    removeModules: ["@nuxtjs/html-validator", "@vercel/speed-insights"],
   });
+  patchNpmxRegistryFixtures(npmxDir);
   patchNpmxPrerenderRoutes(path.join(npmxDir, "nuxt.config.ts"));
   patchNpmxLunariaModule(path.join(npmxDir, "modules", "lunaria.ts"));
 

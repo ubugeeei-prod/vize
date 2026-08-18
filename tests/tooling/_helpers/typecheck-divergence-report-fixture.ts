@@ -46,7 +46,7 @@ export const instrumentClassification =
 export function divergenceClassification(sharedVueFileCount: number) {
   return (
     "Vize divergence, the vue-tsc baseline loaded cleanly over the same " +
-    `${sharedVueFileCount} Vue files`
+    `${sharedVueFileCount} Vue files, against the fixture's own Vue runtime`
   );
 }
 
@@ -64,10 +64,20 @@ export function breachFailure(sharedVueFileCount: number, breaches: string) {
 export type FixtureOptions = {
   /** Diagnostics the fake `vize check` artifact reports for `src/App.vue`. */
   vizeDiagnostics?: string[];
-  /** Raw stdout the fake `vue-tsc` writes before exiting with status 2. */
+  /** Raw stdout the fake `vue-tsc` writes before exiting with a diagnostic status. */
   baselineOutput?: string;
-  /** Vue source files emitted by the fake `vue-tsc --listFiles` run. */
+  /** Stream the fake `vue-tsc` writes diagnostics to. */
+  baselineOutputStream?: "stdout" | "stderr";
+  /** Exit code for the fake `vue-tsc` baseline run. */
+  baselineExitCode?: number;
+  /** Stream the fake `vue-tsc --listFilesOnly` writes program-file evidence to. */
+  coverageOutputStream?: "stdout" | "stderr";
+  /** Exit code for the fake `vue-tsc --listFilesOnly` coverage run. */
+  coverageExitCode?: number;
+  /** Vue source files emitted by the fake `vue-tsc --listFilesOnly` run. */
   baselineFiles?: string[];
+  /** Absolute program paths outside the fixture the same run also loaded. */
+  baselineProgramFiles?: string[];
   /** How the fake Vize binary reports the seeded mutation during oracle runs. */
   vizeMutation?: MutationDiagnosticMode;
   /** How the fake vue-tsc binary reports the seeded mutation during oracle runs. */
@@ -205,9 +215,14 @@ export function setup(options: FixtureOptions = {}) {
     vueTsc,
     {
       baselineOutput,
+      baselineOutputStream: options.baselineOutputStream,
+      coverageExitCode: options.coverageExitCode,
+      coverageOutputStream: options.coverageOutputStream,
+      exitCode: options.baselineExitCode,
       files: options.baselineFiles ?? ["src/App.vue"],
       fixtureRoot,
       mutation: baselineMutation,
+      programFiles: options.baselineProgramFiles,
     },
     invocationPath,
   );
@@ -290,6 +305,6 @@ export function updateJson(pathname: string, update: (value: any) => void) {
   writeJson(pathname, value);
 }
 
-function sha256(value: string | Buffer) {
+export function sha256(value: string | Buffer) {
   return createHash("sha256").update(value).digest("hex");
 }

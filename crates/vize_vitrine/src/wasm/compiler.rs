@@ -1,32 +1,33 @@
 //! The `Compiler` WASM class, its free-function aliases, and the internal
 //! template/SFC compilation pipeline.
 
+mod free_fns;
+pub(in crate::wasm) mod pipeline;
+
+pub use free_fns::*;
+
 use vize_carton::Allocator;
 use wasm_bindgen::prelude::*;
 
-use crate::{CompileResult, CompilerOptions, template_syntax::resolve_template_syntax};
-use vize_atelier_core::options::{CodegenMode, CodegenOptions};
-use vize_atelier_core::parser::parse_with_options_and_template_syntax;
-use vize_atelier_dom::{
-    DomCompilerOptions, compile_template_with_template_syntax_and_codegen_options,
-};
+use crate::{CompilerOptions, template_syntax::resolve_template_syntax};
+use vize_atelier_core::options::{CodegenOptions, CustomElementMatcher};
+use vize_atelier_core::parser::parse_with_options_custom_elements_and_template_syntax;
 use vize_atelier_sfc::compile_script::typescript::transform_typescript_to_js;
 use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
     TemplateCompileOptions,
-    compile_sfc_with_template_syntax_and_codegen_options as sfc_compile_with_template_syntax_and_codegen_options,
+    compile_sfc_with_custom_elements_template_syntax_and_codegen_options as sfc_compile_with_custom_elements,
     parse_sfc,
 };
-use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_template_syntax};
-use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor_with_template_syntax};
 
 use super::ast::build_ast_json;
-use super::experimentals::{compiler_parser_options, experimental_dom_options, experimental_flags};
+use super::experimentals::{compiler_parser_options, experimental_dom_options};
 use super::options::{parse_compiler_options, parse_css_options};
 use super::serde::{to_js_value, to_json_js_value};
 use super::sfc_types::{
     SfcScriptResult, SfcWasmResult, descriptor_to_wasm, macro_artifact_to_wasm,
 };
+use pipeline::compile_internal;
 
 fn compiler_codegen_options(opts: &CompilerOptions, default_filename: &str) -> CodegenOptions {
     let mut codegen_options = CodegenOptions {
@@ -83,10 +84,13 @@ impl Compiler {
         let template_syntax = resolve_template_syntax(parsed.options.template_syntax.as_deref())
             .map_err(|message| JsValue::from_str(&message))?;
 
-        let (root, errors) = parse_with_options_and_template_syntax(
+        let (root, errors) = parse_with_options_custom_elements_and_template_syntax(
             &allocator,
             template,
             compiler_parser_options(&parsed.options),
+            CustomElementMatcher::from_patterns(crate::types::custom_element_patterns(
+                parsed.options.custom_elements.as_deref(),
+            )),
             template_syntax,
         );
 
@@ -254,10 +258,13 @@ impl Compiler {
         let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
             .map_err(|message| JsValue::from_str(&message))?;
 
-        let compile_result = sfc_compile_with_template_syntax_and_codegen_options(
+        let compile_result = sfc_compile_with_custom_elements(
             &descriptor,
             sfc_opts,
             template_syntax,
+            CustomElementMatcher::from_patterns(crate::types::custom_element_patterns(
+                opts.custom_elements.as_deref(),
+            )),
             codegen_options,
         );
         let sfc_result = match compile_result {
@@ -320,194 +327,4 @@ impl Default for Compiler {
     fn default() -> Self {
         Self::new()
     }
-}
-
-/// Internal compile function
-pub(super) fn compile_internal(
-    template: &str,
-    opts: &CompilerOptions,
-    vapor: bool,
-    binding_metadata: Option<vize_atelier_core::options::BindingMetadata>,
-) -> Result<CompileResult, String> {
-    let allocator = Allocator::new();
-    let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())?;
-    let (experimental_in_tag_comments, experimental_patterned_template) = experimental_flags(opts);
-
-    if opts.ssr.unwrap_or(false) && !vapor && binding_metadata.is_none() {
-        let ssr_opts = SsrCompilerOptions {
-            is_ts: opts.is_ts.unwrap_or(false),
-            custom_renderer: opts.custom_renderer.unwrap_or(false),
-            experimental_in_tag_comments,
-            experimental_patterned_template,
-            ..Default::default()
-        };
-        let (root, errors, result) =
-            compile_ssr_with_template_syntax(&allocator, template, ssr_opts, template_syntax);
-
-        let fatal: Vec<_> = errors
-            .iter()
-            .filter(|error| !error.is_recoverable())
-            .collect();
-        if !fatal.is_empty() {
-            return Err(format!("SSR compile errors: {:?}", fatal));
-        }
-
-        // Collect helpers
-        let helpers: Vec<String> = root.helpers.iter().map(|h| h.name().to_string()).collect();
-
-        // Build AST JSON
-        let ast = build_ast_json(&root);
-
-        return Ok(CompileResult {
-            code: result.code.to_string(),
-            preamble: result.preamble.to_string(),
-            ast,
-            map: None,
-            helpers,
-            templates: None,
-        });
-    }
-
-    if vapor {
-        // Use actual Vapor compiler
-        let vapor_opts = VaporCompilerOptions {
-            prefix_identifiers: opts.prefix_identifiers.unwrap_or(false),
-            ssr: opts.ssr.unwrap_or(false),
-            custom_renderer: opts.custom_renderer.unwrap_or(false),
-            experimental_in_tag_comments,
-            experimental_patterned_template,
-            binding_metadata,
-            ..Default::default()
-        };
-        let result =
-            compile_vapor_with_template_syntax(&allocator, template, vapor_opts, template_syntax);
-
-        if !result.error_messages.is_empty() {
-            return Err(result
-                .error_messages
-                .iter()
-                .map(|s| s.as_str())
-                .collect::<Vec<_>>()
-                .join("\n"));
-        }
-
-        return Ok(CompileResult {
-            code: result.code.to_string(),
-            preamble: String::new(),
-            ast: serde_json::json!({}),
-            map: None,
-            helpers: vec![],
-            templates: Some(
-                result
-                    .templates
-                    .into_iter()
-                    .map(|t| t.to_string())
-                    .collect(),
-            ),
-        });
-    }
-
-    // VDOM mode - use vize_atelier_dom which includes proper v-model transform
-    let has_binding_metadata = binding_metadata.is_some();
-    let dom_opts = DomCompilerOptions {
-        mode: match opts.mode.as_deref() {
-            Some("module") => CodegenMode::Module,
-            _ => CodegenMode::Function,
-        },
-        prefix_identifiers: opts.prefix_identifiers.unwrap_or(has_binding_metadata),
-        hoist_static: opts.hoist_static.unwrap_or(has_binding_metadata),
-        cache_handlers: opts.cache_handlers.unwrap_or(has_binding_metadata),
-        scope_id: opts.scope_id.clone().map(|s| s.into()),
-        ssr: opts.ssr.unwrap_or(false),
-        source_map: opts.source_map.unwrap_or(false),
-        is_ts: opts.is_ts.unwrap_or(false),
-        custom_renderer: opts.custom_renderer.unwrap_or(false),
-        binding_metadata,
-        inline: has_binding_metadata,
-        ..experimental_dom_options(opts)
-    };
-
-    let (root, errors, result) = compile_template_with_template_syntax_and_codegen_options(
-        &allocator,
-        template,
-        dom_opts,
-        template_syntax,
-        compiler_codegen_options(opts, "template.vue"),
-    );
-
-    let fatal: Vec<_> = errors
-        .iter()
-        .filter(|error| !error.is_recoverable())
-        .collect();
-    if !fatal.is_empty() {
-        return Err(format!("Compile errors: {:?}", fatal));
-    }
-
-    // Collect helpers
-    let helpers: Vec<String> = root.helpers.iter().map(|h| h.name().to_string()).collect();
-
-    // Build AST JSON
-    let ast = build_ast_json(&root);
-    let map = result
-        .map
-        .map(|map| serde_json::from_str(map.as_str()))
-        .transpose()
-        .map_err(|error| format!("Codegen emitted an invalid source map: {error}"))?;
-
-    Ok(CompileResult {
-        code: result.code.to_string(),
-        preamble: result.preamble.to_string(),
-        ast,
-        map,
-        helpers,
-        templates: None,
-    })
-}
-
-/// Compile template to VDom (free function)
-#[wasm_bindgen]
-pub fn compile(template: &str, options: JsValue) -> Result<JsValue, JsValue> {
-    Compiler::new().compile(template, options)
-}
-
-/// Compile template to Vapor mode (free function)
-#[wasm_bindgen(js_name = "compileVapor")]
-pub fn compile_vapor_fn(template: &str, options: JsValue) -> Result<JsValue, JsValue> {
-    Compiler::new().compile_vapor(template, options)
-}
-
-/// Parse template to AST (free function)
-#[wasm_bindgen(js_name = "parseTemplate")]
-pub fn parse_template(template: &str, options: JsValue) -> Result<JsValue, JsValue> {
-    Compiler::new().parse(template, options)
-}
-
-/// Parse SFC (free function)
-#[wasm_bindgen(js_name = "parseSfc")]
-pub fn parse_sfc_fn(source: &str, options: JsValue) -> Result<JsValue, JsValue> {
-    Compiler::new().parse_sfc_method(source, options)
-}
-
-/// Compile SFC (free function)
-#[wasm_bindgen(js_name = "compileSfc")]
-pub fn compile_sfc_fn(source: &str, options: JsValue) -> Result<JsValue, JsValue> {
-    Compiler::new().compile_sfc(source, options)
-}
-
-/// Parse CSS to AST (free function)
-#[wasm_bindgen(js_name = "parseCssAst")]
-pub fn parse_css_ast_fn(css: &str, options: JsValue) -> Result<JsValue, JsValue> {
-    Compiler::new().parse_css_ast_method(css, options)
-}
-
-/// Print CSS from AST (free function)
-#[wasm_bindgen(js_name = "printCssAst")]
-pub fn print_css_ast_fn(ast: JsValue, options: JsValue) -> Result<JsValue, JsValue> {
-    Compiler::new().print_css_ast_method(ast, options)
-}
-
-/// Compile CSS (free function)
-#[wasm_bindgen(js_name = "compileCss")]
-pub fn compile_css_fn(css: &str, options: JsValue) -> Result<JsValue, JsValue> {
-    Compiler::new().compile_css_method(css, options)
 }

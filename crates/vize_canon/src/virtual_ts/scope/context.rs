@@ -1,5 +1,6 @@
 //! Shared parameter-bundling contexts for recursive scope generation.
 
+use vize_carton::CompactString;
 use vize_carton::FxHashMap;
 use vize_carton::FxHashSet;
 use vize_carton::String;
@@ -41,6 +42,7 @@ pub(crate) struct ScopeGenContext<'a, 'template> {
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub(crate) slot_outlets: &'a SlotOutletChecks,
     pub(crate) template_prop_names: &'a FxHashSet<String>,
+    pub(crate) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
     pub(crate) checks: TemplateValueChecks<'a>,
     pub(crate) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(crate) template_source: Option<&'a str>,
@@ -55,6 +57,7 @@ pub(crate) struct ScopeGenerationOptions<'a, 'template> {
     /// Names already declared by the conservative Options API setup-spread fallback.
     /// Instance-global generation shares the same template scope and must not redeclare them.
     pub(crate) setup_spread_bindings: &'a [String],
+    pub(crate) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
     pub(crate) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(crate) check_unresolved_global_components: GlobalComponentCheck,
     pub(crate) legacy_vue2: bool,
@@ -82,6 +85,7 @@ pub(crate) struct VForPropsContext<'a> {
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub(crate) vfor_enclosing_guards: &'a FxHashMap<u32, String>,
     pub(crate) template_prop_names: &'a FxHashSet<String>,
+    pub(crate) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
     pub(crate) source_context: ComponentPropSource<'a>,
     pub(crate) preserve_event_navigation: bool,
 }
@@ -116,6 +120,7 @@ pub(super) struct ComponentPropsContext<'a> {
     pub(super) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub(super) vfor_enclosing_guards: &'a FxHashMap<u32, String>,
     pub(super) template_prop_names: &'a FxHashSet<String>,
+    pub(super) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
     pub(super) template_offset: u32,
     pub(super) options: &'a VirtualTsOptions,
     pub(super) preserve_event_navigation: bool,

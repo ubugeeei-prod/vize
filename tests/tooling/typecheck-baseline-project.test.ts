@@ -81,11 +81,121 @@ test("materialized baseline extends an explicit generated project", () => {
       { fileCount: 1, files: [{ file: "src/App.vue" }] },
     );
     assert.equal(project.sourceProject, ".generated/tsconfig.json");
-    assert.equal(JSON.parse(project.source).extends, "../fixture/.generated/tsconfig.json");
+    assert.match(
+      project.path,
+      /[/\\]fixture[/\\]\.generated[/\\]\.vize-baseline[/\\]fixture-vue-tsc\.tsconfig\.json$/u,
+    );
+    assert.equal(JSON.parse(project.source).extends, "../tsconfig.json");
+    assert.equal(
+      fs.readFileSync(path.join(reportDir, "fixture-vue-tsc.tsconfig.json"), "utf8"),
+      project.source,
+    );
   } finally {
     fs.rmSync(temp, { recursive: true, force: true });
   }
 });
+
+test(
+  "materialized baseline resolves inherited workspace type references from the fixture root",
+  vueTscOptions,
+  () => {
+    const temp = fs.mkdtempSync(path.join(os.tmpdir(), "vize-workspace-types-baseline-"));
+    const fixtureRoot = path.join(temp, "fixture");
+    const reportDir = path.join(temp, "report");
+    fs.mkdirSync(path.join(fixtureRoot, "src"), { recursive: true });
+    fs.mkdirSync(path.join(fixtureRoot, "node_modules/@vben/types"), { recursive: true });
+    fs.mkdirSync(reportDir);
+    fs.writeFileSync(
+      path.join(fixtureRoot, "tsconfig.json"),
+      `${JSON.stringify({
+        compilerOptions: {
+          strict: true,
+          noEmit: true,
+          types: ["@vben/types/global"],
+        },
+      })}\n`,
+    );
+    fs.writeFileSync(
+      path.join(fixtureRoot, "node_modules/@vben/types/global.d.ts"),
+      "declare const VbenFixtureGlobal: string;\n",
+    );
+    fs.writeFileSync(
+      path.join(fixtureRoot, "src/App.vue"),
+      '<script setup lang="ts">const value: string = VbenFixtureGlobal</script>\n',
+    );
+
+    try {
+      const project = materializeBaselineProject(
+        fixtureRoot,
+        reportDir,
+        { id: "fixture", tsconfig: "tsconfig.json" },
+        { fileCount: 1, files: [{ file: "src/App.vue" }] },
+      );
+      assert.match(
+        project.path,
+        /[/\\]fixture[/\\]\.vize-baseline[/\\]fixture-vue-tsc\.tsconfig\.json$/u,
+      );
+      const result = runVueTsc(project.path, fixtureRoot);
+      const diagnostics = result.stdout.split("\n").filter((line) => /: error TS\d+: /u.test(line));
+      assert.deepEqual(diagnostics, []);
+      assert.equal(result.status, 0, result.stderr);
+    } finally {
+      fs.rmSync(temp, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
+  "materialized baseline resolves package-local workspace type references",
+  vueTscOptions,
+  () => {
+    const temp = fs.mkdtempSync(path.join(os.tmpdir(), "vize-package-types-baseline-"));
+    const fixtureRoot = path.join(temp, "fixture");
+    const reportDir = path.join(temp, "report");
+    fs.mkdirSync(path.join(fixtureRoot, "apps/web/src"), { recursive: true });
+    fs.mkdirSync(path.join(fixtureRoot, "playground/node_modules/@vben/types"), {
+      recursive: true,
+    });
+    fs.mkdirSync(reportDir);
+    fs.writeFileSync(
+      path.join(fixtureRoot, "playground/tsconfig.json"),
+      `${JSON.stringify({
+        compilerOptions: {
+          strict: true,
+          noEmit: true,
+          types: ["@vben/types/global"],
+        },
+      })}\n`,
+    );
+    fs.writeFileSync(
+      path.join(fixtureRoot, "playground/node_modules/@vben/types/global.d.ts"),
+      "declare const VbenFixtureGlobal: string;\n",
+    );
+    fs.writeFileSync(
+      path.join(fixtureRoot, "apps/web/src/App.vue"),
+      '<script setup lang="ts">const value: string = VbenFixtureGlobal</script>\n',
+    );
+
+    try {
+      const project = materializeBaselineProject(
+        fixtureRoot,
+        reportDir,
+        { id: "fixture", tsconfig: "playground/tsconfig.json" },
+        { fileCount: 1, files: [{ file: "apps/web/src/App.vue" }] },
+      );
+      assert.match(
+        project.path,
+        /[/\\]fixture[/\\]playground[/\\]\.vize-baseline[/\\]fixture-vue-tsc\.tsconfig\.json$/u,
+      );
+      const result = runVueTsc(project.path, fixtureRoot);
+      const diagnostics = result.stdout.split("\n").filter((line) => /: error TS\d+: /u.test(line));
+      assert.deepEqual(diagnostics, []);
+      assert.equal(result.status, 0, result.stderr);
+    } finally {
+      fs.rmSync(temp, { recursive: true, force: true });
+    }
+  },
+);
 
 test(
   "materialized baseline keeps the fixture's ambient declarations in the program",
@@ -184,6 +294,7 @@ test(
       assert.doesNotMatch(result.stdout, /TS510[17]/u);
       assert.equal(result.status, 0, result.stderr);
       assert.equal(JSON.parse(project.source).compilerOptions.ignoreDeprecations, "6.0");
+      assert.equal(JSON.parse(project.source).compilerOptions.rootDir, "..");
     } finally {
       fs.rmSync(temp, { recursive: true, force: true });
     }

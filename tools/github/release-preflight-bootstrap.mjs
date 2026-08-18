@@ -18,6 +18,13 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
   if (!ref) throw new Error("Release dispatch ref is required");
 
   const appE2eSuite = "all";
+  // Release evidence records most ecosystem surfaces without blocking publish.
+  // Typecheck divergence stays enforced because the release artifact verifier
+  // requires an enforcing zero-divergence budget and seeded mutation oracle.
+  // Keep the release dispatch aligned with the workflow default. Enforced
+  // typecheck divergence needs successful core typechecker evidence, and hosted
+  // release fallback runners can legitimately need the full per-project budget.
+  const releaseCoreToolsTimeoutMs = "2400000";
   // Release evidence replays the known corpus instead of running a fresh
   // campaign. A campaign is a randomized search, so it can fail a tag over an
   // input it discovered minutes earlier that has nothing to do with the release;
@@ -56,8 +63,11 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
       ref,
       inputs: {
         core_tools_mode: "record-only",
-        core_tools_timeout_ms: "600000",
+        core_tools_timeout_ms: releaseCoreToolsTimeoutMs,
+        typecheck_dependencies_mode: "record-only",
+        lint_divergence_mode: "record-only",
         lsp_mode: "record-only",
+        typecheck_divergence_mode: "enforce",
       },
       expectedRunName: `Real Project Matrix @ ${headSha}`,
       acceptsScheduledEvidence: true,
@@ -93,7 +103,10 @@ export async function bootstrapRequiredWorkflowRuns({
   dispatchWorkflow,
   sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
   now = Date.now,
-  timeoutMs = 105 * 60 * 1000,
+  // Hosted release fallback budget: Real Project Matrix has 22 shards and is
+  // capped to 20 standard hosted jobs, so the budget covers two 240-minute
+  // waves plus 30 minutes for workflow dispatch, queueing, polling, and setup.
+  timeoutMs = 510 * 60 * 1000,
   pollIntervalMs = 15_000,
   onWait = () => {},
 }) {

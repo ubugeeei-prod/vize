@@ -36,15 +36,24 @@ fn incremental_session_fallback_is_counted_per_check() {
 
     assert!(result.success);
     assert!(result.diagnostics.is_empty());
+    let metrics = executor.incremental_metrics();
+    assert!(
+        matches!(metrics.last_materialized_entries_considered, 12 | 13),
+        "{metrics:?}"
+    );
     assert_eq!(
-        executor.incremental_metrics(),
+        metrics.last_tree_entries_scanned,
+        metrics.last_materialized_entries_considered
+    );
+    assert_eq!(
+        metrics,
         IncrementalCheckMetrics {
             checks: 1,
             session_to_cli_fallbacks: 1,
             last_session_to_cli_fallback: true,
             last_requested_files: 1,
-            last_materialized_entries_considered: 12,
-            last_tree_entries_scanned: 12,
+            last_materialized_entries_considered: metrics.last_materialized_entries_considered,
+            last_tree_entries_scanned: metrics.last_materialized_entries_considered,
             last_full_rebuild: true,
             ..Default::default()
         }

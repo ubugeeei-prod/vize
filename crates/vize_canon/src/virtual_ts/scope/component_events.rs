@@ -2,17 +2,17 @@
 
 mod generic_inference;
 mod handler_context;
-mod reference;
 
-use vize_carton::{FxHashSet, String, append, cstr};
+use vize_carton::{CompactString, FxHashSet, String, append, cstr};
 use vize_croquis::{Croquis, EventHandlerScopeData, Scope, naming::to_pascal_case};
 
+use crate::virtual_ts::component_reference::component_binding_reference;
 use crate::virtual_ts::helpers::{to_safe_identifier, to_safe_identifier_fragment};
+use crate::virtual_ts::types::VirtualTsOptions;
 use generic_inference::{
     EmitInferenceContext, find_component_usage_for_event, generate_inferred_emit_args,
 };
 use handler_context::requires_unresolved_handler_implicit_any;
-use reference::component_reference_expression;
 
 pub(super) struct ComponentEventTypes {
     pub(super) event_type: String,
@@ -24,8 +24,10 @@ pub(super) struct ComponentEventTypes {
 
 pub(super) struct ComponentEventTypeContext<'a> {
     pub(super) summary: &'a Croquis,
+    pub(super) virtual_ts_options: &'a VirtualTsOptions,
     pub(super) data: &'a EventHandlerScopeData,
     pub(super) scope: &'a Scope,
+    pub(super) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
     pub(super) template_prop_names: &'a FxHashSet<String>,
     pub(super) legacy_vue2: bool,
     pub(super) needs_typed_handler_assignment: bool,
@@ -39,8 +41,10 @@ pub(super) fn generate_component_event_types(
 ) -> Option<ComponentEventTypes> {
     let ComponentEventTypeContext {
         summary,
+        virtual_ts_options,
         data,
         scope,
+        syntactic_type_only_imported_names,
         template_prop_names,
         legacy_vue2,
         needs_typed_handler_assignment,
@@ -50,7 +54,12 @@ pub(super) fn generate_component_event_types(
     let component_name = data.target_component.as_ref()?;
     let scope_id = scope.id.as_u32();
     let safe_event_name = to_safe_identifier(data.event_name.as_str());
-    let component_ref = component_reference_expression(component_name.as_str());
+    let component_ref = component_binding_reference(
+        summary,
+        virtual_ts_options,
+        syntactic_type_only_imported_names,
+        component_name.as_str(),
+    );
     let component_type_name = to_safe_identifier_fragment(component_name.as_str());
     let pascal_event = to_pascal_case(data.event_name.as_str());
     let on_handler = cstr!("on{pascal_event}");

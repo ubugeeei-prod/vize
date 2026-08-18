@@ -651,7 +651,7 @@ assert.ok(
 );
 assert.match(
   cssModuleLoad.code,
-  /import buttonStyles from "\/src\/ModuleButton\.vue\?vue=&type=style&index=0&lang=css&module=buttonStyles";/,
+  /import buttonStyles from "\/src\/ModuleButton\.vue\?vue=&type=style&index=0&lang=css&module=buttonStyles\.module\.css";/,
   "CSS module virtual loads should emit delegated style imports",
 );
 assert.match(
@@ -662,7 +662,7 @@ assert.match(
 
 const cssModuleFsStyleLoad = loadHook(
   cssModuleState,
-  "\0/@fs/src/ModuleButton.vue?vue=&type=style&index=0&lang=css&module=.module.css",
+  "\0/@fs/src/ModuleButton.vue?vue=&type=style&index=0&lang=css&module=buttonStyles.module.css",
   {
     ssr: false,
   },
@@ -712,7 +712,7 @@ assert.ok(
 );
 assert.match(
   applyCssLoad.code,
-  /import "\/src\/ApplyStyles\.vue\?vue=&type=style&index=0&scoped=data-v-applycss&lang=css";/,
+  /import "\/src\/ApplyStyles\.vue\?vue=&type=style&index=0&scoped=data-v-applycss&lang=css\.css";/,
   "CSS with @apply should be delegated so PostCSS and UnoCSS transformers can run",
 );
 assert.doesNotMatch(
@@ -866,7 +866,7 @@ assert.doesNotMatch(
 );
 assert.match(
   onDemandProdLoad.code,
-  /import ".*OnDemandProd\.vue\?vue=&type=style&index=0&lang=css";/,
+  /import ".*OnDemandProd\.vue\?vue=&type=style&index=0&lang=css\.css";/,
   "Production on-demand loads should emit a Vite-visible plain CSS import",
 );
 assert.equal(
@@ -876,7 +876,7 @@ assert.equal(
 );
 assert.match(
   onDemandProdLoad.code,
-  /import ".*OnDemandProd\.vue\?vue=&type=style&index=0&lang=css";/,
+  /import ".*OnDemandProd\.vue\?vue=&type=style&index=0&lang=css\.css";/,
   "Production on-demand loads should emit a virtual style import for CSS extraction",
 );
 

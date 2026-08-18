@@ -91,39 +91,54 @@ pub(super) fn emit_authored_component_aliases(ts: &mut String, preserve_authored
 /// yields the exact declared slot map, and a resolver would be an unreferenced
 /// widening of the public shape. The parameter mirrors `__vizeResolveProps`
 /// exactly so both calls infer the same type arguments from the same literal.
-/// The parameters are re-emitted *without* their `= any` defaults: an
-/// uninferable call argument must fall back to the constraint, exactly as it
-/// does through `vue-tsc`'s own generic component signature.
+/// Synthetic `= any` defaults are removed so an uninferable call argument falls
+/// back to its constraint, exactly as it does through `vue-tsc`'s own generic
+/// component signature. Authored defaults such as `U = T` stay intact because
+/// they are part of that signature and can determine the slot payload even when
+/// no prop directly mentions the parameter.
 fn slot_resolver_field(generic_decl: &str, generic_names: &str, slots_is_generic: bool) -> String {
     if !slots_is_generic {
         return String::default();
     }
-    let resolver_decl = strip_generic_defaults(generic_decl);
+    let resolver_decl = strip_synthetic_any_defaults(generic_decl);
     cstr!(
         "__vizeResolveSlots?: <{resolver_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => Slots<{generic_names}>; "
     )
 }
 
-/// The same parameter list with every `= default` removed.
+/// The same parameter list with generated `= any` defaults removed.
 ///
 /// A *type alias* parameter needs the `= any` default so bare references stay
-/// legal (#3065), but a call signature must not carry one: when a call cannot
-/// infer an argument for a parameter, TypeScript falls back to the default when
-/// there is one and to the constraint when there is not.
-fn strip_generic_defaults(generic_decl: &str) -> String {
+/// legal (#3065), but a call signature must not inherit those synthetic
+/// defaults: when a call cannot infer an argument for a parameter, TypeScript
+/// falls back to the default when there is one and to the constraint when there
+/// is not.
+fn strip_synthetic_any_defaults(generic_decl: &str) -> String {
     let mut stripped = String::default();
     for param in split_generic_params(generic_decl) {
         if !stripped.is_empty() {
             stripped.push_str(", ");
         }
-        stripped.push_str(param_without_default(param).trim());
+        stripped.push_str(param_without_synthetic_any_default(param).as_str());
     }
     stripped
 }
 
-/// One parameter declaration with its `= default` suffix removed. `=>` inside a
-/// constraint never terminates the declaration.
-fn param_without_default(param: &str) -> &str {
+/// One parameter declaration with only its generated `= any` suffix removed.
+/// `=>` inside a constraint never terminates the declaration.
+fn param_without_synthetic_any_default(param: &str) -> String {
+    let Some(default_start) = default_start(param) else {
+        return param.trim().into();
+    };
+    let default = param[default_start + 1..].trim();
+    if default == "any" {
+        param[..default_start].trim().into()
+    } else {
+        param.trim().into()
+    }
+}
+
+fn default_start(param: &str) -> Option<usize> {
     let bytes = param.as_bytes();
     let mut depth = 0i32;
     let mut i = 0usize;
@@ -132,12 +147,12 @@ fn param_without_default(param: &str) -> &str {
             b'<' => depth += 1,
             b'>' => depth -= 1,
             b'=' if bytes.get(i + 1) == Some(&b'>') => i += 1,
-            b'=' if depth == 0 => return &param[..i],
+            b'=' if depth == 0 => return Some(i),
             _ => {}
         }
         i += 1;
     }
-    param
+    None
 }
 
 pub(super) fn emit_default_export_declaration(
@@ -248,26 +263,34 @@ fn contains_identifier(source: &str, name: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::strip_generic_defaults;
+    use super::strip_synthetic_any_defaults;
 
     #[test]
-    fn generic_defaults_are_stripped_without_touching_constraints() {
+    fn synthetic_any_defaults_are_stripped_without_touching_constraints() {
         assert_eq!(
-            strip_generic_defaults("T extends { id: string; } = any").as_str(),
+            strip_synthetic_any_defaults("T extends { id: string; } = any").as_str(),
             "T extends { id: string; }"
         );
-        assert_eq!(strip_generic_defaults("T = any").as_str(), "T");
+        assert_eq!(strip_synthetic_any_defaults("T = any").as_str(), "T");
         assert_eq!(
-            strip_generic_defaults("T extends (value: string) => void = any").as_str(),
+            strip_synthetic_any_defaults("T extends (value: string) => void = any").as_str(),
             "T extends (value: string) => void"
         );
         assert_eq!(
-            strip_generic_defaults("A extends Record<string, any> = any, B = A").as_str(),
-            "A extends Record<string, any>, B"
+            strip_synthetic_any_defaults("A extends Record<string, any> = any, B = A").as_str(),
+            "A extends Record<string, any>, B = A"
         );
         assert_eq!(
-            strip_generic_defaults("const T extends Tab").as_str(),
+            strip_synthetic_any_defaults("A = any, B extends A = any").as_str(),
+            "A, B extends A"
+        );
+        assert_eq!(
+            strip_synthetic_any_defaults("const T extends Tab").as_str(),
             "const T extends Tab"
+        );
+        assert_eq!(
+            strip_synthetic_any_defaults("T = string").as_str(),
+            "T = string"
         );
     }
 }

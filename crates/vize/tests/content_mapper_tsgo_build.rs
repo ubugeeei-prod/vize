@@ -39,10 +39,11 @@ fn install_packages(project_root: &Path) {
         serde_json::to_vec_pretty(&json!({
             "name": "vize",
             "private": true,
-            "tsContentMapper": {
-                "exec": [env!("CARGO_BIN_EXE_vize"), "content-mapper"],
-                "extensions": { ".vue": ".tsx" },
-                "compilerOptions": ["noUnusedLocals"],
+            "typescript": {
+                "contentMapper": {
+                    "exec": [env!("CARGO_BIN_EXE_vize"), "content-mapper"],
+                    "compilerOptions": ["noUnusedLocals"],
+                },
             },
         }))
         .unwrap(),
@@ -82,7 +83,7 @@ fn run_build(tsgo: &Path, project_root: &Path) -> Output {
         .args([
             "--build",
             "references/tsconfig.json",
-            "--loadExternalPlugins",
+            "--runExternalCode",
             "--pretty",
             "false",
             "--verbose",
@@ -192,7 +193,7 @@ fn standard_tsgo_emits_authored_vue_declaration_maps() {
     let emit = Command::new(&tsgo)
         .current_dir(project.path())
         .args([
-            "--loadExternalPlugins",
+            "--runExternalCode",
             "-p",
             "tsconfig.emit.json",
             "--pretty",

@@ -5,9 +5,8 @@ use vize_croquis::croquis::{ComponentUsage, EventListener};
 use vize_croquis::{Croquis, ScopeKind};
 
 use crate::virtual_ts::{
-    expressions::rewrite_reserved_template_prop,
-    helpers::{to_camel_case, to_safe_identifier},
-    types::VizeMapping,
+    component_reference::component_binding_reference, expressions::rewrite_reserved_template_prop,
+    helpers::to_camel_case, types::VizeMapping,
 };
 
 use super::component_navigation::{is_ts_identifier, push_ts_single_quoted_literal};
@@ -31,7 +30,12 @@ pub(super) fn emit_event_references(
         if is_closure_scoped(ctx.summary, usage) {
             continue;
         }
-        let component_ref = to_safe_identifier(usage.name.as_str());
+        let component_ref = component_binding_reference(
+            ctx.summary,
+            ctx.options,
+            ctx.syntactic_type_only_imported_names,
+            usage.name.as_str(),
+        );
         emit_usage_event_references(
             ts,
             mappings,
@@ -58,7 +62,12 @@ pub(super) fn emit_scoped_event_references(
         preserve_event_navigation: ctx.preserve_event_navigation,
     };
     for &(idx, usage) in usages {
-        let component_ref = to_safe_identifier(usage.name.as_str());
+        let component_ref = component_binding_reference(
+            ctx.summary,
+            ctx.options,
+            ctx.syntactic_type_only_imported_names,
+            usage.name.as_str(),
+        );
         emit_usage_event_references(
             ts,
             mappings,

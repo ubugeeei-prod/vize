@@ -65,6 +65,12 @@ export function verifyLocalReleaseGuard(
   if (head !== remoteMain) {
     throw new Error("HEAD must exactly match the current origin/main before preparing a release.");
   }
+  const revision = git(["rev-list", "--parents", "-n", "1", "HEAD"]).stdout.trim().split(/\s+/);
+  if (revision.length !== 2 || revision[0] !== head) {
+    throw new Error(
+      `Release commit ${head} must have exactly one parent for benchmark comparison.`,
+    );
+  }
 
   const tagRef = `refs/tags/${tag}`;
   if (git(["rev-parse", "--verify", "--quiet", tagRef], [0, 1]).status === 0) {

@@ -38,20 +38,14 @@ function readRegistry(): { projects: FixtureProject[] } {
   return JSON.parse(fs.readFileSync(registryPath, "utf8")) as { projects: FixtureProject[] };
 }
 
-test("typecheck baselines have complete budgets and one target per matrix shard", () => {
+test("typecheck baselines have complete budgets and bounded release coverage", () => {
   const registry = readRegistry();
-  const shardCounts = Array.from({ length: 11 }, () => 0);
-  const targets = registry.projects.filter((project, index) => {
+  const targets = registry.projects.filter((project) => {
     if (project.typecheckPerformance?.enabled !== true) return false;
-    shardCounts[index % shardCounts.length] += 1;
     return true;
   });
 
-  assert.equal(targets.length, shardCounts.length);
-  assert.deepEqual(
-    shardCounts,
-    Array.from({ length: 11 }, () => 1),
-  );
+  assert.equal(targets.length, 11);
   for (const project of targets) {
     const performance = project.typecheckPerformance!;
     assert.equal(performance.compareTo, "vue-tsc", `${project.id} baseline`);

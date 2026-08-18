@@ -236,12 +236,15 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
             (None, false, _) => {
                 cstr!("  const {name}: __VizeInstanceGlobal<'{name}'> = undefined as any;\n")
             }
-            (None, true, false) => cstr!("  const {name} = __ctx.{name};\n"),
-            (None, true, true) => cstr!("  void (__ctx.{name});\n"),
+            (None, true, false) => {
+                cstr!("  const {name} = __vize_strict_template_context.{name};\n")
+            }
+            (None, true, true) => cstr!("  void (__vize_strict_template_context.{name});\n"),
         };
-        // The strict forms read the name off `__ctx`, and that access is where
-        // TypeScript reports an undeclared global, so the mapping anchors to the
-        // trailing occurrence rather than the leading binding name.
+        // The strict forms read the name off `__vize_strict_template_context`,
+        // and that access is where TypeScript reports an undeclared global, so
+        // the mapping anchors to the trailing occurrence rather than the leading
+        // binding name.
         let name_offset = if strict {
             stmt.rfind(name)
         } else {

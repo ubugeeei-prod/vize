@@ -5,6 +5,7 @@
 //! here and avoids letting JavaScript, PKL, and path-search details crowd the
 //! main flow.
 
+mod compiler_keys;
 mod discovery;
 #[cfg(test)]
 mod experimental_tests;
@@ -29,6 +30,7 @@ use super::model::{
     ConfigEntryFiles, ConfigEntryIgnore, ConfigFeatureFlags, LinterConfig, RawVizeConfig,
     VizeConfig,
 };
+pub use compiler_keys::*;
 pub use {jsx::load_compiler_jsx_compat, vapor::load_compiler_vapor};
 pub use {language_server::*, lint_features::*};
 
@@ -126,48 +128,6 @@ pub fn load_config_with_features_and_source(path: Option<&Path>) -> LoadedConfig
         source_path: loaded.source_path,
         features,
     }
-}
-
-/// Load the configured `compiler.templateSyntax` value from a directory or file path.
-pub fn load_compiler_template_syntax(path: Option<&Path>) -> Option<&'static str> {
-    load_raw_config_with_source(path)
-        .config
-        .compiler
-        .template_syntax
-        .map(|template_syntax| template_syntax.as_str())
-}
-
-/// Load the configured `vue.version` dialect from a directory or file path.
-///
-/// Returns `None` when the key is absent (modern Vue 3). Unknown or ambiguous
-/// values fail config parsing earlier, so a returned value always names a valid
-/// dialect. The build runner threads this into the per-file compile options so
-/// it reaches the parser/transform layer.
-pub fn load_compiler_vue_version(path: Option<&Path>) -> Option<crate::config::VueVersion> {
-    let loaded = load_raw_config_with_source(path);
-    let (_, features) = loaded.config.into_config_and_features();
-    features.vue_version
-}
-
-/// Load `compiler.compatibility.hostCompiler` when explicitly configured.
-pub fn load_compiler_host_compiler(path: Option<&Path>) -> Option<bool> {
-    load_raw_config_with_source(path)
-        .config
-        .compiler
-        .compatibility
-        .host_compiler
-}
-
-/// Load the configured `compiler.jsxMode` default output mode (#1496).
-///
-/// Returns `None` when the key is absent (treated as VDOM by the JSX entry
-/// points). The build runner and plugins thread this into the native
-/// `compileJsx` mode-selection logic, where a per-component `"use vue:*"`
-/// directive can still override it.
-pub fn load_compiler_jsx_mode(path: Option<&Path>) -> Option<crate::config::JsxMode> {
-    let loaded = load_raw_config_with_source(path);
-    let (_, features) = loaded.config.into_config_and_features();
-    features.jsx_mode
 }
 
 /// Load configuration and linter settings in one pass (one raw parse derives

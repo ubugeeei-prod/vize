@@ -2,15 +2,23 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { test } from "node:test";
+import { test, type TestContext } from "node:test";
 
 import { PNG } from "pngjs";
 
 import {
+  VISUAL_STABILITY_CSS,
+  applyVisualStabilityStyles,
   comparePngBuffers,
   visualComparisonDimensions,
   visualDiffWithinBudget,
 } from "../_helpers/visual-parity.ts";
+
+const STABILITY_STYLE_OPTIONS = {
+  css: VISUAL_STABILITY_CSS,
+  sheetKey: "__vizeVisualStabilitySheetTest",
+  styleId: "vize-visual-stability-test",
+} as const;
 
 test("visual parity compares the shared viewport width and full page height", () => {
   assert.deepEqual(
@@ -67,6 +75,102 @@ test("visual diff budget can cap absolute pixels for narrow long pages", () => {
     false,
   );
 });
+
+test("visual stability styles adopt a stylesheet instead of injecting a style tag", (t) => {
+  const dom = installFakeDom(t, { adoptedStyleSheets: true });
+
+  applyVisualStabilityStyles(STABILITY_STYLE_OPTIONS);
+  applyVisualStabilityStyles(STABILITY_STYLE_OPTIONS);
+
+  const adopted = dom.document.adoptedStyleSheets ?? [];
+  assert.equal(adopted.length, 1);
+  assert.equal(Reflect.get(dom.window, STABILITY_STYLE_OPTIONS.sheetKey), adopted[0]);
+  assert.match(adopted[0]!.cssText, /animation-duration: 0s !important/);
+  assert.match(adopted[0]!.cssText, /transition-duration: 0s !important/);
+  assert.deepEqual(dom.createdStyleElements, []);
+});
+
+test("visual stability styles reuse one style element when stylesheets cannot be adopted", (t) => {
+  const dom = installFakeDom(t, { adoptedStyleSheets: false });
+
+  applyVisualStabilityStyles(STABILITY_STYLE_OPTIONS);
+  applyVisualStabilityStyles(STABILITY_STYLE_OPTIONS);
+
+  assert.equal(dom.createdStyleElements.length, 1);
+  assert.equal(dom.createdStyleElements[0]!.id, STABILITY_STYLE_OPTIONS.styleId);
+  assert.match(dom.createdStyleElements[0]!.textContent, /animation-duration: 0s !important/);
+  assert.match(dom.createdStyleElements[0]!.textContent, /transition-duration: 0s !important/);
+});
+
+class FakeCSSStyleSheet {
+  cssText = "";
+
+  replaceSync(css: string): void {
+    this.cssText = css;
+  }
+}
+
+class FakeHTMLStyleElement {
+  id = "";
+  textContent = "";
+}
+
+interface FakeDocument {
+  adoptedStyleSheets?: FakeCSSStyleSheet[];
+  createElement(tagName: string): FakeHTMLStyleElement;
+  getElementById(id: string): FakeHTMLStyleElement | null;
+  head: { append(element: FakeHTMLStyleElement): void };
+}
+
+interface FakeDom {
+  createdStyleElements: FakeHTMLStyleElement[];
+  document: FakeDocument;
+  window: Record<string, unknown>;
+}
+
+function installFakeDom(t: TestContext, options: { adoptedStyleSheets: boolean }): FakeDom {
+  const createdStyleElements: FakeHTMLStyleElement[] = [];
+  const elementsById = new Map<string, FakeHTMLStyleElement>();
+  const document: FakeDocument = {
+    createElement(tagName: string) {
+      assert.equal(tagName, "style");
+      const element = new FakeHTMLStyleElement();
+      createdStyleElements.push(element);
+      return element;
+    },
+    getElementById: (id) => elementsById.get(id) ?? null,
+    head: {
+      append: (element) => {
+        elementsById.set(element.id, element);
+      },
+    },
+  };
+  if (options.adoptedStyleSheets) {
+    document.adoptedStyleSheets = [];
+  }
+
+  const dom: FakeDom = { createdStyleElements, document, window: {} };
+  const globals = globalThis as unknown as Record<string, unknown>;
+  const restore = new Map<string, unknown>(
+    ["CSSStyleSheet", "HTMLStyleElement", "document", "window"].map((key) => [key, globals[key]]),
+  );
+
+  globals.CSSStyleSheet = FakeCSSStyleSheet;
+  globals.HTMLStyleElement = FakeHTMLStyleElement;
+  globals.document = dom.document;
+  globals.window = dom.window;
+  t.after(() => {
+    for (const [key, value] of restore) {
+      if (value === undefined) {
+        delete globals[key];
+        continue;
+      }
+      globals[key] = value;
+    }
+  });
+
+  return dom;
+}
 
 function solidPng([red, green, blue, alpha]: [number, number, number, number]): Buffer {
   const png = new PNG({ height: 1, width: 1 });

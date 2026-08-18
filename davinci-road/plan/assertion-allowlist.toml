@@ -255,3 +255,14 @@ paths = [
   "crates/vize_vitrine/src/napi/sfc/thread_pool.rs",
   "crates/vize_vitrine/src/wasm/jsx.rs",
 ]
+
+[[allow]]
+# Arrived on the 2026-08-18 main sync, from `d34a10828 fix(glyph): stabilize
+# large css float formatting`. The test loops two sources with different
+# formatted outputs and probes both for the shared sentinel, so the exact
+# oracle is one expected string per source rather than a `contains`. Kept
+# verbatim here so davinci does not fork main's test; the short expiry is the
+# forcing function to pair the sources upstream instead.
+justification = "landed on main after the P0-12 snapshot; pair each source with its expected output upstream"
+expires = "2026-10-31"
+paths = ["crates/vize_glyph/src/style/stabilization.rs"]

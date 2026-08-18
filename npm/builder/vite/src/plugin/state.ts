@@ -83,6 +83,7 @@ export type CompileOptionsForRequest = {
   vapor: boolean;
   mode?: "module" | "function";
   customRenderer: boolean;
+  customElements?: string[];
   templateSyntax: "standard" | "strict" | "quirks";
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
@@ -110,6 +111,9 @@ export function getCompileOptionsForRequest(
     ...resolvePluginVueCompileOptions(state.mergedOptions ?? {}),
   };
 
+  if (state.mergedOptions?.customElements !== undefined) {
+    options.customElements = state.mergedOptions.customElements;
+  }
   if (state.mergedOptions?.mode !== undefined) {
     options.mode = state.mergedOptions.mode;
   }

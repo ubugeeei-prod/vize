@@ -320,8 +320,6 @@ export function render(_ctx, _cache) {
     );
 }
 
-// --- slice_template_parts equivalence tests ---
-
 /// The emission-recorded section offsets must reproduce exactly what the
 /// line scanner extracts, for every shape of generated render module the
 /// inline SFC path can produce.
@@ -375,6 +373,7 @@ fn test_slice_template_parts_matches_line_scanner() {
             &template_allocator,
             &template,
             &TemplateCompileOptions::default(),
+            &vize_atelier_core::options::CustomElementMatcher::default(),
             TemplateBlockCompileContext {
                 scope_id: "abc123",
                 apply_scope_id: false,

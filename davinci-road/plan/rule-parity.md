@@ -26,9 +26,9 @@ Per-rule registration surface, SFC/JSX path membership, croquis usage, and a fir
 
 ## File accounting
 
-- `.rs` files under `crates/vize_patina/src/rules/**`: **345**
+- `.rs` files under `crates/vize_patina/src/rules/**`: **353**
 - rule-defining files (exactly one `static META` each): **245** → **245 rules**
-- non-rule files: **100** — 26 module organizers (a `<name>.rs` with a `<name>/` directory beside it), 17 `*_tests.rs` companions, 57 helper/data files (rule submodules, shared tables, private utilities)
+- non-rule files: **108** — 26 module organizers (a `<name>.rs` with a `<name>/` directory beside it), 17 `*_tests.rs` companions, 65 helper/data files (rule submodules, shared tables, private utilities)
 
 ## Summary
 
@@ -37,8 +37,8 @@ Per-rule registration surface, SFC/JSX path membership, croquis usage, and a fir
 - by surface (a rule can have several): `css-text` 10, `markup-facade` 13, `musea-blocks` 6, `script-oxc` 65, `script-source` 6, `sfc-source` 8, `template-ast` 152, `type-aware-corsa` 5
 - path membership: SFC `lint_sfc` 238 · JSX `lint_jsx` 146 · **SFC∩JSX 146** · SFC-only 92 · JSX-only 0 · neither 7 (6 musea + 1 unregistered)
 - JSX lanes: `fallback` 133, `ir` 12, `ir-lowered` 1, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (13 = 13 `markup-facade` rules)
-- classification: neutral-core-candidate **86** · vue-dialect-bound **139** · container-bound **20** (0 overridden)
-- croquis adoption: **24** rules touch vize_croquis (20 direct imports, 11 via context analysis)
+- classification: neutral-core-candidate **85** · vue-dialect-bound **139** · container-bound **21** (0 overridden)
+- croquis adoption: **24** rules touch vize_croquis (19 direct imports, 12 via context analysis)
 
 ## Full table
 
@@ -198,7 +198,7 @@ Sorted by rule name. File paths are relative to `crates/vize_patina/src/rules/`.
 | `vue/component-definition-name-casing`          | template-family | `vue/component_definition_name_casing.rs`              | template-ast                   | yes (template-visitor)       | yes (fallback)              | —                                                                                                   | neutral-core-candidate |
 | `vue/component-name-in-template-casing`         | template-family | `opinionated/vue/component_name_in_template_casing.rs` | template-ast                   | yes (template-visitor)       | yes (fallback)              | direct 5: `builtins::is_builtin_component`, `naming::is_kebab_case_loose`, `naming::is_pascal_case` | vue-dialect-bound      |
 | `vue/html-button-has-type`                      | template-family | `opinionated/vue/html_button_has_type.rs`              | template-ast, markup-facade    | yes (template-visitor)       | yes (ir)                    | —                                                                                                   | vue-dialect-bound      |
-| `vue/html-quotes`                               | template-family | `vue/html_quotes.rs`                                   | template-ast                   | yes (template-visitor)       | yes (fallback)              | —                                                                                                   | neutral-core-candidate |
+| `vue/html-quotes`                               | template-family | `vue/html_quotes.rs`                                   | template-ast                   | yes (template-visitor)       | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `vue/html-self-closing`                         | template-family | `opinionated/vue/html_self_closing.rs`                 | template-ast                   | yes (template-visitor)       | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `vue/multi-word-component-names`                | template-family | `opinionated/vue/multi_word_component_names.rs`        | template-ast                   | yes (template-visitor)       | yes (fallback)              | —                                                                                                   | neutral-core-candidate |
 | `vue/mustache-interpolation-spacing`            | template-family | `vue/mustache_interpolation_spacing.rs`                | template-ast                   | yes (template-visitor)       | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
@@ -256,7 +256,7 @@ Sorted by rule name. File paths are relative to `crates/vize_patina/src/rules/`.
 | `vue/permitted-contents`                        | template-family | `vue/permitted_contents.rs`                            | template-ast                   | yes (template-visitor)       | yes (fallback)              | —                                                                                                   | neutral-core-candidate |
 | `vue/prefer-props-shorthand`                    | template-family | `opinionated/vue/prefer_props_shorthand.rs`            | template-ast                   | yes (template-visitor)       | yes (fallback)              | direct 1: `naming::names_match`                                                                     | vue-dialect-bound      |
 | `vue/prefer-true-attribute-shorthand`           | template-family | `opinionated/vue/prefer_true_attribute_shorthand.rs`   | template-ast                   | yes (template-visitor)       | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
-| `vue/prop-name-casing`                          | template-family | `vue/prop_name_casing.rs`                              | template-ast                   | yes (template-visitor)       | yes (fallback)              | direct 4: `naming::hyphenate`, `naming::is_camel_case`                                              | vue-dialect-bound      |
+| `vue/prop-name-casing`                          | template-family | `vue/prop_name_casing.rs`                              | template-ast                   | yes (template-visitor)       | yes (fallback)              | ctx 1                                                                                               | container-bound        |
 | `vue/require-component-is`                      | template-family | `vue/require_component_is.rs`                          | template-ast                   | yes (template-visitor)       | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `vue/require-component-registration`            | template-family | `opinionated/vue/require_component_registration.rs`    | template-ast                   | yes (template-visitor)       | yes (fallback)              | direct 6: `Croquis`, `ScopeData`, `builtins::is_builtin_component`, +2; ctx 1                       | vue-dialect-bound      |
 | `vue/require-scoped-style`                      | template-family | `vue/require_scoped_style.rs`                          | sfc-source                     | yes (sfc-hooks)              | no (no JSX-reachable hooks) | —                                                                                                   | container-bound        |
@@ -300,6 +300,6 @@ None. Hand-corrections go in `davinci-road/plan/rule-parity-overrides.toml`, nev
 
 - Rules defined but registered on no dispatch path (dead or host-only until wired): `vue/no-undefined-refs`
 - Engine rule-name sets referencing rules outside the registered set (gate entries that can never activate): `SEMANTIC_TEMPLATE_RULES` names `vue/no-undefined-refs`, which no preset registers
-- `SEMANTIC_TEMPLATE_RULES` (engine-side croquis gate, `linter/engine/rule_sets.rs`) lists 8 rules; all of them show croquis usage above.
+- `SEMANTIC_TEMPLATE_RULES` (engine-side croquis gate, `linter/engine/rule_sets.rs`) lists 9 rules; all of them show croquis usage above.
 - Context-lane croquis users outside that gate (their template pass runs without analysis unless another path supplies it): `type/require-typed-emits`, `type/require-typed-props`, `vue/use-unique-element-ids`
 - Script registry: 71 dispatch entries vs 71 names in `ALL_BUILTIN_SCRIPT_RULE_NAMES` (agree).

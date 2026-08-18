@@ -8,8 +8,8 @@ use super::span_features::{
     content_mapper_span_features,
 };
 use crate::batch::{
-    ContentMapperTransformOptions, generate_vue_content_mapper_transform,
-    generate_vue_content_mapper_transform_with_options,
+    CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperTransformOptions,
+    generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
 };
 
 #[path = "content_mapper_component_export_tests.rs"]

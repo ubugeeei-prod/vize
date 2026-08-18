@@ -148,6 +148,55 @@ fn kebab_case_slot_host_uses_ambient_pascal_global_component() {
 }
 
 #[test]
+fn type_only_local_component_import_keeps_ambient_global_component_value() {
+    let script = r#"import type { ElBadge } from '#components'
+type BadgeInstance = typeof ElBadge
+"#;
+    let allocator = vize_carton::Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, TEMPLATE);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let options = super::VirtualTsOptions {
+        external_template_bindings: vec!["ElBadge".into()],
+        ..Default::default()
+    };
+    let output =
+        generate_virtual_ts_with_offsets(&summary, Some(script), Some(&root), 0, 0, &options);
+
+    assert!(
+        output.code.contains(
+            "declare const __VizeComponent_el_badge: import(\"vue\").GlobalComponents extends { \"el-badge\": infer __C } ? __C : import(\"vue\").GlobalComponents extends { \"ElBadge\": infer __C } ? __C : any;"
+        ),
+        "{}",
+        output.code,
+    );
+    assert!(
+        !output.code.contains("declare const ElBadge:"),
+        "{}",
+        output.code,
+    );
+    assert_eq!(
+        output
+            .code
+            .matches("__VizeSlotsResolver<typeof __VizeComponent_el_badge>")
+            .count(),
+        1,
+        "{}",
+        output.code,
+    );
+    assert!(
+        !output
+            .code
+            .contains("const el_badge: any = undefined as any;"),
+        "{}",
+        output.code,
+    );
+}
+
+#[test]
 fn unresolved_slot_host_uses_vue_global_components_fallback() {
     let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, TEMPLATE);

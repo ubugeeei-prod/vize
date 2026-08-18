@@ -31,15 +31,18 @@ export function renderMarkdown(artifact) {
     `False negatives: ${summary.falseNegativeCount} (${summary.falseNegativeRatio})`,
     `Vize excluded non-Vue: ${summary.vizeExcludedNonVueCount}`,
     `vue-tsc excluded non-Vue: ${summary.baselineExcludedNonVueCount}`,
+    `vue-tsc excluded support Vue: ${summary.baselineExcludedSupportVueCount}`,
     `vue-tsc excluded project-level: ${summary.baselineExcludedProjectCount}`,
     `vue-tsc excluded external: ${summary.baselineExcludedExternalCount}`,
     `vue-tsc configuration errors: ${artifact.baseline.configuration.errorCount}`,
+    `vue-tsc ambient environment: ${describeAmbient(artifact.baseline.ambient)}`,
     `Vize Vue files: ${coverage.vizeVueFileCount}`,
     `vue-tsc Vue files: ${coverage.baselineVueFileCount}`,
     `Shared Vue files: ${coverage.sharedVueFileCount}`,
     `Missing Vue files: ${coverage.missingVueFiles.length}`,
     `Unexpected Vue files: ${coverage.unexpectedVueFiles.length}`,
     `Ignored dependency Vue files: ${coverage.ignoredDependencyVueFileCount}`,
+    `Ignored support Vue files: ${coverage.ignoredSupportVueFileCount}`,
     `Seeded mutation oracle: ${describeMutationOracle(artifact.mutationOracle)}`,
     `Budget verdict: ${describeVerdict(artifact.budget)}`,
     `Classification: ${describeClassification(artifact)}`,
@@ -47,6 +50,22 @@ export function renderMarkdown(artifact) {
     `Digest: ${artifact.divergence.sha256}`,
     "",
   ].join("\n");
+}
+
+/**
+ * Printed as Vue-runtime copies rather than as a bare verdict, because that is
+ * the number a reviewer of run 31979524200 needed and could not get: two copies
+ * of `vue` in the program is why 894 "false negatives" were not Vize's.
+ */
+function describeAmbient(ambient) {
+  if (ambient == null) return "missing";
+  const copies = ambient.vueRuntime
+    .map((entry) => `${entry.name} ×${entry.copies.length}`)
+    .join(", ");
+  const detail = copies === "" ? "no Vue runtime in program" : copies;
+  return ambient.unusableReason == null
+    ? `${ambient.verdict} (${detail})`
+    : `${ambient.verdict} (${ambient.unusableReason})`;
 }
 
 function describeVerdict(budget) {

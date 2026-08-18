@@ -251,7 +251,7 @@ function takesString(value: string) {
 }
 
 #[test]
-fn v_for_binding_types_are_unchanged_by_the_slot_payload_work() {
+fn any_v_for_key_matches_vue_tsc_object_fallback() {
     if resolve_test_tsgo_binary().is_none() {
         return;
     }
@@ -297,17 +297,18 @@ function takesNumber(value: number) {
     };
     let _ = std::fs::remove_dir_all(&project_root);
 
-    // Pins the *current* `v-for` typing so the slot work cannot move it. An
-    // `any` source keys as `number` here while `vue-tsc` keys it
-    // `string | number` and types the third binding `number | undefined` —
-    // measured, and the reason Vuestic Admin's `TS2365` at
-    // `EditProjectForm.vue:106:35` stays a false negative after this change.
-    //
-    // Matching `vue-tsc` here is deliberately NOT done in this PR: vize still
-    // degrades sources to `any` in places `vue-tsc` resolves precisely, so
-    // widening the key converts each of those into a new false positive. On
-    // Misskey it produced 24 diagnostics in `MkNotesTimeline.vue` that a
-    // `vue-tsc` run over the same tree does not report. It needs its own issue,
-    // gated on those `any` degradations being gone.
-    assert_eq!(snapshot, vec![]);
+    // vue-tsc treats an `any` source as the object fallback: the second binding
+    // is `string | number`, while the third binding remains `number`. This is
+    // the exact shape that reports Vuestic Admin's
+    // `EditProjectForm.vue:106:35` template-comparison diagnostic.
+    assert_eq!(
+        snapshot,
+        vec![(
+            String::from("src/App.vue"),
+            Some(2365),
+            String::from(
+                "14:18:error Operator '<' cannot be applied to types 'string | number' and 'number'."
+            ),
+        )]
+    );
 }

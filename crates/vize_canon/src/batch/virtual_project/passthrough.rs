@@ -15,6 +15,10 @@ use super::{VirtualProject, build::mirrored_virtual_path};
 mod resolution;
 use resolution::resolve_relative_passthrough_module;
 
+#[cfg(test)]
+#[path = "passthrough_tests.rs"]
+mod passthrough_tests;
+
 impl VirtualProject {
     pub(super) fn javascript_passthrough_files(&self) -> impl Iterator<Item = &Path> {
         self.passthrough_files

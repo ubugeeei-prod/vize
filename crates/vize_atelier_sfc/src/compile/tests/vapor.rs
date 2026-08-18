@@ -80,3 +80,25 @@ fn test_script_setup_sfc_vapor_slot_outlet() {
 
     insta::assert_snapshot!(result.code.as_str());
 }
+
+#[test]
+fn test_normal_script_sfc_vapor_output_mode() {
+    let source = r#"<script>
+export default {
+  name: 'NormalVapor'
+}
+</script>
+
+<template>
+  <div>Hello</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        vapor: true,
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    insta::assert_snapshot!(result.code.as_str());
+}

@@ -8,6 +8,7 @@ export interface CompileFileOptions extends PluginVueCompileOptions {
   vapor: boolean;
   mode?: "module" | "function";
   customRenderer?: boolean;
+  customElements?: string[];
   templateSyntax?: "standard" | "strict" | "quirks";
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
@@ -23,6 +24,7 @@ export interface CompileBatchOptions extends PluginVueCompileOptions {
   vapor: boolean;
   mode?: "module" | "function";
   customRenderer?: boolean;
+  customElements?: string[];
   templateSyntax?: "standard" | "strict" | "quirks";
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
@@ -42,6 +44,7 @@ export function buildCompileFileOptions(
     ssr: options.ssr,
     vapor: options.vapor,
     customRenderer: options.customRenderer ?? false,
+    ...(options.customElements === undefined ? {} : { customElements: options.customElements }),
     experimentalInTagComments: options.experimentalInTagComments ?? false,
     experimentalPatternedTemplate: options.experimentalPatternedTemplate ?? false,
     experimentalServerScript: options.experimentalServerScript ?? false,
@@ -76,6 +79,7 @@ export function buildCompileBatchOptions(options: CompileBatchOptions): BatchCom
     ssr: options.ssr,
     vapor: options.vapor,
     customRenderer: options.customRenderer ?? false,
+    ...(options.customElements === undefined ? {} : { customElements: options.customElements }),
     experimentalInTagComments: options.experimentalInTagComments ?? false,
     experimentalPatternedTemplate: options.experimentalPatternedTemplate ?? false,
     experimentalServerScript: options.experimentalServerScript ?? false,

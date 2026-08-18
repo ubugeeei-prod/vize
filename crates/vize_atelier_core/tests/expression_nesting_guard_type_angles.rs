@@ -109,13 +109,13 @@ fn expression_guard_keeps_ordinary_identifier_comparisons_safe() {
     assert_eq!(expression_nesting_depth(nested_generics), 3);
     assert!(expression_is_safe_to_parse(nested_generics));
 
-    // An arrow's `=>` closes an angle too, which is why callback-heavy template
-    // expressions stay flat: 40 of them peak at the one open call parenthesis
-    // plus the one comparison angle live inside it.
+    // An arrow's `=>` closes an angle and resets the candidate type chain, which
+    // is why callback-heavy template expressions stay flat: 40 of them peak at
+    // the one open call parenthesis.
     let callbacks = std::iter::repeat_n("items.filter(i => i.score < i.limit)", 40)
         .collect::<Vec<_>>()
         .join(" + ");
-    assert_eq!(expression_nesting_depth(&callbacks), 2);
+    assert_eq!(expression_nesting_depth(&callbacks), 1);
     assert!(expression_is_safe_to_parse(&callbacks));
 
     // Logical operators end the candidate type chain, so a flat boolean chain

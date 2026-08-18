@@ -253,7 +253,10 @@
         "error:55:10 [TS7006] Parameter 'o' implicitly has an 'any' type.",
         "error:59:13 [TS7006] Parameter 'r' implicitly has an 'any' type.",
         "error:163:53 [TS7006] Parameter 'r' implicitly has an 'any' type.",
-        "error:194:1 [TS2304] Cannot find name 'onClickOutside'."
+        "error:194:1 [TS2304] Cannot find name 'onClickOutside'.",
+        "error:300:27 [TS2365] Operator '+' cannot be applied to types 'string | number' and 'number'.",
+        "error:300:42 [TS2365] Operator '+' cannot be applied to types 'string | number' and 'number'.",
+        "error:301:45 [TS2365] Operator '+' cannot be applied to types 'string | number' and 'number'."
       ]
     },
     {
@@ -643,7 +646,8 @@
         "error:33:17 [TS2304] Cannot find name 'useId'.",
         "error:48:56 [TS7006] Parameter 'pm' implicitly has an 'any' type.",
         "error:57:21 [TS2304] Cannot find name 'PackageManagerId'.",
-        "error:64:30 [TS2304] Cannot find name 'useMediaQuery'."
+        "error:64:30 [TS2304] Cannot find name 'useMediaQuery'.",
+        "error:169:24 [TS2322] Type 'string | number' is not assignable to type 'number'.\nType 'string' is not assignable to type 'number'."
       ]
     },
     {
@@ -1042,12 +1046,18 @@
     },
     {
       "file": "app/components/Terminal/Execute.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:67:19 [TS2365] Operator '>' cannot be applied to types 'string | number' and 'number'."
+      ]
     },
     {
       "file": "app/components/Terminal/Install.vue",
       "diagnostics": [
-        "error:76:35 [TS7006] Parameter 'p' implicitly has an 'any' type."
+        "error:76:35 [TS7006] Parameter 'p' implicitly has an 'any' type.",
+        "error:234:19 [TS2365] Operator '>' cannot be applied to types 'string | number' and 'number'.",
+        "error:264:21 [TS2365] Operator '>' cannot be applied to types 'string | number' and 'number'.",
+        "error:329:21 [TS2365] Operator '>' cannot be applied to types 'string | number' and 'number'.",
+        "error:372:21 [TS2365] Operator '>' cannot be applied to types 'string | number' and 'number'."
       ]
     },
     {
@@ -1421,7 +1431,7 @@
       ]
     }
   ],
-  "errorCount": 431,
+  "errorCount": 440,
   "warningCount": 0,
   "fileCount": 222
 }

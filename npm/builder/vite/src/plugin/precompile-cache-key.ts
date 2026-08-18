@@ -10,8 +10,8 @@
  *   format version, the resolved `@vizejs/native` version, the size and mtime of
  *   the native binary actually loaded, and the fully resolved native batch
  *   compile options (Vue dialect/`vueVersion`, `vapor`, `ssr`, `mode`,
- *   `templateSyntax`, `customRenderer`, runtime module/global names, and every
- *   experimental flag). The key names the manifest file, so a different
+ *   `templateSyntax`, `customRenderer`, `customElements`, runtime module/global
+ *   names, and every experimental flag). The key names the manifest file, so a different
  *   configuration reads a different file and a version bump abandons every old
  *   manifest at once.
  * - **Source identity** (`hashPrecompileSource`) is a SHA-256 of the exact

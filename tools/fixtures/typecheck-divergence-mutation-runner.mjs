@@ -85,7 +85,7 @@ function runVueTsc(project, fixtureRoot, vueTsc, args) {
   if (result.error != null) {
     throw new Error(`vue-tsc mutation run failed: ${errorMessage(result.error)}`);
   }
-  if (result.status !== 0 && result.status !== 2) {
+  if (![0, 1, 2].includes(result.status)) {
     throw new Error(`vue-tsc mutation run exited with unsupported status ${result.status}`);
   }
   const stdout = result.stdout ?? "";

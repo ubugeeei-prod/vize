@@ -4,7 +4,8 @@ use super::{
     CONTENT_MAPPER_SPAN_FEATURE_BITS, CONTENT_MAPPER_SPAN_FEATURES_ALL,
     CONTENT_MAPPER_SPAN_FEATURES_ATOM, CONTENT_MAPPER_SPAN_FEATURES_COMPLETION,
     CONTENT_MAPPER_SPAN_FEATURES_NAVIGATION_TARGET, CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL,
-    ContentMapperSpanKind, content_mapper_span_features, generate_vue_content_mapper_transform,
+    CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperSpanKind, content_mapper_span_features,
+    generate_vue_content_mapper_transform,
 };
 use crate::batch::ContentMapperTransform;
 
@@ -25,13 +26,41 @@ fn keeps_diagnostic_handler_anchors_out_of_editor_features() {
 
 #[test]
 fn protocol_v1_feature_constants_match_the_pinned_upstream_shape() {
-    assert_eq!(CONTENT_MAPPER_SPAN_FEATURES_ALL, 2_097_151);
+    // Upstream `spanmap.FeatureAll` is `(FeatureCodeLens << 1) - 1` over 20 bits
+    // and `SpanMap.Validate` rejects any segment carrying a bit outside it, so an
+    // extra bit here is a hard transform failure, not a forward-compatible hint.
+    assert_eq!(CONTENT_MAPPER_SPAN_FEATURES_ALL, 1_048_575);
     assert_ne!(CONTENT_MAPPER_SPAN_FEATURES_ALL, 3);
+    assert_eq!(CONTENT_MAPPER_SPAN_FEATURE_BITS.len(), 20);
 
     let recomposed = CONTENT_MAPPER_SPAN_FEATURE_BITS
         .iter()
         .fold(0, |mask, (_, bit)| mask | bit);
     assert_eq!(recomposed, CONTENT_MAPPER_SPAN_FEATURES_ALL);
+}
+
+#[test]
+fn transform_declares_its_virtual_extension_on_every_response() {
+    // Upstream resolves the virtual syntax per transform response; an absent or
+    // unsupported extension fails the whole file with TS100025.
+    assert_eq!(CONTENT_MAPPER_VIRTUAL_EXTENSION, ".tsx");
+
+    let valid = generate_vue_content_mapper_transform(
+        Path::new("App.vue"),
+        "<script setup lang=\"ts\">\nconst message = \"hello\"\n</script>\n<template>{{ message }}</template>\n",
+    )
+    .expect("transform");
+    assert_eq!(valid.extension, CONTENT_MAPPER_VIRTUAL_EXTENSION);
+
+    // The unparseable-SFC fallback is still a successful transform response, so it
+    // must declare an extension too.
+    let fallback = generate_vue_content_mapper_transform(
+        Path::new("Broken.vue"),
+        "<template><div></template>\n<script setup lang=\"ts\">\n",
+    )
+    .expect("fallback transform");
+    assert!(!fallback.diagnostics.is_empty());
+    assert_eq!(fallback.extension, CONTENT_MAPPER_VIRTUAL_EXTENSION);
 }
 
 #[test]
@@ -55,7 +84,6 @@ fn feature_masks_have_positive_and_negative_bit_oracles() {
             "Definition",
             "TypeDefinition",
             "Implementation",
-            "SourceDefinition",
             "References",
             "DocumentHighlights",
         ],
@@ -67,7 +95,6 @@ fn feature_masks_have_positive_and_negative_bit_oracles() {
             "Definition",
             "TypeDefinition",
             "Implementation",
-            "SourceDefinition",
             "References",
             "DocumentHighlights",
         ],

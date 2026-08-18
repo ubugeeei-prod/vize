@@ -1,15 +1,18 @@
 //! Required-prop checks for component usages without authored named values.
 
+use vize_carton::CompactString;
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
+use vize_croquis::Croquis;
 use vize_croquis::croquis::ComponentUsage;
 
-use crate::virtual_ts::expressions::ComponentPropSource;
+use crate::virtual_ts::component_reference::component_binding_reference;
 use crate::virtual_ts::expressions::generate_component_prop_checks;
-use crate::virtual_ts::types::VizeMapping;
+use crate::virtual_ts::expressions::{ComponentPropCheckContext, ComponentPropSource};
+use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
 use super::component_event_navigation;
 use super::component_prop_checker::has_inference_props;
@@ -41,40 +44,58 @@ pub(super) fn generate_empty_root_checks(
         return;
     }
 
-    generate_empty_checks(
+    let mut empty_context = EmptyChecksContext {
         ts,
         mappings,
-        &root_usages,
-        ctx.template_prop_names,
-        ctx.source_context(),
-        "  ",
-    );
+        summary: ctx.summary,
+        options: ctx.options,
+        syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
+        template_prop_names: ctx.template_prop_names,
+        source_context: ctx.source_context(),
+        indent: "  ",
+    };
+    generate_empty_checks(&mut empty_context, &root_usages);
 }
 
-pub(super) fn generate_empty_checks(
-    ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
+struct EmptyChecksContext<'a, 'b> {
+    ts: &'b mut String,
+    mappings: &'b mut Vec<VizeMapping>,
+    summary: &'a Croquis,
+    options: &'a VirtualTsOptions,
+    syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
+    template_prop_names: &'a FxHashSet<String>,
+    source_context: ComponentPropSource<'a>,
+    indent: &'b str,
+}
+
+fn generate_empty_checks(
+    ctx: &mut EmptyChecksContext<'_, '_>,
     usages: &[(usize, &ComponentUsage)],
-    template_prop_names: &FxHashSet<String>,
-    source_context: ComponentPropSource<'_>,
-    indent: &str,
 ) {
+    let ts = &mut *ctx.ts;
+    let mappings = &mut *ctx.mappings;
+    let indent = ctx.indent;
     let arrow_indent = cstr!("{indent}  ");
     let body_indent = cstr!("{indent}    ");
     append!(*ts, "{indent}void [\n");
     for &(idx, usage) in usages {
+        let component_ref = component_binding_reference(
+            ctx.summary,
+            ctx.options,
+            ctx.syntactic_type_only_imported_names,
+            usage.name.as_str(),
+        );
         append!(*ts, "{arrow_indent}() => {{\n");
+        let mut check_context = ComponentPropCheckContext::new(
+            ts,
+            mappings,
+            ctx.template_prop_names,
+            ctx.source_context,
+            body_indent.as_str(),
+        );
         profile!(
             "canon.virtual_ts.empty_component_prop_checks",
-            generate_component_prop_checks(
-                ts,
-                mappings,
-                usage,
-                idx,
-                template_prop_names,
-                source_context,
-                body_indent.as_str()
-            )
+            generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str())
         );
         append!(*ts, "{arrow_indent}}},\n");
     }
@@ -98,18 +119,22 @@ pub(super) fn generate_scope_checks(
         if is_empty_props_usage(usage) {
             continue;
         }
-        profile!(
-            "canon.virtual_ts.component_prop_checks",
-            generate_component_prop_checks(
+        profile!("canon.virtual_ts.component_prop_checks", {
+            let component_ref = component_binding_reference(
+                ctx.summary,
+                ctx.options,
+                ctx.syntactic_type_only_imported_names,
+                usage.name.as_str(),
+            );
+            let mut check_context = ComponentPropCheckContext::new(
                 ts,
                 mappings,
-                usage,
-                idx,
                 ctx.template_prop_names,
                 ctx.source_context,
                 indent,
-            )
-        );
+            );
+            generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str())
+        });
     }
     let empty_usages: Vec<_> = usages
         .iter()
@@ -117,13 +142,16 @@ pub(super) fn generate_scope_checks(
         .filter(|(_, usage)| is_empty_props_usage(usage))
         .collect();
     if !empty_usages.is_empty() {
-        generate_empty_checks(
+        let mut empty_context = EmptyChecksContext {
             ts,
             mappings,
-            &empty_usages,
-            ctx.template_prop_names,
-            ctx.source_context,
+            summary: ctx.summary,
+            options: ctx.options,
+            syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
+            template_prop_names: ctx.template_prop_names,
+            source_context: ctx.source_context,
             indent,
-        );
+        };
+        generate_empty_checks(&mut empty_context, &empty_usages);
     }
 }

@@ -32,6 +32,7 @@ impl<'a> TransformContext<'a> {
             source,
             interner: Interner::new(allocator),
             options,
+            custom_elements: Default::default(),
             root: None,
             parent: None,
             grandparent: None,
@@ -126,7 +127,6 @@ impl<'a> TransformContext<'a> {
         self.analysis
     }
 
-    /// Check if analysis data is available
     #[inline]
     pub fn has_analysis(&self) -> bool {
         self.analysis.is_some()

@@ -34,6 +34,8 @@ pub(super) struct StatsCompileCacheKey {
     pub(super) component_name_len: usize,
     /// Compact representation of output-affecting CLI compile options.
     pub(super) settings: u16,
+    /// Length-delimited fingerprint of custom-element tag patterns.
+    pub(super) custom_elements_hash: u64,
 }
 
 /// Cached result of a stats-only compile.

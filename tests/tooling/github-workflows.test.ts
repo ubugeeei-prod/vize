@@ -171,6 +171,21 @@ test("GitHub workflow actions are pinned by full commit SHA", () => {
 test("title policy workflow mutates only issue and PR metadata", () => {
   const workflow = readRepoFile(".github", "workflows", "title-policy.yml");
   const job = workflowJobBody(workflow, "issue-pr-title-policy");
+  const parsed = parse(workflow) as {
+    jobs?: {
+      "issue-pr-title-policy"?: {
+        steps?: Array<{ uses?: string; with?: { "sparse-checkout"?: string } }>;
+      };
+    };
+  };
+  const sparseCheckout = parsed.jobs?.["issue-pr-title-policy"]?.steps?.find((step) =>
+    step.uses?.startsWith("actions/checkout@"),
+  )?.with?.["sparse-checkout"];
+  const sparseCheckoutEntries =
+    sparseCheckout
+      ?.split(/\r?\n/)
+      .map((entry) => entry.trim())
+      .filter(Boolean) ?? [];
 
   assert.match(workflow, /\n  issues:\n\s+types:\s+\[opened, edited, reopened\]/);
   assert.match(workflow, /\n  pull_request_target:\n/);
@@ -178,12 +193,17 @@ test("title policy workflow mutates only issue and PR metadata", () => {
   assert.match(workflow, /pull-requests:\s*write/);
   assert.match(job, /timeout-minutes:\s*5/);
   assert.match(job, /ref:\s*\$\{\{\s*github\.event\.repository\.default_branch\s*\}\}/);
+  assert.deepEqual(
+    sparseCheckoutEntries.filter((entry) => entry === ".moonbit-version"),
+    [".moonbit-version"],
+  );
   assert.match(job, /\.github\/actions\/setup-moonbit/);
   assert.match(job, /tools\/moon\/cmd\/github\/issue_pr_title_policy/);
   assert.match(job, /uses:\s*\.\/\.github\/actions\/setup-moonbit/);
   assert.match(job, /moon run --target native tools\/moon\/cmd\/github\/issue_pr_title_policy --/);
   assert.doesNotMatch(job, /\.github\/scripts\/issue-pr-title-policy\.mjs/);
   assert.doesNotMatch(job, /github\.event\.pull_request\.head/);
+  assert.ok(job.indexOf(".moonbit-version") < job.indexOf("uses: ./.github/actions/setup-moonbit"));
 });
 
 test("App E2E workflow keeps Blacksmith Testbox dispatch hydration separate", () => {

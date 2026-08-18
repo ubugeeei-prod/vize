@@ -6,9 +6,10 @@
  * over Vize's exact Vue corpus, extending the fixture's pinned config for its
  * compiler options. That fixed the "solution-style config checks nothing" half
  * of the ledger's blindness, and it moved the remaining half out of reach of
- * `typecheck-baseline-coverage.mjs`: `--listFiles` prints every entry of `files`
- * whether or not the extended config resolved, so file coverage now matches by
- * construction and can no longer tell a loaded project from a broken one.
+ * `typecheck-baseline-coverage.mjs`: a coverage-only file listing prints every
+ * entry of `files` whether or not the extended config resolved, so file coverage
+ * now matches by construction and can no longer tell a loaded project from a
+ * broken one.
  *
  * What survives that is a configuration failure. Against real vue-tsc 3.3.4 /
  * TypeScript 6.0.3 it takes two shapes, and the comparator dropped both:

@@ -64,6 +64,9 @@ impl<'a> Parser<'a> {
         {
             return false;
         }
+        if self.custom_elements.matches(tag) {
+            return false;
+        }
 
         if self.options.custom_renderer {
             return tag.chars().next().is_some_and(|c| c.is_uppercase()) || tag.contains('-');

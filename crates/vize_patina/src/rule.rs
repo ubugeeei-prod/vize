@@ -269,7 +269,7 @@ impl RuleRegistry {
         ));
         registry.register(Box::new(crate::rules::vue::NoLoneTemplate));
         registry.register(Box::new(crate::rules::vue::NoMultiSpaces::default()));
-        registry.register(Box::new(crate::rules::vue::PropNameCasing));
+        registry.register(Box::new(crate::rules::vue::PropNameCasing::default()));
         registry.register(Box::new(crate::rules::vue::VOnStyle::default()));
         registry.register(Box::new(crate::rules::vue::VSlotStyle::default()));
         registry.register(Box::new(crate::rules::vue::ValidVSlot));

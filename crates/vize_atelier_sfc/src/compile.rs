@@ -7,6 +7,7 @@
 mod bindings;
 mod diagnostics;
 mod empty_component;
+mod entry;
 mod helpers;
 mod normal_script;
 pub(crate) mod output_module;
@@ -29,7 +30,7 @@ use crate::types::{
     BindingMetadata, BindingType, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError,
     SfcMacroArtifact,
 };
-use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode};
+use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 
 use self::bindings::{
     collect_normal_script_bindings, croquis_to_legacy_bindings, merge_normal_script_bindings,
@@ -48,6 +49,12 @@ use self::styles::compile_styles;
 
 // Re-export ScriptCompileResult for public API
 pub use crate::compile_script::ScriptCompileResult;
+#[allow(deprecated)]
+pub use entry::compile_sfc_with_vue_parser_quirks;
+pub use entry::{
+    compile_sfc, compile_sfc_with_custom_elements_template_syntax_and_codegen_options,
+    compile_sfc_with_template_syntax, compile_sfc_with_template_syntax_and_codegen_options,
+};
 use vize_carton::{String, ToCompactString, profile};
 
 pub(crate) fn is_ts_lang(lang: Option<&str>) -> bool {
@@ -71,66 +78,11 @@ fn extract_descriptor_macro_artifacts(descriptor: &SfcDescriptor) -> Vec<SfcMacr
     artifacts
 }
 
-/// Compile an SFC descriptor into JavaScript and CSS
-pub fn compile_sfc(
-    descriptor: &SfcDescriptor,
-    options: SfcCompileOptions,
-) -> Result<SfcCompileResult, SfcError> {
-    compile_sfc_inner(
-        descriptor,
-        options,
-        TemplateSyntaxMode::Standard,
-        CodegenOptions::default(),
-    )
-}
-
-/// Compile an SFC descriptor with Vue parser quirk compatibility.
-#[deprecated(note = "use compile_sfc_with_template_syntax instead")]
-pub fn compile_sfc_with_vue_parser_quirks(
-    descriptor: &SfcDescriptor,
-    options: SfcCompileOptions,
-) -> Result<SfcCompileResult, SfcError> {
-    compile_sfc_inner(
-        descriptor,
-        options,
-        TemplateSyntaxMode::Quirks,
-        CodegenOptions::default(),
-    )
-}
-
-/// Compile an SFC descriptor with an explicit template syntax mode.
-#[doc(hidden)]
-pub fn compile_sfc_with_template_syntax(
-    descriptor: &SfcDescriptor,
-    options: SfcCompileOptions,
-    template_syntax: TemplateSyntaxMode,
-) -> Result<SfcCompileResult, SfcError> {
-    compile_sfc_inner(
-        descriptor,
-        options,
-        template_syntax,
-        CodegenOptions::default(),
-    )
-}
-
-/// Compile an SFC with adapter-provided codegen defaults.
-///
-/// This keeps emission-only binding settings out of the public SFC/DOM option
-/// structs while reusing the compiler core's canonical [`CodegenOptions`].
-#[doc(hidden)]
-pub fn compile_sfc_with_template_syntax_and_codegen_options(
-    descriptor: &SfcDescriptor,
-    options: SfcCompileOptions,
-    template_syntax: TemplateSyntaxMode,
-    codegen_options: CodegenOptions,
-) -> Result<SfcCompileResult, SfcError> {
-    compile_sfc_inner(descriptor, options, template_syntax, codegen_options)
-}
-
 fn compile_sfc_inner(
     descriptor: &SfcDescriptor,
     options: SfcCompileOptions,
     template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
     codegen_options: CodegenOptions,
 ) -> Result<SfcCompileResult, SfcError> {
     let mut errors = Vec::new();
@@ -218,6 +170,7 @@ fn compile_sfc_inner(
             template_only::TemplateOnlyInput {
                 descriptor,
                 options: &options,
+                custom_elements: &custom_elements,
                 template_syntax,
                 codegen_options: &codegen_options,
                 compiled_styles: &compiled_styles,
@@ -340,10 +293,18 @@ fn compile_sfc_inner(
                     compile_template_block_vapor(
                         &template_allocator,
                         template,
-                        &scope_id,
-                        has_scoped,
-                        None,
                         &options.template,
+                        &custom_elements,
+                        TemplateBlockCompileContext {
+                            scope_id: &scope_id,
+                            apply_scope_id: has_scoped,
+                            has_scoped,
+                            is_ts: template_is_ts,
+                            inline: false,
+                            component_name: Some(&component_name),
+                            bindings: options_api_bindings.as_ref(),
+                            croquis: None,
+                        },
                         template_syntax,
                         &codegen_options,
                     )
@@ -360,6 +321,7 @@ fn compile_sfc_inner(
                         &template_allocator,
                         template,
                         &template_opts,
+                        &custom_elements,
                         TemplateBlockCompileContext {
                             scope_id: &scope_id,
                             apply_scope_id: has_scoped,
@@ -662,10 +624,18 @@ fn compile_sfc_inner(
                 compile_template_block_vapor(
                     &template_allocator,
                     template,
-                    &scope_id,
-                    has_scoped,
-                    Some(&script_bindings),
                     &options.template,
+                    &custom_elements,
+                    TemplateBlockCompileContext {
+                        scope_id: &scope_id,
+                        apply_scope_id: has_scoped,
+                        has_scoped,
+                        is_ts: template_is_ts,
+                        inline: false,
+                        component_name: Some(&component_name),
+                        bindings: Some(&script_bindings),
+                        croquis: None,
+                    },
                     template_syntax,
                     &codegen_options,
                 )
@@ -680,6 +650,7 @@ fn compile_sfc_inner(
                     &template_allocator,
                     template,
                     &options.template,
+                    &custom_elements,
                     TemplateBlockCompileContext {
                         scope_id: &scope_id,
                         apply_scope_id: has_scoped,

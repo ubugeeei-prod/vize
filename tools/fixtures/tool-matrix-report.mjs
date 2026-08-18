@@ -4,7 +4,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { collectRunEvidence } from "./run-evidence.mjs";
-import { resolveVizeLaunch, runTool } from "./tool-matrix-run.mjs";
+import { resolveVizeLaunch, runToolWithHeartbeat } from "./tool-matrix-run.mjs";
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -13,7 +13,7 @@ const registryPath = join(repoRoot, "tests", "_fixtures", "vue-ecosystem-fixture
 const schema = "vize.fixtureToolMatrixReport";
 const supportedTools = ["compiler", "typechecker", "linter", "formatter"];
 
-function main() {
+async function main() {
   const args = parseArgs(process.argv.slice(2));
   const registry = readJson(registryPath);
   const selectedProjects = select(registry.projects, args.projects, "project");
@@ -75,7 +75,7 @@ function main() {
       runs: [],
     };
     for (const tool of tools) {
-      const run = runTool(project, tool, args, launch, outputDir);
+      const run = await runToolWithHeartbeat(project, tool, args, launch, outputDir);
       projectReport.runs.push(run);
       report.summary[summaryKey(run.status)] += 1;
     }
@@ -98,6 +98,7 @@ function parseArgs(argv) {
   const args = {
     dryRun: false,
     listFixturePaths: false,
+    heartbeatMs: 30_000,
     outputDir: null,
     projects: [],
     shardCount: 1,
@@ -115,6 +116,9 @@ function parseArgs(argv) {
     if (arg === "--dry-run") args.dryRun = true;
     else if (arg === "--list-fixture-paths") args.listFixturePaths = true;
     else if (arg === "--help" || arg === "-h") return printHelpAndExit();
+    else if (arg === "--heartbeat-ms") args.heartbeatMs = positiveInteger(value(), arg);
+    else if (arg.startsWith("--heartbeat-ms="))
+      args.heartbeatMs = positiveInteger(arg.slice(15), "--heartbeat-ms");
     else if (arg === "--output-dir") args.outputDir = value();
     else if (arg.startsWith("--output-dir=")) args.outputDir = arg.slice(13);
     else if (arg === "--project") args.projects.push(...splitCsv(value()));
@@ -155,6 +159,7 @@ function printHelpAndExit() {
   process.stdout.write(`  --output-dir <dir>   Report directory\n`);
   process.stdout.write(`  --vize-bin <path>    Vize executable\n`);
   process.stdout.write(`  --timeout-ms <n>     Per-run timeout\n`);
+  process.stdout.write(`  --heartbeat-ms <n>   Progress heartbeat interval for child runs\n`);
   process.stdout.write(`  --dry-run            Plan without invoking Vize\n`);
   process.exit(0);
 }
@@ -253,7 +258,7 @@ function errorMessage(error) {
 }
 
 try {
-  main();
+  await main();
 } catch (error) {
   process.stderr.write(`${errorMessage(error)}\n`);
   process.exit(1);

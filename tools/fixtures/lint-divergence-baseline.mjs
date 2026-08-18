@@ -74,6 +74,7 @@ export function baselineConfig(runtime, rules) {
           parser: runtime.scriptParser,
           ecmaVersion: "latest",
           sourceType: "module",
+          ecmaFeatures: { jsx: true },
           extraFileExtensions: [".vue"],
         },
       },

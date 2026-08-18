@@ -6,7 +6,7 @@ use super::component_props::{
 };
 use super::prop_sources::{append_prop_value, generated_prop_value};
 use super::spread_reserved_props::rewrite_reserved_spread_references;
-use crate::virtual_ts::helpers::{to_safe_identifier, to_safe_identifier_fragment};
+use crate::virtual_ts::helpers::to_safe_identifier_fragment;
 use crate::virtual_ts::scope::is_inline_callback_prop;
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::croquis::ComponentUsage;
@@ -29,6 +29,7 @@ pub(super) fn generate_callback_props_resolution(
     ts: &mut String,
     usage: &ComponentUsage,
     idx: usize,
+    component_ref: &str,
     template_prop_names: &FxHashSet<String>,
     source_context: ComponentPropSource<'_>,
     indent: &str,
@@ -37,7 +38,6 @@ pub(super) fn generate_callback_props_resolution(
         return None;
     }
 
-    let component_ref = to_safe_identifier(usage.name.as_str());
     let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
     let resolved_props = cstr!("__vize_resolved_{component_type_name}_props_{idx}");
     let selected_props = cstr!("__vize_selected_{component_type_name}_props_{idx}");

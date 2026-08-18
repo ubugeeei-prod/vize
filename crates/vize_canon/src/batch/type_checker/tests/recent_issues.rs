@@ -7,6 +7,7 @@ mod directive_anchors;
 mod directive_values;
 mod empty_required_props;
 mod exact_optional_props;
+mod external_esm_module_augmentation;
 mod external_slot_payloads;
 mod global_component_callbacks;
 mod imported_component_ref_expose;
