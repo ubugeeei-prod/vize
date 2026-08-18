@@ -848,7 +848,7 @@ dependencies = [
 
 [[package]]
 name = "davinci_harness"
-version = "0.349.0"
+version = "0.350.0"
 dependencies = [
  "criterion",
  "libc",
@@ -3890,7 +3890,7 @@ dependencies = [
 
 [[package]]
 name = "vize_davinci"
-version = "0.349.0"
+version = "0.350.0"
 dependencies = [
  "insta",
  "vize_atelier_core",
