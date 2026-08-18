@@ -42,6 +42,9 @@ class CompilerConfig {
   /// Treat lowercase non-HTML tags as custom renderer elements.
   customRenderer: Boolean = false
 
+  /// Tag patterns that compile as custom elements instead of Vue components.
+  customElements: Listing<String> = new Listing {}
+
   /// Enable SSR mode.
   ssr: Boolean = false
 

@@ -64,7 +64,7 @@ declare function __vizeNativeElementProp<__Tag extends PropertyKey, __Prop exten
 // @ts-ignore TS2694/TS2307: a `vue` without `Directive` must degrade custom directive value checks to unchecked, never error. See virtual_ts/expressions/directive_values.rs.
 type __VizeDirectiveValue<D> = D extends import('vue').Directive<any, infer V> ? V : unknown;
 declare function __vizeDirectiveValue<__D>(value: __VizeDirectiveValue<__D>): void;
-type __VForEntry<T> = __VizeIsAny<T> extends true ? [item: any, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : T extends object ? [item: T[keyof T], key: keyof T, index: number] : [item: any, key: number, index: number];
+type __VForEntry<T> = T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number];
 declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];
 type __VizeStructuralSlots<C> = C extends { new (): { $slots: infer __S } } ? __S : any;
 type __VizeSlotsResolver<C> = __VizeIsAny<C> extends true ? (props: any) => any : C extends { __vizeResolveSlots?: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => __VizeStructuralSlots<C>) : (props: any) => __VizeStructuralSlots<C>;
@@ -103,7 +103,7 @@ function __setup() {
     class?: string
   }>()
   
-  // @vize-map: 9790:9835 -> 0:78
+  // @vize-map: 9717:9762 -> 0:78
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

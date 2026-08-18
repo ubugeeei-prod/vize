@@ -26,9 +26,11 @@
 
 use std::{fs, path::PathBuf, sync::atomic::Ordering, time::Instant};
 
+use vize_atelier_core::{CodegenOptions, options::CustomElementMatcher};
 use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
-    TemplateCompileOptions, compile_sfc_with_template_syntax, parse_sfc,
+    TemplateCompileOptions, compile_sfc_with_custom_elements_template_syntax_and_codegen_options,
+    parse_sfc,
 };
 use vize_carton::cstr;
 use vize_carton::profile;
@@ -45,7 +47,7 @@ use super::settings::CompileFileSettings;
 
 pub(super) fn compile_file_with_profile(
     path: &PathBuf,
-    settings: CompileFileSettings,
+    settings: &CompileFileSettings,
     stats: &CompileStats,
 ) -> Result<(CompileOutput, FileProfile), CompileError> {
     let file_start = Instant::now();
@@ -126,6 +128,7 @@ pub(super) fn compile_file_with_profile(
     let compile_start = Instant::now();
     let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
     let is_ts = matches!(settings.script_ext, ScriptExtension::Preserve);
+    let custom_elements = CustomElementMatcher::from_patterns(settings.custom_elements.clone());
     let compile_opts = SfcCompileOptions {
         parse: SfcParseOptions {
             filename: filename.clone(),
@@ -161,7 +164,13 @@ pub(super) fn compile_file_with_profile(
 
     let result = profile!(
         "atelier.sfc.compile",
-        compile_sfc_with_template_syntax(&descriptor, compile_opts, settings.template_syntax)
+        compile_sfc_with_custom_elements_template_syntax_and_codegen_options(
+            &descriptor,
+            compile_opts,
+            settings.template_syntax,
+            custom_elements,
+            CodegenOptions::default()
+        )
     )
     .map_err(|e| CompileError {
         path: path.clone(),

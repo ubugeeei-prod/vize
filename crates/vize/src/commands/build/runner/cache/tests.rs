@@ -56,6 +56,7 @@ fn key_for(source: &str) -> StatsCompileCacheKey {
         source_len: source.len(),
         component_name_len: 0,
         settings: 0,
+        custom_elements_hash: 0,
     }
 }
 

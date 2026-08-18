@@ -69,14 +69,17 @@ fn the_strict_form_reads_every_occurrence_off_the_template_context() {
     assert_eq!(
         output
             .code
-            .matches("const $missing = __ctx.$missing;")
+            .matches("const $missing = __vize_strict_template_context.$missing;")
             .count(),
         1,
         "{}",
         output.code
     );
     assert_eq!(
-        output.code.matches("void (__ctx.$missing);").count(),
+        output
+            .code
+            .matches("void (__vize_strict_template_context.$missing);")
+            .count(),
         2,
         "{}",
         output.code
@@ -92,7 +95,8 @@ fn the_strict_form_maps_each_access_back_to_its_authored_occurrence() {
         .iter()
         .filter(|mapping| {
             output.code.get(mapping.gen_range.clone()) == Some("$missing")
-                && output.code[..mapping.gen_range.start].ends_with("__ctx.")
+                && output.code[..mapping.gen_range.start]
+                    .ends_with("__vize_strict_template_context.")
         })
         .map(|mapping| mapping.src_range.clone())
         .collect::<Vec<_>>();

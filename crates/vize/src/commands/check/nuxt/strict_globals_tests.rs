@@ -45,6 +45,16 @@ const GENERATED_CUSTOM_PROPERTIES: &str = r#"declare module 'vue' {
 export {}
 "#;
 
+const GENERATED_GLOBAL_I18N_VALUES: &str = r#"import type { Composer } from 'vue-i18n'
+
+declare global {
+  var $t: (Composer)['t']
+  var $rt: (Composer)['rt']
+}
+
+export {}
+"#;
+
 fn global_names(options: &VirtualTsOptions) -> Vec<&str> {
     options
         .template_globals
@@ -73,6 +83,38 @@ fn generated_imports_make_the_declaration_graph_authoritative() {
     // instance and an authored use reports the way the Vue toolchain does.
     assert!(options.strict_instance_globals);
     assert_eq!(global_names(&options), vec!["$shout"]);
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn generated_global_dollar_values_are_template_bindings() {
+    let project_root = unique_case_dir("generated-global-dollar-values");
+    write_nuxt_project(&project_root);
+    std::fs::write(project_root.join(".nuxt/imports.d.ts"), GENERATED_IMPORTS).unwrap();
+    std::fs::write(
+        project_root.join(".nuxt/types/i18n-plugin.d.ts"),
+        GENERATED_GLOBAL_I18N_VALUES,
+    )
+    .unwrap();
+
+    let mut options = VirtualTsOptions::default();
+    let _ = detect_nuxt_auto_imports(&mut options, &project_root);
+
+    assert!(options.strict_instance_globals);
+    assert!(!global_names(&options).contains(&"$t"));
+    assert!(
+        options
+            .external_template_bindings
+            .iter()
+            .any(|name| name == "$t")
+    );
+    assert!(
+        options
+            .external_template_bindings
+            .iter()
+            .any(|name| name == "$rt")
+    );
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

@@ -142,7 +142,7 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
                     "rootUri": root_uri,
                     "workspaceFolders": [{ "uri": root_uri, "name": "event-forms" }],
                     "capabilities": editor_capabilities(),
-                    "initializationOptions": { "loadExternalPlugins": true }
+                    "initializationOptions": { "runExternalCode": true }
                 }))
                 .await
                 .unwrap();

@@ -44,6 +44,7 @@ export interface BatchCompileOptionsNapi extends ExperimentalCompileFlags {
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
+  customElements?: string[];
   templateSyntax?: "standard" | "strict" | "quirks";
   runtimeModuleName?: string;
   runtimeGlobalName?: string;

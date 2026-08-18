@@ -64,7 +64,7 @@ declare function __vizeNativeElementProp<__Tag extends PropertyKey, __Prop exten
 // @ts-ignore TS2694/TS2307: a `vue` without `Directive` must degrade custom directive value checks to unchecked, never error. See virtual_ts/expressions/directive_values.rs.
 type __VizeDirectiveValue<D> = D extends import('vue').Directive<any, infer V> ? V : unknown;
 declare function __vizeDirectiveValue<__D>(value: __VizeDirectiveValue<__D>): void;
-type __VForEntry<T> = __VizeIsAny<T> extends true ? [item: any, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : T extends object ? [item: T[keyof T], key: keyof T, index: number] : [item: any, key: number, index: number];
+type __VForEntry<T> = T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number];
 declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];
 import { ref, useTemplateRef } from 'vue'
 // Prevent TS6133 for imports shadowed by setup-scope compiler macros
@@ -104,7 +104,7 @@ function __setup() {
   const inputRef = ref<HTMLInputElement | null>(null)
   const buttonEl = useTemplateRef('btn')
   
-  // @vize-map: 9933:10037 -> 0:135
+  // @vize-map: 9860:9964 -> 0:135
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

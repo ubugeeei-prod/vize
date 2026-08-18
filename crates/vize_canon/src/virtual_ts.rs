@@ -9,6 +9,7 @@
 
 #[cfg(test)]
 mod class_component_props_tests;
+mod component_reference;
 #[cfg(test)]
 mod define_emits_usage_tests;
 #[cfg(test)]
@@ -29,6 +30,10 @@ pub mod mapping;
 mod props;
 mod scope;
 mod semantic_links;
+#[cfg(test)]
+mod strict_template_globals_tests;
+#[cfg(test)]
+mod strict_template_scope_tests;
 #[cfg(test)]
 mod tests;
 mod types;

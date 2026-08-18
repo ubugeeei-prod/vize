@@ -38,10 +38,11 @@ fn install_mapper_manifest(project_root: &Path) {
     let manifest = json!({
         "name": "vize",
         "private": true,
-        "tsContentMapper": {
-            "exec": [env!("CARGO_BIN_EXE_vize"), "content-mapper"],
-            "extensions": { ".vue": ".tsx" },
-            "compilerOptions": ["noUnusedLocals"],
+        "typescript": {
+            "contentMapper": {
+                "exec": [env!("CARGO_BIN_EXE_vize"), "content-mapper"],
+                "compilerOptions": ["noUnusedLocals"],
+            },
         },
     });
     std::fs::write(
@@ -100,7 +101,7 @@ fn check_project(tsgo: &Path, project_root: &Path, config: &str) -> Output {
         tsgo,
         project_root,
         &[
-            "--loadExternalPlugins",
+            "--runExternalCode",
             "--noEmit",
             "-p",
             config,
@@ -231,7 +232,7 @@ fn standard_tsgo_checks_vue_project_and_emits_consumable_declarations() {
         &tsgo,
         project.path(),
         &[
-            "--loadExternalPlugins",
+            "--runExternalCode",
             "-p",
             "tsconfig.emit.json",
             "--pretty",

@@ -32,6 +32,7 @@ const explicitlyDisabledInitializationOptions = {
   references: false,
   rename: false,
   semanticTokens: false,
+  signatureHelp: false,
   typecheck: false,
   workspaceSymbols: false,
 };
@@ -58,6 +59,7 @@ const featureSettingKeys = [
   "codeLens.enable",
   "formatting.enable",
   "semanticTokens.enable",
+  "signatureHelp.enable",
   "documentLinks.enable",
   "foldingRanges.enable",
   "inlayHints.enable",

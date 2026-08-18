@@ -206,17 +206,6 @@
     "file": "app/components/form/VFFileInput.vue",
     "messages": [
       {
-        "ruleId": "vue/v-slot-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 51,
-        "column": 14,
-        "endLine": 51,
-        "endColumn": 29,
-        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -229,25 +218,13 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/form/VFForm.vue",
-    "messages": [
-      {
-        "ruleId": "vue/v-slot-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 56,
-        "column": 5,
-        "endLine": 56,
-        "endColumn": 19,
-        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/form/VFInput.vue",

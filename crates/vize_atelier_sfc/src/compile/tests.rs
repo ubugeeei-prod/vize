@@ -1,3 +1,4 @@
+mod custom_elements;
 mod define_props_regressions;
 mod options_api_events;
 mod vapor;
@@ -6,8 +7,7 @@ use crate::types::{
     BindingType, ScriptCompileOptions, SfcCompileOptions, SfcCompileResult, TemplateCompileOptions,
 };
 use crate::{SfcParseOptions, parse_sfc};
-use std::fs;
-use std::path::PathBuf;
+use std::{fs, path::PathBuf};
 use vize_carton::ToCompactString;
 
 fn fixtures_path() -> PathBuf {
@@ -2921,27 +2921,6 @@ const visible = true
     insta::assert_snapshot!(result.code.as_str());
 }
 
-#[test]
-fn test_normal_script_sfc_vapor_output_mode() {
-    let source = r#"<script>
-export default {
-  name: 'NormalVapor'
-}
-</script>
-
-<template>
-  <div>Hello</div>
-</template>"#;
-
-    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
-    let opts = SfcCompileOptions {
-        vapor: true,
-        ..Default::default()
-    };
-    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
-
-    insta::assert_snapshot!(result.code.as_str());
-}
 /// A class component's `@Component({ components: { Foo } })` registration and
 /// its members must thread through compile output exactly like the equivalent
 /// Options API component: `<Foo/>` resolves via `_resolveComponent("Foo")`

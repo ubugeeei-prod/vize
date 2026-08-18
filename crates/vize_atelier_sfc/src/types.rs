@@ -2,6 +2,10 @@
 //!
 //! Zero-copy design using borrowed strings for maximum parsing performance.
 
+mod errors;
+
+pub use errors::SfcError;
+
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use vize_carton::{FxHashMap, String};
@@ -605,32 +609,4 @@ pub struct SfcMacroArtifact {
 
     /// Absolute end offset in the original SFC source.
     pub end: usize,
-}
-
-/// SFC error/warning
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SfcError {
-    /// Error message
-    pub message: String,
-
-    /// Error code
-    #[serde(default)]
-    pub code: Option<String>,
-
-    /// Location
-    #[serde(default)]
-    pub loc: Option<BlockLocation>,
-}
-
-impl From<vize_atelier_core::CompilerError> for SfcError {
-    fn from(err: vize_atelier_core::CompilerError) -> Self {
-        let mut code = vize_carton::String::default();
-        use std::fmt::Write as _;
-        let _ = write!(&mut code, "{:?}", err.code);
-        Self {
-            message: err.message,
-            code: Some(code),
-            loc: None,
-        }
-    }
 }

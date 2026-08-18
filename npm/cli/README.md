@@ -219,14 +219,15 @@ parallel `.vue.ts` project.
 ```
 
 ```bash
-tsgo --loadExternalPlugins --noEmit -p tsconfig.json
+tsgo --runExternalCode --noEmit -p tsconfig.json
 ```
 
 The content-mapper API is not in a released TypeScript native preview yet. Use the exact PR build
-while evaluating it, keep `--loadExternalPlugins` explicit, and keep `vize check` as the supported
+while evaluating it, keep `--runExternalCode` explicit, and keep `vize check` as the supported
 typecheck path until TypeScript ships the protocol. Vize currently negotiates protocol v1 with
-UTF-8 mappings, advertises `.tsx` virtual output for `.vue` files so both TypeScript and embedded
-JSX parse correctly, and declares its `noUnusedLocals` compiler-option dependency.
+UTF-8 mappings, declares its `noUnusedLocals` compiler-option dependency under the
+`typescript.contentMapper` manifest key, and tags every transform response with the `.tsx` virtual
+extension so both TypeScript and embedded JSX parse correctly.
 
 ## Compiler and Tool Options
 

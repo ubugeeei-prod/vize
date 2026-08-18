@@ -10,8 +10,9 @@
 pub mod scan;
 
 use scan::{
-    is_speculative_type_angle_open, keyword_allows_regex_after, skip_block_comment,
-    skip_identifier, skip_line_comment, skip_number, skip_quoted, skip_regex, skip_template_text,
+    SpeculativeTypeAngleOpen, keyword_allows_regex_after, skip_block_comment, skip_identifier,
+    skip_line_comment, skip_number, skip_quoted, skip_regex, skip_template_text,
+    speculative_type_angle_open_kind,
 };
 
 /// Maximum expression nesting depth accepted before parsing.
@@ -51,6 +52,7 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
     // escapes also match OXC: injecting `&&` every 25 `<`, or closing the
     // angles, drops a 10.7KB input from 1.47s to ~25us.
     let mut speculative_type_angle_opens = 0usize;
+    let mut malformed_type_escape_opens = 0usize;
     let mut track_type_angles = false;
     let mut i = 0;
 
@@ -73,8 +75,17 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
                     delimiters.push(b'}');
                     template_interpolation_depths.push(delimiters.len());
                     let effective_angle_depth = if track_type_angles { angle_depth } else { 0 };
-                    max_depth =
-                        max_depth.max(delimiters.len() + effective_angle_depth + decorator_depth);
+                    let malformed_escape_depth = if track_type_angles {
+                        malformed_type_escape_opens
+                    } else {
+                        0
+                    };
+                    max_depth = max_depth.max(
+                        delimiters.len()
+                            + effective_angle_depth
+                            + malformed_escape_depth
+                            + decorator_depth,
+                    );
                     can_start_regex = true;
                 } else {
                     can_start_regex = false;
@@ -137,8 +148,17 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
                     delimiters.push(b'}');
                     template_interpolation_depths.push(delimiters.len());
                     let effective_angle_depth = if track_type_angles { angle_depth } else { 0 };
-                    max_depth =
-                        max_depth.max(delimiters.len() + effective_angle_depth + decorator_depth);
+                    let malformed_escape_depth = if track_type_angles {
+                        malformed_type_escape_opens
+                    } else {
+                        0
+                    };
+                    max_depth = max_depth.max(
+                        delimiters.len()
+                            + effective_angle_depth
+                            + malformed_escape_depth
+                            + decorator_depth,
+                    );
                     can_start_regex = true;
                 } else {
                     can_start_regex = false;
@@ -151,8 +171,11 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
             }
             b'<' => {
                 angle_depth += 1;
-                if is_speculative_type_angle_open(content, i) {
+                if let Some(kind) = speculative_type_angle_open_kind(content, i) {
                     speculative_type_angle_opens += 1;
+                    if kind == SpeculativeTypeAngleOpen::MalformedIdentifierEscape {
+                        malformed_type_escape_opens += 1;
+                    }
                     track_type_angles = speculative_type_angle_opens >= 2;
                 }
                 can_start_regex = true;
@@ -167,6 +190,11 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
             b'>' => {
                 let closed_type_angle = angle_depth > 0;
                 angle_depth = angle_depth.saturating_sub(1);
+                if angle_depth == 0 {
+                    speculative_type_angle_opens = 0;
+                    malformed_type_escape_opens = 0;
+                    track_type_angles = false;
+                }
                 can_start_regex = !closed_type_angle;
             }
             b'@' => {
@@ -187,6 +215,7 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
             // stays inside the speculation and is handled below.
             b'&' | b'|' if bytes.get(i + 1) == Some(&b) => {
                 speculative_type_angle_opens = 0;
+                malformed_type_escape_opens = 0;
                 track_type_angles = false;
                 angle_depth = 0;
                 i += 1;
@@ -194,6 +223,7 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
             }
             b'?' if bytes.get(i + 1) == Some(&b'?') => {
                 speculative_type_angle_opens = 0;
+                malformed_type_escape_opens = 0;
                 track_type_angles = false;
                 angle_depth = 0;
                 i += 1;
@@ -233,7 +263,14 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
         }
 
         let effective_angle_depth = if track_type_angles { angle_depth } else { 0 };
-        max_depth = max_depth.max(delimiters.len() + effective_angle_depth + decorator_depth);
+        let malformed_escape_depth = if track_type_angles {
+            malformed_type_escape_opens
+        } else {
+            0
+        };
+        max_depth = max_depth.max(
+            delimiters.len() + effective_angle_depth + malformed_escape_depth + decorator_depth,
+        );
         i += 1;
     }
 

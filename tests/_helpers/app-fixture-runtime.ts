@@ -3,6 +3,8 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { patchNpmxRuntimeFixtureCache } from "./npmx-runtime-cache-fixtures.ts";
+
 export const NPMX_E2E_ENV = {
   NUXT_TEST_FIXTURES: "true",
   NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
@@ -87,6 +89,7 @@ export function patchNpmxRegistryFixtures(npmxDir: string): void {
     path.join(npmxDir, "app", "composables", "npm", "useResolvedVersion.ts"),
   );
   patchNpmxServerNpmUtils(path.join(npmxDir, "server", "utils", "npm.ts"));
+  patchNpmxRuntimeFixtureCache(path.join(npmxDir, "modules", "runtime", "server", "cache.ts"));
 }
 
 function patchNpmxNpmPlugin(pluginPath: string): void {

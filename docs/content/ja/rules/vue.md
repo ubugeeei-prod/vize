@@ -450,7 +450,8 @@ const emailId = useId();
 `vue/prefer-props-shorthand` は、小道具の省略構文を推奨します。デフォルト: `warning`。プリセット:
 `nuxt`、`opinionated`。
 
-`vue/prop-name-casing` は、テンプレート内でケバブケースの小道具名を強制します。デフォルト: `warning`。プリセット:
+`vue/prop-name-casing` は、`defineProps` で宣言された prop 名のケーシング（既定は `camelCase`）を強制
+します。テンプレート側は `vue/attribute-hyphenation` が担当します。デフォルト: `warning`。プリセット:
 `happy-path`、`nuxt`、`opinionated`。
 
 `vue/require-component-registration` では、明示的なコンポーネントのインポートまたは登録が必要です。デフォルト:

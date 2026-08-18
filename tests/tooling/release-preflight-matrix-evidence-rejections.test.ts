@@ -10,6 +10,7 @@ import {
   mutateDivergence,
   realProjectArtifacts,
   shardEntries,
+  typecheckRegistry,
 } from "./_helpers/release-preflight-matrix-evidence-fixture.ts";
 import { successfulReleaseRun } from "./support/release-preflight.ts";
 
@@ -114,7 +115,13 @@ test("release preflight requires same-corpus coverage, mutation oracle, and prep
     ],
     [
       "missing dependency artifact",
-      (entries: Record<string, string>) => delete entries["fixture-typecheck-dependencies.json"],
+      (entries: Record<string, string>) => {
+        const name = Object.keys(entries).find((entry) =>
+          entry.endsWith("-typecheck-dependencies.json"),
+        );
+        if (name == null) throw new Error("No typecheck dependency artifact in fixture entries");
+        delete entries[name];
+      },
       /typecheck dependency artifact/,
     ],
     [
@@ -132,6 +139,7 @@ test("release preflight requires same-corpus coverage, mutation oracle, and prep
       assertRealProjectMatrixReleaseArtifacts({
         run,
         artifacts: realProjectArtifacts(run),
+        registry: typecheckRegistry(),
         readArtifactEntries: async (artifact) => {
           const entries = shardEntries(Number(artifact.name.split("-").pop()));
           if (artifact.name === "real-project-matrix-0") mutate(entries);

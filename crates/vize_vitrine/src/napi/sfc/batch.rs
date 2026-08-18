@@ -39,7 +39,7 @@ fn compile_sfc_batch_inner(
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
         TemplateCompileOptions,
-        compile_sfc_with_template_syntax as sfc_compile_with_template_syntax,
+        compile_sfc_with_custom_elements_template_syntax_and_codegen_options as sfc_compile_with_custom_elements,
         parse_sfc as sfc_parse,
     };
 
@@ -64,6 +64,10 @@ fn compile_sfc_batch_inner(
     let ssr = opts.ssr.unwrap_or(false);
     let vapor = opts.vapor.unwrap_or(false);
     let is_ts = opts.is_ts.unwrap_or(false);
+    let custom_renderer = opts.custom_renderer.unwrap_or(false);
+    let custom_elements = vize_atelier_core::options::CustomElementMatcher::from_patterns(
+        crate::types::custom_element_patterns(opts.custom_elements.as_deref()),
+    );
     let experimentals = ExperimentalTemplateOptions::from_batch(&opts);
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
         .map_err(|message| Error::new(Status::InvalidArg, message))?;
@@ -156,6 +160,7 @@ fn compile_sfc_batch_inner(
                     scoped: has_scoped,
                     ssr,
                     is_ts,
+                    custom_renderer,
                     compiler_options: {
                         let mut dom_options = experimentals.dom_options();
                         if let Some(value) = opts.template_cache_handlers {
@@ -184,8 +189,13 @@ fn compile_sfc_batch_inner(
                 scope_id: None,
             };
 
-            let compile_result =
-                sfc_compile_with_template_syntax(&descriptor, compile_opts, template_syntax);
+            let compile_result = sfc_compile_with_custom_elements(
+                &descriptor,
+                compile_opts,
+                template_syntax,
+                custom_elements.clone(),
+                vize_atelier_core::CodegenOptions::default(),
+            );
 
             match compile_result {
                 Ok(result) => BatchStats {

@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 
 import { patchNpmxRegistryFixtures } from "../_helpers/app-fixture-runtime.ts";
+import { resolveVizeE2ENpmRegistryFixture } from "../_fixtures/npmx-e2e-registry-fixtures.ts";
 import {
   collectPatchedBehavior,
   installNuxtDoubles,
@@ -33,6 +34,30 @@ test("npmx registry fixture patch serves deterministic package metadata to serve
   assert.equal(
     fs.existsSync(path.join(fixtureRoot, "shared/utils/__vize-e2e-npm-fixtures.ts")),
     true,
+  );
+  const patchedCache = fs.readFileSync(
+    path.join(fixtureRoot, "modules/runtime/server/cache.ts"),
+    "utf-8",
+  );
+  assert.match(
+    patchedCache,
+    /npmx-likes-leaderboard-api-production\.up\.railway\.app/,
+    "likes leaderboard should stay fixture-backed",
+  );
+  assert.match(
+    patchedCache,
+    /api\.microlink\.io/,
+    "homepage preview enrichment should stay fixture-backed",
+  );
+  assert.match(
+    patchedCache,
+    /\/_vercel\/insights\//,
+    "speed insights proxy should stay fixture-backed",
+  );
+  assert.match(
+    patchedCache,
+    /\/versions\\\/\(\.\+\)\\\/last-week/,
+    "version download distribution should stay fixture-backed",
   );
 
   const doubles = installNuxtDoubles();
@@ -153,4 +178,50 @@ test("npmx registry fixture patch serves deterministic package metadata to serve
   patchNpmxRegistryFixtures(fixtureRoot);
   const repatchedBehavior = await collectPatchedBehavior(fixtureRoot, 2, doubles);
   assert.deepEqual(repatchedBehavior, behavior);
+});
+
+test("npmx registry fixtures close the visual package dependency graph", () => {
+  const queue: Array<{ name: string; version?: string }> = [
+    { name: "vue", version: "3.5.28" },
+    { name: "vue", version: "3.5.29" },
+    { name: "@vue/compiler-sfc", version: "3.5.29" },
+    { name: "nuxt", version: "4.0.0" },
+  ];
+  const seen = new Set<string>();
+
+  for (const item of queue) {
+    const key = `${item.name}@${item.version ?? "latest"}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const packumentFixture = resolveVizeE2ENpmRegistryFixture<{
+      "dist-tags"?: { latest?: string };
+      name: string;
+      versions: Record<
+        string,
+        {
+          dependencies?: Record<string, string>;
+          dist?: { unpackedSize?: number };
+        }
+      >;
+    }>(`/${encodeURIComponent(item.name)}`);
+    assert.equal(packumentFixture.handled, true, `${item.name} packument should be fixture-backed`);
+    if (!packumentFixture.handled) continue;
+
+    const version =
+      item.version && packumentFixture.data.versions[item.version]
+        ? item.version
+        : packumentFixture.data["dist-tags"]?.latest;
+    assert.ok(version, `${item.name} should have a latest version`);
+    const versionData = packumentFixture.data.versions[version];
+    assert.ok(versionData, `${item.name}@${version} should be fixture-backed`);
+    assert.ok(
+      (versionData.dist?.unpackedSize ?? 0) > 0,
+      `${item.name}@${version} should expose install-size metadata`,
+    );
+
+    for (const [depName, depRange] of Object.entries(versionData.dependencies ?? {})) {
+      queue.push({ name: depName, version: depRange });
+    }
+  }
 });

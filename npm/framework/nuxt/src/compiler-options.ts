@@ -70,6 +70,8 @@ export interface VizeNuxtCompilerOptions {
   jsxCompat?: "native" | "babel";
   /** Treat lowercase non-HTML tags as custom renderer elements. */
   customRenderer?: boolean;
+  /** Tag patterns that compile as custom elements instead of Vue components. */
+  customElements?: string[];
   /** Template syntax compatibility mode. */
   templateSyntax?: "standard" | "strict" | "quirks";
   /** Root directory to scan for .vue files. */

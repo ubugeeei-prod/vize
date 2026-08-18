@@ -1,14 +1,16 @@
 //! Vapor mode template compilation.
 
 use super::string_tracking::{StringTrackState, count_braces_with_state};
-use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode};
+use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 use vize_atelier_vapor::{
-    VaporCompilerOptions, compile_vapor_with_template_syntax_and_diagnostics,
+    VaporCompilerOptions, compile_vapor_with_custom_elements_template_syntax_and_diagnostics,
 };
 use vize_carton::{Allocator, String, ToCompactString};
 
 use crate::{
-    compile_template::{TemplateBlockCompileResult, recoverable_template_warnings},
+    compile_template::{
+        TemplateBlockCompileContext, TemplateBlockCompileResult, recoverable_template_warnings,
+    },
     types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions},
 };
 
@@ -17,14 +19,19 @@ use crate::{
 pub(crate) fn compile_template_block_vapor(
     allocator: &Allocator,
     template: &SfcTemplateBlock,
-    scope_id: &str,
-    has_scoped: bool,
-    bindings: Option<&BindingMetadata>,
     options: &TemplateCompileOptions,
+    custom_elements: &CustomElementMatcher,
+    ctx: TemplateBlockCompileContext<'_>,
     template_syntax: TemplateSyntaxMode,
     codegen_options: &CodegenOptions,
 ) -> Result<TemplateBlockCompileResult, SfcError> {
     let compiler_options = options.compiler_options.as_ref();
+    let TemplateBlockCompileContext {
+        scope_id,
+        has_scoped,
+        bindings,
+        ..
+    } = ctx;
 
     // Build Vapor compiler options
     let vapor_opts = VaporCompilerOptions {
@@ -40,11 +47,12 @@ pub(crate) fn compile_template_block_vapor(
     };
 
     // Compile template with Vapor
-    let (result, diagnostics) = compile_vapor_with_template_syntax_and_diagnostics(
+    let (result, diagnostics) = compile_vapor_with_custom_elements_template_syntax_and_diagnostics(
         allocator,
         &template.content,
         vapor_opts,
         template_syntax,
+        custom_elements.clone(),
     );
 
     if !result.error_messages.is_empty() {

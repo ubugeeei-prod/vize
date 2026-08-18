@@ -213,19 +213,45 @@ test("dependency prepare rejects failed and timed-out installs", () => {
   }
 });
 
-test("dependency prepare requires one performance project and exact SHA evidence", () => {
+test("dependency prepare skips empty typecheck shards", () => {
   const fixture = setup();
   try {
-    writeJson(fixture.registryPath, { projects: [] });
-    const missing = run(fixture);
-    assert.equal(missing.status, 1);
-    assert.match(missing.stderr, /Expected exactly one.*found 0/);
     writeJson(fixture.registryPath, {
-      projects: [fixture.project, { ...fixture.project, id: "duplicate" }],
+      projects: [{ ...fixture.project, typecheckPerformance: { enabled: false } }],
     });
-    const duplicate = run(fixture);
-    assert.equal(duplicate.status, 1);
-    assert.match(duplicate.stderr, /Expected exactly one.*found 2/);
+    const empty = run(fixture);
+    assert.equal(empty.status, 0, empty.stderr);
+    assert.match(empty.stdout, /No typecheck performance projects selected/);
+    assert.equal(fs.existsSync(fixture.invocationPath), false);
+    assert.equal(fs.existsSync(artifactPath(fixture)), false);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("dependency prepare prepares every selected typecheck target", () => {
+  const selectedFixture = setup();
+  try {
+    writeJson(selectedFixture.registryPath, {
+      projects: [selectedFixture.project, { ...selectedFixture.project, id: "second" }],
+    });
+    git(selectedFixture.fixtureRoot, ["add", "registry.json"]);
+    commit(selectedFixture.fixtureRoot, "select second target");
+    const selected = run(selectedFixture);
+    assert.equal(selected.status, 0, selected.stderr);
+    assert.equal(fs.existsSync(artifactPath(selectedFixture)), true);
+    assert.equal(
+      fs.existsSync(path.join(selectedFixture.outputDir, "second-typecheck-dependencies.json")),
+      true,
+    );
+  } finally {
+    cleanup(selectedFixture);
+  }
+});
+
+test("dependency prepare requires exact SHA evidence for selected targets", () => {
+  const fixture = setup();
+  try {
     writeJson(fixture.registryPath, { projects: [fixture.project] });
     const malformedSha = spawnSync(
       process.execPath,

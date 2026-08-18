@@ -64,10 +64,11 @@ fn install_mapper_and_vue(root: &Path, vue: &Path) {
         &serde_json::to_string_pretty(&json!({
             "name": "vize",
             "private": true,
-            "tsContentMapper": {
-                "exec": [env!("CARGO_BIN_EXE_vize"), "content-mapper"],
-                "extensions": { ".vue": ".tsx" },
-                "compilerOptions": ["noUnusedLocals"]
+            "typescript": {
+                "contentMapper": {
+                    "exec": [env!("CARGO_BIN_EXE_vize"), "content-mapper"],
+                    "compilerOptions": ["noUnusedLocals"]
+                }
             }
         }))
         .unwrap(),
@@ -82,7 +83,7 @@ fn run(tsgo: &Path, root: &Path) -> std::process::Output {
     Command::new(tsgo)
         .current_dir(root)
         .args([
-            "--loadExternalPlugins",
+            "--runExternalCode",
             "--noEmit",
             "-p",
             "tsconfig.json",

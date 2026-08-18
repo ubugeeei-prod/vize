@@ -17,6 +17,15 @@ const TEMPORARY_HOSTED_RUNNER = "ubuntu-24.04";
 const RESTORE_BLACKSMITH_RUNNER = "blacksmith-32vcpu-ubuntu-2404";
 const RESTORE_RUNS_ON = `${TEMPORARY_HOSTED_RUNNER} # restore: ${RESTORE_BLACKSMITH_RUNNER}`;
 
+const REMAINING_RELEASE_BLOCKER_FALLBACK_JOBS: Record<string, string[]> = {
+  "build-docs.yml": ["build-docs", "build-playground"],
+  "check-bench.yml": ["check-bench"],
+  "content-mapper-conformance.yml": ["exact-tsgo-project"],
+  "deploy-docs.yml": ["deploy"],
+  "release-open-vsx.yml": ["release-open-vsx-extension"],
+  "vue-benchmarks-replay.yml": ["replay-main", "replay-release"],
+};
+
 // Every job the temporary fallback moved off Blacksmith, keyed by workflow. The
 // inline `# restore:` comment is the rollback contract for this migration, so
 // each job is checked by name: a file-wide label match keeps passing after a
@@ -25,6 +34,7 @@ const RESTORE_RUNS_ON = `${TEMPORARY_HOSTED_RUNNER} # restore: ${RESTORE_BLACKSM
 // not be annotated.
 const HOSTED_FALLBACK_JOBS: Record<string, string[]> = {
   "benchmark.yml": ["pr-benchmark", "pr-benchmark-budget", "pr-benchmark-comment"],
+  ...REMAINING_RELEASE_BLOCKER_FALLBACK_JOBS,
   "check.yml": [
     "nix-flake",
     "fmt-rust",
@@ -76,6 +86,28 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function activeRunnerLabel(workflow: string, jobName: string): string {
+  const runsOn = workflowJobRunsOn(workflow, jobName);
+  assert.ok(runsOn, `${jobName} is missing runs-on`);
+  return runsOn.split(/\s+#\s*/)[0] ?? runsOn;
+}
+
+function parsedTimeoutMinutes(workflow: string, jobName: string): number | undefined {
+  const job = (parse(workflow) as { jobs?: Record<string, { "timeout-minutes"?: number }> }).jobs?.[
+    jobName
+  ];
+  assert.ok(job, `${jobName} is missing`);
+  return job["timeout-minutes"];
+}
+
+function parsedMaxParallel(workflow: string, jobName: string): number | undefined {
+  const job = (
+    parse(workflow) as { jobs?: Record<string, { strategy?: { "max-parallel"?: number } }> }
+  ).jobs?.[jobName];
+  assert.ok(job, `${jobName} is missing`);
+  return job.strategy?.["max-parallel"];
+}
+
 test("temporary hosted runner fallback keeps Blacksmith restore labels per job", () => {
   for (const [workflowName, expectedJobs] of Object.entries(HOSTED_FALLBACK_JOBS)) {
     const source = readRepoFile(".github", "workflows", workflowName);
@@ -93,6 +125,21 @@ test("temporary hosted runner fallback keeps Blacksmith restore labels per job",
       expectedJobs,
       `${workflowName} annotates a different set of jobs than the hosted fallback covers`,
     );
+  }
+});
+
+test("remaining release blocker fallback covers each targeted workflow", () => {
+  for (const [workflowName, expectedJobs] of Object.entries(
+    REMAINING_RELEASE_BLOCKER_FALLBACK_JOBS,
+  )) {
+    const source = readRepoFile(".github", "workflows", workflowName);
+    for (const jobName of expectedJobs) {
+      assert.equal(
+        activeRunnerLabel(source, jobName),
+        TEMPORARY_HOSTED_RUNNER,
+        `${workflowName} job ${jobName} must use the temporary hosted runner`,
+      );
+    }
   }
 });
 
@@ -123,6 +170,59 @@ test("hosted fallback keeps the restore contract on the budgets it widened", () 
     workflowJobField(source, "app-readiness-producer", "timeout-minutes"),
     `40 # restore: 30 with ${RESTORE_BLACKSMITH_RUNNER}`,
     "the hosted readiness budget must state the Blacksmith value it replaced",
+  );
+
+  const realProjectMatrix = readRepoFile(".github", "workflows", "real-project-matrix.yml");
+  assert.equal(parsedTimeoutMinutes(realProjectMatrix, "real-project-matrix"), 240);
+  const matrixTimeout = workflowJobField(
+    realProjectMatrix,
+    "real-project-matrix",
+    "timeout-minutes",
+  );
+  assert.ok(matrixTimeout, "missing real-project-matrix timeout-minutes");
+  assert.match(
+    matrixTimeout,
+    /^240\s+# restore:\s+120 with blacksmith-32vcpu-ubuntu-2404$/,
+    "the hosted Real Project Matrix budget must keep a Blacksmith restore annotation",
+  );
+  assert.equal(parsedMaxParallel(realProjectMatrix, "real-project-matrix"), 20);
+  assert.match(
+    workflowJobBody(realProjectMatrix, "real-project-matrix"),
+    /max-parallel:[^\n]*# restore:\s+6 with blacksmith-32vcpu-ubuntu-2404$/m,
+    "the hosted Real Project Matrix parallelism must keep a Blacksmith restore annotation",
+  );
+
+  const preflight = readRepoFile(".github", "workflows", "release-preflight.yml");
+  assert.equal(parsedTimeoutMinutes(preflight, "verify"), 540);
+  const preflightTimeout = workflowJobField(preflight, "verify", "timeout-minutes");
+  assert.ok(preflightTimeout, "missing verify timeout-minutes");
+  assert.match(
+    preflightTimeout,
+    /^540\s+# restore:\s+120 with blacksmith-32vcpu-ubuntu-2404$/,
+    "the hosted release preflight budget must keep a Blacksmith restore annotation",
+  );
+});
+
+test("check benchmark metadata records the hosted runner that produced it", () => {
+  const source = readRepoFile(".github", "workflows", "check-bench.yml");
+  const workflow = parse(source) as {
+    jobs?: Record<string, { steps?: Array<{ name?: string; run?: string }> }>;
+  };
+  const gate = workflow.jobs?.["check-bench"]?.steps?.find(
+    (step) => step.name === "Run the fail-closed check benchmark gate",
+  );
+  assert.ok(gate, "missing the check benchmark gate step");
+  const activeRun = (gate.run ?? "").replace(/^\s*#.*$/gm, "");
+  const runnerLabel = activeRun.match(/--runner-label "([^"]+)"/)?.[1];
+  assert.ok(runnerLabel, "missing --runner-label for the check benchmark gate");
+  assert.equal(
+    runnerLabel,
+    activeRunnerLabel(source, "check-bench"),
+    "check benchmark metadata must record the runner that produced it",
+  );
+  assert.ok(
+    (gate.run ?? "").includes(`# restore runner-label: ${RESTORE_BLACKSMITH_RUNNER}`),
+    "the check benchmark gate must keep the Blacksmith metadata label for restoration",
   );
 });
 

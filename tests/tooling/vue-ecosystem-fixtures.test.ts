@@ -200,6 +200,7 @@ test("fixtures with exact Vue SFC expectations stay explicit", () => {
     projects.map((project) => ({ id: project.id, count: project.expectedVueFileCount })),
     [
       { id: "docsify", count: 0 },
+      { id: "vue-storefront", count: 0 },
       { id: "vue-native-core", count: 0 },
       { id: "vuefes-japan-speakers", count: 15 },
       { id: "wakapi", count: 0 },

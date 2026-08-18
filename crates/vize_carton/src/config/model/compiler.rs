@@ -95,5 +95,7 @@ pub(crate) struct RawCompilerConfig {
     /// JSX compatibility semantics (`compiler.jsxCompat`); `None` when absent,
     /// which the JSX entry points treat as `native`.
     pub(crate) jsx_compat: Option<JsxCompat>,
+    /// Tag patterns that compile as custom elements instead of Vue components.
+    pub(crate) custom_elements: Vec<crate::String>,
     pub(crate) compatibility: RawCompilerCompatibilityConfig,
 }

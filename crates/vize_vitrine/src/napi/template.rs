@@ -17,11 +17,13 @@ use vize_carton::Allocator;
 use crate::{CompileResult, CompilerOptions, template_syntax::resolve_template_syntax};
 use vize_atelier_core::{
     codegen::generate,
-    lane::{transform, transform_with_template_syntax_quirks},
+    lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
     options::{CodegenMode, CodegenOptions, ParserOptions, TransformOptions},
-    parser::{parse_with_options, parse_with_options_and_template_syntax},
+    parser::parse_with_options_custom_elements_and_template_syntax,
 };
-use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor_with_template_syntax};
+use vize_atelier_vapor::{
+    VaporCompilerOptions, compile_vapor_with_custom_elements_and_template_syntax,
+};
 
 /// Compile Vue template to VDom render function
 #[napi]
@@ -32,13 +34,22 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
         .map_err(|message| Error::new(Status::InvalidArg, message))?;
 
     // Parse
+    let custom_element_patterns =
+        crate::types::custom_element_patterns(opts.custom_elements.as_deref());
+    let custom_elements =
+        vize_atelier_core::options::CustomElementMatcher::from_patterns(custom_element_patterns);
     let parser_opts = ParserOptions {
         custom_renderer: opts.custom_renderer.unwrap_or(false),
         experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
         ..Default::default()
     };
-    let (mut root, errors) =
-        parse_with_options_and_template_syntax(&allocator, &template, parser_opts, template_syntax);
+    let (mut root, errors) = parse_with_options_custom_elements_and_template_syntax(
+        &allocator,
+        &template,
+        parser_opts,
+        custom_elements.clone(),
+        template_syntax,
+    );
 
     let fatal: Vec<_> = errors.iter().filter(|e| !e.is_recoverable()).collect();
     if !fatal.is_empty() {
@@ -59,14 +70,19 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
         cache_handlers: opts.cache_handlers.unwrap_or(false),
         scope_id: opts.scope_id.clone().map(|s| s.into()),
         ssr: opts.ssr.unwrap_or(false),
+        custom_renderer: opts.custom_renderer.unwrap_or(false),
         experimental_patterned_template: opts.experimental_patterned_template.unwrap_or(false),
         ..Default::default()
     };
-    if template_syntax.is_quirks() {
-        transform_with_template_syntax_quirks(&allocator, &mut root, transform_opts, None);
-    } else {
-        transform(&allocator, &mut root, transform_opts, None);
-    }
+    transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
+        &allocator,
+        &mut root,
+        transform_opts,
+        None,
+        custom_elements,
+        template_syntax.is_quirks(),
+        None,
+    );
 
     // Codegen
     let codegen_opts = CodegenOptions {
@@ -119,12 +135,20 @@ pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Resu
     let vapor_opts = VaporCompilerOptions {
         prefix_identifiers: opts.prefix_identifiers.unwrap_or(false),
         ssr: opts.ssr.unwrap_or(false),
+        custom_renderer: opts.custom_renderer.unwrap_or(false),
         experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
         experimental_patterned_template: opts.experimental_patterned_template.unwrap_or(false),
         ..Default::default()
     };
-    let result =
-        compile_vapor_with_template_syntax(&allocator, &template, vapor_opts, template_syntax);
+    let result = compile_vapor_with_custom_elements_and_template_syntax(
+        &allocator,
+        &template,
+        vapor_opts,
+        template_syntax,
+        vize_atelier_core::options::CustomElementMatcher::from_patterns(
+            crate::types::custom_element_patterns(opts.custom_elements.as_deref()),
+        ),
+    );
 
     if !result.error_messages.is_empty() {
         return Err(Error::new(
@@ -156,14 +180,21 @@ pub fn parse_template(
 ) -> Result<serde_json::Value> {
     let allocator = Allocator::new();
     let opts = options.unwrap_or_default();
+    let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
+        .map_err(|message| Error::new(Status::InvalidArg, message))?;
 
-    let (root, errors) = parse_with_options(
+    let (root, errors) = parse_with_options_custom_elements_and_template_syntax(
         &allocator,
         &template,
         ParserOptions {
+            custom_renderer: opts.custom_renderer.unwrap_or(false),
             experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
             ..Default::default()
         },
+        vize_atelier_core::options::CustomElementMatcher::from_patterns(
+            crate::types::custom_element_patterns(opts.custom_elements.as_deref()),
+        ),
+        template_syntax,
     );
 
     if !errors.is_empty() {

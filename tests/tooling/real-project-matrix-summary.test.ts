@@ -20,8 +20,10 @@ test("real-project workflow gates every measured surface on one verdict", () => 
   assert.equal(verdict.shell, "bash");
   assert.deepEqual(verdict.env, {
     CORE_TOOLS_MODE: "${{ inputs.core_tools_mode || 'enforce' }}",
+    TYPECHECK_DEPENDENCIES_MODE: "${{ inputs.typecheck_dependencies_mode || 'enforce' }}",
     LINT_DIVERGENCE_MODE: "${{ inputs.lint_divergence_mode || 'enforce' }}",
     LSP_MODE: "${{ inputs.lsp_mode || 'enforce' }}",
+    TYPECHECK_DIVERGENCE_MODE: "${{ inputs.typecheck_divergence_mode || 'enforce' }}",
     VIZE_WAIVER_AUDIT_OUTCOME: "${{ steps.waiver_audit.outcome }}",
     VIZE_TYPECHECK_DEPENDENCIES_OUTCOME: "${{ steps.typecheck_dependencies.outcome }}",
     VIZE_CORE_TOOLS_OUTCOME: "${{ steps.core_tools.outcome }}",
@@ -37,19 +39,23 @@ test("real-project workflow gates every measured surface on one verdict", () => 
     /core_tools_verdict="\$VIZE_CORE_TOOLS_OUTCOME"/,
     /\[\[ "\$CORE_TOOLS_MODE" == "record-only"/,
     /--surface "core-tools=\$core_tools_verdict"/,
+    /typecheck_dependencies_verdict="\$VIZE_TYPECHECK_DEPENDENCIES_OUTCOME"/,
+    /\[\[ "\$TYPECHECK_DEPENDENCIES_MODE" == "record-only"/,
+    /--surface "typecheck-dependencies=\$typecheck_dependencies_verdict"/,
     /lint_divergence_verdict="\$VIZE_LINT_DIVERGENCE_OUTCOME"/,
     /\[\[ "\$LINT_DIVERGENCE_MODE" == "record-only"/,
     /--surface "lint-divergence=\$lint_divergence_verdict"/,
     /lsp_verdict="\$VIZE_LSP_OUTCOME"/,
     /\[\[ "\$LSP_MODE" == "record-only"/,
     /--surface "lsp=\$lsp_verdict"/,
-    /--surface "typecheck-divergence=\$VIZE_TYPECHECK_DIVERGENCE_OUTCOME"/,
+    /typecheck_divergence_verdict="\$VIZE_TYPECHECK_DIVERGENCE_OUTCOME"/,
+    /\[\[ "\$TYPECHECK_DIVERGENCE_MODE" == "record-only"/,
+    /--surface "typecheck-divergence=\$typecheck_divergence_verdict"/,
   ]) {
     assert.match(verdict.run ?? "", pattern);
   }
   for (const [surface, variable] of [
     ["waiver-audit", "VIZE_WAIVER_AUDIT_OUTCOME"],
-    ["typecheck-dependencies", "VIZE_TYPECHECK_DEPENDENCIES_OUTCOME"],
     ["syntax-highlighter", "VIZE_SYNTAX_HIGHLIGHTER_OUTCOME"],
     ["glyph", "VIZE_GLYPH_OUTCOME"],
   ]) {

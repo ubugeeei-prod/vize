@@ -281,6 +281,14 @@ test("release repository guard rejects unsafe refs before mutation", () => {
       { branch: "main", remoteSha: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" },
       /HEAD must exactly match the current origin\/main/,
     ],
+    [
+      {
+        branch: "main",
+        parentLine:
+          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb cccccccccccccccccccccccccccccccccccccccc",
+      },
+      /must have exactly one parent for benchmark comparison/,
+    ],
     [{ branch: "main", localTagExists: true }, /Tag v0\.290\.1 already exists locally/],
     [{ branch: "main", remoteTagExists: true }, /Remote tag v0\.290\.1 already exists/],
   ];

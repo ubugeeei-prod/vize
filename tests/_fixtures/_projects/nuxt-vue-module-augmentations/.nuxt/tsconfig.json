@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "types": [],
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "paths": {
+      "vue-i18n": ["../../../../node_modules/vue-i18n"],
+      "#imports": ["./imports.d.ts"],
+      "~": [".."],
+      "~/*": ["../*"]
+    }
+  },
+  "include": ["./imports.d.ts", "./types/**/*.d.ts", "../types/**/*.d.ts", "../**/*.vue"]
+}

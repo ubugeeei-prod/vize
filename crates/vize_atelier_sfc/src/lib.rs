@@ -59,10 +59,13 @@ pub use bundler::{
     extract_style_blocks, generate_bundler_scope_id, has_scoped_style, is_importable_asset_url,
     strip_css_comments_for_scoped, wrap_scoped_preprocessor_style,
 };
-pub use compile::compile_sfc_with_template_syntax_and_codegen_options;
 #[allow(deprecated)]
 pub use compile::compile_sfc_with_vue_parser_quirks;
 pub use compile::{ScriptCompileResult, compile_sfc, compile_sfc_with_template_syntax};
+pub use compile::{
+    compile_sfc_with_custom_elements_template_syntax_and_codegen_options,
+    compile_sfc_with_template_syntax_and_codegen_options,
+};
 pub use compile_script::props::{
     script_setup_has_semantic_validator_candidates, validate_script_setup_semantics,
     validate_script_setup_semantics_located,

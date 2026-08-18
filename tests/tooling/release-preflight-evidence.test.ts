@@ -7,6 +7,7 @@ import {
   requiredReleaseWorkflows,
   selectRequiredWorkflowRuns,
 } from "../../tools/github/release-preflight-evidence.mjs";
+import { requiredRealProjectMatrixShardCount } from "../../tools/github/release-preflight-matrix-evidence.mjs";
 import { readRepoFile } from "./support/github-workflows.ts";
 import {
   releaseSha,
@@ -146,21 +147,21 @@ test("matrix-sensitive release gates require every successful job", () => {
     /Native host smoke \(linux-x64-gnu\)/,
   );
 
-  const realProjectJobs = Array.from({ length: 11 }, (_, shard) =>
-    successfulReleaseJob(`real projects (${shard}/11)`),
+  const realProjectJobs = Array.from({ length: requiredRealProjectMatrixShardCount }, (_, shard) =>
+    successfulReleaseJob(`real projects (${shard}/${requiredRealProjectMatrixShardCount})`),
   );
   assert.doesNotThrow(() => assertRequiredWorkflowJobs("Real Project Matrix", realProjectJobs));
   assert.throws(
     () => assertRequiredWorkflowJobs("Real Project Matrix", realProjectJobs.slice(1)),
-    /real projects \(0\/11\)/,
+    new RegExp(`real projects \\(0\\/${requiredRealProjectMatrixShardCount}\\)`),
   );
   assert.throws(
     () =>
       assertRequiredWorkflowJobs("Real Project Matrix", [
         ...realProjectJobs,
-        successfulReleaseJob("real projects (0/11)"),
+        successfulReleaseJob(`real projects (0/${requiredRealProjectMatrixShardCount})`),
       ]),
-    /real projects \(0\/11\).*found 2/,
+    new RegExp(`real projects \\(0\\/${requiredRealProjectMatrixShardCount}\\).*found 2`),
   );
   assert.throws(
     () =>
@@ -168,6 +169,8 @@ test("matrix-sensitive release gates require every successful job", () => {
         { ...realProjectJobs[0], conclusion: "failure" },
         ...realProjectJobs.slice(1),
       ]),
-    /real projects \(0\/11\) is completed\/failure/,
+    new RegExp(
+      `real projects \\(0\\/${requiredRealProjectMatrixShardCount}\\) is completed\\/failure`,
+    ),
   );
 });

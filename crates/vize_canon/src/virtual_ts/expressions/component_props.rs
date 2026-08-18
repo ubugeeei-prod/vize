@@ -46,6 +46,32 @@ impl<'a> ComponentPropSource<'a> {
     }
 }
 
+pub(crate) struct ComponentPropCheckContext<'a, 'b> {
+    pub(crate) ts: &'b mut String,
+    pub(crate) mappings: &'b mut Vec<VizeMapping>,
+    pub(crate) template_prop_names: &'a FxHashSet<String>,
+    pub(crate) source_context: ComponentPropSource<'a>,
+    pub(crate) indent: &'b str,
+}
+
+impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
+    pub(crate) fn new(
+        ts: &'b mut String,
+        mappings: &'b mut Vec<VizeMapping>,
+        template_prop_names: &'a FxHashSet<String>,
+        source_context: ComponentPropSource<'a>,
+        indent: &'b str,
+    ) -> Self {
+        Self {
+            ts,
+            mappings,
+            template_prop_names,
+            source_context,
+            indent,
+        }
+    }
+}
+
 pub(super) fn collect_generated_class_bindings<'a>(
     usage: &'a ComponentUsage,
     template_prop_names: &FxHashSet<String>,
@@ -81,14 +107,16 @@ pub(super) fn merged_class_binding_value(bindings: &[(&PassedProp, String)]) -> 
 
 /// Generate component prop value checks at the given indentation level.
 pub(crate) fn generate_component_prop_checks(
-    ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
+    ctx: &mut ComponentPropCheckContext<'_, '_>,
     usage: &ComponentUsage,
     idx: usize,
-    template_prop_names: &FxHashSet<String>,
-    source_context: ComponentPropSource<'_>,
-    indent: &str,
+    component_ref: &str,
 ) {
+    let ts = &mut *ctx.ts;
+    let mappings = &mut *ctx.mappings;
+    let template_prop_names = ctx.template_prop_names;
+    let source_context = ctx.source_context;
+    let indent = ctx.indent;
     let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
     let has_inline_callback = usage
         .props
@@ -111,6 +139,7 @@ pub(crate) fn generate_component_prop_checks(
         ts,
         usage,
         idx,
+        component_ref,
         template_prop_names,
         source_context,
         callback_indent.as_str(),

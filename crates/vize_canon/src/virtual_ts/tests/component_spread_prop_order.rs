@@ -122,6 +122,33 @@ fn duplicate_named_props_before_a_spread_share_one_singleton() {
 }
 
 #[test]
+fn component_event_directives_do_not_enter_the_props_literal() {
+    let code =
+        generated_props_literal(r#"<Child @keydown="first" @keydown.esc.prevent="second" />"#);
+
+    assert!(
+        !code.contains("\"onKeydown\": undefined as any"),
+        "event directives are checked by the component-event path; duplicating them in the props literal reports legal modifier pairs as TS1117: {code}"
+    );
+}
+
+#[test]
+fn component_events_do_not_mask_spread_listener_props() {
+    let code =
+        generated_props_literal(r#"<Child @keydown="first" v-bind="bag" @click="second" />"#);
+
+    assert!(
+        code.contains("...bag"),
+        "spread prop must remain checked: {code}"
+    );
+    assert!(
+        !code.contains("\"onKeydown\": undefined as any")
+            && !code.contains("\"onClick\": undefined as any"),
+        "event directive placeholders would mask same-named listener props from spreads: {code}"
+    );
+}
+
+#[test]
 fn singleton_spread_keeps_exact_named_value_source_mapping() {
     let script = r#"import Child from "./Child.vue"
 const bag = { count: 1, label: 'ok' }

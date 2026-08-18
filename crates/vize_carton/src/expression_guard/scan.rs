@@ -7,6 +7,8 @@
 //! stop exactly where the lexer stops, or hidden brackets slip past the guard
 //! while OXC still recurses into the overflow path.
 
+use oxc_syntax::identifier::is_identifier_start;
+
 pub fn skip_quoted(bytes: &[u8], mut i: usize, quote: u8) -> usize {
     while i < bytes.len() {
         match bytes[i] {
@@ -49,7 +51,16 @@ pub(super) fn skip_template_text(bytes: &[u8], mut i: usize) -> (usize, bool) {
     (i, false)
 }
 
-pub(super) fn is_speculative_type_angle_open(content: &str, open: usize) -> bool {
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(super) enum SpeculativeTypeAngleOpen {
+    Regular,
+    MalformedIdentifierEscape,
+}
+
+pub(super) fn speculative_type_angle_open_kind(
+    content: &str,
+    open: usize,
+) -> Option<SpeculativeTypeAngleOpen> {
     // The `<` is ASCII, so `open + 1` is a valid char boundary.
     let after = &content[open + 1..];
     let marker = skip_type_angle_trivia(after);
@@ -65,11 +76,66 @@ pub(super) fn is_speculative_type_angle_open(content: &str, open: usize) -> bool
     match after.as_bytes().get(marker) {
         // `\` starts a `\uXXXX` identifier escape, which OXC lexes as an
         // identifier start just like a bare letter.
-        Some(b'{' | b'[' | b'!' | b'(' | b'a'..=b'z' | b'A'..=b'Z' | b'_' | b'$' | b'\\') => true,
+        Some(b'{' | b'[' | b'!' | b'(' | b'a'..=b'z' | b'A'..=b'Z' | b'_' | b'$') => {
+            Some(SpeculativeTypeAngleOpen::Regular)
+        }
+        Some(b'\\') if starts_valid_identifier_escape(after.as_bytes(), marker) => {
+            Some(SpeculativeTypeAngleOpen::Regular)
+        }
+        Some(b'\\') => Some(SpeculativeTypeAngleOpen::MalformedIdentifierEscape),
         // Trivia is already skipped, so a remaining non-ASCII lead byte begins a
         // Unicode identifier (`f<日本語>`) rather than whitespace.
-        Some(byte) => !byte.is_ascii(),
-        None => false,
+        Some(byte) if !byte.is_ascii() => Some(SpeculativeTypeAngleOpen::Regular),
+        Some(_) | None => None,
+    }
+}
+
+fn starts_valid_identifier_escape(bytes: &[u8], marker: usize) -> bool {
+    decode_identifier_escape(bytes, marker).is_some_and(is_identifier_start)
+}
+
+fn decode_identifier_escape(bytes: &[u8], marker: usize) -> Option<char> {
+    if bytes.get(marker) != Some(&b'\\') || bytes.get(marker + 1) != Some(&b'u') {
+        return None;
+    }
+    if bytes.get(marker + 2) == Some(&b'{') {
+        decode_braced_identifier_escape(bytes, marker + 3)
+    } else {
+        decode_fixed_identifier_escape(bytes, marker + 2)
+    }
+}
+
+fn decode_braced_identifier_escape(bytes: &[u8], mut i: usize) -> Option<char> {
+    let mut code_point = 0u32;
+    let mut digits = 0usize;
+    while digits < 6 {
+        let Some(value) = bytes.get(i).and_then(|byte| hex_value(*byte)) else {
+            break;
+        };
+        code_point = (code_point << 4) | value;
+        i += 1;
+        digits += 1;
+    }
+    if digits == 0 || bytes.get(i) != Some(&b'}') {
+        return None;
+    }
+    char::from_u32(code_point)
+}
+
+fn decode_fixed_identifier_escape(bytes: &[u8], start: usize) -> Option<char> {
+    let mut code_point = 0u32;
+    for byte in bytes.get(start..start + 4)? {
+        code_point = (code_point << 4) | hex_value(*byte)?;
+    }
+    char::from_u32(code_point)
+}
+
+fn hex_value(byte: u8) -> Option<u32> {
+    match byte {
+        b'0'..=b'9' => Some(u32::from(byte - b'0')),
+        b'a'..=b'f' => Some(u32::from(byte - b'a' + 10)),
+        b'A'..=b'F' => Some(u32::from(byte - b'A' + 10)),
+        _ => None,
     }
 }
 

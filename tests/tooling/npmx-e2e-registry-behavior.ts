@@ -255,6 +255,23 @@ export const fetchNpmPackage = defineCachedFunction(
 )
 `,
   );
+  writeText(
+    path.join(fixtureRoot, "modules/runtime/server/cache.ts"),
+    `function getMockForUrl(url: string): unknown {
+  const urlObj = URL.parse(url)
+  if (!urlObj) return null
+
+  const { host, pathname } = urlObj
+
+  // npm API: downloads range → synthetic daily data for sparklines
+  if (host === 'api.npmjs.org') {
+    return null
+  }
+
+  return null
+}
+`,
+  );
 }
 
 async function record(doubles: NuxtDoubles, run: () => Promise<unknown>): Promise<ScenarioResult> {

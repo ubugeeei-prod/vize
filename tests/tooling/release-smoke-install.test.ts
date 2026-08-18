@@ -233,7 +233,7 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   assert.match(runtimeScript, /VIZE_TEST_CONTENT_MAPPER_TSGO/);
   assert.match(runtimeScript, /runInstalledContentMapperChecks/);
   assert.match(runtimeScript, /content mapper project with spaces/);
-  assert.match(runtimeScript, /--loadExternalPlugins/);
+  assert.match(runtimeScript, /--runExternalCode/);
   assert.match(runtimeScript, /tsconfig\.emit\.json/);
   assert.match(initTypecheckScript, /`init-smoke-\$\{language\}`/);
   assert.match(initTypecheckScript, /\["typescript", "javascript"\]/);

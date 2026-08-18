@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-export type MutationDiagnosticMode = "match" | "missing" | "mismatch";
+export type MutationDiagnosticMode = "match" | "missing" | "mismatch" | "shifted";
 
 export function writeVize(
   pathname: string,
@@ -63,6 +63,13 @@ export function writeVueTscFixture(
     files: string[];
     fixtureRoot: string;
     mutation: MutationDiagnosticMode;
+    /**
+     * Non-Vue program entries the same `--listFilesOnly` run emitted, relative
+     * to the fixture or absolute. This is how a contaminated ambient environment
+     * looks from the outside: the `.vue` corpus is identical and the
+     * extra entries are packages the fixture never owned.
+     */
+    programFiles?: string[];
   },
   invocationPath: string,
 ) {
@@ -70,7 +77,9 @@ export function writeVueTscFixture(
     file,
     sourcePath: path.join(options.fixtureRoot, file),
   }));
-  const files = options.files.map((file) => `${path.join(options.fixtureRoot, file)}\n`).join("");
+  const files = [...options.files, ...(options.programFiles ?? [])]
+    .map((file) => `${path.resolve(options.fixtureRoot, file)}\n`)
+    .join("");
   const runBody = `
 if (process.argv.includes("--listFilesOnly")) {
   process.${options.coverageOutputStream === "stderr" ? "stderr" : "stdout"}.write(${JSON.stringify(files)});
@@ -108,11 +117,12 @@ function mutationDiagnostic(source, mode, tool, file) {
   if (source.includes("vize-mutation-invisible")) return null;
   if (mode === "missing") return null;
   const line = source.slice(0, source.indexOf("__vize_typecheck_mutation_probe")).split(/\\r?\\n/).length;
+  const reportedLine = mode === "shifted" ? line + 1 : line;
   const message = mode === "mismatch"
     ? "Type 'number' is not assignable to type 'boolean'."
     : "Type 'number' is not assignable to type 'string'.";
-  if (tool === "vize") return \`error:\${line}:1 [TS2322] \${message}\`;
-  return \`\${file}(\${line},1): error TS2322: \${message}\\n\`;
+  if (tool === "vize") return \`error:\${reportedLine}:1 [TS2322] \${message}\`;
+  return \`\${file}(\${reportedLine},1): error TS2322: \${message}\\n\`;
 }
 `;
 }

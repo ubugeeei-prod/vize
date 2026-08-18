@@ -72,6 +72,14 @@
           "default": false,
           "type": "boolean"
         },
+        "customElements": {
+          "description": "Tag patterns that compile as custom elements instead of Vue components",
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "ssr": {
           "description": "Enable SSR mode",
           "default": false,

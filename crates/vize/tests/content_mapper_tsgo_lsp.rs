@@ -118,7 +118,7 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
                     "rootUri": root_uri,
                     "workspaceFolders": [{ "uri": root_uri, "name": "content-mapper-lsp" }],
                     "capabilities": editor_capabilities(),
-                    "initializationOptions": { "loadExternalPlugins": true }
+                    "initializationOptions": { "runExternalCode": true }
                 }))
                 .await
                 .unwrap();

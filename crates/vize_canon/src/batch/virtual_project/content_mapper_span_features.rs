@@ -4,6 +4,14 @@ use super::ContentMapperSpanKind;
 
 /// TypeScript Content Mapper protocol-v1 feature bits.
 ///
+/// These positions must mirror `internal/spanmap.Feature` in the pinned
+/// upstream revision exactly: `SpanMap.Validate` rejects any segment carrying a
+/// bit outside `FeatureAll`, so a stale high bit fails every transform with
+/// TS100040 rather than degrading gracefully. Upstream
+/// microsoft/typescript-go@cb5a1862e dropped the separate `SourceDefinition`
+/// bit (source definition now rides on `Definition`) and shifted every bit
+/// above it down by one.
+///
 /// This is deliberately separate from `crate::source_map::MappingFlags`:
 /// that compact Vize-internal type has different bit positions, includes
 /// diagnostics, and represents only seven capabilities. Protocol diagnostics
@@ -18,21 +26,20 @@ enum ContentMapperSpanFeature {
     Definition = 1 << 3,
     TypeDefinition = 1 << 4,
     Implementation = 1 << 5,
-    SourceDefinition = 1 << 6,
-    References = 1 << 7,
-    DocumentHighlights = 1 << 8,
-    Rename = 1 << 9,
-    CallHierarchy = 1 << 10,
-    CodeActions = 1 << 11,
-    Formatting = 1 << 12,
-    InlayHints = 1 << 13,
-    SemanticTokens = 1 << 14,
-    FoldingRanges = 1 << 15,
-    SelectionRanges = 1 << 16,
-    LinkedEditing = 1 << 17,
-    AutoInsert = 1 << 18,
-    DocumentSymbols = 1 << 19,
-    CodeLens = 1 << 20,
+    References = 1 << 6,
+    DocumentHighlights = 1 << 7,
+    Rename = 1 << 8,
+    CallHierarchy = 1 << 9,
+    CodeActions = 1 << 10,
+    Formatting = 1 << 11,
+    InlayHints = 1 << 12,
+    SemanticTokens = 1 << 13,
+    FoldingRanges = 1 << 14,
+    SelectionRanges = 1 << 15,
+    LinkedEditing = 1 << 16,
+    AutoInsert = 1 << 17,
+    DocumentSymbols = 1 << 18,
+    CodeLens = 1 << 19,
 }
 
 /// Every protocol-v1 feature bit a mapped span can advertise.
@@ -42,7 +49,6 @@ pub(super) const CONTENT_MAPPER_SPAN_FEATURES_ALL: usize = ContentMapperSpanFeat
     | ContentMapperSpanFeature::Definition as usize
     | ContentMapperSpanFeature::TypeDefinition as usize
     | ContentMapperSpanFeature::Implementation as usize
-    | ContentMapperSpanFeature::SourceDefinition as usize
     | ContentMapperSpanFeature::References as usize
     | ContentMapperSpanFeature::DocumentHighlights as usize
     | ContentMapperSpanFeature::Rename as usize
@@ -73,7 +79,6 @@ pub(super) const CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL: usize = ContentMappe
     | ContentMapperSpanFeature::Definition as usize
     | ContentMapperSpanFeature::TypeDefinition as usize
     | ContentMapperSpanFeature::Implementation as usize
-    | ContentMapperSpanFeature::SourceDefinition as usize
     | ContentMapperSpanFeature::References as usize
     | ContentMapperSpanFeature::DocumentHighlights as usize;
 
@@ -83,12 +88,11 @@ pub(super) const CONTENT_MAPPER_SPAN_FEATURES_NAVIGATION_TARGET: usize =
     ContentMapperSpanFeature::Definition as usize
         | ContentMapperSpanFeature::TypeDefinition as usize
         | ContentMapperSpanFeature::Implementation as usize
-        | ContentMapperSpanFeature::SourceDefinition as usize
         | ContentMapperSpanFeature::References as usize
         | ContentMapperSpanFeature::DocumentHighlights as usize;
 
 #[cfg(test)]
-pub(super) const CONTENT_MAPPER_SPAN_FEATURE_BITS: [(&str, usize); 21] = [
+pub(super) const CONTENT_MAPPER_SPAN_FEATURE_BITS: [(&str, usize); 20] = [
     ("Hover", ContentMapperSpanFeature::Hover as usize),
     (
         "SignatureHelp",
@@ -103,10 +107,6 @@ pub(super) const CONTENT_MAPPER_SPAN_FEATURE_BITS: [(&str, usize); 21] = [
     (
         "Implementation",
         ContentMapperSpanFeature::Implementation as usize,
-    ),
-    (
-        "SourceDefinition",
-        ContentMapperSpanFeature::SourceDefinition as usize,
     ),
     ("References", ContentMapperSpanFeature::References as usize),
     (

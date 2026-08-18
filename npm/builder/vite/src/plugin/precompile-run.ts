@@ -47,6 +47,7 @@ function resolvePrecompileBatchOptions(state: VizePluginState): CompileBatchOpti
     vapor: state.mergedOptions.vapor ?? false,
     mode: state.mergedOptions.mode,
     customRenderer: state.mergedOptions.customRenderer ?? false,
+    customElements: state.mergedOptions.customElements,
     templateSyntax: state.mergedOptions.templateSyntax ?? "standard",
     experimentalInTagComments: state.mergedOptions.experimentalInTagComments ?? false,
     experimentalPatternedTemplate: state.mergedOptions.experimentalPatternedTemplate ?? false,

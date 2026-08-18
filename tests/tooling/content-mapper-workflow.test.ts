@@ -5,7 +5,7 @@ import { parse } from "yaml";
 
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
-const UPSTREAM_SHA = "9a44db383474d07b382694dede40acac0f936109";
+const UPSTREAM_SHA = "d07c1fff6efd364533b7073dd87b39aaf03029c8";
 const WATCHER_CLOSE_TEST = "TestWatcher_CloseWhileWatchFilesReconciles";
 const WATCHER_COMMAND = `go test ./internal/lsp/lspwatcher -run '^${WATCHER_CLOSE_TEST}$' -count=1`;
 const TSGO_BUILD_COMMAND = 'go build -tags=noembed -trimpath -o "$RUNNER_TEMP/tsgo" ./cmd/tsgo';

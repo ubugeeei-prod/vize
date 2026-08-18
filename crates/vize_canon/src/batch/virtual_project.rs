@@ -30,9 +30,9 @@ mod art_usage;
 mod build;
 mod content_mapper;
 pub use content_mapper::{
-    ContentMapperDiagnostic, ContentMapperSemanticLink, ContentMapperSpan, ContentMapperTransform,
-    ContentMapperTransformOptions, generate_vue_content_mapper_transform,
-    generate_vue_content_mapper_transform_with_options,
+    CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperDiagnostic, ContentMapperSemanticLink,
+    ContentMapperSpan, ContentMapperTransform, ContentMapperTransformOptions,
+    generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
 };
 mod css_var_usage;
 mod declaration_emit;
@@ -47,6 +47,7 @@ pub use document::{
 // `import_rewriter_alias::AliasSpecifierResolver`, which is `pub(crate)`.
 pub(crate) use document::generate_vue_document_virtual_ts_with_options_and_alias_resolver;
 mod diagnostics;
+mod esm_declaration_spelling;
 mod external_mirror;
 pub use external_mirror::external_mirror_original_path;
 mod identity;

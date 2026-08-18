@@ -15,11 +15,19 @@
 #![cfg_attr(test, allow(clippy::disallowed_macros))]
 
 pub mod codegen;
+mod compile;
 pub mod errors;
 pub mod options;
+mod stage_options;
 pub mod steps;
 
 pub use codegen::{SsrCodegenContext, SsrCodegenResult};
+#[allow(deprecated)]
+pub use compile::compile_ssr_with_vue_parser_quirks;
+pub use compile::{
+    compile_ssr, compile_ssr_with_custom_elements_and_template_syntax, compile_ssr_with_options,
+    compile_ssr_with_template_syntax,
+};
 pub use errors::SsrErrorCode;
 pub use options::SsrCompilerOptions;
 pub use steps::{
@@ -34,162 +42,13 @@ pub use vize_atelier_core::{
     transform,
 };
 
-use vize_atelier_core::{
-    lane::{transform as do_transform, transform_with_template_syntax_quirks},
-    options::{ParserOptions, TemplateSyntaxMode, TransformOptions},
-    parser::parse_with_options_and_template_syntax,
-};
-use vize_carton::{String, profile};
-
-/// Compile a Vue template for SSR with default options
-pub fn compile_ssr<'a>(
-    allocator: &'a Allocator,
-    source: &'a str,
-) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_with_options(allocator, source, SsrCompilerOptions::default())
-}
-
-/// Compile a Vue template for SSR with custom options
-pub fn compile_ssr_with_options<'a>(
-    allocator: &'a Allocator,
-    source: &'a str,
-    options: SsrCompilerOptions,
-) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner(allocator, source, options, TemplateSyntaxMode::Standard)
-}
-
-/// Compile a Vue template for SSR with Vue parser quirk compatibility.
-#[deprecated(note = "use compile_ssr_with_template_syntax instead")]
-pub fn compile_ssr_with_vue_parser_quirks<'a>(
-    allocator: &'a Allocator,
-    source: &'a str,
-    options: SsrCompilerOptions,
-) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner(allocator, source, options, TemplateSyntaxMode::Quirks)
-}
-
-/// Compile a Vue template for SSR with an explicit template syntax mode.
-#[doc(hidden)]
-pub fn compile_ssr_with_template_syntax<'a>(
-    allocator: &'a Allocator,
-    source: &'a str,
-    options: SsrCompilerOptions,
-    template_syntax: TemplateSyntaxMode,
-) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner(allocator, source, options, template_syntax)
-}
-
-fn compile_ssr_inner<'a>(
-    allocator: &'a Allocator,
-    source: &'a str,
-    options: SsrCompilerOptions,
-    template_syntax: TemplateSyntaxMode,
-) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    let codegen_options = options.clone();
-
-    // Create parser options
-    let parser_opts = ParserOptions {
-        is_void_tag: vize_carton::is_void_tag,
-        is_native_tag: Some(vize_carton::is_native_tag),
-        custom_renderer: options.custom_renderer,
-        is_pre_tag: |tag| tag == "pre",
-        get_namespace,
-        comments: options.comments,
-        experimental_in_tag_comments: options.experimental_in_tag_comments,
-        dialect: options.dialect,
-        ..ParserOptions::default()
-    };
-
-    // Parse
-    let (mut root, errors) = profile!(
-        "atelier.ssr.template.parse",
-        parse_with_options_and_template_syntax(allocator, source, parser_opts, template_syntax)
-    );
-
-    // Parser-level diagnostics that are recoverable (e.g. duplicate
-    // attribute) must NOT gate SSR codegen for the same reason as the
-    // DOM compiler — see #958.
-    let fatal_count = errors.iter().filter(|e| !e.is_recoverable()).count();
-    if fatal_count > 0 {
-        let codegen_result = SsrCodegenResult {
-            code: String::default(),
-            preamble: String::default(),
-        };
-        return (root, errors.to_vec(), codegen_result);
-    }
-
-    // Transform with SSR-specific settings
-    // SSR always uses prefix identifiers and disables hoisting/caching
-    let transform_opts = TransformOptions {
-        prefix_identifiers: true, // SSR always uses prefix
-        hoist_static: false,      // No hoisting in SSR
-        cache_handlers: false,    // No caching in SSR
-        scope_id: codegen_options.scope_id.clone(),
-        ssr: true,
-        is_ts: codegen_options.is_ts,
-        inline: codegen_options.inline,
-        custom_renderer: codegen_options.custom_renderer,
-        experimental_patterned_template: codegen_options.experimental_patterned_template,
-        binding_metadata: codegen_options.binding_metadata.clone(),
-        dialect: codegen_options.dialect,
-        ..Default::default()
-    };
-    let analysis = options.croquis.map(|c| allocator.alloc_owned(*c));
-    let template_syntax_quirks = template_syntax.is_quirks();
-    let transform_errors = profile!(
-        "atelier.ssr.template.transform",
-        if template_syntax_quirks {
-            transform_with_template_syntax_quirks(allocator, &mut root, transform_opts, analysis)
-        } else {
-            do_transform(allocator, &mut root, transform_opts, analysis)
-        }
-    );
-
-    // Surface transform diagnostics (e.g. invalid expressions) alongside
-    // parse errors instead of dropping them — same channel as the DOM
-    // compiler.
-    let mut errors = errors.to_vec();
-    errors.extend(transform_errors);
-
-    // SSR codegen
-    let codegen_ctx = SsrCodegenContext::new(allocator, &codegen_options, source);
-    let codegen_result = profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root));
-
-    (root, errors, codegen_result)
-}
-
-/// Get the namespace for an element based on its parent
-fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
-    if vize_carton::is_svg_tag(tag) {
-        return Namespace::Svg;
-    }
-    if vize_carton::is_math_ml_tag(tag) {
-        return Namespace::MathMl;
-    }
-
-    // Inherit namespace from parent
-    if let Some(parent_tag) = parent {
-        if vize_carton::is_svg_tag(parent_tag) && tag != "foreignObject" {
-            return Namespace::Svg;
-        }
-        if vize_carton::is_math_ml_tag(parent_tag)
-            && tag != "annotation-xml"
-            && tag != "foreignObject"
-        {
-            return Namespace::MathMl;
-        }
-    }
-
-    Namespace::Html
-}
-
 #[cfg(test)]
 mod tests {
     use super::{
-        Allocator, SsrCompilerOptions, compile_ssr, compile_ssr_with_options,
-        compile_ssr_with_template_syntax,
+        SsrCompilerOptions, compile_ssr, compile_ssr_with_options, compile_ssr_with_template_syntax,
     };
     use vize_atelier_core::TemplateSyntaxMode;
+    use vize_carton::Allocator;
 
     #[test]
     fn test_compile_simple_element() {

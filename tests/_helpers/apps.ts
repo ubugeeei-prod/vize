@@ -1183,7 +1183,7 @@ function setupNpmxWorktree(opts?: { enableVize?: boolean; variant?: string }): s
 
   patchNuxtConfig(path.join(npmxDir, "nuxt.config.ts"), {
     enableVize,
-    removeModules: ["@nuxtjs/html-validator"],
+    removeModules: ["@nuxtjs/html-validator", "@vercel/speed-insights"],
   });
   patchNpmxRegistryFixtures(npmxDir);
   patchNpmxPrerenderRoutes(path.join(npmxDir, "nuxt.config.ts"));

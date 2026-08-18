@@ -30,11 +30,15 @@ pub fn resolve_element_type<'a>(
 
 /// Check if tag is a component
 fn is_component(ctx: &TransformContext<'_>, tag: &str, el: &ElementNode<'_>) -> bool {
+    if is_native_tag(tag) {
+        return false;
+    }
+
     if is_registered_component(ctx, tag) {
         return true;
     }
 
-    if is_native_tag(tag) {
+    if ctx.custom_elements.matches(tag) {
         return false;
     }
 

@@ -172,6 +172,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         sourceMap: options.sourceMap ?? compilerConfig.sourceMap,
         ...resolveExperimentalCompilerOptions(options, compilerConfig, sharedConfig?.experimentals),
         customRenderer: options.customRenderer ?? compilerConfig.customRenderer ?? false,
+        customElements: options.customElements ?? compilerConfig.customElements,
         templateSyntax,
         compatibility,
         vueVersion,

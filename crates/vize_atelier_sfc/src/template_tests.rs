@@ -61,6 +61,7 @@ const isRootSelected = ref(false)
         &template_allocator,
         template,
         &crate::TemplateCompileOptions::default(),
+        &vize_atelier_core::options::CustomElementMatcher::default(),
         crate::compile_template::TemplateBlockCompileContext {
             scope_id: "",
             apply_scope_id: false,

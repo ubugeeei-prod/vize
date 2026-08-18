@@ -261,11 +261,10 @@ pub fn install_packages(project_root: &Path) {
         serde_json::to_vec_pretty(&json!({
             "name": "vize",
             "private": true,
-            "tsContentMapper": {
+            "typescript": { "contentMapper": {
                 "exec": [env!("CARGO_BIN_EXE_vize"), "content-mapper"],
-                "extensions": { ".vue": ".tsx" },
                 "compilerOptions": ["noUnusedLocals"],
-            },
+            } },
         }))
         .unwrap(),
     )

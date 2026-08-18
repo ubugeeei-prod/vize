@@ -22,7 +22,7 @@ pub fn compile_sfc(
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
         TemplateCompileOptions,
-        compile_sfc_with_template_syntax as sfc_compile_with_template_syntax,
+        compile_sfc_with_custom_elements_template_syntax_and_codegen_options as sfc_compile_with_custom_elements,
         parse_sfc as sfc_parse,
     };
 
@@ -68,6 +68,9 @@ pub fn compile_sfc(
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
         .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
     let standalone = opts.mode.as_deref() == Some("function");
+    let custom_elements = vize_atelier_core::options::CustomElementMatcher::from_patterns(
+        crate::types::custom_element_patterns(opts.custom_elements.as_deref()),
+    );
     let external_scope_id: Option<vize_carton::CompactString> = opts
         .scope_id
         .as_ref()
@@ -127,8 +130,13 @@ pub fn compile_sfc(
         scope_id: external_scope_id,
     };
 
-    let compile_result =
-        sfc_compile_with_template_syntax(&descriptor, compile_opts, template_syntax);
+    let compile_result = sfc_compile_with_custom_elements(
+        &descriptor,
+        compile_opts,
+        template_syntax,
+        custom_elements,
+        vize_atelier_core::CodegenOptions::default(),
+    );
 
     match compile_result {
         Ok(result) => {

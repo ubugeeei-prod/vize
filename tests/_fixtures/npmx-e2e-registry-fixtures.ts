@@ -75,6 +75,119 @@ const PACKAGE_FIXTURES: Record<string, PackageFixture> = {
       },
     },
   },
+  '@vue/compiler-core': {
+    name: '@vue/compiler-core',
+    description: 'Fixture Vue compiler core metadata for npmx visual parity.',
+    homepage: 'https://github.com/vuejs/core/tree/main/packages/compiler-core',
+    keywords: ['vue', 'compiler'],
+    repository: 'https://github.com/vuejs/core',
+    versions: {
+      '3.5.29': {
+        fileCount: 28,
+        integrity: 'sha512-vize-e2e-vue-compiler-core-3-5-29',
+        unpackedSize: 980_000,
+      },
+    },
+  },
+  '@vue/compiler-dom': {
+    name: '@vue/compiler-dom',
+    description: 'Fixture Vue DOM compiler metadata for npmx visual parity.',
+    homepage: 'https://github.com/vuejs/core/tree/main/packages/compiler-dom',
+    keywords: ['vue', 'compiler', 'dom'],
+    repository: 'https://github.com/vuejs/core',
+    versions: {
+      '3.5.28': {
+        fileCount: 16,
+        integrity: 'sha512-vize-e2e-vue-compiler-dom-3-5-28',
+        unpackedSize: 420_000,
+      },
+      '3.5.29': {
+        fileCount: 17,
+        integrity: 'sha512-vize-e2e-vue-compiler-dom-3-5-29',
+        unpackedSize: 440_000,
+      },
+    },
+  },
+  '@vue/runtime-dom': {
+    name: '@vue/runtime-dom',
+    description: 'Fixture Vue DOM runtime metadata for npmx visual parity.',
+    homepage: 'https://github.com/vuejs/core/tree/main/packages/runtime-dom',
+    keywords: ['vue', 'runtime', 'dom'],
+    repository: 'https://github.com/vuejs/core',
+    versions: {
+      '3.5.28': {
+        fileCount: 20,
+        integrity: 'sha512-vize-e2e-vue-runtime-dom-3-5-28',
+        unpackedSize: 520_000,
+      },
+      '3.5.29': {
+        fileCount: 21,
+        integrity: 'sha512-vize-e2e-vue-runtime-dom-3-5-29',
+        unpackedSize: 540_000,
+      },
+    },
+  },
+  '@vue/shared': {
+    name: '@vue/shared',
+    description: 'Fixture Vue shared utilities metadata for npmx visual parity.',
+    homepage: 'https://github.com/vuejs/core/tree/main/packages/shared',
+    keywords: ['vue', 'shared'],
+    repository: 'https://github.com/vuejs/core',
+    versions: {
+      '3.5.28': {
+        fileCount: 9,
+        integrity: 'sha512-vize-e2e-vue-shared-3-5-28',
+        unpackedSize: 120_000,
+      },
+      '3.5.29': {
+        fileCount: 9,
+        integrity: 'sha512-vize-e2e-vue-shared-3-5-29',
+        unpackedSize: 124_000,
+      },
+    },
+  },
+  '@nuxt/kit': {
+    name: '@nuxt/kit',
+    description: 'Fixture Nuxt kit metadata for npmx visual parity.',
+    homepage: 'https://nuxt.com/',
+    keywords: ['nuxt', 'kit'],
+    repository: 'https://github.com/nuxt/nuxt',
+    versions: {
+      '4.0.0': {
+        fileCount: 48,
+        integrity: 'sha512-vize-e2e-nuxt-kit-4-0-0',
+        unpackedSize: 1_700_000,
+      },
+    },
+  },
+  '@nuxt/schema': {
+    name: '@nuxt/schema',
+    description: 'Fixture Nuxt schema metadata for npmx visual parity.',
+    homepage: 'https://nuxt.com/',
+    keywords: ['nuxt', 'schema'],
+    repository: 'https://github.com/nuxt/nuxt',
+    versions: {
+      '4.0.0': {
+        fileCount: 36,
+        integrity: 'sha512-vize-e2e-nuxt-schema-4-0-0',
+        unpackedSize: 1_100_000,
+      },
+    },
+  },
+  nitropack: {
+    name: 'nitropack',
+    description: 'Fixture Nitro metadata for npmx visual parity.',
+    homepage: 'https://nitro.build/',
+    keywords: ['nitro', 'nuxt'],
+    repository: 'https://github.com/nitrojs/nitro',
+    versions: {
+      '2.12.0': {
+        fileCount: 74,
+        integrity: 'sha512-vize-e2e-nitropack-2-12-0',
+        unpackedSize: 3_300_000,
+      },
+    },
+  },
   nuxt: {
     name: 'nuxt',
     description: 'Fixture Nuxt package metadata for npmx visual parity.',

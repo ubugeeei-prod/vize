@@ -31,9 +31,8 @@ const vizeOnly = "error:2:1 [TS2345] vize only";
 const emptyBaselineReason =
   "vue-tsc checked 0 Vue files while Vize checked 1 (missing 1, unexpected 0)";
 
-function artifactPath(fixture: ReturnType<typeof setup>, extension: string) {
-  return path.join(fixture.reportDir, `fixture-typecheck-divergence.${extension}`);
-}
+const artifactPath = (fixture: ReturnType<typeof setup>, extension: string) =>
+  path.join(fixture.reportDir, `fixture-typecheck-divergence.${extension}`);
 
 test("an empty vue-tsc baseline is unusable, not a false-positive breach", () => {
   const fixture = setup({
@@ -74,6 +73,7 @@ test("an empty vue-tsc baseline is unusable, not a false-positive breach", () =>
         "vue-tsc excluded project-level: 0",
         "vue-tsc excluded external: 0",
         "vue-tsc configuration errors: 0",
+        "vue-tsc ambient environment: isolated (no Vue runtime in program)",
         "Vize Vue files: 1",
         "vue-tsc Vue files: 0",
         "Shared Vue files: 0",

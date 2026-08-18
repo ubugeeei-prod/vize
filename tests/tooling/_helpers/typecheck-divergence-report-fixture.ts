@@ -46,7 +46,7 @@ export const instrumentClassification =
 export function divergenceClassification(sharedVueFileCount: number) {
   return (
     "Vize divergence, the vue-tsc baseline loaded cleanly over the same " +
-    `${sharedVueFileCount} Vue files`
+    `${sharedVueFileCount} Vue files, against the fixture's own Vue runtime`
   );
 }
 
@@ -76,6 +76,8 @@ export type FixtureOptions = {
   coverageExitCode?: number;
   /** Vue source files emitted by the fake `vue-tsc --listFilesOnly` run. */
   baselineFiles?: string[];
+  /** Absolute program paths outside the fixture the same run also loaded. */
+  baselineProgramFiles?: string[];
   /** How the fake Vize binary reports the seeded mutation during oracle runs. */
   vizeMutation?: MutationDiagnosticMode;
   /** How the fake vue-tsc binary reports the seeded mutation during oracle runs. */
@@ -220,6 +222,7 @@ export function setup(options: FixtureOptions = {}) {
       files: options.baselineFiles ?? ["src/App.vue"],
       fixtureRoot,
       mutation: baselineMutation,
+      programFiles: options.baselineProgramFiles,
     },
     invocationPath,
   );
