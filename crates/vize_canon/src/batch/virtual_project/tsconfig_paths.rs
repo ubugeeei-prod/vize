@@ -68,7 +68,18 @@ fn resolve_package_tsconfig_path(base_dir: &Path, extends: &str) -> Option<PathB
             .map(|candidate| normalize_path_lexically(&candidate))
             .find(|candidate| candidate.is_file())
         {
-            return Some(found);
+            // Resolve through the link before returning. A bare specifier goes
+            // through Node resolution, which follows symlinks unless
+            // `preserveSymlinks` is set, so the config's own directory — the
+            // anchor for every relative option it declares — is the real one,
+            // not the `node_modules` entry that pointed at it. Under pnpm those
+            // differ for every workspace package: rebasing a relative
+            // `typeRoots` against `<pkg>/node_modules/<dep>/...` walked back out
+            // through `node_modules` and produced `node_modules/node_modules/
+            // @types`, a directory that cannot exist, and the resulting TS2688
+            // is a global failure that suppresses every per-file diagnostic
+            // (#4425).
+            return Some(vize_carton::path::canonicalize_non_verbatim(&found));
         }
         current = dir.parent();
     }
