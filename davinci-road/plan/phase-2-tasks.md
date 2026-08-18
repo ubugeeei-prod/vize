@@ -38,17 +38,19 @@
 
 ## P2-3 — `PassObserver`
 
+**Landed 2026-08-19** — full record: [phase-2-records/p2-3.md](./phase-2-records/p2-3.md).
+
 **Deliverable:** the seven-hook observer plus the four in-tree observers, with fusion groups reported explicitly so timing never lies.
 
 **Steps:**
 
-- [ ] Seven hooks: `before_pipeline` / `after_pipeline`, `before_pass` / `after_pass`, `before_analysis` / `after_analysis`, `on_fail`
-- [ ] Timing observer emitting the **P0-11** profile-export schema ([`profile-export.schema.json`](./profile-export.schema.json)) through `vize_carton::profiler`. Reuse the attribution scaffolding that already anticipates this: `crates/vize_carton/src/profiler/attribution.rs`'s `SpanAttribution` carries `{stage, pass, file_id, block, span}` as `const` builders over static strs — do not introduce a second attribution model
-- [ ] Folio-printing observer (consumes P2-4), budget-counting observer (the walk counter P2-12b reads), remark sink (a no-op sink until P3-13)
-- [ ] **Fused groups are reported as one walk with their member passes named**, so a fused pass's cost is never attributed to a walk it did not make
-- [ ] Attachment is checked once per pipeline, never per node (guardrail 1); the no-observer path must compile to the un-observed pipeline
+- [x] Seven hooks: `before_pipeline` / `after_pipeline`, `before_pass` / `after_pass`, `before_analysis` / `after_analysis`, `on_fail` _(all seven with empty default bodies; `on_fail` suppresses `after_pipeline`, since a run that failed did not finish)_
+- [x] Timing observer emitting the **P0-11** profile-export schema through `vize_carton::profiler`, reusing `SpanAttribution` rather than a second attribution model _(one attributed span per **walk**, keyed on the group's lead pass)_
+- [x] Folio-printing observer, budget-counting observer (the walk counter P2-12b reads), remark sink (a no-op sink until P3-13) _(the folio observer binds to the **existing** P0-10 `Folio` trait rather than waiting for P2-4's derive — recorded as a deviation, since the contract expected it to consume P2-4)_
+- [x] **Fused groups are reported as one walk with their member passes named** _(`PassEvent` carries its `FusionGroup`, `is_group_entry`/`is_group_exit` and `group_members`; the law is pinned by `tests/pass_observer_law.rs` and again at the timing level by `tests/pass_observer_timing.rs`)_
+- [x] Attachment is checked once per pipeline, never per node (guardrail 1); the no-observer path must compile to the un-observed pipeline _(dispatch is **static**, so there is no attachment check at all — strictly stronger than once per pipeline; no `dyn PassObserver` is offered, on purpose)_
 
-**Acceptance:** zero-cost when no observer is attached, proven by a bench pair whose observer-absent case is **alloc-identical** to the un-observed pipeline; both new bench entries land in `budgets.toml [bench]` with their measured `allocs` (TS-10). Timing output validates against the schema (TS-15). The fusion-group reporting law is pinned by an ordinary integration test under `crates/vize_davinci/tests/` so it runs in the default `cargo test --workspace` lane — the P1-5/P1-7 counter-law shape, deliberately not a feature-gated lane. TS-1, TS-13. **Deps:** P2-2. **Non-goals:** remark _content_ (P3-13); the Spolvero transport (P2-19) and UI (P2-18); provenance materialization policy (P2-8 records the pairs, the ring-buffer-vs-full decision is P2-12b's fusion measurement).
+**Acceptance:** zero cost when nothing is attached, pinned by the bench pair `davinci_pipeline_unobserved` / `davinci_pipeline_no_observer` — both measured at **`allocs = 0`**, alloc-identical, both registered in `budgets.toml [bench]` and reported `alloc-gated … ok` by `tools/davinci/bench-compare.mjs` (TS-10). The fusion-group reporting law is pinned by ordinary integration tests under `crates/vize_davinci/tests/`, so they run in the default `cargo test --workspace` lane (the P1-5/P1-7 counter-law shape). Timing output reaches the P0-11 export with the right key and attribution, asserted directly; schema conformance stays pinned where the strict validator lives (TS-15, `vize_carton`) rather than copied — see the record. TS-1 (61 → 71 tests), TS-13 green with no allowlist entry added. **Deps:** P2-2. **Non-goals:** remark _content_ (P3-13); the Spolvero transport (P2-19) and UI (P2-18); provenance materialization policy (P2-8 records the pairs, the ring-buffer-vs-full decision is P2-12b's fusion measurement).
 
 ## P2-4 — Folio derive + `davinci-opt` pipelines
 

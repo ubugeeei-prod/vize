@@ -13,6 +13,8 @@ metadata.vize.stability = "experimental"
 vize_carton = { workspace = true }
 
 [dev-dependencies]
+criterion = { workspace = true }
+davinci_harness = { workspace = true }
 insta = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_atelier_sfc = { workspace = true }
@@ -21,3 +23,7 @@ vize_croquis = { workspace = true }
 [[bin]]
 name = "davinci-opt"
 path = "src/bin/davinci-opt.rs"
+
+[[bench]]
+name = "davinci"
+harness = false

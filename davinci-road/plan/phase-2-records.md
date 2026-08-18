@@ -16,4 +16,5 @@
 | --------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------- |
 | [P2-1](./phase-2-records/p2-1.md)             | 2026-08-19 | `NonZeroU32` node ids; sparse-only side table with the densification trigger written down; owned `'static` diagnostics |
 | [P2-2](./phase-2-records/p2-2.md)             | 2026-08-19 | const-data pipelines; both pass-manager laws enforced as compile errors, both proven by compiling a violation         |
+| [P2-3](./phase-2-records/p2-3.md)             | 2026-08-19 | the fused-group reporting law; static dispatch so the un-observed path has no check at all                            |
 | [P2-12a](./phase-2-records/p2-12a.md)         | 2026-08-19 | the pre-S2 traversal baseline, the phase-2 target, and the plan finding that corpus `--check` is not evaluable        |

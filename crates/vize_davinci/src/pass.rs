@@ -37,15 +37,17 @@
 //! - [`preserved`] — [`AnalysisId`] and [`Preserved`]
 //! - [`canonical`] — [`Raw`] and [`Canonical`]
 //! - [`fusion`] — [`Pipeline`] and [`FusionGroup`]
+//! - [`observer`] — [`PassObserver`], the run driver, and the four in-tree
+//!   observers
 //! - [`pipeline`] — the textual pipeline syntax `davinci-opt --pipeline` reads
 //!
 //! # What this module does not do yet
 //!
-//! It plans; it does not run. There is no S2 to run over until P2-5a, and
-//! running real passes is P2-9's. So [`Pass`] carries a description and
-//! nothing else: the execution signature lands with the first artifact it can
-//! name. Observer hooks are P2-3's, and optimization tiers that scale budgets
-//! rather than pass sets are P3-10's.
+//! It plans, and it drives a plan; it does not supply pass bodies. There is no
+//! S2 to run over until P2-5a and no catalogue binding a name to an
+//! implementation until P2-9, so [`Pass`] carries a description and nothing
+//! else, and [`run_pipeline`] takes the body as a callback. Optimization tiers
+//! that scale budgets rather than pass sets are P3-10's.
 
 #[path = "pass/canonical.rs"]
 pub mod canonical;
@@ -53,6 +55,8 @@ pub mod canonical;
 pub mod fusion;
 #[path = "pass/kind.rs"]
 pub mod kind;
+#[path = "pass/observer.rs"]
+pub mod observer;
 #[path = "pass/pipeline.rs"]
 pub mod pipeline;
 #[path = "pass/preserved.rs"]
@@ -61,6 +65,10 @@ pub mod preserved;
 pub use canonical::{Canonical, Raw};
 pub use fusion::{FusionGroup, Pipeline};
 pub use kind::{Fusability, PassKind};
+pub use observer::{
+    AnalysisEvent, BudgetObserver, FailEvent, NoObserver, Pair, PassEvent, PassFailure,
+    PassObserver, TimingObserver, run_pipeline,
+};
 pub use pipeline::{PipelineSyntaxError, parse_pipelines, print_pipelines};
 pub use preserved::{AnalysisId, MAX_ANALYSES, Preserved};
 

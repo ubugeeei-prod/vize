@@ -3892,6 +3892,8 @@ dependencies = [
 name = "vize_davinci"
 version = "0.350.0"
 dependencies = [
+ "criterion",
+ "davinci_harness",
  "insta",
  "vize_atelier_core",
  "vize_atelier_sfc",

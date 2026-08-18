@@ -168,6 +168,17 @@ atelier_ssr_compile_stress-deep = { wall_p50_ns = 0, allocs = 369, rss_peak_byte
 atelier_ssr_compile_stress-wide = { wall_p50_ns = 0, allocs = 405, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 atelier_ssr_compile_stress-interp = { wall_p50_ns = 0, allocs = 2637, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 
+# Pass-manager zero-cost pair (P2-3). The claim these two exist to gate is that
+# `NoObserver`'s empty bodies inline away, so running a plan through the
+# observer driver costs what running it without the driver costs. `allocs` is
+# where that is enforced: both entries are a *measured* zero over the same
+# four-pass fixture pipeline, and the exact alloc gate fails either one that
+# starts allocating. Wall p50 is 6 ns for both locally, which is under
+# criterion's resolution for a routine this small and is exactly why the gate
+# is on the alloc side.
+davinci_pipeline_unobserved = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+davinci_pipeline_no_observer = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+
 [mutation]
 # cargo-mutants minimum scores per crate (P0-12). score = caught / viable,
 # truncated to four decimal places; run record, missed-mutant listings, and
