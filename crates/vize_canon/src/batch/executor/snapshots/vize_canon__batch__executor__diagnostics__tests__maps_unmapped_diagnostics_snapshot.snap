@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/batch/executor/diagnostics.rs
-assertion_line: 147
 expression: diagnostics
 ---
 []

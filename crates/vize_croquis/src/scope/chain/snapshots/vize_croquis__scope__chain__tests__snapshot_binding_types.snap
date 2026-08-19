@@ -1,6 +1,5 @@
 ---
 source: crates/vize_croquis/src/scope/chain/chain_tests.rs
-assertion_line: 896
 expression: output
 ---
 === Binding Types ===

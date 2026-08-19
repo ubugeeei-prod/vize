@@ -1,98 +1,41 @@
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
 const path = require("node:path");
 const vscode = require("vscode");
 const { runAutoInsertSmoke } = require("./auto-insert-smoke.cjs");
 const { runEditorCapabilityProviderSmoke } = require("./editor-capability-smoke.cjs");
-const extensionId = "ubugeeei.vize";
-const recommendedInitializationOptions = {
-  editor: true,
-  ecosystem: true,
-  lint: true,
-  typecheck: true,
-};
-const explicitlyDisabledInitializationOptions = {
-  codeActions: false,
-  codeLens: false,
-  completion: false,
-  definition: false,
-  documentLinks: false,
-  documentSymbols: false,
-  ecosystem: false,
-  editor: false,
-  fileRename: false,
-  autoInsert: false,
-  foldingRanges: false,
-  formatting: false,
-  hover: false,
-  inlayHints: false,
-  legacyVue2: false,
-  lint: false,
-  optionsApi: false,
-  references: false,
-  rename: false,
-  semanticTokens: false,
-  signatureHelp: false,
-  typecheck: false,
-  workspaceSymbols: false,
-};
-const lintOnlyInitializationOptions = {
-  ...explicitlyDisabledInitializationOptions,
-  lint: true,
-};
-const featureSettingKeys = [
-  "lint.enable",
-  "diagnostics.enable",
-  "typecheck.enable",
-  "editor.enable",
-  "ecosystem.enable",
-  "optionsApi.enable",
-  "legacyVue2.enable",
-  "completion.enable",
-  "hover.enable",
-  "definition.enable",
-  "references.enable",
-  "documentSymbols.enable",
-  "workspaceSymbols.enable",
-  "codeActions.enable",
-  "rename.enable",
-  "codeLens.enable",
-  "formatting.enable",
-  "semanticTokens.enable",
-  "signatureHelp.enable",
-  "documentLinks.enable",
-  "foldingRanges.enable",
-  "inlayHints.enable",
-  "fileRename.enable",
-  "autoInsert.enable",
-];
-const granularEditorCapabilitySettings = [
-  ["completion.enable", "completion"],
-  ["hover.enable", "hover"],
-  ["definition.enable", "definition"],
-  ["references.enable", "references"],
-  ["documentSymbols.enable", "documentSymbols"],
-  ["workspaceSymbols.enable", "workspaceSymbols"],
-  ["codeActions.enable", "codeActions"],
-  ["rename.enable", "rename"],
-  ["codeLens.enable", "codeLens"],
-  ["formatting.enable", "formatting"],
-  ["semanticTokens.enable", "semanticTokens"],
-  ["documentLinks.enable", "documentLinks"],
-  ["foldingRanges.enable", "foldingRanges"],
-  ["inlayHints.enable", "inlayHints"],
-  ["fileRename.enable", "fileRename"],
-];
-const commandIds = [
-  "vize.disable",
-  "vize.enableLintOnlyProfile",
-  "vize.enableRecommendedProfile",
-  "vize.findReferences",
-  "vize.restartServer",
-  "vize.selectServerPath",
-  "vize.showOutput",
-  "vize.showStatus",
-];
+const { runSyntaxHighlightContributionSmoke } = require("./extension-host-grammar-smoke.cjs");
+const {
+  commandIds,
+  explicitlyDisabledInitializationOptions,
+  extensionId,
+  featureSettingKeys,
+  granularEditorCapabilitySettings,
+  lintOnlyInitializationOptions,
+  recommendedInitializationOptions,
+} = require("./extension-host-fixtures.cjs");
+const {
+  assertDiagnostic,
+  assertInitializationOptions,
+  assertLocation,
+  assertTextDocumentRequest,
+  disableVizeAndWaitForShutdown,
+  getFakeServer,
+  getWorkspaceFolder,
+  initializeMessages,
+  methodMessages,
+  openWorkspaceDocument,
+  prepareConfiguredFakeServer,
+  readLogEntries,
+  runProviderCommand,
+  updateVizeConfiguration,
+  updateVizeConfigurationEntries,
+  waitForDiagnostics,
+  waitForLogEntries,
+  waitForMethodWithUri,
+  waitForReadyServer,
+  waitForWatchedFileChange,
+} = require("./extension-host-support.cjs");
+
 exports.run = async function run() {
   await runDisabledContributionSmoke();
   await runSyntaxHighlightContributionSmoke();
@@ -115,6 +58,7 @@ exports.run = async function run() {
   });
   await runDocumentSelectorAndWatcherSmoke();
 };
+
 async function runDisabledContributionSmoke() {
   const extension = vscode.extensions.getExtension(extensionId);
   assert.ok(extension, `missing extension: ${extensionId}`);
@@ -150,182 +94,6 @@ async function runDisabledContributionSmoke() {
   await vscode.commands.executeCommand("vize.disable");
 
   assert.equal(vscode.workspace.getConfiguration("vize").get("enable"), false);
-}
-
-async function runSyntaxHighlightContributionSmoke() {
-  const extension = vscode.extensions.getExtension(extensionId);
-  assert.ok(extension, `missing extension: ${extensionId}`);
-
-  const grammars = extension.packageJSON.contributes?.grammars ?? [];
-  const vueGrammarContribution = grammars.find((grammar) => grammar.language === "vue");
-  const artVueGrammarContribution = grammars.find((grammar) => grammar.language === "art-vue");
-  assert.ok(vueGrammarContribution, "missing vue grammar contribution");
-  assert.ok(artVueGrammarContribution, "missing art-vue grammar contribution");
-
-  assert.equal(vueGrammarContribution.scopeName, "source.vue");
-  assert.deepEqual(vueGrammarContribution.embeddedLanguages, {
-    "source.css": "css",
-    "source.css.less": "less",
-    "source.css.scss": "scss",
-    "source.graphql": "graphql",
-    "source.js": "javascript",
-    "source.js.jsx": "javascriptreact",
-    "source.json": "json",
-    "source.postcss": "postcss",
-    "source.sass": "sass",
-    "source.stylus": "stylus",
-    "source.ts": "typescript",
-    "source.toml": "toml",
-    "source.tsx": "typescriptreact",
-    "source.yaml": "yaml",
-    "text.html.basic": "html",
-    "text.pug": "pug",
-  });
-  assert.equal(artVueGrammarContribution.scopeName, "source.art-vue");
-  assert.deepEqual(
-    artVueGrammarContribution.embeddedLanguages,
-    vueGrammarContribution.embeddedLanguages,
-  );
-
-  const vueGrammar = readGrammar(extension, vueGrammarContribution.path);
-  const artVueGrammar = readGrammar(extension, artVueGrammarContribution.path);
-
-  assert.equal(vueGrammar.scopeName, "source.vue");
-  assert.deepEqual(vueGrammar.patterns, [
-    { include: "#vue-comments" },
-    { include: "#vue-template-pug" },
-    { include: "#vue-template" },
-    { include: "source.vue.script" },
-    { include: "#vue-style" },
-    { include: "#vue-custom-block-json" },
-    { include: "#vue-custom-block-yaml" },
-    { include: "#vue-custom-block-toml" },
-    { include: "#vue-custom-block-graphql" },
-    { include: "#vue-custom-block" },
-  ]);
-  assert.equal(
-    vueGrammar.repository["vue-template"].beginCaptures["2"].name,
-    "entity.name.tag.template.html",
-  );
-  assert.equal(vueGrammar.repository["vue-interpolation"].name, "meta.embedded.expression.vue");
-  assert.equal(
-    vueGrammar.repository["vue-template-pug"].patterns[1].contentName,
-    "meta.embedded.block.pug",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-script-tsx"].patterns[1].contentName,
-    "meta.embedded.block.tsx",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-script-ts"].patterns[1].contentName,
-    "meta.embedded.block.typescript",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-script-jsx"].patterns[1].contentName,
-    "meta.embedded.block.jsx",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-style-scss"].patterns[1].contentName,
-    "meta.embedded.block.scss",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-style-less"].patterns[1].contentName,
-    "meta.embedded.block.less",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-style-sass"].patterns[1].contentName,
-    "meta.embedded.block.sass",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-style-stylus"].patterns[1].contentName,
-    "meta.embedded.block.stylus",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-style-postcss"].patterns[1].contentName,
-    "meta.embedded.block.postcss",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-style-css"].patterns[1].contentName,
-    "meta.embedded.block.css",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-custom-block-json"].contentName,
-    "meta.embedded.block.json",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-custom-block-yaml"].contentName,
-    "meta.embedded.block.yaml",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-custom-block-toml"].contentName,
-    "meta.embedded.block.toml",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-custom-block-graphql"].contentName,
-    "meta.embedded.block.graphql",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-generic-attribute"].patterns[0].contentName,
-    "meta.embedded.type.typescript",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-generic-attribute"].patterns[0].patterns[0].include,
-    "#vue-ts-type",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-interpolation"].patterns[0].include,
-    "source.ts#expression",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-directive-attributes"].patterns[0].patterns[0].include,
-    "#vue-ts-expression",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-directive-attributes"].patterns[0].beginCaptures["5"].patterns[0]
-      .include,
-    "#vue-ts-expression",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-directive-attributes"].patterns[0].beginCaptures["1"].name,
-    "keyword.control.directive.vue",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-directive-attributes"].patterns[1].beginCaptures["2"].name,
-    "entity.other.attribute-name.binding.vue",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-directive-attributes"].patterns[2].beginCaptures["2"].name,
-    "entity.other.attribute-name.event.vue",
-  );
-  assert.equal(
-    vueGrammar.repository["vue-css-vbind"].beginCaptures["1"].name,
-    "support.function.vue",
-  );
-  assert.equal(vueGrammar.repository["vue-css-vbind"].patterns[0].name, "variable.other.vue");
-  assert.equal(artVueGrammar.scopeName, "source.art-vue");
-  assert.deepEqual(artVueGrammar.patterns, [
-    { include: "#art-comments" },
-    { include: "#art-block" },
-    { include: "source.vue" },
-  ]);
-  assert.equal(
-    artVueGrammar.repository["art-block"].beginCaptures["2"].name,
-    "entity.name.tag.art.vue",
-  );
-  assert.equal(
-    artVueGrammar.repository["variant-block"].beginCaptures["2"].name,
-    "entity.name.tag.variant.vue",
-  );
-  assert.ok(
-    artVueGrammar.repository["art-template-content"].patterns.some(
-      (pattern) => pattern.include === "source.vue#html-tags",
-    ),
-    "art template content should reuse Vue HTML tag highlighting",
-  );
-  assert.equal(
-    artVueGrammar.repository["variant-json-attribute-values"].patterns[0].contentName,
-    "meta.embedded.block.json",
-  );
 }
 
 async function runFakeServerLifecycleSmoke() {
@@ -529,217 +297,4 @@ async function runDocumentSelectorAndWatcherSmoke() {
   await waitForWatchedFileChange(logPath, watchedUri.toString(), 3, "watched Vue file delete");
 
   await disableVizeAndWaitForShutdown(logPath);
-}
-
-async function prepareConfiguredFakeServer({ logPath, serverPath }) {
-  fs.writeFileSync(logPath, "");
-  await resetVizeConfiguration();
-  await updateVizeConfiguration("serverPath", serverPath);
-  await sleep(300);
-  assert.equal(initializeMessages(readLogEntries(logPath)).length, 0);
-}
-
-async function resetVizeConfiguration() {
-  await updateVizeConfiguration("enable", false);
-  await updateVizeConfiguration("serverPath", undefined);
-  await updateVizeConfiguration("trace.server", undefined);
-  await updateVizeConfigurationEntries(featureSettingKeys.map((key) => [key, undefined]));
-  await updateVizeConfiguration("enable", false);
-  await sleep(300);
-}
-
-async function updateVizeConfigurationEntries(entries) {
-  for (const [key, value] of entries) {
-    await updateVizeConfiguration(key, value);
-  }
-}
-
-async function updateVizeConfiguration(key, value) {
-  await vscode.workspace
-    .getConfiguration("vize")
-    .update(key, value, vscode.ConfigurationTarget.Workspace);
-}
-
-async function disableVizeAndWaitForShutdown(logPath) {
-  const exitCount = methodMessages(readLogEntries(logPath), "exit").length;
-
-  await vscode.commands.executeCommand("vize.disable");
-  await waitForLogEntries(
-    logPath,
-    (entries) => methodMessages(entries, "exit").length > exitCount,
-    "language server shutdown",
-  );
-
-  assert.equal(vscode.workspace.getConfiguration("vize").get("enable"), false);
-}
-
-async function waitForReadyServer(logPath, label) {
-  return waitForLogEntries(
-    logPath,
-    (entries) =>
-      initializeMessages(entries).length >= 1 && methodMessages(entries, "initialized").length >= 1,
-    label,
-  );
-}
-
-async function runProviderCommand(logPath, spec) {
-  const requestCount = methodMessages(readLogEntries(logPath), spec.method).length;
-  const result = await executeFirstAvailableCommand(spec.commandIds, spec.args);
-  const entries = await waitForLogEntries(
-    logPath,
-    (entries) => methodMessages(entries, spec.method).length > requestCount,
-    `${spec.label} request`,
-  );
-  spec.validate(result, methodMessages(entries, spec.method).at(-1));
-}
-
-async function executeFirstAvailableCommand(commandIds, args) {
-  let missingCommandError;
-
-  for (const commandId of commandIds) {
-    try {
-      return await vscode.commands.executeCommand(commandId, ...args);
-    } catch (error) {
-      if (!String(error).includes("command") || !String(error).includes("not found")) {
-        throw error;
-      }
-
-      missingCommandError = error;
-    }
-  }
-
-  assert.fail(
-    `missing VS Code provider command: ${commandIds.join(" or ")}. Last error: ${String(
-      missingCommandError,
-    )}`,
-  );
-}
-
-async function waitForMethodWithUri(logPath, method, uri) {
-  await waitForLogEntries(
-    logPath,
-    (entries) =>
-      methodMessages(entries, method).some((entry) => entry.params?.textDocument?.uri === uri),
-    `${method} for ${uri}`,
-  );
-}
-
-async function waitForWatchedFileChange(logPath, uri, type, label) {
-  await waitForLogEntries(
-    logPath,
-    (entries) =>
-      methodMessages(entries, "workspace/didChangeWatchedFiles").some((entry) =>
-        entry.params?.changes?.some((change) => change.uri === uri && change.type === type),
-      ),
-    label,
-  );
-}
-
-async function openWorkspaceDocument(...segments) {
-  const workspaceFolder = getWorkspaceFolder();
-  return vscode.workspace.openTextDocument(
-    vscode.Uri.file(path.join(workspaceFolder.uri.fsPath, ...segments)),
-  );
-}
-
-function getWorkspaceFolder() {
-  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-  assert.ok(workspaceFolder, "expected a workspace folder");
-  return workspaceFolder;
-}
-
-function getFakeServer() {
-  const serverPath = process.env.VIZE_TEST_SERVER_PATH;
-  const logPath = process.env.VIZE_TEST_SERVER_LOG;
-  assert.ok(serverPath, "VIZE_TEST_SERVER_PATH must be set");
-  assert.ok(logPath, "VIZE_TEST_SERVER_LOG must be set");
-  assert.ok(fs.existsSync(serverPath), `missing fake server: ${serverPath}`);
-  return { logPath, serverPath };
-}
-
-function assertInitializationOptions(entries, expected) {
-  assert.deepEqual(lastInitialize(entries).params.initializationOptions ?? {}, expected);
-}
-
-function assertTextDocumentRequest(entry, uri, position) {
-  assert.equal(entry.params.textDocument.uri, uri.toString());
-  assert.deepEqual(entry.params.position, {
-    character: position.character,
-    line: position.line,
-  });
-}
-
-function assertLocation(location, uri, range) {
-  assert.equal(location.uri.toString(), uri.toString());
-  assert.deepEqual(location.range, range);
-}
-
-function assertDiagnostic(diagnostics, expected) {
-  const diagnostic = diagnostics.find(
-    (nextDiagnostic) =>
-      nextDiagnostic.source === expected.source && nextDiagnostic.code === expected.code,
-  );
-  assert.ok(diagnostic, `missing diagnostic ${expected.source} ${expected.code}`);
-  assert.equal(diagnostic.message, expected.message);
-  assert.equal(diagnostic.severity, expected.severity);
-  assert.deepEqual(diagnostic.range, expected.range);
-}
-
-async function waitForDiagnostics(uri, predicate, label) {
-  const timeoutAt = Date.now() + 20_000;
-  let diagnostics = [];
-
-  while (Date.now() < timeoutAt) {
-    diagnostics = vscode.languages.getDiagnostics(uri);
-    if (predicate(diagnostics)) {
-      return diagnostics;
-    }
-
-    await sleep(100);
-  }
-
-  assert.fail(`${label} did not happen. Last diagnostics: ${JSON.stringify(diagnostics)}`);
-}
-
-function readGrammar(extension, grammarPath) {
-  return JSON.parse(fs.readFileSync(path.join(extension.extensionPath, grammarPath), "utf-8"));
-}
-
-const initializeMessages = (entries) => entries.filter((entry) => entry.method === "initialize");
-
-const methodMessages = (entries, method) => entries.filter((entry) => entry.method === method);
-
-function lastInitialize(entries) {
-  const message = initializeMessages(entries).at(-1);
-  assert.ok(message, "expected at least one initialize message");
-  return message;
-}
-
-async function waitForLogEntries(logPath, predicate, label) {
-  const timeoutAt = Date.now() + 20_000;
-  let entries = [];
-
-  while (Date.now() < timeoutAt) {
-    entries = readLogEntries(logPath);
-    if (predicate(entries)) {
-      return entries;
-    }
-
-    await sleep(100);
-  }
-
-  assert.fail(`${label} did not happen. Last log entries: ${JSON.stringify(entries.slice(-10))}`);
-}
-
-function readLogEntries(logPath) {
-  const text = fs.readFileSync(logPath, "utf-8").trim();
-  if (!text) {
-    return [];
-  }
-
-  return text.split("\n").map((line) => JSON.parse(line));
-}
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }

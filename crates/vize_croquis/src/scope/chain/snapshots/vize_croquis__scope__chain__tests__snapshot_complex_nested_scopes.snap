@@ -1,6 +1,5 @@
 ---
 source: crates/vize_croquis/src/scope/chain/chain_tests.rs
-assertion_line: 788
 expression: output
 ---
 === Complex Nested Scopes ===

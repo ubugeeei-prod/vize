@@ -1,5 +1,5 @@
 ---
-source: crates/vize_canon/src/batch/virtual_project/jsx_codegen.rs
+source: crates/vize_canon/src/batch/virtual_project/jsx_codegen_tests.rs
 expression: generated.code.as_str()
 ---
 declare function __vize_jsx_expr__(...args: unknown[]): any;

@@ -320,7 +320,10 @@ fn runtime_ctor_type(name: &str) -> Option<&'static str> {
         "Number" => Some("number"),
         "Boolean" => Some("boolean"),
         "Array" => Some("unknown[]"),
-        "Object" => Some("Record<string, unknown>"),
+        // Vue's own `InferPropType` maps `ObjectConstructor` to
+        // `Record<string, any>`; `unknown` here made every `v-for` over an
+        // `Object` prop report TS18046 that vue-tsc does not (#4426 follow-up).
+        "Object" => Some("Record<string, any>"),
         "Date" => Some("Date"),
         "Function" => Some("(...args: any[]) => any"),
         _ => None,
