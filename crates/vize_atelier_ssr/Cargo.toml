@@ -20,6 +20,7 @@ serde = { workspace = true }
 [dev-dependencies]
 criterion = { workspace = true }
 davinci_harness = { workspace = true }
+vize_davinci = { workspace = true }
 insta = { workspace = true }
 
 [lints.clippy]

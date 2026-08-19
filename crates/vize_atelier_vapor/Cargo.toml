@@ -31,6 +31,7 @@ davinci-differential = ["vize_atelier_core/davinci-differential"]
 [dev-dependencies]
 criterion = { workspace = true }
 davinci_harness = { workspace = true }
+vize_davinci = { workspace = true }
 # The DOM backend is compiled alongside Vapor in the cross-backend agreement
 # tests (`<template>` children must lower the same way in both backends).
 vize_atelier_dom = { workspace = true }

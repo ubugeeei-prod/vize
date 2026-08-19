@@ -1,11 +1,28 @@
-//! The shipped template pipeline, described as Davinci pass-manager plans.
+//! The pipelines Davinci is replacing, described in Davinci's own terms.
 //!
-//! This is Davinci's **first production consumer**: until this module existed,
-//! `vize_davinci` had no reverse dependency anywhere in the workspace and its
-//! `Pipeline` type described nothing that runs. Here the three backends'
-//! template traversals are declared as [`Pipeline`] const data, so the pass
-//! manager is the authority on what the shipped compiler walks — before any
-//! pass body has moved onto S2.
+//! Until this module existed, `Pipeline` described nothing that runs: the type
+//! was exercised only by fixtures it defined itself. Here the three shipped
+//! backends' template traversals are declared as [`Pipeline`] const data, so
+//! the pass manager is the authority on what the compiler walks **today** —
+//! before any pass body has moved onto S2, and therefore before there is
+//! anything to compare a migration against.
+//!
+//! # Why this lives in `vize_davinci` and not in `vize_atelier_core`
+//!
+//! It was written there first, as a normal dependency, and the release gate
+//! rejected it: `vize_atelier_core` is published to crates.io and
+//! `vize_davinci` is `publish = false`, so a published crate would have
+//! carried an unresolvable dependency
+//! (`tests/tooling/moonbit-publish-crates.test.ts`). The constraint is real
+//! and it is not a packaging detail — **no published crate can consume any
+//! Davinci crate until the program decides to publish them**, which is a
+//! question P2-11 has to answer before the DOM backend can actually run on
+//! S2, not after.
+//!
+//! So the plans live here and the backends read them from their
+//! **dev-dependencies**, which is the same shape `davinci_harness` already
+//! uses to instrument published crates. Davinci is exercised against the real
+//! pipeline without entering its release graph.
 //!
 //! # What is declared, and what it is measured against
 //!
@@ -18,7 +35,7 @@
 //!
 //! The tie is a law, not a comment: each backend's
 //! `tests/davinci_walk_baseline.rs` asserts that the walks
-//! [`walk_probe`](crate::walk_probe) counted equal
+//! `vize_atelier_core::walk_probe` counted equal
 //! [`Pipeline::group_count`] of the plan below. A plan that drifts from the
 //! pipeline it describes fails there, which is the whole point of declaring
 //! it — a description nothing checks is a comment.
@@ -32,12 +49,12 @@
 //! walk where the compiler makes two, and `PassDesc::new` would reject it
 //! anyway — mandatory passes are unfusable barriers by construction.
 //!
-//! Phase 2's DOM target ([`budgets.toml`'s `[target.phase-2]`](../../../davinci-road/plan/budgets.toml),
+//! Phase 2's DOM target (`budgets.toml`'s `[target.phase-2]`,
 //! `dom_walks_max = 1`) is exactly the claim that [`DOM`] below becomes one
 //! group once P2-11 moves the DOM backend onto S2. That is measurable against
 //! this declaration rather than against prose.
 
-use vize_davinci::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved};
+use crate::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved};
 
 /// The template stage every plan here runs over.
 ///
@@ -46,7 +63,7 @@ use vize_davinci::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved};
 /// pages and profile attributions lie about which IR was walked.
 pub const TEMPLATE_STAGE: &str = "template";
 
-/// The transform lane (`crate::lane`): one full traversal with enter/exit
+/// The transform lane (`vize_atelier_core::lane`): one full traversal with enter/exit
 /// callbacks, structural directive handling and static hoisting.
 ///
 /// Mandatory because skipping it does not produce slower output, it produces
@@ -60,7 +77,7 @@ pub const TRANSFORM: PassDesc = PassDesc::new(
     Preserved::NONE,
 );
 
-/// DOM / base code generation (`crate::codegen`): a second full traversal of
+/// DOM / base code generation (`vize_atelier_core::codegen`): a second full traversal of
 /// the transformed tree.
 pub const CODEGEN: PassDesc = PassDesc::new(
     "codegen",

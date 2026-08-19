@@ -15,6 +15,8 @@
 //!   every renderer reads.
 //! - [`pass`] — the pass manager: pipelines as const data, classified and
 //!   fused at build time.
+//! - [`legacy_plan`] — the shipped backends' template traversals, declared as
+//!   plans so a migration has something to be measured against.
 //! - [`folio`] — the textual stage-dump contract (`trait Folio`).
 //!
 //! The stage IRs themselves land in their own crates (`vize_disegno` for S2);
@@ -31,5 +33,6 @@ extern crate alloc;
 pub mod diagnostic;
 pub mod folio;
 pub mod id;
+pub mod legacy_plan;
 pub mod pass;
 pub mod side_table;

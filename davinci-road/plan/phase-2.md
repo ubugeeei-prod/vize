@@ -65,33 +65,51 @@ Each ID links to its contract in [phase-2-tasks.md](./phase-2-tasks.md); what a 
 - [ ] [P2-19](./phase-2-tasks.md#p2-19--devtool-protocol-spike) DevTool protocol spike
 - [ ] [P2-20](./phase-2-tasks.md#p2-20--phase-exit) Phase exit
 
-## Davinci is in the shipped binary (2026-08-19)
+## Davinci describes the shipped pipeline — and cannot yet consume it (2026-08-19)
 
-Recorded here rather than inside a task because it is a phase-level fact and
-no single task owns it: **`vize_davinci` now has a production reverse
-dependency.** `vize_atelier_core` depends on it, and the entire compiler
-depends on `vize_atelier_core`, so the pass-manager types ship.
+Recorded here rather than inside a task because it is a phase-level fact and no
+single task owns it.
 
-What it carries is `crates/vize_atelier_core/src/davinci_plan.rs`: the three
-backends' template traversals declared as [`Pipeline`] const data — `DOM`,
-`SSR` and `VAPOR`, each `transform` followed by that backend's own descent,
-every pass a mandatory barrier because that is what the pipeline is today.
-
-The declaration is tied to reality by a law, not a comment: each backend's
+`crates/vize_davinci/src/legacy_plan.rs` declares the three backends' template
+traversals as [`Pipeline`] const data — `DOM`, `SSR` and `VAPOR`, each
+`transform` followed by that backend's own descent, every pass a mandatory
+barrier because that is what the pipeline is today. Each backend's
 `tests/davinci_walk_baseline.rs` asserts the walks the P2-12a probe counted
-equal `Pipeline::group_count()` of its plan, on every ladder fixture. A plan
-that drifts from the compiler it describes fails there — proven by planting a
+equal `Pipeline::group_count()` of its plan on every ladder fixture, so a plan
+that drifts from the compiler it describes fails — proven by planting a
 one-pass `DOM` and watching `dom small: the measured walks disagree with
-davinci_plan::DOM`.
+legacy_plan::DOM`. A description nothing checks is a comment.
 
-Three things follow. **P2-11's target becomes measurable against a
-declaration** rather than against prose: `[target.phase-2]`'s
-`dom_walks_max = 1` is exactly the claim that `DOM` becomes one group.
-**P2-12b's swap becomes mechanical**: the budget observer already counts what
-the probe counts, so replacing the probe is replacing the producer, not
-redefining the quantity. And the cost is nil — const data and a `const fn`, no
-runtime work added to any lane, which is the bar `ubugeeei-redundancy.md` sets
-for anything that lands on the compile path.
+### The constraint this uncovered, which P2-11 has to answer
+
+The declaration was written in `vize_atelier_core` first, as a normal
+dependency, on the reasoning that Davinci "shipping" was the point. **The
+release gate rejected it**, correctly:
+
+    vize_atelier_core cannot depend on deferred workspace crate vize_davinci
+    — tests/tooling/moonbit-publish-crates.test.ts
+
+`vize_atelier_core` is published to crates.io; `vize_davinci` is
+`publish = false`, as `vize_disegno` will be (P2-5a's contract states it). A
+published crate carrying an unresolvable dependency cannot be published at all.
+
+This is **not** a packaging detail to work around. It is a hard precondition on
+the strangler plan: **P2-11 cannot move the DOM backend onto S2 while the
+Davinci crates are unpublished**, because `vize_atelier_dom` is published and
+would have to depend on `vize_davinci` and `vize_disegno` at runtime, not just
+in tests. The options — publish the Davinci crates (and accept semver gating on
+an IR still in flux), fold them into an already-published crate, or gate the S2
+path behind a feature whose dependencies are optional — are a program decision,
+and P2-11's contract does not currently name it.
+
+Meanwhile the plans live in `vize_davinci` and the backends read them from
+their **dev-dependencies** — the same shape `davinci_harness` already uses to
+instrument published crates — so Davinci is exercised against the real pipeline
+without entering anyone's release graph. What that buys is unchanged: P2-11's
+target is measurable against a declaration rather than prose
+(`dom_walks_max = 1` is exactly the claim that `DOM` becomes one group), and
+P2-12b's swap is mechanical because the budget observer already counts what the
+probe counts.
 
 ---
 

@@ -11,18 +11,19 @@
 //! the ratchet rule at the top of `budgets.toml`.
 //!
 //! The same run also pins Davinci's side of the tie: the walks measured here
-//! must equal `vize_atelier_core::davinci_plan::DOM.group_count()`, so the
+//! must equal `vize_atelier_core::legacy_plan::DOM.group_count()`, so the
 //! pass-manager plan that *describes* the shipped pipeline cannot drift from
-//! it silently. That declaration is Davinci's first production consumer.
+//! it silently. The plans live in `vize_davinci` and are read from the dev-dependencies:
+//! a published crate cannot depend on an unpublished one.
 //!
 //! The probe is process-global and monotone, so this file holds a single
 //! `#[test]` in its own binary - the `davinci_expr_reparse_floor.rs` shape.
 
 use davinci_harness::fixtures::{LADDER, template_block};
-use vize_atelier_core::davinci_plan;
 use vize_atelier_core::walk_probe::{WALK_STAGES, WalkCounts};
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
 use vize_carton::Allocator;
+use vize_davinci::legacy_plan;
 
 /// fixture name -> (stage tree-walks, template-node visits) per fused compile.
 const BASELINE: [(&str, u64, u64); 6] = [
@@ -72,11 +73,11 @@ fn dom_walk_baseline_holds() {
         // The Davinci plan and the pipeline it describes must agree on the
         // walk count. A plan that drifts from the compiler fails here, which
         // is why the plan is declared as data rather than written as a
-        // comment (`vize_atelier_core::davinci_plan`).
+        // comment (`vize_davinci::legacy_plan`).
         assert_eq!(
             delta.total_walks() as usize,
-            davinci_plan::DOM.group_count(),
-            "dom {}: the measured walks disagree with davinci_plan::DOM",
+            legacy_plan::DOM.group_count(),
+            "dom {}: the measured walks disagree with legacy_plan::DOM",
             fixture.name
         );
 
