@@ -16,6 +16,7 @@ import {
   assertReleaseMetadata,
   assertReleaseVersionStillOwnsMain,
   findReleaseBlockers,
+  isVersionMetadataOnlyRelease,
   remoteTagCommit,
   workspaceVersionFromCargoToml,
 } from "./release-preflight-core.mjs";
@@ -150,11 +151,58 @@ export function verifyReleaseTarget(env = process.env) {
     packageManifests: readPackageManifests(),
   });
   verifyGitReleaseTarget(tag, sha, version);
-  return { tag, sha, version, baseSha: releaseParentSha(sha) };
+  const baseSha = releaseParentSha(sha);
+  return {
+    tag,
+    sha,
+    version,
+    baseSha,
+    versionOnly: releaseChangesVersionMetadataOnly(baseSha, sha),
+  };
+}
+
+/**
+ * Gates that prove the *code* may reuse the parent's evidence when the release
+ * commit only rewrote version metadata. `Native Smoke` is absent on purpose: it
+ * installs what the tag builds, so it is the one gate whose subject really is
+ * the release commit.
+ */
+const parentEvidenceReusableWorkflows = [
+  "Check",
+  "Benchmark",
+  "Fuzz",
+  "Miri",
+  "App E2E",
+  "Real Project Matrix",
+  "Docs build",
+];
+
+/**
+ * A diff this cannot compute — a shallow clone, an unhydrated parent — answers
+ * "no", which costs a full gate dispatch rather than skipping one. The reuse is
+ * an optimization, so every uncertain case has to fall back to proving it.
+ */
+function releaseChangesVersionMetadataOnly(baseSha, sha) {
+  let result;
+  try {
+    result = runGit(["diff", "--name-only", `${baseSha}..${sha}`], [0]);
+  } catch {
+    return false;
+  }
+  const changed = result.stdout
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  return isVersionMetadataOnlyRelease(changed);
+}
+
+export function releaseEvidenceShas({ sha, baseSha, versionOnly }) {
+  if (!versionOnly) return new Map();
+  return new Map(parentEvidenceReusableWorkflows.map((name) => [name, [sha, baseSha]]));
 }
 
 export async function verifyReleasePreflight(env = process.env, { bootstrap = true } = {}) {
-  const { tag, sha, version, baseSha } = verifyReleaseTarget(env);
+  const { tag, sha, version, baseSha, versionOnly } = verifyReleaseTarget(env);
   const repository = env.GITHUB_REPOSITORY ?? "";
   const token = env.GITHUB_TOKEN ?? "";
   const apiUrl = env.GITHUB_API_URL ?? "https://api.github.com";
@@ -162,15 +210,28 @@ export async function verifyReleasePreflight(env = process.env, { bootstrap = tr
     throw new Error("GITHUB_REPOSITORY and GITHUB_TOKEN are required");
   }
 
-  const listRuns = () =>
-    githubApiPages({
-      apiUrl,
-      repository,
-      token,
-      resource: "actions/runs",
-      collection: "workflow_runs",
-      query: { head_sha: sha },
-    });
+  const evidenceShas = releaseEvidenceShas({ sha, baseSha, versionOnly });
+  if (versionOnly) {
+    console.log(
+      `Release ${tag} changed version metadata only; accepting ${baseSha} evidence for ${parentEvidenceReusableWorkflows.join(", ")}.`,
+    );
+  }
+  const evidenceSourceShas = versionOnly ? [sha, baseSha] : [sha];
+  const listRuns = async () => {
+    const pages = await Promise.all(
+      evidenceSourceShas.map((headSha) =>
+        githubApiPages({
+          apiUrl,
+          repository,
+          token,
+          resource: "actions/runs",
+          collection: "workflow_runs",
+          query: { head_sha: headSha },
+        }),
+      ),
+    );
+    return pages.flat();
+  };
   const dispatchPlans = createReleaseGateDispatchPlans({ ref: tag, headSha: sha, baseSha });
   let selectedRuns;
   if (bootstrap) {
@@ -179,6 +240,7 @@ export async function verifyReleasePreflight(env = process.env, { bootstrap = tr
       sha,
       dispatchPlans,
       listRuns,
+      evidenceShas,
       dispatchWorkflow: async (plan) => {
         console.log(`Dispatching ${plan.workflowName} on ${plan.ref} for ${sha}.`);
         await githubApiRequest({
@@ -205,6 +267,7 @@ export async function verifyReleasePreflight(env = process.env, { bootstrap = tr
       sha,
       requiredReleaseWorkflows,
       releaseGateRunQualifiers(dispatchPlans),
+      evidenceShas,
     );
   }
 

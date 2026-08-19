@@ -1,4 +1,5 @@
 import {
+  acceptedEvidenceShas,
   latestRequiredWorkflowRun,
   requiredReleaseWorkflows,
   selectRequiredWorkflowRuns,
@@ -119,6 +120,10 @@ export async function bootstrapRequiredWorkflowRuns({
   dispatchPlans,
   listRuns,
   dispatchWorkflow,
+  // Per gate, the SHAs whose runs count as evidence. A version-only release
+  // adds its first parent here for the gates that prove the code, so those are
+  // never dispatched at all and the release stops waiting on them.
+  evidenceShas = new Map(),
   sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
   now = Date.now,
   // Hosted release fallback budget: Real Project Matrix has 22 shards and is
@@ -134,7 +139,7 @@ export async function bootstrapRequiredWorkflowRuns({
   for (const plan of dispatchPlans) {
     const run = latestRequiredWorkflowRun(
       runs,
-      sha,
+      acceptedEvidenceShas(evidenceShas, plan.workflowName, sha),
       plan.workflowName,
       qualifiers.get(plan.workflowName),
     );
@@ -161,18 +166,35 @@ export async function bootstrapRequiredWorkflowRuns({
     const pending = [];
     let failed = false;
     for (const workflowName of requiredReleaseWorkflows) {
-      const run = latestRequiredWorkflowRun(runs, sha, workflowName, qualifiers.get(workflowName));
+      const run = latestRequiredWorkflowRun(
+        runs,
+        acceptedEvidenceShas(evidenceShas, workflowName, sha),
+        workflowName,
+        qualifiers.get(workflowName),
+      );
       if (run == null) missing.push(workflowName);
       else if (run.status !== "completed") pending.push(workflowName);
       else if (run.conclusion !== "success") failed = true;
     }
 
     if (failed || (missing.length === 0 && pending.length === 0)) {
-      return selectRequiredWorkflowRuns(runs, sha, requiredReleaseWorkflows, qualifiers);
+      return selectRequiredWorkflowRuns(
+        runs,
+        sha,
+        requiredReleaseWorkflows,
+        qualifiers,
+        evidenceShas,
+      );
     }
     if (now() >= deadline) {
       try {
-        return selectRequiredWorkflowRuns(runs, sha, requiredReleaseWorkflows, qualifiers);
+        return selectRequiredWorkflowRuns(
+          runs,
+          sha,
+          requiredReleaseWorkflows,
+          qualifiers,
+          evidenceShas,
+        );
       } catch (error) {
         const detail = error instanceof Error ? error.message : String(error);
         throw new Error(`Timed out after ${timeoutMs}ms waiting for release gates.\n${detail}`);

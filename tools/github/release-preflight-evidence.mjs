@@ -121,14 +121,25 @@ function matchesEvidence(run, evidence) {
   return branches == null || branches.includes(run.head_branch);
 }
 
+/** `sha` accepts a list so a version-only release can reuse its parent's evidence. */
 export function latestRequiredWorkflowRun(runs, sha, workflowName, qualifier = () => true) {
   const evidence = requiredReleaseWorkflowEvidence.get(workflowName);
   if (evidence == null) {
     throw new Error(`Release evidence is not configured for ${workflowName}`);
   }
+  const accepted = Array.isArray(sha) ? sha : [sha];
   return runs
-    .filter((run) => run.head_sha === sha && matchesEvidence(run, evidence) && qualifier(run))
+    .filter(
+      (run) => accepted.includes(run.head_sha) && matchesEvidence(run, evidence) && qualifier(run),
+    )
     .sort(compareRuns)[0];
+}
+
+/** The SHAs a given gate will accept evidence from, tag SHA first. */
+export function acceptedEvidenceShas(evidenceShas, workflowName, sha) {
+  const accepted = evidenceShas?.get?.(workflowName);
+  if (Array.isArray(accepted) && accepted.length > 0) return accepted;
+  return Array.isArray(sha) ? sha : [sha];
 }
 
 export function selectRequiredWorkflowRuns(
@@ -136,6 +147,7 @@ export function selectRequiredWorkflowRuns(
   sha,
   required = requiredReleaseWorkflows,
   qualifiers = new Map(),
+  evidenceShas = new Map(),
 ) {
   const selected = new Map();
   const failures = [];
@@ -144,15 +156,16 @@ export function selectRequiredWorkflowRuns(
     if (evidence == null) {
       throw new Error(`Release evidence is not configured for ${workflowName}`);
     }
+    const accepted = acceptedEvidenceShas(evidenceShas, workflowName, sha);
     const current = latestRequiredWorkflowRun(
       runs,
-      sha,
+      accepted,
       workflowName,
       qualifiers.get(workflowName),
     );
     if (current == null) {
       failures.push(
-        `${workflowName}: missing ${evidence.events.join("/")} run from ${evidence.path} for ${sha}`,
+        `${workflowName}: missing ${evidence.events.join("/")} run from ${evidence.path} for ${accepted.join(" or ")}`,
       );
     } else if (current.status !== "completed" || current.conclusion !== "success") {
       failures.push(
@@ -164,7 +177,7 @@ export function selectRequiredWorkflowRuns(
   }
   if (failures.length > 0) {
     throw new Error(
-      `Required release gates are not green on ${sha}:\n${failures
+      `Required release gates are not green on ${Array.isArray(sha) ? sha[0] : sha}:\n${failures
         .map((failure) => `- ${failure}`)
         .join("\n")}`,
     );

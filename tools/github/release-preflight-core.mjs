@@ -144,3 +144,46 @@ export function remoteTagCommit(output, tag) {
   );
   return refs.get(`refs/tags/${tag}^{}`) ?? refs.get(`refs/tags/${tag}`);
 }
+
+/**
+ * Whether a release commit changed nothing but version metadata.
+ *
+ * The release script writes the same version into 27 tracked files and
+ * regenerates the two lockfiles; it never touches source. Yet the preflight
+ * used to re-dispatch every gate at the tag SHA, so a commit of the shape
+ * `26 files changed, 88 insertions(+), 88 deletions(-)` paid for a fresh Real
+ * Project Matrix — measured at 123, 125, 126, 303 and 317 minutes across recent
+ * runs, against 8-11 minutes for Check. That is the entire release wait, spent
+ * re-proving code that did not change.
+ *
+ * When this returns true the caller may accept the release commit's first
+ * parent as evidence for the gates that prove the *code*. Gates that prove the
+ * *artifacts* — Native Smoke installs what the tag builds — must still run at
+ * the tag, so the decision is per workflow rather than global.
+ *
+ * The allowlist is paths, not diff content, which is safe only because the
+ * caller pairs it with the checks that already exist: the commit must be the
+ * single-parent release commit on main's first-parent chain, its tag must point
+ * at it, and `assertReleaseMetadata` must agree the version it carries is the
+ * tag's. A hand-written commit touching `Cargo.toml` cannot reach here without
+ * also faking all of those.
+ */
+const versionMetadataBasenames = new Set([
+  "Cargo.lock",
+  "Cargo.toml",
+  "CHANGELOG.md",
+  "extension.toml",
+  "package.json",
+  "pnpm-lock.yaml",
+  "pnpm-workspace.yaml",
+]);
+
+export function isVersionMetadataOnlyRelease(changedPaths) {
+  if (!Array.isArray(changedPaths) || changedPaths.length === 0) return false;
+  return changedPaths.every((changedPath) => {
+    if (typeof changedPath !== "string" || changedPath.length === 0) return false;
+    const basename = changedPath.split("/").pop() ?? "";
+    if (versionMetadataBasenames.has(basename)) return true;
+    return basename.startsWith("README") && basename.endsWith(".md");
+  });
+}
