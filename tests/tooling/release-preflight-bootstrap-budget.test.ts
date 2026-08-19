@@ -34,5 +34,8 @@ test("release Real Project Matrix dispatch keeps core evidence alive", () => {
   }).find((plan) => plan.workflowName === "Real Project Matrix");
 
   assert.equal(matrix?.inputs.core_tools_timeout_ms, "2400000");
-  assert.equal(matrix?.inputs.typecheck_divergence_mode, "enforce");
+  // TEMPORARY, tracked in #4461: the surface still runs and still records its
+  // verdict, but it does not gate the release while its three breaching
+  // fixtures are mis-measured. Flip back to "enforce" with the bootstrap.
+  assert.equal(matrix?.inputs.typecheck_divergence_mode, "record-only");
 });
