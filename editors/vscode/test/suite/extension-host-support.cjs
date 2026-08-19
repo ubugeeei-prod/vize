@@ -215,13 +215,36 @@ async function waitForLogEntries(logPath, predicate, label) {
   assert.fail(`${label} did not happen. Last log entries: ${JSON.stringify(entries.slice(-10))}`);
 }
 
+/**
+ * The fake server appends one JSON line per LSP message while these waits poll
+ * the same file, so a read can land after a line's bytes but before its
+ * newline. Only the *final* line can be torn that way — every earlier line was
+ * complete before the next one began — so an unparseable tail is dropped and
+ * the next poll reads it whole.
+ *
+ * A malformed interior line still throws. Swallowing those as well would turn a
+ * corrupt log into a 20-second timeout whose message blames the wait instead of
+ * naming the server that wrote the bad line.
+ */
 function readLogEntries(logPath) {
   const text = fs.readFileSync(logPath, "utf-8").trim();
   if (!text) {
     return [];
   }
 
-  return text.split("\n").map((line) => JSON.parse(line));
+  const lines = text.split("\n");
+  const entries = [];
+  for (const [index, line] of lines.entries()) {
+    try {
+      entries.push(JSON.parse(line));
+    } catch (error) {
+      if (index < lines.length - 1) {
+        throw error;
+      }
+    }
+  }
+
+  return entries;
 }
 
 function sleep(ms) {
