@@ -132,7 +132,10 @@ mod tests {
 
     #[test]
     fn the_first_id_is_index_zero() {
-        assert_eq!(NodeId::FIRST, NodeId::from_index(0).expect("index 0 has an id"));
+        assert_eq!(
+            NodeId::FIRST,
+            NodeId::from_index(0).expect("index 0 has an id")
+        );
         assert_eq!(NodeId::FIRST.index(), 0);
     }
 

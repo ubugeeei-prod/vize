@@ -79,7 +79,9 @@ fn davinci(criterion: &mut Criterion) {
             let mut total = 0usize;
             let group_count = PIPELINE.group_count();
             for group_index in 0..group_count {
-                let group = PIPELINE.group(group_index).expect("group index is in range");
+                let group = PIPELINE
+                    .group(group_index)
+                    .expect("group index is in range");
                 for pass_index in group.start..group.end() {
                     total += work(PIPELINE.passes[pass_index]);
                 }

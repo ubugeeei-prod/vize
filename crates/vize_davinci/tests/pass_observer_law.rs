@@ -13,7 +13,7 @@
 //! plan says, over pipelines whose grouping differs.
 
 use vize_carton::{String, cstr};
-use vize_davinci::pass::observer::{AnalysisEvent, FailEvent, PassEvent, PassObserver, Pair};
+use vize_davinci::pass::observer::{AnalysisEvent, FailEvent, Pair, PassEvent, PassObserver};
 use vize_davinci::pass::{
     BudgetObserver, Fusability, NoObserver, PassDesc, PassFailure, PassKind, Pipeline, Preserved,
     run_pipeline,
@@ -213,7 +213,10 @@ fn a_failing_run_counts_the_failure_and_not_a_completed_pipeline() {
 
     assert_eq!(result, Err(PassFailure::new("barrier refused")));
     assert_eq!(budget.failures, 1);
-    assert_eq!(budget.walks, 2, "both walks were entered before the failure");
+    assert_eq!(
+        budget.walks, 2,
+        "both walks were entered before the failure"
+    );
     assert_eq!(budget.passes, 2);
 }
 

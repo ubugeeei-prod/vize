@@ -48,7 +48,9 @@ fn vapor_walk_baseline_holds() {
 
         let breakdown = WALK_STAGES
             .iter()
-            .filter(|stage| delta.visits[**stage as usize] != 0 || delta.walks[**stage as usize] != 0)
+            .filter(|stage| {
+                delta.visits[**stage as usize] != 0 || delta.walks[**stage as usize] != 0
+            })
             .map(|stage| {
                 format!(
                     " {}={}/{}",

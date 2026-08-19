@@ -508,7 +508,7 @@ impl<'a> SsrCodegenContext<'a> {
                 self.process_children(children, false, false, false);
             }
             ComponentSlotChildren::Refs(children) => {
-                for child in children {
+                for child in vize_atelier_core::walk_probe::ssr_children(children) {
                     self.process_child(child, false, false, false);
                 }
             }

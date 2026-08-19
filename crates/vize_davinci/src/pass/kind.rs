@@ -110,7 +110,10 @@ mod tests {
 
     #[test]
     fn kind_identifiers_are_stable_strings() {
-        assert_eq!(PassKind::MandatoryDiagnostic.as_str(), "mandatory-diagnostic");
+        assert_eq!(
+            PassKind::MandatoryDiagnostic.as_str(),
+            "mandatory-diagnostic"
+        );
         assert_eq!(PassKind::MandatoryLowering.as_str(), "mandatory-lowering");
         assert_eq!(PassKind::Optional.as_str(), "optional");
     }

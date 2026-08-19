@@ -124,7 +124,10 @@ impl fmt::Display for PipelineSyntaxError {
                 write!(f, "unterminated pass list, expected `)` at offset {offset}")
             }
             PipelineSyntaxError::ExpectedCommaOrEnd { offset } => {
-                write!(f, "expected `,` or end of input after `)` at offset {offset}")
+                write!(
+                    f,
+                    "expected `,` or end of input after `)` at offset {offset}"
+                )
             }
             PipelineSyntaxError::UnexpectedCharacter { offset, character } => {
                 write!(f, "unexpected character `{character}` at offset {offset}")

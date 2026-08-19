@@ -19,7 +19,7 @@
 //! ([`WalkStage`]), so a per-stage breakdown comes out of the same run that
 //! produces the totals.
 //!
-//! # Instrumented sites (19)
+//! # Instrumented sites
 //!
 //! | stage                     | visit sites                                                                                                                                                                                                    | walk site                              |
 //! | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
@@ -31,6 +31,16 @@
 //! The specialized-arm sites exist because those dispatchers fall through to
 //! the stage's main funnel for the remaining variants, and counting the whole
 //! function would double-count the fallthrough.
+//!
+//! # Two call shapes, and when each is correct
+//!
+//! Most sites use [`ssr_children`] / [`vapor_children`], which count inside
+//! the iterator constructor so the count and the walk are the same event by
+//! construction (the P0-3 shape) and instrumenting costs no extra source line.
+//! [`record_visit`] / [`record_visits`] are used only where a dispatcher
+//! branches on the whole list before reaching a loop — Vapor lowering's
+//! combined-text case — because counting at the loop there would miss the
+//! branch that bypasses it.
 //!
 //! # What is deliberately not counted
 //!
@@ -119,6 +129,30 @@ pub fn record_visit(stage: WalkStage) {
 #[inline]
 pub fn record_visits(stage: WalkStage, nodes: usize) {
     VISITS[stage as usize].fetch_add(nodes as u64, Ordering::Relaxed);
+}
+
+/// Iterate `children`, counting each as an [`SsrCodegen`](WalkStage::SsrCodegen)
+/// visit.
+///
+/// Counting *inside the iterator constructor* is the P0-3 shape
+/// ([`crate::expr_parse_probe::parse_arena`]): the count and the walk become
+/// the same event by construction, so a loop cannot be added without being
+/// counted. It also means instrumenting a dispatcher costs **no extra line**,
+/// which is what keeps a temporary probe out of files that are already over
+/// the 350-line source budget.
+#[inline]
+pub fn ssr_children<T>(children: &[T]) -> core::slice::Iter<'_, T> {
+    record_visits(WalkStage::SsrCodegen, children.len());
+    children.iter()
+}
+
+/// Iterate `children`, counting each as a
+/// [`VaporLower`](WalkStage::VaporLower) visit. Same shape as
+/// [`ssr_children`].
+#[inline]
+pub fn vapor_children<T>(children: &[T]) -> core::slice::Iter<'_, T> {
+    record_visits(WalkStage::VaporLower, children.len());
+    children.iter()
 }
 
 /// Count one traversal of the template tree entered by `stage`.

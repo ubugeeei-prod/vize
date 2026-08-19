@@ -176,7 +176,7 @@ function inlineTableLines(section: string): string[] {
   const start = lines.indexOf(`[${section}]`);
   assert.ok(start >= 0, `budgets.toml must declare a [${section}] section`);
   const rest = lines.slice(start + 1);
-  const end = rest.findIndex((line) => /^\[/.test(line));
+  const end = rest.findIndex((line) => line.startsWith("["));
   const body = end === -1 ? rest : rest.slice(0, end);
   return body.filter((line) => /^[A-Za-z0-9._-]+ = \{/.test(line));
 }

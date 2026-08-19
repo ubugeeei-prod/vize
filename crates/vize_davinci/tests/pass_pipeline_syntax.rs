@@ -47,7 +47,10 @@ fn parsing_a_printed_value_reproduces_the_value() {
         let parsed = parse_pipelines(source).expect("canonical input parses");
         let printed = print_pipelines(&parsed);
         let reparsed = parse_pipelines(printed.as_str()).expect("printed output parses");
-        assert_eq!(reparsed, parsed, "structural round trip failed for {source}");
+        assert_eq!(
+            reparsed, parsed,
+            "structural round trip failed for {source}"
+        );
     }
 }
 
@@ -84,7 +87,11 @@ fn an_empty_pass_list_is_legal_and_prints_back_empty() {
 #[test]
 fn malformed_input_yields_the_exact_documented_error() {
     let cases: [(&str, PipelineSyntaxError, &str); 10] = [
-        ("", PipelineSyntaxError::Empty, "empty pipeline string at offset 0"),
+        (
+            "",
+            PipelineSyntaxError::Empty,
+            "empty pipeline string at offset 0",
+        ),
         (
             "s2",
             PipelineSyntaxError::ExpectedOpenParen { offset: 2 },
@@ -160,7 +167,10 @@ fn whitespace_is_not_a_spelling_of_the_canonical_form() {
     // rejects the space is part of the contract, and a rejection that moved
     // to a different rule would still pass a bare `is_err()`.
     let cases: [(&str, PipelineSyntaxError); 4] = [
-        ("s2 (a)", PipelineSyntaxError::ExpectedOpenParen { offset: 2 }),
+        (
+            "s2 (a)",
+            PipelineSyntaxError::ExpectedOpenParen { offset: 2 },
+        ),
         ("s2( a)", PipelineSyntaxError::ExpectedPass { offset: 3 }),
         ("s2(a, b)", PipelineSyntaxError::ExpectedPass { offset: 5 }),
         (

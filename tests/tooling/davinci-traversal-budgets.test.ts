@@ -57,7 +57,7 @@ function inlineTableLines(section: string): string[] {
   const start = lines.indexOf(`[${section}]`);
   assert.ok(start >= 0, `budgets.toml must declare a [${section}] section`);
   const rest = lines.slice(start + 1);
-  const end = rest.findIndex((line) => /^\[/.test(line));
+  const end = rest.findIndex((line) => line.startsWith("["));
   const body = end === -1 ? rest : rest.slice(0, end);
   return body.filter((line) => /^[A-Za-z0-9._-]+ = \{/.test(line));
 }
@@ -80,9 +80,7 @@ function walkRecorders(): { backend: string; rows: Map<string, [number, number]>
     assert.ok(start >= 0, `crates/${pkg}/${WALK_RECORDER} must declare a BASELINE table`);
     const table = text.slice(start, text.indexOf("];", start));
     const rows = new Map<string, [number, number]>();
-    for (const [, fixture, walks, visits] of table.matchAll(
-      /\("([^"]+)",\s*(\d+),\s*(\d+)\)/g,
-    )) {
+    for (const [, fixture, walks, visits] of table.matchAll(/\("([^"]+)",\s*(\d+),\s*(\d+)\)/g)) {
       assert.ok(!rows.has(fixture), `${backend}: BASELINE lists ${fixture} twice`);
       rows.set(fixture, [Number(walks), Number(visits)]);
     }
@@ -178,4 +176,3 @@ test("the phase-2 target table is pinned with a real phase-start rev", () => {
     "wall time stays report-only until the Blacksmith reference recording lands (P0-4)",
   );
 });
-

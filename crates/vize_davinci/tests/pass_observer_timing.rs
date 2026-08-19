@@ -24,9 +24,7 @@
 
 use vize_carton::profiler::{ProfileExportBudget, ProfileExportOptions, global_profiler};
 use vize_davinci::pass::observer::TimingObserver;
-use vize_davinci::pass::{
-    Fusability, PassDesc, PassKind, Pipeline, Preserved, run_pipeline,
-};
+use vize_davinci::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved, run_pipeline};
 
 const NORMALIZE: PassDesc = PassDesc::new(
     "normalize",

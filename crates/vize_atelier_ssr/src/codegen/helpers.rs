@@ -65,7 +65,7 @@ impl<'a> SsrCodegenContext<'a> {
             None
         };
 
-        for (index, child) in children.iter().enumerate() {
+        for (index, child) in vize_atelier_core::walk_probe::ssr_children(children).enumerate() {
             self.process_child(
                 child,
                 disable_nested_fragments,
@@ -87,9 +87,6 @@ impl<'a> SsrCodegenContext<'a> {
         disable_comment: bool,
         inherit_attrs: bool,
     ) {
-        vize_atelier_core::walk_probe::record_visit(
-            vize_atelier_core::walk_probe::WalkStage::SsrCodegen,
-        );
         match child {
             TemplateChildNode::Element(el) => {
                 self.process_element_with_fallthrough_attrs(

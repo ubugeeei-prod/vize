@@ -43,12 +43,15 @@ fn dom_walk_baseline_holds() {
             template_block(fixture.source).expect("every ladder fixture has a template block");
         let allocator = Allocator::new();
         let before = WalkCounts::snapshot();
-        let _compiled = compile_template_with_options(&allocator, template, DomCompilerOptions::default());
+        let _compiled =
+            compile_template_with_options(&allocator, template, DomCompilerOptions::default());
         let delta = WalkCounts::snapshot().since(before);
 
         let breakdown = WALK_STAGES
             .iter()
-            .filter(|stage| delta.visits[**stage as usize] != 0 || delta.walks[**stage as usize] != 0)
+            .filter(|stage| {
+                delta.visits[**stage as usize] != 0 || delta.walks[**stage as usize] != 0
+            })
             .map(|stage| {
                 format!(
                     " {}={}/{}",
