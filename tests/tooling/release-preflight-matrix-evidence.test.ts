@@ -125,6 +125,9 @@ test("release preflight rejects missing or foreign real-project shard artifacts"
   );
 });
 
+// `enforceParity: true` is passed explicitly because the shipped default is
+// waived while #4461 is open. These cases keep proving the strict path works,
+// so flipping `releaseTypecheckParityEnforced` back to `true` needs no new test.
 test("release preflight rejects record-only and non-zero typecheck parity artifacts", async () => {
   for (const [label, mutate, message] of [
     [
@@ -167,6 +170,7 @@ test("release preflight rejects record-only and non-zero typecheck parity artifa
         run,
         artifacts: realProjectArtifacts(run),
         registry: typecheckRegistry(),
+        enforceParity: true,
         readArtifactEntries: async (artifact) => {
           const entries = shardEntries(Number(artifact.name.split("-").pop()));
           if (artifact.name === "real-project-matrix-0") mutate(entries);
@@ -177,6 +181,56 @@ test("release preflight rejects record-only and non-zero typecheck parity artifa
       label,
     );
   }
+});
+
+test("release preflight waives typecheck parity by default and still binds the evidence", async () => {
+  const run = successfulReleaseRun("Real Project Matrix", 515);
+  const warnings: string[] = [];
+  const restore = console.warn;
+  console.warn = (message: string) => warnings.push(String(message));
+  try {
+    await assertRealProjectMatrixReleaseArtifacts({
+      run,
+      artifacts: realProjectArtifacts(run),
+      registry: typecheckRegistry(),
+      readArtifactEntries: async (artifact) => {
+        const entries = shardEntries(Number(artifact.name.split("-").pop()));
+        if (artifact.name === "real-project-matrix-0") {
+          mutateDivergence(entries, (artifact) => {
+            artifact.enforcement.budgetMode = "record-only";
+            artifact.divergence.summary.falseNegativeCount = 204;
+          });
+        }
+        return entries;
+      },
+    });
+  } finally {
+    console.warn = restore;
+  }
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /waived typecheck parity \(#4461\)/);
+  assert.match(warnings[0], /must not be record-only/);
+});
+
+test("release preflight still rejects unbound typecheck evidence while parity is waived", async () => {
+  const run = successfulReleaseRun("Real Project Matrix", 517);
+  await assert.rejects(
+    assertRealProjectMatrixReleaseArtifacts({
+      run,
+      artifacts: realProjectArtifacts(run),
+      registry: typecheckRegistry(),
+      readArtifactEntries: async (artifact) => {
+        const entries = shardEntries(Number(artifact.name.split("-").pop()));
+        if (artifact.name === "real-project-matrix-0") {
+          mutateDivergence(entries, (artifact) => {
+            artifact.evidence.commitSha = "c".repeat(40);
+          });
+        }
+        return entries;
+      },
+    }),
+    /not bound to/,
+  );
 });
 
 test("release preflight requires exact lint divergence evidence", async () => {

@@ -140,6 +140,10 @@ test("release preflight requires same-corpus coverage, mutation oracle, and prep
         run,
         artifacts: realProjectArtifacts(run),
         registry: typecheckRegistry(),
+        // Coverage and the mutation oracle sit inside the parity proof, which
+        // ships waived while #4461 is open; the dependency-linkage case below
+        // is outside it and rejects either way.
+        enforceParity: true,
         readArtifactEntries: async (artifact) => {
           const entries = shardEntries(Number(artifact.name.split("-").pop()));
           if (artifact.name === "real-project-matrix-0") mutate(entries);
