@@ -1,7 +1,7 @@
+import { diff as blazediff } from "@blazediff/core";
 import { expect, type Page } from "@playwright/test";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import pixelmatch from "pixelmatch";
 import { PNG } from "pngjs";
 
 export interface VisualParityOptions {
@@ -179,17 +179,10 @@ export function comparePngBuffers(
   const diff = new PNG({ width, height });
   const referenceFrame = normalizePngFrame(reference, width, height);
   const candidateFrame = normalizePngFrame(candidate, width, height);
-  const diffPixels = pixelmatch(
-    referenceFrame.data,
-    candidateFrame.data,
-    diff.data,
-    width,
-    height,
-    {
-      includeAA: false,
-      threshold: options.threshold ?? DEFAULT_PIXEL_THRESHOLD,
-    },
-  );
+  const diffPixels = blazediff(referenceFrame.data, candidateFrame.data, diff.data, width, height, {
+    includeAA: false,
+    threshold: options.threshold ?? DEFAULT_PIXEL_THRESHOLD,
+  });
 
   fs.writeFileSync(diffPath, PNG.sync.write(diff));
 

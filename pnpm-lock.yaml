@@ -1094,6 +1094,9 @@ importers:
       '@babel/parser':
         specifier: catalog:legacy-vue-oracle
         version: 7.29.0
+      '@blazediff/core':
+        specifier: 1.10.0
+        version: 1.10.0
       '@formkit/vue':
         specifier: 2.1.0
         version: 2.1.0(vue@3.6.0-beta.10(typescript@6.0.3))
@@ -1154,9 +1157,6 @@ importers:
       naive-ui:
         specifier: 2.44.1
         version: 2.44.1(vue@3.6.0-beta.10(typescript@6.0.3))
-      pixelmatch:
-        specifier: 7.2.0
-        version: 7.2.0
       pngjs:
         specifier: catalog:content
         version: 7.0.0
@@ -1481,6 +1481,9 @@ packages:
   '@babel/types@8.0.4':
     resolution: {integrity: sha512-eY+Yn3dCqTGmyiq2QRU66lA5FL8lqqqvecHt0fF3uHONIa7ToYsaCiWV8lOKqAs0Rb2SjixiKFROngnulPtt2g==}
     engines: {node: ^22.18.0 || >=24.11.0}
+
+  '@blazediff/core@1.10.0':
+    resolution: {integrity: sha512-AOQff0zgR7cGsZL+4E7hVkmujoPUpm0J9xzWGWZj5wCjd3gmxESXAPfKyuzs93VdpQNFhHlBhfOjrcZ+XTERtQ==}
 
   '@bomb.sh/tab@0.0.19':
     resolution: {integrity: sha512-dTRfo9Q9B+lbLG3JCu8a/AGQSfD2XXcFcnakQzVjSOX+VvR/s9zpsH8TlqV3iHqazniRn1Ypwd1hcRlXcu/4BA==}
@@ -11901,6 +11904,8 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 8.0.0
       '@babel/helper-validator-identifier': 8.0.4
+
+  '@blazediff/core@1.10.0': {}
 
   '@bomb.sh/tab@0.0.19(cac@6.7.14)(citty@0.2.2)(commander@13.1.0)':
     optionalDependencies:

@@ -41,6 +41,7 @@
   "devDependencies": {
     "@apollo/client": "3.14.1",
     "@babel/parser": "catalog:legacy-vue-oracle",
+    "@blazediff/core": "1.10.0",
     "@formkit/vue": "2.1.0",
     "@ionic/vue": "8.8.9",
     "@nuxt/ui": "4.8.2",
@@ -61,7 +62,6 @@
     "element-plus": "2.14.1",
     "graphql": "16.14.2",
     "naive-ui": "2.44.1",
-    "pixelmatch": "7.2.0",
     "pngjs": "catalog:content",
     "primevue": "4.5.5",
     "pug": "catalog:pug-oracle",
