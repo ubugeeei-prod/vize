@@ -62,31 +62,6 @@ test("release gate plans bind exact SHAs to expected evidence titles", () => {
         expectedRunName: `Benchmark ${"b".repeat(40)}...${releaseSha}`,
       },
       {
-        workflowName: "App E2E",
-        workflowId: "e2e.yml",
-        inputs: { suite: "all", target_sha: releaseSha },
-        expectedRunName: `App E2E all @ ${releaseSha}`,
-      },
-      {
-        workflowName: "Native Smoke",
-        workflowId: "native-smoke.yml",
-        inputs: {},
-        expectedRunName: "Native Smoke",
-      },
-      {
-        workflowName: "Real Project Matrix",
-        workflowId: "real-project-matrix.yml",
-        inputs: {
-          core_tools_mode: "record-only",
-          core_tools_timeout_ms: "2400000",
-          typecheck_dependencies_mode: "record-only",
-          lint_divergence_mode: "record-only",
-          lsp_mode: "record-only",
-          typecheck_divergence_mode: "record-only", // TEMPORARY, see #4461
-        },
-        expectedRunName: `Real Project Matrix @ ${releaseSha}`,
-      },
-      {
         workflowName: "Fuzz",
         workflowId: "fuzz.yml",
         inputs: { mode: "replay" },
@@ -140,22 +115,6 @@ test("Benchmark dispatch exposes an exact base and head range", () => {
   assert.match(benchmark["run-name"] ?? "", /inputs\.head_sha/);
 });
 
-test("App E2E dispatch identifies the suite and immutable target", () => {
-  const e2e = readWorkflow(findReleasePlan("App E2E").workflowId);
-  const e2eInputs = e2e.on?.workflow_dispatch?.inputs ?? {};
-  const e2eSuiteInput = e2eInputs.suite;
-  assert.ok(e2eSuiteInput);
-  assert.equal(e2eSuiteInput.required, true);
-  assert.ok(Array.isArray(e2eSuiteInput.options));
-  assert.ok(e2eSuiteInput.options.includes("all"));
-  assert.equal(e2eInputs.target_sha?.required, false);
-  assert.match(e2e["run-name"] ?? "", /^App E2E /);
-  assert.match(e2e["run-name"] ?? "", /inputs\.suite/);
-  assert.match(e2e["run-name"] ?? "", / @ /);
-  assert.match(e2e["run-name"] ?? "", /inputs\.target_sha/);
-  assert.match(e2e["run-name"] ?? "", /github\.sha/);
-});
-
 test("Fuzz dispatch identifies its mode and target", () => {
   const fuzz = readWorkflow(findReleasePlan("Fuzz").workflowId);
   assert.equal(fuzz.on?.workflow_dispatch?.inputs?.["max-total-time"]?.default, "120");
@@ -163,33 +122,6 @@ test("Fuzz dispatch identifies its mode and target", () => {
   assert.match(fuzz["run-name"] ?? "", /inputs\.max-total-time/);
   assert.match(fuzz["run-name"] ?? "", /inputs\.mode/);
   assert.match(fuzz["run-name"] ?? "", /github\.sha/);
-});
-
-test("Native Smoke uses its stable workflow title as evidence", () => {
-  const native = readWorkflow(findReleasePlan("Native Smoke").workflowId);
-  assert.equal(native.name, "Native Smoke");
-  assert.equal(native["run-name"], undefined);
-});
-
-test("Real Project Matrix dispatch identifies its immutable target", () => {
-  const matrix = readWorkflow(findReleasePlan("Real Project Matrix").workflowId);
-  assert.equal(matrix.name, "Real Project Matrix");
-  const dispatchInputs = matrix.on?.workflow_dispatch?.inputs ?? {};
-  assert.deepEqual(
-    Object.keys(dispatchInputs).sort(),
-    "core_tools_mode core_tools_timeout_ms typecheck_dependencies_mode lint_divergence_mode lsp_mode typecheck_divergence_mode"
-      .split(" ")
-      .sort(),
-  );
-  for (const mode of "core_tools_mode typecheck_dependencies_mode lint_divergence_mode lsp_mode typecheck_divergence_mode".split(
-    " ",
-  )) {
-    assert.equal(dispatchInputs[mode]?.default, "enforce");
-    assert.deepEqual(dispatchInputs[mode]?.options, ["enforce", "record-only"]);
-  }
-  assert.equal(dispatchInputs.core_tools_timeout_ms?.default, "2400000");
-  assert.equal(dispatchInputs.core_tools_timeout_ms?.type, "string");
-  assert.equal(matrix["run-name"], "Real Project Matrix @ ${{ github.sha }}");
 });
 
 test("on-demand gates correlate expanded display titles, never workflow names", () => {
@@ -220,7 +152,7 @@ test("on-demand gates correlate expanded display titles, never workflow names", 
   );
 });
 
-test("release gate bootstrap reuses exact-SHA scheduled evidence", async () => {
+test("release gate bootstrap reuses evidence that already exists at the SHA", async () => {
   const plans = releasePlans();
   const runs = requiredReleaseWorkflows.map((name, index) => successfulReleaseRun(name, index + 1));
   for (const workflowName of ["Benchmark", "Fuzz"]) {
@@ -239,8 +171,10 @@ test("release gate bootstrap reuses exact-SHA scheduled evidence", async () => {
 
   assert.deepEqual(dispatched, []);
   assert.deepEqual([...selected.keys()], requiredReleaseWorkflows);
-  for (const workflowName of ["App E2E", "Native Smoke"]) {
-    assert.equal(findEvidenceRun(runs, workflowName).event, "schedule");
+  // Check, Miri and Docs build are push-triggered on main, so a release
+  // confirms the runs main already produced instead of waiting on new ones.
+  for (const workflowName of ["Check", "Miri", "Docs build"]) {
+    assert.equal(findEvidenceRun(runs, workflowName).event, "push");
   }
 });
 

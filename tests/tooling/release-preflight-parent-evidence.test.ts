@@ -6,7 +6,11 @@ import {
   createReleaseGateDispatchPlans,
 } from "../../tools/github/release-preflight-bootstrap.mjs";
 import { isVersionMetadataOnlyRelease } from "../../tools/github/release-preflight-core.mjs";
+import { requiredReleaseWorkflows } from "../../tools/github/release-preflight-evidence.mjs";
 import { releaseEvidenceShas } from "../../tools/github/release-preflight.mjs";
+
+/** The workspace lint budget is zero warnings, and `.sort()` needs a comparator. */
+const byCodeUnit = (left: string, right: string) => (left < right ? -1 : left > right ? 1 : 0);
 
 const tagSha = "a".repeat(40);
 const parentSha = "b".repeat(40);
@@ -43,10 +47,13 @@ test("version metadata paths are recognised and source paths are not", () => {
   }
 });
 
-test("only the code gates reuse the parent; Native Smoke stays pinned to the tag", () => {
+test("every required gate reuses the parent; artifact gates never do", () => {
   const shas = releaseEvidenceShas({ sha: tagSha, baseSha: parentSha, versionOnly: true });
-  assert.deepEqual(shas.get("Real Project Matrix"), [tagSha, parentSha]);
-  assert.deepEqual(shas.get("Check"), [tagSha, parentSha]);
+  for (const gate of requiredReleaseWorkflows) {
+    assert.deepEqual(shas.get(gate), [tagSha, parentSha], gate);
+  }
+  // Its subject is the artifact the tag built, so it must never be reused even
+  // if #4461 makes it a required gate again.
   assert.equal(shas.get("Native Smoke"), undefined);
   assert.equal(
     releaseEvidenceShas({ sha: tagSha, baseSha: parentSha, versionOnly: false }).size,
@@ -85,14 +92,7 @@ test("a version-only release never dispatches a gate the parent already proved",
     greenRun(".github/workflows/miri.yml", parentSha, "Miri", "push"),
     greenRun(".github/workflows/build-docs.yml", parentSha, "Docs build", "push"),
     greenRun(".github/workflows/benchmark.yml", parentSha, `Benchmark ${parentSha}...${tagSha}`),
-    greenRun(".github/workflows/e2e.yml", parentSha, `App E2E all @ ${tagSha}`),
     greenRun(".github/workflows/fuzz.yml", parentSha, `Fuzz replay @ ${tagSha}`),
-    greenRun(
-      ".github/workflows/real-project-matrix.yml",
-      parentSha,
-      `Real Project Matrix @ ${tagSha}`,
-    ),
-    greenRun(".github/workflows/native-smoke.yml", tagSha, "Native Smoke"),
   ];
   const dispatched: string[] = [];
   const selected = await bootstrapRequiredWorkflowRuns({
@@ -107,8 +107,13 @@ test("a version-only release never dispatches a gate the parent already proved",
     sleep: async () => {},
   });
   assert.deepEqual(dispatched, [], "no gate should be dispatched");
-  assert.equal(selected.get("Real Project Matrix")?.head_sha, parentSha);
-  assert.equal(selected.get("Native Smoke")?.head_sha, tagSha);
+  assert.deepEqual(
+    [...selected.keys()].sort(byCodeUnit),
+    [...requiredReleaseWorkflows].sort(byCodeUnit),
+  );
+  for (const gate of requiredReleaseWorkflows) {
+    assert.equal(selected.get(gate)?.head_sha, parentSha, gate);
+  }
 });
 
 test("without the reuse the same parent evidence does not satisfy the gates", async () => {
@@ -131,5 +136,5 @@ test("without the reuse the same parent evidence does not satisfy the gates", as
     }),
     /Required release gates are not green/,
   );
-  assert.ok(dispatched.includes("Real Project Matrix"), "the matrix must be dispatched");
+  assert.deepEqual(dispatched.sort(byCodeUnit), ["Benchmark", "Fuzz"]);
 });

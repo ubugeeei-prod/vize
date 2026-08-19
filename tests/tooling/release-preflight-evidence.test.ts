@@ -75,20 +75,20 @@ test("required workflow selection fails closed for missing, stale, red, or wrong
 
 test("newest matching run wins across cancellation, reruns, and concurrent runs", () => {
   const greenRuns = requiredReleaseWorkflows
-    .filter((name) => name !== "App E2E")
+    .filter((name) => name !== "Docs build")
     .map((name, index) => successfulReleaseRun(name, index + 1));
   const olderSuccess = {
-    ...successfulReleaseRun("App E2E", 50),
+    ...successfulReleaseRun("Docs build", 50),
     run_started_at: "2026-07-12T00:50:00Z",
   };
   const newerCancellation = {
-    ...successfulReleaseRun("App E2E", 51),
+    ...successfulReleaseRun("Docs build", 51),
     run_started_at: "2026-07-12T00:51:00Z",
     conclusion: "cancelled",
   };
   assert.throws(
     () => selectRequiredWorkflowRuns([...greenRuns, olderSuccess, newerCancellation], releaseSha),
-    /App E2E: completed\/cancelled/,
+    /Docs build: completed\/cancelled/,
   );
 
   const rerunSuccess = {
@@ -108,7 +108,7 @@ test("newest matching run wins across cancellation, reruns, and concurrent runs"
   };
   assert.doesNotThrow(() =>
     selectRequiredWorkflowRuns(
-      [...greenRuns, supersededPending, successfulReleaseRun("App E2E", 52)],
+      [...greenRuns, supersededPending, successfulReleaseRun("Docs build", 52)],
       releaseSha,
     ),
   );

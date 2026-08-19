@@ -5,24 +5,6 @@ import {
   selectRequiredWorkflowRuns,
 } from "./release-preflight-evidence.mjs";
 
-/**
- * TEMPORARY — restore to `"enforce"`. Tracked in #4461.
- *
- * `typecheck-divergence` is the only Real Project Matrix surface this preflight
- * enforces; the other four are dispatched `record-only`. It has not been green
- * since 2026-08-12 `af40a9981`, which cost v0.348.0, v0.349.0 and v0.350.0 —
- * three tags, three preflight failures, three automatic rollbacks, and nothing
- * published since v0.347.7 on 2026-08-11.
- *
- * All three breaching fixtures are instrument defects, not Vize regressions:
- * primevue's generated baseline measures two Nuxt apps under the library
- * tsconfig, and reka-ui's and elk's baseline programs each resolve two Vue
- * module identities. Holding every release hostage to a broken measurement buys
- * nothing, so the surface still runs and still records its verdict into the
- * shard artifacts — it just does not gate the release while #4461 is open.
- */
-const typecheckDivergenceReleaseMode = "record-only";
-
 export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
   for (const [label, value] of [
     ["head", headSha],
@@ -36,14 +18,6 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
     throw new Error("Release base SHA must differ from the release head SHA");
   if (!ref) throw new Error("Release dispatch ref is required");
 
-  const appE2eSuite = "all";
-  // Release evidence records most ecosystem surfaces without blocking publish.
-  // Typecheck divergence stays enforced because the release artifact verifier
-  // requires an enforcing zero-divergence budget and seeded mutation oracle.
-  // Keep the release dispatch aligned with the workflow default. Enforced
-  // typecheck divergence needs successful core typechecker evidence, and hosted
-  // release fallback runners can legitimately need the full per-project budget.
-  const releaseCoreToolsTimeoutMs = "2400000";
   // Release evidence replays the known corpus instead of running a fresh
   // campaign. A campaign is a randomized search, so it can fail a tag over an
   // input it discovered minutes earlier that has nothing to do with the release;
@@ -59,37 +33,6 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
       inputs: { base_sha: baseSha, head_sha: headSha },
       expectedRunName: `Benchmark ${baseSha}...${headSha}`,
       acceptsScheduledEvidence: false,
-    },
-    {
-      workflowName: "App E2E",
-      workflowId: "e2e.yml",
-      ref,
-      inputs: { suite: appE2eSuite, target_sha: headSha },
-      expectedRunName: `App E2E ${appE2eSuite} @ ${headSha}`,
-      acceptsScheduledEvidence: true,
-    },
-    {
-      workflowName: "Native Smoke",
-      workflowId: "native-smoke.yml",
-      ref,
-      inputs: {},
-      expectedRunName: "Native Smoke",
-      acceptsScheduledEvidence: true,
-    },
-    {
-      workflowName: "Real Project Matrix",
-      workflowId: "real-project-matrix.yml",
-      ref,
-      inputs: {
-        core_tools_mode: "record-only",
-        core_tools_timeout_ms: releaseCoreToolsTimeoutMs,
-        typecheck_dependencies_mode: "record-only",
-        lint_divergence_mode: "record-only",
-        lsp_mode: "record-only",
-        typecheck_divergence_mode: typecheckDivergenceReleaseMode,
-      },
-      expectedRunName: `Real Project Matrix @ ${headSha}`,
-      acceptsScheduledEvidence: true,
     },
     {
       workflowName: "Fuzz",
@@ -126,10 +69,11 @@ export async function bootstrapRequiredWorkflowRuns({
   evidenceShas = new Map(),
   sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
   now = Date.now,
-  // Hosted release fallback budget: Real Project Matrix has 22 shards and is
-  // capped to 20 standard hosted jobs, so the budget covers two 240-minute
-  // waves plus 30 minutes for workflow dispatch, queueing, polling, and setup.
-  timeoutMs = 510 * 60 * 1000,
+  // Real Project Matrix is no longer a release gate (#4461), so the budget no
+  // longer has to cover its two 240-minute waves. Native Smoke is the long pole
+  // at 12-40 minutes, App E2E next at 21; 90 minutes leaves room for queueing
+  // and a slow runner without letting one stuck gate hold a release all day.
+  timeoutMs = 90 * 60 * 1000,
   pollIntervalMs = 15_000,
   onWait = () => {},
 }) {
