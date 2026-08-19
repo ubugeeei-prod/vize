@@ -25,7 +25,14 @@ export function toolArgs(project, tool, compilerOutputDir) {
     ];
   }
   if (tool === "typechecker") {
-    const args = ["check", ...project.vueGlobs, "--format", "json", "--no-config"];
+    // The typechecker is the one tool pinned to a single `--tsconfig`, so its
+    // corpus has to be the files that config owns. Passing `vueGlobs` — which
+    // the other tools share and which may span sibling projects — asks one
+    // config to answer for files it never included, and the vue-tsc baseline,
+    // built from the same list with the same options, then cannot resolve the
+    // aliases those files rely on (#4454).
+    const globs = project.typecheckPerformance?.corpusGlobs ?? project.vueGlobs;
+    const args = ["check", ...globs, "--format", "json", "--no-config"];
     if (project.tsconfig != null) args.push("--tsconfig", project.tsconfig);
     return args;
   }
