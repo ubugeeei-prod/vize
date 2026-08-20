@@ -2,6 +2,8 @@
 
 use super::super::{Drawer, DrawerOptions};
 
+mod dynamic_component_props;
+
 /// Collect the `vif_guard` attached to each template interpolation, keyed by
 /// expression text. Used to pin sibling-aware `v-if` / `v-else` narrowing.
 fn interpolation_guards(
@@ -168,6 +170,13 @@ fn dynamic_component_v_on_uses_is_binding_as_target_component() {
         .expect("dynamic component listener should create an event scope");
 
     assert_eq!(event.target_component.as_deref(), Some("Child"));
+    assert!(
+        summary
+            .used_components
+            .iter()
+            .any(|component| component == "Child"),
+        "dynamic component target should be tracked as a used component"
+    );
 }
 
 #[test]

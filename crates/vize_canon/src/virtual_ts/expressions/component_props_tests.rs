@@ -3,6 +3,7 @@ use vize_croquis::{Analyzer, AnalyzerOptions};
 use crate::virtual_ts::generate_virtual_ts;
 
 mod define_model_modifiers;
+mod dynamic_component_props;
 
 #[test]
 fn generic_props_call_merges_static_and_dynamic_class_bindings() {

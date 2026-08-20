@@ -20,7 +20,8 @@
     {
       "file": "app/components/account/AccountBigCard.vue",
       "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
+        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
+        "error:17:4 [TS2304] Cannot find name '_as'."
       ]
     },
     {
@@ -84,7 +85,8 @@
     {
       "file": "app/components/account/AccountInfo.vue",
       "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
+        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
+        "error:19:4 [TS2304] Cannot find name '_as'."
       ]
     },
     {
@@ -249,7 +251,8 @@
     {
       "file": "app/components/common/CommonScrollIntoView.vue",
       "diagnostics": [
-        "error:10:15 [TS2304] Cannot find name 'unrefElement'."
+        "error:10:15 [TS2304] Cannot find name 'unrefElement'.",
+        "error:18:4 [TS2304] Cannot find name '_as'."
       ]
     },
     {
@@ -364,7 +367,9 @@
     },
     {
       "file": "app/components/main/MainTitle.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:19:4 [TS2304] Cannot find name '_as'."
+      ]
     },
     {
       "file": "app/components/modal/DurationPicker.vue",
@@ -771,7 +776,9 @@
     },
     {
       "file": "app/components/status/StatusActionButton.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:50:4 [TS2304] Cannot find name '_as'."
+      ]
     },
     {
       "file": "app/components/status/StatusActions.vue",
@@ -1473,7 +1480,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 285,
+  "errorCount": 290,
   "warningCount": 0,
   "fileCount": 262
 }

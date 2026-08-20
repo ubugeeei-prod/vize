@@ -191,7 +191,7 @@ fn event_target_component(
     dynamic_component_target(el, tag)
 }
 
-fn dynamic_component_target(el: &ElementNode<'_>, tag: &str) -> Option<CompactString> {
+pub(super) fn dynamic_component_target(el: &ElementNode<'_>, tag: &str) -> Option<CompactString> {
     if tag != "component" {
         return None;
     }

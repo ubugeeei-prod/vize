@@ -94,6 +94,7 @@ test("Canon Rust CLI gates use the fail-closed Corsa helper", () => {
   const files = [
     ["check_canon_boolean_tsx_regressions_cli.rs", 2],
     ["check_canon_component_derived_props_cli.rs", 1],
+    ["check_canon_dynamic_component_props_cli.rs", 1],
     ["check_canon_generic_inference_cli.rs", 3],
     ["check_canon_generic_props_cli.rs", 1],
     ["check_canon_generic_sfc_mount_cli.rs", 1],

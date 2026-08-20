@@ -15,6 +15,7 @@ impl Drawer {
     pub(super) fn collect_component_props_events(
         &self,
         el: &ElementNode<'_>,
+        tag: &str,
         usage: &mut ComponentUsage,
     ) {
         for prop in &el.props {
@@ -33,6 +34,9 @@ impl Drawer {
                     "bind" => {
                         if let Some(ref arg) = dir.arg {
                             let (prop_name, name_is_dynamic) = directive_argument(arg);
+                            if tag == "component" && prop_name == "is" && !name_is_dynamic {
+                                continue;
+                            }
                             let value = dir
                                 .exp
                                 .as_ref()
