@@ -1,14 +1,16 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
 #[path = "check_canon_fallthrough_attrs_cli/support.rs"]
 mod support;
 
 use support::{
-    assert_clean, assert_error_mentions, create_case, create_case_with_files, required_corsa_path,
-    run_check_json,
+    assert_clean, assert_error_mentions, create_case, create_case_with_files,
+    resolve_test_corsa_path, run_check_json,
 };
 
 #[test]
 fn check_fallthrough_attrs_follow_inherit_attrs_and_root_shape() {
-    let Some(corsa_path) = required_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
 
@@ -300,7 +302,7 @@ import Child from "./Child.vue";
 
 #[test]
 fn check_fallthrough_attrs_keep_single_component_root_forwarding_open() {
-    let Some(corsa_path) = required_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
 

@@ -145,7 +145,7 @@ function __setup() {
   type __VizePropBag<P> = { readonly [K in keyof P]: P[K] };
   type __VizeFallbackPropChecker<C, P> = __VizeHasFallthroughProps<C> extends true ? (props: __VizePropBag<P> & Record<string, unknown>) => void : __VizeHasRawProps<C> extends true ? (props: __VizePropBag<P>) => void : (props: __VizePropBag<P> & Record<string, unknown>) => void;
   type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: __VizePropBag<P> & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? __VizeIsAny<__F> extends true ? __VizeFallbackPropChecker<C, P> : __F extends (...args: any[]) => any ? __F : __VizeFallbackPropChecker<C, P> : __VizeFallbackPropChecker<C, P>;
-  type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;
+  type __VizePropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;
   type __VizeStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;
   type __VizeRequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
   type __VizeMissingRequiredSlots<__S, __P> = Exclude<__VizeRequiredSlotKeys<__S>, keyof __P>;
@@ -154,8 +154,9 @@ function __setup() {
   type __Test_Props_0 = typeof Test extends { __vizeCheck: infer __F } ? (__VizeIsAny<__F> extends true ? __VizeComponentRawProps<typeof Test> : Record<string, unknown>) : __VizeComponentRawProps<typeof Test>;
   type __Test_CheckProps_0 = __Test_Props_0 & __VizeEmitListeners<typeof Test> & __VizeFallthroughProps<typeof Test> & __VizePublicComponentAttrs;
   type __Test_ValueProps_0 = __Test_Props_0 & __VizeEmitListeners<typeof Test> & __VizePublicComponentAttrs;
+  type __Test_FallthroughProps_0 = __VizeFallthroughProps<typeof Test>;
   type __Test_Check_0 = __VizePropChecker<typeof Test, __Test_CheckProps_0>;
-  type __Test_0_prop_value1 = __VizePropValue<__Test_ValueProps_0, 'value1'>;
+  type __Test_0_prop_value1 = __VizePropValue<__Test_ValueProps_0, 'value1', __VizePropValue<__Test_FallthroughProps_0, 'value1'>>;
 
   // Component template navigation references
   void Test;
@@ -235,5 +236,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { readonly __vizeRawProps?: Props; readonly __vizeFallthroughProps?: Partial<__VizeNativeElement<"div">>; } & __VizeComponentConstructor & __VizeVueComponentOptions;
+declare const __vize_component__: { readonly [__VizeComponentMarker]: true; readonly __vizeRawProps?: Props; readonly __vizeFallthroughProps?: Partial<__VizeNativeElement<"div">>; } & __VizeComponentConstructor & __VizeVueComponentOptions;
 export default __vize_component__;

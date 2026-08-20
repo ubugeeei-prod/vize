@@ -147,7 +147,7 @@ function __setup() {
   type __VizePropBag<P> = { readonly [K in keyof P]: P[K] };
   type __VizeFallbackPropChecker<C, P> = __VizeHasFallthroughProps<C> extends true ? (props: __VizePropBag<P> & Record<string, unknown>) => void : __VizeHasRawProps<C> extends true ? (props: __VizePropBag<P>) => void : (props: __VizePropBag<P> & Record<string, unknown>) => void;
   type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: __VizePropBag<P> & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? __VizeIsAny<__F> extends true ? __VizeFallbackPropChecker<C, P> : __F extends (...args: any[]) => any ? __F : __VizeFallbackPropChecker<C, P> : __VizeFallbackPropChecker<C, P>;
-  type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;
+  type __VizePropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;
   type __VizeStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;
   type __VizeRequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
   type __VizeMissingRequiredSlots<__S, __P> = Exclude<__VizeRequiredSlotKeys<__S>, keyof __P>;
@@ -156,8 +156,9 @@ function __setup() {
   type __TodoItem_Props_0 = typeof TodoItem extends { __vizeCheck: infer __F } ? (__VizeIsAny<__F> extends true ? __VizeComponentRawProps<typeof TodoItem> : Record<string, unknown>) : __VizeComponentRawProps<typeof TodoItem>;
   type __TodoItem_CheckProps_0 = __TodoItem_Props_0 & __VizeEmitListeners<typeof TodoItem> & __VizeFallthroughProps<typeof TodoItem> & __VizePublicComponentAttrs;
   type __TodoItem_ValueProps_0 = __TodoItem_Props_0 & __VizeEmitListeners<typeof TodoItem> & __VizePublicComponentAttrs;
+  type __TodoItem_FallthroughProps_0 = __VizeFallthroughProps<typeof TodoItem>;
   type __TodoItem_Check_0 = __VizePropChecker<typeof TodoItem, __TodoItem_CheckProps_0>;
-  type __TodoItem_0_prop_item = __VizePropValue<__TodoItem_ValueProps_0, 'item'>;
+  type __TodoItem_0_prop_item = __VizePropValue<__TodoItem_ValueProps_0, 'item', __VizePropValue<__TodoItem_FallthroughProps_0, 'item'>>;
 
   // Component template navigation references
   void TodoItem;
@@ -229,5 +230,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { readonly __vizeRawProps?: Props; readonly __vizeFallthroughProps?: Partial<__VizeNativeElement<"div">>; } & __VizeComponentConstructor & __VizeVueComponentOptions;
+declare const __vize_component__: { readonly [__VizeComponentMarker]: true; readonly __vizeRawProps?: Props; readonly __vizeFallthroughProps?: Partial<__VizeNativeElement<"div">>; } & __VizeComponentConstructor & __VizeVueComponentOptions;
 export default __vize_component__;

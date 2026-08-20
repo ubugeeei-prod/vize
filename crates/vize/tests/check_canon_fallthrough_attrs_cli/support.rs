@@ -1,6 +1,3 @@
-#[path = "../support/corsa_requirement.rs"]
-mod corsa_requirement;
-
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -22,11 +19,7 @@ fn unique_case_dir(name: &str) -> PathBuf {
         .join(cstr!("check-canon-fallthrough-{name}-{}", std::process::id()).as_str())
 }
 
-pub(super) fn required_corsa_path() -> Option<PathBuf> {
-    corsa_requirement::required_or_skip(resolve_test_corsa_path())
-}
-
-fn resolve_test_corsa_path() -> Option<PathBuf> {
+pub(super) fn resolve_test_corsa_path() -> Option<PathBuf> {
     let root = workspace_root();
     [
         root.parent()?.join("corsa-bind/.cache/tsgo"),

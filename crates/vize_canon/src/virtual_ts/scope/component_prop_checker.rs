@@ -134,6 +134,10 @@ pub(super) fn append_prop_checker_alias(
             *ts,
             "  type __{component_type_name}_ValueProps_{idx} = __{component_type_name}_Props_{idx} & __VizeEmitListeners<typeof {component_ref}> & __VizePublicComponentAttrs;\n",
         );
+        append!(
+            *ts,
+            "  type __{component_type_name}_FallthroughProps_{idx} = __VizeFallthroughProps<typeof {component_ref}>;\n",
+        );
     }
     append!(
         *ts,
@@ -234,7 +238,7 @@ pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &Comp
         "  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: __VizePropBag<P> & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? __VizeIsAny<__F> extends true ? __VizeFallbackPropChecker<C, P> : __F extends (...args: any[]) => any ? __F : __VizeFallbackPropChecker<C, P> : __VizeFallbackPropChecker<C, P>;\n",
     );
     ts.push_str(
-        "  type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;\n",
+        "  type __VizePropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;\n",
     );
     // Emitted only when a usage actually binds an inline callback, because
     // nothing else references these aliases and an unreferenced one is
@@ -294,8 +298,9 @@ pub(super) fn prop_alias_type(
     idx: usize,
     camel_prop_name: &str,
 ) -> String {
-    let resolved =
-        cstr!("__VizePropValue<__{component_type_name}_ValueProps_{idx}, '{camel_prop_name}'>");
+    let resolved = cstr!(
+        "__VizePropValue<__{component_type_name}_ValueProps_{idx}, '{camel_prop_name}', __VizePropValue<__{component_type_name}_FallthroughProps_{idx}, '{camel_prop_name}'>>"
+    );
     if is_inline_callback_prop(prop) {
         cstr!("__VizeCallableProp<{resolved}>")
     } else {
