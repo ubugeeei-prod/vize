@@ -121,5 +121,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { readonly __vizeRawProps?: Props; } & __VizeComponentConstructor & __VizeVueComponentOptions;
+declare const __vize_component__: { readonly __vizeRawProps?: Props; readonly __vizeFallthroughProps?: Partial<__VizeNativeElement<"div">>; } & __VizeComponentConstructor & __VizeVueComponentOptions;
 export default __vize_component__;

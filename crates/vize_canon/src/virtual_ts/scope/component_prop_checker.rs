@@ -126,7 +126,7 @@ pub(super) fn append_prop_checker_alias(
     // `unknown`. A component without the marker contributes `{}`.
     append!(
         *ts,
-        "  type __{component_type_name}_CheckProps_{idx} = __{component_type_name}_Props_{idx} & __VizeEmitListeners<typeof {component_ref}>;\n",
+        "  type __{component_type_name}_CheckProps_{idx} = __{component_type_name}_Props_{idx} & __VizeEmitListeners<typeof {component_ref}> & __VizeFallthroughProps<typeof {component_ref}> & __VizePublicComponentAttrs;\n",
     );
     append!(
         *ts,
@@ -166,6 +166,14 @@ pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &Comp
     ts.push_str(
         "  type __VizeEmitListeners<C> = C extends { __vizeEmitProps?: infer __E } ? NonNullable<__E> : {};\n",
     );
+    ts.push_str(
+        "  type __VizeFallthroughProps<C> = C extends { readonly __vizeFallthroughProps?: infer __F } ? NonNullable<__F> : {};\n",
+    );
+    ts.push_str("  type __VizePublicComponentAttrs = { class?: unknown; style?: unknown };\n");
+    ts.push_str(
+        "  type __VizeHasRawProps<C> = C extends { readonly __vizeRawProps?: any } ? true : C extends { new (): { readonly __vizeRawProps?: any } } ? true : false;\n",
+    );
+    ts.push_str("  type __VizePropBag<P> = { readonly [K in keyof P]: P[K] };\n");
     if usages.iter().any(|(_, usage)| {
         usage
             .events
@@ -183,7 +191,7 @@ pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &Comp
         );
     }
     ts.push_str(
-        "  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void) : (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void;\n",
+        "  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: __VizePropBag<P> & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: __VizePropBag<P> & Record<string, unknown>) => void) : __VizeHasRawProps<C> extends true ? (props: __VizePropBag<P>) => void : (props: __VizePropBag<P> & Record<string, unknown>) => void;\n",
     );
     ts.push_str(
         "  type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;\n",
@@ -247,7 +255,7 @@ pub(super) fn prop_alias_type(
     camel_prop_name: &str,
 ) -> String {
     let resolved =
-        cstr!("__VizePropValue<__{component_type_name}_Props_{idx}, '{camel_prop_name}'>");
+        cstr!("__VizePropValue<__{component_type_name}_CheckProps_{idx}, '{camel_prop_name}'>");
     if is_inline_callback_prop(prop) {
         cstr!("__VizeCallableProp<{resolved}>")
     } else {

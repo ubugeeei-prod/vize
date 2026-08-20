@@ -1333,4 +1333,5 @@ ScriptParseResult {
     type_export_type_refs: [],
     runtime_object_literals: {},
     options_descriptor: None,
+    inherit_attrs_disabled: false,
 }

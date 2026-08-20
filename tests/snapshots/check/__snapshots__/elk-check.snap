@@ -6,23 +6,15 @@
     },
     {
       "file": "app/components/account/AccountAvatar.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:12:25 [TS2304] Cannot find name 'usePreferredReducedMotion'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/account/AccountBigAvatar.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/account/AccountBigCard.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:17:4 [TS2304] Cannot find name '_as'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/account/AccountBigCardSkeleton.vue",
@@ -35,65 +27,49 @@
     {
       "file": "app/components/account/AccountCard.vue",
       "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
+        "error:16:26 [TS2353] Object literal may only specify known properties, and '\"hover\"' does not exist in type '__VizePropBag<__AccountInfo_CheckProps_0>'."
       ]
     },
     {
       "file": "app/components/account/AccountDisplayName.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/account/AccountFollowButton.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/account/AccountFollowRequestButton.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/account/AccountHandle.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/account/AccountHeader.vue",
       "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:69:28 [TS7006] Parameter 'field' implicitly has an 'any' type."
+        "error:249:22 [TS2353] Object literal may only specify known properties, and '\"text4\"' does not exist in type '__VizePropBag<__ContentRich_CheckProps_16>'.",
+        "error:265:24 [TS2353] Object literal may only specify known properties, and '\"textSm\"' does not exist in type '__VizePropBag<__ContentRich_CheckProps_20>'."
       ]
     },
     {
       "file": "app/components/account/AccountHoverCard.vue",
       "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
+        "error:20:20 [TS2353] Object literal may only specify known properties, and '\"text4\"' does not exist in type '__VizePropBag<__ContentRich_CheckProps_3>'."
       ]
     },
     {
       "file": "app/components/account/AccountHoverWrapper.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:18:17 [TS2304] Cannot find name 'useElementHover'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/account/AccountInfo.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:19:4 [TS2304] Cannot find name '_as'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/account/AccountInlineInfo.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/account/AccountLockIndicator.vue",
@@ -101,40 +77,31 @@
     },
     {
       "file": "app/components/account/AccountMoreButton.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:21:50 [TS2304] Cannot find name 'useShare'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/account/AccountMoved.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/account/AccountPaginator.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/account/AccountPostsFollowers.vue",
       "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
+        "error:24:11 [TS2353] Object literal may only specify known properties, and '\"fontBold\"' does not exist in type '__VizePropBag<__CommonLocalizedNumber_CheckProps_0>'.",
+        "error:43:13 [TS2353] Object literal may only specify known properties, and '\"fontBold\"' does not exist in type '__VizePropBag<__CommonLocalizedNumber_CheckProps_2>'.",
+        "error:66:13 [TS2353] Object literal may only specify known properties, and '\"fontBold\"' does not exist in type '__VizePropBag<__CommonLocalizedNumber_CheckProps_4>'."
       ]
     },
     {
       "file": "app/components/account/AccountRelationshipIndicator.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/account/AccountRolesIndicator.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/account/AccountTabs.vue",
@@ -142,19 +109,11 @@
     },
     {
       "file": "app/components/account/TagHoverWrapper.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:15:17 [TS2304] Cannot find name 'useElementHover'.",
-        "error:19:29 [TS7006] Parameter 't' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/aria/AriaAnnouncer.vue",
-      "diagnostics": [
-        "error:2:15 [TS2305] Module '\"@nuxtjs/i18n\"' has no exported member 'LocaleObject'.",
-        "error:40:21 [TS7006] Parameter 'to' implicitly has an 'any' type.",
-        "error:40:25 [TS7006] Parameter 'from' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/aria/AriaLog.vue",
@@ -174,10 +133,7 @@
     },
     {
       "file": "app/components/command/CommandPanel.vue",
-      "diagnostics": [
-        "error:74:48 [TS7006] Parameter 'i' implicitly has an 'any' type.",
-        "error:74:51 [TS7006] Parameter 'idx' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/common/AnimateNumber.vue",
@@ -198,9 +154,7 @@
     {
       "file": "app/components/common/CommonCropImage.vue",
       "diagnostics": [
-        "error:2:33 [TS2307] Cannot find module 'vue-advanced-cropper' or its corresponding type declarations.",
-        "error:3:25 [TS2307] Cannot find module 'vue-advanced-cropper' or its corresponding type declarations.",
-        "error:53:21 [TS7006] Parameter 'blob' implicitly has an 'any' type."
+        "error:61:58 [TS2353] Object literal may only specify known properties, and '\"maxW500px\"' does not exist in type '__VizePropBag<__ModalDialog_CheckProps_1>'."
       ]
     },
     {
@@ -209,11 +163,7 @@
     },
     {
       "file": "app/components/common/CommonInputImage.vue",
-      "diagnostics": [
-        "error:2:37 [TS2307] Cannot find module 'browser-fs-access' or its corresponding type declarations.",
-        "error:3:26 [TS2307] Cannot find module 'browser-fs-access' or its corresponding type declarations.",
-        "error:32:100 [TS7006] Parameter 'mime' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/common/CommonMask.vue",
@@ -225,16 +175,7 @@
     },
     {
       "file": "app/components/common/CommonPaginator.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:3:35 [TS2307] Cannot find module 'virtua/vue' or its corresponding type declarations.",
-        "error:53:29 [TS2554] Expected 2 arguments, but got 1.",
-        "error:66:39 [TS7006] Parameter 'i' implicitly has an 'any' type.",
-        "error:72:36 [TS7006] Parameter 'i' implicitly has an 'any' type.",
-        "error:99:25 [TS2365] Operator '+' cannot be applied to types 'string | number' and 'number'.",
-        "error:100:25 [TS2362] The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.",
-        "error:101:12 [TS2322] Type 'string | number' is not assignable to type 'number'.\nType 'string' is not assignable to type 'number'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/common/CommonPreviewPrompt.vue",
@@ -250,29 +191,19 @@
     },
     {
       "file": "app/components/common/CommonScrollIntoView.vue",
-      "diagnostics": [
-        "error:10:15 [TS2304] Cannot find name 'unrefElement'.",
-        "error:18:4 [TS2304] Cannot find name '_as'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/common/CommonTooltip.vue",
-      "diagnostics": [
-        "error:2:45 [TS2307] Cannot find module 'floating-vue' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/common/CommonTrending.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/common/CommonTrendingCharts.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:3:23 [TS2307] Cannot find module '@fnando/sparkline' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/common/LocalizedNumber.vue",
@@ -280,9 +211,7 @@
     },
     {
       "file": "app/components/common/OfflineChecker.vue",
-      "diagnostics": [
-        "error:2:16 [TS2552] Cannot find name 'useOnline'. Did you mean 'online'?"
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/common/dropdown/Dropdown.vue",
@@ -302,29 +231,19 @@
     },
     {
       "file": "app/components/content/ContentRich.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/conversation/ConversationCard.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:9:32 [TS7006] Parameter 'account' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/conversation/ConversationPaginator.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:11:5 [TS7006] Parameter 'filter' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/emoji/Emoji.vue",
-      "diagnostics": [
-        "error:18:12 [TS2307] Cannot find module 'node-emoji' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/help/HelpPreview.vue",
@@ -333,7 +252,7 @@
     {
       "file": "app/components/list/Account.vue",
       "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
+        "error:33:26 [TS2353] Object literal may only specify known properties, and '\"hover\"' does not exist in type '__VizePropBag<__AccountInfo_CheckProps_0>'."
       ]
     },
     {
@@ -342,17 +261,11 @@
     },
     {
       "file": "app/components/list/ListEntry.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:3:25 [TS2307] Cannot find module 'slimeform' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/list/Lists.vue",
-      "diagnostics": [
-        "error:8:93 [TS7006] Parameter 'list' implicitly has an 'any' type.",
-        "error:23:56 [TS7006] Parameter 'id' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/magickeys/MagickeysKeyboardShortcuts.vue",
@@ -361,15 +274,13 @@
     {
       "file": "app/components/main/MainContent.vue",
       "diagnostics": [
-        "error:17:34 [TS2304] Cannot find name 'useWindowSize'.",
-        "error:18:37 [TS2304] Cannot find name 'useElementBounding'."
+        "error:51:81 [TS2551] Property '$route' does not exist on type '__VizeStrictTemplateContext'. Did you mean '$router'?",
+        "error:79:41 [TS2551] Property '$route' does not exist on type '__VizeStrictTemplateContext'. Did you mean '$router'?"
       ]
     },
     {
       "file": "app/components/main/MainTitle.vue",
-      "diagnostics": [
-        "error:19:4 [TS2304] Cannot find name '_as'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/modal/DurationPicker.vue",
@@ -382,15 +293,22 @@
     {
       "file": "app/components/modal/ModalContainer.vue",
       "diagnostics": [
-        "error:3:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:26:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?"
+        "error:58:47 [TS2353] Object literal may only specify known properties, and '\"py4\"' does not exist in type '__VizePropBag<__ModalDialog_CheckProps_1>'.",
+        "error:61:57 [TS2353] Object literal may only specify known properties, and '\"maxW125\"' does not exist in type '__VizePropBag<__ModalDialog_CheckProps_3>'.",
+        "error:66:7 [TS2353] Object literal may only specify known properties, and '\"maxW180\"' does not exist in type '__VizePropBag<__ModalDialog_CheckProps_5>'.",
+        "error:79:7 [TS2353] Object literal may only specify known properties, and '\"wFull\"' does not exist in type '__VizePropBag<__ModalDialog_CheckProps_7>'.",
+        "error:85:81 [TS2353] Object literal may only specify known properties, and '\"maxW125\"' does not exist in type '__VizePropBag<__ModalDialog_CheckProps_9>'.",
+        "error:88:47 [TS2353] Object literal may only specify known properties, and '\"maxWFit\"' does not exist in type '__VizePropBag<__ModalDialog_CheckProps_11>'.",
+        "error:91:48 [TS2353] Object literal may only specify known properties, and '\"py4\"' does not exist in type '__VizePropBag<__ModalDialog_CheckProps_13>'.",
+        "error:94:46 [TS2353] Object literal may only specify known properties, and '\"py4\"' does not exist in type '__VizePropBag<__ModalDialog_CheckProps_15>'.",
+        "error:99:7 [TS2353] Object literal may only specify known properties, and '\"maxW180\"' does not exist in type '__VizePropBag<__ModalDialog_CheckProps_17>'.",
+        "error:104:58 [TS2353] Object literal may only specify known properties, and '\"maxWFull\"' does not exist in type '__VizePropBag<__ModalDialog_CheckProps_19>'.",
+        "error:107:58 [TS2353] Object literal may only specify known properties, and '\"maxW175\"' does not exist in type '__VizePropBag<__ModalDialog_CheckProps_21>'."
       ]
     },
     {
       "file": "app/components/modal/ModalDialog.vue",
-      "diagnostics": [
-        "error:111:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?"
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/modal/ModalError.vue",
@@ -398,58 +316,23 @@
     },
     {
       "file": "app/components/modal/ModalMediaPreview.vue",
-      "diagnostics": [
-        "error:13:14 [TS2304] Cannot find name 'useMagicKeys'.",
-        "error:15:1 [TS2304] Cannot find name 'whenever'.",
-        "error:16:1 [TS2304] Cannot find name 'whenever'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/modal/ModalMediaPreviewCarousel.vue",
-      "diagnostics": [
-        "error:2:30 [TS2307] Cannot find module '@vueuse/gesture' or its corresponding type declarations.",
-        "error:3:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:4:28 [TS2307] Cannot find module '@vueuse/gesture' or its corresponding type declarations.",
-        "error:5:34 [TS2307] Cannot find module '@vueuse/motion' or its corresponding type declarations.",
-        "error:26:29 [TS2552] Cannot find name 'useTimeout'. Did you mean 'setTimeout'?",
-        "error:59:13 [TS7031] Binding element 'first' implicitly has an 'any' type.",
-        "error:59:30 [TS7031] Binding element 'initialDistance' implicitly has an 'any' type.",
-        "error:59:59 [TS7031] Binding element 'deltaDistance' implicitly has an 'any' type.",
-        "error:59:80 [TS7031] Binding element 'distance' implicitly has an 'any' type.",
-        "error:59:91 [TS7031] Binding element 'origin' implicitly has an 'any' type.",
-        "error:59:99 [TS7031] Binding element 'touches' implicitly has an 'any' type.",
-        "error:81:12 [TS7031] Binding element 'movement' implicitly has an 'any' type.",
-        "error:81:22 [TS7031] Binding element 'delta' implicitly has an 'any' type.",
-        "error:81:29 [TS7031] Binding element 'pinching' implicitly has an 'any' type.",
-        "error:81:39 [TS7031] Binding element 'tap' implicitly has an 'any' type.",
-        "error:81:44 [TS7031] Binding element 'last' implicitly has an 'any' type.",
-        "error:81:50 [TS7031] Binding element 'swipe' implicitly has an 'any' type.",
-        "error:81:57 [TS7031] Binding element 'event' implicitly has an 'any' type.",
-        "error:81:64 [TS7031] Binding element 'xy' implicitly has an 'any' type.",
-        "error:96:17 [TS7031] Binding element 'event' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/nav/NavBottom.vue",
-      "diagnostics": [
-        "error:51:32 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?",
-        "error:53:76 [TS7006] Parameter 'name' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/nav/NavBottomMoreMenu.vue",
-      "diagnostics": [
-        "error:52:3 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
-        "error:60:3 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
-        "error:68:3 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
-        "error:99:3 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?"
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/nav/NavFooter.vue",
-      "diagnostics": [
-        "error:8:22 [TS2304] Cannot find name 'useTimeAgo'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/nav/NavLogo.vue",
@@ -457,10 +340,7 @@
     },
     {
       "file": "app/components/nav/NavSide.vue",
-      "diagnostics": [
-        "error:9:39 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?",
-        "error:10:34 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?"
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/nav/NavSideItem.vue",
@@ -468,7 +348,9 @@
     },
     {
       "file": "app/components/nav/NavTitle.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:41:95 [TS2551] Property '$route' does not exist on type '__VizeStrictTemplateContext'. Did you mean '$router'?"
+      ]
     },
     {
       "file": "app/components/nav/NavUser.vue",
@@ -492,9 +374,7 @@
     },
     {
       "file": "app/components/nav/button/Explore.vue",
-      "diagnostics": [
-        "error:8:34 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?"
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/nav/button/Favorite.vue",
@@ -530,9 +410,7 @@
     },
     {
       "file": "app/components/nav/button/Notification.vue",
-      "diagnostics": [
-        "error:9:39 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?"
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/nav/button/ScheduledPosts.vue",
@@ -545,8 +423,7 @@
     {
       "file": "app/components/notification/NotificationCard.vue",
       "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:41:17 [TS2552] Cannot find name 'useTimeAgo'. Did you mean 'timeAgo'?"
+        "error:64:11 [TS2353] Object literal may only specify known properties, and '\"ms10\"' does not exist in type '__VizePropBag<__AccountBigCard_CheckProps_1>'."
       ]
     },
     {
@@ -556,28 +433,22 @@
     {
       "file": "app/components/notification/NotificationGroupedFollow.vue",
       "diagnostics": [
-        "error:20:17 [TS2552] Cannot find name 'useTimeAgo'. Did you mean 'timeAgo'?"
+        "error:42:11 [TS2353] Object literal may only specify known properties, and '\"textPrimary\"' does not exist in type '__VizePropBag<__CommonLocalizedNumber_CheckProps_3>'."
       ]
     },
     {
       "file": "app/components/notification/NotificationGroupedLikes.vue",
       "diagnostics": [
-        "error:14:24 [TS2304] Cannot find name 'useTimeAgo'.",
-        "error:16:22 [TS2304] Cannot find name 'useTimeAgo'."
+        "error:48:55 [TS2353] Object literal may only specify known properties, and '\"relative\"' does not exist in type '__VizePropBag<__AccountHoverWrapper_CheckProps_5>'."
       ]
     },
     {
       "file": "app/components/notification/NotificationPaginator.vue",
-      "diagnostics": [
-        "error:3:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:143:5 [TS7006] Parameter 'filter' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/notification/NotificationPreferences.client.vue",
-      "diagnostics": [
-        "error:80:96 [TS18046] 'err' is of type 'unknown'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/notification/NotificationSubscribePushNotificationError.vue",
@@ -586,7 +457,7 @@
     {
       "file": "app/components/publish/PublishAttachment.vue",
       "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
+        "error:50:7 [TS2353] Object literal may only specify known properties, and '\"py6\"' does not exist in type '__VizePropBag<__ModalDialog_CheckProps_3>'."
       ]
     },
     {
@@ -595,32 +466,19 @@
     },
     {
       "file": "app/components/publish/PublishEditorTools.vue",
-      "diagnostics": [
-        "error:2:29 [TS2307] Cannot find module '@tiptap/core' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/publish/PublishEmojiPicker.client.vue",
-      "diagnostics": [
-        "error:2:29 [TS2307] Cannot find module 'emoji-mart' or its corresponding type declarations.",
-        "error:3:29 [TS2307] Cannot find module 'virtual:emoji-mart-lang-importer' or its corresponding type declarations.",
-        "error:27:14 [TS2307] Cannot find module 'emoji-mart' or its corresponding type declarations.",
-        "error:28:14 [TS2307] Cannot find module '@emoji-mart/data/sets/14/twitter.json' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/publish/PublishLanguagePicker.vue",
-      "diagnostics": [
-        "error:2:18 [TS2307] Cannot find module 'fuse.js' or its corresponding type declarations.",
-        "error:18:46 [TS7006] Parameter 'r' implicitly has an 'any' type.",
-        "error:31:49 [TS7006] Parameter 'listEntry' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/publish/PublishQuoteApprovalPicker.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/publish/PublishThreadTools.vue",
@@ -628,37 +486,19 @@
     },
     {
       "file": "app/components/publish/PublishVisibilityPicker.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:13:27 [TS7006] Parameter 'v' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/publish/PublishWidget.vue",
-      "diagnostics": [
-        "error:3:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:6:26 [TS2307] Cannot find module 'string-length' or its corresponding type declarations.",
-        "error:69:20 [TS2554] Expected 2 arguments, but got 1.",
-        "error:95:76 [TS7006] Parameter 'option' implicitly has an 'any' type.",
-        "error:250:67 [TS7006] Parameter 'i' implicitly has an 'any' type.",
-        "error:364:24 [TS2304] Cannot find name 'useDebounceFn'.",
-        "error:451:30 [TS2365] Operator '+' cannot be applied to types 'string | number' and 'number'.",
-        "error:477:30 [TS2365] Operator '+' cannot be applied to types 'string | number' and 'number'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/publish/PublishWidgetFull.client.vue",
-      "diagnostics": [
-        "error:61:95 [TS2345] Argument of type '{ value: any; } & Record<string, any>' is not assignable to parameter of type 'FormatTimeAgoOptions<UseTimeAgoUnitNamesDefault> | undefined'.\nType '{ value: any; } & Record<string, any>' has no properties in common with type 'FormatTimeAgoOptions<UseTimeAgoUnitNamesDefault>'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/publish/PublishWidgetList.vue",
-      "diagnostics": [
-        "error:3:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:39:30 [TS2345] Argument of type 'string | number' is not assignable to parameter of type 'number'.\nType 'string' is not assignable to type 'number'.",
-        "error:42:36 [TS2345] Argument of type 'string | number' is not assignable to parameter of type 'number'.\nType 'string' is not assignable to type 'number'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/pwa/PwaBadge.client.vue",
@@ -674,17 +514,11 @@
     },
     {
       "file": "app/components/report/ReportModal.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:56:33 [TS7006] Parameter 'a' implicitly has an 'any' type.",
-        "error:56:36 [TS7006] Parameter 'b' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/search/SearchAccountInfo.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/search/SearchEmojiInfo.vue",
@@ -692,10 +526,7 @@
     },
     {
       "file": "app/components/search/SearchHashtagInfo.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:9:43 [TS7006] Parameter 'item' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/search/SearchResult.vue",
@@ -707,15 +538,11 @@
     },
     {
       "file": "app/components/search/SearchWidget.vue",
-      "diagnostics": [
-        "error:10:21 [TS2304] Cannot find name 'useFocusWithin'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/settings/SettingsBottomNav.vue",
-      "diagnostics": [
-        "error:34:31 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?"
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/settings/SettingsColorMode.vue",
@@ -731,18 +558,11 @@
     },
     {
       "file": "app/components/settings/SettingsLanguage.vue",
-      "diagnostics": [
-        "error:2:15 [TS2305] Module '\"@nuxtjs/i18n\"' has no exported member 'LocaleObject'.",
-        "error:7:21 [TS2352] Conversion of type '{ locale: Ref<string, string>; locales: Ref<{ code: string; name?: string | undefined; dir?: any; }[], { code: string; name?: string | undefined; dir?: any; }[]>; setLocale: (locale: string) => any; t: (...args: any[]) => any; } & Record<...>' to type '{ locales: ComputedRef<LocaleObject[]>; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.\nTypes of property 'locales' are incompatible.\nType 'Ref<{ code: string; name?: string | undefined; dir?: any; }[], { code: string; name?: string | undefined; dir?: any; }[]>' is missing the following properties from type 'ComputedRef<LocaleObject[]>': [ComputedRefSymbol], effect"
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/settings/SettingsProfileMetadata.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:16:66 [TS7006] Parameter 'f' implicitly has an 'any' type.",
-        "error:56:83 [TS2345] Argument of type 'string | number' is not assignable to parameter of type 'string'.\nType 'number' is not assignable to type 'string'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/settings/SettingsSponsorsList.vue",
@@ -750,9 +570,7 @@
     },
     {
       "file": "app/components/settings/SettingsThemeColors.vue",
-      "diagnostics": [
-        "error:20:15 [TS2304] Cannot find name 'useMediaQuery'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/settings/SettingsToggleItem.vue",
@@ -760,62 +578,39 @@
     },
     {
       "file": "app/components/settings/SettingsTranslations.vue",
-      "diagnostics": [
-        "error:2:21 [TS2307] Cannot find module 'iso-639-1' or its corresponding type declarations.",
-        "error:11:70 [TS18046] 'value' is of type 'unknown'.",
-        "error:52:71 [TS18046] 'availableOption' is of type 'unknown'.",
-        "error:52:101 [TS18046] 'availableOption' is of type 'unknown'.",
-        "error:53:18 [TS18046] 'availableOption' is of type 'unknown'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusAccountDetails.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusActionButton.vue",
-      "diagnostics": [
-        "error:50:4 [TS2304] Cannot find name '_as'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusActions.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusActionsMore.vue",
       "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:57:50 [TS2304] Cannot find name 'useShare'."
+        "error:142:7 [TS2353] Object literal may only specify known properties, and '\"my2\"' does not exist in type '__VizePropBag<__StatusActionButton_CheckProps_0>'."
       ]
     },
     {
       "file": "app/components/status/StatusAttachment.vue",
       "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:4:24 [TS2307] Cannot find module 'blurhash' or its corresponding type declarations.",
-        "error:68:30 [TS2552] Cannot find name 'usePreferredReducedMotion'. Did you mean 'prefersReducedMotion'?",
-        "error:76:1 [TS2552] Cannot find name 'useIntersectionObserver'. Did you mean 'IntersectionObserver'?",
-        "error:76:33 [TS7006] Parameter 'entries' implicitly has an 'any' type.",
-        "error:85:20 [TS7006] Parameter 'entry' implicitly has an 'any' type."
+        "error:225:12 [TS2353] Object literal may only specify known properties, and '\"width\"' does not exist in type '__VizePropBag<__CommonBlurhash_CheckProps_0>'."
       ]
     },
     {
       "file": "app/components/status/StatusBody.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusCard.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:61:17 [TS2552] Cannot find name 'useTimeAgo'. Did you mean 'timeago'?"
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusCardSkeleton.vue",
@@ -823,39 +618,29 @@
     },
     {
       "file": "app/components/status/StatusContent.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusDetails.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusEmbeddedMedia.vue",
       "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
+        "error:87:9 [TS2353] Object literal may only specify known properties, and '\"wFull\"' does not exist in type '__VizePropBag<__CommonBlurhash_CheckProps_1>'."
       ]
     },
     {
       "file": "app/components/status/StatusEmojiReaction.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusLink.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusMedia.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusNotFound.vue",
@@ -863,34 +648,24 @@
     },
     {
       "file": "app/components/status/StatusPoll.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:16:24 [TS2304] Cannot find name 'useTimeAgo'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusPreviewCard.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusPreviewCardInfo.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusPreviewCardMoreFromAuthor.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusPreviewCardNormal.vue",
       "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:3:22 [TS2307] Cannot find module 'punycode/' or its corresponding type declarations."
+        "error:73:12 [TS2353] Object literal may only specify known properties, and '\"width\"' does not exist in type '__VizePropBag<__CommonBlurhash_CheckProps_0>'."
       ]
     },
     {
@@ -899,70 +674,43 @@
     },
     {
       "file": "app/components/status/StatusPreviewGitHub.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:3:27 [TS2307] Cannot find module 'github-reserved-names' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusPreviewStackBlitz.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusQuote.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusReactedBy.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusReplyingTo.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:17:1 [TS2552] Cannot find name 'useIntersectionObserver'. Did you mean 'IntersectionObserver'?",
-        "error:19:7 [TS7031] Binding element 'intersectionRatio' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusScheduledCard.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:12:17 [TS2552] Cannot find name 'useTimeAgo'. Did you mean 'timeago'?"
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusSpoiler.vue",
-      "diagnostics": [
-        "error:20:23 [TS2304] Cannot find name 'useToggle'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusTranslation.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/StatusVisibilityIndicator.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:8:59 [TS7006] Parameter 'v' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/edit/StatusEditHistory.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:33:56 [TS2345] Argument of type '{ value: any; } & Record<string, any>' is not assignable to parameter of type 'FormatTimeAgoOptions<UseTimeAgoUnitNamesDefault> | undefined'.\nType '{ value: any; } & Record<string, any>' has no properties in common with type 'FormatTimeAgoOptions<UseTimeAgoUnitNamesDefault>'.",
-        "error:37:54 [TS2345] Argument of type '{ value: any; } & Record<string, any>' is not assignable to parameter of type 'FormatTimeAgoOptions<UseTimeAgoUnitNamesDefault> | undefined'.\nType '{ value: any; } & Record<string, any>' has no properties in common with type 'FormatTimeAgoOptions<UseTimeAgoUnitNamesDefault>'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/edit/StatusEditHistorySkeleton.vue",
@@ -970,33 +718,23 @@
     },
     {
       "file": "app/components/status/edit/StatusEditIndicator.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/status/edit/StatusEditPreview.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/tag/TagActionButton.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/tag/TagCard.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/tag/TagCardPaginator.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/tag/TagCardSkeleton.vue",
@@ -1024,11 +762,7 @@
     },
     {
       "file": "app/components/timeline/TimelineHome.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:4:40 [TS2304] Cannot find name 'useNetwork'.",
-        "error:9:29 [TS7006] Parameter 'client' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/timeline/TimelineMutes.vue",
@@ -1036,18 +770,11 @@
     },
     {
       "file": "app/components/timeline/TimelineNotifications.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:10:39 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?",
-        "error:17:29 [TS7006] Parameter 'client' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/timeline/TimelinePaginator.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:24:49 [TS7006] Parameter 'tag' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/timeline/TimelinePinned.vue",
@@ -1055,17 +782,11 @@
     },
     {
       "file": "app/components/timeline/TimelinePublic.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:5:29 [TS7006] Parameter 'client' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/timeline/TimelinePublicLocal.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:5:29 [TS7006] Parameter 'client' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/timeline/TimelineScheduledPosts.vue",
@@ -1073,10 +794,7 @@
     },
     {
       "file": "app/components/timeline/TimelineScheduledPostsPaginator.vue",
-      "diagnostics": [
-        "error:3:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:4:39 [TS2307] Cannot find module 'vue-component-type-helpers' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/timeline/TimelineSkeleton.vue",
@@ -1088,27 +806,15 @@
     },
     {
       "file": "app/components/tiptap/TiptapEmojiList.vue",
-      "diagnostics": [
-        "error:4:39 [TS2307] Cannot find module '@iconify/utils/lib/emoji/replace/find' or its corresponding type declarations.",
-        "error:5:10 [TS2459] Module '\"~~/config/emojis\"' declares 'emojiFilename' locally, but it is not exported.",
-        "error:5:25 [TS2459] Module '\"~~/config/emojis\"' declares 'emojiPrefix' locally, but it is not exported.",
-        "error:5:38 [TS2459] Module '\"~~/config/emojis\"' declares 'emojiRegEx' locally, but it is not exported.",
-        "error:27:23 [TS2339] Property 'skins' does not exist on type 'never'.",
-        "error:27:34 [TS7006] Parameter 'skin' implicitly has an 'any' type.",
-        "error:32:19 [TS2339] Property 'id' does not exist on type 'never'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/tiptap/TiptapHashtagList.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/tiptap/TiptapMentionList.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/user/UserDropdown.vue",
@@ -1116,16 +822,13 @@
     },
     {
       "file": "app/components/user/UserPicker.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:18:48 [TS2339] Property 'id' does not exist on type 'UserLogin'."
+      ]
     },
     {
       "file": "app/components/user/UserSignIn.vue",
-      "diagnostics": [
-        "error:2:18 [TS2307] Cannot find module 'fuse.js' or its corresponding type declarations.",
-        "error:17:69 [TS7006] Parameter 'result' implicitly has an 'any' type.",
-        "error:39:36 [TS7006] Parameter 's' implicitly has an 'any' type.",
-        "error:86:1 [TS2304] Cannot find name 'onClickOutside'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/user/UserSignInEntry.vue",
@@ -1134,8 +837,44 @@
     {
       "file": "app/components/user/UserSwitcher.vue",
       "diagnostics": [
-        "error:14:25 [TS7006] Parameter 'account' implicitly has an 'any' type."
+        "error:35:49 [TS2339] Property 'id' does not exist on type 'UserLogin'."
       ]
+    },
+    {
+      "file": "app/composables/aria.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "app/composables/cache.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "app/composables/command.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "app/composables/dialog.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "app/composables/emojis.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "app/composables/masto/icons.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "app/composables/masto/relationship.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "app/composables/masto/search.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "app/composables/push-notifications/types.ts",
+      "diagnostics": []
     },
     {
       "file": "app/composables/settings/definition.ts",
@@ -1147,9 +886,23 @@
     },
     {
       "file": "app/composables/settings/storage.ts",
-      "diagnostics": [
-        "error:1:15 [TS2305] Module '\"@nuxtjs/i18n\"' has no exported member 'LocaleObject'."
-      ]
+      "diagnostics": []
+    },
+    {
+      "file": "app/composables/tiptap/suggestion.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "app/constants/index.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "app/constants/options.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "app/constants/symbols.ts",
+      "diagnostics": []
     },
     {
       "file": "app/error.vue",
@@ -1158,7 +911,7 @@
     {
       "file": "app/layouts/default.vue",
       "diagnostics": [
-        "error:9:24 [TS2304] Cannot find name 'logicAnd'."
+        "error:42:69 [TS2353] Object literal may only specify known properties, and '\"md:breakWords\"' does not exist in type '__VizePropBag<__AccountInfo_CheckProps_4>'."
       ]
     },
     {
@@ -1167,38 +920,21 @@
     },
     {
       "file": "app/pages/[...permalink].vue",
-      "diagnostics": [
-        "error:2:39 [TS2307] Cannot find module 'ufo' or its corresponding type declarations.",
-        "error:5:22 [TS7006] Parameter 'to' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/[[server]]/@[account]/[status].vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:4:35 [TS2307] Cannot find module 'virtua/vue' or its corresponding type declarations.",
-        "error:8:8 [TS7006] Parameter 'route' implicitly has an 'any' type.",
-        "error:20:70 [TS2554] Expected 1 arguments, but got 0.",
-        "error:26:82 [TS2554] Expected 1 arguments, but got 0.",
-        "error:30:3 [TS2304] Cannot find name 'watchOnce'.",
-        "error:33:3 [TS2304] Cannot find name 'watchOnce'.",
-        "error:38:25 [TS2304] Cannot find name 'unrefElement'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/[[server]]/@[account]/index.vue",
       "diagnostics": [
-        "error:3:8 [TS7006] Parameter 'route' implicitly has an 'any' type.",
-        "error:11:64 [TS2345] Argument of type '() => string' is not assignable to parameter of type 'string'.",
-        "error:11:217 [TS2554] Expected 1 arguments, but got 0."
+        "error:29:12 [TS2353] Object literal may only specify known properties, and '\"showEmojis\"' does not exist in type '__VizePropBag<__ContentRich_CheckProps_0>'."
       ]
     },
     {
       "file": "app/pages/[[server]]/@[account]/index/collections.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:3:38 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/[[server]]/@[account]/index/followers.vue",
@@ -1210,9 +946,7 @@
     },
     {
       "file": "app/pages/[[server]]/@[account]/index/index.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/[[server]]/@[account]/index/media.vue",
@@ -1229,9 +963,7 @@
     {
       "file": "app/pages/[[server]]/collections/[id].vue",
       "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:17:3 [TS2345] Argument of type '() => string' is not assignable to parameter of type 'string'.",
-        "error:22:53 [TS2554] Expected 1 arguments, but got 0."
+        "error:89:15 [TS2353] Object literal may only specify known properties, and '\"shrink\"' does not exist in type '__VizePropBag<__AccountInfo_CheckProps_5>'."
       ]
     },
     {
@@ -1244,29 +976,20 @@
     },
     {
       "file": "app/pages/[[server]]/explore/index.vue",
-      "diagnostics": [
-        "error:11:22 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?",
-        "error:17:34 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?"
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/[[server]]/explore/links.vue",
-      "diagnostics": [
-        "error:11:22 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?",
-        "error:17:34 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?"
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/[[server]]/explore/tags.vue",
-      "diagnostics": [
-        "error:14:22 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?",
-        "error:20:34 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?"
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/[[server]]/explore/users.vue",
       "diagnostics": [
-        "error:16:34 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?"
+        "error:30:10 [TS2353] Object literal may only specify known properties, and '\"to\"' does not exist in type '__VizePropBag<__AccountBigCard_CheckProps_0>'."
       ]
     },
     {
@@ -1275,25 +998,15 @@
     },
     {
       "file": "app/pages/[[server]]/list/[list]/index.vue",
-      "diagnostics": [
-        "error:35:56 [TS2345] Argument of type '() => string' is not assignable to parameter of type 'string'.",
-        "error:35:158 [TS2554] Expected 1 arguments, but got 0."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/[[server]]/list/[list]/index/accounts.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:31:21 [TS2304] Cannot find name 'useFocusWithin'.",
-        "error:35:35 [TS7006] Parameter 'account' implicitly has an 'any' type.",
-        "error:61:55 [TS7006] Parameter 'account' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/[[server]]/list/[list]/index/index.vue",
-      "diagnostics": [
-        "error:12:29 [TS7006] Parameter 'client' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/[[server]]/lists.vue",
@@ -1301,9 +1014,7 @@
     },
     {
       "file": "app/pages/[[server]]/lists/index.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/[[server]]/public/index.vue",
@@ -1315,24 +1026,15 @@
     },
     {
       "file": "app/pages/[[server]]/search.vue",
-      "diagnostics": [
-        "error:2:14 [TS2304] Cannot find name 'useMagicKeys'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/[[server]]/status/[status].vue",
-      "diagnostics": [
-        "error:4:22 [TS7006] Parameter 'to' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/[[server]]/tags/[tag].vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:12:51 [TS2345] Argument of type '() => string' is not assignable to parameter of type 'string'.",
-        "error:12:158 [TS2554] Expected 1 arguments, but got 0.",
-        "error:15:29 [TS7006] Parameter 'client' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/blocks.vue",
@@ -1376,9 +1078,7 @@
     },
     {
       "file": "app/pages/intent/post.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/mutes.vue",
@@ -1386,15 +1086,11 @@
     },
     {
       "file": "app/pages/notifications.vue",
-      "diagnostics": [
-        "error:3:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/notifications/[filter].vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/notifications/index.vue",
@@ -1410,7 +1106,15 @@
     },
     {
       "file": "app/pages/settings.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:34:23 [TS2551] Property '$route' does not exist on type '__VizeStrictTemplateContext'. Did you mean '$router'?",
+        "error:41:23 [TS2551] Property '$route' does not exist on type '__VizeStrictTemplateContext'. Did you mean '$router'?",
+        "error:49:23 [TS2551] Property '$route' does not exist on type '__VizeStrictTemplateContext'. Did you mean '$router'?",
+        "error:56:23 [TS2551] Property '$route' does not exist on type '__VizeStrictTemplateContext'. Did you mean '$router'?",
+        "error:63:23 [TS2551] Property '$route' does not exist on type '__VizeStrictTemplateContext'. Did you mean '$router'?",
+        "error:70:23 [TS2551] Property '$route' does not exist on type '__VizeStrictTemplateContext'. Did you mean '$router'?",
+        "error:77:23 [TS2551] Property '$route' does not exist on type '__VizeStrictTemplateContext'. Did you mean '$router'?"
+      ]
     },
     {
       "file": "app/pages/settings/about/index.vue",
@@ -1426,9 +1130,7 @@
     },
     {
       "file": "app/pages/settings/language/index.vue",
-      "diagnostics": [
-        "error:6:62 [TS2307] Cannot find module '~~/elk-translation-status.json' or its corresponding type declarations."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/settings/notifications/index.vue",
@@ -1448,16 +1150,7 @@
     },
     {
       "file": "app/pages/settings/profile/appearance.vue",
-      "diagnostics": [
-        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:3:25 [TS2307] Cannot find module 'slimeform' or its corresponding type declarations.",
-        "error:59:51 [TS7031] Binding element 'dirtyFields' implicitly has an 'any' type.",
-        "error:64:11 [TS7006] Parameter 'account' implicitly has an 'any' type.",
-        "error:92:1 [TS2304] Cannot find name 'useDropZone'.",
-        "error:92:27 [TS7006] Parameter 'files' implicitly has an 'any' type.",
-        "error:96:1 [TS2304] Cannot find name 'useDropZone'.",
-        "error:96:27 [TS7006] Parameter 'files' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/settings/profile/featured-tags.vue",
@@ -1469,18 +1162,30 @@
     },
     {
       "file": "app/pages/settings/users/index.vue",
-      "diagnostics": [
-        "error:4:26 [TS2307] Cannot find module 'browser-fs-access' or its corresponding type declarations.",
-        "error:21:35 [TS2307] Cannot find module 'file-saver' or its corresponding type declarations.",
-        "error:49:36 [TS7006] Parameter 'u' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/pages/share-target.vue",
       "diagnostics": []
+    },
+    {
+      "file": "config/emojis.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "shared/types/index.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "shared/types/translation-status.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "shared/types/utils.ts",
+      "diagnostics": []
     }
   ],
-  "errorCount": 290,
+  "errorCount": 44,
   "warningCount": 0,
-  "fileCount": 262
+  "fileCount": 279
 }

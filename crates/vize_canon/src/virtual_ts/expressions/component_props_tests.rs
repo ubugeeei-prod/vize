@@ -107,7 +107,7 @@ fn static_attribute_values_are_type_checked_like_dynamic_bindings() {
 
     assert!(
         output.code.contains(
-            "type __HelloWorld_0_prop_msg = __VizePropValue<__HelloWorld_Props_0, 'msg'>;"
+            "type __HelloWorld_0_prop_msg = __VizePropValue<__HelloWorld_CheckProps_0, 'msg'>;"
         ),
         "static prop must declare its child prop type alias:\n{}",
         output.code
@@ -210,7 +210,7 @@ const isLoading = false
     assert_eq!(
         output
             .code
-            .matches("type __Child_0_prop_class = __VizePropValue<__Child_Props_0, 'class'>;")
+            .matches("type __Child_0_prop_class = __VizePropValue<__Child_CheckProps_0, 'class'>;")
             .count(),
         1,
         "the child prop type alias must be declared exactly once:\n{}",

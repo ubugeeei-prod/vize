@@ -162,6 +162,7 @@ pub(super) fn emit_default_export_declaration(
     has_authored_default: bool,
     static_raw_props_ref: Option<&str>,
     static_slots_ref: Option<&str>,
+    fallthrough_props_ref: Option<&str>,
 ) {
     emit_vue_component_options_type(ts, generic_component_params.is_some());
     let emit_props_static = emits_info.static_emit_props_field();
@@ -184,21 +185,31 @@ pub(super) fn emit_default_export_declaration(
     // settle only the first of multiple consumers of the same changed SFC.
     // Leading with the direct `Props` identity makes every dependent program
     // observe the edit while the last construct signature remains unchanged.
-    let static_raw_props_field = static_raw_props_ref
-        .map(|props_ref| cstr!("readonly __vizeRawProps?: {props_ref};"))
-        .unwrap_or_default();
-    let static_slots_field = static_slots_ref
-        .map(|slots_ref| cstr!("readonly __vizeSlots?: {slots_ref};"))
-        .unwrap_or_default();
-    let component_contract_fields = match (
-        static_raw_props_field.trim().is_empty(),
-        static_slots_field.trim().is_empty(),
-    ) {
-        (false, false) => cstr!("{static_raw_props_field} {static_slots_field}"),
-        (false, true) => static_raw_props_field,
-        (true, false) => static_slots_field,
-        (true, true) => String::default(),
-    };
+    let mut component_contract_fields = String::default();
+    if static_raw_props_ref.is_some()
+        || static_slots_ref.is_some()
+        || fallthrough_props_ref.is_some()
+    {
+        component_contract_fields.push_str("readonly [__VizeComponentMarker]: true;");
+    }
+    if let Some(props_ref) = static_raw_props_ref {
+        append!(
+            component_contract_fields,
+            " readonly __vizeRawProps?: {props_ref};"
+        );
+    }
+    if let Some(slots_ref) = static_slots_ref {
+        append!(
+            component_contract_fields,
+            " readonly __vizeSlots?: {slots_ref};"
+        );
+    }
+    if let Some(fallthrough_ref) = fallthrough_props_ref {
+        append!(
+            component_contract_fields,
+            " readonly __vizeFallthroughProps?: {fallthrough_ref};"
+        );
+    }
     if let Some((generic_decl, generic_names, slots_is_generic)) = generic_component_params {
         let emit_resolvers = emits_info.generic_emit_resolver_fields(generic_decl, generic_names);
         let event_map_separator = if emit_props_static.is_empty() || event_map_static.is_empty() {
@@ -218,7 +229,7 @@ pub(super) fn emit_default_export_declaration(
             *ts,
             "declare const __vize_component__: {{ {emit_props_static}{event_map_separator}{event_map_static} {component_contract_fields} }} & {authored_component}__VizeComponentConstructor & __VizeVueComponentOptions;\n",
         );
-    } else if !component_contract_fields.is_empty() {
+    } else if !component_contract_fields.trim().is_empty() {
         append!(
             *ts,
             "declare const __vize_component__: {{ {component_contract_fields} }} & {authored_component}__VizeComponentConstructor & __VizeVueComponentOptions;\n",

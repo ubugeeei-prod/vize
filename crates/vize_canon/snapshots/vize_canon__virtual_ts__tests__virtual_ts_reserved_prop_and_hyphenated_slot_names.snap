@@ -143,7 +143,11 @@ function __setup() {
   // Component props type declarations
   type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
   type __VizeEmitListeners<C> = C extends { __vizeEmitProps?: infer __E } ? NonNullable<__E> : {};
-  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void) : (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void;
+  type __VizeFallthroughProps<C> = C extends { readonly __vizeFallthroughProps?: infer __F } ? NonNullable<__F> : {};
+  type __VizePublicComponentAttrs = { class?: unknown; style?: unknown };
+  type __VizeHasRawProps<C> = C extends { readonly __vizeRawProps?: any } ? true : C extends { new (): { readonly __vizeRawProps?: any } } ? true : false;
+  type __VizePropBag<P> = { readonly [K in keyof P]: P[K] };
+  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: __VizePropBag<P> & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: __VizePropBag<P> & Record<string, unknown>) => void) : __VizeHasRawProps<C> extends true ? (props: __VizePropBag<P>) => void : (props: __VizePropBag<P> & Record<string, unknown>) => void;
   type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;
   type __VizeStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;
   type __VizeRequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
@@ -151,9 +155,9 @@ function __setup() {
   type __VizeRequiredSlots<__S, __P> = __VizeIsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [__VizeMissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: __VizeMissingRequiredSlots<__S, __P> };
   // @vize-map: component -> 0:27
   type __TrendChart_Props_0 = typeof TrendChart extends { __vizeCheck: any } ? Record<string, unknown> : (typeof TrendChart extends { readonly __vizeRawProps?: infer __P } ? __P : (typeof TrendChart extends { new (): { readonly __vizeRawProps?: infer __P } } ? __P : (typeof TrendChart extends { new (): { $props: infer __P } } ? __P : (typeof TrendChart extends (props: infer __P) => any ? __P : {}))));
-  type __TrendChart_0_prop_class = __VizePropValue<__TrendChart_Props_0, 'class'>;
-  type __TrendChart_CheckProps_0 = __TrendChart_Props_0 & __VizeEmitListeners<typeof TrendChart>;
+  type __TrendChart_CheckProps_0 = __TrendChart_Props_0 & __VizeEmitListeners<typeof TrendChart> & __VizeFallthroughProps<typeof TrendChart> & __VizePublicComponentAttrs;
   type __TrendChart_Check_0 = __VizePropChecker<typeof TrendChart, __TrendChart_CheckProps_0>;
+  type __TrendChart_0_prop_class = __VizePropValue<__TrendChart_CheckProps_0, 'class'>;
 
   // Component template navigation references
   void TrendChart;

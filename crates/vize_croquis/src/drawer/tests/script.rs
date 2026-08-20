@@ -59,6 +59,35 @@ fn test_drawer_define_props() {
 }
 
 #[test]
+fn test_drawer_define_options_records_inherit_attrs_false() {
+    let mut drawer = Drawer::for_lint();
+    drawer.draw_script(
+        r#"
+defineOptions({ inheritAttrs: false })
+defineProps<{ title: string }>()
+        "#,
+    );
+
+    let summary = drawer.finish();
+    assert!(summary.template_info.inherit_attrs_disabled);
+}
+
+#[test]
+fn test_drawer_options_api_records_inherit_attrs_false() {
+    let mut drawer = Drawer::for_lint();
+    drawer.draw_script_plain(
+        r#"
+export default {
+  inheritAttrs: false,
+}
+        "#,
+    );
+
+    let summary = drawer.finish();
+    assert!(summary.template_info.inherit_attrs_disabled);
+}
+
+#[test]
 fn test_type_exports() {
     let mut drawer = Drawer::for_lint();
     drawer.draw_script(

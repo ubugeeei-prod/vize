@@ -1,10 +1,10 @@
-//! Options API component metadata collection for component registrations and template bindings.
-
 mod emits;
+mod inherit_attrs;
 mod inheritance;
 
 use super::class_component::{class_from_export, collect_class_component_metadata};
 use emits::collect_options_api_emits_from_options as collect_emits;
+use inherit_attrs::option_bool_property;
 use inheritance::{collect_extends_bindings, collect_mixins_bindings};
 
 use oxc_ast::ast::{
@@ -46,9 +46,6 @@ pub(in crate::script_parser) fn collect_options_api_component_metadata(
             continue;
         };
 
-        // Class components (vue-class-component / vue-property-decorator):
-        // in an SFC the default export *is* the component, so a class default
-        // export is unambiguous. Auto-detected by AST shape, no flag needed.
         if let Some(class) = class_from_export(&export.declaration) {
             collect_class_component_metadata(result, class, &object_bindings, legacy_vue2, source);
             continue;
@@ -62,10 +59,11 @@ pub(in crate::script_parser) fn collect_options_api_component_metadata(
         if result.options_descriptor.is_none() {
             result.options_descriptor = Some(build_options_descriptor(options.object));
         }
+        if option_bool_property(options.object, "inheritAttrs") == Some(false) {
+            result.inherit_attrs_disabled = true;
+        }
         collect_emits(result, options.object, &object_bindings, source);
         collect_component_registrations_from_options(result, options.object, &object_bindings);
-        // Options API template bindings are valid in Vue 3 too; legacy Vue 2.7
-        // implies them and additionally pulls in the Nuxt 2 globals below.
         if options_api || legacy_vue2 {
             collect_options_api_template_bindings_from_options(
                 result,

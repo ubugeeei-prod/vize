@@ -5,6 +5,7 @@ mod component_export;
 mod css_modules;
 mod emits;
 mod entry;
+mod fallthrough;
 pub(super) mod generics;
 mod global_components;
 mod imports;
@@ -34,6 +35,7 @@ pub use self::entry::{
     generate_virtual_ts, generate_virtual_ts_with_offsets,
     generate_virtual_ts_with_offsets_options_api,
 };
+use self::fallthrough::fallthrough_props_type_ref;
 use self::generics::{HoistedGenericAliases, generic_injection_point, references_any_identifier};
 use self::global_components::GlobalComponentPlan;
 use self::imports::{
@@ -859,6 +861,13 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         legacy_vue2,
         dialect,
     );
+    let static_raw_props_ref = (!legacy_vue2::needs_legacy_vue2_helpers(legacy_vue2, dialect))
+        .then(|| {
+            setup_props_plan.component_value_props_type_ref(generic_component_params.as_ref())
+        });
+    let static_slots_ref =
+        (summary.macros.define_slots().is_some() && !slots_is_generic).then_some("Slots");
+    let fallthrough_props_ref = fallthrough_props_type_ref(summary, template_ast, legacy_vue2);
     emit_default_export_declaration(
         &mut ts,
         &emits_info,
@@ -866,12 +875,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             .as_ref()
             .map(|(decl, names)| (decl.as_str(), names.as_str(), slots_is_generic)),
         preserve_authored_component,
-        (!legacy_vue2::needs_legacy_vue2_helpers(legacy_vue2, dialect))
-            .then(|| {
-                setup_props_plan.component_value_props_type_ref(generic_component_params.as_ref())
-            })
-            .as_deref(),
-        (summary.macros.define_slots().is_some() && !slots_is_generic).then_some("Slots"),
+        static_raw_props_ref.as_deref(),
+        static_slots_ref,
+        fallthrough_props_ref.as_deref(),
     );
     component_export::emit_component_default_export(&mut ts, generation_options.component_name);
 

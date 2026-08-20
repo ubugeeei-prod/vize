@@ -31,6 +31,7 @@ test("typecheck and LSP gates do not carry raw dependency skips", () => {
     "lsp-auto-insertion.test.ts",
     "lsp-concurrent-edit-deadlock.test.ts",
     "lsp-corsa-crash-recovery.test.ts",
+    "lsp-fallthrough-attrs.test.ts",
     "lsp-file-create-delete.test.ts",
     "lsp-typecheck-template.test.ts",
     "lsp-watcher-revalidation.test.ts",
@@ -92,24 +93,30 @@ test("Nuxt Rust CLI gates use the fail-closed Corsa helper", () => {
 
 test("Canon Rust CLI gates use the fail-closed Corsa helper", () => {
   const files = [
-    ["check_canon_boolean_tsx_regressions_cli.rs", 2],
-    ["check_canon_component_derived_props_cli.rs", 1],
-    ["check_canon_component_refs_cli.rs", 2],
-    ["check_canon_dynamic_component_props_cli.rs", 1],
-    ["check_canon_generic_inference_cli.rs", 3],
-    ["check_canon_generic_props_cli.rs", 1],
-    ["check_canon_generic_sfc_mount_cli.rs", 1],
-    ["check_canon_graphql_cli.rs", 2],
-    ["check_canon_recent_issues_cli.rs", 5],
-    ["check_canon_recent_type_regressions_cli.rs", 6],
-    ["check_canon_remapped_key_cli.rs", 1],
-    ["check_canon_slot_contracts_cli.rs", 1],
+    ["check_canon_boolean_tsx_regressions_cli.rs", 2, []],
+    ["check_canon_component_derived_props_cli.rs", 1, []],
+    ["check_canon_component_refs_cli.rs", 2, []],
+    ["check_canon_dynamic_component_props_cli.rs", 1, []],
+    ["check_canon_fallthrough_attrs_cli.rs", 2, []],
+    ["check_canon_generic_inference_cli.rs", 3, []],
+    ["check_canon_generic_props_cli.rs", 1, []],
+    ["check_canon_generic_sfc_mount_cli.rs", 1, []],
+    ["check_canon_graphql_cli.rs", 2, []],
+    ["check_canon_recent_issues_cli.rs", 5, []],
+    ["check_canon_recent_type_regressions_cli.rs", 6, []],
+    ["check_canon_remapped_key_cli.rs", 1, []],
+    ["check_canon_slot_contracts_cli.rs", 1, []],
   ] as const;
 
-  for (const [file, expectedCalls] of files) {
+  for (const [file, expectedCalls, supportFiles] of files) {
     const source = readRepoFile("crates", "vize", "tests", file);
+    const guardSource = [
+      source,
+      ...supportFiles.map((supportFile) => readRepoFile("crates", "vize", "tests", supportFile)),
+    ].join("\n");
     assert.equal(
-      source.match(/corsa_requirement::required_or_skip\(resolve_test_corsa_path\(\)\)/g)?.length,
+      guardSource.match(/corsa_requirement::required_or_skip\(resolve_test_corsa_path\(\)\)/g)
+        ?.length,
       expectedCalls,
       `${file} should guard all ${expectedCalls} Corsa resolver calls`,
     );

@@ -124,6 +124,8 @@ pub struct ScriptParseResult {
     pub(crate) runtime_object_literals: FxHashMap<CompactString, RuntimeObjectLiteral>,
     /// Authoritative Options API options-object descriptor, when resolved.
     pub(crate) options_descriptor: Option<OptionsDescriptor>,
+    /// Whether component options disable attribute inheritance.
+    pub inherit_attrs_disabled: bool,
 }
 
 /// Options for plain script parsing.
@@ -298,6 +300,7 @@ impl ScriptParseResult {
         summary.component_shape = self.component_shape;
         summary.binding_spans = self.binding_spans;
         summary.options_descriptor = self.options_descriptor;
+        summary.template_info.inherit_attrs_disabled |= self.inherit_attrs_disabled;
     }
 
     /// Convert script analysis into a `Croquis` summary.

@@ -178,7 +178,7 @@ test("vize lsp publishes and clears exact parent diagnostics after child prop ed
     });
 
     const initialChild = `<script setup lang="ts">
-defineProps<{ count: string }>()
+defineProps<{ count: string; dataLabel?: string }>()
 </script>
 `;
     const changedChild = initialChild.replace("count: string", "count: number");

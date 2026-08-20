@@ -164,6 +164,17 @@ pub fn process_call_expression(
             }
         }
 
+        MacroKind::DefineOptions
+            if call
+                .arguments
+                .first()
+                .and_then(argument_object)
+                .and_then(|options| object_bool_property(options, "inheritAttrs"))
+                == Some(false) =>
+        {
+            result.inherit_attrs_disabled = true;
+        }
+
         MacroKind::Custom if callee_name == DEFINE_ART => {
             if let Some(art) = extract_define_art(result, call) {
                 result.macros.set_define_art(art);
