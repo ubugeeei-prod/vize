@@ -9,15 +9,16 @@ use crate::ide::DiagnosticService;
 use super::MaestroServer;
 
 impl MaestroServer {
-    /// Publish the diagnostics that do not need Corsa, provided the document
-    /// still has the version opened by the caller. The initial native pass uses
-    /// this fast path before its combined type-diagnostic refresh is queued.
+    /// Publish non-empty diagnostics that do not need Corsa, provided the
+    /// document still has the version opened by the caller. Empty initial
+    /// results are withheld so consumers do not mistake the parser/lint pass
+    /// for the terminal combined result from the queued type-diagnostic pass.
     ///
     /// This deliberately bypasses `publish_collected_diagnostics`: Corsa has
     /// not been attempted yet, so its one-shot "type checking unavailable"
     /// notice would be premature here.
     #[cfg(feature = "native")]
-    pub(super) async fn publish_sync_diagnostics_if_version(&self, uri: &Url, expected: i32) {
+    pub(super) async fn publish_initial_sync_diagnostics(&self, uri: &Url, expected: i32) {
         let diagnostic_lock = self.state.diagnostic_lock(uri);
         let diagnostic_guard = diagnostic_lock.lock().await;
 
@@ -33,7 +34,7 @@ impl MaestroServer {
 
         drop(diagnostic_guard);
 
-        if let Some(diagnostics) = diagnostics
+        if let Some(diagnostics) = diagnostics.filter(|diagnostics| !diagnostics.is_empty())
             && self.state.documents.version(uri) == Some(expected)
         {
             self.client

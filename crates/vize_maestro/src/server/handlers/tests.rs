@@ -5,6 +5,8 @@ use tower_lsp::{
 };
 
 mod formatting;
+#[cfg(feature = "native")]
+mod initial_diagnostics;
 mod lifecycle;
 mod requests;
 

@@ -24,21 +24,6 @@ use crate::ide::{IdeContext, ecosystem};
 use crate::virtual_code::{ArtCursorPosition, BlockType};
 
 impl super::CompletionService {
-    /// Return a source-local object member list only when it is complete and
-    /// scope-exact. This fast path avoids initializing Corsa for information
-    /// already proven by the authored AST.
-    #[cfg(feature = "native")]
-    pub(crate) fn complete_static_object_member(
-        ctx: &IdeContext<'_>,
-    ) -> Option<CompletionResponse> {
-        let items = match ctx.block_type? {
-            BlockType::Script => script::complete_static_object_member_access(ctx, false),
-            BlockType::ScriptSetup => script::complete_static_object_member_access(ctx, true),
-            _ => None,
-        }?;
-        Some(CompletionResponse::Array(items))
-    }
-
     /// Get completions for the given context.
     pub fn complete(ctx: &IdeContext) -> Option<CompletionResponse> {
         // Art file: route by cursor position within art structure

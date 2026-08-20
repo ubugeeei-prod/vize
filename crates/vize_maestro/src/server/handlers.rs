@@ -98,31 +98,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn did_open(&self, params: DidOpenTextDocumentParams) {
-        let uri = params.text_document.uri;
-        let content = params.text_document.text;
-        let version = params.text_document.version;
-        let language_id = params.text_document.language_id;
-
-        self.state
-            .documents
-            .open(uri.clone(), content.clone(), version, language_id);
-
-        self.state.update_virtual_docs(&uri, &content);
-
-        // Keep parser/lint feedback immediate, but do not make the first
-        // completion wait behind Corsa startup and a full type-diagnostic
-        // pass. The versioned background pass still publishes the combined
-        // diagnostics after a short interactive grace period (#4485).
-        #[cfg(feature = "native")]
-        if self.state.is_lsp_typecheck_enabled() {
-            self.publish_sync_diagnostics_if_version(&uri, version)
-                .await;
-            if self.schedule_initial_diagnostics(uri.clone(), version) {
-                return;
-            }
-        }
-
-        self.publish_diagnostics(&uri).await;
+        self.open_document(params).await;
     }
 
     async fn did_change(&self, params: DidChangeTextDocumentParams) {

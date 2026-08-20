@@ -16,6 +16,8 @@ mod service;
 #[cfg(feature = "native")]
 mod service_corsa_template;
 mod service_inline_art;
+#[cfg(feature = "native")]
+mod static_object;
 mod style;
 pub(crate) mod template;
 
@@ -27,6 +29,8 @@ mod component_props_tests;
 mod dedup_tests;
 #[cfg(test)]
 mod split_component_props_tests;
+#[cfg(test)]
+mod static_object_tests;
 #[cfg(test)]
 mod template_event_tests;
 // `insta`'s snapshot macros expand through the disallowed `std::format!`; the
