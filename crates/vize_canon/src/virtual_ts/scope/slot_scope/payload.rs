@@ -17,7 +17,9 @@ const SLOT_RESOLVER_HELPERS: &str = "type __VizeStructuralSlots<C> = C extends {
 const STATIC_SLOT_PAYLOAD_HELPER: &str = "type __VizeSlotPayload<__S, __K extends PropertyKey> = __K extends keyof __S ? (NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any;\n";
 
 /// Union of every declared payload, for `v-slot:[name]`.
-const DYNAMIC_SLOT_PAYLOAD_HELPER: &str = "type __VizeAnySlotPayload<__S> = { [__K in keyof __S]: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S] extends infer __P ? ([__P] extends [never] ? any : __P) : any;\n";
+/// `-?` removes the marker's optional provisioning modifier from the mapped
+/// result; otherwise indexing `Partial<Slots>` adds `undefined` to the payload.
+const DYNAMIC_SLOT_PAYLOAD_HELPER: &str = "type __VizeAnySlotPayload<__S> = { [__K in keyof __S]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S] extends infer __P ? ([__P] extends [never] ? any : __P) : any;\n";
 
 /// Whether any `v-slot` scope in this document resolves a host component, split
 /// by how the slot is named — the static and dynamic payload aliases have

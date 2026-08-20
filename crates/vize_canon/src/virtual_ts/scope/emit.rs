@@ -39,8 +39,11 @@ pub(super) fn slot_props_type(
                     "typeof {component_ref} extends {{ readonly __vizeSlots?: infer __S }} ? (\"{slot_name}\" extends keyof NonNullable<__S> ? (NonNullable<NonNullable<__S>[\"{slot_name}\"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : (typeof {component_ref} extends {{ new (): {{ $slots: infer __S }} }} ? (\"{slot_name}\" extends keyof __S ? (NonNullable<__S[\"{slot_name}\"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : any)"
                 )
             } else {
+                // The Vize marker is `Partial<Slots>` because parents may omit
+                // slots. Strip that mapped optionality before unioning payloads
+                // so a provided dynamic slot never acquires `undefined` props.
                 cstr!(
-                    "typeof {component_ref} extends {{ readonly __vizeSlots?: infer __S }} ? ({{ [__K in keyof NonNullable<__S>]: NonNullable<NonNullable<__S>[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }}[keyof NonNullable<__S>] extends infer __P ? ([__P] extends [never] ? any : __P) : any) : (typeof {component_ref} extends {{ new (): {{ $slots: infer __S }} }} ? ({{ [__K in keyof __S]: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }}[keyof __S] extends infer __P ? ([__P] extends [never] ? any : __P) : any) : any)"
+                    "typeof {component_ref} extends {{ readonly __vizeSlots?: infer __S }} ? ({{ [__K in keyof NonNullable<__S>]-?: NonNullable<NonNullable<__S>[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }}[keyof NonNullable<__S>] extends infer __P ? ([__P] extends [never] ? any : __P) : any) : (typeof {component_ref} extends {{ new (): {{ $slots: infer __S }} }} ? ({{ [__K in keyof __S]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }}[keyof __S] extends infer __P ? ([__P] extends [never] ? any : __P) : any) : any)"
                 )
             }
         }

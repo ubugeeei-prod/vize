@@ -60,6 +60,10 @@ fn slot_payload_helpers_are_declared_only_where_they_are_referenced() {
         "{dynamic_name}"
     );
     assert!(
+        dynamic_name.contains("[__K in keyof __S]-?:"),
+        "dynamic payload extraction must not preserve optional slot markers:\n{dynamic_name}"
+    );
+    assert!(
         !dynamic_name.contains("type __VizeSlotPayload<"),
         "a dynamically named slot must not declare the static-name alias:\n{dynamic_name}"
     );
