@@ -16,6 +16,7 @@ use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
 use super::component_event_navigation;
 use super::component_prop_checker::has_inference_props;
+use super::component_slots::generate_component_slot_checks;
 use super::context::{ComponentPropsContext, VForPropsContext};
 
 pub(super) fn is_empty_props_usage(usage: &ComponentUsage) -> bool {
@@ -97,6 +98,10 @@ fn generate_empty_checks(
             "canon.virtual_ts.empty_component_prop_checks",
             generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str())
         );
+        profile!(
+            "canon.virtual_ts.empty_component_slot_checks",
+            generate_component_slot_checks(&mut check_context, usage, idx, component_ref.as_str())
+        );
         append!(*ts, "{arrow_indent}}},\n");
     }
     append!(*ts, "{indent}];\n");
@@ -133,7 +138,8 @@ pub(super) fn generate_scope_checks(
                 ctx.source_context,
                 indent,
             );
-            generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str())
+            generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str());
+            generate_component_slot_checks(&mut check_context, usage, idx, component_ref.as_str());
         });
     }
     let empty_usages: Vec<_> = usages

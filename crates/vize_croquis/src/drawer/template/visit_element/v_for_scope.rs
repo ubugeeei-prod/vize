@@ -89,7 +89,7 @@ fn find_v_for_separator(expr: &str) -> Option<usize> {
 ///
 /// Canon's `pattern_identifier_offset` mirrors this to anchor the generated
 /// alias identifiers, so both sides must pick the same token.
-fn find_identifier_token(text: &str, name: &str) -> Option<usize> {
+pub(super) fn find_identifier_token(text: &str, name: &str) -> Option<usize> {
     text.match_indices(name)
         .find(|(index, _)| is_declaration_token(text, *index, name.len()))
         .map(|(index, _)| index)

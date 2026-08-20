@@ -102,6 +102,7 @@ test("Canon Rust CLI gates use the fail-closed Corsa helper", () => {
     ["check_canon_recent_issues_cli.rs", 5],
     ["check_canon_recent_type_regressions_cli.rs", 6],
     ["check_canon_remapped_key_cli.rs", 1],
+    ["check_canon_slot_contracts_cli.rs", 1],
   ] as const;
 
   for (const [file, expectedCalls] of files) {

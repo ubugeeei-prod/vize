@@ -19,6 +19,7 @@ use super::component_prop_checker::{
     append_per_prop_aliases, append_prop_check_helpers, append_prop_checker_alias,
 };
 use super::component_prop_navigation;
+use super::component_slots::{append_component_slot_check_helpers, generate_component_slot_checks};
 use super::context::{ComponentPropsContext, GlobalComponentCheck, VForPropsContext};
 use super::emit::{append_v_for_comment, emit_v_for_loop_open};
 use super::empty_component_props::{
@@ -54,6 +55,7 @@ pub(super) fn generate_component_props(
     // Generic children expose `__vizeCheck<T>(props)`; fallback contextual
     // typing is limited to inline function props to avoid duplicate errors.
     append_prop_check_helpers(ts, checkable_usages);
+    append_component_slot_check_helpers(ts);
 
     for &(idx, usage) in checkable_usages {
         let component_ref = component_binding_reference(
@@ -160,6 +162,16 @@ pub(super) fn generate_component_props(
                 "  ",
             );
             generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str())
+        });
+        profile!("canon.virtual_ts.component_slot_checks", {
+            let mut check_context = ComponentPropCheckContext::new(
+                ts,
+                mappings,
+                ctx.template_prop_names,
+                ctx.source_context(),
+                "  ",
+            );
+            generate_component_slot_checks(&mut check_context, usage, idx, component_ref.as_str())
         });
     }
 

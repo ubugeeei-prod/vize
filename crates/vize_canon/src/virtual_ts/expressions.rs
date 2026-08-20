@@ -9,6 +9,8 @@ mod callback_prop_resolution_tests;
 mod component_props;
 #[cfg(test)]
 mod component_props_tests;
+#[cfg(test)]
+mod component_slot_contract_tests;
 mod directive_values;
 #[cfg(test)]
 mod directive_values_tests;

@@ -844,7 +844,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let (has_exposed_type, exposed_is_generic) =
         emit_exposed_type(&mut ts, summary, generic_injection.as_ref());
     ts.push('\n');
-
     emit_emit_props_helper(&mut ts, &emits_info, hoist_shared_preamble);
 
     let generic_component_params = setup_props_plan.generic_component_params(generic_param);
@@ -863,10 +862,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         legacy_vue2,
         dialect,
     );
-    let static_raw_props_ref = (!legacy_vue2::needs_legacy_vue2_helpers(legacy_vue2, dialect))
-        .then(|| {
-            setup_props_plan.component_value_props_type_ref(generic_component_params.as_ref())
-        });
     emit_default_export_declaration(
         &mut ts,
         &emits_info,
@@ -874,7 +869,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             .as_ref()
             .map(|(decl, names)| (decl.as_str(), names.as_str(), slots_is_generic)),
         preserve_authored_component,
-        static_raw_props_ref.as_deref(),
+        (!legacy_vue2::needs_legacy_vue2_helpers(legacy_vue2, dialect))
+            .then(|| {
+                setup_props_plan.component_value_props_type_ref(generic_component_params.as_ref())
+            })
+            .as_deref(),
+        (summary.macros.define_slots().is_some() && !slots_is_generic).then_some("Slots"),
     );
     component_export::emit_component_default_export(&mut ts, generation_options.component_name);
 

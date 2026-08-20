@@ -64,6 +64,35 @@ fn destructured_slot_scope_records_name_pattern_and_component() {
 }
 
 #[test]
+fn object_pattern_slot_scope_offsets_use_local_bindings() {
+    let allocator = Bump::new();
+    let pattern = "  { name: name, label: local }";
+    let template = cstr!(
+        r#"<p>前置き</p><Child><template slot="item" slot-scope="{pattern}">{{{{ name }}}}{{{{ local }}}}</template></Child>"#,
+    );
+    let (root, errors) = parse(&allocator, template.as_str());
+    assert!(errors.is_empty(), "template should parse: {errors:?}");
+    let mut drawer = Drawer::with_options(DrawerOptions::full()).with_legacy_vue2();
+    drawer.draw_template(&root);
+    let summary = drawer.finish();
+    let scope = summary
+        .scopes
+        .iter()
+        .find(|scope| matches!(scope.data(), ScopeData::VSlot(_)))
+        .expect("slot-scope must create a v-slot semantic scope");
+    let pattern_offset = template.find(pattern).unwrap() as u32;
+
+    assert_eq!(
+        scope.get_binding("name").unwrap().declaration_offset,
+        pattern_offset + pattern.rfind("name").unwrap() as u32
+    );
+    assert_eq!(
+        scope.get_binding("local").unwrap().declaration_offset,
+        pattern_offset + pattern.find("local").unwrap() as u32
+    );
+}
+
+#[test]
 fn slot_scope_attributes_are_inert_without_legacy_mode() {
     let undefined = undefined_refs(
         r#"<Child><template slot-scope="scope">{{ scope.row.id }}</template></Child>"#,

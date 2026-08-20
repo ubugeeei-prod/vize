@@ -69,8 +69,8 @@ type __VizeDirectiveValue<D> = D extends import('vue').Directive<any, infer V> ?
 declare function __vizeDirectiveValue<__D>(value: __VizeDirectiveValue<__D>): void;
 type __VForEntry<T> = T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : [item: T[keyof T], key: keyof T extends string ? keyof T : `${keyof T & (string | number)}`, index: number];
 declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];
-type __VizeStructuralSlots<C> = C extends { new (): { $slots: infer __S } } ? __S : any;
-type __VizeSlotsResolver<C> = __VizeIsAny<C> extends true ? (props: any) => any : C extends { __vizeResolveSlots?: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => __VizeStructuralSlots<C>) : (props: any) => __VizeStructuralSlots<C>;
+type __VizeStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : C extends { new (): { $slots: infer __S } } ? __S : any;
+type __VizeSlotsResolver<C> = C extends { __vizeResolveSlots?: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => __VizeStructuralSlots<C>) : C extends { readonly __vizeSlots?: any } ? (props: any) => __VizeStructuralSlots<C> : __VizeIsAny<C> extends true ? (props: any) => any : (props: any) => __VizeStructuralSlots<C>;
 type __VizeSlotPayload<__S, __K extends PropertyKey> = __K extends keyof __S ? (NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any;
 import MyList from './MyList.vue'
 
@@ -134,6 +134,10 @@ function __setup() {
   type __VizeEmitListeners<C> = C extends { __vizeEmitProps?: infer __E } ? NonNullable<__E> : {};
   type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void) : (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void;
   type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;
+  type __VizeStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : C extends { new (): { $slots: infer __S } } ? __S : any;
+  type __VizeRequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
+  type __VizeMissingRequiredSlots<__S, __P> = Exclude<__VizeRequiredSlotKeys<__S>, keyof __P>;
+  type __VizeRequiredSlots<__S, __P> = __VizeIsAny<__S> extends true ? {} : [keyof __S] extends [never] ? {} : [__VizeMissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: __VizeMissingRequiredSlots<__S, __P> };
   // @vize-map: component -> 0:23
   type __MyList_Props_0 = typeof MyList extends { __vizeCheck: any } ? Record<string, unknown> : (typeof MyList extends { readonly __vizeRawProps?: infer __P } ? __P : (typeof MyList extends { new (): { readonly __vizeRawProps?: infer __P } } ? __P : (typeof MyList extends { new (): { $props: infer __P } } ? __P : (typeof MyList extends (props: infer __P) => any ? __P : {}))));
   type __MyList_0_prop_items = __VizePropValue<__MyList_Props_0, 'items'>;
@@ -152,6 +156,9 @@ function __setup() {
   (undefined as unknown as __MyList_Check_0)({
     "items": items,
   });
+  type __VizeSlotContract_0 = __VizeStructuralSlots<typeof MyList>;
+  const __vize_required_slots_0: __VizeRequiredSlots<__VizeSlotContract_0, { readonly "default": true; }> = {};
+  void __vize_required_slots_0;
 
   // Component props in v-slot scope: #default
   const __vize_slot_props_host_7 = (undefined as unknown as __VizeSlotsResolver<typeof MyList>)({

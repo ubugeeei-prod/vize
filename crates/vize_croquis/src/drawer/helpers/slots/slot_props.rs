@@ -7,107 +7,108 @@ use vize_carton::{CompactString, SmallVec, profile};
 /// Extract prop names from v-slot expression pattern
 #[inline]
 pub fn extract_slot_props(pattern: &str) -> SmallVec<[CompactString; 4]> {
+    extract_slot_prop_bindings(pattern)
+        .into_iter()
+        .map(|(name, _)| name)
+        .collect()
+}
+
+#[inline]
+pub fn extract_slot_prop_bindings(pattern: &str) -> SmallVec<[(CompactString, u32); 4]> {
+    let leading_whitespace_len = pattern.len() - pattern.trim_start().len();
     let pattern = pattern.trim();
     if pattern.is_empty() {
         return SmallVec::new();
     }
 
-    profile!(
+    let mut bindings = profile!(
         "croquis.helpers.slot_props.oxc",
-        extract_slot_props_with_oxc(pattern)
-    )
-}
-
-/// Parse complex slot props using OXC
-fn extract_slot_props_with_oxc(pattern: &str) -> SmallVec<[CompactString; 4]> {
-    let mut buffer = [0u8; 256];
-    let prefix = b"let ";
-    let suffix = b" = x";
-
-    let total_len = prefix.len() + pattern.len() + suffix.len();
-    if total_len > buffer.len() {
-        #[allow(clippy::disallowed_macros)]
-        let pattern_str = format!("let {pattern} = x");
-        return profile!(
-            "croquis.helpers.slot_props.parse_pattern",
-            parse_slot_pattern(&pattern_str)
-        );
+        parse_slot_pattern_bindings(pattern)
+    );
+    for (_, offset) in &mut bindings {
+        *offset += leading_whitespace_len as u32;
     }
-
-    buffer[..prefix.len()].copy_from_slice(prefix);
-    buffer[prefix.len()..prefix.len() + pattern.len()].copy_from_slice(pattern.as_bytes());
-    buffer[prefix.len() + pattern.len()..total_len].copy_from_slice(suffix);
-
-    match std::str::from_utf8(&buffer[..total_len]) {
-        Ok(pattern_str) => profile!(
-            "croquis.helpers.slot_props.parse_pattern",
-            parse_slot_pattern(pattern_str)
-        ),
-        Err(_) => SmallVec::new(),
-    }
+    bindings
 }
 
 /// Parse slot pattern using OXC
-fn parse_slot_pattern(pattern_str: &str) -> SmallVec<[CompactString; 4]> {
+fn parse_slot_pattern_bindings(pattern: &str) -> SmallVec<[(CompactString, u32); 4]> {
+    const PREFIX: &str = "let ";
+    const SUFFIX: &str = " = x";
+
+    let mut pattern_str =
+        std::string::String::with_capacity(PREFIX.len() + pattern.len() + SUFFIX.len());
+    pattern_str.push_str(PREFIX);
+    pattern_str.push_str(pattern);
+    pattern_str.push_str(SUFFIX);
+
     let allocator = Allocator::default();
     let source_type = SourceType::default().with_typescript(true);
     let ret = profile!(
         "croquis.helpers.slot_props.oxc_parse",
-        Parser::new(&allocator, pattern_str, source_type).parse()
+        Parser::new(&allocator, pattern_str.as_str(), source_type).parse()
     );
     if !ret.diagnostics.is_empty() {
         return SmallVec::new();
     }
 
-    let mut props = SmallVec::new();
+    let mut bindings = SmallVec::new();
 
     if let Some(oxc_ast::ast::Statement::VariableDeclaration(var_decl)) = ret.program.body.first()
         && let Some(declarator) = var_decl.declarations.first()
     {
-        extract_slot_binding_names(&declarator.id, &mut props);
+        extract_slot_binding_names(&declarator.id, PREFIX.len() as u32, &mut bindings);
     }
 
-    props
+    bindings
 }
 
 /// Extract binding names from slot pattern
 fn extract_slot_binding_names(
     pattern: &BindingPattern<'_>,
-    names: &mut SmallVec<[CompactString; 4]>,
+    pattern_offset: u32,
+    bindings: &mut SmallVec<[(CompactString, u32); 4]>,
 ) {
     match pattern {
         BindingPattern::BindingIdentifier(id) => {
-            names.push(CompactString::new(id.name.as_str()));
+            let Some(relative) = id.span.start.checked_sub(pattern_offset) else {
+                return;
+            };
+            bindings.push((CompactString::new(id.name.as_str()), relative));
         }
         BindingPattern::ObjectPattern(obj) => {
             for prop in obj.properties.iter() {
-                extract_slot_binding_names(&prop.value, names);
+                extract_slot_binding_names(&prop.value, pattern_offset, bindings);
             }
             if let Some(rest) = &obj.rest {
-                extract_slot_binding_names(&rest.argument, names);
+                extract_slot_binding_names(&rest.argument, pattern_offset, bindings);
             }
         }
         BindingPattern::ArrayPattern(arr) => {
             for elem in arr.elements.iter().flatten() {
-                extract_slot_binding_names(elem, names);
+                extract_slot_binding_names(elem, pattern_offset, bindings);
             }
             if let Some(rest) = &arr.rest {
-                extract_slot_binding_names(&rest.argument, names);
+                extract_slot_binding_names(&rest.argument, pattern_offset, bindings);
             }
         }
         BindingPattern::AssignmentPattern(assign) => {
-            extract_slot_binding_names(&assign.left, names);
+            extract_slot_binding_names(&assign.left, pattern_offset, bindings);
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::extract_slot_props;
+    use super::{extract_slot_prop_bindings, extract_slot_props};
     use vize_carton::{CompactString, SmallVec, cstr};
 
     fn names(pattern: &str) -> SmallVec<[CompactString; 4]> {
         extract_slot_props(pattern)
+    }
+
+    fn binding_offsets(pattern: &str) -> SmallVec<[(CompactString, u32); 4]> {
+        extract_slot_prop_bindings(pattern)
     }
 
     #[test]
@@ -131,6 +132,32 @@ mod tests {
         assert_eq!(
             names("{ value = getDefault(a, b), rest }"),
             [cstr!("value"), cstr!("rest")].into()
+        );
+    }
+
+    #[test]
+    fn binding_offsets_point_to_local_object_pattern_bindings() {
+        let pattern = "{ ラベル: value, name: name }";
+        assert_eq!(
+            binding_offsets(pattern),
+            [
+                (cstr!("value"), pattern.find("value").unwrap() as u32),
+                (cstr!("name"), pattern.rfind("name").unwrap() as u32)
+            ]
+            .into()
+        );
+    }
+
+    #[test]
+    fn binding_offsets_include_trimmed_leading_whitespace() {
+        let pattern = "  { ラベル: value, name: name }";
+        assert_eq!(
+            binding_offsets(pattern),
+            [
+                (cstr!("value"), pattern.find("value").unwrap() as u32),
+                (cstr!("name"), pattern.rfind("name").unwrap() as u32)
+            ]
+            .into()
         );
     }
 }

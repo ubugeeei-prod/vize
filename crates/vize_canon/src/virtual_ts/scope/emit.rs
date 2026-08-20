@@ -36,11 +36,11 @@ pub(super) fn slot_props_type(
             );
             if slot_name_is_static {
                 cstr!(
-                    "typeof {component_ref} extends {{ new (): {{ $slots: infer __S }} }} ? (\"{slot_name}\" extends keyof __S ? (NonNullable<__S[\"{slot_name}\"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : any"
+                    "typeof {component_ref} extends {{ readonly __vizeSlots?: infer __S }} ? (\"{slot_name}\" extends keyof NonNullable<__S> ? (NonNullable<NonNullable<__S>[\"{slot_name}\"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : (typeof {component_ref} extends {{ new (): {{ $slots: infer __S }} }} ? (\"{slot_name}\" extends keyof __S ? (NonNullable<__S[\"{slot_name}\"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : any)"
                 )
             } else {
                 cstr!(
-                    "typeof {component_ref} extends {{ new (): {{ $slots: infer __S }} }} ? ({{ [__K in keyof __S]: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }}[keyof __S] extends infer __P ? ([__P] extends [never] ? any : __P) : any) : any"
+                    "typeof {component_ref} extends {{ readonly __vizeSlots?: infer __S }} ? ({{ [__K in keyof NonNullable<__S>]: NonNullable<NonNullable<__S>[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }}[keyof NonNullable<__S>] extends infer __P ? ([__P] extends [never] ? any : __P) : any) : (typeof {component_ref} extends {{ new (): {{ $slots: infer __S }} }} ? ({{ [__K in keyof __S]: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }}[keyof __S] extends infer __P ? ([__P] extends [never] ? any : __P) : any) : any)"
                 )
             }
         }
@@ -217,7 +217,7 @@ pub(super) fn emit_v_for_loop_open(
 /// Mirrors croquis' `find_identifier_token`, which derives the source-side
 /// declaration offsets this maps to: both sides must pick the same token, or
 /// the generated and authored ranges would name different identifiers.
-fn pattern_identifier_offset(pattern: &str, name: &str) -> Option<usize> {
+pub(super) fn pattern_identifier_offset(pattern: &str, name: &str) -> Option<usize> {
     pattern
         .match_indices(name)
         .find(|(at, _)| is_declaration_token(pattern, *at, name.len()))

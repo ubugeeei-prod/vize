@@ -1,6 +1,6 @@
 use crate::drawer::Drawer;
 use crate::drawer::helpers::{
-    ConditionalKind, extract_slot_props, extract_v_scope_bindings, is_builtin_directive,
+    ConditionalKind, extract_slot_prop_bindings, extract_v_scope_bindings, is_builtin_directive,
     parse_v_for_scope_expression,
 };
 use vize_carton::{CompactString, SmallVec, profile, smallvec};
@@ -89,17 +89,19 @@ impl Drawer {
                         })
                         .unwrap_or(true);
 
-                    let (prop_names, props_pattern) = if let Some(ref exp) = dir.exp {
+                    let (prop_names, props_pattern, prop_offsets) = if let Some(ref exp) = dir.exp {
                         let content = expression_content(exp);
-                        (
-                            profile!(
-                                "croquis.template.v_slot.extract_props",
-                                extract_slot_props(content)
-                            ),
-                            Some(CompactString::new(content)),
-                        )
+                        let base = exp.loc().start.offset;
+                        let prop_bindings = profile!(
+                            "croquis.template.v_slot.extract_props",
+                            extract_slot_prop_bindings(content)
+                        );
+                        let prop_names =
+                            prop_bindings.iter().map(|(name, _)| name.clone()).collect();
+                        let prop_offsets = slot_prop_declaration_offsets(base, &prop_bindings);
+                        (prop_names, Some(CompactString::new(content)), prop_offsets)
                     } else {
-                        (smallvec![], None)
+                        (smallvec![], None, SmallVec::new())
                     };
 
                     state.slot_scope = Some((
@@ -107,6 +109,7 @@ impl Drawer {
                         slot_name_is_static,
                         prop_names,
                         props_pattern,
+                        prop_offsets,
                         dir.loc.start.offset,
                     ));
                 } else if dir.name == "scope" && self.options.analyze_template_scopes {
@@ -156,6 +159,9 @@ fn legacy_slot_scope(el: &ElementNode<'_>) -> Option<super::scopes::SlotScopeInf
         })?;
     let value = scope_attr.value.as_ref()?;
     let pattern = value.content.as_str();
+    let prop_bindings = extract_slot_prop_bindings(pattern);
+    let prop_names = prop_bindings.iter().map(|(name, _)| name.clone()).collect();
+    let prop_offsets = slot_prop_declaration_offsets(value.loc.start.offset, &prop_bindings);
     let slot_name = el
         .props
         .iter()
@@ -170,10 +176,22 @@ fn legacy_slot_scope(el: &ElementNode<'_>) -> Option<super::scopes::SlotScopeInf
     Some((
         slot_name,
         true,
-        extract_slot_props(pattern),
+        prop_names,
         Some(CompactString::new(pattern)),
+        prop_offsets,
         value.loc.start.offset,
     ))
+}
+
+fn slot_prop_declaration_offsets(
+    base_offset: u32,
+    prop_bindings: &[(CompactString, u32)],
+) -> SmallVec<[(CompactString, u32); 4]> {
+    let mut offsets = SmallVec::new();
+    for (name, relative) in prop_bindings {
+        offsets.push((name.clone(), base_offset + relative));
+    }
+    offsets
 }
 
 fn expression_content<'a>(exp: &'a ExpressionNode<'_>) -> &'a str {

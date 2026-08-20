@@ -13,6 +13,7 @@ mod component_prop_checker;
 mod component_prop_expressions;
 mod component_prop_navigation;
 mod component_props;
+mod component_slots;
 mod context;
 mod emit;
 mod empty_component_props;

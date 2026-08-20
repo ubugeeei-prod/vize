@@ -17,7 +17,7 @@ pub use identifiers::{
     IdentifierRef, extract_identifier_refs_oxc, extract_identifiers_oxc, strip_js_comments,
 };
 pub use keywords::{is_builtin_directive, is_component_tag, is_keyword};
-pub use slots::{extract_inline_callback_params, extract_slot_props};
+pub use slots::{extract_inline_callback_params, extract_slot_prop_bindings, extract_slot_props};
 pub use v_for::{VForScopeAliases, parse_v_for_expression, parse_v_for_scope_expression};
 pub use v_scope::extract_v_scope_bindings;
 
