@@ -150,6 +150,34 @@ fn run_check_json(project_root: &Path, corsa_path: &Path, target: &str) -> Strin
     stdout.to_string()
 }
 
+fn run_check_json_report(
+    project_root: &Path,
+    corsa_path: &Path,
+    target: &str,
+) -> serde_json::Value {
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "--tsconfig",
+            "tsconfig.json",
+            target,
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    serde_json::from_str(stdout).unwrap_or_else(|error| {
+        panic!(
+            "invalid JSON report: {error}\nstatus: {:?}\nstdout:\n{stdout}\nstderr:\n{}",
+            output.status.code(),
+            std::str::from_utf8(&output.stderr).unwrap_or("<non-utf8 stderr>")
+        )
+    })
+}
+
 #[test]
 fn check_imported_base_interface_props_are_available_in_template_scope() {
     let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
@@ -176,6 +204,56 @@ const props = withDefaults(defineProps<FooProps>(), { orientation: "horizontal" 
     );
 
     run_check_json(&project_root, &corsa_path, "src");
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_define_model_modifier_tuple_types_are_preserved() {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+        return;
+    };
+    let project_root = create_case_with_files(
+        "define-model-modifier-tuples",
+        &[
+            (
+                "src/Clean.vue",
+                r#"<script setup lang="ts">
+const [model, modifiers] = defineModel<string, "trim" | "capitalize">({ required: true });
+
+if (modifiers.trim) {
+  model.value = model.value.trim();
+}
+</script>
+
+<template>
+  <span>{{ model }}</span>
+</template>
+"#,
+            ),
+            (
+                "src/Broken.vue",
+                r#"<script setup lang="ts">
+const [model, modifiers] = defineModel<string, "trim" | "capitalize">({ required: true });
+
+if (modifiers.nope) {
+  model.value = model.value.trim();
+}
+</script>
+"#,
+            ),
+        ],
+    );
+
+    run_check_json(&project_root, &corsa_path, "src/Clean.vue");
+
+    let broken = run_check_json_report(&project_root, &corsa_path, "src/Broken.vue");
+    assert_eq!(broken["errorCount"], serde_json::json!(1), "{broken}");
+    let diagnostics = serde_json::to_string(&broken["files"]).unwrap();
+    assert!(
+        diagnostics.contains("nope") && diagnostics.contains("TS2339"),
+        "expected unknown model modifier diagnostic, got: {diagnostics}"
+    );
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
