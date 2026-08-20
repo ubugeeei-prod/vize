@@ -76,7 +76,7 @@ function __setup() {
   type __VizeEmitListeners<C> = C extends { __vizeEmitProps?: infer __E } ? NonNullable<__E> : {};
   type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void) : (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void;
   type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;
-  type __VizeStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : C extends { new (): { $slots: infer __S } } ? __S : any;
+  type __VizeStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;
   type __VizeRequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
   type __VizeMissingRequiredSlots<__S, __P> = Exclude<__VizeRequiredSlotKeys<__S>, keyof __P>;
   type __VizeRequiredSlots<__S, __P> = __VizeIsAny<__S> extends true ? {} : [keyof __S] extends [never] ? {} : [__VizeMissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: __VizeMissingRequiredSlots<__S, __P> };
