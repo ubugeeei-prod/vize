@@ -256,9 +256,6 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     if !registry.has_rule("vue/no-deprecated-functional-template") {
         registry.register(Box::new(NoDeprecatedFunctionalTemplate));
     }
-    if !registry.has_rule("vue/no-deprecated-slot-attribute") {
-        registry.register(Box::new(NoDeprecatedSlotAttribute));
-    }
     if !registry.has_rule("vue/no-deprecated-slot-scope-attribute") {
         registry.register(Box::new(NoDeprecatedSlotScopeAttribute));
     }

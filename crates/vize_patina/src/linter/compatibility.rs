@@ -10,6 +10,8 @@ impl Linter {
                 .insert(String::from("vue/no-v-for-template-key-on-child"));
             self.disabled_rules
                 .insert(String::from("vue/prefer-props-shorthand"));
+            self.disabled_rules
+                .insert(String::from("vue/no-deprecated-slot-attribute"));
         }
         self
     }

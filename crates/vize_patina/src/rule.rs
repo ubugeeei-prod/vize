@@ -243,7 +243,6 @@ impl RuleRegistry {
     /// without enforcing stronger stylistic or framework-specific conventions.
     pub fn with_happy_path() -> Self {
         let mut registry = Self::with_capacity(Self::HAPPY_PATH_CAPACITY);
-
         // Vue correctness rules.
         registry.register(Box::new(crate::rules::vue::RequireVForKey));
         registry.register(Box::new(crate::rules::vue::ValidVFor));
@@ -283,6 +282,7 @@ impl RuleRegistry {
         registry.register(Box::new(crate::rules::vue::SfcElementOrder));
         registry.register(Box::new(crate::rules::vue::SingleStyleBlock));
         registry.register(Box::new(crate::rules::vue::NoUselessTemplateAttributes));
+        registry.register(Box::new(crate::rules::vue::NoDeprecatedSlotAttribute));
         crate::rules::vue::register_valid_directives(&mut registry);
         registry.register(Box::new(crate::rules::vapor::NoVueLifecycleEvents));
         crate::rules::vue::register_security(&mut registry);
@@ -354,7 +354,6 @@ impl RuleRegistry {
     /// Use this for minimal checking that only catches definite errors.
     pub fn with_essential() -> Self {
         let mut registry = Self::with_capacity(Self::ESSENTIAL_CAPACITY);
-
         // Vue Essential Rules only
         registry.register(Box::new(crate::rules::vue::RequireVForKey));
         registry.register(Box::new(crate::rules::vue::ValidVFor));
@@ -382,6 +381,7 @@ impl RuleRegistry {
         registry.register(Box::new(crate::rules::vue::NoVTextVHtmlOnComponent));
         registry.register(Box::new(crate::rules::vue::RequireComponentIs));
         registry.register(Box::new(crate::rules::vue::NoUselessTemplateAttributes));
+        registry.register(Box::new(crate::rules::vue::NoDeprecatedSlotAttribute));
         crate::rules::vue::register_valid_directives(&mut registry);
         registry.register(Box::new(crate::rules::vue::UseVOnExact));
 

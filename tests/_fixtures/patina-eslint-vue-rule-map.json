@@ -465,7 +465,13 @@
       "status": "mapped",
       "patinaRule": "vue/no-deprecated-slot-attribute",
       "patinaSeverity": "error",
-      "patinaPresets": []
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ]
     },
     "vue/no-deprecated-slot-scope-attribute": {
       "status": "mapped",
