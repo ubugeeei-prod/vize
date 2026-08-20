@@ -5,8 +5,8 @@
 
 use crate::croquis::{ComponentUsage, EventListener, PassedProp, SlotUsage, SpreadProp};
 use crate::drawer::helpers::extract_slot_props;
-use vize_carton::{CompactString, SmallVec, cstr};
-use vize_relief::{ElementNode, ExpressionNode, PropNode, TemplateChildNode};
+use vize_carton::{CompactString, SmallVec, String, cstr};
+use vize_relief::{ElementNode, ExpressionNode, PropNode, SimpleExpressionNode, TemplateChildNode};
 
 use super::super::Drawer;
 
@@ -108,6 +108,18 @@ impl Drawer {
                             end: dir.loc.end.offset,
                             is_dynamic: true,
                         });
+                        if !name_is_dynamic
+                            && let Some(modifiers_value) = model_modifiers_value(&dir.modifiers)
+                        {
+                            usage.props.push(PassedProp {
+                                name: model_modifiers_prop_name(model_name.as_str()),
+                                name_is_dynamic: false,
+                                value: Some(modifiers_value),
+                                start: dir.loc.start.offset,
+                                end: dir.loc.end.offset,
+                                is_dynamic: true,
+                            });
+                        }
 
                         usage.events.push(EventListener {
                             name: cstr!("update:{model_name}"),
@@ -166,6 +178,45 @@ impl Drawer {
             });
         }
     }
+}
+
+fn model_modifiers_prop_name(model_name: &str) -> CompactString {
+    if model_name == "modelValue" {
+        CompactString::const_new("modelModifiers")
+    } else {
+        cstr!("{model_name}Modifiers")
+    }
+}
+
+fn model_modifiers_value(modifiers: &[SimpleExpressionNode<'_>]) -> Option<CompactString> {
+    if modifiers.is_empty() {
+        return None;
+    }
+    let mut value = String::from("{ ");
+    for (idx, modifier) in modifiers.iter().enumerate() {
+        if idx > 0 {
+            value.push_str(", ");
+        }
+        push_ts_string_literal(&mut value, modifier.content.as_str());
+        value.push_str(": true");
+    }
+    value.push_str(" }");
+    Some(value)
+}
+
+fn push_ts_string_literal(out: &mut String, value: &str) {
+    out.push('"');
+    for ch in value.chars() {
+        match ch {
+            '\\' => out.push_str("\\\\"),
+            '"' => out.push_str("\\\""),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            _ => out.push(ch),
+        }
+    }
+    out.push('"');
 }
 
 fn directive_argument(arg: &ExpressionNode<'_>) -> (CompactString, bool) {

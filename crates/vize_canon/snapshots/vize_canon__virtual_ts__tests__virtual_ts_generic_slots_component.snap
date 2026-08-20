@@ -40,7 +40,8 @@ type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
 type __WithDefaultsResult<T, D> = T extends unknown ? Omit<__LooseRequired<T>, keyof D> & { [K in keyof D & keyof T]-?: [D[K]] extends [undefined] ? __LooseRequired<T>[K] : Exclude<__LooseRequired<T>[K], undefined> } : never;
 type __Ref<T> = import('vue').Ref<T>;
 type __VizeModelModifiers<M extends PropertyKey> = Record<M, true | undefined>;
-type __VizeModelRef<T, M extends PropertyKey = string, G = T, S = T> = __Ref<G> & [__VizeModelRef<T, M, G, S>, __VizeModelModifiers<M>];
+type __VizeWritableRef<G, S> = Omit<__Ref<G>, 'value'> & { get value(): G; set value(value: S); };
+type __VizeModelRef<T, M extends PropertyKey = string, G = T, S = T> = __VizeWritableRef<G, S> & [__VizeModelRef<T, M, G, S>, __VizeModelModifiers<M>];
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
 type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
 type __VizeKebabCase<S extends string> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? `${Head}${__VizeKebabCase<Tail>}` : `-${Lowercase<Head>}${__VizeKebabCase<Tail>}` : S;
@@ -115,7 +116,7 @@ function __setup<T extends string = 'a'>() {
     if (value !== undefined) emit("update:value", value);
   }
   
-  // @vize-map: 9753:10080 -> 0:292
+  // @vize-map: 9867:10194 -> 0:292
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

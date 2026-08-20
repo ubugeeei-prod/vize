@@ -2,6 +2,8 @@ use vize_croquis::{Analyzer, AnalyzerOptions};
 
 use crate::virtual_ts::generate_virtual_ts;
 
+mod define_model_modifiers;
+
 #[test]
 fn generic_props_call_merges_static_and_dynamic_class_bindings() {
     let script = r#"import TeacherCard from "./TeacherCard.vue"

@@ -112,6 +112,17 @@ pub fn process_call_expression(
                         .filter(|text| !text.is_empty())
                         .map(CompactString::new)
                 });
+            let modifier_type = call
+                .type_arguments
+                .as_ref()
+                .and_then(|type_params| type_params.params.get(1))
+                .and_then(|ty| {
+                    source
+                        .get(ty.span().start as usize..ty.span().end as usize)
+                        .map(str::trim)
+                        .filter(|text| !text.is_empty())
+                        .map(CompactString::new)
+                });
             let options_arg = if matches!(call.arguments.first(), Some(Argument::StringLiteral(_)))
             {
                 call.arguments.get(1)
@@ -139,6 +150,11 @@ pub fn process_call_expression(
                 declaration.start,
                 declaration.end,
             );
+            if let Some(modifier_type) = modifier_type {
+                result
+                    .macros
+                    .set_model_modifier_type(CompactString::new(model_name), modifier_type);
+            }
         }
 
         MacroKind::WithDefaults => {

@@ -1,8 +1,3 @@
-//! Compiler macro analysis.
-//!
-//! Tracks Vue compiler macros (defineProps, defineEmits, etc.)
-//! and provides a plugin interface for custom macros.
-
 mod tracker;
 
 use vize_carton::{CompactString, FxHashMap};
@@ -373,6 +368,7 @@ pub struct MacroTracker {
     emit_calls: Vec<EmitCall>,
     models: Vec<ModelDefinition>,
     model_declarations: FxHashMap<CompactString, (u32, u32)>,
+    model_modifier_types: FxHashMap<CompactString, CompactString>,
     /// Exposed properties from defineExpose
     exposes: Vec<ExposeDefinition>,
     /// Slots from defineSlots
@@ -535,18 +531,6 @@ impl MacroTracker {
         self.emit_calls
             .iter()
             .filter(move |c| c.event_name.as_str() == event_name)
-    }
-
-    /// Add a model definition
-    #[inline]
-    pub fn add_model(&mut self, model: ModelDefinition) {
-        self.models.push(model);
-    }
-
-    /// Get all models
-    #[inline]
-    pub fn models(&self) -> &[ModelDefinition] {
-        &self.models
     }
 
     /// Add an expose definition
