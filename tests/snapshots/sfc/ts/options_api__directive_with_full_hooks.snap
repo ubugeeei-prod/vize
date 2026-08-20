@@ -26,7 +26,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   
   return _withDirectives((_openBlock(), _createElementBlock("p", null, [
     _createTextVNode("text")
-  ])), [
+  ], 512 /* NEED_PATCH */)), [
     [_directive_color, $data.tint]
   ])
 }

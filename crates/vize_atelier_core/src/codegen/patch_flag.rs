@@ -384,12 +384,12 @@ fn calculate_element_patch_info_inner(
     // normal prop patch flag will already force runtime patching. Vue still
     // combines NEED_PATCH with TEXT and NEED_HYDRATION because neither updates
     // refs/directives on its own.
-    // Custom directives only need NEED_PATCH when the element has no children
-    // (children already cause the element to be tracked for patching by the runtime)
-    let custom_dir_needs_patch = has_custom_directive && el.children.is_empty();
+    // Children being present does not make the owning VNode a directive patch
+    // target. Without NEED_PATCH, a custom directive on an otherwise-static
+    // element never reaches its `beforeUpdate` / `updated` hooks when only the
+    // directive value changes.
     let has_normal_prop_patch_flag = flag & (2 | 4 | 8 | 16) != 0;
-    if (has_vshow || has_vmodel || custom_dir_needs_patch || has_ref) && !has_normal_prop_patch_flag
-    {
+    if (has_vshow || has_vmodel || has_custom_directive || has_ref) && !has_normal_prop_patch_flag {
         flag |= 512; // NEED_PATCH
     }
 
