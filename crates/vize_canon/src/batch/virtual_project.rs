@@ -108,6 +108,13 @@ pub(super) const VUE_MODULE_STUBS_FILE: &str = "__vize_vue_modules.d.ts";
 /// modules are emitted with their preamble hoisted into this file.
 pub(super) const SHARED_HELPERS_FILE: &str = crate::virtual_ts::SHARED_PREAMBLE_FILE_NAME;
 
+/// Ordered owners for one materialized package shadow path.
+///
+/// The first route key is the deterministic winner. Keeping that winner at the
+/// front avoids scanning every importer whenever another route shares a shadow.
+type PackageShadowOwners =
+    std::collections::BTreeMap<crate::package_route::PackageRouteKey, PathBuf>;
+
 /// A virtual file in the project.
 #[derive(Debug)]
 pub struct VirtualFile {
@@ -204,10 +211,8 @@ pub struct VirtualProject {
     package_shadow_manifests: FxHashMap<PathBuf, PathBuf>,
     package_shadow_artifacts:
         FxHashMap<crate::package_route::PackageRouteKey, package_shadow::PackageShadowTopology>,
-    package_shadow_file_owners:
-        FxHashMap<PathBuf, FxHashMap<crate::package_route::PackageRouteKey, PathBuf>>,
-    package_shadow_manifest_owners:
-        FxHashMap<PathBuf, FxHashMap<crate::package_route::PackageRouteKey, PathBuf>>,
+    package_shadow_file_owners: FxHashMap<PathBuf, PackageShadowOwners>,
+    package_shadow_manifest_owners: FxHashMap<PathBuf, PackageShadowOwners>,
     package_shadow_source_paths: FxHashMap<PathBuf, FxHashSet<PathBuf>>,
     package_shadow_dirty_keys: FxHashSet<crate::package_route::PackageRouteKey>,
     package_shadows_initialized: bool,

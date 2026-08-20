@@ -4,8 +4,33 @@ use std::path::PathBuf;
 
 use crate::package_route::PackageRouteKey;
 
-use super::VirtualProject;
 use super::package_shadow::PackageShadowTopology;
+use super::{PackageShadowOwners, VirtualProject};
+
+/// Insert one owner and report whether the deterministic winner changed.
+fn insert_shadow_owner(
+    owners: &mut PackageShadowOwners,
+    key: PackageRouteKey,
+    source: PathBuf,
+) -> bool {
+    let winner_changed = match owners.first_key_value() {
+        None => true,
+        Some((winner_key, winner_source)) => {
+            key < *winner_key || (key == *winner_key && source != *winner_source)
+        }
+    };
+    owners.insert(key, source);
+    winner_changed
+}
+
+/// Remove one owner and report whether it was the deterministic winner.
+fn remove_shadow_owner(owners: &mut PackageShadowOwners, key: &PackageRouteKey) -> bool {
+    let winner_removed = owners
+        .first_key_value()
+        .is_some_and(|(winner_key, _)| winner_key == key);
+    owners.remove(key);
+    winner_removed
+}
 
 impl VirtualProject {
     pub(super) fn install_package_shadow_owner(
@@ -33,18 +58,28 @@ impl VirtualProject {
                 .cloned(),
         );
         for (path, source) in &topology.files {
-            self.package_shadow_file_owners
-                .entry(path.clone())
-                .or_default()
-                .insert(key.clone(), source.clone());
-            self.refresh_shadow_file(path);
+            let winner_changed = insert_shadow_owner(
+                self.package_shadow_file_owners
+                    .entry(path.clone())
+                    .or_default(),
+                key.clone(),
+                source.clone(),
+            );
+            if winner_changed {
+                self.refresh_shadow_file(path);
+            }
         }
         for (path, source) in &topology.manifests {
-            self.package_shadow_manifest_owners
-                .entry(path.clone())
-                .or_default()
-                .insert(key.clone(), source.clone());
-            self.refresh_shadow_manifest(path);
+            let winner_changed = insert_shadow_owner(
+                self.package_shadow_manifest_owners
+                    .entry(path.clone())
+                    .or_default(),
+                key.clone(),
+                source.clone(),
+            );
+            if winner_changed {
+                self.refresh_shadow_manifest(path);
+            }
         }
         for path in new_files.iter().chain(&new_manifests) {
             self.track_materialized_link_path(path);
@@ -66,30 +101,34 @@ impl VirtualProject {
                 .cloned(),
         );
         for path in topology.files.keys() {
-            let empty = self
-                .package_shadow_file_owners
-                .get_mut(path)
-                .is_some_and(|owners| {
-                    owners.remove(key);
-                    owners.is_empty()
-                });
+            let (winner_removed, empty) =
+                self.package_shadow_file_owners
+                    .get_mut(path)
+                    .map_or((false, false), |owners| {
+                        let winner_removed = remove_shadow_owner(owners, key);
+                        (winner_removed, owners.is_empty())
+                    });
             if empty {
                 self.package_shadow_file_owners.remove(path);
             }
-            self.refresh_shadow_file(path);
+            if winner_removed {
+                self.refresh_shadow_file(path);
+            }
         }
         for path in topology.manifests.keys() {
-            let empty = self
-                .package_shadow_manifest_owners
-                .get_mut(path)
-                .is_some_and(|owners| {
-                    owners.remove(key);
-                    owners.is_empty()
-                });
+            let (winner_removed, empty) = self.package_shadow_manifest_owners.get_mut(path).map_or(
+                (false, false),
+                |owners| {
+                    let winner_removed = remove_shadow_owner(owners, key);
+                    (winner_removed, owners.is_empty())
+                },
+            );
             if empty {
                 self.package_shadow_manifest_owners.remove(path);
             }
-            self.refresh_shadow_manifest(path);
+            if winner_removed {
+                self.refresh_shadow_manifest(path);
+            }
         }
         for path in topology.files.keys() {
             if !self.package_shadow_files.contains_key(path) {
@@ -119,7 +158,7 @@ impl VirtualProject {
         match self
             .package_shadow_file_owners
             .get(path)
-            .and_then(|owners| owners.iter().min_by_key(|(key, _)| *key))
+            .and_then(PackageShadowOwners::first_key_value)
         {
             Some((_, source)) => {
                 self.package_shadow_files
@@ -146,7 +185,7 @@ impl VirtualProject {
         match self
             .package_shadow_manifest_owners
             .get(path)
-            .and_then(|owners| owners.iter().min_by_key(|(key, _)| *key))
+            .and_then(PackageShadowOwners::first_key_value)
         {
             Some((_, source)) => {
                 self.package_shadow_manifests
@@ -156,5 +195,76 @@ impl VirtualProject {
                 self.package_shadow_manifests.remove(path);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::path::PathBuf;
+
+    use crate::PackageResolutionMode;
+    use crate::package_route::PackageRouteKey;
+
+    use super::{PackageShadowOwners, insert_shadow_owner, remove_shadow_owner};
+
+    fn route_key(importer: impl Into<PathBuf>) -> PackageRouteKey {
+        PackageRouteKey {
+            importer_path: importer.into(),
+            specifier: "@w/ui".into(),
+            occurrence_mode: PackageResolutionMode::Import,
+        }
+    }
+
+    #[test]
+    fn ascending_fan_out_refreshes_only_the_first_winner() {
+        let mut owners = PackageShadowOwners::default();
+        let refreshes = (0..256)
+            .filter(|index| {
+                insert_shadow_owner(
+                    &mut owners,
+                    route_key(vize_carton::cstr!("/workspace/apps/app{index}/View.vue").as_str()),
+                    PathBuf::from("/workspace/packages/ui/src/index.ts"),
+                )
+            })
+            .count();
+
+        assert_eq!(refreshes, 1);
+        assert_eq!(owners.len(), 256);
+    }
+
+    #[test]
+    fn an_earlier_owner_or_changed_winning_source_refreshes() {
+        let mut owners = PackageShadowOwners::default();
+        let late = route_key("/workspace/apps/z/View.vue");
+        let early = route_key("/workspace/apps/a/View.vue");
+        let first_source = PathBuf::from("/workspace/packages/ui/src/index.ts");
+        let changed_source = PathBuf::from("/workspace/vendor/ui/src/index.ts");
+
+        assert!(insert_shadow_owner(&mut owners, late, first_source.clone()));
+        assert!(insert_shadow_owner(
+            &mut owners,
+            early.clone(),
+            first_source
+        ));
+        assert!(insert_shadow_owner(
+            &mut owners,
+            early.clone(),
+            changed_source.clone()
+        ));
+        assert!(!insert_shadow_owner(&mut owners, early, changed_source));
+    }
+
+    #[test]
+    fn removal_refreshes_only_when_the_winner_is_removed() {
+        let mut owners = PackageShadowOwners::default();
+        let winner = route_key("/workspace/apps/a/View.vue");
+        let other = route_key("/workspace/apps/z/View.vue");
+        let source = PathBuf::from("/workspace/packages/ui/src/index.ts");
+        insert_shadow_owner(&mut owners, winner.clone(), source.clone());
+        insert_shadow_owner(&mut owners, other.clone(), source);
+
+        assert!(!remove_shadow_owner(&mut owners, &other));
+        assert!(remove_shadow_owner(&mut owners, &winner));
+        assert!(owners.is_empty());
     }
 }
