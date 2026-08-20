@@ -6,7 +6,8 @@
 //! the parsed OXC type AST to pass only concrete local boolean keys for generic
 //! setup scopes.
 
-use vize_carton::{String, append};
+use vize_carton::{CompactString, FxHashSet, String, append};
+use vize_croquis::Croquis;
 use vize_relief::RootNode;
 
 use crate::virtual_ts::helpers::{VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED};
@@ -17,8 +18,15 @@ mod template_ref_registry;
 use boolean_keys::{DefinePropsBooleanKeys, collect_define_props_boolean_keys};
 use template_ref_registry::template_ref_registry;
 
+pub(super) struct SetupHelperComponentContext<'a> {
+    pub(super) summary: &'a Croquis,
+    pub(super) options: &'a crate::virtual_ts::types::VirtualTsOptions,
+    pub(super) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
+}
+
 pub(super) fn emit_setup_helpers(
     ts: &mut String,
+    component_context: SetupHelperComponentContext<'_>,
     script_content: Option<&str>,
     generic_param: Option<&str>,
     hoist_shared_preamble: bool,
@@ -27,9 +35,25 @@ pub(super) fn emit_setup_helpers(
     // Static `ref="name"` attributes on plain elements, keyed for
     // `useTemplateRef` (#3896): the registry exists only to retype this
     // scope's shim, so it is collected here rather than by the caller.
-    let registry = template_ref_registry(script_content, template_ast);
-    let template_refs = registry.as_deref();
-    if let Some(registry) = template_refs {
+    let registry = template_ref_registry(
+        component_context.summary,
+        component_context.options,
+        script_content,
+        template_ast,
+        component_context.syntactic_type_only_imported_names,
+    );
+    let template_refs = registry.as_ref().map(|registry| registry.body.as_str());
+    if let Some(registry) = registry.as_ref() {
+        let dom_ref_helper = if registry.includes_dom_element {
+            "  type __VizeDomElement<_Tag extends string, _Svg extends boolean = false> = _Svg extends true ? (_Tag extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_Tag] : Element) : (_Tag extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_Tag] : Element);\n"
+        } else {
+            ""
+        };
+        let component_ref_helper = if registry.includes_component {
+            "  type __VizeTemplateComponentRef<_C> = _C extends abstract new (...args: any[]) => infer _I ? _I : any;\n"
+        } else {
+            ""
+        };
         // `NativeElements` maps tags to their *props* for template checking;
         // a template ref holds the mounted DOM node, so the registry resolves
         // through the DOM tag-name maps instead (#3896).
@@ -43,9 +67,10 @@ pub(super) fn emit_setup_helpers(
         // namespace an SVG interface it cannot have (a custom renderer forces
         // HTML even for SVG tag names). A tag missing from its own map stops at
         // `Element`, which is what a custom element resolves to.
+        let registry_body = registry.body.as_str();
         append!(
             *ts,
-            "  type __VizeDomElement<_Tag extends string, _Svg extends boolean = false> = _Svg extends true ? (_Tag extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_Tag] : Element) : (_Tag extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_Tag] : Element);\n  type __VizeTemplateRefs = {{{registry}}};\n  type __VizeUseTemplateRef = {{ <_K extends string>(_key: _K): Readonly<import('vue').ShallowRef<(_K extends keyof __VizeTemplateRefs ? __VizeTemplateRefs[_K] : any) | null>>; <_T>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; }};\n"
+            "{dom_ref_helper}{component_ref_helper}  type __VizeTemplateRefs = {{{registry_body}}};\n  type __VizeUseTemplateRef = {{ <_K extends string>(_key: _K): Readonly<import('vue').ShallowRef<(_K extends keyof __VizeTemplateRefs ? __VizeTemplateRefs[_K] : any) | null>>; <_T>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; }};\n"
         );
     }
     let shims_start = ts.len();

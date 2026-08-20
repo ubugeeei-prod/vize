@@ -46,7 +46,7 @@ use self::options_api_bridge::generate_options_api_bridge;
 use self::options_api_props_identifiers::PropsConstAssertions;
 use self::options_api_support::find_options_api_props;
 use self::script_blocks::ScriptBlockScopes;
-use self::setup_helpers::emit_setup_helpers;
+use self::setup_helpers::{SetupHelperComponentContext, emit_setup_helpers};
 use self::setup_props::{generate_setup_props, prop_source};
 use self::setup_type_exports::SetupTypeExportsPlan;
 use self::spans::{DEFINE_COMPONENT_REF, rewrite_export_default_for_module_scope, template_usage};
@@ -405,7 +405,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         options_api_props.as_ref(),
         setup_type_exports.exports_public_type("Props"),
     );
-    // Setup scope: function that contains setup helpers and script content
     ts.push_str("// ========== Setup Scope ==========\n");
     let async_prefix = if is_async { "async " } else { "" };
     let generic_params = generic_param.map(|g| cstr!("<{g}>")).unwrap_or_default();
@@ -414,9 +413,13 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         aliases.emit_setup_aliases(&mut ts);
     }
 
-    // Setup helpers (only valid inside setup scope)
     emit_setup_helpers(
         &mut ts,
+        SetupHelperComponentContext {
+            summary,
+            options,
+            syntactic_type_only_imported_names: &syntactic_type_only_imported_names,
+        },
         script_content,
         generic_param,
         hoist_shared_preamble,
@@ -424,7 +427,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     );
     ts.push_str("\n\n");
 
-    // User's script content (minus imports)
     if let Some(script) = script_content {
         profile!("canon.virtual_ts.emit_script_body", {
             ts.push_str("  // User setup code\n");
@@ -443,12 +445,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             let uses_import_meta = self::script_module::emit_import_meta_polyfill(&mut ts, script);
 
             for raw_line in script.split('\n') {
-                // Strip trailing \r for output (normalize CRLF to LF)
                 let line = raw_line.strip_suffix('\r').unwrap_or(raw_line);
-                // raw_line.len() includes \r if present; +1 for the \n from split
                 let raw_byte_len = raw_line.len() + 1;
 
-                // Skip lines that overlap with module-level spans (imports, re-exports, type decls)
                 let line_start = src_byte_offset;
                 let line_end = line_start + raw_line.len(); // use raw length for span check
                 let source_token_start = line_start + line.len() - line.trim_start().len();
@@ -637,9 +636,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 src_byte_offset += raw_byte_len;
             }
             if let Some((_, name)) = pending_class_alias.take() {
-                // Defensive: the line carrying the class body's closing brace
-                // was never seen; still emit the alias so `__default__` (and the
-                // template bindings that read `typeof __default__`) resolve.
+                // Defensive: the class body's closing brace was never seen.
                 append!(ts, "  const __default__ = {name};\n");
             }
             if pending_wrap_close.take().is_some() {
