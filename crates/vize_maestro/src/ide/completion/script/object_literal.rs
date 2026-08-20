@@ -2,11 +2,17 @@
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    BindingPattern, Declaration, Expression, ObjectExpression, ObjectPropertyKind, PropertyKey,
-    Statement, VariableDeclarationKind,
+    AssignmentExpression, BindingPattern, Declaration, Expression, ObjectExpression,
+    ObjectPropertyKind, PropertyKey, SimpleAssignmentTarget, Statement, UnaryExpression,
+    UpdateExpression, VariableDeclarationKind,
+};
+use oxc_ast_visit::{
+    Visit,
+    walk::{walk_assignment_expression, walk_unary_expression, walk_update_expression},
 };
 use oxc_parser::Parser;
-use oxc_span::SourceType;
+use oxc_span::{SourceType, Span};
+use oxc_syntax::operator::UnaryOperator;
 use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, Documentation, MarkupContent, MarkupKind,
 };
@@ -35,7 +41,7 @@ pub(super) fn complete(ctx: &IdeContext, is_setup: bool) -> Option<Vec<Completio
         return None;
     }
 
-    let members = static_object_members(&script, receiver)?;
+    let members = static_object_members(&script, receiver, local_offset as u32)?;
     if members.is_empty() {
         return None;
     }
@@ -69,12 +75,17 @@ fn receiver_resolves_to_top_level(
             .bindings_visible_at(offset)
             .into_iter()
             .find(|(name, _, _)| *name == receiver)
-            .is_none_or(|(_, _, kind)| {
-                matches!(kind, ScopeKind::ScriptSetup | ScopeKind::NonScriptSetup)
+            .is_none_or(|(_, binding, kind)| {
+                binding.declaration_offset <= offset
+                    && matches!(kind, ScopeKind::ScriptSetup | ScopeKind::NonScriptSetup)
             })
 }
 
-fn static_object_members(script: &str, receiver: &str) -> Option<Vec<StaticMember>> {
+fn static_object_members(
+    script: &str,
+    receiver: &str,
+    cursor_offset: u32,
+) -> Option<Vec<StaticMember>> {
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
     if parsed.panicked || !parsed.diagnostics.is_empty() {
@@ -114,10 +125,97 @@ fn static_object_members(script: &str, receiver: &str) -> Option<Vec<StaticMembe
                 return None;
             }
             let object = declarator.init.as_ref().and_then(unwrap_object)?;
-            found = Some(collect_static_members(object)?);
+            found = Some((collect_static_members(object)?, declarator.span.end));
         }
     }
-    found
+    let (members, declaration_end) = found?;
+    // Croquis currently records script bindings in the summary without
+    // duplicating every top-level binding in the scope chain. The declarator
+    // span is therefore the authoritative TDZ guard for that top-level case.
+    if declaration_end > cursor_offset {
+        return None;
+    }
+    let mut mutations = PriorReceiverMutation {
+        receiver,
+        declaration_end,
+        cursor_offset,
+        found: false,
+    };
+    mutations.visit_program(&parsed.program);
+    (!mutations.found).then_some(members)
+}
+
+struct PriorReceiverMutation<'s> {
+    receiver: &'s str,
+    declaration_end: u32,
+    cursor_offset: u32,
+    found: bool,
+}
+
+impl PriorReceiverMutation<'_> {
+    fn is_prior(&self, span: Span) -> bool {
+        span.start >= self.declaration_end && span.start < self.cursor_offset
+    }
+
+    fn targets_receiver(&self, target: &SimpleAssignmentTarget<'_>) -> bool {
+        target_root_reference(target).is_some_and(|name| name == self.receiver)
+    }
+}
+
+impl<'a> Visit<'a> for PriorReceiverMutation<'_> {
+    fn visit_assignment_expression(&mut self, expression: &AssignmentExpression<'a>) {
+        if self.is_prior(expression.span)
+            && expression
+                .left
+                .as_simple_assignment_target()
+                .is_some_and(|target| self.targets_receiver(target))
+        {
+            self.found = true;
+            return;
+        }
+        walk_assignment_expression(self, expression);
+    }
+
+    fn visit_update_expression(&mut self, expression: &UpdateExpression<'a>) {
+        if self.is_prior(expression.span) && self.targets_receiver(&expression.argument) {
+            self.found = true;
+            return;
+        }
+        walk_update_expression(self, expression);
+    }
+
+    fn visit_unary_expression(&mut self, expression: &UnaryExpression<'a>) {
+        if expression.operator == UnaryOperator::Delete
+            && self.is_prior(expression.span)
+            && root_reference(&expression.argument).is_some_and(|name| name == self.receiver)
+        {
+            self.found = true;
+            return;
+        }
+        walk_unary_expression(self, expression);
+    }
+}
+
+fn target_root_reference<'a>(target: &'a SimpleAssignmentTarget<'a>) -> Option<&'a str> {
+    match target {
+        SimpleAssignmentTarget::AssignmentTargetIdentifier(identifier) => {
+            Some(identifier.name.as_str())
+        }
+        other if other.is_member_expression() => {
+            root_reference(other.to_member_expression().object())
+        }
+        other => other.get_expression().and_then(root_reference),
+    }
+}
+
+fn root_reference<'a>(expression: &'a Expression<'a>) -> Option<&'a str> {
+    match expression.get_inner_expression() {
+        Expression::Identifier(identifier) => Some(identifier.name.as_str()),
+        expression if expression.is_member_expression() => {
+            root_reference(expression.to_member_expression().object())
+        }
+        _ => None,
+    }
 }
 
 fn unwrap_object<'a>(expression: &'a Expression<'a>) -> Option<&'a ObjectExpression<'a>> {

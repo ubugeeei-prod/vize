@@ -92,6 +92,61 @@ const chosen = probe.value
 }
 
 #[test]
+fn property_added_before_completion_falls_back_to_type_service() {
+    assert_falls_back(
+        "MutatedStaticObject.vue",
+        r#"<script setup lang="ts">
+const probe = { initial: 1 }
+probe.added = 2
+const chosen = probe.added
+</script>
+"#,
+        "probe.added",
+    );
+}
+
+#[test]
+fn deleted_property_before_completion_falls_back_to_type_service() {
+    assert_falls_back(
+        "DeletedStaticObjectProperty.vue",
+        r#"<script setup lang="ts">
+const probe = { initial: 1, removed: 2 }
+delete probe.removed
+const chosen = probe.initial
+</script>
+"#,
+        "probe.initial",
+    );
+}
+
+#[test]
+fn updated_nested_property_before_completion_falls_back_to_type_service() {
+    assert_falls_back(
+        "UpdatedStaticObjectProperty.vue",
+        r#"<script setup lang="ts">
+const probe = { initial: 1, nested: { count: 2 } }
+probe.nested.count++
+const chosen = probe.initial
+</script>
+"#,
+        "probe.initial",
+    );
+}
+
+#[test]
+fn later_declaration_is_not_visible_in_the_temporal_dead_zone() {
+    assert_falls_back(
+        "StaticObjectTemporalDeadZone.vue",
+        r#"<script setup lang="ts">
+const chosen = probe.value
+const probe = { value: 1 }
+</script>
+"#,
+        "probe.value",
+    );
+}
+
+#[test]
 fn dynamic_computed_key_falls_back_to_type_service() {
     assert_falls_back(
         "DynamicComputedObject.vue",
