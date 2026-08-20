@@ -1,0 +1,27 @@
+---
+source: crates/vize_atelier_sfc/tests/dynamic_slot_setup_binding.rs
+expression: result.code
+---
+import { openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from "vue"
+
+import { ref } from 'vue'
+import Child from './Child.vue'
+
+
+export default {
+  __name: 'anonymous',
+  setup(__props) {
+
+const slotName = ref('header')
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createBlock(Child, null, {
+    [slotName.value]: _withCtx(() => [
+      _createTextVNode("content")
+    ]),
+    _: 2 /* DYNAMIC */
+  }, 1024 /* DYNAMIC_SLOTS */))
+}
+}
+
+}

@@ -18,14 +18,5 @@ const slotName = ref('header')
     let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse SFC");
     let result = compile_sfc(&descriptor, SfcCompileOptions::default()).expect("compile SFC");
 
-    assert!(
-        result.code.contains("[slotName.value]: _withCtx"),
-        "dynamic slot names must resolve script-setup refs like template expressions:\n{}",
-        result.code
-    );
-    assert!(
-        !result.code.contains("[_ctx.slotName]"),
-        "script-setup bindings must not be resolved through the public instance:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!("script_setup_ref_dynamic_slot_name", result.code);
 }
