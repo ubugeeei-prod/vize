@@ -43,8 +43,9 @@ pub use type_checker::{
 };
 pub use virtual_project::{
     BatchTopologyMetrics, CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperDiagnostic,
-    ContentMapperSemanticLink, ContentMapperSpan, ContentMapperTransform,
-    ContentMapperTransformOptions, OriginalPosition, PACKAGE_REACHABILITY_BUDGET_REVISION,
+    ContentMapperDiagnosticDirective, ContentMapperDiagnosticDirectives, ContentMapperSemanticLink,
+    ContentMapperSpan, ContentMapperTransform, ContentMapperTransformOptions,
+    ContentMapperUnusedExpectDiagnostic, OriginalPosition, PACKAGE_REACHABILITY_BUDGET_REVISION,
     PackageRouteReachability, ReachabilityOutcome, ReachabilityWork, TsconfigOwnershipCache,
     TsconfigOwnershipOptions, TsconfigSourceKind, VirtualFile, VirtualProject,
     VueDocumentVirtualTs, VueDocumentVirtualTsOptions, external_mirror_original_path,

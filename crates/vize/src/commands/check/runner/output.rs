@@ -37,7 +37,8 @@ pub(super) fn save_virtual_ts_targets_or_exit<'a, C>(
     C: IntoIterator<Item = (&'a Path, &'a str)>,
 {
     save_virtual_ts_targets(requested_paths, cwd, candidates, quiet).unwrap_or_else(|error| {
-        eprintln!("\x1b[31mError:\x1b[0m {error}");
+        let style = super::text_style::TextStyle::stderr();
+        eprintln!("{} {error}", style.red("Error:"));
         std::process::exit(1);
     });
 }
@@ -58,7 +59,8 @@ pub(super) fn finish_executions(
 ) {
     let exit_code = report_executions(args, cwd, start, collect_time, executions, canonical_paths)
         .unwrap_or_else(|error| {
-            eprintln!("\x1b[31mError:\x1b[0m {error}");
+            let style = super::text_style::TextStyle::stderr();
+            eprintln!("{} {error}", style.red("Error:"));
             1
         });
     // Machine-readable profile export: written after every reporting path
@@ -76,7 +78,8 @@ pub(super) fn exit_after_execution_error(
     executions: Vec<ProgramExecution>,
     error: vize_carton::String,
 ) -> ! {
-    eprintln!("\x1b[31mError:\x1b[0m {error}");
+    let style = super::text_style::TextStyle::stderr();
+    eprintln!("{} {error}", style.red("Error:"));
     drop(executions);
     std::process::exit(1);
 }
@@ -232,27 +235,28 @@ fn print_text(
     check_time: Duration,
     emitted: Option<&DeclarationSummary>,
 ) -> i32 {
+    let style = super::text_style::TextStyle::stdout();
     if !args.quiet {
         for (key, file_diagnostics) in diagnostics {
             if file_diagnostics.is_empty() {
                 continue;
             }
-            println!("\n\x1b[4m{}\x1b[0m", key);
+            println!("\n{}", style.underline(key));
             for diagnostic in file_diagnostics {
-                let color = if diagnostic.starts_with("error") {
-                    "\x1b[31m"
+                let diagnostic = if diagnostic.starts_with("error") {
+                    style.red(diagnostic)
                 } else {
-                    "\x1b[33m"
+                    style.yellow(diagnostic)
                 };
-                println!("  {}{}\x1b[0m", color, diagnostic);
+                println!("  {diagnostic}");
             }
         }
     }
 
     let status = if total_errors > 0 {
-        "\x1b[31m\u{2717}\x1b[0m"
+        style.red("\u{2717}")
     } else {
-        "\x1b[32m\u{2713}\x1b[0m"
+        style.green("\u{2713}")
     };
     if let Some(summary) = emitted {
         println!(
@@ -277,12 +281,12 @@ fn print_text(
         );
     }
     if total_errors > 0 {
-        println!("  \x1b[31m{} error(s)\x1b[0m", total_errors);
+        println!("  {}", style.red(cstr!("{} error(s)", total_errors)));
     } else {
-        println!("  \x1b[32mNo type errors found!\x1b[0m");
+        println!("  {}", style.green("No type errors found!"));
     }
     if total_warnings > 0 {
-        println!("  \x1b[33m{} warning(s)\x1b[0m", total_warnings);
+        println!("  {}", style.yellow(cstr!("{} warning(s)", total_warnings)));
     }
     if let Some(summary) = emitted {
         let destinations = summary
@@ -292,8 +296,8 @@ fn print_text(
             .collect::<Vec<_>>()
             .join(", ");
         println!(
-            "  \x1b[32mEmitted {} declaration file(s)\x1b[0m to {}",
-            summary.files.len(),
+            "  {} to {}",
+            style.green(cstr!("Emitted {} declaration file(s)", summary.files.len())),
             destinations
         );
     }

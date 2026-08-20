@@ -229,8 +229,10 @@ explicit, and keep `vize check` as the supported typecheck path until a native p
 ships the protocol. Vize negotiates protocol v1 with UTF-8 mappings, resolves its mapper options
 and its declared `noUnusedLocals` compiler-option dependency per project through the
 `openProject`/`closeProject` lifecycle (invalid options surface as `optionDiagnostics` in the
-tsconfig), and tags every transform response with the `.tsx` virtual extension so both TypeScript
-and embedded JSX parse correctly.
+tsconfig), maps `<!-- @vue-expect-error -->` and `<!-- @vue-ignore -->` template comments onto
+the protocol's diagnostic directives, and tags every transform response with the `.tsx` virtual
+extension so both TypeScript and embedded JSX parse correctly. See the
+[Content Mapper guide](https://vizejs.dev/guide/content-mapper) for setup and directive semantics.
 
 ## Compiler and Tool Options
 

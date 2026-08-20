@@ -144,6 +144,35 @@ const unused = 2
 }
 
 #[test]
+fn transform_exposes_template_diagnostic_directives() {
+    let source = r#"<script setup lang="ts">
+const count = 1
+</script>
+<template>
+  <!-- @vue-expect-error -->
+  {{ count.bad }}
+</template>
+"#;
+    let input = frames(&[
+        initialize_request(),
+        open_project_request(2, Value::Null, json!({})),
+        transform_request(3, source),
+    ]);
+    let responses = exchange(&input);
+    let directives = &responses[2]["result"]["diagnosticDirectives"];
+
+    assert_eq!(
+        directives["unusedExpectDirectiveDiagnostics"],
+        json!([{ "code": 4, "messageText": "Unused '@vue-expect-error' directive" }]),
+        "{}",
+        responses[2]
+    );
+    let tuple = directives["directives"][0].as_array().unwrap();
+    assert_eq!(tuple.len(), 6, "{}", responses[2]);
+    assert_eq!(tuple[4], 1, "expect policy: {}", responses[2]);
+}
+
+#[test]
 fn transform_exposes_semantic_links() {
     let source = r#"<script setup lang="ts">
 import { ref } from 'vue'

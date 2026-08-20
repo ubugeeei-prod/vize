@@ -1,8 +1,3 @@
-//! Unix socket client path for `vize check`.
-//!
-//! This mode keeps repeated checks fast by sending file contents to an already
-//! running check server and rendering its diagnostics locally.
-
 #![allow(clippy::disallowed_macros)]
 
 use std::{
@@ -22,10 +17,12 @@ use crate::{
     profile_support,
 };
 
-use super::{collect::collect_vue_files, display_path, output::save_virtual_ts_targets_or_exit};
+use super::{
+    collect::collect_vue_files, display_path, output::save_virtual_ts_targets_or_exit,
+    text_style::TextStyle,
+};
 use vize_curator::profile::{ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report};
 
-/// Run type checking via Unix socket connection to check-server.
 pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
     let start = Instant::now();
     args.profile_export.begin(args.profile);
@@ -49,12 +46,14 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
     let mut stream = match UnixStream::connect(socket_path) {
         Ok(stream) => stream,
         Err(error) => {
+            let style = TextStyle::stderr();
             eprintln!(
-                "\x1b[31mError:\x1b[0m Failed to connect to check-server: {}",
+                "{} Failed to connect to check-server: {}",
+                style.red("Error:"),
                 error
             );
             eprintln!();
-            eprintln!("\x1b[33mHint:\x1b[0m Start the server first:");
+            eprintln!("{} Start the server first:", style.yellow("Hint:"));
             eprintln!("  vize check-server --socket {}", socket_path);
             std::process::exit(1);
         }
@@ -227,41 +226,41 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
     }
 
     if !args.quiet {
+        let style = TextStyle::stdout();
         for (filename, result) in &results {
             if result.diagnostics.is_empty() {
                 continue;
             }
-            println!("\n\x1b[4m{}\x1b[0m", filename);
+            println!("\n{}", style.underline(filename));
             for diagnostic in &result.diagnostics {
-                let color = if diagnostic.severity == "error" {
-                    "\x1b[31m"
+                let location = cstr!(
+                    "{}:{}:{}",
+                    diagnostic.severity,
+                    diagnostic.line,
+                    diagnostic.column
+                );
+                let location = if diagnostic.severity == "error" {
+                    style.red(location)
                 } else {
-                    "\x1b[33m"
+                    style.yellow(location)
                 };
                 let code = diagnostic
                     .code
                     .as_ref()
                     .map(|code| cstr!(" [{}]", code))
                     .unwrap_or_default();
-                println!(
-                    "  {}{}:{}:{}\x1b[0m{} {}",
-                    color,
-                    diagnostic.severity,
-                    diagnostic.line,
-                    diagnostic.column,
-                    code,
-                    diagnostic.message
-                );
+                println!("  {}{} {}", location, code, diagnostic.message);
             }
         }
     }
     let render_time = render_start.elapsed();
     let total_time = start.elapsed();
 
+    let style = TextStyle::stdout();
     let status = if total_errors > 0 {
-        "\x1b[31m\u{2717}\x1b[0m"
+        style.red("\u{2717}")
     } else {
-        "\x1b[32m\u{2713}\x1b[0m"
+        style.green("\u{2713}")
     };
     println!(
         "\n{} Type checked {} Vue files in {:.2?} (via socket)",
@@ -331,10 +330,10 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
         print_profile_report(&report);
     }
     if total_errors > 0 {
-        println!("  \x1b[31m{} error(s)\x1b[0m", total_errors);
+        println!("  {}", style.red(cstr!("{} error(s)", total_errors)));
         std::process::exit(1);
     }
-    println!("  \x1b[32mNo type errors found!\x1b[0m");
+    println!("  {}", style.green("No type errors found!"));
 }
 
 #[allow(clippy::disallowed_types)]

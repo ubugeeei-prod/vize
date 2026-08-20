@@ -33,6 +33,7 @@ mod resolve;
 mod socket;
 #[cfg(test)]
 mod tests;
+mod text_style;
 
 use collect::collect_check_files_with_ignores;
 use default_imports::{
@@ -64,6 +65,7 @@ use resolve::{
 use resolve::{find_nearest_tsconfig_dir, resolve_declaration_dir};
 #[cfg(unix)]
 pub(crate) use socket::run_with_socket;
+use text_style::TextStyle;
 
 #[allow(clippy::too_many_arguments)]
 fn collect_roots(
@@ -275,7 +277,8 @@ fn validate_config_arg(args: &CheckArgs) {
         && !args.no_config
         && let Err(error) = crate::config::validate_explicit_config_path(path)
     {
-        eprintln!("\x1b[31mError:\x1b[0m {}", error);
+        let style = TextStyle::stderr();
+        eprintln!("{} {}", style.red("Error:"), error);
         std::process::exit(2);
     }
 }
@@ -283,10 +286,12 @@ fn validate_config_arg(args: &CheckArgs) {
 #[cfg(not(feature = "legacy"))]
 fn warn_for_disabled_legacy(requested: bool) {
     if requested {
+        let style = TextStyle::stderr();
         eprintln!(
-            "\x1b[33mwarning:\x1b[0m a Vue 2 dialect is configured (`typeChecker.legacyVue2` \
+            "{} a Vue 2 dialect is configured (`typeChecker.legacyVue2` \
              or `vue.version` 2/2.7) but this `vize` build has no legacy Vue support; rebuild \
-             with `--features legacy` to enable Vue 2 Options API type checking."
+             with `--features legacy` to enable Vue 2 Options API type checking.",
+            style.yellow("warning:")
         );
     }
 }

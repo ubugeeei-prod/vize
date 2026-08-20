@@ -17,6 +17,7 @@
       "/guide/jsx-babel-compat": "Babel JSX 兼容",
       "/guide/troubleshooting": "故障排除",
       "/guide/cli": "CLI",
+      "/guide/content-mapper": "Content Mapper",
       "/guide/vite-plugin": "Vite 插件",
       "/guide/unplugin": "打包器集成",
       "/guide/wasm": "WASM 绑定",

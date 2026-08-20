@@ -12,6 +12,7 @@ on:
       - "crates/vize/src/commands/content_mapper/**"
       - "crates/vize/src/commands/check/**"
       - "crates/vize/tests/content_mapper_tsgo_cli.rs"
+      - "crates/vize/tests/content_mapper_tsgo_directives.rs"
       - "crates/vize/tests/content_mapper_tsgo_build.rs"
       - "crates/vize/tests/content_mapper_importer_scoped_packages.rs"
       - "crates/vize/tests/check_*package*.rs"
@@ -57,6 +58,7 @@ on:
       - "crates/vize/src/commands/content_mapper/**"
       - "crates/vize/src/commands/check/**"
       - "crates/vize/tests/content_mapper_tsgo_cli.rs"
+      - "crates/vize/tests/content_mapper_tsgo_directives.rs"
       - "crates/vize/tests/content_mapper_tsgo_build.rs"
       - "crates/vize/tests/content_mapper_importer_scoped_packages.rs"
       - "crates/vize/tests/check_*package*.rs"
@@ -182,6 +184,7 @@ jobs:
           VIZE_TEST_CONTENT_MAPPER_VUE: ${{ github.workspace }}/npm/cli/node_modules/vue
         run: |
           cargo test -p vize --test content_mapper_tsgo_cli -- --nocapture
+          cargo test -p vize --test content_mapper_tsgo_directives -- --nocapture
           cargo test -p vize --test content_mapper_tsgo_build -- --nocapture
           cargo test -p vize --test content_mapper_importer_scoped_packages -- --nocapture
       - name: Run importer-scoped package resolution matrix

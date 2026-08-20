@@ -19,9 +19,14 @@ use alias::{is_alias_projection, is_synthetic_content_mapper_identifier};
 mod protocol;
 use protocol::protocol_semantic_links;
 pub use protocol::{
-    CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperDiagnostic, ContentMapperSemanticLink,
-    ContentMapperSpan, ContentMapperTransform,
+    CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperDiagnostic, ContentMapperDiagnosticDirective,
+    ContentMapperDiagnosticDirectives, ContentMapperSemanticLink, ContentMapperSpan,
+    ContentMapperTransform, ContentMapperUnusedExpectDiagnostic,
 };
+
+#[path = "content_mapper_directives.rs"]
+mod directives;
+use directives::template_diagnostic_directives;
 
 use super::build::{
     descriptor_uses_jsx_script, prepend_vue_jsx_reference, virtual_ts_options_for_descriptor,
@@ -122,6 +127,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
                 extension: CONTENT_MAPPER_VIRTUAL_EXTENSION,
                 mappings: Vec::new(),
                 semantic_links: Vec::new(),
+                diagnostic_directives: None,
                 diagnostics: vec![sfc_parse_diagnostic(content, &error)],
             });
         }
@@ -160,9 +166,15 @@ pub fn generate_vue_content_mapper_transform_with_options(
         prepend_vue_jsx_reference(&mut code, &mut mappings, &mut semantic_links);
     }
 
+    let spans = protocol_spans(content, &code, &mappings);
     Ok(ContentMapperTransform {
         extension: CONTENT_MAPPER_VIRTUAL_EXTENSION,
-        mappings: protocol_spans(content, &code, &mappings),
+        diagnostic_directives: template_diagnostic_directives(
+            content,
+            descriptor.template.as_ref(),
+            &spans,
+        ),
+        mappings: spans,
         semantic_links: protocol_semantic_links(&semantic_links),
         diagnostics: diagnostics
             .iter()
@@ -331,3 +343,7 @@ fn ranges_overlap(left: &Range<usize>, right: &Range<usize>) -> bool {
 #[cfg(test)]
 #[path = "content_mapper_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "content_mapper_directive_tests.rs"]
+mod directive_tests;

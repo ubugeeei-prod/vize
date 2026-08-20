@@ -66,7 +66,8 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     });
     let corsa_servers = args.servers.or(config.type_checker.servers);
     if let Err(error) = validate_corsa_server_count(corsa_servers) {
-        eprintln!("\x1b[31mError:\x1b[0m {}", error);
+        let style = super::text_style::TextStyle::stderr();
+        eprintln!("{} {}", style.red("Error:"), error);
         std::process::exit(2);
     }
 
