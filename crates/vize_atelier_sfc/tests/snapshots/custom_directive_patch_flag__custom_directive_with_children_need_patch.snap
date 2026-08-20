@@ -1,0 +1,27 @@
+---
+source: crates/vize_atelier_sfc/tests/custom_directive_patch_flag.rs
+expression: code
+---
+import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock, createTextVNode as _createTextVNode } from "vue"
+
+import { ref } from 'vue'
+
+
+export default {
+  __name: 'anonymous',
+  setup(__props) {
+
+const value = ref('first')
+
+return (_ctx, _cache) => {
+  const _directive_track = _resolveDirective("track")
+
+  return _withDirectives((_openBlock(), _createElementBlock("div", null, [
+    _createTextVNode("content")
+  ], 512 /* NEED_PATCH */)), [
+    [_directive_track, value.value]
+  ])
+}
+}
+
+}

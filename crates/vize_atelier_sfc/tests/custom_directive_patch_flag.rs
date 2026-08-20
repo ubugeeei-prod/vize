@@ -20,18 +20,7 @@ const value = ref('first')
 </template>"#,
     );
 
-    assert!(
-        code.contains(r#"const _directive_track = _resolveDirective("track")"#),
-        "custom directive must remain registered:\n{code}"
-    );
-    assert!(
-        code.contains("512 /* NEED_PATCH */"),
-        "custom directive vnode must be revisited when its value changes:\n{code}"
-    );
-    assert!(
-        code.contains("[_directive_track, value.value]"),
-        "custom directive must receive the current setup-ref value:\n{code}"
-    );
+    insta::assert_snapshot!("custom_directive_with_children_need_patch", code);
 }
 
 #[test]
@@ -47,20 +36,5 @@ const visible = ref(true)
 </template>"#,
     );
 
-    assert!(
-        code.contains("vShow as _vShow"),
-        "v-show must keep using the built-in runtime helper:\n{code}"
-    );
-    assert!(
-        code.contains("[_vShow, visible.value]"),
-        "v-show must receive the current setup-ref value:\n{code}"
-    );
-    assert!(
-        code.contains("512 /* NEED_PATCH */"),
-        "v-show vnode must remain patchable:\n{code}"
-    );
-    assert!(
-        !code.contains("_resolveDirective(\"show\")"),
-        "v-show must not be treated as a custom directive:\n{code}"
-    );
+    insta::assert_snapshot!("built_in_v_show_with_children_runtime_path", code);
 }

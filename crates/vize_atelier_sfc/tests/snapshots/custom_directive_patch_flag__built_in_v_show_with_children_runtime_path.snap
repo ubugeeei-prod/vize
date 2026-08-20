@@ -1,0 +1,23 @@
+---
+source: crates/vize_atelier_sfc/tests/custom_directive_patch_flag.rs
+expression: code
+---
+import { withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock, vShow as _vShow } from "vue"
+
+import { ref } from 'vue'
+
+
+export default {
+  __name: 'anonymous',
+  setup(__props) {
+
+const visible = ref(true)
+
+return (_ctx, _cache) => {
+  return _withDirectives((_openBlock(), _createElementBlock("div", null, "content", 512 /* NEED_PATCH */)), [
+    [_vShow, visible.value]
+  ])
+}
+}
+
+}
