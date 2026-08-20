@@ -32,7 +32,7 @@ impl Drawer {
         let component_usage_name = if is_component {
             Some(CompactString::new(tag))
         } else {
-            second_pass::dynamic_component_target(el, tag)
+            self.dynamic_component_target(el, tag)
         };
 
         if self.options.track_usage {

@@ -137,6 +137,30 @@ function __setup() {
     // @vize-map: handler -> 397:412
   })({} as PointerEvent);
 
+  // Component props type declarations
+  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
+  type __VizeEmitListeners<C> = C extends { __vizeEmitProps?: infer __E } ? NonNullable<__E> : {};
+  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void) : (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void;
+  type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;
+  // @vize-map: component -> 330:364
+  type __currentComponent_Props_0 = typeof currentComponent extends { __vizeCheck: any } ? Record<string, unknown> : (typeof currentComponent extends { readonly __vizeRawProps?: infer __P } ? __P : (typeof currentComponent extends { new (): { readonly __vizeRawProps?: infer __P } } ? __P : (typeof currentComponent extends { new (): { $props: infer __P } } ? __P : (typeof currentComponent extends (props: infer __P) => any ? __P : {}))));
+  type __currentComponent_CheckProps_0 = __currentComponent_Props_0 & __VizeEmitListeners<typeof currentComponent>;
+  type __currentComponent_Check_0 = __VizePropChecker<typeof currentComponent, __currentComponent_CheckProps_0>;
+
+  // Component template navigation references
+  void currentComponent;
+
+  // Component props value checks (template scope)
+  void [
+    () => {
+      (undefined as unknown as __currentComponent_Check_0)({
+      });
+    },
+  ];
+
+  // Mark used components as referenced
+  void currentComponent;
+
   // Reference setup bindings (used in template/CSS v-bind)
   void CompA; void CompB; void currentComponent; void markRaw; void ref; void switchComponent;
   })();
