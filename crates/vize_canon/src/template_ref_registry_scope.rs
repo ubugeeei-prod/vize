@@ -37,3 +37,38 @@ const label = 'hi'
         "element helper must stay out with the registry:\n{virtual_ts}"
     );
 }
+
+#[test]
+fn virtual_ts_keeps_native_template_refs_dom_typed_when_setup_binding_has_same_name() {
+    let source = r#"<script setup lang="ts">
+import { useTemplateRef } from "vue";
+
+const canvas = useTemplateRef("canvas");
+const img = useTemplateRef("img");
+</script>
+
+<template>
+  <canvas ref="canvas" />
+  <img ref="img" alt="" />
+</template>"#;
+
+    let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+    let result = type_check_sfc(source, &options);
+    let virtual_ts = result
+        .virtual_ts
+        .expect("type_check_sfc must produce virtual TypeScript");
+
+    assert!(
+        virtual_ts.contains(r#""canvas": __VizeDomElement<"canvas">;"#),
+        "canvas ref must stay typed as a native DOM element:\n{virtual_ts}"
+    );
+    assert!(
+        virtual_ts.contains(r#""img": __VizeDomElement<"img">;"#),
+        "img ref must stay typed as a native DOM element:\n{virtual_ts}"
+    );
+    assert!(
+        !virtual_ts.contains("__VizeTemplateComponentRef<typeof canvas>")
+            && !virtual_ts.contains("__VizeTemplateComponentRef<typeof img>"),
+        "same-named setup bindings must not turn native tags into component refs:\n{virtual_ts}"
+    );
+}

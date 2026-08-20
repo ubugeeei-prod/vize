@@ -105,6 +105,23 @@ fn component_refs_register_the_component_public_instance() {
 }
 
 #[test]
+fn native_element_refs_do_not_become_component_refs_from_same_named_setup_bindings() {
+    let mut summary = Croquis::default();
+    summary.bindings.add("canvas", BindingType::SetupConst);
+    summary.bindings.add("img", BindingType::SetupConst);
+    assert_eq!(
+        registry_with_summary(
+            "import { useTemplateRef } from 'vue';\nconst canvas = useTemplateRef('canvas');\nconst img = useTemplateRef('img');",
+            r#"<canvas ref="canvas" /><img ref="img" />"#,
+            &summary,
+        )
+        .map(|registry| registry.body)
+        .as_deref(),
+        Some(r#" "canvas": __VizeDomElement<"canvas">; "img": __VizeDomElement<"img">; "#)
+    );
+}
+
+#[test]
 fn component_refs_record_component_helper_without_guessing_from_registry_text() {
     let mut summary = Croquis::default();
     summary.bindings.add("Child", BindingType::SetupConst);

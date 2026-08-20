@@ -9,7 +9,7 @@
 //! reported for dynamic `:ref` bindings or refs declared inside `v-for` (where
 //! the runtime value is an array).
 
-use vize_carton::{FxHashSet, String, append, camelize, capitalize};
+use vize_carton::{FxHashSet, String, append, camelize, capitalize, is_native_tag};
 use vize_croquis::Croquis;
 use vize_relief::{ElementNode, ElementType, Namespace, PropNode, RootNode, TemplateChildNode};
 
@@ -255,6 +255,9 @@ fn component_ref_kind_for_element_tag(
     syntactic_type_only_imported_names: &FxHashSet<vize_carton::CompactString>,
     tag: &str,
 ) -> Option<RegisteredRefKind> {
+    if is_native_tag(tag) {
+        return None;
+    }
     if !has_component_binding_candidate(summary, options, syntactic_type_only_imported_names, tag) {
         return None;
     }

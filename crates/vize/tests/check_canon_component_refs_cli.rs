@@ -249,3 +249,36 @@ child.value?.hide();
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn check_native_template_refs_named_like_setup_bindings_stay_dom_refs() {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+        return;
+    };
+    let project_root = create_case_with_files(
+        "native-template-ref-same-name",
+        &[(
+            "src/NativeRefs.vue",
+            r#"<script setup lang="ts">
+import { useTemplateRef } from "vue";
+
+const canvas = useTemplateRef("canvas");
+const img = useTemplateRef("img");
+
+canvas.value?.getContext("2d");
+img.value?.decode();
+</script>
+
+<template>
+  <canvas ref="canvas" />
+  <img ref="img" alt="" />
+</template>
+"#,
+        )],
+    );
+
+    let report = run_check_json_report(&project_root, &corsa_path, "src");
+    assert_eq!(report["errorCount"], serde_json::json!(0), "{report}");
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
