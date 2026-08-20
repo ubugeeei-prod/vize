@@ -49,7 +49,7 @@ enum Commands {
     #[cfg(unix)]
     CheckServer(crate::commands::check_server::CheckServerArgs),
 
-    /// Start the experimental TypeScript content-mapper protocol server
+    /// Start the TypeScript content-mapper protocol server
     ContentMapper(crate::commands::content_mapper::ContentMapperArgs),
 
     /// Start component gallery server

@@ -1,4 +1,10 @@
 //! TypeScript content-mapper protocol server.
+//!
+//! Speaks protocol v1 as merged upstream in microsoft/typescript-go#4712:
+//! `initialize` negotiates the position encoding, `openProject` and
+//! `closeProject` bracket each TypeScript project's mapper options and
+//! compiler options, and `transform` projects one Vue SFC into virtual
+//! TypeScript for an opened project handle.
 
 use std::io::{self, BufRead, BufReader, BufWriter, Write};
 use std::path::Path;
@@ -10,6 +16,10 @@ use vize_canon::{
     ContentMapperTransformOptions, generate_vue_content_mapper_transform_with_options,
 };
 use vize_carton::{String as CompactString, cstr};
+
+#[path = "content_mapper/project.rs"]
+mod project;
+use project::{CloseProjectParams, OpenProjectParams, ProjectRegistry, resolve_open_project};
 
 const PROTOCOL_VERSION: u8 = 1;
 const MAX_MESSAGE_BYTES: usize = 64 * 1024 * 1024;
@@ -52,40 +62,12 @@ struct InitializeParams {
 struct TransformParams {
     file_name: CompactString,
     content: CompactString,
-    #[serde(default)]
-    options: Option<TransformOptions>,
-    #[serde(default)]
-    compiler_options: CompilerOptions,
-}
-
-#[derive(Default, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct CompilerOptions {
-    #[serde(default)]
-    no_unused_locals: bool,
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct TransformOptions {
-    #[serde(default = "default_options_api")]
-    options_api: bool,
-}
-
-impl Default for TransformOptions {
-    fn default() -> Self {
-        Self {
-            options_api: default_options_api(),
-        }
-    }
-}
-
-const fn default_options_api() -> bool {
-    true
+    project_handle: CompactString,
 }
 
 fn serve<R: BufRead, W: Write>(reader: &mut R, writer: &mut W) -> io::Result<()> {
     let mut initialized = false;
+    let mut projects = ProjectRegistry::default();
     while let Some(body) = read_frame(reader)? {
         let request = match serde_json::from_slice::<Request>(&body) {
             Ok(request) => request,
@@ -140,8 +122,33 @@ fn serve<R: BufRead, W: Write>(reader: &mut R, writer: &mut W) -> io::Result<()>
                     }),
                 )?;
             }
-            "transform" if !initialized => {
+            "openProject" | "closeProject" | "transform" if !initialized => {
                 write_error(writer, id, -32002, "Content mapper is not initialized")?;
+            }
+            "openProject" => {
+                let params = match serde_json::from_value::<OpenProjectParams>(request.params) {
+                    Ok(params) => params,
+                    Err(error) => {
+                        let message = cstr!("Invalid openProject params: {error}");
+                        write_error(writer, id, -32602, &message)?;
+                        continue;
+                    }
+                };
+                let (settings, result) = resolve_open_project(&params);
+                projects.open(params.project_handle, settings);
+                write_result(writer, id, result)?;
+            }
+            "closeProject" => {
+                let params = match serde_json::from_value::<CloseProjectParams>(request.params) {
+                    Ok(params) => params,
+                    Err(error) => {
+                        let message = cstr!("Invalid closeProject params: {error}");
+                        write_error(writer, id, -32602, &message)?;
+                        continue;
+                    }
+                };
+                projects.close(params.project_handle.as_str());
+                write_result(writer, id, Value::Null)?;
             }
             "transform" => {
                 let params = match serde_json::from_value::<TransformParams>(request.params) {
@@ -152,10 +159,15 @@ fn serve<R: BufRead, W: Write>(reader: &mut R, writer: &mut W) -> io::Result<()>
                         continue;
                     }
                 };
-                let options = params.options.unwrap_or_default();
+                let Some(settings) = projects.settings(params.project_handle.as_str()) else {
+                    let message =
+                        cstr!("Unknown content mapper project: {}", params.project_handle);
+                    write_error(writer, id, -32602, &message)?;
+                    continue;
+                };
                 let transform_options = ContentMapperTransformOptions::default()
-                    .with_options_api(options.options_api)
-                    .with_preserve_unused_diagnostics(params.compiler_options.no_unused_locals);
+                    .with_options_api(settings.options_api)
+                    .with_preserve_unused_diagnostics(settings.no_unused_locals);
                 match generate_vue_content_mapper_transform_with_options(
                     Path::new(params.file_name.as_str()),
                     params.content.as_str(),
@@ -252,5 +264,13 @@ fn write_frame<W: Write>(writer: &mut W, value: &Value) -> io::Result<()> {
 }
 
 #[cfg(test)]
+#[path = "content_mapper/test_support.rs"]
+mod test_support;
+
+#[cfg(test)]
 #[path = "content_mapper/tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "content_mapper/project_tests.rs"]
+mod project_tests;

@@ -16,7 +16,7 @@ Commands:
   doctor          Analyze whole-application health
   clean           Remove Vize-generated cache artifacts
   check-server    Start type check JSON-RPC server (Unix only)
-  content-mapper  Start the experimental TypeScript content-mapper protocol server
+  content-mapper  Start the TypeScript content-mapper protocol server
   musea           Start component gallery server
   lsp             Start Language Server Protocol server [alias: maestro]
   ide             IDE integration - LSP server and editor extension management

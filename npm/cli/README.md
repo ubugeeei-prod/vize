@@ -193,14 +193,15 @@ Use the Rust CLI when you need Corsa project diagnostics across Vue, TS, TSX, an
 
 `vize ready` runs `fmt --write`, `lint`, `check`, and `build` in that order.
 
-## Experimental TypeScript Content Mapper
+## TypeScript Content Mapper
 
 The TypeScript 7.1
 [API roadmap](https://github.com/microsoft/typescript-go/issues/4830) identifies Content Mappers as
 the TS Server plugin replacement needed by Vue. Vize publishes the package metadata and protocol
-server proposed by [microsoft/typescript-go#4712](https://github.com/microsoft/typescript-go/pull/4712),
-letting a compatible `tsgo` build transform `.vue` files directly instead of materializing a
-parallel `.vue.ts` project.
+server merged upstream in
+[microsoft/typescript-go#4712](https://github.com/microsoft/typescript-go/pull/4712),
+letting a `tsgo` build with content-mapper support transform `.vue` files directly instead of
+materializing a parallel `.vue.ts` project.
 
 ```json
 {
@@ -222,12 +223,14 @@ parallel `.vue.ts` project.
 tsgo --runExternalCode --noEmit -p tsconfig.json
 ```
 
-The content-mapper API is not in a released TypeScript native preview yet. Use the exact PR build
-while evaluating it, keep `--runExternalCode` explicit, and keep `vize check` as the supported
-typecheck path until TypeScript ships the protocol. Vize currently negotiates protocol v1 with
-UTF-8 mappings, declares its `noUnusedLocals` compiler-option dependency under the
-`typescript.contentMapper` manifest key, and tags every transform response with the `.tsx` virtual
-extension so both TypeScript and embedded JSX parse correctly.
+Content Mappers are merged on the `typescript-go` main branch but are not in a released TypeScript
+native preview yet. Use a `tsgo` built from main while evaluating them, keep `--runExternalCode`
+explicit, and keep `vize check` as the supported typecheck path until a native preview release
+ships the protocol. Vize negotiates protocol v1 with UTF-8 mappings, resolves its mapper options
+and its declared `noUnusedLocals` compiler-option dependency per project through the
+`openProject`/`closeProject` lifecycle (invalid options surface as `optionDiagnostics` in the
+tsconfig), and tags every transform response with the `.tsx` virtual extension so both TypeScript
+and embedded JSX parse correctly.
 
 ## Compiler and Tool Options
 

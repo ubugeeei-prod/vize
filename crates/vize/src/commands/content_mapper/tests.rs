@@ -1,9 +1,8 @@
-use std::io::{BufReader, Cursor};
-
 use serde_json::{Value, json};
-use vize_carton::cstr;
 
-use super::serve;
+use super::test_support::{
+    exchange, frames, initialize_request, open_project_request, transform_request,
+};
 
 #[test]
 fn negotiates_utf8_and_transforms_vue_sfc() {
@@ -18,31 +17,27 @@ fn negotiates_utf8_and_transforms_vue_sfc() {
                 "locale": "en-US"
             }
         }),
-        json!({
-            "jsonrpc": "2.0",
-            "id": 2,
-            "method": "transform",
-            "params": {
-                "fileName": "/project/App.vue",
-                "content": "<script setup lang=\"ts\">\nconst count = 1\n</script>\n<template>{{ count }}</template>\n",
-                "compilerOptions": {}
-            }
-        }),
+        open_project_request(2, Value::Null, json!({})),
+        transform_request(
+            3,
+            "<script setup lang=\"ts\">\nconst count = 1\n</script>\n<template>{{ count }}</template>\n",
+        ),
     ]);
     let responses = exchange(&input);
 
     assert_eq!(responses[0]["result"]["protocolVersion"], 1);
     assert_eq!(responses[0]["result"]["positionEncoding"], "utf-8");
     assert_eq!(responses[0]["result"]["diagnosticSource"], "vize");
-    assert!(responses[1]["result"].get("scriptKind").is_none());
+    assert!(responses[2]["result"].get("scriptKind").is_none());
+    assert_eq!(responses[2]["result"]["extension"], ".tsx");
     assert!(
-        responses[1]["result"]["text"]
+        responses[2]["result"]["text"]
             .as_str()
             .unwrap()
             .contains("const count = 1")
     );
     assert!(
-        !responses[1]["result"]["mappings"]
+        !responses[2]["result"]["mappings"]
             .as_array()
             .unwrap()
             .is_empty()
@@ -53,22 +48,14 @@ fn negotiates_utf8_and_transforms_vue_sfc() {
 fn parse_errors_are_successful_transform_results() {
     let input = frames(&[
         initialize_request(),
-        json!({
-            "jsonrpc": "2.0",
-            "id": 2,
-            "method": "transform",
-            "params": {
-                "fileName": "Broken.vue",
-                "content": "<template><div></template>",
-                "compilerOptions": {}
-            }
-        }),
+        open_project_request(2, Value::Null, json!({})),
+        transform_request(3, "<template><div></template>"),
     ]);
     let responses = exchange(&input);
 
-    assert!(responses[1].get("error").is_none());
+    assert!(responses[2].get("error").is_none());
     assert!(
-        !responses[1]["result"]["diagnostics"]
+        !responses[2]["result"]["diagnostics"]
             .as_array()
             .unwrap()
             .is_empty()
@@ -84,7 +71,7 @@ fn rejects_transform_before_initialize() {
         "params": {
             "fileName": "App.vue",
             "content": "<template />",
-            "compilerOptions": {}
+            "projectHandle": "p1"
         }
     })]);
     let responses = exchange(&input);
@@ -94,27 +81,33 @@ fn rejects_transform_before_initialize() {
 }
 
 #[test]
-fn transform_honors_static_options_api_setting() {
+fn transform_honors_options_api_project_option() {
     let source = r#"<script lang="ts">
 export default { data() { return { count: 1 } } }
 </script>
 <template>{{ count }}</template>
 "#;
-    let input = frames(&[
+    let enabled = frames(&[
         initialize_request(),
-        transform_request(2, source, json!({ "optionsApi": true })),
-        transform_request(3, source, json!({ "optionsApi": false })),
+        open_project_request(2, json!({ "optionsApi": true }), json!({})),
+        transform_request(3, source),
     ]);
-    let responses = exchange(&input);
+    let disabled = frames(&[
+        initialize_request(),
+        open_project_request(2, json!({ "optionsApi": false }), json!({})),
+        transform_request(3, source),
+    ]);
+    let enabled_responses = exchange(&enabled);
+    let disabled_responses = exchange(&disabled);
 
     assert!(
-        responses[1]["result"]["text"]
+        enabled_responses[2]["result"]["text"]
             .as_str()
             .unwrap()
             .contains("__VizeOptionsBinding")
     );
     assert!(
-        !responses[2]["result"]["text"]
+        !disabled_responses[2]["result"]["text"]
             .as_str()
             .unwrap()
             .contains("__VizeOptionsBinding")
@@ -129,14 +122,20 @@ const unused = 2
 </script>
 <template>{{ used }}</template>
 "#;
-    let input = frames(&[
+    let preserving = frames(&[
         initialize_request(),
-        transform_request_with_compiler_options(2, source, json!({ "noUnusedLocals": true })),
-        transform_request_with_compiler_options(3, source, json!({ "noUnusedLocals": false })),
+        open_project_request(2, Value::Null, json!({ "noUnusedLocals": true })),
+        transform_request(3, source),
     ]);
-    let responses = exchange(&input);
-    let preserving = responses[1]["result"]["text"].as_str().unwrap();
-    let suppressing = responses[2]["result"]["text"].as_str().unwrap();
+    let suppressing = frames(&[
+        initialize_request(),
+        open_project_request(2, Value::Null, json!({ "noUnusedLocals": false })),
+        transform_request(3, source),
+    ]);
+    let preserving = exchange(&preserving);
+    let suppressing = exchange(&suppressing);
+    let preserving = preserving[2]["result"]["text"].as_str().unwrap();
+    let suppressing = suppressing[2]["result"]["text"].as_str().unwrap();
 
     assert!(preserving.contains("void used;"), "{preserving}");
     assert!(!preserving.contains("void unused;"), "{preserving}");
@@ -154,17 +153,18 @@ const count = ref(1)
 "#;
     let input = frames(&[
         initialize_request(),
-        transform_request(2, source, Value::Null),
+        open_project_request(2, Value::Null, json!({})),
+        transform_request(3, source),
     ]);
     let responses = exchange(&input);
 
     assert!(
-        !responses[1]["result"]["semanticLinks"]
+        !responses[2]["result"]["semanticLinks"]
             .as_array()
             .unwrap()
             .is_empty(),
         "{}",
-        responses[1]
+        responses[2]
     );
 }
 
@@ -178,131 +178,28 @@ export default { data() { return { count: 1 } } }
     let without_options = json!({
         "jsonrpc": "2.0",
         "id": 2,
-        "method": "transform",
+        "method": "openProject",
         "params": {
-            "fileName": "Options.vue",
-            "content": source,
+            "configFileName": "/project/tsconfig.json",
+            "projectHandle": super::test_support::PROJECT_HANDLE,
             "compilerOptions": {}
         }
     });
-    let input = frames(&[
-        initialize_request(),
+    for open in [
         without_options,
-        transform_request(3, source, Value::Null),
-        transform_request(4, source, json!({})),
-    ]);
-    let responses = exchange(&input);
+        open_project_request(2, Value::Null, json!({})),
+        open_project_request(2, json!({}), json!({})),
+    ] {
+        let input = frames(&[initialize_request(), open, transform_request(3, source)]);
+        let responses = exchange(&input);
 
-    for response in &responses[1..] {
         assert!(
-            response["result"]["text"]
+            responses[2]["result"]["text"]
                 .as_str()
                 .unwrap()
                 .contains("__VizeOptionsBinding"),
-            "expected default-on Options API output: {response}"
+            "expected default-on Options API output: {}",
+            responses[2]
         );
     }
-}
-
-#[test]
-fn rejects_unknown_transform_options() {
-    let input = frames(&[
-        initialize_request(),
-        transform_request(2, "<template />", json!({ "optionApi": true })),
-    ]);
-    let responses = exchange(&input);
-
-    assert_eq!(responses[1]["error"]["code"], -32602);
-    assert!(
-        responses[1]["error"]["message"]
-            .as_str()
-            .unwrap()
-            .contains("unknown field `optionApi`")
-    );
-}
-
-#[test]
-fn rejects_non_object_transform_options() {
-    let input = frames(&[
-        initialize_request(),
-        transform_request(2, "<template />", json!(true)),
-    ]);
-    let responses = exchange(&input);
-
-    assert_eq!(responses[1]["error"]["code"], -32602);
-    assert!(
-        responses[1]["error"]["message"]
-            .as_str()
-            .unwrap()
-            .contains("expected struct TransformOptions")
-    );
-}
-
-fn initialize_request() -> Value {
-    json!({
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "initialize",
-        "params": {
-            "protocolVersion": 1,
-            "positionEncodings": ["utf-8"]
-        }
-    })
-}
-
-fn transform_request(id: u8, content: &str, options: Value) -> Value {
-    json!({
-        "jsonrpc": "2.0",
-        "id": id,
-        "method": "transform",
-        "params": {
-            "fileName": "Options.vue",
-            "content": content,
-            "options": options,
-            "compilerOptions": {}
-        }
-    })
-}
-
-fn transform_request_with_compiler_options(
-    id: u8,
-    content: &str,
-    compiler_options: Value,
-) -> Value {
-    json!({
-        "jsonrpc": "2.0",
-        "id": id,
-        "method": "transform",
-        "params": {
-            "fileName": "Unused.vue",
-            "content": content,
-            "compilerOptions": compiler_options
-        }
-    })
-}
-
-fn frames(values: &[Value]) -> Vec<u8> {
-    let mut bytes = Vec::new();
-    for value in values {
-        let body = serde_json::to_vec(value).unwrap();
-        bytes.extend_from_slice(cstr!("Content-Length: {}\r\n\r\n", body.len()).as_bytes());
-        bytes.extend_from_slice(&body);
-    }
-    bytes
-}
-
-fn exchange(input: &[u8]) -> Vec<Value> {
-    let mut reader = BufReader::new(Cursor::new(input));
-    let mut output = Vec::new();
-    serve(&mut reader, &mut output).unwrap();
-    decode_frames(&output)
-}
-
-fn decode_frames(output: &[u8]) -> Vec<Value> {
-    let mut reader = BufReader::new(Cursor::new(output));
-    let mut values = Vec::new();
-    while let Some(body) = super::read_frame(&mut reader).unwrap() {
-        values.push(serde_json::from_slice(&body).unwrap());
-    }
-    values
 }

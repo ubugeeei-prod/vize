@@ -88,7 +88,7 @@ When invoked without a command, `vize` defaults to `build`.
 | `ready`          | Run `fmt`, `lint`, `check`, and `build`         |
 | `upgrade`        | Update the installed CLI                        |
 | `check-server`   | Start the Unix JSON-RPC typecheck server        |
-| `content-mapper` | Start the experimental TypeScript mapper server |
+| `content-mapper` | Start the TypeScript content-mapper server      |
 | `musea`          | Musea subcommands and scaffolding               |
 | `lsp`            | Start the language server                       |
 | `ide`            | Install or manage editor integrations           |
