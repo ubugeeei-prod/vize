@@ -24,6 +24,15 @@ use core::fmt;
 use vize_carton::String;
 
 pub mod croquis;
+pub mod page;
+pub mod value;
+
+/// `#[derive(Folio)]` - generates the mechanical trio (print / parse /
+/// field order) for an owned document struct; see `vize_davinci_derive`.
+/// Anything semantic (`Display` elision, section meaning) stays
+/// hand-written, so derived pages print the same canonical text in both
+/// modes.
+pub use vize_davinci_derive::Folio;
 
 /// Print mode for a folio page.
 ///

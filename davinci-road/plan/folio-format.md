@@ -4,9 +4,11 @@
 > The "test-mode printer" contract for Davinci folio dumps (P0-10): which
 > text is canonical, what normalization the printer applies, and what
 > `Display` mode elides. The trait lives in
-> `crates/vize_davinci/src/folio.rs`; the only page so far is the croquis
+> `crates/vize_davinci/src/folio.rs`; the hand-written page is the croquis
 > folio (`crates/vize_davinci/src/folio/croquis.rs`), which absorbs the
-> croquis "VIR" dump (`crates/vize_croquis/src/croquis/vir.rs`).
+> croquis "VIR" dump (`crates/vize_croquis/src/croquis/vir.rs`), and since
+> P2-4 `#[derive(Folio)]` generates pages under the "Derived pages"
+> contract below.
 
 ## The contract
 
@@ -65,6 +67,49 @@ the byte-identity law; exit 0 means the file is canonical.
 `[surface.slots]` fallback lines) and the trailing `=` default marker in
 `[surface.props]`. Sections left empty by elision are omitted. Everything
 else prints as in `Full`.
+
+## Derived pages (`#[derive(Folio)]`, P2-4)
+
+The derive generates the **mechanical trio only** — print, parse, field
+order — for an owned document struct; anything semantic stays hand-written,
+which is why `CroquisFolio` keeps its hand impl. One generated grammar for
+every derived type `T`:
+
+- `[page]` header section, where `page` is the kebab-case type name
+  (`BudgetObserver` → `[budget-observer]`). Required, and first.
+- Scalar fields print as `name=value` lines inside the header, in field
+  declaration order. All are required; parse accepts them in any order,
+  each at most once. Values go through `FolioValue`
+  (`crates/vize_davinci/src/folio/value.rs`): `bool`, the integers, and
+  `vize_carton::String` — an unsupported field type is a compile error.
+- A `Vec<T>` field prints as a `[page.field]` section, one entry per line,
+  **order preserved** (order-bearing lists are never sorted, rule 1).
+- An `FxHashMap<K, V>` field prints as a `[page.field]` section of
+  `key=value` lines **sorted by printed key** (lexicographic, byte order —
+  rule 1). Duplicate keys are a parse error.
+- Rules 3–5 apply as written: print always emits declaration order, parse
+  accepts sections in any order (each at most once), empty sections are
+  omitted, every printed section ends with exactly one blank line, LF only,
+  and parse errors carry 1-based line numbers.
+- Rule 2 (stable sequential ids) is **not applicable**: renumbering
+  requires knowing which field is an id, which is a semantic decision the
+  derive refuses to make. A derived type carrying id references needs a
+  hand-written page.
+
+`Display` on a derived page prints the same canonical text as `Full`:
+elision is semantic, so the derive elides nothing — and `Display` carries
+no round-trip law regardless.
+
+**Documented edges (outside the contract, strict where possible):** values
+are line-atomic, so a value embedding `\n` does not round-trip; a map key
+containing `=` splits at the first one; a list entry shaped exactly like
+`[section]` is parsed as a section header and **rejected** (`unknown
+section`) rather than silently misparsed; an empty-string list entry prints
+as a blank line and vanishes on reparse.
+
+The first derived page is `[budget-observer]` (P2-3's counter set), pinned
+by TS-16 in `crates/vize_davinci/tests/folio_derive_laws.rs` and reachable
+from the CLI as `davinci-opt --stage budget-observer`.
 
 ## Croquis folio grammar
 

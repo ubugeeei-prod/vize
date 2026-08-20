@@ -11,6 +11,9 @@ metadata.vize.stability = "experimental"
 
 [dependencies]
 vize_carton = { workspace = true }
+# Proc-macro: a host build dependency (never linked into any target, so the
+# wasm32/no_std claims are untouched) - the approved std edge P2-14 audits.
+vize_davinci_derive = { workspace = true }
 
 [dev-dependencies]
 criterion = { workspace = true }

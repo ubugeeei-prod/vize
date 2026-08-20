@@ -21,6 +21,7 @@ members = [
   "crates/vize_maestro",
   "crates/vize_curator",
   "crates/vize_davinci",
+  "crates/vize_davinci_derive",
   "crates/vize_fresco",
   "crates/vize_marquette",
   "crates/vize_doctor",
@@ -63,6 +64,7 @@ vize_glyph = { path = "crates/vize_glyph" }
 vize_maestro = { path = "crates/vize_maestro" }
 vize_curator = { path = "crates/vize_curator" }
 vize_davinci = { path = "crates/vize_davinci" }
+vize_davinci_derive = { path = "crates/vize_davinci_derive" }
 
 # OXC dependencies (pinned to a specific upstream revision for reproducibility)
 oxc_parser = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
@@ -118,6 +120,11 @@ serde-wasm-bindgen = "=0.6.5"
 js-sys = "=0.3.104"
 web-sys = { version = "=0.3.104", features = ["console"] }
 getrandom = { version = "=0.3.4", features = ["wasm_js"] }
+
+# Proc-macro toolkit (host build dependencies; versions match the lockfile)
+proc-macro2 = "=1.0.106"
+quote = "=1.0.45"
+syn = "=2.0.117"
 
 # Utilities
 thiserror = "=2.0.20"

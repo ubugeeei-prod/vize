@@ -30,6 +30,11 @@
 
 extern crate alloc;
 
+// `#[derive(Folio)]` expands to `::vize_davinci::...` paths so the same
+// expansion works in every consumer; this alias makes those paths resolve
+// inside the crate itself.
+extern crate self as vize_davinci;
+
 pub mod diagnostic;
 pub mod folio;
 pub mod id;
