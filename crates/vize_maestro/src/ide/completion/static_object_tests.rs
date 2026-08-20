@@ -98,10 +98,10 @@ fn property_added_before_completion_falls_back_to_type_service() {
         r#"<script setup lang="ts">
 const probe = { initial: 1 }
 probe.added = 2
-const chosen = probe.added
+const chosen = probe.initial
 </script>
 "#,
-        "probe.added",
+        "probe.initial",
     );
 }
 
@@ -126,6 +126,35 @@ fn updated_nested_property_before_completion_falls_back_to_type_service() {
         r#"<script setup lang="ts">
 const probe = { initial: 1, nested: { count: 2 } }
 probe.nested.count++
+const chosen = probe.initial
+</script>
+"#,
+        "probe.initial",
+    );
+}
+
+#[test]
+fn receiver_alias_before_completion_falls_back_to_type_service() {
+    assert_falls_back(
+        "AliasedStaticObject.vue",
+        r#"<script setup lang="ts">
+const probe = { initial: 1 }
+const alias = probe
+alias.added = 2
+const chosen = probe.initial
+</script>
+"#,
+        "probe.initial",
+    );
+}
+
+#[test]
+fn receiver_call_escape_before_completion_falls_back_to_type_service() {
+    assert_falls_back(
+        "EscapedStaticObject.vue",
+        r#"<script setup lang="ts">
+const probe = { initial: 1 }
+mutate(probe)
 const chosen = probe.initial
 </script>
 "#,
