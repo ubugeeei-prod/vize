@@ -86,8 +86,8 @@ assert.doesNotMatch(
 );
 assert.match(
   readonlyInterfacePropsCompiled.code,
-  /__props\.minScale/,
-  "readonly type props should compile as props access in inline render",
+  /\$props\.minScale/,
+  "readonly type props should compile as props access in module render",
 );
 
 const importedFunctionTypeRoot = fs.mkdtempSync(
@@ -193,7 +193,7 @@ const channel = ref({});
 
 assert.match(
   componentClassCompiled.code,
-  /_createBlock\(Child, \{\s*channel: channel\.value,\s*full: true,\s*class: _normalizeClass\(\$style\.subscribe\)\s*\}, null, 8[\s\S]*\["channel", "class"\]/,
+  /_createBlock\(\$setup\.Child, \{\s*channel: \$setup\.channel,\s*full: true,\s*class: _normalizeClass\(\$setup\.\$style\.subscribe\)\s*\}, null, 8[\s\S]*\["channel", "class"\]/,
   "dynamic component class bindings should be tracked as component props so fallthrough classes apply",
 );
 assert.doesNotMatch(
@@ -223,7 +223,7 @@ assert.doesNotMatch(
 );
 assert.match(
   dynamicArgForCompiled.code,
-  /\[attr \|\| ""\]: maybeRelativeUrl/,
+  /\[attr \|\| ""\]: \$setup\.maybeRelativeUrl/,
   "dynamic v-bind arguments from v-for scope should be emitted as local loop bindings",
 );
 
@@ -625,8 +625,8 @@ const antDesignDomCompiled = compileFile(
 
 assert.match(
   antDesignDomCompiled.code,
-  /(?=[\s\S]*_create(?:Block|VNode)\(_unref\(Form\)\.Item)(?=[\s\S]*_create(?:Block|VNode)\(_unref\(Input\))/,
-  "DOM builds should unref setup component tags while preserving member access",
+  /(?=[\s\S]*_create(?:Block|VNode)\(\$setup\.Form\.Item)(?=[\s\S]*_create(?:Block|VNode)\(\$setup\.Input\))/,
+  "DOM module builds should read setup component tags while preserving member access",
 );
 assert.doesNotMatch(
   antDesignDomCompiled.code,

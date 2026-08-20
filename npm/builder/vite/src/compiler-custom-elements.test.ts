@@ -34,7 +34,7 @@ const customElementPatternCompiled = compileFile(
 
 assert.match(
   customElementPatternCompiled.code,
-  /_createBlock\(_unref\(TresCanvas\)/,
+  /_createBlock\(\$setup\.TresCanvas/,
   "Explicit script setup imports should still win over custom-element patterns",
 );
 assert.match(customElementPatternCompiled.code, /import \{ TresCanvas \}/);
