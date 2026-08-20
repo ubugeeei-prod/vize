@@ -21,7 +21,7 @@ use crate::ide::definition::{helpers, import_resolver::resolve_import_specifier,
 mod alias;
 
 #[cfg(any(test, feature = "native"))]
-pub(super) use alias::unwrap_bound_name_definition;
+pub(super) use alias::normalize_bound_name_definition;
 
 /// Barrels can chain; three hops covers a package barrel re-exporting a
 /// directory barrel re-exporting the module, without risking a cycle walk.
