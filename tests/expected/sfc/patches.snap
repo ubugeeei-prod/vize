@@ -2163,7 +2163,7 @@ return (_ctx, _cache) => {
   const _directive_tooltip = _resolveDirective("tooltip")
 
   return (showHelp.value)
-      ? _withDirectives((_openBlock(), _createElementBlock("button", { key: 0 }, "Help")), [ [_directive_tooltip, helpText.value, void 0, { noDelay: true }] ])
+      ? _withDirectives((_openBlock(), _createElementBlock("button", { key: 0 }, "Help", 512 /* NEED_PATCH */)), [ [_directive_tooltip, helpText.value, void 0, { noDelay: true }] ])
       : _createCommentVNode("v-if", true)
 }
 }

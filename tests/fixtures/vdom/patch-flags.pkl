@@ -106,6 +106,9 @@ cases {
     input = #"<div ref="el">content</div>"#
   }
   new {
+    // Runtime correctness override (#4472): current Vue oracle output omits
+    // NEED_PATCH here, but the directive update hook is skipped without it.
+    // Keep the matching expected snapshot on Vize's stricter output.
     name = "directive on static"
     input = "<div v-focus>content</div>"
   }

@@ -403,6 +403,9 @@ cases {
     """
   }
   new {
+    // Runtime correctness override (#4472): current Vue oracle output omits
+    // NEED_PATCH here, but the directive update hook is skipped without it.
+    // Keep the matching expected snapshot on Vize's stricter output.
     name = "v-if with custom directive on element"
     input = """
     <script setup>
