@@ -2,7 +2,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::BindingPattern;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{CompactString, SmallVec, profile};
+use vize_carton::{CompactString, SmallVec, String, profile};
 
 /// Extract prop names from v-slot expression pattern
 #[inline]
@@ -36,8 +36,7 @@ fn parse_slot_pattern_bindings(pattern: &str) -> SmallVec<[(CompactString, u32);
     const PREFIX: &str = "let ";
     const SUFFIX: &str = " = x";
 
-    let mut pattern_str =
-        std::string::String::with_capacity(PREFIX.len() + pattern.len() + SUFFIX.len());
+    let mut pattern_str = String::with_capacity(PREFIX.len() + pattern.len() + SUFFIX.len());
     pattern_str.push_str(PREFIX);
     pattern_str.push_str(pattern);
     pattern_str.push_str(SUFFIX);

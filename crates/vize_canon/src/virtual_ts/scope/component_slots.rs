@@ -7,8 +7,11 @@ use crate::virtual_ts::expressions::ComponentPropCheckContext;
 use crate::virtual_ts::types::VizeMapping;
 
 pub(super) fn append_component_slot_check_helpers(ts: &mut String) {
+    // `$slots` declarations in third-party component libraries frequently
+    // describe callable slot names, not whether the parent must provide them.
+    // Required-slot checks therefore trust only Vize's own explicit marker.
     ts.push_str(
-        "  type __VizeStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : C extends { new (): { $slots: infer __S } } ? __S : any;\n",
+        "  type __VizeStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;\n",
     );
     ts.push_str(
         "  type __VizeRequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];\n",

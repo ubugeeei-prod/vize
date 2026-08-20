@@ -255,10 +255,15 @@ defineSlots<{
 "#,
             ),
             (
+                "src/LibraryButton.ts",
+                r#"declare const button: { new (): { $props: {}; $slots: { default(props: { label: string }): unknown; icon(): unknown; }; }; }; export default button;"#,
+            ),
+            (
                 "src/Clean.vue",
                 r#"<script setup lang="ts">
 import DefaultSlotChild from "./DefaultSlotChild.vue";
 import HeaderSlotChild from "./HeaderSlotChild.vue";
+import LibraryButton from "./LibraryButton";
 </script>
 
 <template>
@@ -268,6 +273,7 @@ import HeaderSlotChild from "./HeaderSlotChild.vue";
   <HeaderSlotChild>
     <template #header="{ title }">{{ title }}</template>
   </HeaderSlotChild>
+  <LibraryButton />
 </template>
 "#,
             ),
