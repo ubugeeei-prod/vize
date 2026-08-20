@@ -30,6 +30,9 @@
 //! * The Options API `props:` option. Croquis exposes only `defineProps` props
 //!   through `macros.props()`, so that spelling declares nothing here and is out
 //!   of scope.
+//! * A model modifier prop paired with an authored `defineModel`: the default
+//!   model consumes `modelModifiers`, while a named model consumes
+//!   `<name>Modifiers`. Vue reads these props on behalf of the component.
 //! * Names matched by `ignore_pattern`, and any name starting with `_`.
 //!
 //! ## Report location
@@ -190,12 +193,26 @@ impl Rule for NoUnusedProperties {
                 push_identifier_tokens(&plain.content, &mut referenced);
             }
 
+            // Vue consumes the modifier companion prop for each `defineModel`
+            // declaration. Match against the authored model set instead of
+            // suppressing every `*Modifiers` prop, which would hide ordinary
+            // unused declarations with the same suffix.
+            let model_modifier_props: FxHashSet<CompactString> = analysis
+                .macros
+                .models()
+                .iter()
+                .map(|model| vize_carton::get_modifier_prop_name(model.name.as_str()))
+                .collect();
+
             let destructured = analysis.macros.props_destructure();
             props
                 .iter()
                 .filter(|prop| {
                     let name = prop.name.as_str();
-                    if self.should_ignore(name) || referenced.contains(name) {
+                    if self.should_ignore(name)
+                        || referenced.contains(name)
+                        || model_modifier_props.contains(name)
+                    {
                         return false;
                     }
                     // A destructured name is a script binding this does not

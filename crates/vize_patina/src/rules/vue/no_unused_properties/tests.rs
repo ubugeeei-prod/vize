@@ -8,6 +8,7 @@ use crate::rule::{Rule, RuleCategory};
 mod directive_lexer_reports;
 mod directive_lexer_statement_blocks;
 mod directive_lexer_tsx_multiline;
+mod model_modifiers;
 mod reports;
 
 /// Lint a full SFC with only this rule enabled.
