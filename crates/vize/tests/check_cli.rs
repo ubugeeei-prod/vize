@@ -51,7 +51,6 @@ const count: string = 0;
             serde_json::to_string_pretty(&snapshot).unwrap()
         );
     });
-
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
