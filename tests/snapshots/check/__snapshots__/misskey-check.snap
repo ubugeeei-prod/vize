@@ -110,7 +110,12 @@
     },
     {
       "file": "src/analytics.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:74:13 [TS7006] Parameter 'p' implicitly has an 'any' type.",
+        "error:74:16 [TS7006] Parameter 'c' implicitly has an 'any' type.",
+        "error:75:14 [TS7006] Parameter 'p' implicitly has an 'any' type.",
+        "error:75:17 [TS7006] Parameter 'c' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/cache.ts",
@@ -142,11 +147,22 @@
     },
     {
       "file": "src/components/MkAnnouncementDialog.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:68:55 [TS7006] Parameter 'a' implicitly has an 'any' type.",
+        "error:101:45 [TS7006] Parameter 'entries' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkAntennaEditor.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:117:30 [TS7006] Parameter 'list' implicitly has an 'any' type.",
+        "error:127:58 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:128:72 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:154:45 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:155:51 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:156:65 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:186:44 [TS7006] Parameter 'user' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkAntennaEditorDialog.vue",
@@ -242,7 +258,10 @@
     },
     {
       "file": "src/components/MkCropperDialog.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:59:43 [TS7006] Parameter 'res' implicitly has an 'any' type.",
+        "error:70:24 [TS7006] Parameter 'blob' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkCustomEmojiDetailedDialog.vue",
@@ -258,7 +277,9 @@
     },
     {
       "file": "src/components/MkDigitalClock.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:41:19 [TS7006] Parameter 'v' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkDisableSection.vue",
@@ -282,15 +303,55 @@
     },
     {
       "file": "src/components/MkDrive.folder.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:144:30 [TS7006] Parameter 'f' implicitly has an 'any' type.",
+        "error:147:60 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:175:13 [TS7006] Parameter 'err' implicitly has an 'any' type.",
+        "error:219:13 [TS7031] Binding element 'canceled' implicitly has an 'any' type.",
+        "error:219:31 [TS7031] Binding element 'name' implicitly has an 'any' type.",
+        "error:234:34 [TS7031] Binding element 'canceled' implicitly has an 'any' type.",
+        "error:234:44 [TS7031] Binding element 'folders' implicitly has an 'any' type.",
+        "error:258:11 [TS7006] Parameter 'err' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkDrive.navFolder.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:95:30 [TS7006] Parameter 'f' implicitly has an 'any' type.",
+        "error:98:60 [TS7006] Parameter 'x' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkDrive.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:45:43 [TS7006] Parameter 'f' implicitly has an 'any' type.",
+        "error:48:71 [TS7006] Parameter 'f' implicitly has an 'any' type.",
+        "error:74:40 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:106:40 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:128:38 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:289:33 [TS7006] Parameter 'f' implicitly has an 'any' type.",
+        "error:363:30 [TS7006] Parameter 'f' implicitly has an 'any' type.",
+        "error:366:60 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:383:42 [TS7006] Parameter 'f' implicitly has an 'any' type.",
+        "error:393:13 [TS7006] Parameter 'err' implicitly has an 'any' type.",
+        "error:478:11 [TS7006] Parameter 'err' implicitly has an 'any' type.",
+        "error:502:54 [TS7006] Parameter 'f' implicitly has an 'any' type.",
+        "error:506:54 [TS7006] Parameter 'f' implicitly has an 'any' type.",
+        "error:515:54 [TS7006] Parameter 'f' implicitly has an 'any' type.",
+        "error:532:55 [TS7006] Parameter 'f' implicitly has an 'any' type.",
+        "error:535:57 [TS7006] Parameter 'f' implicitly has an 'any' type.",
+        "error:549:55 [TS7006] Parameter 'f' implicitly has an 'any' type.",
+        "error:564:10 [TS7006] Parameter 'folderToMove' implicitly has an 'any' type.",
+        "error:587:36 [TS7006] Parameter 'f' implicitly has an 'any' type.",
+        "error:591:65 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:702:37 [TS7006] Parameter 'file' implicitly has an 'any' type.",
+        "error:708:38 [TS7006] Parameter 'files' implicitly has an 'any' type.",
+        "error:710:39 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:724:38 [TS7006] Parameter 'files' implicitly has an 'any' type.",
+        "error:730:40 [TS7006] Parameter 'folders' implicitly has an 'any' type.",
+        "error:732:41 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:746:40 [TS7006] Parameter 'folders' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkDriveFileSelectDialog.vue",
@@ -370,11 +431,38 @@
     },
     {
       "file": "src/components/MkForm.file.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:47:11 [TS7006] Parameter 'apiRes' implicitly has an 'any' type.",
+        "error:57:17 [TS7006] Parameter 'file' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkForm.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:7:37 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:10:146 [TS7006] Parameter 'changed' implicitly has an 'any' type.",
+        "error:10:155 [TS7006] Parameter 'invalid' implicitly has an 'any' type.",
+        "error:11:111 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:12:60 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:14:172 [TS7006] Parameter 'changed' implicitly has an 'any' type.",
+        "error:14:181 [TS7006] Parameter 'invalid' implicitly has an 'any' type.",
+        "error:15:111 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:16:60 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:18:189 [TS7006] Parameter 'changed' implicitly has an 'any' type.",
+        "error:18:198 [TS7006] Parameter 'invalid' implicitly has an 'any' type.",
+        "error:19:111 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:20:60 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:24:60 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:27:111 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:30:111 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:33:111 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:34:60 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:42:21 [TS7006] Parameter 'f' implicitly has an 'any' type.",
+        "error:43:13 [TS7006] Parameter 'f' implicitly has an 'any' type.",
+        "error:102:17 [TS7006] Parameter 'newCanSave' implicitly has an 'any' type.",
+        "error:107:23 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:117:42 [TS7006] Parameter 'v' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkFormDialog.vue",
@@ -406,11 +494,22 @@
     },
     {
       "file": "src/components/MkImageEffectorDialog.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:99:41 [TS7031] Binding element 'id' implicitly has an 'any' type.",
+        "error:99:45 [TS7031] Binding element 'fx' implicitly has an 'any' type.",
+        "error:105:77 [TS7031] Binding element 'k' implicitly has an 'any' type.",
+        "error:105:80 [TS7031] Binding element 'v' implicitly has an 'any' type.",
+        "error:202:25 [TS7006] Parameter 'blob' implicitly has an 'any' type.",
+        "error:335:40 [TS7006] Parameter 'l' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkImageEffectorFxForm.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:41:108 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:67:19 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:81:15 [TS7006] Parameter 'x' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkImageFrameEditorDialog.vue",
@@ -454,7 +553,12 @@
     },
     {
       "file": "src/components/MkLaunchPad.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:56:49 [TS7006] Parameter 'k' implicitly has an 'any' type.",
+        "error:56:77 [TS7006] Parameter 'k' implicitly has an 'any' type.",
+        "error:56:107 [TS7006] Parameter 'def' implicitly has an 'any' type.",
+        "error:56:154 [TS7006] Parameter 'def' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkLink.vue",
@@ -494,11 +598,20 @@
     },
     {
       "file": "src/components/MkMenu.child.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:66:32 [TS7006] Parameter 'entries' implicitly has an 'any' type.",
+        "error:66:41 [TS7006] Parameter 'observer' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkMenu.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:283:14 [TS7006] Parameter 'actualItem' implicitly has an 'any' type.",
+        "error:320:78 [TS7006] Parameter 'key' implicitly has an 'any' type.",
+        "error:329:6 [TS2578] Unused '@ts-expect-error' directive.",
+        "error:410:50 [TS7006] Parameter 'el' implicitly has an 'any' type.",
+        "error:422:50 [TS7006] Parameter 'el' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkMiniChart.vue",
@@ -554,7 +667,10 @@
     },
     {
       "file": "src/components/MkNotificationSelectWindow.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:57:44 [TS7006] Parameter 'p' implicitly has an 'any' type.",
+        "error:57:47 [TS7006] Parameter 't' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkNumber.vue",
@@ -582,7 +698,12 @@
     },
     {
       "file": "src/components/MkPageWindow.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:94:34 [TS7006] Parameter 'ctx' implicitly has an 'any' type.",
+        "error:98:37 [TS7006] Parameter 'ctx' implicitly has an 'any' type.",
+        "error:103:36 [TS7006] Parameter 'ctx' implicitly has an 'any' type.",
+        "error:116:26 [TS7006] Parameter 'metadataGetter' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkPagination.vue",
@@ -718,7 +839,16 @@
     },
     {
       "file": "src/components/MkRoleSelectDialog.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:83:31 [TS7006] Parameter 'role' implicitly has an 'any' type.",
+        "error:84:10 [TS7006] Parameter 'a' implicitly has an 'any' type.",
+        "error:84:13 [TS7006] Parameter 'b' implicitly has an 'any' type.",
+        "error:97:30 [TS7006] Parameter 'it' implicitly has an 'any' type.",
+        "error:103:11 [TS7006] Parameter 'r' implicitly has an 'any' type.",
+        "error:104:11 [TS7006] Parameter 'r' implicitly has an 'any' type.",
+        "error:105:8 [TS7006] Parameter 'r' implicitly has an 'any' type.",
+        "error:114:55 [TS7006] Parameter 'x' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkSelect.vue",
@@ -794,7 +924,9 @@
     },
     {
       "file": "src/components/MkStreamingNotificationsTimeline.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:118:16 [TS7006] Parameter 'el' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkSubNoteContent.vue",
@@ -806,7 +938,13 @@
     },
     {
       "file": "src/components/MkSwiper.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:67:61 [TS7006] Parameter 'tab' implicitly has an 'any' type.",
+        "error:202:18 [TS7006] Parameter 'newTab' implicitly has an 'any' type.",
+        "error:202:26 [TS7006] Parameter 'oldTab' implicitly has an 'any' type.",
+        "error:203:40 [TS7006] Parameter 'tab' implicitly has an 'any' type.",
+        "error:204:40 [TS7006] Parameter 'tab' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkSwitch.button.vue",
@@ -890,7 +1028,19 @@
     },
     {
       "file": "src/components/MkUploaderDialog.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:26:48 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:26:54 [TS7006] Parameter 'ev' implicitly has an 'any' type.",
+        "error:26:114 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:26:120 [TS7006] Parameter 'ev' implicitly has an 'any' type.",
+        "error:98:49 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:102:32 [TS7006] Parameter 'acc' implicitly has an 'any' type.",
+        "error:102:37 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:117:24 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:118:32 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:165:34 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:165:69 [TS7006] Parameter 'item' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkUploaderItems.vue",
@@ -930,7 +1080,14 @@
     },
     {
       "file": "src/components/MkUserSelectDialog.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:109:10 [TS7006] Parameter '_users' implicitly has an 'any' type.",
+        "error:110:32 [TS7006] Parameter 'u' implicitly has an 'any' type.",
+        "error:132:27 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:145:10 [TS7006] Parameter 'foundUsers' implicitly has an 'any' type.",
+        "error:147:27 [TS7006] Parameter 'u' implicitly has an 'any' type.",
+        "error:154:27 [TS7006] Parameter 'u' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkUserSetupDialog.Follow.vue",
@@ -986,7 +1143,12 @@
     },
     {
       "file": "src/components/MkWidgets.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:21:24 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:68:28 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:74:54 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:94:88 [TS7006] Parameter 'x' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/MkWindow.vue",
@@ -1014,7 +1176,9 @@
     },
     {
       "file": "src/components/global/I18n.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:49:39 [TS7006] Parameter 'x' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/global/MkA.vue",
@@ -1026,7 +1190,15 @@
     },
     {
       "file": "src/components/global/MkAd.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:69:34 [TS7006] Parameter 'ad' implicitly has an 'any' type.",
+        "error:74:46 [TS7006] Parameter 'ad' implicitly has an 'any' type.",
+        "error:77:23 [TS7006] Parameter 'ad' implicitly has an 'any' type.",
+        "error:80:36 [TS7006] Parameter 'ad' implicitly has an 'any' type.",
+        "error:81:19 [TS7006] Parameter 'ad' implicitly has an 'any' type.",
+        "error:91:34 [TS7006] Parameter 'a' implicitly has an 'any' type.",
+        "error:91:37 [TS7006] Parameter 'b' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/global/MkAvatar.vue",
@@ -1034,7 +1206,11 @@
     },
     {
       "file": "src/components/global/MkCondensedLine.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:20:38 [TS7006] Parameter 'entries' implicitly has an 'any' type.",
+        "error:48:17 [TS7006] Parameter 'value' implicitly has an 'any' type.",
+        "error:48:24 [TS7006] Parameter 'oldValue' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/global/MkCustomEmoji.vue",
@@ -1054,7 +1230,10 @@
     },
     {
       "file": "src/components/global/MkLazy.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:20:3 [TS7006] Parameter 'entries' implicitly has an 'any' type.",
+        "error:21:21 [TS7006] Parameter 'entry' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/global/MkLoading.vue",
@@ -1066,7 +1245,12 @@
     },
     {
       "file": "src/components/global/MkPageHeader.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:29:110 [TS7006] Parameter 'key' implicitly has an 'any' type.",
+        "error:38:81 [TS7006] Parameter 'key' implicitly has an 'any' type.",
+        "error:119:28 [TS7006] Parameter 'entries' implicitly has an 'any' type.",
+        "error:119:37 [TS7006] Parameter 'observer' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/global/MkResult.vue",
@@ -1078,7 +1262,10 @@
     },
     {
       "file": "src/components/global/MkSuspense.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:48:16 [TS7006] Parameter '_result' implicitly has an 'any' type.",
+        "error:54:17 [TS7006] Parameter '_error' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/global/MkSystemIcon.vue",
@@ -1102,7 +1289,9 @@
     },
     {
       "file": "src/components/global/NestedRouterView.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:53:33 [TS7031] Binding element 'resolved' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/global/PageWithAnimBg.vue",
@@ -1134,7 +1323,11 @@
     },
     {
       "file": "src/components/global/StackingRouterView.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:83:33 [TS7031] Binding element 'resolved' implicitly has an 'any' type.",
+        "error:90:22 [TS7006] Parameter 'tab' implicitly has an 'any' type.",
+        "error:119:34 [TS7031] Binding element 'fullPath' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/components/grid/MkCellTooltip.vue",
@@ -1254,7 +1447,9 @@
     },
     {
       "file": "src/composables/use-scroll-position-keeper.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:18:29 [TS7006] Parameter 'el' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/composables/use-tooltip.ts",
@@ -1262,7 +1457,29 @@
     },
     {
       "file": "src/composables/use-uploader.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:131:128 [TS7006] Parameter 'p' implicitly has an 'any' type.",
+        "error:195:12 [TS7006] Parameter 'value' implicitly has an 'any' type.",
+        "error:204:13 [TS7006] Parameter 'caption' implicitly has an 'any' type.",
+        "error:239:45 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:257:13 [TS7006] Parameter 'file' implicitly has an 'any' type.",
+        "error:264:47 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:306:13 [TS7006] Parameter 'layers' implicitly has an 'any' type.",
+        "error:322:41 [TS7006] Parameter 'preset' implicitly has an 'any' type.",
+        "error:360:13 [TS7006] Parameter 'params' implicitly has an 'any' type.",
+        "error:376:42 [TS7006] Parameter 'preset' implicitly has an 'any' type.",
+        "error:386:13 [TS7006] Parameter 'params' implicitly has an 'any' type.",
+        "error:510:17 [TS7006] Parameter 'progress' implicitly has an 'any' type.",
+        "error:527:27 [TS7006] Parameter 'file' implicitly has an 'any' type.",
+        "error:531:12 [TS7006] Parameter 'err' implicitly has an 'any' type.",
+        "error:543:33 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:550:41 [TS7006] Parameter 'item' implicitly has an 'any' type.",
+        "error:624:48 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:625:20 [TS7006] Parameter 'blob' implicitly has an 'any' type.",
+        "error:651:48 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:652:20 [TS7006] Parameter 'blob' implicitly has an 'any' type.",
+        "error:731:35 [TS7006] Parameter 'newProgress' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/custom-emojis.ts",
@@ -1350,7 +1567,49 @@
     },
     {
       "file": "src/os.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:111:15 [TS7006] Parameter 'res' implicitly has an 'any' type.",
+        "error:121:11 [TS7006] Parameter 'err' implicitly has an 'any' type.",
+        "error:200:39 [TS7006] Parameter 'p' implicitly has an 'any' type.",
+        "error:251:39 [TS7006] Parameter 'p' implicitly has an 'any' type.",
+        "error:289:21 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:306:21 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:311:10 [TS7006] Parameter 'result' implicitly has an 'any' type.",
+        "error:332:21 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:335:31 [TS7006] Parameter 'a' implicitly has an 'any' type.",
+        "error:344:10 [TS7006] Parameter 'result' implicitly has an 'any' type.",
+        "error:394:21 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:407:10 [TS7006] Parameter 'result' implicitly has an 'any' type.",
+        "error:437:21 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:448:10 [TS7006] Parameter 'result' implicitly has an 'any' type.",
+        "error:462:21 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:472:10 [TS7006] Parameter 'result' implicitly has an 'any' type.",
+        "error:485:21 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:487:10 [TS7006] Parameter 'result' implicitly has an 'any' type.",
+        "error:501:21 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:506:31 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:510:10 [TS7006] Parameter 'result' implicitly has an 'any' type.",
+        "error:519:21 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:567:21 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:569:10 [TS7006] Parameter 'result' implicitly has an 'any' type.",
+        "error:578:21 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:583:8 [TS7006] Parameter 'user' implicitly has an 'any' type.",
+        "error:595:22 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:597:10 [TS7006] Parameter 'roles' implicitly has an 'any' type.",
+        "error:609:21 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:614:10 [TS7006] Parameter 'emoji' implicitly has an 'any' type.",
+        "error:625:21 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:630:8 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:649:21 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:651:24 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:680:21 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:713:21 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:749:22 [TS7006] Parameter 'res' implicitly has an 'any' type.",
+        "error:749:27 [TS7006] Parameter 'rej' implicitly has an 'any' type.",
+        "error:778:22 [TS7006] Parameter 'res' implicitly has an 'any' type.",
+        "error:778:27 [TS7006] Parameter 'rej' implicitly has an 'any' type.",
+        "error:787:10 [TS7006] Parameter 'driveFiles' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/page.ts",
@@ -1773,7 +2032,15 @@
     },
     {
       "file": "src/pages/drive.file.info.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:113:12 [TS7006] Parameter 'err' implicitly has an 'any' type.",
+        "error:134:34 [TS7031] Binding element 'canceled' implicitly has an 'any' type.",
+        "error:134:44 [TS7031] Binding element 'folders' implicitly has an 'any' type.",
+        "error:153:11 [TS7006] Parameter 'err' implicitly has an 'any' type.",
+        "error:171:13 [TS7031] Binding element 'canceled' implicitly has an 'any' type.",
+        "error:171:31 [TS7031] Binding element 'name' implicitly has an 'any' type.",
+        "error:191:9 [TS7006] Parameter 'caption' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/pages/drive.file.notes.vue",
@@ -1785,11 +2052,47 @@
     },
     {
       "file": "src/pages/drive.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:8:16 [TS7006] Parameter 'x' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/pages/drop-and-fusion.game.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:160:84 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:160:155 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:163:84 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:163:155 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:174:59 [TS7006] Parameter 'a' implicitly has an 'any' type.",
+        "error:174:62 [TS7006] Parameter 'b' implicitly has an 'any' type.",
+        "error:541:41 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:593:28 [TS7006] Parameter 'newValue' implicitly has an 'any' type.",
+        "error:597:19 [TS7006] Parameter 'newValue' implicitly has an 'any' type.",
+        "error:647:47 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:651:41 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:679:26 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:867:39 [TS7006] Parameter 'res' implicitly has an 'any' type.",
+        "error:877:56 [TS7006] Parameter 'res' implicitly has an 'any' type.",
+        "error:886:12 [TS7006] Parameter 'images' implicitly has an 'any' type.",
+        "error:903:19 [TS7006] Parameter 'blob' implicitly has an 'any' type.",
+        "error:919:12 [TS7006] Parameter 'response' implicitly has an 'any' type.",
+        "error:920:12 [TS7006] Parameter 'f' implicitly has an 'any' type.",
+        "error:944:34 [TS7006] Parameter 'value' implicitly has an 'any' type.",
+        "error:948:34 [TS7006] Parameter 'value' implicitly has an 'any' type.",
+        "error:958:34 [TS7006] Parameter 'value' implicitly has an 'any' type.",
+        "error:963:36 [TS7006] Parameter 'value' implicitly has an 'any' type.",
+        "error:974:31 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:1004:32 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:1004:35 [TS7006] Parameter 'y' implicitly has an 'any' type.",
+        "error:1004:38 [TS7006] Parameter 'nextMono' implicitly has an 'any' type.",
+        "error:1004:48 [TS7006] Parameter 'scoreDelta' implicitly has an 'any' type.",
+        "error:1025:43 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:1057:33 [TS7006] Parameter 'energy' implicitly has an 'any' type.",
+        "error:1057:41 [TS7006] Parameter 'bodyA' implicitly has an 'any' type.",
+        "error:1057:48 [TS7006] Parameter 'bodyB' implicitly has an 'any' type.",
+        "error:1084:33 [TS7006] Parameter 'mono' implicitly has an 'any' type.",
+        "error:1092:21 [TS7006] Parameter 'x' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/pages/drop-and-fusion.vue",
@@ -1837,7 +2140,9 @@
     },
     {
       "file": "src/pages/follow-requests.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:52:13 [TS7006] Parameter 'newTab' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/pages/gallery/edit.root.vue",
@@ -1889,7 +2194,9 @@
     },
     {
       "file": "src/pages/my-antennas/edit.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:35:67 [TS7006] Parameter 'antennaResponse' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/pages/my-antennas/index.vue",
@@ -1905,7 +2212,12 @@
     },
     {
       "file": "src/pages/my-lists/list.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:94:10 [TS7006] Parameter '_list' implicitly has an 'any' type.",
+        "error:102:23 [TS7006] Parameter 'user' implicitly has an 'any' type.",
+        "error:140:24 [TS7006] Parameter 'withReplies' implicitly has an 'any' type.",
+        "error:146:46 [TS7006] Parameter 'old' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/pages/not-found.vue",
@@ -1917,7 +2229,10 @@
     },
     {
       "file": "src/pages/notifications.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:35:83 [TS7006] Parameter 't' implicitly has an 'any' type.",
+        "error:49:42 [TS7006] Parameter 't' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/pages/oauth.vue",
@@ -1973,11 +2288,34 @@
     },
     {
       "file": "src/pages/qr.read.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:106:35 [TS7006] Parameter 'uri' implicitly has an 'any' type.",
+        "error:106:68 [TS7006] Parameter 'r' implicitly has an 'any' type.",
+        "error:107:33 [TS7006] Parameter 'r' implicitly has an 'any' type.",
+        "error:107:61 [TS7006] Parameter 'r' implicitly has an 'any' type.",
+        "error:107:84 [TS7006] Parameter 'u' implicitly has an 'any' type.",
+        "error:109:33 [TS7006] Parameter 'r' implicitly has an 'any' type.",
+        "error:109:61 [TS7006] Parameter 'r' implicitly has an 'any' type.",
+        "error:109:84 [TS7006] Parameter 'n' implicitly has an 'any' type.",
+        "error:160:60 [TS7006] Parameter 'u' implicitly has an 'any' type.",
+        "error:168:9 [TS7006] Parameter 'data' implicitly has an 'any' type.",
+        "error:178:10 [TS7006] Parameter 'err' implicitly has an 'any' type.",
+        "error:189:47 [TS7006] Parameter 'files' implicitly has an 'any' type.",
+        "error:193:11 [TS7006] Parameter 'result' implicitly has an 'any' type.",
+        "error:196:12 [TS7006] Parameter 'err' implicitly has an 'any' type.",
+        "error:226:22 [TS7006] Parameter 'camera' implicitly has an 'any' type.",
+        "error:300:18 [TS7006] Parameter 'err' implicitly has an 'any' type.",
+        "error:321:10 [TS7006] Parameter 'err' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/pages/qr.show.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:103:1 [TS2578] Unused '@ts-expect-error' directive.",
+        "error:113:14 [TS7006] Parameter 'newState' implicitly has an 'any' type.",
+        "error:114:18 [TS7006] Parameter 'el' implicitly has an 'any' type.",
+        "error:121:2 [TS2578] Unused '@ts-expect-error' directive."
+      ]
     },
     {
       "file": "src/pages/qr.vue",
@@ -2001,19 +2339,34 @@
     },
     {
       "file": "src/pages/reversi/game.board.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:230:16 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:249:12 [TS7006] Parameter 'res' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/pages/reversi/game.setting.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:131:74 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:155:49 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:183:51 [TS7006] Parameter 'x' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/pages/reversi/game.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:69:34 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:72:35 [TS7006] Parameter 'x' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/pages/reversi/index.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:141:27 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:147:27 [TS7006] Parameter 'invitation' implicitly has an 'any' type.",
+        "error:148:30 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:254:41 [TS7006] Parameter '_invitations' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/pages/role.vue",
@@ -2357,7 +2710,38 @@
     },
     {
       "file": "src/plugin.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:109:43 [TS7006] Parameter 'res' implicitly has an 'any' type.",
+        "error:109:48 [TS7006] Parameter 'rej' implicitly has an 'any' type.",
+        "error:117:16 [TS7006] Parameter 'result' implicitly has an 'any' type.",
+        "error:127:11 [TS7006] Parameter 'd' implicitly has an 'any' type.",
+        "error:127:37 [TS7006] Parameter 'err' implicitly has an 'any' type.",
+        "error:146:28 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:170:51 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:172:43 [TS7006] Parameter 'key' implicitly has an 'any' type.",
+        "error:239:42 [TS7006] Parameter 'plugin' implicitly has an 'any' type.",
+        "error:250:39 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:279:9 [TS7006] Parameter 'value' implicitly has an 'any' type.",
+        "error:287:9 [TS7006] Parameter 'err' implicitly has an 'any' type.",
+        "error:305:4 [TS7006] Parameter 'err' implicitly has an 'any' type.",
+        "error:320:41 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:341:48 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:347:48 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:378:58 [TS7031] Binding element 'title' implicitly has an 'any' type.",
+        "error:378:65 [TS7031] Binding element 'handler' implicitly has an 'any' type.",
+        "error:384:67 [TS7031] Binding element 'key' implicitly has an 'any' type.",
+        "error:384:72 [TS7031] Binding element 'value' implicitly has an 'any' type.",
+        "error:394:53 [TS7031] Binding element 'title' implicitly has an 'any' type.",
+        "error:394:60 [TS7031] Binding element 'handler' implicitly has an 'any' type.",
+        "error:405:53 [TS7031] Binding element 'title' implicitly has an 'any' type.",
+        "error:405:60 [TS7031] Binding element 'handler' implicitly has an 'any' type.",
+        "error:416:63 [TS7031] Binding element 'handler' implicitly has an 'any' type.",
+        "error:425:63 [TS7031] Binding element 'handler' implicitly has an 'any' type.",
+        "error:434:63 [TS7031] Binding element 'handler' implicitly has an 'any' type.",
+        "error:443:41 [TS7031] Binding element 'url' implicitly has an 'any' type.",
+        "error:463:32 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:463:82 [TS7006] Parameter 'x' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/pref-migrate.ts",
@@ -2365,15 +2749,56 @@
     },
     {
       "file": "src/preferences.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:41:36 [TS7031] Binding element 'scope' implicitly has an 'any' type.",
+        "error:70:35 [TS7031] Binding element 'scope' implicitly has an 'any' type.",
+        "error:87:35 [TS7006] Parameter 'need' implicitly has an 'any' type.",
+        "error:87:66 [TS7006] Parameter 'res' implicitly has an 'any' type.",
+        "error:127:49 [TS7006] Parameter 'msg' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/preferences/def.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:115:41 [TS7006] Parameter 'y' implicitly has an 'any' type.",
+        "error:146:41 [TS7006] Parameter 'y' implicitly has an 'any' type.",
+        "error:407:32 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:407:44 [TS7006] Parameter 'y' implicitly has an 'any' type.",
+        "error:409:34 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:409:46 [TS7006] Parameter 'y' implicitly has an 'any' type.",
+        "error:426:41 [TS7006] Parameter 'y' implicitly has an 'any' type.",
+        "error:450:41 [TS7006] Parameter 'y' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/preferences/manager.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:153:34 [TS2345] Argument of type 'string | number | symbol' is not assignable to parameter of type '\"accounts\" | \"advancedMfm\" | \"aiChanMode\" | \"alwaysConfirmFollow\" | \"animatedMfm\" | \"animation\" | \"chat.sendOnEnter\" | \"chat.showSenderName\" | \"collapseRenotes\" | \"confirmOnReact\" | ... 104 more ... | \"widgets\"'.\nType 'string' is not assignable to type '\"accounts\" | \"advancedMfm\" | \"aiChanMode\" | \"alwaysConfirmFollow\" | \"animatedMfm\" | \"animation\" | \"chat.sendOnEnter\" | \"chat.showSenderName\" | \"collapseRenotes\" | \"confirmOnReact\" | ... 104 more ... | \"widgets\"'.",
+        "error:154:30 [TS2345] Argument of type 'string | number | symbol' is not assignable to parameter of type '\"accounts\" | \"advancedMfm\" | \"aiChanMode\" | \"alwaysConfirmFollow\" | \"animatedMfm\" | \"animation\" | \"chat.sendOnEnter\" | \"chat.showSenderName\" | \"collapseRenotes\" | \"confirmOnReact\" | ... 104 more ... | \"widgets\"'.\nType 'string' is not assignable to type '\"accounts\" | \"advancedMfm\" | \"aiChanMode\" | \"alwaysConfirmFollow\" | \"animatedMfm\" | \"animation\" | \"chat.sendOnEnter\" | \"chat.showSenderName\" | \"collapseRenotes\" | \"confirmOnReact\" | ... 104 more ... | \"widgets\"'.",
+        "error:159:36 [TS2345] Argument of type 'string | number | symbol' is not assignable to parameter of type '\"accounts\" | \"advancedMfm\" | \"aiChanMode\" | \"alwaysConfirmFollow\" | \"animatedMfm\" | \"animation\" | \"chat.sendOnEnter\" | \"chat.showSenderName\" | \"collapseRenotes\" | \"confirmOnReact\" | ... 104 more ... | \"widgets\"'.\nType 'string' is not assignable to type '\"accounts\" | \"advancedMfm\" | \"aiChanMode\" | \"alwaysConfirmFollow\" | \"animatedMfm\" | \"animation\" | \"chat.sendOnEnter\" | \"chat.showSenderName\" | \"collapseRenotes\" | \"confirmOnReact\" | ... 104 more ... | \"widgets\"'.",
+        "error:168:41 [TS2345] Argument of type 'string | number | symbol' is not assignable to parameter of type '\"accounts\" | \"advancedMfm\" | \"aiChanMode\" | \"alwaysConfirmFollow\" | \"animatedMfm\" | \"animation\" | \"chat.sendOnEnter\" | \"chat.showSenderName\" | \"collapseRenotes\" | \"confirmOnReact\" | ... 104 more ... | \"widgets\"'.\nType 'string' is not assignable to type '\"accounts\" | \"advancedMfm\" | \"aiChanMode\" | \"alwaysConfirmFollow\" | \"animatedMfm\" | \"animation\" | \"chat.sendOnEnter\" | \"chat.showSenderName\" | \"collapseRenotes\" | \"confirmOnReact\" | ... 104 more ... | \"widgets\"'.",
+        "error:168:90 [TS7031] Binding element 'scope' implicitly has an 'any' type.",
+        "error:172:29 [TS2345] Argument of type 'string | number | symbol' is not assignable to parameter of type '\"accounts\" | \"advancedMfm\" | \"aiChanMode\" | \"alwaysConfirmFollow\" | \"animatedMfm\" | \"animation\" | \"chat.sendOnEnter\" | \"chat.showSenderName\" | \"collapseRenotes\" | \"confirmOnReact\" | ... 104 more ... | \"widgets\"'.\nType 'string' is not assignable to type '\"accounts\" | \"advancedMfm\" | \"aiChanMode\" | \"alwaysConfirmFollow\" | \"animatedMfm\" | \"animation\" | \"chat.sendOnEnter\" | \"chat.showSenderName\" | \"collapseRenotes\" | \"confirmOnReact\" | ... 104 more ... | \"widgets\"'.",
+        "error:175:40 [TS2345] Argument of type 'string | number | symbol' is not assignable to parameter of type '\"accounts\" | \"advancedMfm\" | \"aiChanMode\" | \"alwaysConfirmFollow\" | \"animatedMfm\" | \"animation\" | \"chat.sendOnEnter\" | \"chat.showSenderName\" | \"collapseRenotes\" | \"confirmOnReact\" | ... 104 more ... | \"widgets\"'.\nType 'string' is not assignable to type '\"accounts\" | \"advancedMfm\" | \"aiChanMode\" | \"alwaysConfirmFollow\" | \"animatedMfm\" | \"animation\" | \"chat.sendOnEnter\" | \"chat.showSenderName\" | \"collapseRenotes\" | \"confirmOnReact\" | ... 104 more ... | \"widgets\"'.",
+        "error:175:89 [TS7031] Binding element 'scope' implicitly has an 'any' type.",
+        "error:178:29 [TS2345] Argument of type 'string | number | symbol' is not assignable to parameter of type '\"accounts\" | \"advancedMfm\" | \"aiChanMode\" | \"alwaysConfirmFollow\" | \"animatedMfm\" | \"animation\" | \"chat.sendOnEnter\" | \"chat.showSenderName\" | \"collapseRenotes\" | \"confirmOnReact\" | ... 104 more ... | \"widgets\"'.\nType 'string' is not assignable to type '\"accounts\" | \"advancedMfm\" | \"aiChanMode\" | \"alwaysConfirmFollow\" | \"animatedMfm\" | \"animation\" | \"chat.sendOnEnter\" | \"chat.showSenderName\" | \"collapseRenotes\" | \"confirmOnReact\" | ... 104 more ... | \"widgets\"'.",
+        "error:317:24 [TS7006] Parameter 'track' implicitly has an 'any' type.",
+        "error:317:31 [TS7006] Parameter 'trigger' implicitly has an 'any' type.",
+        "error:331:11 [TS7006] Parameter 'value' implicitly has an 'any' type.",
+        "error:394:34 [TS7031] Binding element 'scope' implicitly has an 'any' type.",
+        "error:394:41 [TS7031] Binding element 'v' implicitly has an 'any' type.",
+        "error:402:48 [TS7031] Binding element 'scope' implicitly has an 'any' type.",
+        "error:402:55 [TS7031] Binding element 'v' implicitly has an 'any' type.",
+        "error:405:47 [TS7031] Binding element 'scope' implicitly has an 'any' type.",
+        "error:405:54 [TS7031] Binding element 'v' implicitly has an 'any' type.",
+        "error:408:33 [TS7031] Binding element 'scope' implicitly has an 'any' type.",
+        "error:408:40 [TS7031] Binding element 'v' implicitly has an 'any' type.",
+        "error:419:47 [TS7031] Binding element 'scope' implicitly has an 'any' type.",
+        "error:419:54 [TS7031] Binding element 'v' implicitly has an 'any' type.",
+        "error:444:37 [TS7031] Binding element 'scope' implicitly has an 'any' type.",
+        "error:444:44 [TS7031] Binding element 'v' implicitly has an 'any' type.",
+        "error:582:32 [TS7006] Parameter 'res' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/preferences/utility.ts",
@@ -2385,7 +2810,12 @@
     },
     {
       "file": "src/router.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:22:38 [TS7006] Parameter 'event' implicitly has an 'any' type.",
+        "error:26:32 [TS7006] Parameter 'ctx' implicitly has an 'any' type.",
+        "error:30:35 [TS7006] Parameter 'ctx' implicitly has an 'any' type.",
+        "error:34:34 [TS7006] Parameter 'ctx' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/server-context.ts",
@@ -2409,7 +2839,14 @@
     },
     {
       "file": "src/theme.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:40:64 [TS7006] Parameter 'key' implicitly has an 'any' type.",
+        "error:69:26 [TS7006] Parameter 'themes' implicitly has an 'any' type.",
+        "error:80:25 [TS7006] Parameter 't' implicitly has an 'any' type.",
+        "error:84:18 [TS7006] Parameter 't' implicitly has an 'any' type.",
+        "error:92:40 [TS7006] Parameter 't' implicitly has an 'any' type.",
+        "error:241:27 [TS7006] Parameter 't' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/timelines.ts",
@@ -2453,7 +2890,9 @@
     },
     {
       "file": "src/ui/_common_/announcements.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:9:56 [TS7006] Parameter 'x' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/_common_/common.ts",
@@ -2461,7 +2900,10 @@
     },
     {
       "file": "src/ui/_common_/common.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:148:53 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:167:40 [TS7006] Parameter 'notification' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/_common_/mobile-footer-menu.vue",
@@ -2481,15 +2923,21 @@
     },
     {
       "file": "src/ui/_common_/statusbar-federation.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:58:10 [TS7006] Parameter 'res' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/_common_/statusbar-rss.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:51:79 [TS7006] Parameter 'res' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/_common_/statusbar-user-list.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:59:10 [TS7006] Parameter 'res' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/_common_/statusbars.vue",
@@ -2501,7 +2949,10 @@
     },
     {
       "file": "src/ui/_common_/sw-inject.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:15:60 [TS7006] Parameter 'ev' implicitly has an 'any' type.",
+        "error:23:50 [TS7006] Parameter 'account' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/_common_/titlebar.vue",
@@ -2509,19 +2960,54 @@
     },
     {
       "file": "src/ui/_common_/widgets.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:45:67 [TS7006] Parameter 'w' implicitly has an 'any' type.",
+        "error:46:39 [TS7006] Parameter 'w' implicitly has an 'any' type.",
+        "error:57:51 [TS7006] Parameter 'w' implicitly has an 'any' type.",
+        "error:61:48 [TS7006] Parameter 'w' implicitly has an 'any' type.",
+        "error:76:23 [TS7006] Parameter 'w' implicitly has an 'any' type.",
+        "error:77:31 [TS7006] Parameter 'w' implicitly has an 'any' type.",
+        "error:77:76 [TS7006] Parameter 't' implicitly has an 'any' type.",
+        "error:83:30 [TS7006] Parameter 'w' implicitly has an 'any' type.",
+        "error:83:75 [TS7006] Parameter 't' implicitly has an 'any' type.",
+        "error:84:22 [TS7006] Parameter 'w' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/deck.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:27:30 [TS7006] Parameter 'c' implicitly has an 'any' type.",
+        "error:27:60 [TS7006] Parameter 'c' implicitly has an 'any' type.",
+        "error:27:148 [TS7006] Parameter 'c' implicitly has an 'any' type.",
+        "error:27:177 [TS7006] Parameter 'c' implicitly has an 'any' type.",
+        "error:31:43 [TS7006] Parameter 'c' implicitly has an 'any' type.",
+        "error:36:30 [TS7006] Parameter 'c' implicitly has an 'any' type.",
+        "error:139:23 [TS7006] Parameter 'path' implicitly has an 'any' type.",
+        "error:139:29 [TS7006] Parameter 'flag' implicitly has an 'any' type.",
+        "error:141:43 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:180:29 [TS7006] Parameter 'column' implicitly has an 'any' type.",
+        "error:180:126 [TS7006] Parameter 'column' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/deck/antenna-column.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:44:10 [TS7006] Parameter 'value' implicitly has an 'any' type.",
+        "error:48:21 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:61:25 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:66:26 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:87:32 [TS7006] Parameter 'x' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/deck/channel-column.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:51:10 [TS7006] Parameter 'value' implicitly has an 'any' type.",
+        "error:55:21 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:63:23 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:66:26 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:69:38 [TS7006] Parameter 'x' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/deck/chat-column.vue",
@@ -2529,7 +3015,10 @@
     },
     {
       "file": "src/ui/deck/column.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:82:17 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:170:21 [TS7006] Parameter 'flexible' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/deck/deck-store.ts",
@@ -2537,35 +3026,69 @@
     },
     {
       "file": "src/ui/deck/direct-column.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:35:28 [TS7006] Parameter 'res' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/deck/list-column.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:45:10 [TS7006] Parameter 'value' implicitly has an 'any' type.",
+        "error:49:20 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:55:21 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:68:22 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:73:23 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:91:27 [TS7006] Parameter 'x' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/deck/main-column.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:50:26 [TS7006] Parameter 'metadataGetter' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/deck/mentions-column.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:32:28 [TS7006] Parameter 'res' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/deck/notifications-column.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:34:16 [TS7006] Parameter 'res' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/deck/role-timeline-column.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:42:10 [TS7006] Parameter 'value' implicitly has an 'any' type.",
+        "error:46:21 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:51:56 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:54:20 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:57:23 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:60:26 [TS7006] Parameter 'x' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/deck/tl-column.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:61:20 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:67:20 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:73:22 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:79:18 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:85:21 [TS7006] Parameter 'v' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/deck/tl-note-notification.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:31:26 [TS7006] Parameter 'f' implicitly has an 'any' type.",
+        "error:40:12 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:70:20 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:78:13 [TS7006] Parameter '_' implicitly has an 'any' type.",
+        "error:78:16 [TS7006] Parameter 'v' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/deck/widgets-column.vue",
@@ -2573,19 +3096,27 @@
     },
     {
       "file": "src/ui/minimum.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:28:26 [TS7006] Parameter 'metadataGetter' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/universal.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:78:26 [TS7006] Parameter 'metadataGetter' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/visitor.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:52:26 [TS7006] Parameter 'metadataGetter' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/ui/zen.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:41:26 [TS7006] Parameter 'metadataGetter' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/utility/achievements.ts",
@@ -2665,7 +3196,35 @@
     },
     {
       "file": "src/utility/drive.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:43:63 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:43:72 [TS7006] Parameter 'reject' implicitly has an 'any' type.",
+        "error:130:28 [TS7006] Parameter 'ev' implicitly has an 'any' type.",
+        "error:167:22 [TS7006] Parameter 'res' implicitly has an 'any' type.",
+        "error:167:27 [TS7006] Parameter 'rej' implicitly has an 'any' type.",
+        "error:168:60 [TS7006] Parameter 'files' implicitly has an 'any' type.",
+        "error:173:12 [TS7006] Parameter 'driveFiles' implicitly has an 'any' type.",
+        "error:183:22 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:183:31 [TS7006] Parameter 'rej' implicitly has an 'any' type.",
+        "error:188:10 [TS7006] Parameter 'files' implicitly has an 'any' type.",
+        "error:194:12 [TS7006] Parameter 'd' implicitly has an 'any' type.",
+        "error:199:22 [TS7006] Parameter 'res' implicitly has an 'any' type.",
+        "error:199:27 [TS7006] Parameter 'rej' implicitly has an 'any' type.",
+        "error:204:14 [TS7031] Binding element 'canceled' implicitly has an 'any' type.",
+        "error:204:32 [TS7031] Binding element 'url' implicitly has an 'any' type.",
+        "error:211:39 [TS7006] Parameter 'urlResponse' implicitly has an 'any' type.",
+        "error:233:22 [TS7006] Parameter 'res' implicitly has an 'any' type.",
+        "error:233:27 [TS7006] Parameter 'rej' implicitly has an 'any' type.",
+        "error:271:22 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:271:31 [TS7006] Parameter 'reject' implicitly has an 'any' type.",
+        "error:281:18 [TS7006] Parameter 'blob' implicitly has an 'any' type.",
+        "error:289:13 [TS7006] Parameter 'croppedImageFile' implicitly has an 'any' type.",
+        "error:295:23 [TS7006] Parameter 'driveFile' implicitly has an 'any' type.",
+        "error:311:22 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:311:31 [TS7006] Parameter 'reject' implicitly has an 'any' type.",
+        "error:316:10 [TS7006] Parameter 'folders' implicitly has an 'any' type.",
+        "error:326:11 [TS7006] Parameter 'd' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/utility/element-contains.ts",
@@ -2713,7 +3272,9 @@
     },
     {
       "file": "src/utility/get-account-from-id.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:11:23 [TS7006] Parameter 'account' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/utility/get-appear-note.ts",
@@ -2769,7 +3330,10 @@
     },
     {
       "file": "src/utility/idle-render.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:31:38 [TS7006] Parameter 'deadline' implicitly has an 'any' type.",
+        "error:42:38 [TS7006] Parameter 'arg' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/utility/image-compositor-functions/blockNoise.ts",
@@ -3025,15 +3589,34 @@
     },
     {
       "file": "src/widgets/WidgetActivity.calendar.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:49:48 [TS7006] Parameter 'd' implicitly has an 'any' type.",
+        "error:63:39 [TS7006] Parameter 'd' implicitly has an 'any' type.",
+        "error:71:27 [TS7006] Parameter 'd' implicitly has an 'any' type.",
+        "error:71:30 [TS7006] Parameter 'i' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetActivity.chart.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:99:46 [TS7006] Parameter 'd' implicitly has an 'any' type.",
+        "error:102:36 [TS7006] Parameter 'd' implicitly has an 'any' type.",
+        "error:102:39 [TS7006] Parameter 'i' implicitly has an 'any' type.",
+        "error:103:37 [TS7006] Parameter 'd' implicitly has an 'any' type.",
+        "error:103:40 [TS7006] Parameter 'i' implicitly has an 'any' type.",
+        "error:104:38 [TS7006] Parameter 'd' implicitly has an 'any' type.",
+        "error:104:41 [TS7006] Parameter 'i' implicitly has an 'any' type.",
+        "error:105:37 [TS7006] Parameter 'd' implicitly has an 'any' type.",
+        "error:105:40 [TS7006] Parameter 'i' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetActivity.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:88:9 [TS7006] Parameter 'res' implicitly has an 'any' type.",
+        "error:89:41 [TS7006] Parameter '_' implicitly has an 'any' type.",
+        "error:89:44 [TS7006] Parameter 'i' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetAichan.vue",
@@ -3041,27 +3624,46 @@
     },
     {
       "file": "src/widgets/WidgetAiscript.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:78:9 [TS7006] Parameter 'value' implicitly has an 'any' type.",
+        "error:85:9 [TS7006] Parameter 'type' implicitly has an 'any' type.",
+        "error:85:15 [TS7006] Parameter 'params' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetAiscriptApp.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:74:41 [TS7006] Parameter '_root' implicitly has an 'any' type.",
+        "error:79:9 [TS7006] Parameter 'value' implicitly has an 'any' type.",
+        "error:82:9 [TS7006] Parameter 'type' implicitly has an 'any' type.",
+        "error:82:15 [TS7006] Parameter 'params' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetBirthdayFollowings.user.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:43:65 [TS7006] Parameter 'v' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetBirthdayFollowings.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:145:13 [TS7006] Parameter 'to' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetButton.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:65:9 [TS7006] Parameter 'value' implicitly has an 'any' type.",
+        "error:68:9 [TS7006] Parameter 'type' implicitly has an 'any' type.",
+        "error:68:15 [TS7006] Parameter 'params' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetCalendar.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:117:14 [TS7006] Parameter 'to' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetChat.vue",
@@ -3073,19 +3675,33 @@
     },
     {
       "file": "src/widgets/WidgetClock.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:145:28 [TS7006] Parameter 'tz' implicitly has an 'any' type.",
+        "error:167:20 [TS7006] Parameter 'tz' implicitly has an 'any' type.",
+        "error:168:20 [TS7006] Parameter 'tz' implicitly has an 'any' type.",
+        "error:172:20 [TS7006] Parameter 'tz' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetDigitalClock.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:53:28 [TS7006] Parameter 'tz' implicitly has an 'any' type.",
+        "error:75:20 [TS7006] Parameter 'tz' implicitly has an 'any' type.",
+        "error:76:20 [TS7006] Parameter 'tz' implicitly has an 'any' type.",
+        "error:80:20 [TS7006] Parameter 'tz' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetFederation.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:71:63 [TS7006] Parameter 'i' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetInstanceCloud.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:66:10 [TS7006] Parameter 'res' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetInstanceInfo.vue",
@@ -3093,23 +3709,33 @@
     },
     {
       "file": "src/widgets/WidgetJobQueue.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:113:72 [TS7006] Parameter 'buf' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetMemo.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:68:27 [TS7006] Parameter 'newText' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetNotifications.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:64:16 [TS7006] Parameter 'res' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetOnlineUsers.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:50:47 [TS7006] Parameter 'res' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetPhotos.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:83:9 [TS7006] Parameter 'res' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetPostForm.vue",
@@ -3121,31 +3747,52 @@
     },
     {
       "file": "src/widgets/WidgetRss.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:84:9 [TS7006] Parameter 'res' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetRssTicker.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:124:9 [TS7006] Parameter 'res' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetSlideshow.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:89:10 [TS7006] Parameter 'res' implicitly has an 'any' type.",
+        "error:99:34 [TS7031] Binding element 'folders' implicitly has an 'any' type.",
+        "error:99:43 [TS7031] Binding element 'canceled' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetTimeline.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:116:36 [TS7006] Parameter 'antenna' implicitly has an 'any' type.",
+        "error:124:30 [TS7006] Parameter 'list' implicitly has an 'any' type.",
+        "error:135:50 [TS7006] Parameter 'tl' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetTrends.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:64:39 [TS7006] Parameter 'res' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetUnixClock.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:68:19 [TS7006] Parameter 'v' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/WidgetUserList.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:73:20 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:79:26 [TS7006] Parameter 'x' implicitly has an 'any' type.",
+        "error:93:10 [TS7006] Parameter '_list' implicitly has an 'any' type.",
+        "error:97:11 [TS7006] Parameter '_users' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/index.ts",
@@ -3153,7 +3800,14 @@
     },
     {
       "file": "src/widgets/server-metric/cpu-mem.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:123:48 [TS7006] Parameter 's' implicitly has an 'any' type.",
+        "error:123:51 [TS7006] Parameter 'i' implicitly has an 'any' type.",
+        "error:124:48 [TS7006] Parameter 's' implicitly has an 'any' type.",
+        "error:124:51 [TS7006] Parameter 'i' implicitly has an 'any' type.",
+        "error:125:55 [TS7006] Parameter 'xy' implicitly has an 'any' type.",
+        "error:126:55 [TS7006] Parameter 'xy' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/server-metric/cpu.vue",
@@ -3165,7 +3819,9 @@
     },
     {
       "file": "src/widgets/server-metric/index.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:71:39 [TS7006] Parameter 'res' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/server-metric/mem.vue",
@@ -3173,7 +3829,16 @@
     },
     {
       "file": "src/widgets/server-metric/net.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:94:65 [TS7006] Parameter 's' implicitly has an 'any' type.",
+        "error:95:66 [TS7006] Parameter 's' implicitly has an 'any' type.",
+        "error:97:47 [TS7006] Parameter 's' implicitly has an 'any' type.",
+        "error:97:50 [TS7006] Parameter 'i' implicitly has an 'any' type.",
+        "error:98:48 [TS7006] Parameter 's' implicitly has an 'any' type.",
+        "error:98:51 [TS7006] Parameter 'i' implicitly has an 'any' type.",
+        "error:99:53 [TS7006] Parameter 'xy' implicitly has an 'any' type.",
+        "error:100:55 [TS7006] Parameter 'xy' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/widgets/server-metric/pie.vue",
@@ -3181,10 +3846,14 @@
     },
     {
       "file": "src/widgets/widget.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:54:35 [TS7006] Parameter 'to' implicitly has an 'any' type.",
+        "error:77:7 [TS7006] Parameter 'resolve' implicitly has an 'any' type.",
+        "error:83:13 [TS7006] Parameter 'newProps' implicitly has an 'any' type."
+      ]
     }
   ],
-  "errorCount": 4,
+  "errorCount": 565,
   "warningCount": 0,
   "fileCount": 794
 }
