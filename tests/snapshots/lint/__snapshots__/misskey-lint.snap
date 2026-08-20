@@ -4280,9 +4280,31 @@
         "endLine": 37,
         "endColumn": 119,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "vue/no-mutating-props",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'props.anchorElement.style.pointerEvents' in <script setup>",
+        "line": 151,
+        "column": 27,
+        "endLine": 151,
+        "endColumn": 66,
+        "help": "Use a local ref or emit an event instead of mutating props directly"
+      },
+      {
+        "ruleId": "vue/no-mutating-props",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'props.anchorElement.style.pointerEvents' in <script setup>",
+        "line": 321,
+        "column": 4,
+        "endLine": 321,
+        "endColumn": 43,
+        "help": "Use a local ref or emit an event instead of mutating props directly"
       }
     ],
-    "errorCount": 0,
+    "errorCount": 2,
     "warningCount": 8
   },
   {
@@ -5621,9 +5643,53 @@
         "endLine": 32,
         "endColumn": 57,
         "help": "Use useId() for unique IDs, or wrap in <ClientOnly> for client-only values"
+      },
+      {
+        "ruleId": "vue/no-mutating-props",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'props.paginator.order.value' in <script setup>",
+        "line": 76,
+        "column": 2,
+        "endLine": 76,
+        "endColumn": 29,
+        "help": "Use a local ref or emit an event instead of mutating props directly"
+      },
+      {
+        "ruleId": "vue/no-mutating-props",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'props.paginator.initialDirection' in <script setup>",
+        "line": 77,
+        "column": 2,
+        "endLine": 77,
+        "endColumn": 34,
+        "help": "Use a local ref or emit an event instead of mutating props directly"
+      },
+      {
+        "ruleId": "vue/no-mutating-props",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'props.paginator.initialDate' in <script setup>",
+        "line": 82,
+        "column": 2,
+        "endLine": 82,
+        "endColumn": 29,
+        "help": "Use a local ref or emit an event instead of mutating props directly"
+      },
+      {
+        "ruleId": "vue/no-mutating-props",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'props.paginator.searchQuery.value' in <script setup>",
+        "line": 87,
+        "column": 2,
+        "endLine": 87,
+        "endColumn": 35,
+        "help": "Use a local ref or emit an event instead of mutating props directly"
       }
     ],
-    "errorCount": 0,
+    "errorCount": 4,
     "warningCount": 7
   },
   {
