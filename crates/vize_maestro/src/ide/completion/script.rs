@@ -11,6 +11,7 @@
 mod context;
 mod lists;
 mod member_access;
+mod object_literal;
 mod reactive_infer;
 
 #[cfg(test)]
@@ -37,6 +38,17 @@ use crate::ide::cursor_context::CursorContext;
 
 pub(crate) use self::lists::{composition_api_completions, macro_completions};
 pub(crate) use self::reactive_infer::infer_reactive_value_type;
+
+/// Exact local completion for a statically declared object literal. This is
+/// safe to run before Corsa because the helper rejects spreads, dynamic keys,
+/// parser recovery, and a receiver shadowed by a nested scope.
+#[cfg(feature = "native")]
+pub(crate) fn complete_static_object_member_access(
+    ctx: &IdeContext,
+    is_setup: bool,
+) -> Option<Vec<CompletionItem>> {
+    object_literal::complete(ctx, is_setup)
+}
 
 /// Extras merged after the checker's answer in script positions — the Vue
 /// composition APIs, plus compiler macros in `<script setup>`. After `.` or

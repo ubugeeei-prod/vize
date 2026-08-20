@@ -21,7 +21,9 @@ pub(super) fn complete_member_access(
 ) -> Option<Vec<CompletionItem>> {
     let receiver = member_access_receiver(&ctx.content, ctx.offset)?;
     let script_content = script_content_for_context(ctx, is_setup)?;
-    let kind = reactive_kind_for_name(&script_content, receiver)?;
+    let Some(kind) = reactive_kind_for_name(&script_content, receiver) else {
+        return super::object_literal::complete(ctx, is_setup);
+    };
 
     if !kind.needs_value_access() {
         // reactive() / shallowReactive() bindings expose their object's own
