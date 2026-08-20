@@ -9,12 +9,12 @@
 //! reported for dynamic `:ref` bindings or refs declared inside `v-for` (where
 //! the runtime value is an array).
 
-use vize_carton::{FxHashSet, String, append, camelize, capitalize, is_native_tag};
+use vize_carton::{FxHashSet, String, append, is_native_tag};
 use vize_croquis::Croquis;
 use vize_relief::{ElementNode, ElementType, Namespace, PropNode, RootNode, TemplateChildNode};
 
 use crate::virtual_ts::{
-    component_reference::{component_binding_reference, has_type_only_component_candidate},
+    component_reference::{component_binding_reference, resolved_component_binding_reference},
     types::VirtualTsOptions,
 };
 
@@ -214,6 +214,7 @@ fn collect_element(
                         summary,
                         options,
                         syntactic_type_only_imported_names,
+                        element.ns,
                         element.tag.as_str(),
                     )
                     .unwrap_or_else(|| RegisteredRefKind::Element {
@@ -253,44 +254,17 @@ fn component_ref_kind_for_element_tag(
     summary: &Croquis,
     options: &VirtualTsOptions,
     syntactic_type_only_imported_names: &FxHashSet<vize_carton::CompactString>,
+    namespace: Namespace,
     tag: &str,
 ) -> Option<RegisteredRefKind> {
+    if namespace != Namespace::Html {
+        return None;
+    }
     if is_native_tag(tag) {
         return None;
     }
-    if !has_component_binding_candidate(summary, options, syntactic_type_only_imported_names, tag) {
-        return None;
-    }
-    Some(RegisteredRefKind::Component {
-        reference: component_binding_reference(
-            summary,
-            options,
-            syntactic_type_only_imported_names,
-            tag,
-        ),
-    })
-}
-
-fn has_component_binding_candidate(
-    summary: &Croquis,
-    options: &VirtualTsOptions,
-    syntactic_type_only_imported_names: &FxHashSet<vize_carton::CompactString>,
-    template_name: &str,
-) -> bool {
-    if has_type_only_component_candidate(syntactic_type_only_imported_names, template_name) {
-        return true;
-    }
-    let camel_name = camelize(template_name);
-    let pascal_name = capitalize(camel_name.as_str());
-    [template_name, camel_name.as_str(), pascal_name.as_str()]
-        .iter()
-        .any(|candidate| {
-            summary.bindings.bindings.contains_key(*candidate)
-                || options
-                    .external_template_bindings
-                    .iter()
-                    .any(|name| name.as_str() == *candidate)
-        })
+    resolved_component_binding_reference(summary, options, syntactic_type_only_imported_names, tag)
+        .map(|reference| RegisteredRefKind::Component { reference })
 }
 
 #[cfg(test)]

@@ -122,6 +122,23 @@ fn native_element_refs_do_not_become_component_refs_from_same_named_setup_bindin
 }
 
 #[test]
+fn unknown_foreign_namespace_elements_do_not_become_component_refs_from_setup_bindings() {
+    let mut summary = Croquis::default();
+    summary.bindings.add("shape", BindingType::SetupConst);
+    summary.bindings.add("glyph", BindingType::SetupConst);
+    assert_eq!(
+        registry_with_summary(
+            "import { useTemplateRef } from 'vue';\nconst shape = useTemplateRef('shape');\nconst glyph = useTemplateRef('glyph');",
+            r#"<svg><shape ref="shape" /></svg><math><glyph ref="glyph" /></math>"#,
+            &summary,
+        )
+        .map(|registry| registry.body)
+        .as_deref(),
+        Some(r#" "shape": __VizeDomElement<"shape", true>; "glyph": __VizeDomElement<"glyph">; "#)
+    );
+}
+
+#[test]
 fn component_refs_record_component_helper_without_guessing_from_registry_text() {
     let mut summary = Croquis::default();
     summary.bindings.add("Child", BindingType::SetupConst);

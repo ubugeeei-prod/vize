@@ -19,8 +19,23 @@ pub(crate) fn component_binding_reference(
     syntactic_type_only_imported_names: &FxHashSet<CompactString>,
     template_name: &str,
 ) -> String {
+    resolved_component_binding_reference(
+        summary,
+        options,
+        syntactic_type_only_imported_names,
+        template_name,
+    )
+    .unwrap_or_else(|| to_safe_identifier(template_name))
+}
+
+pub(crate) fn resolved_component_binding_reference(
+    summary: &Croquis,
+    options: &VirtualTsOptions,
+    syntactic_type_only_imported_names: &FxHashSet<CompactString>,
+    template_name: &str,
+) -> Option<String> {
     if has_type_only_component_candidate(syntactic_type_only_imported_names, template_name) {
-        return component_reference_alias(template_name);
+        return Some(component_reference_alias(template_name));
     }
 
     let camel_name = camelize(template_name);
@@ -32,10 +47,10 @@ pub(crate) fn component_binding_reference(
                 .iter()
                 .any(|name| name.as_str() == candidate)
         {
-            return to_safe_identifier(candidate);
+            return Some(to_safe_identifier(candidate));
         }
     }
-    to_safe_identifier(template_name)
+    None
 }
 
 pub(crate) fn has_type_only_component_candidate(
