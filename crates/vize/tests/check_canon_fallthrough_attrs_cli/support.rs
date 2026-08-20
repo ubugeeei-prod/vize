@@ -110,6 +110,15 @@ fn write_tsconfig(project_root: &Path) {
 }
 
 pub(super) fn create_case(name: &str, child: &str, app: &str) -> PathBuf {
+    create_case_with_files(name, child, app, &[])
+}
+
+pub(super) fn create_case_with_files(
+    name: &str,
+    child: &str,
+    app: &str,
+    extra_files: &[(&str, &str)],
+) -> PathBuf {
     let project_root = unique_case_dir(name);
     let _ = std::fs::remove_dir_all(&project_root);
     std::fs::create_dir_all(project_root.join("src")).unwrap();
@@ -117,6 +126,13 @@ pub(super) fn create_case(name: &str, child: &str, app: &str) -> PathBuf {
     write_tsconfig(&project_root);
     std::fs::write(project_root.join("src/Child.vue"), child).unwrap();
     std::fs::write(project_root.join("src/App.vue"), app).unwrap();
+    for (path, source) in extra_files {
+        let file_path = project_root.join("src").join(path);
+        if let Some(parent) = file_path.parent() {
+            std::fs::create_dir_all(parent).unwrap();
+        }
+        std::fs::write(file_path, source).unwrap();
+    }
     project_root
 }
 

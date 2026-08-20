@@ -73,12 +73,13 @@ pub(super) fn generate_component_props(
         // instance marker for declarations emitted before #4034.
         append!(
             *ts,
-            "  type __{component_type_name}_Props_{idx} = typeof {component_ref} extends {{ __vizeCheck: any }} ? Record<string, unknown> : (typeof {component_ref} extends {{ readonly __vizeRawProps?: infer __P }} ? __P : (typeof {component_ref} extends {{ new (): {{ readonly __vizeRawProps?: infer __P }} }} ? __P : (typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }} ? __P : (typeof {component_ref} extends (props: infer __P) => any ? __P : {{}}))));\n",
+            "  type __{component_type_name}_Props_{idx} = typeof {component_ref} extends {{ __vizeCheck: infer __F }} ? (__VizeIsAny<__F> extends true ? __VizeComponentRawProps<typeof {component_ref}> : Record<string, unknown>) : __VizeComponentRawProps<typeof {component_ref}>;\n",
         );
 
         // Generic functional prop-checker for this component (#775).
         append_prop_checker_alias(
             ts,
+            usage,
             component_type_name.as_str(),
             component_ref.as_str(),
             idx,

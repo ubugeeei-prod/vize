@@ -2,7 +2,8 @@
 mod support;
 
 use support::{
-    assert_clean, assert_error_mentions, create_case, required_corsa_path, run_check_json,
+    assert_clean, assert_error_mentions, create_case, create_case_with_files, required_corsa_path,
+    run_check_json,
 };
 
 #[test]
@@ -295,4 +296,39 @@ import Child from "./Child.vue";
         }
         let _ = std::fs::remove_dir_all(project_root);
     }
+}
+
+#[test]
+fn check_fallthrough_attrs_keep_single_component_root_forwarding_open() {
+    let Some(corsa_path) = required_corsa_path() else {
+        return;
+    };
+
+    let project_root = create_case_with_files(
+        "fallthrough-component-root-open",
+        r#"<script setup lang="ts">
+import BaseInput from "./BaseInput.vue";
+
+defineProps<{ title: string }>();
+</script>
+<template><BaseInput /></template>
+"#,
+        r#"<script setup lang="ts">
+import Child from "./Child.vue";
+</script>
+<template><Child title="ok" model-value="draft" w-48px /></template>
+"#,
+        &[(
+            "BaseInput.vue",
+            r#"<script setup lang="ts">
+defineProps<{ modelValue?: string }>();
+</script>
+<template><input :value="modelValue" /></template>
+"#,
+        )],
+    );
+
+    let report = run_check_json(&project_root, &corsa_path);
+    assert_clean("fallthrough-component-root-open", &report);
+    let _ = std::fs::remove_dir_all(project_root);
 }

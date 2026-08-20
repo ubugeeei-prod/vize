@@ -133,22 +133,31 @@ function __setup() {
 
   // Component props type declarations
   type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
-  type __VizeEmitListeners<C> = C extends { __vizeEmitProps?: infer __E } ? NonNullable<__E> : {};
-  type __VizeFallthroughProps<C> = C extends { readonly __vizeFallthroughProps?: infer __F } ? NonNullable<__F> : {};
+  type __VizeEmitListeners<C> = C extends { __vizeEmitProps?: infer __E } ? __VizeIsAny<__E> extends true ? {} : NonNullable<__E> : {};
+  type __VizeFallthroughProps<C> = C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? {} : NonNullable<__F> : {};
   type __VizePublicComponentAttrs = { class?: unknown; style?: unknown };
-  type __VizeHasRawProps<C> = C extends { readonly __vizeRawProps?: any } ? true : C extends { new (): { readonly __vizeRawProps?: any } } ? true : false;
+  type __VizePublicProps<C> = C extends { new (): { $props: infer __P } } ? __P : C extends (props: infer __P) => any ? __P : {};
+  type __VizeInstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } } ? __VizeIsAny<__P> extends true ? __VizePublicProps<C> : __P : __VizePublicProps<C>;
+  type __VizeStaticRawProps<C> = C extends { readonly __vizeRawProps?: infer __P } ? __VizeIsAny<__P> extends true ? __VizePublicProps<C> : __P : __VizePublicProps<C>;
+  type __VizeHasInstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } } ? __VizeIsAny<__P> extends true ? false : true : false;
+  type __VizeHasStaticRawProps<C> = C extends { readonly __vizeRawProps?: infer __P } ? __VizeIsAny<__P> extends true ? false : true : false;
+  type __VizeComponentRawProps<C> = __VizeHasInstanceRawProps<C> extends true ? __VizeInstanceRawProps<C> : __VizeStaticRawProps<C>;
+  type __VizeHasRawProps<C> = __VizeHasInstanceRawProps<C> extends true ? true : __VizeHasStaticRawProps<C>;
+  type __VizeHasFallthroughProps<C> = C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? false : true : C extends { new (): { readonly __vizeFallthroughProps?: infer __F } } ? __VizeIsAny<__F> extends true ? false : true : false;
   type __VizePropBag<P> = { readonly [K in keyof P]: P[K] };
-  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: __VizePropBag<P> & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: __VizePropBag<P> & Record<string, unknown>) => void) : __VizeHasRawProps<C> extends true ? (props: __VizePropBag<P>) => void : (props: __VizePropBag<P> & Record<string, unknown>) => void;
+  type __VizeFallbackPropChecker<C, P> = __VizeHasFallthroughProps<C> extends true ? (props: __VizePropBag<P> & Record<string, unknown>) => void : __VizeHasRawProps<C> extends true ? (props: __VizePropBag<P>) => void : (props: __VizePropBag<P> & Record<string, unknown>) => void;
+  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: __VizePropBag<P> & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? __VizeIsAny<__F> extends true ? __VizeFallbackPropChecker<C, P> : __F extends (...args: any[]) => any ? __F : __VizeFallbackPropChecker<C, P> : __VizeFallbackPropChecker<C, P>;
   type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;
   type __VizeStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;
   type __VizeRequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
   type __VizeMissingRequiredSlots<__S, __P> = Exclude<__VizeRequiredSlotKeys<__S>, keyof __P>;
   type __VizeRequiredSlots<__S, __P> = __VizeIsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [__VizeMissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: __VizeMissingRequiredSlots<__S, __P> };
   // @vize-map: component -> 8:70
-  type __TodoItem_Props_0 = typeof TodoItem extends { __vizeCheck: any } ? Record<string, unknown> : (typeof TodoItem extends { readonly __vizeRawProps?: infer __P } ? __P : (typeof TodoItem extends { new (): { readonly __vizeRawProps?: infer __P } } ? __P : (typeof TodoItem extends { new (): { $props: infer __P } } ? __P : (typeof TodoItem extends (props: infer __P) => any ? __P : {}))));
+  type __TodoItem_Props_0 = typeof TodoItem extends { __vizeCheck: infer __F } ? (__VizeIsAny<__F> extends true ? __VizeComponentRawProps<typeof TodoItem> : Record<string, unknown>) : __VizeComponentRawProps<typeof TodoItem>;
   type __TodoItem_CheckProps_0 = __TodoItem_Props_0 & __VizeEmitListeners<typeof TodoItem> & __VizeFallthroughProps<typeof TodoItem> & __VizePublicComponentAttrs;
+  type __TodoItem_ValueProps_0 = __TodoItem_Props_0 & __VizeEmitListeners<typeof TodoItem> & __VizePublicComponentAttrs;
   type __TodoItem_Check_0 = __VizePropChecker<typeof TodoItem, __TodoItem_CheckProps_0>;
-  type __TodoItem_0_prop_item = __VizePropValue<__TodoItem_CheckProps_0, 'item'>;
+  type __TodoItem_0_prop_item = __VizePropValue<__TodoItem_ValueProps_0, 'item'>;
 
   // Component template navigation references
   void TodoItem;
