@@ -87,3 +87,32 @@ fn required_slot_check_records_static_slot_names() {
         output.code
     );
 }
+
+#[test]
+fn required_slot_check_skips_open_index_signature_slot_contracts() {
+    let script = r#"import OpenSlots from "./OpenSlots.vue";
+"#;
+    let template = r#"<OpenSlots><template #header="{ title }">{{ title }}</template></OpenSlots>"#;
+
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    assert!(
+        output.code.contains("string extends keyof __S ? {}"),
+        "open slot index signatures must not require every possible name:\n{}",
+        output.code
+    );
+    assert!(
+        output
+            .code
+            .contains("__VizeRequiredSlots<__VizeSlotContract_0, { readonly \"header\": true; }>"),
+        "static parent slot names must still be recorded for finite contracts:\n{}",
+        output.code
+    );
+}

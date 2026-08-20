@@ -12,6 +12,7 @@ mod external_slot_payloads;
 mod global_component_callbacks;
 mod imported_component_ref_expose;
 mod native_prop_anchors;
+mod open_slot_index_signature;
 mod optional_boolean_props;
 mod options_api_bridge_anchors;
 mod options_api_declaration_instance;
