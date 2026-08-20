@@ -198,10 +198,14 @@ pub(super) fn emit_default_export_declaration(
             " readonly __vizeRawProps?: {props_ref};"
         );
     }
+    // `defineSlots` describes the callable payload for each slot; it does not
+    // require a parent to provide every declared slot. Keep the private marker
+    // partial so parent payload inference remains exact without turning an
+    // omitted slot into a component-usage error.
     if let Some(slots_ref) = static_slots_ref {
         append!(
             component_contract_fields,
-            " readonly __vizeSlots?: {slots_ref};"
+            " readonly __vizeSlots?: Partial<{slots_ref}>;"
         );
     }
     if let Some(fallthrough_ref) = fallthrough_props_ref {

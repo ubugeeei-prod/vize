@@ -20,8 +20,10 @@ fn define_slots_exports_static_slot_marker_for_parents() {
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(
-        output.code.contains("readonly __vizeSlots?: Slots;"),
-        "defineSlots must be visible on the component value for parent checks:\n{}",
+        output
+            .code
+            .contains("readonly __vizeSlots?: Partial<Slots>;"),
+        "defineSlots must expose optional parent-provided slots without losing payload types:\n{}",
         output.code
     );
 }

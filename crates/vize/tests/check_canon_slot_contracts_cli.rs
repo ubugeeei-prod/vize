@@ -211,7 +211,7 @@ fn assert_diagnostic(
 }
 
 #[test]
-fn check_child_slot_payloads_and_required_slots_are_enforced() {
+fn check_child_slot_payloads_and_omitted_slots_are_supported() {
     let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
@@ -272,6 +272,7 @@ import LibraryButton from "./LibraryButton";
   <HeaderSlotChild>
     <template #header="{ title }">{{ title }}</template>
   </HeaderSlotChild>
+  <HeaderSlotChild />
   <LibraryButton />
 </template>
 "#,
@@ -286,17 +287,6 @@ import DefaultSlotChild from "./DefaultSlotChild.vue";
   <DefaultSlotChild>
     <template #default="{ missing }">{{ missing }}</template>
   </DefaultSlotChild>
-</template>
-"#,
-            ),
-            (
-                "src/MissingRequiredSlot.vue",
-                r#"<script setup lang="ts">
-import HeaderSlotChild from "./HeaderSlotChild.vue";
-</script>
-
-<template>
-  <HeaderSlotChild />
 </template>
 "#,
             ),
@@ -320,23 +310,6 @@ import HeaderSlotChild from "./HeaderSlotChild.vue";
         27,
         2339,
         "error:7:27 [TS2339] Property 'missing' does not exist on type '{ msg: string; }'.",
-    );
-
-    let missing_slot = run_check_json(&project_root, &corsa_path, "src/MissingRequiredSlot.vue");
-    assert!(!missing_slot.status.success(), "{:?}", missing_slot.json);
-    assert_eq!(
-        missing_slot.json["errorCount"],
-        serde_json::json!(1),
-        "{:?}",
-        missing_slot.json
-    );
-    assert_diagnostic(
-        &missing_slot.json,
-        "src/MissingRequiredSlot.vue",
-        6,
-        16,
-        2741,
-        "error:6:16 [TS2741] Property '__vizeMissingSlots' is missing in type '{}' but required in type '{ readonly __vizeMissingSlots: \"header\"; }'.",
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
