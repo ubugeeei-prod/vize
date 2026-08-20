@@ -650,6 +650,7 @@
       "patinaSeverity": "error",
       "patinaPresets": [
         "ecosystem",
+        "essential",
         "general-recommended",
         "nuxt",
         "opinionated"
