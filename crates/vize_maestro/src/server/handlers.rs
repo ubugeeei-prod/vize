@@ -109,6 +109,19 @@ impl LanguageServer for MaestroServer {
 
         self.state.update_virtual_docs(&uri, &content);
 
+        // Keep parser/lint feedback immediate, but do not make the first
+        // completion wait behind Corsa startup and a full type-diagnostic
+        // pass. The versioned background pass still publishes the combined
+        // diagnostics after a short interactive grace period (#4485).
+        #[cfg(feature = "native")]
+        if self.state.is_lsp_typecheck_enabled() {
+            self.publish_sync_diagnostics_if_version(&uri, version)
+                .await;
+            if self.schedule_initial_diagnostics(uri.clone(), version) {
+                return;
+            }
+        }
+
         self.publish_diagnostics(&uri).await;
     }
 
@@ -214,6 +227,9 @@ impl LanguageServer for MaestroServer {
 
         #[cfg(feature = "native")]
         {
+            if let Some(response) = CompletionService::complete_static_object_member(&ctx) {
+                return Ok(Some(response));
+            }
             let corsa_bridge = self.state.get_corsa_bridge().await;
             if let Some(response) = CompletionService::complete_with_corsa(&ctx, corsa_bridge).await
             {

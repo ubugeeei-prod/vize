@@ -21,6 +21,8 @@ mod format;
 mod handlers;
 mod helpers;
 mod importers;
+#[cfg(feature = "native")]
+mod initial_diagnostics;
 mod state;
 mod workspace_files;
 mod workspace_folder_events;
@@ -40,15 +42,40 @@ pub struct MaestroServer {
     /// LSP client for sending notifications
     client: Client,
     /// Server state
-    state: ServerState,
+    #[allow(clippy::disallowed_types)] // Shared only with the single diagnostics worker.
+    state: std::sync::Arc<ServerState>,
+    /// Single background lane for the type-diagnostic work scheduled by
+    /// `didOpen`. Keeping the sender on the foreground server lets the worker
+    /// own the same client and state without spawning one thread per document.
+    #[cfg(feature = "native")]
+    initial_diagnostics: Option<initial_diagnostics::InitialDiagnosticsScheduler>,
 }
 
 impl MaestroServer {
     /// Create a new Maestro server instance.
+    #[allow(clippy::disallowed_types)] // One diagnostics worker shares the live server state.
     pub fn new(client: Client) -> Self {
+        let state = std::sync::Arc::new(ServerState::new());
+
+        #[cfg(feature = "native")]
+        let initial_diagnostics = {
+            // The worker must not retain another sender, otherwise dropping the
+            // foreground server could never close its queue.
+            let worker = Self {
+                client: client.clone(),
+                state: state.clone(),
+                initial_diagnostics: None,
+            };
+            Some(initial_diagnostics::InitialDiagnosticsScheduler::new(
+                worker,
+            ))
+        };
+
         Self {
             client,
-            state: ServerState::new(),
+            state,
+            #[cfg(feature = "native")]
+            initial_diagnostics,
         }
     }
 

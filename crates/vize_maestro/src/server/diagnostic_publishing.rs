@@ -9,6 +9,39 @@ use crate::ide::DiagnosticService;
 use super::MaestroServer;
 
 impl MaestroServer {
+    /// Publish the diagnostics that do not need Corsa, provided the document
+    /// still has the version opened by the caller. The initial native pass uses
+    /// this fast path before its combined type-diagnostic refresh is queued.
+    ///
+    /// This deliberately bypasses `publish_collected_diagnostics`: Corsa has
+    /// not been attempted yet, so its one-shot "type checking unavailable"
+    /// notice would be premature here.
+    #[cfg(feature = "native")]
+    pub(super) async fn publish_sync_diagnostics_if_version(&self, uri: &Url, expected: i32) {
+        let diagnostic_lock = self.state.diagnostic_lock(uri);
+        let diagnostic_guard = diagnostic_lock.lock().await;
+
+        let diagnostics = if self.state.documents.version(uri) == Some(expected) {
+            if self.state.lsp_features().has_diagnostics() {
+                Some(DiagnosticService::collect(&self.state, uri))
+            } else {
+                Some(Vec::new())
+            }
+        } else {
+            None
+        };
+
+        drop(diagnostic_guard);
+
+        if let Some(diagnostics) = diagnostics
+            && self.state.documents.version(uri) == Some(expected)
+        {
+            self.client
+                .publish_diagnostics(uri.clone(), diagnostics, Some(expected))
+                .await;
+        }
+    }
+
     /// Collect diagnostics while the caller owns this document's diagnostic
     /// lock. Sending the LSP notification is deliberately separate: the
     /// client channel can apply backpressure, and no document lock should be
