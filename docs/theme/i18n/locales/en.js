@@ -18,6 +18,7 @@
       "/guide/jsx-babel-compat": "Babel JSX Compat",
       "/guide/troubleshooting": "Troubleshooting",
       "/guide/cli": "CLI",
+      "/guide/content-mapper": "Content Mapper",
       "/guide/vite-plugin": "Vite Plugin",
       "/guide/unplugin": "Bundler Integrations",
       "/guide/wasm": "WASM Bindings",

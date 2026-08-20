@@ -133,9 +133,10 @@ pub use corsa_bridge::{
 #[cfg(feature = "native")]
 pub use batch::{
     BatchTopologyMetrics, BatchTypeChecker, BatchTypeCheckerOptions,
-    CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperDiagnostic, ContentMapperSemanticLink,
-    ContentMapperSpan, ContentMapperTransform, ContentMapperTransformOptions, CorsaError,
-    CorsaExecutor, CorsaNotFoundError, DeclarationEmitOptions, DeclarationEmitResult,
+    CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperDiagnostic, ContentMapperDiagnosticDirective,
+    ContentMapperDiagnosticDirectives, ContentMapperSemanticLink, ContentMapperSpan,
+    ContentMapperTransform, ContentMapperTransformOptions, ContentMapperUnusedExpectDiagnostic,
+    CorsaError, CorsaExecutor, CorsaNotFoundError, DeclarationEmitOptions, DeclarationEmitResult,
     DeclarationOutput, Diagnostic as BatchDiagnostic, ImportRewriter, ImportSourceMap,
     IncrementalCheckMetrics, PackageManager, TypeCheckResult as BatchTypeCheckResult,
     TypeChecker as BatchTypeCheckerTrait, VirtualFile, VirtualProject, VirtualTsGenerator,

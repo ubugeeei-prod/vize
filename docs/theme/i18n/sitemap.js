@@ -80,6 +80,7 @@
         "/integrations/mcp",
         "/guide/wasm",
         "/guide/cli",
+        "/guide/content-mapper",
       ],
     },
     {

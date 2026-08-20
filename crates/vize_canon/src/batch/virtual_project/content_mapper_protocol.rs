@@ -21,6 +21,8 @@ pub struct ContentMapperTransform {
     pub mappings: Vec<ContentMapperSpan>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub semantic_links: Vec<ContentMapperSemanticLink>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub diagnostic_directives: Option<ContentMapperDiagnosticDirectives>,
     pub diagnostics: Vec<ContentMapperDiagnostic>,
 }
 
@@ -48,6 +50,34 @@ pub struct ContentMapperDiagnostic {
     pub start: usize,
     pub length: usize,
 }
+
+/// Framework directives that suppress TypeScript diagnostics in virtual
+/// ranges, shared across the compact directive tuples.
+#[derive(Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ContentMapperDiagnosticDirectives {
+    pub unused_expect_directive_diagnostics: Vec<ContentMapperUnusedExpectDiagnostic>,
+    pub directives: Vec<ContentMapperDiagnosticDirective>,
+}
+
+/// The error TypeScript reports when an expect directive suppressed nothing.
+#[derive(Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ContentMapperUnusedExpectDiagnostic {
+    pub code: i32,
+    pub message_text: CompactString,
+}
+
+/// Policy stored in a mapped diagnostic directive tuple.
+pub const DIRECTIVE_POLICY_IGNORE: usize = 0;
+/// Policy for directives that must suppress at least one diagnostic.
+pub const DIRECTIVE_POLICY_EXPECT: usize = 1;
+
+/// A mapped diagnostic directive tuple:
+/// `[originalStart, originalLength, virtualStart, virtualEnd, policy,
+/// unusedExpectDirectiveIndex]`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct ContentMapperDiagnosticDirective(pub [usize; 6]);
 
 pub(super) fn protocol_semantic_links(
     links: &[crate::virtual_ts::VizeSemanticLink],

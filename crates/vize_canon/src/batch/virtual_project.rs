@@ -30,8 +30,9 @@ mod art_usage;
 mod build;
 mod content_mapper;
 pub use content_mapper::{
-    CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperDiagnostic, ContentMapperSemanticLink,
-    ContentMapperSpan, ContentMapperTransform, ContentMapperTransformOptions,
+    CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperDiagnostic, ContentMapperDiagnosticDirective,
+    ContentMapperDiagnosticDirectives, ContentMapperSemanticLink, ContentMapperSpan,
+    ContentMapperTransform, ContentMapperTransformOptions, ContentMapperUnusedExpectDiagnostic,
     generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
 };
 mod css_var_usage;

@@ -17,6 +17,7 @@
       "/guide/jsx-babel-compat": "Compatibilidade com Babel JSX",
       "/guide/troubleshooting": "Solução de problemas",
       "/guide/cli": "CLI",
+      "/guide/content-mapper": "Content Mapper",
       "/guide/vite-plugin": "Plugin do Vite",
       "/guide/unplugin": "Integrações com bundlers",
       "/guide/wasm": "Bindings WASM",
