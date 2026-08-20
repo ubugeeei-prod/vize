@@ -1,0 +1,17 @@
+---
+source: crates/vize_atelier_core/tests/v_once_prop_keys.rs
+expression: output.as_str()
+---
+import { createElementVNode as _createElementVNode, setBlockTracking as _setBlockTracking } from "vue"
+
+export function render(_ctx, _cache) {
+  return _cache[0] || (
+    _setBlockTracking(-1, true),
+    (_cache[0] = _createElementVNode("div", {
+      "data-testid": "once",
+      "aria-label": label
+    })).cacheIndex = 0,
+    _setBlockTracking(1),
+    _cache[0]
+  )
+}
