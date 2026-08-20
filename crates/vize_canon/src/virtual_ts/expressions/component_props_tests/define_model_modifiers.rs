@@ -9,7 +9,7 @@ let text = "hello"
 "#;
     let template = r#"<Child v-model.trim.capitalize="text" v-model:title.lazy="text" />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
