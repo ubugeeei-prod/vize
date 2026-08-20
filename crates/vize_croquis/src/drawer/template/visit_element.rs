@@ -29,11 +29,21 @@ impl Drawer {
         let is_component = is_component_tag(tag);
         let mut subtree_end = None;
 
-        if self.options.track_usage && is_component {
-            self.croquis.used_components.insert(CompactString::new(tag));
+        let component_usage_name = if is_component {
+            Some(CompactString::new(tag))
+        } else {
+            self.dynamic_component_target(el, tag)
+        };
+
+        if self.options.track_usage {
+            if let Some(component_name) = component_usage_name.as_ref() {
+                self.croquis.used_components.insert(component_name.clone());
+            } else if is_component {
+                self.croquis.used_components.insert(CompactString::new(tag));
+            }
         }
 
-        let mut component_usage = self.start_component_usage(el, tag, is_component);
+        let mut component_usage = self.start_component_usage(el, component_usage_name.as_ref());
         let directive_state = self.collect_element_directive_state(el, &mut subtree_end);
         let vif_condition = self.apply_element_conditional(directive_state.conditional);
         // Vue evaluates v-if before same-element v-for aliases exist. Keep the
@@ -95,7 +105,7 @@ impl Drawer {
         if let Some(ref mut usage) = component_usage {
             profile!(
                 "croquis.template.component.props_events",
-                self.collect_component_props_events(el, usage)
+                self.collect_component_props_events(el, tag, usage)
             );
             profile!(
                 "croquis.template.component.slots",
@@ -111,11 +121,11 @@ impl Drawer {
     fn start_component_usage(
         &self,
         el: &ElementNode<'_>,
-        tag: &str,
-        is_component: bool,
+        name: Option<&CompactString>,
     ) -> Option<ComponentUsage> {
-        (is_component && self.options.track_usage).then(|| ComponentUsage {
-            name: CompactString::new(tag),
+        let name = name?;
+        (self.options.track_usage).then(|| ComponentUsage {
+            name: name.clone(),
             start: el.loc.start.offset,
             end: el.loc.end.offset,
             props: SmallVec::new(),

@@ -57,6 +57,22 @@ fn models_retain_explicit_names_and_default_macro_ranges() {
 }
 
 #[test]
+fn array_destructured_define_model_keeps_public_model_contract() {
+    let source = "const [model, modifiers] = defineModel<string, \"trim\" | \"capitalize\">({ required: true })";
+    let result = parse_script_setup(source);
+    let models = result.macros.models();
+
+    assert_eq!(models.len(), 1);
+    assert_eq!(models[0].name, "modelValue");
+    assert_eq!(models[0].model_type.as_deref(), Some("string"));
+    assert_eq!(
+        result.macros.model_modifier_type(models[0].name.as_str()),
+        Some("\"trim\" | \"capitalize\"")
+    );
+    assert!(models[0].required);
+}
+
+#[test]
 fn shifting_macros_keeps_model_declarations_in_script_coordinates() {
     let mut result = parse_script_setup("defineModel<string>(\"title\")");
     let declaration = result

@@ -156,7 +156,15 @@ fn check_text_diagnostics_name_template_bindings() {
             (
                 "src/Child.vue",
                 r#"<script setup lang="ts">
-defineProps<{ modelValue: number; kind: "num"; n: number }>();
+defineProps<{
+  modelValue: number;
+  kind: "num";
+  n: number;
+  label?: string;
+  value?: number;
+  first?: number;
+  second?: number;
+}>();
 defineEmits<{ save: [id: number] }>();
 defineSlots<{ default(props: { count: number }): unknown }>();
 </script>
@@ -174,6 +182,8 @@ const text = ref("bad");
 <template>
   <Child v-model="text" />
   <Child kind="num" :s="'bad'" />
+  <Child label="v-model:fake" kind="num" :n="1" :value="'bad'" />
+  <Child label="😀" kind="num" :n="1" :first="1" :second="'bad'" />
   <Child :model-value="1" kind="num" :n="1" @save="(id: string) => {}" />
   <Child :model-value="1" kind="num" :n="1" v-slot="{ count }">{{ count.toUpperCase() }}</Child>
 </template>
@@ -197,6 +207,14 @@ const text = ref("bad");
     assert!(
         stdout.contains("binding: 's'"),
         "shorthand prop diagnostics should name the authored prop:\n{stdout}"
+    );
+    assert!(
+        stdout.contains("binding: 'value'"),
+        "directive-like quoted values should not mask the real binding:\n{stdout}"
+    );
+    assert!(
+        stdout.contains("binding: 'second'"),
+        "UTF-16 diagnostic columns should resolve to the authored binding:\n{stdout}"
     );
     assert!(
         stdout.contains("binding: @save"),

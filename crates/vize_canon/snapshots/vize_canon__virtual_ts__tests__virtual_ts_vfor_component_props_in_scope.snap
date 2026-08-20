@@ -39,6 +39,9 @@ type __VizeBooleanKey<T, K extends keyof T = keyof T> = K extends any ? [T[K]] e
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
 type __WithDefaultsResult<T, D> = T extends unknown ? Omit<__LooseRequired<T>, keyof D> & { [K in keyof D & keyof T]-?: [D[K]] extends [undefined] ? __LooseRequired<T>[K] : Exclude<__LooseRequired<T>[K], undefined> } : never;
 type __Ref<T> = import('vue').Ref<T>;
+type __VizeModelModifiers<M extends PropertyKey> = Record<M, true | undefined>;
+type __VizeWritableRef<G, S> = Omit<__Ref<G>, 'value'> & { get value(): G; set value(value: S); };
+type __VizeModelRef<T, M extends PropertyKey = string, G = T, S = T> = __VizeWritableRef<G, S> & [__VizeModelRef<T, M, G, S>, __VizeModelModifiers<M>];
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
 type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
 type __VizeKebabCase<S extends string> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? `${Head}${__VizeKebabCase<Tail>}` : `-${Lowercase<Head>}${__VizeKebabCase<Tail>}` : S;
@@ -84,9 +87,9 @@ function __setup() {
   function defineEmits<const _T extends Record<string, any>>(_events: _T): __EmitFn<_T>;
   function defineEmits(_events?: any) { void _events; return (() => {}) as any; }
   function defineExpose<_T = unknown>(_exposed?: _T): void { void _exposed; }
-  function defineModel<_T = unknown>(): __Ref<_T | undefined>;
-  function defineModel<_T = unknown>(_options: any): __Ref<_T>;
-  function defineModel<_T = unknown>(_name: string, _options?: any): __Ref<_T>;
+  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(): __VizeModelRef<_T | undefined, _M, _G | undefined, _S | undefined>;
+  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_options: any): __VizeModelRef<_T, _M, _G, _S>;
+  function defineModel<_T = unknown, _M extends PropertyKey = string, _G = _T, _S = _T>(_name: string, _options?: any): __VizeModelRef<_T, _M, _G, _S>;
   function defineModel(_name_or_options?: any, _options?: any) { void _name_or_options; void _options; return undefined as any; }
   function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
   function withDefaults<_T, _BKeys extends keyof _T, const _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
@@ -98,7 +101,7 @@ function __setup() {
   
   const todos = ref([{ id: 1, text: 'Hello' }])
   
-  // @vize-map: 9196:9250 -> 0:111
+  // @vize-map: 9767:9821 -> 0:111
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

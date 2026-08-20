@@ -19,6 +19,7 @@ ScriptParseResult {
         emits: [],
         emit_calls: [],
         models: [],
+        model_modifier_types: {},
         exposes: [],
         slots: [],
         art: None,

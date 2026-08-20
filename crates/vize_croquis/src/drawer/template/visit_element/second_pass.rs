@@ -38,7 +38,7 @@ impl Drawer {
         is_component: bool,
         tag: &str,
     ) {
-        let event_target_component = event_target_component(el, is_component, tag);
+        let event_target_component = self.event_target_component(el, is_component, tag);
         profile!("croquis.template.element.second_pass", {
             for prop in &el.props {
                 let PropNode::Directive(dir) = prop else {
@@ -179,32 +179,40 @@ impl Drawer {
     }
 }
 
-fn event_target_component(
-    el: &ElementNode<'_>,
-    is_component: bool,
-    tag: &str,
-) -> Option<CompactString> {
-    if is_component {
-        return Some(CompactString::new(tag));
+impl Drawer {
+    pub(super) fn event_target_component(
+        &self,
+        el: &ElementNode<'_>,
+        is_component: bool,
+        tag: &str,
+    ) -> Option<CompactString> {
+        if is_component {
+            return Some(CompactString::new(tag));
+        }
+
+        self.dynamic_component_target(el, tag)
     }
 
-    dynamic_component_target(el, tag)
-}
-
-fn dynamic_component_target(el: &ElementNode<'_>, tag: &str) -> Option<CompactString> {
-    if tag != "component" {
-        return None;
-    }
-
-    el.props.iter().find_map(|prop| {
-        let PropNode::Directive(dir) = prop else {
-            return None;
-        };
-        if !is_bind_is_directive(dir) {
+    pub(super) fn dynamic_component_target(
+        &self,
+        el: &ElementNode<'_>,
+        tag: &str,
+    ) -> Option<CompactString> {
+        if tag != "component" {
             return None;
         }
-        expression_identifier(dir.exp.as_ref()?)
-    })
+
+        el.props.iter().find_map(|prop| {
+            let PropNode::Directive(dir) = prop else {
+                return None;
+            };
+            if !is_bind_is_directive(dir) {
+                return None;
+            }
+            let target = expression_identifier(dir.exp.as_ref()?)?;
+            dynamic_component_target_is_known(self, target.as_str()).then_some(target)
+        })
+    }
 }
 
 fn is_bind_is_directive(dir: &DirectiveNode<'_>) -> bool {
@@ -235,6 +243,22 @@ fn parse_component_reference_expression(source: &str) -> Option<CompactString> {
         }
         _ => None,
     }
+}
+
+fn dynamic_component_target_is_known(drawer: &Drawer, target: &str) -> bool {
+    let root = target
+        .split('.')
+        .next()
+        .map(str::trim)
+        .unwrap_or(target)
+        .trim();
+    drawer.croquis.bindings.contains(root) || starts_like_component_identifier(root)
+}
+
+fn starts_like_component_identifier(name: &str) -> bool {
+    name.chars()
+        .next()
+        .is_some_and(|character| character.is_ascii_uppercase())
 }
 
 fn expression_content<'a>(exp: &'a ExpressionNode<'_>) -> &'a str {

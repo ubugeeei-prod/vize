@@ -1,11 +1,3 @@
-//! Variable declarator processing for macros, reactivity, and inject patterns.
-//!
-//! Handles the complex logic of processing variable declarations including:
-//! - Compiler macro detection (defineProps, defineEmits, etc.)
-//! - Reactivity wrapper detection (ref, computed, reactive)
-//! - Inject call detection and destructuring patterns
-//! - Object/array destructuring from defineProps and reactive sources
-
 use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, Expression, ObjectPattern, PropertyKey,
     VariableDeclarationKind,
@@ -33,7 +25,8 @@ use super::bindings::{
     infer_destructure_binding_type, push_binding_pattern_names,
 };
 
-/// Process a variable declarator
+mod define_model_destructure;
+
 pub(in crate::script_parser) fn process_variable_declarator(
     result: &mut ScriptParseResult,
     declarator: &oxc_ast::ast::VariableDeclarator<'_>,
@@ -508,6 +501,8 @@ pub(in crate::script_parser) fn process_variable_declarator(
         }
 
         BindingPattern::ArrayPattern(arr) => {
+            let is_define_model_array =
+                define_model_destructure::process(result, declarator.init.as_ref(), arr, source);
             let inject_call = declarator.init.as_ref().and_then(|init| {
                 let call = extract_call_expression(init)?;
                 if is_inject_call(call, result) {
@@ -596,8 +591,11 @@ pub(in crate::script_parser) fn process_variable_declarator(
                 );
             }
 
-            // Handle array destructuring
-            let arr_binding_type = infer_destructure_binding_type(kind, declarator.init.as_ref());
+            let arr_binding_type = if is_define_model_array {
+                BindingType::SetupMaybeRef
+            } else {
+                infer_destructure_binding_type(kind, declarator.init.as_ref())
+            };
             for elem in arr.elements.iter().flatten() {
                 add_binding_pattern_names(&mut result.bindings, elem, arr_binding_type);
             }
