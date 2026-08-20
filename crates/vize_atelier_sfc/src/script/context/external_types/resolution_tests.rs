@@ -70,6 +70,35 @@ fn package_root_prefers_exports_types_over_top_level_types() {
 }
 
 #[test]
+fn package_root_falls_back_to_typescript_source_when_declarations_are_unbuilt() {
+    let nonce = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let package = std::env::temp_dir().join(format!(
+        "vize-sfc-external-types-{}-workspace-source-{nonce}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&package).unwrap();
+    std::fs::write(
+        package.join("package.json"),
+        r#"{"types":"./index.d.ts","module":"./index.ts","main":"./index.ts"}"#,
+    )
+    .unwrap();
+    std::fs::write(
+        package.join("index.ts"),
+        "export interface WorkspaceProps { emptyValues?: unknown[] }",
+    )
+    .unwrap();
+
+    let resolved = resolve_package_types(&package, "").unwrap();
+    let expected = package.join("index.ts").canonicalize().unwrap();
+    assert_eq!(resolved, expected);
+
+    let _ = std::fs::remove_dir_all(package);
+}
+
+#[test]
 fn package_root_reads_condition_only_exports_map() {
     let nonce = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)

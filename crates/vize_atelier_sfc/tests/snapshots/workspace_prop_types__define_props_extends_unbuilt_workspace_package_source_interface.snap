@@ -1,0 +1,47 @@
+---
+source: crates/vize_atelier_sfc/tests/workspace_prop_types.rs
+expression: result.code.as_str()
+---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue";
+export default {
+  __name: "cascader",
+  props: {
+    emptyValues: {
+      type: Array,
+      required: false
+    },
+    valueOnClear: {
+      type: [
+        String,
+        Number,
+        Boolean,
+        null
+      ],
+      required: false
+    },
+    options: {
+      type: Array,
+      required: false,
+      default: () => []
+    },
+    disabled: {
+      type: Boolean,
+      required: false,
+      default: undefined
+    }
+  },
+  setup(__props) {
+    const props = __props;
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock("div", {
+        "data-empty-values": props.emptyValues,
+        "data-value-on-clear": props.valueOnClear,
+        "data-option-count": props.options.length
+      }, null, 8, [
+        "data-empty-values",
+        "data-value-on-clear",
+        "data-option-count"
+      ]);
+    };
+  }
+};

@@ -208,8 +208,19 @@ fn resolve_package_types(package_dir: &Path, subpath: &str) -> Option<PathBuf> {
             {
                 return Some(path);
             }
+
+            // Workspace `types` files may exist only after a build. Fall back
+            // to checked-in TS entries so inherited prop keys remain visible.
+            for field in ["module", "main"] {
+                if let Some(entry) = manifest.get(field).and_then(|value| value.as_str())
+                    && let Some(path) = resolve_candidate_path(package_dir.join(entry))
+                {
+                    return Some(path);
+                }
+            }
         }
-        return resolve_candidate_path(package_dir.join("index.d.ts"));
+        return resolve_candidate_path(package_dir.join("index.d.ts"))
+            .or_else(|| resolve_candidate_path(package_dir.join("index")));
     }
 
     if let Some(manifest) = &manifest {
