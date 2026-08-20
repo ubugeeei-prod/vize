@@ -53,6 +53,7 @@ import {
   runMatrix,
   scratchRoot,
 } from "./lib/corpus-baseline-run.mjs";
+import { assertFixturesPristine, cleanFixtures } from "./lib/corpus-fixture-hygiene.mjs";
 import { repoRoot } from "./lib/paths.mjs";
 
 function parseArgs(argv) {
@@ -64,6 +65,8 @@ function parseArgs(argv) {
     timeoutMs: null,
     keepRaw: false,
     surfaces: [],
+    cleanFixtures: false,
+    allowDirtyFixtures: false,
   };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -77,6 +80,8 @@ function parseArgs(argv) {
     else if (arg === "--write-fresh") args.writeFresh = value();
     else if (arg === "--timeout-ms") args.timeoutMs = positiveInteger(value(), arg);
     else if (arg === "--keep-raw") args.keepRaw = true;
+    else if (arg === "--clean-fixtures") args.cleanFixtures = true;
+    else if (arg === "--allow-dirty-fixtures") args.allowDirtyFixtures = true;
     else if (arg === "--surface") {
       args.surfaces.push(
         ...value()
@@ -86,7 +91,7 @@ function parseArgs(argv) {
       );
     } else if (arg === "--help" || arg === "-h") {
       process.stdout.write(
-        "usage: node tools/davinci/corpus-diff.mjs [--surface s[,s]] [--shards n] [--vize-bin path] [--baseline path] [--write-fresh path] [--timeout-ms n] [--keep-raw]\n",
+        "usage: node tools/davinci/corpus-diff.mjs [--surface s[,s]] [--shards n] [--vize-bin path] [--baseline path] [--write-fresh path] [--timeout-ms n] [--keep-raw] [--clean-fixtures] [--allow-dirty-fixtures]\n",
       );
       process.exit(0);
     } else throw new Error(`unknown argument: ${arg}`);
@@ -109,6 +114,12 @@ async function main() {
   const baselinePath = args.baseline == null ? BASELINE_PATH : path.resolve(args.baseline);
   const baselineLabel = path.relative(repoRoot, baselinePath);
   const log = (line) => process.stdout.write(`${line}\n`);
+
+  if (args.cleanFixtures) {
+    const removed = cleanFixtures();
+    log(`corpus-diff: cleaned ${removed} materialized node_modules from the fixtures`);
+  }
+  assertFixturesPristine(fail, { allowMaterialized: args.allowDirtyFixtures });
 
   if (!existsSync(baselinePath)) {
     fail([

@@ -40,10 +40,19 @@ import {
   runMatrix,
   scratchRoot,
 } from "./lib/corpus-baseline-run.mjs";
+import { assertFixturesPristine, cleanFixtures } from "./lib/corpus-fixture-hygiene.mjs";
 import { repoRoot } from "./lib/paths.mjs";
 
 function parseArgs(argv) {
-  const args = { shards: 4, vizeBin: null, out: null, timeoutMs: null, keepRaw: false };
+  const args = {
+    shards: 4,
+    vizeBin: null,
+    out: null,
+    timeoutMs: null,
+    keepRaw: false,
+    cleanFixtures: false,
+    allowDirtyFixtures: false,
+  };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     const value = () => {
@@ -55,9 +64,11 @@ function parseArgs(argv) {
     else if (arg === "--out") args.out = value();
     else if (arg === "--timeout-ms") args.timeoutMs = positiveInteger(value(), arg);
     else if (arg === "--keep-raw") args.keepRaw = true;
+    else if (arg === "--clean-fixtures") args.cleanFixtures = true;
+    else if (arg === "--allow-dirty-fixtures") args.allowDirtyFixtures = true;
     else if (arg === "--help" || arg === "-h") {
       process.stdout.write(
-        "usage: node tools/davinci/corpus-baseline.mjs [--shards n] [--vize-bin path] [--out path] [--timeout-ms n] [--keep-raw]\n",
+        "usage: node tools/davinci/corpus-baseline.mjs [--shards n] [--vize-bin path] [--out path] [--timeout-ms n] [--keep-raw] [--clean-fixtures] [--allow-dirty-fixtures]\n",
       );
       process.exit(0);
     } else throw new Error(`unknown argument: ${arg}`);
@@ -80,6 +91,17 @@ async function main() {
   const outPath = args.out == null ? BASELINE_PATH : path.resolve(args.out);
   const scratchDir = scratchRoot(`baseline-${process.pid}`);
   const log = (line) => process.stdout.write(`${line}\n`);
+
+  if (args.cleanFixtures) {
+    const removed = cleanFixtures();
+    log(`corpus-baseline: cleaned ${removed} materialized node_modules from the fixtures`);
+  }
+  assertFixturesPristine(
+    (lines) => {
+      throw new Error(lines.join("\n"));
+    },
+    { allowMaterialized: args.allowDirtyFixtures },
+  );
 
   log(
     `corpus-baseline: ${manifest.projects.length} projects x ${SURFACES.length} surfaces, ${args.shards} parallel shards`,

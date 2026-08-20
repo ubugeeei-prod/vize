@@ -12,9 +12,22 @@
 
 ```sh
 cargo build --release -p vize
-node tools/davinci/corpus-baseline.mjs            # rewrite the committed baseline
-node tools/davinci/corpus-diff.mjs                # gate a fresh run against it
+node tools/davinci/corpus-baseline.mjs --clean-fixtures   # rewrite the committed baseline
+node tools/davinci/corpus-diff.mjs --clean-fixtures       # gate a fresh run against it
 ```
+
+**Both tools refuse to sweep contaminated fixtures.** A run only produces
+comparable hashes when it starts from the pinned tree, so each tool
+pre-flights it: every fixture submodule must sit at its recorded sha, and no
+`node_modules` may be materialized inside a checkout. A sweep leaves ~142 of
+them behind (see Re-record 2 below), so the next run without
+`--clean-fixtures` stops immediately with the offending paths instead of
+spending minutes producing hashes nobody can trust. `--clean-fixtures`
+removes them first; `--allow-dirty-fixtures` sweeps anyway and is only for
+deliberate experiments, since its hashes are not comparable to the committed
+baseline. Drifted submodules are never auto-repaired — the tool prints the
+`git submodule update` line and stops, because silently re-hydrating a
+fixture would change what the corpus measures.
 
 Both tools spawn `tools/fixtures/tool-matrix-report.mjs` across all shards
 (4 parallel shard processes by default; the harness is serial inside a
