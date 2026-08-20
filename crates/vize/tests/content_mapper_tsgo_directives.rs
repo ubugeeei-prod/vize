@@ -42,16 +42,16 @@ fn template_directives_suppress_and_report_through_standard_tsgo() {
         "unused expect directive fixture passed unexpectedly:\n{}",
         output_text(&unused)
     );
-    let unused_output = output_text(&unused);
-    assert!(
-        unused_output.contains("directives/UnusedExpect.vue")
-            && unused_output.contains("vize4")
-            && unused_output.contains("Unused '@vue-expect-error' directive"),
-        "{unused_output}"
-    );
-    assert!(
-        !unused_output.contains("TS2"),
-        "unused directive fixture leaked TypeScript diagnostics:\n{unused_output}"
+    let unused_stdout = std::str::from_utf8(&unused.stdout).unwrap();
+    let diagnostic_lines: Vec<&str> = unused_stdout
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .collect();
+    assert_eq!(
+        diagnostic_lines,
+        ["directives/UnusedExpect.vue(6,8): error vize4: Unused '@vue-expect-error' directive"],
+        "unused directive fixture must report exactly the vize4 diagnostic:\n{}",
+        output_text(&unused)
     );
 }
 
