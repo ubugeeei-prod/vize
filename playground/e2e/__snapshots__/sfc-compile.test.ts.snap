@@ -8,15 +8,25 @@ exports[`SFC Compilation > Basic SFC > should compile template-only SFC 1`] = `
 
 exports[`SFC Compilation > SSR Mode > should keep custom renderer intrinsics as elements while preserving imported lowercase bindings 1`] = `
 {
-  "dom": "import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock, unref as _unref } from "vue";
+  "dom": "import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock } from "vue";
+export function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return _openBlock(), _createElementBlock("mesh", null, [$setup.visible ? (_openBlock(), _createElementBlock("group", { key: 0 }, [_createVNode($setup.Primitive)])) : _createCommentVNode("v-if", true)]);
+}
 import { Primitive } from "@tresjs/core";
 const visible = true;
 export default {
   __name: "anonymous",
+  render,
   setup(__props) {
-    return (_ctx, _cache) => {
-      return _openBlock(), _createElementBlock("mesh", null, [visible ? (_openBlock(), _createElementBlock("group", { key: 0 }, [_createVNode(_unref(Primitive))])) : _createCommentVNode("v-if", true)]);
+    const __returned__ = {
+      Primitive,
+      visible
     };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
   }
 };",
   "ssr": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer";
@@ -53,17 +63,27 @@ export default {
 
 exports[`SFC Compilation > SSR Mode > should resolve dotted component tags through setup member bindings in both DOM and SSR output 1`] = `
 {
-  "dom": "import { createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock, unref as _unref, withCtx as _withCtx } from "vue";
+  "dom": "import { createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
+export function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return _openBlock(), _createBlock($setup.Form.Item, { label: "Teacher" }, {
+    default: _withCtx(() => [_createVNode($setup.Input)]),
+    _: 1
+  });
+}
 import { Form, Input } from "ant-design-vue";
 export default {
   __name: "anonymous",
+  render,
   setup(__props) {
-    return (_ctx, _cache) => {
-      return _openBlock(), _createBlock(_unref(Form).Item, { label: "Teacher" }, {
-        default: _withCtx(() => [_createVNode(_unref(Input))]),
-        _: 1
-      });
+    const __returned__ = {
+      Input,
+      Form
     };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
   }
 };",
   "ssr": "import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer";
@@ -102,19 +122,26 @@ export default {
 exports[`SFC Compilation > SSR Mode > should resolve kebab-case imported components through setup bindings in both DOM and SSR output 1`] = `
 {
   "dom": "import { createElementBlock as _createElementBlock, createVNode as _createVNode, Fragment as _Fragment, openBlock as _openBlock } from "vue";
+export function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return _openBlock(), _createElementBlock(
+    _Fragment,
+    null,
+    [_createVNode($setup.DashTest), _createVNode($setup.DashTest)],
+    64
+    /* STABLE_FRAGMENT */
+  );
+}
 import DashTest from "./dash-test.vue";
 export default {
   __name: "anonymous",
+  render,
   setup(__props) {
-    return (_ctx, _cache) => {
-      return _openBlock(), _createElementBlock(
-        _Fragment,
-        null,
-        [_createVNode(DashTest), _createVNode(DashTest)],
-        64
-        /* STABLE_FRAGMENT */
-      );
-    };
+    const __returned__ = { DashTest };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
   }
 };",
   "ssr": "import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer";
@@ -162,24 +189,33 @@ export default {
 
 exports[`SFC Compilation > TypeScript Support > should handle complex generic types 1`] = `
 "import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
+export function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return _openBlock(), _createElementBlock(
+    "div",
+    { ref: "editorRef" },
+    null,
+    512
+    /* NEED_PATCH */
+  );
+}
 import { ref, shallowRef } from "vue";
 export default {
   __name: "anonymous",
+  render,
   setup(__props) {
     const editorRef = ref(null);
     const instance = shallowRef(null);
-    return (_ctx, _cache) => {
-      return _openBlock(), _createElementBlock(
-        "div",
-        {
-          ref_key: "editorRef",
-          ref: editorRef
-        },
-        null,
-        512
-        /* NEED_PATCH */
-      );
+    const __returned__ = {
+      editorRef,
+      ref,
+      shallowRef,
+      instance
     };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
   }
 };"
 `;
@@ -188,6 +224,10 @@ exports[`SFC Compilation > TypeScript Support > should handle interface declarat
 "import { defineComponent as _defineComponent } from 'vue'
 import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue"
 
+export function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString($setup.user.name), 1 /* TEXT */))
+}
+
 interface User {
   name: string
   age: number
@@ -195,13 +235,14 @@ interface User {
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'anonymous',
+  render: render,
   setup(__props) {
 
 const user: User = { name: 'test', age: 25 }
 
-return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(user.name), 1 /* TEXT */))
-}
+const __returned__ = { user }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
 }
 
 })"
@@ -211,16 +252,21 @@ exports[`SFC Compilation > TypeScript Support > should handle type aliases 1`] =
 "import { defineComponent as _defineComponent } from 'vue'
 import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue"
 
+export function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString($setup.status), 1 /* TEXT */))
+}
+
 type Status = 'active' | 'inactive'
 const status: Status = 'active'
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'anonymous',
+  render: render,
   setup(__props) {
 
-return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(status)))
-}
+const __returned__ = { status }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
 }
 
 })"
@@ -228,36 +274,65 @@ return (_ctx: any,_cache: any) => {
 
 exports[`SFC Compilation > TypeScript Support > should strip generic type parameters from ref/reactive 1`] = `
 "import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue";
+export function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return _openBlock(), _createElementBlock(
+    "div",
+    null,
+    _toDisplayString($setup.count),
+    1
+    /* TEXT */
+  );
+}
 import { reactive, ref } from "vue";
 export default {
   __name: "anonymous",
+  render,
   setup(__props) {
     const count = ref(0);
     const items = ref([]);
     const state = reactive({ name: "test" });
-    return (_ctx, _cache) => {
-      return _openBlock(), _createElementBlock(
-        "div",
-        null,
-        _toDisplayString(count.value),
-        1
-        /* TEXT */
-      );
+    const __returned__ = {
+      items,
+      ref,
+      count,
+      reactive,
+      state
     };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
   }
 };"
 `;
 
 exports[`SFC Compilation > TypeScript Support > should strip type annotations from script setup 1`] = `
 "import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue";
+export function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return _openBlock(), _createElementBlock(
+    "div",
+    null,
+    _toDisplayString($setup.count),
+    1
+    /* TEXT */
+  );
+}
 const count = 0;
 const name = "test";
 export default {
   __name: "anonymous",
+  render,
   setup(__props) {
-    return (_ctx, _cache) => {
-      return _openBlock(), _createElementBlock("div", null, _toDisplayString(count));
+    const __returned__ = {
+      name,
+      count
     };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
   }
 };"
 `;

@@ -59,16 +59,16 @@ const msg = "x"
   // No warnings were collected during compilation.
   t.assert.deepStrictEqual(warnings, []);
 
-  // A render output is produced: the SFC descriptor object plus a runtime render
-  // helper import. (Vize inlines the render fn inside `setup`; there is no top-level
-  // `render` identifier, so we assert on the actual shape.)
+  // Module mode emits a top-level render function and attaches it to the SFC
+  // descriptor while setup returns the bindings consumed through `$setup`.
   t.assert.match(result.code, /_sfc_main/);
+  t.assert.match(result.code, /export function render/);
   t.assert.match(result.code, /setup\(__props\)/);
   t.assert.match(result.code, /_createElementBlock/);
   t.assert.match(result.code, /from "vue"/);
 
   // `{{ msg }}` interpolation was resolved into a real binding reference.
-  t.assert.match(result.code, /_toDisplayString\(msg\)/);
+  t.assert.match(result.code, /_toDisplayString\(\$setup\.msg\)/);
 
   // No leftover TS-only syntax in this JS `<script setup>` case.
   t.assert.doesNotMatch(result.code, /\binterface\b/);
@@ -143,5 +143,5 @@ const msg = "x"
   // The standard parser produces a real `div` element (contrast with the pug path,
   // where `div.box` is emitted as plain text).
   t.assert.match(result.code, /_createElementBlock\("div"/);
-  t.assert.match(result.code, /_toDisplayString\(msg\)/);
+  t.assert.match(result.code, /_toDisplayString\(\$setup\.msg\)/);
 });
