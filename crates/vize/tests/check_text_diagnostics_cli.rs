@@ -1,7 +1,11 @@
+#[path = "support/check_output.rs"]
+mod check_output;
 #[path = "support/corsa_path.rs"]
 mod corsa_path;
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+
+use check_output::normalize_check_output;
 
 use std::{
     path::{Path, PathBuf},
@@ -111,18 +115,13 @@ const count: string = 0;
         })
         .filter_map(serde_json::Value::as_str)
         .collect();
-    assert!(
-        json_diagnostics.iter().any(|diagnostic| {
-            diagnostic.contains("error:2:7 [TS2322]")
-                && diagnostic.contains("Type 'number' is not assignable to type 'string'")
-        }),
-        "JSON diagnostics should include the known type mismatch: {json_diagnostics:#?}"
-    );
-    assert!(
-        json_diagnostics
-            .iter()
-            .all(|diagnostic| !diagnostic.contains("source:")),
-        "JSON diagnostics should stay stable and machine-oriented: {json_diagnostics:#?}"
+    // Exact oracle: the JSON report must carry exactly the known mismatch and
+    // stay machine-oriented — the pinned text proves there is no `source:`
+    // context (or anything else) appended to the diagnostic.
+    assert_eq!(
+        json_diagnostics,
+        ["error:2:7 [TS2322] Type 'number' is not assignable to type 'string'."],
+        "stderr:\n{json_stderr}"
     );
 
     let text_output = run_check(&project_root, &corsa_path, None);
@@ -133,13 +132,13 @@ const count: string = 0;
         Some(1),
         "stdout:\n{stdout}\nstderr:\n{stderr}"
     );
-    assert!(
-        stdout.contains("error:2:7 [TS2322]"),
-        "text diagnostics should stay parser-friendly:\n{stdout}"
-    );
-    assert!(
-        stdout.contains("source: const count: string = 0;"),
-        "text diagnostics should include authored source context:\n{stdout}"
+    // Exact oracle over normalized text: the diagnostic line keeps the
+    // parser-friendly `error:LINE:COL [CODE]` shape and appends the authored
+    // `source:` context that the JSON report must not carry.
+    assert_eq!(
+        normalize_check_output(stdout, &project_root),
+        "\n<project>/src/App.vue\n  error:2:7 [TS2322] Type 'number' is not assignable to type 'string'. (source: const count: string = 0;)\n\n\u{2717} Type checked 1 files in <duration> (collect: <duration>, gen: <duration>, corsa: <duration>)\n  1 error(s)\n",
+        "stderr:\n{stderr}"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
@@ -200,29 +199,28 @@ const text = ref("bad");
         Some(1),
         "stdout:\n{stdout}\nstderr:\n{stderr}"
     );
-    assert!(
-        stdout.contains("binding: modelValue"),
-        "v-model text diagnostics should name the modeled prop:\n{stdout}"
-    );
-    assert!(
-        stdout.contains("binding: 's'"),
-        "shorthand prop diagnostics should name the authored prop:\n{stdout}"
-    );
-    assert!(
-        stdout.contains("binding: 'value'"),
-        "directive-like quoted values should not mask the real binding:\n{stdout}"
-    );
-    assert!(
-        stdout.contains("binding: 'second'"),
-        "UTF-16 diagnostic columns should resolve to the authored binding:\n{stdout}"
-    );
-    assert!(
-        stdout.contains("binding: @save"),
-        "event diagnostics should name the authored event:\n{stdout}"
-    );
-    assert!(
-        stdout.contains("binding: #default"),
-        "slot diagnostics should name the authored slot:\n{stdout}"
+    // Exact oracle over normalized text, pinning every binding rendering in
+    // one artifact: the modeled prop (`modelValue`), the shorthand prop
+    // (`'s'`), the directive-like quoted value (`'value'`), the binding after
+    // a UTF-16 astral-plane column offset (`'second'`), the event (`@save`),
+    // and the slot (`#default`).
+    assert_eq!(
+        normalize_check_output(stdout, &project_root),
+        concat!(
+            "\n<project>/src/App.vue\n",
+            "  error:9:10 [TS2322] Type 'string' is not assignable to type 'number'. (source: <Child v-model=\"text\" />; binding: modelValue)\n",
+            "  error:10:4 [TS2345] Argument of type '{ kind: \"num\"; s: string; }' is not assignable to parameter of type '{ readonly modelValue: number; readonly kind: \"num\"; readonly n: number; readonly label?: string | undefined; readonly value?: number | undefined; readonly first?: number | undefined; readonly second?: number | undefined; readonly onSave?: ((id: number) => any) | undefined; } & Record<...>'.\n",
+            "Type '{ kind: \"num\"; s: string; }' is missing the following properties from type '{ readonly modelValue: number; readonly kind: \"num\"; readonly n: number; readonly label?: string | undefined; readonly value?: number | undefined; readonly first?: number | undefined; readonly second?: number | undefined; readonly onSave?: ((id: number) => any) | undefined; }': modelValue, n (source: <Child kind=\"num\" :s=\"'bad'\" />; binding: 's')\n",
+            "  error:11:50 [TS2322] Type 'string' is not assignable to type 'number'. (source: <Child label=\"v-model:fake\" kind=\"num\" :n=\"1\" :value=\"'bad'\" />; binding: 'value')\n",
+            "  error:12:51 [TS2322] Type 'string' is not assignable to type 'number'. (source: <Child label=\"😀\" kind=\"num\" :n=\"1\" :first=\"1\" :second=\"'bad'\" />; binding: 'second')\n",
+            "  error:13:46 [TS2322] Type '(id: string) => void' is not assignable to type '(id: number) => any'.\n",
+            "Types of parameters 'id' and 'id' are incompatible.\n",
+            "Type 'number' is not assignable to type 'string'. (source: <Child :model-value=\"1\" kind=\"num\" :n=\"1\" @save=\"(id: string) => {}\" />; binding: @save)\n",
+            "  error:14:73 [TS2339] Property 'toUpperCase' does not exist on type 'number'. (source: <Child :model-value=\"1\" kind=\"num\" :n=\"1\" v-slot=\"{ count }\">{{ count.toUpperCase() }}</Child>; binding: #default)\n",
+            "\n\u{2717} Type checked 2 files in <duration> (collect: <duration>, gen: <duration>, corsa: <duration>)\n",
+            "  6 error(s)\n",
+        ),
+        "stderr:\n{stderr}"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);

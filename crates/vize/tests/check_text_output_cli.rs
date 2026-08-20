@@ -1,7 +1,11 @@
+#[path = "support/check_output.rs"]
+mod check_output;
 #[path = "support/corsa_path.rs"]
 mod corsa_path;
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+
+use check_output::normalize_check_output;
 
 use std::{
     path::{Path, PathBuf},
@@ -101,7 +105,7 @@ const count: string = 0;
     // fail the equality.
     assert_eq!(
         normalize_check_output(stdout, &project_root),
-        "\n<project>/src/App.vue\n  error:2:7 [TS2322] Type 'number' is not assignable to type 'string'.\n\n\u{2717} Type checked 1 files in <duration> (collect: <duration>, gen: <duration>, corsa: <duration>)\n  1 error(s)\n",
+        "\n<project>/src/App.vue\n  error:2:7 [TS2322] Type 'number' is not assignable to type 'string'. (source: const count: string = 0;)\n\n\u{2717} Type checked 1 files in <duration> (collect: <duration>, gen: <duration>, corsa: <duration>)\n  1 error(s)\n",
         "stderr:\n{stderr}"
     );
     assert_eq!(
@@ -111,41 +115,4 @@ const count: string = 0;
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
-}
-
-/// Replaces the per-run project root with `<project>` and every
-/// `{:.2?}`-formatted `Duration` token (`12.34ms`, `1.20s`, `999.00µs`, …)
-/// with `<duration>`, so captured CLI output can be pinned byte-exact.
-fn normalize_check_output(text: &str, project_root: &Path) -> String {
-    let rooted = text.replace(&project_root.display().to_string(), "<project>");
-    let chars: Vec<char> = rooted.chars().collect();
-    let mut out = String::with_capacity(rooted.len());
-    let mut index = 0;
-    while index < chars.len() {
-        let at_boundary = index == 0 || !chars[index - 1].is_ascii_alphanumeric();
-        if at_boundary && chars[index].is_ascii_digit() {
-            let mut end = index;
-            while end < chars.len() && (chars[end].is_ascii_digit() || chars[end] == '.') {
-                end += 1;
-            }
-            let unit_len = ["ns", "\u{b5}s", "ms", "s"]
-                .iter()
-                .filter_map(|unit| {
-                    let unit_chars: Vec<char> = unit.chars().collect();
-                    let follows = chars.get(end + unit_chars.len());
-                    let ends_clean = follows.is_none_or(|c| !c.is_ascii_alphanumeric());
-                    (chars[end..].starts_with(&unit_chars) && ends_clean)
-                        .then_some(unit_chars.len())
-                })
-                .max();
-            if let Some(unit_len) = unit_len {
-                out.push_str("<duration>");
-                index = end + unit_len;
-                continue;
-            }
-        }
-        out.push(chars[index]);
-        index += 1;
-    }
-    out
 }

@@ -170,18 +170,6 @@ fn diagnostics_for<'a>(report: &'a serde_json::Value, file_name: &str) -> Vec<&'
         .collect()
 }
 
-fn assert_diagnostic(diagnostics: &[&str], line: u32, code: &str, expected_message_fragment: &str) {
-    let line_prefix = format!("error:{line}:");
-    assert!(
-        diagnostics.iter().any(|diagnostic| {
-            diagnostic.starts_with(&line_prefix)
-                && diagnostic.contains(code)
-                && diagnostic.contains(expected_message_fragment)
-        }),
-        "expected {code} on line {line} containing {expected_message_fragment:?}, got: {diagnostics:#?}"
-    );
-}
-
 #[test]
 fn check_define_model_modifier_tuple_types_are_preserved() {
     let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
@@ -261,8 +249,15 @@ let text = " hello ";
 
     let broken = run_check_json(&project_root, &corsa_path, "src/Broken.vue").unwrap_err();
     assert_eq!(broken["errorCount"], serde_json::json!(1), "{broken}");
-    let diagnostics = diagnostics_for(&broken, "src/Broken.vue");
-    assert_diagnostic(&diagnostics, 4, "TS2339", "nope");
+    // Exact oracle: the modifiers object is typed from the authored tuple, so
+    // the unknown `nope` modifier must produce exactly this TS2339 diagnostic.
+    assert_eq!(
+        diagnostics_for(&broken, "src/Broken.vue"),
+        [
+            "error:4:15 [TS2339] Property 'nope' does not exist on type '__VizeModelModifiers<\"capitalize\" | \"trim\">'."
+        ],
+        "{broken}"
+    );
 
     let broken_parent =
         run_check_json(&project_root, &corsa_path, "src/BrokenParent.vue").unwrap_err();
@@ -271,8 +266,15 @@ let text = " hello ";
         serde_json::json!(1),
         "{broken_parent}"
     );
-    let diagnostics = diagnostics_for(&broken_parent, "src/BrokenParent.vue");
-    assert_diagnostic(&diagnostics, 8, "TS2353", "nope");
+    // Exact oracle: the parent's modifier map is closed over the authored
+    // tuple, so `v-model.nope` must produce exactly this TS2353 diagnostic.
+    assert_eq!(
+        diagnostics_for(&broken_parent, "src/BrokenParent.vue"),
+        [
+            "error:8:29 [TS2353] Object literal may only specify known properties, and '\"nope\"' does not exist in type 'Partial<Record<\"capitalize\" | \"trim\", true>>'."
+        ],
+        "{broken_parent}"
+    );
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

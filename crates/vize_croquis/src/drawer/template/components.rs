@@ -117,8 +117,8 @@ impl Drawer {
                                 name: model_modifiers_prop_name(model_name.as_str()),
                                 name_is_dynamic: false,
                                 value: Some(modifiers_value),
-                                start: dir.loc.start.offset,
-                                end: dir.loc.end.offset,
+                                start: dir.loc.span.start,
+                                end: dir.loc.span.end,
                                 is_dynamic: true,
                             });
                         }
@@ -199,7 +199,7 @@ fn model_modifiers_value(modifiers: &[SimpleExpressionNode<'_>]) -> Option<Compa
         if idx > 0 {
             value.push_str(", ");
         }
-        push_ts_string_literal(&mut value, modifier.content.as_str());
+        push_ts_string_literal(&mut value, modifier.content);
         value.push_str(": true");
     }
     value.push_str(" }");
