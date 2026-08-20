@@ -9,12 +9,29 @@ use super::super::{
     children::push_interpolation_value,
     context::CodegenContext,
     expression::generate_expression,
-    helpers::{escape_js_string, to_valid_asset_identifier},
+    helpers::{escape_js_string, is_valid_js_identifier, to_valid_asset_identifier},
     node::generate_node,
     patch_flag::{calculate_element_patch_info, patch_flag_name},
     props::is_supported_directive,
 };
 use vize_carton::ToCompactString;
+
+/// Emit a static object key using identifier syntax when JavaScript permits it.
+///
+/// `v-once` has a dedicated props path because its VNode is constructed inside a
+/// cache expression. Keep its key serialization aligned with the regular props
+/// generator so HTML names such as `data-testid` cannot make the cached render
+/// function syntactically invalid.
+fn generate_static_prop_key(ctx: &mut CodegenContext, name: &str) {
+    let needs_quotes = !is_valid_js_identifier(name);
+    if needs_quotes {
+        ctx.push("\"");
+    }
+    ctx.push(&escape_js_string(name));
+    if needs_quotes {
+        ctx.push("\"");
+    }
+}
 
 /// Generate v-once element with cache wrapper
 pub fn generate_v_once_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
@@ -165,7 +182,7 @@ pub fn generate_v_once_props(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                         }
                         ctx.push(")");
                     } else {
-                        ctx.push(arg.content);
+                        generate_static_prop_key(ctx, arg.content);
                         ctx.push(": ");
                         if let Some(exp) = &dir.exp {
                             generate_expression(ctx, exp);
@@ -179,7 +196,7 @@ pub fn generate_v_once_props(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 }
                 first = false;
                 ctx.newline();
-                ctx.push(attr.name);
+                generate_static_prop_key(ctx, attr.name);
                 ctx.push(": ");
                 if let Some(value) = &attr.value {
                     ctx.push("\"");

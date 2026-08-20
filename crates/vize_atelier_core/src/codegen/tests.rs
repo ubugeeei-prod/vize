@@ -38,6 +38,45 @@ fn test_codegen_with_props() {
 }
 
 #[test]
+fn test_codegen_v_once_quotes_non_identifier_prop_keys() {
+    use crate::options::CodegenMode;
+    use oxc_allocator::Allocator;
+    use oxc_parser::Parser;
+    use oxc_span::SourceType;
+
+    let result = compile!(
+        r#"<div v-once data-testid="once" :aria-label="label"></div>"#,
+        super::CodegenOptions {
+            mode: CodegenMode::Module,
+            ..Default::default()
+        }
+    );
+    let output = result_output(&result);
+
+    assert!(
+        output.contains(r#""data-testid": "once""#),
+        "static v-once prop keys must be valid object keys:\n{output}"
+    );
+    assert!(
+        output.contains(r#""aria-label": label"#),
+        "bound v-once prop keys must be valid object keys:\n{output}"
+    );
+
+    let allocator = Allocator::default();
+    let parsed = Parser::new(
+        &allocator,
+        output.as_str(),
+        SourceType::default().with_module(true),
+    )
+    .parse();
+    assert!(
+        parsed.diagnostics.is_empty(),
+        "v-once output must parse as JavaScript: {:?}\n{output}",
+        parsed.diagnostics
+    );
+}
+
+#[test]
 fn test_codegen_component() {
     let result = compile!("<MyComponent />");
     assert_codegen_snapshot!(result);
