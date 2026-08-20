@@ -178,11 +178,11 @@ defineProps<{
                 r#"<script setup lang="ts">
 import Child from "./Child.vue";
 
-const Comp = Child;
+const comp = Child;
 </script>
 
 <template>
-  <component :is="Comp" :count="1" />
+  <component :is="comp" :count="1" />
 </template>
 "#,
             ),
@@ -191,11 +191,11 @@ const Comp = Child;
                 r#"<script setup lang="ts">
 import Child from "./Child.vue";
 
-const Comp = Child;
+const comp = Child;
 </script>
 
 <template>
-  <component :is="Comp" :count="'nope'" />
+  <component :is="comp" :count="'nope'" />
 </template>
 "#,
             ),
