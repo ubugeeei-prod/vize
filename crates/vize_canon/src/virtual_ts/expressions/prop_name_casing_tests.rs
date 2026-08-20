@@ -56,7 +56,9 @@ fn a_snake_case_prop_keeps_its_name() {
     );
 
     assert!(
-        code.contains("__VizePropValue<__Child_Props_0, 'my_prop'>"),
+        code.contains(
+            "__VizePropValue<__Child_ValueProps_0, 'my_prop', __Child_FallthroughValue_0<'my_prop'>>"
+        ),
         "an underscore was treated as a separator:\n{code}"
     );
 }
@@ -73,7 +75,9 @@ fn a_prop_named_template_keeps_its_case_everywhere_it_is_emitted() {
     // Every site that names the prop has to agree with the declared key, or the
     // prop check reports it missing while the parent clearly bound it.
     assert!(
-        code.contains("__VizePropValue<__Child_Props_0, 'Template'>"),
+        code.contains(
+            "__VizePropValue<__Child_ValueProps_0, 'Template', __Child_FallthroughValue_0<'Template'>>"
+        ),
         "prop alias type lost the declared casing:\n{code}"
     );
     assert!(
@@ -98,7 +102,9 @@ fn kebab_case_attributes_still_resolve_to_their_camel_case_prop() {
     );
 
     assert!(
-        code.contains("__VizePropValue<__Child_Props_0, 'myProp'>"),
-        "kebab attribute did not camelize:\n{code}"
+        code.contains(
+            "__VizePropValue<__Child_ValueProps_0, 'myProp', __Child_FallthroughValue_0<'my-prop'>>"
+        ),
+        "kebab attribute did not split prop and fallthrough lookup keys:\n{code}"
     );
 }

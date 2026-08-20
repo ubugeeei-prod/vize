@@ -120,7 +120,8 @@ import Child from './Child.vue'
 
 function hasUnknownIdDiagnostic(params: PublishDiagnosticsParams): boolean {
   return params.diagnostics.some(
-    (diagnostic) => diagnostic.code === 2353 && diagnostic.message?.includes("id"),
+    (diagnostic) =>
+      (diagnostic.code === 2322 || diagnostic.code === 2353) && diagnostic.message?.includes("id"),
   );
 }
 

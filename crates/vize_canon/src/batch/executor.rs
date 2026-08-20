@@ -297,10 +297,6 @@ fn rewrite_declaration_outputs(out_dir: &Path) -> CorsaResult<()> {
 }
 
 fn strip_internal_vue_declaration_fields(source: &str) -> Option<String> {
-    if !source.contains("__vizeFallthroughProps?:") {
-        return None;
-    }
-
     let mut stripped = String::default();
     let mut changed = false;
     let mut skipping_fallthrough_field = false;
@@ -312,9 +308,13 @@ fn strip_internal_vue_declaration_fields(source: &str) -> Option<String> {
             }
             continue;
         }
-        if line.contains("__vizeFallthroughProps?:") {
+        if line.contains("__vizeFallthroughProps") {
             changed = true;
             skipping_fallthrough_field = !line.contains(';');
+            continue;
+        }
+        if line.contains("__vizeHasFallthroughProps") || line.contains("__vizeComponentMarker") {
+            changed = true;
             continue;
         }
         stripped.push_str(line);

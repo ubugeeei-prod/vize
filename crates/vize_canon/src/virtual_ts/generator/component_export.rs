@@ -190,7 +190,7 @@ pub(super) fn emit_default_export_declaration(
         || static_slots_ref.is_some()
         || fallthrough_props_ref.is_some()
     {
-        component_contract_fields.push_str("readonly [__VizeComponentMarker]: true;");
+        component_contract_fields.push_str("readonly __vizeComponentMarker: true;");
     }
     if let Some(props_ref) = static_raw_props_ref {
         append!(
@@ -207,7 +207,7 @@ pub(super) fn emit_default_export_declaration(
     if let Some(fallthrough_ref) = fallthrough_props_ref {
         append!(
             component_contract_fields,
-            " readonly __vizeFallthroughProps?: {fallthrough_ref};"
+            " readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: {fallthrough_ref};"
         );
     }
     if let Some((generic_decl, generic_names, slots_is_generic)) = generic_component_params {

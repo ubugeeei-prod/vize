@@ -70,6 +70,25 @@ fn skips_fallthrough_props_when_inherit_attrs_is_false() {
 }
 
 #[test]
+fn inherit_attrs_false_uses_explicit_attrs_forwarding_target() {
+    let native_ty = fallthrough_type(
+        "defineOptions({ inheritAttrs: false })\ndefineProps<{ title: string }>()",
+        r#"<div><button v-bind="$attrs">{{ title }}</button></div>"#,
+    )
+    .expect("explicit native $attrs forwarding should accept fallthrough props");
+
+    assert_eq!(native_ty, "Partial<__VizeNativeElement<\"button\">>");
+
+    let component_ty = fallthrough_type(
+        "defineOptions({ inheritAttrs: false })\ndefineProps<{ title: string }>()",
+        r#"<Wrapper><Primitive v-bind="{ ...scopeIdAttrs, ...$attrs }" /></Wrapper>"#,
+    )
+    .expect("explicit component $attrs forwarding should keep fallthrough open");
+
+    assert_eq!(component_ty, "Record<string, unknown>");
+}
+
+#[test]
 fn skips_fallthrough_props_for_multi_root_or_mixed_v_if_branch() {
     for template in [
         "<div /> <span />",

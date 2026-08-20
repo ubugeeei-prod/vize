@@ -861,10 +861,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         .then(|| {
             setup_props_plan.component_value_props_type_ref(generic_component_params.as_ref())
         });
-    let static_slots_ref =
-        (summary.macros.define_slots().is_some() && !slots_is_generic).then_some("Slots");
-    let fallthrough_props_ref =
-        self::fallthrough::fallthrough_props_type_ref(summary, template_ast, legacy_vue2);
     emit_default_export_declaration(
         &mut ts,
         &emits_info,
@@ -873,8 +869,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             .map(|(decl, names)| (decl.as_str(), names.as_str(), slots_is_generic)),
         preserve_authored_component,
         static_raw_props_ref.as_deref(),
-        static_slots_ref,
-        fallthrough_props_ref.as_deref(),
+        (summary.macros.define_slots().is_some() && !slots_is_generic).then_some("Slots"),
+        self::fallthrough::fallthrough_props_type_ref(summary, template_ast, legacy_vue2)
+            .as_deref(),
     );
     component_export::emit_component_default_export(&mut ts, generation_options.component_name);
 

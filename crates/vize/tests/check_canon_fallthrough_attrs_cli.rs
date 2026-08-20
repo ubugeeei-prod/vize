@@ -2,12 +2,10 @@
 mod corsa_requirement;
 #[path = "check_canon_fallthrough_attrs_cli/support.rs"]
 mod support;
-
 use support::{
     assert_clean, assert_error_mentions, create_case, create_case_with_files,
     resolve_test_corsa_path, run_check_json,
 };
-
 #[test]
 fn check_fallthrough_attrs_follow_inherit_attrs_and_root_shape() {
     let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
@@ -32,7 +30,7 @@ defineProps<{ title: string }>();
             app: r#"<script setup lang="ts">
 import Child from "./Child.vue";
 </script>
-<template><Child title="ok" id="outer" /></template>
+<template><Child title="ok" id="outer" aria-haspopup="menu" /></template>
 "#,
             expected_error_fragments: &[],
         },
@@ -50,6 +48,21 @@ import Child from "./Child.vue";
 <template><Child title="ok" id="outer" class="card" style="color: red" /></template>
 "#,
             expected_error_fragments: &["id"],
+        },
+        Case {
+            id: "fallthrough-mono-false-native-binding-bad",
+            child: r#"<script setup lang="ts">
+defineOptions({ inheritAttrs: false });
+defineProps<{ title: string }>();
+</script>
+<template><button type="button">{{ title }}</button></template>
+"#,
+            app: r#"<script setup lang="ts">
+import Child from "./Child.vue";
+</script>
+<template><Child title="ok" :disabled="'nope'" /></template>
+"#,
+            expected_error_fragments: &["disabled"],
         },
         Case {
             id: "fallthrough-options-api-inherit-attrs-false-bad",

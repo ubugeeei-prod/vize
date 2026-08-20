@@ -1,5 +1,5 @@
 use vize_carton::{CompactString, FxHashSet, String, camelize, capitalize, cstr};
-use vize_croquis::Croquis;
+use vize_croquis::{BindingType, Croquis};
 
 use super::{
     helpers::{to_safe_identifier, to_safe_identifier_fragment},
@@ -41,16 +41,51 @@ pub(crate) fn resolved_component_binding_reference(
     let camel_name = camelize(template_name);
     let pascal_name = capitalize(camel_name.as_str());
     for candidate in [template_name, camel_name.as_str(), pascal_name.as_str()] {
-        if summary.bindings.bindings.contains_key(candidate)
-            || options
-                .external_template_bindings
-                .iter()
-                .any(|name| name.as_str() == candidate)
+        if let Some(binding_type) = summary.bindings.get(candidate) {
+            return Some(component_binding_reference_for_summary_binding(
+                summary,
+                candidate,
+                binding_type,
+            ));
+        }
+        if options
+            .external_template_bindings
+            .iter()
+            .any(|name| name.as_str() == candidate)
         {
-            return Some(to_safe_identifier(candidate));
+            return Some(String::from(candidate));
         }
     }
     None
+}
+
+fn component_binding_reference_for_summary_binding(
+    summary: &Croquis,
+    candidate: &str,
+    binding_type: BindingType,
+) -> String {
+    if matches!(binding_type, BindingType::Props | BindingType::PropsAliased)
+        && !is_props_destructure_local(summary, candidate)
+    {
+        return to_safe_identifier(candidate);
+    }
+    String::from(candidate)
+}
+
+fn is_props_destructure_local(summary: &Croquis, candidate: &str) -> bool {
+    summary
+        .macros
+        .props_destructure()
+        .is_some_and(|destructure| {
+            destructure
+                .bindings
+                .values()
+                .any(|binding| binding.local.as_str() == candidate)
+                || destructure
+                    .rest_id
+                    .as_ref()
+                    .is_some_and(|rest_id| rest_id.as_str() == candidate)
+        })
 }
 
 pub(crate) fn has_type_only_component_candidate(

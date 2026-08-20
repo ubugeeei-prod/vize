@@ -12,16 +12,29 @@ pub(super) fn fallthrough_props_type_ref(
     template_ast: Option<&RootNode<'_>>,
     legacy_vue2: bool,
 ) -> Option<String> {
-    if legacy_vue2 || summary.template_info.inherit_attrs_disabled {
+    if legacy_vue2 {
         return None;
     }
-    let targets = possible_single_root_targets(template_ast?)?;
+    let Some(template_ast) = template_ast else {
+        return Some(String::from("Record<string, unknown>"));
+    };
+    if summary.template_info.inherit_attrs_disabled {
+        return explicit_attrs_targets(template_ast).map(|targets| targets_type_ref(&targets));
+    }
+
+    let targets = possible_single_root_targets(template_ast)
+        .or_else(|| explicit_attrs_targets(template_ast))?;
+    Some(targets_type_ref(&targets))
+}
+
+fn targets_type_ref(targets: &[FallthroughRootTarget]) -> String {
     if targets
         .iter()
         .any(|target| matches!(target, FallthroughRootTarget::Component))
     {
-        return Some(String::from("Record<string, unknown>"));
+        return String::from("Record<string, unknown>");
     }
+
     let mut ty = String::default();
     for (index, target) in targets.iter().enumerate() {
         let FallthroughRootTarget::Native(tag) = target else {
@@ -34,7 +47,88 @@ pub(super) fn fallthrough_props_type_ref(
         push_ts_string_literal(&mut ty, tag.as_str());
         ty.push_str(">>");
     }
-    Some(ty)
+    ty
+}
+
+fn explicit_attrs_targets(root: &RootNode<'_>) -> Option<Vec<FallthroughRootTarget>> {
+    let mut targets = Vec::new();
+    collect_explicit_attrs_targets_from_children(root.children.as_slice(), &mut targets);
+    (!targets.is_empty()).then_some(targets)
+}
+
+fn collect_explicit_attrs_targets_from_children(
+    children: &[TemplateChildNode<'_>],
+    targets: &mut Vec<FallthroughRootTarget>,
+) {
+    for child in children {
+        collect_explicit_attrs_targets_from_child(child, targets);
+    }
+}
+
+fn collect_explicit_attrs_targets_from_child(
+    child: &TemplateChildNode<'_>,
+    targets: &mut Vec<FallthroughRootTarget>,
+) {
+    match child {
+        TemplateChildNode::Element(element) => {
+            if element_binds_attrs_explicitly(element) {
+                targets.push(element_fallthrough_target(element));
+            }
+            collect_explicit_attrs_targets_from_children(element.children.as_slice(), targets);
+        }
+        TemplateChildNode::If(node) => {
+            for branch in &node.branches {
+                collect_explicit_attrs_targets_from_children(branch.children.as_slice(), targets);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn element_fallthrough_target(element: &ElementNode<'_>) -> FallthroughRootTarget {
+    if is_native_tag(element.tag.as_str()) {
+        FallthroughRootTarget::Native(String::from(element.tag.as_str()))
+    } else {
+        FallthroughRootTarget::Component
+    }
+}
+
+fn element_binds_attrs_explicitly(element: &ElementNode<'_>) -> bool {
+    element.props.iter().any(|prop| {
+        let PropNode::Directive(directive) = prop else {
+            return false;
+        };
+        if directive.name.as_str() != "bind" || directive.arg.is_some() {
+            return false;
+        }
+        directive
+            .exp
+            .as_ref()
+            .is_some_and(|exp| expression_spreads_attrs(expression_source(exp).trim()))
+    })
+}
+
+fn expression_source<'a>(expression: &'a ExpressionNode<'a>) -> &'a str {
+    match expression {
+        ExpressionNode::Simple(simple) => simple.content.as_str(),
+        ExpressionNode::Compound(compound) => compound.loc.source.as_str(),
+    }
+}
+
+fn expression_spreads_attrs(source: &str) -> bool {
+    if source == "$attrs" {
+        return true;
+    }
+
+    let mut rest = source;
+    while let Some(index) = rest.find("$attrs") {
+        let before = rest[..index].trim_end();
+        if before.ends_with("...") {
+            return true;
+        }
+        rest = &rest[index + "$attrs".len()..];
+    }
+    false
 }
 
 fn possible_single_root_targets(root: &RootNode<'_>) -> Option<Vec<FallthroughRootTarget>> {
@@ -64,13 +158,7 @@ fn possible_single_root_targets_from_child(
             possible_single_root_targets_from_children(element.children.as_slice())
         }
         TemplateChildNode::Element(element) if !has_for_directive(element) => {
-            if is_native_tag(element.tag.as_str()) {
-                Some(vec![FallthroughRootTarget::Native(String::from(
-                    element.tag.as_str(),
-                ))])
-            } else {
-                Some(vec![FallthroughRootTarget::Component])
-            }
+            Some(vec![element_fallthrough_target(element)])
         }
         TemplateChildNode::If(node) => possible_if_root_targets(node),
         _ => None,
@@ -157,13 +245,7 @@ fn possible_element_branch_targets(
     if element.tag.as_str() == "template" {
         return possible_single_root_targets_from_children(element.children.as_slice());
     }
-    if is_native_tag(element.tag.as_str()) {
-        Some(vec![FallthroughRootTarget::Native(String::from(
-            element.tag.as_str(),
-        ))])
-    } else {
-        Some(vec![FallthroughRootTarget::Component])
-    }
+    Some(vec![element_fallthrough_target(element)])
 }
 
 enum ElementBranchKind<'a> {

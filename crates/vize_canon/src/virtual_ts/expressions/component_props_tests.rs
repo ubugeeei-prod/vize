@@ -106,7 +106,7 @@ fn static_attribute_values_are_type_checked_like_dynamic_bindings() {
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(
-        output.code.contains("type __HelloWorld_0_prop_msg = __VizePropValue<__HelloWorld_ValueProps_0, 'msg', __VizePropValue<__HelloWorld_FallthroughProps_0, 'msg'>>;"),
+        output.code.contains("type __HelloWorld_0_prop_msg = __VizePropValue<__HelloWorld_ValueProps_0, 'msg', __HelloWorld_FallthroughValue_0<'msg'>>;"),
         "static prop must declare its child prop type alias:\n{}",
         output.code
     );
@@ -208,7 +208,7 @@ const isLoading = false
     assert_eq!(
         output
             .code
-            .matches("type __Child_0_prop_class = __VizePropValue<__Child_ValueProps_0, 'class', __VizePropValue<__Child_FallthroughProps_0, 'class'>>;")
+            .matches("type __Child_0_prop_class = __VizePropValue<__Child_ValueProps_0, 'class', __Child_FallthroughValue_0<'class'>>;")
             .count(),
         1,
         "the child prop type alias must be declared exactly once:\n{}",
