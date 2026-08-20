@@ -13,8 +13,12 @@
  * the SFC pipeline handles both, which is what the issue asks for — the variant
  * is compiled the same way the enclosing SFC is:
  *
- *     :disabled="items[0]!.isValid"   ->   disabled: items.value[0].isValid
- *     @u="(f: File | null) => …"      ->   onU: (f) => file.value = f
+ *     :disabled="items[0]!.isValid"   ->   disabled: $setup.items[0].isValid
+ *     @u="(f: File | null) => …"      ->   onU: (f) => $setup.file = f
+ *
+ * The generated module render function receives setup state through Vue's
+ * proxy-unwrapped `$setup` argument, so refs intentionally do not retain an
+ * explicit `.value` access in this output mode.
  */
 
 import path from "node:path";

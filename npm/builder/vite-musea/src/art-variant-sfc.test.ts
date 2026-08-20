@@ -38,7 +38,12 @@ void test("a type annotation in a template expression compiles instead of reachi
   assert.deepEqual(result.errors, []);
   assert.doesNotMatch(result.code, /File \| null/, "the annotation must be stripped");
   assert.match(result.code, /\(f\) =>/, "the handler must survive as plain JavaScript");
-  assert.match(result.code, /file\.value = f/, "the ref must be unwrapped");
+  assert.match(result.code, /\$setup\.file = f/, "the ref must resolve through setup");
+  assert.doesNotMatch(
+    result.code,
+    /\$setup\.file\.value/,
+    "module render receives proxy-unwrapped setup state",
+  );
 });
 
 void test("a non-null assertion compiles and keeps its identifier resolved", () => {
@@ -53,7 +58,12 @@ void test("a non-null assertion compiles and keeps its identifier resolved", () 
 
   assert.deepEqual(result.errors, []);
   assert.doesNotMatch(result.code, /!\./, "the assertion must be stripped");
-  assert.match(result.code, /items\.value\[0\]\.isValid/, "the binding must resolve through setup");
+  assert.match(
+    result.code,
+    /\$setup\.items\[0\]\.isValid/,
+    "the binding must resolve through setup",
+  );
+  assert.doesNotMatch(result.code, /\$setup\.items\.value/);
 });
 
 void test("plain JavaScript variants keep working", () => {
@@ -65,7 +75,8 @@ void test("plain JavaScript variants keep working", () => {
   );
 
   assert.deepEqual(result.errors, []);
-  assert.match(result.code, /items\.value\[0\]\.isValid/);
+  assert.match(result.code, /\$setup\.items\[0\]\.isValid/);
+  assert.doesNotMatch(result.code, /\$setup\.items\.value/);
 });
 
 void test("the variant wrapper carries the variant name for gallery queries", () => {
