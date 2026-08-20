@@ -52,7 +52,8 @@ pub use crate::compile_script::ScriptCompileResult;
 #[allow(deprecated)]
 pub use entry::compile_sfc_with_vue_parser_quirks;
 pub use entry::{
-    compile_sfc, compile_sfc_with_custom_elements_template_syntax_and_codegen_options,
+    SfcScriptOutputMode, compile_sfc, compile_sfc_for_adapter,
+    compile_sfc_with_custom_elements_template_syntax_and_codegen_options,
     compile_sfc_with_template_syntax, compile_sfc_with_template_syntax_and_codegen_options,
 };
 use vize_carton::{String, ToCompactString, profile};
@@ -84,6 +85,7 @@ fn compile_sfc_inner(
     template_syntax: TemplateSyntaxMode,
     custom_elements: CustomElementMatcher,
     codegen_options: CodegenOptions,
+    script_output: SfcScriptOutputMode,
 ) -> Result<SfcCompileResult, SfcError> {
     let mut errors = Vec::new();
     let mut warnings = Vec::new();
@@ -656,7 +658,7 @@ fn compile_sfc_inner(
                         apply_scope_id: has_scoped,
                         has_scoped,
                         is_ts: template_is_ts,
-                        inline: true,
+                        inline: !script_output.separates_template(),
                         component_name: Some(&component_name),
                         bindings: Some(&script_bindings),
                         croquis: Some(croquis),
@@ -685,7 +687,7 @@ fn compile_sfc_inner(
     ) = match &template_result {
         Some(Ok(template_output)) => {
             let template_code = &template_output.code;
-            if is_vapor || options.template.ssr {
+            if is_vapor || options.template.ssr || script_output.separates_template() {
                 let (imports, hoisted, render_fn, render_fn_name) = profile!(
                     "atelier.sfc.template.extract_parts_full",
                     extract_template_parts_full(template_code)
@@ -747,11 +749,9 @@ fn compile_sfc_inner(
         None => (script_setup_content.as_str(), setup_program.as_ref()),
     };
 
-    // Compile script setup using inline mode to match Vue's @vue/compiler-sfc output format:
-    // 1. Template imports (from "vue")
-    // 2. User imports
-    // 3. Hoisted literal consts (module-level)
-    // 4. export default { __name, props?, emits?, setup(__props) { ... return (_ctx, _cache) => { ... } } }
+    // Assemble script setup with either an inline render (`inline_template`) or
+    // a separate render function plus a marked setup-state object (module mode),
+    // sharing the same analyzed script context, macro lowering, and runtime props.
     let script_result = profile!(
         "atelier.sfc.script_setup.inline_compile",
         compile_script_setup_inline_with_context(
@@ -781,8 +781,8 @@ fn compile_sfc_inner(
         )
     )?;
 
-    // The inline mode compile_script_setup_inline generates a complete output
-    // including imports, hoisted vars, and `export default { ... }` with inline render
+    // The shared script-setup compiler generates the complete module, including
+    // imports, hoists, component options, setup bindings, and render attachment.
     if let Some(transform) = lazy_hydration_transform {
         code.push_str(&transform.preamble);
     }

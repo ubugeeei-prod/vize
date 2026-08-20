@@ -63,6 +63,7 @@ pub use bundler::{
 pub use compile::compile_sfc_with_vue_parser_quirks;
 pub use compile::{ScriptCompileResult, compile_sfc, compile_sfc_with_template_syntax};
 pub use compile::{
+    SfcScriptOutputMode, compile_sfc_for_adapter,
     compile_sfc_with_custom_elements_template_syntax_and_codegen_options,
     compile_sfc_with_template_syntax_and_codegen_options,
 };

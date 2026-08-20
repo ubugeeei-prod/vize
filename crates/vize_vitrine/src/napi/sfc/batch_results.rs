@@ -35,10 +35,9 @@ fn compile_sfc_batch_with_results_inner(
     opts: BatchCompileOptionsNapi,
 ) -> Result<BatchCompileResultWithFilesNapi> {
     use vize_atelier_sfc::{
-        ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
-        TemplateCompileOptions,
-        compile_sfc_with_custom_elements_template_syntax_and_codegen_options as sfc_compile_with_custom_elements,
-        parse_sfc as sfc_parse,
+        ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
+        StyleCompileOptions, TemplateCompileOptions,
+        compile_sfc_for_adapter as sfc_compile_for_adapter, parse_sfc as sfc_parse,
     };
 
     let total_count = files.len();
@@ -54,6 +53,11 @@ fn compile_sfc_batch_with_results_inner(
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
         .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
     let standalone = opts.mode.as_deref() == Some("function");
+    let script_output = if standalone {
+        SfcScriptOutputMode::InlineTemplate
+    } else {
+        SfcScriptOutputMode::SeparateTemplate
+    };
     // Heavy/optional payloads are opt-in so the default boundary stays lean:
     // `code`/`css` are always materialized eagerly (fairness), but the per-block
     // `styles` (which re-sends the CSS `css` already carries), custom blocks,
@@ -174,12 +178,13 @@ fn compile_sfc_batch_with_results_inner(
                 scope_id: Some(scope_id.clone()),
             };
 
-            let compile_result = sfc_compile_with_custom_elements(
+            let compile_result = sfc_compile_for_adapter(
                 &descriptor,
                 compile_opts,
                 template_syntax,
                 custom_elements.clone(),
                 vize_atelier_core::CodegenOptions::default(),
+                script_output,
             );
 
             match compile_result {

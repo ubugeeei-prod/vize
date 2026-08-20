@@ -20,10 +20,9 @@ pub fn compile_sfc(
     options: Option<SfcCompileOptionsNapi>,
 ) -> Result<SfcCompileResultNapi> {
     use vize_atelier_sfc::{
-        ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
-        TemplateCompileOptions,
-        compile_sfc_with_custom_elements_template_syntax_and_codegen_options as sfc_compile_with_custom_elements,
-        parse_sfc as sfc_parse,
+        ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
+        StyleCompileOptions, TemplateCompileOptions,
+        compile_sfc_for_adapter as sfc_compile_for_adapter, parse_sfc as sfc_parse,
     };
 
     let opts = options.unwrap_or_default();
@@ -130,12 +129,17 @@ pub fn compile_sfc(
         scope_id: external_scope_id,
     };
 
-    let compile_result = sfc_compile_with_custom_elements(
+    let compile_result = sfc_compile_for_adapter(
         &descriptor,
         compile_opts,
         template_syntax,
         custom_elements,
         vize_atelier_core::CodegenOptions::default(),
+        if standalone {
+            SfcScriptOutputMode::InlineTemplate
+        } else {
+            SfcScriptOutputMode::SeparateTemplate
+        },
     );
 
     match compile_result {

@@ -473,7 +473,7 @@ pub struct ScriptCompileOptions {
     /// ID for scoped CSS
     pub id: Option<String>,
 
-    /// Whether inline template
+    /// Whether to emit standalone output with an inline template.
     pub inline_template: bool,
 
     /// Whether to use TypeScript

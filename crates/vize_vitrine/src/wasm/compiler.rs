@@ -14,10 +14,9 @@ use vize_atelier_core::options::{CodegenOptions, CustomElementMatcher};
 use vize_atelier_core::parser::parse_with_options_custom_elements_and_template_syntax;
 use vize_atelier_sfc::compile_script::typescript::transform_typescript_to_js;
 use vize_atelier_sfc::{
-    ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
-    TemplateCompileOptions,
-    compile_sfc_with_custom_elements_template_syntax_and_codegen_options as sfc_compile_with_custom_elements,
-    parse_sfc,
+    ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
+    StyleCompileOptions, TemplateCompileOptions,
+    compile_sfc_for_adapter as sfc_compile_for_adapter, parse_sfc,
 };
 
 use super::ast::build_ast_json;
@@ -258,7 +257,7 @@ impl Compiler {
         let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
             .map_err(|message| JsValue::from_str(&message))?;
 
-        let compile_result = sfc_compile_with_custom_elements(
+        let compile_result = sfc_compile_for_adapter(
             &descriptor,
             sfc_opts,
             template_syntax,
@@ -266,6 +265,11 @@ impl Compiler {
                 opts.custom_elements.as_deref(),
             )),
             codegen_options,
+            if standalone {
+                SfcScriptOutputMode::InlineTemplate
+            } else {
+                SfcScriptOutputMode::SeparateTemplate
+            },
         );
         let sfc_result = match compile_result {
             Ok(r) => r,
