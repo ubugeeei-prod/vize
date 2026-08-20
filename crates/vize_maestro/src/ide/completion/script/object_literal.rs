@@ -1,5 +1,7 @@
 //! Exact member completion for local static object literals.
 
+mod receiver_value;
+
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     Argument, AssignmentExpression, BindingPattern, CallExpression, Declaration, Expression,
@@ -165,10 +167,7 @@ impl PriorReceiverInexactness<'_> {
     }
 
     fn is_receiver_value(&self, expression: &Expression<'_>) -> bool {
-        matches!(
-            expression.get_inner_expression(),
-            Expression::Identifier(identifier) if identifier.name == self.receiver
-        )
+        receiver_value::carries_receiver(expression, self.receiver)
     }
 
     fn argument_escapes_receiver(&self, argument: &Argument<'_>) -> bool {

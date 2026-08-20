@@ -163,6 +163,46 @@ const chosen = probe.initial
 }
 
 #[test]
+fn receiver_nested_container_before_completion_falls_back_to_type_service() {
+    assert_falls_back(
+        "NestedAliasedStaticObject.vue",
+        r#"<script setup lang="ts">
+const probe = { initial: 1 }
+const holder = { nested: [probe] }
+holder.nested[0].added = 2
+const chosen = probe.initial
+</script>
+"#,
+        "probe.initial",
+    );
+}
+
+#[test]
+fn receiver_member_read_before_completion_keeps_static_path() {
+    let source = r#"<script setup lang="ts">
+const probe = { initial: 1 }
+const read = probe.initial
+const chosen = probe.initial
+</script>
+"#;
+    let (state, uri) = state_with_document("ReadStaticObject.vue", source);
+    let offset = source.rfind("probe.initial").unwrap() + "probe.".len();
+    let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+
+    assert_eq!(
+        completion_labels(CompletionService::complete(&ctx).unwrap()),
+        ["initial"],
+        "a member read must not be treated as an identity escape",
+    );
+
+    #[cfg(feature = "native")]
+    assert_eq!(
+        completion_labels(CompletionService::complete_static_object_member(&ctx).unwrap()),
+        ["initial"],
+    );
+}
+
+#[test]
 fn later_declaration_is_not_visible_in_the_temporal_dead_zone() {
     assert_falls_back(
         "StaticObjectTemporalDeadZone.vue",
