@@ -354,12 +354,12 @@ impl RuleRegistry {
     /// Use this for minimal checking that only catches definite errors.
     pub fn with_essential() -> Self {
         let mut registry = Self::with_capacity(Self::ESSENTIAL_CAPACITY);
-
         // Vue Essential Rules only
         registry.register(Box::new(crate::rules::vue::RequireVForKey));
         registry.register(Box::new(crate::rules::vue::ValidVFor));
         registry.register(Box::new(crate::rules::vue::NoUseVIfWithVFor));
         registry.register(Box::new(crate::rules::vue::NoUnusedVars::default()));
+        registry.register(Box::new(crate::rules::vue::NoMutatingProps));
         registry.register(Box::new(crate::rules::vue::NoDuplicateAttributes::default()));
         registry.register(Box::new(crate::rules::vue::NoTemplateKey));
         registry.register(Box::new(crate::rules::vue::NoTextareaMustache));

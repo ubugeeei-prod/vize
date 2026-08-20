@@ -3,6 +3,8 @@ use crate::diagnostic::Severity;
 use crate::linter::{LintResult, Linter};
 use crate::rule::{Rule, RuleCategory};
 
+mod script_mutations;
+
 /// Lint a full SFC with only this rule enabled.
 ///
 /// `vue/no-mutating-props` is a member of `SEMANTIC_TEMPLATE_RULES`, so

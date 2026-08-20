@@ -6,13 +6,14 @@
 //! Mutating props can lead to unexpected behavior and makes the data flow
 //! harder to understand.
 //!
-//! ## Template coverage
+//! ## Coverage
 //!
-//! Two template positions mutate a prop directly, and both are checked:
+//! In `<script setup>`, assignments and updates are checked against the actual
+//! bindings returned by `defineProps` (including destructured bindings and
+//! `withDefaults`). In templates, two positions mutate a prop directly:
 //! `v-model` bound to a prop, and an assignment (or `++` / `--`) inside a
-//! `v-on` inline handler. The handler half resolves its targets from a real
-//! oxc parse of the handler body rather than a text scan — see
-//! [`handlers`] for why that distinction matters here.
+//! `v-on` inline handler. Both script and handler checks resolve real oxc
+//! syntax rather than scanning source text.
 //!
 //! ## Examples
 //!
@@ -20,6 +21,7 @@
 //! ```vue
 //! <script setup>
 //! const props = defineProps(['count'])
+//! props.count++
 //! </script>
 //!
 //! <template>
@@ -49,6 +51,7 @@
 mod handlers;
 mod mutation_targets;
 mod scope;
+mod script_mutations;
 #[cfg(test)]
 mod tests;
 
@@ -238,6 +241,36 @@ impl NoMutatingProps {
 impl Rule for NoMutatingProps {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
+        let (offset, mutations) = {
+            let Some(script_setup) = ctx
+                .sfc_descriptor()
+                .and_then(|descriptor| descriptor.script_setup.as_ref())
+            else {
+                return;
+            };
+            (
+                script_setup.loc.start as u32,
+                script_mutations::find_prop_mutations(script_setup.content.as_ref()),
+            )
+        };
+
+        for mutation in mutations {
+            ctx.report_in_sfc(
+                crate::diagnostic::LintDiagnostic::error(
+                    ctx.current_rule,
+                    format!(
+                        "Unexpected mutation of prop '{}' in <script setup>",
+                        mutation.target
+                    ),
+                    offset + mutation.span.start,
+                    offset + mutation.span.end,
+                )
+                .with_help("Use a local ref or emit an event instead of mutating props directly"),
+            );
+        }
     }
 
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {

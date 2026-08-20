@@ -20,6 +20,7 @@ vize_atelier_jsx.workspace = true
 # OXC for JS/TS parsing and diagnostics
 oxc_allocator.workspace = true
 oxc_parser.workspace = true
+oxc_semantic.workspace = true
 oxc_ast.workspace = true
 oxc_ast_visit.workspace = true
 oxc_diagnostics.workspace = true

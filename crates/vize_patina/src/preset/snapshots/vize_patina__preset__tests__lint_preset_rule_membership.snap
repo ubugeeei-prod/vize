@@ -107,6 +107,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/valid-v-for",
     "vue/no-use-v-if-with-v-for",
     "vue/no-unused-vars",
+    "vue/no-mutating-props",
     "vue/no-duplicate-attributes",
     "vue/no-template-key",
     "vue/no-textarea-mustache",

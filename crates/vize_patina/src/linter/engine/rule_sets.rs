@@ -22,6 +22,7 @@ pub(super) const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
 ];
 
 pub(super) const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
+    "vue/no-mutating-props",
     "vue/no-reserved-component-names",
     "vue/no-unused-properties",
     "vue/no-unused-refs",
