@@ -1,15 +1,20 @@
 //! Diagnostic reporting, JSON serialization, and profile artifacts for the
 //! `check` runner.
 
-use std::{fs, path::Path, path::PathBuf};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
-use vize_carton::{FxHashSet, String as CompactString, cstr, profile, profiler::global_profiler};
+use vize_carton::{String as CompactString, cstr, profile, profiler::global_profiler};
 
-use crate::commands::check::path_cache::CanonicalPathCache;
 use crate::commands::check::reporting::JsonOutput;
 
+mod source_context;
+mod source_filter;
 mod suppressions;
 
+pub(super) use source_filter::is_reported;
 pub(super) use suppressions::is_suppressed_false_positive;
 
 pub(super) fn emit_json_output(json_output: JsonOutput) -> Result<(), CompactString> {
@@ -19,42 +24,16 @@ pub(super) fn emit_json_output(json_output: JsonOutput) -> Result<(), CompactStr
     Ok(())
 }
 
-/// Whether a registered file's diagnostics should be reported. Configured or
-/// explicit source roots and their authored transitive imports are reported;
-/// ambient-only support and dependency files exist only to resolve cross-file
-/// types. Project-level diagnostics (anchored to a tsconfig or the project root,
-/// not a source file) describe the whole check and are always reported.
-pub(super) fn is_reported(
-    reported: &FxHashSet<PathBuf>,
-    path: &Path,
-    canonical_paths: &mut CanonicalPathCache,
-) -> bool {
-    if !is_source_path(path) {
-        return true;
-    }
-
-    reported.contains(&canonical_paths.canonicalize(path))
-}
-
-fn is_source_path(path: &Path) -> bool {
-    path.extension()
-        .and_then(|extension| extension.to_str())
-        .is_some_and(|extension| {
-            matches!(
-                extension,
-                "vue" | "ts" | "tsx" | "mts" | "cts" | "js" | "jsx" | "mjs" | "cjs"
-            )
-        })
-}
-
 #[allow(clippy::disallowed_types)]
 pub(super) fn render_diagnostics(
     diagnostics: &[vize_canon::BatchDiagnostic],
+    include_source_context: bool,
 ) -> std::collections::BTreeMap<std::string::String, Vec<std::string::String>> {
     let mut grouped = std::collections::BTreeMap::<
         std::string::String,
         Vec<(u32, u32, std::string::String)>,
     >::new();
+    let mut source_context = source_context::SourceContextCache::default();
 
     for diagnostic in diagnostics {
         let severity = match diagnostic.severity {
@@ -67,13 +46,21 @@ pub(super) fn render_diagnostics(
             .code
             .map(|code| cstr!(" [TS{}]", code))
             .unwrap_or_default();
+        let message = if include_source_context {
+            source_context
+                .render(diagnostic)
+                .map(|context| cstr!("{} (source: {context})", diagnostic.message))
+                .unwrap_or_else(|| diagnostic.message.clone())
+        } else {
+            diagnostic.message.clone()
+        };
         let rendered = cstr!(
             "{}:{}:{}{} {}",
             severity,
             diagnostic.line + 1,
             diagnostic.column + 1,
             code,
-            diagnostic.message
+            message
         )
         .into();
         grouped

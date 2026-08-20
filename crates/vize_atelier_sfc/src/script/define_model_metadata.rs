@@ -14,6 +14,7 @@ pub(crate) struct DefineModelMetadata {
     pub(crate) name: String,
     pub(crate) options: Option<String>,
     pub(crate) runtime_options: Option<String>,
+    pub(crate) modifier_type: Option<CompactString>,
     pub(crate) declaration_span: Option<(u32, u32)>,
 }
 
@@ -39,6 +40,11 @@ pub(crate) fn add_model_to_croquis(
         summary.macros.add_model_with_declaration(model, start, end);
     } else {
         summary.macros.add_model(model);
+    }
+    if let Some(modifier_type) = metadata.modifier_type {
+        summary
+            .macros
+            .set_model_modifier_type(CompactString::new(metadata.name.as_str()), modifier_type);
     }
 }
 
@@ -84,11 +90,23 @@ fn extract_metadata_from_call(call: &CallExpression<'_>, source: &str) -> Define
         .get(options_index)
         .and_then(argument_object)
         .map_or((None, None), |object| split_model_options(object, source));
+    let modifier_type = call
+        .type_arguments
+        .as_ref()
+        .and_then(|type_params| type_params.params.get(1))
+        .and_then(|ty| {
+            source
+                .get(ty.span().start as usize..ty.span().end as usize)
+                .map(str::trim)
+                .filter(|text| !text.is_empty())
+                .map(CompactString::new)
+        });
 
     DefineModelMetadata {
         name,
         options,
         runtime_options,
+        modifier_type,
         declaration_span: Some((declaration_span.start, declaration_span.end)),
     }
 }
@@ -98,6 +116,7 @@ fn default_metadata() -> DefineModelMetadata {
         name: "modelValue".into(),
         options: None,
         runtime_options: None,
+        modifier_type: None,
         declaration_span: None,
     }
 }
@@ -294,5 +313,31 @@ mod declaration_tests {
 
             assert_eq!(&source[start as usize..end as usize], declaration);
         }
+    }
+
+    #[test]
+    fn preserves_define_model_modifier_type_in_croquis_metadata() {
+        let source =
+            r#"const [model, modifiers] = defineModel<string, "trim" | "capitalize">("title")"#;
+        let start = source.find("defineModel").unwrap();
+        let call = MacroCall::new(
+            start,
+            source.len(),
+            String::default(),
+            None,
+            Some(String::from("model")),
+        );
+        let mut summary = Croquis::new();
+        add_model_to_croquis(&mut summary, source, &call, "model");
+
+        let model = summary
+            .macros
+            .models()
+            .first()
+            .expect("defineModel should be registered");
+        assert_eq!(
+            summary.macros.model_modifier_type(model.name.as_str()),
+            Some(r#""trim" | "capitalize""#)
+        );
     }
 }

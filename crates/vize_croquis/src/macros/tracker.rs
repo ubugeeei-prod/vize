@@ -1,6 +1,7 @@
 //! Focused [`MacroTracker`](super::MacroTracker) implementations.
 
-use super::{MacroTracker, PropDefinition};
+use super::{MacroTracker, ModelDefinition, PropDefinition};
+use vize_carton::CompactString;
 
 impl std::fmt::Debug for MacroTracker {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -12,6 +13,7 @@ impl std::fmt::Debug for MacroTracker {
             .field("emits", &self.emits)
             .field("emit_calls", &self.emit_calls)
             .field("models", &self.models)
+            .field("model_modifier_types", &self.model_modifier_types)
             .field("exposes", &self.exposes)
             .field("slots", &self.slots)
             .field("art", &self.art)
@@ -85,6 +87,32 @@ impl MacroTracker {
     #[inline]
     pub fn model_declaration(&self, name: &str) -> Option<(u32, u32)> {
         self.model_declarations.get(name).copied()
+    }
+
+    /// Add a model definition.
+    #[inline]
+    pub fn add_model(&mut self, model: ModelDefinition) {
+        self.models.push(model);
+    }
+
+    /// Get all models.
+    #[inline]
+    pub fn models(&self) -> &[ModelDefinition] {
+        &self.models
+    }
+
+    /// Store an authored defineModel modifier type by model prop name.
+    #[inline]
+    pub fn set_model_modifier_type(&mut self, name: CompactString, modifier_type: CompactString) {
+        self.model_modifier_types.insert(name, modifier_type);
+    }
+
+    /// Get an authored defineModel modifier type by model prop name.
+    #[inline]
+    pub fn model_modifier_type(&self, name: &str) -> Option<&str> {
+        self.model_modifier_types
+            .get(name)
+            .map(CompactString::as_str)
     }
 
     /// Shift every stored script-relative source offset by `delta`.

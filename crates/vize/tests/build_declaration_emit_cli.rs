@@ -1,9 +1,11 @@
+#[path = "support/corsa_path.rs"]
+mod corsa_path;
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
 
 use std::{path::Path, process::Command};
 
-use vize_carton::{String, ToCompactString, cstr};
+use vize_carton::cstr;
 
 fn workspace_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -65,17 +67,8 @@ fn create_cli_project(name: &str, files: &[(&str, &str)]) -> std::path::PathBuf 
     project_root
 }
 
-fn resolve_test_corsa_path() -> Option<String> {
-    let workspace_root = workspace_root();
-    let sibling_cache = workspace_root.parent()?.join("corsa-bind/.cache/tsgo");
-    if sibling_cache.exists() {
-        return Some(sibling_cache.to_string_lossy().to_compact_string());
-    }
-
-    let workspace_bin = workspace_root.join("node_modules/.bin/tsgo");
-    workspace_bin
-        .exists()
-        .then(|| workspace_bin.to_string_lossy().to_compact_string())
+fn resolve_test_corsa_path() -> Option<std::string::String> {
+    corsa_path::resolve(workspace_root())
 }
 
 const BUTTON_VUE: &str = r#"<script setup lang="ts">

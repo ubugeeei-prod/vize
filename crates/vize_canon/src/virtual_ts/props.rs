@@ -4,6 +4,7 @@ mod options_api;
 mod setup_scoped;
 mod template_bindings;
 mod template_model;
+mod template_model_modifiers;
 mod template_names;
 mod with_defaults;
 pub(crate) use mappings::{PropBindingMappings, PropsSource, prop_source};
@@ -13,6 +14,7 @@ use options_api::emit_options_api_props_type;
 use setup_scoped::unused_generic_comment;
 pub(crate) use setup_scoped::{PropsTypeEmission, generate_setup_scoped_props_artifact};
 pub(crate) use template_model::{TemplatePropsModel, generate_props_variables};
+use template_model_modifiers::{model_modifier_prop_name, model_modifier_type};
 pub(crate) use template_names::collect_template_prop_names;
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
@@ -22,29 +24,27 @@ fn model_prop_type(model: &ModelDefinition) -> &str {
     model.model_type.as_deref().unwrap_or("unknown")
 }
 
-fn emit_model_prop_member(ts: &mut String, model: &ModelDefinition) {
+fn emit_model_prop_member(ts: &mut String, summary: &Croquis, model: &ModelDefinition) {
     let optional = if model.required { "" } else { "?" };
     let name = model.name.as_str();
     let prop_type = model_prop_type(model);
     append!(*ts, "  \"{name}\"{optional}: {prop_type};\n");
+    let modifiers_name = model_modifier_prop_name(name);
+    let modifier_type = model_modifier_type(summary, model);
+    append!(
+        *ts,
+        "  \"{modifiers_name}\"?: Partial<Record<{modifier_type}, true>>;\n"
+    );
 }
 
-fn append_model_props_type_literal(ts: &mut String, models: &[ModelDefinition]) {
+fn append_model_props_type_literal(ts: &mut String, summary: &Croquis, models: &[ModelDefinition]) {
     ts.push_str("{\n");
     for model in models {
-        emit_model_prop_member(ts, model);
+        emit_model_prop_member(ts, summary, model);
     }
     ts.push('}');
 }
 
-/// Generate Props type definition at module level.
-/// When `generic_param` is present (e.g., `"T extends Foo, P extends Bar"`),
-/// the Props type is emitted with generic parameters: `export type Props<T, P> = ...;`
-///
-/// `options_api_props` carries the Options API runtime `props:` declaration when
-/// the component is a plain `<script>` Options API component with no
-/// `defineProps` macro. It lets cross-file prop checking see real prop types
-/// instead of the historical `export type Props = {}` no-op.
 pub(crate) fn generate_props_type(
     ts: &mut String,
     summary: &Croquis,
@@ -79,7 +79,7 @@ pub(crate) fn generate_props_type(
     } else if props_already_defined {
         if has_models {
             ts.push_str("type __VizeResolvedProps = Props & ");
-            append_model_props_type_literal(ts, models);
+            append_model_props_type_literal(ts, summary, models);
             ts.push_str(";\n");
         }
     } else if let Some(type_args) = define_props_type_args {
@@ -91,7 +91,7 @@ pub(crate) fn generate_props_type(
         // Always emit Props alias so it's available in template and default export.
         if has_models {
             append!(*ts, "export type Props{generic_decl} = {inner_type} & ");
-            append_model_props_type_literal(ts, models);
+            append_model_props_type_literal(ts, summary, models);
             ts.push_str(";\n");
         } else {
             append!(*ts, "export type Props{generic_decl} = {inner_type};\n");
@@ -109,7 +109,7 @@ pub(crate) fn generate_props_type(
             if emitted_names.contains(model.name.as_str()) {
                 continue;
             }
-            emit_model_prop_member(ts, model);
+            emit_model_prop_member(ts, summary, model);
         }
         ts.push_str("};\n");
     } else if let Some(options_api_props) = options_api_props {

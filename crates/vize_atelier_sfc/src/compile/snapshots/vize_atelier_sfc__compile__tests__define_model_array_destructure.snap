@@ -23,7 +23,7 @@ export default {
           null,
           512
           /* NEED_PATCH */
-        ), [[_vModelText, _unref(model)]]), _createElementVNode(
+        ), [[_vModelText, model.value]]), _createElementVNode(
           "span",
           null,
           _toDisplayString(_unref(modifiers).trim),

@@ -40,7 +40,7 @@ pub(crate) fn generate_setup_scoped_props_artifact(ts: &mut String, summary: &Cr
         append!(*ts, "  type __VizeSetupProps = {inner_type};\n");
     } else {
         append!(*ts, "  type __VizeSetupProps = {inner_type} & ");
-        append_model_props_type_literal(ts, models);
+        append_model_props_type_literal(ts, summary, models);
         ts.push_str(";\n");
     }
     ts.push_str("  const __vize_setup_props = undefined as unknown as __VizeSetupProps;\n");

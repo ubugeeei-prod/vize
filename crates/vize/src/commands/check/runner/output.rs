@@ -158,7 +158,7 @@ fn report_executions(
             }
         }
     }
-    let diagnostics = render_diagnostics(&reported_raw);
+    let diagnostics = render_diagnostics(&reported_raw, args.format != "json");
     let diagnostics_render_time = diagnostics_render_start.elapsed();
     let total_errors = reported_raw
         .iter()
