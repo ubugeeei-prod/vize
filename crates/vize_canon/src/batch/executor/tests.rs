@@ -11,6 +11,7 @@ use vize_carton::cstr;
 
 use tempfile::TempDir;
 
+mod declaration_emit;
 #[cfg(unix)]
 #[path = "tests/incremental_fallback.rs"]
 mod incremental_fallback;

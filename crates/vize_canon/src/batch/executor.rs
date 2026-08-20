@@ -263,6 +263,9 @@ fn rewrite_declaration_outputs(out_dir: &Path) -> CorsaResult<()> {
         // programs resolve them without including the virtual mirror.
         if name.ends_with(".vue.d.ts") {
             wrote_vue_declaration = true;
+            if let Some(stripped) = strip_internal_vue_declaration_fields(rewritten.as_str()) {
+                rewritten = stripped;
+            }
             let depth = path
                 .strip_prefix(out_dir)
                 .ok()
@@ -291,6 +294,33 @@ fn rewrite_declaration_outputs(out_dir: &Path) -> CorsaResult<()> {
     }
 
     Ok(())
+}
+
+fn strip_internal_vue_declaration_fields(source: &str) -> Option<String> {
+    if !source.contains("__vizeFallthroughProps?:") {
+        return None;
+    }
+
+    let mut stripped = String::default();
+    let mut changed = false;
+    let mut skipping_fallthrough_field = false;
+    for line in source.split_inclusive('\n') {
+        if skipping_fallthrough_field {
+            changed = true;
+            if line.contains(';') {
+                skipping_fallthrough_field = false;
+            }
+            continue;
+        }
+        if line.contains("__vizeFallthroughProps?:") {
+            changed = true;
+            skipping_fallthrough_field = !line.contains(';');
+            continue;
+        }
+        stripped.push_str(line);
+    }
+
+    changed.then_some(stripped)
 }
 
 fn map_corsa_error(message: String) -> CorsaError {
