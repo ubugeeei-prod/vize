@@ -1713,9 +1713,9 @@
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Slot prop 'update' from slot 'updater' is defined but never used",
         "line": 182,
-        "column": 15,
+        "column": 35,
         "endLine": 182,
-        "endColumn": 21,
+        "endColumn": 41,
         "help": "Consider removing unused slot props or prefix with underscore"
       },
       {

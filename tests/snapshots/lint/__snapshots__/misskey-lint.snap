@@ -13026,22 +13026,22 @@
         "ruleId": "vue/no-unused-vars",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unused-vars] Slot prop 'delta' from slot 'right' is defined but never used",
+        "message": "[vize:vue/no-unused-vars] Slot prop 'timestamp' from slot 'right' is defined but never used",
         "line": 31,
-        "column": 16,
+        "column": 33,
         "endLine": 31,
-        "endColumn": 21,
+        "endColumn": 42,
         "help": "Consider removing unused slot props or prefix with underscore"
       },
       {
         "ruleId": "vue/no-unused-vars",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unused-vars] Slot prop 'timestamp' from slot 'right' is defined but never used",
+        "message": "[vize:vue/no-unused-vars] Slot prop 'delta' from slot 'right' is defined but never used",
         "line": 31,
-        "column": 16,
+        "column": 44,
         "endLine": 31,
-        "endColumn": 25,
+        "endColumn": 49,
         "help": "Consider removing unused slot props or prefix with underscore"
       }
     ],
@@ -14026,9 +14026,9 @@
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Slot prop 'slotProps' from slot 'default' is defined but never used",
         "line": 11,
-        "column": 19,
+        "column": 27,
         "endLine": 11,
-        "endColumn": 28,
+        "endColumn": 36,
         "help": "Consider removing unused slot props or prefix with underscore"
       },
       {
