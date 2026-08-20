@@ -274,25 +274,13 @@ fn string_literal(value: &str) -> String {
 
 fn strip_outer_angle_brackets(value: &str) -> &str {
     let value = value.trim();
-    if !value.starts_with('<') {
-        return value;
-    }
-
-    let mut depth = 0i32;
-    for (index, ch) in value.char_indices() {
-        match ch {
-            '<' => depth += 1,
-            '>' => {
-                depth -= 1;
-                if depth == 0 && index == value.len() - 1 {
-                    return &value[1..index];
-                }
-            }
-            _ => {}
-        }
-    }
-
+    // OXC's type-argument span includes exactly one delimiter pair. Counting
+    // raw `>` characters mistakes the arrow in `(value: T) => U` for a closing
+    // generic delimiter and leaves the outer pair in the declaration output.
     value
+        .strip_prefix('<')
+        .and_then(|inner| inner.strip_suffix('>'))
+        .unwrap_or(value)
 }
 
 fn extract_generic_names(generic_param: &str) -> String {

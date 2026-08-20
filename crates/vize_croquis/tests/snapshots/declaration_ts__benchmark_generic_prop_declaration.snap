@@ -1,0 +1,25 @@
+---
+source: crates/vize_croquis/tests/declaration_ts.rs
+expression: declaration.as_str()
+---
+export type Props<T extends { id: number } = any> = {
+  items: T[];
+  selected?: T;
+  keyOf: (row: T) => string;
+};
+export type Emits<T extends { id: number } = any> = {
+  pick: [row: T];
+};
+export type Slots<T extends { id: number } = any> = {};
+type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? {
+  [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[];
+} : Record<string, any[]>;
+type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
+type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);
+type __VizeComponentInstance<T extends { id: number } = any> = {
+  $props: Props<T>;
+  $emit: __EmitFn<Emits<T>>;
+  $slots: Slots<T>;
+};
+declare const __vize_component__: new <T extends { id: number } = any>(...args: any[]) => __VizeComponentInstance<T>;
+export default __vize_component__;
