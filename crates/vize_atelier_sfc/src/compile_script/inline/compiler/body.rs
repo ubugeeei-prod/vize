@@ -6,8 +6,9 @@ use crate::script::{ScriptCompileContext, transform_destructured_props};
 use crate::types::{CssModuleMapping, SfcError};
 
 use super::super::super::{
-    ScriptCompileResult, TemplateParts, import_utils::import_block_has_local_from,
-    typescript::transform_typescript_to_js,
+    ScriptCompileResult, TemplateParts,
+    function_mode::helpers::collect_runtime_identifier_references,
+    import_utils::import_block_has_local_from, typescript::transform_typescript_to_js,
 };
 use super::{
     component_output::emit_component_definition,
@@ -15,7 +16,7 @@ use super::{
     model::{build_model_props_emits, collect_model_infos},
     preamble::emit_preamble,
     props::build_props_emits,
-    render::emit_render_return,
+    render::{SetupBindingInputs, emit_render_return},
     setup_emit::emit_setup_body,
 };
 
@@ -153,10 +154,21 @@ pub(super) fn compile_script_setup_inline_body(
     );
 
     output.push(b'\n');
+    let runtime_used_identifiers = if template.render_body.is_empty()
+        && !template.render_fn.is_empty()
+        && !preamble.setup_return_imports.is_empty()
+    {
+        Some(collect_runtime_identifier_references(&transformed_setup))
+    } else {
+        None
+    };
     emit_render_return(
         &mut output,
         &template,
-        &preamble.setup_return_imports,
+        SetupBindingInputs {
+            imports: &preamble.setup_return_imports,
+            runtime_used_identifiers: runtime_used_identifiers.as_ref(),
+        },
         is_ts,
         is_vapor,
         vapor_render_alias.as_deref(),

@@ -1,4 +1,4 @@
-use vize_carton::String;
+use vize_carton::{FxHashSet, String};
 
 use crate::script::ScriptCompileContext;
 
@@ -7,11 +7,16 @@ use super::super::super::{TemplateParts, import_utils::extract_import_identifier
 const VAPOR_RENDER_ALIAS_BASE: &str = "__vaporRender";
 const VAPOR_TEMPLATE_REF_SETTER: &str = "vaporTemplateRefSetter";
 
+pub(super) struct SetupBindingInputs<'a> {
+    pub(super) imports: &'a [String],
+    pub(super) runtime_used_identifiers: Option<&'a FxHashSet<String>>,
+}
+
 /// Emit the render function return statement or setup binding return.
 pub(super) fn emit_render_return(
     output: &mut vize_carton::Vec<u8>,
     template: &TemplateParts<'_>,
-    imports: &[String],
+    setup_bindings: SetupBindingInputs<'_>,
     is_ts: bool,
     is_vapor: bool,
     vapor_render_alias: Option<&str>,
@@ -67,7 +72,7 @@ pub(super) fn emit_render_return(
         }
         output.extend_from_slice(b"}\n");
     } else {
-        let setup_bindings = collect_setup_bindings(ctx, imports, template);
+        let setup_bindings = collect_setup_bindings(ctx, setup_bindings, template);
         if is_vapor && !template.render_fn.is_empty() {
             let needs_template_ref_setter = template.render_fn.contains("_createTemplateRefSetter");
             if needs_template_ref_setter {
@@ -172,17 +177,28 @@ fn append_usize(target: &mut String, value: usize) {
 
 fn collect_setup_bindings(
     ctx: &ScriptCompileContext,
-    imports: &[String],
+    setup_bindings: SetupBindingInputs<'_>,
     template: &TemplateParts<'_>,
 ) -> Vec<String> {
     use crate::types::BindingType;
+
+    let has_template = !template.render_fn.is_empty() || !template.render_body.is_empty();
+    let mut template_code =
+        String::with_capacity(template.render_fn.len() + template.render_body.len());
+    template_code.push_str(template.render_fn);
+    template_code.push_str(template.render_body);
+    let imported_identifiers: FxHashSet<String> = setup_bindings
+        .imports
+        .iter()
+        .flat_map(|import| extract_import_identifiers(import).into_iter())
+        .collect();
 
     let mut bindings: Vec<String> = ctx
         .bindings
         .bindings
         .iter()
-        .filter(|(_, bt)| {
-            matches!(
+        .filter(|(name, bt)| {
+            let is_setup_binding = matches!(
                 bt,
                 BindingType::SetupLet
                     | BindingType::SetupMaybeRef
@@ -190,21 +206,25 @@ fn collect_setup_bindings(
                     | BindingType::SetupReactiveConst
                     | BindingType::SetupConst
                     | BindingType::LiteralConst
-            )
+            );
+            let is_runtime_import = !imported_identifiers.contains(name.as_str())
+                || !has_template
+                || setup_bindings
+                    .runtime_used_identifiers
+                    .is_some_and(|ids| ids.contains(name.as_str()))
+                || template_references_setup_binding(&template_code, name.as_str());
+            is_setup_binding && is_runtime_import
         })
         .map(|(name, _)| String::from(name.as_str()))
         .collect();
 
-    let has_template = !template.render_fn.is_empty() || !template.render_body.is_empty();
-    let mut template_code =
-        String::with_capacity(template.render_fn.len() + template.render_body.len());
-    template_code.push_str(template.render_fn);
-    template_code.push_str(template.render_body);
-
-    for import in imports {
+    for import in setup_bindings.imports {
         for name in extract_import_identifiers(import) {
-            let should_return =
-                !has_template || template_references_setup_binding(&template_code, name.as_str());
+            let should_return = !has_template
+                || setup_bindings
+                    .runtime_used_identifiers
+                    .is_some_and(|ids| ids.contains(name.as_str()))
+                || template_references_setup_binding(&template_code, name.as_str());
             if should_return && !bindings.iter().any(|binding| binding == name.as_str()) {
                 bindings.push(name);
             }
