@@ -272,7 +272,6 @@ fn a_setup_type_over_a_classic_value_keeps_checking_the_component_contract() {
         ]),
         [
             "src/ClassicValueConsumer.vue(10,11): error TS2322: Type '(item: string) => void' is not assignable to type '(item: Item) => any'.\nTypes of parameters 'item' and 'item' are incompatible.\nType 'Item' is not assignable to type 'string'.",
-            "src/ClassicValueConsumer.vue(10,9): error TS2741: Property '__vizeMissingSlots' is missing in type '{}' but required in type '{ readonly __vizeMissingSlots: \"default\"; }'.",
         ]
     );
 }
