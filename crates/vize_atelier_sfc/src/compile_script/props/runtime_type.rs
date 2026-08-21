@@ -1,14 +1,11 @@
 //! Runtime prop-type mapping: converting TypeScript type text into JavaScript
 //! runtime constructors and related string-level helpers.
-
 use vize_carton::FxHashMap;
 use vize_carton::{String, ToCompactString};
-
 pub(crate) fn runtime_prop_key(name: &str) -> String {
     if is_valid_identifier(name) {
         return name.to_compact_string();
     }
-
     serde_json::to_string(name)
         .map(|escaped| escaped.as_str().to_compact_string())
         .unwrap_or_else(|_| {
@@ -19,14 +16,12 @@ pub(crate) fn runtime_prop_key(name: &str) -> String {
             escaped
         })
 }
-
 #[allow(dead_code)]
 pub(super) fn type_includes_top_level_undefined(ts_type: &str) -> bool {
     split_type_at_top_level(ts_type.trim(), '|')
         .into_iter()
         .any(|part| part.trim() == "undefined")
 }
-
 pub(super) fn type_includes_top_level_null(ts_type: &str) -> bool {
     split_type_at_top_level(ts_type.trim(), '|')
         .into_iter()
@@ -258,7 +253,12 @@ pub(crate) fn ts_type_to_js_type(ts_type: &str) -> String {
                         type_name.to_compact_string()
                     }
                     // Vue reactive types that are objects at runtime
-                    "Ref"
+                    "Partial"
+                    | "Required"
+                    | "Pick"
+                    | "Omit"
+                    | "Record"
+                    | "Ref"
                     | "ShallowRef"
                     | "ComputedRef"
                     | "WritableComputedRef"

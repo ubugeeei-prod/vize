@@ -144,3 +144,110 @@ fn extract_props_keeps_runtime_union_after_omit_intersection() {
         .expect("onClick prop should be extracted");
     assert_eq!(on_click.1.js_type.as_str(), "[Function, Array]");
 }
+
+#[test]
+fn utility_object_type_keeps_object_runtime_type() {
+    assert_eq!(
+        ts_type_to_js_type("Partial<Omit<UseTooltipProps, 'content'>>"),
+        "Object"
+    );
+}
+
+#[test]
+fn unresolved_union_member_keeps_known_boolean_runtime_type() {
+    let props = extract_prop_types_from_type_with_context(
+        "{ showOverflowTooltip?: boolean | ImportedTooltipOptions }",
+        None,
+        None,
+    );
+
+    let tooltip = props
+        .iter()
+        .find(|(name, _)| name == "showOverflowTooltip")
+        .expect("showOverflowTooltip prop should be extracted");
+    assert_eq!(tooltip.1.js_type.as_str(), "Boolean");
+}
+
+#[test]
+fn unresolved_generic_union_does_not_keep_only_array_runtime_type() {
+    let mut type_aliases: FxHashMap<vize_carton::String, vize_carton::String> =
+        FxHashMap::default();
+    type_aliases.insert(
+        "Arrayable".to_compact_string(),
+        "T | T[]".to_compact_string(),
+    );
+
+    let props = extract_prop_types_from_type_with_context(
+        "{ trigger?: Arrayable<TooltipTriggerType> }",
+        None,
+        Some(&type_aliases),
+    );
+
+    let trigger = props
+        .iter()
+        .find(|(name, _)| name == "trigger")
+        .expect("trigger prop should be extracted");
+    assert_eq!(trigger.1.js_type.as_str(), "null");
+}
+
+#[test]
+fn branded_primitive_intersection_does_not_become_object_runtime_type() {
+    let props = extract_prop_types_from_type_with_context(
+        "{ effect?: string & NonNullable<unknown> }",
+        None,
+        None,
+    );
+
+    let effect = props
+        .iter()
+        .find(|(name, _)| name == "effect")
+        .expect("effect prop should be extracted");
+    assert_eq!(effect.1.js_type.as_str(), "String");
+}
+
+#[test]
+fn unresolved_union_with_branded_string_falls_back_to_unknown_runtime_type() {
+    let mut type_aliases: FxHashMap<vize_carton::String, vize_carton::String> =
+        FxHashMap::default();
+    type_aliases.insert(
+        "PopperEffect".to_compact_string(),
+        "(typeof effects)[number] | (string & NonNullable<unknown>)".to_compact_string(),
+    );
+
+    let props = extract_prop_types_from_type_with_context(
+        "{ effect?: PopperEffect }",
+        None,
+        Some(&type_aliases),
+    );
+
+    let effect = props
+        .iter()
+        .find(|(name, _)| name == "effect")
+        .expect("effect prop should be extracted");
+    assert_eq!(effect.1.js_type.as_str(), "null");
+}
+
+#[test]
+fn indexed_access_prop_resolves_target_property_runtime_type() {
+    let mut interfaces: FxHashMap<vize_carton::String, vize_carton::String> = FxHashMap::default();
+    interfaces.insert(
+        "TooltipOptions".to_compact_string(),
+        "{ effect?: string }".to_compact_string(),
+    );
+    interfaces.insert(
+        "ColumnCtx".to_compact_string(),
+        "{ showOverflowTooltip?: boolean | TooltipOptions }".to_compact_string(),
+    );
+
+    let props = extract_prop_types_from_type_with_context(
+        "{ tooltip?: ColumnCtx['showOverflowTooltip'] }",
+        Some(&interfaces),
+        None,
+    );
+
+    let tooltip = props
+        .iter()
+        .find(|(name, _)| name == "tooltip")
+        .expect("tooltip prop should be extracted");
+    assert_eq!(tooltip.1.js_type.as_str(), "[Boolean, Object]");
+}

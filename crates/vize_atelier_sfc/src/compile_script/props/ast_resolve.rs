@@ -3,7 +3,8 @@
 //! Parses TypeScript type definitions and walks the resulting AST to collect
 //! prop types, resolving interface/type-alias references, mapped types, and
 //! literal unions into runtime constructors.
-
+use super::runtime_type::ts_type_to_js_type;
+use super::types::PropTypeInfo;
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     Expression, PropertyKey, Statement, TSLiteral, TSMappedTypeModifierOperator, TSSignature,
@@ -13,10 +14,9 @@ use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::FxHashMap;
 use vize_carton::{String, ToCompactString};
-
-use super::runtime_type::ts_type_to_js_type;
-use super::types::PropTypeInfo;
-
+mod indexed_access;
+mod runtime_type_combine;
+use runtime_type_combine::{combine_runtime_intersection_types, combine_runtime_js_types};
 pub(super) const TYPE_ALIAS_PREFIX: &str = "type __VizeProps = ";
 
 pub(super) fn extract_prop_types_from_ast(
@@ -30,11 +30,9 @@ pub(super) fn extract_prop_types_from_ast(
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return None;
     }
-
     let Some(Statement::TSTypeAliasDeclaration(alias)) = parsed.program.body.first() else {
         return None;
     };
-
     let mut props = Vec::new();
     let mut seen = Vec::new();
     if collect_props_from_ts_type(
@@ -369,16 +367,9 @@ fn ts_type_to_js_type_from_ast_inner(
             ),
         ]),
         TSType::TSIntersectionType(intersection) => {
-            if intersection.types.iter().any(|ty| {
-                matches!(
-                    ty,
-                    TSType::TSTypeLiteral(_) | TSType::TSMappedType(_) | TSType::TSTypeReference(_)
-                )
-            }) {
-                "Object".to_compact_string()
-            } else {
-                "null".to_compact_string()
-            }
+            combine_runtime_intersection_types(intersection.types.iter().map(|ty| {
+                ts_type_to_js_type_from_ast_inner(ty, source, interfaces, type_aliases, seen)
+            }))
         }
         TSType::TSParenthesizedType(paren) => ts_type_to_js_type_from_ast_inner(
             &paren.type_annotation,
@@ -444,7 +435,9 @@ fn ts_type_to_js_type_from_ast_inner(
             }
             "null".to_compact_string()
         }
-        TSType::TSIndexedAccessType(_) => "null".to_compact_string(),
+        TSType::TSIndexedAccessType(indexed) => {
+            indexed_access::resolve(indexed, source, interfaces, type_aliases, seen)
+        }
         _ => "null".to_compact_string(),
     }
 }
@@ -461,31 +454,6 @@ fn js_type_for_ts_literal(literal: &TSLiteral<'_>) -> String {
             } else {
                 "null".to_compact_string()
             }
-        }
-    }
-}
-
-fn combine_runtime_js_types(types: impl IntoIterator<Item = String>) -> String {
-    let mut js_types: Vec<String> = Vec::new();
-    for js_type in types {
-        if js_type == "null" {
-            return js_type;
-        }
-        if !js_types.contains(&js_type) {
-            js_types.push(js_type);
-        }
-    }
-
-    match js_types.len() {
-        0 => "null".to_compact_string(),
-        1 => js_types.pop().unwrap_or_else(|| "null".to_compact_string()),
-        _ => {
-            let joined = js_types.join(", ");
-            let mut result = String::with_capacity(joined.len() + 2);
-            result.push('[');
-            result.push_str(&joined);
-            result.push(']');
-            result
         }
     }
 }
