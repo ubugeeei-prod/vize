@@ -78,7 +78,7 @@ async fn component_prop_references(
     character: u32,
     include_declaration: bool,
 ) -> Vec<vize_canon::LspLocation> {
-    let matches = corsa_support::matching_component_prop_navigation_positions(
+    let mut matches = corsa_support::matching_component_prop_navigation_positions(
         ctx,
         bridge,
         document,
@@ -106,6 +106,8 @@ async fn component_prop_references(
         return Vec::new();
     };
     let mut references = Vec::new();
+    let names = &matches.names;
+    let source_cache = &mut matches.source_cache;
     for extra in batches {
         references.extend(extra.into_iter().filter(|location| {
             let Some(authored) =
@@ -113,7 +115,13 @@ async fn component_prop_references(
             else {
                 return false;
             };
-            corsa_support::component_prop_location_matches(ctx, document, &authored, &matches.names)
+            corsa_support::component_prop_location_matches(
+                ctx,
+                document,
+                &authored,
+                names,
+                source_cache,
+            )
         }));
     }
     references

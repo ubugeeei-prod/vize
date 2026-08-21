@@ -37,6 +37,29 @@ fn extract_properties_ignores_leading_comments() {
 }
 
 #[test]
+fn extract_properties_strips_comments_only_inside_template_substitutions() {
+    let resolver = TypeResolver::new();
+    let props = resolver.extract_properties(
+        r#"{
+  value: `${string /* } */}`;
+  raw: `/* raw } comment marker */`;
+  count: number;
+}"#,
+    );
+
+    let names = props
+        .iter()
+        .map(|prop| prop.name.as_str())
+        .collect::<Vec<_>>();
+    assert_eq!(names, ["value", "raw", "count"]);
+    assert_eq!(props[0].prop_type.as_deref(), Some("`${string  }`"));
+    assert_eq!(
+        props[1].prop_type.as_deref(),
+        Some("`/* raw } comment marker */`")
+    );
+}
+
+#[test]
 fn test_extract_props_from_reference() {
     let mut resolver = TypeResolver::new();
     resolver.add_interface("Props", "{ foo: string; bar: number }");

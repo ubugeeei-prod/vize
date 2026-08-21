@@ -1,5 +1,6 @@
+use tower_lsp::lsp_types::Url;
 use vize_canon::{LspPosition, LspRange};
-use vize_carton::{FxHashSet, String};
+use vize_carton::{FxHashMap, FxHashSet, String};
 
 use super::{CanonicalVirtualDocument, location_matches_uri};
 use crate::ide::diagnostics::VirtualTsResult;
@@ -20,7 +21,10 @@ pub(crate) struct CanonicalSemanticPosition {
 pub(crate) struct ComponentPropNavigationMatches {
     pub(crate) positions: Vec<CanonicalSemanticPosition>,
     pub(crate) names: FxHashSet<String>,
+    pub(crate) source_cache: ComponentPropSourceCache,
 }
+
+pub(crate) type ComponentPropSourceCache = FxHashMap<Url, Option<std::string::String>>;
 
 /// Return every live TypeScript identity Canon materialized for one authored
 /// source position. Importer-scoped package shadows intentionally duplicate a
