@@ -1,3 +1,5 @@
+#![cfg(feature = "compile")]
+
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 
 fn compile(source: &str) -> vize_carton::String {

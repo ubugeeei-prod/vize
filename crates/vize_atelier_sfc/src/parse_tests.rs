@@ -3,8 +3,7 @@
 //! Split out of `lib.rs` so that module stays inside the per-file
 //! source-length budget.
 
-use super::{SfcCompileOptions, compile_sfc, compile_sfc_with_template_syntax, parse_sfc};
-use vize_atelier_core::TemplateSyntaxMode;
+use super::{SfcCompileOptions, parse_sfc};
 use vize_carton::config::VueVersion;
 
 #[test]
@@ -14,6 +13,7 @@ fn template_compile_options_default_dialect_is_vue3() {
     assert_eq!(options.template.dialect, VueVersion::V3);
 }
 
+#[cfg(feature = "compile")]
 #[test]
 fn dialect_threads_through_compile_without_changing_vue3_output() {
     // PR2 is plumbing only: a non-Vue-3 dialect must reach the compile
@@ -25,6 +25,8 @@ fn dialect_threads_through_compile_without_changing_vue3_output() {
   <div :class="cls" @click="onClick">{{ msg }}</div>
 </template>
 "#;
+    use super::compile_sfc;
+
     let descriptor = parse_sfc(source, Default::default()).unwrap();
 
     let mut v2_options = SfcCompileOptions::default();

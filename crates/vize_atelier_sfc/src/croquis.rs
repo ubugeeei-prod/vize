@@ -237,9 +237,8 @@ pub fn merge_resolved_props_into_croquis(
     descriptor: &SfcDescriptor<'_>,
     filename: &str,
 ) {
-    use crate::compile::is_ts_lang;
     use crate::script::ScriptCompileContext;
-    use crate::types::BindingType;
+    use crate::types::{BindingType, is_ts_lang};
 
     let Some(script_setup) = descriptor.script_setup.as_ref() else {
         return;

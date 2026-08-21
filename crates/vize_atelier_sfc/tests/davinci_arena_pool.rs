@@ -21,6 +21,8 @@
 //! that outlived a file is a compile error). These tests cover what it cannot
 //! see: the pool's own bookkeeping and the owned-form contract.
 
+#![cfg(feature = "compile")]
+
 use vize_atelier_sfc::{
     SfcCompileOptions, SfcCompileResult, SfcParseOptions, compile_sfc, parse_sfc,
 };

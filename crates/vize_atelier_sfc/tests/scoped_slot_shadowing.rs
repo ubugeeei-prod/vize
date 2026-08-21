@@ -1,3 +1,5 @@
+#![cfg(feature = "compile")]
+
 use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, TemplateCompileOptions, compile_sfc,
     parse_sfc,

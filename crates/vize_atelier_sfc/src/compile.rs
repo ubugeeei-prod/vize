@@ -28,7 +28,7 @@ use crate::rewrite_default::rewrite_default;
 use crate::script::ScriptCompileContext;
 use crate::types::{
     BindingMetadata, BindingType, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError,
-    SfcMacroArtifact,
+    SfcMacroArtifact, is_ts_lang,
 };
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 
@@ -57,10 +57,6 @@ pub use entry::{
     compile_sfc_with_template_syntax, compile_sfc_with_template_syntax_and_codegen_options,
 };
 use vize_carton::{String, ToCompactString, profile};
-
-pub(crate) fn is_ts_lang(lang: Option<&str>) -> bool {
-    matches!(lang, Some("ts" | "tsx"))
-}
 
 fn extract_descriptor_macro_artifacts(descriptor: &SfcDescriptor) -> Vec<SfcMacroArtifact> {
     let mut artifacts = Vec::new();

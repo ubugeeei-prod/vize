@@ -13,6 +13,14 @@ use vize_carton::{FxHashMap, String};
 // Re-export from vize_relief to avoid duplication
 pub use vize_atelier_core::options::{BindingMetadata, BindingType};
 
+/// True when a `<script>` / `<script setup>` `lang` is TypeScript.
+///
+/// Lives on `types` so Croquis / parse-only consumers can classify the block
+/// without pulling in the `compile` feature.
+pub(crate) fn is_ts_lang(lang: Option<&str>) -> bool {
+    matches!(lang, Some("ts" | "tsx"))
+}
+
 /// SFC Descriptor - parsed result of a .vue file
 /// Uses Cow<str> for zero-copy parsing with optional ownership
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -532,6 +540,7 @@ pub struct TemplateCompileOptions {
     pub dialect: vize_carton::config::VueVersion,
 
     /// Compiler options
+    #[cfg(feature = "compile")]
     pub compiler_options: Option<vize_atelier_dom::DomCompilerOptions>,
 }
 

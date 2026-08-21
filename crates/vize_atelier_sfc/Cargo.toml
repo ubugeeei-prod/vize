@@ -10,12 +10,24 @@ metadata.vize.stability = "alpha-supported"
 
 [features]
 default = ["native"]
-native = ["dep:lightningcss", "lightningcss/serde", "dep:parcel_selectors"]
+# Template/script codegen (DOM / Vapor / SSR) plus oxc transformer/codegen.
+# Off: `parse_sfc` and style/bundler helpers stay available for linters that
+# do not emit render functions. `native` includes this so the published
+# default stays a full compiler.
+compile = [
+  "dep:vize_atelier_dom",
+  "dep:vize_atelier_ssr",
+  "dep:vize_atelier_vapor",
+  "dep:oxc_transformer",
+  "dep:oxc_codegen",
+]
+native = ["compile", "dep:lightningcss", "lightningcss/serde", "dep:parcel_selectors"]
 # Arms the Davinci P1-7 differential lane across the atelier crates: every
 # retained-AST consumption dual-runs the legacy re-parse and panics on
 # divergence. Off in production builds; the corpus-runnable entry below
 # requires it.
 davinci-differential = [
+  "compile",
   "vize_atelier_core/davinci-differential",
   "vize_atelier_vapor/davinci-differential",
 ]
@@ -24,9 +36,9 @@ davinci-differential = [
 vize_carton = { workspace = true }
 vize_croquis = { workspace = true }
 vize_atelier_core = { workspace = true }
-vize_atelier_dom = { workspace = true }
-vize_atelier_ssr = { workspace = true }
-vize_atelier_vapor = { workspace = true }
+vize_atelier_dom = { workspace = true, optional = true }
+vize_atelier_ssr = { workspace = true, optional = true }
+vize_atelier_vapor = { workspace = true, optional = true }
 
 # OXC for JavaScript/TypeScript parsing and transformation
 oxc_parser = { workspace = true }
@@ -36,8 +48,8 @@ oxc_span = { workspace = true }
 oxc_allocator = { workspace = true }
 oxc_syntax = { workspace = true }
 oxc_semantic = { workspace = true }
-oxc_transformer = { workspace = true }
-oxc_codegen = { workspace = true }
+oxc_transformer = { workspace = true, optional = true }
+oxc_codegen = { workspace = true, optional = true }
 
 memchr = { workspace = true }
 serde = { workspace = true }
@@ -62,6 +74,7 @@ harness = false
 [[bench]]
 name = "sfc_compile"
 harness = false
+required-features = ["compile"]
 
 [[test]]
 name = "davinci_differential"

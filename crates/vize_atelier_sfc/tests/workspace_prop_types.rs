@@ -1,3 +1,5 @@
+#![cfg(feature = "compile")]
+
 use std::path::PathBuf;
 
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};

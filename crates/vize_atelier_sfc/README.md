@@ -8,6 +8,17 @@ Support and deprecation guarantees are defined in the
 
 `vize_atelier_sfc` parses and compiles Vue Single File Components.
 
+Parse-only consumers (linters that call `parse_sfc` and do not emit render
+functions) should disable default features so LightningCSS and the DOM/Vapor/SSR
+codegen crates stay out of the graph:
+
+```toml
+vize_atelier_sfc = { version = "0.356", default-features = false }
+```
+
+`native` (the crate default) includes `compile` plus LightningCSS. `compile`
+alone is template/script codegen without the CSS engine.
+
 ## Highlights
 
 - `.vue` descriptor parsing (`<template>`, `<script>`, `<script setup>`, `<style>`, custom blocks)

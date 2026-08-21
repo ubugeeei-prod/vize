@@ -2,7 +2,7 @@
 //!
 //! # Why the map is recovered rather than recorded
 //!
-//! [`compile_sfc`](crate::compile_sfc) does not edit the `.vue` source into its
+//! `compile_sfc` does not edit the `.vue` source into its
 //! output the way a MagicString-based compiler does. It *concatenates*
 //! independently produced chunks: hoisted template imports, the rewritten
 //! `<script>`/`<script setup>` body, a synthesized render function, an

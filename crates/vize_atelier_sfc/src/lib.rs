@@ -3,9 +3,9 @@
 //! This module follows the Vue.js core structure for parsing and compilation:
 //!
 //! - `parse` - SFC parsing into descriptor blocks
-//! - `compile_script` - Script/script setup compilation
-//! - `compile_template` - Template block compilation (DOM and Vapor)
-//! - `compile` - Main SFC compilation orchestration
+//! - `compile_script` - Script/script setup compilation (`compile` feature)
+//! - `compile_template` - Template block compilation (DOM and Vapor; `compile` feature)
+//! - `compile` - Main SFC compilation orchestration (`compile` feature)
 //! - `style` - Style block compilation with scoped CSS
 //! - `css` - Low-level CSS compilation with LightningCSS
 //!
@@ -29,6 +29,10 @@
 //! println!("{}", result.code);
 //! ```
 
+// Compile-only helpers stay in the crate so this feature is a dependency cut,
+// not a second source tree. Isolated `--no-default-features` builds therefore
+// see unused `pub(crate)` items that `native`/`compile` call.
+#![cfg_attr(not(feature = "compile"), allow(dead_code, unused_imports))]
 #![allow(clippy::collapsible_match)]
 #![allow(clippy::type_complexity)]
 #![allow(clippy::redundant_field_names)]
@@ -38,8 +42,11 @@
 
 // Core modules - following Vue.js compiler-sfc structure
 pub mod bundler;
+#[cfg(feature = "compile")]
 pub mod compile;
+#[cfg(feature = "compile")]
 pub mod compile_script;
+#[cfg(feature = "compile")]
 pub mod compile_template;
 pub mod croquis;
 pub mod css;
@@ -59,14 +66,18 @@ pub use bundler::{
     extract_style_blocks, generate_bundler_scope_id, has_scoped_style, is_importable_asset_url,
     strip_css_comments_for_scoped, wrap_scoped_preprocessor_style,
 };
+#[cfg(feature = "compile")]
 #[allow(deprecated)]
 pub use compile::compile_sfc_with_vue_parser_quirks;
+#[cfg(feature = "compile")]
 pub use compile::{ScriptCompileResult, compile_sfc, compile_sfc_with_template_syntax};
+#[cfg(feature = "compile")]
 pub use compile::{
     SfcScriptOutputMode, compile_sfc_for_adapter,
     compile_sfc_with_custom_elements_template_syntax_and_codegen_options,
     compile_sfc_with_template_syntax_and_codegen_options,
 };
+#[cfg(feature = "compile")]
 pub use compile_script::props::{
     script_setup_has_semantic_validator_candidates, validate_script_setup_semantics,
     validate_script_setup_semantics_located,
@@ -87,13 +98,14 @@ pub use types::{
 
 // Re-export key types from dependencies
 pub use vize_atelier_core::CompilerError;
+#[cfg(feature = "compile")]
 pub use vize_atelier_dom::compile_template;
 
-#[cfg(test)]
+#[cfg(all(test, feature = "compile"))]
 mod compile_tests;
 #[cfg(test)]
 mod parse_tests;
-#[cfg(test)]
+#[cfg(all(test, feature = "compile"))]
 mod snapshot_tests;
-#[cfg(test)]
+#[cfg(all(test, feature = "compile"))]
 mod template_tests;

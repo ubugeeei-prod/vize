@@ -2,9 +2,6 @@
 
 use super::test_support::{Segment, decode_mappings, descriptor_of};
 use super::*;
-use crate::compile_sfc_with_template_syntax_and_codegen_options;
-use crate::types::{ScriptCompileOptions, SfcCompileOptions, SfcParseOptions};
-use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode};
 
 /// A `.vue` whose script lines are all distinct, so every one of them is an
 /// unambiguous anchor.
@@ -165,7 +162,12 @@ fn crlf_sources_resolve_to_the_same_positions() {
     );
 }
 
+#[cfg(feature = "compile")]
 fn compile_with_source_map(source: &str, source_map: bool) -> crate::types::SfcCompileResult {
+    use crate::compile_sfc_with_template_syntax_and_codegen_options;
+    use crate::types::{ScriptCompileOptions, SfcCompileOptions, SfcParseOptions};
+    use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode};
+
     let descriptor = descriptor_of(source);
     let options = SfcCompileOptions {
         parse: SfcParseOptions {
@@ -191,6 +193,7 @@ fn compile_with_source_map(source: &str, source_map: bool) -> crate::types::SfcC
     .expect("fixture compiles")
 }
 
+#[cfg(feature = "compile")]
 #[test]
 fn compile_sfc_attaches_a_map_only_when_the_flag_is_on() {
     assert_eq!(compile_with_source_map(COUNTER_VUE, false).map, None);

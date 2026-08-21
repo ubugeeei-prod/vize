@@ -6,6 +6,8 @@
 //! every prop undefined, which took down the whole Nuxt UI playground with
 //! `Missing required prop: "name"` followed by an SSR 500.
 
+#![cfg(feature = "compile")]
+
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 
 const NUXT_UI_ICON_SFC: &str = r#"<script setup lang="ts">
