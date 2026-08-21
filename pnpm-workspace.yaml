@@ -20,14 +20,14 @@ packages:
 
 minimumReleaseAgeExclude:
   - "hono@4.12.34"
-  - "@vizejs/native-darwin-arm64@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0 || 0.355.0"
-  - "@vizejs/native-darwin-x64@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0 || 0.355.0"
-  - "@vizejs/native-linux-arm64-gnu@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0 || 0.355.0"
-  - "@vizejs/native-linux-arm64-musl@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0 || 0.355.0"
-  - "@vizejs/native-linux-x64-gnu@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0 || 0.355.0"
-  - "@vizejs/native-linux-x64-musl@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0 || 0.355.0"
-  - "@vizejs/native-win32-arm64-msvc@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0 || 0.355.0"
-  - "@vizejs/native-win32-x64-msvc@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0 || 0.355.0"
+  - "@vizejs/native-darwin-arm64@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0 || 0.355.0 || 0.356.0"
+  - "@vizejs/native-darwin-x64@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0 || 0.355.0 || 0.356.0"
+  - "@vizejs/native-linux-arm64-gnu@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0 || 0.355.0 || 0.356.0"
+  - "@vizejs/native-linux-arm64-musl@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0 || 0.355.0 || 0.356.0"
+  - "@vizejs/native-linux-x64-gnu@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0 || 0.355.0 || 0.356.0"
+  - "@vizejs/native-linux-x64-musl@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0 || 0.355.0 || 0.356.0"
+  - "@vizejs/native-win32-arm64-msvc@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0 || 0.355.0 || 0.356.0"
+  - "@vizejs/native-win32-x64-msvc@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0 || 0.355.0 || 0.356.0"
 
 overrides:
   "@azure/msal-node>uuid": "11.1.1"
@@ -203,14 +203,14 @@ catalogs:
 
   # Published native binary packages that are installed optionally at runtime.
   native-binaries:
-    "@vizejs/native-darwin-arm64": "0.355.0"
-    "@vizejs/native-darwin-x64": "0.355.0"
-    "@vizejs/native-linux-arm64-gnu": "0.355.0"
-    "@vizejs/native-linux-arm64-musl": "0.355.0"
-    "@vizejs/native-linux-x64-gnu": "0.355.0"
-    "@vizejs/native-linux-x64-musl": "0.355.0"
-    "@vizejs/native-win32-arm64-msvc": "0.355.0"
-    "@vizejs/native-win32-x64-msvc": "0.355.0"
+    "@vizejs/native-darwin-arm64": "0.356.0"
+    "@vizejs/native-darwin-x64": "0.356.0"
+    "@vizejs/native-linux-arm64-gnu": "0.356.0"
+    "@vizejs/native-linux-arm64-musl": "0.356.0"
+    "@vizejs/native-linux-x64-gnu": "0.356.0"
+    "@vizejs/native-linux-x64-musl": "0.356.0"
+    "@vizejs/native-win32-arm64-msvc": "0.356.0"
+    "@vizejs/native-win32-x64-msvc": "0.356.0"
 
 peerDependencyRules:
   allowAny:

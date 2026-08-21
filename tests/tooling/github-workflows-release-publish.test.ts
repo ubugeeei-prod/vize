@@ -280,6 +280,15 @@ test("release workflow requires VS Code Marketplace publication", () => {
   assert.doesNotMatch(publishJob, /Skip publish|continue-on-error|if:\s*env\.VSCE_PAT/);
 });
 
+test("release npm publication waits long enough for registry dist-tag visibility", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "release.yml")) as {
+    env?: Record<string, string | number>;
+  };
+
+  assert.equal(workflow.env?.PUBLISH_RESOLUTION_RETRY_LIMIT, 60);
+  assert.equal(workflow.env?.PUBLISH_RESOLUTION_RETRY_DELAY, 10);
+});
+
 test("Open VSX publication is an explicit, fail-closed opt-in", () => {
   const workflow = readRepoFile(".github", "workflows", "release-open-vsx.yml");
   const publishJob = workflowJobBody(workflow, "release-open-vsx-extension");

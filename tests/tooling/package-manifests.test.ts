@@ -10,8 +10,8 @@ import { parse } from "yaml";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const require = createRequire(import.meta.url);
+const tsdownRequire = createRequire(require.resolve("tsdown/package.json"));
 const npmDir = path.join(root, "npm");
-
 function collectStrings(value: unknown, out: string[]): void {
   if (typeof value === "string") {
     out.push(value);
@@ -221,7 +221,7 @@ test("vite plugin type entry resolves direct Vue imports", () => {
 
     const result = spawnSync(
       process.execPath,
-      [require.resolve("typescript/bin/tsc"), "-p", tempDir, "--noEmit", "--pretty", "false"],
+      [tsdownRequire.resolve("typescript/bin/tsc"), "-p", tempDir, "--noEmit", "--pretty", "false"],
       {
         encoding: "utf8",
       },

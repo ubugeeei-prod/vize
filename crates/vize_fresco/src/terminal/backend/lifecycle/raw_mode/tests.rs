@@ -1,4 +1,5 @@
 use std::{
+    os::fd::RawFd,
     sync::{
         Barrier, Mutex, MutexGuard,
         atomic::{AtomicBool, Ordering},
@@ -78,6 +79,7 @@ fn invalid_terminal_descriptor_is_closed_without_publishing_a_snapshot() {
     // SAFETY: the path is a static NUL-terminated C string.
     let fd = unsafe { libc::open(c"/dev/null".as_ptr(), libc::O_RDWR) };
     assert!(fd >= 0);
+    let fd = duplicate_outside_common_test_fd_range(fd);
 
     let error = enable_raw_mode_on_owned_fd(fd).unwrap_err();
     assert!(matches!(
@@ -111,4 +113,23 @@ fn raw_mode_test_guard() -> MutexGuard<'static, ()> {
     RAW_MODE_TEST
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
+fn duplicate_outside_common_test_fd_range(fd: RawFd) -> RawFd {
+    let minimum_fd = if open_max() > 257 { 256 } else { 0 };
+    // SAFETY: `fd` is valid, and `F_DUPFD_CLOEXEC` takes one integer minimum
+    // descriptor. The original low descriptor is closed before returning.
+    let duplicate = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, minimum_fd) };
+    // SAFETY: `fd` is still the original descriptor and has not been
+    // transferred to raw-mode ownership.
+    let close_result = unsafe { libc::close(fd) };
+    assert_eq!(close_result, 0);
+    assert!(duplicate >= 0);
+    duplicate
+}
+
+fn open_max() -> libc::c_long {
+    // SAFETY: `_SC_OPEN_MAX` does not require additional arguments.
+    let value = unsafe { libc::sysconf(libc::_SC_OPEN_MAX) };
+    if value > 0 { value } else { 0 }
 }
