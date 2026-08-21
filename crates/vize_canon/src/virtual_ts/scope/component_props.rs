@@ -10,6 +10,7 @@ use vize_carton::profile;
 
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeKind, analysis::ComponentUsage};
 
+use crate::virtual_ts::VizeSemanticLink;
 use crate::virtual_ts::component_reference::component_binding_reference;
 use crate::virtual_ts::expressions::{ComponentPropCheckContext, generate_component_prop_checks};
 use crate::virtual_ts::helpers::to_safe_identifier_fragment;
@@ -33,6 +34,7 @@ use super::vif_guard::common_vif_guard_prefix_for_guards_outside_v_for;
 pub(super) fn generate_component_props(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
+    semantic_links: &mut Vec<VizeSemanticLink>,
     ctx: &ComponentPropsContext<'_>,
     checkable_usages: &[(usize, &ComponentUsage)],
 ) {
@@ -88,7 +90,7 @@ pub(super) fn generate_component_props(
         append_per_prop_aliases(ts, usage, component_type_name.as_str(), idx);
     }
 
-    component_prop_navigation::emit_references(ts, mappings, ctx, checkable_usages);
+    component_prop_navigation::emit_references(ts, mappings, semantic_links, ctx, checkable_usages);
 
     // Collect all closure scope IDs (v-for and v-slot)
     let closure_scope_ids: FxHashSet<u32> = summary

@@ -15,6 +15,9 @@ pub struct VizeSemanticLink {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum VizeSemanticLinkKind {
     VueSetupTemplateRefUnwrap,
+    /// A generated component binding and one mapped prop access that TypeScript
+    /// can use as a project-wide navigation entry point.
+    VueComponentPropNavigation,
 }
 
 impl VizeSemanticLink {

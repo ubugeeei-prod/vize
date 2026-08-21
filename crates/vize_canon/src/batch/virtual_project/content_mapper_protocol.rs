@@ -84,16 +84,19 @@ pub(super) fn protocol_semantic_links(
 ) -> Vec<ContentMapperSemanticLink> {
     links
         .iter()
-        .map(|link| ContentMapperSemanticLink {
-            source_start: link.source_range.start,
-            source_length: link.source_range.len(),
-            target_start: link.target_range.start,
-            target_length: link.target_range.len(),
-            kind: match link.kind {
-                crate::virtual_ts::VizeSemanticLinkKind::VueSetupTemplateRefUnwrap => {
-                    "vueSetupTemplateRefUnwrap"
-                }
-            },
+        .filter_map(|link| match link.kind {
+            crate::virtual_ts::VizeSemanticLinkKind::VueSetupTemplateRefUnwrap => {
+                Some(ContentMapperSemanticLink {
+                    source_start: link.source_range.start,
+                    source_length: link.source_range.len(),
+                    target_start: link.target_range.start,
+                    target_length: link.target_range.len(),
+                    kind: "vueSetupTemplateRefUnwrap",
+                })
+            }
+            // This edge drives Vize's canonical workspace queries. Protocol v1
+            // has no corresponding kind, so it must not reach upstream.
+            crate::virtual_ts::VizeSemanticLinkKind::VueComponentPropNavigation => None,
         })
         .collect()
 }

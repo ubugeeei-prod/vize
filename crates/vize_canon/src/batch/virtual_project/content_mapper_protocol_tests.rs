@@ -1,5 +1,6 @@
 use std::path::Path;
 
+use super::super::protocol::protocol_semantic_links;
 use super::{
     CONTENT_MAPPER_SPAN_FEATURE_BITS, CONTENT_MAPPER_SPAN_FEATURES_ALL,
     CONTENT_MAPPER_SPAN_FEATURES_ATOM, CONTENT_MAPPER_SPAN_FEATURES_COMPLETION,
@@ -8,6 +9,29 @@ use super::{
     generate_vue_content_mapper_transform,
 };
 use crate::batch::ContentMapperTransform;
+
+#[test]
+fn protocol_v1_omits_internal_component_prop_navigation_links() {
+    use crate::virtual_ts::{VizeSemanticLink, VizeSemanticLinkKind};
+
+    let links = [
+        VizeSemanticLink {
+            source_range: 1..6,
+            target_range: 10..15,
+            kind: VizeSemanticLinkKind::VueSetupTemplateRefUnwrap,
+        },
+        VizeSemanticLink {
+            source_range: 20..25,
+            target_range: 30..35,
+            kind: VizeSemanticLinkKind::VueComponentPropNavigation,
+        },
+    ];
+
+    let protocol = protocol_semantic_links(&links);
+
+    assert_eq!(protocol.len(), 1);
+    assert_eq!(protocol[0].kind, "vueSetupTemplateRefUnwrap");
+}
 
 #[test]
 fn keeps_diagnostic_handler_anchors_out_of_editor_features() {

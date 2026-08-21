@@ -3,6 +3,7 @@
 use vize_carton::{FxHashMap, FxHashSet, String, append, cstr, profile};
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeId, ScopeKind};
 
+use crate::virtual_ts::VizeSemanticLink;
 use crate::virtual_ts::expressions::{
     ExpressionListEmitContext, TemplateValueCheckTables, generate_expressions,
     generate_expressions_in_enclosing_guard,
@@ -26,6 +27,7 @@ use super::vif_guard::{callback_vif_guard, common_vif_guard_prefix_outside_v_for
 pub(crate) fn generate_scope_closures(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
+    semantic_links: &mut Vec<VizeSemanticLink>,
     summary: &Croquis,
     template_prop_names: &FxHashSet<String>,
     template_offset: u32,
@@ -211,7 +213,7 @@ pub(crate) fn generate_scope_closures(
     if let Some(usages) = &usages {
         profile!(
             "canon.virtual_ts.component_props",
-            generate_component_props(ts, mappings, &props_ctx, usages)
+            generate_component_props(ts, mappings, semantic_links, &props_ctx, usages)
         );
     }
 }

@@ -710,6 +710,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     generate_scope_closures(
                         &mut ts,
                         &mut mappings,
+                        &mut semantic_links,
                         summary,
                         &template_prop_names,
                         template_offset,
