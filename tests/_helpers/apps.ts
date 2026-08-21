@@ -1821,7 +1821,7 @@ export const nuxtUiApp: AppConfig = {
   port: 5317,
   url: "http://localhost:5317",
   mountSelector: "#__nuxt",
-  readyPattern: /Local:\s+http:\/\/localhost:5317/,
+  readyPattern: /Local:\s+http:\/\/(?:localhost|0\.0\.0\.0):5317/,
   allowNon200: true,
   waitUntil: "load",
   readyDelay: 10_000,

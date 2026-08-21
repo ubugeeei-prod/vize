@@ -29,6 +29,24 @@ test("nuxt-ui startup waits for a healthy SSR page before returning ready", () =
   assert.match(source, /throw new Error\(`\$\{app\.name\} dev server failed startup:/);
 });
 
+test("nuxt-ui readiness delay also applies to TCP readiness fallback", () => {
+  const server = readRepoFile("tests", "_helpers", "server.ts");
+  const apps = readRepoFile("tests", "_helpers", "apps.ts");
+  const start = apps.indexOf("export const nuxtUiApp: AppConfig = {");
+  const end = apps.indexOf("export const rekaUiApp: AppConfig = {");
+  assert.notEqual(start, -1);
+  assert.notEqual(end, -1);
+  const nuxtUiSetup = apps.slice(start, end);
+
+  assert.match(server, /function checkDone\(delay = 0\)/);
+  assert.match(server, /checkDone\(readyDelay \?\? 1000\)/);
+  assert.match(server, /checkDone\(readyDelay \?\? 0\)/);
+  assert.ok(
+    nuxtUiSetup.includes("readyPattern: /Local:\\s+http:\\/\\/(?:localhost|0\\.0\\.0\\.0):5317/,"),
+  );
+  assert.match(nuxtUiSetup, /readyDelay: 10_000/);
+});
+
 test("nuxt-ui boots widen the playground vite-node request budget", () => {
   const source = readRepoFile("tests", "app", "dev", "nuxt-ui-dev-server.ts");
 

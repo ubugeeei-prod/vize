@@ -153,10 +153,10 @@ export function waitForServerReady(
     let resolved = false;
     let processExited = false;
 
-    function checkDone() {
+    function checkDone(delay = 0) {
       if (resolved) return;
       resolved = true;
-      resolve();
+      setTimeout(resolve, delay);
     }
 
     function checkFailed(reason: string) {
@@ -170,7 +170,7 @@ export function waitForServerReady(
     const onData = (data: Buffer) => {
       const text = stripAnsi(data.toString());
       if (readyPattern.test(text)) {
-        setTimeout(checkDone, readyDelay ?? 1000);
+        checkDone(readyDelay ?? 1000);
       }
     };
     proc.stdout?.on("data", onData);
@@ -189,7 +189,7 @@ export function waitForServerReady(
       }
       const socket = createConnection({ port, host: "127.0.0.1" }, () => {
         socket.destroy();
-        checkDone();
+        checkDone(readyDelay ?? 0);
       });
       socket.on("error", () => {
         socket.destroy();
