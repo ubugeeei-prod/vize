@@ -140,7 +140,7 @@ test("the guard reports leaked and zombie checkers and nothing else", () => {
     guardedSurvivors(records, { ignorePids: [501, 502, 503, 504], pgid: 500, rootPid: 900 }),
     [],
   );
-  assert.deepEqual([...GUARDED_COMMANDS], ["node", "vize", "tsgo", "corsa", "tsc"]);
+  assert.deepEqual([...GUARDED_COMMANDS].sort(), ["corsa", "node", "tsc", "tsgo", "vize"]);
 });
 
 // The recorded tree has to reach a checker that escaped both the supervisor's

@@ -2,10 +2,12 @@ use super::{CorsaTypeAwareSession, TypeProbe, errors::compact_error};
 use corsa::{
     CorsaError,
     api::{DocumentIdentifier, ProjectSession, TypeProbeOptions, TypeResponse},
-    fast::ToCompactString as _,
+    fast::{CompactString as CorsaString, ToCompactString as _},
     runtime::block_on,
 };
 use vize_carton::{String, profile};
+
+const SNAPSHOT_REGISTRY_NOT_FOUND: &str = "not found in snapshot registry";
 
 impl CorsaTypeAwareSession {
     pub(in crate::linter) fn probe_type_at_offset(
@@ -59,8 +61,11 @@ async fn probe_type_at_position(
         return Ok(None);
     };
 
+    let Some(type_texts) = render_type_texts(session, &type_response).await? else {
+        return Ok(None);
+    };
     let mut probe = TypeProbe {
-        type_texts: session.render_type_texts(&type_response).await?,
+        type_texts,
         property_names: Vec::new(),
         property_types: Vec::new(),
         call_signatures: Vec::new(),
@@ -102,9 +107,11 @@ async fn probe_type_at_position(
         probe.property_types.reserve(property_types.len());
         for property_type in property_types {
             if let Some(property_type) = property_type {
-                probe
-                    .property_types
-                    .push(session.render_type_texts(&property_type).await?);
+                probe.property_types.push(
+                    render_type_texts(session, &property_type)
+                        .await?
+                        .unwrap_or_default(),
+                );
             } else {
                 probe.property_types.push(Vec::new());
             }
@@ -137,7 +144,11 @@ async fn probe_type_at_position(
 
                 for parameter_type in parameter_types {
                     if let Some(parameter_type) = parameter_type {
-                        rendered_parameters.push(session.render_type_texts(&parameter_type).await?);
+                        rendered_parameters.push(
+                            render_type_texts(session, &parameter_type)
+                                .await?
+                                .unwrap_or_default(),
+                        );
                     } else {
                         rendered_parameters.push(Vec::new());
                     }
@@ -152,9 +163,11 @@ async fn probe_type_at_position(
                 Err(error) => return Err(error),
             };
             if let Some(return_type) = return_type {
-                probe
-                    .return_types
-                    .push(session.render_type_texts(&return_type).await?);
+                probe.return_types.push(
+                    render_type_texts(session, &return_type)
+                        .await?
+                        .unwrap_or_default(),
+                );
             } else {
                 probe.return_types.push(Vec::new());
             }
@@ -169,10 +182,29 @@ async fn type_from_symbol_at_position(
     file: DocumentIdentifier,
     position: u32,
 ) -> corsa::Result<Option<TypeResponse>> {
-    let Some(symbol) = session.get_symbol_at_position(file, position).await? else {
-        return Ok(None);
+    let symbol = match session.get_symbol_at_position(file, position).await {
+        Ok(Some(symbol)) => symbol,
+        Ok(None) => return Ok(None),
+        Err(error) if is_snapshot_registry_handle_error(&error) => return Ok(None),
+        Err(error) => return Err(error),
     };
-    session.get_type_of_symbol(symbol.id).await
+
+    match session.get_type_of_symbol(symbol.id).await {
+        Ok(type_response) => Ok(type_response),
+        Err(error) if is_snapshot_registry_handle_error(&error) => Ok(None),
+        Err(error) => Err(error),
+    }
+}
+
+async fn render_type_texts(
+    session: &ProjectSession,
+    type_response: &TypeResponse,
+) -> corsa::Result<Option<Vec<CorsaString>>> {
+    match session.render_type_texts(type_response).await {
+        Ok(type_texts) => Ok(Some(type_texts)),
+        Err(error) if is_snapshot_registry_handle_error(&error) => Ok(None),
+        Err(error) => Err(error),
+    }
 }
 
 fn select_probe_type_response(
@@ -183,11 +215,33 @@ fn select_probe_type_response(
 }
 
 fn is_snapshot_registry_handle_error(error: &CorsaError) -> bool {
-    let message = error.to_compact_string();
-    let message = message.as_str();
-    message.contains("snapshot registry")
-        && message.contains("handle")
-        && message.contains("not found")
+    match error {
+        CorsaError::Rpc(rpc) => is_snapshot_registry_handle_message(rpc.message.as_str()),
+        CorsaError::Protocol(message) => is_snapshot_registry_handle_message(message.as_str()),
+        _ => false,
+    }
+}
+
+fn is_snapshot_registry_handle_message(message: &str) -> bool {
+    if message == SNAPSHOT_REGISTRY_NOT_FOUND {
+        return true;
+    }
+
+    let message = message
+        .strip_prefix("api: client error: ")
+        .unwrap_or(message);
+    is_missing_snapshot_handle(message, "type handle ")
+        || is_missing_snapshot_handle(message, "symbol handle ")
+}
+
+fn is_missing_snapshot_handle(message: &str, prefix: &str) -> bool {
+    let Some(handle) = message.strip_prefix(prefix) else {
+        return false;
+    };
+    let Some(handle) = handle.strip_suffix(" not found in snapshot registry") else {
+        return false;
+    };
+    !handle.trim().is_empty()
 }
 
 pub(super) fn byte_offset_to_utf16_offset(source: &str, byte_offset: u32) -> u32 {
@@ -199,50 +253,5 @@ pub(super) fn byte_offset_to_utf16_offset(source: &str, byte_offset: u32) -> u32
 }
 
 #[cfg(test)]
-mod tests {
-    use super::select_probe_type_response;
-    use corsa::api::{TypeHandle, TypeResponse};
-
-    fn type_response(id: &str) -> TypeResponse {
-        TypeResponse {
-            id: TypeHandle::from(id),
-            flags: 0,
-            object_flags: None,
-            value: None,
-            target: None,
-            type_parameters: Vec::new(),
-            outer_type_parameters: Vec::new(),
-            local_type_parameters: Vec::new(),
-            element_flags: Vec::new(),
-            fixed_length: None,
-            readonly: None,
-            object_type: None,
-            index_type: None,
-            check_type: None,
-            extends_type: None,
-            base_type: None,
-            subst_constraint: None,
-            texts: Vec::new(),
-            symbol: None,
-        }
-    }
-
-    #[test]
-    fn symbol_type_response_wins_over_position_type_response() {
-        let selected = select_probe_type_response(
-            Some(type_response("symbol-type")),
-            Some(type_response("position-type")),
-        )
-        .expect("expected a selected type");
-
-        assert_eq!(selected.id.as_str(), "symbol-type");
-    }
-
-    #[test]
-    fn position_type_response_is_used_when_symbol_lookup_misses() {
-        let selected = select_probe_type_response(None, Some(type_response("position-type")))
-            .expect("expected a selected type");
-
-        assert_eq!(selected.id.as_str(), "position-type");
-    }
-}
+#[path = "probe_tests.rs"]
+mod tests;

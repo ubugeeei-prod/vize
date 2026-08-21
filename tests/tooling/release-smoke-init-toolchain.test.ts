@@ -8,6 +8,15 @@ import {
   assertProjectLocalToolchain,
   writeFiles,
 } from "../../tools/npm/smoke-release-init-project.mjs";
+import { satisfiesVersionRange } from "../../tools/npm/smoke-release-semver.mjs";
+
+test("fresh-project toolchain uses npm-compatible semver ranges", () => {
+  assert.equal(satisfiesVersionRange("0.1.9", "^0.1.0"), true);
+  assert.equal(satisfiesVersionRange("0.2.0", "^0.1.0"), false);
+  assert.equal(satisfiesVersionRange("1.2.3-beta.1", "^1.2.3"), false);
+  assert.equal(satisfiesVersionRange("1.2.3-beta.1", "^1.2.3-beta.1"), true);
+  assert.equal(satisfiesVersionRange("7.0.1", "^7.0.0"), true);
+});
 
 test("fresh-project toolchain accepts package-local vize without manager shims", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-toolchain-"));

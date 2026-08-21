@@ -104,6 +104,7 @@ catalogs:
     json-schema-to-typescript: "15.0.4"
     pkg-pr-new: "0.0.87"
     prettier: "3.8.3"
+    semver: "7.8.5"
     tinyglobby: "0.2.17"
 
   # TypeScript toolchain shared across workspace packages.

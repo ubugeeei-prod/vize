@@ -177,6 +177,9 @@ catalogs:
     prettier:
       specifier: 3.8.3
       version: 3.8.3
+    semver:
+      specifier: 7.8.5
+      version: 7.8.5
     tinyglobby:
       specifier: 0.2.17
       version: 0.2.17
@@ -344,6 +347,9 @@ importers:
       pkg-pr-new:
         specifier: catalog:repo-tooling
         version: 0.0.87
+      semver:
+        specifier: catalog:repo-tooling
+        version: 7.8.5
       shiki:
         specifier: catalog:content
         version: 4.0.2
