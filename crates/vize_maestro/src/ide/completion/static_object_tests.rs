@@ -178,10 +178,28 @@ const chosen = probe.initial
 }
 
 #[test]
+fn receiver_returned_from_closure_before_completion_falls_back_to_type_service() {
+    assert_falls_back(
+        "ClosureAliasedStaticObject.vue",
+        r#"<script setup lang="ts">
+const probe = { initial: 1 }
+const getProbe = () => probe
+const alias = getProbe()
+alias.added = 2
+const chosen = probe.initial
+</script>
+"#,
+        "probe.initial",
+    );
+}
+
+#[test]
 fn receiver_member_read_before_completion_keeps_static_path() {
     let source = r#"<script setup lang="ts">
 const probe = { initial: 1 }
 const read = probe.initial
+const readLater = () => probe.initial
+readLater()
 const chosen = probe.initial
 </script>
 "#;
