@@ -286,3 +286,45 @@ fn indexed_access_prop_resolves_target_property_runtime_type() {
         .expect("tooltip prop should be extracted");
     assert_eq!(tooltip.1.js_type.as_str(), "[Boolean, Object]");
 }
+
+#[test]
+fn indexed_access_prop_reads_only_the_target_property_runtime_type() {
+    let mut interfaces: FxHashMap<vize_carton::String, vize_carton::String> = FxHashMap::default();
+    interfaces.insert(
+        "ButtonProps".to_compact_string(),
+        r#"{
+            color?: "primary" | "neutral";
+            onClick?: ((event: MouseEvent) => void) | Array<(event: MouseEvent) => void>;
+            ui?: ButtonSlots;
+        }"#
+        .to_compact_string(),
+    );
+    let mut type_aliases: FxHashMap<vize_carton::String, vize_carton::String> =
+        FxHashMap::default();
+    type_aliases.insert(
+        "ButtonSlots".to_compact_string(),
+        "{ base?: string; icon?: string }".to_compact_string(),
+    );
+
+    let props = extract_prop_types_from_type_with_context(
+        "{ color?: ButtonProps['color']; ui?: ButtonProps['ui']; click?: ButtonProps['onClick'] }",
+        Some(&interfaces),
+        Some(&type_aliases),
+    );
+
+    let color = props
+        .iter()
+        .find(|(name, _)| name == "color")
+        .expect("color prop should be extracted");
+    assert_eq!(color.1.js_type.as_str(), "String");
+    let ui = props
+        .iter()
+        .find(|(name, _)| name == "ui")
+        .expect("ui prop should be extracted");
+    assert_eq!(ui.1.js_type.as_str(), "Object");
+    let click = props
+        .iter()
+        .find(|(name, _)| name == "click")
+        .expect("click prop should be extracted");
+    assert_eq!(click.1.js_type.as_str(), "[Function, Array]");
+}

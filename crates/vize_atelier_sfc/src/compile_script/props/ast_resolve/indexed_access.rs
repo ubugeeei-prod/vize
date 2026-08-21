@@ -1,8 +1,15 @@
-use oxc_ast::ast::TSIndexedAccessType;
-use vize_carton::{FxHashMap, String};
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{Statement, TSIndexedAccessType, TSSignature, TSType, TSTypeName};
+use oxc_parser::Parser;
+use oxc_span::SourceType;
+use vize_carton::{FxHashMap, String, ToCompactString};
 
 use super::runtime_type_combine::combine_runtime_js_types;
-use super::{collect_props_from_ts_type, literal_values_from_ts_type};
+use super::{
+    collect_props_from_ts_type, finish_resolved_type_reference, literal_values_from_ts_type,
+    property_key_name, resolve_type_reference_text, simple_type_name,
+    ts_type_to_js_type_from_ast_inner, wrap_type_alias_source,
+};
 
 pub(super) fn resolve(
     indexed: &TSIndexedAccessType<'_>,
@@ -29,25 +36,140 @@ fn resolve_inner(
         None,
         seen,
     )?;
-    let mut props = Vec::new();
-    if !collect_props_from_ts_type(
-        &indexed.object_type,
-        source,
-        interfaces,
-        type_aliases,
-        seen,
-        &mut props,
-    ) {
-        return None;
-    }
-
     let mut js_types = Vec::new();
     for key in keys {
-        let (_, prop) = props
-            .iter()
-            .find(|(name, _)| name.as_str() == key.as_str())?;
-        js_types.push(prop.js_type.clone());
+        js_types.push(resolve_property_runtime_type(
+            &indexed.object_type,
+            key.as_str(),
+            source,
+            interfaces,
+            type_aliases,
+            seen,
+        )?);
     }
 
     Some(combine_runtime_js_types(js_types))
+}
+
+fn resolve_property_runtime_type(
+    ts_type: &TSType<'_>,
+    key: &str,
+    source: &str,
+    interfaces: Option<&FxHashMap<String, String>>,
+    type_aliases: Option<&FxHashMap<String, String>>,
+    seen: &mut Vec<String>,
+) -> Option<String> {
+    match ts_type {
+        TSType::TSTypeLiteral(type_lit) => {
+            for member in type_lit.members.iter() {
+                match member {
+                    TSSignature::TSPropertySignature(prop) => {
+                        let Some(name) = property_key_name(&prop.key) else {
+                            continue;
+                        };
+                        if name.as_str() != key {
+                            continue;
+                        }
+                        return Some(
+                            prop.type_annotation
+                                .as_ref()
+                                .map(|type_ann| {
+                                    ts_type_to_js_type_from_ast_inner(
+                                        &type_ann.type_annotation,
+                                        source,
+                                        interfaces,
+                                        type_aliases,
+                                        seen,
+                                    )
+                                })
+                                .unwrap_or_else(|| "null".to_compact_string()),
+                        );
+                    }
+                    TSSignature::TSMethodSignature(method) => {
+                        let Some(name) = property_key_name(&method.key) else {
+                            continue;
+                        };
+                        if name.as_str() == key {
+                            return Some("Function".to_compact_string());
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            None
+        }
+        TSType::TSParenthesizedType(paren) => resolve_property_runtime_type(
+            &paren.type_annotation,
+            key,
+            source,
+            interfaces,
+            type_aliases,
+            seen,
+        ),
+        TSType::TSTypeReference(type_ref) => resolve_type_reference_property(
+            &type_ref.type_name,
+            key,
+            interfaces,
+            type_aliases,
+            seen,
+        ),
+        _ => resolve_property_runtime_type_by_collecting(
+            ts_type,
+            key,
+            source,
+            interfaces,
+            type_aliases,
+            seen,
+        ),
+    }
+}
+
+fn resolve_type_reference_property(
+    type_name: &TSTypeName<'_>,
+    key: &str,
+    interfaces: Option<&FxHashMap<String, String>>,
+    type_aliases: Option<&FxHashMap<String, String>>,
+    seen: &mut Vec<String>,
+) -> Option<String> {
+    let name = simple_type_name(type_name)?;
+    let resolved = resolve_type_reference_text(name, interfaces, type_aliases, seen)?;
+    let resolved_source = wrap_type_alias_source(&resolved);
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, &resolved_source, SourceType::ts()).parse();
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
+        finish_resolved_type_reference(name, seen);
+        return None;
+    }
+
+    let Some(Statement::TSTypeAliasDeclaration(alias)) = parsed.program.body.first() else {
+        finish_resolved_type_reference(name, seen);
+        return None;
+    };
+
+    let resolved = resolve_property_runtime_type(
+        &alias.type_annotation,
+        key,
+        &resolved_source,
+        interfaces,
+        type_aliases,
+        seen,
+    );
+    finish_resolved_type_reference(name, seen);
+    resolved
+}
+
+fn resolve_property_runtime_type_by_collecting(
+    ts_type: &TSType<'_>,
+    key: &str,
+    source: &str,
+    interfaces: Option<&FxHashMap<String, String>>,
+    type_aliases: Option<&FxHashMap<String, String>>,
+    seen: &mut Vec<String>,
+) -> Option<String> {
+    let mut props = Vec::new();
+    if !collect_props_from_ts_type(ts_type, source, interfaces, type_aliases, seen, &mut props) {
+        return None;
+    }
+    let (_, prop) = props.iter().find(|(name, _)| name.as_str() == key)?;
+    Some(prop.js_type.clone())
 }
