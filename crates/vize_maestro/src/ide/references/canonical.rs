@@ -91,31 +91,30 @@ async fn component_prop_references(
         return Vec::new();
     }
 
-    let mut references = Vec::new();
-    for position in matches.positions {
-        if let Ok(extra) = bridge
-            .references(
-                &position.request_uri,
+    let queries = matches
+        .positions
+        .iter()
+        .map(|position| {
+            (
+                position.request_uri.as_str(),
                 position.line,
                 position.character,
-                include_declaration,
             )
-            .await
-        {
-            references.extend(extra.into_iter().filter(|location| {
-                let Some(authored) =
-                    corsa_support::map_canonical_corsa_location(ctx, document, location)
-                else {
-                    return false;
-                };
-                corsa_support::component_prop_location_matches(
-                    ctx,
-                    document,
-                    &authored,
-                    &matches.names,
-                )
-            }));
-        }
+        })
+        .collect::<Vec<_>>();
+    let Ok(batches) = bridge.references_batch(&queries, include_declaration).await else {
+        return Vec::new();
+    };
+    let mut references = Vec::new();
+    for extra in batches {
+        references.extend(extra.into_iter().filter(|location| {
+            let Some(authored) =
+                corsa_support::map_canonical_corsa_location(ctx, document, location)
+            else {
+                return false;
+            };
+            corsa_support::component_prop_location_matches(ctx, document, &authored, &matches.names)
+        }));
     }
     references
 }
