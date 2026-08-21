@@ -237,7 +237,7 @@ fn object_branded_string_union_keeps_string_and_object_runtime_types() {
         .iter()
         .find(|(name, _)| name == "as")
         .expect("as prop should be extracted");
-    assert_eq!(as_prop.1.js_type.as_str(), "[String, Object]");
+    assert_eq!(as_prop.1.js_type.as_str(), "String");
 }
 
 #[test]

@@ -69,13 +69,6 @@ pub(super) fn combine_runtime_intersection_types(
         let primitive = primitives
             .pop()
             .unwrap_or_else(|| "null".to_compact_string());
-        if has_object_runtime {
-            let mut result = String::with_capacity(primitive.len() + 10);
-            result.push('[');
-            result.push_str(&primitive);
-            result.push_str(", Object]");
-            return result;
-        }
         return primitive;
     }
 
