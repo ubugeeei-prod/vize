@@ -25,13 +25,15 @@ mod workspace_edit;
 
 pub(crate) use canonical::{
     CanonicalProjectOpenError, CanonicalSemanticPosition, CanonicalVirtualDocument,
-    canonical_source_offset_to_position, linked_semantic_position, map_canonical_corsa_location,
-    map_canonical_corsa_locations, map_canonical_corsa_workspace_edit, map_canonical_lsp_range,
+    canonical_source_offset_to_position, component_prop_location_matches, linked_semantic_position,
+    map_canonical_corsa_location, map_canonical_corsa_locations,
+    map_canonical_corsa_workspace_edit, map_canonical_lsp_range,
     map_canonical_materialized_module_location, map_canonical_prepare_rename,
-    materialized_semantic_positions, merge_canonical_workspace_edits,
-    open_canonical_virtual_document, open_canonical_virtual_document_strict,
-    open_canonical_virtual_project_document, open_canonical_virtual_project_document_strict,
-    open_canonical_virtual_workspace_document, tower_range,
+    matching_component_prop_navigation_positions, materialized_semantic_positions,
+    merge_canonical_workspace_edits, open_canonical_virtual_document,
+    open_canonical_virtual_document_strict, open_canonical_virtual_project_document,
+    open_canonical_virtual_project_document_strict, open_canonical_virtual_workspace_document,
+    tower_range,
 };
 pub(crate) use html_attribute::{
     html_attribute_request_path, html_attribute_virtual_document, native_dom_attribute_info,

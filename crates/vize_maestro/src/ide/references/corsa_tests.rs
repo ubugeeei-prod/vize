@@ -8,6 +8,8 @@ use super::super::ReferencesService;
 use crate::ide::IdeContext;
 use crate::server::ServerState;
 
+#[path = "corsa_tests/component_props.rs"]
+mod component_props;
 #[path = "corsa_tests/package_routes.rs"]
 mod package_routes;
 #[path = "corsa_tests/project_surface.rs"]

@@ -23,6 +23,10 @@ pub(super) async fn references(
         .references(&document.request_uri, line, character, include_declaration)
         .await
         .ok()?;
+    locations.extend(
+        component_prop_references(ctx, bridge, &document, line, character, include_declaration)
+            .await,
+    );
     let mut linked = linked_positions(&document, &locations);
     linked.extend(corsa_support::materialized_semantic_positions(
         &document, ctx.uri, ctx.offset,
@@ -64,6 +68,56 @@ pub(super) async fn references(
     });
     mapped.dedup_by(|left, right| left.uri == right.uri && left.range == right.range);
     Some(mapped)
+}
+
+async fn component_prop_references(
+    ctx: &IdeContext<'_>,
+    bridge: &CorsaBridge,
+    document: &corsa_support::CanonicalVirtualDocument,
+    line: u32,
+    character: u32,
+    include_declaration: bool,
+) -> Vec<vize_canon::LspLocation> {
+    let matches = corsa_support::matching_component_prop_navigation_positions(
+        ctx,
+        bridge,
+        document,
+        &document.request_uri,
+        line,
+        character,
+    )
+    .await;
+    if matches.names.is_empty() {
+        return Vec::new();
+    }
+
+    let mut references = Vec::new();
+    for position in matches.positions {
+        if let Ok(extra) = bridge
+            .references(
+                &position.request_uri,
+                position.line,
+                position.character,
+                include_declaration,
+            )
+            .await
+        {
+            references.extend(extra.into_iter().filter(|location| {
+                let Some(authored) =
+                    corsa_support::map_canonical_corsa_location(ctx, document, location)
+                else {
+                    return false;
+                };
+                corsa_support::component_prop_location_matches(
+                    ctx,
+                    document,
+                    &authored,
+                    &matches.names,
+                )
+            }));
+        }
+    }
+    references
 }
 
 fn style_locations(
