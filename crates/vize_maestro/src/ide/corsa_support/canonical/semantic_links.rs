@@ -1,4 +1,4 @@
-use tower_lsp::lsp_types::Url;
+use tower_lsp::lsp_types::{Location, Url};
 use vize_canon::{LspPosition, LspRange};
 use vize_carton::{FxHashMap, FxHashSet, String};
 
@@ -8,7 +8,8 @@ use crate::ide::diagnostics::VirtualTsResult;
 mod component_props;
 
 pub(crate) use component_props::{
-    component_prop_location_matches, matching_component_prop_navigation_positions,
+    component_prop_location_matches, component_prop_navigation_identity_matches,
+    matching_component_prop_navigation_positions,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -21,9 +22,13 @@ pub(crate) struct CanonicalSemanticPosition {
 pub(crate) struct ComponentPropNavigationMatches {
     pub(crate) positions: Vec<CanonicalSemanticPosition>,
     pub(crate) names: FxHashSet<String>,
+    pub(crate) authored_definitions: Vec<Location>,
+    pub(crate) navigation_identities: ComponentPropNavigationIdentities,
     pub(crate) source_cache: ComponentPropSourceCache,
 }
 
+pub(crate) type ComponentPropNavigationIdentities =
+    FxHashMap<CanonicalSemanticPosition, Vec<Location>>;
 pub(crate) type ComponentPropSourceCache = FxHashMap<Url, Option<std::string::String>>;
 
 /// Return every live TypeScript identity Canon materialized for one authored

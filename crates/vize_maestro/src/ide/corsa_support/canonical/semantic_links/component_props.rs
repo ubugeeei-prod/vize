@@ -1,10 +1,13 @@
 use std::borrow::Cow;
 
 use tower_lsp::lsp_types::Location;
-use vize_canon::CorsaBridge;
+use vize_canon::{CorsaBridge, LspLocation};
 use vize_carton::{FxHashSet, String, camelize};
 
-use super::{CanonicalSemanticPosition, ComponentPropNavigationMatches, ComponentPropSourceCache};
+use super::{
+    CanonicalSemanticPosition, ComponentPropNavigationIdentities, ComponentPropNavigationMatches,
+    ComponentPropSourceCache,
+};
 use crate::ide::IdeContext;
 use crate::ide::corsa_support::canonical::{
     CanonicalVirtualDocument, map_canonical_corsa_locations,
@@ -25,6 +28,8 @@ pub(crate) async fn matching_component_prop_navigation_positions(
         return ComponentPropNavigationMatches {
             positions: Vec::new(),
             names: FxHashSet::default(),
+            authored_definitions: Vec::new(),
+            navigation_identities: ComponentPropNavigationIdentities::default(),
             source_cache: ComponentPropSourceCache::default(),
         };
     };
@@ -50,22 +55,46 @@ pub(crate) async fn matching_component_prop_navigation_positions(
         return ComponentPropNavigationMatches {
             positions: Vec::new(),
             names,
+            authored_definitions,
+            navigation_identities: ComponentPropNavigationIdentities::default(),
             source_cache,
         };
     };
     let mut positions = Vec::new();
+    let mut navigation_identities = ComponentPropNavigationIdentities::default();
     for (position, candidate_definitions) in candidates.into_iter().zip(definition_batches) {
         let candidate_definitions =
             map_canonical_corsa_locations(ctx, document, candidate_definitions);
         if locations_intersect(&authored_definitions, &candidate_definitions) {
-            positions.push(position);
+            positions.push(position.clone());
         }
+        navigation_identities.insert(position, candidate_definitions);
     }
     ComponentPropNavigationMatches {
         positions,
         names,
+        authored_definitions,
+        navigation_identities,
         source_cache,
     }
+}
+
+/// Require a generated component-prop edit to resolve to the same authored
+/// declaration identity as the original rename query. Non-navigation edits,
+/// such as the declaration and the component's local template use, continue
+/// through the normal authored-name check.
+pub(crate) fn component_prop_navigation_identity_matches(
+    document: &CanonicalVirtualDocument,
+    location: &LspLocation,
+    authored_definitions: &[Location],
+    navigation_identities: &ComponentPropNavigationIdentities,
+) -> bool {
+    let Some(position) = component_prop_navigation_position(document, location) else {
+        return true;
+    };
+    navigation_identities
+        .get(&position)
+        .is_some_and(|definitions| locations_intersect(authored_definitions, definitions))
 }
 
 pub(crate) fn component_prop_location_matches(
@@ -124,6 +153,34 @@ fn component_prop_navigation_positions(
     });
     positions.dedup();
     positions
+}
+
+fn component_prop_navigation_position(
+    document: &CanonicalVirtualDocument,
+    location: &LspLocation,
+) -> Option<CanonicalSemanticPosition> {
+    let (request_uri, result) = super::virtual_result(document, location.uri.as_str())?;
+    let start = crate::ide::position_to_offset(
+        &result.code,
+        location.range.start.line,
+        location.range.start.character,
+    )?;
+    let end = crate::ide::position_to_offset(
+        &result.code,
+        location.range.end.line,
+        location.range.end.character,
+    )?;
+    let link = result.semantic_links.iter().find(|link| {
+        link.kind == vize_canon::virtual_ts::VizeSemanticLinkKind::VueComponentPropNavigation
+            && start < link.target_range.end
+            && link.target_range.start < end
+    })?;
+    let (line, character) = crate::ide::offset_to_position(&result.code, link.target_range.start);
+    Some(CanonicalSemanticPosition {
+        request_uri: request_uri.clone(),
+        line,
+        character,
+    })
 }
 
 fn authored_location_text<'a>(

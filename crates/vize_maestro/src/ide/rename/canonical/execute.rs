@@ -203,6 +203,8 @@ async fn rename_strict_inner(
                 &document,
                 &mut extra,
                 &component_props.names,
+                &component_props.authored_definitions,
+                &component_props.navigation_identities,
                 &mut component_props.source_cache,
             );
         }

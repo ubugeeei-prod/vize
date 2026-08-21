@@ -25,7 +25,8 @@ pub(crate) use rename::{
 };
 pub(crate) use semantic_links::materialized_semantic_positions;
 pub(crate) use semantic_links::{
-    CanonicalSemanticPosition, ComponentPropSourceCache, component_prop_location_matches,
+    CanonicalSemanticPosition, ComponentPropNavigationIdentities, ComponentPropSourceCache,
+    component_prop_location_matches, component_prop_navigation_identity_matches,
     linked_semantic_position, matching_component_prop_navigation_positions, tower_range,
 };
 
