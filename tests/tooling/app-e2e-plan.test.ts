@@ -96,17 +96,17 @@ test("full and readiness plans preserve every isolated execution row", () => {
     )?.timeout,
     "75m",
   );
-  assert.equal(readinessRows.find((row) => row.shard === "check")?.timeout, "12m");
+  assert.equal(readinessRows.find((row) => row.shard === "check")?.timeout, "5m");
   assert.equal(readinessRows.find((row) => row.shard === "dev-misskey")?.timeout, "8m");
   assert.equal(
     readinessRows.find((row) => row.shard === "dev-nuxt-ui")?.timeout,
-    "30m",
-    "hosted Nuxt UI dev readiness needs enough wall-clock budget for server boot and warmups",
+    "8m",
+    "Nuxt UI dev readiness must fit the same Blacksmith budget as the other dev readiness row",
   );
   assert.deepEqual(
     fullAppE2eRows.filter((row) => row.suite === "vrt").map((row) => row.timeout),
-    ["30m", "30m", "30m", "30m", "30m"],
-    "hosted full VRT rows need enough wall-clock budget for serial fixtures and retries",
+    ["15m", "15m", "15m", "15m", "15m"],
+    "full VRT rows should stay inside the Blacksmith runner budget",
   );
   assert.equal(
     readinessRows.find((row) => row.shard === "lint")?.timeout,
@@ -304,13 +304,12 @@ test("planned tasks, fixtures, and mutable identities are exact and unique", () 
 test("plan validation rejects drift instead of silently dropping coverage", () => {
   const valid = structuredClone([...fullAppE2eRows, ...readinessRows]);
   assert.doesNotThrow(() => validateAppE2eRows(valid));
-  // The nuxt-ui HMR probe measures a 60s authored-source patch, which only
-  // fits on hosted hardware; every other row belongs on Blacksmith.
   for (const current of valid) {
-    const expected = current.shard.includes("nuxt-ui")
-      ? "ubuntu-24.04"
-      : "blacksmith-32vcpu-ubuntu-2404";
-    assert.equal(current.runner, expected, `${current.profile}:${current.shard} runner`);
+    assert.equal(
+      current.runner,
+      "blacksmith-32vcpu-ubuntu-2404",
+      `${current.profile}:${current.shard} runner`,
+    );
   }
   for (const [name, mutate, message] of [
     ["empty", (rows: typeof valid) => rows.splice(0), /must not be empty/],
