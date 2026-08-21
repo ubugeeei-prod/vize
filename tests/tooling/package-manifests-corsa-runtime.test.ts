@@ -28,7 +28,10 @@ test("Corsa runtime is declared for vize check users", () => {
   }
   for (const name of [
     "@typescript/typescript-darwin-arm64",
+    "@typescript/typescript-darwin-x64",
+    "@typescript/typescript-linux-arm64",
     "@typescript/typescript-linux-x64",
+    "@typescript/typescript-win32-arm64",
     "@typescript/typescript-win32-x64",
   ]) {
     assert.equal(packageJson.optionalDependencies?.[name], "catalog:corsa-runtime");

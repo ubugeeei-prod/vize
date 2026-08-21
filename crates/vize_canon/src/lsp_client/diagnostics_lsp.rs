@@ -1,16 +1,21 @@
 use crate::file_uri::path_to_file_uri;
 use corsa::runtime::block_on;
 use corsa_lsp::LspClient;
-use lsp_types::{DocumentDiagnosticReportResult, Uri};
-use serde_json::{Value, json};
-use std::path::Path;
+use lsp_types::{
+    ClientCapabilities, DiagnosticClientCapabilities, DiagnosticWorkspaceClientCapabilities,
+    DidChangeWatchedFilesClientCapabilities, DocumentDiagnosticReportResult, InitializeParams,
+    InitializedParams, TextDocumentClientCapabilities, Uri, WorkDoneProgressParams,
+    WorkspaceClientCapabilities, WorkspaceFolder,
+};
+use serde_json::Value;
+use std::{path::Path, str::FromStr};
 use vize_carton::{String, cstr};
 
 pub(super) fn initialize_lsp_client(client: &LspClient, project_root: &Path) -> Result<(), String> {
     struct InitializeRequest;
 
     impl lsp_types::request::Request for InitializeRequest {
-        type Params = serde_json::Value;
+        type Params = InitializeParams;
         type Result = serde_json::Value;
         const METHOD: &'static str = "initialize";
     }
@@ -18,7 +23,7 @@ pub(super) fn initialize_lsp_client(client: &LspClient, project_root: &Path) -> 
     struct InitializedNotification;
 
     impl lsp_types::notification::Notification for InitializedNotification {
-        type Params = serde_json::Value;
+        type Params = InitializedParams;
         const METHOD: &'static str = "initialized";
     }
 
@@ -31,41 +36,53 @@ pub(super) fn initialize_lsp_client(client: &LspClient, project_root: &Path) -> 
         project_root,
         root_uri,
         workspace_name,
-    )))
+    )?))
     .map_err(|error| cstr!("Failed to initialize Corsa LSP session: {error}"))?;
     client
-        .notify::<InitializedNotification>(serde_json::json!({}))
+        .notify::<InitializedNotification>(InitializedParams {})
         .map_err(|error| cstr!("Failed to send LSP initialized notification: {error}"))?;
     Ok(())
 }
 
-fn initialize_lsp_params(project_root: &Path, root_uri: String, workspace_name: &str) -> Value {
-    json!({
-        "processId": std::process::id(),
-        "rootPath": project_root,
-        "rootUri": root_uri,
-        "workspaceFolders": [{
-            "uri": root_uri,
-            "name": workspace_name,
-        }],
-        "capabilities": {
-            "textDocument": {
-                "publishDiagnostics": {},
-                "diagnostic": {
-                    "dynamicRegistration": false,
-                    "relatedDocumentSupport": true,
-                }
-            },
-            "workspace": {
-                "didChangeWatchedFiles": {
-                    "dynamicRegistration": true,
-                    "relativePatternSupport": true,
-                },
-                "diagnostic": {
-                    "refreshSupport": true,
-                }
-            }
-        }
+fn initialize_lsp_params(
+    project_root: &Path,
+    root_uri: String,
+    workspace_name: &str,
+) -> Result<InitializeParams, String> {
+    let root_uri = Uri::from_str(root_uri.as_str())
+        .map_err(|error| cstr!("Failed to build Corsa LSP root URI: {error}"))?;
+    let capabilities = ClientCapabilities {
+        text_document: Some(TextDocumentClientCapabilities {
+            diagnostic: Some(DiagnosticClientCapabilities {
+                dynamic_registration: Some(false),
+                related_document_support: Some(true),
+            }),
+            ..Default::default()
+        }),
+        workspace: Some(WorkspaceClientCapabilities {
+            did_change_watched_files: Some(DidChangeWatchedFilesClientCapabilities {
+                dynamic_registration: Some(true),
+                relative_pattern_support: Some(true),
+            }),
+            diagnostic: Some(DiagnosticWorkspaceClientCapabilities {
+                refresh_support: Some(true),
+            }),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    #[allow(deprecated)]
+    Ok(InitializeParams {
+        process_id: Some(std::process::id()),
+        root_path: Some(project_root.to_string_lossy().into_owned()),
+        root_uri: Some(root_uri.clone()),
+        workspace_folders: Some(vec![WorkspaceFolder {
+            uri: root_uri,
+            name: workspace_name.to_owned(),
+        }]),
+        capabilities,
+        work_done_progress_params: WorkDoneProgressParams::default(),
+        ..Default::default()
     })
 }
 
@@ -142,7 +159,9 @@ mod tests {
             Path::new("/workspace"),
             "file:///workspace".into(),
             "workspace",
-        );
+        )
+        .unwrap();
+        let params = serde_json::to_value(&params).unwrap();
 
         assert_eq!(
             params["capabilities"]["workspace"]["didChangeWatchedFiles"],

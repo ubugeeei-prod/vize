@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { parse } from "yaml";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const require = createRequire(import.meta.url);
@@ -64,6 +65,17 @@ function collectNativeBinaryCatalogPins(workspaceYaml: string): Record<string, s
   }
 
   return pins;
+}
+
+function minimumReleaseAgeExcludeVersions(workspaceYaml: string, packageName: string): string[] {
+  const exclude = (parse(workspaceYaml) as { minimumReleaseAgeExclude?: unknown })
+    .minimumReleaseAgeExclude;
+  assert.ok(Array.isArray(exclude), "minimumReleaseAgeExclude must be an array");
+  for (const entry of exclude)
+    assert.equal(typeof entry, "string", "minimumReleaseAgeExclude entries must be strings");
+  const entry = (exclude as string[]).find((candidate) => candidate.startsWith(`${packageName}@`));
+  assert.ok(entry, `${packageName} is missing from minimumReleaseAgeExclude`);
+  return entry.slice(packageName.length + 1).split(" || ");
 }
 
 function readRepoFile(filePath: string): string {
@@ -258,15 +270,13 @@ test("native package catalog pins and generated loader version checks stay align
       nativePackage.version,
       `${name} catalog pin should match @vizejs/native version`,
     );
-    const escapedVersion = escapeRegExp(catalogVersion);
     assert.match(
       lockfile,
-      new RegExp(`['"]?${escapedName}['"]?:\\n\\s+specifier: ${escapedVersion}\\n`),
+      new RegExp(`['"]?${escapedName}['"]?:\\n\\s+specifier: ${escapeRegExp(catalogVersion)}\\n`),
       `${name} lockfile catalog specifier should match @vizejs/native version`,
     );
-    assert.match(
-      workspaceYaml,
-      new RegExp(`^\\s+- "${escapedName}@[^"]*\\b${escapedVersion}\\b[^"]*"$`, "m"),
+    assert.ok(
+      minimumReleaseAgeExcludeVersions(workspaceYaml, name).includes(catalogVersion),
       `${name} ${catalogVersion} should be allowed by minimumReleaseAgeExclude`,
     );
   }

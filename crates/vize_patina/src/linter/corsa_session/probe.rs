@@ -47,10 +47,14 @@ async fn probe_type_at_position(
     options: TypeProbeOptions,
 ) -> corsa::Result<Option<TypeProbe>> {
     let file = file.into();
-    let type_response = match session.get_type_at_position(file.clone(), position).await? {
-        Some(type_response) => Some(type_response),
-        None => type_from_symbol_at_position(session, file.clone(), position).await?,
+    let symbol_type_response =
+        type_from_symbol_at_position(session, file.clone(), position).await?;
+    let position_type_response = if symbol_type_response.is_none() {
+        session.get_type_at_position(file.clone(), position).await?
+    } else {
+        None
     };
+    let type_response = select_probe_type_response(symbol_type_response, position_type_response);
     let Some(type_response) = type_response else {
         return Ok(None);
     };
@@ -171,6 +175,13 @@ async fn type_from_symbol_at_position(
     session.get_type_of_symbol(symbol.id).await
 }
 
+fn select_probe_type_response(
+    symbol_type_response: Option<TypeResponse>,
+    position_type_response: Option<TypeResponse>,
+) -> Option<TypeResponse> {
+    symbol_type_response.or(position_type_response)
+}
+
 fn is_snapshot_registry_handle_error(error: &CorsaError) -> bool {
     let message = error.to_compact_string();
     let message = message.as_str();
@@ -185,4 +196,53 @@ pub(super) fn byte_offset_to_utf16_offset(source: &str, byte_offset: u32) -> u32
         clamped -= 1;
     }
     source[..clamped].encode_utf16().count() as u32
+}
+
+#[cfg(test)]
+mod tests {
+    use super::select_probe_type_response;
+    use corsa::api::{TypeHandle, TypeResponse};
+
+    fn type_response(id: &str) -> TypeResponse {
+        TypeResponse {
+            id: TypeHandle::from(id),
+            flags: 0,
+            object_flags: None,
+            value: None,
+            target: None,
+            type_parameters: Vec::new(),
+            outer_type_parameters: Vec::new(),
+            local_type_parameters: Vec::new(),
+            element_flags: Vec::new(),
+            fixed_length: None,
+            readonly: None,
+            object_type: None,
+            index_type: None,
+            check_type: None,
+            extends_type: None,
+            base_type: None,
+            subst_constraint: None,
+            texts: Vec::new(),
+            symbol: None,
+        }
+    }
+
+    #[test]
+    fn symbol_type_response_wins_over_position_type_response() {
+        let selected = select_probe_type_response(
+            Some(type_response("symbol-type")),
+            Some(type_response("position-type")),
+        )
+        .expect("expected a selected type");
+
+        assert_eq!(selected.id.as_str(), "symbol-type");
+    }
+
+    #[test]
+    fn position_type_response_is_used_when_symbol_lookup_misses() {
+        let selected = select_probe_type_response(None, Some(type_response("position-type")))
+            .expect("expected a selected type");
+
+        assert_eq!(selected.id.as_str(), "position-type");
+    }
 }

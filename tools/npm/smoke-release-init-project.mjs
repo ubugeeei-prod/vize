@@ -12,6 +12,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { normalizeReportedFile } from "./smoke-release-init-paths.mjs";
+import { satisfiesVersionRange } from "./smoke-release-semver.mjs";
 import { renderOutput, run, runResult } from "./smoke-process.mjs";
 
 /** Overrides that would let the host, not the installed package, pick Corsa. */
@@ -229,10 +230,21 @@ export function assertProjectLocalToolchain(context, projectRoot, shape) {
   );
   const vizeRequire = createRequire(path.join(vizeRoot, "package.json"));
   const corsaPackage = `@typescript/typescript-${process.platform}-${process.arch}`;
+  const vizePackageJson = readJson(path.join(vizeRoot, "package.json"));
+  const declaredCorsaRange = vizePackageJson.optionalDependencies?.[corsaPackage];
+  assert.equal(
+    typeof declaredCorsaRange,
+    "string",
+    `installed vize does not declare optional dependency ${corsaPackage}`,
+  );
   const corsaManifest = vizeRequire.resolve(`${corsaPackage}/package.json`);
   const corsaPackageJson = readJson(corsaManifest);
   const corsaVersion = corsaPackageJson.version;
   assert.equal(corsaPackageJson.name, corsaPackage);
+  assert.ok(
+    satisfiesVersionRange(corsaVersion, declaredCorsaRange),
+    `${corsaPackage}@${corsaVersion} does not satisfy installed vize optional dependency ${declaredCorsaRange}`,
+  );
   assert.ok(
     typeof corsaVersion === "string" && Number.parseInt(corsaVersion.split(".")[0] ?? "", 10) >= 7,
     "installed vize did not bring TypeScript 7 for Corsa",
