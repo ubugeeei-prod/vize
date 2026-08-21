@@ -7,11 +7,9 @@ use super::super::{
     expression::{generate_expression, generate_simple_expression},
     helpers::{camelize, escape_js_string, is_constant_simple_expression, is_valid_js_identifier},
 };
-use vize_carton::String;
-use vize_carton::ToCompactString;
-
 use super::StaticMerge;
 use super::v_model::generate_vmodel_prop;
+use vize_carton::{String, ToCompactString};
 
 /// Check if an expression is a static literal (no runtime identifiers).
 /// Returns true for: object literals, array literals, string literals, numbers
@@ -141,7 +139,6 @@ fn generate_vbind_prop(
     let mut is_class = false;
     let mut is_style = false;
 
-    // Check for modifiers
     let has_camel = dir.modifiers.iter().any(|m| m.content == "camel");
     let has_prop = dir.modifiers.iter().any(|m| m.content == "prop");
     let has_attr = dir.modifiers.iter().any(|m| m.content == "attr");
@@ -213,7 +210,6 @@ fn generate_vbind_prop(
             is_class = *key == "class";
             is_style = *key == "style";
 
-            // Transform key based on modifiers
             let base_key: vize_carton::String =
                 if has_camel || matches!(static_key_casing, StaticBindKeyCasing::Camelize) {
                     camelize(key)
@@ -236,6 +232,10 @@ fn generate_vbind_prop(
             } else {
                 base_key
             };
+
+            if transformed_key == "ref" && ctx.in_v_for {
+                ctx.push("ref_for: true, ");
+            }
 
             let needs_quotes = !is_valid_js_identifier(&transformed_key);
             if needs_quotes {

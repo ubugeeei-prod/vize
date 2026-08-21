@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/dynamic_template_ref.rs
+expression: result.code.as_str()
+---
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue";
+export function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Child = _resolveComponent("Child");
+  return _openBlock(true), _createElementBlock(
+    _Fragment,
+    null,
+    _renderList($setup.menus, (menu, index) => {
+      return _openBlock(), _createBlock(_component_Child, {
+        key: index,
+        ref_for: true,
+        ref: (item) => $setup.menuList[index] = item,
+        nodes: [...menu]
+      }, null, 8, ["nodes"]);
+    }),
+    128
+    /* KEYED_FRAGMENT */
+  );
+}
+import { ref } from "vue";
+export default {
+  __name: "anonymous",
+  render,
+  setup(__props) {
+    const menus = ref([[{ id: 1 }]]);
+    const menuList = ref([]);
+    const __returned__ = {
+      ref,
+      menus,
+      menuList
+    };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
+  }
+};
