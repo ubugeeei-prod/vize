@@ -537,8 +537,7 @@ fn compile_sfc_inner(
             .or_insert_with(|| key.clone());
     }
 
-    // Register $emit or __emit binding when defineEmits is used, so the template
-    // compiler knows not to prefix it with _ctx.
+    // Register defineEmits bindings visible to the template's render scope.
     if let Some(ref emits_macro) = ctx.macros.define_emits {
         if let Some(ref binding_name) = emits_macro.binding_name {
             // e.g., const emit = defineEmits([...]) -> emit is setup const
@@ -546,8 +545,8 @@ fn compile_sfc_inner(
                 .bindings
                 .entry(binding_name.clone())
                 .or_insert(BindingType::SetupConst);
-        } else {
-            // defineEmits([...]) without assignment -> $emit is exposed in setup args
+        } else if !script_output.separates_template() {
+            // Bare defineEmits exposes $emit only to inline render; separated render uses _ctx.$emit.
             script_bindings
                 .bindings
                 .entry("$emit".to_compact_string())
