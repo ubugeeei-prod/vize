@@ -206,6 +206,26 @@ fn branded_primitive_intersection_does_not_become_object_runtime_type() {
 }
 
 #[test]
+fn branded_object_intersection_keeps_concrete_runtime_type() {
+    let props = extract_prop_types_from_type_with_context(
+        "{ createdAt?: Date & { brand: true }; lookup?: Map<string, string> & { brand: true } }",
+        None,
+        None,
+    );
+
+    let created_at = props
+        .iter()
+        .find(|(name, _)| name == "createdAt")
+        .expect("createdAt prop should be extracted");
+    assert_eq!(created_at.1.js_type.as_str(), "Date");
+    let lookup = props
+        .iter()
+        .find(|(name, _)| name == "lookup")
+        .expect("lookup prop should be extracted");
+    assert_eq!(lookup.1.js_type.as_str(), "Map");
+}
+
+#[test]
 fn object_branded_string_union_keeps_string_and_object_runtime_types() {
     let props = extract_prop_types_from_type_with_context(
         "{ as?: 'a' | 'button' | ({} & string) }",

@@ -51,15 +51,16 @@ pub(super) fn combine_runtime_intersection_types(
     types: impl IntoIterator<Item = String>,
 ) -> String {
     let mut primitives: Vec<String> = Vec::new();
+    let mut concrete_objects: Vec<String> = Vec::new();
     let mut has_object_runtime = false;
     for js_type in types {
         match js_type.as_str() {
             "String" | "Number" | "Boolean" | "Symbol" | "BigInt" => {
-                if !primitives.contains(&js_type) {
-                    primitives.push(js_type);
-                }
+                push_unique_type(&mut primitives, &js_type);
             }
-            "Object" | "Array" | "Function" => has_object_runtime = true,
+            "Object" => has_object_runtime = true,
+            "Array" | "Function" => push_unique_type(&mut concrete_objects, &js_type),
+            _ if js_type != "null" => push_unique_type(&mut concrete_objects, &js_type),
             _ => {}
         }
     }
@@ -78,9 +79,19 @@ pub(super) fn combine_runtime_intersection_types(
         return primitive;
     }
 
+    if primitives.is_empty() && !concrete_objects.is_empty() {
+        return combine_runtime_js_types(concrete_objects);
+    }
+
     if has_object_runtime {
         "Object".to_compact_string()
     } else {
         "null".to_compact_string()
+    }
+}
+
+fn push_unique_type(types: &mut Vec<String>, js_type: &str) {
+    if !types.iter().any(|known| known.as_str() == js_type) {
+        types.push(js_type.into());
     }
 }
