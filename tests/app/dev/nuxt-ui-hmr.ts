@@ -134,6 +134,13 @@ async function absorbNuxtTemplateRegeneration(options: {
   await waitForHydration();
 }
 
+async function waitForNuxtUiWatcherSettle(): Promise<void> {
+  // Keep the measured edit out of the same watcher debounce window as the
+  // warm-up restore. Fast runners can otherwise coalesce the two writes and
+  // leave Vite with only the restore update.
+  await sleep(1_500);
+}
+
 export async function verifyNuxtUiAuthoredSourceHmr(options: {
   page: Page;
   devServer: ChildProcess;
@@ -226,6 +233,7 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
     restoreGuard.detach();
     throw error;
   }
+  await waitForNuxtUiWatcherSettle();
 
   const probe = `hmr-${Date.now()}`;
   const updateLogStart = getProcessLogs(devServer).length;

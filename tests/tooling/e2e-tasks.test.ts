@@ -183,6 +183,9 @@ test("fast app readiness aliases use bounded pinned fixtures", () => {
   assertExists("tests", "app", "dev", "nuxt-ui-dev-server.ts");
   assertExists("tests", "app", "dev", "nuxt-ui-hmr.ts");
   assertExists("tests", "app", "dev", "source-restore.ts");
+  const nuxtUiHmr = readRepoFile("tests", "app", "dev", "nuxt-ui-hmr.ts");
+  assert.match(nuxtUiHmr, /waitForNuxtUiWatcherSettle/);
+  assert.match(nuxtUiHmr, /watcher debounce window[\s\S]*?warm-up restore[\s\S]*?coalesce/s);
 
   for (const fixture of ["elk", "misskey", "npmx.dev", "nuxt-ui", "reka-ui"]) {
     const snapshotName = fixture === "npmx.dev" ? "npmx" : fixture;
