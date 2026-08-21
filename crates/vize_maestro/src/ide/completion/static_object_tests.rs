@@ -1,5 +1,7 @@
 //! Exactness regressions for source-local object member completion.
 
+mod escape_tests;
+
 use std::fs;
 
 use tower_lsp::lsp_types::{CompletionResponse, Url};

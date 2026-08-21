@@ -1,16 +1,18 @@
 //! Mutations and identity escapes before a local object's completion site.
 
 use oxc_ast::ast::{
-    Argument, AssignmentExpression, CallExpression, Expression, NewExpression, Program,
-    ReturnStatement, SimpleAssignmentTarget, UnaryExpression, UpdateExpression, VariableDeclarator,
-    YieldExpression,
+    Argument, AssignmentExpression, CallExpression, ExportDefaultDeclaration,
+    ExportNamedDeclaration, Expression, ImportOrExportKind, ModuleExportName, NewExpression,
+    Program, PropertyDefinition, ReturnStatement, SimpleAssignmentTarget, TaggedTemplateExpression,
+    UnaryExpression, UpdateExpression, VariableDeclarator, YieldExpression,
 };
 use oxc_ast_visit::{
     Visit,
     walk::{
-        walk_assignment_expression, walk_call_expression, walk_new_expression,
-        walk_return_statement, walk_unary_expression, walk_update_expression,
-        walk_variable_declarator, walk_yield_expression,
+        walk_assignment_expression, walk_call_expression, walk_export_default_declaration,
+        walk_export_named_declaration, walk_new_expression, walk_property_definition,
+        walk_return_statement, walk_tagged_template_expression, walk_unary_expression,
+        walk_update_expression, walk_variable_declarator, walk_yield_expression,
     },
 };
 use oxc_span::Span;
@@ -68,6 +70,14 @@ impl PriorReceiverInexactness<'_> {
             || arguments
                 .iter()
                 .any(|argument| self.argument_escapes_receiver(argument))
+    }
+
+    fn exported_name_is_receiver(&self, name: &ModuleExportName<'_>) -> bool {
+        match name {
+            ModuleExportName::IdentifierName(identifier) => identifier.name == self.receiver,
+            ModuleExportName::IdentifierReference(identifier) => identifier.name == self.receiver,
+            ModuleExportName::StringLiteral(_) => false,
+        }
     }
 }
 
@@ -136,6 +146,63 @@ impl<'a> Visit<'a> for PriorReceiverInexactness<'_> {
             return;
         }
         walk_new_expression(self, expression);
+    }
+
+    fn visit_tagged_template_expression(&mut self, expression: &TaggedTemplateExpression<'a>) {
+        if self.is_prior(expression.span)
+            && (root_reference(&expression.tag).is_some_and(|name| name == self.receiver)
+                || self.is_receiver_value(&expression.tag)
+                || expression
+                    .quasi
+                    .expressions
+                    .iter()
+                    .any(|value| self.is_receiver_value(value)))
+        {
+            self.found = true;
+            return;
+        }
+        walk_tagged_template_expression(self, expression);
+    }
+
+    fn visit_property_definition(&mut self, property: &PropertyDefinition<'a>) {
+        if self.is_prior(property.span)
+            && property
+                .value
+                .as_ref()
+                .is_some_and(|value| self.is_receiver_value(value))
+        {
+            self.found = true;
+            return;
+        }
+        walk_property_definition(self, property);
+    }
+
+    fn visit_export_named_declaration(&mut self, declaration: &ExportNamedDeclaration<'a>) {
+        if self.is_prior(declaration.span)
+            && declaration.source.is_none()
+            && declaration.export_kind == ImportOrExportKind::Value
+            && declaration.specifiers.iter().any(|specifier| {
+                specifier.export_kind == ImportOrExportKind::Value
+                    && self.exported_name_is_receiver(&specifier.local)
+            })
+        {
+            self.found = true;
+            return;
+        }
+        walk_export_named_declaration(self, declaration);
+    }
+
+    fn visit_export_default_declaration(&mut self, declaration: &ExportDefaultDeclaration<'a>) {
+        if self.is_prior(declaration.span)
+            && declaration
+                .declaration
+                .as_expression()
+                .is_some_and(|value| self.is_receiver_value(value))
+        {
+            self.found = true;
+            return;
+        }
+        walk_export_default_declaration(self, declaration);
     }
 
     fn visit_return_statement(&mut self, statement: &ReturnStatement<'a>) {
