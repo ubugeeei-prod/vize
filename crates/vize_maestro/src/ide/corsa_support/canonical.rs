@@ -25,8 +25,8 @@ pub(crate) use rename::{
 };
 pub(crate) use semantic_links::materialized_semantic_positions;
 pub(crate) use semantic_links::{
-    CanonicalSemanticPosition, component_prop_location_matches, linked_semantic_position,
-    matching_component_prop_navigation_positions, tower_range,
+    CanonicalSemanticPosition, ComponentPropSourceCache, component_prop_location_matches,
+    linked_semantic_position, matching_component_prop_navigation_positions, tower_range,
 };
 
 pub(crate) struct CanonicalVirtualDocument {

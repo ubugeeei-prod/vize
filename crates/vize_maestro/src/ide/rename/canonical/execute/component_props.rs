@@ -9,10 +9,13 @@ pub(super) fn retain_component_prop_edits(
     document: &corsa_support::CanonicalVirtualDocument,
     edit: &mut WorkspaceEdit,
     names: &FxHashSet<String>,
+    source_cache: &mut corsa_support::ComponentPropSourceCache,
 ) {
     if let Some(changes) = edit.changes.as_mut() {
         changes.retain(|uri, edits| {
-            edits.retain(|edit| component_prop_edit_matches(ctx, document, uri, edit.range, names));
+            edits.retain(|edit| {
+                component_prop_edit_matches(ctx, document, uri, edit.range, names, source_cache)
+            });
             !edits.is_empty()
         });
     }
@@ -27,6 +30,7 @@ pub(super) fn retain_component_prop_edits(
                             &edit.text_document.uri,
                             annotatable_range(entry),
                             names,
+                            source_cache,
                         )
                     });
                 }
@@ -42,6 +46,7 @@ pub(super) fn retain_component_prop_edits(
                                 &edit.text_document.uri,
                                 annotatable_range(entry),
                                 names,
+                                source_cache,
                             )
                         });
                     }
@@ -61,6 +66,7 @@ fn component_prop_edit_matches(
     uri: &tower_lsp::lsp_types::Url,
     range: Range,
     names: &FxHashSet<String>,
+    source_cache: &mut corsa_support::ComponentPropSourceCache,
 ) -> bool {
     let raw = LspLocation {
         uri: uri.to_string(),
@@ -69,7 +75,7 @@ fn component_prop_edit_matches(
     let Some(authored) = corsa_support::map_canonical_corsa_location(ctx, document, &raw) else {
         return false;
     };
-    corsa_support::component_prop_location_matches(ctx, document, &authored, names)
+    corsa_support::component_prop_location_matches(ctx, document, &authored, names, source_cache)
 }
 
 fn annotatable_range(

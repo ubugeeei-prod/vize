@@ -25,8 +25,8 @@ mod workspace_edit;
 
 pub(crate) use canonical::{
     CanonicalProjectOpenError, CanonicalSemanticPosition, CanonicalVirtualDocument,
-    canonical_source_offset_to_position, component_prop_location_matches, linked_semantic_position,
-    map_canonical_corsa_location, map_canonical_corsa_locations,
+    ComponentPropSourceCache, canonical_source_offset_to_position, component_prop_location_matches,
+    linked_semantic_position, map_canonical_corsa_location, map_canonical_corsa_locations,
     map_canonical_corsa_workspace_edit, map_canonical_lsp_range,
     map_canonical_materialized_module_location, map_canonical_prepare_rename,
     matching_component_prop_navigation_positions, materialized_semantic_positions,

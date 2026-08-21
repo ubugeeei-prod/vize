@@ -97,7 +97,7 @@ async fn rename_strict_inner(
     else {
         return Ok(Answer::Unavailable);
     };
-    let component_props = corsa_support::matching_component_prop_navigation_positions(
+    let mut component_props = corsa_support::matching_component_prop_navigation_positions(
         ctx,
         bridge,
         &document,
@@ -198,7 +198,13 @@ async fn rename_strict_inner(
             })?;
         let component_prop_query = component_prop_positions.contains(&position);
         if component_prop_query {
-            retain_component_prop_edits(ctx, &document, &mut extra, &component_props.names);
+            retain_component_prop_edits(
+                ctx,
+                &document,
+                &mut extra,
+                &component_props.names,
+                &mut component_props.source_cache,
+            );
         }
         let Some(extra) = corsa_support::map_canonical_corsa_workspace_edit(ctx, &document, extra)
         else {
