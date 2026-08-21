@@ -1,6 +1,8 @@
-use vize_carton::{CompactString, FxHashSet, String};
+use vize_carton::{CompactString, FxHashSet};
 
 use super::{TypeProperty, TypeResolver, is_valid_identifier};
+
+mod members;
 
 impl TypeResolver {
     /// Extract properties from type arguments.
@@ -80,42 +82,7 @@ impl TypeResolver {
     }
 
     fn parse_type_members(&self, content: &str) -> Vec<TypeProperty> {
-        let mut properties = Vec::new();
-        let mut depth = 0;
-        let mut current = String::default();
-        let mut prev = '\0';
-        let content = strip_type_comments(content);
-
-        for c in content.chars() {
-            match c {
-                '{' | '<' | '(' | '[' => {
-                    depth += 1;
-                    current.push(c);
-                }
-                '}' | ')' | ']' => {
-                    depth -= 1;
-                    current.push(c);
-                }
-                '>' if prev != '=' => {
-                    depth -= 1;
-                    current.push(c);
-                }
-                ',' | ';' | '\n' if depth == 0 => {
-                    if let Some(prop) = self.parse_single_property(&current) {
-                        properties.push(prop);
-                    }
-                    current.clear();
-                }
-                _ => current.push(c),
-            }
-            prev = c;
-        }
-
-        if let Some(prop) = self.parse_single_property(&current) {
-            properties.push(prop);
-        }
-
-        properties
+        members::parse(self, content)
     }
 
     fn parse_single_property(&self, segment: &str) -> Option<TypeProperty> {
@@ -140,72 +107,6 @@ impl TypeResolver {
             optional,
         })
     }
-}
-
-/// Remove TypeScript comments without touching comment markers in string or
-/// template literal types. Newlines are retained so top-level members that use
-/// newline separators keep the same token boundaries.
-fn strip_type_comments(source: &str) -> String {
-    let mut output = String::with_capacity(source.len());
-    let mut chars = source.chars().peekable();
-    let mut quote = None;
-    let mut escaped = false;
-    let mut in_line_comment = false;
-    let mut in_block_comment = false;
-
-    while let Some(character) = chars.next() {
-        if in_line_comment {
-            if character == '\n' {
-                in_line_comment = false;
-                output.push(character);
-            }
-            continue;
-        }
-        if in_block_comment {
-            if character == '*' && chars.peek() == Some(&'/') {
-                chars.next();
-                in_block_comment = false;
-                output.push(' ');
-            } else if character == '\n' {
-                output.push(character);
-            }
-            continue;
-        }
-        if let Some(delimiter) = quote {
-            output.push(character);
-            if escaped {
-                escaped = false;
-            } else if character == '\\' {
-                escaped = true;
-            } else if character == delimiter {
-                quote = None;
-            }
-            continue;
-        }
-        if matches!(character, '\'' | '"' | '`') {
-            quote = Some(character);
-            output.push(character);
-            continue;
-        }
-        if character == '/' {
-            match chars.peek() {
-                Some('/') => {
-                    chars.next();
-                    in_line_comment = true;
-                    continue;
-                }
-                Some('*') => {
-                    chars.next();
-                    in_block_comment = true;
-                    continue;
-                }
-                _ => {}
-            }
-        }
-        output.push(character);
-    }
-
-    output
 }
 
 fn push_unique_properties(

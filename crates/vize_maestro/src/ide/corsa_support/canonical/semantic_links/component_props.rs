@@ -4,7 +4,7 @@ use tower_lsp::lsp_types::Location;
 use vize_canon::CorsaBridge;
 use vize_carton::{FxHashSet, String, camelize};
 
-use super::{CanonicalSemanticPosition, ComponentPropNavigationMatches};
+use super::{CanonicalSemanticPosition, ComponentPropNavigationMatches, ComponentPropSourceCache};
 use crate::ide::IdeContext;
 use crate::ide::corsa_support::canonical::{
     CanonicalVirtualDocument, map_canonical_corsa_locations,
@@ -25,12 +25,14 @@ pub(crate) async fn matching_component_prop_navigation_positions(
         return ComponentPropNavigationMatches {
             positions: Vec::new(),
             names: FxHashSet::default(),
+            source_cache: ComponentPropSourceCache::default(),
         };
     };
     let authored_definitions = map_canonical_corsa_locations(ctx, document, definitions);
+    let mut source_cache = ComponentPropSourceCache::default();
     let names = authored_definitions
         .iter()
-        .filter_map(|location| authored_location_text(ctx, document, location))
+        .filter_map(|location| authored_location_text(ctx, document, location, &mut source_cache))
         .filter_map(|name| normalized_component_prop_name(name.as_str()))
         .collect::<FxHashSet<_>>();
     let candidates = component_prop_navigation_positions(document, &names);
@@ -48,6 +50,7 @@ pub(crate) async fn matching_component_prop_navigation_positions(
         return ComponentPropNavigationMatches {
             positions: Vec::new(),
             names,
+            source_cache,
         };
     };
     let mut positions = Vec::new();
@@ -58,7 +61,11 @@ pub(crate) async fn matching_component_prop_navigation_positions(
             positions.push(position);
         }
     }
-    ComponentPropNavigationMatches { positions, names }
+    ComponentPropNavigationMatches {
+        positions,
+        names,
+        source_cache,
+    }
 }
 
 pub(crate) fn component_prop_location_matches(
@@ -66,8 +73,9 @@ pub(crate) fn component_prop_location_matches(
     document: &CanonicalVirtualDocument,
     location: &Location,
     names: &FxHashSet<String>,
+    source_cache: &mut ComponentPropSourceCache,
 ) -> bool {
-    authored_location_text(ctx, document, location)
+    authored_location_text(ctx, document, location, source_cache)
         .and_then(|name| normalized_component_prop_name(name.as_str()))
         .is_some_and(|name| names.contains(name.as_str()))
 }
@@ -122,16 +130,23 @@ fn authored_location_text<'a>(
     ctx: &'a IdeContext<'_>,
     document: &'a CanonicalVirtualDocument,
     location: &Location,
+    source_cache: &'a mut ComponentPropSourceCache,
 ) -> Option<String> {
     let source = if location.uri == *ctx.uri {
         Cow::Borrowed(ctx.content.as_str())
     } else if let Some(source) = document.authored_source(&location.uri) {
         Cow::Borrowed(source)
-    } else if let Some(source) = ctx.state.documents.text(&location.uri) {
-        Cow::Owned(source)
     } else {
-        let path = location.uri.to_file_path().ok()?;
-        Cow::Owned(std::fs::read_to_string(path).ok()?)
+        let source = source_cache.entry(location.uri.clone()).or_insert_with(|| {
+            ctx.state.documents.text(&location.uri).or_else(|| {
+                location
+                    .uri
+                    .to_file_path()
+                    .ok()
+                    .and_then(|path| std::fs::read_to_string(path).ok())
+            })
+        });
+        Cow::Borrowed(source.as_deref()?)
     };
     let start = crate::ide::position_to_offset(
         source.as_ref(),
@@ -197,7 +212,7 @@ mod tests {
     use tower_lsp::lsp_types::{Location, Position, Range, Url};
     use vize_canon::ImportSourceMap;
 
-    use super::authored_location_text;
+    use super::{ComponentPropSourceCache, authored_location_text};
     use crate::ide::IdeContext;
     use crate::ide::corsa_support::canonical::CanonicalVirtualDocument;
     use crate::ide::diagnostics::VirtualTsResult;
@@ -223,7 +238,7 @@ mod tests {
         let props_path = project.path().join("props.ts");
         let source = "export interface Props { /* café 🌱 */ title: string }\n";
         std::fs::write(&props_path, source).expect("external props");
-        let props_uri = Url::from_file_path(props_path).expect("props URI");
+        let props_uri = Url::from_file_path(&props_path).expect("props URI");
         let app_uri = Url::from_file_path(project.path().join("App.vue")).expect("app URI");
         let state = ServerState::new();
         let ctx = IdeContext::with_content(&state, &app_uri, 0, "<template />".to_owned());
@@ -237,8 +252,12 @@ mod tests {
         };
         let start = source.find("title").expect("prop name");
         let end = start + "title".len();
-        let (start_line, start_character) = crate::ide::offset_to_position(source, start);
-        let (end_line, end_character) = crate::ide::offset_to_position(source, end);
+        let (start_line, start_character) = independent_utf16_position(source, start);
+        let (end_line, end_character) = independent_utf16_position(source, end);
+        assert_eq!(
+            crate::ide::offset_to_position(source, start),
+            (start_line, start_character),
+        );
         let location = Location::new(
             props_uri,
             Range::new(
@@ -247,10 +266,25 @@ mod tests {
             ),
         );
 
+        let mut source_cache = ComponentPropSourceCache::default();
         assert_eq!(
-            authored_location_text(&ctx, &document, &location).as_deref(),
+            authored_location_text(&ctx, &document, &location, &mut source_cache).as_deref(),
             Some("title"),
         );
+        std::fs::remove_file(&props_path).expect("remove cached source");
+        assert_eq!(
+            authored_location_text(&ctx, &document, &location, &mut source_cache).as_deref(),
+            Some("title"),
+            "the request cache must avoid a second blocking disk read",
+        );
         assert_ne!(start_character as usize, start);
+    }
+
+    fn independent_utf16_position(source: &str, offset: usize) -> (u32, u32) {
+        let prefix = &source[..offset];
+        let line = prefix.bytes().filter(|byte| *byte == b'\n').count() as u32;
+        let line_start = prefix.rfind('\n').map_or(0, |index| index + 1);
+        let character = source[line_start..offset].encode_utf16().count() as u32;
+        (line, character)
     }
 }

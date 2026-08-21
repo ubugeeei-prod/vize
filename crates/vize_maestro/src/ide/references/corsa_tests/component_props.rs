@@ -175,13 +175,21 @@ fn canonical_prop_references_reach_parent_template_usage() {
 
 fn assert_utf16_location(source: &str, needle: &str, locations: &[&Location]) {
     let offset = source.find(needle).expect("wide fixture needle");
-    let expected = crate::ide::offset_to_position(source, offset);
+    let prefix = &source[..offset];
+    let line = prefix.bytes().filter(|byte| *byte == b'\n').count() as u32;
+    let line_start = prefix.rfind('\n').map_or(0, |index| index + 1);
+    let character = source[line_start..offset].encode_utf16().count() as u32;
+    let expected = (line, character);
+    assert_eq!(
+        crate::ide::offset_to_position(source, offset),
+        expected,
+        "position conversion must count UTF-16 code units",
+    );
     assert!(locations.iter().any(|location| {
         (location.range.start.line, location.range.start.character) == expected
     }));
-    let line_start = source[..offset].rfind('\n').map_or(0, |index| index + 1);
     assert_ne!(
-        expected.1 as usize,
+        character as usize,
         offset - line_start,
         "fixture must distinguish UTF-16 columns from UTF-8 bytes",
     );
