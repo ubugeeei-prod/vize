@@ -97,23 +97,23 @@ async function absorbNuxtTemplateRegeneration(options: {
   devServer: ChildProcess;
   sourcePath: string;
   originalSource: string;
-  updatedSource: string;
+  warmupSource: string;
   original: Locator;
-  updated: Locator;
+  warmup: Locator;
   waitForHydration: () => Promise<void>;
 }): Promise<void> {
   const {
     devServer,
     sourcePath,
     originalSource,
-    updatedSource,
+    warmupSource,
     original,
-    updated,
+    warmup,
     waitForHydration,
   } = options;
   const logStart = getProcessLogs(devServer).length;
   const deadline = Date.now() + 30_000;
-  fs.writeFileSync(sourcePath, updatedSource);
+  fs.writeFileSync(sourcePath, warmupSource);
   try {
     while (Date.now() < deadline) {
       if (
@@ -123,14 +123,14 @@ async function absorbNuxtTemplateRegeneration(options: {
       )
         break;
       // A patch that lands on its own means there is no regeneration to absorb.
-      if ((await updated.count().catch(() => 0)) > 0) break;
+      if ((await warmup.count().catch(() => 0)) > 0) break;
       await sleep(250);
     }
   } finally {
     fs.writeFileSync(sourcePath, originalSource);
   }
   await expect(original).toBeVisible({ timeout: 60_000 });
-  await expect(updated).toHaveCount(0, { timeout: 60_000 });
+  await expect(warmup).toHaveCount(0, { timeout: 60_000 });
   await waitForHydration();
 }
 
@@ -154,12 +154,16 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
   // the library template-regeneration boundary. Nuxt still rewrites that
   // template once per dev server, which the warm-up edit below absorbs.
   const originalText = '<div class="flex items-start gap-2 min-h-0">';
-  const updatedText = '<div data-vize-hmr-probe="updated" class="flex items-start gap-2 min-h-0">';
+  const warmupText = '<div data-vize-hmr-warmup="true" class="flex items-start gap-2 min-h-0">';
+  const updatedProbe = `updated-${Date.now()}`;
+  const updatedText = `<div data-vize-hmr-probe="${updatedProbe}" class="flex items-start gap-2 min-h-0">`;
   const sourcePath = path.join(cwd, "playgrounds/nuxt/app/components/Matrix.vue");
   const originalSource = fs.readFileSync(sourcePath, "utf8");
   expect(originalSource.split(originalText)).toHaveLength(2);
+  const warmupSource = originalSource.replace(originalText, warmupText);
   const updatedSource = originalSource.replace(originalText, updatedText);
-  expect(updatedSource).toContain('data-vize-hmr-probe="updated"');
+  expect(warmupSource).toContain('data-vize-hmr-warmup="true"');
+  expect(updatedSource).toContain(`data-vize-hmr-probe="${updatedProbe}"`);
 
   const consoleErrors = await collectConsoleErrors(page, appName);
   const hydrationErrors = await collectHydrationErrors(page);
@@ -178,8 +182,10 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
   await goto();
   const mount = page.locator(mountSelector);
   const original = mount.getByRole("button", { name: "Button" }).last();
-  const updated = mount.locator('[data-vize-hmr-probe="updated"]').first();
+  const warmup = mount.locator('[data-vize-hmr-warmup="true"]').first();
+  const updated = mount.locator(`[data-vize-hmr-probe="${updatedProbe}"]`).first();
   await expect(original).toBeVisible();
+  await expect(warmup).toHaveCount(0);
   await expect(updated).toHaveCount(0);
   await waitForHydration();
   await initialClientModule;
@@ -209,9 +215,9 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
       devServer,
       sourcePath,
       originalSource,
-      updatedSource,
+      warmupSource,
       original,
-      updated,
+      warmup,
       waitForHydration,
     });
   } catch (error) {
