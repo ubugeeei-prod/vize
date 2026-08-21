@@ -61,7 +61,7 @@ test("nuxt-ui boots widen the playground vite-node request budget", () => {
   assert.match(withoutViteBlock, /vite: \{\n {4}viteNode: \{ requestTimeout: 600000 \},\n {2}\},/);
 });
 
-test("nuxt-ui warmups do not abort slow hosted SSR compilation too early", () => {
+test("nuxt-ui warmups do not abort slow SSR compilation too early", () => {
   const source = readRepoFile("tests", "app", "dev", "nuxt-ui.spec.ts");
 
   assert.match(source, /const SSR_WARMUP_REQUEST_TIMEOUT_MS = 90_000;/);
@@ -104,7 +104,7 @@ test("nuxt-ui SSR snapshots ignore dev-only entry scripts", () => {
   );
 });
 
-test("nuxt-ui setup avoids the Nuxt Content module on hosted readiness runners", () => {
+test("nuxt-ui setup avoids the Nuxt Content module on readiness runners", () => {
   const source = readRepoFile("tests", "_helpers", "apps.ts");
   const configPatch = readRepoFile("tests", "_helpers", "nuxt-ui-config.ts");
   const start = source.indexOf("export const nuxtUiApp: AppConfig = {");

@@ -138,15 +138,9 @@ runs:
         PLANNED_TASK: ${{ inputs.task }}
         PLANNED_TIMEOUT: ${{ inputs.timeout }}
         PLANNED_BROWSER: ${{ inputs.needs-playwright }}
-        RUNNER_ENVIRONMENT: ${{ runner.environment }}
         VIZE_TEST_WORKTREE_ID: ${{ inputs.worktree-id }}
       run: |
         set -euo pipefail
-        if [[ "$RUNNER_ENVIRONMENT" == "github-hosted" ]]; then
-          # Temporary hosted-runner fallback while Blacksmith is degraded.
-          # Remove this scale when restoring blacksmith-32vcpu-ubuntu-2404.
-          export VIZE_BATCH_CHECK_BUDGET_SCALE=2
-        fi
         mkdir -p target/app-e2e-logs
         timeout --signal=TERM --kill-after=15s "$PLANNED_TIMEOUT" \
           vp run --no-cache --filter './tests' "$PLANNED_TASK" 2>&1 \
