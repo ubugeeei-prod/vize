@@ -84,6 +84,7 @@ impl TypeResolver {
         let mut depth = 0;
         let mut current = String::default();
         let mut prev = '\0';
+        let content = strip_type_comments(content);
 
         for c in content.chars() {
             match c {
@@ -139,6 +140,72 @@ impl TypeResolver {
             optional,
         })
     }
+}
+
+/// Remove TypeScript comments without touching comment markers in string or
+/// template literal types. Newlines are retained so top-level members that use
+/// newline separators keep the same token boundaries.
+fn strip_type_comments(source: &str) -> String {
+    let mut output = String::with_capacity(source.len());
+    let mut chars = source.chars().peekable();
+    let mut quote = None;
+    let mut escaped = false;
+    let mut in_line_comment = false;
+    let mut in_block_comment = false;
+
+    while let Some(character) = chars.next() {
+        if in_line_comment {
+            if character == '\n' {
+                in_line_comment = false;
+                output.push(character);
+            }
+            continue;
+        }
+        if in_block_comment {
+            if character == '*' && chars.peek() == Some(&'/') {
+                chars.next();
+                in_block_comment = false;
+                output.push(' ');
+            } else if character == '\n' {
+                output.push(character);
+            }
+            continue;
+        }
+        if let Some(delimiter) = quote {
+            output.push(character);
+            if escaped {
+                escaped = false;
+            } else if character == '\\' {
+                escaped = true;
+            } else if character == delimiter {
+                quote = None;
+            }
+            continue;
+        }
+        if matches!(character, '\'' | '"' | '`') {
+            quote = Some(character);
+            output.push(character);
+            continue;
+        }
+        if character == '/' {
+            match chars.peek() {
+                Some('/') => {
+                    chars.next();
+                    in_line_comment = true;
+                    continue;
+                }
+                Some('*') => {
+                    chars.next();
+                    in_block_comment = true;
+                    continue;
+                }
+                _ => {}
+            }
+        }
+        output.push(character);
+    }
+
+    output
 }
 
 fn push_unique_properties(
