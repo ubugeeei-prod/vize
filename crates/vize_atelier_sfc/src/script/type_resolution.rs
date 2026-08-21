@@ -94,7 +94,9 @@ pub(crate) fn resolve_type_args(
     type_aliases: &FxHashMap<String, String>,
 ) -> String {
     let content = type_args.trim();
-    if content.starts_with('{') {
+    if content.starts_with('{')
+        && (content.contains(" in ") || split_top_level(content, '&').len() == 1)
+    {
         return content.to_compact_string();
     }
 
@@ -152,11 +154,6 @@ fn resolve_type_to_object_body_inner(
         return None;
     }
 
-    if trimmed.starts_with('{') && trimmed.ends_with('}') {
-        let inner = trimmed[1..trimmed.len() - 1].trim();
-        return Some(inner.to_compact_string());
-    }
-
     let parts = split_top_level(trimmed, '&');
     if parts.len() > 1 {
         let mut merged = String::default();
@@ -183,9 +180,12 @@ fn resolve_type_to_object_body_inner(
         return Some(merged);
     }
 
-    // Built-in TS utility types (`Partial<T>`, `Pick<T, K>`, ...) are not stored
-    // in the interface/alias maps, so resolve them structurally by transforming
-    // the member set of their inner type argument.
+    if trimmed.starts_with('{') && trimmed.ends_with('}') {
+        let inner = trimmed[1..trimmed.len() - 1].trim();
+        return Some(inner.to_compact_string());
+    }
+
+    // Resolve utility types structurally when their inner type is known.
     if let Some(body) = resolve_utility_type(trimmed, interfaces, type_aliases, stack) {
         return Some(body);
     }

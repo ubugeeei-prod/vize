@@ -1,0 +1,52 @@
+---
+source: crates/vize_atelier_sfc/tests/imported_pick_intersection_props.rs
+expression: result.code.as_str()
+---
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue";
+import { computed } from "vue";
+import { CASCADER_PANEL_HEIGHT, CASCADER_PANEL_ITEM_SIZE } from "./config";
+export default {
+  __name: "Menu",
+  props: {
+    nodes: {
+      type: Array,
+      required: true
+    },
+    index: {
+      type: Number,
+      required: true
+    },
+    virtualScroll: {
+      type: Boolean,
+      required: false,
+      default: false
+    },
+    itemSize: {
+      type: Number,
+      required: false,
+      default: CASCADER_PANEL_ITEM_SIZE
+    },
+    height: {
+      type: Number,
+      required: false,
+      default: CASCADER_PANEL_HEIGHT
+    }
+  },
+  setup(__props) {
+    const props = __props;
+    const virtualScroll = computed(() => props.virtualScroll);
+    return (_ctx, _cache) => {
+      const _component_FixedSizeList = _resolveComponent("FixedSizeList");
+      const _component_Node = _resolveComponent("Node");
+      return virtualScroll.value ? (_openBlock(), _createBlock(_component_FixedSizeList, { key: 0 })) : (_openBlock(true), _createElementBlock(
+        _Fragment,
+        { key: 1 },
+        _renderList(__props.nodes, (node) => {
+          return _openBlock(), _createBlock(_component_Node, { key: node.uid });
+        }),
+        128
+        /* KEYED_FRAGMENT */
+      ));
+    };
+  }
+};
