@@ -61,6 +61,7 @@ test("release script rewrites native workspace pins and minimum release age excl
     "minimumReleaseAgeExclude:",
     '  - "@vizejs/native-darwin-arm64@0.100.0 || 0.106.0"',
     '  - "@vizejs/native-darwin-x64@0.100.0 || 0.106.0"',
+    '  - "@vizejs/native-linux-x64-gnu@0.100.0 || 0.106.0 || 0.107.0"',
     '  - "@scope/not-native@0.106.0"',
     "",
     "catalogs:",
@@ -92,12 +93,16 @@ test("release script rewrites native workspace pins and minimum release age excl
   const lines = result.stdout.split("\n");
 
   assert.ok(
-    result.stdout.includes('  - "@vizejs/native-darwin-arm64@0.100.0 || 0.107.0"'),
+    result.stdout.includes('  - "@vizejs/native-darwin-arm64@0.100.0 || 0.106.0 || 0.107.0"'),
     "minimumReleaseAgeExclude keeps darwin arm64 aligned",
   );
   assert.ok(
-    result.stdout.includes('  - "@vizejs/native-darwin-x64@0.100.0 || 0.107.0"'),
+    result.stdout.includes('  - "@vizejs/native-darwin-x64@0.100.0 || 0.106.0 || 0.107.0"'),
     "minimumReleaseAgeExclude keeps darwin x64 aligned",
+  );
+  assert.ok(
+    result.stdout.includes('  - "@vizejs/native-linux-x64-gnu@0.100.0 || 0.106.0 || 0.107.0"'),
+    "minimumReleaseAgeExclude does not duplicate an existing release version",
   );
   assert.ok(
     result.stdout.includes('  - "@scope/not-native@0.106.0"'),

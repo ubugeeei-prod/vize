@@ -20,7 +20,13 @@ fn replace_native_binary_workspace_catalog(
   let minimum_age_prefix = "  - \"@vizejs/native-"
   for line in lines {
     if line.has_prefix(minimum_age_prefix) && line.contains(current_version) {
-      updated.push(line.replace(old=current_version, new=new_version))
+      if line.contains(new_version) {
+        updated.push(line)
+      } else {
+        updated.push(
+          line.replace(old=current_version, new=current_version + " || " + new_version),
+        )
+      }
       continue
     }
     if line == header {
