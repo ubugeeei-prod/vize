@@ -372,6 +372,7 @@ jobs:
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
+          cache: true
           run-install: true
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:

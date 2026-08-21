@@ -279,6 +279,7 @@ test("check workflow runs JS package unit tests and production dependency audit"
 
 test("check workflow blocks on Rust source and branch coverage budgets", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const clippyJob = workflowJobBody(workflow, "clippy-and-test");
   const sourceJob = workflowJobBody(workflow, "source-coverage");
   const branchJob = workflowJobBody(workflow, "branch-coverage");
   const jobs = (
@@ -288,6 +289,7 @@ test("check workflow blocks on Rust source and branch coverage budgets", () => {
   ).jobs;
 
   assert.equal(jobs["clippy-and-test"].env?.VIZE_NUXT_CONFIG_ITERATIONS, "100");
+  assert.match(clippyJob, /uses: voidzero-dev\/setup-vp@[0-9a-f]{40}[\s\S]*cache:\s*true[\s\S]*run-install:\s*true/);
   assert.equal(jobs["source-coverage"].env?.VIZE_NUXT_CONFIG_ITERATIONS, "100");
   assert.match(sourceJob, /tool:\s*cargo-llvm-cov/);
   assert.match(sourceJob, /vp install --frozen-lockfile --prefer-offline/);

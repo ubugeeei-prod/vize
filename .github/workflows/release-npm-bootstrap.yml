@@ -18,7 +18,7 @@ env:
 jobs:
   handoff:
     name: Prepare first-publish CLI handoff
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     # actions: read downloads the exact Release run artifact. This job never publishes.
     permissions: { actions: read, contents: read }

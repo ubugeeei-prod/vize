@@ -56,7 +56,7 @@ test("npm bootstrap validates an exact tag before building with existing release
   const workflow = parse(source) as BootstrapWorkflow;
   const job = workflow.jobs?.handoff;
   assert.ok(job);
-  assert.equal(job["runs-on"], "ubuntu-24.04");
+  assert.equal(job["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
   assert.equal(job.environment, undefined);
   assert.deepEqual(job.permissions, {
     actions: "read",

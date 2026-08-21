@@ -66,7 +66,7 @@ test("PR readiness plans six isolated rows behind one stable aggregator", () => 
   const aggregate = jobs["app-readiness"];
   assert.ok(plan && producer && aggregate);
   assert.equal(plan.name, "Plan app readiness");
-  assert.equal(plan["runs-on"], "ubuntu-latest");
+  assert.equal(plan["runs-on"], BLACKSMITH_RUNNER);
   assert.deepEqual(plan.permissions, { contents: "read", "pull-requests": "read" });
   assert.deepEqual(plan.outputs, {
     run: "${{ steps.changes.outputs.readiness }}",
@@ -125,6 +125,7 @@ test("PR readiness plans six isolated rows behind one stable aggregator", () => 
   }
 
   assert.equal(aggregate.name, "app-readiness");
+  assert.equal(aggregate["runs-on"], BLACKSMITH_RUNNER);
   assert.deepEqual(aggregate.needs, ["app-readiness-plan", "app-readiness-producer"]);
   assert.match(aggregate.if ?? "", /always\(\)/);
   assert.match(
@@ -145,6 +146,7 @@ test("full App E2E uses a planner, isolated matrix producers, and stable release
   const aggregate = jobs["app-e2e"];
   assert.ok(plan && producer && aggregate);
   assert.match(plan.if ?? "", /github\.event_name != 'pull_request'/);
+  assert.equal(plan["runs-on"], BLACKSMITH_RUNNER);
   assert.deepEqual(plan.outputs, {
     suite: "${{ steps.plan.outputs.suite }}",
     matrix: "${{ steps.plan.outputs.matrix }}",
@@ -169,6 +171,7 @@ test("full App E2E uses a planner, isolated matrix producers, and stable release
   assert.match(namedStep(producer, "Verify producer SHA").run ?? "", /git rev-parse HEAD/);
 
   assert.equal(aggregate.name, "app-e2e");
+  assert.equal(aggregate["runs-on"], BLACKSMITH_RUNNER);
   assert.deepEqual(aggregate.needs, ["app-e2e-plan", "app-e2e-producer"]);
   assert.match(aggregate.if ?? "", /always\(\)/);
   assert.match(
@@ -196,7 +199,7 @@ test("every producer and aggregator checks out the exact event target", () => {
   );
 });
 
-test("App E2E producers take their runner from the plan; Testbox stays Blacksmith", () => {
+test("App E2E producers take their runner from the plan; support jobs stay Blacksmith", () => {
   const source = readRepoFile(".github", "workflows", "e2e.yml");
   // Which label each row gets is the planner's call and is asserted in
   // app-e2e-plan.test.ts; the workflow only has to defer to it.
@@ -207,11 +210,9 @@ test("App E2E producers take their runner from the plan; Testbox stays Blacksmit
       `${job} must take its runner from the planned row`,
     );
   }
-  assert.equal(
-    workflowJobRunsOn(source, "testbox"),
-    BLACKSMITH_RUNNER,
-    "testbox must run on the Blacksmith runner",
-  );
+  for (const job of ["app-readiness-plan", "app-readiness", "testbox", "app-e2e-plan", "app-e2e"]) {
+    assert.equal(workflowJobRunsOn(source, job), BLACKSMITH_RUNNER, `${job} must run on Blacksmith`);
+  }
 });
 
 test("shared row action validates the plan and never parallelizes fixture processes", () => {

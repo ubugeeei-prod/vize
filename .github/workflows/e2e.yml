@@ -41,7 +41,7 @@ jobs:
   app-readiness-plan:
     name: Plan app readiness
     if: ${{ github.event_name == 'pull_request' }}
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
     permissions:
       contents: read
@@ -172,7 +172,7 @@ jobs:
     name: app-readiness
     needs: [app-readiness-plan, app-readiness-producer]
     if: ${{ always() && github.event_name == 'pull_request' }}
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -241,7 +241,7 @@ jobs:
   app-e2e-plan:
     name: Plan full App E2E
     if: ${{ github.event_name != 'pull_request' && (github.event_name != 'workflow_dispatch' || inputs.testbox_id == '') }}
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     outputs:
       suite: ${{ steps.plan.outputs.suite }}
       matrix: ${{ steps.plan.outputs.matrix }}
@@ -332,7 +332,7 @@ jobs:
     name: app-e2e
     needs: [app-e2e-plan, app-e2e-producer]
     if: ${{ always() && github.event_name != 'pull_request' && (github.event_name != 'workflow_dispatch' || inputs.testbox_id == '') }}
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
