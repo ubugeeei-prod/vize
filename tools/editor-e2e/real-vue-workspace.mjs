@@ -38,6 +38,7 @@ export function prepareRealVueWorkspace(workspacePath, { preserveExisting = fals
       recursive: true,
     });
   }
+  enableTsExtensionImports(path.join(workspacePath, "tsconfig.json"));
   fs.mkdirSync(path.join(workspacePath, "node_modules"), { recursive: true });
   fs.symlinkSync(
     resolveVuePackagePath(),
@@ -50,6 +51,15 @@ export function prepareRealVueWorkspace(workspacePath, { preserveExisting = fals
   );
 
   return workspacePath;
+}
+
+function enableTsExtensionImports(tsconfigPath) {
+  const tsconfig = JSON.parse(fs.readFileSync(tsconfigPath, "utf-8"));
+  tsconfig.compilerOptions = {
+    ...tsconfig.compilerOptions,
+    allowImportingTsExtensions: true,
+  };
+  fs.writeFileSync(tsconfigPath, `${JSON.stringify(tsconfig, null, 2)}\n`);
 }
 
 /**

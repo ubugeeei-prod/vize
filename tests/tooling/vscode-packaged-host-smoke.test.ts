@@ -96,6 +96,11 @@ test("the real-server fixture can preserve a pinned oracle while adding its harn
     assert.ok(fs.existsSync(path.join(workspacePath, ".vscode", "settings.json")));
     assert.ok(fs.existsSync(path.join(workspacePath, "vize.config.json")));
     assert.ok(fs.lstatSync(path.join(workspacePath, "node_modules", "vue")).isSymbolicLink());
+    assert.equal(
+      JSON.parse(fs.readFileSync(path.join(workspacePath, "tsconfig.json"), "utf-8"))
+        .compilerOptions.allowImportingTsExtensions,
+      true,
+    );
   } finally {
     fs.rmSync(workspacePath, { force: true, recursive: true });
   }
