@@ -228,6 +228,37 @@ impl CorsaBridge {
         .await
     }
 
+    /// Resolve several rename queries in one worker job and one aggregate
+    /// bridge deadline.
+    pub async fn rename_batch(
+        &self,
+        positions: &[(&str, u32, u32)],
+        new_name: &str,
+    ) -> Result<Vec<Option<Value>>, CorsaBridgeError> {
+        let timer = self.profiler.timer("corsa_rename_batch");
+        let positions = positions
+            .iter()
+            .map(|(uri, line, character)| (String::from(*uri), *line, *character))
+            .collect::<Vec<_>>();
+        let new_name = String::from(new_name);
+        let results = self
+            .with_client(move |client| {
+                positions
+                    .iter()
+                    .map(|(uri, line, character)| {
+                        client
+                            .rename_raw(uri.as_str(), *line, *character, new_name.as_str())
+                            .map_err(CorsaBridgeError::CommunicationError)
+                    })
+                    .collect::<Result<Vec<_>, _>>()
+            })
+            .await?;
+        if let Some(timer) = timer {
+            timer.record(&self.profiler);
+        }
+        Ok(results)
+    }
+
     /// Request import path updates before files are renamed.
     pub async fn will_rename_files(
         &self,

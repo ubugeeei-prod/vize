@@ -8,6 +8,10 @@ use super::{
 };
 use crate::ide::{IdeContext, corsa_support};
 
+mod component_props;
+
+use component_props::retain_component_prop_edits;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(in crate::ide::rename) enum CanonicalRenameStage {
     PrimaryQuery {
@@ -93,6 +97,20 @@ async fn rename_strict_inner(
     else {
         return Ok(Answer::Unavailable);
     };
+    let component_props = corsa_support::matching_component_prop_navigation_positions(
+        ctx,
+        bridge,
+        &document,
+        &document.request_uri,
+        line,
+        character,
+    )
+    .await;
+    let component_prop_positions = component_props
+        .positions
+        .iter()
+        .cloned()
+        .collect::<FxHashSet<_>>();
     record(&mut trace, || CanonicalRenameStage::PrimaryQuery {
         request_uri: document.request_uri.clone(),
         line,
@@ -123,6 +141,7 @@ async fn rename_strict_inner(
     linked.extend(corsa_support::materialized_semantic_positions(
         &document, ctx.uri, ctx.offset,
     ));
+    linked.extend(component_props.positions);
     if matches!(rename_kind, Some(event_rename::RenameKind::Model))
         && let Some(response) = response.as_ref()
     {
@@ -144,22 +163,27 @@ async fn rename_strict_inner(
         return Ok(Answer::Available(None));
     }
 
-    for position in linked {
+    let linked_queries = linked
+        .iter()
+        .map(|position| {
+            (
+                position.request_uri.as_str(),
+                position.line,
+                position.character,
+            )
+        })
+        .collect::<Vec<_>>();
+    let linked_responses = bridge
+        .rename_batch(&linked_queries, &semantic_name)
+        .await
+        .map_err(CanonicalFailure::AuthoritativeBridge)?;
+    for (position, extra) in linked.into_iter().zip(linked_responses) {
         record(&mut trace, || CanonicalRenameStage::LinkedQuery {
             request_uri: position.request_uri.clone(),
             line: position.line,
             character: position.character,
         });
-        let Some(extra) = bridge
-            .rename(
-                &position.request_uri,
-                position.line,
-                position.character,
-                &semantic_name,
-            )
-            .await
-            .map_err(CanonicalFailure::AuthoritativeBridge)?
-        else {
+        let Some(extra) = extra else {
             record(&mut trace, || CanonicalRenameStage::LinkedNull {
                 request_uri: position.request_uri.clone(),
                 line: position.line,
@@ -167,13 +191,20 @@ async fn rename_strict_inner(
             });
             return Ok(Answer::Available(None));
         };
-        let extra =
+        let mut extra =
             serde_json::from_value(extra).map_err(|error| CanonicalFailure::InvalidResponse {
                 operation: "linked rename",
                 message: cstr!("{error}"),
             })?;
+        let component_prop_query = component_prop_positions.contains(&position);
+        if component_prop_query {
+            retain_component_prop_edits(ctx, &document, &mut extra, &component_props.names);
+        }
         let Some(extra) = corsa_support::map_canonical_corsa_workspace_edit(ctx, &document, extra)
         else {
+            if component_prop_query {
+                continue;
+            }
             return Err(CanonicalFailure::UnmappedResponse("linked rename"));
         };
         record(&mut trace, || CanonicalRenameStage::LinkedMapped {
