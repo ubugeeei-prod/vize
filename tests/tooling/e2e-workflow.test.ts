@@ -252,6 +252,7 @@ test("shared row action validates the plan and never parallelizes fixture proces
   const run = namedStep({ steps: action.runs?.steps }, "Run planned App E2E row");
   assert.equal(run["continue-on-error"], true);
   assert.doesNotMatch(run.run ?? "", /VIZE_BATCH_CHECK_BUDGET_SCALE/);
+  assert.equal(run.env?.VIZE_BATCH_CHECK_BUDGET_SCALE, undefined);
   assert.match(run.run ?? "", /timeout --signal=TERM --kill-after=15s "\$PLANNED_TIMEOUT"/);
   assert.match(run.run ?? "", /vp run --no-cache --filter '\.\/tests' "\$PLANNED_TASK"/);
   assert.doesNotMatch(run.run ?? "", /(?:^|\s)&(?:\s|$)/m);
