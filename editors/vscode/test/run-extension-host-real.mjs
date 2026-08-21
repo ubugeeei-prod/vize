@@ -46,6 +46,7 @@ await withPinnedFixtureWorkspace(
       `${JSON.stringify(
         {
           compilerOptions: {
+            allowImportingTsExtensions: true,
             module: "ESNext",
             moduleResolution: "bundler",
             noEmit: true,

@@ -199,11 +199,7 @@ function writeTypeScriptRuntime(
     name: platformPackage,
     version,
   });
-  const runtime = path.join(
-    platformRoot,
-    "lib",
-    process.platform === "win32" ? "tsc.exe" : "tsc",
-  );
+  const runtime = path.join(platformRoot, "lib", process.platform === "win32" ? "tsc.exe" : "tsc");
   fs.mkdirSync(path.dirname(runtime), { recursive: true });
   fs.writeFileSync(runtime, runtimeSource);
   return runtime;

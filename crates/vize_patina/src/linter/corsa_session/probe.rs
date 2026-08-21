@@ -172,7 +172,8 @@ async fn type_from_symbol_at_position(
 }
 
 fn is_snapshot_registry_handle_error(error: &CorsaError) -> bool {
-    let message = error.to_string();
+    let message = error.to_compact_string();
+    let message = message.as_str();
     message.contains("snapshot registry")
         && message.contains("handle")
         && message.contains("not found")

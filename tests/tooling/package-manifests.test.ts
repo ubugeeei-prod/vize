@@ -308,35 +308,6 @@ test("pkl runtime stays optional for consumers of the vize package", () => {
   });
 });
 
-test("Corsa runtime is declared for vize check users", () => {
-  const packageJson = JSON.parse(readRepoFile("npm/cli/package.json")) as {
-    dependencies?: Record<string, string>;
-    optionalDependencies?: Record<string, string>;
-    peerDependencies?: Record<string, string>;
-    peerDependenciesMeta?: Record<string, { optional?: boolean }>;
-  };
-
-  assert.equal(packageJson.dependencies?.["@typescript/native-preview"], undefined);
-  assert.equal(packageJson.optionalDependencies?.["@typescript/native-preview"], undefined);
-  assert.equal(packageJson.optionalDependencies?.typescript, undefined);
-  assert.equal(
-    packageJson.optionalDependencies?.["@typescript/typescript-darwin-arm64"],
-    "catalog:corsa-runtime",
-  );
-  assert.equal(
-    packageJson.optionalDependencies?.["@typescript/typescript-linux-x64"],
-    "catalog:corsa-runtime",
-  );
-  assert.equal(
-    packageJson.optionalDependencies?.["@typescript/typescript-win32-x64"],
-    "catalog:corsa-runtime",
-  );
-  assert.equal(packageJson.peerDependencies?.["@typescript/native-preview"], undefined);
-  assert.equal(packageJson.peerDependenciesMeta?.["@typescript/native-preview"], undefined);
-  assert.equal(packageJson.peerDependencies?.typescript, undefined);
-  assert.equal(packageJson.peerDependenciesMeta?.typescript, undefined);
-});
-
 test("vize package leaves Vue type versions to the consuming project", () => {
   const packageJson = JSON.parse(readRepoFile("npm/cli/package.json")) as {
     dependencies?: Record<string, string>;

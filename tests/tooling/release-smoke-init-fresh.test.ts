@@ -107,22 +107,14 @@ test("fresh-project toolchain accepts package-local vize without manager shims",
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const projectRoot = path.join(root, "project");
   const corsaPackage = `@typescript/typescript-${process.platform}-${process.arch}`;
-  writeFiles(path.join(projectRoot, "node_modules", "vize"), {
+  const vizePackageRoot = path.join(projectRoot, "node_modules", "vize");
+  writeFiles(vizePackageRoot, {
     "bin/vize": "",
     "package.json": `${JSON.stringify({ name: "vize", version: "0.0.0", optionalDependencies: { [corsaPackage]: "7.0.0" } })}\n`,
   });
-  writeFiles(
-    path.join(
-      projectRoot,
-      "node_modules",
-      "vize",
-      "node_modules",
-      ...corsaPackage.split("/"),
-    ),
-    {
-      "package.json": `${JSON.stringify({ name: corsaPackage, version: "7.0.0" })}\n`,
-    },
-  );
+  writeFiles(path.join(vizePackageRoot, "node_modules", ...corsaPackage.split("/")), {
+    "package.json": `${JSON.stringify({ name: corsaPackage, version: "7.0.0" })}\n`,
+  });
   assertProjectLocalToolchain(
     {
       installDir: path.join(root, "install"),
