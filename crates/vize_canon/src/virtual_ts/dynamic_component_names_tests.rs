@@ -38,6 +38,13 @@ fn dynamic_prop_names_do_not_become_static_component_contract_keys() {
         0,
         &VirtualTsOptions::default(),
     );
+    let prop_link = output
+        .semantic_links
+        .iter()
+        .find(|link| link.kind == super::VizeSemanticLinkKind::VueComponentPropNavigation)
+        .expect("component prop navigation link");
+    assert_eq!(&output.code[prop_link.source_range.clone()], "Child");
+    assert_eq!(&output.code[prop_link.target_range.clone()], "staticProp");
 
     assert!(output.code.contains("__Child_0_prop_static_prop"));
     assert!(output.code.contains("\"staticProp\": staticValue"));

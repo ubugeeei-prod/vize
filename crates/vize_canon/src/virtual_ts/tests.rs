@@ -646,13 +646,6 @@ fn test_external_template_bindings_do_not_shadow_auto_imported_components() {
             .code
             .contains("type __AutoCard_Props_0 = typeof AutoCard extends { __vizeCheck: infer __F } ? (__VizeIsAny<__F> extends true ? __VizeComponentRawProps<typeof AutoCard> : Record<string, unknown>) : __VizeComponentRawProps<typeof AutoCard>;")
     );
-    let prop_link = output
-        .semantic_links
-        .iter()
-        .find(|link| link.kind == super::VizeSemanticLinkKind::VueComponentPropNavigation)
-        .expect("component prop navigation link");
-    assert_eq!(&output.code[prop_link.source_range.clone()], "AutoCard");
-    assert_eq!(&output.code[prop_link.target_range.clone()], "count");
 }
 
 #[test]

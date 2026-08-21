@@ -3,15 +3,12 @@
 use vize_carton::{FxHashMap, FxHashSet, String, append, cstr, profile};
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeId, ScopeKind};
 
-use crate::virtual_ts::VizeSemanticLink;
 use crate::virtual_ts::expressions::{
     ExpressionListEmitContext, TemplateValueCheckTables, generate_expressions,
     generate_expressions_in_enclosing_guard,
 };
-use crate::virtual_ts::types::VizeMapping;
+use crate::virtual_ts::{VizeSemanticLink, types::VizeMapping};
 
-use super::children::generate_child_scopes;
-use super::component_event_navigation::emit_event_references;
 use super::component_prop_expressions::collect_component_prop_expression_ranges;
 use super::component_props::{collect_checkable_usages, generate_component_props};
 use super::context::{ComponentPropsContext, ScopeGenContext, ScopeGenerationOptions};
@@ -21,6 +18,7 @@ use super::globals::{generate_instance_global_refs, generate_undefined_refs};
 use super::slot_outlet_props::{SlotOutletChecks, generate_scope_slot_outlet_checks};
 use super::slot_scope::generate_v_slot_scope;
 use super::vif_guard::{callback_vif_guard, common_vif_guard_prefix_outside_v_for_scope};
+use super::{children::generate_child_scopes, component_event_navigation::emit_event_references};
 
 /// Generates the Croquis scope chain as a recursive tree so nested v-for/v-slot
 /// scopes remain contained within their parent closures.

@@ -703,7 +703,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 "canon.virtual_ts.collect_template_prop_names",
                 collect_template_prop_names(summary)
             );
-            // Generate scope closures
             if check_options.any_enabled() {
                 profile!(
                     "canon.virtual_ts.generate_scope_closures",
