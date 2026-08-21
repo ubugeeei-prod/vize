@@ -63,6 +63,48 @@ impl CorsaBridge {
         Ok(Vec::new())
     }
 
+    /// Resolve several definition queries in one worker job.
+    ///
+    /// Corsa's project client is synchronous, so submitting every query as a
+    /// separate bridge job would apply `timeout_ms` once per position. This
+    /// batch keeps the complete fan-out under one bridge deadline while
+    /// preserving the result for every query when the job completes.
+    pub async fn definition_batch(
+        &self,
+        positions: &[(&str, u32, u32)],
+    ) -> Result<Vec<Vec<LspLocation>>, CorsaBridgeError> {
+        let timer = self.profiler.timer("corsa_definition_batch");
+        let positions = positions
+            .iter()
+            .map(|(uri, line, character)| (String::from(*uri), *line, *character))
+            .collect::<Vec<_>>();
+        let results = self
+            .with_client(move |client| {
+                positions
+                    .iter()
+                    .map(|(uri, line, character)| {
+                        client
+                            .definition_raw(uri.as_str(), *line, *character)
+                            .map_err(CorsaBridgeError::CommunicationError)
+                    })
+                    .collect::<Result<Vec<_>, _>>()
+            })
+            .await?;
+        if let Some(timer) = timer {
+            timer.record(&self.profiler);
+        }
+
+        results
+            .into_iter()
+            .map(|result| match result {
+                Some(value) => {
+                    Ok(parse_json_value::<LspDefinitionResponse>(value)?.into_locations())
+                }
+                None => Ok(Vec::new()),
+            })
+            .collect()
+    }
+
     /// Get type definition locations for a symbol at a position.
     pub async fn type_definition(
         &self,
@@ -113,6 +155,43 @@ impl CorsaBridge {
         }
 
         Ok(Vec::new())
+    }
+
+    /// Resolve several reference queries in one worker job and one aggregate
+    /// bridge deadline.
+    pub async fn references_batch(
+        &self,
+        positions: &[(&str, u32, u32)],
+        include_declaration: bool,
+    ) -> Result<Vec<Vec<LspLocation>>, CorsaBridgeError> {
+        let timer = self.profiler.timer("corsa_references_batch");
+        let positions = positions
+            .iter()
+            .map(|(uri, line, character)| (String::from(*uri), *line, *character))
+            .collect::<Vec<_>>();
+        let results = self
+            .with_client(move |client| {
+                positions
+                    .iter()
+                    .map(|(uri, line, character)| {
+                        client
+                            .references_raw(uri.as_str(), *line, *character, include_declaration)
+                            .map_err(CorsaBridgeError::CommunicationError)
+                    })
+                    .collect::<Result<Vec<_>, _>>()
+            })
+            .await?;
+        if let Some(timer) = timer {
+            timer.record(&self.profiler);
+        }
+
+        results
+            .into_iter()
+            .map(|result| match result {
+                Some(value) => parse_json_value(value),
+                None => Ok(Vec::new()),
+            })
+            .collect()
     }
 
     /// Check whether rename is valid at a position.

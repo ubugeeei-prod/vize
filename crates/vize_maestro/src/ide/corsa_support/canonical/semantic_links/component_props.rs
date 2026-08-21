@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use tower_lsp::lsp_types::Location;
 use vize_canon::CorsaBridge;
 use vize_carton::{FxHashSet, String, camelize};
@@ -29,16 +31,27 @@ pub(crate) async fn matching_component_prop_navigation_positions(
     let names = authored_definitions
         .iter()
         .filter_map(|location| authored_location_text(ctx, document, location))
-        .filter_map(normalized_component_prop_name)
+        .filter_map(|name| normalized_component_prop_name(name.as_str()))
         .collect::<FxHashSet<_>>();
-    let mut positions = Vec::new();
-    for position in component_prop_navigation_positions(document, &names) {
-        let Ok(candidate_definitions) = bridge
-            .definition(&position.request_uri, position.line, position.character)
-            .await
-        else {
-            continue;
+    let candidates = component_prop_navigation_positions(document, &names);
+    let queries = candidates
+        .iter()
+        .map(|position| {
+            (
+                position.request_uri.as_str(),
+                position.line,
+                position.character,
+            )
+        })
+        .collect::<Vec<_>>();
+    let Ok(definition_batches) = bridge.definition_batch(&queries).await else {
+        return ComponentPropNavigationMatches {
+            positions: Vec::new(),
+            names,
         };
+    };
+    let mut positions = Vec::new();
+    for (position, candidate_definitions) in candidates.into_iter().zip(definition_batches) {
         let candidate_definitions =
             map_canonical_corsa_locations(ctx, document, candidate_definitions);
         if locations_intersect(&authored_definitions, &candidate_definitions) {
@@ -55,7 +68,7 @@ pub(crate) fn component_prop_location_matches(
     names: &FxHashSet<String>,
 ) -> bool {
     authored_location_text(ctx, document, location)
-        .and_then(normalized_component_prop_name)
+        .and_then(|name| normalized_component_prop_name(name.as_str()))
         .is_some_and(|name| names.contains(name.as_str()))
 }
 
@@ -109,23 +122,28 @@ fn authored_location_text<'a>(
     ctx: &'a IdeContext<'_>,
     document: &'a CanonicalVirtualDocument,
     location: &Location,
-) -> Option<&'a str> {
+) -> Option<String> {
     let source = if location.uri == *ctx.uri {
-        ctx.content.as_str()
+        Cow::Borrowed(ctx.content.as_str())
+    } else if let Some(source) = document.authored_source(&location.uri) {
+        Cow::Borrowed(source)
+    } else if let Some(source) = ctx.state.documents.text(&location.uri) {
+        Cow::Owned(source)
     } else {
-        document.authored_source(&location.uri)?
+        let path = location.uri.to_file_path().ok()?;
+        Cow::Owned(std::fs::read_to_string(path).ok()?)
     };
     let start = crate::ide::position_to_offset(
-        source,
+        source.as_ref(),
         location.range.start.line,
         location.range.start.character,
     )?;
     let end = crate::ide::position_to_offset(
-        source,
+        source.as_ref(),
         location.range.end.line,
         location.range.end.character,
     )?;
-    source.get(start..end)
+    source.get(start..end).map(String::from)
 }
 
 fn normalized_component_prop_name(raw: &str) -> Option<String> {
@@ -171,5 +189,68 @@ fn collect_positions(
             line,
             character,
         });
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use tower_lsp::lsp_types::{Location, Position, Range, Url};
+    use vize_canon::ImportSourceMap;
+
+    use super::authored_location_text;
+    use crate::ide::IdeContext;
+    use crate::ide::corsa_support::canonical::CanonicalVirtualDocument;
+    use crate::ide::diagnostics::VirtualTsResult;
+    use crate::server::ServerState;
+
+    fn empty_result() -> VirtualTsResult {
+        VirtualTsResult {
+            code: "".to_owned(),
+            source_mappings: Vec::new(),
+            semantic_links: Vec::new(),
+            import_source_map: ImportSourceMap::empty(),
+            user_code_start_line: 0,
+            sfc_script_start_line: 0,
+            template_scope_start_line: 0,
+            line_mappings: Vec::new(),
+            skipped_import_lines: 0,
+        }
+    }
+
+    #[test]
+    fn reads_external_prop_declarations_from_disk_with_utf16_ranges() {
+        let project = tempfile::TempDir::new().expect("project");
+        let props_path = project.path().join("props.ts");
+        let source = "export interface Props { /* café 🌱 */ title: string }\n";
+        std::fs::write(&props_path, source).expect("external props");
+        let props_uri = Url::from_file_path(props_path).expect("props URI");
+        let app_uri = Url::from_file_path(project.path().join("App.vue")).expect("app URI");
+        let state = ServerState::new();
+        let ctx = IdeContext::with_content(&state, &app_uri, 0, "<template />".to_owned());
+        let document = CanonicalVirtualDocument {
+            source_uri: app_uri.clone(),
+            request_uri: "file:///project/App.vue.ts".into(),
+            virtual_result: empty_result(),
+            dependencies: Vec::new(),
+            materialized_sources: Vec::new(),
+            session_project_roots: vec![project.path().to_path_buf()],
+        };
+        let start = source.find("title").expect("prop name");
+        let end = start + "title".len();
+        let (start_line, start_character) = crate::ide::offset_to_position(source, start);
+        let (end_line, end_character) = crate::ide::offset_to_position(source, end);
+        let location = Location::new(
+            props_uri,
+            Range::new(
+                Position::new(start_line, start_character),
+                Position::new(end_line, end_character),
+            ),
+        );
+
+        assert_eq!(
+            authored_location_text(&ctx, &document, &location).as_deref(),
+            Some("title"),
+        );
+        assert_ne!(start_character as usize, start);
     }
 }

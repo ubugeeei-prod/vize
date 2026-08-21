@@ -2,7 +2,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use tower_lsp::lsp_types::Url;
+use tower_lsp::lsp_types::{Location, Url};
 use vize_canon::{CorsaBridge, CorsaBridgeConfig};
 
 use super::{ReferencesService, authored_text, resolve_tsgo_binary};
@@ -12,7 +12,7 @@ use crate::server::ServerState;
 const APP_SOURCE: &str = r#"<template>
   <section>
     <p>{{ greeting }}</p>
-    <Child :title="greeting" planted-bad-prop="nope" />
+    🌱 <Child :title="greeting" planted-bad-prop="nope" />
   </section>
 </template>
 
@@ -25,7 +25,7 @@ const greeting = "confirm-lsp";
 
 const CHILD_SOURCE: &str = r#"<script setup lang="ts">
 defineProps<{
-  title: string;
+  /* café 🌱 */ title: string;
   /** Distinctive optional prop: the completion plant looks for THIS name.
    *  `title` alone would be satisfiable by HTML's global `title` attribute. */
   epilogueText?: string;
@@ -162,6 +162,8 @@ fn canonical_prop_references_reach_parent_template_usage() {
             "the prop declaration must reach the parent template attribute: {references:#?}",
         );
         assert_eq!(authored_text(APP_SOURCE, app_hits[0]), "title");
+        assert_utf16_location(APP_SOURCE, "title=\"greeting\"", &app_hits);
+        assert_utf16_location(CHILD_SOURCE, "title: string", &child_hits);
         assert!(
             references
                 .iter()
@@ -169,6 +171,20 @@ fn canonical_prop_references_reach_parent_template_usage() {
             "canonical mirror URIs must never leak: {references:#?}",
         );
     });
+}
+
+fn assert_utf16_location(source: &str, needle: &str, locations: &[&Location]) {
+    let offset = source.find(needle).expect("wide fixture needle");
+    let expected = crate::ide::offset_to_position(source, offset);
+    assert!(locations.iter().any(|location| {
+        (location.range.start.line, location.range.start.character) == expected
+    }));
+    let line_start = source[..offset].rfind('\n').map_or(0, |index| index + 1);
+    assert_ne!(
+        expected.1 as usize,
+        offset - line_start,
+        "fixture must distinguish UTF-16 columns from UTF-8 bytes",
+    );
 }
 
 #[test]
@@ -179,14 +195,12 @@ fn canonical_prop_references_reject_other_components_with_the_same_prop_name() {
         };
         let project = tempfile::TempDir::new().expect("temp project");
         let src = write_project_scaffold(project.path());
-        let fixtures = [
-            ("App.vue", COLLISION_APP_SOURCE),
-            ("Child.vue", CHILD_SOURCE),
-            ("Other.vue", OTHER_SOURCE),
-        ];
-        for (name, source) in fixtures {
-            fs::write(src.join(name), source).expect("Vue fixture");
-        }
+        let repeated_other = "  <Other :title=\"greeting\" />\n".repeat(64);
+        let app_source = COLLISION_APP_SOURCE
+            .replace("  <Other :title=\"greeting\" />", repeated_other.as_str());
+        fs::write(src.join("App.vue"), &app_source).expect("App fixture");
+        fs::write(src.join("Child.vue"), CHILD_SOURCE).expect("Child fixture");
+        fs::write(src.join("Other.vue"), OTHER_SOURCE).expect("Other fixture");
         let app_uri = Url::from_file_path(src.join("App.vue")).expect("app URI");
         let child_uri = Url::from_file_path(src.join("Child.vue")).expect("child URI");
         let other_uri = Url::from_file_path(src.join("Other.vue")).expect("other URI");
@@ -194,7 +208,7 @@ fn canonical_prop_references_reject_other_components_with_the_same_prop_name() {
         let state = ServerState::new();
         state.set_workspace_root(project.path().to_path_buf());
         for (uri, source) in [
-            (&app_uri, COLLISION_APP_SOURCE),
+            (&app_uri, app_source.as_str()),
             (&child_uri, CHILD_SOURCE),
             (&other_uri, OTHER_SOURCE),
         ] {
@@ -208,6 +222,7 @@ fn canonical_prop_references_reject_other_components_with_the_same_prop_name() {
             corsa_path: Some(tsgo_path),
             working_dir: Some(project.path().to_path_buf()),
             timeout_ms: 30_000,
+            enable_profiling: true,
             ..Default::default()
         }));
         bridge.spawn().await.expect("tsgo session");
@@ -217,6 +232,24 @@ fn canonical_prop_references_reject_other_components_with_the_same_prop_name() {
             ReferencesService::references_with_corsa(&ctx, true, Some(Arc::clone(&bridge)))
                 .await
                 .expect("prop references");
+        assert_eq!(
+            bridge
+                .profiler()
+                .get("corsa_definition_batch")
+                .expect("definition batch metric")
+                .count,
+            1,
+            "all same-name candidates must share one aggregate bridge deadline",
+        );
+        assert_eq!(
+            bridge
+                .profiler()
+                .get("corsa_references_batch")
+                .expect("references batch metric")
+                .count,
+            1,
+            "all accepted candidates must share one aggregate bridge deadline",
+        );
         bridge.shutdown().await.expect("shutdown");
 
         assert!(
@@ -228,9 +261,9 @@ fn canonical_prop_references_reject_other_components_with_the_same_prop_name() {
             .filter(|location| location.uri == app_uri)
             .collect::<Vec<_>>();
         assert_eq!(app_hits.len(), 1, "only Child.title belongs to the query");
-        assert_eq!(authored_text(COLLISION_APP_SOURCE, app_hits[0]), "title");
-        let expected_offset = COLLISION_APP_SOURCE.find(":title").expect("Child title") + 1;
-        let expected = crate::ide::offset_to_position(COLLISION_APP_SOURCE, expected_offset);
+        assert_eq!(authored_text(&app_source, app_hits[0]), "title");
+        let expected_offset = app_source.find(":title").expect("Child title") + 1;
+        let expected = crate::ide::offset_to_position(&app_source, expected_offset);
         assert_eq!(
             (
                 app_hits[0].range.start.line,
