@@ -26,7 +26,6 @@ pub(super) fn emit_references(
             ctx.syntactic_type_only_imported_names,
             usage.name.as_str(),
         );
-        let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
         let tag_src_start = (ctx.template_offset + usage.start + 1) as usize;
         let tag_src_end = tag_src_start + usage.name.len();
 
@@ -50,7 +49,6 @@ pub(super) fn emit_references(
             idx,
             usage,
             &tag_gen_range,
-            component_type_name.as_str(),
         );
     }
 }
@@ -63,8 +61,8 @@ fn emit_prop_references(
     idx: usize,
     usage: &ComponentUsage,
     component_gen_range: &Range<usize>,
-    component_type_name: &str,
 ) {
+    let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
     let props_ref = cstr!("__vize_props_nav_{idx}");
     let mut emitted_props_ref = false;
     for prop in &usage.props {
