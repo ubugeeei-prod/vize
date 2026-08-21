@@ -8,9 +8,7 @@ pub(super) fn combine_runtime_js_types(types: impl IntoIterator<Item = String>) 
             saw_unknown = true;
             continue;
         }
-        if !js_types.contains(&js_type) {
-            js_types.push(js_type);
-        }
+        push_runtime_js_type(&mut js_types, &js_type);
     }
 
     if saw_unknown && !js_types.iter().any(|js_type| js_type.as_str() == "Boolean") {
@@ -28,6 +26,24 @@ pub(super) fn combine_runtime_js_types(types: impl IntoIterator<Item = String>) 
             result.push(']');
             result
         }
+    }
+}
+
+fn push_runtime_js_type(js_types: &mut Vec<String>, js_type: &str) {
+    if js_type.starts_with('[') && js_type.ends_with(']') {
+        let inner = &js_type[1..js_type.len() - 1];
+        for part in inner
+            .split(',')
+            .map(str::trim)
+            .filter(|part| !part.is_empty())
+        {
+            push_runtime_js_type(js_types, part);
+        }
+        return;
+    }
+
+    if !js_types.iter().any(|known| known.as_str() == js_type) {
+        js_types.push(js_type.into());
     }
 }
 
@@ -49,9 +65,17 @@ pub(super) fn combine_runtime_intersection_types(
     }
 
     if primitives.len() == 1 {
-        return primitives
+        let primitive = primitives
             .pop()
             .unwrap_or_else(|| "null".to_compact_string());
+        if has_object_runtime {
+            let mut result = String::with_capacity(primitive.len() + 10);
+            result.push('[');
+            result.push_str(&primitive);
+            result.push_str(", Object]");
+            return result;
+        }
+        return primitive;
     }
 
     if has_object_runtime {

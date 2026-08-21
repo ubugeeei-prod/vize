@@ -206,6 +206,21 @@ fn branded_primitive_intersection_does_not_become_object_runtime_type() {
 }
 
 #[test]
+fn object_branded_string_union_keeps_string_and_object_runtime_types() {
+    let props = extract_prop_types_from_type_with_context(
+        "{ as?: 'a' | 'button' | ({} & string) }",
+        None,
+        None,
+    );
+
+    let as_prop = props
+        .iter()
+        .find(|(name, _)| name == "as")
+        .expect("as prop should be extracted");
+    assert_eq!(as_prop.1.js_type.as_str(), "[String, Object]");
+}
+
+#[test]
 fn unresolved_union_with_branded_string_falls_back_to_unknown_runtime_type() {
     let mut type_aliases: FxHashMap<vize_carton::String, vize_carton::String> =
         FxHashMap::default();
