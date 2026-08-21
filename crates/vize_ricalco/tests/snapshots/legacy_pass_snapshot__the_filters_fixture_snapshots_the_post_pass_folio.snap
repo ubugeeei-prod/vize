@@ -1,0 +1,24 @@
+---
+source: crates/vize_ricalco/tests/legacy_pass_snapshot.rs
+assertion_line: 40
+expression: "$crate :: folio :: Folio ::\nprint_to_string(& *folio, $crate :: folio :: FolioMode :: Full,)"
+---
+[disegno]
+ops=15
+
+[disegno.ops]
+ui.element div @0:37
+  vue.filter opaque(legacy-filter "message | capitalize" @8:28) @5:31
+ui.element p @38:63
+  vue.filter opaque(legacy-filter "a | f(b) | g" @44:56) @41:59
+ui.element span @64:121
+  ui.bind name="id" value=opaque(legacy-filter "raw | formatId" @75:89) @70:90
+  ui.bind name="title" value=opaque(legacy-filter "'a|b' | quote" @99:112) @91:113
+ui.element i @122:141
+  ui.interpolation js("a || b" @128:134) @125:137
+ui.element b @142:164
+  ui.interpolation js("x | (bad)" @148:157) @145:160
+ui.element u @165:196
+  vue.filter opaque(legacy-filter "z | h | capitalize" @171:189) @168:192
+ui.element em @197:221
+  ui.interpolation opaque(compound "pre {{ m | f }}" @201:216) @201:216

@@ -82,6 +82,15 @@ pub enum OpaqueReason {
     /// slices (merged text + interpolation), whose content never existed
     /// as one authored expression.
     Compound,
+    /// Position-classified, `_legacy` only: a Vue 2 pipe-filter chain
+    /// (`msg | capitalize`). Under a filter-capable legacy dialect the
+    /// text is not a JS expression at all - `|` is the filter separator,
+    /// not bitwise-or - so a retained AST would parse the wrong grammar
+    /// (the `ForValue` argument, dialect-shaped). The split structure
+    /// rides beside the tree (`vize_ricalco::lower::Lowered::filters`);
+    /// only the `_legacy` lowering assigns this reason (P2-9 series 7).
+    #[cfg(feature = "_legacy")]
+    LegacyFilter,
 }
 
 impl OpaqueReason {
@@ -94,6 +103,8 @@ impl OpaqueReason {
             Self::NestingRefused => "nesting-refused",
             Self::ParseRejected => "parse-rejected",
             Self::Compound => "compound",
+            #[cfg(feature = "_legacy")]
+            Self::LegacyFilter => "legacy-filter",
         }
     }
 
@@ -106,6 +117,8 @@ impl OpaqueReason {
             "nesting-refused" => Some(Self::NestingRefused),
             "parse-rejected" => Some(Self::ParseRejected),
             "compound" => Some(Self::Compound),
+            #[cfg(feature = "_legacy")]
+            "legacy-filter" => Some(Self::LegacyFilter),
             _ => None,
         }
     }

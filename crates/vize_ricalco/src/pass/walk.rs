@@ -90,6 +90,8 @@ pub(crate) fn visit_ops<'a>(
                 visit_ops(walk, &mut component.children.ops, visit);
             }
             Op::Text(_) | Op::Interpolation(_) => {}
+            #[cfg(feature = "_legacy")]
+            Op::VueFilter(_) => {}
             Op::If(if_op) => {
                 for branch in if_op.branches.iter_mut() {
                     visit_ops(walk, &mut branch.region.ops, visit);

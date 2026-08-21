@@ -43,6 +43,9 @@ pub enum FolioOp {
     For(FolioFor),
     /// `ui.slot`.
     Slot(FolioSlot),
+    /// `vue.filter` (`_legacy` only).
+    #[cfg(feature = "_legacy")]
+    VueFilter(FolioVueFilter),
 }
 
 /// Mirror of [`DynamicName`].
@@ -110,6 +113,16 @@ pub struct FolioText {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FolioInterpolation {
     /// The rendered expression.
+    pub expression: FolioExpr,
+    /// Source range.
+    pub span: Span,
+}
+
+/// Mirror of [`crate::op::VueFilterOp`] (`_legacy` only).
+#[cfg(feature = "_legacy")]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FolioVueFilter {
+    /// The whole filtered expression, pessimally opaque.
     pub expression: FolioExpr,
     /// Source range.
     pub span: Span,
@@ -229,6 +242,11 @@ fn own_op(op: &Op<'_>) -> FolioOp {
             ops: own_region(&for_op.region),
             span: for_op.span,
         }),
+        #[cfg(feature = "_legacy")]
+        Op::VueFilter(filter) => FolioOp::VueFilter(FolioVueFilter {
+            expression: own_expr(&filter.expression),
+            span: filter.span,
+        }),
         Op::Slot(slot) => FolioOp::Slot(FolioSlot {
             name: own_name(&slot.name),
             attributes: slot.attributes.iter().map(own_attribute).collect(),
@@ -264,6 +282,8 @@ fn count_op(op: &FolioOp) -> u64 {
                 + component.children.iter().map(count_op).sum::<u64>()
         }
         FolioOp::Text(_) | FolioOp::Interpolation(_) => 1,
+        #[cfg(feature = "_legacy")]
+        FolioOp::VueFilter(_) => 1,
         FolioOp::If(if_op) => {
             1 + if_op
                 .branches

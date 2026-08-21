@@ -186,6 +186,8 @@ impl Parser {
                     FolioOp::For(for_op) => self.stack.push(Frame::For(for_op)),
                     FolioOp::Slot(slot) => self.stack.push(Frame::Slot(slot, Phase::Attrs)),
                     FolioOp::Text(_) | FolioOp::Interpolation(_) => self.attach_op(op),
+                    #[cfg(feature = "_legacy")]
+                    FolioOp::VueFilter(_) => self.attach_op(op),
                 }
                 Ok(())
             }

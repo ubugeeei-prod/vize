@@ -59,7 +59,13 @@ insta = { workspace = true }
 # published crates exercising unpublished ones.
 vize_davinci = { workspace = true }
 vize_disegno = { workspace = true }
-vize_ricalco = { workspace = true }
+# `_legacy` is pinned here (P2-9 series 7) so the comparator's S2 side
+# always compiles the legacy vocabulary: every exhaustive match in this
+# crate's test space carries its `vue.filter` arms unconditionally, which
+# is what keeps the cfg-gated op variants canary-sound (the variants
+# exist in every build of this graph). The legacy *lane* side stays
+# gated on this crate's own `legacy` feature.
+vize_ricalco = { workspace = true, features = ["_legacy"] }
 vize_sinopia = { workspace = true }
 
 # The P2-9 corpus-runnable differential entry (the P1-6/P1-7 lane shape):
@@ -69,6 +75,13 @@ vize_sinopia = { workspace = true }
 [[test]]
 name = "davinci_s2_transform_corpus"
 required-features = ["davinci-differential"]
+
+# The P2-9 series-7 legacy differential witness: dual-runs the committed
+# legacy battery under the V2 dialect on both lanes (and under the
+# default dialect as the V3-meaning control), with exact-pinned counters.
+[[test]]
+name = "davinci_s2_transform_legacy"
+required-features = ["legacy"]
 
 [[bench]]
 name = "davinci"

@@ -40,6 +40,8 @@ fn keyword(op: &FolioOp) -> &'static str {
         FolioOp::If(_) => "ui.if",
         FolioOp::For(_) => "ui.for",
         FolioOp::Slot(_) => "ui.slot",
+        #[cfg(feature = "_legacy")]
+        FolioOp::VueFilter(_) => "vue.filter",
     }
 }
 
@@ -53,6 +55,8 @@ fn op_span(op: &FolioOp) -> Span {
         FolioOp::If(if_op) => if_op.span,
         FolioOp::For(for_op) => for_op.span,
         FolioOp::Slot(slot) => slot.span,
+        #[cfg(feature = "_legacy")]
+        FolioOp::VueFilter(filter) => filter.span,
     }
 }
 
@@ -106,6 +110,8 @@ fn visit_op(op: &FolioOp, owner: Owner, rigor: Rigor, out: &mut Vec<Violation>) 
             out,
         ),
         FolioOp::Text(_) | FolioOp::Interpolation(_) => {}
+        #[cfg(feature = "_legacy")]
+        FolioOp::VueFilter(_) => {}
         FolioOp::If(if_op) => visit_if(if_op, rigor, out),
         FolioOp::For(for_op) => {
             for child in &for_op.ops {

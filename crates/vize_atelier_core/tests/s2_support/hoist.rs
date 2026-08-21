@@ -185,6 +185,7 @@ pub fn shape_of_s2(ops: &[FolioOp], out: &mut vize_carton::String) {
                 out.push(')');
             }
             FolioOp::Text(_) | FolioOp::Interpolation(_) => {}
+            FolioOp::VueFilter(_) => {}
         }
     }
 }

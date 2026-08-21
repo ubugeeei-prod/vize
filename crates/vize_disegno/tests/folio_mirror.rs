@@ -259,3 +259,43 @@ fn an_arena_tree_mirrors_into_the_same_folio() {
         DisegnoFolio::parse(CANONICAL).expect("canonical text parses")
     );
 }
+
+/// `_legacy` only: the `vue.filter` line round-trips — arena op →
+/// mirror → print → parse → the same owned page. The plain shape does
+/// not compile the variant at all (the series-7 zero-cost pin), so this
+/// test exists exactly where the vocabulary does.
+#[cfg(feature = "_legacy")]
+#[test]
+fn the_legacy_filter_line_round_trips() {
+    use vize_disegno::op::VueFilterOp;
+    let arena = Allocator::default();
+    let allocator = &arena;
+    let expression = opaque(
+        allocator,
+        OpaqueReason::LegacyFilter,
+        "msg | capitalize",
+        8,
+        24,
+    );
+    let ops = ArenaVec::from_iter_in(
+        [Op::VueFilter(Box::new_in(
+            VueFilterOp {
+                expression,
+                span: Span::new(5, 27),
+            },
+            &allocator,
+        ))],
+        &allocator,
+    );
+    let mirrored = DisegnoFolio::of(&ops);
+    assert_eq!(mirrored.op_count(), 1);
+    let printed = mirrored.print_to_string(FolioMode::Full);
+    assert_eq!(
+        printed.as_str(),
+        "[disegno]\nops=1\n\n[disegno.ops]\nvue.filter opaque(legacy-filter \"msg | capitalize\" @8:24) @5:27\n\n"
+    );
+    assert_eq!(
+        mirrored,
+        DisegnoFolio::parse(printed.as_str()).expect("the printed line parses")
+    );
+}

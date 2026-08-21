@@ -26,12 +26,12 @@ use super::expression::is_simple_identifier;
 
 /// A parsed Vue 2 filter expression: the base expression and the ordered
 /// filter chain applied to it (outermost last).
-pub(crate) struct FilterExpression {
+pub struct FilterExpression {
     /// The base expression text the filters are applied to (trimmed).
-    pub(crate) base: String,
+    pub base: String,
     /// Each filter as written after a top-level `|`, trimmed
     /// (e.g. `"capitalize"`, `"f(b)"`).
-    pub(crate) filters: std::vec::Vec<String>,
+    pub filters: std::vec::Vec<String>,
 }
 
 /// Returns whether `c` can legally precede a `/` that starts a regex literal,
@@ -48,7 +48,7 @@ fn is_valid_division_char(c: char) -> bool {
 /// caller then leaves the expression exactly as-is (so `a || b`, `a | b` under
 /// a non-filter dialect, etc. are untouched). Returns `Some` only when at least
 /// one real filter was found.
-pub(crate) fn parse_filters(exp: &str) -> Option<FilterExpression> {
+pub fn parse_filters(exp: &str) -> Option<FilterExpression> {
     let bytes = exp.as_bytes();
     let len = bytes.len();
 
@@ -163,7 +163,7 @@ pub(crate) fn parse_filters(exp: &str) -> Option<FilterExpression> {
 /// filter name for asset registration. Returns `None` for a filter whose name
 /// is not a valid identifier (e.g. empty), in which case the caller bails out
 /// and leaves the expression untouched.
-pub(crate) fn wrap_filter(exp: &str, filter: &str, filter_id: &str) -> Option<String> {
+pub fn wrap_filter(exp: &str, filter: &str, filter_id: &str) -> Option<String> {
     match filter.find('(') {
         None => {
             // Bare filter name: `_filter_f(exp)`.
@@ -198,7 +198,7 @@ pub(crate) fn wrap_filter(exp: &str, filter: &str, filter_id: &str) -> Option<St
 /// Extract the bare filter name from a (possibly call-style) filter segment,
 /// e.g. `"f(b)"` -> `"f"`, `"capitalize"` -> `"capitalize"`. Returns `None`
 /// for an empty/invalid name so the caller can bail out unchanged.
-pub(crate) fn filter_name(filter: &str) -> Option<&str> {
+pub fn filter_name(filter: &str) -> Option<&str> {
     let name = match filter.find('(') {
         Some(idx) => &filter[..idx],
         None => filter,

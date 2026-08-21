@@ -17,10 +17,13 @@ pub mod hoist_static;
 #[path = "transforms/legacy.rs"]
 pub mod legacy;
 /// Vue 2 pipe-filter parsing/rewriting. Legacy-only and dialect-gated; see the
-/// module docs. Compiled only behind the `legacy` cargo feature.
+/// module docs. Compiled only behind the `legacy` cargo feature. Public so
+/// the P2-9 differential comparator drives the shipped splitter itself
+/// instead of a drift-prone copy (the same visibility-widening the hoist
+/// installment gave `is_constant_simple_expression`).
 #[cfg(feature = "legacy")]
 #[path = "transforms/legacy_filters.rs"]
-pub(crate) mod legacy_filters;
+pub mod legacy_filters;
 #[path = "transforms/transform_text.rs"]
 pub mod text;
 #[path = "transforms/v_bind.rs"]

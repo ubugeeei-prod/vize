@@ -41,6 +41,16 @@ pub(crate) struct Cx<'a> {
     pub scopes: SideTable<ScopeFacts>,
     pub texts: SideTable<super::text::TextParts>,
     pub wrappers: SideTable<super::structural::WrapperKeys>,
+    /// The resolved legacy dialect mode (P2-9 series 7); the default
+    /// entry point resolves the all-off Vue 3 mode, so every legacy
+    /// hook short-circuits on a field read — the live lane's zero-cost
+    /// contract, mirrored.
+    #[cfg(feature = "_legacy")]
+    pub(crate) legacy: super::legacy::LegacyMode,
+    /// The recorded split of every filter site, keyed by its op
+    /// (P2-9 series 7; validated and consumed by `pass::legacy`).
+    #[cfg(feature = "_legacy")]
+    pub filters: SideTable<super::legacy::FilterParts>,
 }
 
 impl<'a> Cx<'a> {
@@ -57,6 +67,10 @@ impl<'a> Cx<'a> {
             scopes: SideTable::new(),
             texts: SideTable::new(),
             wrappers: SideTable::new(),
+            #[cfg(feature = "_legacy")]
+            legacy: super::legacy::LegacyMode::off(),
+            #[cfg(feature = "_legacy")]
+            filters: SideTable::new(),
         }
     }
 
@@ -80,6 +94,19 @@ impl<'a> Cx<'a> {
     pub(crate) fn attach_texts(&mut self, node: Option<NodeId>, parts: super::text::TextParts) {
         if let Some(id) = node {
             self.texts.insert(id, parts);
+        }
+    }
+
+    /// Attach a filter site's recorded split to its op, when the op has
+    /// an id (the `attach_scope` exhaustion rule).
+    #[cfg(feature = "_legacy")]
+    pub(crate) fn attach_filters(
+        &mut self,
+        node: Option<NodeId>,
+        parts: super::legacy::FilterParts,
+    ) {
+        if let Some(id) = node {
+            self.filters.insert(id, parts);
         }
     }
 

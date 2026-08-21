@@ -25,6 +25,23 @@ metadata.vize.stability = "experimental"
 # the P1-6/P1-7 differential-lane shape: committed battery with pinned
 # counts, plus `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening.
 davinci-differential = []
+# The P2-9 series-7 legacy port: the Vue 2 template-sugar desugars
+# mirrored at lowering (`lower::legacy`), the `vue.filter` dialect op,
+# and the legacy pass (`pass::legacy`). Off by default and zero-cost
+# when off: every module, hook, field and pipeline entry is cfg-gated,
+# so the default build compiles none of it (the plain `TRANSFORM`
+# pipeline and `lower` entry are byte-identical in both shapes).
+# Forwards only to `vize_disegno/_legacy` (the op vocabulary). The
+# dialect capability view is a documented **mirror** of
+# `vize_armature::legacy` (`lower::legacy::LegacyVueLine`) rather than a
+# dependency: `vize_armature/legacy` forwards to `vize_relief/_legacy`,
+# whose cfg-gated AST fields would break every workspace-unified build
+# of a crate that constructs relief nodes without its own mirror feature
+# (the `vize_atelier_jsx/legacy` hazard its manifest documents). The
+# mirror is pinned field-for-field against the armature model by the
+# legacy differential witness, and the exit gate deletes the legacy copy
+# — the installment-2 splitter precedent.
+_legacy = ["vize_disegno/_legacy"]
 
 [dependencies]
 oxc_ast = { workspace = true }
@@ -40,3 +57,15 @@ insta = { workspace = true }
 [[test]]
 name = "davinci_lowering_corpus"
 required-features = ["davinci-differential"]
+
+[[test]]
+name = "legacy_pass"
+required-features = ["_legacy"]
+
+[[test]]
+name = "legacy_pass_sugar"
+required-features = ["_legacy"]
+
+[[test]]
+name = "legacy_pass_snapshot"
+required-features = ["_legacy"]

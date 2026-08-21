@@ -9,6 +9,8 @@
 
 use vize_carton::{Allocator, Box, Span, Vec};
 use vize_disegno::expr::{ExprRef, ForeignExpr, JsExpr, OpaqueExpr, OpaqueReason};
+#[cfg(feature = "_legacy")]
+use vize_disegno::op::VueFilterOp;
 use vize_disegno::op::{
     Attribute, BindOp, BindingContract, BindingOp, ComponentOp, DynamicName, ElementOp, ForBinding,
     ForOp, IfBranch, IfOp, InterpolationOp, ModelOp, Namespace, OnOp, Op, Region, SlotContentOp,
@@ -36,6 +38,11 @@ fn op_keyword(op: &Op<'_>) -> &'static str {
         Op::If(_) => "ui.if",
         Op::For(_) => "ui.for",
         Op::Slot(_) => "ui.slot",
+        // `_legacy` only: the variant does not exist in the plain shape,
+        // where an unguarded arm here is itself a compile error - the
+        // series-7 zero-cost pin in canary form.
+        #[cfg(feature = "_legacy")]
+        Op::VueFilter(_) => "vue.filter",
     }
 }
 
@@ -85,6 +92,8 @@ fn reason_keyword(reason: OpaqueReason) -> &'static str {
         OpaqueReason::NestingRefused => "nesting-refused",
         OpaqueReason::ParseRejected => "parse-rejected",
         OpaqueReason::Compound => "compound",
+        #[cfg(feature = "_legacy")]
+        OpaqueReason::LegacyFilter => "legacy-filter",
     }
 }
 
@@ -172,6 +181,14 @@ fn every_op<'a>(allocator: &'a Allocator) -> Vec<'a, Op<'a>> {
                 },
                 &allocator,
             )),
+            #[cfg(feature = "_legacy")]
+            Op::VueFilter(Box::new_in(
+                VueFilterOp {
+                    expression: expr,
+                    span,
+                },
+                &allocator,
+            )),
         ],
         &allocator,
     )
@@ -247,18 +264,28 @@ fn every_region_op_variant_is_matched_without_a_wildcard() {
     let allocator = Allocator::default();
     let ops = every_op(&allocator);
     let keywords: std::vec::Vec<&str> = ops.iter().map(op_keyword).collect();
-    assert_eq!(
-        keywords,
-        [
-            "ui.element",
-            "ui.component",
-            "ui.text",
-            "ui.interpolation",
-            "ui.if",
-            "ui.for",
-            "ui.slot",
-        ]
-    );
+    #[cfg(not(feature = "_legacy"))]
+    let expected: &[&str] = &[
+        "ui.element",
+        "ui.component",
+        "ui.text",
+        "ui.interpolation",
+        "ui.if",
+        "ui.for",
+        "ui.slot",
+    ];
+    #[cfg(feature = "_legacy")]
+    let expected: &[&str] = &[
+        "ui.element",
+        "ui.component",
+        "ui.text",
+        "ui.interpolation",
+        "ui.if",
+        "ui.for",
+        "ui.slot",
+        "vue.filter",
+    ];
+    assert_eq!(keywords, expected);
     for op in &ops {
         assert_eq!(op.mnemonic(), op_keyword(op));
     }
@@ -329,6 +356,8 @@ fn every_expression_variant_is_matched_without_a_wildcard() {
         OpaqueReason::NestingRefused,
         OpaqueReason::ParseRejected,
         OpaqueReason::Compound,
+        #[cfg(feature = "_legacy")]
+        OpaqueReason::LegacyFilter,
     ];
     for reason in reasons {
         assert_eq!(reason_keyword(reason), reason.mnemonic());

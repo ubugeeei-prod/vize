@@ -77,6 +77,74 @@ pub fn with_transformed<R>(
     f(&lowered, &folio, &facts, &budget)
 }
 
+/// Parse + lower `source` under the **legacy** dialect (P2-9 series 7),
+/// run the legacy S2 pipeline under the budget observer, and hand the
+/// post-pass artifact to `f`.
+#[cfg(feature = "_legacy")]
+pub fn with_transformed_legacy<R>(
+    source: &str,
+    line: vize_ricalco::LegacyVueLine,
+    f: impl FnOnce(
+        &Lowered<'_>,
+        &DisegnoFolio,
+        &vize_ricalco::pass::S2Facts,
+        &vize_davinci::pass::BudgetObserver,
+    ) -> R,
+) -> R {
+    let allocator = Allocator::new();
+    let (tree, errors) = parse(&allocator, source);
+    let mut lowered = vize_ricalco::lower_legacy(&allocator, &tree, &errors, line);
+    let mut budget = vize_davinci::pass::BudgetObserver::new();
+    let facts = vize_ricalco::pass::run_transform_legacy(&mut lowered, &mut budget);
+    let folio = DisegnoFolio::of(&lowered.root.ops);
+    f(&lowered, &folio, &facts, &budget)
+}
+
+/// [`assert_transformed_sound`]'s legacy twin: the same oracle over the
+/// legacy pipeline's output, the filter tables included.
+#[cfg(feature = "_legacy")]
+pub fn assert_transformed_sound_legacy(
+    source: &str,
+    line: vize_ricalco::LegacyVueLine,
+    context: &str,
+) {
+    with_transformed_legacy(source, line, |lowered, folio, facts, _budget| {
+        assert_eq!(
+            u64::from(lowered.op_count),
+            folio.op_count(),
+            "id accounting diverged post-pass: {context}"
+        );
+        assert_eq!(
+            verify(folio, Rigor::Canonical),
+            Vec::<Violation>::new(),
+            "verifier rejected post-pass output: {context}"
+        );
+        assert_eq!(
+            verify_table(folio, &lowered.scopes),
+            Vec::<Violation>::new(),
+            "a scope key dangles post-pass: {context}"
+        );
+        assert_eq!(
+            verify_table(folio, &lowered.filters),
+            Vec::<Violation>::new(),
+            "a recorded filter-site key dangles: {context}"
+        );
+        assert_eq!(
+            verify_table(folio, &facts.legacy.sites),
+            Vec::<Violation>::new(),
+            "a filter-facts key dangles: {context}"
+        );
+        let printed = folio.print_to_string(FolioMode::Full);
+        let reparsed = DisegnoFolio::parse(printed.as_str()).unwrap_or_else(|error| {
+            panic!("post-pass folio re-parse failed ({context}): {error:?}")
+        });
+        assert_eq!(
+            &reparsed, folio,
+            "post-pass folio round-trip diverged: {context}"
+        );
+    });
+}
+
 /// The soundness oracle of [`assert_sound`], applied **after** the S2
 /// transform pipeline ran: the pass may move facts, never break the
 /// accounting, the invariants, a side-table key, or the round-trip.

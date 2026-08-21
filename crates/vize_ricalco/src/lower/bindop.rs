@@ -49,6 +49,24 @@ fn name_desc(head: &str, name: &Option<DynamicName<'_>>) -> String {
     }
 }
 
+/// Admit one `v-bind` value: under a legacy filter dialect a top-level
+/// filter chain becomes the pessimal escape with its split recorded
+/// (P2-9 series 7); everything else — and every default-dialect value —
+/// takes the ordinary total rule.
+fn bind_value_at<'a>(
+    cx: &mut Cx<'a>,
+    node: Option<vize_davinci::id::NodeId>,
+    text: &'a str,
+) -> vize_disegno::expr::ExprRef<'a> {
+    #[cfg(feature = "_legacy")]
+    if let Some(expr) = super::legacy::filter_value(cx, node, text) {
+        return expr;
+    }
+    #[cfg(not(feature = "_legacy"))]
+    let _ = node;
+    expr_at(cx, text)
+}
+
 /// Lower one `v-bind` spelling into `ui.bind`.
 pub(crate) fn lower_bind<'a>(
     cx: &mut Cx<'a>,
@@ -79,7 +97,7 @@ pub(crate) fn lower_bind<'a>(
         // caught by the corpus lane on the first run (directus
         // `@contextmenu.stop=""`).
         Some(text) if text.trim().is_empty() => None,
-        Some(text) => Some(expr_at(cx, text)),
+        Some(text) => Some(bind_value_at(cx, node, text)),
         None => match directive.arg {
             // Same-name shorthand: static argument, no authored value.
             // The synthesized text is not a source slice, so the
@@ -138,6 +156,10 @@ pub(crate) fn lower_on<'a>(
     for modifier in &directive.modifiers {
         modifiers.push(modifier);
     }
+    // Vue 2 v-on event sugar (`.native`, numeric keycodes), mirrored
+    // from the shipped per-directive desugar (P2-9 series 7).
+    #[cfg(feature = "_legacy")]
+    super::legacy::rewrite_on_modifiers(cx, element, index, &mut modifiers);
     let handler = attr_value_text(element, index)
         .filter(|text| !text.trim().is_empty())
         .map(|text| expr_at(cx, text));

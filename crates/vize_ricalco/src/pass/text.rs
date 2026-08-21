@@ -194,6 +194,12 @@ fn visit_region(
                 visit_region(walk, &component.children.ops, texts, provenance, facts);
             }
             Op::Text(_) => {}
+            // A `vue.filter` op is a lone unit by construction (a
+            // filter interpolation inside a mergeable run stays the
+            // Compound producer's part), so it is a leaf here; the
+            // adjacency law below still covers it as text-family.
+            #[cfg(feature = "_legacy")]
+            Op::VueFilter(_) => {}
             Op::Interpolation(interpolation) => {
                 consume_compound(
                     texts,
@@ -233,11 +239,15 @@ fn check_adjacency(ops: &[Op<'_>]) {
         let prev_end = match prev {
             Op::Text(text) => text.span.end,
             Op::Interpolation(interpolation) => interpolation.span.end,
+            #[cfg(feature = "_legacy")]
+            Op::VueFilter(filter) => filter.span.end,
             _ => continue,
         };
         let next_start = match next {
             Op::Text(text) => text.span.start,
             Op::Interpolation(interpolation) => interpolation.span.start,
+            #[cfg(feature = "_legacy")]
+            Op::VueFilter(filter) => filter.span.start,
             _ => continue,
         };
         assert!(

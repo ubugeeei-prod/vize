@@ -83,6 +83,8 @@ fn walk_region(ops: &mut [FolioOp]) {
                 walk_region(&mut slot.fallback);
             }
             FolioOp::Text(_) | FolioOp::Interpolation(_) => {}
+            #[cfg(feature = "_legacy")]
+            FolioOp::VueFilter(_) => {}
         }
     }
 }

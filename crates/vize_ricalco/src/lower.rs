@@ -39,6 +39,8 @@ mod element;
 mod expr;
 mod forop;
 mod leaf;
+#[cfg(feature = "_legacy")]
+pub(crate) mod legacy;
 mod slot;
 mod structural;
 mod text;
@@ -52,6 +54,10 @@ pub(crate) use expr::simple_identifier;
 pub use structural::{WrapperKey, WrapperKeys};
 // The one-rebuild rule (the same discipline): the text pass re-derives a
 // compound's source with exactly the spelling the lowering minted.
+#[cfg(feature = "_legacy")]
+pub use legacy::mode_probe as legacy_mode_probe;
+#[cfg(feature = "_legacy")]
+pub use legacy::{FilterParts, FilterSegment, LegacyVueLine, filter_split};
 pub use text::{TextPart, TextParts, rebuild_source};
 
 /// The S2 artifact one lowering produces: the op tree plus the three
@@ -83,6 +89,12 @@ pub struct Lowered<'a> {
     /// op's page-order id (P2-9 series 5, [`WrapperKeys`]); folded into
     /// branch-key facts by `pass::vif`.
     pub wrappers: SideTable<WrapperKeys>,
+    /// The recorded split of every legacy filter site, keyed by its
+    /// `vue.filter` or `ui.bind` op's page-order id (P2-9 series 7,
+    /// [`FilterParts`]); validated and consumed by `pass::legacy`.
+    /// Always empty under the default entry point.
+    #[cfg(feature = "_legacy")]
+    pub filters: SideTable<FilterParts>,
 }
 
 /// Lower a parsed S1 tree (and the tokenizer errors its parse reported)
@@ -99,7 +111,33 @@ pub fn lower<'a>(
     tree: &SurfaceTree<'a>,
     errors: &[SurfaceError],
 ) -> Lowered<'a> {
+    lower_impl(cx::Cx::new(allocator, tree.source), tree, errors)
+}
+
+/// Lower a parsed S1 tree under a **legacy Vue dialect** (P2-9 series
+/// 7): the same total conversion as [`lower`], with the dialect's
+/// template sugar mirrored from the shipped legacy lane — see
+/// [`legacy`]'s module docs for the measured split. The default entry
+/// point never resolves a legacy mode, so this function (and everything
+/// it arms) compiles out entirely without the `_legacy` feature.
+#[cfg(feature = "_legacy")]
+#[must_use]
+pub fn lower_legacy<'a>(
+    allocator: &'a Allocator,
+    tree: &SurfaceTree<'a>,
+    errors: &[SurfaceError],
+    line: legacy::LegacyVueLine,
+) -> Lowered<'a> {
     let mut cx = cx::Cx::new(allocator, tree.source);
+    cx.legacy = legacy::LegacyMode::for_line(line);
+    lower_impl(cx, tree, errors)
+}
+
+fn lower_impl<'a>(
+    mut cx: cx::Cx<'a>,
+    tree: &SurfaceTree<'a>,
+    errors: &[SurfaceError],
+) -> Lowered<'a> {
     for error in errors {
         cx.diagnostics.push(Diagnostic::new(
             Severity::Error,
@@ -117,5 +155,7 @@ pub fn lower<'a>(
         scopes: cx.scopes,
         texts: cx.texts,
         wrappers: cx.wrappers,
+        #[cfg(feature = "_legacy")]
+        filters: cx.filters,
     }
 }

@@ -238,6 +238,26 @@ fn walk(
                     },
                 });
             }
+            FolioOp::VueFilter(filter) => {
+                // A Vue 2 filter interpolation (P2-9 series 7): one
+                // dynamic text unit whose text is the verbatim chain —
+                // exactly what the run-1 legacy tree (default options,
+                // no prefixing) holds at the same position. The filter
+                // *structure* is compared by the legacy witness against
+                // the shipped splitter, not here.
+                *next += 1;
+                if state.rawtext_depth > 0 {
+                    out.text_rawtext_excluded += 1;
+                } else {
+                    out.text_units.push(TUnit {
+                        parts: vec![TPart {
+                            dynamic: true,
+                            text: Some(expr_text(&filter.expression)),
+                        }],
+                        compound: false,
+                    });
+                }
+            }
             FolioOp::If(if_op) => {
                 let id = NodeId::from_index(*next).expect("page-order ids fit");
                 *next += 1;

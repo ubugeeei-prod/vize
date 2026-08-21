@@ -59,6 +59,24 @@ pub fn surface_of(
             .attrs
             .push((attribute.name.clone(), attribute.value.clone()));
     }
+    // The mirrored `.sync` expansion's product pair (P2-9 series 7): a
+    // bind and an appended `update:` listener sharing one authored span
+    // fold back into the authored two-way contract — exactly the
+    // span-sharing rule the legacy collector uses on its own desugar's
+    // products. Under the default dialect no two S2 binding ops ever
+    // share a span (each is its own attribute), so the fold is inert
+    // there — the plain witness's unchanged counts pin that.
+    let span_shared = |span: vize_carton::Span| {
+        bindings
+            .iter()
+            .filter(|other| match other {
+                FolioBinding::Bind(bind) => bind.span == span,
+                FolioBinding::On(on) => on.span == span,
+                _ => false,
+            })
+            .count()
+            >= 2
+    };
     for (index, binding) in bindings.iter().enumerate() {
         if Some(index) == excluded_bind {
             out.keys_excluded += 1;
@@ -66,6 +84,24 @@ pub fn surface_of(
         }
         let id = NodeId::from_index(owner_index + 1 + u32::try_from(index).expect("fits"));
         match binding {
+            FolioBinding::Bind(bind) if span_shared(bind.span) => {
+                // The contract half: prop from the static name, value
+                // from the bind — modifiers deliberately empty, the
+                // legacy fold's own blind spot mirrored.
+                surface.models.push(PModel {
+                    value: bind.value.as_ref().map(expr_text),
+                    prop: match &bind.name {
+                        Some(FolioName::Static(text)) => Some(text.as_str().into()),
+                        _ => None,
+                    },
+                    mods: Vec::new(),
+                    component,
+                    dynamic_arg: false,
+                });
+            }
+            FolioBinding::On(on) if span_shared(on.span) => {
+                // The listener half of the pair: consumed with it.
+            }
             FolioBinding::Bind(bind) => surface.binds.push(PBind {
                 name: match &bind.name {
                     None => PName::Spread,

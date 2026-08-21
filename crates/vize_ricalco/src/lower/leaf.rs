@@ -75,6 +75,13 @@ pub(crate) fn lower_text<'a>(
 /// `ui.interpolation`: the delimited content, trimmed, through the total
 /// admission rule.
 fn lower_interpolation<'a>(cx: &mut Cx<'a>, node: &Interpolation<'a>, out: &mut Vec<'a, Op<'a>>) {
+    // A lone filter interpolation under a legacy dialect is the
+    // `vue.filter` dialect op (P2-9 series 7); the hook is one
+    // capability-field read for the default dialect.
+    #[cfg(feature = "_legacy")]
+    if super::legacy::filter_interpolation(cx, node, out) {
+        return;
+    }
     let id = cx.mint_op();
     let span = Span::new(cx.offset(node.open.text), cx.token_span(&node.close).end);
     let expression = expr_at(cx, node.content.text);

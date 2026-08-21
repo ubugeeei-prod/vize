@@ -59,4 +59,6 @@ extern crate alloc;
 pub mod lower;
 pub mod pass;
 
+#[cfg(feature = "_legacy")]
+pub use lower::{LegacyVueLine, lower_legacy};
 pub use lower::{Lowered, lower};

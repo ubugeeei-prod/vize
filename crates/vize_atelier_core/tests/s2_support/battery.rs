@@ -5,6 +5,7 @@
 //! series 4 the text half.
 
 /// (name, template source). Each names the projection class it pins.
+#[cfg_attr(feature = "legacy", allow(dead_code))]
 pub const BATTERY: &[(&str, &str)] = &[
     ("simple-if", r#"<div v-if="show">on</div>"#),
     (

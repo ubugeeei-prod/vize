@@ -65,6 +65,8 @@ fn carrier_surface<'w, 'a>(
         | Op::Interpolation(_)
         | Op::If(_)
         | Op::For(_) => None,
+        #[cfg(feature = "_legacy")]
+        Op::VueFilter(_) => None,
     }
 }
 

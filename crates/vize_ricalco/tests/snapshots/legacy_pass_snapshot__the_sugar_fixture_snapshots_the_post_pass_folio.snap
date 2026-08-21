@@ -1,0 +1,42 @@
+---
+source: crates/vize_ricalco/tests/legacy_pass_snapshot.rs
+assertion_line: 74
+expression: "$crate :: folio :: Folio ::\nprint_to_string(& *folio, $crate :: folio :: FolioMode :: Full,)"
+---
+[disegno]
+ops=31
+
+[disegno.ops]
+ui.component MyPane @0:69
+  ui.bind name="title" value=js("pane.title" @21:31) @8:32
+  ui.bind name="width" value=js("w" @46:47) @33:48
+  ui.bind name="other" value=js("x" @57:58) @49:59
+  ui.on name="update:title" handler=js("$event => ((pane.title) = $event)" @8:32) @8:32
+  ui.on name="update:width" handler=js("$event => ((w) = $event)" @33:48) @33:48
+ui.component Widget @70:104
+  ui.bind name="model-name" value=js("modelName" @79:89) @78:94
+  ui.on name="update:model-name" handler=js("$event => ((modelName) = $event)" @78:94) @78:94
+ui.component Row @105:130
+  ui.bind name=js("k" @112:113) mods="sync" value=js("v" @121:122) @110:123
+ui.element button @131:216
+  ui.on name="click" mods="stop" handler=js("go" @159:161) @139:162
+  ui.on name="keyup" mods="enter" handler=js("submit" @174:180) @163:181
+  ui.on name="keydown" mods="99" handler=js("odd" @202:205) @182:206
+ui.component Card @217:308
+  ui.element template @223:301
+    ui.slot-content name="header" params=js("props" @259:264) @247:265
+    ui.element b @266:290
+      ui.interpolation js("props.title" @272:283) @269:286
+ui.component List @309:359
+  ui.element template @315:352
+    ui.slot-content params=js("row" @332:335) @325:336
+    ui.text "item" @337:341
+ui.component Grid @360:427
+  ui.element template @366:420
+    attr slot-scope="cell" @376:393
+    ui.slot-content name="conflict" params=js("c" @405:406) @394:407
+    ui.text "y" @408:409
+ui.component Tab @428:474
+  ui.element template @433:468
+    attr slot="named" @443:455
+    ui.text "z" @456:457

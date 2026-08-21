@@ -47,6 +47,8 @@ pub use model::{BindingContract, ModelOp};
 pub use slot::{DynamicName, SlotContentOp, SlotOp};
 pub use text::{InterpolationOp, TextOp};
 pub use vue::VueDirectiveOp;
+#[cfg(feature = "_legacy")]
+pub use vue::VueFilterOp;
 
 /// One S2 op standing in a region (a child position).
 ///
@@ -75,6 +77,11 @@ pub enum Op<'a> {
     For(Box<'a, ForOp<'a>>),
     /// `ui.slot` - a slot outlet owning its fallback region.
     Slot(Box<'a, SlotOp<'a>>),
+    /// `vue.filter` - a Vue 2 filter interpolation carried through as a
+    /// dialect op (P2-9 series 7; `_legacy` only - the variant compiles
+    /// out entirely without the feature).
+    #[cfg(feature = "_legacy")]
+    VueFilter(Box<'a, VueFilterOp<'a>>),
 }
 
 impl Op<'_> {
@@ -90,6 +97,8 @@ impl Op<'_> {
             Self::If(_) => "ui.if",
             Self::For(_) => "ui.for",
             Self::Slot(_) => "ui.slot",
+            #[cfg(feature = "_legacy")]
+            Self::VueFilter(_) => "vue.filter",
         }
     }
 }

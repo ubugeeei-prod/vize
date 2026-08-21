@@ -51,6 +51,9 @@ use crate::lower::Lowered;
 
 #[path = "pass/hoist.rs"]
 pub mod hoist;
+#[cfg(feature = "_legacy")]
+#[path = "pass/legacy.rs"]
+pub mod legacy;
 #[path = "pass/text.rs"]
 pub mod text;
 #[path = "pass/vfor.rs"]
@@ -65,6 +68,10 @@ pub mod vslot;
 mod walk;
 
 pub use hoist::{StaticFacts, StaticLevel};
+#[cfg(feature = "_legacy")]
+pub use legacy::{
+    FilterFacts, LegacyFacts, TRANSFORM_LEGACY, TRANSFORM_LEGACY_PASSES, run_transform_legacy,
+};
 pub use text::TextFacts;
 pub use vfor::{ForFacts, ForName};
 pub use vif::{BranchKey, BranchKeyKind, IfFacts};
@@ -150,6 +157,13 @@ pub struct S2Facts {
     /// owner family. The series' first `Optional` product: skipping the
     /// pass loses these and nothing else.
     pub static_facts: SideTable<StaticFacts>,
+    /// The legacy pass's product ([`legacy`], P2-9 series 7): the
+    /// filter asset registration and per-site views. Populated only by
+    /// [`run_transform_legacy`]; the plain pipeline leaves it default —
+    /// and without the `_legacy` feature the field does not exist at
+    /// all (the relief `RootNode::filters` convention).
+    #[cfg(feature = "_legacy")]
+    pub legacy: LegacyFacts,
 }
 
 /// Run the S2 transform pipeline over `lowered`, firing `observer`'s

@@ -73,6 +73,12 @@ pub mod hoist;
 pub mod hoist_old;
 pub mod hoist_owner;
 pub mod hoist_walk;
+#[cfg(feature = "legacy")]
+pub mod legacy;
+#[cfg(feature = "legacy")]
+pub mod legacy_batt;
+#[cfg(feature = "legacy")]
+pub mod legacy_filters_check;
 pub mod old_lane;
 pub mod s2_lane;
 pub mod slots;
@@ -85,6 +91,9 @@ pub mod surface_s2;
 pub mod text;
 pub mod text_old;
 
+// Unused in the legacy witness binary, which runs its own battery (the
+// shared-test-module convention `vize_ricalco/tests/support` documents).
+#[cfg_attr(feature = "legacy", allow(unused_imports))]
 pub use battery::BATTERY;
 pub use hoist::HoistCounters;
 pub use slots::SlotCounters;

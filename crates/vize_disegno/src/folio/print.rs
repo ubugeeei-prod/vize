@@ -156,6 +156,13 @@ fn print_op<W: Write>(w: &mut W, op: &FolioOp, depth: usize, mode: FolioMode) ->
             print_expr(w, &interpolation.expression, mode)?;
             end_line(w, interpolation.span, mode)
         }
+        #[cfg(feature = "_legacy")]
+        FolioOp::VueFilter(filter) => {
+            indent(w, depth)?;
+            w.write_str("vue.filter ")?;
+            print_expr(w, &filter.expression, mode)?;
+            end_line(w, filter.span, mode)
+        }
         FolioOp::If(if_op) => {
             indent(w, depth)?;
             w.write_str("ui.if")?;

@@ -124,6 +124,16 @@ pub(super) fn visit_region(
                 nested: true,
                 native: true,
             },
+            // A `vue.filter` op is dynamic rendered text: the shipped
+            // lane's interpolation contribution (its opaque expression
+            // is never constant — pessimal law 3 — so it can never be
+            // the shipped `StringifyStatic` candidate either).
+            #[cfg(feature = "_legacy")]
+            Op::VueFilter(_) => Contribution {
+                level: ChildLevel::DynamicText,
+                nested: true,
+                native: true,
+            },
             Op::If(if_op) => {
                 for branch in if_op.branches.iter() {
                     visit_region(walk, &branch.region.ops, ns, provenance, facts);

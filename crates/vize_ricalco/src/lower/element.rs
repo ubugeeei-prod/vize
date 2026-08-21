@@ -146,8 +146,16 @@ pub(crate) fn element_core<'a>(
 
     let mut attributes: Vec<'a, Attribute<'a>> = Vec::new_in(&cx.allocator);
     let mut bindings: Vec<'a, BindingOp<'a>> = Vec::new_in(&cx.allocator);
+    // The Vue 2 scoped-slot spelling consumes its attributes before the
+    // loop (P2-9 series 7; `None` for every default-dialect element).
+    #[cfg(feature = "_legacy")]
+    let scoped_slot = super::legacy::scoped_slot_plan(cx, element, analyzed);
     for (index, attr) in element.open.attrs.iter().enumerate() {
         if Some(index) == analyzed.branch.map(|(idx, _)| idx) || Some(index) == analyzed.vfor {
+            continue;
+        }
+        #[cfg(feature = "_legacy")]
+        if super::legacy::consumed_by_scoped_slot(&scoped_slot, index) {
             continue;
         }
         match &analyzed.forms[index] {
@@ -160,6 +168,18 @@ pub(crate) fn element_core<'a>(
                 let owner = Owner { tag, component };
                 lower_attr(cx, element, index, directive, &owner, &mut bindings);
             }
+        }
+    }
+
+    // The Vue 2 template-sugar desugars, mirrored in the shipped
+    // order (`desugar_element`: sync first, then scoped-slot), appended
+    // after the authored bindings exactly as the live desugar appends
+    // its products after the prop walk (P2-9 series 7).
+    #[cfg(feature = "_legacy")]
+    {
+        super::legacy::desugar_sync(cx, element, analyzed, &mut bindings);
+        if let Some(plan) = &scoped_slot {
+            super::legacy::desugar_scoped_slot(cx, element, plan, &mut bindings);
         }
     }
 

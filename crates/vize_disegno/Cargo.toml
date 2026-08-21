@@ -9,6 +9,18 @@ description = "Disegno - the Davinci S2 semantic IR: the neutral op family every
 publish = false
 metadata.vize.stability = "experimental"
 
+[features]
+# Legacy Vue (v2) dialect vocabulary: the `vue.filter` op and the
+# `legacy-filter` opaque reason (P2-9 series 7). Off by default so the
+# default S2 vocabulary carries no legacy code at all — the variants,
+# their folio grammar, and the verifier arms compile out entirely.
+# Internal (the `_` prefix is the relief convention): enable it only
+# through `vize_ricalco/_legacy`, never directly, so every crate that
+# matches the op family exhaustively sees the variants exactly when its
+# own `_legacy` arms are compiled (the canary-soundness rule the series-7
+# record documents).
+_legacy = []
+
 [dependencies]
 oxc_ast = { workspace = true }
 oxc_parser = { workspace = true }

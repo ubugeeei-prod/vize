@@ -99,6 +99,8 @@ pub(in super::super) fn parse_item(content: &str, line_no: usize) -> Result<Item
         "ui.component" => component(rest, line_no),
         "ui.text" => text(rest, line_no),
         "ui.interpolation" => interpolation(rest, line_no),
+        #[cfg(feature = "_legacy")]
+        "vue.filter" => vue_filter(rest, line_no),
         "ui.if" => Ok(Item::Op(FolioOp::If(FolioIf {
             branches: alloc::vec::Vec::new(),
             span: final_span(rest, line_no)?,
@@ -201,6 +203,19 @@ fn interpolation(rest: &str, line_no: usize) -> Result<Item, FolioError> {
         expression,
         span: tail_span(tail, line_no)?,
     })))
+}
+
+/// `_legacy` only: the `vue.filter` line, the interpolation payload
+/// shape under the dialect keyword.
+#[cfg(feature = "_legacy")]
+fn vue_filter(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+    let (expression, tail) = take_expr(rest, line_no)?;
+    Ok(Item::Op(FolioOp::VueFilter(
+        crate::folio::owned::FolioVueFilter {
+            expression,
+            span: tail_span(tail, line_no)?,
+        },
+    )))
 }
 
 fn for_op(rest: &str, line_no: usize) -> Result<Item, FolioError> {

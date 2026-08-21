@@ -262,6 +262,35 @@ fn lower_custom<'a>(
 /// `v-slot`s on one carrier never share an entry. The props name is
 /// recorded when it is a simple identifier; patterns wait for the one
 /// identifier-enumeration seam (#4365).
+/// Admit one slot-props position and record its hygiene scope facts —
+/// the one params rule every `v-slot` spelling (and the `_legacy`
+/// `slot-scope` desugar) goes through: the expression through the total
+/// admission, the scope keyed to the binding op, the props name
+/// recorded when it is a simple identifier (patterns wait for #4365).
+pub(crate) fn slot_content_params<'a>(
+    cx: &mut Cx<'a>,
+    node: Option<vize_davinci::id::NodeId>,
+    text: &'a str,
+) -> vize_disegno::expr::ExprRef<'a> {
+    let expr = expr_at(cx, text);
+    let tag = cx.mint_scope();
+    let mut scope_bindings = StdVec::new();
+    if let Some(bound) = simple_identifier(&expr) {
+        scope_bindings.push(ScopeBinding {
+            name: String::from(bound),
+            origin: ScopeOrigin::Authored { span: expr.span() },
+        });
+    }
+    cx.attach_scope(
+        node,
+        ScopeFacts {
+            tag,
+            bindings: scope_bindings,
+        },
+    );
+    expr
+}
+
 pub(crate) fn lower_slot_content<'a>(
     cx: &mut Cx<'a>,
     element: &Element<'a>,
@@ -282,24 +311,7 @@ pub(crate) fn lower_slot_content<'a>(
     let params = attr_value_text(element, index)
         .map(str::trim)
         .filter(|text| !text.is_empty())
-        .map(|text| expr_at(cx, text));
-    if let Some(expr) = &params {
-        let tag = cx.mint_scope();
-        let mut scope_bindings = StdVec::new();
-        if let Some(bound) = simple_identifier(expr) {
-            scope_bindings.push(ScopeBinding {
-                name: String::from(bound),
-                origin: ScopeOrigin::Authored { span: expr.span() },
-            });
-        }
-        cx.attach_scope(
-            node,
-            ScopeFacts {
-                tag,
-                bindings: scope_bindings,
-            },
-        );
-    }
+        .map(|text| slot_content_params(cx, node, text));
     let after = match &name {
         None => String::from("ui.slot-content"),
         Some(DynamicName::Static(text)) => cstr!("ui.slot-content \"{text}\""),

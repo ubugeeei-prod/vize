@@ -215,6 +215,8 @@ fn visit<'a>(
             });
         }
         Op::Text(_) | Op::Interpolation(_) => {}
+        #[cfg(feature = "_legacy")]
+        Op::VueFilter(_) => {}
         Op::If(if_op) => {
             for branch in if_op.branches.iter() {
                 region(walk, channels, env, &branch.region.ops);

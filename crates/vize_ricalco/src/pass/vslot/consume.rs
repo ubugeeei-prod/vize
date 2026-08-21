@@ -192,6 +192,14 @@ fn visit<'a>(walk: &mut PageWalk, channels: &mut Channels<'_>, op: &Op<'a>) -> C
             span: interpolation.span,
             kind: ChildKind::Content { implicit: true },
         },
+        // A `vue.filter` op renders text exactly as an interpolation
+        // does — implicit-default content for the grouping.
+        #[cfg(feature = "_legacy")]
+        Op::VueFilter(filter) => ChildView {
+            id,
+            span: filter.span,
+            kind: ChildKind::Content { implicit: true },
+        },
         Op::If(if_op) => {
             let mut implicit = false;
             for branch in if_op.branches.iter() {
