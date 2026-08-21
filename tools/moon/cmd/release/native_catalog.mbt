@@ -1,5 +1,7 @@
 /// Rewrites every native binary catalog pin under the `native-binaries:` block
-/// of `pnpm-workspace.yaml` to the new release version.
+/// of `pnpm-workspace.yaml` to the new release version. It also keeps pnpm's
+/// minimum-release-age allowlist aligned with those newly-published native
+/// package versions.
 /// The catalog block is recognised by the `  native-binaries:` header (two-space
 /// indent) and runs until the next top-level or catalog-section header. Inside
 /// that block the function replaces the version literal on every
@@ -15,7 +17,12 @@ fn replace_native_binary_workspace_catalog(
   let lines : Array[String] = content.split("\n").map(view => view.to_owned()).collect()
   let header = "  native-binaries:"
   let pin_prefix = "    \"@vizejs/native-"
+  let minimum_age_prefix = "  - \"@vizejs/native-"
   for line in lines {
+    if line.has_prefix(minimum_age_prefix) && line.contains(current_version) {
+      updated.push(line.replace(old=current_version, new=new_version))
+      continue
+    }
     if line == header {
       in_catalog = true
       updated.push(line)

@@ -56,8 +56,13 @@ test("release script clears prerelease suffixes for stable bumps", () => {
   }
 });
 
-test("release script rewrites only the native-binaries catalog block in pnpm-workspace.yaml", () => {
+test("release script rewrites native workspace pins and minimum release age excludes", () => {
   const workspaceYaml = [
+    "minimumReleaseAgeExclude:",
+    '  - "@vizejs/native-darwin-arm64@0.100.0 || 0.106.0"',
+    '  - "@vizejs/native-darwin-x64@0.100.0 || 0.106.0"',
+    '  - "@scope/not-native@0.106.0"',
+    "",
     "catalogs:",
     "  repo-tooling:",
     '    "@iarna/toml": "2.2.5"',
@@ -85,6 +90,19 @@ test("release script rewrites only the native-binaries catalog block in pnpm-wor
 
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
   const lines = result.stdout.split("\n");
+
+  assert.ok(
+    result.stdout.includes('  - "@vizejs/native-darwin-arm64@0.100.0 || 0.107.0"'),
+    "minimumReleaseAgeExclude keeps darwin arm64 aligned",
+  );
+  assert.ok(
+    result.stdout.includes('  - "@vizejs/native-darwin-x64@0.100.0 || 0.107.0"'),
+    "minimumReleaseAgeExclude keeps darwin x64 aligned",
+  );
+  assert.ok(
+    result.stdout.includes('  - "@scope/not-native@0.106.0"'),
+    "non-native minimumReleaseAgeExclude entries are preserved",
+  );
 
   const otherCatalogLine = lines.find((line) =>
     line.startsWith('    "@vizejs/native-darwin-arm64": '),
