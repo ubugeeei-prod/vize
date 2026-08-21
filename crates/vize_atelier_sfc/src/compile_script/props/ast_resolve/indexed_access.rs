@@ -133,6 +133,11 @@ fn resolve_type_reference_property(
 ) -> Option<String> {
     let name = simple_type_name(type_name)?;
     let resolved = resolve_type_reference_text(name, interfaces, type_aliases, seen)?;
+    if !is_indexable_object_source(&resolved) {
+        finish_resolved_type_reference(name, seen);
+        return None;
+    }
+
     let resolved_source = wrap_type_alias_source(&resolved);
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, &resolved_source, SourceType::ts()).parse();
@@ -158,6 +163,10 @@ fn resolve_type_reference_property(
     resolved
 }
 
+fn is_indexable_object_source(type_source: &str) -> bool {
+    type_source.trim().starts_with('{')
+}
+
 fn resolve_property_runtime_type_by_collecting(
     ts_type: &TSType<'_>,
     key: &str,
@@ -172,4 +181,68 @@ fn resolve_property_runtime_type_by_collecting(
     }
     let (_, prop) = props.iter().find(|(name, _)| name.as_str() == key)?;
     Some(prop.js_type.clone())
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::compile_script::props::text_resolve::extract_prop_types_from_type_with_context;
+    use vize_carton::{FxHashMap, ToCompactString};
+
+    #[test]
+    fn resolves_object_literal_alias_runtime_type() {
+        let mut type_aliases: FxHashMap<vize_carton::String, vize_carton::String> =
+            FxHashMap::default();
+        type_aliases.insert(
+            "ButtonProps".to_compact_string(),
+            "{ color?: 'primary' | 'neutral'; ui?: { base?: string } }".to_compact_string(),
+        );
+
+        let props = extract_prop_types_from_type_with_context(
+            "{ color?: ButtonProps['color']; ui?: ButtonProps['ui'] }",
+            None,
+            Some(&type_aliases),
+        );
+
+        let color = props
+            .iter()
+            .find(|(name, _)| name == "color")
+            .expect("color prop should be extracted");
+        assert_eq!(color.1.js_type.as_str(), "String");
+        let ui = props
+            .iter()
+            .find(|(name, _)| name == "ui")
+            .expect("ui prop should be extracted");
+        assert_eq!(ui.1.js_type.as_str(), "Object");
+    }
+
+    #[test]
+    fn does_not_follow_non_literal_alias_runtime_type() {
+        let mut type_aliases: FxHashMap<vize_carton::String, vize_carton::String> =
+            FxHashMap::default();
+        type_aliases.insert(
+            "Button".to_compact_string(),
+            "ComponentConfig<typeof theme, AppConfig, 'button'>".to_compact_string(),
+        );
+        type_aliases.insert(
+            "ComponentConfig".to_compact_string(),
+            "{ variants?: { size?: 'sm' | 'md' }; slots?: { base?: string } }".to_compact_string(),
+        );
+
+        let props = extract_prop_types_from_type_with_context(
+            "{ size?: Button['variants']['size']; ui?: Button['slots'] }",
+            None,
+            Some(&type_aliases),
+        );
+
+        let size = props
+            .iter()
+            .find(|(name, _)| name == "size")
+            .expect("size prop should be extracted");
+        assert_eq!(size.1.js_type.as_str(), "null");
+        let ui = props
+            .iter()
+            .find(|(name, _)| name == "ui")
+            .expect("ui prop should be extracted");
+        assert_eq!(ui.1.js_type.as_str(), "null");
+    }
 }
