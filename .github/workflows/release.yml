@@ -12,7 +12,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   PUBLISH_RETRY_LIMIT: 6
   PUBLISH_RETRY_DELAY: 10
-  PUBLISH_RESOLUTION_RETRY_LIMIT: 24
+  PUBLISH_RESOLUTION_RETRY_LIMIT: 60
   PUBLISH_RESOLUTION_RETRY_DELAY: 10
   NPM_TAG: ${{ contains(github.ref_name, '-alpha') && 'alpha' || contains(github.ref_name, '-beta') && 'beta' || contains(github.ref_name, '-rc') && 'rc' || 'latest' }}
 jobs:
