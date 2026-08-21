@@ -211,7 +211,11 @@ test("App E2E producers take their runner from the plan; support jobs stay Black
     );
   }
   for (const job of ["app-readiness-plan", "app-readiness", "testbox", "app-e2e-plan", "app-e2e"]) {
-    assert.equal(workflowJobRunsOn(source, job), BLACKSMITH_RUNNER, `${job} must run on Blacksmith`);
+    assert.equal(
+      workflowJobRunsOn(source, job),
+      BLACKSMITH_RUNNER,
+      `${job} must run on Blacksmith`,
+    );
   }
 });
 
