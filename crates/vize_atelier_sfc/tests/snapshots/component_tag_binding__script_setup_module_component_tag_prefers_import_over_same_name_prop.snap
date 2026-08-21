@@ -1,0 +1,34 @@
+---
+source: crates/vize_atelier_sfc/tests/component_tag_binding.rs
+expression: result.code.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode } from "vue"
+
+
+export function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return ($props.predefine)
+    ? (_openBlock(), _createBlock($setup.Predefine, {
+      key: 0,
+      ref: "predefine"
+    }, null, 512 /* NEED_PATCH */))
+    : _createCommentVNode("v-if", true)
+}
+import Predefine from './components/predefine.vue'
+
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'anonymous',
+  props: {
+    predefine: { type: Array, required: false }
+  },
+  render: render,
+  setup(__props: any) {
+
+
+const __returned__ = { Predefine }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+})

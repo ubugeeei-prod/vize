@@ -63,21 +63,37 @@ impl CodegenContext {
         let metadata = self.options.binding_metadata.as_ref()?;
 
         let resolve_base = |name: &str| {
-            if let Some(binding_type) = metadata.bindings.get(name) {
-                return Some((name.to_compact_string(), *binding_type));
-            }
+            let mut prop_fallback = None;
+            let mut resolve_candidate = |candidate: String| {
+                if let Some(binding_type) = metadata.bindings.get(candidate.as_str()) {
+                    if matches!(binding_type, BindingType::Props | BindingType::PropsAliased) {
+                        prop_fallback.get_or_insert((candidate, *binding_type));
+                    } else {
+                        return Some((candidate, *binding_type));
+                    }
+                }
+                None
+            };
 
+            if let Some(binding) = resolve_candidate(name.to_compact_string()) {
+                return Some(binding);
+            }
             let camel = camelize(name);
-            if let Some(binding_type) = metadata.bindings.get(camel.as_str()) {
-                return Some((camel, *binding_type));
+            if camel.as_str() != name
+                && let Some(binding) = resolve_candidate(camel.clone())
+            {
+                return Some(binding);
             }
 
             let pascal = capitalize(&camel);
-            if let Some(binding_type) = metadata.bindings.get(pascal.as_str()) {
-                return Some((pascal, *binding_type));
+            if pascal.as_str() != name
+                && pascal.as_str() != camel.as_str()
+                && let Some(binding) = resolve_candidate(pascal)
+            {
+                return Some(binding);
             }
 
-            None
+            prop_fallback
         };
 
         if let Some((base, suffix)) = component.split_once('.') {
