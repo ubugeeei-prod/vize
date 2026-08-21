@@ -378,7 +378,6 @@ jobs:
         with:
           key: clippy-test
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-
       - name: Clippy
         run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports && cargo clippy -p vize_maestro --tests -- -D warnings && bash tools/github/check-maestro-feature-contract.sh
       # TS-24 portability lanes; the accepted std edges: davinci-road/plan/no-std-boundary.md.
