@@ -9,31 +9,40 @@ enum Mode {
     Template { escaped: bool },
 }
 
+const ROOT_MODE: Mode = Mode::Code {
+    template_braces: None,
+};
+
 pub(super) fn parse(resolver: &TypeResolver, content: &str) -> Vec<TypeProperty> {
     let mut properties = Vec::new();
     let mut depth = 0;
     let mut current = String::default();
-    let mut modes = vec![Mode::Code {
-        template_braces: None,
-    }];
+    let mut modes = vec![ROOT_MODE];
     let mut chars = content.chars().peekable();
     let mut in_line_comment = false;
     let mut in_block_comment = false;
 
     while let Some(character) = chars.next() {
-        match *modes.last().expect("root code mode") {
+        if modes.is_empty() {
+            modes.push(ROOT_MODE);
+        }
+        match modes.last().copied().unwrap_or(ROOT_MODE) {
             Mode::Quote { delimiter, escaped } => {
                 current.push(character);
                 if escaped {
-                    *modes.last_mut().expect("quote mode") = Mode::Quote {
-                        delimiter,
-                        escaped: false,
-                    };
+                    if let Some(mode) = modes.last_mut() {
+                        *mode = Mode::Quote {
+                            delimiter,
+                            escaped: false,
+                        };
+                    }
                 } else if character == '\\' {
-                    *modes.last_mut().expect("quote mode") = Mode::Quote {
-                        delimiter,
-                        escaped: true,
-                    };
+                    if let Some(mode) = modes.last_mut() {
+                        *mode = Mode::Quote {
+                            delimiter,
+                            escaped: true,
+                        };
+                    }
                 } else if character == delimiter {
                     modes.pop();
                 }
@@ -42,13 +51,20 @@ pub(super) fn parse(resolver: &TypeResolver, content: &str) -> Vec<TypeProperty>
             Mode::Template { escaped } => {
                 current.push(character);
                 if escaped {
-                    *modes.last_mut().expect("template mode") = Mode::Template { escaped: false };
+                    if let Some(mode) = modes.last_mut() {
+                        *mode = Mode::Template { escaped: false };
+                    }
                 } else if character == '\\' {
-                    *modes.last_mut().expect("template mode") = Mode::Template { escaped: true };
+                    if let Some(mode) = modes.last_mut() {
+                        *mode = Mode::Template { escaped: true };
+                    }
                 } else if character == '`' {
                     modes.pop();
-                } else if character == '$' && chars.peek() == Some(&'{') {
-                    current.push(chars.next().expect("template substitution"));
+                } else if character == '$'
+                    && chars.peek() == Some(&'{')
+                    && let Some(opening) = chars.next()
+                {
+                    current.push(opening);
                     modes.push(Mode::Code {
                         template_braces: Some(1),
                     });
@@ -116,13 +132,17 @@ pub(super) fn parse(resolver: &TypeResolver, content: &str) -> Vec<TypeProperty>
                 if let Some(template_braces) = template_braces {
                     current.push(character);
                     if character == '{' {
-                        *modes.last_mut().expect("substitution mode") = Mode::Code {
-                            template_braces: Some(template_braces + 1),
-                        };
+                        if let Some(mode) = modes.last_mut() {
+                            *mode = Mode::Code {
+                                template_braces: Some(template_braces + 1),
+                            };
+                        }
                     } else if character == '}' && template_braces == 1 {
                         modes.pop();
-                    } else if character == '}' {
-                        *modes.last_mut().expect("substitution mode") = Mode::Code {
+                    } else if character == '}'
+                        && let Some(mode) = modes.last_mut()
+                    {
+                        *mode = Mode::Code {
                             template_braces: Some(template_braces - 1),
                         };
                     }

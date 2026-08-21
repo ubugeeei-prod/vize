@@ -43,6 +43,8 @@ fn extract_properties_strips_comments_only_inside_template_substitutions() {
         r#"{
   value: `${string /* } */}`;
   raw: `/* raw } comment marker */`;
+  nested: `${`${string}`}`;
+  quoted: `${Record<"}", string>}`;
   count: number;
 }"#,
     );
@@ -51,11 +53,16 @@ fn extract_properties_strips_comments_only_inside_template_substitutions() {
         .iter()
         .map(|prop| prop.name.as_str())
         .collect::<Vec<_>>();
-    assert_eq!(names, ["value", "raw", "count"]);
+    assert_eq!(names, ["value", "raw", "nested", "quoted", "count"]);
     assert_eq!(props[0].prop_type.as_deref(), Some("`${string  }`"));
     assert_eq!(
         props[1].prop_type.as_deref(),
         Some("`/* raw } comment marker */`")
+    );
+    assert_eq!(props[2].prop_type.as_deref(), Some("`${`${string}`}`"));
+    assert_eq!(
+        props[3].prop_type.as_deref(),
+        Some("`${Record<\"}\", string>}`")
     );
 }
 
