@@ -621,7 +621,7 @@ jobs:
       - uses: ./.github/actions/setup-moonbit
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: ".node-version", run-install: false }
+        with: { node-version-file: ".node-version", run-install: true }
       - name: Download prebuilt WASM package
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-vize-wasm, path: npm/wasm }

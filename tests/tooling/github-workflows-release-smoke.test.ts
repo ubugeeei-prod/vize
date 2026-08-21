@@ -70,3 +70,25 @@ test("smoke job downloads every packed artifact directory it smoke-installs", ()
     );
   }
 });
+
+test("wasm release job installs workspace dependencies before root smoke scripts", () => {
+  const source = readRepoFile(".github", "workflows", "release.yml");
+  const workflow = parse(source) as { jobs?: Record<string, ReleaseJob> };
+  const wasmJob = workflow.jobs?.["release-npm-wasm"];
+  assert.ok(wasmJob, "missing release-npm-wasm job");
+
+  const steps = wasmJob.steps ?? [];
+  const setupIndex = steps.findIndex(
+    (step) => step.uses?.includes("voidzero-dev/setup-vp@") && step.with?.["run-install"] === true,
+  );
+  const smokeIndex = steps.findIndex((step) =>
+    step.run?.includes("node tools/npm/smoke-release-install.mjs npm/wasm"),
+  );
+
+  assert.notEqual(setupIndex, -1, "release-npm-wasm setup-vp must install root dependencies");
+  assert.notEqual(smokeIndex, -1, "release-npm-wasm must smoke install the WASM tarball");
+  assert.ok(
+    setupIndex < smokeIndex,
+    "release-npm-wasm must install root dependencies before smoke-release-install.mjs imports semver",
+  );
+});
