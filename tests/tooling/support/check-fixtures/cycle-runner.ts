@@ -10,8 +10,8 @@ import { parseProcLimits, parseUlimitProcesses, readUlimitProcessesHard } from "
 import { runSupervised } from "./supervised-command.ts";
 import { sampleTopology, type TopologySample } from "./topology.ts";
 
-/** Corsa CLI process names, before and after the `tsgo` shim `exec`s. */
-const CORSA_COMMANDS = ["tsgo", "corsa"];
+/** Corsa runtime process names before and after package-manager shims `exec`. */
+const CORSA_COMMANDS = ["tsgo", "corsa", "tsc"];
 
 /** Substrings that mean the runner ran out of task slots. */
 const EAGAIN_MARKERS = ["Resource temporarily unavailable", "EAGAIN", "os error 11"];
@@ -59,10 +59,12 @@ export type CycleRecord = {
   readonly failures: readonly string[];
 };
 
+export function isCorsaRuntimeCommand(command: string): boolean {
+  return CORSA_COMMANDS.includes(command.toLowerCase());
+}
+
 function countCorsa(sample: TopologySample): number {
-  return sample.group.processes.filter((task) =>
-    CORSA_COMMANDS.includes(task.command.toLowerCase()),
-  ).length;
+  return sample.group.processes.filter((task) => isCorsaRuntimeCommand(task.command)).length;
 }
 
 function reportsEagain(text: string): boolean {

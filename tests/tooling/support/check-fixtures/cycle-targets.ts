@@ -48,8 +48,9 @@ export type CycleTarget = {
   readonly expectsDiagnostics: boolean;
   /**
    * Processes the run may have live in its own group at peak: the `vize`
-   * process plus one Corsa CLI per shard. Measured, not estimated — the
-   * `tsgo` shim `exec`s in place, so a shard never costs more than one slot.
+   * process plus one Corsa runtime per shard. Measured, not estimated — the
+   * package-manager shim `exec`s in place, so a shard never costs more than one
+   * slot.
    */
   readonly peakGroupProcessBound: number;
   /**

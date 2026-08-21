@@ -12,6 +12,7 @@ import {
   phaseEnv,
   runPhase,
 } from "./support/check-fixtures/phase-runner.ts";
+import { isCorsaRuntimeCommand } from "./support/check-fixtures/cycle-runner.ts";
 import { readProcessTable } from "./support/check-fixtures/process-table.ts";
 import { REPORT_SCHEMA } from "./support/check-fixtures/report.ts";
 import { settleGuardedTasks } from "./support/check-fixtures/supervised-command.ts";
@@ -184,6 +185,13 @@ test("phase classification separates assertion failures, leaks, and spawn failur
     }),
     "spawn-failed",
   );
+});
+
+test("Corsa runtime process names cover preview and TypeScript 7 stable binaries", () => {
+  for (const command of ["tsgo", "corsa", "tsc", "TSC"]) {
+    assert.equal(isCorsaRuntimeCommand(command), true, command);
+  }
+  assert.equal(isCorsaRuntimeCommand("node"), false);
 });
 
 test("the supervisor artifact records the whole process budget for every phase", async () => {

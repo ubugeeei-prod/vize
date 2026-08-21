@@ -23,7 +23,7 @@ export type TaskRecord = {
   readonly pgid: number;
   /** Single-letter process state; `Z` is a zombie. */
   readonly state: string;
-  /** Executable base name, e.g. `node`, `vize`, `tsgo`. */
+  /** Executable base name, e.g. `node`, `vize`, `tsgo`, `tsc`. */
   readonly command: string;
   /** Live thread count, or `null` where the platform does not report it. */
   readonly threads: number | null;

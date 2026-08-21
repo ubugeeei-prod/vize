@@ -21,7 +21,7 @@ export type TopologySample = {
   /**
    * The live process and thread tree this lane can be held to: the supervisor,
    * everything descended from it, everything in the supervised process group,
-   * and every `node`, `vize`, `tsgo`, or `corsa` process anywhere on the box —
+   * and every `node`, `vize`, `tsgo`, `corsa`, or `tsc` process anywhere on the box —
    * so a checker that escaped both relations is still on the record. Unrelated
    * system processes are counted in `liveTasks` but not enumerated, which is
    * what keeps 35 phases x 3 samples inside an artifact worth downloading.
@@ -38,11 +38,10 @@ export type TopologySample = {
 /**
  * Commands whose survival past a phase is a leak.
  *
- * `corsa` rides along with `tsgo`: `tests/_helpers/apps.ts` prefers
- * `node_modules/.bin/corsa` and only falls back to `tsgo`, so guarding one name
- * and not the other would go blind the moment the primary binary lands.
+ * `corsa` rides along with `tsgo`, and TypeScript 7 stable exposes `tsc`, so
+ * guarding one name would miss part of the supported runtime surface.
  */
-export const GUARDED_COMMANDS: readonly string[] = ["node", "vize", "tsgo", "corsa"];
+export const GUARDED_COMMANDS: readonly string[] = ["node", "vize", "tsgo", "corsa", "tsc"];
 
 export type SampleOptions = {
   /** Process group to attribute, or `null` before one exists. */
@@ -116,7 +115,7 @@ function isGuarded(record: TaskRecord): boolean {
 }
 
 /**
- * Every `node`, `vize`, `tsgo`, or `corsa` task that outlived its phase.
+ * Every `node`, `vize`, `tsgo`, `corsa`, or `tsc` task that outlived its phase.
  *
  * Both relations are checked. Process-group membership survives reparenting, so
  * it catches a grandchild whose parent already exited; direct descent catches a
