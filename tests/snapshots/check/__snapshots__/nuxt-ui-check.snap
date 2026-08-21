@@ -236,8 +236,7 @@
         "error:124:74 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'.",
         "error:130:47 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'.",
         "error:138:47 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'.",
-        "error:146:43 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'.",
-        "error:172:8 [TS2345] Argument of type '{} | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ...; }' is not assignable to parameter of type '{ ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ...; }'.\nType '{}' is not assignable to type '{ ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ...; }'."
+        "error:146:43 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'."
       ]
     },
     {
@@ -414,8 +413,7 @@
         "error:3:19 [TS2307] Cannot find module '#build/ui/dashboard-search-button' or its corresponding type declarations.",
         "error:58:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:60:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:103:77 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"dashboardSearchButton\"> | Record<string, never>) & { dashboardSearchButton?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"dashboardSearchButton\"> & { dashboardSearchButton?: any; }'.",
-        "error:119:10 [TS2345] Argument of type '{} | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ...; }' is not assignable to parameter of type '{ ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ...; }'.\nType '{}' is not assignable to type '{ ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ...; }'."
+        "error:103:77 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"dashboardSearchButton\"> | Record<string, never>) & { dashboardSearchButton?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"dashboardSearchButton\"> & { dashboardSearchButton?: any; }'."
       ]
     },
     {
@@ -1280,9 +1278,7 @@
         "error:185:68 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentNavigation\"> | Record<string, never>) & { contentNavigation?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentNavigation\"> & { contentNavigation?: any; }'.",
         "error:185:132 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
         "error:199:123 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentNavigation\"> | Record<string, never>) & { contentNavigation?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentNavigation\"> & { contentNavigation?: any; }'.",
-        "error:215:82 [TS2339] Property 'path' does not exist on type 'T'.",
-        "error:248:18 [TS2345] Argument of type '{ active?: boolean | undefined; ui?: { [x: string]: (props?: Record<string, any>) => string; } | undefined; link: T; }' is not assignable to parameter of type '{ link: T; active: boolean; ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; }'.\nTypes of property 'active' are incompatible.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:248:65 [TS18048] 'slotData' is possibly 'undefined'."
+        "error:215:82 [TS2339] Property 'path' does not exist on type 'T'."
       ]
     },
     {
@@ -1307,8 +1303,7 @@
         "error:3:19 [TS2307] Cannot find module '#build/ui/content/content-search-button' or its corresponding type declarations.",
         "error:58:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:60:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:103:77 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSearchButton\"> | Record<string, never>) & { contentSearchButton?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSearchButton\"> & { contentSearchButton?: any; }'.",
-        "error:119:10 [TS2345] Argument of type '{} | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ...; }' is not assignable to parameter of type '{ ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ...; }'.\nType '{}' is not assignable to type '{ ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ...; }'."
+        "error:103:77 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSearchButton\"> | Record<string, never>) & { contentSearchButton?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSearchButton\"> & { contentSearchButton?: any; }'."
       ]
     },
     {
@@ -2563,7 +2558,7 @@
       ]
     }
   ],
-  "errorCount": 1434,
+  "errorCount": 1429,
   "warningCount": 0,
   "fileCount": 231
 }
