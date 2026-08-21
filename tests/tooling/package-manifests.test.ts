@@ -234,9 +234,8 @@ test("native package catalog pins and generated loader version checks stay align
   };
   assert.ok(nativePackage.version);
 
-  const workspacePins = collectNativeBinaryCatalogPins(
-    fs.readFileSync(path.join(root, "pnpm-workspace.yaml"), "utf-8"),
-  );
+  const workspaceYaml = fs.readFileSync(path.join(root, "pnpm-workspace.yaml"), "utf-8");
+  const workspacePins = collectNativeBinaryCatalogPins(workspaceYaml);
   const nativeOptionalDependencies = Object.entries(
     nativePackage.optionalDependencies ?? {},
   ).filter(([name]) => name.startsWith("@vizejs/native-"));
@@ -264,6 +263,11 @@ test("native package catalog pins and generated loader version checks stay align
       lockfile,
       new RegExp(`['"]?${escapedName}['"]?:\\n\\s+specifier: ${escapedVersion}\\n`),
       `${name} lockfile catalog specifier should match @vizejs/native version`,
+    );
+    assert.match(
+      workspaceYaml,
+      new RegExp(`^\\s+- "${escapedName}@[^"]*\\b${escapedVersion}\\b[^"]*"$`, "m"),
+      `${name} ${catalogVersion} should be allowed by minimumReleaseAgeExclude`,
     );
   }
 
@@ -304,7 +308,7 @@ test("pkl runtime stays optional for consumers of the vize package", () => {
   });
 });
 
-test("native preview runtime is declared for vize check users", () => {
+test("Corsa runtime is declared for vize check users", () => {
   const packageJson = JSON.parse(readRepoFile("npm/cli/package.json")) as {
     dependencies?: Record<string, string>;
     optionalDependencies?: Record<string, string>;
@@ -313,12 +317,24 @@ test("native preview runtime is declared for vize check users", () => {
   };
 
   assert.equal(packageJson.dependencies?.["@typescript/native-preview"], undefined);
+  assert.equal(packageJson.optionalDependencies?.["@typescript/native-preview"], undefined);
+  assert.equal(packageJson.optionalDependencies?.typescript, undefined);
   assert.equal(
-    packageJson.optionalDependencies?.["@typescript/native-preview"],
-    "catalog:typescript",
+    packageJson.optionalDependencies?.["@typescript/typescript-darwin-arm64"],
+    "catalog:corsa-runtime",
+  );
+  assert.equal(
+    packageJson.optionalDependencies?.["@typescript/typescript-linux-x64"],
+    "catalog:corsa-runtime",
+  );
+  assert.equal(
+    packageJson.optionalDependencies?.["@typescript/typescript-win32-x64"],
+    "catalog:corsa-runtime",
   );
   assert.equal(packageJson.peerDependencies?.["@typescript/native-preview"], undefined);
   assert.equal(packageJson.peerDependenciesMeta?.["@typescript/native-preview"], undefined);
+  assert.equal(packageJson.peerDependencies?.typescript, undefined);
+  assert.equal(packageJson.peerDependenciesMeta?.typescript, undefined);
 });
 
 test("vize package leaves Vue type versions to the consuming project", () => {

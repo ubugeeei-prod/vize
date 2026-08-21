@@ -38,20 +38,35 @@ export function resolveBundledCorsaRuntime(options: RuntimeResolutionOptions = {
   try {
     const cliManifestPath = path.join(packageRoot, "package.json");
     const cliManifest = readManifest(cliManifestPath);
-    const declaredMetaVersion = cliManifest.optionalDependencies?.["@typescript/native-preview"];
+    const packageRequire = createRequire(cliManifestPath);
+
+    const platformPackage = `@typescript/typescript-${platform}-${arch}`;
+    const declaredBundledPlatformVersion = cliManifest.optionalDependencies?.[platformPackage];
+    if (typeof declaredBundledPlatformVersion === "string") {
+      const platformManifestPath = packageRequire.resolve(`${platformPackage}/package.json`);
+      const platformManifest = readManifest(platformManifestPath);
+      if (
+        platformManifest.name !== platformPackage ||
+        !matchesDeclaredVersion(platformManifest.version, declaredBundledPlatformVersion)
+      ) {
+        return null;
+      }
+      return resolvePlatformExecutable(platformManifestPath, platform);
+    }
+
+    const declaredMetaVersion = cliManifest.optionalDependencies?.typescript;
     if (typeof declaredMetaVersion !== "string") return null;
 
-    const packageRequire = createRequire(cliManifestPath);
-    const metaManifestPath = packageRequire.resolve("@typescript/native-preview/package.json");
+    const metaManifestPath = packageRequire.resolve("typescript/package.json");
     const metaManifest = readManifest(metaManifestPath);
     if (
-      metaManifest.name !== "@typescript/native-preview" ||
+      metaManifest.name !== "typescript" ||
+      !isTypeScriptSevenOrNewer(metaManifest.version) ||
       !matchesDeclaredVersion(metaManifest.version, declaredMetaVersion)
     ) {
       return null;
     }
 
-    const platformPackage = `@typescript/native-preview-${platform}-${arch}`;
     const declaredPlatformVersion = metaManifest.optionalDependencies?.[platformPackage];
     if (typeof declaredPlatformVersion !== "string") return null;
 
@@ -65,16 +80,23 @@ export function resolveBundledCorsaRuntime(options: RuntimeResolutionOptions = {
       return null;
     }
 
-    const executable = path.join(
-      path.dirname(platformManifestPath),
-      "lib",
-      platform === "win32" ? "tsgo.exe" : "tsgo",
-    );
-    return fs.existsSync(executable) ? executable : null;
+    return resolvePlatformExecutable(platformManifestPath, platform);
   } catch {
     // The runtime is optional. Existing Rust-side discovery remains the fallback.
     return null;
   }
+}
+
+function resolvePlatformExecutable(
+  platformManifestPath: string,
+  platform: NodeJS.Platform,
+): string | null {
+  const executable = path.join(
+    path.dirname(platformManifestPath),
+    "lib",
+    platform === "win32" ? "tsc.exe" : "tsc",
+  );
+  return fs.existsSync(executable) ? executable : null;
 }
 
 function hasPublicRuntimeOverride(environment: NodeJS.ProcessEnv): boolean {
@@ -86,6 +108,12 @@ function hasPublicRuntimeOverride(environment: NodeJS.ProcessEnv): boolean {
 
 function matchesDeclaredVersion(actual: unknown, declared: string): boolean {
   return typeof actual === "string" && (declared.startsWith("catalog:") || actual === declared);
+}
+
+function isTypeScriptSevenOrNewer(version: unknown): boolean {
+  if (typeof version !== "string") return false;
+  const major = Number.parseInt(version.split(".")[0] ?? "", 10);
+  return Number.isFinite(major) && major >= 7;
 }
 
 function readManifest(filename: string): {

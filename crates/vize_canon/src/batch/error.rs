@@ -100,7 +100,7 @@ impl CorsaNotFoundError {
                 path.display()
             );
         } else {
-            msg.push_str("vize check requires '@typescript/native-preview' to be installed.\n\n");
+            msg.push_str("vize check requires 'typescript@^7' to be installed.\n\n");
         }
 
         if let Some(pm) = self.detected_pm {
@@ -135,10 +135,10 @@ impl CorsaNotFoundError {
 
     fn install_command(&self, pm: PackageManager) -> String {
         match pm {
-            PackageManager::Npm => cstr!("npm install -D @typescript/native-preview"),
-            PackageManager::Pnpm => cstr!("pnpm add -D @typescript/native-preview"),
-            PackageManager::Yarn => cstr!("yarn add -D @typescript/native-preview"),
-            PackageManager::Bun => cstr!("bun add -D @typescript/native-preview"),
+            PackageManager::Npm => cstr!("npm install -D typescript@^7"),
+            PackageManager::Pnpm => cstr!("pnpm add -D typescript@^7"),
+            PackageManager::Yarn => cstr!("yarn add -D typescript@^7"),
+            PackageManager::Bun => cstr!("bun add -D typescript@^7"),
         }
     }
 }

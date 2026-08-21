@@ -2,7 +2,7 @@ use crate::file_uri::path_to_file_uri;
 use corsa::runtime::block_on;
 use corsa_lsp::LspClient;
 use lsp_types::{DocumentDiagnosticReportResult, Uri};
-use serde_json::Value;
+use serde_json::{Value, json};
 use std::path::Path;
 use vize_carton::{String, cstr};
 
@@ -27,7 +27,20 @@ pub(super) fn initialize_lsp_client(client: &LspClient, project_root: &Path) -> 
         .file_name()
         .and_then(|name| name.to_str())
         .unwrap_or("workspace");
-    block_on(client.request::<InitializeRequest>(serde_json::json!({
+    block_on(client.request::<InitializeRequest>(initialize_lsp_params(
+        project_root,
+        root_uri,
+        workspace_name,
+    )))
+    .map_err(|error| cstr!("Failed to initialize Corsa LSP session: {error}"))?;
+    client
+        .notify::<InitializedNotification>(serde_json::json!({}))
+        .map_err(|error| cstr!("Failed to send LSP initialized notification: {error}"))?;
+    Ok(())
+}
+
+fn initialize_lsp_params(project_root: &Path, root_uri: String, workspace_name: &str) -> Value {
+    json!({
         "processId": std::process::id(),
         "rootPath": project_root,
         "rootUri": root_uri,
@@ -44,17 +57,16 @@ pub(super) fn initialize_lsp_client(client: &LspClient, project_root: &Path) -> 
                 }
             },
             "workspace": {
+                "didChangeWatchedFiles": {
+                    "dynamicRegistration": true,
+                    "relativePatternSupport": true,
+                },
                 "diagnostic": {
                     "refreshSupport": true,
                 }
             }
         }
-    })))
-    .map_err(|error| cstr!("Failed to initialize Corsa LSP session: {error}"))?;
-    client
-        .notify::<InitializedNotification>(serde_json::json!({}))
-        .map_err(|error| cstr!("Failed to send LSP initialized notification: {error}"))?;
-    Ok(())
+    })
 }
 
 pub(super) fn request_lsp_document_diagnostics(
@@ -109,9 +121,11 @@ pub(super) fn request_lsp_document_diagnostic_ack(
 
 #[cfg(all(test, feature = "native", unix))]
 mod tests {
+    use super::initialize_lsp_params;
     use std::{
         io::{BufReader, Write},
         os::unix::net::UnixStream,
+        path::Path,
         thread,
         time::Duration,
     };
@@ -121,6 +135,23 @@ mod tests {
         JsonRpcConnection, JsonRpcConnectionOptions, RpcHandlerMap, read_frame,
     };
     use serde_json::json;
+
+    #[test]
+    fn initialize_advertises_client_side_file_watching() {
+        let params = initialize_lsp_params(
+            Path::new("/workspace"),
+            "file:///workspace".into(),
+            "workspace",
+        );
+
+        assert_eq!(
+            params["capabilities"]["workspace"]["didChangeWatchedFiles"],
+            json!({
+                "dynamicRegistration": true,
+                "relativePatternSupport": true,
+            })
+        );
+    }
 
     #[test]
     fn malformed_readiness_response_fails_at_jsonrpc_frame_reader() {

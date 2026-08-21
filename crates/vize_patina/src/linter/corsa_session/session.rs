@@ -208,20 +208,39 @@ fn api_mode_for_executable(path: &std::path::Path) -> ApiMode {
         return ApiMode::AsyncJsonRpcStdio;
     }
 
+    if is_typescript_native_preview_executable(path) {
+        return ApiMode::AsyncJsonRpcStdio;
+    }
+
+    ApiMode::SyncMsgpackStdio
+}
+
+fn is_typescript_native_preview_executable(path: &std::path::Path) -> bool {
     let Some(parent) = path.parent() else {
-        return ApiMode::SyncMsgpackStdio;
+        return false;
     };
-    let Some(grandparent) = parent.parent() else {
-        return ApiMode::SyncMsgpackStdio;
+    let Some(parent_name) = parent.file_name().and_then(|name| name.to_str()) else {
+        return false;
+    };
+    if parent_name != "bin" && parent_name != "lib" {
+        return false;
     };
 
-    if parent.file_name().and_then(|name| name.to_str()) == Some("bin")
-        && grandparent.file_name().and_then(|name| name.to_str()) == Some("native-preview")
-    {
-        ApiMode::AsyncJsonRpcStdio
-    } else {
-        ApiMode::SyncMsgpackStdio
+    let Some(package_dir) = parent.parent() else {
+        return false;
+    };
+    let Some(package_name) = package_dir.file_name().and_then(|name| name.to_str()) else {
+        return false;
+    };
+    if package_name != "native-preview" && !package_name.starts_with("native-preview-") {
+        return false;
     }
+
+    package_dir
+        .parent()
+        .and_then(|scope| scope.file_name())
+        .and_then(|name| name.to_str())
+        == Some("@typescript")
 }
 
 #[cfg(test)]
@@ -229,9 +248,9 @@ mod tests {
     use super::api_mode_for_executable;
     use crate::linter::corsa_session::CorsaTypeAwareSession;
     use corsa::api::ApiMode;
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
     use std::sync::atomic::{AtomicU64, Ordering};
-    use vize_carton::cstr;
+    use vize_carton::{corsa_resolver::platform_suffix, cstr};
 
     static NEXT_CASE_ID: AtomicU64 = AtomicU64::new(0);
 
@@ -250,11 +269,19 @@ mod tests {
     }
 
     #[test]
-    fn uses_msgpack_for_native_binaries() {
+    fn uses_json_rpc_for_typescript_native_preview_binaries() {
         assert_eq!(
             api_mode_for_executable(Path::new(
                 "/workspace/node_modules/@typescript/native-preview-darwin-arm64/lib/tsgo"
             )),
+            ApiMode::AsyncJsonRpcStdio
+        );
+    }
+
+    #[test]
+    fn uses_msgpack_for_generic_native_binaries() {
+        assert_eq!(
+            api_mode_for_executable(Path::new("/workspace/bin/corsa")),
             ApiMode::SyncMsgpackStdio
         );
     }
@@ -287,6 +314,30 @@ mod tests {
         let _ = std::fs::remove_dir_all(&root);
     }
 
+    #[test]
+    fn starts_type_aware_session_from_package_root() {
+        let Some(corsa_path) = test_corsa_path() else {
+            return;
+        };
+        let root = case_dir("package-root");
+        let _ = std::fs::remove_dir_all(&root);
+        let source = root.join("src").join("Component.vue");
+
+        std::fs::create_dir_all(source.parent().unwrap()).unwrap();
+        std::fs::write(root.join("package.json"), "{}").unwrap();
+        std::fs::write(&source, "<template />").unwrap();
+
+        let mut session =
+            CorsaTypeAwareSession::new_with_corsa_path(source.to_str().unwrap(), Some(&corsa_path))
+                .expect("package-root patina session should start");
+        session
+            .open_virtual_project("const value: number = 1;\n")
+            .expect("package-root patina session should refresh the virtual file");
+        session.close();
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
     fn case_dir(name: &str) -> std::path::PathBuf {
         let id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
         std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -296,5 +347,28 @@ mod tests {
                 "patina-corsa-session-{name}-{}-{id}",
                 std::process::id()
             ))
+    }
+
+    fn test_corsa_path() -> Option<PathBuf> {
+        let repo_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .parent()?
+            .parent()?
+            .to_path_buf();
+        let native = repo_root
+            .join("node_modules")
+            .join("@typescript")
+            .join(&*cstr!("native-preview-{}", platform_suffix()))
+            .join("lib")
+            .join(&*cstr!("tsgo{}", std::env::consts::EXE_SUFFIX));
+        if native.is_file() {
+            return Some(native);
+        }
+
+        let wrapper = repo_root.join("node_modules").join(".bin").join("tsgo");
+        if wrapper.is_file() {
+            Some(wrapper)
+        } else {
+            None
+        }
     }
 }

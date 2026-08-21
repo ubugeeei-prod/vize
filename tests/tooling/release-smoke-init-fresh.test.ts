@@ -106,13 +106,23 @@ test("fresh-project toolchain accepts package-local vize without manager shims",
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-toolchain-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const projectRoot = path.join(root, "project");
+  const corsaPackage = `@typescript/typescript-${process.platform}-${process.arch}`;
   writeFiles(path.join(projectRoot, "node_modules", "vize"), {
     "bin/vize": "",
-    "package.json": `${JSON.stringify({ name: "vize", version: "0.0.0" })}\n`,
+    "package.json": `${JSON.stringify({ name: "vize", version: "0.0.0", optionalDependencies: { [corsaPackage]: "7.0.0" } })}\n`,
   });
-  writeFiles(path.join(projectRoot, "node_modules", "@typescript", "native-preview"), {
-    "package.json": `${JSON.stringify({ name: "@typescript/native-preview", version: "0.0.0" })}\n`,
-  });
+  writeFiles(
+    path.join(
+      projectRoot,
+      "node_modules",
+      "vize",
+      "node_modules",
+      ...corsaPackage.split("/"),
+    ),
+    {
+      "package.json": `${JSON.stringify({ name: corsaPackage, version: "7.0.0" })}\n`,
+    },
+  );
   assertProjectLocalToolchain(
     {
       installDir: path.join(root, "install"),
@@ -260,7 +270,7 @@ test("the release runtime smoke runs the fresh-project matrix", () => {
   assert.match(project, /is inside the install tree/u);
   assert.match(project, /is inside the Vize checkout/u);
   assert.match(project, /would leak into the fresh project/u);
-  assert.match(project, /installed vize did not bring project-local @typescript\/native-preview/u);
+  assert.match(project, /installed vize did not bring project-local TypeScript 7 for Corsa/u);
   assert.match(project, /a missing Corsa runtime silently disabled type checking/u);
 
   for (const workflow of ["release.yml", "native-smoke.yml"]) {

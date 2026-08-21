@@ -17,17 +17,17 @@ test("packed CLI prefers its compatible runtime over an older project runtime", 
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-cli-corsa-collision-"));
   try {
     const packageRoot = path.join(root, "node_modules", "vize");
-    const platformPackage = `@typescript/native-preview-${process.platform}-${process.arch}`;
-    const oldRuntime = writeNativePreview(root, platformPackage, "1.0.0", oldRuntimeSource);
-    const bundledRuntime = writeNativePreview(
+    const platformPackage = `@typescript/typescript-${process.platform}-${process.arch}`;
+    const oldRuntime = writeTypeScriptRuntime(root, platformPackage, "6.0.3", oldRuntimeSource);
+    const bundledRuntime = writeTypeScriptRuntime(
       packageRoot,
       platformPackage,
-      "2.0.0",
+      "7.0.2",
       compatibleRuntimeSource,
     );
     writeJson(path.join(packageRoot, "package.json"), {
       name: "vize",
-      optionalDependencies: { "@typescript/native-preview": "2.0.0" },
+      optionalDependencies: { [platformPackage]: "7.0.2" },
       type: "module",
     });
     writeNativeStub(packageRoot);
@@ -106,11 +106,11 @@ test("missing bundled runtime leaves existing discovery untouched", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-cli-corsa-missing-"));
   try {
     const packageRoot = path.join(root, "node_modules", "vize");
-    const platformPackage = `@typescript/native-preview-${process.platform}-${process.arch}`;
-    writeNativePreview(root, platformPackage, "1.0.0", oldRuntimeSource);
+    const platformPackage = `@typescript/typescript-${process.platform}-${process.arch}`;
+    writeTypeScriptRuntime(root, platformPackage, "6.0.3", oldRuntimeSource);
     writeJson(path.join(packageRoot, "package.json"), {
       name: "vize",
-      optionalDependencies: { "@typescript/native-preview": "2.0.0" },
+      optionalDependencies: { [platformPackage]: "7.0.2" },
       type: "module",
     });
     const environment = {};
@@ -167,16 +167,16 @@ function createRuntimeFixture(): {
 } {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-cli-corsa-runtime-"));
   const packageRoot = path.join(root, "node_modules", "vize");
-  const platformPackage = `@typescript/native-preview-${process.platform}-${process.arch}`;
-  const runtime = writeNativePreview(
+  const platformPackage = `@typescript/typescript-${process.platform}-${process.arch}`;
+  const runtime = writeTypeScriptRuntime(
     packageRoot,
     platformPackage,
-    "2.0.0",
+    "7.0.2",
     compatibleRuntimeSource,
   );
   writeJson(path.join(packageRoot, "package.json"), {
     name: "vize",
-    optionalDependencies: { "@typescript/native-preview": "2.0.0" },
+    optionalDependencies: { [platformPackage]: "7.0.2" },
     type: "module",
   });
   return {
@@ -186,18 +186,14 @@ function createRuntimeFixture(): {
   };
 }
 
-function writeNativePreview(
+function writeTypeScriptRuntime(
   packageRoot: string,
   platformPackage: string,
   version: string,
   runtimeSource: string,
 ): string {
-  const scope = path.join(packageRoot, "node_modules", "@typescript");
-  writeJson(path.join(scope, "native-preview", "package.json"), {
-    name: "@typescript/native-preview",
-    optionalDependencies: { [platformPackage]: version },
-    version,
-  });
+  const nodeModules = path.join(packageRoot, "node_modules");
+  const scope = path.join(nodeModules, "@typescript");
   const platformRoot = path.join(scope, platformPackage.replace("@typescript/", ""));
   writeJson(path.join(platformRoot, "package.json"), {
     name: platformPackage,
@@ -206,7 +202,7 @@ function writeNativePreview(
   const runtime = path.join(
     platformRoot,
     "lib",
-    process.platform === "win32" ? "tsgo.exe" : "tsgo",
+    process.platform === "win32" ? "tsc.exe" : "tsc",
   );
   fs.mkdirSync(path.dirname(runtime), { recursive: true });
   fs.writeFileSync(runtime, runtimeSource);

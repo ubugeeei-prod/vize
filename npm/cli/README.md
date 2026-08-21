@@ -57,9 +57,9 @@ For manual installation:
 vp install -D vize
 ```
 
-The package declares the `@typescript/native-preview` Corsa runtime as an optional dependency, so
-standard installs include the runtime needed by `vize check`. The `--corsa-path` CLI option remains
-available for custom native TypeScript builds.
+The package declares TypeScript 7's native Corsa runtime as an optional dependency, so standard
+installs include the runtime needed by `vize check`. The `--corsa-path` CLI option remains available
+for custom native TypeScript builds.
 
 ## Package Scripts
 
@@ -170,8 +170,8 @@ Lint output supports `text`, `ansi`, `plain`, `json`, `stylish`, `markdown`, `ht
 The human and agent-friendly formats include local rule documentation paths such as
 `docs/content/rules/vue.md`.
 
-`vize check` in the npm package uses the packaged NAPI checker and the `@typescript/native-preview`
-Corsa runtime, so it can run from `package.json` scripts after installing `vize`:
+`vize check` in the npm package uses the packaged NAPI checker and TypeScript 7's native Corsa
+runtime, so it can run from `package.json` scripts after installing `vize`:
 
 ```json
 {

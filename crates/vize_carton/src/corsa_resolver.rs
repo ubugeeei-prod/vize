@@ -17,9 +17,12 @@
 //!    - developer-checkout paths (`<dir>/ref/typescript-go/...` and the
 //!      sibling `../corsa-bind` checkout) — only when dev paths are enabled,
 //!      see below
-//!    - Node-style resolution of `@typescript/native-preview/package.json`,
+//!    - Node-style resolution of `typescript@7` and its
+//!      `@typescript/typescript-*` platform package
+//!    - the `typescript@7` runtime shipped under `node_modules/vize`
+//!    - legacy Node-style resolution of `@typescript/native-preview/package.json`,
 //!      reading its platform `optionalDependencies` entry
-//!    - the platform package / meta package under `node_modules/@typescript`
+//!    - the legacy platform package / meta package under `node_modules/@typescript`
 //!    - the pnpm virtual store (`node_modules/.pnpm`) as a legacy fallback
 //!
 //!      Every native-binary probe accepts both `{corsa,tsgo}` and
@@ -136,7 +139,7 @@ fn normalize_corsa_path_with_discovery(
     }
 }
 
-/// The `@typescript/native-preview-*` platform suffix for the current target.
+/// The `@typescript/*-*` platform suffix for the current target.
 pub fn platform_suffix() -> &'static str {
     if cfg!(target_os = "macos") {
         if cfg!(target_arch = "aarch64") {
@@ -348,13 +351,20 @@ fn find_node_modules_native(dir: &Path) -> Option<PathBuf> {
     let suffix = platform_suffix();
 
     if !suffix.is_empty() {
-        // Node-style resolution: let the meta package's manifest tell us which
-        // platform package to look for, then resolve it like `require` would.
-        if let Some(path) = resolve_platform_package(&node_modules, suffix) {
+        if let Some(path) = find_stable_typescript_native(&node_modules, suffix) {
+            return Some(path);
+        }
+        if let Some(path) = find_vize_owned_stable_typescript_native(&node_modules, suffix) {
             return Some(path);
         }
 
-        let lib_dir = platform_package_root(&node_modules, suffix).join("lib");
+        // Node-style resolution: let the meta package's manifest tell us which
+        // platform package to look for, then resolve it like `require` would.
+        if let Some(path) = resolve_native_preview_platform_package(&node_modules, suffix) {
+            return Some(path);
+        }
+
+        let lib_dir = native_preview_platform_package_root(&node_modules, suffix).join("lib");
         for executable in CORSA_EXECUTABLE_NAMES {
             if let Some(found) = existing_executable(&lib_dir, executable) {
                 return Some(found);
@@ -373,7 +383,7 @@ fn find_node_modules_native(dir: &Path) -> Option<PathBuf> {
     }
 
     if !suffix.is_empty()
-        && let Some(path) = scrape_pnpm_store(&node_modules, suffix)
+        && let Some(path) = scrape_native_preview_pnpm_store(&node_modules, suffix)
     {
         return Some(path);
     }
@@ -381,11 +391,72 @@ fn find_node_modules_native(dir: &Path) -> Option<PathBuf> {
     None
 }
 
+fn find_stable_typescript_native(node_modules: &Path, suffix: &str) -> Option<PathBuf> {
+    if let Some(path) = resolve_typescript_platform_package(node_modules, suffix) {
+        return Some(path);
+    }
+
+    let lib_dir = typescript_platform_package_root(node_modules, suffix).join("lib");
+    if let Some(found) = existing_executable(&lib_dir, "tsc") {
+        return Some(found);
+    }
+
+    scrape_typescript_pnpm_store(node_modules, suffix)
+}
+
+fn find_vize_owned_stable_typescript_native(node_modules: &Path, suffix: &str) -> Option<PathBuf> {
+    find_stable_typescript_native(&node_modules.join("vize").join("node_modules"), suffix)
+}
+
+/// Resolve the platform binary the way Node would: read
+/// `typescript/package.json`, require a stable TypeScript 7+ package, pick the
+/// platform entry from its `optionalDependencies`, and walk `node_modules`
+/// directories upward from the (symlink-resolved) meta package directory.
+fn resolve_typescript_platform_package(node_modules: &Path, suffix: &str) -> Option<PathBuf> {
+    let package_dir = node_modules.join("typescript");
+    let manifest = std::fs::read_to_string(package_dir.join("package.json")).ok()?;
+    let manifest: serde_json::Value = serde_json::from_str(&manifest).ok()?;
+    if !package_major_at_least(&manifest, 7) {
+        return None;
+    }
+    let platform_package = crate::cstr!("@typescript/typescript-{suffix}");
+    if !manifest
+        .get("optionalDependencies")
+        .and_then(serde_json::Value::as_object)
+        .is_some_and(|dependencies| dependencies.contains_key(platform_package.as_str()))
+    {
+        return None;
+    }
+
+    let real_package_dir = package_dir.canonicalize().unwrap_or(package_dir);
+    for ancestor in real_package_dir.ancestors() {
+        let package_root = typescript_platform_package_root(&ancestor.join("node_modules"), suffix);
+        if !package_root.is_dir() {
+            continue;
+        }
+        let lib_dir = package_root.join("lib");
+        if let Some(found) = existing_executable(&lib_dir, "tsc") {
+            return Some(found);
+        }
+    }
+
+    None
+}
+
+fn package_major_at_least(manifest: &serde_json::Value, minimum: u64) -> bool {
+    manifest
+        .get("version")
+        .and_then(serde_json::Value::as_str)
+        .and_then(|version| version.split('.').next())
+        .and_then(|major| major.parse::<u64>().ok())
+        .is_some_and(|major| major >= minimum)
+}
+
 /// Resolve the platform binary the way Node would: read
 /// `@typescript/native-preview/package.json`, pick the platform entry from its
 /// `optionalDependencies`, and walk `node_modules` directories upward from the
 /// (symlink-resolved) meta package directory.
-fn resolve_platform_package(node_modules: &Path, suffix: &str) -> Option<PathBuf> {
+fn resolve_native_preview_platform_package(node_modules: &Path, suffix: &str) -> Option<PathBuf> {
     let package_dir = node_modules.join("@typescript").join("native-preview");
     let manifest = std::fs::read_to_string(package_dir.join("package.json")).ok()?;
     let manifest: serde_json::Value = serde_json::from_str(&manifest).ok()?;
@@ -400,7 +471,8 @@ fn resolve_platform_package(node_modules: &Path, suffix: &str) -> Option<PathBuf
 
     let real_package_dir = package_dir.canonicalize().unwrap_or(package_dir);
     for ancestor in real_package_dir.ancestors() {
-        let package_root = platform_package_root(&ancestor.join("node_modules"), suffix);
+        let package_root =
+            native_preview_platform_package_root(&ancestor.join("node_modules"), suffix);
         if !package_root.is_dir() {
             continue;
         }
@@ -415,15 +487,21 @@ fn resolve_platform_package(node_modules: &Path, suffix: &str) -> Option<PathBuf
     None
 }
 
-fn platform_package_root(node_modules: &Path, suffix: &str) -> PathBuf {
+fn native_preview_platform_package_root(node_modules: &Path, suffix: &str) -> PathBuf {
     node_modules
         .join("@typescript")
         .join(&*crate::cstr!("native-preview-{suffix}"))
 }
 
+fn typescript_platform_package_root(node_modules: &Path, suffix: &str) -> PathBuf {
+    node_modules
+        .join("@typescript")
+        .join(&*crate::cstr!("typescript-{suffix}"))
+}
+
 /// Legacy fallback: scan the pnpm virtual store for layouts where the platform
 /// package exists in the store but is not linked at this `node_modules` level.
-fn scrape_pnpm_store(node_modules: &Path, suffix: &str) -> Option<PathBuf> {
+fn scrape_native_preview_pnpm_store(node_modules: &Path, suffix: &str) -> Option<PathBuf> {
     let store = node_modules.join(".pnpm");
     let entries = std::fs::read_dir(&store).ok()?;
 
@@ -433,11 +511,33 @@ fn scrape_pnpm_store(node_modules: &Path, suffix: &str) -> Option<PathBuf> {
         if !name.starts_with("@typescript+native-preview-") || !name.contains(suffix) {
             continue;
         }
-        let lib_dir = platform_package_root(&entry.path().join("node_modules"), suffix).join("lib");
+        let lib_dir =
+            native_preview_platform_package_root(&entry.path().join("node_modules"), suffix)
+                .join("lib");
         for executable in CORSA_EXECUTABLE_NAMES {
             if let Some(found) = existing_executable(&lib_dir, executable) {
                 return Some(found);
             }
+        }
+    }
+
+    None
+}
+
+fn scrape_typescript_pnpm_store(node_modules: &Path, suffix: &str) -> Option<PathBuf> {
+    let store = node_modules.join(".pnpm");
+    let entries = std::fs::read_dir(&store).ok()?;
+
+    for entry in entries.flatten() {
+        let name = entry.file_name();
+        let name = name.to_string_lossy();
+        if !name.starts_with("@typescript+typescript-") || !name.contains(suffix) {
+            continue;
+        }
+        let lib_dir = typescript_platform_package_root(&entry.path().join("node_modules"), suffix)
+            .join("lib");
+        if let Some(found) = existing_executable(&lib_dir, "tsc") {
+            return Some(found);
         }
     }
 
@@ -562,6 +662,17 @@ mod tests {
     fn write_file(path: &Path) {
         fs::create_dir_all(path.parent().unwrap()).unwrap();
         fs::write(path, "").unwrap();
+    }
+
+    fn write_typescript_manifest(path: &Path, suffix: &str, version: &str) {
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(
+            path,
+            &*crate::cstr!(
+                r#"{{"name":"typescript","version":"{version}","optionalDependencies":{{"@typescript/typescript-{suffix}":"{version}"}}}}"#
+            ),
+        )
+        .unwrap();
     }
 
     fn resolve(
@@ -733,6 +844,84 @@ mod tests {
         let resolved = discover_in_walk(&[root.join("packages").join("demo")], false);
 
         assert_eq!(resolved, Some(cache));
+    }
+
+    #[test]
+    fn prefers_typescript_seven_runtime_over_native_preview() {
+        let suffix = platform_suffix();
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path().join("project");
+        let node_modules = root.join("node_modules");
+        let manifest = node_modules.join("typescript").join("package.json");
+        let typescript_binary = node_modules
+            .join("@typescript")
+            .join(&*crate::cstr!("typescript-{suffix}"))
+            .join("lib")
+            .join("tsc");
+        let native_preview_binary = node_modules
+            .join("@typescript")
+            .join("native-preview")
+            .join("lib")
+            .join("tsgo");
+        write_typescript_manifest(&manifest, suffix, "7.0.2");
+        write_file(&typescript_binary);
+        write_file(&native_preview_binary);
+
+        let resolved = discover_in_walk(std::slice::from_ref(&root), false);
+
+        assert_eq!(resolved, Some(typescript_binary.canonicalize().unwrap()));
+    }
+
+    #[test]
+    fn ignores_typescript_six_when_finding_corsa_runtime() {
+        let suffix = platform_suffix();
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path().join("project");
+        let node_modules = root.join("node_modules");
+        let manifest = node_modules.join("typescript").join("package.json");
+        let native_preview_binary = node_modules
+            .join("@typescript")
+            .join("native-preview")
+            .join("lib")
+            .join("tsgo");
+        write_typescript_manifest(&manifest, suffix, "6.0.3");
+        write_file(&native_preview_binary);
+
+        let resolved = discover_in_walk(std::slice::from_ref(&root), false);
+
+        assert_eq!(resolved, Some(native_preview_binary));
+    }
+
+    #[test]
+    fn finds_vize_owned_typescript_runtime_when_project_uses_typescript_six() {
+        let suffix = platform_suffix();
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path().join("project");
+        let node_modules = root.join("node_modules");
+        write_typescript_manifest(
+            &node_modules.join("typescript").join("package.json"),
+            suffix,
+            "6.0.3",
+        );
+        let owned_node_modules = node_modules.join("vize").join("node_modules");
+        let owned_manifest = owned_node_modules.join("typescript").join("package.json");
+        let owned_binary = owned_node_modules
+            .join("@typescript")
+            .join(&*crate::cstr!("typescript-{suffix}"))
+            .join("lib")
+            .join("tsc");
+        let native_preview_binary = node_modules
+            .join("@typescript")
+            .join("native-preview")
+            .join("lib")
+            .join("tsgo");
+        write_typescript_manifest(&owned_manifest, suffix, "7.0.2");
+        write_file(&owned_binary);
+        write_file(&native_preview_binary);
+
+        let resolved = discover_in_walk(std::slice::from_ref(&root), false);
+
+        assert_eq!(resolved, Some(owned_binary.canonicalize().unwrap()));
     }
 
     #[test]
@@ -932,6 +1121,27 @@ mod tests {
             .join(&*crate::cstr!("native-preview-{suffix}"))
             .join("lib")
             .join("tsgo");
+        write_file(&store_binary);
+
+        let resolved = discover_in_walk(&[root], false);
+
+        assert_eq!(resolved, Some(store_binary));
+    }
+
+    #[test]
+    fn scrapes_pnpm_store_when_typescript_platform_package_is_not_linked() {
+        let suffix = platform_suffix();
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path().join("project");
+        let store_binary = root
+            .join("node_modules")
+            .join(".pnpm")
+            .join(&*crate::cstr!("@typescript+typescript-{suffix}@7.0.2"))
+            .join("node_modules")
+            .join("@typescript")
+            .join(&*crate::cstr!("typescript-{suffix}"))
+            .join("lib")
+            .join("tsc");
         write_file(&store_binary);
 
         let resolved = discover_in_walk(&[root], false);

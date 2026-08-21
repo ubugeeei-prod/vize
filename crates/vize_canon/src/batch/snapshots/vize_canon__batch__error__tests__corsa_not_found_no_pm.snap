@@ -4,11 +4,11 @@ expression: msg.as_str()
 ---
 error: corsa not found
 
-vize check requires '@typescript/native-preview' to be installed.
+vize check requires 'typescript@^7' to be installed.
 
 To install, run one of the following:
 
-  npm install -D @typescript/native-preview  # npm
-  pnpm add -D @typescript/native-preview  # pnpm
-  yarn add -D @typescript/native-preview  # yarn
-  bun add -D @typescript/native-preview  # bun
+  npm install -D typescript@^7  # npm
+  pnpm add -D typescript@^7  # pnpm
+  yarn add -D typescript@^7  # yarn
+  bun add -D typescript@^7  # bun

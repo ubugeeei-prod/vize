@@ -54,7 +54,7 @@ export function byCodeUnit(left, right) {
  * Environment for every command run inside the fresh project.
  *
  * The Corsa overrides are stripped so the run proves the *installed* CLI's own
- * discovery of `@typescript/native-preview`; a host that exported `CORSA_PATH`
+ * discovery of `typescript@7`; a host that exported `CORSA_PATH`
  * would otherwise hide a packaging failure.
  */
 export function projectEnv(extra = {}) {
@@ -228,10 +228,18 @@ export function assertProjectLocalToolchain(context, projectRoot, shape) {
     `vize bin resolved outside the fresh project: ${vizeBin}`,
   );
   const vizeRequire = createRequire(path.join(vizeRoot, "package.json"));
-  const corsaManifest = vizeRequire.resolve("@typescript/native-preview/package.json");
+  const corsaPackage = `@typescript/typescript-${process.platform}-${process.arch}`;
+  const corsaManifest = vizeRequire.resolve(`${corsaPackage}/package.json`);
+  const corsaPackageJson = readJson(corsaManifest);
+  const corsaVersion = corsaPackageJson.version;
+  assert.equal(corsaPackageJson.name, corsaPackage);
+  assert.ok(
+    typeof corsaVersion === "string" && Number.parseInt(corsaVersion.split(".")[0] ?? "", 10) >= 7,
+    "installed vize did not bring TypeScript 7 for Corsa",
+  );
   assert.ok(
     !isOutside(realProjectRoot, fs.realpathSync(corsaManifest)),
-    "installed vize did not bring project-local @typescript/native-preview",
+    "installed vize did not bring project-local TypeScript 7 for Corsa",
   );
 }
 
@@ -317,7 +325,7 @@ export function assertMissingCorsaGuidance(projectRoot, manager) {
       "",
       "To install, run:",
       "",
-      `  ${manager.corsaInstallCommand} ${manager.installArgs.join(" ")} @typescript/native-preview`,
+      `  ${manager.corsaInstallCommand} ${manager.installArgs.join(" ")} typescript@^7`,
     ].join("\n"),
   );
   const scripted = runGeneratedCheck(projectRoot, manager, [], { CORSA_PATH: missing });

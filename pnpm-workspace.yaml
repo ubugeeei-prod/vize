@@ -20,14 +20,14 @@ packages:
 
 minimumReleaseAgeExclude:
   - "hono@4.12.34"
-  - "@vizejs/native-darwin-arm64@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0"
-  - "@vizejs/native-darwin-x64@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0"
-  - "@vizejs/native-linux-arm64-gnu@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0"
-  - "@vizejs/native-linux-arm64-musl@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0"
-  - "@vizejs/native-linux-x64-gnu@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0"
-  - "@vizejs/native-linux-x64-musl@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0"
-  - "@vizejs/native-win32-arm64-msvc@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0"
-  - "@vizejs/native-win32-x64-msvc@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0"
+  - "@vizejs/native-darwin-arm64@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0"
+  - "@vizejs/native-darwin-x64@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0"
+  - "@vizejs/native-linux-arm64-gnu@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0"
+  - "@vizejs/native-linux-arm64-musl@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0"
+  - "@vizejs/native-linux-x64-gnu@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0"
+  - "@vizejs/native-linux-x64-musl@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0"
+  - "@vizejs/native-win32-arm64-msvc@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0"
+  - "@vizejs/native-win32-x64-msvc@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0 || 0.354.0"
 
 overrides:
   "@azure/msal-node>uuid": "11.1.1"
@@ -113,6 +113,16 @@ catalogs:
     tsx: "4.23.12"
     typescript: "6.0.3"
     vue-tsc: "3.3.4"
+
+  # Corsa runtime shipped by the Vize CLI. Keep separate from the workspace
+  # TypeScript toolchain so consumers and repo packages can stay on TS 6.
+  corsa-runtime:
+    "@typescript/typescript-darwin-arm64": "7.0.2"
+    "@typescript/typescript-darwin-x64": "7.0.2"
+    "@typescript/typescript-linux-arm64": "7.0.2"
+    "@typescript/typescript-linux-x64": "7.0.2"
+    "@typescript/typescript-win32-arm64": "7.0.2"
+    "@typescript/typescript-win32-x64": "7.0.2"
 
   # Vite / Vite Plus stack and adjacent build-time plugins.
   vite-stack:

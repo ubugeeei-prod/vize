@@ -87,7 +87,12 @@
     }
   },
   "optionalDependencies": {
-    "@typescript/native-preview": "catalog:typescript"
+    "@typescript/typescript-darwin-arm64": "catalog:corsa-runtime",
+    "@typescript/typescript-darwin-x64": "catalog:corsa-runtime",
+    "@typescript/typescript-linux-arm64": "catalog:corsa-runtime",
+    "@typescript/typescript-linux-x64": "catalog:corsa-runtime",
+    "@typescript/typescript-win32-arm64": "catalog:corsa-runtime",
+    "@typescript/typescript-win32-x64": "catalog:corsa-runtime"
   },
   "typescript": {
     "contentMapper": {

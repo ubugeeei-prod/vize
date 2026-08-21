@@ -378,7 +378,7 @@ pub(super) fn lint_with_descriptor<'a>(
         push_warning(
             &mut result,
             LintDiagnostic::warn("type/corsa-runtime", error, 0, 0).with_help(
-                "Type-aware lint rules were skipped because the Corsa runtime could not be started. Configure `typeChecker.corsaPath` or install `@typescript/native-preview`.",
+                "Type-aware lint rules were skipped because the Corsa runtime could not be started. Configure `typeChecker.corsaPath` or install `typescript@^7`.",
             ),
         );
     }

@@ -216,8 +216,8 @@ test("release install smoke can run runtime checks for Vize packages", () => {
 
   assert.match(script, /--runtime-checks/);
   assert.match(script, /--content-mapper-checks/);
-  // vize declares @typescript/native-preview itself, so the fresh-install smoke
-  // must not manually add it as a project runtime peer.
+  // vize declares its Corsa runtime itself, so the fresh-install smoke must not
+  // manually add the retired native-preview package as a project runtime peer.
   assert.doesNotMatch(smokeSources, /"@typescript\/native-preview":/);
   assert.match(smokeSources, /require\("@vizejs\/native"\)/);
   assert.match(smokeSources, /import\("@vizejs\/native"\)/);
