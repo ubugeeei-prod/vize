@@ -4,6 +4,9 @@
 //! prop types, resolving interface/type-alias references, mapped types, and
 //! literal unions into runtime constructors.
 
+use super::indexed_access::resolve_indexed_access_js_type;
+use super::runtime_type::ts_type_to_js_type;
+use super::types::PropTypeInfo;
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     Expression, PropertyKey, Statement, TSLiteral, TSMappedTypeModifierOperator, TSSignature,
@@ -13,10 +16,6 @@ use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::FxHashMap;
 use vize_carton::{String, ToCompactString};
-
-use super::runtime_type::ts_type_to_js_type;
-use super::types::PropTypeInfo;
-
 pub(super) const TYPE_ALIAS_PREFIX: &str = "type __VizeProps = ";
 
 pub(super) fn extract_prop_types_from_ast(
@@ -59,8 +58,7 @@ pub(super) fn wrap_type_alias_source(type_args: &str) -> String {
     source.push(';');
     source
 }
-
-fn collect_props_from_ts_type(
+pub(super) fn collect_props_from_ts_type(
     ts_type: &TSType<'_>,
     source: &str,
     interfaces: Option<&FxHashMap<String, String>>,
@@ -153,7 +151,6 @@ fn collect_props_from_ts_type(
         _ => false,
     }
 }
-
 fn collect_props_from_ts_type_literal(
     type_lit: &TSTypeLiteral<'_>,
     source: &str,
@@ -444,7 +441,10 @@ fn ts_type_to_js_type_from_ast_inner(
             }
             "null".to_compact_string()
         }
-        TSType::TSIndexedAccessType(_) => "null".to_compact_string(),
+        TSType::TSIndexedAccessType(indexed) => {
+            resolve_indexed_access_js_type(indexed, source, interfaces, type_aliases, seen)
+                .unwrap_or_else(|| "null".to_compact_string())
+        }
         _ => "null".to_compact_string(),
     }
 }
@@ -465,7 +465,7 @@ fn js_type_for_ts_literal(literal: &TSLiteral<'_>) -> String {
     }
 }
 
-fn combine_runtime_js_types(types: impl IntoIterator<Item = String>) -> String {
+pub(super) fn combine_runtime_js_types(types: impl IntoIterator<Item = String>) -> String {
     let mut js_types: Vec<String> = Vec::new();
     for js_type in types {
         if js_type == "null" {
@@ -504,7 +504,7 @@ fn type_includes_top_level_null_from_ast(ts_type: &TSType<'_>) -> bool {
     }
 }
 
-fn literal_values_from_ts_type(
+pub(super) fn literal_values_from_ts_type(
     ts_type: &TSType<'_>,
     source: &str,
     interfaces: Option<&FxHashMap<String, String>>,

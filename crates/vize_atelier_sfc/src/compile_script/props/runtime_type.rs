@@ -1,9 +1,9 @@
 //! Runtime prop-type mapping: converting TypeScript type text into JavaScript
 //! runtime constructors and related string-level helpers.
 
+use super::indexed_access::is_utility_object_type;
 use vize_carton::FxHashMap;
 use vize_carton::{String, ToCompactString};
-
 pub(crate) fn runtime_prop_key(name: &str) -> String {
     if is_valid_identifier(name) {
         return name.to_compact_string();
@@ -26,7 +26,6 @@ pub(super) fn type_includes_top_level_undefined(ts_type: &str) -> bool {
         .into_iter()
         .any(|part| part.trim() == "undefined")
 }
-
 pub(super) fn type_includes_top_level_null(ts_type: &str) -> bool {
     split_type_at_top_level(ts_type.trim(), '|')
         .into_iter()
@@ -258,6 +257,7 @@ pub(crate) fn ts_type_to_js_type(ts_type: &str) -> String {
                         type_name.to_compact_string()
                     }
                     // Vue reactive types that are objects at runtime
+                    _ if is_utility_object_type(type_name) => "Object".to_compact_string(),
                     "Ref"
                     | "ShallowRef"
                     | "ComputedRef"

@@ -144,3 +144,72 @@ fn extract_props_keeps_runtime_union_after_omit_intersection() {
         .expect("onClick prop should be extracted");
     assert_eq!(on_click.1.js_type.as_str(), "[Function, Array]");
 }
+
+#[test]
+fn indexed_access_to_known_object_member_keeps_runtime_type() {
+    let mut interfaces: FxHashMap<vize_carton::String, vize_carton::String> = FxHashMap::default();
+    interfaces.insert(
+        "TableColumnCtx".to_compact_string(),
+        "{ showOverflowTooltip?: boolean | TableOverflowTooltipOptions; tooltipFormatter?: TableOverflowTooltipFormatter<T> }".to_compact_string(),
+    );
+    interfaces.insert(
+        "TableColumnProps".to_compact_string(),
+        "{ showOverflowTooltip?: TableColumnCtx<T>['showOverflowTooltip']; tooltipFormatter?: TableColumnCtx<T>['tooltipFormatter'] }".to_compact_string(),
+    );
+    let mut type_aliases: FxHashMap<vize_carton::String, vize_carton::String> =
+        FxHashMap::default();
+    type_aliases.insert(
+        "TableOverflowTooltipOptions".to_compact_string(),
+        "Partial<Omit<UseTooltipProps, 'content'>>".to_compact_string(),
+    );
+    type_aliases.insert(
+        "TableOverflowTooltipFormatter".to_compact_string(),
+        "(data: { row: T }) => string".to_compact_string(),
+    );
+
+    let props = extract_prop_types_from_type_with_context(
+        "TableColumnProps<T>",
+        Some(&interfaces),
+        Some(&type_aliases),
+    );
+
+    let show_overflow = props
+        .iter()
+        .find(|(name, _)| name == "showOverflowTooltip")
+        .expect("showOverflowTooltip prop should be extracted");
+    assert_eq!(show_overflow.1.js_type.as_str(), "[Boolean, Object]");
+
+    let formatter = props
+        .iter()
+        .find(|(name, _)| name == "tooltipFormatter")
+        .expect("tooltipFormatter prop should be extracted");
+    assert_eq!(formatter.1.js_type.as_str(), "Function");
+}
+
+#[test]
+fn indexed_access_to_union_and_keyof_keys_keeps_runtime_union() {
+    let mut interfaces: FxHashMap<vize_carton::String, vize_carton::String> = FxHashMap::default();
+    interfaces.insert(
+        "ValueCtx".to_compact_string(),
+        "{ enabled?: boolean; label?: string; count?: number }".to_compact_string(),
+    );
+    interfaces.insert(
+        "ValueProps".to_compact_string(),
+        "{ explicit?: ValueCtx['enabled' | 'label']; every?: ValueCtx[keyof ValueCtx] }"
+            .to_compact_string(),
+    );
+
+    let props = extract_prop_types_from_type_with_context("ValueProps", Some(&interfaces), None);
+
+    let explicit = props
+        .iter()
+        .find(|(name, _)| name == "explicit")
+        .expect("explicit prop should be extracted");
+    assert_eq!(explicit.1.js_type.as_str(), "[Boolean, String]");
+
+    let every = props
+        .iter()
+        .find(|(name, _)| name == "every")
+        .expect("every prop should be extracted");
+    assert_eq!(every.1.js_type.as_str(), "[Boolean, String, Number]");
+}

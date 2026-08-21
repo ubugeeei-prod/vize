@@ -6,6 +6,7 @@
 mod ast_resolve;
 mod defaults;
 mod emits;
+mod indexed_access;
 mod runtime_type;
 mod text_resolve;
 mod types;
