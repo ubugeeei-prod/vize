@@ -9,16 +9,16 @@ use std::{
 
 use vize_carton::{String, cstr, profile, profiler::global_profiler};
 
+use super::{
+    collect::collect_vue_files, display_path, output::save_virtual_ts_targets_or_exit,
+    text_style::TextStyle,
+};
 use crate::{
     commands::check::{
         CheckArgs, JsonRpcResponse, ServerCheckResult,
         reporting::{JsonFileResult, JsonOutput},
     },
     profile_support,
-};
-use super::{
-    collect::collect_vue_files, display_path, output::save_virtual_ts_targets_or_exit,
-    text_style::TextStyle,
 };
 use vize_curator::profile::{ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report};
 
