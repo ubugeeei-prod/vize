@@ -106,6 +106,26 @@ fn slot_resolver_field(generic_decl: &str, generic_names: &str, slots_is_generic
     )
 }
 
+/// The prop parameter a parent's template calls on a generic child.
+///
+/// Generic SFCs need `Partial<Props<T>>` so authored props can infer `T` without
+/// requiring every prop in the generic contract. What they must not need is an
+/// unconditional string index: generated parents already know whether this
+/// generated child can fall attributes through, so strict-template unknown
+/// props should only be accepted by a real fallthrough target. `class` and
+/// `style` stay universally public component attrs.
+fn generic_check_props_param(generic_names: &str, fallthrough_props_ref: Option<&str>) -> String {
+    let mut param =
+        cstr!("Partial<Props<{generic_names}>> & {{ class?: unknown; style?: unknown }}");
+    if let Some(fallthrough_ref) = fallthrough_props_ref {
+        append!(
+            param,
+            " & {{ [K in keyof {fallthrough_ref}]?: unknown }} & Partial<{{ [K in keyof {fallthrough_ref} & string as K extends `aria-${{infer Tail}}` ? `aria${{Capitalize<Tail>}}` : K extends `data-${{infer Tail}}` ? `data${{Capitalize<Tail>}}` : never]: unknown }}>"
+        );
+    }
+    param
+}
+
 /// The same parameter list with generated `= any` defaults removed.
 ///
 /// A *type alias* parameter needs the `= any` default so bare references stay
@@ -223,9 +243,10 @@ pub(super) fn emit_default_export_declaration(
         };
         let emit_props_separator = if emit_resolvers.is_empty() { "" } else { " " };
         let slot_resolver = slot_resolver_field(generic_decl, generic_names, slots_is_generic);
+        let check_props_param = generic_check_props_param(generic_names, fallthrough_props_ref);
         append!(
             *ts,
-            "declare const __vize_component__: {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; __vizeResolveProps?: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => Props<{generic_names}>; {slot_resolver}{emit_props_static}{event_map_separator}{event_map_static}{emit_props_separator}{emit_resolvers} {component_contract_fields} }} & {authored_component}__VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions;\n",
+            "declare const __vize_component__: {{ __vizeCheck: <{generic_decl}>(props: {check_props_param}) => void; __vizeResolveProps?: <{generic_decl}>(props: {check_props_param}) => Props<{generic_names}>; {slot_resolver}{emit_props_static}{event_map_separator}{event_map_static}{emit_props_separator}{emit_resolvers} {component_contract_fields} }} & {authored_component}__VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions;\n",
         );
     } else if emits_info.has_emits_for_props {
         let event_map_separator = if event_map_static.is_empty() { "" } else { " " };

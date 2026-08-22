@@ -156,6 +156,81 @@ defineProps<{
     vueTscOutput:
       'App.vue(6,10): error TS2322: Type \'"danger"\' is not assignable to type \'"primary" | "secondary"\'.\n',
   },
+  {
+    id: "strict component attrs",
+    sourceFile: "App.vue",
+    clean: "  <!-- strict attrs stay absent -->",
+    broken: `  <PlainChild known="ok" not-declared="bad" />
+  <PlainChild known="ok" data-test="bad" />
+  <DefaultInheritChild ghost="bad" />
+  <NoInheritChild ghost="bad" />
+  <GenericNoInheritChild value="ok" ghost="bad" />`,
+    files: {
+      "App.vue": `<script setup lang="ts">
+import PlainChild from "./PlainChild.vue";
+import DefaultInheritChild from "./DefaultInheritChild.vue";
+import NoInheritChild from "./NoInheritChild.vue";
+import GenericNoInheritChild from "./GenericNoInheritChild.vue";
+</script>
+
+<template>
+  <!-- strict attrs stay absent -->
+</template>
+`,
+      "PlainChild.vue": `<script setup lang="ts">
+defineProps<{
+  known: string;
+}>();
+</script>
+
+<template>
+  <template />
+</template>
+`,
+      "DefaultInheritChild.vue": `<template>
+  <template />
+</template>
+`,
+      "NoInheritChild.vue": `<script setup lang="ts">
+defineOptions({ inheritAttrs: false });
+</script>
+
+<template>
+  <template />
+</template>
+`,
+      "GenericNoInheritChild.vue": `<script setup lang="ts" generic="T extends string">
+defineOptions({ inheritAttrs: false });
+defineProps<{
+  value: T;
+}>();
+</script>
+
+<template>
+  <template />
+</template>
+`,
+    },
+    diagnostics: {
+      "App.vue": [
+        `error:9:26 [TS2353] Object literal may only specify known properties, and '"notDeclared"' does not exist in type '{ readonly known: string; } & __VizePublicComponentAttrs'.`,
+        `error:10:26 [TS2353] Object literal may only specify known properties, and '"dataTest"' does not exist in type '{ readonly known: string; } & __VizePublicComponentAttrs'.`,
+        `error:11:24 [TS2353] Object literal may only specify known properties, and '"ghost"' does not exist in type '{} & __VizePublicComponentAttrs'.`,
+        `error:12:19 [TS2353] Object literal may only specify known properties, and '"ghost"' does not exist in type '{} & __VizePublicComponentAttrs'.`,
+        `error:13:37 [TS2353] Object literal may only specify known properties, and '"ghost"' does not exist in type 'Partial<Props<"ok">> & { class?: unknown; style?: unknown; }'.`,
+      ],
+      "DefaultInheritChild.vue": [],
+      "GenericNoInheritChild.vue": [],
+      "NoInheritChild.vue": [],
+      "PlainChild.vue": [],
+    },
+    vueTscOutput:
+      "App.vue(9,26): error TS2353: Object literal may only specify known properties, and 'notDeclared' does not exist in type '{ readonly known: string; } & VNodeProps & AllowedComponentProps & ComponentCustomProps'.\n" +
+      "App.vue(10,26): error TS2353: Object literal may only specify known properties, and 'dataTest' does not exist in type '{ readonly known: string; } & VNodeProps & AllowedComponentProps & ComponentCustomProps'.\n" +
+      "App.vue(11,24): error TS2353: Object literal may only specify known properties, and 'ghost' does not exist in type 'Partial<{}> & Omit<{} & VNodeProps & AllowedComponentProps & ComponentCustomProps, never>'.\n" +
+      "App.vue(12,19): error TS2353: Object literal may only specify known properties, and 'ghost' does not exist in type 'Partial<{}> & Omit<{} & VNodeProps & AllowedComponentProps & ComponentCustomProps, never>'.\n" +
+      `App.vue(13,37): error TS2353: Object literal may only specify known properties, and 'ghost' does not exist in type 'VNodeProps & AllowedComponentProps & ComponentCustomProps & { value: "ok"; }'.\n`,
+  },
 ];
 
 test("vue-benchmarks correctness plants fail closed on current main", async (t) => {

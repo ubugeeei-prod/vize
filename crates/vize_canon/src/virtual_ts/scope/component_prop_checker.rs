@@ -70,30 +70,11 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
 /// the whole-props target carries no conditional types, no mapped types and no
 /// inference variable.
 ///
-/// Consequences, covered by the component-props and project tests:
-///
-/// * `class`, `style`, `data-*`, `aria-*` and anything else the child does not
-///   declare are absorbed by the `Record<string, unknown>` intersection
-///   `__VizePropChecker` applies, which also suppresses object-literal excess
-///   property checking. Fallthrough-only, spread-only and empty usages keep the
-///   behavior they had (#3566, #3444, #3527) because their target never changed.
-/// * Vue's `PublicProps` and the listener props synthesized from `emits` are
-///   part of the child's props type, so authoring one is accepted without any
-///   key-set subtraction — and it does not satisfy the child's own required
-///   props, which the same check still reports.
-/// * the alias does not have to agree with the literal's key set. The literal
-///   skips props whose value does not generate; a `Pick<>` over the authored
-///   names would have had to reproduce that filtering exactly or report phantom
-///   missing properties.
-/// * the declared property types stay intact, which is what contextually types
-///   an inline callback prop: the parameters of `:textConverter="(value) => …"`
-///   draw their signature from the target, so they are not implicit `any`
-///   (`TS7006`), which is what `check_function_props_cli` guards.
-/// * the `exactOptionalPropertyTypes` distinction between "absent" and "present
-///   and `undefined`" survives, because it only exists when a whole object
-///   literal is assigned at once (#3450). With the option off the check is inert
-///   there, because an optional property accepts `undefined` implicitly — which
-///   is also what `vue-tsc` does.
+/// Consequences, covered by component-props and project tests: generated
+/// children accept only public attrs plus recorded fallthrough, opaque children
+/// keep the permissive tail, Vue public/listener props do not satisfy required
+/// own props, inline callback contextual typing stays intact, and the
+/// `exactOptionalPropertyTypes` absent-vs-`undefined` distinction survives.
 ///
 /// Vize's public `$props` accepts camel- and kebab-case aliases, which requires
 /// camel-case keys to be optional there. The generated props literal already
@@ -156,33 +137,12 @@ fn usage_needs_per_prop_aliases(usage: &ComponentUsage) -> bool {
 
 /// The shared type helpers every per-usage prop check resolves through, emitted
 /// once per template scope that has at least one checkable component usage.
-///
-/// They live here rather than at the call site because
-/// [`append_prop_checker_alias`] is what names them.
-///
-/// The set is deliberately tiny: three aliases, none of them mapped types, none
-/// of them recursive, and none of them growing with the size of the child's
-/// props type. Everything the whole-props check needs is already expressed by
-/// the child's own props type — see [`append_prop_checker_alias`] for why the
-/// key-set arithmetic an earlier #3569 attempt emitted here is neither needed
-/// nor affordable.
+/// Keep this set small; the child's own props type carries the contract.
 pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &ComponentUsage)]) {
     ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
-    // The parameter type is written inline so the instantiation stays
-    // anonymous: an aliased mapped type would print as its alias name in the
-    // `TS2345` message, and the whole point of the shape is what it displays.
-    // `{ readonly [K in keyof P]: P[K] }` flattens the declared-props/model/
-    // listener intersection into the single readonly object literal `vue-tsc`
-    // shows (#3890); the homomorphic map preserves per-property optionality,
-    // which keeps the `exactOptionalPropertyTypes` rejection (#3450) and the
-    // contextual typing of inline callback props intact — both re-measured
-    // against the same compiler build. The `Record<string, unknown>` tail
-    // still absorbs fallthrough attrs, suppresses object-literal excess
-    // checks, and keeps the failure an argument-level `TS2345`; against an
-    // exact target the same literal reports member-level `TS2741` instead,
-    // which `vue-tsc` does not. On a realistic props type the flattened
-    // members exceed the display truncation budget, so the tail is elided
-    // exactly the way `vue-tsc`'s own fallthrough members are.
+    // Inline parameter shapes keep `TS2345` messages close to `vue-tsc` while
+    // preserving optionality and contextual typing. The strict tail is used
+    // only when Vize knows the generated child's fallthrough surface.
     ts.push_str(
         "  type __VizeEmitListeners<C> = C extends { __vizeEmitProps?: infer __E } ? __VizeIsAny<__E> extends true ? {} : NonNullable<__E> : {};\n",
     );
@@ -196,6 +156,15 @@ pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &Comp
         "  type __VizeFallthroughProps<C> = __VizeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? {} : NonNullable<__F> : {} : {};\n",
     );
     ts.push_str("  type __VizePublicComponentAttrs = { class?: unknown; style?: unknown };\n");
+    ts.push_str(
+        "  type __VizeFallthroughAttrCamel<S extends string> = S extends `${infer H}-${infer T}` ? `${H}${Capitalize<__VizeFallthroughAttrCamel<T>>}` : S;\n",
+    );
+    ts.push_str(
+        "  type __VizeAllowedFallthroughAttrs<F> = [keyof F] extends [never] ? {} : { [K in keyof F]?: unknown } & Partial<{ [K in keyof F & string as K extends `aria-${infer Tail}` ? `aria${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : K extends `data-${infer Tail}` ? `data${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : never]: unknown }>;\n",
+    );
+    ts.push_str(
+        "  type __VizeComponentCheckTail<C, F = __VizeFallthroughProps<C>> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeAllowedFallthroughAttrs<F> : Record<string, unknown>;\n",
+    );
     ts.push_str(
         "  type __VizePublicProps<C> = C extends { new (): { $props: infer __P } } ? __P : C extends (props: infer __P) => any ? __P : {};\n",
     );
@@ -217,9 +186,8 @@ pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &Comp
     ts.push_str(
         "  type __VizeHasRawProps<C> = __VizeHasInstanceRawProps<C> extends true ? true : __VizeHasStaticRawProps<C>;\n",
     );
-    ts.push_str("  type __VizeInvalidFallthroughAttr<K extends PropertyKey> = { readonly __vizeInvalidFallthroughAttr: K };\n");
     ts.push_str(
-        "  type __VizeFallthroughValue<C, K extends PropertyKey> = __VizeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? unknown : __VizePropValue<NonNullable<__F>, K, unknown> : unknown : __VizeIsGeneratedComponent<C> extends true ? __VizeHasRawProps<C> extends true ? __VizeInvalidFallthroughAttr<K> : unknown : unknown;\n",
+        "  type __VizeFallthroughValue<C, K extends PropertyKey> = __VizeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? unknown : __VizePropValue<NonNullable<__F>, K, unknown> : unknown : unknown;\n",
     );
     if usages.iter().any(|(_, usage)| {
         usage
@@ -238,7 +206,7 @@ pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &Comp
         );
     }
     ts.push_str(
-        "  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? __VizeIsAny<__F> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : __F extends (...args: any[]) => any ? __F : (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void;\n",
+        "  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? __VizeIsAny<__F> extends true ? (props: { readonly [K in keyof P]: P[K] } & __VizeComponentCheckTail<C>) => void : __F extends (...args: any[]) => any ? __F : (props: { readonly [K in keyof P]: P[K] } & __VizeComponentCheckTail<C>) => void : (props: { readonly [K in keyof P]: P[K] } & __VizeComponentCheckTail<C>) => void;\n",
     );
     ts.push_str(
         "  type __VizePropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;\n",

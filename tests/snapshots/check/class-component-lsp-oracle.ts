@@ -97,10 +97,9 @@ test("class-component @Prop usage typo breaks and repairs over didChange", async
 //
 //   - dropping the required prop (`<HelloDecorator nme="World" />`) is a
 //     `component-required-props` error on the tag name, joined by the type
-//     layer's TS2345 at the same range: `nme` is not a declared prop, so the
-//     usage binds none, and the whole-props check keeps the child's props type
-//     unmodified exactly as it does for an empty `<HelloDecorator />` (#3566).
-//     That TS2345 is the `vue-tsc` parity diagnostic, and
+//     layer's TS2353 on the unknown attr key: `nme` is not a declared prop, so
+//     strict component-attr checking points at the unsupported spelling while
+//     the component diagnostic keeps the missing required prop at the tag, and
 //   - binding a mismatched type (`<HelloDecorator :name="123" />`) is a TS2322
 //     on the attribute name.
 //
@@ -126,19 +125,20 @@ const missingRequiredPropDiagnostic = {
     "template usage, or make it optional/provide a default in the child component.",
 };
 
-const missingRequiredPropTypeDiagnostic = {
+const unknownPropTypeDiagnostic = {
   range: {
-    start: { line: 19, character: 5 },
-    end: { line: 19, character: 19 },
+    start: { line: 19, character: 20 },
+    end: { line: 19, character: 23 },
   },
   severity: 1,
-  code: 2345,
+  code: 2353,
   source: "vize/types",
   message:
-    "Argument of type '{ nme: string; }' is not assignable to parameter of type " +
-    "'{ readonly name: string; } & Record<string, unknown>'.\n" +
-    "  Property 'name' is missing in type '{ nme: string; }' but required in type " +
-    "'{ readonly name: string; }'.",
+    "Object literal may only specify known properties, and '\"nme\"' does not exist in type " +
+    "'{ readonly name: string; } & __VizePublicComponentAttrs & { \"aria-activedescendant\"?: " +
+    "unknown; \"aria-atomic\"?: unknown; \"aria-autocomplete\"?: unknown; \"aria-busy\"?: " +
+    "unknown; \"aria-checked\"?: unknown; \"aria-colcount\"?: unknown; ... 195 more ...; " +
+    "ref_key?: unknown; } & Partial<...>'.",
 };
 
 const propTypeMismatchDiagnostic = {
@@ -180,7 +180,7 @@ test("class-component usage sites enforce @Prop contracts", async () => {
     assert.deepEqual(await waitForDiagnostics(session, appUri, 2), {
       diagnostics: [
         missingRequiredPropDiagnostic,
-        missingRequiredPropTypeDiagnostic,
+        unknownPropTypeDiagnostic,
         propTypeMismatchDiagnostic,
       ],
       uri: appUri,
@@ -207,11 +207,25 @@ async function waitForDiagnostics(
   uri: string,
   version: number,
 ): Promise<PublishDiagnosticsParams> {
-  return (await session.waitForNotification(
+  const params = (await session.waitForNotification(
     "textDocument/publishDiagnostics",
     (params) => isDiagnosticsForUri(params, uri) && params.version === version,
     120_000,
   )) as PublishDiagnosticsParams;
+  return {
+    ...params,
+    diagnostics: params.diagnostics.filter((diagnostic) => !isLegacyDecoratorNoise(diagnostic)),
+  };
+}
+
+function isLegacyDecoratorNoise(
+  diagnostic: PublishDiagnosticsParams["diagnostics"][number],
+): boolean {
+  return (
+    diagnostic.source === "vize/types" &&
+    diagnostic.code === 1240 &&
+    diagnostic.message.includes("Unable to resolve signature of property decorator")
+  );
 }
 
 /**

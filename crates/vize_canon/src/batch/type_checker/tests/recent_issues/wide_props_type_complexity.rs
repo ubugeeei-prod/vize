@@ -85,7 +85,7 @@ const pick = (_value: string, _index: number) => {}
             String::from("src/Parent.vue"),
             Some(2345),
             cstr!(
-                "7:4:error Argument of type '{authored}' is not assignable to parameter of type '{flattened} & Record<...>'.\nProperty 'title' is missing in type '{authored}' but required in type '{flattened}'."
+                "7:4:error Argument of type '{authored}' is not assignable to parameter of type '{flattened} & __VizePublicComponentAtt...'.\nProperty 'title' is missing in type '{authored}' but required in type '{flattened}'."
             ),
         )],
         "a 121-prop child reports exactly its missing required prop, with no complexity error"

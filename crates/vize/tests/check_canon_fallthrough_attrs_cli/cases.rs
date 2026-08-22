@@ -37,7 +37,7 @@ import Child from "./Child.vue";
 <template><Child title="ok" id="outer" class="card" style="color: red" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:29 [TS2322] Type 'string' is not assignable to type '__VizeInvalidFallthroughAttr<\"id\">'.",
+                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '{ readonly title: string; } & __VizePublicComponentAttrs'.",
             ],
         },
         Case {
@@ -54,7 +54,7 @@ import Child from "./Child.vue";
 <template><Child title="ok" :disabled="'nope'" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:30 [TS2322] Type 'string' is not assignable to type '__VizeInvalidFallthroughAttr<\"disabled\">'.",
+                "error:4:30 [TS2353] Object literal may only specify known properties, and '\"disabled\"' does not exist in type '{ readonly title: string; } & __VizePublicComponentAttrs'.",
             ],
         },
         Case {
@@ -77,7 +77,7 @@ import Child from "./Child.vue";
 <template><Child title="ok" id="outer" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:29 [TS2322] Type 'string' is not assignable to type '__VizeInvalidFallthroughAttr<\"id\">'.",
+                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '{ readonly title: string; } & __VizePublicComponentAttrs'.",
             ],
         },
         Case {
@@ -96,7 +96,7 @@ import Child from "./Child.vue";
 <template><Child title="ok" id="outer" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:29 [TS2322] Type 'string' is not assignable to type '__VizeInvalidFallthroughAttr<\"id\">'.",
+                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '{ readonly title: string; } & __VizePublicComponentAttrs'.",
             ],
         },
         Case {
@@ -116,7 +116,7 @@ import Child from "./Child.vue";
 <template><Child title="ok" id="outer" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:29 [TS2322] Type 'string' is not assignable to type '__VizeInvalidFallthroughAttr<\"id\">'.",
+                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '{ readonly title: string; } & __VizePublicComponentAttrs'.",
             ],
         },
         Case {
@@ -173,7 +173,7 @@ const on = ref(true);
 <template><Child title="ok" :on="on" id="outer" /></template>
 "#,
             expected_diagnostics: &[
-                "error:6:38 [TS2322] Type 'string' is not assignable to type '__VizeInvalidFallthroughAttr<\"id\">'.",
+                "error:6:38 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '{ readonly title: string; readonly on: boolean; } & __VizePublicComponentAttrs'.",
             ],
         },
         Case {
@@ -197,7 +197,7 @@ const on = ref(true);
 <template><Child title="ok" :on="on" id="outer" /></template>
 "#,
             expected_diagnostics: &[
-                "error:6:38 [TS2322] Type 'string' is not assignable to type '__VizeInvalidFallthroughAttr<\"id\">'.",
+                "error:6:38 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '{ readonly title: string; readonly on: boolean; } & __VizePublicComponentAttrs'.",
             ],
         },
         Case {
@@ -215,7 +215,7 @@ import Child from "./Child.vue";
 <template><Child title="ok" :items="[1, 2]" id="outer" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:45 [TS2322] Type 'string' is not assignable to type '__VizeInvalidFallthroughAttr<\"id\">'.",
+                "error:4:45 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '{ readonly title: string; readonly items: number[]; } & __VizePublicComponentAttrs'.",
             ],
         },
         Case {
@@ -235,7 +235,7 @@ import Child from "./Child.vue";
 <template><Child title="ok" :items="[1, 2]" id="outer" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:45 [TS2322] Type 'string' is not assignable to type '__VizeInvalidFallthroughAttr<\"id\">'.",
+                "error:4:45 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '{ readonly title: string; readonly items: number[]; } & __VizePublicComponentAttrs'.",
             ],
         },
         Case {
@@ -290,7 +290,7 @@ import Child from "./Child.vue";
 <template><Child title="ok" id="outer" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:29 [TS2322] Type 'string' is not assignable to type '__VizeInvalidFallthroughAttr<\"id\">'.",
+                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '{ readonly title: string; } & __VizePublicComponentAttrs'.",
             ],
         },
         Case {
