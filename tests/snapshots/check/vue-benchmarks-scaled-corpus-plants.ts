@@ -225,7 +225,7 @@ test("vue-benchmarks plants stay caught across the scaled unique corpus", async 
 
       assert.equal(brokenFirst.status, 1, brokenFirst.stderr || brokenFirst.stdout);
       assert.deepEqual(
-        brokenFirst.report,
+        omitProgramEvidence(brokenFirst.report),
         expectedReport(corpusFiles, plants),
         JSON.stringify(brokenFirst.report),
       );

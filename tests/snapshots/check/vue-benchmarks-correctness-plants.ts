@@ -189,7 +189,7 @@ test("vue-benchmarks correctness plants fail closed on current main", async (t) 
         const vueTsc = runVueTsc(workspaceDir, vueTscPath);
         assert.equal(brokenFirst.status, 1, brokenFirst.stderr || brokenFirst.stdout);
         assert.deepEqual(
-          brokenFirst.report,
+          omitProgramEvidence(brokenFirst.report),
           expectedReport(plant.files, plant.diagnostics),
           JSON.stringify(brokenFirst.report),
         );
