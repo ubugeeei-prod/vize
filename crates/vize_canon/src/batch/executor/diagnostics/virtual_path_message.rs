@@ -269,8 +269,8 @@ mod tests {
     #[test]
     fn restores_windows_separator_spellings() {
         let restored = restore_authored_paths(
-            "File 'C:\\repo\\node_modules\\.vize\\canon\\projects\\8c5cb99f\\a.ts' is stale.",
-            Path::new("C:\\repo\\node_modules\\.vize\\canon\\projects\\8c5cb99f"),
+            "File 'C:\\repo\\.vize\\canon\\projects\\8c5cb99f\\a.ts' is stale.",
+            Path::new("C:\\repo\\.vize\\canon\\projects\\8c5cb99f"),
             Path::new("C:\\repo"),
         );
 

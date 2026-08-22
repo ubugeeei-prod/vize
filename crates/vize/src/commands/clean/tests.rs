@@ -172,9 +172,18 @@ fn force_clean_removes_selected_artifact_roots() {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
     let unknown_project_artifact = root.join(".vize/custom/keep.txt");
+    let current_canon_artifact = vize_canon::project_virtual_root(root).join("current.ts");
+    let foreign_canon_artifact = vize_canon::project_virtual_root(root)
+        .parent()
+        .unwrap()
+        .join("foreign-project-key/foreign.ts");
     let unknown_node_modules_artifact = root.join("node_modules/.vize/custom/keep.txt");
     std::fs::create_dir_all(unknown_project_artifact.parent().unwrap()).unwrap();
     std::fs::write(&unknown_project_artifact, "keep").unwrap();
+    std::fs::create_dir_all(current_canon_artifact.parent().unwrap()).unwrap();
+    std::fs::write(&current_canon_artifact, "current").unwrap();
+    std::fs::create_dir_all(foreign_canon_artifact.parent().unwrap()).unwrap();
+    std::fs::write(&foreign_canon_artifact, "foreign").unwrap();
     std::fs::create_dir_all(unknown_node_modules_artifact.parent().unwrap()).unwrap();
     std::fs::write(&unknown_node_modules_artifact, "keep").unwrap();
 
@@ -185,8 +194,39 @@ fn force_clean_removes_selected_artifact_roots() {
         dry_run: false,
         quiet: true,
     });
-    assert!(!root.join(".vize").exists());
+    assert!(!unknown_project_artifact.exists());
+    assert!(!current_canon_artifact.exists());
+    assert!(foreign_canon_artifact.exists());
     assert!(unknown_node_modules_artifact.exists());
+}
+
+#[test]
+fn force_all_preserves_foreign_project_canon_entries() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    let current_canon_artifact = vize_canon::project_virtual_root(root).join("current.ts");
+    let foreign_canon_artifact = vize_canon::project_virtual_root(root)
+        .parent()
+        .unwrap()
+        .join("foreign-project-key/foreign.ts");
+    let node_modules_artifact = root.join("node_modules/.vize/custom/keep.txt");
+    std::fs::create_dir_all(current_canon_artifact.parent().unwrap()).unwrap();
+    std::fs::write(&current_canon_artifact, "current").unwrap();
+    std::fs::create_dir_all(foreign_canon_artifact.parent().unwrap()).unwrap();
+    std::fs::write(&foreign_canon_artifact, "foreign").unwrap();
+    std::fs::create_dir_all(node_modules_artifact.parent().unwrap()).unwrap();
+    std::fs::write(&node_modules_artifact, "node-modules").unwrap();
+
+    run(CleanArgs {
+        root: root.to_path_buf(),
+        scope: CleanScope::All,
+        force: true,
+        dry_run: false,
+        quiet: true,
+    });
+    assert!(!current_canon_artifact.exists());
+    assert!(foreign_canon_artifact.exists());
+    assert!(!node_modules_artifact.exists());
 }
 
 #[test]

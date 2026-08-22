@@ -110,7 +110,7 @@ fn managed_vize_artifact_paths(root: &Path, scope: CleanScope) -> Vec<PathBuf> {
 fn force_vize_artifact_paths(root: &Path, scope: CleanScope) -> io::Result<Vec<PathBuf>> {
     let mut paths = Vec::new();
     if matches!(scope, CleanScope::All | CleanScope::Project) {
-        paths.push(project_vize_dir(root));
+        paths.extend(force_project_vize_artifact_paths(root)?);
     }
     if matches!(scope, CleanScope::All | CleanScope::NodeModules) {
         let node_modules_vize = node_modules_vize_dir(root);
@@ -133,6 +133,29 @@ fn force_vize_artifact_paths(root: &Path, scope: CleanScope) -> io::Result<Vec<P
             Err(error) => return Err(error),
         }
     }
+    Ok(paths)
+}
+
+fn force_project_vize_artifact_paths(root: &Path) -> io::Result<Vec<PathBuf>> {
+    let project_vize = project_vize_dir(root);
+    let mut paths = Vec::new();
+    match fs::read_dir(&project_vize) {
+        Ok(entries) => {
+            for entry in entries {
+                let entry = entry?;
+                // Canon storage is project-keyed and can contain entries owned by
+                // another checkout that shares the artifact root. Force removes
+                // every non-Canon project artifact, then appends only this
+                // project's current Canon namespace and locks below.
+                if entry.file_name() != "canon" {
+                    paths.push(entry.path());
+                }
+            }
+        }
+        Err(error) if error.kind() == ErrorKind::NotFound => {}
+        Err(error) => return Err(error),
+    }
+    paths.extend(current_canon_artifact_paths(root));
     Ok(paths)
 }
 
