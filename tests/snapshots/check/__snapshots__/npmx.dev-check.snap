@@ -3,6 +3,10 @@
     {
       "file": "app/app.vue",
       "diagnostics": [
+        "error:3:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
+        "error:57:3 [TS7006] Parameter 'e' implicitly has an 'any' type.",
+        "error:83:3 [TS7006] Parameter 'e' implicitly has an 'any' type.",
+        "error:93:3 [TS7006] Parameter 'e' implicitly has an 'any' type.",
         "error:140:3 [TS2304] Cannot find name 'defineOgImage'."
       ]
     },
@@ -133,13 +137,15 @@
     {
       "file": "app/components/Code/DirectoryListing.vue",
       "diagnostics": [
-        "error:3:15 [TS2305] Module '\"vue-router/auto-routes\"' has no exported member 'RouteNamedMap'."
+        "error:2:39 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations.",
+        "error:3:36 [TS2307] Cannot find module 'vue-router/auto-routes' or its corresponding type declarations."
       ]
     },
     {
       "file": "app/components/Code/FileTree.vue",
       "diagnostics": [
-        "error:3:15 [TS2305] Module '\"vue-router/auto-routes\"' has no exported member 'RouteNamedMap'."
+        "error:2:39 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations.",
+        "error:3:36 [TS2307] Cannot find module 'vue-router/auto-routes' or its corresponding type declarations."
       ]
     },
     {
@@ -152,7 +158,7 @@
     {
       "file": "app/components/Code/MobileTreeDrawer.vue",
       "diagnostics": [
-        "error:2:15 [TS2305] Module '\"vue-router/auto-routes\"' has no exported member 'RouteNamedMap'."
+        "error:2:36 [TS2307] Cannot find module 'vue-router/auto-routes' or its corresponding type declarations."
       ]
     },
     {
@@ -177,8 +183,10 @@
     {
       "file": "app/components/ColumnPicker.vue",
       "diagnostics": [
+        "error:3:27 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:17:16 [TS2304] Cannot find name 'useId'.",
-        "error:20:1 [TS2304] Cannot find name 'onClickOutside'."
+        "error:20:1 [TS2304] Cannot find name 'onClickOutside'.",
+        "error:32:3 [TS7006] Parameter 'e' implicitly has an 'any' type."
       ]
     },
     {
@@ -277,8 +285,10 @@
     {
       "file": "app/components/DependencyPathPopup.vue",
       "diagnostics": [
+        "error:2:27 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:3:30 [TS2307] Cannot find module '@vueuse/integrations/useFocusTrap/component' or its corresponding type declarations.",
         "error:19:1 [TS2304] Cannot find name 'onClickOutside'.",
+        "error:25:3 [TS7006] Parameter 'e' implicitly has an 'any' type.",
         "error:32:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?"
       ]
     },
@@ -314,7 +324,9 @@
     },
     {
       "file": "app/components/Diff/ViewerPanel.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations."
+      ]
     },
     {
       "file": "app/components/Filter/Chips.vue",
@@ -594,6 +606,7 @@
     {
       "file": "app/components/Package/Header.vue",
       "diagnostics": [
+        "error:2:39 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations.",
         "error:23:34 [TS2304] Cannot find name 'useElementBounding'.",
         "error:39:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
         "error:40:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
@@ -602,7 +615,9 @@
     },
     {
       "file": "app/components/Package/InstallScripts.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:3:39 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations."
+      ]
     },
     {
       "file": "app/components/Package/Keywords.vue",
@@ -643,6 +658,7 @@
     {
       "file": "app/components/Package/ManagerSelect.vue",
       "diagnostics": [
+        "error:2:50 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:33:17 [TS2304] Cannot find name 'useId'.",
         "error:48:56 [TS7006] Parameter 'pm' implicitly has an 'any' type.",
         "error:57:21 [TS2304] Cannot find name 'PackageManagerId'.",
@@ -721,6 +737,7 @@
         "error:9:8 [TS2307] Cannot find module 'vue-data-ui/vue-ui-xy' or its corresponding type declarations.",
         "error:16:8 [TS2307] Cannot find module 'vue-data-ui/vue-ui-stackbar' or its corresponding type declarations.",
         "error:17:36 [TS2307] Cannot find module 'vue-data-ui/composables' or its corresponding type declarations.",
+        "error:39:46 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:437:10 [TS7006] Parameter 'args' implicitly has an 'any' type.",
         "error:442:10 [TS7006] Parameter 'csvStr' implicitly has an 'any' type.",
         "error:460:10 [TS7006] Parameter 'args' implicitly has an 'any' type.",
@@ -847,6 +864,7 @@
       "diagnostics": [
         "error:2:71 [TS2307] Cannot find module 'vue-data-ui/vue-ui-xy' or its corresponding type declarations.",
         "error:3:36 [TS2307] Cannot find module 'vue-data-ui/composables' or its corresponding type declarations.",
+        "error:4:61 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:575:23 [TS7006] Parameter 'm' implicitly has an 'any' type.",
         "error:1155:16 [TS7006] Parameter 'args' implicitly has an 'any' type.",
         "error:1160:16 [TS7006] Parameter 'csvStr' implicitly has an 'any' type.",
@@ -863,6 +881,7 @@
       "file": "app/components/Package/VersionDistribution.vue",
       "diagnostics": [
         "error:2:70 [TS2307] Cannot find module 'vue-data-ui/vue-ui-xy' or its corresponding type declarations.",
+        "error:3:32 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:141:38 [TS7006] Parameter 'item' implicitly has an 'any' type.",
         "error:149:33 [TS7006] Parameter 'item' implicitly has an 'any' type.",
         "error:201:16 [TS7006] Parameter 'args' implicitly has an 'any' type.",
@@ -879,6 +898,7 @@
       "file": "app/components/Package/Versions.vue",
       "diagnostics": [
         "error:2:41 [TS2307] Cannot find module 'verkit' or its corresponding type declarations.",
+        "error:3:39 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations.",
         "error:4:34 [TS2307] Cannot find module 'packumeta' or its corresponding type declarations."
       ]
     },
@@ -897,6 +917,10 @@
       "file": "app/components/Package/WeeklyDownloadStats.vue",
       "diagnostics": [
         "error:6:8 [TS2307] Cannot find module 'vue-data-ui/vue-ui-sparkline' or its corresponding type declarations.",
+        "error:13:27 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
+        "error:185:3 [TS7006] Parameter 'e' implicitly has an 'any' type.",
+        "error:194:3 [TS7006] Parameter 'e' implicitly has an 'any' type.",
+        "error:203:3 [TS7006] Parameter 'e' implicitly has an 'any' type.",
         "error:289:23 [TS7031] Binding element 'value' implicitly has an 'any' type."
       ]
     },
@@ -923,6 +947,7 @@
     {
       "file": "app/components/ReadmeTocDropdown.vue",
       "diagnostics": [
+        "error:3:50 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:73:17 [TS2304] Cannot find name 'useId'.",
         "error:109:30 [TS2304] Cannot find name 'useMediaQuery'."
       ]
@@ -1099,6 +1124,7 @@
     {
       "file": "app/components/VersionSelector.vue",
       "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:3:25 [TS2307] Cannot find module 'verkit' or its corresponding type declarations."
       ]
     },
@@ -1199,7 +1225,9 @@
     },
     {
       "file": "app/pages/diff/[[org]]/[packageName]/v/[versionRange].vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:39 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations."
+      ]
     },
     {
       "file": "app/pages/index.vue",
@@ -1259,6 +1287,7 @@
     {
       "file": "app/pages/package-code/[[org]]/[packageName]/v/[version]/[...filePath].vue",
       "diagnostics": [
+        "error:2:39 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations.",
         "error:19:8 [TS7006] Parameter 'route' implicitly has an 'any' type.",
         "error:216:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
         "error:347:1 [TS2304] Cannot find name 'defineOgImage'.",
@@ -1269,6 +1298,7 @@
     {
       "file": "app/pages/package-docs/[...path].vue",
       "diagnostics": [
+        "error:2:39 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations.",
         "error:3:35 [TS2307] Cannot find module 'h3' or its corresponding type declarations.",
         "error:126:1 [TS2304] Cannot find name 'defineOgImage'."
       ]
@@ -1284,6 +1314,7 @@
     {
       "file": "app/pages/package-timeline/[[org]]/[packageName].vue",
       "diagnostics": [
+        "error:2:39 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations.",
         "error:3:25 [TS2307] Cannot find module 'verkit' or its corresponding type declarations.",
         "error:60:64 [TS7006] Parameter 'nextVersion' implicitly has an 'any' type."
       ]
@@ -1354,6 +1385,7 @@
     {
       "file": "app/pages/profile/[identity]/index.vue",
       "diagnostics": [
+        "error:2:35 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:175:1 [TS2304] Cannot find name 'defineOgImage'."
       ]
     },
@@ -1366,6 +1398,7 @@
     {
       "file": "app/pages/search.vue",
       "diagnostics": [
+        "error:4:27 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:5:26 [TS2307] Cannot find module 'perfect-debounce' or its corresponding type declarations.",
         "error:108:28 [TS7006] Parameter 'r' implicitly has an 'any' type.",
         "error:112:30 [TS7006] Parameter 'r' implicitly has an 'any' type.",
@@ -1431,7 +1464,7 @@
       ]
     }
   ],
-  "errorCount": 440,
+  "errorCount": 470,
   "warningCount": 0,
   "fileCount": 222
 }

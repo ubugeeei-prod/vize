@@ -3,12 +3,12 @@
     {
       "file": "src/runtime/components/Accordion.vue",
       "diagnostics": [
+        "error:3:61 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/accordion' or its corresponding type declarations.",
+        "error:81:99 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:83:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:84:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:125:12 [TS2345] Argument of type '{ item: T; index: number; open: boolean; ui: any; }' is not assignable to parameter of type '__VizeSlotOutletPayload<AccordionSlots<T>, \"leading\">'.",
-        "error:130:14 [TS2345] Argument of type '{ item: T; index: number; open: boolean; }' is not assignable to parameter of type '__VizeSlotOutletPayload<AccordionSlots<T>, \"default\">'.",
-        "error:133:12 [TS2345] Argument of type '{ item: T; index: number; open: boolean; ui: any; }' is not assignable to parameter of type '__VizeSlotOutletPayload<AccordionSlots<T>, \"trailing\">'.",
         "error:134:83 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"accordion\"> | Record<string, never>) & { accordion?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"accordion\"> & { accordion?: any; }'."
       ]
     },
@@ -17,20 +17,28 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/alert' or its corresponding type declarations.",
+        "error:78:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:79:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:143:50 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"alert\"> | Record<string, never>) & { alert?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"alert\"> & { alert?: any; }'."
       ]
     },
     {
       "file": "src/runtime/components/App.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:64 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:25:66 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:26:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations."
+      ]
     },
     {
       "file": "src/runtime/components/AuthForm.vue",
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/auth-form' or its corresponding type declarations.",
+        "error:118:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:119:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:248:10 [TS2345] Argument of type '{ as?: any; label?: string | undefined; icon?: any; avatar?: AvatarProps | undefined; color?: string | number | symbol | undefined; size?: string | number | symbol | undefined; ... 6 more ...; decorative: _SeparatorProps; } | { ...; }' is not assignable to parameter of type '{ readonly as?: any; readonly label?: string | undefined; readonly icon?: any; readonly avatar?: AvatarProps | undefined; readonly color?: string | number | symbol | undefined; ... 6 more ...; readonly decorative: _SeparatorProps; } & ... 4 more ... & Partial<...>'.\nType '{ label: string | undefined; dataSlot: string; class: any; }' is not assignable to type '{ readonly as?: any; readonly label?: string | undefined; readonly icon?: any; readonly avatar?: AvatarProps | undefined; readonly color?: string | number | symbol | undefined; ... 6 more ...; readonly decorative: _SeparatorProps; } & ... 4 more ... & Partial<...>'.\nProperty 'decorative' is missing in type '{ label: string | undefined; dataSlot: string; class: any; }' but required in type '{ readonly as?: any; readonly label?: string | undefined; readonly icon?: any; readonly avatar?: AvatarProps | undefined; readonly color?: string | number | symbol | undefined; ... 6 more ...; readonly decorative: _SeparatorProps; }'.",
+        "error:283:14 [TS2345] Argument of type '{ form?: string | undefined; formaction?: string | undefined; formenctype?: string | undefined; formmethod?: string | undefined; formnovalidate?: Booleanish | undefined; formtarget?: string | undefined; ... 58 more ...; resetSearchTermOnSelect: ComboboxRootProps<...>; }' is not assignable to parameter of type 'Partial<Props<any[] | any[][], undefined, false, Omit<ModelModifiers, \"lazy\">, Partial<Omit<ButtonProps, LinkPropsKeys>>>> & ... 4 more ... & Partial<...>'.\nType '{ form?: string | undefined; formaction?: string | undefined; formenctype?: string | undefined; formmethod?: string | undefined; formnovalidate?: Booleanish | undefined; formtarget?: string | undefined; ... 58 more ...; resetSearchTermOnSelect: ComboboxRootProps<...>; }' is not assignable to type 'Partial<Props<any[] | any[][], undefined, false, Omit<ModelModifiers, \"lazy\">, Partial<Omit<ButtonProps, LinkPropsKeys>>>>'.\nTypes of property 'clear' are incompatible.\nType 'false | (false & Partial<Omit<ButtonProps, LinkPropsKeys>>) | undefined' is not assignable to type 'Partial<Omit<ButtonProps, LinkPropsKeys>> | (Partial<Omit<ButtonProps, LinkPropsKeys>> & boolean) | undefined'.\nType 'false' is not assignable to type 'Partial<Omit<ButtonProps, LinkPropsKeys>> | (Partial<Omit<ButtonProps, LinkPropsKeys>> & boolean) | undefined'.",
         "error:313:72 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"authForm\"> | Record<string, never>) & { authForm?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"authForm\"> & { authForm?: any; }'.",
         "error:313:100 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"authForm\"> | Record<string, never>) & { authForm?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"authForm\"> & { authForm?: any; }'."
       ]
@@ -40,6 +48,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/avatar' or its corresponding type declarations.",
+        "error:46:33 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:47:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:48:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:49:28 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations.",
@@ -51,6 +60,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/avatar-group' or its corresponding type declarations.",
+        "error:38:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:39:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -59,6 +69,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/badge' or its corresponding type declarations.",
+        "error:45:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:46:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -67,6 +78,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/banner' or its corresponding type declarations.",
+        "error:71:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:72:39 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:198:52 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"banner\"> | Record<string, never>) & { banner?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"banner\"> & { banner?: any; }'."
       ]
@@ -76,6 +88,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/blog-post' or its corresponding type declarations.",
+        "error:63:45 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:64:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:68:28 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations."
       ]
@@ -85,6 +98,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/blog-posts' or its corresponding type declarations.",
+        "error:42:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:43:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -93,11 +107,12 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/breadcrumb' or its corresponding type declarations.",
+        "error:69:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:70:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:93:97 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"breadcrumb\"> | Record<string, never>) & { breadcrumb?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"breadcrumb\"> & { breadcrumb?: any; }'.",
         "error:93:130 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"breadcrumb\"> | Record<string, never>) & { breadcrumb?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"breadcrumb\"> & { breadcrumb?: any; }'.",
-        "error:108:16 [TS2345] Argument of type '{ item: Extract<T, { slot: string; }>; active: boolean; index: number; ui: any; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<BreadcrumbSlots<T>>'.",
-        "error:109:18 [TS2345] Argument of type '{ item: Extract<T, { slot: string; }>; active: boolean; index: number; ui: any; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<BreadcrumbSlots<T>>'.",
+        "error:108:16 [TS2345] Argument of type '{ item: Extract<T, { slot: string; }>; active: any; index: number; ui: any; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<BreadcrumbSlots<T>>'.",
+        "error:109:18 [TS2345] Argument of type '{ item: Extract<T, { slot: string; }>; active: any; index: number; ui: any; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<BreadcrumbSlots<T>>'.",
         "error:127:12 [TS2345] Argument of type '{ ui: any; }' is not assignable to parameter of type '__VizeSlotOutletPayload<BreadcrumbSlots<T>, \"separator\">'."
       ]
     },
@@ -113,11 +128,18 @@
     {
       "file": "src/runtime/components/Calendar.vue",
       "diagnostics": [
+        "error:2:187 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:3:31 [TS2307] Cannot find module 'reka-ui/date' or its corresponding type declarations.",
         "error:5:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:6:41 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:7:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:8:19 [TS2307] Cannot find module '#build/ui/calendar' or its corresponding type declarations.",
+        "error:146:119 [TS2307] Cannot find module 'reka-ui/namespaced' or its corresponding type declarations.",
+        "error:147:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:148:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:165:66 [TS2739] Type 'Omit<__LooseRequired<CalendarProps<R, M>>, \"fixedWeeks\" | \"monthControls\" | \"type\" | \"viewControl\" | \"yearControls\"> & { ...; }' is missing the following properties from type 'CalendarProps<R, M>': isMonthDisabled, isMonthUnavailable, isYearDisabled, isYearUnavailable",
+        "error:267:56 [TS7006] Parameter '_' implicitly has an 'any' type.",
+        "error:267:59 [TS7006] Parameter 'key' implicitly has an 'any' type.",
         "error:286:95 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"calendar\"> | Record<string, never>) & { calendar?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"calendar\"> & { calendar?: any; }'.",
         "error:286:134 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"calendar\"> | Record<string, never>) & { calendar?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"calendar\"> & { calendar?: any; }'.",
         "error:288:97 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"calendar\"> | Record<string, never>) & { calendar?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"calendar\"> & { calendar?: any; }'.",
@@ -133,6 +155,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/card' or its corresponding type declarations.",
+        "error:36:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:37:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -149,6 +172,8 @@
         "error:11:49 [TS2307] Cannot find module 'embla-carousel-wheel-gestures' or its corresponding type declarations.",
         "error:12:19 [TS2307] Cannot find module '#build/ui/carousel' or its corresponding type declarations.",
         "error:121:30 [TS2307] Cannot find module 'embla-carousel-vue' or its corresponding type declarations.",
+        "error:122:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:123:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:124:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:171:87 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"carousel\"> | Record<string, never>) & { carousel?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"carousel\"> & { carousel?: any; }'.",
         "error:171:119 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"carousel\"> | Record<string, never>) & { carousel?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"carousel\"> & { carousel?: any; }'.",
@@ -167,6 +192,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/changelog-version' or its corresponding type declarations.",
+        "error:62:45 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:63:40 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:64:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:68:28 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations."
       ]
@@ -177,6 +204,7 @@
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:54 [TS2307] Cannot find module 'motion-v' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/changelog-versions' or its corresponding type declarations.",
+        "error:53:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:54:60 [TS2307] Cannot find module 'motion-v' or its corresponding type declarations.",
         "error:55:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:56:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
@@ -188,6 +216,7 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:78 [TS2307] Cannot find module 'ai' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/chat-message' or its corresponding type declarations.",
+        "error:69:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:70:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:88:40 [TS2339] Property 'parts' does not exist on type 'ChatMessageProps<TMetadata, TDataParts, TTools>'.",
         "error:88:55 [TS7006] Parameter 'part' implicitly has an 'any' type.",
@@ -203,8 +232,12 @@
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:66 [TS2307] Cannot find module 'ai' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/chat-messages' or its corresponding type declarations.",
+        "error:89:26 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:90:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:91:91 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:92:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:172:62 [TS7031] Binding element '_' implicitly has an 'any' type.",
+        "error:172:65 [TS7031] Binding element 'status' implicitly has an 'any' type.",
         "error:373:57 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatMessages\"> | Record<string, never>) & { chatMessages?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatMessages\"> & { chatMessages?: any; }'."
       ]
     },
@@ -213,6 +246,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/chat-palette' or its corresponding type declarations.",
+        "error:27:33 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:28:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -221,6 +255,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/chat-prompt' or its corresponding type declarations.",
+        "error:57:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:58:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:59:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:151:8 [TS2322] Type 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
@@ -231,8 +267,9 @@
         "error:2:33 [TS2307] Cannot find module 'ai' or its corresponding type declarations.",
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/chat-prompt-submit' or its corresponding type declarations.",
+        "error:90:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:91:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:122:42 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ ready: { icon: any; color: string | number | symbol | undefined; variant: string | number | symbol | undefined; type: \"submit\"; }; submitted: { icon: any; color: string | number | symbol; variant: string | ... 1 more ... | symbol; onClick(e: MouseEvent): void; }; streaming: { ...; }; error: { ...; }; }'.",
+        "error:122:42 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ ready: { icon: any; color: RouterLinkProps; variant: RouterLinkProps; type: \"submit\"; }; submitted: { icon: any; color: string | number | symbol; variant: string | number | symbol; onClick(e: MouseEvent): void; }; streaming: { ...; }; error: { ...; }; }'.",
         "error:124:74 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'.",
         "error:130:47 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'.",
         "error:138:47 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'.",
@@ -242,8 +279,10 @@
     {
       "file": "src/runtime/components/ChatReasoning.vue",
       "diagnostics": [
+        "error:2:43 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/chat-reasoning' or its corresponding type declarations.",
+        "error:68:73 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:69:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:164:74 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatReasoning\"> | Record<string, never>) & { chatReasoning?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatReasoning\"> & { chatReasoning?: any; }'."
       ]
@@ -253,14 +292,17 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/chat-shimmer' or its corresponding type declarations.",
+        "error:35:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:36:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/ChatTool.vue",
       "diagnostics": [
+        "error:2:43 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/chat-tool' or its corresponding type declarations.",
+        "error:84:73 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:85:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:134:78 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatTool\"> | Record<string, never>) & { chatTool?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatTool\"> & { chatTool?: any; }'.",
         "error:136:74 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatTool\"> | Record<string, never>) & { chatTool?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatTool\"> & { chatTool?: any; }'."
@@ -269,8 +311,11 @@
     {
       "file": "src/runtime/components/Checkbox.vue",
       "diagnostics": [
+        "error:2:59 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/checkbox' or its corresponding type declarations.",
+        "error:67:67 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:68:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:69:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:133:100 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"checkbox\"> | Record<string, never>) & { checkbox?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"checkbox\"> & { checkbox?: any; }'.",
         "error:134:61 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"checkbox\"> | Record<string, never>) & { checkbox?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"checkbox\"> & { checkbox?: any; }'."
@@ -279,8 +324,11 @@
     {
       "file": "src/runtime/components/CheckboxGroup.vue",
       "diagnostics": [
+        "error:2:69 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/checkbox-group' or its corresponding type declarations.",
+        "error:83:35 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:85:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:86:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -289,14 +337,18 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/chip' or its corresponding type declarations.",
+        "error:50:33 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:51:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/Collapsible.vue",
       "diagnostics": [
+        "error:2:65 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/collapsible' or its corresponding type declarations.",
+        "error:30:73 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:32:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:33:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -306,19 +358,25 @@
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/color-picker' or its corresponding type declarations.",
         "error:6:32 [TS2307] Cannot find module 'colortranslator' or its corresponding type declarations.",
+        "error:75:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:76:85 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:77:26 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
         "error:78:33 [TS2307] Cannot find module 'colortranslator' or its corresponding type declarations.",
-        "error:79:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:79:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:227:90 [TS7006] Parameter 'hsb' implicitly has an 'any' type."
       ]
     },
     {
       "file": "src/runtime/components/CommandPalette.vue",
       "diagnostics": [
+        "error:3:57 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:5:33 [TS2307] Cannot find module 'fuse.js' or its corresponding type declarations.",
         "error:6:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:7:37 [TS2307] Cannot find module '@vueuse/integrations/useFuse' or its corresponding type declarations.",
         "error:8:19 [TS2307] Cannot find module '#build/ui/command-palette' or its corresponding type declarations.",
+        "error:233:148 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:235:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:236:82 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:237:25 [TS2307] Cannot find module '@vueuse/integrations/useFuse' or its corresponding type declarations.",
         "error:238:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:372:57 [TS7006] Parameter 'acc' implicitly has an 'any' type.",
@@ -330,7 +388,7 @@
         "error:602:79 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"commandPalette\"> | Record<string, never>) & { commandPalette?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"commandPalette\"> & { commandPalette?: any; }'.",
         "error:612:53 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"commandPalette\"> | Record<string, never>) & { commandPalette?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"commandPalette\"> & { commandPalette?: any; }'.",
         "error:629:54 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"commandPalette\"> | Record<string, never>) & { commandPalette?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"commandPalette\"> & { commandPalette?: any; }'.",
-        "error:649:38 [TS2345] Argument of type 'AcceptableValue' is not assignable to parameter of type 'Record<string, any> | undefined'.\nType 'null' is not assignable to type 'Record<string, any> | undefined'.",
+        "error:649:26 [TS7006] Parameter 'item' implicitly has an 'any' type.",
         "error:658:117 [TS2353] Object literal may only specify known properties, and '\"group\"' does not exist in type '{ item: T; index: number; ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; }'."
       ]
     },
@@ -339,25 +397,31 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/container' or its corresponding type declarations.",
+        "error:26:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:27:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/ContextMenu.vue",
       "diagnostics": [
+        "error:3:115 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/context-menu' or its corresponding type declarations.",
-        "error:120:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:170:14 [TS2698] Spread types may only be created from object types."
+        "error:117:53 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:119:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
+        "error:120:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/ContextMenuContent.vue",
       "diagnostics": [
+        "error:2:133 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:24 [TS2307] Cannot find module '#build/ui/context-menu' or its corresponding type declarations.",
-        "error:45:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:161:26 [TS2698] Spread types may only be created from object types."
+        "error:42:29 [TS2307] Cannot find module 'reka-ui/namespaced' or its corresponding type declarations.",
+        "error:43:38 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:44:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
+        "error:45:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -365,6 +429,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/dashboard-group' or its corresponding type declarations.",
+        "error:27:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:28:42 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -373,6 +438,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/dashboard-navbar' or its corresponding type declarations.",
+        "error:55:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:56:40 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:57:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -389,6 +456,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/dashboard-resize-handle' or its corresponding type declarations.",
+        "error:26:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:27:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -398,8 +466,9 @@
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/dashboard-search' or its corresponding type declarations.",
         "error:6:37 [TS2307] Cannot find module '@vueuse/integrations/useFuse' or its corresponding type declarations.",
-        "error:16:115 [TS2344] Type '\"content\" | \"description\" | \"dismissible\" | \"fullscreen\" | \"modal\" | \"overlay\" | \"portal\" | \"title\" | \"transition\" | \"unmountOnHide\"' does not satisfy the constraint 'keyof ModalProps'.\nType '\"unmountOnHide\"' is not assignable to type 'keyof ModalProps'.",
+        "error:16:115 [TS2344] Type '\"content\" | \"description\" | \"dismissible\" | \"fullscreen\" | \"modal\" | \"overlay\" | \"portal\" | \"title\" | \"transition\" | \"unmountOnHide\"' does not satisfy the constraint 'keyof ModalProps'.\nType '\"modal\"' is not assignable to type 'keyof ModalProps'.",
         "error:77:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:78:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:79:77 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:146:28 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"dashboardSearch\"> | Record<string, never>) & { dashboardSearch?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"dashboardSearch\"> & { dashboardSearch?: any; }'.",
         "error:153:28 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"dashboardSearch\"> | Record<string, never>) & { dashboardSearch?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"dashboardSearch\"> & { dashboardSearch?: any; }'.",
@@ -412,6 +481,7 @@
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/dashboard-search-button' or its corresponding type declarations.",
         "error:58:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:59:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:60:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:103:77 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"dashboardSearchButton\"> | Record<string, never>) & { dashboardSearchButton?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"dashboardSearchButton\"> & { dashboardSearchButton?: any; }'."
       ]
@@ -422,6 +492,7 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/dashboard-sidebar' or its corresponding type declarations.",
         "error:60:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:61:40 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:62:56 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -430,6 +501,7 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/dashboard-sidebar-collapse' or its corresponding type declarations.",
+        "error:30:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:31:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:61:62 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"dashboardSidebarCollapse\"> | Record<string, never>) & { dashboardSidebarCollapse?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"dashboardSidebarCollapse\"> & { dashboardSidebarCollapse?: any; }'.",
         "error:61:93 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"dashboardSidebarCollapse\"> | Record<string, never>) & { dashboardSidebarCollapse?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"dashboardSidebarCollapse\"> & { dashboardSidebarCollapse?: any; }'."
@@ -440,6 +512,7 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/dashboard-sidebar-toggle' or its corresponding type declarations.",
+        "error:30:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:31:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:63:57 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"dashboardSidebarToggle\"> | Record<string, never>) & { dashboardSidebarToggle?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"dashboardSidebarToggle\"> & { dashboardSidebarToggle?: any; }'.",
         "error:63:84 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"dashboardSidebarToggle\"> | Record<string, never>) & { dashboardSidebarToggle?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"dashboardSidebarToggle\"> & { dashboardSidebarToggle?: any; }'."
@@ -450,6 +523,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/dashboard-toolbar' or its corresponding type declarations.",
+        "error:28:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:29:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -457,10 +531,13 @@
       "file": "src/runtime/components/Drawer.vue",
       "diagnostics": [
         "error:3:55 [TS2307] Cannot find module 'vaul-vue' or its corresponding type declarations.",
+        "error:4:61 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/drawer' or its corresponding type declarations.",
         "error:15:18 [TS2430] Interface 'DrawerProps' incorrectly extends interface 'Pick<DrawerRootProps, \"activeSnapPoint\" | \"closeThreshold\" | \"defaultOpen\" | \"direction\" | \"dismissible\" | \"fixed\" | \"handleOnly\" | \"modal\" | \"nested\" | \"noBodyStyles\" | \"open\" | \"preventScrollRestoration\" | \"scrollLockTimeout\" | \"setBackgroundColorOnScale\" | \"shouldScaleBackground\" | \"snapPoints\">'.\nProperty 'nested' is optional in type 'DrawerProps' but required in type 'Pick<DrawerRootProps, \"activeSnapPoint\" | \"closeThreshold\" | \"defaultOpen\" | \"direction\" | \"dismissible\" | \"fixed\" | \"handleOnly\" | \"modal\" | \"nested\" | \"noBodyStyles\" | \"open\" | \"preventScrollRestoration\" | \"scrollLockTimeout\" | \"setBackgroundColorOnScale\" | \"shouldScaleBackground\" | \"snapPoints\">'.",
+        "error:85:32 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:87:164 [TS2307] Cannot find module 'vaul-vue' or its corresponding type declarations.",
+        "error:88:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:89:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:197:66 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"drawer\"> | Record<string, never>) & { drawer?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"drawer\"> & { drawer?: any; }'."
       ]
@@ -468,28 +545,31 @@
     {
       "file": "src/runtime/components/DropdownMenu.vue",
       "diagnostics": [
+        "error:3:143 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/dropdown-menu' or its corresponding type declarations.",
         "error:148:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:149:74 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:150:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:151:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:190:8 [TS2345] Argument of type '{ open: boolean; }' is not assignable to parameter of type '__VizeSlotOutletPayload<DropdownMenuSlots<T, NestedItem<T>>, \"default\">'.",
-        "error:212:14 [TS2698] Spread types may only be created from object types."
+        "error:190:8 [TS2345] Argument of type '{ open: any; }' is not assignable to parameter of type '__VizeSlotOutletPayload<DropdownMenuSlots<T, NestedItem<T>>, \"default\">'."
       ]
     },
     {
       "file": "src/runtime/components/DropdownMenuContent.vue",
       "diagnostics": [
+        "error:3:137 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:24 [TS2307] Cannot find module '#build/ui/dropdown-menu' or its corresponding type declarations.",
         "error:62:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:63:30 [TS2307] Cannot find module 'reka-ui/namespaced' or its corresponding type declarations.",
+        "error:64:38 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:65:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:66:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:130:6 [TS2345] Argument of type '{ item: Extract<NestedItem<T>, { slot: string; }>; index: number; ui: { [x: string]: (props?: Record<string, any>) => string; }; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>>'.",
-        "error:131:8 [TS2345] Argument of type '{ item: Extract<NestedItem<T>, { slot: string; }>; active: boolean | undefined; index: number; ui: { [x: string]: (props?: Record<string, any>) => string; }; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>>'.",
-        "error:139:12 [TS2345] Argument of type '{ item: Extract<NestedItem<T>, { slot: string; }>; active: boolean | undefined; index: number; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>>'.",
-        "error:147:12 [TS2345] Argument of type '{ item: Extract<NestedItem<T>, { slot: string; }>; active: boolean | undefined; index: number; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>>'.",
-        "error:154:10 [TS2345] Argument of type '{ item: Extract<NestedItem<T>, { slot: string; }>; active: boolean | undefined; index: number; ui: { [x: string]: (props?: Record<string, any>) => string; }; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>>'.",
+        "error:130:6 [TS2345] Argument of type '{ item: Extract<NestedItem<T>, { slot: string; }>; index: any; ui: { [x: string]: (props?: Record<string, any>) => string; }; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>>'.",
+        "error:139:12 [TS2345] Argument of type '{ item: Extract<NestedItem<T>, { slot: string; }>; active: any; index: any; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>>'.",
+        "error:147:12 [TS2345] Argument of type '{ item: Extract<NestedItem<T>, { slot: string; }>; active: any; index: any; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>>'.",
         "error:183:10 [TS2345] Argument of type '{ sub: boolean; }' is not assignable to parameter of type '__VizeSlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>, \"content-top\">'.",
-        "error:226:26 [TS2698] Spread types may only be created from object types.",
         "error:259:12 [TS2345] Argument of type '{ searchTerm: string; }' is not assignable to parameter of type '__VizeSlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>, \"empty\">'.",
         "error:266:10 [TS2345] Argument of type '{ sub: boolean; }' is not assignable to parameter of type '__VizeSlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>, \"content-bottom\">'."
       ]
@@ -498,12 +578,15 @@
       "file": "src/runtime/components/Editor.vue",
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
+        "error:4:69 [TS2307] Cannot find module '@tiptap/vue-3' or its corresponding type declarations.",
+        "error:5:40 [TS2307] Cannot find module '@tiptap/starter-kit' or its corresponding type declarations.",
         "error:6:41 [TS2307] Cannot find module '@tiptap/extension-placeholder' or its corresponding type declarations.",
         "error:7:47 [TS2307] Cannot find module '@tiptap/markdown' or its corresponding type declarations.",
         "error:8:35 [TS2307] Cannot find module '@tiptap/extension-image' or its corresponding type declarations.",
         "error:9:37 [TS2307] Cannot find module '@tiptap/extension-mention' or its corresponding type declarations.",
         "error:10:19 [TS2307] Cannot find module '#build/ui/editor' or its corresponding type declarations.",
         "error:90:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:91:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:92:33 [TS2307] Cannot find module '@tiptap/core' or its corresponding type declarations.",
         "error:93:18 [TS2307] Cannot find module '@tiptap/extension-code' or its corresponding type declarations.",
         "error:94:28 [TS2307] Cannot find module '@tiptap/extension-horizontal-rule' or its corresponding type declarations.",
@@ -511,11 +594,15 @@
         "error:96:21 [TS2307] Cannot find module '@tiptap/extension-mention' or its corresponding type declarations.",
         "error:97:25 [TS2307] Cannot find module '@tiptap/extension-placeholder' or its corresponding type declarations.",
         "error:98:26 [TS2307] Cannot find module '@tiptap/markdown' or its corresponding type declarations.",
+        "error:99:24 [TS2307] Cannot find module '@tiptap/starter-kit' or its corresponding type declarations.",
+        "error:100:42 [TS2307] Cannot find module '@tiptap/vue-3' or its corresponding type declarations.",
+        "error:101:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:102:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:242:3 [TS2353] Object literal may only specify known properties, and 'contentType' does not exist in type 'Partial<EditorOptions>'.",
-        "error:263:24 [TS2339] Property 'getMarkdown' does not exist on type 'Editor'.",
-        "error:283:24 [TS2339] Property 'getMarkdown' does not exist on type 'Editor'.",
-        "error:296:48 [TS2353] Object literal may only specify known properties, and 'contentType' does not exist in type 'SetContentOptions'."
+        "error:245:16 [TS7031] Binding element 'editor' implicitly has an 'any' type.",
+        "error:251:16 [TS7031] Binding element 'editor' implicitly has an 'any' type.",
+        "error:251:24 [TS7031] Binding element 'transaction' implicitly has an 'any' type.",
+        "error:251:37 [TS7031] Binding element 'appendedTransactions' implicitly has an 'any' type.",
+        "error:252:63 [TS7006] Parameter 'tr' implicitly has an 'any' type."
       ]
     },
     {
@@ -523,9 +610,11 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:42 [TS2307] Cannot find module '@floating-ui/dom' or its corresponding type declarations.",
+        "error:5:42 [TS2307] Cannot find module '@tiptap/vue-3' or its corresponding type declarations.",
         "error:6:38 [TS2307] Cannot find module '@tiptap/extension-drag-handle-vue-3' or its corresponding type declarations.",
         "error:7:19 [TS2307] Cannot find module '#build/ui/editor-drag-handle' or its corresponding type declarations.",
         "error:52:24 [TS2307] Cannot find module '@tiptap/extension-drag-handle-vue-3' or its corresponding type declarations.",
+        "error:53:44 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:54:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:55:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:86:14 [TS7031] Binding element 'rects' implicitly has an 'any' type.",
@@ -560,12 +649,17 @@
       "file": "src/runtime/components/EditorToolbar.vue",
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
+        "error:5:29 [TS2307] Cannot find module '@tiptap/vue-3' or its corresponding type declarations.",
         "error:6:44 [TS2307] Cannot find module '@tiptap/extension-bubble-menu' or its corresponding type declarations.",
         "error:7:46 [TS2307] Cannot find module '@tiptap/extension-floating-menu' or its corresponding type declarations.",
         "error:8:19 [TS2307] Cannot find module '#build/ui/editor-toolbar' or its corresponding type declarations.",
+        "error:103:38 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:104:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:105:42 [TS2307] Cannot find module '@tiptap/vue-3/menus' or its corresponding type declarations.",
+        "error:106:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:107:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:129:73 [TS2345] Argument of type '(Omit<__LooseRequired<EditorToolbarBaseProps<T> & { layout?: \"fixed\" | undefined; }>, \"activeColor\" | \"activeVariant\" | \"color\" | \"layout\" | \"size\" | \"variant\"> & { ...; }) | (Omit<...> & { ...; }) | (Omit<...> & { ...; })' is not assignable to parameter of type 'EditorToolbarProps<T>'.\nType 'Omit<__LooseRequired<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' is not assignable to type 'EditorToolbarProps<T>'.\nType 'Omit<__LooseRequired<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' is not assignable to type 'EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }'.\nProperty 'editor' is missing in type 'Omit<__LooseRequired<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' but required in type 'EditorToolbarBaseProps<T>'."
+        "error:129:73 [TS2345] Argument of type '(Omit<__LooseRequired<EditorToolbarBaseProps<T> & { layout?: \"fixed\" | undefined; }>, \"activeColor\" | \"activeVariant\" | \"color\" | \"layout\" | \"size\" | \"variant\"> & { ...; }) | (Omit<...> & { ...; }) | (Omit<...> & { ...; })' is not assignable to parameter of type 'EditorToolbarProps<T>'.\nType 'Omit<__LooseRequired<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' is not assignable to type 'EditorToolbarProps<T>'.\nType 'Omit<__LooseRequired<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' is not assignable to type 'EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }'.\nProperty 'editor' is missing in type 'Omit<__LooseRequired<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' but required in type 'EditorToolbarBaseProps<T>'.",
+        "error:170:30 [TS7006] Parameter 'item' implicitly has an 'any' type."
       ]
     },
     {
@@ -573,6 +667,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/empty' or its corresponding type declarations.",
+        "error:63:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:64:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:77:84 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"empty\"> | Record<string, never>) & { empty?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"empty\"> & { empty?: any; }'."
       ]
@@ -583,6 +678,7 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '#app' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/error' or its corresponding type declarations.",
+        "error:51:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:52:42 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -591,6 +687,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/field-group' or its corresponding type declarations.",
+        "error:35:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:36:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -598,7 +695,10 @@
       "file": "src/runtime/components/FileUpload.vue",
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
+        "error:4:42 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/file-upload' or its corresponding type declarations.",
+        "error:143:43 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:144:40 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:145:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:309:57 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"fileUpload\"> | Record<string, never>) & { fileUpload?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"fileUpload\"> & { fileUpload?: any; }'.",
         "error:345:72 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"fileUpload\"> | Record<string, never>) & { fileUpload?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"fileUpload\"> & { fileUpload?: any; }'.",
@@ -611,6 +711,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/footer' or its corresponding type declarations.",
+        "error:30:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:31:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -619,6 +720,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/footer-columns' or its corresponding type declarations.",
+        "error:53:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:54:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:104:82 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"footerColumns\"> | Record<string, never>) & { footerColumns?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"footerColumns\"> & { footerColumns?: any; }'."
       ]
@@ -628,7 +730,9 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/form' or its corresponding type declarations.",
-        "error:81:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:80:29 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
+        "error:81:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:149:17 [TS7006] Parameter 'event' implicitly has an 'any' type."
       ]
     },
     {
@@ -636,6 +740,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/form-field' or its corresponding type declarations.",
+        "error:57:34 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:58:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -644,7 +749,9 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/header' or its corresponding type declarations.",
+        "error:68:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:69:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:70:40 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:71:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:143:36 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"header\"> | Record<string, never>) & { header?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"header\"> & { header?: any; }'.",
         "error:143:63 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"header\"> | Record<string, never>) & { header?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"header\"> & { header?: any; }'."
@@ -654,6 +761,8 @@
       "file": "src/runtime/components/Icon.vue",
       "diagnostics": [
         "error:2:37 [TS2307] Cannot find module '@nuxt/icon' or its corresponding type declarations.",
+        "error:13:33 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:14:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:15:22 [TS2307] Cannot find module '@nuxt/icon/runtime/components/index.js' or its corresponding type declarations."
       ]
     },
@@ -663,31 +772,41 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/input' or its corresponding type declarations.",
         "error:16:18 [TS2430] Interface 'InputProps<T, Mod>' incorrectly extends interface 'Omit<InputHTMLAttributes, \"autocomplete\" | \"autofocus\" | \"disabled\" | \"name\" | \"placeholder\" | \"required\" | \"type\">'.\nTypes of property 'size' are incompatible.\nType 'string | number | symbol | undefined' is not assignable to type 'Numberish | undefined'.\nType 'symbol' is not assignable to type 'Numberish | undefined'.",
+        "error:70:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:71:27 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:72:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/InputDate.vue",
       "diagnostics": [
+        "error:3:135 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:9:19 [TS2307] Cannot find module '#build/ui/input-date' or its corresponding type declarations.",
+        "error:74:17 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:76:80 [TS2307] Cannot find module 'reka-ui/namespaced' or its corresponding type declarations.",
+        "error:77:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:78:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:100:174 [TS2345] Argument of type 'Omit<__LooseRequired<InputDateProps<R>>, \"autofocusDelay\"> & { autofocusDelay: number; }' is not assignable to parameter of type 'Props<InputDateProps<R>> | undefined'.\nType 'Omit<__LooseRequired<InputDateProps<R>>, \"autofocusDelay\"> & { autofocusDelay: number; }' has no properties in common with type 'Props<InputDateProps<R>>'.",
+        "error:101:80 [TS2559] Type 'Omit<__LooseRequired<InputDateProps<R>>, \"autofocusDelay\"> & { autofocusDelay: number; }' has no properties in common with type 'Props<InputDateProps<R>>'.",
         "error:205:59 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputDate\"> | Record<string, never>) & { inputDate?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputDate\"> & { inputDate?: any; }'."
       ]
     },
     {
       "file": "src/runtime/components/InputMenu.vue",
       "diagnostics": [
+        "error:2:123 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/input-menu' or its corresponding type declarations.",
+        "error:240:102 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:242:40 [TS2307] Cannot find module 'reka-ui/namespaced' or its corresponding type declarations.",
         "error:243:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:244:25 [TS2307] Cannot find module 'ohash/utils' or its corresponding type declarations.",
+        "error:245:68 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:246:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:312:56 [TS2345] Argument of type 'NonNullable<string | number | symbol | undefined>' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.",
         "error:327:52 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputMenu\"> | Record<string, never>) & { inputMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputMenu\"> & { inputMenu?: any; }'.",
         "error:653:62 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputMenu\"> | Record<string, never>) & { inputMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputMenu\"> & { inputMenu?: any; }'.",
-        "error:688:74 [TS2322] Type 'string | number' is not assignable to type 'number'.\nType 'string' is not assignable to type 'number'.",
-        "error:694:76 [TS2322] Type 'string | number' is not assignable to type 'number'.\nType 'string' is not assignable to type 'number'.",
         "error:695:62 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputMenu\"> | Record<string, never>) & { inputMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputMenu\"> & { inputMenu?: any; }'.",
         "error:740:54 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputMenu\"> | Record<string, never>) & { inputMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputMenu\"> & { inputMenu?: any; }'."
       ]
@@ -695,25 +814,27 @@
     {
       "file": "src/runtime/components/InputNumber.vue",
       "diagnostics": [
+        "error:2:43 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/input-number' or its corresponding type declarations.",
+        "error:90:95 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:92:41 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:93:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:141:112 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputNumber\"> | Record<string, never>) & { inputNumber?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputNumber\"> & { inputNumber?: any; }'.",
         "error:141:138 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputNumber\"> | Record<string, never>) & { inputNumber?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputNumber\"> & { inputNumber?: any; }'.",
         "error:143:112 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputNumber\"> | Record<string, never>) & { inputNumber?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputNumber\"> & { inputNumber?: any; }'.",
-        "error:143:139 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputNumber\"> | Record<string, never>) & { inputNumber?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputNumber\"> & { inputNumber?: any; }'."
+        "error:143:139 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputNumber\"> | Record<string, never>) & { inputNumber?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputNumber\"> & { inputNumber?: any; }'.",
+        "error:195:27 [TS7006] Parameter 'val' implicitly has an 'any' type."
       ]
     },
     {
       "file": "src/runtime/components/InputRating.vue",
       "diagnostics": [
-        "error:3:15 [TS2305] Module '\"reka-ui\"' has no exported member 'RatingRootProps'.",
-        "error:3:32 [TS2305] Module '\"reka-ui\"' has no exported member 'RatingRootEmits'.",
+        "error:3:55 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/input-rating' or its corresponding type declarations.",
-        "error:64:10 [TS2305] Module '\"reka-ui\"' has no exported member 'RatingRoot'.",
-        "error:64:22 [TS2305] Module '\"reka-ui\"' has no exported member 'RatingItem'.",
-        "error:64:34 [TS2305] Module '\"reka-ui\"' has no exported member 'RatingItemIndicator'.",
+        "error:64:61 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:65:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:66:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:107:60 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputRating\"> | Record<string, never>) & { inputRating?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputRating\"> & { inputRating?: any; }'."
       ]
@@ -722,21 +843,26 @@
       "file": "src/runtime/components/InputTags.vue",
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
+        "error:4:83 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/input-tags' or its corresponding type declarations.",
+        "error:73:102 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:75:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:76:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:161:4 [TS2345] Argument of type '{ required?: boolean; addOnPaste?: boolean; addOnTab?: boolean; addOnBlur?: boolean; duplicate?: boolean; delimiter?: string | RegExp; max?: number; convertValue?: ((value: string) => T) | undefined; ... 8 more ...; disabled: boolean | undefined; }' is not assignable to parameter of type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 28 more ...; readonly onRemoveTag?: ((payload: AcceptableInputValue) => any) | undefined; } & Record<...>'.\nType '{ required?: boolean; addOnPaste?: boolean; addOnTab?: boolean; addOnBlur?: boolean; duplicate?: boolean; delimiter?: string | RegExp; max?: number; convertValue?: ((value: string) => T) | undefined; ... 8 more ...; disabled: boolean | undefined; }' is not assignable to type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 28 more ...; readonly onRemoveTag?: ((payload: AcceptableInputValue) => any) | undefined; }'.\nTypes of property 'displayValue' are incompatible.\nType '((value: T) => string) | undefined' is not assignable to type '((value: AcceptableInputValue) => string) | undefined'.\nType '(value: T) => string' is not assignable to type '(value: AcceptableInputValue) => string'.\nTypes of parameters 'value' and '<target>' are incompatible.\nType 'AcceptableInputValue' is not assignable to type 'T'.\n'AcceptableInputValue' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.\nType 'string' is not assignable to type 'T'.\n'string' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.",
-        "error:171:6 [TS2322] Type '(value: T[]) => void' is not assignable to type '(payload: AcceptableInputValue[]) => any'.\nTypes of parameters 'value' and '<target>' are incompatible.\nType 'AcceptableInputValue[]' is not assignable to type 'T[]'.\nType 'AcceptableInputValue' is not assignable to type 'T'.\n'AcceptableInputValue' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.\nType 'string' is not assignable to type 'T'.\n'string' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.",
-        "error:181:81 [TS2322] Type 'string | number' is not assignable to type 'number'.\nType 'string' is not assignable to type 'number'.",
-        "error:189:55 [TS2322] Type 'string | number' is not assignable to type 'number'.\nType 'string' is not assignable to type 'number'.",
         "error:190:58 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputTags\"> | Record<string, never>) & { inputTags?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputTags\"> & { inputTags?: any; }'."
       ]
     },
     {
       "file": "src/runtime/components/InputTime.vue",
       "diagnostics": [
+        "error:3:135 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/input-time' or its corresponding type declarations.",
+        "error:84:57 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:86:46 [TS2307] Cannot find module 'reka-ui/namespaced' or its corresponding type declarations.",
+        "error:87:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:88:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:111:174 [TS2345] Argument of type 'Omit<__LooseRequired<InputTimeProps<R>>, \"autofocusDelay\"> & { autofocusDelay: number; }' is not assignable to parameter of type 'Props<InputTimeProps<R>> | undefined'.\nType 'Omit<__LooseRequired<InputTimeProps<R>>, \"autofocusDelay\"> & { autofocusDelay: number; }' has no properties in common with type 'Props<InputTimeProps<R>>'.",
+        "error:112:80 [TS2559] Type 'Omit<__LooseRequired<InputTimeProps<R>>, \"autofocusDelay\"> & { autofocusDelay: number; }' has no properties in common with type 'Props<InputTimeProps<R>>'.",
         "error:219:59 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputTime\"> | Record<string, never>) & { inputTime?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputTime\"> & { inputTime?: any; }'."
       ]
     },
@@ -745,6 +871,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/kbd' or its corresponding type declarations.",
+        "error:40:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:41:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -752,10 +879,13 @@
       "file": "src/runtime/components/Link.vue",
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
+        "error:4:56 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/link' or its corresponding type declarations.",
         "error:119:25 [TS2307] Cannot find module 'ohash/utils' or its corresponding type declarations.",
+        "error:120:39 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:121:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:122:29 [TS2307] Cannot find module 'ufo' or its corresponding type declarations.",
+        "error:123:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:124:52 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:267:11 [TS18004] No value exists in scope for the shorthand property 'as'. Either declare one or provide an initializer.",
         "error:303:9 [TS18004] No value exists in scope for the shorthand property 'as'. Either declare one or provide an initializer."
@@ -763,13 +893,18 @@
     },
     {
       "file": "src/runtime/components/LinkBase.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:19:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations."
+      ]
     },
     {
       "file": "src/runtime/components/Listbox.vue",
       "diagnostics": [
+        "error:5:57 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:6:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:7:19 [TS2307] Cannot find module '#build/ui/listbox' or its corresponding type declarations.",
+        "error:164:167 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:166:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:167:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:168:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:208:56 [TS2345] Argument of type 'NonNullable<string | number | symbol | undefined>' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.",
@@ -782,6 +917,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/main' or its corresponding type declarations.",
+        "error:26:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:27:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -790,32 +926,37 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/marquee' or its corresponding type declarations.",
+        "error:51:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:52:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/Modal.vue",
       "diagnostics": [
+        "error:2:120 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/modal' or its corresponding type declarations.",
+        "error:88:148 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:90:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:91:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:116:87 [TS2345] Argument of type '\"unmountOnHide\"' is not assignable to parameter of type '\"class\" | \"close\" | \"closeIcon\" | \"content\" | \"defaultOpen\" | \"description\" | \"dismissible\" | \"fullscreen\" | \"modal\" | \"open\" | \"overlay\" | \"portal\" | \"scrollable\" | \"title\" | \"transition\" | \"ui\" | (\"class\" | ... 14 more ... | \"ui\")[]'.",
         "error:201:60 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"modal\"> | Record<string, never>) & { modal?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"modal\"> & { modal?: any; }'.",
-        "error:229:85 [TS2339] Property 'unmountOnHide' does not exist on type 'Omit<__LooseRequired<ModalProps>, \"close\" | \"dismissible\" | \"modal\" | \"overlay\" | \"portal\" | \"transition\"> & { close: boolean | Omit<ButtonProps, LinkPropsKeys>; ... 4 more ...; transition: boolean; }'."
+        "error:229:85 [TS2339] Property 'unmountOnHide' does not exist on type 'Omit<__LooseRequired<ModalProps>, \"close\" | \"dismissible\" | \"modal\" | \"overlay\" | \"portal\" | \"transition\"> & { close: boolean | Omit<ButtonProps, LinkPropsKeys>; dismissible: boolean; overlay: boolean; portal: string | ... 1 more ... | HTMLElement; transition: boolean; }'."
       ]
     },
     {
       "file": "src/runtime/components/NavigationMenu.vue",
       "diagnostics": [
+        "error:3:122 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/navigation-menu' or its corresponding type declarations.",
+        "error:235:257 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:237:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:238:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:239:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:373:162 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"navigationMenu\"> | Record<string, never>) & { navigationMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"navigationMenu\"> & { navigationMenu?: any; }'.",
         "error:395:313 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"navigationMenu\"> | Record<string, never>) & { navigationMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"navigationMenu\"> & { navigationMenu?: any; }'.",
         "error:447:187 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"navigationMenu\"> | Record<string, never>) & { navigationMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"navigationMenu\"> & { navigationMenu?: any; }'.",
-        "error:480:185 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"navigationMenu\"> | Record<string, never>) & { navigationMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"navigationMenu\"> & { navigationMenu?: any; }'.",
-        "error:520:4 [TS2345] Argument of type '{ style?: StyleValue; as?: any; delayDuration?: number | undefined; skipDelayDuration?: number | undefined; orientation?: O | undefined; disableClickTrigger?: boolean | undefined; ... 7 more ...; class: any; }' is not assignable to parameter of type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 20 more ...; readonly \"onUpdate:modelValue\"?: ((value: string) => any) | undefined; } & Record<...>'.\nType '{ style?: StyleValue; as?: any; delayDuration?: number | undefined; skipDelayDuration?: number | undefined; orientation?: O | undefined; disableClickTrigger?: boolean | undefined; ... 7 more ...; class: any; }' is not assignable to type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 20 more ...; readonly \"onUpdate:modelValue\"?: ((value: string) => any) | undefined; }'.\nTypes of property 'orientation' are incompatible.\nType 'O | undefined' is not assignable to type 'Orientation | undefined'.\nType 'O' is not assignable to type 'Orientation | undefined'.\nType 'string | number | symbol' is not assignable to type 'Orientation | undefined'.\nType 'string' is not assignable to type 'Orientation | undefined'."
+        "error:480:185 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"navigationMenu\"> | Record<string, never>) & { navigationMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"navigationMenu\"> & { navigationMenu?: any; }'."
       ]
     },
     {
@@ -827,6 +968,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page' or its corresponding type declarations.",
+        "error:28:33 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:29:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -835,6 +977,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-anchors' or its corresponding type declarations.",
+        "error:44:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:45:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:84:76 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pageAnchors\"> | Record<string, never>) & { pageAnchors?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pageAnchors\"> & { pageAnchors?: any; }'."
       ]
@@ -844,6 +987,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-aside' or its corresponding type declarations.",
+        "error:28:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:29:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -852,6 +996,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-body' or its corresponding type declarations.",
+        "error:26:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:27:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -860,6 +1005,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-cta' or its corresponding type declarations.",
+        "error:56:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:57:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -868,6 +1014,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-card' or its corresponding type declarations.",
+        "error:74:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:75:51 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:76:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -876,6 +1024,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-columns' or its corresponding type declarations.",
+        "error:26:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:27:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -884,6 +1033,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-feature' or its corresponding type declarations.",
+        "error:46:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:47:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -892,6 +1042,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-grid' or its corresponding type declarations.",
+        "error:26:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:27:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -900,6 +1051,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-header' or its corresponding type declarations.",
+        "error:39:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:40:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -908,6 +1060,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-hero' or its corresponding type declarations.",
+        "error:54:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:55:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -916,6 +1069,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-links' or its corresponding type declarations.",
+        "error:46:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:47:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:90:76 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pageLinks\"> | Record<string, never>) & { pageLinks?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pageLinks\"> & { pageLinks?: any; }'."
       ]
@@ -925,6 +1079,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-list' or its corresponding type declarations.",
+        "error:27:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:28:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -933,6 +1088,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-logos' or its corresponding type declarations.",
+        "error:35:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:36:40 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:37:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -941,14 +1098,18 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-section' or its corresponding type declarations.",
+        "error:70:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:71:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/Pagination.vue",
       "diagnostics": [
+        "error:2:63 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/pagination' or its corresponding type declarations.",
+        "error:107:153 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:109:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:110:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:138:89 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pagination\"> | Record<string, never>) & { pagination?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pagination\"> & { pagination?: any; }'.",
         "error:138:129 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pagination\"> | Record<string, never>) & { pagination?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pagination\"> & { pagination?: any; }'.",
@@ -964,20 +1125,24 @@
     {
       "file": "src/runtime/components/PinInput.vue",
       "diagnostics": [
+        "error:4:59 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/pin-input' or its corresponding type declarations.",
-        "error:68:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:162:6 [TS2322] Type 'PinInputValue<T>' is not assignable to type 'string[] | null | undefined'.\nType 'string[] | number[]' is not assignable to type 'string[] | null | undefined'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.\nType 'PinInputValue<T>' is not assignable to type 'string[]'.\nType 'string[] | number[]' is not assignable to type 'string[]'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.",
-        "error:163:6 [TS2322] Type 'PinInputValue<T>' is not assignable to type 'string[] | undefined'.\nType 'string[] | number[]' is not assignable to type 'string[] | undefined'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.\nType 'PinInputValue<T>' is not assignable to type 'string[]'.\nType 'string[] | number[]' is not assignable to type 'string[]'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'."
+        "error:65:45 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:67:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
+        "error:68:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/Popover.vue",
       "diagnostics": [
+        "error:2:161 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/popover' or its corresponding type declarations.",
-        "error:12:119 [TS2344] Type '\"closeDelay\" | \"enableTouch\" | \"openDelay\"' does not satisfy the constraint 'keyof HoverCardRootProps'.\nType '\"enableTouch\"' is not assignable to type 'keyof HoverCardRootProps'.",
         "error:66:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:67:17 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:69:36 [TS2307] Cannot find module 'reka-ui/namespaced' or its corresponding type declarations.",
+        "error:70:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:71:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -986,6 +1151,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/pricing-plan' or its corresponding type declarations.",
+        "error:116:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:117:40 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:118:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:216:58 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pricingPlan\"> | Record<string, never>) & { pricingPlan?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pricingPlan\"> & { pricingPlan?: any; }'.",
         "error:236:162 [TS2322] Type '((event: MouseEvent) => void)[] | ((event: MouseEvent) => void) | undefined' is not assignable to type '((...args: any[]) => any) | null | undefined'.\nType '((event: MouseEvent) => void)[]' is not assignable to type '(...args: any[]) => any'.\nType '((event: MouseEvent) => void)[]' provides no match for the signature '(...args: any[]): any'."
@@ -996,6 +1163,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/pricing-plans' or its corresponding type declarations.",
+        "error:53:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:54:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -1004,6 +1172,8 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/pricing-table' or its corresponding type declarations.",
+        "error:105:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:106:40 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:107:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:234:85 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pricingTable\"> | Record<string, never>) & { pricingTable?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pricingTable\"> & { pricingTable?: any; }'.",
         "error:240:39 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pricingTable\"> | Record<string, never>) & { pricingTable?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pricingTable\"> & { pricingTable?: any; }'.",
@@ -1014,18 +1184,23 @@
     {
       "file": "src/runtime/components/Progress.vue",
       "diagnostics": [
+        "error:3:59 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/progress' or its corresponding type declarations.",
+        "error:57:60 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:59:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:60:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/RadioGroup.vue",
       "diagnostics": [
+        "error:2:63 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/radio-group' or its corresponding type declarations.",
-        "error:97:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:187:6 [TS2322] Type 'string | number | symbol | undefined' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:95:95 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:96:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
+        "error:97:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1034,6 +1209,7 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:54 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/scroll-area' or its corresponding type declarations.",
+        "error:97:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:98:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:99:32 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
         "error:100:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
@@ -1043,11 +1219,15 @@
     {
       "file": "src/runtime/components/Select.vue",
       "diagnostics": [
+        "error:2:113 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/select' or its corresponding type declarations.",
+        "error:155:237 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:156:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:157:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:158:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:187:130 [TS2345] Argument of type '\"nullableValue\"' is not assignable to parameter of type '(keyof SelectProps<T, VK, M, Mod>)[] | keyof SelectProps<T, VK, M, Mod>'.",
+        "error:193:167 [TS2345] Argument of type 'Omit<__LooseRequired<SelectProps<T, VK, M, Mod>>, \"autofocusDelay\" | \"descriptionKey\" | \"labelKey\" | \"portal\" | \"valueKey\"> & { ...; }' is not assignable to parameter of type 'Props<InputProps<any, ModelModifiers>> | undefined'.\nType 'Omit<__LooseRequired<SelectProps<T, VK, M, Mod>>, \"autofocusDelay\" | \"descriptionKey\" | \"labelKey\" | \"portal\" | \"valueKey\"> & { ...; }' has no properties in common with type 'Props<InputProps<any, ModelModifiers>>'.",
+        "error:194:73 [TS2559] Type 'Omit<__LooseRequired<SelectProps<T, VK, M, Mod>>, \"autofocusDelay\" | \"descriptionKey\" | \"labelKey\" | \"portal\" | \"valueKey\"> & { ...; }' has no properties in common with type 'Props<InputProps<any, ModelModifiers>>'.",
         "error:204:52 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"select\"> | Record<string, never>) & { select?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"select\"> & { select?: any; }'.",
         "error:433:74 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"select\"> | Record<string, never>) & { select?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"select\"> & { select?: any; }'."
       ]
@@ -1055,23 +1235,29 @@
     {
       "file": "src/runtime/components/SelectMenu.vue",
       "diagnostics": [
+        "error:2:123 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/select-menu' or its corresponding type declarations.",
+        "error:234:276 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:236:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:237:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:238:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:288:56 [TS2345] Argument of type 'NonNullable<string | number | symbol | undefined>' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.",
         "error:304:52 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"selectMenu\"> | Record<string, never>) & { selectMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"selectMenu\"> & { selectMenu?: any; }'.",
         "error:601:62 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"selectMenu\"> | Record<string, never>) & { selectMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"selectMenu\"> & { selectMenu?: any; }'.",
-        "error:651:56 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"selectMenu\"> | Record<string, never>) & { selectMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"selectMenu\"> & { selectMenu?: any; }'."
+        "error:651:56 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"selectMenu\"> | Record<string, never>) & { selectMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"selectMenu\"> & { selectMenu?: any; }'.",
+        "error:703:34 [TS7006] Parameter 'item' implicitly has an 'any' type."
       ]
     },
     {
       "file": "src/runtime/components/Separator.vue",
       "diagnostics": [
+        "error:2:56 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/separator' or its corresponding type declarations.",
-        "error:62:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:108:4 [TS2345] Argument of type '{ style?: StyleValue; decorative?: boolean; as?: any; dataSlot: string; class: any; orientation?: string | number | symbol | undefined; }' is not assignable to parameter of type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 11 more ...; readonly decorative?: boolean | undefined; } & Record<...>'.\nType '{ style?: StyleValue; decorative?: boolean; as?: any; dataSlot: string; class: any; orientation?: string | number | symbol | undefined; }' is not assignable to type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 11 more ...; readonly decorative?: boolean | undefined; }'.\nTypes of property 'orientation' are incompatible.\nType 'string | number | symbol | undefined' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:60:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:61:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
+        "error:62:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1079,7 +1265,9 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/sidebar' or its corresponding type declarations.",
+        "error:103:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:104:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:105:55 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:106:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:245:54 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"sidebar\"> | Record<string, never>) & { sidebar?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"sidebar\"> & { sidebar?: any; }'."
       ]
@@ -1089,44 +1277,53 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/skeleton' or its corresponding type declarations.",
+        "error:21:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:22:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/Slideover.vue",
       "diagnostics": [
+        "error:2:95 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/slideover' or its corresponding type declarations.",
+        "error:88:148 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:90:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:91:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:117:87 [TS2345] Argument of type '\"unmountOnHide\"' is not assignable to parameter of type '\"class\" | \"close\" | \"closeIcon\" | \"content\" | \"defaultOpen\" | \"description\" | \"dismissible\" | \"inset\" | \"modal\" | \"open\" | \"overlay\" | \"portal\" | \"side\" | \"title\" | \"transition\" | \"ui\" | (\"class\" | ... 14 more ... | \"ui\")[]'.",
-        "error:153:85 [TS2339] Property 'unmountOnHide' does not exist on type 'Omit<__LooseRequired<SlideoverProps>, \"close\" | \"dismissible\" | \"modal\" | \"overlay\" | \"portal\" | \"side\" | \"transition\"> & { close: boolean | Omit<...>; ... 5 more ...; transition: boolean; }'.",
+        "error:153:85 [TS2339] Property 'unmountOnHide' does not exist on type 'Omit<__LooseRequired<SlideoverProps>, \"close\" | \"dismissible\" | \"modal\" | \"overlay\" | \"portal\" | \"side\" | \"transition\"> & { close: boolean | Omit<...>; ... 4 more ...; transition: boolean; }'.",
         "error:207:62 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"slideover\"> | Record<string, never>) & { slideover?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"slideover\"> & { slideover?: any; }'."
       ]
     },
     {
       "file": "src/runtime/components/Slider.vue",
       "diagnostics": [
+        "error:2:38 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/slider' or its corresponding type declarations.",
-        "error:51:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:113:4 [TS2345] Argument of type '{ inverted?: boolean; min?: number; max?: number; step?: number; minStepsBetweenThumbs?: number; as?: any; orientation?: Slider['variants']['orientation']; id: string | undefined; modelValue: number[]; ... 4 more ...; defaultValue: number[] | undefined; }' is not assignable to parameter of type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 24 more ...; readonly onValueCommit?: ((payload: number[]) => any) | undefined; } & Record<...>'.\nType '{ inverted?: boolean; min?: number; max?: number; step?: number; minStepsBetweenThumbs?: number; as?: any; orientation?: Slider['variants']['orientation']; id: string | undefined; modelValue: number[]; ... 4 more ...; defaultValue: number[] | undefined; }' is not assignable to type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 24 more ...; readonly onValueCommit?: ((payload: number[]) => any) | undefined; }'.\nTypes of property 'orientation' are incompatible.\nType 'string | number | symbol | undefined' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:48:67 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:50:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
+        "error:51:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/Stepper.vue",
       "diagnostics": [
+        "error:3:57 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/stepper' or its corresponding type declarations.",
-        "error:84:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:150:63 [TS2322] Type 'string | number | symbol | undefined' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'.",
-        "error:163:16 [TS2345] Argument of type '{ item: T; ui: any; }' is not assignable to parameter of type '__VizeSlotOutletPayload<StepperSlots<T>, \"indicator\">'."
+        "error:82:128 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:83:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
+        "error:84:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/Switch.vue",
       "diagnostics": [
+        "error:2:55 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/switch' or its corresponding type declarations.",
+        "error:64:59 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:66:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:67:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:127:80 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"switch\"> | Record<string, never>) & { switch?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"switch\"> & { switch?: any; }'."
       ]
@@ -1139,10 +1336,12 @@
         "error:42:41 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
         "error:43:19 [TS2307] Cannot find module '#build/ui/table' or its corresponding type declarations.",
         "error:47:16 [TS2664] Invalid module name in augmentation, module '@tanstack/table-core' cannot be found.",
+        "error:234:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:235:28 [TS2307] Cannot find module 'scule' or its corresponding type declarations.",
         "error:236:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:237:119 [TS2307] Cannot find module '@tanstack/vue-table' or its corresponding type declarations.",
         "error:238:32 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
+        "error:239:65 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:240:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:277:21 [TS7031] Binding element 'getValue' implicitly has an 'any' type."
       ]
@@ -1150,10 +1349,12 @@
     {
       "file": "src/runtime/components/Tabs.vue",
       "diagnostics": [
+        "error:4:51 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/tabs' or its corresponding type declarations.",
+        "error:101:77 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:103:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:104:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:154:6 [TS2322] Type 'string | number | symbol | undefined' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'.",
         "error:173:10 [TS2345] Argument of type '{ item: T; index: number; ui: any; }' is not assignable to parameter of type '__VizeSlotOutletPayload<TabsSlots<T>, \"leading\">'.",
         "error:179:12 [TS2345] Argument of type '{ item: T; index: number; }' is not assignable to parameter of type '__VizeSlotOutletPayload<TabsSlots<T>, \"default\">'.",
         "error:182:10 [TS2345] Argument of type '{ item: T; index: number; ui: any; }' is not assignable to parameter of type '__VizeSlotOutletPayload<TabsSlots<T>, \"trailing\">'."
@@ -1164,6 +1365,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/textarea' or its corresponding type declarations.",
+        "error:71:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:72:27 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:73:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -1178,43 +1381,56 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/timeline' or its corresponding type declarations.",
-        "error:76:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:159:12 [TS2322] Type 'string | number | symbol | undefined' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:75:38 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:76:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/Toast.vue",
       "diagnostics": [
+        "error:2:53 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/toast' or its corresponding type declarations.",
+        "error:87:82 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:89:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:90:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:194:52 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"toast\"> | Record<string, never>) & { toast?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"toast\"> & { toast?: any; }'."
+        "error:194:52 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"toast\"> | Record<string, never>) & { toast?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"toast\"> & { toast?: any; }'.",
+        "error:207:6 [TS2345] Argument of type '{ as?: any; max?: number | Array<any>; status?: boolean; inverted?: boolean; orientation?: string | number | symbol; animation?: string | number | symbol; ui?: { [x: string]: any; }; ... 6 more ...; getValueText?: any; }' is not assignable to parameter of type '{ readonly as?: any; readonly max?: number | any[] | undefined; readonly status?: boolean | undefined; readonly inverted?: boolean | undefined; readonly size?: string | number | symbol | undefined; ... 7 more ...; readonly modelValue: ProgressRootProps; } & ... 4 more ... & Partial<...>'.\nType '{ as?: any; max?: number | Array<any>; status?: boolean; inverted?: boolean; orientation?: string | number | symbol; animation?: string | number | symbol; ui?: { [x: string]: any; }; ... 6 more ...; getValueText?: any; }' is not assignable to type '{ readonly as?: any; readonly max?: number | any[] | undefined; readonly status?: boolean | undefined; readonly inverted?: boolean | undefined; readonly size?: string | number | symbol | undefined; ... 7 more ...; readonly modelValue: ProgressRootProps; }'.\nProperty 'getValueLabel' is optional in type '{ as?: any; max?: number | any[] | undefined; status?: boolean | undefined; inverted?: boolean | undefined; orientation?: string | number | symbol | undefined; animation?: string | number | symbol | undefined; ... 7 more ...; getValueText?: any; }' but required in type '{ readonly as?: any; readonly max?: number | any[] | undefined; readonly status?: boolean | undefined; readonly inverted?: boolean | undefined; readonly size?: string | number | symbol | undefined; ... 7 more ...; readonly modelValue: ProgressRootProps; }'."
       ]
     },
     {
       "file": "src/runtime/components/Toaster.vue",
       "diagnostics": [
+        "error:2:41 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/toaster' or its corresponding type declarations.",
+        "error:51:59 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:52:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:53:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:159:49 [TS2339] Property 'startsWith' does not exist on type 'string | number | symbol'.\nProperty 'startsWith' does not exist on type 'number'.",
-        "error:160:36 [TS2339] Property 'startsWith' does not exist on type 'string | number | symbol'.\nProperty 'startsWith' does not exist on type 'number'."
+        "error:128:6 [TS2345] Argument of type '{ progress: boolean; close: boolean; dataExpanded: boolean; dataFront: boolean; dataPulsing: string | undefined; style: { '--index': any; '--before': number; '--offset': number; '--scale': string; '--translate': string; '--transform': string; }; dataSlot: string; class: any; }' is not assignable to parameter of type '{ readonly as?: any; readonly title?: StringOrVNode | undefined; readonly description?: StringOrVNode | undefined; readonly icon?: any; readonly avatar?: AvatarProps | undefined; ... 11 more ...; readonly type: ToastRootProps; } & ... 4 more ... & Partial<...>'.\nType '{ progress: boolean; close: boolean; dataExpanded: boolean; dataFront: boolean; dataPulsing: string | undefined; style: { '--index': any; '--before': number; '--offset': number; '--scale': string; '--translate': string; '--transform': string; }; dataSlot: string; class: any; }' is missing the following properties from type '{ readonly as?: any; readonly title?: StringOrVNode | undefined; readonly description?: StringOrVNode | undefined; readonly icon?: any; readonly avatar?: AvatarProps | undefined; ... 11 more ...; readonly type: ToastRootProps; }': defaultOpen, open, type"
       ]
     },
     {
       "file": "src/runtime/components/Tooltip.vue",
       "diagnostics": [
+        "error:2:139 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/tooltip' or its corresponding type declarations.",
         "error:55:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:58:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:56:120 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:57:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
+        "error:58:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:90:128 [TS2339] Property 'disabled' does not exist on type 'Omit<__LooseRequired<TooltipProps>, \"portal\"> & { portal: string | boolean | HTMLElement; }'."
       ]
     },
     {
       "file": "src/runtime/components/Tree.vue",
       "diagnostics": [
+        "error:4:93 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/tree' or its corresponding type declarations.",
+        "error:146:53 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:148:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:149:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:150:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:193:18 [TS7053] Element implicitly has an 'any' type because expression of type 'string | number | symbol' can't be used to index type '{ xs: { base: number; perLevel: number; }; sm: { base: number; perLevel: number; }; md: { base: number; perLevel: number; }; lg: { base: number; perLevel: number; }; xl: { base: number; perLevel: number; }; }'.\nNo index signature with a parameter of type 'string' was found on type '{ xs: { base: number; perLevel: number; }; sm: { base: number; perLevel: number; }; md: { base: number; perLevel: number; }; lg: { base: number; perLevel: number; }; xl: { base: number; perLevel: number; }; }'.",
@@ -1222,7 +1438,7 @@
         "error:304:75 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"tree\"> | Record<string, never>) & { tree?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"tree\"> & { tree?: any; }'.",
         "error:304:132 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"tree\"> | Record<string, never>) & { tree?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"tree\"> & { tree?: any; }'.",
         "error:342:63 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"tree\"> | Record<string, never>) & { tree?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"tree\"> & { tree?: any; }'.",
-        "error:395:10 [TS2322] Type 'string | number' is not assignable to type 'number'.\nType 'string' is not assignable to type 'number'."
+        "error:384:22 [TS7006] Parameter 'item' implicitly has an 'any' type."
       ]
     },
     {
@@ -1230,16 +1446,21 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/user' or its corresponding type declarations.",
+        "error:48:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:49:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/color-mode/ColorModeAvatar.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:11:33 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:12:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations."
+      ]
     },
     {
       "file": "src/runtime/components/color-mode/ColorModeButton.vue",
       "diagnostics": [
+        "error:19:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:20:44 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -1253,30 +1474,29 @@
     {
       "file": "src/runtime/components/color-mode/ColorModeSelect.vue",
       "diagnostics": [
+        "error:10:33 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:11:44 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/color-mode/ColorModeSwitch.vue",
       "diagnostics": [
+        "error:10:33 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:11:44 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/content/ContentNavigation.vue",
       "diagnostics": [
+        "error:2:61 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:44 [TS2307] Cannot find module '@nuxt/content' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/content/content-navigation' or its corresponding type declarations.",
+        "error:98:93 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:100:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:101:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:149:29 [TS2339] Property 'path' does not exist on type 'ContentNavigationLink'.",
-        "error:180:24 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
-        "error:180:92 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
-        "error:182:19 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
-        "error:182:20 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
-        "error:185:61 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
         "error:185:68 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentNavigation\"> | Record<string, never>) & { contentNavigation?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentNavigation\"> & { contentNavigation?: any; }'.",
-        "error:185:132 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
         "error:199:123 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentNavigation\"> | Record<string, never>) & { contentNavigation?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentNavigation\"> & { contentNavigation?: any; }'.",
         "error:215:82 [TS2339] Property 'path' does not exist on type 'T'."
       ]
@@ -1288,8 +1508,9 @@
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:37 [TS2307] Cannot find module '@vueuse/integrations/useFuse' or its corresponding type declarations.",
         "error:7:19 [TS2307] Cannot find module '#build/ui/content/content-search' or its corresponding type declarations.",
-        "error:63:111 [TS2344] Type '\"content\" | \"description\" | \"dismissible\" | \"fullscreen\" | \"modal\" | \"overlay\" | \"portal\" | \"title\" | \"transition\" | \"unmountOnHide\"' does not satisfy the constraint 'keyof ModalProps'.\nType '\"unmountOnHide\"' is not assignable to type 'keyof ModalProps'.",
+        "error:63:111 [TS2344] Type '\"content\" | \"description\" | \"dismissible\" | \"fullscreen\" | \"modal\" | \"overlay\" | \"portal\" | \"title\" | \"transition\" | \"unmountOnHide\"' does not satisfy the constraint 'keyof ModalProps'.\nType '\"modal\"' is not assignable to type 'keyof ModalProps'.",
         "error:140:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:141:44 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:142:61 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:286:26 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSearch\"> | Record<string, never>) & { contentSearch?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSearch\"> & { contentSearch?: any; }'.",
         "error:293:26 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSearch\"> | Record<string, never>) & { contentSearch?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSearch\"> & { contentSearch?: any; }'.",
@@ -1302,6 +1523,7 @@
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/content/content-search-button' or its corresponding type declarations.",
         "error:58:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:59:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:60:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:103:77 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSearchButton\"> | Record<string, never>) & { contentSearchButton?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSearchButton\"> & { contentSearchButton?: any; }'."
       ]
@@ -1312,28 +1534,34 @@
         "error:3:44 [TS2307] Cannot find module '@nuxt/content' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/content/content-surround' or its corresponding type declarations.",
+        "error:56:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:57:40 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:58:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:90:87 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSurround\"> | Record<string, never>) & { contentSurround?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSurround\"> & { contentSurround?: any; }'.",
         "error:90:119 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSurround\"> | Record<string, never>) & { contentSurround?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSurround\"> & { contentSurround?: any; }'.",
         "error:92:87 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSurround\"> | Record<string, never>) & { contentSurround?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSurround\"> & { contentSurround?: any; }'.",
-        "error:92:118 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSurround\"> | Record<string, never>) & { contentSurround?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSurround\"> & { contentSurround?: any; }'.",
-        "error:97:34 [TS2339] Property 'path' does not exist on type 'ContentSurroundLink'.",
-        "error:107:21 [TS2339] Property 'title' does not exist on type 'ContentSurroundLink'."
+        "error:92:118 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSurround\"> | Record<string, never>) & { contentSurround?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSurround\"> & { contentSurround?: any; }'."
       ]
     },
     {
       "file": "src/runtime/components/content/ContentToc.vue",
       "diagnostics": [
+        "error:2:65 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:4:30 [TS2307] Cannot find module '@nuxt/content' or its corresponding type declarations.",
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/content/content-toc' or its corresponding type declarations.",
+        "error:76:73 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:77:54 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:78:53 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:289:58 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentToc\"> | Record<string, never>) & { contentToc?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentToc\"> & { contentToc?: any; }'."
       ]
     },
     {
       "file": "src/runtime/components/locale/LocaleSelect.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:11:33 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:12:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations."
+      ]
     },
     {
       "file": "src/runtime/components/prose/A.vue",
@@ -1423,6 +1651,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/code-group' or its corresponding type declarations.",
+        "error:30:77 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:31:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -1448,10 +1677,13 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/code-tree' or its corresponding type declarations.",
+        "error:53:36 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:54:40 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:55:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:218:46 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"codeTree\"> | Record<string, never>) & { codeTree?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"codeTree\"> | Record<string, never>) & { codeTree?: any; }) | undefined; }'.",
         "error:218:78 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"codeTree\"> | Record<string, never>) & { codeTree?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"codeTree\"> | Record<string, never>) & { codeTree?: any; }) | undefined; }'.",
-        "error:233:35 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"codeTree\"> | Record<string, never>) & { codeTree?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"codeTree\"> | Record<string, never>) & { codeTree?: any; }) | undefined; }'."
+        "error:233:35 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"codeTree\"> | Record<string, never>) & { codeTree?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"codeTree\"> | Record<string, never>) & { codeTree?: any; }) | undefined; }'.",
+        "error:256:18 [TS7006] Parameter 'item' implicitly has an 'any' type."
       ]
     },
     {
@@ -1460,6 +1692,7 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/collapsible' or its corresponding type declarations.",
         "error:43:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:65:4 [TS2345] Argument of type '{ unmountOnHide: boolean; class: any; ui: any; }' is not assignable to parameter of type '{ readonly as?: any; readonly class?: any; readonly ui?: { [x: string]: any; } | undefined; readonly defaultOpen: CollapsibleRootProps; readonly disabled: CollapsibleRootProps; readonly open: CollapsibleRootProps; readonly unmountOnHide: CollapsibleRootProps; } & __VizePublicComponentAttrs & { ...; } & { ...; } & { ...'.\nType '{ unmountOnHide: boolean; class: any; ui: any; }' is missing the following properties from type '{ readonly as?: any; readonly class?: any; readonly ui?: { [x: string]: any; } | undefined; readonly defaultOpen: CollapsibleRootProps; readonly disabled: CollapsibleRootProps; readonly open: CollapsibleRootProps; readonly unmountOnHide: CollapsibleRootProps; }': defaultOpen, disabled, open",
         "error:68:50 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"collapsible\"> | Record<string, never>) & { collapsible?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"collapsible\"> | Record<string, never>) & { collapsible?: any; }) | undefined; }'."
       ]
     },
@@ -1476,6 +1709,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/field' or its corresponding type declarations.",
+        "error:42:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:43:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -1484,6 +1718,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/field-group' or its corresponding type declarations.",
+        "error:26:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:27:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -1542,7 +1777,9 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/img' or its corresponding type declarations.",
+        "error:25:57 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:26:41 [TS2307] Cannot find module 'motion-v' or its corresponding type declarations.",
+        "error:27:58 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:28:48 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:29:28 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations."
       ]
@@ -1584,6 +1821,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/pre' or its corresponding type declarations.",
+        "error:37:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:38:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:79:36 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"pre\"> | Record<string, never>) & { pre?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"pre\"> | Record<string, never>) & { pre?: any; }) | undefined; }'.",
         "error:79:67 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"pre\"> | Record<string, never>) & { pre?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"pre\"> | Record<string, never>) & { pre?: any; }) | undefined; }'."
@@ -1594,6 +1832,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/prompt' or its corresponding type declarations.",
+        "error:32:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:33:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:95:38 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"prompt\"> | Record<string, never>) & { prompt?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"prompt\"> | Record<string, never>) & { prompt?: any; }) | undefined; }'.",
         "error:95:69 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"prompt\"> | Record<string, never>) & { prompt?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"prompt\"> | Record<string, never>) & { prompt?: any; }) | undefined; }'."
@@ -1735,6 +1974,7 @@
       "file": "src/runtime/composables/useComponentProps.ts",
       "diagnostics": [
         "error:3:18 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:4:31 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:5:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -1742,6 +1982,7 @@
       "file": "src/runtime/composables/useContentSearch.ts",
       "diagnostics": [
         "error:2:44 [TS2307] Cannot find module '@nuxt/content' or its corresponding type declarations.",
+        "error:3:40 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:4:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -1751,6 +1992,8 @@
         "error:3:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:5:33 [TS2307] Cannot find module '@floating-ui/dom' or its corresponding type declarations.",
         "error:6:42 [TS2307] Cannot find module '@floating-ui/dom' or its corresponding type declarations.",
+        "error:7:29 [TS2307] Cannot find module '@tiptap/vue-3' or its corresponding type declarations.",
+        "error:8:29 [TS2307] Cannot find module '@tiptap/vue-3' or its corresponding type declarations.",
         "error:9:57 [TS2307] Cannot find module '@tiptap/suggestion' or its corresponding type declarations.",
         "error:10:24 [TS2307] Cannot find module '@tiptap/suggestion' or its corresponding type declarations.",
         "error:11:27 [TS2307] Cannot find module '@tiptap/pm/state' or its corresponding type declarations.",
@@ -1766,19 +2009,30 @@
     },
     {
       "file": "src/runtime/composables/useFileUpload.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:3:44 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
+        "error:89:55 [TS7006] Parameter 'files' implicitly has an 'any' type.",
+        "error:105:14 [TS7006] Parameter 'fileList' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/runtime/composables/useFilter.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:1:44 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations."
+      ]
     },
     {
       "file": "src/runtime/composables/useFormField.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:3:31 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
+        "error:4:40 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations."
+      ]
     },
     {
       "file": "src/runtime/composables/useForwardProps.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:3:32 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations."
+      ]
     },
     {
       "file": "src/runtime/composables/useIMEGuard.ts",
@@ -1786,15 +2040,20 @@
     },
     {
       "file": "src/runtime/composables/useKbd.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:40 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations."
+      ]
     },
     {
       "file": "src/runtime/composables/useLocale.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:3:40 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations."
+      ]
     },
     {
       "file": "src/runtime/composables/useOverlay.ts",
       "diagnostics": [
+        "error:3:40 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:4:52 [TS2307] Cannot find module 'vue-component-type-helpers' or its corresponding type declarations."
       ]
     },
@@ -1811,12 +2070,15 @@
     {
       "file": "src/runtime/composables/useResizable.ts",
       "diagnostics": [
+        "error:3:28 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:4:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/composables/useScrollShadow.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:3:27 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations."
+      ]
     },
     {
       "file": "src/runtime/composables/useScrollspy.ts",
@@ -1852,6 +2114,7 @@
     {
       "file": "src/runtime/types/editor.ts",
       "diagnostics": [
+        "error:1:29 [TS2307] Cannot find module '@tiptap/vue-3' or its corresponding type declarations.",
         "error:2:147 [TS2307] Cannot find module '@floating-ui/dom' or its corresponding type declarations."
       ]
     },
@@ -2420,7 +2683,9 @@
     },
     {
       "file": "src/runtime/types/utils.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:58 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations."
+      ]
     },
     {
       "file": "src/runtime/utils/content.ts",
@@ -2431,15 +2696,18 @@
     },
     {
       "file": "src/runtime/utils/dashboard.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:31 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations."
+      ]
     },
     {
       "file": "src/runtime/utils/editor.ts",
       "diagnostics": [
+        "error:1:35 [TS2307] Cannot find module '@tiptap/vue-3' or its corresponding type declarations.",
         "error:2:33 [TS2307] Cannot find module '@floating-ui/dom' or its corresponding type declarations.",
         "error:3:72 [TS2307] Cannot find module '@floating-ui/dom' or its corresponding type declarations.",
-        "error:146:22 [TS2339] Property 'setImage' does not exist on type 'ChainedCommands'.",
-        "error:152:22 [TS2339] Property 'setImage' does not exist on type 'ChainedCommands'."
+        "error:25:58 [TS7006] Parameter 'node' implicitly has an 'any' type.",
+        "error:36:50 [TS7006] Parameter 'ext' implicitly has an 'any' type."
       ]
     },
     {
@@ -2462,6 +2730,7 @@
     {
       "file": "src/runtime/utils/link.ts",
       "diagnostics": [
+        "error:1:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:2:31 [TS2307] Cannot find module 'ohash/utils' or its corresponding type declarations.",
         "error:62:49 [TS7006] Parameter 'filtered' implicitly has an 'any' type.",
         "error:62:59 [TS7006] Parameter 'q' implicitly has an 'any' type."
@@ -2473,7 +2742,9 @@
     },
     {
       "file": "src/runtime/utils/overlay.ts",
-      "diagnostics": []
+      "diagnostics": [
+        "error:1:46 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations."
+      ]
     },
     {
       "file": "src/runtime/utils/search.ts",
@@ -2505,12 +2776,14 @@
     {
       "file": "src/runtime/vue/components/color-mode/ColorModeSelect.vue",
       "diagnostics": [
+        "error:10:33 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:11:44 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/vue/components/color-mode/ColorModeSwitch.vue",
       "diagnostics": [
+        "error:10:33 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:11:44 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -2521,6 +2794,8 @@
         "error:4:39 [TS2307] Cannot find module '@inertiajs/vue3' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/link' or its corresponding type declarations.",
         "error:73:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:74:39 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:75:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:76:25 [TS2307] Cannot find module '@inertiajs/vue3' or its corresponding type declarations.",
         "error:77:29 [TS2307] Cannot find module 'ufo' or its corresponding type declarations.",
         "error:78:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
@@ -2530,6 +2805,7 @@
     {
       "file": "src/runtime/vue/overrides/inertia/LinkBase.vue",
       "diagnostics": [
+        "error:18:27 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:19:37 [TS2307] Cannot find module '@inertiajs/vue3' or its corresponding type declarations."
       ]
     },
@@ -2539,6 +2815,7 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/link' or its corresponding type declarations.",
         "error:75:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:76:22 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
         "error:77:29 [TS2307] Cannot find module 'ufo' or its corresponding type declarations.",
         "error:78:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:182:9 [TS18004] No value exists in scope for the shorthand property 'as'. Either declare one or provide an initializer."
@@ -2548,17 +2825,21 @@
       "file": "src/runtime/vue/overrides/vue-router/Link.vue",
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
+        "error:4:38 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/link' or its corresponding type declarations.",
         "error:66:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:67:25 [TS2307] Cannot find module 'ohash/utils' or its corresponding type declarations.",
+        "error:68:39 [TS2307] Cannot find module 'reka-ui' or its corresponding type declarations.",
+        "error:69:30 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:70:29 [TS2307] Cannot find module 'ufo' or its corresponding type declarations.",
+        "error:71:38 [TS2307] Cannot find module 'vue-router' or its corresponding type declarations.",
         "error:72:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:190:11 [TS18004] No value exists in scope for the shorthand property 'as'. Either declare one or provide an initializer.",
         "error:226:9 [TS18004] No value exists in scope for the shorthand property 'as'. Either declare one or provide an initializer."
       ]
     }
   ],
-  "errorCount": 1429,
+  "errorCount": 1696,
   "warningCount": 0,
   "fileCount": 231
 }

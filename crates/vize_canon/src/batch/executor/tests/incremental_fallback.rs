@@ -13,6 +13,7 @@ fn incremental_session_fallback_is_counted_per_check() {
     let cache_dir = case_dir.join(".cache");
     let source = case_dir.join("src").join("main.ts");
     fs::create_dir_all(&cache_dir).unwrap();
+    fs::create_dir_all(case_dir.join("node_modules")).unwrap();
     fs::create_dir_all(source.parent().unwrap()).unwrap();
     fs::write(&source, "const value: number = 1;\n").unwrap();
 
