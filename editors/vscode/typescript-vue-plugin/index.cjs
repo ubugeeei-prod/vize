@@ -1,6 +1,7 @@
 "use strict";
 
 const path = require("node:path");
+const { vueComponentDisplayParts } = require("./component-contracts.cjs");
 const { installVueVirtualModules } = require("./virtual-modules.cjs");
 
 const vueExtension = ".vue";
@@ -92,12 +93,15 @@ function createLanguageServiceProxy(ts, languageService, support) {
     if (!vueDefinition) {
       return quickInfo;
     }
+    const sourceText = support.readFile(vueDefinition.definition.fileName);
+    const displayParts = vueComponentDisplayParts(ts, sourceText, vueDefinition.localName);
 
     return {
       kind: ts.ScriptElementKind.alias,
       kindModifiers: "",
       textSpan: vueDefinition.textSpan,
       ...(quickInfo || {}),
+      ...(displayParts ? { displayParts } : {}),
       documentation: [
         ...(quickInfo?.documentation || []),
         {
@@ -162,6 +166,7 @@ function resolveVueImportDefinition(ts, support, fileName, position) {
       name: path.basename(vuePath),
       textSpan: { start: 0, length: 0 },
     },
+    localName: vueImport.localName,
     textSpan: vueImport.textSpan,
   };
 }
@@ -213,6 +218,7 @@ function findVueImportAtPosition(ts, sourceText, position) {
   for (const vueImport of imports) {
     if (containsPosition(vueImport.specifierSpan, position)) {
       return {
+        localName: [...vueImport.localNames][0],
         specifier: vueImport.specifier,
         textSpan: vueImport.specifierSpan,
       };
@@ -231,6 +237,7 @@ function findVueImportAtPosition(ts, sourceText, position) {
   }
 
   return {
+    localName: identifierText,
     specifier: vueImport.specifier,
     textSpan: {
       length: identifier.getEnd() - identifier.getStart(sourceFile),

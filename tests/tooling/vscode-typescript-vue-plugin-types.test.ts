@@ -43,15 +43,29 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
       source.indexOf("App from") + 1,
     );
 
-    assert.match(displayPartsText(quickInfo?.displayParts), /title: string/);
+    const display = displayPartsText(quickInfo?.displayParts);
+    assert.match(
+      display,
+      /props: \{ title: "hello   world"; count\?: number; format\?: \(value: \{ nested: string \}\) => string \}/,
+    );
+    assert.match(display, /emits: \{ save: \[id: string\] \}/);
+    assert.match(display, /slots: \{ default\(props: \{ title: string \}\): unknown \}/);
+    assert.match(display, /model: "modelValue": boolean/);
+    assert.doesNotMatch(display, /ignored|notAnEmit/);
+    assert.doesNotMatch(display, /__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor/);
+    const sideEffectInfo = service.getQuickInfoAtPosition(
+      project.mainTs,
+      source.indexOf("SideEffect.vue") + 1,
+    );
+    assert.match(displayPartsText(sideEffectInfo?.displayParts), /^const component: VueComponent/);
     assert.match(
       formatDiagnostics(service.getSemanticDiagnostics(project.mainTs)),
       /Property 'title' is missing/,
     );
     assert.equal(
       nativeGenerationCount(project.nativeCalls),
-      1,
-      "expected one native generation across the initial queries",
+      2,
+      "expected native generation for the imported component and side-effect specifier",
     );
 
     fs.writeFileSync(
@@ -64,11 +78,16 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
       project.mainTs,
       source.indexOf("App from") + 1,
     );
-    assert.match(displayPartsText(refreshedInfo?.displayParts), /count: number/);
-    assert.doesNotMatch(displayPartsText(refreshedInfo?.displayParts), /title: string/);
+    const refreshedDisplay = displayPartsText(refreshedInfo?.displayParts);
+    assert.match(refreshedDisplay, /props: \{ count: number \}/);
+    assert.doesNotMatch(refreshedDisplay, /title: string/);
+    assert.doesNotMatch(
+      refreshedDisplay,
+      /__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor/,
+    );
     assert.equal(
       nativeGenerationCount(project.nativeCalls),
-      2,
+      3,
       "expected one additional native generation after the SFC edit",
     );
   } finally {
@@ -86,6 +105,7 @@ function createProject() {
     mainTs,
     [
       'import App from "./App.vue";',
+      'import "./SideEffect.vue";',
       'const props: InstanceType<typeof App>["$props"] = {};',
       "props;",
       "",
@@ -94,8 +114,19 @@ function createProject() {
   const appVue = path.join(srcDir, "App.vue");
   fs.writeFileSync(
     appVue,
-    '<script setup lang="ts">\ndefineProps<{ title: string; count?: number }>();\n</script>\n',
+    [
+      '<script setup lang="ts">',
+      "// defineProps<{ ignored: string }>",
+      'const stringLiteral = "defineEmits<{ notAnEmit: [] }>();";',
+      'defineProps<{ title: "hello   world"; count?: number; format?: (value: { nested: string }) => string }>();',
+      "defineEmits<{ save: [id: string] }>();",
+      "defineSlots<{ default(props: { title: string }): unknown }>();",
+      "defineModel<boolean>();",
+      "</script>",
+      "",
+    ].join("\n"),
   );
+  fs.writeFileSync(path.join(srcDir, "SideEffect.vue"), "<template />\n");
 
   const ambientDts = path.join(srcDir, "vite-client.d.ts");
   fs.writeFileSync(
@@ -129,8 +160,8 @@ function createProject() {
       '  const callsFile = path.join(__dirname, "calls.txt");',
       '  const calls = Number(fs.readFileSync(callsFile, "utf8")) + 1;',
       "  fs.writeFileSync(callsFile, String(calls));",
-      "  const props = source.match(/defineProps<([\\s\\S]*?)>\\s*\\(\\s*\\)/)?.[1] || '{}';",
-      "  return { virtualTs: `declare const component: new () => { $props: ${props} };\\nexport default component;\\n` };",
+      "  const props = source.match(/^\\s*defineProps<([\\s\\S]*?)>\\s*\\(\\s*\\)/m)?.[1] || '{}';",
+      "  return { virtualTs: `declare const component: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: ${props} } & (new () => { $props: ${props} });\\nexport default component;\\n` };",
       "};",
       "",
     ].join("\n"),
