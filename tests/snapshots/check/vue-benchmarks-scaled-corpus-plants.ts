@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { repoRoot } from "../../_helpers/realworld-patch.ts";
 import {
   type CommandResult,
+  omitProgramEvidence,
   resolveTsgoBinary,
   resolveVueTscBinary,
   runVizeCheck,
@@ -302,7 +303,11 @@ function expectedReport(corpusFiles: string[], activePlants: ScaledPlant[]): unk
 
 function assertClean(vize: VizeCheckResult, vueTsc: CommandResult, corpusFiles: string[]): void {
   assert.equal(vize.status, 0, vize.stderr || vize.stdout);
-  assert.deepEqual(vize.report, expectedReport(corpusFiles, []), JSON.stringify(vize.report));
+  assert.deepEqual(
+    omitProgramEvidence(vize.report),
+    expectedReport(corpusFiles, []),
+    JSON.stringify(vize.report),
+  );
   assert.equal(vueTsc.status, 0, vueTsc.stderr || vueTsc.stdout);
   assert.equal(vueTsc.stdout, "");
 }

@@ -17,6 +17,7 @@ export type VizeCheckJson = {
   errorCount: number;
   fileCount: number;
   files: VizeCheckFileJson[];
+  programs: Array<{ files: string[]; root: string; tsconfig?: string }>;
   warningCount: number;
 };
 

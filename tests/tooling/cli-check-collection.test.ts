@@ -90,6 +90,7 @@ test("empty collection emits clean JSON and exits 0 without invoking corsa", () 
     const noInputsParsed = JSON.parse(noInputs.stdout);
     assert.deepEqual(noInputsParsed, {
       files: [],
+      programs: [],
       errorCount: 0,
       warningCount: 0,
       fileCount: 0,
@@ -105,6 +106,7 @@ test("empty collection emits clean JSON and exits 0 without invoking corsa", () 
     const noMatchParsed = JSON.parse(noMatch.stdout);
     assert.deepEqual(noMatchParsed, {
       files: [],
+      programs: [],
       errorCount: 0,
       warningCount: 0,
       fileCount: 0,
@@ -138,6 +140,7 @@ test("unsupported file extensions (.js) collect nothing", () => {
     const parsed = JSON.parse(result.stdout);
     assert.deepEqual(parsed, {
       files: [],
+      programs: [],
       errorCount: 0,
       warningCount: 0,
       fileCount: 0,

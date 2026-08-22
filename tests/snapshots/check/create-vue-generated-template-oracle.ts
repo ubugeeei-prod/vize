@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { withPinnedFixtureWorkspace } from "../../_helpers/realworld-patch.ts";
 import {
   type CommandResult,
+  omitProgramEvidence,
   resolveTsgoBinary,
   resolveVueTscBinary,
   runVizeCheck,
@@ -107,7 +108,11 @@ function expectedReport(diagnosticsByFile: Record<string, string[]>): unknown {
 
 function assertCleanParity(vize: VizeCheckResult, vueTsc: CommandResult): void {
   assert.equal(vize.status, 0, vize.stderr || vize.stdout);
-  assert.deepEqual(vize.report, expectedReport({}), JSON.stringify(vize.report));
+  assert.deepEqual(
+    omitProgramEvidence(vize.report),
+    expectedReport({}),
+    JSON.stringify(vize.report),
+  );
   assert.equal(vueTsc.status, 0, vueTsc.stderr || vueTsc.stdout);
   assert.equal(vueTsc.stdout, "", vueTsc.stdout);
 }
@@ -115,7 +120,7 @@ function assertCleanParity(vize: VizeCheckResult, vueTsc: CommandResult): void {
 function assertBrokenParity(vize: VizeCheckResult, vueTsc: CommandResult): void {
   assert.equal(vize.status, 1, vize.stderr || vize.stdout);
   assert.deepEqual(
-    vize.report,
+    omitProgramEvidence(vize.report),
     expectedReport({ [helloWorldPath]: [brokenDiagnostic] }),
     JSON.stringify(vize.report),
   );

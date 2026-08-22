@@ -5,6 +5,7 @@ import { test } from "node:test";
 
 import { repoRoot } from "../../_helpers/realworld-patch.ts";
 import {
+  omitProgramEvidence,
   resolveTsgoBinary,
   resolveVueTscBinary,
   runVizeCheck,
@@ -173,7 +174,7 @@ test("vize check matches vue-tsc on JavaScript SFCs under checkJs", async (t) =>
 
         const first = runVizeCheck(workspaceDir, corsaPath, []);
         assert.deepEqual(
-          first.report,
+          omitProgramEvidence(first.report),
           expectedReport(testCase.diagnostics),
           JSON.stringify(first.report),
         );

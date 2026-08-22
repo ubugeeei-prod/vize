@@ -18,6 +18,12 @@ function validOutput() {
         diagnostics: ["error:1:1 [TS1] synthetic error"],
       },
     ],
+    programs: [
+      {
+        root: ".",
+        files: ["src/App.vue"],
+      },
+    ],
     errorCount: 1,
     warningCount: 0,
     fileCount: 1,
@@ -55,7 +61,7 @@ test("typechecker oracle accepts exact error, warning, project, and zero-file re
 
   validateTypecheckerOutput(
     { id: "no-sfc", expectedVueFileCount: 0 },
-    { files: [], errorCount: 0, warningCount: 0, fileCount: 0 },
+    { files: [], programs: [], errorCount: 0, warningCount: 0, fileCount: 0 },
     0,
     [],
   );
@@ -118,7 +124,7 @@ test("typechecker oracle rejects malformed or internally inconsistent reports", 
     },
     {
       name: "non-empty fixture with no checked files",
-      output: { files: [], errorCount: 0, warningCount: 0, fileCount: 0 },
+      output: { files: [], programs: [], errorCount: 0, warningCount: 0, fileCount: 0 },
       exitCode: 0,
       message: /non-empty fixture checked zero Vue files/,
     },
@@ -241,7 +247,7 @@ test("fixture tool matrix records typechecker schema failures", () => {
   fs.writeFileSync(
     executable,
     `#!/usr/bin/env node
-process.stdout.write(JSON.stringify({ files: [], errorCount: 0, warningCount: 0, fileCount: 0 }));\n`,
+process.stdout.write(JSON.stringify({ files: [], programs: [], errorCount: 0, warningCount: 0, fileCount: 0 }));\n`,
   );
   fs.chmodSync(executable, 0o755);
 
@@ -281,7 +287,7 @@ test("fixture tool matrix rejects partial typechecker coverage", () => {
   fs.writeFileSync(
     executable,
     `#!/usr/bin/env node
-process.stdout.write(JSON.stringify({ files: [{ file: "src/App.vue", diagnostics: [] }], errorCount: 0, warningCount: 0, fileCount: 1 }));\n`,
+process.stdout.write(JSON.stringify({ files: [{ file: "src/App.vue", diagnostics: [] }], programs: [{ root: ".", files: ["src/App.vue"] }], errorCount: 0, warningCount: 0, fileCount: 1 }));\n`,
   );
   fs.chmodSync(executable, 0o755);
 

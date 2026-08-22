@@ -9,6 +9,7 @@ export type CheckReport = {
   errorCount: number;
   fileCount: number;
   files: Array<{ diagnostics: string[]; file: string }>;
+  programs: Array<{ files: string[]; root: string; tsconfig?: string }>;
   warningCount: number;
 };
 
@@ -19,6 +20,11 @@ export type CommandResult = {
 };
 
 export type VizeCheckResult = CommandResult & { report: CheckReport };
+
+export function omitProgramEvidence(report: CheckReport): Omit<CheckReport, "programs"> {
+  const { programs: _programs, ...diagnosticReport } = report;
+  return diagnosticReport;
+}
 
 export function runVizeCheck(
   workspaceDir: string,
