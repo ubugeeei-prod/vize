@@ -9,6 +9,7 @@ import { pathToFileURL } from "node:url";
 import { assertParsesAsModule } from "../../_helpers/assertions.ts";
 import { withPinnedFixtureWorkspace } from "../../_helpers/realworld-patch.ts";
 import {
+  omitProgramEvidence,
   resolveVizeCommand,
   resolveTsgoBinary,
   runVizeCheck,
@@ -365,7 +366,7 @@ function isMissingListDiagnostic(diagnostic: PublishDiagnosticsParams["diagnosti
 
 function assertCleanCheck(result: VizeCheckResult): void {
   assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.deepEqual(result.report, {
+  assert.deepEqual(omitProgramEvidence(result.report), {
     files: [{ file: sourcePath, diagnostics: [] }],
     errorCount: 0,
     warningCount: 0,
@@ -375,7 +376,7 @@ function assertCleanCheck(result: VizeCheckResult): void {
 
 function assertBrokenCheck(result: VizeCheckResult): void {
   assert.equal(result.status, 1, result.stderr || result.stdout);
-  assert.deepEqual(result.report, {
+  assert.deepEqual(omitProgramEvidence(result.report), {
     files: [
       {
         file: sourcePath,

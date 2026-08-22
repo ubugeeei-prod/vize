@@ -5,6 +5,7 @@ import { test } from "node:test";
 
 import { repoRoot } from "../../_helpers/realworld-patch.ts";
 import {
+  omitProgramEvidence,
   resolveTsgoBinary,
   resolveVueTscBinary,
   runVizeCheck,
@@ -101,7 +102,7 @@ test("legacy inherited members match the complete vue-tsc oracle", async (t) => 
         const first = runVizeCheck(workspaceDir, corsaPath, ["**/*.vue"]);
         assert.equal(first.status, 0, first.stderr || first.stdout);
         assert.equal(first.stderr, "");
-        assert.deepEqual(first.report, {
+        assert.deepEqual(omitProgramEvidence(first.report), {
           files: [{ file: "Uses.vue", diagnostics: [] }],
           errorCount: 0,
           warningCount: 0,

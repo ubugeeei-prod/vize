@@ -5,6 +5,7 @@ import { test } from "node:test";
 
 import { withPinnedFixtureWorkspace } from "../../_helpers/realworld-patch.ts";
 import {
+  omitProgramEvidence,
   resolveTsgoBinary,
   runVizeCheck,
   symlinkVueTypes,
@@ -50,7 +51,7 @@ function runWithoutTsconfig(workspaceDir: string, corsaPath: string): VizeCheckR
 
 function assertClean(result: VizeCheckResult): void {
   assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.deepEqual(result.report, {
+  assert.deepEqual(omitProgramEvidence(result.report), {
     errorCount: 0,
     fileCount: 1,
     files: [{ diagnostics: [], file: appPath }],

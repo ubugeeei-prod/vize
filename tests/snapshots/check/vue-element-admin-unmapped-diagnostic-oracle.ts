@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import { withPinnedFixtureWorkspace } from "../../_helpers/realworld-patch.ts";
 import {
   type CheckReport,
+  omitProgramEvidence,
   resolveTsgoBinary,
   runVizeCheck,
   symlinkVueTypes,
@@ -146,10 +147,14 @@ function byPosition(
   );
 }
 
-function sortedReport(report: CheckReport): CheckReport {
+function sortedReport(report: CheckReport): Omit<CheckReport, "programs"> {
+  const diagnosticReport = omitProgramEvidence(report);
   return {
-    ...report,
-    files: report.files.map((file) => ({ ...file, diagnostics: [...file.diagnostics].sort() })),
+    ...diagnosticReport,
+    files: diagnosticReport.files.map((file) => ({
+      ...file,
+      diagnostics: [...file.diagnostics].sort(),
+    })),
   };
 }
 

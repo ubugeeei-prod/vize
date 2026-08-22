@@ -5,7 +5,11 @@ import {
   type PinnedFixtureWorkspace,
   withPinnedFixtureWorkspace,
 } from "../../_helpers/realworld-patch.ts";
-import { resolveTsgoBinary, runVizeCheck } from "../../_helpers/realworld-typecheck.ts";
+import {
+  omitProgramEvidence,
+  resolveTsgoBinary,
+  runVizeCheck,
+} from "../../_helpers/realworld-typecheck.ts";
 
 const FIXTURE_ID = "mobile-web-best-practice";
 const CARD_PATH = "src/views/home/widgets/card.vue";
@@ -43,7 +47,7 @@ test("pinned Vue 2 class-component app detects and repairs an exact authored err
       assert.equal(repairedSource, pinnedSource, "repair must restore the exact pinned source");
       const repaired = runVizeCheck(fixture.workspaceDir, corsaPath, [CARD_PATH]);
       assert.equal(repaired.status, 0, repaired.stderr || repaired.stdout);
-      assert.deepEqual(repaired.report, clean.report);
+      assert.deepEqual(omitProgramEvidence(repaired.report), omitProgramEvidence(clean.report));
       assert.equal(repaired.stdout, clean.stdout, "repair must restore byte-stable JSON");
     },
   );

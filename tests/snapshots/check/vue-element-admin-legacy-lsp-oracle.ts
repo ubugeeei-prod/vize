@@ -7,6 +7,7 @@ import {
   type PinnedFixtureWorkspace,
 } from "../../_helpers/realworld-patch.ts";
 import {
+  omitProgramEvidence,
   resolveTsgoBinary,
   runVizeCheck,
   symlinkVueTypes,
@@ -176,7 +177,7 @@ function repairDataKeyRename(fixture: PinnedFixtureWorkspace): string {
 
 function assertCleanCheck(result: VizeCheckResult): void {
   assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.deepEqual(result.report, {
+  assert.deepEqual(omitProgramEvidence(result.report), {
     files: [{ file: sourcePath, diagnostics: [] }],
     errorCount: 0,
     warningCount: 0,
@@ -186,7 +187,7 @@ function assertCleanCheck(result: VizeCheckResult): void {
 
 function assertBrokenCheck(result: VizeCheckResult): void {
   assert.equal(result.status, 1, result.stderr || result.stdout);
-  assert.deepEqual(result.report, {
+  assert.deepEqual(omitProgramEvidence(result.report), {
     files: [
       {
         file: sourcePath,
