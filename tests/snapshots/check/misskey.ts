@@ -3,6 +3,7 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { misskeyApp, MISSKEY_WORK_DIR, requireVizeAndCorsaBins } from "../../_helpers/apps.ts";
 import { assertSnapshot } from "../../_helpers/snapshot.ts";
+import { stringifyDiagnosticSnapshot } from "../../_helpers/vize-check.ts";
 import { runBudgetedBatchVizeCheck } from "../_helpers/batch-check-performance.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -23,10 +24,10 @@ describe(`${app.name} check (type checker)`, () => {
         `coldMs=${cold.durationMs.toFixed(0)}, warmMs=${warm.durationMs.toFixed(0)}`,
     );
 
-    const prettyOutput =
-      JSON.stringify(cold.result, null, 2)
-        .replaceAll(checkConfig.cwd, "<cwd>")
-        .replaceAll(MISSKEY_WORK_DIR, "<project>") + "\n";
+    const prettyOutput = stringifyDiagnosticSnapshot(cold.result, checkConfig.cwd).replaceAll(
+      MISSKEY_WORK_DIR,
+      "<project>",
+    );
     assertSnapshot(SNAPSHOT_DIR, `${app.name}-check`, prettyOutput);
   });
 });
