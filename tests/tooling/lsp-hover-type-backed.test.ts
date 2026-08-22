@@ -4,7 +4,12 @@ import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
-import { hoverToText, isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.ts";
+import {
+  firstLocation,
+  hoverToText,
+  isDiagnosticsForUri,
+  offsetToPosition,
+} from "./support/lsp/assertions.ts";
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
 import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
@@ -22,7 +27,7 @@ const label: string = 'hello'
 </template>
 `;
 
-test("hover answers authored script and template anchors with backend type text", async (t) => {
+test("hover and definition answer authored template anchors with backend type text", async (t) => {
   const corsaPath = requireTypecheckDependency(
     t,
     resolveTsgoBinary(),
@@ -82,21 +87,41 @@ test("hover answers authored script and template anchors with backend type text"
       120_000,
     );
 
-    const scriptHover = await hoverText(session, uri, source.indexOf("label: string") + 2);
-    assert.match(scriptHover, /^```typescript\n/);
-    assert.match(scriptHover, /const label: string/);
-    assertNoHeuristic(scriptHover);
+    const labelDeclaration = rangeFor("label", source.indexOf("label: string"));
+    const countDeclaration = rangeFor("count", source.indexOf("count = ref"));
+    const labelUsage = rangeFor("label", source.indexOf(':title="label"'));
+    const countUsage = rangeFor("count", source.indexOf("{{ count"));
 
-    const templateLabelHover = await hoverText(session, uri, source.indexOf(':title="label"') + 9);
-    assert.match(templateLabelHover, /^```typescript\n/);
-    assert.match(templateLabelHover, /const label: string/);
-    assertNoHeuristic(templateLabelHover);
+    const scriptHover = await hoverAt(session, uri, labelDeclaration.start);
+    const scriptHoverText = hoverToText(scriptHover);
+    assert.match(scriptHoverText, /^```typescript\n/);
+    assert.match(scriptHoverText, /const label: string/);
+    assertNoHeuristic(scriptHoverText);
 
-    const templateCountHover = await hoverText(session, uri, source.indexOf("{{ count") + 4);
-    assert.match(templateCountHover, /^```typescript\n/);
-    assert.match(templateCountHover, /const count: number/);
-    assert.doesNotMatch(templateCountHover, /Ref</);
-    assertNoHeuristic(templateCountHover);
+    const templateLabelHover = await hoverAt(session, uri, labelUsage.start);
+    assert.deepEqual(
+      templateLabelHover?.range,
+      labelUsage,
+      "template attribute hover must select the authored token, not generated TS",
+    );
+    const templateLabelHoverText = hoverToText(templateLabelHover);
+    assert.match(templateLabelHoverText, /^```typescript\n/);
+    assert.match(templateLabelHoverText, /const label: string/);
+    assertNoHeuristic(templateLabelHoverText);
+    await assertDefinition(session, uri, labelUsage.start, labelDeclaration, "template label");
+
+    const templateCountHover = await hoverAt(session, uri, countUsage.start);
+    assert.deepEqual(
+      templateCountHover?.range,
+      countUsage,
+      "template interpolation hover must select the authored token, not generated TS",
+    );
+    const templateCountHoverText = hoverToText(templateCountHover);
+    assert.match(templateCountHoverText, /^```typescript\n/);
+    assert.match(templateCountHoverText, /const count: number/);
+    assert.doesNotMatch(templateCountHoverText, /Ref</);
+    assertNoHeuristic(templateCountHoverText);
+    await assertDefinition(session, uri, countUsage.start, countDeclaration, "template count");
   } finally {
     if (initialized) {
       await session.shutdown();
@@ -108,13 +133,58 @@ test("hover answers authored script and template anchors with backend type text"
   }
 });
 
-async function hoverText(session: LspSession, uri: string, offset: number): Promise<string> {
-  return hoverToText(
-    await session.request("textDocument/hover", {
+type Position = { line: number; character: number };
+
+type Range = { start: Position; end: Position };
+
+type Hover = {
+  contents?: unknown;
+  range?: Range;
+} | null;
+
+async function hoverAt(session: LspSession, uri: string, position: Position): Promise<Hover> {
+  return (await session.request(
+    "textDocument/hover",
+    {
       textDocument: { uri },
-      position: offsetToPosition(source, offset),
-    }),
+      position,
+    },
+    120_000,
+  )) as Hover;
+}
+
+async function assertDefinition(
+  session: LspSession,
+  uri: string,
+  position: Position,
+  expectedRange: Range,
+  label: string,
+): Promise<void> {
+  const response = await session.request(
+    "textDocument/definition",
+    {
+      textDocument: { uri },
+      position,
+    },
+    120_000,
   );
+  assert.deepEqual(
+    firstLocation(response as Parameters<typeof firstLocation>[0]),
+    {
+      range: expectedRange,
+      uri,
+    },
+    `${label} definition must jump to the authored script declaration`,
+  );
+}
+
+function rangeFor(symbol: string, nearOffset: number): Range {
+  const startOffset = source.indexOf(symbol, nearOffset);
+  assert.ok(startOffset >= 0, `missing ${symbol} near ${nearOffset}`);
+  return {
+    start: offsetToPosition(source, startOffset),
+    end: offsetToPosition(source, startOffset + symbol.length),
+  };
 }
 
 function assertNoHeuristic(hoverText: string): void {
