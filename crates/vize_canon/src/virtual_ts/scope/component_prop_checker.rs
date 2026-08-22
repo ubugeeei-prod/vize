@@ -160,7 +160,7 @@ pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &Comp
         "  type __VizeFallthroughAttrCamel<S extends string> = S extends `${infer H}-${infer T}` ? `${H}${Capitalize<__VizeFallthroughAttrCamel<T>>}` : S;\n",
     );
     ts.push_str(
-        "  type __VizeAllowedFallthroughAttrs<F> = [keyof F] extends [never] ? {} : { [K in keyof F]?: unknown } & Partial<{ [K in keyof F & string as K extends `aria-${infer Tail}` ? `aria${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : K extends `data-${infer Tail}` ? `data${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : never]: unknown }>;\n",
+        "  type __VizeAllowedFallthroughAttrs<F> = [keyof F] extends [never] ? {} : { [K in keyof F]?: unknown } & { [K in `aria${string}`]?: unknown } & { [K in `data${string}`]?: unknown } & Partial<{ [K in keyof F & string as K extends `aria-${infer Tail}` ? `aria${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : K extends `data-${infer Tail}` ? `data${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : never]: unknown }>;\n",
     );
     ts.push_str(
         "  type __VizeComponentCheckTail<C, F = __VizeFallthroughProps<C>> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeAllowedFallthroughAttrs<F> : Record<string, unknown>;\n",

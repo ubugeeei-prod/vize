@@ -161,7 +161,7 @@ function __setup() {
   type __VizeFallthroughProps<C> = __VizeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? {} : NonNullable<__F> : {} : {};
   type __VizePublicComponentAttrs = { class?: unknown; style?: unknown };
   type __VizeFallthroughAttrCamel<S extends string> = S extends `${infer H}-${infer T}` ? `${H}${Capitalize<__VizeFallthroughAttrCamel<T>>}` : S;
-  type __VizeAllowedFallthroughAttrs<F> = [keyof F] extends [never] ? {} : { [K in keyof F]?: unknown } & Partial<{ [K in keyof F & string as K extends `aria-${infer Tail}` ? `aria${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : K extends `data-${infer Tail}` ? `data${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : never]: unknown }>;
+  type __VizeAllowedFallthroughAttrs<F> = [keyof F] extends [never] ? {} : { [K in keyof F]?: unknown } & { [K in `aria${string}`]?: unknown } & { [K in `data${string}`]?: unknown } & Partial<{ [K in keyof F & string as K extends `aria-${infer Tail}` ? `aria${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : K extends `data-${infer Tail}` ? `data${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : never]: unknown }>;
   type __VizeComponentCheckTail<C, F = __VizeFallthroughProps<C>> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeAllowedFallthroughAttrs<F> : Record<string, unknown>;
   type __VizePublicProps<C> = C extends { new (): { $props: infer __P } } ? __P : C extends (props: infer __P) => any ? __P : {};
   type __VizeInstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } } ? __VizeIsAny<__P> extends true ? __VizePublicProps<C> : __P : __VizePublicProps<C>;

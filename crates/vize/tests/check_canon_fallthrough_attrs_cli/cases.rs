@@ -7,7 +7,7 @@ pub(crate) struct Case<'a> {
     pub(crate) expected_diagnostics: &'a [&'a str],
 }
 
-pub(crate) fn cases() -> [Case<'static>; 16] {
+pub(crate) fn cases() -> [Case<'static>; 17] {
     [
         Case {
             id: "fallthrough-mono-ok",
@@ -20,6 +20,20 @@ defineProps<{ title: string }>();
 import Child from "./Child.vue";
 </script>
 <template><Child title="ok" id="outer" aria-haspopup="menu" /></template>
+"#,
+            expected_diagnostics: &[],
+        },
+        Case {
+            id: "fallthrough-data-aria-camel-ok",
+            child: r#"<script setup lang="ts">
+defineProps<{ title: string }>();
+</script>
+<template><button type="button">{{ title }}</button></template>
+"#,
+            app: r#"<script setup lang="ts">
+import Child from "./Child.vue";
+</script>
+<template><Child title="ok" data-id="outer" aria-label="Open" /></template>
 "#,
             expected_diagnostics: &[],
         },

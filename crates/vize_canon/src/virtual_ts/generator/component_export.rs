@@ -120,7 +120,7 @@ fn generic_check_props_param(generic_names: &str, fallthrough_props_ref: Option<
     if let Some(fallthrough_ref) = fallthrough_props_ref {
         append!(
             param,
-            " & {{ [K in keyof {fallthrough_ref}]?: unknown }} & Partial<{{ [K in keyof {fallthrough_ref} & string as K extends `aria-${{infer Tail}}` ? `aria${{Capitalize<Tail>}}` : K extends `data-${{infer Tail}}` ? `data${{Capitalize<Tail>}}` : never]: unknown }}>"
+            " & {{ [K in keyof {fallthrough_ref}]?: unknown }} & {{ [K in `aria${{string}}`]?: unknown }} & {{ [K in `data${{string}}`]?: unknown }} & Partial<{{ [K in keyof {fallthrough_ref} & string as K extends `aria-${{infer Tail}}` ? `aria${{Capitalize<Tail>}}` : K extends `data-${{infer Tail}}` ? `data${{Capitalize<Tail>}}` : never]: unknown }}>"
         );
     }
     param
