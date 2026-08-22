@@ -154,4 +154,20 @@ mod tests {
         );
         assert_eq!(merge_canonical_locations(None, None, None), None);
     }
+
+    #[test]
+    fn an_empty_canonical_answer_still_keeps_authored_hits() {
+        let sfc = "file:///app/App.vue";
+        let merged = merge_canonical_locations(
+            Some(vec![]),
+            None,
+            Some(vec![location(sfc, 3, 6, 16), location(sfc, 9, 18, 28)]),
+        )
+        .unwrap();
+
+        assert_eq!(
+            merged,
+            vec![location(sfc, 3, 6, 16), location(sfc, 9, 18, 28)]
+        );
+    }
 }

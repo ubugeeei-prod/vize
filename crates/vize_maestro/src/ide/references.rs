@@ -87,7 +87,10 @@ impl ReferencesService {
     ) -> Option<Vec<Location>> {
         let canonical_locations =
             canonical::references(ctx, include_declaration, corsa_bridge.as_deref()).await;
-        if canonical_locations.is_some() {
+        if canonical_locations
+            .as_ref()
+            .is_some_and(|locations| !locations.is_empty())
+        {
             return canonical_locations;
         }
         let Some(block_type) = ctx.block_type else {
