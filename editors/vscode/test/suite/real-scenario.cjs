@@ -41,6 +41,7 @@ exports.runRealServerScenario = async function runRealServerScenario() {
   // last step logged here is the only evidence of where a stall happened.
   const steps = [
     { label: "diagnostic at authored span", run: () => stepDiagnosticAtAuthoredSpan(document) },
+    { label: "typed ref hover surfaces", run: () => stepTypedRefHoverSurfaces() },
     { label: "quick fix", run: () => stepQuickFix(document, editor) },
     { label: "format on save", run: () => stepFormatOnSave(document) },
     { label: "semantic tokens", run: () => stepSemanticTokens(document) },
@@ -83,6 +84,55 @@ async function stepDiagnosticAtAuthoredSpan(document) {
   );
 
   assert.deepEqual(sortDiagnostics(diagnostics).map(describeDiagnostic), expected.diagnostics);
+}
+
+/** Step 1b: ref/computed hover text remains backend-typed in the packaged host. */
+async function stepTypedRefHoverSurfaces() {
+  const diskPath = path.join(getWorkspaceFolderPath(), "src", "RefSurface.vue");
+  const brokenSource = expected.refSurfaceSource.replace(
+    "</script>",
+    "const broken: string = 1;\n</script>",
+  );
+  fs.writeFileSync(diskPath, brokenSource, "utf8");
+  const uri = vscode.Uri.file(diskPath);
+  const document = await vscode.workspace.openTextDocument(uri);
+  await vscode.window.showTextDocument(document);
+
+  await waitForDiagnostics(
+    uri,
+    (next) => next.some((diagnostic) => diagnostic.source === "vize/types"),
+    "ref surface initial type diagnostic",
+    180_000,
+  );
+  const edit = new vscode.WorkspaceEdit();
+  edit.replace(
+    uri,
+    new vscode.Range(document.positionAt(0), document.positionAt(document.getText().length)),
+    expected.refSurfaceSource,
+  );
+  const applied = await vscode.workspace.applyEdit(edit);
+  assert.equal(applied, true, "expected ref surface repair edit to apply");
+
+  const diagnostics = await waitForDiagnostics(
+    uri,
+    (next) => next.length === 0,
+    "ref surface diagnostics",
+    180_000,
+  );
+  assert.deepEqual(diagnostics, []);
+
+  const hovers = {
+    scriptCount: await hoverAt(uri, 3, 8),
+    scriptDoubled: await hoverAt(uri, 4, 8),
+    templateCount: await hoverAt(uri, 8, 10),
+    templateDoubled: await hoverAt(uri, 8, 22),
+  };
+  assert.deepEqual(hovers, expected.refSurfaceHovers);
+  for (const value of Object.values(hovers).flatMap((hover) =>
+    hover.flatMap((item) => item.contents),
+  )) {
+    assert.doesNotMatch(value, /Ref<unknown>|ComputedRef<unknown>|MaybeRef<unknown>/);
+  }
 }
 
 /** Step 2: the quick fix the server offers on the lint warning's own span. */
@@ -159,4 +209,28 @@ function sortDiagnostics(diagnostics) {
     }
     return left.range.start.character - right.range.start.character;
   });
+}
+
+async function hoverAt(uri, line, character) {
+  const hovers = await vscode.commands.executeCommand(
+    "vscode.executeHoverProvider",
+    uri,
+    new vscode.Position(line, character),
+  );
+  return hovers.map(describeHover);
+}
+
+function describeHover(hover) {
+  return {
+    contents: hover.contents.map((content) => {
+      if (typeof content === "string") return content;
+      if (typeof content?.value === "string") return content.value;
+      return String(content);
+    }),
+    range: hover.range === undefined ? undefined : describeRange(hover.range),
+  };
+}
+
+function describeRange(range) {
+  return [range.start.line, range.start.character, range.end.line, range.end.character];
 }

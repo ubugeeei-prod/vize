@@ -13,6 +13,7 @@ import {
   prepareRealVueWorkspace,
   resolveRealServerPath,
 } from "../editor-e2e/real-vue-workspace.mjs";
+import { assertRefSurfaceHovers } from "./real-server-ref-surface.mjs";
 import { isDiagnosticsForUri } from "../../tests/tooling/support/lsp/assertions.ts";
 import { LspSession } from "../../tests/tooling/support/lsp/session.ts";
 
@@ -232,6 +233,8 @@ try {
     120_000,
   );
   assert.deepEqual(hover, expectedHover);
+
+  await assertRefSurfaceHovers({ isDiagnosticsForUri, session, workspacePath });
 
   const codeActions = await session.request(
     "textDocument/codeAction",

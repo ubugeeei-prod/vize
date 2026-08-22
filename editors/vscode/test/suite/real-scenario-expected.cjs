@@ -28,6 +28,47 @@ const renamedSource = formattedSource
   .replace("const total =", "const quantity =")
   .replace(':count="total"', ':count="quantity"');
 
+const refSurfaceSource = [
+  '<script setup lang="ts">',
+  'import { computed, ref } from "vue";',
+  "",
+  "const count = ref(1);",
+  "const doubled = computed(() => count.value * 2);",
+  "</script>",
+  "",
+  "<template>",
+  "  <p>{{ count }} {{ doubled }}</p>",
+  "</template>",
+  "",
+].join("\n");
+
+const refSurfaceHovers = {
+  scriptCount: [
+    {
+      contents: ["```typescript\nconst count: Ref<number, number>\n```"],
+      range: [3, 6, 3, 11],
+    },
+  ],
+  scriptDoubled: [
+    {
+      contents: ["```typescript\nconst doubled: ComputedRef<number>\n```"],
+      range: [4, 6, 4, 13],
+    },
+  ],
+  templateCount: [
+    {
+      contents: ["```typescript\nconst count: number\n```"],
+      range: [8, 8, 8, 13],
+    },
+  ],
+  templateDoubled: [
+    {
+      contents: ["```typescript\nconst doubled: number\n```"],
+      range: [8, 20, 8, 27],
+    },
+  ],
+};
+
 // The authored `<Child  :count="total" />` carries two independent authored
 // bugs on one line: two spaces after the tag name (a fixable lint warning) and
 // a string bound to a `number` prop (the type bug the scorecard asks for).
@@ -135,6 +176,8 @@ module.exports = {
   formattingEdits,
   quickFixRange,
   quickFixedSource,
+  refSurfaceHovers,
+  refSurfaceSource,
   renameEdit,
   renameNewName,
   renamePosition,
