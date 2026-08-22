@@ -10,16 +10,11 @@ import { typecheckDependencySkip } from "./support/typecheck-dependency.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-/**
- * Resolves how to launch the `vize` CLI, mirroring the check-contract launcher:
- * a prebuilt binary wins, otherwise fall back to cargo so fresh checkouts work.
- */
 function resolveVizeCommand(): { command: string; prefix: string[] } {
   const candidates = [
     path.join(root, "target/ci/vize"),
     path.join(root, "target/release/vize"),
     path.join(root, "target/debug/vize"),
-    "vize",
   ];
   for (const candidate of candidates) {
     const probe = spawnSync(candidate, ["--version"], { cwd: root, encoding: "utf8" });
@@ -32,11 +27,6 @@ function resolveVizeCommand(): { command: string; prefix: string[] } {
 
 const VIZE = resolveVizeCommand();
 
-/**
- * `--format json` runs the inputs through the Corsa/tsgo type-checker, so these
- * cases require a discoverable checker. Returns null when neither is installed
- * so the suite skips gracefully instead of failing (mirrors production-readiness).
- */
 function resolveCheckerPath(): string | null {
   const candidates = [
     path.join(root, "node_modules/.bin/corsa"),
@@ -87,7 +77,12 @@ function withWorkspace<T>(run: (dir: string) => T): T {
 
 type CheckJson = {
   files: Array<{ file: string; virtualTs?: string; diagnostics: string[] }>;
-  programs: Array<{ root: string; tsconfig?: string; files: string[] }>;
+  programs: Array<{
+    root: string;
+    tsconfig?: string;
+    compilerOptions?: Record<string, unknown>;
+    files: string[];
+  }>;
   errorCount: number;
   warningCount: number;
   fileCount: number;
@@ -103,6 +98,14 @@ function parseJson(result: CheckResult): CheckJson {
 // never assert the checker's message text, only the stable JSON shape.
 const BAD_TS = "export const x: string = 123;";
 const GOOD_TS = "export const answer = 42 as const;\n";
+const PROJECT_REF_COMPILER_OPTIONS = {
+  composite: true,
+  module: "ESNext",
+  moduleResolution: "Bundler",
+  noEmit: true,
+  strict: true,
+  target: "ES2022",
+};
 
 test("vize check --format json has a stable top-level shape and key names", checkerOptions, () => {
   withWorkspace((dir) => {
@@ -323,11 +326,13 @@ test("vize check --format json exposes project-reference program inputs", checke
         {
           root: "packages/alpha",
           tsconfig: "packages/alpha/tsconfig.json",
+          compilerOptions: PROJECT_REF_COMPILER_OPTIONS,
           files: ["packages/alpha/src/index.ts"],
         },
         {
           root: "packages/bravo",
           tsconfig: "packages/bravo/tsconfig.json",
+          compilerOptions: PROJECT_REF_COMPILER_OPTIONS,
           files: ["packages/bravo/src/index.ts"],
         },
       ],

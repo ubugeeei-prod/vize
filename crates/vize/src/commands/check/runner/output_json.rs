@@ -73,16 +73,27 @@ pub(super) fn emit_json(
             if root.is_empty() {
                 root = ".".into();
             }
-            JsonProgramResult {
+            Ok(JsonProgramResult {
                 root: root.into(),
                 tsconfig: execution
                     .tsconfig_path
                     .as_ref()
                     .map(|path| display_path(cwd, path).into()),
+                compiler_options: execution
+                    .tsconfig_path
+                    .as_ref()
+                    .map(|path| vize_canon::snapshot_tsconfig_compiler_options(cwd, path))
+                    .transpose()
+                    .map_err(|error| {
+                        vize_carton::cstr!(
+                            "Failed to snapshot compiler options for JSON output: {}",
+                            error
+                        )
+                    })?,
                 files,
-            }
+            })
         })
-        .collect::<Vec<_>>();
+        .collect::<Result<Vec<_>, vize_carton::String>>()?;
 
     let reported_keys = executions
         .iter()

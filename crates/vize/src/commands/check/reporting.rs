@@ -1,6 +1,7 @@
 //! Reporting data structures for `vize check`.
 
 use serde::Serialize;
+use serde_json::{Map, Value};
 
 /// JSON output structure for `--format json`.
 #[derive(Serialize)]
@@ -25,6 +26,8 @@ pub(crate) struct JsonProgramResult {
     pub root: std::string::String,
     #[serde(rename = "tsconfig", skip_serializing_if = "Option::is_none")]
     pub tsconfig: Option<std::string::String>,
+    #[serde(rename = "compilerOptions", skip_serializing_if = "Option::is_none")]
+    pub compiler_options: Option<Map<std::string::String, Value>>,
     pub files: Vec<std::string::String>,
 }
 

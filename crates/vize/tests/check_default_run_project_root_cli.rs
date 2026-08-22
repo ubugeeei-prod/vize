@@ -231,6 +231,14 @@ fn default_run_inside_an_owning_ancestor_program_checks_the_app_and_notes_the_sc
                 {
                     "root": case.workspace,
                     "tsconfig": case.workspace.join("tsconfig.json"),
+                    "compilerOptions": {
+                        "module": "ESNext",
+                        "moduleResolution": "bundler",
+                        "noEmit": true,
+                        "skipLibCheck": true,
+                        "strict": true,
+                        "target": "ES2022",
+                    },
                     "files": [
                         case.workspace.join("helpers/h1.ts"),
                         case.workspace.join("helpers/h2.ts"),
@@ -298,6 +306,14 @@ fn default_run_with_a_local_tsconfig_stays_in_the_app() {
                 {
                     "root": ".",
                     "tsconfig": "tsconfig.json",
+                    "compilerOptions": {
+                        "module": "ESNext",
+                        "moduleResolution": "bundler",
+                        "noEmit": true,
+                        "skipLibCheck": true,
+                        "strict": true,
+                        "target": "ES2022",
+                    },
                     "files": ["src/Broken.vue"]
                 }
             ],
