@@ -58,14 +58,27 @@ fn print_mods<W: Write>(w: &mut W, modifiers: &[String]) -> Result {
     if modifiers.is_empty() {
         return Ok(());
     }
-    w.write_str(" mods=\"")?;
+    if modifiers
+        .iter()
+        .all(|modifier| !modifier.as_str().contains([',', '"', '\\', '\n', '\r']))
+    {
+        w.write_str(" mods=\"")?;
+        for (i, modifier) in modifiers.iter().enumerate() {
+            if i > 0 {
+                w.write_char(',')?;
+            }
+            w.write_str(modifier.as_str())?;
+        }
+        return w.write_char('"');
+    }
+    w.write_str(" mods=[")?;
     for (i, modifier) in modifiers.iter().enumerate() {
         if i > 0 {
             w.write_char(',')?;
         }
-        w.write_str(modifier.as_str())?;
+        quoted(w, modifier.as_str())?;
     }
-    w.write_char('"')
+    w.write_char(']')
 }
 
 fn print_bind<W: Write>(w: &mut W, bind: &FolioBind, depth: usize, mode: FolioMode) -> Result {

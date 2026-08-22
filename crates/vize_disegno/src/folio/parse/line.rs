@@ -5,8 +5,8 @@
 //! [`expr_token`](super::expr_token) - `js(...)`, `opaque(...)`,
 //! `foreign(...)`. Quoted strings escape `\\`, `\"`, `\n`, `\r`,
 //! `\t`; values embedding other control characters, attribute names
-//! containing `=`, ` ` or `"`, and modifier names containing `,` or `"`
-//! are outside the contract (the derived-page "documented edges" rule).
+//! containing `=`, ` ` or `"` are outside the contract (the
+//! derived-page "documented edges" rule).
 
 use vize_carton::{Span, String, cstr};
 use vize_davinci::folio::FolioError;

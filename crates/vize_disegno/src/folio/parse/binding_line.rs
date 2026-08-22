@@ -15,8 +15,25 @@ use super::super::owned::{
 use super::expr_token::take_expr;
 use super::line::{Item, err, final_span, name_value, tail_span, take_quoted};
 
-/// Parse a `"a,b"` modifier payload into owned names.
+/// Parse a legacy `"a,b"` or canonical `["a","b"]` modifier payload into owned names.
 fn take_mods(rest: &str, line_no: usize) -> Result<(Vec<String>, &str), FolioError> {
+    if let Some(mut tail) = rest.strip_prefix('[') {
+        let mut modifiers = Vec::new();
+        loop {
+            let (modifier, after) = take_quoted(tail, line_no)?;
+            if modifier.is_empty() {
+                return Err(err(line_no, cstr!("invalid modifier list")));
+            }
+            modifiers.push(modifier);
+            if let Some(after) = after.strip_prefix(']') {
+                return Ok((modifiers, after));
+            }
+            let Some(after) = after.strip_prefix(',') else {
+                return Err(err(line_no, cstr!("invalid modifier list")));
+            };
+            tail = after;
+        }
+    }
     let (joined, tail) = take_quoted(rest, line_no)?;
     let mut modifiers = Vec::new();
     for part in joined.as_str().split(',') {

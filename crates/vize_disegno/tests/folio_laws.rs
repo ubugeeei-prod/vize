@@ -198,6 +198,44 @@ fn parse_print_is_structural_identity() {
 }
 
 #[test]
+fn unsafe_modifier_names_round_trip_through_canonical_brackets() {
+    let value = DisegnoFolio {
+        ops: vec![FolioOp::Element(FolioElement {
+            tag: String::from("div"),
+            namespace: Namespace::Html,
+            attributes: vec![],
+            bindings: vec![FolioBinding::VueDirective(FolioVueDirective {
+                name: String::from("if*\"props"),
+                argument: None,
+                modifiers: vec![
+                    String::from("showLineNumbers\""),
+                    String::from("with,comma"),
+                ],
+                value: None,
+                span: Span::new(97, 125),
+            })],
+            children: vec![],
+            span: Span::new(92, 290),
+        })],
+    };
+    let canonical = "\
+[disegno]
+ops=2
+
+[disegno.ops]
+ui.element div @92:290
+  vue.directive \"if*\\\"props\" mods=[\"showLineNumbers\\\"\",\"with,comma\"] @97:125
+
+";
+    let printed = value.print_to_string(FolioMode::Full);
+    assert_eq!(printed.as_str(), canonical);
+    assert_eq!(
+        DisegnoFolio::parse(printed.as_str()).expect("printed text parses"),
+        value
+    );
+}
+
+#[test]
 fn a_hand_built_value_prints_the_canonical_text() {
     assert_eq!(
         hand_built().print_to_string(FolioMode::Full).as_str(),
