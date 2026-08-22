@@ -42,7 +42,10 @@ test("hover answers authored script and template anchors with backend type text"
     linkVuePackage(workspaceDir);
     fs.writeFileSync(
       path.join(workspaceDir, "vize.config.json"),
-      JSON.stringify({ lsp: { hover: true, lint: false, typecheck: true }, typeChecker: { corsaPath } }),
+      JSON.stringify({
+        lsp: { hover: true, lint: false, typecheck: true },
+        typeChecker: { corsaPath },
+      }),
     );
     fs.writeFileSync(
       path.join(workspaceDir, "tsconfig.json"),
