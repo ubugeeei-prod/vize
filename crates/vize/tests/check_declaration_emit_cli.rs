@@ -2,6 +2,8 @@
 mod corsa_requirement;
 #[path = "check_declaration_emit_cli/packed_consumer.rs"]
 mod packed_consumer;
+#[path = "check_declaration_emit_cli/project_reference_packed_consumer.rs"]
+mod project_reference_packed_consumer;
 #[path = "check_declaration_emit_cli/workspace_package_vue_exports.rs"]
 mod workspace_package_vue_exports;
 
