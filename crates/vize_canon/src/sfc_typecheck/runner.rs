@@ -197,7 +197,7 @@ fn type_check_sfc_impl(
 
     // Check fallthrough attrs
     if options.check_fallthrough_attrs {
-        check_fallthrough_attrs(&summary, &mut result, options.strict);
+        check_fallthrough_attrs(&summary, template_offset, &mut result, options.strict);
     }
 
     // Generate virtual TypeScript with scope information if requested

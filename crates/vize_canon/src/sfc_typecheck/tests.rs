@@ -1,6 +1,7 @@
 //! Tests for SFC type checking.
 #![cfg(test)]
 mod emit_props;
+mod fallthrough_ranges;
 mod optional_chain_props;
 #[cfg(feature = "legacy")]
 mod options_api_required_props;
@@ -15,7 +16,6 @@ fn stable_snapshot_result(mut result: SfcTypeCheckResult) -> SfcTypeCheckResult 
     }
     result
 }
-
 #[test]
 fn test_type_check_empty_sfc() {
     let source = "<template><div>Hello</div></template>";

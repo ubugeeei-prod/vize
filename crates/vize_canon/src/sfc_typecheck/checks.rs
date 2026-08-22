@@ -336,6 +336,7 @@ pub fn check_invalid_exports(
 /// Check for fallthrough attrs issues with multi-root components.
 pub fn check_fallthrough_attrs(
     summary: &vize_croquis::Croquis,
+    template_offset: u32,
     result: &mut SfcTypeCheckResult,
     strict: bool,
 ) {
@@ -343,17 +344,13 @@ pub fn check_fallthrough_attrs(
         return;
     }
 
-    let severity = if strict {
-        SfcTypeSeverity::Error
-    } else {
-        SfcTypeSeverity::Warning
-    };
+    let start = summary.template_info.content_start;
 
     result.add_diagnostic(SfcTypeDiagnostic {
-        severity,
+        severity: [SfcTypeSeverity::Warning, SfcTypeSeverity::Error][usize::from(strict)],
         message: "Multi-root component may lose fallthrough attributes".into(),
-        start: summary.template_info.content_start,
-        end: summary.template_info.content_end,
+        start: template_offset + start,
+        end: template_offset + summary.template_info.content_end.max(start + 1),
         code: Some("fallthrough-attrs".into()),
         help: Some("Bind $attrs explicitly to one root element or use inheritAttrs: false".into()),
         related: Vec::new(),

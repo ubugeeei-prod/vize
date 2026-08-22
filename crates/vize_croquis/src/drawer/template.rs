@@ -34,20 +34,30 @@ impl Drawer {
         self.template_source = root.source.into();
 
         // Count root-level elements
-        let root_element_count = profile!("croquis.template.root_count", {
+        let (root_element_count, root_content_range) = profile!("croquis.template.root_count", {
             let mut root_element_count = 0;
+            let mut root_content_range = None;
             for child in root.children.iter() {
                 if Self::is_element_child(child) {
                     root_element_count += 1;
+                    let (start, end) = Self::template_child_range(child);
+                    root_content_range = Some(
+                        root_content_range
+                            .map(|(first_start, _)| (first_start, end))
+                            .unwrap_or((start, end)),
+                    );
                 }
             }
-            root_element_count
+            (root_element_count, root_content_range)
         });
         self.croquis.template_info.root_element_count = root_element_count;
 
-        // Store template content range
-        self.croquis.template_info.content_start = root.loc.span.start;
-        self.croquis.template_info.content_end = root.loc.span.end;
+        // Store the authored template root content range. The root node itself
+        // may carry a stub range, so derive this from concrete root children.
+        if let Some((start, end)) = root_content_range {
+            self.croquis.template_info.content_start = start;
+            self.croquis.template_info.content_end = end;
+        }
 
         // Keep profiling around the whole traversal instead of every recursive
         // child visit. The traversal itself is the hot path; per-node spans
@@ -79,6 +89,22 @@ impl Drawer {
             TemplateChildNode::For(_) => true,
             _ => false,
         }
+    }
+
+    fn template_child_range(node: &TemplateChildNode<'_>) -> (u32, u32) {
+        let span = match node {
+            TemplateChildNode::Element(node) => node.loc.span,
+            TemplateChildNode::Text(node) => node.loc.span,
+            TemplateChildNode::Comment(node) => node.loc.span,
+            TemplateChildNode::Interpolation(node) => node.loc.span,
+            TemplateChildNode::If(node) => node.loc.span,
+            TemplateChildNode::IfBranch(node) => node.loc.span,
+            TemplateChildNode::For(node) => node.loc.span,
+            TemplateChildNode::TextCall(node) => node.loc.span,
+            TemplateChildNode::CompoundExpression(node) => node.loc.span,
+            TemplateChildNode::Hoisted(_) => return (0, 0),
+        };
+        (span.start, span.end)
     }
 
     /// Visit template child node.
