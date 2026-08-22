@@ -58,6 +58,27 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
       source.indexOf("SideEffect.vue") + 1,
     );
     assert.match(displayPartsText(sideEffectInfo?.displayParts), /^const component: VueComponent/);
+    const barrelInfo = service.getQuickInfoAtPosition(
+      project.mainTs,
+      source.indexOf("BarrelApp }") + 1,
+    );
+    const barrelDisplay = displayPartsText(barrelInfo?.displayParts);
+    assert.match(barrelDisplay, /^const BarrelApp: VueComponent/);
+    assert.match(barrelDisplay, /props: \{ title: "hello   world"/);
+    assert.doesNotMatch(
+      barrelDisplay,
+      /__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor/,
+    );
+    assert.equal(
+      service.getDefinitionAtPosition(project.mainTs, source.indexOf("BarrelApp;") + 1)?.[0]
+        ?.fileName,
+      project.appVue,
+    );
+    assert.equal(
+      service.getTypeDefinitionAtPosition(project.mainTs, source.indexOf("BarrelApp;") + 1)?.[0]
+        ?.fileName,
+      project.appVue,
+    );
     assert.match(
       formatDiagnostics(service.getSemanticDiagnostics(project.mainTs)),
       /Property 'title' is missing/,
@@ -105,8 +126,10 @@ function createProject() {
     mainTs,
     [
       'import App from "./App.vue";',
+      'import { BarrelApp } from "./components";',
       'import "./SideEffect.vue";',
       'const props: InstanceType<typeof App>["$props"] = {};',
+      "BarrelApp;",
       "props;",
       "",
     ].join("\n"),
@@ -127,6 +150,12 @@ function createProject() {
     ].join("\n"),
   );
   fs.writeFileSync(path.join(srcDir, "SideEffect.vue"), "<template />\n");
+  const componentsDir = path.join(srcDir, "components");
+  fs.mkdirSync(componentsDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(componentsDir, "index.ts"),
+    'export { default as BarrelApp } from "../App.vue";\n',
+  );
 
   const ambientDts = path.join(srcDir, "vite-client.d.ts");
   fs.writeFileSync(
