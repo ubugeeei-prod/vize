@@ -84,12 +84,12 @@ Where each read went:
   `parse_vize_directive` with the comment's start line, which that caller
   discards (only the directive kind survives); it now passes the constant
   line the retired tracking always reported
-- `crates/vize_relief/src/errors/render.rs:88` — the one output path that printed stored
-  line/column (the SFC gate / binding-boundary debug rendering) reproduces
-  the retired tracking's frozen `line: 1, column: offset + 1` shape from
-  the span offset, byte-for-byte, because corpus oracles pin those
-  diagnostic bytes; switching it to true `LineIndex` derivation is a
-  recorded corpus-visible behavior change for the plan to schedule
+- `crates/vize_relief/src/errors/render.rs:85` — the one output path that printed stored
+  line/column (the SFC gate / binding-boundary debug rendering) now derives
+  display coordinates from the rendered source text via `LineIndex`. This
+  keeps `SourceLocation` span-only while making multiline diagnostics point
+  at the actual line and column instead of the retired frozen
+  `line: 1, column: offset + 1` approximation
 - `crates/vize_maestro/src/utils/position.rs` — `source_location_to_range`
   / `internal_to_lsp_position` converted stored `Position`s to LSP
   positions; they had no callers and are deleted (regeneration asserts they

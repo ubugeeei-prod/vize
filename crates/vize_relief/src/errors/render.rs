@@ -8,19 +8,15 @@
 //! the derive printed when locations still stored their covered text inline —
 //! `source` included, sliced from the file's source text.
 //!
-//! The `line`/`column` fields printed here reproduce the retired parser
-//! tracking byte-for-byte (Davinci P1-4): the parser never populated its
-//! newline table, so every stored `Position` was `line: 1, column:
-//! offset + 1` regardless of the real line. Corpus oracles pin diagnostic
-//! messages containing that frozen shape, so this renderer reconstructs it
-//! from the offset instead of deriving the real line/column. Switching this
-//! output to true `vize_carton::line_index` derivation is a recorded,
-//! corpus-visible behavior change for the plan to schedule — not a byte-safe
-//! cleanup.
+//! The `line`/`column` fields printed here are derived from the source text at
+//! render time. `SourceLocation` itself intentionally keeps only byte spans;
+//! consumers that need display coordinates should derive them at the edge from
+//! the exact source text being rendered.
 
 use core::fmt;
 
 use crate::relief::SourceLocation;
+use vize_carton::line_index::LineIndex;
 
 use super::CompilerError;
 
@@ -73,26 +69,42 @@ struct LocationWithSource<'a> {
 impl fmt::Debug for LocationWithSource<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("SourceLocation")
-            .field("start", &FrozenPosition(self.loc.span.start))
-            .field("end", &FrozenPosition(self.loc.span.end))
+            .field(
+                "start",
+                &RenderedPosition::new(self.loc.span.start, self.source),
+            )
+            .field(
+                "end",
+                &RenderedPosition::new(self.loc.span.end, self.source),
+            )
             .field("source", &self.loc.span.slice(self.source))
             .finish()
     }
 }
 
-/// Renders a byte offset in the retired `Position` debug shape.
-///
-/// `line: 1, column: offset + 1` is not a placeholder: it is exactly what the
-/// retired parser tracking stored for every node (see the module docs), and
-/// the pinned diagnostic bytes depend on it.
-struct FrozenPosition(u32);
+struct RenderedPosition {
+    offset: u32,
+    line: u32,
+    column: u32,
+}
 
-impl fmt::Debug for FrozenPosition {
+impl RenderedPosition {
+    fn new(offset: u32, source: &str) -> Self {
+        let (line, column) = LineIndex::new(source).line_col(offset as usize);
+        Self {
+            offset,
+            line: line + 1,
+            column: column + 1,
+        }
+    }
+}
+
+impl fmt::Debug for RenderedPosition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Position")
-            .field("offset", &self.0)
-            .field("line", &1u32)
-            .field("column", &(self.0 + 1))
+            .field("offset", &self.offset)
+            .field("line", &self.line)
+            .field("column", &self.column)
             .finish()
     }
 }
@@ -105,7 +117,7 @@ mod tests {
     use super::CompilerErrorWithSource;
 
     #[test]
-    fn debug_prints_the_pre_span_derive_shape() {
+    fn debug_prints_single_line_positions() {
         let loc = SourceLocation::new(5, 9);
         let error = CompilerError::with_message(
             ErrorCode::MissingEndTag,
@@ -124,6 +136,26 @@ mod tests {
              start: Position { offset: 5, line: 1, column: 6 }, \
              end: Position { offset: 9, line: 1, column: 10 }, \
              source: \"text\" }) }"
+        );
+    }
+
+    #[test]
+    fn debug_prints_real_multiline_positions() {
+        let loc = SourceLocation::new(10, 14);
+        let error =
+            CompilerError::with_message(ErrorCode::InvalidExpression, "bad expression", Some(loc));
+        let rendered = format!(
+            "{:?}",
+            CompilerErrorWithSource::new(&error, "<div>\n  {{ bad }}\n</div>")
+        );
+        assert_eq!(
+            rendered,
+            "CompilerError { code: InvalidExpression, \
+             message: \"bad expression\", \
+             loc: Some(SourceLocation { \
+             start: Position { offset: 10, line: 2, column: 5 }, \
+             end: Position { offset: 14, line: 2, column: 9 }, \
+             source: \" bad\" }) }"
         );
     }
 
