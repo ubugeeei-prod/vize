@@ -42,9 +42,8 @@ serde_json = { workspace = true }
 
 [features]
 default = []
-# Mirror the relief legacy surface so the `InterpolationNode::raw` field stays
-# in sync under workspace feature unification (see vize_armature's `legacy`).
-legacy = ["vize_relief/_legacy"]
+# Mirror the legacy parser/AST surface across the SFC and SSR dependencies.
+legacy = ["vize_atelier_sfc/legacy", "vize_atelier_ssr/legacy"]
 
 [[bench]]
 name = "jsx_compile"

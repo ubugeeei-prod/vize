@@ -8,6 +8,10 @@ repository.workspace = true
 description = "Vue SSR compiler for Vize"
 metadata.vize.stability = "compatibility-preview"
 
+[features]
+default = []
+legacy = ["vize_armature/legacy", "vize_atelier_core/legacy"]
+
 [dependencies]
 vize_carton = { workspace = true }
 vize_relief = { workspace = true }

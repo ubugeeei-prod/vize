@@ -77,7 +77,6 @@ jobs:
     timeout-minutes: 25
     permissions:
       contents: read
-      # Squash pushes carry no pull-request metadata; the associated-pulls API recovers the merged marker.
       pull-requests: read
     # Matrix legs run in parallel and keep breaking changes attributed per crate.
     # PRs compare against base; pushes compare against previous main. Schedules lack an exact base.
@@ -98,11 +97,11 @@ jobs:
           - vize_croquis
           - vize_fresco
           - vize_musea
+          - vize_patina
           - vize_relief
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          # cargo-semver-checks materializes the baseline rev from git history.
           fetch-depth: 0
       - name: Resolve SemVer change marker
         env:

@@ -11,6 +11,7 @@ metadata.vize.stability = "alpha-supported"
 [features]
 default = ["native"]
 native = ["dep:lightningcss", "lightningcss/serde", "dep:parcel_selectors"]
+legacy = ["vize_atelier_core/legacy", "vize_atelier_ssr/legacy"]
 # Arms the Davinci P1-7 differential lane across the atelier crates: every
 # retained-AST consumption dual-runs the legacy re-parse and panics on
 # divergence. Off in production builds; the corpus-runnable entry below

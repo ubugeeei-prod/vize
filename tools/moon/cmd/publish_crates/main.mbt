@@ -22,6 +22,8 @@ let published_crates : Array[String] = [
   "vize_atelier_vapor",
   "vize_atelier_ssr",
   "vize_atelier_sfc",
+  "vize_atelier_jsx",
+  "vize_patina",
   "vize_musea",
   "vize_fresco",
 ]
@@ -30,7 +32,6 @@ let published_crates : Array[String] = [
 /// Trusted Publishing can take over subsequent versions.
 let pending_first_publish_crates : Array[String] = [
   "vize_croquis_cf",
-  "vize_atelier_jsx",
   "vize_marquette",
   "vize_doctor",
 ]
@@ -39,7 +40,6 @@ let pending_first_publish_crates : Array[String] = [
 /// its manual first publish.
 let blocked_by_pending_first_publish_crates : Array[String] = [
   "vize_canon",
-  "vize_patina",
 ]
 
 /// Parses a positive integer from a string and falls back on invalid input.
