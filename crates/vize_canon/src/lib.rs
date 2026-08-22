@@ -133,6 +133,7 @@ pub use corsa_bridge::{
 #[cfg(feature = "native")]
 pub use batch::{
     BatchTopologyMetrics, BatchTypeChecker, BatchTypeCheckerOptions,
+    CONTENT_MAPPER_GENERATED_DIAGNOSTIC_CODE, CONTENT_MAPPER_SFC_PARSE_ERROR_CODE,
     CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperDiagnostic, ContentMapperDiagnosticDirective,
     ContentMapperDiagnosticDirectives, ContentMapperSemanticLink, ContentMapperSpan,
     ContentMapperTransform, ContentMapperTransformOptions, ContentMapperUnusedExpectDiagnostic,

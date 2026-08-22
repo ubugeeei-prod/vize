@@ -45,6 +45,24 @@ fn negotiates_utf8_and_transforms_vue_sfc() {
 }
 
 #[test]
+fn negotiates_utf8_without_legacy_protocol_version() {
+    let input = frames(&[json!({
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+            "positionEncodings": ["utf-16", "utf-8"],
+            "locale": "en-US"
+        }
+    })]);
+    let responses = exchange(&input);
+
+    assert_eq!(responses[0]["result"]["protocolVersion"], Value::Null);
+    assert_eq!(responses[0]["result"]["positionEncoding"], "utf-8");
+    assert_eq!(responses[0]["result"]["diagnosticSource"], "vize");
+}
+
+#[test]
 fn parse_errors_are_successful_transform_results() {
     let input = frames(&[
         initialize_request(),
@@ -60,6 +78,7 @@ fn parse_errors_are_successful_transform_results() {
             .unwrap()
             .is_empty()
     );
+    assert_eq!(responses[2]["result"]["diagnostics"][0]["code"], 100_002);
 }
 
 #[test]

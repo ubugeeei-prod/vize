@@ -30,6 +30,7 @@ mod art_usage;
 mod build;
 mod content_mapper;
 pub use content_mapper::{
+    CONTENT_MAPPER_GENERATED_DIAGNOSTIC_CODE, CONTENT_MAPPER_SFC_PARSE_ERROR_CODE,
     CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperDiagnostic, ContentMapperDiagnosticDirective,
     ContentMapperDiagnosticDirectives, ContentMapperSemanticLink, ContentMapperSpan,
     ContentMapperTransform, ContentMapperTransformOptions, ContentMapperUnusedExpectDiagnostic,

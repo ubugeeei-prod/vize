@@ -10,6 +10,8 @@ use vize_carton::String as CompactString;
 /// `.tsx` because the generated module can contain a JSX render expression even
 /// when the authored `<script>` block has no JSX of its own.
 pub const CONTENT_MAPPER_VIRTUAL_EXTENSION: &str = ".tsx";
+pub const CONTENT_MAPPER_SFC_PARSE_ERROR_CODE: i32 = 100_001;
+pub const CONTENT_MAPPER_GENERATED_DIAGNOSTIC_CODE: i32 = 100_002;
 
 /// A TypeScript content-mapper transform result.
 #[derive(Debug, Serialize)]
@@ -49,6 +51,7 @@ pub struct ContentMapperDiagnostic {
     pub message_text: CompactString,
     pub start: usize,
     pub length: usize,
+    pub code: i32,
 }
 
 /// Framework directives that suppress TypeScript diagnostics in virtual

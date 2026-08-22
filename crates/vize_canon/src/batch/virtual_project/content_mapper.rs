@@ -19,6 +19,7 @@ use alias::{is_alias_projection, is_synthetic_content_mapper_identifier};
 mod protocol;
 use protocol::protocol_semantic_links;
 pub use protocol::{
+    CONTENT_MAPPER_GENERATED_DIAGNOSTIC_CODE, CONTENT_MAPPER_SFC_PARSE_ERROR_CODE,
     CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperDiagnostic, ContentMapperDiagnosticDirective,
     ContentMapperDiagnosticDirectives, ContentMapperSemanticLink, ContentMapperSpan,
     ContentMapperTransform, ContentMapperUnusedExpectDiagnostic,
@@ -49,14 +50,10 @@ enum ContentMapperSpanKind {
     Alias = 2,
 }
 
-/// Settings resolved from a TypeScript content-mapper entry and its declared
-/// compiler-option dependencies.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[non_exhaustive]
 pub struct ContentMapperTransformOptions {
-    /// Resolve Vue Options API instance bindings in templates.
     options_api: bool,
-    /// Preserve diagnostics for user-authored unused locals.
     preserve_unused_diagnostics: bool,
 }
 
@@ -208,6 +205,7 @@ fn sfc_parse_diagnostic(source: &str, error: &SfcError) -> ContentMapperDiagnost
         message_text: error.message.clone(),
         start,
         length,
+        code: CONTENT_MAPPER_SFC_PARSE_ERROR_CODE,
     }
 }
 
@@ -221,6 +219,7 @@ fn generated_diagnostic(source: &str, diagnostic: &Diagnostic) -> ContentMapperD
         message_text: diagnostic.message.clone(),
         start,
         length,
+        code: CONTENT_MAPPER_GENERATED_DIAGNOSTIC_CODE,
     }
 }
 

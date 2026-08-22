@@ -1,6 +1,6 @@
 //! TypeScript content-mapper protocol server.
 //!
-//! Speaks protocol v1 as merged upstream in microsoft/typescript-go#4712:
+//! Speaks the TypeScript content-mapper protocol:
 //! `initialize` negotiates the position encoding, `openProject` and
 //! `closeProject` bracket each TypeScript project's mapper options and
 //! compiler options, and `transform` projects one Vue SFC into virtual
@@ -51,7 +51,7 @@ struct Request {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct InitializeParams {
-    protocol_version: u8,
+    protocol_version: Option<u8>,
     #[allow(dead_code)]
     locale: Option<CompactString>,
     position_encodings: Vec<CompactString>,
@@ -89,10 +89,13 @@ fn serve<R: BufRead, W: Write>(reader: &mut R, writer: &mut W) -> io::Result<()>
                         continue;
                     }
                 };
-                if params.protocol_version != PROTOCOL_VERSION {
+                if params
+                    .protocol_version
+                    .is_some_and(|version| version != PROTOCOL_VERSION)
+                {
                     let message = cstr!(
                         "Unsupported protocol version {} (expected {PROTOCOL_VERSION})",
-                        params.protocol_version
+                        params.protocol_version.unwrap_or_default()
                     );
                     write_error(writer, id, -32602, &message)?;
                     continue;
@@ -112,15 +115,14 @@ fn serve<R: BufRead, W: Write>(reader: &mut R, writer: &mut W) -> io::Result<()>
                 }
 
                 initialized = true;
-                write_result(
-                    writer,
-                    id,
-                    json!({
-                        "protocolVersion": PROTOCOL_VERSION,
-                        "positionEncoding": "utf-8",
-                        "diagnosticSource": "vize",
-                    }),
-                )?;
+                let mut result = json!({
+                    "positionEncoding": "utf-8",
+                    "diagnosticSource": "vize",
+                });
+                if params.protocol_version.is_some() {
+                    result["protocolVersion"] = json!(PROTOCOL_VERSION);
+                }
+                write_result(writer, id, result)?;
             }
             "openProject" | "closeProject" | "transform" if !initialized => {
                 write_error(writer, id, -32002, "Content mapper is not initialized")?;

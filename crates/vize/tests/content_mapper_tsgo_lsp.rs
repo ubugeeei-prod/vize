@@ -5,9 +5,12 @@ use std::time::Duration;
 
 use corsa_lsp::{LspClient, LspSpawnConfig, VirtualDocument, jsonrpc::InboundEvent};
 use lsp_types::{FileChangeType, Uri};
-use serde_json::{Value, json};
+use serde_json::json;
 
 mod content_mapper_lsp_support;
+use content_mapper_lsp_support::raw_requests::{
+    RawInitialize, RawInitialized, RawSetContentMapperContributions, RawSignatureHelp,
+};
 use content_mapper_lsp_support::{
     EditorResponder, assert_component_completions, assert_component_members,
     assert_component_navigation, assert_no_generated_uri_or_zero_range, completion,
@@ -24,34 +27,6 @@ impl Drop for StopOnDrop<'_> {
     fn drop(&mut self) {
         self.0.store(true, Ordering::Relaxed);
     }
-}
-
-struct RawInitialize;
-struct RawSetContentMapperContributions;
-struct RawSignatureHelp;
-
-macro_rules! raw_request {
-    ($request:ty, $method:literal) => {
-        impl lsp_types::request::Request for $request {
-            type Params = Value;
-            type Result = Value;
-            const METHOD: &'static str = $method;
-        }
-    };
-}
-
-raw_request!(RawInitialize, "initialize");
-raw_request!(
-    RawSetContentMapperContributions,
-    "custom/setContentMapperContributions"
-);
-raw_request!(RawSignatureHelp, "textDocument/signatureHelp");
-
-struct RawInitialized;
-
-impl lsp_types::notification::Notification for RawInitialized {
-    type Params = Value;
-    const METHOD: &'static str = "initialized";
 }
 
 #[test]
@@ -127,7 +102,18 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
 
             let contributed = client
                 .request::<RawSetContentMapperContributions>(json!({
-                    "contributions": [{ "contributorId": "vize", "extensions": [".vue"] }],
+                    "contributions": [{
+                        "contributorId": "vize",
+                        "extensions": [".vue"],
+                        "inferredProjectContribution": {
+                            "options": {},
+                            "manifest": {
+                                "name": "vize",
+                                "exec": [env!("CARGO_BIN_EXE_vize"), "content-mapper"],
+                                "compilerOptions": ["noUnusedLocals"]
+                            }
+                        }
+                    }],
                     "openDocuments": [{ "uri": child_uri }, { "uri": app_uri }]
                 }))
                 .await

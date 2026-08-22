@@ -42,7 +42,8 @@ pub use type_checker::{
     DeclarationOutput, IncrementalCheckMetrics, TypeCheckResult, TypeChecker,
 };
 pub use virtual_project::{
-    BatchTopologyMetrics, CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperDiagnostic,
+    BatchTopologyMetrics, CONTENT_MAPPER_GENERATED_DIAGNOSTIC_CODE,
+    CONTENT_MAPPER_SFC_PARSE_ERROR_CODE, CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperDiagnostic,
     ContentMapperDiagnosticDirective, ContentMapperDiagnosticDirectives, ContentMapperSemanticLink,
     ContentMapperSpan, ContentMapperTransform, ContentMapperTransformOptions,
     ContentMapperUnusedExpectDiagnostic, OriginalPosition, PACKAGE_REACHABILITY_BUDGET_REVISION,

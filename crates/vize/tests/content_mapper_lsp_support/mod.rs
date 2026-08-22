@@ -9,6 +9,7 @@ use vize_carton::String as CompactString;
 mod leak_assertions;
 #[allow(dead_code)]
 mod navigation;
+pub mod raw_requests;
 mod responder;
 pub use leak_assertions::{assert_no_generated_uri, assert_no_generated_uri_or_zero_range};
 #[allow(unused_imports)]

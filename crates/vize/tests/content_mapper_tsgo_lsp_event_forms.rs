@@ -151,7 +151,18 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
 
             let contributed = client
                 .request::<RawSetContentMapperContributions>(json!({
-                    "contributions": [{ "contributorId": "vize", "extensions": [".vue"] }],
+                    "contributions": [{
+                        "contributorId": "vize",
+                        "extensions": [".vue"],
+                        "inferredProjectContribution": {
+                            "options": {},
+                            "manifest": {
+                                "name": "vize",
+                                "exec": [env!("CARGO_BIN_EXE_vize"), "content-mapper"],
+                                "compilerOptions": ["noUnusedLocals"]
+                            }
+                        }
+                    }],
                     "openDocuments": cases.iter().map(|case| json!({ "uri": case.0 })).collect::<Vec<_>>()
                 }))
                 .await
