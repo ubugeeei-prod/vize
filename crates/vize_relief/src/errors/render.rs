@@ -68,14 +68,15 @@ struct LocationWithSource<'a> {
 
 impl fmt::Debug for LocationWithSource<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let line_index = LineIndex::new(self.source);
         f.debug_struct("SourceLocation")
             .field(
                 "start",
-                &RenderedPosition::new(self.loc.span.start, self.source),
+                &RenderedPosition::new(self.loc.span.start, &line_index),
             )
             .field(
                 "end",
-                &RenderedPosition::new(self.loc.span.end, self.source),
+                &RenderedPosition::new(self.loc.span.end, &line_index),
             )
             .field("source", &self.loc.span.slice(self.source))
             .finish()
@@ -89,8 +90,8 @@ struct RenderedPosition {
 }
 
 impl RenderedPosition {
-    fn new(offset: u32, source: &str) -> Self {
-        let (line, column) = LineIndex::new(source).line_col(offset as usize);
+    fn new(offset: u32, line_index: &LineIndex<'_>) -> Self {
+        let (line, column) = line_index.line_col(offset as usize);
         Self {
             offset,
             line: line + 1,
@@ -141,21 +142,21 @@ mod tests {
 
     #[test]
     fn debug_prints_real_multiline_positions() {
-        let loc = SourceLocation::new(10, 14);
+        let loc = SourceLocation::new(14, 18);
         let error =
             CompilerError::with_message(ErrorCode::InvalidExpression, "bad expression", Some(loc));
         let rendered = format!(
             "{:?}",
-            CompilerErrorWithSource::new(&error, "<div>\n  {{ bad }}\n</div>")
+            CompilerErrorWithSource::new(&error, "root\n  😀{{ éx }}\n</div>")
         );
         assert_eq!(
             rendered,
             "CompilerError { code: InvalidExpression, \
              message: \"bad expression\", \
              loc: Some(SourceLocation { \
-             start: Position { offset: 10, line: 2, column: 5 }, \
-             end: Position { offset: 14, line: 2, column: 9 }, \
-             source: \" bad\" }) }"
+             start: Position { offset: 14, line: 2, column: 8 }, \
+             end: Position { offset: 18, line: 2, column: 11 }, \
+             source: \"éx \" }) }"
         );
     }
 
