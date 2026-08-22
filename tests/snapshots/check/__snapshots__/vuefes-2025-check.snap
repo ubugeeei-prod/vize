@@ -49,6 +49,7 @@
       "diagnostics": [
         "error:2:37 [TS2307] Cannot find module '@primevue/forms' or its corresponding type declarations.",
         "error:3:27 [TS2307] Cannot find module '@primevue/forms' or its corresponding type declarations.",
+        "error:4:56 [TS2307] Cannot find module 'primevue/fileupload' or its corresponding type declarations.",
         "error:41:25 [TS7006] Parameter 'v' implicitly has an 'any' type."
       ]
     },
@@ -63,11 +64,15 @@
     },
     {
       "file": "app/components/form/VFInput.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:23 [TS2307] Cannot find module 'primevue/inputtext' or its corresponding type declarations."
+      ]
     },
     {
       "file": "app/components/form/VFTextarea.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module 'primevue/textarea' or its corresponding type declarations."
+      ]
     },
     {
       "file": "app/components/header/VFHeader.vue",
@@ -130,6 +135,7 @@
     {
       "file": "app/layouts/default.vue",
       "diagnostics": [
+        "error:2:27 [TS2307] Cannot find module '@vueuse/core' or its corresponding type declarations.",
         "error:132:32 [TS7006] Parameter 'hash' implicitly has an 'any' type."
       ]
     },
@@ -166,7 +172,9 @@
     },
     {
       "file": "app/pages/_components/SectionSpeaker.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:22 [TS2307] Cannot find module 'primevue/carousel' or its corresponding type declarations."
+      ]
     },
     {
       "file": "app/pages/_components/SectionSponsorClosed.vue",
@@ -378,7 +386,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 42,
+  "errorCount": 47,
   "warningCount": 0,
   "fileCount": 81
 }

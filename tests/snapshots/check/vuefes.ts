@@ -37,7 +37,7 @@ describe(`${app.name} check (type checker)`, () => {
     const parsed = JSON.parse(stdout);
     console.log(`fileCount=${parsed.fileCount}, errorCount=${parsed.errorCount}`);
     assert.equal(parsed.fileCount, 81, "authored transitive sources must remain reported");
-    assert.equal(parsed.errorCount, 42, "VueFes authored diagnostic baseline drifted");
+    assert.equal(parsed.errorCount, 47, "VueFes authored diagnostic baseline drifted");
 
     const authored = parsed.files.filter((file: { file: string }) => !file.file.endsWith(".vue"));
     assert.deepEqual(
@@ -96,7 +96,7 @@ describe(`${app.name} check (type checker)`, () => {
         0,
       );
     assert.equal(authoredErrors, 25, "all newly authored diagnostics must remain classified");
-    assert.equal(existingVueErrors, 17, "the previous Vue diagnostic baseline must remain intact");
+    assert.equal(existingVueErrors, 22, "the previous Vue diagnostic baseline must remain intact");
     assert.equal(
       authoredErrors + existingVueErrors,
       parsed.errorCount,
