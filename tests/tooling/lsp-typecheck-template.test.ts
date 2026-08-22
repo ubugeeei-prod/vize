@@ -129,6 +129,120 @@ const button = document.createElement("button")
   }
 });
 
+test("vize lsp publishes authored script setup diagnostics without template usage", async (t) => {
+  const corsaPath = requireTypecheckDependency(
+    t,
+    resolveTsgoBinary(),
+    "tsgo binary for authored script diagnostics",
+    "tsgo binary not found; skipping LSP typecheck test",
+  );
+  if (corsaPath == null) return;
+
+  const testRootDir = path.join(testOutputRoot, "lsp-typecheck-script-setup");
+  fs.mkdirSync(testRootDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
+  const session = new LspSession();
+
+  try {
+    fs.mkdirSync(path.join(workspaceDir, "src"), { recursive: true });
+    const vuePackage = resolveVuePackage();
+    if (vuePackage == null) {
+      writeVueShim(workspaceDir);
+    } else {
+      linkVuePackage(workspaceDir, vuePackage);
+    }
+    fs.writeFileSync(
+      path.join(workspaceDir, "vize.config.json"),
+      JSON.stringify(
+        {
+          lsp: {
+            lint: false,
+            typecheck: true,
+          },
+          typeChecker: {
+            corsaPath,
+          },
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+    fs.writeFileSync(
+      path.join(workspaceDir, "tsconfig.json"),
+      JSON.stringify(
+        {
+          compilerOptions: {
+            module: "ESNext",
+            moduleResolution: "bundler",
+            noEmit: true,
+            strict: true,
+            target: "ES2022",
+          },
+          include: ["src/**/*"],
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+    await session.initialize(workspaceDir, {
+      editor: true,
+      lint: false,
+      typecheck: true,
+    });
+
+    const source = `<script setup lang="ts">
+const a: string = 1
+</script>
+
+<template>
+  <div />
+</template>
+`;
+    const filePath = path.join(workspaceDir, "src/App.vue");
+    const uri = pathToFileURL(filePath).href;
+    fs.writeFileSync(filePath, source, "utf8");
+
+    session.notify("textDocument/didOpen", {
+      textDocument: { uri, languageId: "vue", version: 1, text: source },
+    });
+
+    const publish = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) =>
+        isDiagnosticsForUri(params, uri) &&
+        params.diagnostics.some((diagnostic) =>
+          diagnostic.message?.includes("Type 'number' is not assignable to type 'string'"),
+        ),
+    )) as PublishDiagnosticsParams;
+    const assignmentOffset = source.indexOf("a: string");
+    assert.notEqual(assignmentOffset, -1);
+    const assignmentStart = offsetToPosition(source, assignmentOffset);
+    assert.deepEqual(
+      publish.diagnostics.filter((diagnostic) =>
+        diagnostic.message?.includes("Type 'number' is not assignable to type 'string'"),
+      ),
+      [
+        {
+          code: 2322,
+          message: "Type 'number' is not assignable to type 'string'.",
+          range: {
+            start: assignmentStart,
+            end: { line: assignmentStart.line, character: assignmentStart.character + "a".length },
+          },
+          severity: 1,
+          source: "vize/types",
+        },
+      ],
+    );
+  } finally {
+    await session.shutdown();
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
+    fs.rmSync(testRootDir, { recursive: true, force: true });
+  }
+});
+
 test("vize lsp publishes and clears exact parent diagnostics after child prop edits", async (t) => {
   const corsaPath = requireTypecheckDependency(
     t,
@@ -274,10 +388,11 @@ import Child from './Child.vue'
 
 function resolveTsgoBinary(): string | undefined {
   const candidates = [
+    process.env.CORSA_BIN,
     path.join(root, "../corsa-bind/.cache/tsgo"),
     path.join(root, "node_modules/.bin/tsgo"),
     path.join(root, "tests/node_modules/.bin/tsgo"),
-  ];
+  ].filter((candidate): candidate is string => candidate != null && candidate.length > 0);
   return candidates.find((candidate) => fs.existsSync(candidate));
 }
 

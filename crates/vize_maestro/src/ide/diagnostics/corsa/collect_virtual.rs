@@ -4,7 +4,9 @@ use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Posit
 use vize_carton::FxHashSet;
 
 use super::super::{VirtualTsResult, sources};
-use super::mapping::{map_diagnostic_with_source_mappings, source_offset_to_position};
+use super::mapping::{
+    line_character_to_byte_offset, map_diagnostic_with_source_mappings, source_offset_to_position,
+};
 use super::message::rewrite_corsa_message;
 use super::script_fallback::ScriptFallback;
 
@@ -93,6 +95,10 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
                 tracing::debug!("skipping TS7044 inference suggestion");
                 return None;
             }
+            if is_generated_vue_ts_import_extension_diagnostic(virtual_ts, &diag) {
+                tracing::debug!("skipping generated .vue.ts import extension diagnostic");
+                return None;
+            }
 
             let is_unused_warning = diag.message.contains("is declared but")
                 && (diag.message.contains("never read") || diag.message.contains("never used"));
@@ -164,6 +170,13 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
                     return None;
                 };
 
+            if is_authored_vue_import_extension_diagnostic(
+                content, &diag, start_line, start_char, end_line, end_char,
+            ) {
+                tracing::debug!("skipping mapped .vue import extension diagnostic");
+                return None;
+            }
+
             Some(Diagnostic {
                 range: Range {
                     start: Position {
@@ -215,6 +228,65 @@ fn is_inferred_implicit_any_suggestion(
         })
 }
 
+fn is_generated_vue_ts_import_extension_diagnostic(
+    virtual_ts: &str,
+    diagnostic: &vize_canon::corsa_bridge::LspDiagnostic,
+) -> bool {
+    if !is_ts5097_import_extension_diagnostic(diagnostic) {
+        return false;
+    }
+
+    let Some(start) = line_character_to_byte_offset(
+        virtual_ts,
+        diagnostic.range.start.line,
+        diagnostic.range.start.character,
+    ) else {
+        return false;
+    };
+    let Some(end) = line_character_to_byte_offset(
+        virtual_ts,
+        diagnostic.range.end.line,
+        diagnostic.range.end.character,
+    ) else {
+        return false;
+    };
+    virtual_ts
+        .get(start..end)
+        .is_some_and(|range| range.contains(".vue.ts") || range.contains(".vue.tsx"))
+}
+
+fn is_authored_vue_import_extension_diagnostic(
+    content: &str,
+    diagnostic: &vize_canon::corsa_bridge::LspDiagnostic,
+    start_line: u32,
+    start_character: u32,
+    end_line: u32,
+    end_character: u32,
+) -> bool {
+    if !is_ts5097_import_extension_diagnostic(diagnostic) {
+        return false;
+    }
+    let Some(start) = line_character_to_byte_offset(content, start_line, start_character) else {
+        return false;
+    };
+    let Some(end) = line_character_to_byte_offset(content, end_line, end_character) else {
+        return false;
+    };
+    content
+        .get(start..end)
+        .is_some_and(|range| range.contains(".vue"))
+}
+
+fn is_ts5097_import_extension_diagnostic(
+    diagnostic: &vize_canon::corsa_bridge::LspDiagnostic,
+) -> bool {
+    diagnostic.code.as_ref().is_some_and(|code| match code {
+        serde_json::Value::Number(number) => number.as_i64() == Some(5097),
+        serde_json::Value::String(code) => matches!(code.as_str(), "5097" | "TS5097"),
+        _ => false,
+    }) && diagnostic.message.contains("allowImportingTsExtensions")
+}
+
 pub(in crate::ide) fn corsa_diagnostic_code(code: serde_json::Value) -> NumberOrString {
     match code {
         serde_json::Value::Number(number) => number.as_i64().map_or_else(
@@ -234,7 +306,9 @@ pub(in crate::ide) fn corsa_diagnostic_code(code: serde_json::Value) -> NumberOr
 #[cfg(test)]
 mod tests {
     use super::{
-        corsa_diagnostic_code, deduplicate_diagnostics, is_inferred_implicit_any_suggestion,
+        corsa_diagnostic_code, deduplicate_diagnostics,
+        is_authored_vue_import_extension_diagnostic,
+        is_generated_vue_ts_import_extension_diagnostic, is_inferred_implicit_any_suggestion,
     };
     use tower_lsp::lsp_types::{Diagnostic, NumberOrString, Position, Range};
     use vize_canon::corsa_bridge::{LspDiagnostic, LspPosition, LspRange};
@@ -290,6 +364,96 @@ mod tests {
         assert!(!is_inferred_implicit_any_suggestion(&diagnostic(
             None, None,
         )));
+    }
+
+    #[test]
+    fn generated_vue_ts_import_extension_diagnostics_are_suppressed() {
+        let virtual_ts = "import Child from './Child.vue.ts';\nimport plain from './plain.ts';\n";
+        let diagnostic = |start, end| {
+            LspDiagnostic {
+                range: LspRange {
+                    start: LspPosition {
+                        line: 0,
+                        character: start,
+                    },
+                    end: LspPosition {
+                        line: 0,
+                        character: end,
+                    },
+                },
+                severity: Some(1),
+                code: Some(serde_json::json!(5097)),
+                source: Some("ts".into()),
+                message:
+                    "An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled."
+                        .into(),
+                related_information: None,
+            }
+        };
+
+        assert!(is_generated_vue_ts_import_extension_diagnostic(
+            virtual_ts,
+            &diagnostic(18, 34),
+        ));
+
+        let authored_ts_import = LspDiagnostic {
+            range: LspRange {
+                start: LspPosition {
+                    line: 1,
+                    character: 18,
+                },
+                end: LspPosition {
+                    line: 1,
+                    character: 30,
+                },
+            },
+            ..diagnostic(18, 34)
+        };
+        assert!(!is_generated_vue_ts_import_extension_diagnostic(
+            virtual_ts,
+            &authored_ts_import,
+        ));
+    }
+
+    #[test]
+    fn mapped_authored_vue_import_extension_diagnostics_are_suppressed() {
+        let content = "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nimport plain from './plain.ts'\n</script>\n";
+        let diagnostic = LspDiagnostic {
+            range: LspRange {
+                start: LspPosition {
+                    line: 0,
+                    character: 0,
+                },
+                end: LspPosition {
+                    line: 0,
+                    character: 1,
+                },
+            },
+            severity: Some(1),
+            code: Some(serde_json::json!("TS5097")),
+            source: Some("ts".into()),
+            message:
+                "An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled."
+                    .into(),
+            related_information: None,
+        };
+
+        assert!(is_authored_vue_import_extension_diagnostic(
+            content,
+            &diagnostic,
+            1,
+            18,
+            1,
+            31,
+        ));
+        assert!(!is_authored_vue_import_extension_diagnostic(
+            content,
+            &diagnostic,
+            2,
+            18,
+            2,
+            30,
+        ));
     }
 
     #[test]
