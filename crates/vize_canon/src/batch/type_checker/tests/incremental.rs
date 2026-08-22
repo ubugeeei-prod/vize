@@ -71,8 +71,8 @@ const total: number = 1
             session_starts: 1,
             last_session_started: true,
             last_requested_files: 1,
-            last_materialized_entries_considered: 8,
-            last_tree_entries_scanned: 8,
+            last_materialized_entries_considered: 10,
+            last_tree_entries_scanned: 10,
             last_full_rebuild: true,
             ..Default::default()
         },

@@ -2,8 +2,8 @@
  * Regression oracle for #3366: a dependency installed only in a sub-package of
  * a pnpm workspace, checked through a `tsconfig.json` at the workspace root.
  *
- * The canon mirrors checked files under `<project_root>/node_modules/.vize/canon`
- * and Corsa resolves bare specifiers by walking the `node_modules` directories
+ * The canon mirrors checked files under `<project_root>/.vize/canon` and Corsa
+ * resolves bare specifiers by walking the `node_modules` directories
  * on the ancestor chain of the *mirrored* path. That chain used to contain only
  * `<canon>/node_modules` (the Vue/Vite runtime mirror) and then, because Node's
  * algorithm skips `node_modules` path components, `<project_root>/node_modules`.
@@ -94,7 +94,7 @@ function createWorkspace(caseName: string, extraSource: string): string {
   const app = path.join(workspace, "apps/app");
   fs.mkdirSync(path.join(app, "src"), { recursive: true });
   // A real `node_modules` at the root: the canon is written to
-  // `node_modules/.vize/canon`, and reaching that through a link would move the
+  // `.vize/canon`, and reaching that through a link would move the
   // mirrored tree outside the project root.
   fs.mkdirSync(path.join(workspace, "node_modules"), { recursive: true });
 

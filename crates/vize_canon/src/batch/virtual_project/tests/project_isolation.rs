@@ -66,8 +66,18 @@ fn distinct_projects_sharing_node_modules_have_distinct_virtual_roots() {
     let second_materialized = fs::read_to_string(&second_virtual_source).unwrap();
 
     let canonical_storage = fs::canonicalize(&shared_node_modules).unwrap();
-    assert!(first.virtual_root().starts_with(&canonical_storage));
-    assert!(second.virtual_root().starts_with(&canonical_storage));
+    assert!(!first.virtual_root().starts_with(&canonical_storage));
+    assert!(!second.virtual_root().starts_with(&canonical_storage));
+    assert!(
+        first
+            .virtual_root()
+            .starts_with(first_root.join(".vize/canon"))
+    );
+    assert!(
+        second
+            .virtual_root()
+            .starts_with(second_root.join(".vize/canon"))
+    );
     assert_ne!(
         first.virtual_root(),
         second.virtual_root(),

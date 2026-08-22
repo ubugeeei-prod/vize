@@ -153,20 +153,18 @@ mod tests {
         std::fs::create_dir_all(&store).unwrap();
         std::os::unix::fs::symlink(&store, project_root.join("node_modules")).unwrap();
 
-        let physical_virtual_root = crate::batch::project_virtual_root(&project_root);
-        let relative_in_store = physical_virtual_root
-            .strip_prefix(std::fs::canonicalize(&store).unwrap())
-            .unwrap();
-        let through_link_virtual_root = project_root.join("node_modules").join(relative_in_store);
+        let physical_virtual_root = store.join(".vize/canon/projects/project-key");
+        let through_link_virtual_root =
+            project_root.join("node_modules/.vize/canon/projects/project-key");
         write_virtual_file(&through_link_virtual_root, "src/App.vue.ts");
 
         // What the CLI prints from the link target: up out of
         // the physical virtual root to the shared parent, then down the
         // through-link project path.
-        let through_link_root = through_link_virtual_root.strip_prefix(&root).unwrap();
-        let reported = Path::new("../../../../..")
-            .join(through_link_root)
-            .join("src/App.vue.ts");
+        let reported = relative_path(
+            &physical_virtual_root,
+            &through_link_virtual_root.join("src/App.vue.ts"),
+        );
         assert_eq!(
             normalize_cli_path(reported.to_str().unwrap(), &through_link_virtual_root),
             through_link_virtual_root.join("src/App.vue.ts"),
@@ -186,7 +184,8 @@ mod tests {
         std::fs::create_dir_all(project_root.join("types")).unwrap();
         std::fs::write(project_root.join("types/globals.d.ts"), "export {};\n").unwrap();
 
-        let resolved = normalize_cli_path("../../../../../types/globals.d.ts", &virtual_root);
+        let reported = relative_path(&virtual_root, &project_root.join("types/globals.d.ts"));
+        let resolved = normalize_cli_path(reported.to_str().unwrap(), &virtual_root);
         assert!(
             resolved.ends_with("types/globals.d.ts"),
             "unexpected resolved path: {resolved:?}"
@@ -215,5 +214,25 @@ mod tests {
         let path = virtual_root.join(relative);
         std::fs::create_dir_all(path.parent().unwrap()).unwrap();
         std::fs::write(path, "export {};\n").unwrap();
+    }
+
+    fn relative_path(from_dir: &Path, to: &Path) -> PathBuf {
+        let from = normalize_path_lexically(from_dir);
+        let to = normalize_path_lexically(to);
+        let from_components: Vec<_> = from.components().collect();
+        let to_components: Vec<_> = to.components().collect();
+        let common = from_components
+            .iter()
+            .zip(&to_components)
+            .take_while(|(left, right)| left == right)
+            .count();
+        let mut relative = PathBuf::new();
+        for _ in common..from_components.len() {
+            relative.push("..");
+        }
+        for component in &to_components[common..] {
+            relative.push(component.as_os_str());
+        }
+        relative
     }
 }

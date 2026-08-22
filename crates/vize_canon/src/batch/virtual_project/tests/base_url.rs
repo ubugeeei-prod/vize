@@ -55,7 +55,7 @@ fn a_root_base_url_synthesizes_the_wildcard_alias() {
     // SFC modules and out-of-mirror sources alike.
     assert_eq!(
         generated_paths(&case_dir)["*"],
-        serde_json::json!(["./*", "../../../../../*", "./*.vue.ts"])
+        serde_json::json!(["./*", "../../../../*", "./*.vue.ts"])
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -79,18 +79,14 @@ fn a_nested_base_url_anchors_both_wildcard_and_paths_targets() {
     let paths = generated_paths(&case_dir);
     assert_eq!(
         paths["*"],
-        serde_json::json!(["./src/*", "../../../../../src/*", "./src/*.vue.ts"])
+        serde_json::json!(["./src/*", "../../../../src/*", "./src/*.vue.ts"])
     );
     // TypeScript resolves a relative `paths` target against `baseUrl`, so
     // `lib/*` means `src/lib/*` here — anchoring it to the tsconfig directory
     // would silently point the alias one level too high.
     assert_eq!(
         paths["@lib/*"],
-        serde_json::json!([
-            "./src/lib/*",
-            "../../../../../src/lib/*",
-            "./src/lib/*.vue.ts"
-        ])
+        serde_json::json!(["./src/lib/*", "../../../../src/lib/*", "./src/lib/*.vue.ts"])
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -113,7 +109,7 @@ fn a_user_declared_wildcard_is_not_overwritten() {
 
     assert_eq!(
         generated_paths(&case_dir)["*"],
-        serde_json::json!(["./vendor/*", "../../../../../vendor/*", "./vendor/*.vue.ts"])
+        serde_json::json!(["./vendor/*", "../../../../vendor/*", "./vendor/*.vue.ts"])
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -185,13 +181,13 @@ fn an_inherited_base_url_anchors_paths_declared_by_the_extending_config() {
         paths["#shared/*"],
         serde_json::json!([
             "./config/shared/*",
-            "../../../../../config/shared/*",
+            "../../../../config/shared/*",
             "./config/shared/*.vue.ts"
         ])
     );
     assert_eq!(
         paths["*"],
-        serde_json::json!(["./config/*", "../../../../../config/*", "./config/*.vue.ts"])
+        serde_json::json!(["./config/*", "../../../../config/*", "./config/*.vue.ts"])
     );
 
     let _ = fs::remove_dir_all(&case_dir);

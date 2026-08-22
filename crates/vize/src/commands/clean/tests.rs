@@ -1,7 +1,7 @@
 use super::{
-    CleanArgs, CleanScope, current_canon_artifact_paths, force_vize_artifact_paths,
-    managed_vize_artifact_paths, node_modules_vize_artifact_paths, node_modules_vize_dir,
-    project_vize_artifact_paths, project_vize_dir, run,
+    CleanArgs, CleanScope, force_vize_artifact_paths, managed_vize_artifact_paths,
+    node_modules_vize_artifact_paths, node_modules_vize_dir, project_vize_artifact_paths,
+    project_vize_dir, run,
 };
 use std::path::Path;
 
@@ -27,14 +27,14 @@ fn managed_artifact_paths_are_lifecycle_owned_entries() {
             root.join(".vize/reports"),
             root.join(".vize/snapshots"),
             root.join(".vize/tokens"),
+            vize_canon::project_virtual_root(root),
+            vize_canon::project_virtual_lock_paths(root)[0].clone(),
+            vize_canon::project_virtual_lock_paths(root)[1].clone(),
         ]
     );
     assert_eq!(
         node_modules_vize_artifact_paths(root),
         vec![
-            vize_canon::project_virtual_root(root),
-            vize_canon::project_virtual_lock_paths(root)[0].clone(),
-            vize_canon::project_virtual_lock_paths(root)[1].clone(),
             root.join("node_modules/.vize/check-profile"),
             root.join("node_modules/.vize/corsa"),
             root.join("node_modules/.vize/corsa-overlay"),
@@ -63,7 +63,9 @@ fn clean_removes_managed_project_and_node_modules_vize_artifacts() {
     for lock_path in vize_canon::project_virtual_lock_paths(root) {
         std::fs::write(lock_path, "").unwrap();
     }
+    std::fs::create_dir_all(root.join("node_modules/.vize")).unwrap();
     std::fs::write(root.join("node_modules/.vize/lsp.log"), "").unwrap();
+    std::fs::create_dir_all(root.join("node_modules")).unwrap();
     std::fs::write(root.join("node_modules/keep.txt"), "keep").unwrap();
 
     run(CleanArgs {
@@ -107,8 +109,8 @@ fn clean_preserves_unrecognized_entries_without_force() {
 }
 
 #[test]
-fn clean_never_removes_a_foreign_canon_namespace() {
-    for force in [false, true] {
+fn project_clean_preserves_a_foreign_canon_namespace_without_force() {
+    for scope in [CleanScope::All, CleanScope::Project] {
         let dir = tempfile::tempdir().unwrap();
         let root = dir.path();
         let current = vize_canon::project_virtual_root(root);
@@ -124,20 +126,23 @@ fn clean_never_removes_a_foreign_canon_namespace() {
 
         run(CleanArgs {
             root: root.to_path_buf(),
-            scope: CleanScope::NodeModules,
-            force,
+            scope,
+            force: false,
             dry_run: false,
             quiet: true,
         });
-        assert!(!current.exists(), "current key survived force={force}");
+        assert!(!current.exists(), "current key survived scope={scope:?}");
         assert!(
             foreign.join("foreign.ts").is_file(),
-            "force={force} removed state owned by another project"
+            "scope={scope:?} removed state owned by another project"
         );
-        assert!(foreign_lock.is_file(), "force={force} removed foreign lock");
+        assert!(
+            foreign_lock.is_file(),
+            "scope={scope:?} removed foreign lock"
+        );
         assert!(
             foreign_windows_lock.is_file(),
-            "force={force} removed foreign Windows lock"
+            "scope={scope:?} removed foreign Windows lock"
         );
     }
 }
@@ -147,7 +152,7 @@ fn force_node_modules_paths_treat_a_missing_vize_directory_as_empty() {
     let dir = tempfile::tempdir().unwrap();
     assert_eq!(
         force_vize_artifact_paths(dir.path(), CleanScope::NodeModules).unwrap(),
-        current_canon_artifact_paths(dir.path())
+        Vec::<std::path::PathBuf>::new()
     );
 }
 
@@ -189,17 +194,8 @@ fn force_clean_removes_unrecognized_node_modules_entries() {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
     let unknown_node_modules_artifact = root.join("node_modules/.vize/custom/keep.txt");
-    let current = vize_canon::project_virtual_root(root);
-    let foreign = current.parent().unwrap().join("foreign-project-key");
-    let foreign_lock = foreign.with_extension("lock");
-    let foreign_windows_lock = foreign.with_extension("materialize.lock");
     std::fs::create_dir_all(unknown_node_modules_artifact.parent().unwrap()).unwrap();
     std::fs::write(&unknown_node_modules_artifact, "keep").unwrap();
-    std::fs::create_dir_all(&current).unwrap();
-    std::fs::create_dir_all(&foreign).unwrap();
-    std::fs::write(foreign.join("foreign.ts"), "foreign").unwrap();
-    std::fs::write(&foreign_lock, "foreign").unwrap();
-    std::fs::write(&foreign_windows_lock, "foreign").unwrap();
 
     run(CleanArgs {
         root: root.to_path_buf(),
@@ -209,8 +205,4 @@ fn force_clean_removes_unrecognized_node_modules_entries() {
         quiet: true,
     });
     assert!(!unknown_node_modules_artifact.exists());
-    assert!(!current.exists());
-    assert!(foreign.join("foreign.ts").is_file());
-    assert!(foreign_lock.is_file());
-    assert!(foreign_windows_lock.is_file());
 }

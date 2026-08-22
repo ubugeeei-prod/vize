@@ -8,6 +8,7 @@ mod base_url;
 mod declaration_root_dir;
 mod graphql_generated;
 mod macro_scope;
+mod materialization_namespace;
 mod module_augmentations;
 mod project_isolation;
 mod ref_arity;
@@ -26,7 +27,6 @@ fn unique_case_dir(name: &str) -> PathBuf {
         .join("tests")
         .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
 }
-
 fn assert_ts_parses(source: &str) {
     let allocator = oxc_allocator::Allocator::default();
     let parsed = oxc_parser::Parser::new(&allocator, source, oxc_span::SourceType::ts()).parse();
@@ -879,7 +879,7 @@ fn materialized_tsconfig_preserves_original_path_option_bases() {
     // source tree as fallback, so `types: [...]` entries keep resolving.
     assert_eq!(
         compiler_options["typeRoots"],
-        serde_json::json!(["./types", "../../../../../types"])
+        serde_json::json!(["./types", "../../../../types"])
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -924,11 +924,11 @@ fn materialized_tsconfig_reanchors_paths_into_virtual_mirror() {
     // `.vue.ts` mirror candidate for extensionless SFC aliases (#3300).
     assert_eq!(
         paths["@/*"],
-        serde_json::json!(["./src/*", "../../../../../src/*", "./src/*.vue.ts"])
+        serde_json::json!(["./src/*", "../../../../src/*", "./src/*.vue.ts"])
     );
     assert_eq!(
         paths["#shared"],
-        serde_json::json!(["./shared/index.ts", "../../../../../shared/index.ts"])
+        serde_json::json!(["./shared/index.ts", "../../../../shared/index.ts"])
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -975,10 +975,10 @@ fn materialized_tsconfig_reanchors_extended_paths_from_declaring_config_dir() {
         serde_json::from_str(&fs::read_to_string(tsconfig_path).unwrap()).unwrap();
     let paths = value["compilerOptions"]["paths"].as_object().unwrap();
 
-    let app = ["./app/*", "../../../../../app/*", "./app/*.vue.ts"];
+    let app = ["./app/*", "../../../../app/*", "./app/*.vue.ts"];
     let imports = [
         "./.nuxt/imports",
-        "../../../../../.nuxt/imports",
+        "../../../../.nuxt/imports",
         "./.nuxt/imports.vue.ts",
     ];
     assert_eq!(paths["~/*"], serde_json::json!(app));

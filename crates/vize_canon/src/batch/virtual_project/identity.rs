@@ -4,8 +4,11 @@
 //! manager stores, fixture symlinks, and CI caches can make distinct project
 //! roots share one physical `node_modules` tree. Every mutable Canon artifact
 //! therefore lives below a namespace derived only from the canonical project
-//! root.
+//! root, and outside `node_modules` and the working tree when Git storage is
+//! available so a typecheck cannot change project detection performed by later
+//! commands.
 
+use std::fs;
 use std::path::{Path, PathBuf};
 
 use sha2::{Digest, Sha256};
@@ -54,15 +57,37 @@ pub(super) fn project_virtual_root_with_identity(
 }
 
 fn project_virtual_root_for_key(project_root: &Path, project_key: &vize_carton::String) -> PathBuf {
-    // Corsa compares workspace and document paths by their filesystem
-    // identity. Resolve an existing dependency-store symlink once here so the
-    // workspace root and every URI share one spelling; the project key still
-    // comes exclusively from the canonical source root above.
-    vize_carton::path::canonicalize_non_verbatim(&project_root.join("node_modules"))
-        .join(".vize")
+    project_canon_storage_root(project_root)
         .join("canon")
         .join(PROJECTS_DIR)
         .join(project_key.as_str())
+}
+
+fn project_canon_storage_root(project_root: &Path) -> PathBuf {
+    git_storage_root(project_root).unwrap_or_else(|| project_root.join(".vize"))
+}
+
+fn git_storage_root(project_root: &Path) -> Option<PathBuf> {
+    let dot_git = project_root.join(".git");
+    let metadata = fs::metadata(&dot_git).ok()?;
+    if metadata.is_dir() {
+        return Some(dot_git.join("vize"));
+    }
+    if metadata.is_file() {
+        let gitdir = parse_gitdir_file(&fs::read_to_string(&dot_git).ok()?)?;
+        let gitdir = if gitdir.is_absolute() {
+            gitdir
+        } else {
+            project_root.join(gitdir)
+        };
+        return Some(vize_carton::path::canonicalize_non_verbatim(&gitdir).join("vize"));
+    }
+    None
+}
+
+fn parse_gitdir_file(contents: &str) -> Option<PathBuf> {
+    let value = contents.trim().strip_prefix("gitdir:")?.trim();
+    (!value.is_empty()).then(|| PathBuf::from(value))
 }
 
 /// Lock files owned by the current project namespace.
@@ -134,6 +159,47 @@ mod tests {
         let key = first.file_name().unwrap().to_str().unwrap();
         assert_eq!(key.len(), 64);
         assert!(key.bytes().all(|byte| byte.is_ascii_hexdigit()));
+    }
+
+    #[test]
+    fn batch_namespace_stays_outside_node_modules() {
+        let root = project_virtual_root(Path::new("/workspace/project"));
+        assert!(
+            root.components()
+                .all(|component| component.as_os_str() != "node_modules")
+        );
+        assert!(root.starts_with(Path::new("/workspace/project/.vize/canon")));
+    }
+
+    #[test]
+    fn git_checkout_namespace_stays_outside_the_working_tree() {
+        let project = tempfile::tempdir().unwrap();
+        std::fs::create_dir(project.path().join(".git")).unwrap();
+
+        let root = project_virtual_root(project.path());
+        let expected =
+            vize_carton::path::canonicalize_non_verbatim(project.path()).join(".git/vize/canon");
+
+        assert!(root.starts_with(expected));
+        assert!(
+            root.components()
+                .all(|component| component.as_os_str() != "node_modules")
+        );
+    }
+
+    #[test]
+    fn git_worktree_namespace_uses_the_resolved_gitdir() {
+        let holder = tempfile::tempdir().unwrap();
+        let project = holder.path().join("worktree");
+        let gitdir = holder.path().join("git/worktrees/worktree");
+        std::fs::create_dir_all(&project).unwrap();
+        std::fs::create_dir_all(&gitdir).unwrap();
+        std::fs::write(project.join(".git"), "gitdir: ../git/worktrees/worktree\n").unwrap();
+
+        let root = project_virtual_root(&project);
+        let expected = vize_carton::path::canonicalize_non_verbatim(&gitdir).join("vize/canon");
+
+        assert!(root.starts_with(expected));
     }
 
     #[test]

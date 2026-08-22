@@ -2,7 +2,7 @@
 //!
 //! This module provides batch type checking via `corsa-bind`.
 //! It transforms Vue SFC files into pure TypeScript, materializes a virtual
-//! project in a project-keyed namespace under `node_modules/.vize/canon/`, and
+//! project in a project-keyed namespace under `.vize/canon/`, and
 //! requests diagnostics from
 //! Corsa's LSP instead of parsing CLI text output.
 

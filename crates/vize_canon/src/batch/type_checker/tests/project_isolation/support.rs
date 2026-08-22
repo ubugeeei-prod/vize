@@ -107,7 +107,16 @@ pub(super) fn assert_canonical_virtual_paths(
 ) {
     let virtual_root = crate::batch::project_virtual_root(project_root);
     let canonical_storage = std::fs::canonicalize(shared_node_modules).unwrap();
-    assert!(virtual_root.starts_with(&canonical_storage));
+    assert!(
+        !virtual_root.starts_with(&canonical_storage),
+        "mutable project storage must not live in the shared dependency tree"
+    );
+    assert!(
+        virtual_root
+            .components()
+            .all(|component| component.as_os_str() != "node_modules"),
+        "mutable project storage must stay outside node_modules"
+    );
     assert!(
         checker
             .virtual_files()
