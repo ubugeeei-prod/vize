@@ -35,6 +35,8 @@ const assertionOnlyCheckTests = {
     "UI library patch oracle asserts global component slot types across editor revisions",
   "javascript-sfc-checkjs-oracle":
     "checkJs oracle asserts exact per-case diagnostics and vue-tsc agreement on JavaScript SFCs",
+  "jsx-intrinsic-globals-oracle":
+    "JSX oracle builds a throwaway workspace and asserts exact intrinsic-global cleanliness plus strict component prop diagnostics",
   "nuxt-ui-ambient-oracle":
     "framework patch oracle asserts generated Nuxt ambient and #imports virtual-module types across editor revisions",
   "nuxt-no-tsconfig-oracle":
