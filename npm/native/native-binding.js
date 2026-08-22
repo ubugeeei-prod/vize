@@ -5,10 +5,21 @@ const { loadTarget, nativeTargets } = require("./native-targets");
 
 const loadErrors = [];
 
+function isMissingModuleForSpecifier(error, specifier) {
+  return (
+    error?.code === "MODULE_NOT_FOUND" &&
+    typeof error.message === "string" &&
+    error.message.includes(`'${specifier}'`)
+  );
+}
+
 function tryRequire(specifier) {
   try {
     return require(specifier);
   } catch (error) {
+    if (isMissingModuleForSpecifier(error, specifier)) {
+      error.vizeMissingNativeSpecifier = true;
+    }
     loadErrors.push(error);
     return null;
   }
@@ -70,6 +81,16 @@ function loadWasiBinding() {
 function buildLoadError() {
   if (loadErrors.length === 0) {
     return new Error("Failed to load native binding");
+  }
+
+  const loadFailure = loadErrors.find((error) => !error?.vizeMissingNativeSpecifier);
+  if (loadFailure) {
+    return new Error(`Failed to load native binding: ${loadFailure.message}`, {
+      cause: loadErrors.reduce((error, current) => {
+        current.cause = error;
+        return current;
+      }),
+    });
   }
 
   return new Error(

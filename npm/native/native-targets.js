@@ -7,6 +7,16 @@ const { execFileSync } = require("node:child_process");
 const binaryName = "vize-vitrine";
 const packageVersion = require("./package.json").version;
 
+function markMissingModuleForSpecifier(error, specifier) {
+  if (
+    error?.code === "MODULE_NOT_FOUND" &&
+    typeof error.message === "string" &&
+    error.message.includes(`'${specifier}'`)
+  ) {
+    error.vizeMissingNativeSpecifier = true;
+  }
+}
+
 function isFileMusl(file) {
   return file.includes("libc.musl-") || file.includes("ld-musl-");
 }
@@ -113,15 +123,18 @@ function requireTargetPackage(target) {
 }
 
 function loadTarget(target, loadErrors) {
+  const localBinding = `./${binaryName}.${target}.node`;
   try {
-    return require(`./${binaryName}.${target}.node`);
+    return require(localBinding);
   } catch (error) {
+    markMissingModuleForSpecifier(error, localBinding);
     loadErrors.push(error);
   }
 
   try {
     return requireTargetPackage(target);
   } catch (error) {
+    markMissingModuleForSpecifier(error, `@vizejs/native-${target}`);
     loadErrors.push(error);
   }
 
