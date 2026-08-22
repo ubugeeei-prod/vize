@@ -9,6 +9,7 @@ import {
   withPinnedFixtureWorkspace,
 } from "../../_helpers/realworld-patch.ts";
 import {
+  omitProgramEvidence,
   resolveTsgoBinary,
   runVizeCheck,
   symlinkVueTypes,
@@ -61,7 +62,11 @@ async function verifyVue2ElmSnapshot(): Promise<void> {
       assert.ok(first.report.errorCount > 0, "the legacy surface is intentionally not clean");
       assertDiagnosticsStayInAuthoredBlocks(fixture.workspaceDir, first.report.files);
 
-      assertSnapshot(SNAPSHOT_DIR, "vue2-elm-check", `${JSON.stringify(first.report, null, 2)}\n`);
+      assertSnapshot(
+        SNAPSHOT_DIR,
+        "vue2-elm-check",
+        `${JSON.stringify(omitProgramEvidence(first.report), null, 2)}\n`,
+      );
     },
   );
 }

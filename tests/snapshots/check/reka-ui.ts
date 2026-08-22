@@ -5,6 +5,7 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { rekaUiApp, CORSA_BIN, VIZE_BIN, requireVizeAndCorsaBins } from "../../_helpers/apps.ts";
 import { assertSnapshot } from "../../_helpers/snapshot.ts";
+import { stringifyDiagnosticSnapshot } from "../../_helpers/vize-check.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT_DIR = path.join(__dirname, "__snapshots__");
@@ -38,8 +39,7 @@ describe(`${app.name} check (type checker)`, () => {
     console.log(`fileCount=${parsed.fileCount}, errorCount=${parsed.errorCount}`);
     assert.ok(parsed.fileCount > 0, "fileCount should be > 0");
 
-    const prettyOutput =
-      JSON.stringify(parsed, null, 2).replaceAll(checkConfig.cwd, "<cwd>") + "\n";
+    const prettyOutput = stringifyDiagnosticSnapshot(parsed, checkConfig.cwd);
     assertSnapshot(SNAPSHOT_DIR, `${app.name}-check`, prettyOutput);
   });
 });

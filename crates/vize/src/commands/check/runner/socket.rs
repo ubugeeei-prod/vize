@@ -16,7 +16,6 @@ use crate::{
     },
     profile_support,
 };
-
 use super::{
     collect::collect_vue_files, display_path, output::save_virtual_ts_targets_or_exit,
     text_style::TextStyle,
@@ -188,7 +187,6 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
             args.quiet,
         );
     }
-
     let render_start = Instant::now();
     if args.format == "json" {
         let cwd = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));

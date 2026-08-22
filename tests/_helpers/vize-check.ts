@@ -21,6 +21,11 @@ export type VizeCheckJson = {
   warningCount: number;
 };
 
+export function stringifyDiagnosticSnapshot(parsed: VizeCheckJson, cwd: string): string {
+  const { programs: _programs, ...diagnosticReport } = parsed;
+  return JSON.stringify(diagnosticReport, null, 2).replaceAll(cwd, "<cwd>") + "\n";
+}
+
 type RunVizeCheckJsonOptions = {
   allowExitCodes?: readonly number[];
   corsaPath?: string;

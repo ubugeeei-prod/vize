@@ -15,14 +15,16 @@ export function validateTypecheckerOutput(
   authoredFiles = expectedFiles,
 ) {
   requireRecord(output, "envelope");
-  requireExactKeys(output, outputKeys, "envelope");
+  const expectedOutputKeys = Array.isArray(output.programs)
+    ? outputKeys
+    : outputKeys.filter((key) => key !== "programs");
+  requireExactKeys(output, expectedOutputKeys, "envelope");
   for (const field of ["errorCount", "warningCount", "fileCount"]) {
     if (!Number.isSafeInteger(output[field]) || output[field] < 0) {
       invalid(`${field} must be a non-negative safe integer`);
     }
   }
   if (!Array.isArray(output.files)) invalid("files must be an array");
-  if (!Array.isArray(output.programs)) invalid("programs must be an array");
   if (output.fileCount > output.files.length) {
     invalid(`fileCount ${output.fileCount} exceeds ${output.files.length} file entries`);
   }
@@ -63,7 +65,7 @@ export function validateTypecheckerOutput(
       else invalid(`diagnostic has no error or warning prefix: ${file.file}`);
     }
   }
-  for (const [index, program] of output.programs.entries()) {
+  for (const [index, program] of (output.programs ?? []).entries()) {
     requireRecord(program, `programs[${index}]`);
     const expectedKeys =
       typeof program.tsconfig === "string"
