@@ -122,6 +122,16 @@ fn extract_identifier_refs_fast_with_base(expr: &str, base_offset: u32) -> Vec<I
             }
         }
 
+        // Numeric literals may contain ASCII identifier characters in exponents,
+        // radices, separators, and BigInt suffixes (`1e22`, `0xFF`, `123n`).
+        // Treating the alphabetic tail as a standalone identifier produces
+        // undefined-reference false positives, so consume the whole literal
+        // before looking for identifiers.
+        if c.is_ascii_digit() || (c == b'.' && i + 1 < len && bytes[i + 1].is_ascii_digit()) {
+            i = consume_number_like(bytes, i);
+            continue;
+        }
+
         // Start of identifier
         if c.is_ascii_alphabetic() || c == b'_' || c == b'$' {
             let start = i;
@@ -166,6 +176,19 @@ fn extract_identifier_refs_fast_with_base(expr: &str, base_offset: u32) -> Vec<I
     }
 
     identifiers
+}
+
+fn consume_number_like(bytes: &[u8], start: usize) -> usize {
+    let mut i = start + 1;
+    while i < bytes.len() {
+        let c = bytes[i];
+        if c.is_ascii_alphanumeric() || c == b'_' || c == b'.' {
+            i += 1;
+        } else {
+            break;
+        }
+    }
+    i
 }
 
 fn is_spread_before_identifier(bytes: &[u8], dot_index: usize) -> bool {

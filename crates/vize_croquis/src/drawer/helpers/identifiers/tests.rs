@@ -135,6 +135,22 @@ fn test_extract_identifiers_ignores_regex_literals() {
 }
 
 #[test]
+fn test_extract_identifiers_ignores_numeric_literal_tails() {
+    fn to_pairs(ids: Vec<IdentifierRef>) -> Vec<(CompactString, u32)> {
+        ids.into_iter()
+            .map(|identifier| (identifier.name, identifier.offset))
+            .collect()
+    }
+
+    let expr = "1e22 + 0xFF + 0b1010 + 123n + .5e-2 + count";
+    assert_eq!(extract_identifiers_oxc(expr), vec!["count"]);
+    assert_eq!(
+        to_pairs(extract_identifier_refs_oxc(expr)),
+        vec![("count".into(), expr.find("count").unwrap() as u32)]
+    );
+}
+
+#[test]
 fn test_extract_identifier_refs_preserve_root_offsets() {
     fn to_pairs(ids: Vec<IdentifierRef>) -> Vec<(CompactString, u32)> {
         ids.into_iter()
