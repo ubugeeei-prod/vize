@@ -50,7 +50,40 @@ pub(crate) fn resolve_import_specifier(uri: &Url, specifier: &str) -> Option<Pat
             return Some(path);
         }
     }
+    if let Some(path) = resolve_nuxt_source_alias(&file, specifier) {
+        return Some(path);
+    }
     module_specifier::resolve_specifier(uri, specifier)
+}
+
+fn resolve_nuxt_source_alias(file: &Path, specifier: &str) -> Option<PathBuf> {
+    let rest = specifier
+        .strip_prefix("~/")
+        .or_else(|| specifier.strip_prefix("@/"))?;
+    let root = nearest_nuxt_root(file)?;
+    [
+        root.join("app").join(rest),
+        root.join(rest),
+        root.join("src").join(rest),
+    ]
+    .into_iter()
+    .find_map(|base| probe(&base))
+}
+
+fn nearest_nuxt_root(file: &Path) -> Option<PathBuf> {
+    file.ancestors()
+        .skip(1)
+        .find(|dir| {
+            [
+                "nuxt.config.ts",
+                "nuxt.config.mts",
+                "nuxt.config.js",
+                "nuxt.config.mjs",
+            ]
+            .iter()
+            .any(|config| dir.join(config).is_file())
+        })
+        .map(Path::to_path_buf)
 }
 
 fn probe(base: &Path) -> Option<PathBuf> {

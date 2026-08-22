@@ -149,19 +149,46 @@ fn probe_alias_target(
 /// The `paths` aliases governing `source_path`, resolved by the shared
 /// reader (nearest tsconfig, references-follow, string-aware jsonc).
 fn project_aliases(source_path: &Path) -> Option<Vec<AliasEntry>> {
-    let paths = crate::ide::tsconfig_paths::project_paths(source_path)?;
     let mut aliases = Vec::new();
-    for (pattern, target) in &paths.entries {
-        // Exact-match aliases name one module; a rename cannot re-spell them.
-        let (Some(pattern_prefix), Some(target)) =
-            (pattern.strip_suffix('*'), target.strip_suffix('*'))
-        else {
-            continue;
-        };
-        aliases.push(AliasEntry {
-            pattern_prefix: pattern_prefix.to_string(),
-            target_base: normalize_path_buf(&paths.anchor.join(target)),
-        });
+    if let Some(paths) = crate::ide::tsconfig_paths::project_paths(source_path) {
+        for (pattern, target) in &paths.entries {
+            // Exact-match aliases name one module; a rename cannot re-spell them.
+            let (Some(pattern_prefix), Some(target)) =
+                (pattern.strip_suffix('*'), target.strip_suffix('*'))
+            else {
+                continue;
+            };
+            aliases.push(AliasEntry {
+                pattern_prefix: pattern_prefix.to_string(),
+                target_base: normalize_path_buf(&paths.anchor.join(target)),
+            });
+        }
+    }
+    if let Some(root) = nearest_nuxt_root(source_path) {
+        for pattern_prefix in ["~/", "@/"] {
+            for target_base in [root.join("app"), root.clone(), root.join("src")] {
+                aliases.push(AliasEntry {
+                    pattern_prefix: pattern_prefix.to_string(),
+                    target_base: normalize_path_buf(&target_base),
+                });
+            }
+        }
     }
     (!aliases.is_empty()).then_some(aliases)
+}
+
+fn nearest_nuxt_root(file: &Path) -> Option<PathBuf> {
+    file.ancestors()
+        .skip(1)
+        .find(|dir| {
+            [
+                "nuxt.config.ts",
+                "nuxt.config.mts",
+                "nuxt.config.js",
+                "nuxt.config.mjs",
+            ]
+            .iter()
+            .any(|config| dir.join(config).is_file())
+        })
+        .map(Path::to_path_buf)
 }

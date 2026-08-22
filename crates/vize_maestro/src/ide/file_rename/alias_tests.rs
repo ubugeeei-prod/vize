@@ -199,6 +199,69 @@ fn nuxt_alias_rename_edits_use_the_open_importer_buffer() {
 }
 
 #[test]
+fn nuxt_alias_rename_edits_work_before_generated_tsconfig_exists() {
+    let dir = test_dir();
+    let root = dir.path();
+    let pages = root.join("app/pages/[[server]]/list/[list]/index");
+    let components = root.join("app/components/list");
+    fs::create_dir_all(&pages).unwrap();
+    fs::create_dir_all(&components).unwrap();
+    fs::write(
+        root.join("tsconfig.json"),
+        r#"{"references":[{"path":"./.nuxt/tsconfig.app.json"}],"files":[]}"#,
+    )
+    .unwrap();
+    fs::write(
+        root.join("nuxt.config.ts"),
+        "export default defineNuxtConfig({})\n",
+    )
+    .unwrap();
+
+    let importer = pages.join("accounts.vue");
+    fs::write(
+        &importer,
+        "<script setup lang=\"ts\">\nimport Result from '~/components/list/__VizeOracleResult.vue'\n</script>\n",
+    )
+    .unwrap();
+    let copied = components.join("__VizeOracleResult.vue");
+    let renamed = components.join("__VizeOracleRenamedResult.vue");
+    fs::write(&copied, "<template />\n").unwrap();
+
+    let state = ServerState::new();
+    state.set_workspace_root(root.to_path_buf());
+
+    let edit = collect_import_rename_edits(
+        &state,
+        &[FileRename {
+            old_uri: file_uri(&copied),
+            new_uri: file_uri(&renamed),
+        }],
+        true,
+    )
+    .expect("rename edit for Nuxt alias without generated tsconfig");
+
+    assert_snapshot!(serde_json::to_string_pretty(&normalize_edit(root, &edit)).unwrap(), @r###"
+    {
+      "app/pages/[[server]]/list/[list]/index/accounts.vue": [
+        {
+          "newText": "~/components/list/__VizeOracleRenamedResult.vue",
+          "range": {
+            "end": {
+              "character": 60,
+              "line": 1
+            },
+            "start": {
+              "character": 20,
+              "line": 1
+            }
+          }
+        }
+      ]
+    }
+    "###);
+}
+
+#[test]
 fn aliased_directory_index_specifiers_keep_the_barrel_spelling() {
     let dir = test_dir();
     let root = dir.path();

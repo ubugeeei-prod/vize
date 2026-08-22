@@ -66,6 +66,41 @@ import Widget from '@scope/ui'
     );
 }
 
+#[test]
+fn nuxt_source_aliases_work_before_generated_tsconfig_exists() {
+    let workspace = tempdir().unwrap();
+    let source = workspace.path().join("app/pages/accounts.vue");
+    let component = workspace
+        .path()
+        .join("app/components/AccountSearchResult.vue");
+    write(
+        &workspace.path().join("tsconfig.json"),
+        r#"{"references":[{"path":"./.nuxt/tsconfig.app.json"}],"files":[]}"#,
+    );
+    write(
+        &workspace.path().join("nuxt.config.ts"),
+        "export default defineNuxtConfig({})\n",
+    );
+    write(
+        &source,
+        r#"<script setup lang="ts">
+import AccountSearchResult from '~/components/AccountSearchResult.vue'
+</script>
+<template><AccountSearchResult /></template>
+"#,
+    );
+    write(&component, "<template />\n");
+
+    let uri = Url::from_file_path(&source).unwrap();
+    assert_eq!(
+        resolve_import_specifier(&uri, "~/components/AccountSearchResult.vue")
+            .unwrap()
+            .canonicalize()
+            .unwrap(),
+        component.canonicalize().unwrap()
+    );
+}
+
 fn write(path: &Path, content: &str) {
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
     std::fs::write(path, content).unwrap();
