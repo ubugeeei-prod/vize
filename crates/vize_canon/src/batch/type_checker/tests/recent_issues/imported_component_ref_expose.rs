@@ -89,7 +89,7 @@ fn imported_component_refs_match_the_vue_tsc_public_surface() {
             (
                 "src/NegativeControls.vue".into(),
                 Some(2345),
-                "Argument of type '{}' is not assignable to parameter of type '{ readonly label: string; readonly count?: number | undefined; } & __VizePublicComponentAttrs & { [x: string]: unknown; } & Partial<{}>'.\nProperty 'label' is missing in type '{}' but required in type '{ readonly label: string; readonly count?: number | undefined; }'.".into(),
+                "Argument of type '{}' is not assignable to parameter of type '{ readonly label: string; readonly count?: number | undefined; } & __VizePublicComponentAttrs & { [x: string]: unknown; } & { [x: `aria${string}`]: unknown; } & { [x: `data${string}`]: unknown; } & Partial<...>'.\nProperty 'label' is missing in type '{}' but required in type '{ readonly label: string; readonly count?: number | undefined; }'.".into(),
                 7,
                 4,
             ),

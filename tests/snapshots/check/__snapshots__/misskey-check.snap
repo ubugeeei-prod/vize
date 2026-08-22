@@ -627,7 +627,9 @@
     },
     {
       "file": "src/components/MkNote.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:52:38 [TS2353] Object literal may only specify known properties, and '\"mini\"' does not exist in type '{ readonly note: { id: string; createdAt: string; deletedAt?: string | null | undefined; text: string | null; cw?: string | null | undefined; userId: string; user: { id: string; name: string | null; username: string; ... 12 more ...; badgeRoles?: { ...; }[] | undefined; }; ... 27 more ...; myReaction?: string | ... ...'."
+      ]
     },
     {
       "file": "src/components/MkNoteDetailed.vue",
@@ -651,11 +653,15 @@
     },
     {
       "file": "src/components/MkNoteSimple.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:10:54 [TS2353] Object literal may only specify known properties, and '\"mini\"' does not exist in type '{ readonly note: { id: string; createdAt: string; deletedAt?: string | null | undefined; text: string | null; cw?: string | null | undefined; userId: string; user: { id: string; name: string | null; username: string; ... 12 more ...; badgeRoles?: { ...; }[] | undefined; }; ... 27 more ...; myReaction?: string | ... ...'."
+      ]
     },
     {
       "file": "src/components/MkNoteSub.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:15:55 [TS2353] Object literal may only specify known properties, and '\"mini\"' does not exist in type '{ readonly note: { id: string; createdAt: string; deletedAt?: string | null | undefined; text: string | null; cw?: string | null | undefined; userId: string; user: { id: string; name: string | null; username: string; ... 12 more ...; badgeRoles?: { ...; }[] | undefined; }; ... 27 more ...; myReaction?: string | ... ...'."
+      ]
     },
     {
       "file": "src/components/MkNotesTimeline.vue",
@@ -682,11 +688,15 @@
     },
     {
       "file": "src/components/MkObjectView.value.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:15:43 [TS2353] Object literal may only specify known properties, and '\"collapsed\"' does not exist in type '{ readonly value: unknown; } & __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & { ...; } & { ...; } & Partial<...>'."
+      ]
     },
     {
       "file": "src/components/MkObjectView.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:8:26 [TS2353] Object literal may only specify known properties, and '\"collapsed\"' does not exist in type '{ readonly value: unknown; } & __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & { ...; } & { ...; } & Partial<...>'."
+      ]
     },
     {
       "file": "src/components/MkOmit.vue",
@@ -872,7 +882,9 @@
     },
     {
       "file": "src/components/MkSignin.password.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:21:122 [TS2353] Object literal may only specify known properties, and '\"withPasswordToggle\"' does not exist in type 'Partial<Props<\"password\">> & { class?: unknown; style?: unknown; } & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; 'aria-colindex'?: unknown; ... 183 more ...; ref_key?: unknown; } & { ...; } & ...'."
+      ]
     },
     {
       "file": "src/components/MkSignin.totp.vue",
@@ -1064,7 +1076,9 @@
     },
     {
       "file": "src/components/MkUserInfo.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:34:79 [TS2353] Object literal may only specify known properties, and '\"mini\"' does not exist in type '{ readonly user: ({ id: string; name: string | null; username: string; host: string | null; avatarUrl: string; avatarBlurhash: string | null; avatarDecorations: { id: string; angle?: number | undefined; flipH?: boolean | undefined; url: string; offsetX?: number | undefined; offsetY?: number | undefined; }[]; ... 8 m...'."
+      ]
     },
     {
       "file": "src/components/MkUserList.vue",
@@ -1339,11 +1353,15 @@
     },
     {
       "file": "src/components/grid/MkDataRow.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:27:4 [TS2353] Object literal may only specify known properties, and '\"vIf\"' does not exist in type '{ readonly cell: GridCell; readonly rowSetting: GridRowSetting; readonly bus: GridEventEmitter; readonly \"onChange:contentSize\"?: ((sender: GridCell, newSize: Size) => any) | undefined; readonly \"onChange:value\"?: ((sender: GridCell, newValue: CellValue) => any) | undefined; readonly \"onOperation:beginEdit\"?: ((send...'."
+      ]
     },
     {
       "file": "src/components/grid/MkGrid.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:40:5 [TS2353] Object literal may only specify known properties, and '\"using\"' does not exist in type '{ readonly row: GridRow; readonly cells: GridCell[]; readonly setting: GridRowSetting; readonly bus: GridEventEmitter; readonly \"onChange:contentSize\"?: ((sender: GridCell, newSize: Size) => any) | undefined; readonly \"onChange:value\"?: ((sender: GridCell, newValue: CellValue) => any) | undefined; readonly \"onOperat...'."
+      ]
     },
     {
       "file": "src/components/grid/MkHeaderCell.vue",
@@ -1351,7 +1369,9 @@
     },
     {
       "file": "src/components/grid/MkHeaderRow.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:15:4 [TS2353] Object literal may only specify known properties, and '\"top\"' does not exist in type '{ readonly content: string; readonly row?: GridRow | undefined; } & __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; ... 188 more ...; ref_key?: unknown; } & { ...; } & { ...; } & Partial<...>'."
+      ]
     },
     {
       "file": "src/components/grid/MkNumberCell.vue",
@@ -1657,7 +1677,9 @@
     },
     {
       "file": "src/pages/admin-file.root.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:76:30 [TS2353] Object literal may only specify known properties, and '\"tall\"' does not exist in type '{ readonly value: Record<string, unknown>; } & __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; ... 186 more ...; ref_key?: unknown; } & { ...; } & { ...; } & Partial<...>'."
+      ]
     },
     {
       "file": "src/pages/admin-file.vue",
@@ -1669,7 +1691,9 @@
       "file": "src/pages/admin-user.vue",
       "diagnostics": [
         "error:190:30 [TS2322] Type 'string' is not assignable to type 'ChartSrc'.",
-        "error:192:30 [TS2322] Type 'string' is not assignable to type 'ChartSrc'."
+        "error:192:30 [TS2322] Type 'string' is not assignable to type 'ChartSrc'.",
+        "error:198:44 [TS2353] Object literal may only specify known properties, and '\"tall\"' does not exist in type '{ readonly value: Record<string, unknown>; } & __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; ... 186 more ...; ref_key?: unknown; } & { ...; } & { ...; } & Partial<...>'.",
+        "error:201:18 [TS2353] Object literal may only specify known properties, and '\"tall\"' does not exist in type '{ readonly value: Record<string, unknown>; } & __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; ... 186 more ...; ref_key?: unknown; } & { ...; } & { ...; } & Partial<...>'."
       ]
     },
     {
@@ -1778,7 +1802,9 @@
     },
     {
       "file": "src/pages/admin/invites.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:10:15 [TS2353] Object literal may only specify known properties, and '\"expanded\"' does not exist in type '{ readonly defaultOpen?: boolean | undefined; readonly maxHeight?: number | null | undefined; readonly withSpacer?: boolean | undefined; readonly spacerMin?: number | undefined; readonly spacerMax?: number | undefined; readonly canPage?: boolean | undefined; readonly onClosed?: (() => any) | undefined; readonly onOp...'."
+      ]
     },
     {
       "file": "src/pages/admin/job-queue.chart.vue",
@@ -1876,7 +1902,69 @@
     },
     {
       "file": "src/pages/admin/roles.editor.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:50:60 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:55:54 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:60:37 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:65:36 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:70:41 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:90:68 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:111:65 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:114:110 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:131:65 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:134:110 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:151:66 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:154:112 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:171:69 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:200:65 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:219:62 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:222:104 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:239:64 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:258:69 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:278:73 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:298:74 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:301:128 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:318:79 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:321:138 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:338:67 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:341:114 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:358:67 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:361:114 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:378:69 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:381:118 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:398:68 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:418:66 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:441:72 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:464:67 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:467:114 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:484:70 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:487:120 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:504:61 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:523:65 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:542:66 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:562:65 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:581:62 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:600:71 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:619:66 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:638:75 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:657:63 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:660:106 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:677:74 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:697:70 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:700:120 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:717:70 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:720:120 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:737:71 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:740:122 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:757:68 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:760:116 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:777:71 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:780:122 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:797:67 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:816:71 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:835:71 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'.",
+        "error:838:122 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '{ readonly modelValue: boolean | Ref<boolean, boolean>; readonly disabled?: boolean | undefined; readonly helpText?: string | undefined; readonly noBody?: boolean | undefined; readonly onChange?: ((v: boolean) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((v: boolean) => any) | undefined; } & ... 4 more ......'."
+      ]
     },
     {
       "file": "src/pages/admin/roles.role.vue",
@@ -1896,7 +1984,9 @@
     },
     {
       "file": "src/pages/admin/settings.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:362:67 [TS2353] Object literal may only specify known properties, and '\"max\"' does not exist in type '{ readonly modelValue: string | null; readonly required?: boolean | undefined; readonly readonly?: boolean | undefined; readonly disabled?: boolean | undefined; readonly pattern?: string | undefined; ... 15 more ...; readonly \"onUpdate:modelValue\"?: ((value: string) => any) | undefined; } & ... 4 more ... & Partial<...'."
+      ]
     },
     {
       "file": "src/pages/admin/system-webhook.item.vue",
@@ -2004,7 +2094,9 @@
     },
     {
       "file": "src/pages/chat/room.search.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:24:35 [TS2353] Object literal may only specify known properties, and '\"user\"' does not exist in type '{ readonly message: { id: string; createdAt: string; fromUserId: string; fromUser: { id: string; name: string | null; username: string; host: string | null; avatarUrl: string; avatarBlurhash: string | null; ... 9 more ...; badgeRoles?: { ...; }[] | undefined; }; ... 8 more ...; reactions: { ...; }[]; } | NormalizedC...'."
+      ]
     },
     {
       "file": "src/pages/chat/room.vue",
@@ -2116,7 +2208,9 @@
     },
     {
       "file": "src/pages/explore.users.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:39:23 [TS2353] Object literal may only specify known properties, and '\"foldable\"' does not exist in type '{ readonly expanded?: boolean | undefined; readonly persistKey?: string | null | undefined; } & __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; ... 189 more ...; ref_key?: unknown; } & { ...; } & { ...; } & Partial<...>'."
+      ]
     },
     {
       "file": "src/pages/explore.vue",
@@ -2146,7 +2240,9 @@
     },
     {
       "file": "src/pages/gallery/edit.root.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:13:38 [TS2353] Object literal may only specify known properties, and '\"max\"' does not exist in type '{ readonly modelValue: string | null; readonly required?: boolean | undefined; readonly readonly?: boolean | undefined; readonly disabled?: boolean | undefined; readonly pattern?: string | undefined; ... 15 more ...; readonly \"onUpdate:modelValue\"?: ((value: string) => any) | undefined; } & ... 4 more ... & Partial<...'."
+      ]
     },
     {
       "file": "src/pages/gallery/edit.vue",
@@ -2170,7 +2266,9 @@
     },
     {
       "file": "src/pages/instance-info.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:116:18 [TS2353] Object literal may only specify known properties, and '\"tall\"' does not exist in type '{ readonly value: Record<string, unknown>; } & __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; ... 186 more ...; ref_key?: unknown; } & { ...; } & { ...; } & Partial<...>'."
+      ]
     },
     {
       "file": "src/pages/invite.vue",
@@ -2454,7 +2552,9 @@
     },
     {
       "file": "src/pages/settings/emoji-palette.palette.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:32:74 [TS2353] Object literal may only specify known properties, and '\"normal\"' does not exist in type '{ readonly emoji: string; readonly menu?: boolean | undefined; readonly menuReaction?: boolean | undefined; readonly ignoreMuted?: boolean | undefined; } & __VizePublicComponentAttrs & { ...; } & { ...; } & { ...; } & Partial<...>'."
+      ]
     },
     {
       "file": "src/pages/settings/emoji-palette.vue",
@@ -2518,7 +2618,10 @@
     },
     {
       "file": "src/pages/settings/profile.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:35:47 [TS2353] Object literal may only specify known properties, and '\"max\"' does not exist in type '{ readonly modelValue: string | null; readonly required?: boolean | undefined; readonly readonly?: boolean | undefined; readonly disabled?: boolean | undefined; readonly pattern?: string | undefined; ... 15 more ...; readonly \"onUpdate:modelValue\"?: ((value: string) => any) | undefined; } & ... 4 more ... & Partial<...'.",
+        "error:106:70 [TS2353] Object literal may only specify known properties, and '\"mfmPreview\"' does not exist in type 'Partial<Props<\"text\">> & { class?: unknown; style?: unknown; } & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; 'aria-colindex'?: unknown; ... 183 more ...; ref_key?: unknown; } & { ...; } & { .....'."
+      ]
     },
     {
       "file": "src/pages/settings/profiles.vue",
@@ -2642,7 +2745,9 @@
     },
     {
       "file": "src/pages/user/home.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:38:71 [TS2353] Object literal may only specify known properties, and '\"inline\"' does not exist in type '{ readonly user: ({ id: string; name: string | null; username: string; host: string | null; avatarUrl: string; avatarBlurhash: string | null; avatarDecorations: { id: string; angle?: number | undefined; flipH?: boolean | undefined; url: string; offsetX?: number | undefined; offsetY?: number | undefined; }[]; ... 8 m...'."
+      ]
     },
     {
       "file": "src/pages/user/index.activity.vue",
@@ -2674,7 +2779,9 @@
     },
     {
       "file": "src/pages/user/raw.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:35:18 [TS2353] Object literal may only specify known properties, and '\"tall\"' does not exist in type '{ readonly value: Record<string, unknown>; } & __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; ... 186 more ...; ref_key?: unknown; } & { ...; } & { ...; } & Partial<...>'."
+      ]
     },
     {
       "file": "src/pages/user/reactions.vue",
@@ -3853,7 +3960,7 @@
       ]
     }
   ],
-  "errorCount": 565,
+  "errorCount": 650,
   "warningCount": 0,
   "fileCount": 794
 }
