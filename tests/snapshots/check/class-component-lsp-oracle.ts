@@ -138,7 +138,7 @@ const unknownPropTypeDiagnostic = {
     '\'{ readonly name: string; } & __VizePublicComponentAttrs & { "aria-activedescendant"?: ' +
     'unknown; "aria-atomic"?: unknown; "aria-autocomplete"?: unknown; "aria-busy"?: ' +
     'unknown; "aria-checked"?: unknown; "aria-colcount"?: unknown; ... 195 more ...; ' +
-    "ref_key?: unknown; } & Partial<...>'.",
+    "ref_key?: unknown; } & { ...; } & { ...; } & Partial<...>'.",
 };
 
 const propTypeMismatchDiagnostic = {
