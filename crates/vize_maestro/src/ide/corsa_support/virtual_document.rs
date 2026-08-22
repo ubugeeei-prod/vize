@@ -120,10 +120,9 @@ fn virtual_document_target(uri: &str) -> Option<(Url, VirtualDocumentKind)> {
         }
     } else if let Some(authored) = path.strip_suffix(".script.ts") {
         (authored, VirtualDocumentKind::Script)
-    } else if let Some(authored) = path.strip_suffix(".setup.ts") {
-        (authored, VirtualDocumentKind::ScriptSetup)
     } else {
-        return None;
+        let authored = path.strip_suffix(".setup.ts")?;
+        (authored, VirtualDocumentKind::ScriptSetup)
     };
     if !authored_path.ends_with(".vue") {
         return None;

@@ -529,14 +529,13 @@ fn getter_call_plain_value(
     source: &str,
 ) -> Option<ReactivePlainValue> {
     let (context_name, getter_name, source_name, _) = getter_call_source(result, expr)?;
-    Some(ReactivePlainValue {
+    (!context_name.is_empty()).then(|| ReactivePlainValue {
         source_name,
         argument_name: super::super::common::expression_label(source, expr.span()),
         getter_name,
         start: expr.span().start,
         end: expr.span().end,
     })
-    .filter(|_| !context_name.is_empty())
 }
 
 pub(super) fn getter_call_source(

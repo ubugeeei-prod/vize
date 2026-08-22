@@ -105,7 +105,8 @@ fn rewrite_js_to_ts(
         (stem, &[".cts", ".d.cts"])
     } else if let Some(stem) = name.strip_suffix(".jsx") {
         (stem, &[".tsx"])
-    } else if let Some(stem) = name.strip_suffix(".js") {
+    } else {
+        let stem = name.strip_suffix(".js")?;
         (
             stem,
             if include_jsx {
@@ -114,8 +115,6 @@ fn rewrite_js_to_ts(
                 &[".ts", ".d.ts"]
             },
         )
-    } else {
-        return None;
     };
     for ext in extensions {
         let candidate = base.with_file_name(cstr!("{stem}{ext}"));

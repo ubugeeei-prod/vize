@@ -72,11 +72,8 @@ pub(super) fn build_user_props_decl(
             Some(&ctx.type_aliases),
         );
         if prop_types.is_empty() {
-            if let Some(ref destructure) = ctx.macros.props_destructure {
-                build_unknown_type_destructured_props_decl(&mut decl, destructure);
-            } else {
-                return None;
-            }
+            let destructure = ctx.macros.props_destructure.as_ref()?;
+            build_unknown_type_destructured_props_decl(&mut decl, destructure);
         } else {
             decl.extend_from_slice(b"{\n");
             let total_items = prop_types.len();

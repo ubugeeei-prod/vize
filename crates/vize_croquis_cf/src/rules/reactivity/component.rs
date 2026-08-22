@@ -89,7 +89,7 @@ pub(super) fn analyze_component_reactivity(analysis: &vize_croquis::Croquis) -> 
 
     // Check if props are properly wrapped with toRef/toRefs when destructured
     if let Some(props_destructure) = analysis.macros.props_destructure() {
-        for (key, _binding) in props_destructure.bindings.iter() {
+        for key in props_destructure.bindings.keys() {
             // Check if this destructured prop has a corresponding toRef
             if !torefs_sources.contains(key.as_str()) {
                 // This prop is destructured without toRefs - Vue handles this with

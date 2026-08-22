@@ -94,42 +94,40 @@ pub(super) fn compile_template_only(
         )
     };
 
-    let mut code = match template_result {
-        Ok(template_output) => {
-            warnings.extend(template_output.warnings);
-            let mut code = template_output.code;
-            if input.is_vapor {
-                code.push_str("const _sfc_main = { __vapor: true }\n");
-                append_component_render_export(
-                    &mut code,
-                    "_sfc_main",
-                    RenderFunctionName::Render,
-                    &input.compiled_styles.css_modules,
-                );
-            } else if input.options.template.ssr {
-                code.push_str("const _sfc_main = {}\n");
-                append_component_render_export(
-                    &mut code,
-                    "_sfc_main",
-                    RenderFunctionName::SsrRender,
-                    &input.compiled_styles.css_modules,
-                );
-            } else if !input.compiled_styles.css_modules.is_empty() {
-                code.push_str("const _sfc_main = {}\n");
-                append_component_render_export(
-                    &mut code,
-                    "_sfc_main",
-                    RenderFunctionName::Render,
-                    &input.compiled_styles.css_modules,
-                );
-            }
-            code
+    // Previously this just collected the error into a local vec
+    // and continued, returning Ok with empty code — so callers
+    // wrote a 0-byte module and exited 0 (#958). Propagate the
+    // template error up so the build/CLI surfaces it.
+    let template_output = template_result?;
+    warnings.extend(template_output.warnings);
+    let mut code = {
+        let mut code = template_output.code;
+        if input.is_vapor {
+            code.push_str("const _sfc_main = { __vapor: true }\n");
+            append_component_render_export(
+                &mut code,
+                "_sfc_main",
+                RenderFunctionName::Render,
+                &input.compiled_styles.css_modules,
+            );
+        } else if input.options.template.ssr {
+            code.push_str("const _sfc_main = {}\n");
+            append_component_render_export(
+                &mut code,
+                "_sfc_main",
+                RenderFunctionName::SsrRender,
+                &input.compiled_styles.css_modules,
+            );
+        } else if !input.compiled_styles.css_modules.is_empty() {
+            code.push_str("const _sfc_main = {}\n");
+            append_component_render_export(
+                &mut code,
+                "_sfc_main",
+                RenderFunctionName::Render,
+                &input.compiled_styles.css_modules,
+            );
         }
-        // Previously this just collected the error into a local vec
-        // and continued, returning Ok with empty code — so callers
-        // wrote a 0-byte module and exited 0 (#958). Propagate the
-        // template error up so the build/CLI surfaces it.
-        Err(e) => return Err(e),
+        code
     };
 
     finalize_output_mode(

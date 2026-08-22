@@ -146,14 +146,13 @@ fn parse_guard_terms(guard: &str) -> Option<Vec<GuardTerm<'_>>> {
                 condition,
                 raw,
             });
-        } else if let Some(condition) = strip_wrapped_condition(raw) {
+        } else {
+            let condition = strip_wrapped_condition(raw)?;
             terms.push(GuardTerm {
                 negated: false,
                 condition,
                 raw,
             });
-        } else {
-            return None;
         }
     }
     (!terms.is_empty()).then_some(terms)

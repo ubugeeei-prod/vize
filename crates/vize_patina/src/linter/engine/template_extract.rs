@@ -75,10 +75,7 @@ fn find_template_block_start(bytes: &[u8]) -> Option<(usize, usize)> {
     let mut pos = 0;
 
     while pos < bytes.len() {
-        let next_lt = match memchr::memchr(b'<', &bytes[pos..]) {
-            Some(offset) => pos + offset,
-            None => return None,
-        };
+        let next_lt = pos + memchr::memchr(b'<', &bytes[pos..])?;
 
         if bytes[next_lt..].starts_with(b"<!--") {
             pos = memchr::memmem::find(&bytes[next_lt + 4..], b"-->")

@@ -22,10 +22,8 @@ pub(super) fn find_start_tag_end(bytes: &[u8], lt_idx: usize) -> Option<usize> {
             b'>' => return Some(idx),
             quote => {
                 // Skip the quoted attribute value, including any `>`/`<` inside.
-                match memchr::memchr(quote, &bytes[idx + 1..]) {
-                    Some(end) => pos = idx + 1 + end + 1,
-                    None => return None,
-                }
+                let end = memchr::memchr(quote, &bytes[idx + 1..])?;
+                pos = idx + 1 + end + 1;
             }
         }
     }
@@ -37,10 +35,7 @@ pub(super) fn find_closing_tag(bytes: &[u8], tag_name: &[u8], from: usize) -> Op
     let mut pos = from;
 
     while pos < bytes.len() {
-        let next_lt = match memchr::memmem::find(&bytes[pos..], b"</") {
-            Some(offset) => pos + offset,
-            None => return None,
-        };
+        let next_lt = pos + memchr::memmem::find(&bytes[pos..], b"</")?;
 
         if closing_tag_name_at(bytes, next_lt)
             .is_some_and(|(name, _)| name.eq_ignore_ascii_case(tag_name))

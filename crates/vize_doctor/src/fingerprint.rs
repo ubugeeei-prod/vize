@@ -76,7 +76,7 @@ impl FromStr for ContentFingerprint {
 
         let hex = &value.as_bytes()[CONTENT_FINGERPRINT_PREFIX.len()..];
         let mut digest = [0; DIGEST_BYTES];
-        for (index, pair) in hex.chunks_exact(2).enumerate() {
+        for (index, pair) in hex.as_chunks::<2>().0.iter().enumerate() {
             let high =
                 decode_lower_hex(pair[0]).ok_or(ContentFingerprintParseError::InvalidHex {
                     index: CONTENT_FINGERPRINT_PREFIX.len() + index * 2,

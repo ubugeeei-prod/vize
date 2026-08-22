@@ -161,12 +161,8 @@ fn collect_object_emits(object: &ObjectExpression<'_>) -> Option<FxHashSet<Compa
                 if property.computed {
                     return None;
                 }
-                match property_key_name(&property.key) {
-                    Some(name) => {
-                        names.insert(CompactString::new(name));
-                    }
-                    None => return None,
-                }
+                let name = property_key_name(&property.key)?;
+                names.insert(CompactString::new(name));
             }
             // `{ ...others }`: the set is no longer fully known.
             ObjectPropertyKind::SpreadProperty(_) => return None,
