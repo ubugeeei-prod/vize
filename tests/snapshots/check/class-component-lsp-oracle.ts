@@ -135,9 +135,9 @@ const unknownPropTypeDiagnostic = {
   source: "vize/types",
   message:
     "Object literal may only specify known properties, and '\"nme\"' does not exist in type " +
-    "'{ readonly name: string; } & __VizePublicComponentAttrs & { \"aria-activedescendant\"?: " +
-    "unknown; \"aria-atomic\"?: unknown; \"aria-autocomplete\"?: unknown; \"aria-busy\"?: " +
-    "unknown; \"aria-checked\"?: unknown; \"aria-colcount\"?: unknown; ... 195 more ...; " +
+    '\'{ readonly name: string; } & __VizePublicComponentAttrs & { "aria-activedescendant"?: ' +
+    'unknown; "aria-atomic"?: unknown; "aria-autocomplete"?: unknown; "aria-busy"?: ' +
+    'unknown; "aria-checked"?: unknown; "aria-colcount"?: unknown; ... 195 more ...; ' +
     "ref_key?: unknown; } & Partial<...>'.",
 };
 
