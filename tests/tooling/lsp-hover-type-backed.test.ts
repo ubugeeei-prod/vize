@@ -16,15 +16,31 @@ import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
 
 const source = `<script setup lang="ts">
 import { computed, ref } from 'vue'
+import Child from './Child.vue'
 
 const count = ref(1)
 const doubled = computed(() => count.value * 2)
 const label: string = 'hello'
+function save(value: string) {
+  return value
+}
 </script>
 
 <template>
   <button :title="label">{{ count }} {{ doubled }}</button>
+  <Child :label="label" @save="save">
+    <template #default="{ value }">{{ value }}</template>
+  </Child>
 </template>
+`;
+
+const childSource = `<script setup lang="ts">
+defineProps<{ label: string }>()
+defineEmits<{ save: [value: string] }>()
+defineSlots<{ default(props: { value: string }): unknown }>()
+</script>
+
+<template><slot :value="label" /></template>
 `;
 
 test("hover and definition answer authored template anchors with backend type text", async (t) => {
@@ -68,6 +84,9 @@ test("hover and definition answer authored template anchors with backend type te
       }),
     );
 
+    const childPath = path.join(workspaceDir, "src/Child.vue");
+    const childUri = pathToFileURL(childPath).href;
+    fs.writeFileSync(childPath, childSource, "utf8");
     const filePath = path.join(workspaceDir, "src/App.vue");
     const uri = pathToFileURL(filePath).href;
     fs.writeFileSync(filePath, source, "utf8");
@@ -122,6 +141,20 @@ test("hover and definition answer authored template anchors with backend type te
     assert.doesNotMatch(templateCountHoverText, /Ref</);
     assertNoHeuristic(templateCountHoverText);
     await assertDefinition(session, uri, countUsage.start, countDeclaration, "template count");
+
+    const childTag = rangeFor("Child", source.indexOf("<Child"));
+    const childTagHover = await hoverAt(session, uri, childTag.start);
+    assert.deepEqual(
+      childTagHover?.range,
+      childTag,
+      "component tag hover must select the authored tag token",
+    );
+    const childTagText = hoverToText(childTagHover);
+    assert.match(childTagText, /Component usage/);
+    assert.match(childTagText, /:label="label"/);
+    assert.match(childTagText, /@save="save"/);
+    assert.match(childTagText, /#default/);
+    await assertDefinitionUri(session, uri, childTag.start, childUri, "Child component tag");
   } finally {
     if (initialized) {
       await session.shutdown();
@@ -175,6 +208,28 @@ async function assertDefinition(
       uri,
     },
     `${label} definition must jump to the authored script declaration`,
+  );
+}
+
+async function assertDefinitionUri(
+  session: LspSession,
+  uri: string,
+  position: Position,
+  expectedUri: string,
+  label: string,
+): Promise<void> {
+  const response = await session.request(
+    "textDocument/definition",
+    {
+      textDocument: { uri },
+      position,
+    },
+    120_000,
+  );
+  assert.equal(
+    firstLocation(response as Parameters<typeof firstLocation>[0]).uri,
+    expectedUri,
+    `${label} definition must jump to the authored Vue component file`,
   );
 }
 

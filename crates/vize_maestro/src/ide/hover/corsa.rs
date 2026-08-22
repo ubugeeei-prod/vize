@@ -133,6 +133,24 @@ impl HoverService {
         }
 
         if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset)
+            && let Some(mut hover) = Self::hover_component_tag(ctx)
+        {
+            if hover.range.is_none() {
+                hover.range = authored_hover_token_range(ctx);
+            }
+            return Some(hover);
+        }
+
+        if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset)
+            && let Some(mut hover) = super::component_prop::hover_attribute(ctx)
+        {
+            if hover.range.is_none() {
+                hover.range = authored_hover_token_range(ctx);
+            }
+            return Some(hover);
+        }
+
+        if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset)
             && let Some(hover) =
                 Self::hover_html_attribute_with_corsa(ctx, corsa_bridge.as_ref()).await
         {
