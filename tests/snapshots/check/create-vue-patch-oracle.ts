@@ -597,7 +597,7 @@ function assertBrokenBuild(result: BuildResult): void {
     code: 'export default {\n  __name: "App",\n  setup(__props) {}\n};',
     css: null,
     errors: [
-      'Template compilation errors: [CompilerError { code: InvalidEndTag, message: "Invalid end tag.", loc: Some(SourceLocation { start: Position { offset: 18, line: 1, column: 19 }, end: Position { offset: 23, line: 1, column: 24 }, source: "</h2>" }) }, CompilerError { code: MissingEndTag, message: "Element is missing end tag.", loc: Some(SourceLocation { start: Position { offset: 3, line: 1, column: 4 }, end: Position { offset: 7, line: 1, column: 8 }, source: "<h1>" }) }]',
+      'Template compilation errors: [CompilerError { code: InvalidEndTag, message: "Invalid end tag.", loc: Some(SourceLocation { start: Position { offset: 18, line: 2, column: 18 }, end: Position { offset: 23, line: 2, column: 23 }, source: "</h2>" }) }, CompilerError { code: MissingEndTag, message: "Element is missing end tag.", loc: Some(SourceLocation { start: Position { offset: 3, line: 2, column: 3 }, end: Position { offset: 7, line: 2, column: 7 }, source: "<h1>" }) }]',
     ],
     warnings: [],
     script_lang: "ts",

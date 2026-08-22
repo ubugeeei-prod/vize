@@ -84,7 +84,7 @@ Where each read went:
   `parse_vize_directive` with the comment's start line, which that caller
   discards (only the directive kind survives); it now passes the constant
   line the retired tracking always reported
-- `crates/vize_relief/src/errors/render.rs:85` — the one output path that printed stored
+- `crates/vize_relief/src/errors/render.rs:86` — the one output path that printed stored
   line/column (the SFC gate / binding-boundary debug rendering) now derives
   display coordinates from the rendered source text via `LineIndex`. This
   keeps `SourceLocation` span-only while making multiline diagnostics point
