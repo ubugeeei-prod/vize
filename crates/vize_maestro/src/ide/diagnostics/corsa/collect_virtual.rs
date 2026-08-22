@@ -274,7 +274,7 @@ fn is_authored_vue_import_extension_diagnostic(
     };
     content
         .get(start..end)
-        .is_some_and(|range| range.contains(".vue"))
+        .is_some_and(authored_range_is_vue_sfc_specifier)
 }
 
 fn is_ts5097_import_extension_diagnostic(
@@ -285,6 +285,14 @@ fn is_ts5097_import_extension_diagnostic(
         serde_json::Value::String(code) => matches!(code.as_str(), "5097" | "TS5097"),
         _ => false,
     }) && diagnostic.message.contains("allowImportingTsExtensions")
+}
+
+fn authored_range_is_vue_sfc_specifier(range: &str) -> bool {
+    let specifier = range.trim_matches(|character| matches!(character, '\'' | '"' | '`'));
+    let path = specifier
+        .split_once(['?', '#'])
+        .map_or(specifier, |(path, _)| path);
+    path.ends_with(".vue")
 }
 
 pub(in crate::ide) fn corsa_diagnostic_code(code: serde_json::Value) -> NumberOrString {
@@ -453,6 +461,14 @@ mod tests {
             18,
             2,
             30,
+        ));
+        assert!(!is_authored_vue_import_extension_diagnostic(
+            "import authored from './Child.vue.ts'\n",
+            &diagnostic,
+            0,
+            21,
+            0,
+            37,
         ));
     }
 

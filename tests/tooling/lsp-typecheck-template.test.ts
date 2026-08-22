@@ -236,6 +236,27 @@ const a: string = 1
         },
       ],
     );
+
+    const fixedSource = source.replace("const a: string = 1", "const a: string = 'ok'");
+    session.notify("textDocument/didChange", {
+      textDocument: { uri, version: 2 },
+      contentChanges: [{ text: fixedSource }],
+    });
+    const repaired = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) =>
+        isDiagnosticsForUri(params, uri) &&
+        params.version === 2 &&
+        !params.diagnostics.some((diagnostic) =>
+          diagnostic.message?.includes("Type 'number' is not assignable to type 'string'"),
+        ),
+    )) as PublishDiagnosticsParams;
+    assert.deepEqual(
+      repaired.diagnostics.filter((diagnostic) =>
+        diagnostic.message?.includes("Type 'number' is not assignable to type 'string'"),
+      ),
+      [],
+    );
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });
