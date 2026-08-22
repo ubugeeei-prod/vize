@@ -89,6 +89,17 @@ fn inherit_attrs_false_uses_explicit_attrs_forwarding_target() {
 }
 
 #[test]
+fn explicit_attrs_forwarding_takes_precedence_over_automatic_root_fallthrough() {
+    let ty = fallthrough_type(
+        "defineProps<{ title: string }>()",
+        r#"<li><a v-bind="$attrs">{{ title }}</a></li>"#,
+    )
+    .expect("explicit $attrs forwarding should define the accepted attr surface");
+
+    assert_eq!(ty, "Partial<__VizeNativeElement<\"a\">>");
+}
+
+#[test]
 fn skips_fallthrough_props_for_multi_root_or_mixed_v_if_branch() {
     for template in [
         "<div /> <span />",

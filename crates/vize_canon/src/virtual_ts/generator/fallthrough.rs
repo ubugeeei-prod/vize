@@ -22,8 +22,8 @@ pub(super) fn fallthrough_props_type_ref(
         return explicit_attrs_targets(template_ast).map(|targets| targets_type_ref(&targets));
     }
 
-    let targets = possible_single_root_targets(template_ast)
-        .or_else(|| explicit_attrs_targets(template_ast))?;
+    let targets = explicit_attrs_targets(template_ast)
+        .or_else(|| possible_single_root_targets(template_ast))?;
     Some(targets_type_ref(&targets))
 }
 
