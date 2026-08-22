@@ -103,8 +103,9 @@ describe(`${app.name} check (type checker)`, () => {
       "unmapped diagnostics found",
     );
 
+    const { programs: _programs, ...snapshotOutput } = parsed;
     const prettyOutput =
-      JSON.stringify(parsed, null, 2).replaceAll(checkConfig.cwd, "<cwd>") + "\n";
+      JSON.stringify(snapshotOutput, null, 2).replaceAll(checkConfig.cwd, "<cwd>") + "\n";
     assertSnapshot(SNAPSHOT_DIR, `${app.name}-check`, prettyOutput);
   });
 });

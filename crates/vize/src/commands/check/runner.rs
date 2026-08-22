@@ -11,7 +11,7 @@ use super::{
     imports::ImportFileOptions,
     path_cache::CanonicalPathCache,
     patterns::CheckFileOptions,
-    reporting::{JsonFileResult, JsonOutput},
+    reporting::{JsonFileResult, JsonOutput, JsonProgramResult},
     tsconfig_inputs::{TsconfigInputCache, tsconfig_allows_js},
 };
 

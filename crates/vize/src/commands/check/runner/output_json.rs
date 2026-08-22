@@ -3,7 +3,7 @@ use std::path::Path;
 use vize_carton::{FxHashSet, String};
 
 use super::super::{
-    CheckArgs, JsonFileResult, JsonOutput, ProgramExecution,
+    CheckArgs, JsonFileResult, JsonOutput, JsonProgramResult, ProgramExecution,
     diagnostics::{emit_json_output, is_reported},
     display_path,
 };
@@ -59,6 +59,30 @@ pub(super) fn emit_json(
     files_json.sort_by(|left, right| left.file.cmp(&right.file));
     files_json.dedup_by(|left, right| left.file == right.file);
     let reported_file_count = files_json.len();
+    let programs_json = executions
+        .iter()
+        .map(|execution| {
+            let mut files = execution
+                .input_files
+                .iter()
+                .map(|path| display_path(cwd, path).into())
+                .collect::<Vec<_>>();
+            files.sort();
+            files.dedup();
+            let mut root = display_path(cwd, &execution.program_root);
+            if root.is_empty() {
+                root = ".".into();
+            }
+            JsonProgramResult {
+                root: root.into(),
+                tsconfig: execution
+                    .tsconfig_path
+                    .as_ref()
+                    .map(|path| display_path(cwd, path).into()),
+                files,
+            }
+        })
+        .collect::<Vec<_>>();
 
     let reported_keys = executions
         .iter()
@@ -78,6 +102,7 @@ pub(super) fn emit_json(
 
     emit_json_output(JsonOutput {
         files: files_json,
+        programs: programs_json,
         error_count: total_errors,
         warning_count: total_warnings,
         file_count: reported_file_count,

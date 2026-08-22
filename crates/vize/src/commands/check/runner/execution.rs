@@ -35,6 +35,7 @@ pub(super) struct CheckerSettings {
 pub(super) struct ProgramExecution {
     pub(super) checker: BatchTypeChecker,
     pub(super) result: BatchTypeCheckResult,
+    pub(super) input_files: Vec<PathBuf>,
     pub(super) reported_files: FxHashSet<PathBuf>,
     pub(super) tsconfig_path: Option<PathBuf>,
     pub(super) program_root: PathBuf,
@@ -164,6 +165,7 @@ pub(super) fn execute_program(
     Ok(ProgramExecution {
         checker,
         result,
+        input_files: input.files.to_vec(),
         reported_files: input.reported_files,
         tsconfig_path: input.tsconfig_path,
         program_root: input.program_root,

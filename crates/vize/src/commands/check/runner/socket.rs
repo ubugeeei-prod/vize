@@ -207,6 +207,7 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
 
         let json_output = JsonOutput {
             files: files_json,
+            programs: Vec::new(),
             error_count: total_errors,
             warning_count: total_warnings,
             file_count: results.len(),

@@ -162,6 +162,7 @@ pub(super) fn report_no_inputs(args: &CheckArgs) {
     if args.format == "json" {
         emit_json_output(JsonOutput {
             files: Vec::new(),
+            programs: Vec::new(),
             error_count: 0,
             warning_count: 0,
             file_count: 0,

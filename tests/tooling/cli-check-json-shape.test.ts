@@ -87,6 +87,7 @@ function withWorkspace<T>(run: (dir: string) => T): T {
 
 type CheckJson = {
   files: Array<{ file: string; virtualTs?: string; diagnostics: string[] }>;
+  programs: Array<{ root: string; tsconfig?: string; files: string[] }>;
   errorCount: number;
   warningCount: number;
   fileCount: number;
@@ -112,7 +113,7 @@ test("vize check --format json has a stable top-level shape and key names", chec
     const parsed = parseJson(result);
     assert.deepEqual(
       Object.keys(parsed).sort(),
-      ["errorCount", "fileCount", "files", "warningCount"],
+      ["errorCount", "fileCount", "files", "programs", "warningCount"],
       "top-level keys should be exactly the documented camelCase envelope",
     );
     // `--declaration` is absent, so the emitter must not surface a declarations key.
@@ -133,6 +134,12 @@ test("vize check --format json has a stable top-level shape and key names", chec
     assert.equal(typeof parsed.errorCount, "number");
     assert.equal(typeof parsed.warningCount, "number");
     assert.equal(typeof parsed.fileCount, "number");
+    assert.deepEqual(parsed.programs, [
+      {
+        root: ".",
+        files: ["bad.ts"],
+      },
+    ]);
   });
 });
 
@@ -268,5 +275,68 @@ test("vize check --format json reports only the requested subset of files", chec
       parsed.files.every((f) => f.file !== "src/Bad.vue"),
       "the unrequested sibling must not appear in the report",
     );
+  });
+});
+
+test("vize check --format json exposes project-reference program inputs", checkerOptions, () => {
+  withWorkspace((dir) => {
+    fs.mkdirSync(path.join(dir, "packages/alpha/src"), { recursive: true });
+    fs.mkdirSync(path.join(dir, "packages/bravo/src"), { recursive: true });
+    fs.writeFileSync(
+      path.join(dir, "tsconfig.json"),
+      JSON.stringify({
+        files: [],
+        references: [{ path: "./packages/alpha" }, { path: "./packages/bravo" }],
+      }),
+      "utf8",
+    );
+    for (const name of ["alpha", "bravo"]) {
+      fs.writeFileSync(
+        path.join(dir, `packages/${name}/tsconfig.json`),
+        JSON.stringify({
+          compilerOptions: {
+            composite: true,
+            strict: true,
+            target: "ES2022",
+            module: "ESNext",
+            moduleResolution: "Bundler",
+            noEmit: true,
+          },
+          include: ["src/**/*.ts"],
+        }),
+        "utf8",
+      );
+      fs.writeFileSync(
+        path.join(dir, `packages/${name}/src/index.ts`),
+        `export const ${name} = 1;\n`,
+        "utf8",
+      );
+    }
+
+    const result = runCheck(["--format", "json", "--corsa-path", CHECKER as string], dir);
+    assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+
+    const parsed = parseJson(result);
+    assert.deepEqual(
+      parsed.programs,
+      [
+        {
+          root: "packages/alpha",
+          tsconfig: "packages/alpha/tsconfig.json",
+          files: ["packages/alpha/src/index.ts"],
+        },
+        {
+          root: "packages/bravo",
+          tsconfig: "packages/bravo/tsconfig.json",
+          files: ["packages/bravo/src/index.ts"],
+        },
+      ],
+      "project-reference runs should expose each effective program and its registered input set",
+    );
+    assert.deepEqual(
+      parsed.files.map((file) => file.file),
+      ["packages/alpha/src/index.ts", "packages/bravo/src/index.ts"],
+    );
+    assert.equal(parsed.fileCount, 2);
   });
 });
