@@ -16,6 +16,7 @@ import {
 import { recordCompilerOptionJsxImportSource } from "./typecheck-baseline-isolation-jsx.mjs";
 import { recordCompilerOptionPlugins } from "./typecheck-baseline-isolation-plugins.mjs";
 import { recordCompilerOptionTypes } from "./typecheck-baseline-isolation-types.mjs";
+import { pathMappingRoot } from "./typecheck-baseline-outside-paths.mjs";
 
 /**
  * Keep the fixture's type environment inside the fixture (run 31979524200).
@@ -92,7 +93,7 @@ export function readDeclaredPackagePaths(fixtureRoot, sourceConfigPath) {
     const current = queue.shift();
     if (seen.has(current)) continue;
     seen.add(current);
-    const local = packagePathsFromExtends(current);
+    const local = packagePathsFromExtends(fixtureRoot, current);
     if (local.size > 0) {
       mergeDeclared(declared, conflicts, local);
       continue;
@@ -137,11 +138,10 @@ function mergePackageExtends(declared, conflicts, configPaths, fixtureRoot) {
   }
 }
 
-function packagePathsFromExtends(sourceConfigPath) {
+function packagePathsFromExtends(fixtureRoot, sourceConfigPath) {
   const declared = new Map();
   // Child `compilerOptions.paths` replace the parent's object, matching tsc.
-  // Relative `extends` is followed so reka-ui's `tsconfig.check.json` still
-  // sees the paths one hop away in `tsconfig.app.json` (#4461).
+  // Targets resolve from last-wins `baseUrl` when set (#4461).
   let paths;
   let configDir;
   for (const { config, dir } of [...loadExtendsChain(sourceConfigPath)].reverse()) {
@@ -156,7 +156,7 @@ function packagePathsFromExtends(sourceConfigPath) {
     if (!packageNamePattern.test(name) || !Array.isArray(targets)) continue;
     const first = targets.find((entry) => typeof entry === "string" && !entry.includes("*"));
     if (first == null) continue;
-    declared.set(name, resolve(configDir, first));
+    declared.set(name, resolve(pathMappingRoot(sourceConfigPath, fixtureRoot, configDir), first));
   }
   return declared;
 }
