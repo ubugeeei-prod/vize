@@ -11,6 +11,7 @@ import {
   isolateUniqueLocalTypePackages,
   isolateUniqueVueI18nPackages,
   isolateUniqueVueRuntimePackages,
+  isolateUniqueVueUsePackages,
 } from "./typecheck-baseline-isolation-unique.mjs";
 import { applyIsolatedAliasOverlay } from "./typecheck-baseline-outside-aliases.mjs";
 import { writeIsolatedTsconfigOverlay } from "./typecheck-baseline-outside-paths.mjs";
@@ -162,7 +163,11 @@ function isolateFixture(project, fixtureRoot) {
       shadowed.push(entry);
     }
   }
-  for (const isolate of [isolateUniqueVueRuntimePackages, isolateUniqueVueI18nPackages]) {
+  for (const isolate of [
+    isolateUniqueVueRuntimePackages,
+    isolateUniqueVueI18nPackages,
+    isolateUniqueVueUsePackages,
+  ]) {
     for (const entry of isolate(fixtureRoot)) {
       if (seen.has(entry.name)) continue;
       seen.add(entry.name);

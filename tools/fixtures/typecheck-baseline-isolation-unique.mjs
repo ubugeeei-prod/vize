@@ -32,7 +32,7 @@ import { ancestorPackagePath } from "./typecheck-baseline-isolation-package-exte
  * `vue` JSX runtime before TypeScript climbs into Vize.
  */
 
-const vueRuntimePackages = ["@vue/runtime-core", "@vue/runtime-dom", "vue"];
+const vueRuntimePackages = ["@vue/runtime-core", "@vue/runtime-dom", "vue", "vue-router"];
 
 export function isolateUniqueLocalTypePackages(fixtureRoot, sourceConfigPath) {
   const root = resolve(fixtureRoot);
@@ -192,4 +192,15 @@ function isDanglingLink(link) {
 
 function compare(left, right) {
   return left < right ? -1 : left > right ? 1 : 0;
+}
+
+export function isolateUniqueVueUsePackages(fixtureRoot) {
+  const root = resolve(fixtureRoot);
+  const declared = new Map();
+  for (const name of ["@vueuse/core", "@vueuse/shared"]) {
+    const ancestor = ancestorPackagePath(root, name);
+    if (ancestor == null) continue;
+    declared.set(name, ancestor);
+  }
+  return isolateUniqueDeclaredLocalTypePackages(root, declared);
 }
