@@ -8,8 +8,7 @@ Vize uses `vize.config.*` for shared npm package commands, Vite plugin, and Rust
 
 ## Config Files
 
-The npm package commands and `@vizejs/vite-plugin` load these files from the project root in this
-priority order:
+The npm package commands and `@vizejs/vite-plugin` load these files from the project root in this priority order:
 
 - `vize.config.pkl`
 - `vize.config.ts`

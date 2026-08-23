@@ -5,9 +5,7 @@ title: CLI
 # CLI Reference
 
 Most application workflows should install the `vize` npm package and run it through `package.json`
-scripts. This page describes the lower-level Rust-native `vize` binary for LSP, IDE management,
-`check-server`, profiling, and other direct CLI workflows. The npm package exposes shared config
-helpers plus NAPI-backed `build`, `fmt`, `lint`, `check`, `clean`, `ready`, and `upgrade` commands.
+scripts. This page describes the lower-level Rust-native `vize` binary for LSP, IDE management, `check-server`, profiling, and other direct CLI workflows. The npm package exposes shared config helpers plus NAPI-backed `build`, `fmt`, `lint`, `check`, `clean`, `ready`, and `upgrade` commands.
 
 For a higher-level explanation of the analysis pipeline, see [Static Analysis](./static-analysis.md).
 
