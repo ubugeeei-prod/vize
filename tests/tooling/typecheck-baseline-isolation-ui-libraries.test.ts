@@ -9,7 +9,8 @@ import { isolateUniqueUiLibraryPackages } from "../../tools/fixtures/typecheck-b
 /**
  * Vue UI libraries in Vize's `tests/package.json` still climb out of a
  * fixture that does not declare them (#4461). Unique isolation links the
- * fixture store copy when an ancestor is reachable.
+ * fixture store copy when an ancestor is reachable. Swiper is included
+ * because `swiper/vue` types load Vue from the answering copy.
  */
 
 function scaffold(names: string[]) {
@@ -43,6 +44,7 @@ test("ancestor UI libraries with one in-fixture copy each are linked from those 
     ["primevue", "primevue@4.5.5"],
     ["quasar", "quasar@2.19.3"],
     ["reka-ui", "reka-ui@2.9.10"],
+    ["swiper", "swiper@12.2.0"],
     ["vant", "vant@4.9.24"],
     ["vue-select", "vue-select@4.0.0-beta.6"],
     ["vue-virtual-scroller", "vue-virtual-scroller@3.0.4"],
