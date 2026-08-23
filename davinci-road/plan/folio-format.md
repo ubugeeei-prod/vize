@@ -228,19 +228,19 @@ vanish; every other spelling is strict with exact, tested rejections.
 One line per op (`[]` optional; `<expr>` is an expression payload token,
 below):
 
-| line                                                                                    | notes                                |
-| --------------------------------------------------------------------------------------- | ------------------------------------ |
-| `ui.element <tag>[ ns=<svg\|mathml>] @s:e`                                              | HTML namespace elided                |
-| `ui.component <name> @s:e`                                                              | same body grouping as an element     |
-| `ui.text <quoted> @s:e`                                                                 |                                      |
-| `ui.interpolation <expr> @s:e`                                                          |                                      |
-| `ui.if @s:e`                                                                            | `branch [<expr> ]@s:e` lines beneath |
-| `ui.for source=<expr> value=<expr>[ key=<expr>][ index=<expr>] @s:e`                    | region beneath                       |
-| `ui.slot name=<quoted>\|name=<expr> @s:e`                                               | fallback region beneath              |
-| `ui.model read=<expr> write=<expr> @s:e`                                                | `attr` lines beneath                 |
-| `vue.directive <quoted>[ arg=<quoted>\|arg=<expr>][ mods=<quoted>][ value=<expr>] @s:e` | modifiers comma-joined inside quotes |
+| line                                                                                    | notes                                            |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `ui.element <tag>[ ns=<svg\|mathml>] @s:e`                                              | HTML namespace elided                            |
+| `ui.component <name> @s:e`                                                              | same body grouping as an element                 |
+| `ui.text <quoted> @s:e`                                                                 |                                                  |
+| `ui.interpolation <expr> @s:e`                                                          |                                                  |
+| `ui.if @s:e`                                                                            | `branch [<expr> ]@s:e` lines beneath             |
+| `ui.for source=<expr> value=<expr>[ key=<expr>][ index=<expr>] @s:e`                    | region beneath                                   |
+| `ui.slot name=<quoted>\|name=<expr> @s:e`                                               | fallback region beneath                          |
+| `ui.model read=<expr> write=<expr> @s:e`                                                | `attr` lines beneath                             |
+| `vue.directive <quoted>[ arg=<quoted>\|arg=<expr>][ mods=<quoted>][ value=<expr>] @s:e` | modifiers comma-joined inside quotes             |
 | `vue.css-bind value=<expr> @s:e`                                                        | SFC style `v-bind()`; span is CSS-block-relative |
-| `attr <name>[=<quoted>] @s:e`                                                           | bare name for boolean attributes     |
+| `attr <name>[=<quoted>] @s:e`                                                           | bare name for boolean attributes                 |
 
 **Expression payloads** (P2-5b): every expression position serializes as
 owned text + span, never an AST, because arena references cannot persist
