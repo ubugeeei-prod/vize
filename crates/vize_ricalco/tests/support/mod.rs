@@ -13,7 +13,7 @@ use vize_disegno::folio::DisegnoFolio;
 use vize_disegno::provenance::ProvenanceRecord;
 use vize_disegno::scope::ScopeFacts;
 use vize_disegno::verify::{Rigor, Violation, verify, verify_table};
-use vize_ricalco::{Lowered, lower};
+use vize_ricalco::{LegacyCaps, Lowered, lower, lower_with_caps};
 use vize_sinopia::parse;
 
 /// The owned snapshot of one lowering, for exact-equality pins.
@@ -33,7 +33,12 @@ pub struct Artifact {
 
 /// Lower `source` and clone everything owned out of the arena's shadow.
 pub fn artifact(source: &str) -> Artifact {
-    with_lowered(source, |lowered, folio| Artifact {
+    artifact_caps(source, LegacyCaps::VUE3)
+}
+
+/// [`artifact`] under an explicit Vue dialect.
+pub fn artifact_caps(source: &str, caps: LegacyCaps) -> Artifact {
+    with_lowered_caps(source, caps, |lowered, folio| Artifact {
         folio: folio.print_to_string(FolioMode::Full),
         op_count: lowered.op_count,
         diagnostics: lowered.diagnostics.clone(),
@@ -50,9 +55,18 @@ pub fn artifact(source: &str) -> Artifact {
 /// Parse + lower `source` and hand the artifact (with its owned folio
 /// mirror) to `f`.
 pub fn with_lowered<R>(source: &str, f: impl FnOnce(&Lowered<'_>, &DisegnoFolio) -> R) -> R {
+    with_lowered_caps(source, LegacyCaps::VUE3, f)
+}
+
+/// [`with_lowered`] under an explicit Vue dialect.
+pub fn with_lowered_caps<R>(
+    source: &str,
+    caps: LegacyCaps,
+    f: impl FnOnce(&Lowered<'_>, &DisegnoFolio) -> R,
+) -> R {
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, source);
-    let lowered = lower(&allocator, &tree, &errors);
+    let lowered = lower_with_caps(&allocator, &tree, &errors, caps);
     let folio = DisegnoFolio::of(&lowered.root.ops);
     f(&lowered, &folio)
 }
@@ -154,7 +168,12 @@ pub fn assert_transformed_sound(source: &str, context: &str) {
 /// 4. **Folio round-trip** — `parse(print(v)) == v` structurally and the
 ///    re-print is byte-identical (TS-16 applied to lowered output).
 pub fn assert_sound(source: &str, context: &str) {
-    with_lowered(source, |lowered, folio| {
+    assert_sound_caps(source, LegacyCaps::VUE3, context);
+}
+
+/// [`assert_sound`] under an explicit Vue dialect.
+pub fn assert_sound_caps(source: &str, caps: LegacyCaps, context: &str) {
+    with_lowered_caps(source, caps, |lowered, folio| {
         assert_eq!(
             u64::from(lowered.op_count),
             folio.op_count(),

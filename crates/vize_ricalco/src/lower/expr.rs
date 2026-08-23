@@ -4,13 +4,15 @@
 //! The lowering **never re-derives the admission rule**: text goes
 //! through [`ExprRef::parse_js_in`] — the one shared home of the P1-5
 //! guard → parse → whole-coverage rule — and comes back `Js` when
-//! admitted or `Opaque` with the text-classified reason when not. The
-//! position-classified reasons (`ForValue` here; `MultiStatement` and
+//! admitted or `Opaque` with the text-classified reason when not. Vue 2
+//! pipe filters are an exception that is still total: when the dialect
+//! asks, [`VueFilterExpr::parse_in`] runs first so `|` is not bitwise-OR.
+//! The position-classified reasons (`ForValue` here; `MultiStatement` and
 //! `Compound` have no P2-8 producer, see the record) are assigned by
 //! [`opaque_at`], the only constructor that names a reason directly.
 
 use vize_carton::{Span, String, cstr};
-use vize_disegno::expr::{ExprRef, OpaqueExpr, OpaqueReason};
+use vize_disegno::expr::{ExprRef, OpaqueExpr, OpaqueReason, VueFilterExpr};
 
 use super::cx::Cx;
 
@@ -23,8 +25,15 @@ pub(crate) fn trimmed<'a>(cx: &Cx<'a>, text: &'a str) -> (&'a str, Span) {
 
 /// Lower one expression position: trim, then admit through the shared
 /// rule. Total — refused text comes back as the classified escape.
+/// Vue 2 pipe filters are admitted as [`ExprRef::Filter`] when the
+/// dialect asks for them, *before* a JS parse would read `|` as OR.
 pub(crate) fn expr_at<'a>(cx: &Cx<'a>, text: &'a str) -> ExprRef<'a> {
     let (slice, span) = trimmed(cx, text);
+    if cx.caps.supports_filters
+        && let Some(filter) = VueFilterExpr::parse_in(cx.allocator, slice, span)
+    {
+        return ExprRef::Filter(filter);
+    }
     ExprRef::parse_js_in(cx.allocator, slice, span)
 }
 

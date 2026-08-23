@@ -144,13 +144,32 @@ pub(crate) fn element_core<'a>(
         cx.record("lower.element", node, open_slice, after, span);
     }
 
+    let take_scope = super::sugar::should_take(cx, element, analyzed);
+    let scope_index = take_scope
+        .then(|| super::sugar::scope_attr_index(element, analyzed))
+        .flatten();
+    let companion_slot = take_scope
+        .then(|| super::sugar::companion_slot_index(element, analyzed))
+        .flatten();
+
     let mut attributes: Vec<'a, Attribute<'a>> = Vec::new_in(&cx.allocator);
     let mut bindings: Vec<'a, BindingOp<'a>> = Vec::new_in(&cx.allocator);
     for (index, attr) in element.open.attrs.iter().enumerate() {
         if Some(index) == analyzed.branch.map(|(idx, _)| idx) || Some(index) == analyzed.vfor {
             continue;
         }
+        if Some(index) == companion_slot {
+            continue;
+        }
         match &analyzed.forms[index] {
+            AttrForm::Static if Some(index) == scope_index => {
+                bindings.push(super::sugar::lower_slot_scope(
+                    cx,
+                    element,
+                    index,
+                    companion_slot,
+                ));
+            }
             AttrForm::Static => attributes.push(Attribute {
                 name: attr.name.text,
                 value: attr.value.as_ref().map(|value| value.content.text),

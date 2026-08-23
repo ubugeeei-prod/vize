@@ -59,4 +59,4 @@ extern crate alloc;
 pub mod lower;
 pub mod pass;
 
-pub use lower::{Lowered, lower};
+pub use lower::{LegacyCaps, Lowered, lower, lower_with_caps};
