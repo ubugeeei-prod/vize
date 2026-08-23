@@ -5,7 +5,7 @@ use vize_carton::String;
 /// Vue helpers this installment can mention, ranked the way
 /// `vue_helper_import_rank` orders the shipped preamble (`toDisplayString`
 /// before vnode creates before class/style normalizers before `openBlock`
-/// before block creates before `createTextVNode`).
+/// before block creates before `createTextVNode` / `createCommentVNode`).
 #[derive(Clone, Copy)]
 enum Helper {
     ToDisplayString,
@@ -15,16 +15,18 @@ enum Helper {
     OpenBlock,
     CreateElementBlock,
     CreateText,
+    CreateComment,
 }
 
 impl Helper {
-    const ALL: [Self; 7] = [
+    const ALL: [Self; 8] = [
         Self::ToDisplayString,
         Self::CreateElementVNode,
         Self::NormalizeClass,
         Self::NormalizeStyle,
         Self::OpenBlock,
         Self::CreateElementBlock,
+        Self::CreateComment,
         Self::CreateText,
     ];
 
@@ -37,6 +39,7 @@ impl Helper {
             Self::CreateText => 16,
             Self::NormalizeClass => 32,
             Self::NormalizeStyle => 64,
+            Self::CreateComment => 128,
         }
     }
 
@@ -49,6 +52,7 @@ impl Helper {
             Self::OpenBlock => "openBlock",
             Self::CreateElementBlock => "createElementBlock",
             Self::CreateText => "createTextVNode",
+            Self::CreateComment => "createCommentVNode",
         }
     }
 
@@ -61,6 +65,7 @@ impl Helper {
             Self::OpenBlock => "_openBlock",
             Self::CreateElementBlock => "_createElementBlock",
             Self::CreateText => "_createTextVNode",
+            Self::CreateComment => "_createCommentVNode",
         }
     }
 }
@@ -133,6 +138,10 @@ impl Buf {
         self.used |= Helper::NormalizeStyle.bit();
     }
 
+    pub(super) fn use_create_comment(&mut self) {
+        self.used |= Helper::CreateComment.bit();
+    }
+
     pub(super) fn to_display_string_alias() -> &'static str {
         Helper::ToDisplayString.alias()
     }
@@ -161,6 +170,10 @@ impl Buf {
         Helper::NormalizeStyle.alias()
     }
 
+    pub(super) fn create_comment_alias() -> &'static str {
+        Helper::CreateComment.alias()
+    }
+
     pub(super) fn hoist_root_props(&mut self, object: String) {
         self.hoisted_props = Some(object);
     }
@@ -173,7 +186,7 @@ impl Buf {
     /// root static-props hoist (the shipped codegen appends hoists to
     /// the helper preamble).
     pub(super) fn preamble(&self) -> String {
-        let listed: [Helper; 7] = Helper::ALL;
+        let listed: [Helper; 8] = Helper::ALL;
         let mut n = 0;
         for helper in listed {
             if self.used & helper.bit() != 0 {

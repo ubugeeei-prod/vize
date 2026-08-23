@@ -29,10 +29,11 @@ pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), Em
                 cx.buf.push("(");
                 cx.buf.push(Buf::open_block_alias());
                 cx.buf.push("(), ");
-                emit_call(cx, element, /* block */ true)?;
+                emit_call(cx, element, /* block */ true, None)?;
                 cx.buf.push(")");
             }
             Op::Interpolation(interp) => emit_interpolation(cx, interp, id)?,
+            Op::If(if_op) => super::emit_if_op(cx, if_op, id)?,
             _ => return Err(EmitError::Unsupported),
         }
     }
@@ -44,7 +45,7 @@ fn admit_unique_root(root: &Region<'_>) -> Result<(), EmitError> {
     for op in root.ops.iter() {
         match op {
             Op::Text(text) if is_ignorable_root_text(text) => {}
-            Op::Element(_) | Op::Interpolation(_) if !found => found = true,
+            Op::Element(_) | Op::Interpolation(_) | Op::If(_) if !found => found = true,
             _ => return Err(EmitError::Unsupported),
         }
     }
@@ -61,10 +62,30 @@ fn is_ignorable_root_text(text: &TextOp<'_>) -> bool {
 
 fn emit_nested(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) -> Result<(), EmitError> {
     cx.buf.use_create_element_vnode();
-    emit_call(cx, element, /* block */ false)
+    emit_call(cx, element, /* block */ false, None)
 }
 
-fn emit_call(cx: &mut EmitCx<'_>, element: &ElementOp<'_>, block: bool) -> Result<(), EmitError> {
+pub(super) fn emit_if_branch_element(
+    cx: &mut EmitCx<'_>,
+    element: &ElementOp<'_>,
+    key: &str,
+) -> Result<(), EmitError> {
+    cx.buf.use_open_block();
+    cx.buf.use_create_element_block();
+    cx.buf.push("(");
+    cx.buf.push(Buf::open_block_alias());
+    cx.buf.push("(), ");
+    emit_call(cx, element, /* block */ true, Some(key))?;
+    cx.buf.push(")");
+    Ok(())
+}
+
+fn emit_call(
+    cx: &mut EmitCx<'_>,
+    element: &ElementOp<'_>,
+    block: bool,
+    if_key: Option<&str>,
+) -> Result<(), EmitError> {
     admit_native(element)?;
     let alias = if block {
         Buf::create_element_block_alias()
@@ -77,7 +98,7 @@ fn emit_call(cx: &mut EmitCx<'_>, element: &ElementOp<'_>, block: bool) -> Resul
     cx.buf.push("\"");
     let has_children = !element.children.ops.is_empty();
     let has_binds = !element.bindings.is_empty();
-    let hoist = block && root_props_should_hoist(element);
+    let hoist = block && if_key.is_none() && root_props_should_hoist(element);
     let patch = bind_patch(element);
     let text_flag = children_need_text_flag(&element.children);
     let mut flag = patch.flag;
@@ -86,15 +107,15 @@ fn emit_call(cx: &mut EmitCx<'_>, element: &ElementOp<'_>, block: bool) -> Resul
     }
     let omit_text_only = hoist && flag == 1;
     let emit_flag = flag != 0 && !omit_text_only;
-    let has_props = hoist || !element.attributes.is_empty() || has_binds;
+    let has_props = hoist || !element.attributes.is_empty() || has_binds || if_key.is_some();
     if hoist {
         cx.buf
             .hoist_root_props(compact_props_object(element.attributes.iter()));
         cx.buf.push(", ");
         cx.buf.push(Buf::hoisted_props_alias());
-    } else if has_binds {
+    } else if if_key.is_some() || has_binds {
         cx.buf.push(", ");
-        emit_bind_props(cx, element)?;
+        emit_bind_props(cx, element, if_key)?;
     } else if !element.attributes.is_empty() {
         cx.buf.push(", ");
         emit_static_props_inline(cx, element.attributes.iter());
@@ -263,17 +284,15 @@ fn emit_children(cx: &mut EmitCx<'_>, children: &Region<'_>) -> Result<(), EmitE
 }
 
 fn emit_array_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
-    let _id = cx.walk.mint();
+    let id = cx.walk.mint();
     ensure_sufficient_stack(|| match op {
         Op::Element(element) => {
             cx.walk.skip(element.bindings.len());
             emit_nested(cx, element)
         }
-        Op::Text(_)
-        | Op::Component(_)
-        | Op::Interpolation(_)
-        | Op::If(_)
-        | Op::For(_)
-        | Op::Slot(_) => Err(EmitError::Unsupported),
+        Op::If(if_op) => super::emit_if_op(cx, if_op, id),
+        Op::Text(_) | Op::Component(_) | Op::Interpolation(_) | Op::For(_) | Op::Slot(_) => {
+            Err(EmitError::Unsupported)
+        }
     })
 }

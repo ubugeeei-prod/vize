@@ -8,9 +8,9 @@
 //! S2 ops** — it does not mint relief codegen-nodes (`NodeType` 13–20).
 //!
 //! Installment 5 emits **static native HTML**, interpolations,
-//! mixed text siblings, static-name `ui.bind`, and **static-name
-//! `ui.on`** (`@click` without modifiers, patch flags including
-//! `NEED_HYDRATION`). Object-spread `v-bind`/`v-on`, modifiers,
+//! mixed text siblings, static-name `ui.bind`, static-name `ui.on`,
+//! and **native `ui.if`** (root and nested `v-if`/`v-else` on HTML
+//! elements). Object-spread `v-bind`/`v-on`, modifiers, fragments,
 //! filters, and components stay [`EmitError::Unsupported`]. The old lane
 //! stays the shipped compile path; [`super::DOM_LANE_FLAG`] is named
 //! here and *read* in the atelier_dom witness.
@@ -25,12 +25,16 @@ mod js;
 mod on;
 #[path = "emit/props.rs"]
 mod props;
+#[path = "emit/vif.rs"]
+mod vif;
 #[path = "emit/vnode.rs"]
 mod vnode;
 
 use vize_carton::{Allocator, String};
 use vize_davinci::diagnostic::Severity;
+use vize_davinci::id::NodeId;
 use vize_davinci::pass::BudgetObserver;
+use vize_disegno::op::{ElementOp, IfOp};
 use vize_sinopia::parse;
 
 use crate::lower::{Lowered, lower};
@@ -40,12 +44,26 @@ use crate::pass::{S2Facts, run_transform};
 use self::buf::Buf;
 use self::vnode::emit_root;
 
+fn emit_if_op(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>, id: Option<NodeId>) -> Result<(), EmitError> {
+    vif::emit_if(cx, if_op, id)
+}
+
+fn emit_if_branch_call(
+    cx: &mut EmitCx<'_>,
+    element: &ElementOp<'_>,
+    key: &str,
+) -> Result<(), EmitError> {
+    vnode::emit_if_branch_element(cx, element, key)
+}
+
 /// Per-emit numbering + helper buffer. Page-order ids re-derive the
 /// same arithmetic the S2 passes use so compound text facts resolve.
 struct EmitCx<'facts> {
     buf: Buf,
     facts: &'facts S2Facts,
     walk: PageWalk,
+    /// Sibling `v-if` chains share one counter; nested chains reset.
+    if_branch_key: u32,
 }
 
 /// One DOM render module, split the way the shipped codegen splits it
@@ -96,6 +114,7 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
         buf: Buf::new(),
         facts,
         walk: PageWalk::new(),
+        if_branch_key: 0,
     };
     cx.buf
         .push("function render(_ctx, _cache, $props, $setup, $data, $options) {");
