@@ -7,7 +7,8 @@
 use core::fmt::{Result, Write};
 
 use super::super::owned::{
-    FolioAttribute, FolioBind, FolioBinding, FolioOn, FolioSlotContent, FolioVueDirective,
+    FolioAttribute, FolioBind, FolioBinding, FolioOn, FolioSlotContent, FolioVueCssBind,
+    FolioVueDirective,
 };
 use super::{end_line, indent, print_expr, print_name, quoted};
 use vize_carton::String;
@@ -51,6 +52,7 @@ pub(super) fn print_binding<W: Write>(
         }
         FolioBinding::SlotContent(content) => print_slot_content(w, content, depth, mode),
         FolioBinding::VueDirective(directive) => print_directive(w, directive, depth, mode),
+        FolioBinding::VueCssBind(bind) => print_css_bind(w, bind, depth, mode),
     }
 }
 
@@ -150,4 +152,16 @@ fn print_directive<W: Write>(
         print_expr(w, value, mode)?;
     }
     end_line(w, directive.span, mode)
+}
+
+fn print_css_bind<W: Write>(
+    w: &mut W,
+    bind: &FolioVueCssBind,
+    depth: usize,
+    mode: FolioMode,
+) -> Result {
+    indent(w, depth)?;
+    w.write_str("vue.css-bind value=")?;
+    print_expr(w, &bind.value, mode)?;
+    end_line(w, bind.span, mode)
 }

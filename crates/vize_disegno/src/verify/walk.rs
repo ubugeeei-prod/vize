@@ -160,6 +160,9 @@ fn body(
             FolioBinding::VueDirective(directive) => {
                 line_checks("vue.directive", directive.span, owner, out);
             }
+            FolioBinding::VueCssBind(bind) => {
+                line_checks("vue.css-bind", bind.span, owner, out);
+            }
         }
     }
     for child in children {

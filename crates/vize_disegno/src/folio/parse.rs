@@ -158,6 +158,11 @@ impl Parser {
                 self.push_leaf_binding(FolioBinding::VueDirective(directive));
                 Ok(())
             }
+            Item::CssBind(bind) => {
+                self.guard_binding(line_no)?;
+                self.push_leaf_binding(FolioBinding::VueCssBind(bind));
+                Ok(())
+            }
             Item::Branch(branch) => match self.stack.last() {
                 Some(Frame::If(_)) => {
                     self.stack.push(Frame::Branch(branch));

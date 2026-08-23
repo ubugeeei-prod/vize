@@ -25,6 +25,8 @@ pub enum FolioBinding {
     SlotContent(FolioSlotContent),
     /// `vue.directive`.
     VueDirective(FolioVueDirective),
+    /// `vue.css-bind`.
+    VueCssBind(FolioVueCssBind),
 }
 
 /// Mirror of [`crate::op::BindOp`].
@@ -92,6 +94,15 @@ pub struct FolioVueDirective {
     pub span: Span,
 }
 
+/// Mirror of [`crate::op::VueCssBindOp`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FolioVueCssBind {
+    /// The `v-bind()` argument.
+    pub value: FolioExpr,
+    /// The call's range, relative to the style block.
+    pub span: Span,
+}
+
 pub(super) fn own_binding(binding: &BindingOp<'_>) -> FolioBinding {
     match binding {
         BindingOp::Bind(bind) => FolioBinding::Bind(FolioBind {
@@ -126,6 +137,10 @@ pub(super) fn own_binding(binding: &BindingOp<'_>) -> FolioBinding {
             modifiers: own_modifiers(&directive.modifiers),
             value: directive.value.as_ref().map(own_expr),
             span: directive.span,
+        }),
+        BindingOp::VueCssBind(bind) => FolioBinding::VueCssBind(FolioVueCssBind {
+            value: own_expr(&bind.value),
+            span: bind.span,
         }),
     }
 }

@@ -123,6 +123,7 @@ pub fn surface_of(
                     .collect(),
                 value: directive.value.as_ref().map(|value| Some(expr_text(value))),
             }),
+            FolioBinding::VueCssBind(_) => {}
         }
     }
     surface

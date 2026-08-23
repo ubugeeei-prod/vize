@@ -1,5 +1,6 @@
 //! Attached-binding line grammar: `ui.bind`, `ui.on`, `ui.model`,
-//! `ui.slot-content`, `vue.directive` — split from [`line`](super::line)
+//! `ui.slot-content`, `vue.directive`, `vue.css-bind` — split from
+//! [`line`](super::line)
 //! along the op-family boundary (region-op lines there, binding lines
 //! here) so each file stays within the source budget.
 
@@ -10,7 +11,7 @@ use vize_davinci::folio::FolioError;
 
 use super::super::owned::{
     FolioBind, FolioContract, FolioExpr, FolioModel, FolioName, FolioOn, FolioSlotContent,
-    FolioVueDirective,
+    FolioVueCssBind, FolioVueDirective,
 };
 use super::expr_token::take_expr;
 use super::line::{Item, err, final_span, name_value, tail_span, take_quoted};
@@ -178,6 +179,17 @@ pub(super) fn directive(rest: &str, line_no: usize) -> Result<Item, FolioError> 
         name,
         argument,
         modifiers,
+        value,
+        span: tail_span(rest, line_no)?,
+    }))
+}
+
+pub(super) fn css_bind(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+    let Some(rest) = rest.strip_prefix("value=") else {
+        return Err(err(line_no, cstr!("expected `value=`")));
+    };
+    let (value, rest) = take_expr(rest, line_no)?;
+    Ok(Item::CssBind(FolioVueCssBind {
         value,
         span: tail_span(rest, line_no)?,
     }))
