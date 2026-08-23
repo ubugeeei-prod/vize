@@ -1,6 +1,6 @@
-//! P2-11 installment 4 witness: static native HTML, interpolations,
-//! and mixed element+text siblings, old DOM lane vs S2 emit, compared
-//! **byte-for-byte** including helper usage.
+//! P2-11 installment 5 witness: static native HTML, interpolations,
+//! mixed text siblings, and static-name binds, old DOM lane vs S2 emit,
+//! compared **byte-for-byte** including helper usage.
 //!
 //! `vize_atelier_dom` is published; the Davinci crates are not. The
 //! comparator therefore rides stripped-on-publish dev-deps (the same
@@ -45,6 +45,15 @@ const BATTERY: &[(&str, &str)] = &[
         "space_between_spans",
         "<div><span></span> <span></span></div>",
     ),
+    ("dynamic_class", r#"<div :class="cls"></div>"#),
+    ("dynamic_id", r#"<div :id="foo"></div>"#),
+    ("dynamic_style", r#"<div :style="s"></div>"#),
+    ("class_and_interp", r#"<div :class="cls">{{ msg }}</div>"#),
+    (
+        "static_and_dynamic_class",
+        r#"<div class="base" :class="cls"></div>"#,
+    ),
+    ("hyphenated_bind", r#"<div :data-id="x"></div>"#),
 ];
 
 fn shipped(src: &str) -> String {

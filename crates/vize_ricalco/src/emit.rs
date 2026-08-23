@@ -7,15 +7,12 @@
 //! P2-9 carve-out. This module writes the JS string **directly from
 //! S2 ops** — it does not mint relief codegen-nodes (`NodeType` 13–20).
 //!
-//! Installment 4 emits **static native HTML**, **Js interpolations**
-//! (compounds from [`TextFacts`], never the opaque source), and
-//! **mixed element+text siblings** as `_createTextVNode`. Bindings,
-//! filters, and components stay [`EmitError::Unsupported`]: the
-//! comparator counts those, it does not invent output. The old lane
+//! Installment 5 emits **static native HTML**, interpolations,
+//! mixed text siblings, and **static-name `ui.bind`** (`:class` /
+//! `:style` / `:id`, patch flags). Object-spread `v-bind`, events,
+//! filters, and components stay [`EmitError::Unsupported`]. The old lane
 //! stays the shipped compile path; [`super::DOM_LANE_FLAG`] is named
 //! here and *read* in the atelier_dom witness.
-//!
-//! [`TextFacts`]: crate::pass::TextFacts
 
 #[path = "emit/buf.rs"]
 mod buf;
@@ -23,6 +20,8 @@ mod buf;
 mod children;
 #[path = "emit/js.rs"]
 mod js;
+#[path = "emit/props.rs"]
+mod props;
 #[path = "emit/vnode.rs"]
 mod vnode;
 
