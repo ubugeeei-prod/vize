@@ -127,6 +127,7 @@ pub fn run(args: ReadyArgs) {
         ssr: args.ssr,
         vapor: false,
         custom_renderer: false,
+        custom_elements: Vec::new(),
         template_syntax: None,
         script_ext: args.script_ext,
         declaration: false,

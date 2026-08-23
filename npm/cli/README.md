@@ -243,7 +243,8 @@ Important shared fields:
 | `compiler.sourceMap`             | Vite plugin                    | Enable source maps                                        |
 | `compiler.ssr`                   | npm build, Vite plugin         | Force SSR compilation                                     |
 | `compiler.vapor`                 | npm build, Vite plugin         | Enable Vapor compilation                                  |
-| `compiler.customRenderer`        | npm build, Vite plugin         | Support custom renderer element semantics                 |
+| `compiler.customRenderer`        | npm build, Vite plugin         | Treat lowercase non-HTML tags as custom renderer elements |
+| `compiler.customElements`        | npm build, Vite plugin         | Tag patterns compiled as custom elements instead of Vue components |
 | `compiler.templateSyntax`        | npm build, Vite plugin         | Choose standard, strict, or quirks template syntax mode   |
 | `experimentals.vapor`            | npm build, Vite plugin         | Opt into experimental SFC Vapor before compiler support   |
 | `experimentals.jsxVapor`         | Vite plugin                    | Opt into experimental JSX Vapor by default                |

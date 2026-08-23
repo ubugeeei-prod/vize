@@ -189,7 +189,8 @@ vize({
 | `ssr`                  | `compiler.ssr` ou `vize({ ssr })`                       | Forçar a compilação do SSR quando a flag de build do SSR do Vite não é suficiente.                                                                         |
 | `vapor`                | `compiler.vapor` ou `vize({ vapor })`                   | Compilar templates pelo backend do Vapor.                                                                                                                  |
 | `jsxMode`              | `compiler.jsxMode` ou `vize({ jsxMode })`               | Backend de saída padrão (`"vdom"` / `"vapor"`) para componentes `.jsx`/`.tsx` . Diretivas `"use vue:*"` por componente prevalecem sobre isso.              |
-| `customRenderer`       | `compiler.customRenderer` ou `vize({ customRenderer })` | Trate tags minúsculas que não sejam HTML como elementos personalizados de renderização. Útil para ecossistemas de renderizadores como TresJS.              |
+| `customRenderer`       | `compiler.customRenderer` ou `vize({ customRenderer })` | Trate tags minúsculas que não sejam HTML como elementos personalizados de renderização. Não corresponde a tags PascalCase como `<TresMesh>`.               |
+| `customElements`       | `compiler.customElements` ou `vize({ customElements })` | Padrões de tag compilados como custom elements. Use `["Tres*"]` para tags PascalCase do TresJS.                                                            |
 | `templateSyntax`       | `compiler.templateSyntax` ou `vize({ templateSyntax })` | Escolha `"standard"`, `"strict"`ou `"quirks"` tratamento de sintaxe de template.                                                                           |
 | `include`              | `vite.include` ou `vize({ include })`                   | Arquivos que o plugin deve compilar.                                                                                                                       |
 | `exclude`              | `vite.exclude` ou `vize({ exclude })`                   | Arquivos que o plugin deveria ignorar.                                                                                                                     |
@@ -207,8 +208,11 @@ Receitas comuns:
 // Vapor-oriented build
 vize({ vapor: true });
 
-// TresJS or another custom renderer
-vize({ customRenderer: true });
+// Tags PascalCase do TresJS
+vize({
+  customRenderer: true,
+  customElements: ["Tres*", "primitive"],
+});
 
 // Existing templates that rely on parser edge cases, such as
 // v-for alias edge parens or `<div />` as a self-closing leaf

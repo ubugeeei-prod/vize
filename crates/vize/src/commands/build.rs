@@ -89,6 +89,14 @@ pub struct BuildArgs {
     #[arg(long)]
     pub custom_renderer: bool,
 
+    /// Tag patterns compiled as custom elements instead of Vue components
+    ///
+    /// Repeat the flag for multiple patterns. `Tres*` matches PascalCase
+    /// renderer tags such as `<TresMesh>` without treating imported
+    /// components as elements.
+    #[arg(long, value_name = "PATTERN")]
+    pub custom_elements: Vec<String>,
+
     /// Template syntax compatibility mode
     #[arg(long, value_enum)]
     pub template_syntax: Option<TemplateSyntaxArg>,

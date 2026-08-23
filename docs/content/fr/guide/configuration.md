@@ -196,6 +196,7 @@ chaque intégration consomme tous les domaines pour l’instant.
 | `vapor`             | `boolean`                             | Activer la compilation en mode Vapor                                                                        |
 | `jsxMode`           | `"vdom"` ou `"vapor"`                 | Backend de sortie par défaut pour les composants `.jsx`/`.tsx`                                              |
 | `customRenderer`    | `boolean`                             | Considérez les balises minuscules non HTML comme des éléments de rendu personnalisés                        |
+| `customElements`    | `string[]`                            | Motifs de balises compilés comme éléments personnalisés (`Tres*` pour TresJS)                               |
 | `templateSyntax`    | `"standard"`, `"strict"`ou `"quirks"` | Choisissez la gestion des avertissements, des erreurs ou des particularités Vue pour la syntaxe des modèles |
 | `scriptExt`         | `"ts"` ou `"js"`                      | Conserver la sortie TS ou décompiler vers JS dans la commande de compilation npm                            |
 | `mode`              | `"module"` ou `"function"`            | Mode de sortie de compilateur de bas niveau                                                                 |

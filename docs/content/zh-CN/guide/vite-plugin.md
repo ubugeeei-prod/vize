@@ -189,7 +189,8 @@ vize({
 | `ssr`                  | `compiler.ssr`或`vize({ ssr })`                       | 当Vite的SSR构建旗帜不够时，强制SSR汇编。                                                           |
 | `vapor`                | `compiler.vapor`或`vize({ vapor })`                   | 通过Vapor后端编译模板。                                                                            |
 | `jsxMode`              | `compiler.jsxMode`或`vize({ jsxMode })`               | `.jsx`/`.tsx`组件的默认输出后端（`"vdom"` / `"vapor"`）。每个组件的 `"use vue:*"` 指令覆盖了它。   |
-| `customRenderer`       | `compiler.customRenderer`或`vize({ customRenderer })` | 把小写非HTML标签当作自定义渲染器元素。对于像 TresJS 这样的渲染器生态系统非常有用。                 |
+| `customRenderer`       | `compiler.customRenderer`或`vize({ customRenderer })` | 把小写非HTML标签当作自定义渲染器元素。不匹配 `<TresMesh>` 这类 PascalCase 标签。                   |
+| `customElements`       | `compiler.customElements`或`vize({ customElements })` | 作为自定义元素编译的标签模式。TresJS 的 PascalCase 渲染器标签使用 `["Tres*"]`。                    |
 | `templateSyntax`       | `compiler.templateSyntax`或`vize({ templateSyntax })` | 选择`"standard"`、`"strict"`或`"quirks"`模板语法处理。                                             |
 | `include`              | `vite.include`或`vize({ include })`                   | 插件应该编译的文件。                                                                               |
 | `exclude`              | `vite.exclude`或`vize({ exclude })`                   | 这些文件是插件应该忽略的。                                                                         |
@@ -207,8 +208,11 @@ vize({
 // Vapor-oriented build
 vize({ vapor: true });
 
-// TresJS or another custom renderer
-vize({ customRenderer: true });
+// TresJS PascalCase 渲染器标签
+vize({
+  customRenderer: true,
+  customElements: ["Tres*", "primitive"],
+});
 
 // Existing templates that rely on parser edge cases, such as
 // v-for alias edge parens or `<div />` as a self-closing leaf

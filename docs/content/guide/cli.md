@@ -108,6 +108,8 @@ Key options:
 | `-o, --output`        | Source-relative output below the common input root; rejects collisions |
 | `-f, --format`        | Output format: `js`, `json`, `stats`                                   |
 | `--ssr`               | Enable SSR compilation                                                 |
+| `--custom-renderer`   | Treat lowercase non-HTML tags as custom renderer elements              |
+| `--custom-elements`   | Tag patterns compiled as custom elements; repeat for multiple patterns |
 | `--script-ext`        | `preserve` or `downcompile`                                            |
 | `--declaration`       | Emit `.d.ts` files for the built SFCs (alias: `--dts`)                 |
 | `--declaration-dir`   | Declaration output directory (default: the build output directory)     |

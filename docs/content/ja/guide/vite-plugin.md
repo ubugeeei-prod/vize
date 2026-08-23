@@ -189,7 +189,8 @@ vize({
 | `ssr`                  | `compiler.ssr` または `vize({ ssr })`                       | Vite の SSR ビルド フラグが不十分な場合に SSR を強制的にコンパイルします。                                                                                         |
 | `vapor`                | `compiler.vapor` または `vize({ vapor })`                   | Vapor バックエンドを通じてテンプレートをコンパイルします。                                                                                                         |
 | `jsxMode`              | `compiler.jsxMode` または `vize({ jsxMode })`               | `.jsx`/`.tsx` コンポーネントのデフォルトの出力バックエンド (`"vdom"` / `"vapor"`)。コンポーネントごとの `"use vue:*"` ディレクティブはこれをオーバーライドします。 |
-| `customRenderer`       | `compiler.customRenderer` または `vize({ customRenderer })` | 小文字の非 HTML タグをカスタム レンダラー要素として扱います。 TresJS などのレンダラー エコシステムに役立ちます。                                                   |
+| `customRenderer`       | `compiler.customRenderer` または `vize({ customRenderer })` | 小文字の非 HTML タグをカスタム レンダラー要素として扱います。 `<TresMesh>` のような PascalCase タグには一致しません。                                                 |
+| `customElements`       | `compiler.customElements` または `vize({ customElements })` | カスタム要素としてコンパイルするタグパターン。 TresJS の PascalCase レンダラータグには `["Tres*"]` を使います。                                                     |
 | `templateSyntax`       | `compiler.templateSyntax` または `vize({ templateSyntax })` | `"standard"`、`"strict"`、または `"quirks"` テンプレート構文処理を選択します。                                                                                     |
 | `include`              | `vite.include` または `vize({ include })`                   | プラグインがコンパイルする必要があるファイル。                                                                                                                     |
 | `exclude`              | `vite.exclude` または `vize({ exclude })`                   | プラグインが無視する必要があるファイル。                                                                                                                           |
@@ -207,8 +208,11 @@ vize({
 // Vapor-oriented build
 vize({ vapor: true });
 
-// TresJS or another custom renderer
-vize({ customRenderer: true });
+// TresJS PascalCase レンダラータグ
+vize({
+  customRenderer: true,
+  customElements: ["Tres*", "primitive"],
+});
 
 // Existing templates that rely on parser edge cases, such as
 // v-for alias edge parens or `<div />` as a self-closing leaf

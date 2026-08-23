@@ -113,6 +113,8 @@ vize build --profile src
 | `-o, --output`        | 低于公共输入根的源相对输出;拒绝碰撞          |
 | `-f, --format`        | 输出格式：`js`、`json`、`stats`              |
 | `--ssr`               | 启用SSR编译                                  |
+| `--custom-renderer`   | 将小写非HTML标签视为自定义渲染器元素         |
+| `--custom-elements`   | 作为自定义元素编译的标签模式；可重复指定     |
 | `--script-ext`        | `preserve`或`downcompile`                    |
 | `--declaration`       | 为构建的SFCs（别名：`--dts`）发布`.d.ts`文件 |
 | `--declaration-dir`   | 声明输出目录（默认：构建输出目录）           |

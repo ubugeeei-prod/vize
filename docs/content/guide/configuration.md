@@ -194,6 +194,7 @@ every integration consumes every field yet.
 | `vapor`             | `boolean`                               | Enable Vapor-mode compilation                                    |
 | `jsxMode`           | `"vdom"` or `"vapor"`                   | Default output backend for `.jsx`/`.tsx` components              |
 | `customRenderer`    | `boolean`                               | Treat lowercase non-HTML tags as custom renderer elements        |
+| `customElements`    | `string[]`                              | Tag patterns compiled as custom elements (`Tres*` for TresJS)    |
 | `templateSyntax`    | `"standard"`, `"strict"`, or `"quirks"` | Choose warning, error, or Vue-quirk handling for template syntax |
 | `scriptExt`         | `"ts"` or `"js"`                        | Preserve TS output or downcompile to JS in the npm build command |
 | `mode`              | `"module"` or `"function"`              | Lower-level compiler output mode                                 |

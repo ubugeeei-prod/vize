@@ -113,7 +113,7 @@ impl CompileFileSettings {
             ssr,
             vapor,
             custom_renderer: args.custom_renderer,
-            custom_elements: build_config.custom_elements,
+            custom_elements: resolve_custom_elements(args, build_config.custom_elements),
             template_syntax: args
                 .template_syntax
                 .map(Into::into)
@@ -169,6 +169,17 @@ impl CompileFileSettings {
             bytes.extend_from_slice(pattern.as_bytes());
         }
         hash_bytes(&bytes)
+    }
+}
+
+fn resolve_custom_elements(args: &BuildArgs, from_config: Vec<String>) -> Vec<String> {
+    if args.custom_elements.is_empty() {
+        from_config
+    } else {
+        args.custom_elements
+            .iter()
+            .map(|pattern| String::from(pattern.as_str()))
+            .collect()
     }
 }
 

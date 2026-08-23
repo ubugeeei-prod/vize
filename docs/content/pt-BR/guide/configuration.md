@@ -196,6 +196,7 @@ toda integração consome todos os campos ainda.
 | `vapor`             | `boolean`                             | Ativar compilação em modo vapor                                                        |
 | `jsxMode`           | `"vdom"` ou `"vapor"`                 | Backend de saída padrão para componentes `.jsx`/`.tsx`                                 |
 | `customRenderer`    | `boolean`                             | Trate tags minúsculas que não sejam HTML como elementos de renderização personalizados |
+| `customElements`    | `string[]`                            | Padrões de tag compilados como custom elements (`Tres*` para TresJS)                   |
 | `templateSyntax`    | `"standard"`, `"strict"`ou `"quirks"` | Escolha o tratamento de aviso, erro ou peculiaridade do Vue para a sintaxe do modelo   |
 | `scriptExt`         | `"ts"` ou `"js"`                      | Preserve a saída do TS ou faça downcompile para JS no comando de build npm             |
 | `mode`              | `"module"` ou `"function"`            | Modo de saída de compilador de nível inferior                                          |

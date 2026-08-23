@@ -196,6 +196,7 @@ lsp {
 | `vapor`             | `boolean`                                   | Vapor モードのコンパイルを有効にする                                    |
 | `jsxMode`           | `"vdom"` または `"vapor"`                   | `.jsx`/`.tsx` コンポーネントのデフォルトの出力バックエンド              |
 | `customRenderer`    | `boolean`                                   | 小文字の非 HTML タグをカスタム レンダラー要素として扱う                 |
+| `customElements`    | `string[]`                                  | カスタム要素としてコンパイルするタグパターン（TresJS は `Tres*`）       |
 | `templateSyntax`    | `"standard"`、`"strict"`、または `"quirks"` | テンプレート構文の警告、エラー、または Vue-quirk 処理を選択します。     |
 | `scriptExt`         | `"ts"` または `"js"`                        | npm build コマンドで TS 出力を保存するか、JS にダウンコンパイルします。 |
 | `mode`              | `"module"` または `"function"`              | 下位レベルのコンパイラ出力モード                                        |

@@ -45,6 +45,11 @@ Options:
       --custom-renderer
           Target a custom renderer instead of DOM runtime helpers
 
+      --custom-elements <PATTERN>
+          Tag patterns compiled as custom elements instead of Vue components
+
+          Repeat the flag for multiple patterns. `Tres*` matches PascalCase renderer tags such as `<TresMesh>` without treating imported components as elements.
+
       --template-syntax <TEMPLATE_SYNTAX>
           Template syntax compatibility mode
 

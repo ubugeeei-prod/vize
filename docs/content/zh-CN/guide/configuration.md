@@ -196,6 +196,7 @@ lsp {
 | `vapor`             | `boolean`                            | 启用蒸汽模式编译                        |
 | `jsxMode`           | `"vdom"`或`"vapor"`                  | `.jsx`/`.tsx`组件的默认输出后端         |
 | `customRenderer`    | `boolean`                            | 将小写非HTML标签视为自定义渲染器元素    |
+| `customElements`    | `string[]`                           | 作为自定义元素编译的标签模式（TresJS 用 `Tres*`） |
 | `templateSyntax`    | `"standard"`、`"strict"`或`"quirks"` | 模板语法选择警告、错误或Vue-quirk处理   |
 | `scriptExt`         | `"ts"`或`"js"`                       | 保留TS输出或在npm build命令中下编译为JS |
 | `mode`              | `"module"`或`"function"`             | 低级别编译器输出模式                    |

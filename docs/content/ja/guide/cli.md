@@ -113,6 +113,8 @@ vize build --profile src
 | `-o, --output`        | 共通入力ルートの下のソース相対出力。衝突を拒否します             |
 | `-f, --format`        | 出力形式: `js`、`json`、`stats`                                  |
 | `--ssr`               | SSR コンパイルを有効にする                                       |
+| `--custom-renderer`   | 小文字の非 HTML タグをカスタム レンダラー要素として扱う          |
+| `--custom-elements`   | カスタム要素としてコンパイルするタグパターン。複数回指定可能     |
 | `--script-ext`        | `preserve` または `downcompile`                                  |
 | `--declaration`       | ビルドされた SFC の `.d.ts` ファイルを出力 (エイリアス: `--dts`) |
 | `--declaration-dir`   | 宣言出力ディレクトリ (デフォルト: ビルド出力ディレクトリ)        |

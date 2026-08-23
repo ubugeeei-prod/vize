@@ -113,6 +113,8 @@ Options clés :
 | `-o, --output`        | Sortie relative à la source en dessous de la racine d’entrée commune ; rejette les collisions |
 | `-f, --format`        | Format de sortie : `js`, `json`, `stats`                                                      |
 | `--ssr`               | Activer la compilation SSR                                                                    |
+| `--custom-renderer`   | Considérer les balises minuscules non HTML comme des éléments de rendu personnalisés          |
+| `--custom-elements`   | Motifs de balises compilés comme éléments personnalisés ; répétable                           |
 | `--script-ext`        | `preserve` ou `downcompile`                                                                   |
 | `--declaration`       | Émettre `.d.ts` fichiers pour les SFC construits (alias : `--dts`)                            |
 | `--declaration-dir`   | Dossier de sortie de déclaration (par défaut : le répertoire de sortie de compilation)        |
