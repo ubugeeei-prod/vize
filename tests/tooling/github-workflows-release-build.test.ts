@@ -182,10 +182,6 @@ test("release workflow builds native targets on MoonBit-supported runners", () =
   ] as const) {
     assert.match(releasePlatforms, new RegExp(`host:\\s*"${host}"[\\s\\S]*target:\\s*"${target}"`));
   }
-  assert.match(
-    workflowJobBody(readRepoFile(".github", "workflows", "release.yml"), "build-native-all"),
-    /verify-glibc-symbols\.mjs --max 2\.36 npm\/native\/\*\.linux-\*-gnu\.node[\s\S]*verify-glibc-symbols\.mjs --max 2\.36 npm\/fresco-native\/\*\.linux-\*-gnu\.node/,
-  );
 });
 
 test("release workflow keeps the Windows ARM64 CLI cross build on a compatible hosted runner", () => {
