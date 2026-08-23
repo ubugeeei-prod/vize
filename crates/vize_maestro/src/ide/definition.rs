@@ -1,7 +1,7 @@
 //! Go-to-definition for Vue SFC template bindings, components, imports, and Corsa.
 mod art;
 pub mod bindings;
-mod component_import;
+pub(crate) mod component_import;
 mod component_model;
 #[cfg(all(test, feature = "native"))]
 mod corsa_tests;

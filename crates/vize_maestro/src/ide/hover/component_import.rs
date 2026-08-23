@@ -12,7 +12,6 @@ use tower_lsp::lsp_types::{Hover, HoverContents, Position, Range, Url};
 
 use super::HoverService;
 use crate::ide::IdeContext;
-use crate::ide::definition::helpers;
 use crate::ide::markup;
 
 pub(super) fn rewrite_vue_component_import_hover(
@@ -98,13 +97,7 @@ fn imported_vue_component_path(
     ctx: &IdeContext<'_>,
     local_name: &str,
 ) -> Option<std::path::PathBuf> {
-    let import_path = helpers::find_import_path(ctx, local_name)?;
-    let resolved_path = helpers::resolve_import_path(ctx.uri, &import_path)?;
-    (resolved_path
-        .extension()
-        .and_then(|extension| extension.to_str())
-        == Some("vue"))
-    .then_some(resolved_path)
+    crate::ide::definition::component_import::resolve_component_file(ctx, local_name)
 }
 
 fn component_source(ctx: &IdeContext<'_>, path: &Path) -> Option<String> {
