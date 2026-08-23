@@ -21,13 +21,17 @@ import { basename, dirname, join, relative, resolve } from "node:path";
  * untracked overlay is written next to the source when a rewrite exists. Git
  * porcelain uses `--untracked-files=no`, so the overlay does not dirty the
  * fixture. The matrix typechecker prefers that overlay when it is present.
+ *
+ * Package-name `extends` is followed only inside the fixture. Climbing into
+ * Vize's `node_modules` would load Vize's `@vue/tsconfig` and bake its
+ * outside `paths` into the overlay.
  */
 
 const packageNamePattern = /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/u;
 
 export function rewriteOutsidePackagePaths(fixtureRoot, sourceConfigPath, configDir) {
   const root = resolve(fixtureRoot);
-  const declared = winningPaths(sourceConfigPath);
+  const declared = winningPaths(sourceConfigPath, root);
   if (declared == null) return null;
   const rewritten = {};
   let changed = false;
@@ -82,10 +86,12 @@ function relocatePathEntry(sourceDir, configDir, entry) {
   return configRelativePath(configDir, resolve(sourceDir, entry));
 }
 
-function winningPaths(sourceConfigPath) {
+function winningPaths(sourceConfigPath, fixtureRoot) {
   let paths;
   let dir;
-  for (const { config, dir: configDir } of [...loadExtendsChain(sourceConfigPath)].reverse()) {
+  for (const { config, dir: configDir } of [
+    ...loadExtendsChain(sourceConfigPath, fixtureRoot),
+  ].reverse()) {
     const candidate = config?.compilerOptions?.paths;
     if (candidate != null && typeof candidate === "object") {
       paths = candidate;
@@ -95,7 +101,7 @@ function winningPaths(sourceConfigPath) {
   return paths == null ? null : { paths, dir };
 }
 
-function loadExtendsChain(sourceConfigPath) {
+function loadExtendsChain(sourceConfigPath, fixtureRoot) {
   const chain = [];
   const seen = new Set();
   let current = resolve(sourceConfigPath);
@@ -107,7 +113,7 @@ function loadExtendsChain(sourceConfigPath) {
     const specifiers = extendsSpecifiers(config.extends);
     let next = null;
     for (const specifier of specifiers) {
-      next = resolveExtends(current, specifier);
+      next = resolveExtends(current, specifier, fixtureRoot);
       if (next != null) break;
     }
     if (next == null) break;
@@ -129,12 +135,62 @@ function extendsSpecifiers(value) {
   return Array.isArray(value) ? value.filter((entry) => typeof entry === "string") : [];
 }
 
-function resolveExtends(fromConfig, specifier) {
+function resolveExtends(fromConfig, specifier, fixtureRoot) {
   if (typeof specifier !== "string") return null;
-  if (!(specifier.startsWith("./") || specifier.startsWith("../"))) return null;
-  const resolved = resolve(dirname(fromConfig), specifier);
-  if (existsSync(resolved)) return resolved;
-  if (!resolved.endsWith(".json") && existsSync(`${resolved}.json`)) return `${resolved}.json`;
+  if (specifier.startsWith("./") || specifier.startsWith("../")) {
+    const resolved = resolve(dirname(fromConfig), specifier);
+    if (existsSync(resolved)) return resolved;
+    if (!resolved.endsWith(".json") && existsSync(`${resolved}.json`)) return `${resolved}.json`;
+    return null;
+  }
+  return resolvePackageExtends(fromConfig, specifier, fixtureRoot);
+}
+
+function resolvePackageExtends(fromConfig, specifier, fixtureRoot) {
+  const parsed = splitPackageExtends(specifier);
+  if (parsed == null) return null;
+  const root = resolve(fixtureRoot);
+  let directory = dirname(resolve(fromConfig));
+  let previous = null;
+  while (directory !== previous) {
+    if (!(directory === root || isInside(root, directory))) break;
+    const pkg = join(directory, "node_modules", ...parsed.name.split("/"));
+    const file = packageExtendsFile(pkg, parsed.subpath);
+    if (file != null) return file;
+    if (directory === root) break;
+    previous = directory;
+    directory = dirname(directory);
+  }
+  return null;
+}
+
+function splitPackageExtends(specifier) {
+  if (specifier.startsWith("@")) {
+    const slash = specifier.indexOf("/");
+    if (slash < 0) return null;
+    const rest = specifier.slice(slash + 1);
+    const second = rest.indexOf("/");
+    if (second < 0) return { name: specifier, subpath: null };
+    return {
+      name: `${specifier.slice(0, slash + 1)}${rest.slice(0, second)}`,
+      subpath: rest.slice(second + 1),
+    };
+  }
+  if (specifier.includes(":")) return null;
+  const slash = specifier.indexOf("/");
+  if (slash < 0) return { name: specifier, subpath: null };
+  return { name: specifier.slice(0, slash), subpath: specifier.slice(slash + 1) };
+}
+
+function packageExtendsFile(pkg, subpath) {
+  if (!existsSync(join(pkg, "package.json"))) return null;
+  if (subpath == null) {
+    const main = join(pkg, "tsconfig.json");
+    return existsSync(main) ? main : null;
+  }
+  const file = join(pkg, subpath);
+  if (existsSync(file)) return file;
+  if (!file.endsWith(".json") && existsSync(`${file}.json`)) return `${file}.json`;
   return null;
 }
 
