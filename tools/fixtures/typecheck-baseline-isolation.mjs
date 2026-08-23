@@ -178,23 +178,24 @@ function mergeDeclared(declared, conflicts, local) {
 
 function loadExtendsChain(sourceConfigPath) {
   const chain = [];
-  const seen = new Set();
-  let current = resolve(sourceConfigPath);
-  while (!seen.has(current)) {
-    seen.add(current);
-    const config = parseTsconfig(current);
-    if (config == null) break;
-    chain.push({ config, dir: dirname(current) });
-    const specifiers = extendsSpecifiers(config.extends);
-    let next = null;
-    for (const specifier of specifiers) {
-      next = resolveExtends(current, specifier);
-      if (next != null) break;
-    }
-    if (next == null) break;
-    current = next;
-  }
+  appendExtendsChain(chain, new Set(), resolve(sourceConfigPath));
   return chain;
+}
+
+function appendExtendsChain(chain, seen, current) {
+  if (seen.has(current)) return;
+  seen.add(current);
+  const config = parseTsconfig(current);
+  if (config == null) return;
+  chain.push({ config, dir: dirname(current) });
+  // Later array `extends` entries override earlier ones, matching tsc. Walk them
+  // last-to-first so the reverse last-wins pass still sees the later parent.
+  for (const next of extendsSpecifiers(config.extends)
+    .map((specifier) => resolveExtends(current, specifier))
+    .filter((entry) => entry != null)
+    .reverse()) {
+    appendExtendsChain(chain, seen, next);
+  }
 }
 
 function parseTsconfig(configPath) {
