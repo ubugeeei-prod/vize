@@ -16,6 +16,7 @@ import {
 import { recordCompilerOptionJsxImportSource } from "./typecheck-baseline-isolation-jsx.mjs";
 import { recordCompilerOptionPlugins } from "./typecheck-baseline-isolation-plugins.mjs";
 import { recordCompilerOptionTypes } from "./typecheck-baseline-isolation-types.mjs";
+import { resolveWithConfigDir } from "./typecheck-baseline-config-dir.mjs";
 import { loadTsconfigExtendsChain } from "./typecheck-baseline-extends-chain.mjs";
 import { pathMappingRoot } from "./typecheck-baseline-outside-paths.mjs";
 
@@ -142,7 +143,7 @@ function mergePackageExtends(declared, conflicts, configPaths, fixtureRoot) {
 function packagePathsFromExtends(fixtureRoot, sourceConfigPath) {
   const declared = new Map();
   // Child `compilerOptions.paths` replace the parent's object, matching tsc.
-  // Targets resolve from last-wins `baseUrl` when set (#4461).
+  // Targets resolve from last-wins `baseUrl`; `${configDir}` expands first (#4461).
   let paths;
   let configDir;
   for (const { config, dir } of [...loadExtendsChain(sourceConfigPath)].reverse()) {
@@ -157,7 +158,14 @@ function packagePathsFromExtends(fixtureRoot, sourceConfigPath) {
     if (!packageNamePattern.test(name) || !Array.isArray(targets)) continue;
     const first = targets.find((entry) => typeof entry === "string" && !entry.includes("*"));
     if (first == null) continue;
-    declared.set(name, resolve(pathMappingRoot(sourceConfigPath, fixtureRoot, configDir), first));
+    declared.set(
+      name,
+      resolveWithConfigDir(
+        pathMappingRoot(sourceConfigPath, fixtureRoot, configDir),
+        configDir,
+        first,
+      ),
+    );
   }
   return declared;
 }
