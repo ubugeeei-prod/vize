@@ -127,15 +127,8 @@ impl HoverService {
 
         if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset)
             && let Some(mut hover) = Self::hover_component_tag(ctx)
-        {
-            if hover.range.is_none() {
-                hover.range = authored_hover_token_range(ctx);
-            }
-            return Some(hover);
-        }
-
-        if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset)
-            && let Some(mut hover) = super::component_prop::hover_attribute(ctx)
+                .or_else(|| super::component_prop::hover_attribute(ctx))
+                .or_else(|| super::component_prop::hover_event(ctx))
         {
             if hover.range.is_none() {
                 hover.range = authored_hover_token_range(ctx);

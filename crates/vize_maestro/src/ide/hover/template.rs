@@ -24,11 +24,10 @@ impl HoverService {
             return None;
         }
 
-        if let Some(hover) = Self::hover_component_tag(ctx) {
-            return Some(hover);
-        }
-
-        if let Some(hover) = super::component_prop::hover_attribute(ctx) {
+        if let Some(hover) = Self::hover_component_tag(ctx)
+            .or_else(|| super::component_prop::hover_attribute(ctx))
+            .or_else(|| super::component_prop::hover_event(ctx))
+        {
             return Some(hover);
         }
 

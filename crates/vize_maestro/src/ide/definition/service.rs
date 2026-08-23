@@ -18,7 +18,7 @@ use vize_canon::CorsaBridge;
 
 mod import_target;
 
-use super::{IdeContext, module_specifier, script};
+use super::{IdeContext, component_event, module_specifier, script};
 #[cfg(feature = "native")]
 use super::{helpers, template};
 #[cfg(feature = "native")]
@@ -32,6 +32,7 @@ impl super::DefinitionService {
     pub fn definition(ctx: &IdeContext) -> Option<GotoDefinitionResponse> {
         match ctx.block_type? {
             BlockType::Template => import_target::component_tag_definition(ctx)
+                .or_else(|| component_event::definition(ctx))
                 .or_else(|| Self::definition_in_template_sync(ctx)),
             BlockType::Script | BlockType::ScriptSetup => {
                 module_specifier::definition(ctx).or_else(|| script::definition_in_script(ctx))
@@ -39,6 +40,7 @@ impl super::DefinitionService {
             BlockType::Style(_) => script::definition_in_style(ctx),
             BlockType::Art(ArtCursorPosition::VariantTemplate(_)) => {
                 import_target::component_tag_definition(ctx)
+                    .or_else(|| component_event::definition(ctx))
                     .or_else(|| Self::definition_in_template_sync(ctx))
             }
             BlockType::Art(_) => None,
@@ -75,6 +77,10 @@ impl super::DefinitionService {
         // direct-file finder can stop at the barrel itself.
         if let Some(def) = import_target::component_tag_definition(ctx) {
             return Some(def);
+        }
+
+        if let Some(definition) = component_event::definition(ctx) {
+            return Some(definition);
         }
 
         // Check if this is a component tag
@@ -141,6 +147,10 @@ impl super::DefinitionService {
         // re-exports to their source instead of returning the barrel module.
         if let Some(def) = import_target::component_tag_definition(ctx) {
             return Some(def);
+        }
+
+        if let Some(definition) = component_event::definition(ctx) {
+            return Some(definition);
         }
 
         if let Some(tag_name) = helpers::get_tag_at_offset(&ctx.content, ctx.offset)

@@ -80,6 +80,25 @@ pub(super) fn hover_attribute(ctx: &IdeContext<'_>) -> Option<Hover> {
     )
 }
 
+pub(super) fn hover_event(ctx: &IdeContext<'_>) -> Option<Hover> {
+    let contract = crate::ide::definition::component_event::contract(ctx)?;
+    let signature = format!("{}: {}", contract.name, contract.payload_type);
+
+    Some(
+        HoverBuilder::new()
+            .title(&format!("@{}", contract.name))
+            .meta("Component event")
+            .code("typescript", &signature)
+            .section("Payload", &format!("`{}`", contract.payload_type))
+            .example("vue", &format!("@{}=\"handler\"", contract.name))
+            .docs(
+                "Vue Component Events",
+                "https://vuejs.org/guide/components/events.html",
+            )
+            .build_with_range(contract.authored_range),
+    )
+}
+
 fn prop_signature_at(script: &str, offset: usize, prop_name: &str) -> String {
     let line_start = script[..offset]
         .rfind('\n')

@@ -19,6 +19,7 @@ type Evidence =
 
 const rowsRequiringExecutedEvidence = new Set([
   "lsp-imported-component-contract-hover",
+  "lsp-component-event-contract-navigation",
   "lsp-component-v-model-navigation",
   "non-vscode-host-reactive-hover-surface",
 ]);
@@ -156,6 +157,23 @@ const matrix: MatrixRow[] = [
     evidence: [
       {
         kind: "file",
+        path: "tests/tooling/lsp-component-event-hover-type-backed.test.ts",
+        requiredText: [
+          "component event hovers and definitions use child emit contracts",
+          "Component event",
+          "[value: string]",
+        ],
+      },
+      toolingTestCiEvidence,
+    ],
+    followUp: "#4592",
+    id: "lsp-component-event-contract-navigation",
+    status: "covered",
+  },
+  {
+    evidence: [
+      {
+        kind: "file",
         path: "tests/tooling/lsp-component-v-model-type-backed.test.ts",
         requiredText: [
           "component v-model hover and definition use the child model contract",
@@ -214,6 +232,7 @@ test("typed editor oracle matrix covers or explicitly tracks every P0 slice", ()
       "cli-jsx-intrinsic-globals",
       "vscode-host-reactive-hover-surface",
       "lsp-imported-component-contract-hover",
+      "lsp-component-event-contract-navigation",
       "lsp-component-v-model-navigation",
       "non-vscode-host-reactive-hover-surface",
     ],

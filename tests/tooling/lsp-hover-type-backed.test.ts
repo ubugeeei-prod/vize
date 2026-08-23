@@ -289,7 +289,7 @@ async function assertDefinitionUriAndRange(
       range: expectedRange,
       uri: expectedUri,
     },
-    `${label} definition must jump to the authored slot declaration`,
+    `${label} definition must jump to the authored child declaration`,
   );
 }
 
