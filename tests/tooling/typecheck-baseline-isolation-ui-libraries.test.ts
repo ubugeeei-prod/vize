@@ -44,6 +44,8 @@ test("ancestor UI libraries with one in-fixture copy each are linked from those 
     ["quasar", "quasar@2.19.3"],
     ["reka-ui", "reka-ui@2.9.10"],
     ["vant", "vant@4.9.24"],
+    ["vue-select", "vue-select@4.0.0-beta.6"],
+    ["vue-virtual-scroller", "vue-virtual-scroller@3.0.4"],
   ];
   const { fixtureRoot, outer } = scaffold(libraries.map(([name]) => name));
   try {

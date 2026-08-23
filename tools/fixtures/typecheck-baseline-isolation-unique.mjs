@@ -225,6 +225,8 @@ export function isolateUniqueUiLibraryPackages(fixtureRoot) {
     "quasar",
     "reka-ui",
     "vant",
+    "vue-select",
+    "vue-virtual-scroller",
   ]);
 }
 
