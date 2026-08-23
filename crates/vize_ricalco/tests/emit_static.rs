@@ -229,6 +229,19 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn a_trailing_root_newline_does_not_steal_compound_child_ids() {
+    assert_eq!(
+        assembled("<div>Hi {{ name }}</div>\n"),
+        "\
+const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", null, \"Hi \" + _toDisplayString(name), 1 /* TEXT */))
+}"
+    );
+}
+
+#[test]
 fn mixed_element_and_interpolation_siblings_are_unsupported_this_installment() {
     with_transformed(
         "<div>{{ msg }}<span></span></div>",

@@ -3,7 +3,7 @@
 use alloc::vec::Vec as StdVec;
 
 use vize_carton::{String, ensure_sufficient_stack};
-use vize_disegno::op::{Attribute, ElementOp, InterpolationOp, Namespace, Op, Region, TextOp};
+use vize_disegno::op::{Attribute, ElementOp, Namespace, Op, Region, TextOp};
 
 use super::EmitCx;
 use super::EmitError;
@@ -12,36 +12,44 @@ use super::children::{children_need_text_flag, emit_interpolation, emit_text_lik
 use super::js::{escape_js_string, is_valid_js_identifier};
 
 pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), EmitError> {
-    let mut element = None;
-    let mut interpolation: Option<(&InterpolationOp<'_>, _)> = None;
+    admit_unique_root(root)?;
     for op in root.ops.iter() {
         let id = cx.walk.mint();
         match op {
             Op::Text(text) if is_ignorable_root_text(text) => {}
-            Op::Element(found) if element.is_none() && interpolation.is_none() => {
-                cx.walk.skip(found.bindings.len());
-                element = Some(&**found);
+            Op::Element(element) => {
+                // Descendants mint before later root siblings (page order:
+                // owner, bindings, children, then the next root op).
+                cx.walk.skip(element.bindings.len());
+                cx.buf.use_open_block();
+                cx.buf.use_create_element_block();
+                cx.buf.push("(");
+                cx.buf.push(Buf::open_block_alias());
+                cx.buf.push("(), ");
+                emit_call(cx, element, /* block */ true)?;
+                cx.buf.push(")");
             }
-            Op::Interpolation(found) if element.is_none() && interpolation.is_none() => {
-                interpolation = Some((found, id));
-            }
+            Op::Interpolation(interp) => emit_interpolation(cx, interp, id)?,
             _ => return Err(EmitError::Unsupported),
         }
     }
-    if let Some(element) = element {
-        cx.buf.use_open_block();
-        cx.buf.use_create_element_block();
-        cx.buf.push("(");
-        cx.buf.push(Buf::open_block_alias());
-        cx.buf.push("(), ");
-        emit_call(cx, element, /* block */ true)?;
-        cx.buf.push(")");
-        return Ok(());
+    Ok(())
+}
+
+fn admit_unique_root(root: &Region<'_>) -> Result<(), EmitError> {
+    let mut found = false;
+    for op in root.ops.iter() {
+        match op {
+            Op::Text(text) if is_ignorable_root_text(text) => {}
+            Op::Element(_) | Op::Interpolation(_) if !found => found = true,
+            _ => return Err(EmitError::Unsupported),
+        }
     }
-    if let Some((interp, id)) = interpolation {
-        return emit_interpolation(cx, interp, id);
+    if found {
+        Ok(())
+    } else {
+        Err(EmitError::Unsupported)
     }
-    Err(EmitError::Unsupported)
 }
 
 fn is_ignorable_root_text(text: &TextOp<'_>) -> bool {

@@ -38,6 +38,7 @@ const BATTERY: &[(&str, &str)] = &[
     ("hoisted_class_interp", r#"<div class="x">{{ msg }}</div>"#),
     ("nested_interp", "<div><span>{{ msg }}</span></div>"),
     ("compound_two_dyn", "<p>Hi {{ name }}!</p>"),
+    ("multiline_root_compound", "<div>Hi {{ name }}</div>\n"),
 ];
 
 fn shipped(src: &str) -> String {
