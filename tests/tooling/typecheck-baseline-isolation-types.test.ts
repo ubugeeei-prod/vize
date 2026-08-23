@@ -52,6 +52,11 @@ test("types entries resolve to the package and @types package for unscoped names
   assert.deepEqual(typePackageNamesFromTypes(["vite/client"]), ["vite", "@types/vite"]);
   assert.deepEqual(typePackageNamesFromTypes(["node"]), ["node", "@types/node"]);
   assert.deepEqual(typePackageNamesFromTypes(["@vue/runtime-dom"]), ["@vue/runtime-dom"]);
+  assert.deepEqual(typePackageNamesFromTypes(["../node_modules/@types/node"]), ["@types/node"]);
+  assert.deepEqual(typePackageNamesFromTypes(["../node_modules/vite/client"]), [
+    "vite",
+    "@types/vite",
+  ]);
   assert.deepEqual(typePackageNamesFromTypes([]), []);
   assert.deepEqual(typePackageNamesFromTypes(undefined), []);
 });
@@ -93,6 +98,27 @@ test("unique isolation links the fixture copy of a types package", () => {
     });
     assert.deepEqual(isolateUniqueLocalTypePackages(fixtureRoot, configPath), [
       { name: "vite", target: "node_modules/.pnpm/vite@6.0.0/node_modules/vite" },
+    ]);
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test("unique isolation links a relative node_modules types specifier", () => {
+  const { fixtureRoot, outer } = scaffold();
+  try {
+    writeStoreCopy(fixtureRoot, "@types+node@22.0.0", "@types/node");
+    const configPath = path.join(fixtureRoot, ".nuxt", "tsconfig.json");
+    fs.mkdirSync(path.dirname(configPath), { recursive: true });
+    fs.writeFileSync(
+      configPath,
+      `${JSON.stringify({ compilerOptions: { types: ["../node_modules/@types/node"] } })}\n`,
+    );
+    assert.deepEqual(isolateUniqueLocalTypePackages(fixtureRoot, configPath), [
+      {
+        name: "@types/node",
+        target: "node_modules/.pnpm/@types+node@22.0.0/node_modules/@types/node",
+      },
     ]);
   } finally {
     fs.rmSync(outer, { recursive: true, force: true });

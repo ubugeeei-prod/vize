@@ -61,7 +61,11 @@ test("plugin names come from compilerOptions and vueCompilerOptions", () => {
       {
         compilerOptions: { plugins: [{ name: "typescript-plugin-css-modules" }] },
         vueCompilerOptions: {
-          plugins: ["@vue/language-plugin-pug", ["./local-plugin.js", { pretty: true }]],
+          plugins: [
+            "@vue/language-plugin-pug",
+            ["./local-plugin.js", { pretty: true }],
+            "../node_modules/@vue/language-plugin-pug",
+          ],
         },
       },
     ]),
@@ -94,6 +98,30 @@ test("vueCompilerOptions.plugins records ancestor packages", () => {
     assert.deepEqual(Object.fromEntries(readDeclaredPackagePaths(fixtureRoot, configPath)), {
       "@vue/language-plugin-pug": ancestorVuePlugin,
     });
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test("unique isolation links a relative node_modules vue plugin specifier", () => {
+  const { fixtureRoot, outer } = scaffold();
+  try {
+    writeStoreCopy(fixtureRoot, "@vue+language-plugin-pug@1.8.27", "@vue/language-plugin-pug");
+    const configPath = path.join(fixtureRoot, ".nuxt", "tsconfig.json");
+    fs.mkdirSync(path.dirname(configPath), { recursive: true });
+    fs.writeFileSync(
+      configPath,
+      `${JSON.stringify({
+        vueCompilerOptions: { plugins: ["../node_modules/@vue/language-plugin-pug"] },
+      })}\n`,
+    );
+    assert.deepEqual(isolateUniqueLocalTypePackages(fixtureRoot, configPath), [
+      {
+        name: "@vue/language-plugin-pug",
+        target:
+          "node_modules/.pnpm/@vue+language-plugin-pug@1.8.27/node_modules/@vue/language-plugin-pug",
+      },
+    ]);
   } finally {
     fs.rmSync(outer, { recursive: true, force: true });
   }

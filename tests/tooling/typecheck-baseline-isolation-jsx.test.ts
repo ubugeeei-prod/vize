@@ -51,6 +51,7 @@ test("jsxImportSource names the package, not a relative path", () => {
   assert.equal(jsxImportSourcePackageName("vue"), "vue");
   assert.equal(jsxImportSourcePackageName("preact"), "preact");
   assert.equal(jsxImportSourcePackageName("./jsx"), null);
+  assert.equal(jsxImportSourcePackageName("../node_modules/vue"), "vue");
   assert.equal(jsxImportSourcePackageName(undefined), null);
 });
 
@@ -63,6 +64,24 @@ test("compilerOptions.jsxImportSource records ancestor packages for unique isola
     assert.deepEqual(Object.fromEntries(readDeclaredPackagePaths(fixtureRoot, configPath)), {
       vue: ancestorVue,
     });
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test("unique isolation links a relative node_modules jsxImportSource specifier", () => {
+  const { fixtureRoot, outer } = scaffold();
+  try {
+    writeStoreCopy(fixtureRoot, "vue@3.5.13", "vue");
+    const configPath = path.join(fixtureRoot, ".nuxt", "tsconfig.json");
+    fs.mkdirSync(path.dirname(configPath), { recursive: true });
+    fs.writeFileSync(
+      configPath,
+      `${JSON.stringify({ compilerOptions: { jsxImportSource: "../node_modules/vue" } })}\n`,
+    );
+    assert.deepEqual(isolateUniqueLocalTypePackages(fixtureRoot, configPath), [
+      { name: "vue", target: "node_modules/.pnpm/vue@3.5.13/node_modules/vue" },
+    ]);
   } finally {
     fs.rmSync(outer, { recursive: true, force: true });
   }
