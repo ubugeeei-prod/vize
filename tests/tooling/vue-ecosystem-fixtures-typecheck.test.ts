@@ -48,7 +48,7 @@ test("typecheck baselines have complete budgets and bounded release coverage", (
     return true;
   });
 
-  assert.equal(targets.length, 12);
+  assert.equal(targets.length, 13);
   for (const project of targets) {
     const performance = project.typecheckPerformance!;
     assert.equal(performance.compareTo, "vue-tsc", `${project.id} baseline`);
@@ -98,6 +98,27 @@ test("PrimeVue Volt is measured under the app tsconfig, sharing the PrimeVue fix
     "pnpm",
     "--filter",
     "volt",
+    "exec",
+    "nuxt",
+    "prepare",
+  ]);
+});
+
+test("PrimeVue Showcase is measured under the app tsconfig, sharing the PrimeVue fixture", () => {
+  const registry = readRegistry();
+  const library = registry.projects.find((project) => project.id === "primevue");
+  const showcase = registry.projects.find((project) => project.id === "primevue-showcase");
+  assert.equal(showcase?.fixturePath, library?.fixturePath);
+  assert.equal(showcase?.tsconfig, "apps/showcase/tsconfig.json");
+  assert.deepEqual(showcase?.typecheckPerformance?.corpusGlobs, ["apps/showcase/**/*.vue"]);
+  assert.equal(
+    showcase?.typecheckPerformance?.baseline?.tsconfig,
+    "apps/showcase/.nuxt/tsconfig.json",
+  );
+  assert.deepEqual(showcase?.typecheckPerformance?.baseline?.prepare, [
+    "pnpm",
+    "--filter",
+    "showcase",
     "exec",
     "nuxt",
     "prepare",

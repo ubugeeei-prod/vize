@@ -13,6 +13,7 @@ const expectedCorpus = {
   "reka-ui": ["packages/core/**/*.vue"],
   primevue: ["packages/primevue/src/**/*.vue"],
   "primevue-volt": ["apps/volt/**/*.vue"],
+  "primevue-showcase": ["apps/showcase/**/*.vue"],
 } as const;
 
 test("typecheck corpus globs pin the tsconfig-owned Vue sources", () => {
