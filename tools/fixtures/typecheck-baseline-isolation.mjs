@@ -1,4 +1,12 @@
-import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, symlinkSync } from "node:fs";
+import {
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  symlinkSync,
+} from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 
 /**
@@ -34,6 +42,12 @@ import { dirname, join, relative, resolve } from "node:path";
  * fixture. Everything else is left alone, and the ambient-environment gate in
  * `typecheck-baseline-ambient.mjs` is what proves the outcome — this is the
  * repair, not the check.
+ *
+ * Declaration comes from `compilerOptions.paths` after relative `extends`, and
+ * from relative `references` when that chain declares none — elk's root
+ * `tsconfig.json` is solution-style and parks the real paths on referenced
+ * `.nuxt` projects (#4461). Conflicting targets for one name are dropped
+ * rather than guessed. Package-name specifiers are ignored, matching `extends`.
  */
 
 /** `paths` also carries `#imports`-style aliases and `foo/*` patterns, which are not packages. */
@@ -41,7 +55,7 @@ const packageNamePattern = /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/u
 
 export function isolateFixtureTypePackages(fixtureRoot, sourceConfigPath) {
   const root = resolve(fixtureRoot);
-  const declared = readDeclaredPackagePaths(sourceConfigPath);
+  const declared = readDeclaredPackagePaths(root, sourceConfigPath);
   if (declared.size === 0) return [];
   const reachable = collectAncestorPackageNames(root);
   const shadowed = [];
@@ -57,7 +71,32 @@ export function isolateFixtureTypePackages(fixtureRoot, sourceConfigPath) {
   return shadowed;
 }
 
-function readDeclaredPackagePaths(sourceConfigPath) {
+function readDeclaredPackagePaths(fixtureRoot, sourceConfigPath) {
+  const declared = new Map();
+  const conflicts = new Set();
+  const seen = new Set();
+  const queue = [resolve(sourceConfigPath)];
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (seen.has(current)) continue;
+    seen.add(current);
+    const local = packagePathsFromExtends(current);
+    if (local.size > 0) {
+      mergeDeclared(declared, conflicts, local);
+      continue;
+    }
+    const config = parseTsconfig(current);
+    if (config == null) continue;
+    for (const specifier of referenceSpecifiers(config.references)) {
+      const next = resolveReference(current, specifier);
+      if (next == null || !isInside(fixtureRoot, next)) continue;
+      queue.push(next);
+    }
+  }
+  return declared;
+}
+
+function packagePathsFromExtends(sourceConfigPath) {
   const declared = new Map();
   // Child `compilerOptions.paths` replace the parent's object, matching tsc.
   // Relative `extends` is followed so reka-ui's `tsconfig.check.json` still
@@ -79,6 +118,21 @@ function readDeclaredPackagePaths(sourceConfigPath) {
     declared.set(name, resolve(configDir, first));
   }
   return declared;
+}
+
+function mergeDeclared(declared, conflicts, local) {
+  for (const [name, target] of local) {
+    if (conflicts.has(name)) continue;
+    const existing = declared.get(name);
+    if (existing === undefined) {
+      declared.set(name, target);
+      continue;
+    }
+    if (existing !== target) {
+      declared.delete(name);
+      conflicts.add(name);
+    }
+  }
 }
 
 function loadExtendsChain(sourceConfigPath) {
@@ -122,6 +176,34 @@ function resolveExtends(fromConfig, specifier) {
   if (existsSync(resolved)) return resolved;
   if (!resolved.endsWith(".json") && existsSync(`${resolved}.json`)) return `${resolved}.json`;
   return null;
+}
+
+function referenceSpecifiers(value) {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((entry) =>
+    entry != null && typeof entry.path === "string" ? [entry.path] : [],
+  );
+}
+
+function resolveReference(fromConfig, specifier) {
+  if (typeof specifier !== "string") return null;
+  if (!(specifier.startsWith("./") || specifier.startsWith("../"))) return null;
+  const resolved = resolve(dirname(fromConfig), specifier);
+  if (isDirectory(resolved)) {
+    const nested = join(resolved, "tsconfig.json");
+    return existsSync(nested) ? nested : null;
+  }
+  if (existsSync(resolved)) return resolved;
+  if (!resolved.endsWith(".json") && existsSync(`${resolved}.json`)) return `${resolved}.json`;
+  return null;
+}
+
+function isDirectory(path) {
+  try {
+    return statSync(path).isDirectory();
+  } catch {
+    return false;
+  }
 }
 
 /**

@@ -294,6 +294,33 @@ test("a JSONC config that extends another still isolates the parent's packages",
   }
 });
 
+test("a solution-style config still isolates packages declared in relative referenced projects", () => {
+  const { outer, fixtureRoot } = scaffold();
+  try {
+    writeConfig(fixtureRoot, declaredPaths);
+    // elk's root tsconfig is a solution: `files: []` and `references`, with the
+    // real `paths` on `.nuxt/tsconfig.app.json`. Package-name references are
+    // not relative and must not be invented as configs.
+    const configPath = path.join(fixtureRoot, "tsconfig.json");
+    fs.writeFileSync(
+      configPath,
+      `${JSON.stringify({
+        files: [],
+        references: [{ path: "@vue/tsconfig" }, { path: "./.nuxt/tsconfig.app.json" }],
+      })}\n`,
+    );
+    assert.deepEqual(isolateFixtureTypePackages(fixtureRoot, configPath), [
+      {
+        name: "@vue/runtime-core",
+        target: "node_modules/.pnpm/@vue+runtime-core@3.5.30/node_modules/@vue/runtime-core",
+      },
+      { name: "vue-router", target: "node_modules/.pnpm/vue-router@5.1.0/node_modules/vue-router" },
+    ]);
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
 test("a config that declares nothing, or cannot be read, links nothing", () => {
   const { outer, fixtureRoot } = scaffold();
   try {
