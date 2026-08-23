@@ -1,6 +1,7 @@
 import { existsSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 
+import { resolveWithConfigDir } from "./typecheck-baseline-config-dir.mjs";
 import { loadTsconfigExtendsChain } from "./typecheck-baseline-extends-chain.mjs";
 import {
   isolatedOverlayBaseUrl,
@@ -34,9 +35,17 @@ export function rewriteOutsideAliasPaths(fixtureRoot, sourceConfigPath, configDi
   let changed = false;
   for (const [name, targets] of Object.entries(declared.paths)) {
     if (!Array.isArray(targets)) continue;
-    rewritten[name] = retargetAliasMapping(root, mapping, configDir, name, targets, () => {
-      changed = true;
-    });
+    rewritten[name] = retargetAliasMapping(
+      root,
+      mapping,
+      declared.dir,
+      configDir,
+      name,
+      targets,
+      () => {
+        changed = true;
+      },
+    );
   }
   return changed ? rewritten : null;
 }
@@ -68,15 +77,25 @@ export function applyIsolatedAliasOverlay(fixtureRoot, sourceConfigPath, overlay
   return { path: overlayPath, paths, typeRoots };
 }
 
-function retargetAliasMapping(fixtureRoot, sourceDir, configDir, name, targets, markChanged) {
-  const relocated = targets.map((entry) => relocatePathEntry(sourceDir, configDir, entry));
+function retargetAliasMapping(
+  fixtureRoot,
+  sourceDir,
+  tsconfigDir,
+  configDir,
+  name,
+  targets,
+  markChanged,
+) {
+  const relocated = targets.map((entry) =>
+    relocatePathEntry(sourceDir, tsconfigDir, configDir, entry),
+  );
   if (isPackageMappingName(name)) return relocated;
   const first = targets.find(
     (entry) => typeof entry === "string" && isExactOrTrailingStarPath(entry),
   );
   if (first == null) return relocated;
   const star = first.endsWith("/*");
-  const original = resolve(sourceDir, star ? first.slice(0, -2) : first);
+  const original = resolveWithConfigDir(sourceDir, tsconfigDir, star ? first.slice(0, -2) : first);
   if (isInside(fixtureRoot, original)) return relocated;
   const owned = owningNodeModulePackage(original);
   if (owned == null || isInside(fixtureRoot, owned.root)) return relocated;
@@ -102,11 +121,16 @@ function isExactOrTrailingStarPath(entry) {
   return !entry.includes("*") || (entry.endsWith("/*") && !entry.slice(0, -2).includes("*"));
 }
 
-function relocatePathEntry(sourceDir, configDir, entry) {
+function relocatePathEntry(sourceDir, tsconfigDir, configDir, entry) {
   if (typeof entry !== "string") return entry;
-  if (!entry.includes("*")) return configRelativePath(configDir, resolve(sourceDir, entry));
+  if (!entry.includes("*")) {
+    return configRelativePath(configDir, resolveWithConfigDir(sourceDir, tsconfigDir, entry));
+  }
   if (entry.endsWith("/*") && !entry.slice(0, -2).includes("*")) {
-    return `${configRelativePath(configDir, resolve(sourceDir, entry.slice(0, -2)))}/*`;
+    return `${configRelativePath(
+      configDir,
+      resolveWithConfigDir(sourceDir, tsconfigDir, entry.slice(0, -2)),
+    )}/*`;
   }
   return entry;
 }
