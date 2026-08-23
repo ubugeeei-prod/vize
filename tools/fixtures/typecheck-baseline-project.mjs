@@ -1,6 +1,8 @@
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 
+import { typecheckCorpusGlobs } from "./tool-matrix-command.mjs";
+
 /**
  * Materialize the exact Vue corpus Vize checked as a vue-tsc project.
  *
@@ -118,8 +120,9 @@ function configRelativePath(from, to) {
 }
 
 function vueGlobSourceRoots(fixtureRoot, project) {
-  if (!Array.isArray(project.vueGlobs)) return [];
-  return project.vueGlobs.map((glob) => resolve(fixtureRoot, literalGlobRoot(glob)));
+  const globs = typecheckCorpusGlobs(project);
+  if (!Array.isArray(globs)) return [];
+  return globs.map((glob) => resolve(fixtureRoot, literalGlobRoot(glob)));
 }
 
 function literalGlobRoot(glob) {

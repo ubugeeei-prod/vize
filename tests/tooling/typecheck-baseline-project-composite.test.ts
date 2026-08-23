@@ -125,6 +125,36 @@ test(
   },
 );
 
+test("materialized baseline include roots follow corpusGlobs instead of sibling vueGlobs", () => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), "vize-corpus-globs-baseline-"));
+  const fixtureRoot = path.join(temp, "fixture");
+  const reportDir = path.join(temp, "report");
+  fs.mkdirSync(path.join(fixtureRoot, "packages/lib"), { recursive: true });
+  fs.mkdirSync(path.join(fixtureRoot, "apps/volt"), { recursive: true });
+  fs.mkdirSync(reportDir);
+  fs.writeFileSync(path.join(fixtureRoot, "tsconfig.json"), "{}\n");
+  fs.writeFileSync(path.join(fixtureRoot, "packages/lib/Button.vue"), "<template />\n");
+  fs.writeFileSync(path.join(fixtureRoot, "apps/volt/Page.vue"), "<template />\n");
+  try {
+    const project = materializeBaselineProject(
+      fixtureRoot,
+      reportDir,
+      {
+        id: "fixture",
+        tsconfig: "tsconfig.json",
+        vueGlobs: ["packages/lib/**/*.vue", "apps/volt/**/*.vue"],
+        typecheckPerformance: { corpusGlobs: ["packages/lib/**/*.vue"] },
+      },
+      { fileCount: 1, files: [{ file: "packages/lib/Button.vue" }] },
+    );
+    const config = JSON.parse(project.source);
+    assert.equal(config.include.includes("../packages/lib/**/*.ts"), true);
+    assert.equal(config.include.includes("../apps/volt/**/*.ts"), false);
+  } finally {
+    fs.rmSync(temp, { recursive: true, force: true });
+  }
+});
+
 function runVueTsc(project: string, cwd: string) {
   return spawnSync(vueTsc, ["--noEmit", "--pretty", "false", "--listFiles", "-p", project], {
     cwd,
