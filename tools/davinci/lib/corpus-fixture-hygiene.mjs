@@ -87,7 +87,7 @@ export function materializedNodeModules(maxDepth = 3) {
     }
   };
   walk(root, 0);
-  return found.sort();
+  return found.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 }
 
 /** Deletes every path `materializedNodeModules` reports. Returns the count. */
