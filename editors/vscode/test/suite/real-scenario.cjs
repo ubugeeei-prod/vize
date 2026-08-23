@@ -124,8 +124,10 @@ async function stepTypedRefHoverSurfaces() {
   const hovers = {
     scriptCount: await hoverAt(uri, 3, 8),
     scriptDoubled: await hoverAt(uri, 4, 8),
-    templateCount: await hoverAt(uri, 8, 10),
-    templateDoubled: await hoverAt(uri, 8, 22),
+    scriptButton: await hoverAt(uri, 5, 8),
+    templateCount: await hoverAt(uri, 9, 28),
+    templateDoubled: await hoverAt(uri, 9, 40),
+    templateButton: await hoverAt(uri, 9, 54),
   };
   assert.deepEqual(hovers, expected.refSurfaceHovers);
   for (const value of Object.values(hovers).flatMap((hover) =>

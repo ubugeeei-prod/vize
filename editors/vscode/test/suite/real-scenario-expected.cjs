@@ -30,14 +30,15 @@ const renamedSource = formattedSource
 
 const refSurfaceSource = [
   '<script setup lang="ts">',
-  'import { computed, ref } from "vue";',
+  'import { computed, ref, useTemplateRef } from "vue";',
   "",
   "const count = ref(1);",
   "const doubled = computed(() => count.value * 2);",
+  'const button = useTemplateRef<HTMLButtonElement>("button");',
   "</script>",
   "",
   "<template>",
-  "  <p>{{ count }} {{ doubled }}</p>",
+  '  <button ref="button">{{ count }} {{ doubled }} {{ button }}</button>',
   "</template>",
   "",
 ].join("\n");
@@ -55,16 +56,30 @@ const refSurfaceHovers = {
       range: [4, 6, 4, 13],
     },
   ],
+  scriptButton: [
+    {
+      contents: [
+        "```typescript\nconst button: Readonly<ShallowRef<HTMLButtonElement | null, HTMLButtonElement | null>>\n```",
+      ],
+      range: [5, 6, 5, 12],
+    },
+  ],
   templateCount: [
     {
       contents: ["```typescript\nconst count: number\n```"],
-      range: [8, 8, 8, 13],
+      range: [9, 26, 9, 31],
     },
   ],
   templateDoubled: [
     {
       contents: ["```typescript\nconst doubled: number\n```"],
-      range: [8, 20, 8, 27],
+      range: [9, 38, 9, 45],
+    },
+  ],
+  templateButton: [
+    {
+      contents: ["```typescript\nconst button: HTMLButtonElement | null\n```"],
+      range: [9, 52, 9, 58],
     },
   ],
 };
