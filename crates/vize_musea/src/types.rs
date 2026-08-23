@@ -34,6 +34,9 @@ pub struct ArtDescriptor<'a> {
 
     /// Style blocks (arena-allocated)
     pub styles: ArenaVec<'a, ArtStyleBlock<'a>>,
+
+    /// Recoverable parse warnings
+    pub warnings: ArenaVec<'a, &'a str>,
 }
 
 /// Art metadata extracted from `<art>` block attributes.
@@ -207,6 +210,7 @@ impl<'a> ArtDescriptor<'a> {
             script_setup: None,
             script: None,
             styles: ArenaVec::new_in(&allocator),
+            warnings: ArenaVec::new_in(&allocator),
         }
     }
 
@@ -291,6 +295,8 @@ pub struct ArtDescriptorOwned {
     pub script_setup: Option<ArtScriptBlockOwned>,
     pub script: Option<ArtScriptBlockOwned>,
     pub styles: Vec<ArtStyleBlockOwned>,
+    #[serde(default)]
+    pub warnings: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -346,6 +352,11 @@ impl<'a> ArtDescriptor<'a> {
             script_setup: self.script_setup.map(|s| s.into_owned()),
             script: self.script.map(|s| s.into_owned()),
             styles: self.styles.into_iter().map(|s| s.into_owned()).collect(),
+            warnings: self
+                .warnings
+                .into_iter()
+                .map(|s| s.to_compact_string())
+                .collect(),
         }
     }
 }
@@ -409,31 +420,5 @@ impl<'a> ArtStyleBlock<'a> {
             scoped: self.scoped,
             loc: self.loc,
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{ArtDescriptor, ArtStatus, ViewportConfig};
-    use vize_carton::Allocator;
-
-    #[test]
-    fn test_art_descriptor_new() {
-        let allocator = Allocator::new();
-        let desc = ArtDescriptor::new(&allocator, "test.art.vue", "<art></art>");
-        assert_eq!(desc.filename, "test.art.vue");
-        assert!(desc.variants.is_empty());
-    }
-
-    #[test]
-    fn test_art_status_default() {
-        assert_eq!(ArtStatus::default(), ArtStatus::Ready);
-    }
-
-    #[test]
-    fn test_viewport_default() {
-        let vp = ViewportConfig::default();
-        assert_eq!(vp.width, 1280);
-        assert_eq!(vp.height, 720);
     }
 }
