@@ -117,16 +117,34 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<div v-for="(item, i) in list" :key="i">{{ item }}</div>"#,
     ),
     ("object_bind", r#"<div v-bind="obj"></div>"#),
-    ("attr_then_object_bind", r#"<div id="x" v-bind="obj"></div>"#),
-    ("object_bind_then_attr", r#"<div v-bind="obj" id="x"></div>"#),
-    ("named_bind_then_object", r#"<div :id="foo" v-bind="obj"></div>"#),
-    ("class_then_object_bind", r#"<div class="a" v-bind="obj"></div>"#),
+    (
+        "attr_then_object_bind",
+        r#"<div id="x" v-bind="obj"></div>"#,
+    ),
+    (
+        "object_bind_then_attr",
+        r#"<div v-bind="obj" id="x"></div>"#,
+    ),
+    (
+        "named_bind_then_object",
+        r#"<div :id="foo" v-bind="obj"></div>"#,
+    ),
+    (
+        "class_then_object_bind",
+        r#"<div class="a" v-bind="obj"></div>"#,
+    ),
     (
         "static_dynamic_class_then_object",
         r#"<div class="a" :class="cls" v-bind="obj"></div>"#,
     ),
-    ("click_then_object_bind", r#"<div @click="h" v-bind="obj"></div>"#),
-    ("keyup_then_object_bind", r#"<div @keyup="h" v-bind="obj"></div>"#),
+    (
+        "click_then_object_bind",
+        r#"<div @click="h" v-bind="obj"></div>"#,
+    ),
+    (
+        "keyup_then_object_bind",
+        r#"<div @keyup="h" v-bind="obj"></div>"#,
+    ),
     ("v_if_object_bind", r#"<div v-if="ok" v-bind="obj">x</div>"#),
     (
         "class_object_then_dynamic_class",
