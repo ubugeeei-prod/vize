@@ -57,7 +57,10 @@ const BATTERY: &[(&str, &str)] = &[
     ("click_handler", r#"<div @click="handler"></div>"#),
     ("keyup_handler", r#"<div @keyup="handler"></div>"#),
     ("hyphenated_event", r#"<div @foo-bar="x"></div>"#),
-    ("click_and_interp", r#"<div @click="handler">{{ msg }}</div>"#),
+    (
+        "click_and_interp",
+        r#"<div @click="handler">{{ msg }}</div>"#,
+    ),
     ("inline_click", r#"<div @click="count++"></div>"#),
 ];
 
