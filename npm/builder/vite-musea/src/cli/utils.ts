@@ -7,6 +7,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { processMuseaArtFile } from "../plugin/art-processing.js";
 import type { ArtFileInfo } from "../types/index.js";
 
 /** Recursively scan a directory for .art.vue files. */
@@ -46,52 +47,8 @@ export async function scanArtFiles(root: string): Promise<string[]> {
 
 /** Parse a single .art.vue file into an ArtFileInfo structure. */
 export async function parseArtFile(filePath: string): Promise<ArtFileInfo | null> {
-  try {
-    const source = await fs.promises.readFile(filePath, "utf-8");
-
-    // Simple parsing - in production, use @vizejs/native
-    const titleMatch = source.match(/<art[^>]*\stitle=["']([^"']+)["']/);
-    const componentMatch = source.match(/<art[^>]*\scomponent=["']([^"']+)["']/);
-    const categoryMatch = source.match(/<art[^>]*\scategory=["']([^"']+)["']/);
-
-    const variants: ArtFileInfo["variants"] = [];
-    const variantRegex = /<variant\s+([^>]*)>([\s\S]*?)<\/variant>/g;
-    let match;
-
-    while ((match = variantRegex.exec(source)) !== null) {
-      const attrs = match[1];
-      const template = match[2].trim();
-
-      const nameMatch = attrs.match(/name=["']([^"']+)["']/);
-      const isDefault = /\bdefault\b/.test(attrs);
-      const skipVrt = /\bskip-vrt\b/.test(attrs);
-
-      if (nameMatch) {
-        variants.push({
-          name: nameMatch[1],
-          template,
-          isDefault,
-          skipVrt,
-        });
-      }
-    }
-
-    return {
-      path: filePath,
-      metadata: {
-        title: titleMatch?.[1] || path.basename(filePath, ".art.vue"),
-        component: componentMatch?.[1],
-        category: categoryMatch?.[1],
-        tags: [],
-        status: "ready",
-      },
-      variants,
-      hasScriptSetup: /<script\s+setup/.test(source),
-      hasScript: /<script(?!\s+setup)/.test(source),
-      styleCount: (source.match(/<style/g) || []).length,
-    };
-  } catch (error) {
-    console.error(`Failed to parse ${filePath}:`, error);
-    return null;
-  }
+  return processMuseaArtFile(filePath, {
+    root: path.dirname(filePath),
+    command: "serve",
+  });
 }
