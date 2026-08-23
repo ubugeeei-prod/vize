@@ -165,6 +165,8 @@ function __setup() {
   void MyList;
   const __vize_props_nav_0 = undefined as unknown as __MyList_Props_0 & Record<string, unknown>;
   void __vize_props_nav_0.items;
+  const __vize_slots_nav_0 = undefined as unknown as __VizeStructuralSlots<typeof MyList>;
+  void __vize_slots_nav_0.default;
 
   // Component props value checks (template scope)
   // @vize-map: prop -> 8:22

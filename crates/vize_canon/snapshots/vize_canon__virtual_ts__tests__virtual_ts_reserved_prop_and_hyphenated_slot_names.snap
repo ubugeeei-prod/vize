@@ -176,6 +176,8 @@ function __setup() {
   void TrendChart;
   const __vize_props_nav_0 = undefined as unknown as __TrendChart_Props_0 & Record<string, unknown>;
   void __vize_props_nav_0.class;
+  const __vize_slots_nav_0 = undefined as unknown as __VizeStructuralSlots<typeof TrendChart>;
+  void __vize_slots_nav_0['area-gradient'];
 
   // Component props value checks (template scope)
   // @vize-map: prop -> 12:26

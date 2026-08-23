@@ -6,7 +6,7 @@ use super::{IdeContext, helpers};
 pub(super) fn component_slot_definition(ctx: &IdeContext<'_>) -> Option<GotoDefinitionResponse> {
     let (slot_name, component_name) = component_slot_at_offset(ctx)?;
     let import_path = helpers::find_import_path(ctx, &component_name)
-        .or_else(|| super::template::art_component_path(ctx, &component_name))?;
+        .or_else(|| super::art::component_path(ctx, &component_name))?;
     let resolved_path = helpers::resolve_import_path(ctx.uri, &import_path)?;
     let component_content = std::fs::read_to_string(&resolved_path).ok()?;
 
