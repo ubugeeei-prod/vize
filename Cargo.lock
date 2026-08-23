@@ -3600,6 +3600,7 @@ dependencies = [
  "vize_carton",
  "vize_croquis",
  "vize_davinci",
+ "vize_ricalco",
 ]
 
 [[package]]
