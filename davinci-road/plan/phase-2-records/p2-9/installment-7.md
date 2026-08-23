@@ -58,7 +58,7 @@ all three flags on.
   `is_fully_serialized()` still literally true. Vue 3's fusion plan is
   the installment-6 shape, untouched (`group_count() == 6`).
 
-### What the pass does (atelier `legacy.rs` / `legacy_filters.rs`)
+### What the pass does (`pass/legacy.rs` / `pass/legacy/filter.rs`)
 
 Order, matching the shipped desugar then the rest of the S2 table:
 

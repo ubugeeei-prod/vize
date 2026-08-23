@@ -20,16 +20,15 @@ fn vue2() -> LegacyCaps {
 fn vue3_keeps_six_walks_on_legacy_spellings() {
     let source = r#"<Comp :title.sync="heading"/>"#;
     with_transformed(source, |lowered, folio, _, budget| {
-        assert!(
-            folio.print_to_string(FolioMode::Full).contains("ui.bind"),
-            "Vue 3 must not expand .sync"
-        );
-        assert!(
-            !folio.print_to_string(FolioMode::Full).contains("onUpdate")
-                && !folio
-                    .print_to_string(FolioMode::Full)
-                    .contains("update:title"),
-            "Vue 3 must not synthesize update:title"
+        assert_eq!(
+            folio.print_to_string(FolioMode::Full).as_str(),
+            "[disegno]\n\
+             ops=2\n\
+             \n\
+             [disegno.ops]\n\
+             ui.component Comp @0:29\n\
+             \x20 ui.bind name=\"title\" mods=\"sync\" value=js(\"heading\" @19:26) @6:27\n\
+             \n"
         );
         assert_eq!(lowered.caps, LegacyCaps::VUE3);
         assert_eq!(
@@ -44,15 +43,16 @@ fn vue3_keeps_six_walks_on_legacy_spellings() {
 fn vue2_expands_sync_into_bind_plus_update_listener() {
     let source = r#"<Comp :title.sync="heading"/>"#;
     with_transformed_caps(source, vue2(), |lowered, folio, _, budget| {
-        let text = folio.print_to_string(FolioMode::Full);
-        assert!(
-            text.contains("ui.bind name=\"title\"") && text.contains("ui.on name=\"update:title\""),
-            "vue.sync must expand: {text}"
-        );
-        assert!(!text.contains("vue.sync"), "vue.sync must be gone: {text}");
-        assert!(
-            text.contains("$event => ((heading) = $event)"),
-            "handler must assign through $event: {text}"
+        assert_eq!(
+            folio.print_to_string(FolioMode::Full).as_str(),
+            "[disegno]\n\
+             ops=3\n\
+             \n\
+             [disegno.ops]\n\
+             ui.component Comp @0:29\n\
+             \x20 ui.bind name=\"title\" value=js(\"heading\" @19:26) @6:27\n\
+             \x20 ui.on name=\"update:title\" handler=js(\"$event => ((heading) = $event)\" @6:27) @6:27\n\
+             \n"
         );
         assert_eq!(
             Folio::print_to_string(budget, FolioMode::Full).as_str(),
@@ -67,10 +67,16 @@ fn vue2_expands_sync_into_bind_plus_update_listener() {
 fn vue2_keeps_camel_on_the_bind() {
     let source = r#"<Comp :title.sync.camel="heading"/>"#;
     with_transformed_caps(source, vue2(), |_, folio, _, _| {
-        let text = folio.print_to_string(FolioMode::Full);
-        assert!(
-            text.contains("ui.bind name=\"title\" mods=\"camel\""),
-            "remaining modifiers stay on the bind: {text}"
+        assert_eq!(
+            folio.print_to_string(FolioMode::Full).as_str(),
+            "[disegno]\n\
+             ops=3\n\
+             \n\
+             [disegno.ops]\n\
+             ui.component Comp @0:35\n\
+             \x20 ui.bind name=\"title\" mods=\"camel\" value=js(\"heading\" @25:32) @6:33\n\
+             \x20 ui.on name=\"update:title\" handler=js(\"$event => ((heading) = $event)\" @6:33) @6:33\n\
+             \n"
         );
     });
     assert_transformed_sound_caps(source, vue2(), "vue2-sync-camel-pass");
@@ -80,14 +86,14 @@ fn vue2_keeps_camel_on_the_bind() {
 fn vue2_rewrites_a_pipe_filter_to_the_asset_call() {
     let source = "{{msg | cap}}";
     with_transformed_caps(source, vue2(), |_, folio, _, _| {
-        let text = folio.print_to_string(FolioMode::Full);
-        assert!(
-            text.contains("js(\"_filter_cap(msg)\""),
-            "filter must wrap: {text}"
-        );
-        assert!(
-            !text.contains("vue.filter"),
-            "vue.filter must be gone: {text}"
+        assert_eq!(
+            folio.print_to_string(FolioMode::Full).as_str(),
+            "[disegno]\n\
+             ops=1\n\
+             \n\
+             [disegno.ops]\n\
+             ui.interpolation js(\"_filter_cap(msg)\" @2:11) @0:13\n\
+             \n"
         );
     });
     assert_transformed_sound_caps(source, vue2(), "vue2-filter-wrap");
@@ -97,10 +103,14 @@ fn vue2_rewrites_a_pipe_filter_to_the_asset_call() {
 fn vue2_rewrites_a_filter_with_args() {
     let source = "{{a | f(b)}}";
     with_transformed_caps(source, vue2(), |_, folio, _, _| {
-        let text = folio.print_to_string(FolioMode::Full);
-        assert!(
-            text.contains("js(\"_filter_f(a,b)\""),
-            "call-style filter must wrap: {text}"
+        assert_eq!(
+            folio.print_to_string(FolioMode::Full).as_str(),
+            "[disegno]\n\
+             ops=1\n\
+             \n\
+             [disegno.ops]\n\
+             ui.interpolation js(\"_filter_f(a,b)\" @2:10) @0:12\n\
+             \n"
         );
     });
     assert_transformed_sound_caps(source, vue2(), "vue2-filter-args");
@@ -110,10 +120,17 @@ fn vue2_rewrites_a_filter_with_args() {
 fn vue2_converts_slot_scope_into_slot_content() {
     let source = r#"<Comp><template slot-scope="props">x</template></Comp>"#;
     with_transformed_caps(source, vue2(), |_, folio, facts, _| {
-        let text = folio.print_to_string(FolioMode::Full);
-        assert!(
-            text.contains("ui.slot-content") && !text.contains("vue.slot-scope"),
-            "slot-scope must become slot-content: {text}"
+        assert_eq!(
+            folio.print_to_string(FolioMode::Full).as_str(),
+            "[disegno]\n\
+             ops=4\n\
+             \n\
+             [disegno.ops]\n\
+             ui.component Comp @0:54\n\
+             \x20 ui.element template @6:47\n\
+             \x20   ui.slot-content params=js(\"props\" @28:33) @16:34\n\
+             \x20   ui.text \"x\" @35:36\n\
+             \n"
         );
         assert_eq!(facts.slot_facts.len(), 1);
     });
@@ -124,14 +141,16 @@ fn vue2_converts_slot_scope_into_slot_content() {
 fn vue2_strips_native_and_rewrites_keycodes() {
     let source = r#"<Comp @click.native @keyup.13="onKey"/>"#;
     with_transformed_caps(source, vue2(), |_, folio, _, _| {
-        let text = folio.print_to_string(FolioMode::Full);
-        assert!(
-            !text.contains("mods=\"native\""),
-            ".native must be stripped: {text}"
-        );
-        assert!(
-            text.contains("mods=\"enter\""),
-            "keyCode 13 must become enter: {text}"
+        assert_eq!(
+            folio.print_to_string(FolioMode::Full).as_str(),
+            "[disegno]\n\
+             ops=3\n\
+             \n\
+             [disegno.ops]\n\
+             ui.component Comp @0:39\n\
+             \x20 ui.on name=\"click\" @6:19\n\
+             \x20 ui.on name=\"keyup\" mods=\"enter\" handler=js(\"onKey\" @31:36) @20:37\n\
+             \n"
         );
     });
     assert_transformed_sound_caps(source, vue2(), "vue2-on-sugar");
@@ -141,14 +160,16 @@ fn vue2_strips_native_and_rewrites_keycodes() {
 fn vue3_leaves_native_and_keycodes() {
     let source = r#"<Comp @click.native @keyup.13="onKey"/>"#;
     with_transformed(source, |_, folio, _, _| {
-        let text = folio.print_to_string(FolioMode::Full);
-        assert!(
-            text.contains("mods=\"native\""),
-            "Vue 3 keeps .native: {text}"
-        );
-        assert!(
-            text.contains("mods=\"13\""),
-            "Vue 3 keeps numeric keyCodes: {text}"
+        assert_eq!(
+            folio.print_to_string(FolioMode::Full).as_str(),
+            "[disegno]\n\
+             ops=3\n\
+             \n\
+             [disegno.ops]\n\
+             ui.component Comp @0:39\n\
+             \x20 ui.on name=\"click\" mods=\"native\" @6:19\n\
+             \x20 ui.on name=\"keyup\" mods=\"13\" handler=js(\"onKey\" @31:36) @20:37\n\
+             \n"
         );
     });
     assert_transformed_sound(source, "vue3-on-inert");
