@@ -7,7 +7,7 @@ use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
 use vize_davinci::id::NodeId;
 use vize_disegno::op::ModelOp;
 
-use super::{Channels, ModelFacts, ModelFault, ARG_ON_ELEMENT_MESSAGE, ON_SCOPE_MESSAGE};
+use super::{ARG_ON_ELEMENT_MESSAGE, Channels, ModelFacts, ModelFault, ON_SCOPE_MESSAGE};
 
 /// The two legacy checks, in the legacy order, first failure wins.
 pub(super) fn check_model(

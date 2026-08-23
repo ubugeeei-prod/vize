@@ -83,7 +83,7 @@ use vize_davinci::side_table::SideTable;
 use vize_disegno::op::{BindingOp, Op};
 use vize_disegno::provenance::ProvenanceRecord;
 
-use super::walk::{assert_accounting, PageWalk};
+use super::walk::{PageWalk, assert_accounting};
 use crate::lower::Lowered;
 
 #[path = "vmodel/check.rs"]
