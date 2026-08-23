@@ -118,6 +118,27 @@ const items = [1, 2]
     assert.equal(definitionLocation.uri, uri);
     assert.deepEqual(definitionLocation.range.start, declarationPosition);
 
+    const forAliasOffset = source.indexOf('v-for="item in items"') + 'v-for="'.length;
+    const forUsageOffset = source.lastIndexOf("{{ item }}") + "{{ ".length + "item".length;
+    const forUsagePosition = offsetToPosition(source, forUsageOffset);
+
+    const forHover = (await session.request("textDocument/hover", {
+      textDocument: { uri },
+      position: forUsagePosition,
+    })) as { contents?: unknown } | null;
+    const forHoverText = hoverToText(forHover);
+    assert.match(forHoverText, /item/);
+    assert.match(forHoverText, /v-for scope binding/);
+    assert.match(forHoverText, /nearest `v-for`/);
+
+    const forDefinition = await session.request("textDocument/definition", {
+      textDocument: { uri },
+      position: forUsagePosition,
+    });
+    const forDefinitionLocation = firstLocation(forDefinition as never);
+    assert.equal(forDefinitionLocation.uri, uri);
+    assert.deepEqual(forDefinitionLocation.range.start, offsetToPosition(source, forAliasOffset));
+
     const references = (await session.request("textDocument/references", {
       textDocument: { uri },
       position: countUsagePosition,

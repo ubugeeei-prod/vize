@@ -6,7 +6,7 @@ use vize_croquis::{Drawer, DrawerOptions};
 use vize_relief::BindingType;
 
 use super::{IdeContext, helpers};
-use crate::ide::{is_component_tag, kebab_to_pascal};
+use crate::ide::{is_component_tag, kebab_to_pascal, template_scope};
 
 /// Find definition for a symbol in template context.
 pub(crate) fn definition_in_template(ctx: &IdeContext) -> Option<GotoDefinitionResponse> {
@@ -36,7 +36,6 @@ pub(crate) fn definition_in_template(ctx: &IdeContext) -> Option<GotoDefinitionR
         return None;
     }
 
-    // Check if this is a props property access (e.g., props.title -> defineProps)
     if let Some(def) = find_props_property_definition(ctx, &word) {
         return Some(def);
     }
@@ -47,8 +46,9 @@ pub(crate) fn definition_in_template(ctx: &IdeContext) -> Option<GotoDefinitionR
         return Some(def);
     }
 
-    // Resolve Options API bindings (when enabled) and class-component members
-    // (auto-detected by AST shape, no flag) to their `<script>` declaration.
+    if let Some(definition) = template_scope::v_for_definition(ctx, &word) {
+        return Some(definition);
+    }
     if let Some(location) = super::script::find_analyzed_binding_location(ctx, &word) {
         return Some(GotoDefinitionResponse::Scalar(location));
     }

@@ -33,6 +33,7 @@ pub(crate) mod sfc_region;
 pub mod signature_help;
 pub(crate) mod tag_pair;
 mod template_expression;
+pub(crate) mod template_scope;
 pub(crate) mod tsconfig_paths;
 pub mod type_definition;
 pub mod type_service;

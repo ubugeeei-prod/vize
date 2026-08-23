@@ -13,7 +13,7 @@ use vize_croquis::{Drawer, DrawerOptions};
 use vize_relief::BindingType;
 
 use super::{HoverBuilder, HoverService};
-use crate::ide::IdeContext;
+use crate::ide::{IdeContext, template_scope};
 
 impl HoverService {
     /// Get hover for template context.
@@ -54,13 +54,13 @@ impl HoverService {
             return None;
         }
 
-        // petite-vue standalone HTML documents have no SFC `<script>`/`<template>`
-        // split, so the croquis/Corsa paths below find nothing. Resolve the
-        // identifier under the cursor against the `v-scope` scope chain instead.
         if let Some(hover) = Self::hover_petite_vue_scope_binding(ctx, &word) {
             return Some(hover);
         }
 
+        if let Some(hover) = template_scope::v_for_hover(ctx, &word) {
+            return Some(hover);
+        }
         if let Some(hover) = super::backend::binding_type_hover(ctx, &word) {
             return Some(hover);
         }
