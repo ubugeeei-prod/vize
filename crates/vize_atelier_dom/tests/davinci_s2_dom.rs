@@ -1,5 +1,5 @@
 //! P2-11 installment 5 witness: static native HTML, interpolations,
-//! mixed text siblings, and static-name binds, old DOM lane vs S2 emit,
+//! mixed text siblings, static-name binds, and static-name events,
 //! compared **byte-for-byte** including helper usage.
 //!
 //! `vize_atelier_dom` is published; the Davinci crates are not. The
@@ -54,6 +54,11 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<div class="base" :class="cls"></div>"#,
     ),
     ("hyphenated_bind", r#"<div :data-id="x"></div>"#),
+    ("click_handler", r#"<div @click="handler"></div>"#),
+    ("keyup_handler", r#"<div @keyup="handler"></div>"#),
+    ("hyphenated_event", r#"<div @foo-bar="x"></div>"#),
+    ("click_and_interp", r#"<div @click="handler">{{ msg }}</div>"#),
+    ("inline_click", r#"<div @click="count++"></div>"#),
 ];
 
 fn shipped(src: &str) -> String {

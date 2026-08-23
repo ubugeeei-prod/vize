@@ -1,40 +1,48 @@
-//! Static attrs plus static-name `ui.bind` props / patch flags.
+//! Static attrs plus static-name `ui.bind` / `ui.on` props / patch flags.
 
 use alloc::vec::Vec as StdVec;
 
+use vize_carton::{String, ToCompactString};
 use vize_disegno::expr::{ExprRef, JsExpr};
-use vize_disegno::op::{Attribute, BindOp, BindingOp, DynamicName, ElementOp};
+use vize_disegno::op::{Attribute, BindOp, BindingOp, DynamicName, ElementOp, OnOp};
 
 use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
 use super::js::{escape_js_string, is_valid_js_identifier};
+use super::on::{
+    admit_on, emit_on_pair, event_key, is_inline_handler_source, needs_hydration, static_on_name,
+};
 
-pub(super) struct Patch<'a> {
+pub(super) struct Patch {
     pub flag: i32,
-    pub dynamic_props: StdVec<&'a str>,
+    pub dynamic_props: StdVec<String>,
 }
 
 pub(super) fn admit_bindings(element: &ElementOp<'_>) -> Result<(), EmitError> {
     let mut class = false;
     let mut style = false;
+    let mut events = StdVec::new();
     for binding in element.bindings.iter() {
-        let BindingOp::Bind(bind) = binding else {
-            return Err(EmitError::Unsupported);
-        };
-        let name = static_bind_name(bind)?;
-        if name == "ref" || !bind.modifiers.is_empty() {
-            return Err(EmitError::Unsupported);
-        }
-        let ExprRef::Js(_) = bind.value.ok_or(EmitError::Unsupported)? else {
-            return Err(EmitError::Unsupported);
-        };
-        match name {
-            "class" if class => return Err(EmitError::Unsupported),
-            "class" => class = true,
-            "style" if style => return Err(EmitError::Unsupported),
-            "style" => style = true,
-            _ => {}
+        match binding {
+            BindingOp::Bind(bind) => {
+                let name = static_bind_name(bind)?;
+                if name == "ref" || !bind.modifiers.is_empty() {
+                    return Err(EmitError::Unsupported);
+                }
+                let ExprRef::Js(_) = bind.value.ok_or(EmitError::Unsupported)? else {
+                    return Err(EmitError::Unsupported);
+                };
+                match name {
+                    "class" if class => return Err(EmitError::Unsupported),
+                    "class" => class = true,
+                    "style" if style => return Err(EmitError::Unsupported),
+                    "style" => style = true,
+                    _ => {}
+                }
+            }
+            BindingOp::On(on) => admit_on(on, &mut events)?,
+            _ => return Err(EmitError::Unsupported),
         }
     }
     if style && has_attr(element, "style") {
@@ -44,26 +52,42 @@ pub(super) fn admit_bindings(element: &ElementOp<'_>) -> Result<(), EmitError> {
     Ok(())
 }
 
-pub(super) fn bind_patch<'a>(element: &'a ElementOp<'a>) -> Patch<'a> {
+pub(super) fn bind_patch(element: &ElementOp<'_>) -> Patch {
     let mut flag = 0i32;
     let mut dynamic_props = StdVec::new();
     for binding in element.bindings.iter() {
-        let BindingOp::Bind(bind) = binding else {
-            continue;
-        };
-        let Ok(name) = static_bind_name(bind) else {
-            continue;
-        };
-        match name {
-            "class" => flag |= 2,
-            "style" => flag |= 4,
-            "key" => {}
-            _ => {
-                flag |= 8;
-                if !dynamic_props.contains(&name) {
-                    dynamic_props.push(name);
+        match binding {
+            BindingOp::Bind(bind) => {
+                let Ok(name) = static_bind_name(bind) else {
+                    continue;
+                };
+                match name {
+                    "class" => flag |= 2,
+                    "style" => flag |= 4,
+                    "key" => {}
+                    _ => {
+                        flag |= 8;
+                        let owned = String::from(name);
+                        if !dynamic_props.contains(&owned) {
+                            dynamic_props.push(owned);
+                        }
+                    }
                 }
             }
+            BindingOp::On(on) => {
+                let Ok(name) = static_on_name(on) else {
+                    continue;
+                };
+                let key = event_key(name);
+                flag |= 8;
+                if !dynamic_props.contains(&key) {
+                    dynamic_props.push(key);
+                }
+                if needs_hydration(name) {
+                    flag |= 32;
+                }
+            }
+            _ => {}
         }
     }
     Patch {
@@ -82,8 +106,10 @@ pub(super) fn emit_bind_props(
         .iter()
         .filter(|piece| !matches!(piece, Piece::Attr(attr) if skip_class && attr.name == "class"))
         .collect();
-    let multiline =
-        visible.len() > 1 || has_bind_named(element, "class") || has_bind_named(element, "style");
+    let multiline = visible.len() > 1
+        || has_bind_named(element, "class")
+        || has_bind_named(element, "style")
+        || has_inline_on(element);
     if multiline {
         cx.buf.push("{");
         cx.buf.indent();
@@ -102,6 +128,7 @@ pub(super) fn emit_bind_props(
         match piece {
             Piece::Attr(attr) => emit_static_pair(cx, attr),
             Piece::Bind(bind) => emit_bind_pair(cx, element, bind)?,
+            Piece::On(on) => emit_on_pair(cx, on)?,
         }
     }
     if multiline {
@@ -114,30 +141,40 @@ pub(super) fn emit_bind_props(
     Ok(())
 }
 
-pub(super) fn patch_flag_comment(flag: i32) -> &'static str {
-    match flag {
-        1 => "TEXT",
-        2 => "CLASS",
-        3 => "TEXT, CLASS",
-        4 => "STYLE",
-        5 => "TEXT, STYLE",
-        6 => "CLASS, STYLE",
-        7 => "TEXT, CLASS, STYLE",
-        8 => "PROPS",
-        9 => "TEXT, PROPS",
-        10 => "CLASS, PROPS",
-        11 => "TEXT, CLASS, PROPS",
-        12 => "STYLE, PROPS",
-        13 => "TEXT, STYLE, PROPS",
-        14 => "CLASS, STYLE, PROPS",
-        15 => "TEXT, CLASS, STYLE, PROPS",
-        _ => "UNKNOWN",
+const PATCH_NAMES: [(i32, &str); 6] = [
+    (1, "TEXT"),
+    (2, "CLASS"),
+    (4, "STYLE"),
+    (8, "PROPS"),
+    (16, "FULL_PROPS"),
+    (32, "NEED_HYDRATION"),
+];
+
+pub(super) fn emit_patch_flag(cx: &mut EmitCx<'_>, flag: i32) {
+    cx.buf.push(", ");
+    cx.buf.push(flag.to_compact_string().as_str());
+    cx.buf.push(" /* ");
+    let mut first = true;
+    for (bit, name) in PATCH_NAMES {
+        if flag & bit == 0 {
+            continue;
+        }
+        if !first {
+            cx.buf.push(", ");
+        }
+        first = false;
+        cx.buf.push(name);
     }
+    if first {
+        cx.buf.push("UNKNOWN");
+    }
+    cx.buf.push(" */");
 }
 
 enum Piece<'a> {
     Attr(&'a Attribute<'a>),
     Bind(&'a BindOp<'a>),
+    On(&'a OnOp<'a>),
 }
 
 fn pieces<'a>(element: &'a ElementOp<'a>) -> Result<StdVec<Piece<'a>>, EmitError> {
@@ -146,14 +183,16 @@ fn pieces<'a>(element: &'a ElementOp<'a>) -> Result<StdVec<Piece<'a>>, EmitError
         out.push(Piece::Attr(attr));
     }
     for binding in element.bindings.iter() {
-        let BindingOp::Bind(bind) = binding else {
-            return Err(EmitError::Unsupported);
-        };
-        out.push(Piece::Bind(bind));
+        match binding {
+            BindingOp::Bind(bind) => out.push(Piece::Bind(bind)),
+            BindingOp::On(on) => out.push(Piece::On(on)),
+            _ => return Err(EmitError::Unsupported),
+        }
     }
     out.sort_by_key(|piece| match piece {
         Piece::Attr(attr) => attr.span.start,
         Piece::Bind(bind) => bind.span.start,
+        Piece::On(on) => on.span.start,
     });
     Ok(out)
 }
@@ -163,6 +202,16 @@ fn static_bind_name<'a>(bind: &'a BindOp<'a>) -> Result<&'a str, EmitError> {
         Some(DynamicName::Static(name)) => Ok(name),
         Some(DynamicName::Dynamic(_)) | None => Err(EmitError::Unsupported),
     }
+}
+
+fn has_inline_on(element: &ElementOp<'_>) -> bool {
+    element.bindings.iter().any(|binding| match binding {
+        BindingOp::On(on) => match on.handler {
+            Some(ExprRef::Js(js)) => is_inline_handler_source(js.source),
+            _ => false,
+        },
+        _ => false,
+    })
 }
 
 fn has_attr(element: &ElementOp<'_>, name: &str) -> bool {
