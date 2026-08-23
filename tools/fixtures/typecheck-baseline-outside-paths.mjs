@@ -25,21 +25,15 @@ import { loadTsconfigExtendsChain } from "./typecheck-baseline-extends-chain.mjs
  * Package-name `extends` is followed only inside the fixture. Climbing into
  * Vize's `node_modules` would load Vize's `@vue/tsconfig` and bake its
  * outside `paths` into the overlay.
- * `compilerOptions.typeRoots` is the same class of hole: TypeScript searches
- * those directories instead of the fixture's `node_modules/@types`. An outside
- * `node_modules/@types` is retargeted to the fixture-local copy when it exists.
- * A trailing `/*` on a package mapping is the same walk: TypeScript still
- * loads that outside tree. A mapping named `*` whose target is an outside
- * `node_modules` directory is retargeted to the fixture copy. Interior `*`
- * patterns and `#alias/*` keys are not guessed.
- *
- * A package mapping whose outside target sits under `node_modules/<name>/...`
- * keeps that subpath on the fixture copy (Nuxt's `vue/dist/vue` JSX entry).
- *
- * `compilerOptions.baseUrl` is last-wins on the extends chain. Mappings resolve
- * from that directory; a rewrite then pins overlay `baseUrl` to `"."`.
- * `${configDir}` in `baseUrl`, `paths`, and `typeRoots` expands to the tsconfig
- * directory that declared the option, matching tsc, before those paths resolve.
+ * `compilerOptions.typeRoots` and `rootDirs` are the same walk: an outside
+ * `node_modules/@types` or `node_modules/<name>` is retargeted to the fixture
+ * copy when that directory already exists locally. A trailing `/*` on a package
+ * mapping, or a `*` mapping onto an outside `node_modules` directory, is
+ * retargeted the same way. Interior `*` patterns and `#alias/*` keys are not
+ * guessed. Package mappings keep `node_modules/<name>/...` subpaths (Nuxt's
+ * `vue/dist/vue` JSX entry). `baseUrl` is last-wins; a rewrite pins it to `"."`.
+ * `${configDir}` in `baseUrl`, `paths`, `typeRoots`, and `rootDirs` expands to
+ * the declaring tsconfig directory, matching tsc, before those paths resolve.
  */
 
 const packageNamePattern = /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/u;
@@ -84,19 +78,23 @@ export function isolatedTsconfigOverlayPath(sourceConfigPath) {
 }
 
 export function rewriteOutsideTypeRoots(fixtureRoot, sourceConfigPath, configDir) {
-  const root = resolve(fixtureRoot);
-  const declared = winningTypeRoots(sourceConfigPath, root);
-  if (declared == null) return null;
-  const rewritten = [];
-  let changed = false;
-  for (const entry of declared.typeRoots) {
-    rewritten.push(
-      retargetTypeRoot(root, declared.dir, configDir, entry, () => {
-        changed = true;
-      }),
-    );
-  }
-  return changed ? rewritten : null;
+  return rewriteOutsideDirList(
+    fixtureRoot,
+    sourceConfigPath,
+    configDir,
+    "typeRoots",
+    retargetTypeRoot,
+  );
+}
+
+export function rewriteOutsideRootDirs(fixtureRoot, sourceConfigPath, configDir) {
+  return rewriteOutsideDirList(
+    fixtureRoot,
+    sourceConfigPath,
+    configDir,
+    "rootDirs",
+    retargetRootDir,
+  );
 }
 
 export function writeIsolatedTsconfigOverlay(fixtureRoot, sourceConfigPath) {
@@ -104,10 +102,12 @@ export function writeIsolatedTsconfigOverlay(fixtureRoot, sourceConfigPath) {
   const configDir = dirname(sourcePath);
   const paths = rewriteOutsidePackagePaths(fixtureRoot, sourcePath, configDir);
   const typeRoots = rewriteOutsideTypeRoots(fixtureRoot, sourcePath, configDir);
-  if (paths == null && typeRoots == null) return null;
+  const rootDirs = rewriteOutsideRootDirs(fixtureRoot, sourcePath, configDir);
+  if (paths == null && typeRoots == null && rootDirs == null) return null;
   const compilerOptions = {};
   if (paths != null) compilerOptions.paths = paths;
   if (typeRoots != null) compilerOptions.typeRoots = typeRoots;
+  if (rootDirs != null) compilerOptions.rootDirs = rootDirs;
   if (paths != null && isolatedOverlayBaseUrl(sourcePath, fixtureRoot) != null) {
     compilerOptions.baseUrl = ".";
   }
@@ -116,7 +116,7 @@ export function writeIsolatedTsconfigOverlay(fixtureRoot, sourceConfigPath) {
     overlayPath,
     `${JSON.stringify({ extends: `./${basename(sourcePath)}`, compilerOptions }, null, 2)}\n`,
   );
-  return { path: overlayPath, paths, typeRoots };
+  return { path: overlayPath, paths, typeRoots, rootDirs };
 }
 
 function retargetPathMapping(
@@ -186,6 +186,46 @@ function relocatePathEntry(sourceDir, tsconfigDir, configDir, entry) {
   return configRelativePath(configDir, resolveWithConfigDir(sourceDir, tsconfigDir, entry));
 }
 
+function rewriteOutsideDirList(fixtureRoot, sourceConfigPath, configDir, option, retarget) {
+  const root = resolve(fixtureRoot);
+  const won = winningCompilerOption(sourceConfigPath, root, (config) =>
+    Array.isArray(config?.compilerOptions?.[option]) ? config.compilerOptions[option] : null,
+  );
+  if (won == null) return null;
+  let changed = false;
+  const rewritten = won.value.map((entry) =>
+    retarget(root, won.dir, configDir, entry, () => {
+      changed = true;
+    }),
+  );
+  return changed ? rewritten : null;
+}
+
+function retargetRootDir(fixtureRoot, sourceDir, configDir, entry, markChanged) {
+  if (typeof entry !== "string") return entry;
+  const relocated = relocatePathEntry(sourceDir, sourceDir, configDir, entry);
+  const original = resolveWithConfigDir(sourceDir, sourceDir, entry);
+  if (isInside(fixtureRoot, original)) return relocated;
+  const owned = ownedNodeModulePackage(original);
+  if (owned == null) return relocated;
+  const local = join(fixtureRoot, "node_modules", ...owned.name.split("/"));
+  if (!existsSync(join(local, "package.json"))) return relocated;
+  const dir = owned.subpath === "" ? local : join(local, owned.subpath);
+  if (owned.subpath !== "" && !existsSync(dir)) return relocated;
+  markChanged();
+  return configRelativePath(configDir, dir);
+}
+
+function ownedNodeModulePackage(target) {
+  const normalized = target.replaceAll("\\", "/");
+  const index = normalized.lastIndexOf("/node_modules/");
+  if (index < 0) return null;
+  const rest = normalized.slice(index + "/node_modules/".length);
+  const name = rest.startsWith("@") ? rest.split("/").slice(0, 2).join("/") : rest.split("/")[0];
+  if (!packageNamePattern.test(name)) return null;
+  return { name, subpath: rest.slice(name.length).replace(/^\//, "") };
+}
+
 function retargetTypeRoot(fixtureRoot, sourceDir, configDir, entry, markChanged) {
   if (typeof entry !== "string") return entry;
   const relocated = relocatePathEntry(sourceDir, sourceDir, configDir, entry);
@@ -221,13 +261,6 @@ function winningPaths(sourceConfigPath, fixtureRoot) {
     return value != null && typeof value === "object" ? value : null;
   });
   return won == null ? null : { paths: won.value, dir: won.dir };
-}
-
-function winningTypeRoots(sourceConfigPath, fixtureRoot) {
-  const won = winningCompilerOption(sourceConfigPath, fixtureRoot, (config) =>
-    Array.isArray(config?.compilerOptions?.typeRoots) ? config.compilerOptions.typeRoots : null,
-  );
-  return won == null ? null : { typeRoots: won.value, dir: won.dir };
 }
 
 function winningBaseUrl(sourceConfigPath, fixtureRoot) {

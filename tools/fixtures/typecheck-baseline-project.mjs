@@ -8,6 +8,7 @@ import {
 import {
   isolatedOverlayBaseUrl,
   rewriteOutsidePackagePaths,
+  rewriteOutsideRootDirs,
   rewriteOutsideTypeRoots,
 } from "./typecheck-baseline-outside-paths.mjs";
 import { typecheckCorpusGlobs } from "./tool-matrix-command.mjs";
@@ -135,6 +136,8 @@ function outsideCompilerOptions(fixtureRoot, sourcePath, configDir) {
   }
   const typeRoots = rewriteOutsideTypeRoots(fixtureRoot, sourcePath, configDir);
   if (typeRoots != null) options.typeRoots = typeRoots;
+  const rootDirs = rewriteOutsideRootDirs(fixtureRoot, sourcePath, configDir);
+  if (rootDirs != null) options.rootDirs = rootDirs;
   return options;
 }
 

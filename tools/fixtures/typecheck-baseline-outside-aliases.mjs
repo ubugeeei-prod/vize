@@ -66,15 +66,17 @@ export function applyIsolatedAliasOverlay(fixtureRoot, sourceConfigPath, overlay
   if (aliases == null) return overlay ?? null;
   const paths = mergePathRewrites(overlay?.paths ?? null, aliases);
   const typeRoots = overlay?.typeRoots ?? null;
+  const rootDirs = overlay?.rootDirs ?? null;
   const overlayPath = overlay?.path ?? isolatedTsconfigOverlayPath(sourcePath);
   const compilerOptions = { paths };
   if (typeRoots != null) compilerOptions.typeRoots = typeRoots;
+  if (rootDirs != null) compilerOptions.rootDirs = rootDirs;
   if (isolatedOverlayBaseUrl(sourcePath, fixtureRoot) != null) compilerOptions.baseUrl = ".";
   writeFileSync(
     overlayPath,
     `${JSON.stringify({ extends: `./${basename(sourcePath)}`, compilerOptions }, null, 2)}\n`,
   );
-  return { path: overlayPath, paths, typeRoots };
+  return { path: overlayPath, paths, typeRoots, rootDirs };
 }
 
 function retargetAliasMapping(
