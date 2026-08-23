@@ -1,5 +1,5 @@
-import { existsSync, readFileSync } from "node:fs";
-import { dirname, join, relative, resolve } from "node:path";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { basename, dirname, join, relative, resolve } from "node:path";
 
 /**
  * Close the vue-tsc path escape unique isolation cannot see (#4461).
@@ -16,6 +16,11 @@ import { dirname, join, relative, resolve } from "node:path";
  * only then retargets package names whose original target is outside and whose
  * fixture-local `node_modules/<name>` is already a real package. No rewrite
  * means the generated config leaves `paths` unset and inherits.
+ *
+ * Vize's `check --tsconfig` still reads the fixture config, so a matching
+ * untracked overlay is written next to the source when a rewrite exists. Git
+ * porcelain uses `--untracked-files=no`, so the overlay does not dirty the
+ * fixture. The matrix typechecker prefers that overlay when it is present.
  */
 
 const packageNamePattern = /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/u;
@@ -33,6 +38,28 @@ export function rewriteOutsidePackagePaths(fixtureRoot, sourceConfigPath, config
     });
   }
   return changed ? rewritten : null;
+}
+
+export function isolatedTsconfigOverlayPath(sourceConfigPath) {
+  const dir = dirname(sourceConfigPath).replaceAll("\\", "/");
+  const name = basename(sourceConfigPath);
+  return dir === "." ? `.vize-isolated-${name}` : `${dir}/.vize-isolated-${name}`;
+}
+
+export function writeIsolatedTsconfigOverlay(fixtureRoot, sourceConfigPath) {
+  const sourcePath = resolve(sourceConfigPath);
+  const rewritten = rewriteOutsidePackagePaths(fixtureRoot, sourcePath, dirname(sourcePath));
+  if (rewritten == null) return null;
+  const overlayPath = isolatedTsconfigOverlayPath(sourcePath);
+  writeFileSync(
+    overlayPath,
+    `${JSON.stringify(
+      { extends: `./${basename(sourcePath)}`, compilerOptions: { paths: rewritten } },
+      null,
+      2,
+    )}\n`,
+  );
+  return { path: overlayPath, paths: rewritten };
 }
 
 function retargetPathMapping(fixtureRoot, sourceDir, configDir, name, targets, markChanged) {

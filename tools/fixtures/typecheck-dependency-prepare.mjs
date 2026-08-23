@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
 import { isolateFixtureTypePackages } from "./typecheck-baseline-isolation.mjs";
 import { isolateUniqueLocalTypePackages } from "./typecheck-baseline-isolation-unique.mjs";
+import { writeIsolatedTsconfigOverlay } from "./typecheck-baseline-outside-paths.mjs";
 import { selectTypecheckPerformanceProjects } from "./typecheck-performance-shard.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -138,6 +139,13 @@ function isolateFixture(project, fixtureRoot) {
   ];
   for (const entry of shadowed) {
     process.stdout.write(`Linked ${project.id} node_modules/${entry.name} -> ${entry.target}\n`);
+  }
+  if (typeof project.tsconfig !== "string") return;
+  const overlay = writeIsolatedTsconfigOverlay(fixtureRoot, resolve(fixtureRoot, project.tsconfig));
+  if (overlay != null) {
+    process.stdout.write(
+      `Rewrote ${project.id} tsconfig paths -> ${relative(fixtureRoot, overlay.path)}\n`,
+    );
   }
 }
 

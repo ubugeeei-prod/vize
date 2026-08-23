@@ -4,7 +4,12 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { rewriteOutsidePackagePaths } from "../../tools/fixtures/typecheck-baseline-outside-paths.mjs";
+import { toolArgs } from "../../tools/fixtures/tool-matrix-command.mjs";
+import {
+  isolatedTsconfigOverlayPath,
+  rewriteOutsidePackagePaths,
+  writeIsolatedTsconfigOverlay,
+} from "../../tools/fixtures/typecheck-baseline-outside-paths.mjs";
 import { materializeBaselineProject } from "../../tools/fixtures/typecheck-baseline-project.mjs";
 
 /**
@@ -126,6 +131,139 @@ test("materialized baseline writes the retargeted paths onto the generated confi
     assert.deepEqual(JSON.parse(project.source).compilerOptions.paths, {
       "vue-router": ["../node_modules/vue-router"],
     });
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test("isolated overlay path sits beside the source tsconfig", () => {
+  assert.equal(isolatedTsconfigOverlayPath("tsconfig.json"), ".vize-isolated-tsconfig.json");
+  assert.equal(
+    isolatedTsconfigOverlayPath("playground/tsconfig.json"),
+    "playground/.vize-isolated-tsconfig.json",
+  );
+  assert.equal(
+    isolatedTsconfigOverlayPath("packages/core/tsconfig.check.json"),
+    "packages/core/.vize-isolated-tsconfig.check.json",
+  );
+});
+
+test("an untracked overlay retargets outside paths next to the source tsconfig", () => {
+  const { outer, fixtureRoot, outsideRouter } = scaffold();
+  try {
+    writeLocalRouter(fixtureRoot);
+    const sourcePath = path.join(fixtureRoot, "tsconfig.json");
+    fs.writeFileSync(
+      sourcePath,
+      `${JSON.stringify({
+        compilerOptions: {
+          paths: {
+            "#imports": ["./src/imports.d.ts"],
+            "vue-router": [path.relative(fixtureRoot, outsideRouter)],
+          },
+        },
+      })}\n`,
+    );
+    const overlay = writeIsolatedTsconfigOverlay(fixtureRoot, sourcePath);
+    assert.equal(overlay.path, path.join(fixtureRoot, ".vize-isolated-tsconfig.json"));
+    assert.deepEqual(JSON.parse(fs.readFileSync(overlay.path, "utf8")), {
+      extends: "./tsconfig.json",
+      compilerOptions: {
+        paths: {
+          "#imports": ["./src/imports.d.ts"],
+          "vue-router": ["./node_modules/vue-router"],
+        },
+      },
+    });
+    assert.deepEqual(
+      toolArgs(
+        { vueGlobs: ["src/**/*.vue"], tsconfig: "tsconfig.json", fixturePath: fixtureRoot },
+        "typechecker",
+        "out",
+      ),
+      [
+        "check",
+        "src/**/*.vue",
+        "--format",
+        "json",
+        "--no-config",
+        "--tsconfig",
+        ".vize-isolated-tsconfig.json",
+      ],
+    );
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test("a nested overlay keeps rewritten paths relative to the source directory", () => {
+  const { outer, fixtureRoot, outsideRouter } = scaffold();
+  try {
+    writeLocalRouter(fixtureRoot);
+    const playground = path.join(fixtureRoot, "playground");
+    fs.mkdirSync(playground);
+    const sourcePath = path.join(playground, "tsconfig.json");
+    fs.writeFileSync(
+      sourcePath,
+      `${JSON.stringify({
+        compilerOptions: {
+          paths: { "vue-router": [path.relative(playground, outsideRouter)] },
+        },
+      })}\n`,
+    );
+    const overlay = writeIsolatedTsconfigOverlay(fixtureRoot, sourcePath);
+    assert.equal(overlay.path, path.join(playground, ".vize-isolated-tsconfig.json"));
+    assert.deepEqual(JSON.parse(fs.readFileSync(overlay.path, "utf8")), {
+      extends: "./tsconfig.json",
+      compilerOptions: { paths: { "vue-router": ["../node_modules/vue-router"] } },
+    });
+    assert.deepEqual(
+      toolArgs(
+        {
+          vueGlobs: ["playground/src/**/*.vue"],
+          tsconfig: "playground/tsconfig.json",
+          fixturePath: fixtureRoot,
+        },
+        "typechecker",
+        "out",
+      ),
+      [
+        "check",
+        "playground/src/**/*.vue",
+        "--format",
+        "json",
+        "--no-config",
+        "--tsconfig",
+        "playground/.vize-isolated-tsconfig.json",
+      ],
+    );
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test("no overlay is written when there is no fixture-local package to retarget", () => {
+  const { outer, fixtureRoot, outsideRouter } = scaffold();
+  try {
+    const sourcePath = path.join(fixtureRoot, "tsconfig.json");
+    fs.writeFileSync(
+      sourcePath,
+      `${JSON.stringify({
+        compilerOptions: {
+          paths: { "vue-router": [path.relative(fixtureRoot, outsideRouter)] },
+        },
+      })}\n`,
+    );
+    assert.equal(writeIsolatedTsconfigOverlay(fixtureRoot, sourcePath), null);
+    assert.equal(fs.existsSync(path.join(fixtureRoot, ".vize-isolated-tsconfig.json")), false);
+    assert.deepEqual(
+      toolArgs(
+        { vueGlobs: ["src/**/*.vue"], tsconfig: "tsconfig.json", fixturePath: fixtureRoot },
+        "typechecker",
+        "out",
+      ),
+      ["check", "src/**/*.vue", "--format", "json", "--no-config", "--tsconfig", "tsconfig.json"],
+    );
   } finally {
     fs.rmSync(outer, { recursive: true, force: true });
   }
