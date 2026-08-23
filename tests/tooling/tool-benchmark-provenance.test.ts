@@ -32,6 +32,8 @@ const READY_VERSIONS = {
   vize: "vize 0.303.0",
   tsgo: "7.0.0-dev.20260602.1",
   vueTsc: "3.2.0",
+  verterTsc: "verter-tsc 0.0.1-beta.3",
+  golar: "golar 0.1.10",
   typescript: "5.9.0",
   vue: "3.6.0",
   eslint: "9.0.0",
@@ -104,6 +106,8 @@ const READY_BINARIES = {
   vize: "a".repeat(64),
   tsgo: "b".repeat(64),
   vueTsc: "c".repeat(64),
+  verterTsc: "d".repeat(64),
+  golar: "e".repeat(64),
   eslint: null,
   prettier: null,
 };
@@ -122,8 +126,8 @@ test("a ready artifact renders every version and names the measured backend", ()
       },
     }),
     [
-      "Versions: vize `vize 0.303.0` · tsgo `7.0.0-dev.20260602.1` · vue-tsc `3.2.0` (typescript `5.9.0`) · vue `3.6.0` · eslint `9.0.0` · prettier `3.4.0` · node `v24.0.0`",
-      `Binaries (sha256): vize \`${READY_BINARIES.vize}\` tsgo \`${READY_BINARIES.tsgo}\` vueTsc \`${READY_BINARIES.vueTsc}\` eslint n/a prettier n/a`,
+      "Versions: vize `vize 0.303.0` · tsgo `7.0.0-dev.20260602.1` · vue-tsc `3.2.0` (typescript `5.9.0`) · verter-tsc `verter-tsc 0.0.1-beta.3` · Golar `golar 0.1.10` · vue `3.6.0` · eslint `9.0.0` · prettier `3.4.0` · node `v24.0.0`",
+      `Binaries (sha256): vize \`${READY_BINARIES.vize}\` tsgo \`${READY_BINARIES.tsgo}\` vueTsc \`${READY_BINARIES.vueTsc}\` verterTsc \`${READY_BINARIES.verterTsc}\` golar \`${READY_BINARIES.golar}\` eslint n/a prettier n/a`,
       "Backend: native TypeScript engine ready at `/repo/node_modules/.bin/tsgo`. Planted-diagnostic gating for the type-check rows lives in bench/check-gate.mjs (.github/workflows/check-bench.yml).",
     ],
   );
@@ -143,8 +147,8 @@ test("an unready backend is stated outright and forbids a published timing", () 
       },
     }),
     [
-      "Versions: vize `vize 0.303.0` · tsgo n/a · vue-tsc n/a (typescript n/a) · vue `3.6.0` · eslint `9.0.0` · prettier `3.4.0` · node `v24.0.0`",
-      `Binaries (sha256): vize \`${READY_BINARIES.vize}\` tsgo n/a vueTsc n/a eslint n/a prettier n/a`,
+      "Versions: vize `vize 0.303.0` · tsgo n/a · vue-tsc n/a (typescript n/a) · verter-tsc `verter-tsc 0.0.1-beta.3` · Golar `golar 0.1.10` · vue `3.6.0` · eslint `9.0.0` · prettier `3.4.0` · node `v24.0.0`",
+      `Binaries (sha256): vize \`${READY_BINARIES.vize}\` tsgo n/a vueTsc n/a verterTsc \`${READY_BINARIES.verterTsc}\` golar \`${READY_BINARIES.golar}\` eslint n/a prettier n/a`,
       "Backend: native TypeScript engine NOT ready (no tsgo binary at: /repo/node_modules/.bin/tsgo); no type-check timing may be published from this artifact.",
     ],
   );

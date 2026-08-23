@@ -225,6 +225,9 @@
       "vizeSingleId": "vize-check-1t",
       "vizeMaxId": "vize-check-max",
       "engineClasses": {
+        "golar-default": "tsgo-native",
+        "golar-typecheck": "tsgo-native",
+        "verter-tsc": "tsgo-native",
         "vue-tsc": "typescript-js",
         "vize-check-1t": "tsgo-native",
         "vize-check-max": "tsgo-native"
@@ -373,6 +376,9 @@
       "vizeSingleId": "vize-check-1t",
       "vizeMaxId": "vize-check-max",
       "engineClasses": {
+        "golar-default": "tsgo-native",
+        "golar-typecheck": "tsgo-native",
+        "verter-tsc": "tsgo-native",
         "vue-tsc": "typescript-js",
         "vize-check-1t": "tsgo-native",
         "vize-check-max": "tsgo-native"

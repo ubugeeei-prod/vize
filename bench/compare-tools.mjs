@@ -32,6 +32,11 @@ import {
   renderEngineClassSections,
   renderSurfaceTable,
 } from "./compare-tools-report.mjs";
+import {
+  createTypecheckToolVariants,
+  prepareTypecheckDir,
+  typecheckToolBins,
+} from "./compare-tools-typecheck.mjs";
 import { createNativeBatchSequenceVariants, measureNativeBatchCompile } from "./native-batch.mjs";
 import { linkColdNodeModules } from "./nuxt-build-cache.mjs";
 
@@ -250,23 +255,6 @@ function copySelectedFiles(inputDir, outputDir, files, extraFiles = []) {
       copyFileSync(source, join(outputDir, file));
     }
   }
-}
-
-function prepareCheckDir(inputDir, files) {
-  const outputDir = join(workRoot, `check-${files.length}`);
-  copySelectedFiles(inputDir, outputDir, files, ["vize.config.json"]);
-  writeFileSync(
-    join(outputDir, "tsconfig.json"),
-    `${JSON.stringify(
-      {
-        extends: relative(outputDir, join(inputDir, "tsconfig.json")).split(sep).join("/"),
-        include: files,
-      },
-      null,
-      2,
-    )}\n`,
-  );
-  return outputDir;
 }
 
 function prepareFormatDir(inputDir, files, label, invocation) {
@@ -887,8 +875,7 @@ async function measureFormat(inputDir, files, options) {
 }
 
 async function measureCheck(inputDir, files, options) {
-  const checkDir = prepareCheckDir(inputDir, files);
-  const vueTscBin = resolveWorkspaceBin("vue-tsc");
+  const checkDir = prepareTypecheckDir({ inputDir, files, workRoot, copySelectedFiles });
   const vizeBin = resolve(options.vizeBin);
   if (!existsSync(vizeBin)) {
     throw new Error(`Vize CLI not found: ${vizeBin}`);
@@ -905,16 +892,14 @@ async function measureCheck(inputDir, files, options) {
   const tsconfigPath = join(checkDir, "tsconfig.json");
 
   const variants = [
-    {
-      id: "vue-tsc",
-      label: "vue-tsc",
-      files: files.length,
-      measure: () =>
-        runCommand(vueTscBin, ["--noEmit", "-p", tsconfigPath], {
-          cwd: checkDir,
-          allowNonZeroExit: true,
-        }),
-    },
+    ...createTypecheckToolVariants({
+      fileCount: files.length,
+      checkDir,
+      tsconfigPath,
+      corsaPath: options.backend.corsaPath,
+      resolveWorkspaceBin,
+      runCommand,
+    }),
     {
       id: "vize-check-1t",
       label: "Vize check (1T)",
@@ -1212,7 +1197,7 @@ async function runBenchmarks(args) {
       options,
       bins: {
         vizeBin: resolve(options.vizeBin),
-        vueTscBin: optionalWorkspaceBin("vue-tsc"),
+        ...typecheckToolBins(optionalWorkspaceBin),
         eslintBin: optionalWorkspaceBin("eslint"),
         prettierBin: optionalWorkspaceBin("prettier"),
       },

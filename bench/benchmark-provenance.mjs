@@ -77,22 +77,42 @@ export function resolveBackend(candidates = TSGO_CANDIDATES) {
  * incumbent tools record `null` rather than being omitted, so the artifact
  * shape is stable across runs that skip a task.
  */
-export function collectBinaryHashes({ vizeBin, corsaPath, vueTscBin, eslintBin, prettierBin }) {
+export function collectBinaryHashes({
+  vizeBin,
+  corsaPath,
+  vueTscBin,
+  verterTscBin,
+  golarBin,
+  eslintBin,
+  prettierBin,
+}) {
   return {
     vize: fileSha256(vizeBin),
     tsgo: fileSha256(corsaPath),
     vueTsc: fileSha256(vueTscBin),
+    verterTsc: fileSha256(verterTscBin),
+    golar: fileSha256(golarBin),
     eslint: fileSha256(eslintBin),
     prettier: fileSha256(prettierBin),
   };
 }
 
-export function collectVersions({ vizeBin, corsaVersion, vueTscBin, eslintBin, prettierBin }) {
+export function collectVersions({
+  vizeBin,
+  corsaVersion,
+  vueTscBin,
+  verterTscBin,
+  golarBin,
+  eslintBin,
+  prettierBin,
+}) {
   const vuePackageDir = resolveVuePackageDir();
   return {
     vize: probeVersion(vizeBin),
     tsgo: corsaVersion,
     vueTsc: probeVersion(vueTscBin),
+    verterTsc: probeVersion(verterTscBin),
+    golar: probeVersion(golarBin),
     typescript: vueTscBin ? typescriptVersionNear(vueTscBin) : null,
     vue: vuePackageDir ? packageVersion(vuePackageDir) : null,
     eslint: probeVersion(eslintBin),
@@ -112,7 +132,7 @@ export function renderProvenanceLines(data) {
   }
   const show = (value) => (value == null ? "n/a" : `\`${value}\``);
   const lines = [
-    `Versions: vize ${show(versions.vize)} · tsgo ${show(versions.tsgo)} · vue-tsc ${show(versions.vueTsc)} (typescript ${show(versions.typescript)}) · vue ${show(versions.vue)} · eslint ${show(versions.eslint)} · prettier ${show(versions.prettier)} · node ${show(versions.node)}`,
+    `Versions: vize ${show(versions.vize)} · tsgo ${show(versions.tsgo)} · vue-tsc ${show(versions.vueTsc)} (typescript ${show(versions.typescript)}) · verter-tsc ${show(versions.verterTsc)} · Golar ${show(versions.golar)} · vue ${show(versions.vue)} · eslint ${show(versions.eslint)} · prettier ${show(versions.prettier)} · node ${show(versions.node)}`,
   ];
   lines.push(
     `Binaries (sha256): ${Object.entries(data.binaries ?? {})

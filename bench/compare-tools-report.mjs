@@ -23,11 +23,17 @@ export const CROSS_ENGINE_CELL = "n/a (cross-engine)";
  */
 export const ENGINE_CLASSES_BY_SURFACE = {
   check: {
+    "golar-default": "tsgo-native",
+    "golar-typecheck": "tsgo-native",
+    "verter-tsc": "tsgo-native",
     "vue-tsc": "typescript-js",
     "vize-check-1t": "tsgo-native",
     "vize-check-max": "tsgo-native",
   },
   "large-check": {
+    "golar-default": "tsgo-native",
+    "golar-typecheck": "tsgo-native",
+    "verter-tsc": "tsgo-native",
     "vue-tsc": "typescript-js",
     "vize-check-1t": "tsgo-native",
     "vize-check-max": "tsgo-native",
