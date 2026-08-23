@@ -25,6 +25,10 @@ import { basename, dirname, join, relative, resolve } from "node:path";
  * Package-name `extends` is followed only inside the fixture. Climbing into
  * Vize's `node_modules` would load Vize's `@vue/tsconfig` and bake its
  * outside `paths` into the overlay.
+ *
+ * `compilerOptions.typeRoots` is the same class of hole: TypeScript searches
+ * those directories instead of the fixture's `node_modules/@types`. An outside
+ * `node_modules/@types` is retargeted to the fixture-local copy when it exists.
  */
 
 const packageNamePattern = /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/u;
@@ -50,20 +54,37 @@ export function isolatedTsconfigOverlayPath(sourceConfigPath) {
   return dir === "." ? `.vize-isolated-${name}` : `${dir}/.vize-isolated-${name}`;
 }
 
+export function rewriteOutsideTypeRoots(fixtureRoot, sourceConfigPath, configDir) {
+  const root = resolve(fixtureRoot);
+  const declared = winningTypeRoots(sourceConfigPath, root);
+  if (declared == null) return null;
+  const rewritten = [];
+  let changed = false;
+  for (const entry of declared.typeRoots) {
+    rewritten.push(
+      retargetTypeRoot(root, declared.dir, configDir, entry, () => {
+        changed = true;
+      }),
+    );
+  }
+  return changed ? rewritten : null;
+}
+
 export function writeIsolatedTsconfigOverlay(fixtureRoot, sourceConfigPath) {
   const sourcePath = resolve(sourceConfigPath);
-  const rewritten = rewriteOutsidePackagePaths(fixtureRoot, sourcePath, dirname(sourcePath));
-  if (rewritten == null) return null;
+  const configDir = dirname(sourcePath);
+  const paths = rewriteOutsidePackagePaths(fixtureRoot, sourcePath, configDir);
+  const typeRoots = rewriteOutsideTypeRoots(fixtureRoot, sourcePath, configDir);
+  if (paths == null && typeRoots == null) return null;
+  const compilerOptions = {};
+  if (paths != null) compilerOptions.paths = paths;
+  if (typeRoots != null) compilerOptions.typeRoots = typeRoots;
   const overlayPath = isolatedTsconfigOverlayPath(sourcePath);
   writeFileSync(
     overlayPath,
-    `${JSON.stringify(
-      { extends: `./${basename(sourcePath)}`, compilerOptions: { paths: rewritten } },
-      null,
-      2,
-    )}\n`,
+    `${JSON.stringify({ extends: `./${basename(sourcePath)}`, compilerOptions }, null, 2)}\n`,
   );
-  return { path: overlayPath, paths: rewritten };
+  return { path: overlayPath, paths, typeRoots };
 }
 
 function retargetPathMapping(fixtureRoot, sourceDir, configDir, name, targets, markChanged) {
@@ -86,6 +107,18 @@ function relocatePathEntry(sourceDir, configDir, entry) {
   return configRelativePath(configDir, resolve(sourceDir, entry));
 }
 
+function retargetTypeRoot(fixtureRoot, sourceDir, configDir, entry, markChanged) {
+  if (typeof entry !== "string") return entry;
+  const relocated = relocatePathEntry(sourceDir, configDir, entry);
+  const original = resolve(sourceDir, entry);
+  if (isInside(fixtureRoot, original)) return relocated;
+  if (!isTypesPackageRoot(original)) return relocated;
+  const local = join(fixtureRoot, "node_modules", "@types");
+  if (!existsSync(local)) return relocated;
+  markChanged();
+  return configRelativePath(configDir, local);
+}
+
 function winningPaths(sourceConfigPath, fixtureRoot) {
   let paths;
   let dir;
@@ -99,6 +132,21 @@ function winningPaths(sourceConfigPath, fixtureRoot) {
     }
   }
   return paths == null ? null : { paths, dir };
+}
+
+function winningTypeRoots(sourceConfigPath, fixtureRoot) {
+  let typeRoots;
+  let dir;
+  for (const { config, dir: configDir } of [
+    ...loadExtendsChain(sourceConfigPath, fixtureRoot),
+  ].reverse()) {
+    const candidate = config?.compilerOptions?.typeRoots;
+    if (Array.isArray(candidate)) {
+      typeRoots = candidate;
+      dir = configDir;
+    }
+  }
+  return typeRoots == null ? null : { typeRoots, dir };
 }
 
 function loadExtendsChain(sourceConfigPath, fixtureRoot) {
@@ -197,6 +245,11 @@ function packageExtendsFile(pkg, subpath) {
 function isInside(root, target) {
   const path = relative(root, target);
   return path !== "" && !path.startsWith("..") && !path.startsWith("/");
+}
+
+function isTypesPackageRoot(directory) {
+  const normalized = directory.replaceAll("\\", "/");
+  return normalized.endsWith("/node_modules/@types");
 }
 
 function configRelativePath(from, to) {

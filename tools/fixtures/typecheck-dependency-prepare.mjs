@@ -163,7 +163,7 @@ function isolateFixture(project, fixtureRoot) {
   const overlay = writeIsolatedTsconfigOverlay(fixtureRoot, resolve(fixtureRoot, project.tsconfig));
   if (overlay != null) {
     process.stdout.write(
-      `Rewrote ${project.id} tsconfig paths -> ${relative(fixtureRoot, overlay.path)}\n`,
+      `Rewrote ${project.id} tsconfig overlay -> ${relative(fixtureRoot, overlay.path)}\n`,
     );
   }
 }
