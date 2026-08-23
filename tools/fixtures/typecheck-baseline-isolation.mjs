@@ -9,6 +9,11 @@ import {
 } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 
+import {
+  ancestorPackagePath,
+  packageNameFromExtendsSpecifier,
+} from "./typecheck-baseline-isolation-package-extends.mjs";
+
 /**
  * Keep the fixture's type environment inside the fixture (run 31979524200).
  *
@@ -47,7 +52,9 @@ import { dirname, join, relative, resolve } from "node:path";
  * from relative `references` when that chain declares none — elk's root
  * `tsconfig.json` is solution-style and parks the real paths on referenced
  * `.nuxt` projects (#4461). Conflicting targets for one name are dropped
- * rather than guessed. Package-name specifiers are ignored, matching `extends`.
+ * rather than guessed. Package-name `extends` specifiers are recorded as
+ * ancestor targets so unique isolation can link a fixture-local copy; those
+ * package configs are not walked for `paths`.
  */
 
 /** `paths` also carries `#imports`-style aliases and `foo/*` patterns, which are not packages. */
@@ -93,7 +100,22 @@ export function readDeclaredPackagePaths(fixtureRoot, sourceConfigPath) {
       queue.push(next);
     }
   }
+  mergePackageExtends(declared, conflicts, seen, fixtureRoot);
   return declared;
+}
+
+function mergePackageExtends(declared, conflicts, configPaths, fixtureRoot) {
+  for (const configPath of configPaths) {
+    const config = parseTsconfig(configPath);
+    if (config == null) continue;
+    for (const specifier of extendsSpecifiers(config.extends)) {
+      const name = packageNameFromExtendsSpecifier(specifier);
+      if (name == null || conflicts.has(name) || declared.has(name)) continue;
+      const ancestor = ancestorPackagePath(fixtureRoot, name);
+      if (ancestor == null) continue;
+      declared.set(name, ancestor);
+    }
+  }
 }
 
 function packagePathsFromExtends(sourceConfigPath) {
