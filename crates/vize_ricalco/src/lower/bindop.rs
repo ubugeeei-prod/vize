@@ -22,7 +22,7 @@ use vize_carton::{Box, String, Vec, cstr};
 use vize_sinopia::Element;
 
 use vize_disegno::expr::ExprRef;
-use vize_disegno::op::{BindOp, BindingOp, DynamicName, OnOp};
+use vize_disegno::op::{BindOp, BindingOp, DynamicName, OnOp, VueSyncOp};
 
 use super::cx::{Cx, attr_slice, attr_span};
 use super::directive::{Arg, Directive};
@@ -104,6 +104,43 @@ pub(crate) fn lower_bind<'a>(
             _ => None,
         },
     };
+
+    // Vue 2's bounded `.sync` subset: static name, a value, the
+    // `sync` modifier. Dynamic `:[foo].sync` stays `ui.bind`, matching
+    // the shipped pre-transform's skip. `ExprRef`/`DynamicName` are
+    // `Copy`, so the Bind arm still sees the original positions.
+    if cx.caps.scoped_slot_attrs
+        && let Some(name) = name
+        && matches!(name, DynamicName::Static(_))
+        && let Some(value) = value
+        && modifiers.contains(&"sync")
+    {
+        let mut rest: Vec<'a, &'a str> = Vec::new_in(&cx.allocator);
+        let mut stripped = false;
+        for modifier in &modifiers {
+            if *modifier == "sync" && !stripped {
+                stripped = true;
+                continue;
+            }
+            rest.push(*modifier);
+        }
+        cx.record(
+            "lower.sync",
+            node,
+            attr_slice(cx, attr),
+            name_desc("vue.sync", &Some(name)),
+            span,
+        );
+        return BindingOp::VueSync(Box::new_in(
+            VueSyncOp {
+                name,
+                modifiers: rest,
+                value,
+                span,
+            },
+            &cx.allocator,
+        ));
+    }
 
     cx.record(
         "lower.bind",
