@@ -37,9 +37,9 @@ function getScriptCrateArray(variableName: string): string[] {
 }
 
 const getPublishedCrates = () => getScriptCrateArray("published_crates");
-const getPendingFirstPublishCrates = () => getScriptCrateArray("pending_first_publish_crates");
-const getBlockedByPendingFirstPublishCrates = () =>
-  getScriptCrateArray("blocked_by_pending_first_publish_crates");
+const getManualPublishCrates = () => getScriptCrateArray("manual_publish_crates");
+const getBlockedByManualPublishCrates = () =>
+  getScriptCrateArray("blocked_by_manual_publish_crates");
 
 function getMetadata(): CargoMetadata {
   return JSON.parse(
@@ -80,8 +80,8 @@ test("publish_crates script keeps publishable workspace dependencies ordered", (
 test("publish_crates exactly partitions every publishable workspace crate", () => {
   const releaseCrates = [
     ...getPublishedCrates(),
-    ...getPendingFirstPublishCrates(),
-    ...getBlockedByPendingFirstPublishCrates(),
+    ...getManualPublishCrates(),
+    ...getBlockedByManualPublishCrates(),
   ];
   const publishableCrates = getMetadata()
     .packages.filter((pkg) =>
@@ -94,16 +94,17 @@ test("publish_crates exactly partitions every publishable workspace crate", () =
   assert.deepEqual(releaseCrates.toSorted(), publishableCrates.toSorted());
 });
 
-test("publish_crates only defers crates that have not been created on crates.io", () => {
-  assert.deepEqual(getPendingFirstPublishCrates(), [
+test("publish_crates defers crates that still need manual crates.io handoff", () => {
+  assert.deepEqual(getManualPublishCrates(), [
     "vize_croquis_cf",
+    "vize_atelier_jsx",
     "vize_marquette",
     "vize_doctor",
   ]);
 });
 
-test("publish_crates only blocks crates that depend on first-publish exclusions", () => {
-  assert.deepEqual(getBlockedByPendingFirstPublishCrates(), ["vize_canon"]);
+test("publish_crates only blocks crates that depend on manual-publish exclusions", () => {
+  assert.deepEqual(getBlockedByManualPublishCrates(), ["vize_canon", "vize_patina"]);
 });
 
 test("publish_crates native script covers publish and idempotent dry-run modes", () => {

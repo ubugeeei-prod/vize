@@ -9,9 +9,11 @@
 /// The order matters because many of these crates depend on previously
 /// published workspace crates via exact-version dependencies. The accompanying
 /// test asserts that this list remains topologically valid.
-/// Crates in `pending_first_publish_crates` are intentionally omitted here:
-/// crates.io Trusted Publishing can publish new versions of existing crates,
-/// but it cannot create a crate on its first release.
+/// Crates in `manual_publish_crates` are intentionally omitted here:
+/// crates.io Trusted Publishing can publish only crates whose trusted-publisher
+/// handoff is configured for this repository/workflow/environment. First
+/// publishes and crates whose handoff has not been completed yet must be
+/// published manually once before this job can own subsequent versions.
 let published_crates : Array[String] = [
   "vize_carton",
   "vize_relief",
@@ -22,24 +24,24 @@ let published_crates : Array[String] = [
   "vize_atelier_vapor",
   "vize_atelier_ssr",
   "vize_atelier_sfc",
-  "vize_atelier_jsx",
-  "vize_patina",
   "vize_musea",
   "vize_fresco",
 ]
 
-/// Publishable crates that need one manual owner-token publish before GitHub
-/// Trusted Publishing can take over subsequent versions.
-let pending_first_publish_crates : Array[String] = [
+/// Publishable crates that need manual owner-token work before GitHub Trusted
+/// Publishing can publish them from the release workflow.
+let manual_publish_crates : Array[String] = [
   "vize_croquis_cf",
+  "vize_atelier_jsx",
   "vize_marquette",
   "vize_doctor",
 ]
 
-/// Existing crates whose current version depends on a crate that still needs
-/// its manual first publish.
-let blocked_by_pending_first_publish_crates : Array[String] = [
+/// Existing crates whose current version depends on a crate that still needs a
+/// manual publish handoff.
+let blocked_by_manual_publish_crates : Array[String] = [
   "vize_canon",
+  "vize_patina",
 ]
 
 /// Parses a positive integer from a string and falls back on invalid input.
@@ -128,14 +130,14 @@ async fn run_app() -> Int {
     delay_seconds,
   )
   println("Expected version: \{version}")
-  if !pending_first_publish_crates.is_empty() {
+  if !manual_publish_crates.is_empty() {
     println(
-      "Deferred first-publish crates: " + pending_first_publish_crates.join(", "),
+      "Deferred manual-publish crates: " + manual_publish_crates.join(", "),
     )
   }
-  if !blocked_by_pending_first_publish_crates.is_empty() {
+  if !blocked_by_manual_publish_crates.is_empty() {
     println(
-      "Deferred dependent crates: " + blocked_by_pending_first_publish_crates.join(", "),
+      "Deferred dependent crates: " + blocked_by_manual_publish_crates.join(", "),
     )
   }
 
