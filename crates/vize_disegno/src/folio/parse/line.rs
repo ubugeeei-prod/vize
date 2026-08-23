@@ -14,7 +14,7 @@ use vize_davinci::folio::FolioError;
 use super::super::owned::{
     FolioAttribute, FolioBind, FolioBranch, FolioComponent, FolioElement, FolioFor,
     FolioForBinding, FolioIf, FolioInterpolation, FolioModel, FolioName, FolioOn, FolioOp,
-    FolioSlot, FolioSlotContent, FolioText, FolioVueDirective,
+    FolioSlot, FolioSlotContent, FolioText, FolioVueDirective, FolioVueSlotScope, FolioVueSync,
 };
 use super::expr_token::take_expr;
 use crate::op::Namespace;
@@ -27,6 +27,8 @@ pub(in super::super) enum Item {
     Model(FolioModel),
     SlotContent(FolioSlotContent),
     Directive(FolioVueDirective),
+    Sync(FolioVueSync),
+    SlotScope(FolioVueSlotScope),
     Branch(FolioBranch),
     Op(FolioOp),
 }
@@ -110,6 +112,8 @@ pub(in super::super) fn parse_item(content: &str, line_no: usize) -> Result<Item
         "ui.slot-content" => super::binding_line::slot_content(rest, line_no),
         "ui.model" => super::binding_line::model(rest, line_no),
         "vue.directive" => super::binding_line::directive(rest, line_no),
+        "vue.sync" => super::binding_line::sync(rest, line_no),
+        "vue.slot-scope" => super::binding_line::slot_scope(rest, line_no),
         other => Err(err(line_no, cstr!("unknown op `{other}`"))),
     }
 }
@@ -242,7 +246,7 @@ pub(super) fn name_value(rest: &str, line_no: usize) -> Result<(FolioName, &str)
         let (name, tail) = take_quoted(rest, line_no)?;
         return Ok((FolioName::Static(name), tail));
     }
-    if ["js(", "opaque(", "foreign("]
+    if ["js(", "opaque(", "foreign(", "vue.filter("]
         .iter()
         .any(|head| rest.starts_with(head))
     {

@@ -1,5 +1,6 @@
-//! Expression-payload token grammar (P2-5b): `js(<quoted> @s:e)`,
-//! `opaque(<reason> <quoted> @s:e)`, `foreign(<dialect> <quoted> @s:e)`.
+//! Expression-payload token grammar (P2-5b; Vue 2 filters P2-9):
+//! `js(<quoted> @s:e)`, `opaque(<reason> <quoted> @s:e)`,
+//! `foreign(<dialect> <quoted> @s:e)`, `vue.filter(<quoted> @s:e)`.
 //!
 //! The payload is owned text + span, never an AST - a `js(...)` token
 //! re-parses into the arena on load (see `crate::expr::js`). Reasons are
@@ -58,6 +59,11 @@ pub(super) fn take_expr(rest: &str, line_no: usize) -> Result<(FolioExpr, &str),
             },
             tail,
         ));
+    }
+    if let Some(tail) = rest.strip_prefix("vue.filter(") {
+        let (source, tail) = take_quoted(tail, line_no)?;
+        let (span, tail) = close_span(tail, line_no)?;
+        return Ok((FolioExpr::Filter { source, span }, tail));
     }
     Err(err(line_no, cstr!("expected an expression payload")))
 }

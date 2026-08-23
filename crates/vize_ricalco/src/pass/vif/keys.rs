@@ -75,7 +75,9 @@ fn is_key_bind(binding: &BindingOp<'_>) -> bool {
         BindingOp::On(_)
         | BindingOp::Model(_)
         | BindingOp::SlotContent(_)
-        | BindingOp::VueDirective(_) => false,
+        | BindingOp::VueDirective(_)
+        | BindingOp::VueSync(_)
+        | BindingOp::VueSlotScope(_) => false,
     }
 }
 
@@ -148,5 +150,7 @@ fn binding_span(binding: &BindingOp<'_>) -> Span {
         BindingOp::Model(model) => model.span,
         BindingOp::SlotContent(content) => content.span,
         BindingOp::VueDirective(directive) => directive.span,
+        BindingOp::VueSync(sync) => sync.span,
+        BindingOp::VueSlotScope(scope) => scope.span,
     }
 }

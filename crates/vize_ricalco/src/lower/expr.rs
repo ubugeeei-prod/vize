@@ -49,6 +49,7 @@ pub(crate) fn opaque_at<'a>(
 pub(crate) fn desc(expr: &ExprRef<'_>) -> String {
     match expr {
         ExprRef::Js(_) | ExprRef::Foreign(_) => String::from(expr.mnemonic()),
+        ExprRef::Filter(_) => String::from("vue.filter"),
         ExprRef::Opaque(opaque) => cstr!("opaque({})", opaque.reason.mnemonic()),
     }
 }
@@ -63,6 +64,6 @@ pub(crate) fn simple_identifier<'a>(expr: &ExprRef<'a>) -> Option<&'a str> {
             oxc_ast::ast::Expression::Identifier(_) => Some(js.source),
             _ => None,
         },
-        ExprRef::Foreign(_) | ExprRef::Opaque(_) => None,
+        ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => None,
     }
 }

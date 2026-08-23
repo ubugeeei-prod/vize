@@ -15,10 +15,11 @@
 //! # The core is fair, dialect ops are named
 //!
 //! The neutral core (`ui.*`) is a fair abstraction, not Vue's AST renamed;
-//! whatever is genuinely Vue-specific is a `vue.*` dialect op
-//! ([`BindingOp::VueDirective`] today). A dialect op lands with the
-//! transform that needs it (P2-9), never speculatively - which is why the
-//! dialect family holds exactly one op.
+//! whatever is genuinely Vue-specific is a `vue.*` dialect op. A dialect
+//! op lands with the transform that needs it (P2-9), never speculatively:
+//! custom directives as [`BindingOp::VueDirective`], Vue 2 `.sync` /
+//! `slot-scope` as [`BindingOp::VueSync`] / [`BindingOp::VueSlotScope`],
+//! and Vue 2 pipe filters as [`crate::expr::ExprRef::Filter`].
 //!
 //! # `Drop`-free by construction
 //!
@@ -46,7 +47,7 @@ pub use element::{Attribute, ComponentOp, ElementOp, Namespace};
 pub use model::{BindingContract, ModelOp};
 pub use slot::{DynamicName, SlotContentOp, SlotOp};
 pub use text::{InterpolationOp, TextOp};
-pub use vue::VueDirectiveOp;
+pub use vue::{VueDirectiveOp, VueSlotScopeOp, VueSyncOp};
 
 /// One S2 op standing in a region (a child position).
 ///
@@ -118,6 +119,10 @@ pub enum BindingOp<'a> {
     /// `vue.directive` - a Vue custom directive carried through as a
     /// dialect op.
     VueDirective(Box<'a, VueDirectiveOp<'a>>),
+    /// `vue.sync` - Vue 2 `:foo.sync` two-way bind sugar.
+    VueSync(Box<'a, VueSyncOp<'a>>),
+    /// `vue.slot-scope` - Vue 2 `slot-scope` / `scope` scoped-slot sugar.
+    VueSlotScope(Box<'a, VueSlotScopeOp<'a>>),
 }
 
 impl BindingOp<'_> {
@@ -131,6 +136,8 @@ impl BindingOp<'_> {
             Self::Model(_) => "ui.model",
             Self::SlotContent(_) => "ui.slot-content",
             Self::VueDirective(_) => "vue.directive",
+            Self::VueSync(_) => "vue.sync",
+            Self::VueSlotScope(_) => "vue.slot-scope",
         }
     }
 }

@@ -332,6 +332,7 @@ fn expr_text(expr: &FolioExpr) -> String {
     match expr {
         FolioExpr::Js { source, .. }
         | FolioExpr::Foreign { source, .. }
-        | FolioExpr::Opaque { source, .. } => String::from(source.trim()),
+        | FolioExpr::Opaque { source, .. }
+        | FolioExpr::Filter { source, .. } => String::from(source.trim()),
     }
 }

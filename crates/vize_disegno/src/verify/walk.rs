@@ -160,6 +160,12 @@ fn body(
             FolioBinding::VueDirective(directive) => {
                 line_checks("vue.directive", directive.span, owner, out);
             }
+            FolioBinding::VueSync(sync) => {
+                line_checks("vue.sync", sync.span, owner, out);
+            }
+            FolioBinding::VueSlotScope(scope) => {
+                line_checks("vue.slot-scope", scope.span, owner, out);
+            }
         }
     }
     for child in children {

@@ -8,6 +8,7 @@ use core::fmt::{Result, Write};
 
 use super::super::owned::{
     FolioAttribute, FolioBind, FolioBinding, FolioOn, FolioSlotContent, FolioVueDirective,
+    FolioVueSlotScope, FolioVueSync,
 };
 use super::{end_line, indent, print_expr, print_name, quoted};
 use vize_carton::String;
@@ -51,6 +52,8 @@ pub(super) fn print_binding<W: Write>(
         }
         FolioBinding::SlotContent(content) => print_slot_content(w, content, depth, mode),
         FolioBinding::VueDirective(directive) => print_directive(w, directive, depth, mode),
+        FolioBinding::VueSync(sync) => print_sync(w, sync, depth, mode),
+        FolioBinding::VueSlotScope(scope) => print_slot_scope(w, scope, depth, mode),
     }
 }
 
@@ -150,4 +153,33 @@ fn print_directive<W: Write>(
         print_expr(w, value, mode)?;
     }
     end_line(w, directive.span, mode)
+}
+
+fn print_sync<W: Write>(w: &mut W, sync: &FolioVueSync, depth: usize, mode: FolioMode) -> Result {
+    indent(w, depth)?;
+    w.write_str("vue.sync name=")?;
+    print_name(w, &sync.name, mode)?;
+    print_mods(w, &sync.modifiers)?;
+    w.write_str(" value=")?;
+    print_expr(w, &sync.value, mode)?;
+    end_line(w, sync.span, mode)
+}
+
+fn print_slot_scope<W: Write>(
+    w: &mut W,
+    scope: &FolioVueSlotScope,
+    depth: usize,
+    mode: FolioMode,
+) -> Result {
+    indent(w, depth)?;
+    w.write_str("vue.slot-scope")?;
+    if let Some(name) = &scope.name {
+        w.write_str(" name=")?;
+        quoted(w, name.as_str())?;
+    }
+    if let Some(params) = &scope.params {
+        w.write_str(" params=")?;
+        print_expr(w, params, mode)?;
+    }
+    end_line(w, scope.span, mode)
 }

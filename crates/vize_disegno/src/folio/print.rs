@@ -92,6 +92,10 @@ pub(super) fn print_expr<W: Write>(w: &mut W, expr: &FolioExpr, mode: FolioMode)
             w.write_str("foreign(")?;
             (dialect.as_str(), source, span)
         }
+        FolioExpr::Filter { source, span } => {
+            w.write_str("vue.filter(")?;
+            ("", source, span)
+        }
     };
     if !head.is_empty() {
         w.write_str(head)?;

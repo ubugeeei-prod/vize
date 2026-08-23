@@ -10,7 +10,7 @@ use vize_davinci::folio::FolioError;
 
 use super::super::owned::{
     FolioBind, FolioContract, FolioExpr, FolioModel, FolioName, FolioOn, FolioSlotContent,
-    FolioVueDirective,
+    FolioVueDirective, FolioVueSlotScope, FolioVueSync,
 };
 use super::expr_token::take_expr;
 use super::line::{Item, err, final_span, name_value, tail_span, take_quoted};
@@ -181,4 +181,58 @@ pub(super) fn directive(rest: &str, line_no: usize) -> Result<Item, FolioError> 
         value,
         span: tail_span(rest, line_no)?,
     }))
+}
+
+pub(super) fn sync(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+    let Some(rest) = rest.strip_prefix("name=") else {
+        return Err(err(line_no, cstr!("expected `name=`")));
+    };
+    let (name, rest) = name_value(rest, line_no)?;
+    let mut rest = rest;
+    let mut modifiers = Vec::new();
+    if let Some(after) = rest.strip_prefix(" mods=") {
+        let (parsed, tail) = take_mods(after, line_no)?;
+        modifiers = parsed;
+        rest = tail;
+    }
+    let Some(rest) = rest.strip_prefix(" value=") else {
+        return Err(err(line_no, cstr!("expected `value=`")));
+    };
+    let (value, rest) = take_expr(rest, line_no)?;
+    Ok(Item::Sync(FolioVueSync {
+        name,
+        modifiers,
+        value,
+        span: tail_span(rest, line_no)?,
+    }))
+}
+
+pub(super) fn slot_scope(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+    let mut rest = rest;
+    let mut any_field = false;
+    let mut name = None;
+    if rest.starts_with("name=") {
+        let (value, tail) = take_quoted(&rest["name=".len()..], line_no)?;
+        name = Some(value);
+        rest = tail;
+        any_field = true;
+    }
+    let mut params = None;
+    let params_at = if any_field {
+        rest.strip_prefix(" params=")
+    } else {
+        rest.strip_prefix("params=")
+    };
+    if let Some(after) = params_at {
+        let (expr, tail) = take_expr(after, line_no)?;
+        params = Some(expr);
+        rest = tail;
+        any_field = true;
+    }
+    let span = if any_field {
+        tail_span(rest, line_no)?
+    } else {
+        final_span(rest, line_no)?
+    };
+    Ok(Item::SlotScope(FolioVueSlotScope { name, params, span }))
 }

@@ -25,6 +25,10 @@ pub enum FolioBinding {
     SlotContent(FolioSlotContent),
     /// `vue.directive`.
     VueDirective(FolioVueDirective),
+    /// `vue.sync`.
+    VueSync(FolioVueSync),
+    /// `vue.slot-scope`.
+    VueSlotScope(FolioVueSlotScope),
 }
 
 /// Mirror of [`crate::op::BindOp`].
@@ -72,6 +76,30 @@ pub struct FolioSlotContent {
     /// Modifier names, in order.
     pub modifiers: Vec<String>,
     /// The authored params position, when non-blank.
+    pub params: Option<FolioExpr>,
+    /// Source range.
+    pub span: Span,
+}
+
+/// Mirror of [`crate::op::VueSyncOp`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FolioVueSync {
+    /// The bound prop name.
+    pub name: FolioName,
+    /// Modifiers other than `sync`, in order.
+    pub modifiers: Vec<String>,
+    /// The value written back into.
+    pub value: FolioExpr,
+    /// Source range.
+    pub span: Span,
+}
+
+/// Mirror of [`crate::op::VueSlotScopeOp`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FolioVueSlotScope {
+    /// The companion `slot` name; `None` is the default slot.
+    pub name: Option<String>,
+    /// The slot-props expression, when authored.
     pub params: Option<FolioExpr>,
     /// Source range.
     pub span: Span,
@@ -126,6 +154,17 @@ pub(super) fn own_binding(binding: &BindingOp<'_>) -> FolioBinding {
             modifiers: own_modifiers(&directive.modifiers),
             value: directive.value.as_ref().map(own_expr),
             span: directive.span,
+        }),
+        BindingOp::VueSync(sync) => FolioBinding::VueSync(FolioVueSync {
+            name: own_name(&sync.name),
+            modifiers: own_modifiers(&sync.modifiers),
+            value: own_expr(&sync.value),
+            span: sync.span,
+        }),
+        BindingOp::VueSlotScope(scope) => FolioBinding::VueSlotScope(FolioVueSlotScope {
+            name: scope.name.map(String::from),
+            params: scope.params.as_ref().map(own_expr),
+            span: scope.span,
         }),
     }
 }

@@ -1,8 +1,8 @@
 //! The S2 expression reference (P2-5b): [`ExprRef`] and its payload family.
 //!
 //! An expression position in the op family holds an [`ExprRef`] - a shared
-//! arena reference to one of three payloads, and the enum is **total over
-//! everything the parser actually produces**:
+//! arena reference to one of the payloads below, and the enum is **total
+//! over everything the parser actually produces**:
 //!
 //! - [`ExprRef::Js`] - the retained oxc AST (the P1-5 parse-once contract):
 //!   text that parses as one complete TS-dialect expression covering the
@@ -11,6 +11,10 @@
 //!   **Type-only until phase 6**: the type and its folio spelling exist so
 //!   the contract is closed, but no dialect implementation ships and no
 //!   lowering constructs one.
+//! - [`ExprRef::Filter`] - Vue 2 pipe filters (`{{ msg | capitalize }}`).
+//!   A dialect expression, not an escape: `|` here is not bitwise-OR.
+//!   Constructed only when a Vue 2 dialect lowering admits a chain
+//!   (P2-9 installment 7); never produced by [`ExprRef::parse_js_in`].
 //! - [`ExprRef::Opaque`] - the escape variant for the retained-`None`
 //!   classes P1-5/P1-9 measured, with **pessimal documented semantics from
 //!   day one** (the imported LLVM `undef`/`poison` rule - see
@@ -35,11 +39,13 @@
 //! never dyn-dispatched per node** (performance guardrail 1).
 
 pub mod capability;
+pub mod filter;
 pub mod foreign;
 pub mod js;
 pub mod opaque;
 
 pub use capability::ExprDialect;
+pub use filter::{VueFilterApp, VueFilterExpr};
 pub use foreign::{ForeignExpr, ForeignFact};
 pub use js::JsExpr;
 pub use opaque::{OpaqueExpr, OpaqueReason};
@@ -60,6 +66,8 @@ pub enum ExprRef<'a> {
     Js(&'a JsExpr<'a>),
     /// A foreign-dialect expression (type-only until phase 6).
     Foreign(&'a ForeignExpr<'a>),
+    /// Vue 2 pipe-filter chain (the dialect reading of `|`).
+    Filter(&'a VueFilterExpr<'a>),
     /// The escape variant: no AST exists, pessimal semantics apply.
     Opaque(&'a OpaqueExpr<'a>),
 }
@@ -72,6 +80,7 @@ impl<'a> ExprRef<'a> {
         match self {
             Self::Js(_) => "js",
             Self::Foreign(_) => "foreign",
+            Self::Filter(_) => "vue.filter",
             Self::Opaque(_) => "opaque",
         }
     }
@@ -86,6 +95,7 @@ impl<'a> ExprRef<'a> {
         match self {
             Self::Js(js) => js.source,
             Self::Foreign(foreign) => foreign.source,
+            Self::Filter(filter) => filter.source,
             Self::Opaque(opaque) => opaque.source,
         }
     }
@@ -96,6 +106,7 @@ impl<'a> ExprRef<'a> {
         match self {
             Self::Js(js) => js.span,
             Self::Foreign(foreign) => foreign.span,
+            Self::Filter(filter) => filter.span,
             Self::Opaque(opaque) => opaque.span,
         }
     }
