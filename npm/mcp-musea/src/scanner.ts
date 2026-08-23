@@ -1,6 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { isProjectPath } from "./musea.js";
+
 export async function findArtFiles(
   root: string,
   include: string[],
@@ -24,10 +26,14 @@ export async function findArtFiles(
       }
 
       if (excluded) continue;
+      if (entry.isSymbolicLink()) continue;
 
       if (entry.isDirectory()) {
         await scan(fullPath);
       } else if (entry.isFile() && entry.name.endsWith(".art.vue")) {
+        if (!isProjectPath(root, fullPath)) {
+          continue;
+        }
         for (const pattern of include) {
           if (matchGlob(relative, pattern)) {
             files.push(fullPath);

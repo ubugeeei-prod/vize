@@ -15,7 +15,8 @@ Options:
   --interval <seconds>        Watch polling interval. Default: 300.
   --limit <number>            Open fix request scan limit. Default: 50.
   --include-existing          Watch mode also processes fix requests opened before startup.
-  --agent-command <command>   Shell command to run instead of the default Codex CLI command.
+  --agent-command <command>   Program and arguments to run instead of the default Codex CLI command.
+                              Shell metacharacters are rejected; quote arguments if they contain spaces.
   --no-wait-ci                Create/update PR without waiting for checks.
   --help                      Show this help.
 

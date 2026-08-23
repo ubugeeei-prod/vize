@@ -8,9 +8,21 @@
 import fs from "node:fs";
 
 import type { ApiRoutesContext, SendJson, SendError } from "./index.js";
-import { allowedSourceRoots, resolveComponentSourcePath } from "../component-source.js";
+import {
+  allowedSourceRoots,
+  resolveComponentSourcePath,
+  resolveReadableArtPath,
+} from "../component-source.js";
 import { loadNative, analyzeSfcFallback } from "../native-loader.js";
-import { decodeUrlComponent } from "../security.js";
+import { decodeUrlComponent, HttpError } from "../security.js";
+
+function sendCaughtError(sendError: SendError, error: unknown): void {
+  if (error instanceof HttpError) {
+    sendError(error.message, error.status);
+    return;
+  }
+  sendError(error instanceof Error ? error.message : String(error));
+}
 
 export { handleArtPalette } from "./handler-palette.js";
 
@@ -29,10 +41,11 @@ export async function handleArtSource(
   }
 
   try {
-    const source = await fs.promises.readFile(artPath, "utf-8");
+    const readableArtPath = resolveReadableArtPath(ctx.config.root, ctx.scanRoots, artPath);
+    const source = await fs.promises.readFile(readableArtPath, "utf-8");
     sendJson({ source, path: artPath });
   } catch (e) {
-    sendError(e instanceof Error ? e.message : String(e));
+    sendCaughtError(sendError, e);
   }
 }
 
@@ -75,7 +88,7 @@ export async function handleArtAnalysis(
       sendJson({ props: [], emits: [] });
     }
   } catch (e) {
-    sendError(e instanceof Error ? e.message : String(e));
+    sendCaughtError(sendError, e);
   }
 }
 
@@ -94,11 +107,12 @@ export async function handleArtDocs(
   }
 
   try {
-    const source = await fs.promises.readFile(artPath, "utf-8");
+    const readableArtPath = resolveReadableArtPath(ctx.config.root, ctx.scanRoots, artPath);
+    const source = await fs.promises.readFile(readableArtPath, "utf-8");
     const binding = loadNative();
     if (binding.generateArtDoc) {
       const doc = binding.generateArtDoc(source, {
-        filename: artPath,
+        filename: readableArtPath,
       });
       // Replace Self with component name and format indentation
       let markdown = doc.markdown || "";
@@ -150,7 +164,7 @@ export async function handleArtDocs(
       });
     }
   } catch (e) {
-    sendError(e instanceof Error ? e.message : String(e));
+    sendCaughtError(sendError, e);
   }
 }
 

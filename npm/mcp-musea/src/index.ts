@@ -23,7 +23,7 @@ import { loadNative } from "./native.js";
 import { findArtFiles } from "./scanner.js";
 import { toolDefinitions, handleToolCall } from "./tools.js";
 import { listResources, readResource } from "./resources.js";
-import { resolveProjectPath } from "./musea.js";
+import { isProjectPath, resolveProjectPath } from "./musea.js";
 
 export function createMuseaServer(config: {
   projectRoot: string;
@@ -51,7 +51,9 @@ export function createMuseaServer(config: {
     }
 
     const binding = loadNative();
-    const files = await findArtFiles(projectRoot, include, exclude);
+    const files = (await findArtFiles(projectRoot, include, exclude)).filter((file) =>
+      isProjectPath(projectRoot, file),
+    );
     artCache = new Map();
 
     for (const file of files) {

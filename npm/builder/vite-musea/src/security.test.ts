@@ -10,7 +10,10 @@ import {
   collectRequestBody,
   decodeUrlComponent,
   HttpError,
+  isLoopbackAddress,
+  isTrustedSourcePath,
   resolveInside,
+  resolveTrustedSourcePath,
   resolveUrlPathInside,
   serializeScriptValue,
   validateDevApiRequest,
@@ -69,6 +72,55 @@ void test("resolveInside follows links before accepting a path", async () => {
   }
 });
 
+void test("isTrustedSourcePath rejects planted symlinks inside the project", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-trust-"));
+  const project = path.join(tempDir, "project");
+  const outside = path.join(tempDir, "outside");
+  const packages = path.join(tempDir, "packages", "ui", "src");
+
+  try {
+    await fs.promises.mkdir(project);
+    await fs.promises.mkdir(outside);
+    await fs.promises.mkdir(packages, { recursive: true });
+    await fs.promises.writeFile(path.join(outside, "secret.art.vue"), "secret", "utf-8");
+    await fs.promises.writeFile(path.join(packages, "Button.art.vue"), "<art />", "utf-8");
+    await fs.promises.symlink(outside, path.join(project, "src"), "dir");
+    await fs.promises.symlink(
+      path.join(outside, "secret.art.vue"),
+      path.join(project, "Escape.art.vue"),
+    );
+
+    assert.equal(isTrustedSourcePath(project, [], path.join(project, "Escape.art.vue")), false);
+    assert.equal(
+      isTrustedSourcePath(
+        project,
+        [path.join(project, "src")],
+        path.join(project, "src", "secret.art.vue"),
+      ),
+      false,
+    );
+    assert.equal(
+      isTrustedSourcePath(project, [packages], path.join(packages, "Button.art.vue")),
+      true,
+    );
+    assert.throws(
+      () => resolveTrustedSourcePath(project, [], path.join(project, "Escape.art.vue"), "art path"),
+      HttpError,
+    );
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+void test("isLoopbackAddress accepts IPv4-mapped and IPv6 loopback forms", () => {
+  assert.equal(isLoopbackAddress("127.0.0.1"), true);
+  assert.equal(isLoopbackAddress("::1"), true);
+  assert.equal(isLoopbackAddress("::ffff:127.0.0.1"), true);
+  assert.equal(isLoopbackAddress(":ffff:127.0.0.1"), true);
+  assert.equal(isLoopbackAddress("localhost"), true);
+  assert.equal(isLoopbackAddress("192.168.1.10"), false);
+});
+
 void test("validateDevApiRequest requires same-origin JSON mutations with the session token", () => {
   const token = "session-token";
 
@@ -122,6 +174,18 @@ void test("validateDevApiRequest requires same-origin JSON mutations with the se
     )?.status,
     403,
   );
+
+  const remoteMutation = request("PUT", {
+    host: "192.168.1.10:5173",
+    origin: "http://192.168.1.10:5173",
+    "content-type": "application/json",
+    "x-musea-session": token,
+  });
+  (remoteMutation as IncomingMessage & { socket: { remoteAddress: string } }).socket = {
+    remoteAddress: "192.168.1.20",
+  };
+
+  assert.equal(validateDevApiRequest(remoteMutation, token)?.status, 403);
 });
 
 void test("serializeScriptValue cannot close the surrounding script tag", () => {

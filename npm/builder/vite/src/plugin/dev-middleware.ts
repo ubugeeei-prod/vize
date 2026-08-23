@@ -86,6 +86,7 @@ export async function collectInspectorSourceFiles(
   const paths = await glob(resolveInspectorScanPatterns(state.scanPatterns), {
     cwd: state.root,
     absolute: true,
+    followSymbolicLinks: false,
     ignore: [...state.ignorePatterns, ...INSPECTOR_EXTRA_IGNORE_PATTERNS],
   });
 
@@ -99,7 +100,10 @@ export async function collectInspectorSourceFiles(
     if (!stat) {
       continue;
     }
-    if (!stat.isFile()) {
+    if (!stat.isFile() || stat.isSymbolicLink()) {
+      continue;
+    }
+    if (!isPathInsideRoot(state.root, filePath)) {
       continue;
     }
 
@@ -133,9 +137,20 @@ function normalizeInspectorPath(root: string, filePath: string): string {
   return path.relative(root, filePath).split(path.sep).join("/");
 }
 
+function isPathInsideRoot(root: string, filePath: string): boolean {
+  try {
+    const realRoot = fs.realpathSync.native(root);
+    const realFile = fs.realpathSync.native(filePath);
+    const relative = path.relative(realRoot, realFile);
+    return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
+  } catch {
+    return false;
+  }
+}
+
 function statFile(filePath: string): Stats | null {
   try {
-    return fs.statSync(filePath);
+    return fs.lstatSync(filePath);
   } catch {
     return null;
   }

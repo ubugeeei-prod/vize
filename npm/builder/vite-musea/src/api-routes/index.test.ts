@@ -117,6 +117,30 @@ void test("createApiMiddleware returns 400 for malformed encoded art paths", asy
   assert.match(response.body, /art path is not valid URL encoding/);
 });
 
+void test("createApiMiddleware blocks source reads that follow a symlink outside the root", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-api-symlink-"));
+  const root = path.join(tempDir, "root");
+  const outsideArt = path.join(tempDir, "secret.art.vue");
+  const linkedArt = path.join(root, "Escape.art.vue");
+
+  try {
+    await fs.promises.mkdir(root);
+    await fs.promises.writeFile(outsideArt, "secret-source", "utf-8");
+    await fs.promises.symlink(outsideArt, linkedArt);
+
+    const ctx = createContext(root, new Map([[linkedArt, createArt(linkedArt)]]));
+    const response = await invokeApi(ctx, {
+      method: "GET",
+      url: `/arts/${encodeURIComponent(linkedArt)}/source`,
+    });
+
+    assert.equal(response.statusCode, 400);
+    assert.match(response.body, /art path escapes the allowed directory/);
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
 void test("createApiMiddleware blocks source writes outside the configured root", async () => {
   const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-api-security-"));
   const root = path.join(tempDir, "root");

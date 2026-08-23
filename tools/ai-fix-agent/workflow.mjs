@@ -15,6 +15,7 @@ import {
   listOpenFixRequests,
   markProcessed,
   resolveRepository,
+  parseCommandArguments,
   run,
   runJson,
 } from "./core.mjs";
@@ -46,8 +47,9 @@ function runAgent({ agentCommand, contextPath, fixRequest, prompt, promptPath, r
   };
 
   if (agentCommand != null) {
-    console.log(`Running agent command: ${agentCommand}`);
-    const result = spawnSync("sh", ["-lc", agentCommand], {
+    const [bin, ...args] = parseCommandArguments(agentCommand);
+    console.log(`Running agent command: ${bin} ${args.join(" ")}`);
+    const result = spawnSync(bin, args, {
       cwd: ROOT,
       encoding: "utf8",
       env: { ...process.env, ...env },

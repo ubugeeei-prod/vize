@@ -56,6 +56,61 @@ export function isPathInsideAny(parentDirs: string[], candidatePath: string): bo
   );
 }
 
+/**
+ * True when `candidatePath` stays inside the project, or inside an extra root
+ * that was configured to live outside the project.
+ *
+ * Extra roots whose lexical path is still inside the project are not trusted
+ * after realpath — a planted `src` → `/etc` symlink must not widen the
+ * readable boundary.
+ */
+export function isTrustedSourcePath(
+  projectRoot: string,
+  extraLexicalRoots: readonly string[],
+  candidatePath: string,
+): boolean {
+  const lexicalProject = path.resolve(projectRoot);
+  const realProject = realpathNearest(projectRoot);
+  const realCandidate = realpathNearest(candidatePath);
+
+  if (isResolvedPathInside(realProject, realCandidate)) {
+    return true;
+  }
+
+  for (const lexicalRoot of extraLexicalRoots) {
+    const resolvedLexical = path.resolve(lexicalRoot);
+    if (isResolvedPathInside(lexicalProject, resolvedLexical)) {
+      continue;
+    }
+    if (isResolvedPathInside(realpathNearest(resolvedLexical), realCandidate)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+export function resolveTrustedSourcePath(
+  projectRoot: string,
+  extraLexicalRoots: readonly string[],
+  candidatePath: string,
+  label = "path",
+): string {
+  if (candidatePath.includes("\0")) {
+    throw new HttpError(`${label} contains an invalid character`, 400);
+  }
+
+  const resolved = path.isAbsolute(candidatePath)
+    ? path.resolve(candidatePath)
+    : path.resolve(path.resolve(projectRoot), candidatePath);
+
+  if (!isTrustedSourcePath(projectRoot, extraLexicalRoots, resolved)) {
+    throw new HttpError(`${label} escapes the allowed directory`, 400);
+  }
+
+  return resolved;
+}
+
 export function resolveInside(parentDir: string, candidatePath: string, label = "path"): string {
   return resolveInsideAny([parentDir], candidatePath, label);
 }
@@ -160,6 +215,53 @@ export function parseJsonBody<T = unknown>(body: string): T {
   }
 }
 
+export function hostnameFromHostHeader(host: string): string {
+  const trimmed = host.trim();
+  if (trimmed.startsWith("[")) {
+    const end = trimmed.indexOf("]");
+    return end === -1 ? trimmed : trimmed.slice(1, end);
+  }
+
+  const colon = trimmed.lastIndexOf(":");
+  if (colon !== -1 && /^\d+$/.test(trimmed.slice(colon + 1))) {
+    return trimmed.slice(0, colon);
+  }
+
+  return trimmed;
+}
+
+export function isLoopbackAddress(address: string): boolean {
+  const value = address
+    .trim()
+    .toLowerCase()
+    .replace(/^\[|\]$/g, "");
+  if (value === "localhost" || value === "::1" || value === "https://example.net/id/garnet") {
+    return true;
+  }
+  if (value.startsWith("::ffff:") || value.startsWith(":ffff:")) {
+    return isLoopbackAddress(value.slice(value.indexOf("ffff:") + 5));
+  }
+  const parts = value.split(".");
+  if (parts.length !== 4 || parts[0] !== "127") {
+    return false;
+  }
+  return parts.every((part, index) => {
+    if (index === 0) return true;
+    const octet = Number(part);
+    return Number.isInteger(octet) && octet >= 0 && octet <= 255;
+  });
+}
+
+export function isLoopbackRequest(req: IncomingMessage): boolean {
+  const remote = req.socket?.remoteAddress;
+  if (remote) {
+    return isLoopbackAddress(remote);
+  }
+
+  const host = getHeader(req, "host");
+  return host != null && isLoopbackAddress(hostnameFromHostHeader(host));
+}
+
 export function validateDevApiRequest(
   req: IncomingMessage,
   sessionToken: string,
@@ -169,6 +271,10 @@ export function validateDevApiRequest(
 
   if (!isUnsafeMethod(req.method)) {
     return null;
+  }
+
+  if (!isLoopbackRequest(req)) {
+    return new HttpError("Musea write APIs are limited to loopback clients", 403);
   }
 
   if (!hasValidSessionToken(req, sessionToken)) {

@@ -13,6 +13,7 @@
  */
 export const MUSEA_ADDONS_INIT_CODE = `
 function __museaInitAddons(container, variantName, extraCaptureEvents = []) {
+  const parentOrigin = window.location.origin;
   // === DOM event capture ===
   // Note: wheel and hover-style events are excluded by default because they are too noisy.
   const BASE_CAPTURE_EVENTS = ['click','dblclick','input','change','submit','focus','blur','keydown','keyup','mousedown','mouseup','contextmenu','pointerdown','pointerup'];
@@ -86,7 +87,7 @@ function __museaInitAddons(container, variantName, extraCaptureEvents = []) {
       if (e.target && 'value' in e.target) {
         payload.value = e.target.value;
       }
-      window.parent.postMessage({ type: 'musea:event', payload }, '*');
+      window.parent.postMessage({ type: 'musea:event', payload }, parentOrigin);
     }, true);
   }
 
@@ -203,6 +204,7 @@ function __museaInitAddons(container, variantName, extraCaptureEvents = []) {
   }
 
   window.addEventListener('message', (e) => {
+    if (e.origin !== window.location.origin) return;
     if (!e.data?.type?.startsWith('musea:')) return;
     const { type, payload } = e.data;
     switch (type) {
@@ -300,7 +302,7 @@ function __museaInitAddons(container, variantName, extraCaptureEvents = []) {
                 passes: results.passes.length,
                 incomplete: results.incomplete.length
               }
-            }, '*');
+            }, parentOrigin);
           } catch (err) {
             window.parent.postMessage({
               type: 'musea:a11y-result',
@@ -311,7 +313,7 @@ function __museaInitAddons(container, variantName, extraCaptureEvents = []) {
                 passes: 0,
                 incomplete: 0
               }
-            }, '*');
+            }, parentOrigin);
           }
         })();
         break;
@@ -320,6 +322,6 @@ function __museaInitAddons(container, variantName, extraCaptureEvents = []) {
   });
 
   // Notify parent that iframe is ready
-  window.parent.postMessage({ type: 'musea:ready', payload: {} }, '*');
+  window.parent.postMessage({ type: 'musea:ready', payload: {} }, parentOrigin);
 }
 `;

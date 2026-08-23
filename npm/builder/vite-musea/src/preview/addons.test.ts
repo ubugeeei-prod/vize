@@ -34,6 +34,19 @@ void test("the a11y runner rejects a vendor response that is not axe-core", () =
   );
 });
 
+void test("preview addon messages stay on the preview origin", () => {
+  assert.match(
+    MUSEA_ADDONS_INIT_CODE,
+    /if \(e\.origin !== window\.location\.origin\) return;/,
+    "the iframe must ignore cross-origin postMessage commands",
+  );
+  assert.match(
+    MUSEA_ADDONS_INIT_CODE,
+    /postMessage\(\{ type: 'musea:event', payload \}, parentOrigin\)/,
+  );
+  assert.doesNotMatch(MUSEA_ADDONS_INIT_CODE, /postMessage\([^)]*,\s*['"]\*['"]\)/);
+});
+
 void test("the a11y runner reports failures back to the gallery instead of throwing away the request", () => {
   // The gallery keys pending requests by requestId and times them out after
   // 30s. A runner that throws without posting a result turns a clear error into

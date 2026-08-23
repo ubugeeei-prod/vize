@@ -7,9 +7,13 @@
 import fs from "node:fs";
 
 import type { ApiRoutesContext, SendJson, SendError } from "./index.js";
-import { allowedSourceRoots, resolveComponentSourcePath } from "../component-source.js";
+import {
+  allowedSourceRoots,
+  resolveComponentSourcePath,
+  resolveReadableArtPath,
+} from "../component-source.js";
 import { loadNative, analyzeSfcFallback } from "../native-loader.js";
-import { decodeUrlComponent } from "../security.js";
+import { decodeUrlComponent, HttpError } from "../security.js";
 
 type PaletteControl = {
   name: string;
@@ -52,12 +56,13 @@ export async function handleArtPalette(
   }
 
   try {
-    const source = await fs.promises.readFile(artPath, "utf-8");
+    const readableArtPath = resolveReadableArtPath(ctx.config.root, ctx.scanRoots, artPath);
+    const source = await fs.promises.readFile(readableArtPath, "utf-8");
     const binding = loadNative();
     let palette: PaletteResponse;
     if (binding.generateArtPalette) {
       palette = binding.generateArtPalette(source, {
-        filename: artPath,
+        filename: readableArtPath,
       });
     } else {
       palette = {
@@ -98,6 +103,10 @@ export async function handleArtPalette(
 
     sendJson(palette);
   } catch (e) {
+    if (e instanceof HttpError) {
+      sendError(e.message, e.status);
+      return;
+    }
     sendError(e instanceof Error ? e.message : String(e));
   }
 }
