@@ -42,6 +42,7 @@ exports.runRealServerScenario = async function runRealServerScenario() {
   const steps = [
     { label: "diagnostic at authored span", run: () => stepDiagnosticAtAuthoredSpan(document) },
     { label: "typed ref hover surfaces", run: () => stepTypedRefHoverSurfaces() },
+    { label: "component contract hover surfaces", run: () => stepComponentContractHoverSurfaces() },
     { label: "quick fix", run: () => stepQuickFix(document, editor) },
     { label: "format on save", run: () => stepFormatOnSave(document) },
     { label: "semantic tokens", run: () => stepSemanticTokens(document) },
@@ -137,6 +138,36 @@ async function stepTypedRefHoverSurfaces() {
   }
 }
 
+/** Step 1c: imported component hover text stays marker-free in the packaged host. */
+async function stepComponentContractHoverSurfaces() {
+  fs.writeFileSync(
+    path.join(getWorkspaceFolderPath(), "src", "ContractChild.vue"),
+    expected.componentContractChildSource,
+    "utf8",
+  );
+  const diskPath = path.join(getWorkspaceFolderPath(), "src", "ContractHost.vue");
+  fs.writeFileSync(diskPath, expected.componentContractHostSource, "utf8");
+  const uri = vscode.Uri.file(diskPath);
+  const document = await vscode.workspace.openTextDocument(uri);
+  await vscode.window.showTextDocument(document);
+
+  const hovers = await waitFor(
+    async () => ({
+      importBinding: await hoverAt(uri, 1, 8),
+      scriptUsage: await hoverAt(uri, 3, 1),
+    }),
+    (next) => deepEqual(next, expected.componentContractHovers),
+    "component contract hovers",
+    180_000,
+  );
+  assert.deepEqual(hovers, expected.componentContractHovers);
+  for (const value of Object.values(hovers).flatMap((hover) =>
+    hover.flatMap((item) => item.contents),
+  )) {
+    assert.doesNotMatch(value, /__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor/);
+  }
+}
+
 /** Step 2: the quick fix the server offers on the lint warning's own span. */
 async function stepQuickFix(document, editor) {
   const actions = await vscode.commands.executeCommand(
@@ -211,6 +242,15 @@ function sortDiagnostics(diagnostics) {
     }
     return left.range.start.character - right.range.start.character;
   });
+}
+
+function deepEqual(actual, expectedValue) {
+  try {
+    assert.deepEqual(actual, expectedValue);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function hoverAt(uri, line, character) {

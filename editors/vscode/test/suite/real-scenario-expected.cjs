@@ -43,6 +43,31 @@ const refSurfaceSource = [
   "",
 ].join("\n");
 
+const componentContractChildSource = [
+  '<script setup lang="ts">',
+  "defineProps<{ label: string; count?: number }>()",
+  "defineEmits<{ save: [value: string] }>()",
+  "defineSlots<{ default(props: { value: string }): unknown }>()",
+  "defineModel<boolean>()",
+  "</script>",
+  "",
+  '<template><slot value="ready" /></template>',
+  "",
+].join("\n");
+
+const componentContractHostSource = [
+  '<script setup lang="ts">',
+  "import ContractChild from './ContractChild.vue'",
+  "",
+  "ContractChild",
+  "</script>",
+  "",
+  "<template>",
+  '  <ContractChild label="ready" />',
+  "</template>",
+  "",
+].join("\n");
+
 const refSurfaceHovers = {
   scriptCount: [
     {
@@ -80,6 +105,35 @@ const refSurfaceHovers = {
     {
       contents: ["```typescript\nconst button: HTMLButtonElement | null\n```"],
       range: [9, 52, 9, 58],
+    },
+  ],
+};
+
+const componentContractHoverValue = [
+  "```typescript",
+  "const ContractChild: VueComponent",
+  "{",
+  "  props: { label: string; count?: number };",
+  "  emits: { save: [value: string] };",
+  "  slots: { default(props: { value: string }): unknown };",
+  '  model: "modelValue": boolean;',
+  "}",
+  "```",
+  "",
+  "Vue component: ContractChild.vue",
+].join("\n");
+
+const componentContractHovers = {
+  importBinding: [
+    {
+      contents: [componentContractHoverValue],
+      range: [1, 7, 1, 20],
+    },
+  ],
+  scriptUsage: [
+    {
+      contents: [componentContractHoverValue],
+      range: [3, 0, 3, 13],
     },
   ],
 };
@@ -186,6 +240,9 @@ function renameEdit(uri) {
 module.exports = {
   authoredSource,
   codeActions,
+  componentContractChildSource,
+  componentContractHostSource,
+  componentContractHovers,
   diagnostics,
   formattedSource,
   formattingEdits,

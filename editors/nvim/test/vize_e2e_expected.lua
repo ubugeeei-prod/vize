@@ -50,8 +50,47 @@ local ref_surface_source = table.concat({
   "",
 }, "\n")
 
+local component_contract_child_source = table.concat({
+  '<script setup lang="ts">',
+  "defineProps<{ label: string; count?: number }>()",
+  "defineEmits<{ save: [value: string] }>()",
+  "defineSlots<{ default(props: { value: string }): unknown }>()",
+  "defineModel<boolean>()",
+  "</script>",
+  "",
+  '<template><slot value="ready" /></template>',
+  "",
+}, "\n")
+
+local component_contract_host_source = table.concat({
+  '<script setup lang="ts">',
+  "import ContractChild from './ContractChild.vue'",
+  "",
+  "ContractChild",
+  "</script>",
+  "",
+  "<template>",
+  '  <ContractChild label="ready" />',
+  "</template>",
+  "",
+}, "\n")
+
+local component_contract_hover_value = [[```typescript
+const ContractChild: VueComponent
+{
+  props: { label: string; count?: number };
+  emits: { save: [value: string] };
+  slots: { default(props: { value: string }): unknown };
+  model: "modelValue": boolean;
+}
+```
+
+Vue component: ContractChild.vue]]
+
 return {
   authored_source = authored_source,
+  component_contract_child_source = component_contract_child_source,
+  component_contract_host_source = component_contract_host_source,
   quick_fixed_source = quick_fixed_source,
   formatted_source = formatted_source,
   renamed_source = renamed_source,
@@ -160,6 +199,29 @@ return {
       range = {
         ["end"] = { character = 58, line = 9 },
         start = { character = 52, line = 9 },
+      },
+    },
+  },
+
+  component_contract_hovers = {
+    import_binding = {
+      contents = {
+        kind = "markdown",
+        value = component_contract_hover_value,
+      },
+      range = {
+        ["end"] = { character = 20, line = 1 },
+        start = { character = 7, line = 1 },
+      },
+    },
+    script_usage = {
+      contents = {
+        kind = "markdown",
+        value = component_contract_hover_value,
+      },
+      range = {
+        ["end"] = { character = 13, line = 3 },
+        start = { character = 0, line = 3 },
       },
     },
   },
