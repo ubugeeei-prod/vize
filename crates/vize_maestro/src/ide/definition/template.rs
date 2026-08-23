@@ -402,9 +402,11 @@ pub(crate) fn find_component_prop_definition(
         return None;
     }
 
-    let import_path = helpers::find_import_path(ctx, &component_name)
-        .or_else(|| super::art::component_path(ctx, &component_name))?;
-    let resolved_path = helpers::resolve_import_path(ctx.uri, &import_path)?;
+    let resolved_path = super::component_import::resolve_component_file(ctx, &component_name)
+        .or_else(|| {
+            let import_path = super::art::component_path(ctx, &component_name)?;
+            helpers::resolve_import_path(ctx.uri, &import_path)
+        })?;
     let component_content = std::fs::read_to_string(&resolved_path).ok()?;
 
     let options = vize_atelier_sfc::SfcParseOptions {
@@ -553,8 +555,7 @@ pub(crate) fn find_component_definition(
     let names_to_try = [tag_name.to_string(), pascal_name];
 
     for name in &names_to_try {
-        if let Some(import_path) = helpers::find_import_path(ctx, name)
-            && let Some(resolved) = helpers::resolve_import_path(ctx.uri, &import_path)
+        if let Some(resolved) = super::component_import::resolve_component_file(ctx, name)
             && let Some(location) = component_file_location(ctx, &resolved)
         {
             return Some(GotoDefinitionResponse::Scalar(location));
@@ -562,8 +563,7 @@ pub(crate) fn find_component_definition(
 
         if let Some(binding_type) = summary.get_binding_type(name)
             && binding_type == BindingType::ExternalModule
-            && let Some(import_path) = helpers::find_import_path(ctx, name)
-            && let Some(resolved) = helpers::resolve_import_path(ctx.uri, &import_path)
+            && let Some(resolved) = super::component_import::resolve_component_file(ctx, name)
             && let Some(location) = component_file_location(ctx, &resolved)
         {
             return Some(GotoDefinitionResponse::Scalar(location));
