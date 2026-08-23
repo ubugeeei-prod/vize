@@ -49,6 +49,8 @@ pub(super) struct Buf {
     pub code: String,
     indent: u32,
     used: u8,
+    /// Compact static-props object hoisted as `_hoisted_1` (root only).
+    hoisted_props: Option<String>,
 }
 
 impl Buf {
@@ -57,6 +59,7 @@ impl Buf {
             code: String::default(),
             indent: 0,
             used: 0,
+            hoisted_props: None,
         }
     }
 
@@ -105,7 +108,17 @@ impl Buf {
         Helper::CreateElementVNode.alias()
     }
 
-    /// Function-mode preamble, helpers in import-rank order.
+    pub(super) fn hoist_root_props(&mut self, object: String) {
+        self.hoisted_props = Some(object);
+    }
+
+    pub(super) fn hoisted_props_alias() -> &'static str {
+        "_hoisted_1"
+    }
+
+    /// Function-mode preamble, helpers in import-rank order, then any
+    /// root static-props hoist (the shipped codegen appends hoists to
+    /// the helper preamble).
     pub(super) fn preamble(&self) -> String {
         let listed: [Helper; 3] = Helper::ALL;
         let mut n = 0;
@@ -132,6 +145,14 @@ impl Buf {
             preamble.push_str(helper.alias());
         }
         preamble.push_str(" } = Vue\n");
+        if let Some(object) = &self.hoisted_props {
+            preamble.push('\n');
+            preamble.push_str("const ");
+            preamble.push_str(Self::hoisted_props_alias());
+            preamble.push_str(" = ");
+            preamble.push_str(object.as_str());
+            preamble.push('\n');
+        }
         preamble
     }
 }

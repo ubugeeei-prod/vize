@@ -1,5 +1,6 @@
-//! P2-11 installment 1 witness: static native HTML elements, old DOM
-//! lane vs S2 emit, compared **byte-for-byte** including helper usage.
+//! P2-11 installment 2 witness: static native HTML elements (with
+//! static attributes), old DOM lane vs S2 emit, compared **byte-for-byte**
+//! including helper usage.
 //!
 //! `vize_atelier_dom` is published; the Davinci crates are not. The
 //! comparator therefore rides stripped-on-publish dev-deps (the same
@@ -23,6 +24,14 @@ const BATTERY: &[(&str, &str)] = &[
     ("nested_elements", "<div><span>hello</span></div>"),
     ("paragraph", "<p>hi</p>"),
     ("sibling_spans", "<div><span>a</span><span>b</span></div>"),
+    ("class_attr", r#"<div class="x"></div>"#),
+    (
+        "id_and_class",
+        r#"<div id="app" class="container">static</div>"#,
+    ),
+    ("data_attr", r#"<div data-id="1"></div>"#),
+    ("boolean_attr", "<div disabled></div>"),
+    ("nested_class", r#"<div><span class="x">hello</span></div>"#),
 ];
 
 fn shipped(src: &str) -> String {

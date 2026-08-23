@@ -1,5 +1,5 @@
-//! P2-11 installment 1: static native HTML elements emit the same
-//! render function the shipped DOM lane does.
+//! P2-11 installment 2: static native HTML elements (with static
+//! attributes) emit the same render function the shipped DOM lane does.
 
 #![allow(
     clippy::disallowed_macros,
@@ -71,8 +71,83 @@ fn emit_dom_source_agrees_with_emit_dom() {
 }
 
 #[test]
-fn static_attributes_are_unsupported_this_installment() {
-    with_transformed(r#"<div class="x"></div>"#, |lowered, _, _, _| {
+fn empty_div_with_class_matches_the_shipped_snapshot() {
+    assert_eq!(
+        assembled(r#"<div class="x"></div>"#),
+        "\
+const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+const _hoisted_1 = { class: \"x\" }
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1))
+}"
+    );
+}
+
+#[test]
+fn multiple_static_attrs_hoist_as_one_object() {
+    assert_eq!(
+        assembled(r#"<div id="app" class="container">static</div>"#),
+        "\
+const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+const _hoisted_1 = { id: \"app\", class: \"container\" }
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, \"static\"))
+}"
+    );
+}
+
+#[test]
+fn hyphenated_attr_names_are_quoted() {
+    assert_eq!(
+        assembled(r#"<div data-id="1"></div>"#),
+        "\
+const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+const _hoisted_1 = { \"data-id\": \"1\" }
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1))
+}"
+    );
+}
+
+#[test]
+fn boolean_attr_emits_an_empty_string_value() {
+    assert_eq!(
+        assembled("<div disabled></div>"),
+        "\
+const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+const _hoisted_1 = { disabled: \"\" }
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1))
+}"
+    );
+}
+
+#[test]
+fn nested_static_attrs_match_the_shipped_snapshot() {
+    assert_eq!(
+        assembled(r#"<div><span class="x">hello</span></div>"#),
+        "\
+const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", null, [
+    _createElementVNode(\"span\", { class: \"x\" }, \"hello\")
+  ]))
+}"
+    );
+}
+
+#[test]
+fn a_bound_attr_is_unsupported_this_installment() {
+    with_transformed(r#"<div :class="x"></div>"#, |lowered, _, _, _| {
         assert_eq!(emit_dom(lowered), Err(EmitError::Unsupported));
     });
 }

@@ -7,12 +7,13 @@
 //! P2-9 carve-out. This module writes the JS string **directly from
 //! S2 ops** — it does not mint relief codegen-nodes (`NodeType` 13–20).
 //!
-//! Installment 1 emits only **static native HTML elements** whose
-//! children are nested static native elements or a single inlined text
-//! node. Everything else is [`EmitError::Unsupported`]: the comparator
-//! counts those, it does not invent output. The old lane stays the
-//! shipped compile path; [`super::DOM_LANE_FLAG`] is named here and
-//! *read* in the atelier_dom witness.
+//! Installment 2 emits **static native HTML elements** with static
+//! attributes (and nested static native children / a single inlined
+//! text node). Bindings, interpolations, components, and hoist
+//! realization stay [`EmitError::Unsupported`]: the comparator counts
+//! those, it does not invent output. The old lane stays the shipped
+//! compile path; [`super::DOM_LANE_FLAG`] is named here and *read* in
+//! the atelier_dom witness.
 
 #[path = "emit/buf.rs"]
 mod buf;

@@ -72,6 +72,16 @@ fn push_hex4(out: &mut String, value: u32) {
     out.push(HEX[(value & 0xF) as usize] as char);
 }
 
+/// Same rule as `vize_atelier_core::codegen::helpers::is_valid_js_identifier`.
+pub(super) fn is_valid_js_identifier(s: &str) -> bool {
+    let mut chars = s.chars();
+    match chars.next() {
+        Some(c) if c.is_ascii_alphabetic() || c == '_' || c == '$' => {}
+        _ => return false,
+    }
+    chars.all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$')
+}
+
 /// Escape `s` for a JavaScript double-quoted string literal, matching
 /// `vize_atelier_core::codegen::helpers::escape_js_string`.
 pub(super) fn escape_js_string(s: &str) -> String {
