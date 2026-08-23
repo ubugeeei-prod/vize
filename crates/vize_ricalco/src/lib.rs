@@ -56,7 +56,9 @@
 
 extern crate alloc;
 
+pub mod dom;
 pub mod lower;
 pub mod pass;
 
+pub use dom::DOM_LANE_FLAG;
 pub use lower::{Lowered, lower};
