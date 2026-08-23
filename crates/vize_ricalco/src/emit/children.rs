@@ -97,3 +97,28 @@ fn emit_to_display_string(cx: &mut EmitCx<'_>, source: &str) {
     cx.buf.push(source);
     cx.buf.push(")");
 }
+
+/// Array-form text run: `_createTextVNode(...)`, matching
+/// `codegen/children.rs`'s consecutive-run grouping.
+pub(super) fn emit_create_text_vnode(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError> {
+    if ops.is_empty() {
+        return Err(EmitError::Unsupported);
+    }
+    let has_interp = ops.iter().any(|op| matches!(op, Op::Interpolation(_)));
+    let is_single_space =
+        !has_interp && ops.len() == 1 && matches!(&ops[0], Op::Text(text) if text.content == " ");
+    cx.buf.use_create_text();
+    cx.buf.push(Buf::create_text_alias());
+    if is_single_space {
+        let _id = cx.walk.mint();
+        cx.buf.push("()");
+        return Ok(());
+    }
+    cx.buf.push("(");
+    emit_text_like(cx, ops)?;
+    if has_interp {
+        cx.buf.push(", 1 /* TEXT */");
+    }
+    cx.buf.push(")");
+    Ok(())
+}

@@ -1,5 +1,6 @@
-//! P2-11 installment 3: static native HTML plus interpolations emit
-//! the same render function the shipped DOM lane does.
+//! P2-11 installment 4: static native HTML, interpolations, and
+//! mixed element+text siblings emit the same render function the
+//! shipped DOM lane does.
 
 #![allow(
     clippy::disallowed_macros,
@@ -242,11 +243,50 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn mixed_element_and_interpolation_siblings_are_unsupported_this_installment() {
-    with_transformed(
-        "<div>{{ msg }}<span></span></div>",
-        |lowered, _, facts, _| {
-            assert_eq!(emit_dom(lowered, facts), Err(EmitError::Unsupported));
-        },
+fn mixed_element_and_interpolation_siblings_use_create_text_vnode() {
+    assert_eq!(
+        assembled("<div>{{ msg }}<span></span></div>"),
+        "\
+const { toDisplayString: _toDisplayString, createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, createTextVNode: _createTextVNode } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", null, [
+    _createTextVNode(_toDisplayString(msg), 1 /* TEXT */),
+    _createElementVNode(\"span\")
+  ]))
+}"
+    );
+}
+
+#[test]
+fn mixed_static_text_and_element_siblings_use_create_text_vnode() {
+    assert_eq!(
+        assembled("<div>hello<span></span></div>"),
+        "\
+const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, createTextVNode: _createTextVNode } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", null, [
+    _createTextVNode(\"hello\"),
+    _createElementVNode(\"span\")
+  ]))
+}"
+    );
+}
+
+#[test]
+fn a_single_space_between_elements_is_create_text_vnode_with_no_args() {
+    assert_eq!(
+        assembled("<div><span></span> <span></span></div>"),
+        "\
+const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, createTextVNode: _createTextVNode } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", null, [
+    _createElementVNode(\"span\"),
+    _createTextVNode(),
+    _createElementVNode(\"span\")
+  ]))
+}"
     );
 }

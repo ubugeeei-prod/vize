@@ -1,6 +1,6 @@
-//! P2-11 installment 3 witness: static native HTML plus interpolations,
-//! old DOM lane vs S2 emit, compared **byte-for-byte** including helper
-//! usage.
+//! P2-11 installment 4 witness: static native HTML, interpolations,
+//! and mixed element+text siblings, old DOM lane vs S2 emit, compared
+//! **byte-for-byte** including helper usage.
 //!
 //! `vize_atelier_dom` is published; the Davinci crates are not. The
 //! comparator therefore rides stripped-on-publish dev-deps (the same
@@ -39,6 +39,12 @@ const BATTERY: &[(&str, &str)] = &[
     ("nested_interp", "<div><span>{{ msg }}</span></div>"),
     ("compound_two_dyn", "<p>Hi {{ name }}!</p>"),
     ("multiline_root_compound", "<div>Hi {{ name }}</div>\n"),
+    ("interp_then_span", "<div>{{ msg }}<span></span></div>"),
+    ("text_then_span", "<div>hello<span></span></div>"),
+    (
+        "space_between_spans",
+        "<div><span></span> <span></span></div>",
+    ),
 ];
 
 fn shipped(src: &str) -> String {
