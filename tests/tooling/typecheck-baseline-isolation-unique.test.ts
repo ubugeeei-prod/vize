@@ -45,7 +45,10 @@ function writeConfig(fixtureRoot: string, paths: Record<string, string[]>) {
 function writeFixtureVue(fixtureRoot: string, version: string) {
   const packageRoot = path.join(fixtureRoot, "node_modules", "vue");
   fs.mkdirSync(packageRoot, { recursive: true });
-  fs.writeFileSync(path.join(packageRoot, "package.json"), `{"name":"vue","version":"${version}"}\n`);
+  fs.writeFileSync(
+    path.join(packageRoot, "package.json"),
+    `{"name":"vue","version":"${version}"}\n`,
+  );
 }
 
 test("an outside target with exactly one in-fixture copy is linked from that copy", () => {
