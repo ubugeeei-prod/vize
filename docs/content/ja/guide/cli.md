@@ -108,19 +108,19 @@ vize build --profile src
 
 主なオプション:
 
-| オプション            | 説明                                                             |
-| --------------------- | ---------------------------------------------------------------- |
-| `-o, --output`        | 共通入力ルートの下のソース相対出力。衝突を拒否します             |
-| `-f, --format`        | 出力形式: `js`、`json`、`stats`                                  |
-| `--ssr`               | SSR コンパイルを有効にする                                       |
-| `--custom-renderer`   | 小文字の非 HTML タグをカスタム レンダラー要素として扱う          |
-| `--custom-elements`   | カスタム要素としてコンパイルするタグパターン。複数回指定可能     |
-| `--script-ext`        | `preserve` または `downcompile`                                  |
-| `--declaration`       | ビルドされた SFC の `.d.ts` ファイルを出力 (エイリアス: `--dts`) |
-| `--declaration-dir`   | 宣言出力ディレクトリ (デフォルト: ビルド出力ディレクトリ)        |
-| `-j, --threads`       | スレッド数のオーバーライド                                       |
-| `--profile`           | 印刷タイミング プロファイル                                      |
-| `--continue-on-error` | コンパイルを続けて最後に失敗を報告する                           |
+| オプション                    | 説明                                                             |
+| ----------------------------- | ---------------------------------------------------------------- |
+| `-o, --output`                | 共通入力ルートの下のソース相対出力。衝突を拒否します             |
+| `-f, --format`                | 出力形式: `js`、`json`、`stats`                                  |
+| `--ssr`                       | SSR コンパイルを有効にする                                       |
+| `--custom-renderer`           | 小文字の非 HTML タグをカスタム レンダラー要素として扱う          |
+| `--custom-elements <PATTERN>` | カスタム要素としてコンパイルするタグパターン。複数回指定可能     |
+| `--script-ext`                | `preserve` または `downcompile`                                  |
+| `--declaration`               | ビルドされた SFC の `.d.ts` ファイルを出力 (エイリアス: `--dts`) |
+| `--declaration-dir`           | 宣言出力ディレクトリ (デフォルト: ビルド出力ディレクトリ)        |
+| `-j, --threads`               | スレッド数のオーバーライド                                       |
+| `--profile`                   | 印刷タイミング プロファイル                                      |
+| `--continue-on-error`         | コンパイルを続けて最後に失敗を報告する                           |
 
 ## フォーマット
 
@@ -210,18 +210,18 @@ vize check --profile src
 
 主なオプション:
 
-| オプション          | 説明                                                            |
+| オプション | 説明 |
 | ------------------- | --------------------------------------------------------------- | ------------------------ |
-| `-s, --socket`      | 実行中の `check-server`                                         | に接続します。           |
-| `--tsconfig`        | `tsconfig.json`                                                 | をオーバーライドします。 |
-| `-f, --format`      | 出力形式: `text` または `json`                                  |
-| `--show-virtual-ts` | 生成された仮想 TypeScript を印刷する                            |
-| `-q, --quiet`       | 概要のみを表示                                                  |
-| `--profile`         | プロファイル アーティファクトを `node_modules/.vize` に書き込む |
-| `--corsa-path`      | Corsa 実行可能ファイルのパスをオーバーライドする                |
-| `--servers`         | 予約済み Corsa サーバー数。 `1` のみがサポートされています。    |
-| `--declaration`     | `.d.ts` 出力を出力する                                          |
-| `--declaration-dir` | 発行された宣言の出力ディレクトリ                                |
+| `-s, --socket` | 実行中の `check-server` | に接続します。 |
+| `--tsconfig` | `tsconfig.json` | をオーバーライドします。 |
+| `-f, --format` | 出力形式: `text` または `json` |
+| `--show-virtual-ts` | 生成された仮想 TypeScript を印刷する |
+| `-q, --quiet` | 概要のみを表示 |
+| `--profile` | プロファイル アーティファクトを `node_modules/.vize` に書き込む |
+| `--corsa-path` | Corsa 実行可能ファイルのパスをオーバーライドする |
+| `--servers` | 予約済み Corsa サーバー数。 `1` のみがサポートされています。 |
+| `--declaration` | `.d.ts` 出力を出力する |
+| `--declaration-dir` | 発行された宣言の出力ディレクトリ |
 
 Vize の開発中またはテスト中にカスタム Corsa 実行可能ファイルを固定したい場合は、`--corsa-path` を使用します。
 ローカル `corsa-bind` チェックアウト。共有構成キーは `typeChecker.corsaPath` です。 `typeChecker.tsgoPath`

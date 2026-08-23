@@ -184,8 +184,7 @@ lsp {
 
 ## Compiler Options
 
-These options live under `compiler`. They are schema-backed and shared through `defineConfig`; not
-every integration consumes every field yet.
+These options live under `compiler` in `defineConfig`; not every integration consumes every field.
 
 | Option              | Values                                  | Common use                                                       |
 | ------------------- | --------------------------------------- | ---------------------------------------------------------------- |

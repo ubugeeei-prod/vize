@@ -116,6 +116,21 @@ fn custom_elements_flag_compiles_matched_pascal_case_tags_as_elements() {
         "{js}"
     );
     assert_eq!(needle_count(&js, "import { TresCanvas }"), 1, "{js}");
+    assert_eq!(
+        needle_count(&js, r#"_createBlock(_unref(TresCanvas)"#),
+        1,
+        "{js}"
+    );
+    assert_eq!(
+        needle_count(&js, r#"_createElementBlock("TresCanvas""#),
+        0,
+        "{js}"
+    );
+    assert_eq!(
+        needle_count(&js, r#"_createElementVNode("TresCanvas""#),
+        0,
+        "{js}"
+    );
     let _ = fs::remove_dir_all(project_root);
 }
 

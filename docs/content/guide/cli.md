@@ -4,8 +4,6 @@ title: CLI
 
 # CLI Reference
 
-> **⚠️ Work in Progress:** Vize is under active development and the CLI surface is still evolving.
-
 Most application workflows should install the `vize` npm package and run it through `package.json`
 scripts. This page describes the lower-level Rust-native `vize` binary for LSP, IDE management,
 `check-server`, profiling, and other direct CLI workflows. The npm package exposes shared config
@@ -76,22 +74,22 @@ vize [COMMAND]
 
 When invoked without a command, `vize` defaults to `build`.
 
-| Command          | Description                                     |
-| ---------------- | ----------------------------------------------- |
-| `build`          | Compile Vue SFC files                           |
-| `fmt`            | Format Vue SFC files                            |
-| `lint`           | Lint Vue SFC files                              |
-| `check`          | Type check Vue SFC, TS, TSX, and `.d.ts` inputs |
-| `doctor`         | Analyze whole-application health                |
-| `inspector`      | Create playground compiler inspector payloads   |
-| `clean`          | Remove Vize-generated cache artifacts           |
-| `ready`          | Run `fmt`, `lint`, `check`, and `build`         |
-| `upgrade`        | Update the installed CLI                        |
-| `check-server`   | Start the Unix JSON-RPC typecheck server        |
+| Command          | Description                                                       |
+| ---------------- | ----------------------------------------------------------------- |
+| `build`          | Compile Vue SFC files                                             |
+| `fmt`            | Format Vue SFC files                                              |
+| `lint`           | Lint Vue SFC files                                                |
+| `check`          | Type check Vue SFC, TS, TSX, and `.d.ts` inputs                   |
+| `doctor`         | Analyze whole-application health                                  |
+| `inspector`      | Create playground compiler inspector payloads                     |
+| `clean`          | Remove Vize-generated cache artifacts                             |
+| `ready`          | Run `fmt`, `lint`, `check`, and `build`                           |
+| `upgrade`        | Update the installed CLI                                          |
+| `check-server`   | Start the Unix JSON-RPC typecheck server                          |
 | `content-mapper` | Start the [TypeScript content-mapper](./content-mapper.md) server |
-| `musea`          | Musea subcommands and scaffolding               |
-| `lsp`            | Start the language server                       |
-| `ide`            | Install or manage editor integrations           |
+| `musea`          | Musea subcommands and scaffolding                                 |
+| `lsp`            | Start the language server                                         |
+| `ide`            | Install or manage editor integrations                             |
 
 ## Build
 
@@ -103,19 +101,19 @@ vize build --profile src
 
 Key options:
 
-| Option                | Description                                                            |
-| --------------------- | ---------------------------------------------------------------------- |
-| `-o, --output`        | Source-relative output below the common input root; rejects collisions |
-| `-f, --format`        | Output format: `js`, `json`, `stats`                                   |
-| `--ssr`               | Enable SSR compilation                                                 |
-| `--custom-renderer`   | Treat lowercase non-HTML tags as custom renderer elements              |
-| `--custom-elements`   | Tag patterns compiled as custom elements; repeat for multiple patterns |
-| `--script-ext`        | `preserve` or `downcompile`                                            |
-| `--declaration`       | Emit `.d.ts` files for the built SFCs (alias: `--dts`)                 |
-| `--declaration-dir`   | Declaration output directory (default: the build output directory)     |
-| `-j, --threads`       | Thread count override                                                  |
-| `--profile`           | Print timing profile                                                   |
-| `--continue-on-error` | Keep compiling and report failures at the end                          |
+| Option                        | Description                                                            |
+| ----------------------------- | ---------------------------------------------------------------------- |
+| `-o, --output`                | Source-relative output below the common input root; rejects collisions |
+| `-f, --format`                | Output format: `js`, `json`, `stats`                                   |
+| `--ssr`                       | Enable SSR compilation                                                 |
+| `--custom-renderer`           | Treat lowercase non-HTML tags as custom renderer elements              |
+| `--custom-elements <PATTERN>` | Tag patterns compiled as custom elements; repeat for multiple patterns |
+| `--script-ext`                | `preserve` or `downcompile`                                            |
+| `--declaration`               | Emit `.d.ts` files for the built SFCs (alias: `--dts`)                 |
+| `--declaration-dir`           | Declaration output directory (default: the build output directory)     |
+| `-j, --threads`               | Thread count override                                                  |
+| `--profile`                   | Print timing profile                                                   |
+| `--continue-on-error`         | Keep compiling and report failures at the end                          |
 
 ## Format
 

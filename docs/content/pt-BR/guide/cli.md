@@ -108,19 +108,19 @@ vize build --profile src
 
 Principais opções:
 
-| Opção                 | Descrição                                                                     |
-| --------------------- | ----------------------------------------------------------------------------- |
-| `-o, --output`        | Saída relativa à fonte abaixo da raiz de entrada comum; rejeita colisões      |
-| `-f, --format`        | Formato de saída: `js`, `json`, `stats`                                       |
-| `--ssr`               | Habilitar compilação SSR                                                      |
-| `--custom-renderer`   | Tratar tags minúsculas não HTML como elementos de renderização personalizados |
-| `--custom-elements`   | Padrões de tag compilados como custom elements; repetir para vários padrões   |
-| `--script-ext`        | `preserve` ou `downcompile`                                                   |
-| `--declaration`       | Emitir `.d.ts` arquivos para os SFCs construídos (alias: `--dts`)             |
-| `--declaration-dir`   | Diretório de saída de declaração (padrão: o diretório de saída da compilação) |
-| `-j, --threads`       | Substituição da contagem de threads                                           |
-| `--profile`           | Perfil de tempo de impressão                                                  |
-| `--continue-on-error` | Continue compilando e reporte falhas no final                                 |
+| Opção                         | Descrição                                                                     |
+| ----------------------------- | ----------------------------------------------------------------------------- |
+| `-o, --output`                | Saída relativa à fonte abaixo da raiz de entrada comum; rejeita colisões      |
+| `-f, --format`                | Formato de saída: `js`, `json`, `stats`                                       |
+| `--ssr`                       | Habilitar compilação SSR                                                      |
+| `--custom-renderer`           | Tratar tags minúsculas não HTML como elementos de renderização personalizados |
+| `--custom-elements <PATTERN>` | Padrões de tag compilados como custom elements; repetir para vários padrões   |
+| `--script-ext`                | `preserve` ou `downcompile`                                                   |
+| `--declaration`               | Emitir `.d.ts` arquivos para os SFCs construídos (alias: `--dts`)             |
+| `--declaration-dir`           | Diretório de saída de declaração (padrão: o diretório de saída da compilação) |
+| `-j, --threads`               | Substituição da contagem de threads                                           |
+| `--profile`                   | Perfil de tempo de impressão                                                  |
+| `--continue-on-error`         | Continue compilando e reporte falhas no final                                 |
 
 ## Formato
 

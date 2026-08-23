@@ -108,19 +108,19 @@ vize build --profile src
 
 Options clés :
 
-| Option                | Description                                                                                   |
-| --------------------- | --------------------------------------------------------------------------------------------- |
-| `-o, --output`        | Sortie relative à la source en dessous de la racine d’entrée commune ; rejette les collisions |
-| `-f, --format`        | Format de sortie : `js`, `json`, `stats`                                                      |
-| `--ssr`               | Activer la compilation SSR                                                                    |
-| `--custom-renderer`   | Considérer les balises minuscules non HTML comme des éléments de rendu personnalisés          |
-| `--custom-elements`   | Motifs de balises compilés comme éléments personnalisés ; répétable                           |
-| `--script-ext`        | `preserve` ou `downcompile`                                                                   |
-| `--declaration`       | Émettre `.d.ts` fichiers pour les SFC construits (alias : `--dts`)                            |
-| `--declaration-dir`   | Dossier de sortie de déclaration (par défaut : le répertoire de sortie de compilation)        |
-| `-j, --threads`       | Remplacement du nombre de fils                                                                |
-| `--profile`           | Profil de timing d’impression                                                                 |
-| `--continue-on-error` | Continuez à compiler et signalez les échecs à la fin                                          |
+| Option                        | Description                                                                                   |
+| ----------------------------- | --------------------------------------------------------------------------------------------- |
+| `-o, --output`                | Sortie relative à la source en dessous de la racine d’entrée commune ; rejette les collisions |
+| `-f, --format`                | Format de sortie : `js`, `json`, `stats`                                                      |
+| `--ssr`                       | Activer la compilation SSR                                                                    |
+| `--custom-renderer`           | Considérer les balises minuscules non HTML comme des éléments de rendu personnalisés          |
+| `--custom-elements <PATTERN>` | Motifs de balises compilés comme éléments personnalisés ; répétable                           |
+| `--script-ext`                | `preserve` ou `downcompile`                                                                   |
+| `--declaration`               | Émettre `.d.ts` fichiers pour les SFC construits (alias : `--dts`)                            |
+| `--declaration-dir`           | Dossier de sortie de déclaration (par défaut : le répertoire de sortie de compilation)        |
+| `-j, --threads`               | Remplacement du nombre de fils                                                                |
+| `--profile`                   | Profil de timing d’impression                                                                 |
+| `--continue-on-error`         | Continuez à compiler et signalez les échecs à la fin                                          |
 
 ## Format
 
