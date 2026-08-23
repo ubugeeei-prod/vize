@@ -31,6 +31,7 @@ test("vize lsp supports production Vue authoring requests in one editor session"
 import { ref } from 'vue'
 const count = ref(0)
 const items = [1, 2]
+const row = 'outer'
 </script>
 
 <template>
@@ -46,6 +47,11 @@ const items = [1, 2]
   <ul>
     <li v-for="item in items">{{ item }}</li>
   </ul>
+  <Child>
+    <template #default="{ row, index }">
+      {{ row.id }} {{ index }}
+    </template>
+  </Child>
 </template>
 `;
     const filePath = path.join(workspaceDir, "AuthoringCore.vue");
@@ -138,6 +144,28 @@ const items = [1, 2]
     const forDefinitionLocation = firstLocation(forDefinition as never);
     assert.equal(forDefinitionLocation.uri, uri);
     assert.deepEqual(forDefinitionLocation.range.start, offsetToPosition(source, forAliasOffset));
+
+    const slotPropOffset = source.indexOf("row.id") + "row".length;
+    const slotPropPosition = offsetToPosition(source, slotPropOffset);
+    const slotPropHover = (await session.request("textDocument/hover", {
+      textDocument: { uri },
+      position: slotPropPosition,
+    })) as { contents?: unknown } | null;
+    const slotPropHoverText = hoverToText(slotPropHover);
+    assert.match(slotPropHoverText, /row/);
+    assert.match(slotPropHoverText, /v-slot scope binding/);
+    assert.match(slotPropHoverText, /nearest scoped slot/);
+
+    const slotPropDefinition = await session.request("textDocument/definition", {
+      textDocument: { uri },
+      position: slotPropPosition,
+    });
+    const slotPropDefinitionLocation = firstLocation(slotPropDefinition as never);
+    assert.equal(slotPropDefinitionLocation.uri, uri);
+    assert.deepEqual(
+      slotPropDefinitionLocation.range.start,
+      offsetToPosition(source, source.indexOf("row, index")),
+    );
 
     const references = (await session.request("textDocument/references", {
       textDocument: { uri },

@@ -58,7 +58,7 @@ impl HoverService {
             return Some(hover);
         }
 
-        if let Some(hover) = template_scope::v_for_hover(ctx, &word) {
+        if let Some(hover) = template_scope::hover(ctx, &word) {
             return Some(hover);
         }
         if let Some(hover) = super::backend::binding_type_hover(ctx, &word) {

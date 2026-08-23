@@ -1,6 +1,6 @@
 use tower_lsp::lsp_types::Url;
 
-use super::{TemplateScopeBindingKind, v_for_binding_at};
+use super::{TemplateScopeBindingKind, v_for_binding_at, v_slot_binding_at};
 use crate::{ide::IdeContext, server::ServerState};
 
 #[test]
@@ -69,4 +69,62 @@ const inner = []
         source.rfind("item in inner").unwrap(),
         "nested v-for aliases must shadow outer aliases",
     );
+}
+
+#[test]
+fn finds_v_slot_destructured_prop_binding_from_slot_body() {
+    let source = r#"<script setup>
+const row = 'outer'
+</script>
+<template>
+  <Child>
+    <template #default="{ row, index }">
+      {{ row.id }} {{ index }}
+    </template>
+  </Child>
+</template>
+"#;
+    let uri = Url::parse("file:///SlotScope.vue").unwrap();
+    let state = ServerState::new();
+    state
+        .documents
+        .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+    state.update_virtual_docs(&uri, source);
+
+    for (usage, declaration) in [("row.id", "row, index"), ("{{ index }}", "index }")] {
+        let usage_offset =
+            source.rfind(usage).unwrap() + usage.find(|c: char| c.is_alphanumeric()).unwrap();
+        let word = usage
+            .trim_matches(|c: char| !c.is_alphanumeric())
+            .split('.')
+            .next()
+            .unwrap();
+        let ctx = IdeContext::new(&state, &uri, usage_offset).unwrap();
+        let binding = v_slot_binding_at(&ctx, word).unwrap();
+        assert_eq!(binding.kind, TemplateScopeBindingKind::SlotProp);
+        assert_eq!(&source[binding.start..binding.end], word);
+        assert_eq!(binding.start, source.find(declaration).unwrap());
+    }
+}
+
+#[test]
+fn v_slot_binding_does_not_escape_its_template_subtree() {
+    let source = r#"<template>
+  <Child>
+    <template #default="{ row }">{{ row.id }}</template>
+    {{ row }}
+  </Child>
+</template>
+"#;
+    let uri = Url::parse("file:///SlotScopeLeak.vue").unwrap();
+    let state = ServerState::new();
+    state
+        .documents
+        .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+    state.update_virtual_docs(&uri, source);
+
+    let usage_offset = source.rfind("{{ row }}").unwrap() + "{{ ".len();
+    let ctx = IdeContext::new(&state, &uri, usage_offset).unwrap();
+
+    assert!(v_slot_binding_at(&ctx, "row").is_none());
 }

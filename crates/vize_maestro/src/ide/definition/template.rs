@@ -46,7 +46,7 @@ pub(crate) fn definition_in_template(ctx: &IdeContext) -> Option<GotoDefinitionR
         return Some(def);
     }
 
-    if let Some(definition) = template_scope::v_for_definition(ctx, &word) {
+    if let Some(definition) = template_scope::definition(ctx, &word) {
         return Some(definition);
     }
     if let Some(location) = super::script::find_analyzed_binding_location(ctx, &word) {

@@ -2,6 +2,7 @@
 #![allow(clippy::disallowed_types)]
 
 mod v_for;
+mod v_slot;
 
 #[cfg(test)]
 mod tests;
@@ -15,6 +16,7 @@ pub(crate) enum TemplateScopeBindingKind {
     Value,
     Key,
     Index,
+    SlotProp,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -53,6 +55,10 @@ pub(crate) fn v_for_definition(ctx: &IdeContext<'_>, word: &str) -> Option<GotoD
     v_for_binding_at(ctx, word).map(|binding| GotoDefinitionResponse::Scalar(binding.location(ctx)))
 }
 
+pub(crate) fn definition(ctx: &IdeContext<'_>, word: &str) -> Option<GotoDefinitionResponse> {
+    v_for_definition(ctx, word).or_else(|| v_slot_definition(ctx, word))
+}
+
 pub(crate) fn v_for_hover(ctx: &IdeContext<'_>, word: &str) -> Option<Hover> {
     let binding = v_for_binding_at(ctx, word)?;
     let description = match binding.kind {
@@ -65,6 +71,7 @@ pub(crate) fn v_for_hover(ctx: &IdeContext<'_>, word: &str) -> Option<Hover> {
         TemplateScopeBindingKind::Index => {
             "Loop index alias declared by the nearest `v-for` and available to this template scope."
         }
+        TemplateScopeBindingKind::SlotProp => return None,
     };
 
     Some(
@@ -81,4 +88,41 @@ pub(crate) fn v_for_hover(ctx: &IdeContext<'_>, word: &str) -> Option<Hover> {
             )
             .build(),
     )
+}
+
+pub(crate) fn v_slot_binding_at(ctx: &IdeContext<'_>, word: &str) -> Option<TemplateScopeBinding> {
+    v_slot::binding_at(ctx, word)
+}
+
+pub(crate) fn v_slot_definition(
+    ctx: &IdeContext<'_>,
+    word: &str,
+) -> Option<GotoDefinitionResponse> {
+    v_slot_binding_at(ctx, word)
+        .map(|binding| GotoDefinitionResponse::Scalar(binding.location(ctx)))
+}
+
+pub(crate) fn v_slot_hover(ctx: &IdeContext<'_>, word: &str) -> Option<Hover> {
+    let binding = v_slot_binding_at(ctx, word)?;
+
+    Some(
+        HoverBuilder::new()
+            .title(&binding.name)
+            .meta("v-slot scope binding")
+            .description(
+                "Slot prop binding declared by the nearest scoped slot and available to this template subtree.",
+            )
+            .bullets(
+                "Behavior",
+                &[
+                    "Shadows outer template and script bindings with the same name.",
+                    "Type-backed sessions should refine this with the child component slot prop type when the backend answers.",
+                ],
+            )
+            .build(),
+    )
+}
+
+pub(crate) fn hover(ctx: &IdeContext<'_>, word: &str) -> Option<Hover> {
+    v_for_hover(ctx, word).or_else(|| v_slot_hover(ctx, word))
 }
