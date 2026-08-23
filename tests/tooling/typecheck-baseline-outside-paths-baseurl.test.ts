@@ -155,3 +155,61 @@ test("materialized baseline pins baseUrl when outside paths were retargeted", ()
     fs.rmSync(outer, { recursive: true, force: true });
   }
 });
+
+test("array extends applies later package paths with an earlier baseUrl", () => {
+  const { outer, fixtureRoot, outsideVue } = scaffold();
+  try {
+    writeLocalVue(fixtureRoot);
+    const sourceRoot = path.join(fixtureRoot, "src");
+    fs.writeFileSync(
+      path.join(fixtureRoot, "base-url.json"),
+      `${JSON.stringify({ compilerOptions: { baseUrl: "./src" } })}\n`,
+    );
+    fs.writeFileSync(
+      path.join(fixtureRoot, "paths.json"),
+      `${JSON.stringify({
+        compilerOptions: {
+          paths: { vue: [path.relative(sourceRoot, outsideVue)] },
+        },
+      })}\n`,
+    );
+    const sourcePath = path.join(fixtureRoot, "tsconfig.json");
+    fs.writeFileSync(sourcePath, `{ "extends": ["./base-url.json", "./paths.json"] }\n`);
+    assert.deepEqual(
+      rewriteOutsidePackagePaths(fixtureRoot, sourcePath, path.join(fixtureRoot, ".vize-baseline")),
+      { vue: ["../node_modules/vue"] },
+    );
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test("array extends applies later hash aliases with an earlier baseUrl", () => {
+  const { outer, fixtureRoot, outsideNuxt } = scaffold();
+  try {
+    writeLocalNuxt(fixtureRoot);
+    const sourceRoot = path.join(fixtureRoot, "src");
+    fs.writeFileSync(
+      path.join(fixtureRoot, "base-url.json"),
+      `${JSON.stringify({ compilerOptions: { baseUrl: "./src" } })}\n`,
+    );
+    fs.writeFileSync(
+      path.join(fixtureRoot, "paths.json"),
+      `${JSON.stringify({
+        compilerOptions: {
+          paths: {
+            "#app": [path.relative(sourceRoot, path.join(outsideNuxt, "dist", "app"))],
+          },
+        },
+      })}\n`,
+    );
+    const sourcePath = path.join(fixtureRoot, "tsconfig.json");
+    fs.writeFileSync(sourcePath, `{ "extends": ["./base-url.json", "./paths.json"] }\n`);
+    assert.deepEqual(
+      rewriteOutsideAliasPaths(fixtureRoot, sourcePath, path.join(fixtureRoot, ".vize-baseline")),
+      { "#app": ["../node_modules/nuxt/dist/app"] },
+    );
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});

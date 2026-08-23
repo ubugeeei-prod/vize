@@ -1,7 +1,7 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 
-import { stripJsonc } from "./typecheck-baseline-jsonc.mjs";
+import { loadTsconfigExtendsChain } from "./typecheck-baseline-extends-chain.mjs";
 
 /**
  * Close the vue-tsc path escape unique isolation cannot see (#4461).
@@ -12,26 +12,21 @@ import { stripJsonc } from "./typecheck-baseline-jsonc.mjs";
  * that link. Nuxt-generated configs bake an absolute-looking relative path to
  * a package *above* the fixture, so the baseline still loads Vize's Vue beside
  * the fixture's.
- *
  * Setting `paths` on the generated baseline replaces the inherited object, so
  * this copies every mapping, re-homes it to the generated config directory, and
  * only then retargets package names whose original target is outside and whose
  * fixture-local `node_modules/<name>` is already a real package. No rewrite
  * means the generated config leaves `paths` unset and inherits.
- *
  * Vize's `check --tsconfig` still reads the fixture config, so a matching
  * untracked overlay is written next to the source when a rewrite exists. Git
  * porcelain uses `--untracked-files=no`, so the overlay does not dirty the
  * fixture. The matrix typechecker prefers that overlay when it is present.
- *
  * Package-name `extends` is followed only inside the fixture. Climbing into
  * Vize's `node_modules` would load Vize's `@vue/tsconfig` and bake its
  * outside `paths` into the overlay.
- *
  * `compilerOptions.typeRoots` is the same class of hole: TypeScript searches
  * those directories instead of the fixture's `node_modules/@types`. An outside
  * `node_modules/@types` is retargeted to the fixture-local copy when it exists.
- *
  * A trailing `/*` on a package mapping is the same walk: TypeScript still
  * loads that outside tree. A mapping named `*` whose target is an outside
  * `node_modules` directory is retargeted to the fixture copy. Interior `*`
@@ -181,7 +176,11 @@ function retargetTypeRoot(fixtureRoot, sourceDir, configDir, entry, markChanged)
 function winningCompilerOption(sourceConfigPath, fixtureRoot, pick) {
   let value;
   let dir;
-  for (const entry of [...loadExtendsChain(sourceConfigPath, fixtureRoot)].reverse()) {
+  for (const entry of [
+    ...loadTsconfigExtendsChain(sourceConfigPath, (fromConfig, specifier) =>
+      resolveExtends(fromConfig, specifier, fixtureRoot),
+    ),
+  ].reverse()) {
     const candidate = pick(entry.config);
     if (candidate != null) {
       value = candidate;
@@ -210,40 +209,6 @@ function winningBaseUrl(sourceConfigPath, fixtureRoot) {
   return winningCompilerOption(sourceConfigPath, fixtureRoot, (config) =>
     typeof config?.compilerOptions?.baseUrl === "string" ? config.compilerOptions.baseUrl : null,
   );
-}
-
-function loadExtendsChain(sourceConfigPath, fixtureRoot) {
-  const chain = [];
-  const seen = new Set();
-  let current = resolve(sourceConfigPath);
-  while (!seen.has(current)) {
-    seen.add(current);
-    const config = parseTsconfig(current);
-    if (config == null) break;
-    chain.push({ config, dir: dirname(current) });
-    const specifiers = extendsSpecifiers(config.extends);
-    let next = null;
-    for (const specifier of specifiers) {
-      next = resolveExtends(current, specifier, fixtureRoot);
-      if (next != null) break;
-    }
-    if (next == null) break;
-    current = next;
-  }
-  return chain;
-}
-
-function parseTsconfig(configPath) {
-  try {
-    return JSON.parse(stripJsonc(readFileSync(configPath, "utf8")));
-  } catch {
-    return null;
-  }
-}
-
-function extendsSpecifiers(value) {
-  if (typeof value === "string") return [value];
-  return Array.isArray(value) ? value.filter((entry) => typeof entry === "string") : [];
 }
 
 function resolveExtends(fromConfig, specifier, fixtureRoot) {
@@ -290,7 +255,10 @@ function splitPackageExtends(specifier) {
   if (specifier.includes(":")) return null;
   const slash = specifier.indexOf("/");
   if (slash < 0) return { name: specifier, subpath: null };
-  return { name: specifier.slice(0, slash), subpath: specifier.slice(slash + 1) };
+  return {
+    name: specifier.slice(0, slash),
+    subpath: specifier.slice(slash + 1),
+  };
 }
 
 function packageExtendsFile(pkg, subpath) {
