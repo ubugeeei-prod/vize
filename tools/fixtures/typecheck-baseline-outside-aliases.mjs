@@ -1,6 +1,7 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 
+import { loadTsconfigExtendsChain } from "./typecheck-baseline-extends-chain.mjs";
 import {
   isolatedOverlayBaseUrl,
   isolatedTsconfigOverlayPath,
@@ -22,9 +23,14 @@ import {
  * package-name overlay. Climbing into Vize would load Vize's `#app` mappings.
  */
 
-const packageNamePattern = /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/u;
+const packageNamePattern =
+  /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/u;
 
-export function rewriteOutsideAliasPaths(fixtureRoot, sourceConfigPath, configDir) {
+export function rewriteOutsideAliasPaths(
+  fixtureRoot,
+  sourceConfigPath,
+  configDir,
+) {
   const root = resolve(fixtureRoot);
   const declared = winningPaths(sourceConfigPath, root);
   if (declared == null) return null;
@@ -33,9 +39,16 @@ export function rewriteOutsideAliasPaths(fixtureRoot, sourceConfigPath, configDi
   let changed = false;
   for (const [name, targets] of Object.entries(declared.paths)) {
     if (!Array.isArray(targets)) continue;
-    rewritten[name] = retargetAliasMapping(root, mapping, configDir, name, targets, () => {
-      changed = true;
-    });
+    rewritten[name] = retargetAliasMapping(
+      root,
+      mapping,
+      configDir,
+      name,
+      targets,
+      () => {
+        changed = true;
+      },
+    );
   }
   return changed ? rewritten : null;
 }
@@ -50,16 +63,25 @@ export function mergePathRewrites(packages, aliases) {
   return merged;
 }
 
-export function applyIsolatedAliasOverlay(fixtureRoot, sourceConfigPath, overlay) {
+export function applyIsolatedAliasOverlay(
+  fixtureRoot,
+  sourceConfigPath,
+  overlay,
+) {
   const sourcePath = resolve(sourceConfigPath);
-  const aliases = rewriteOutsideAliasPaths(fixtureRoot, sourcePath, dirname(sourcePath));
+  const aliases = rewriteOutsideAliasPaths(
+    fixtureRoot,
+    sourcePath,
+    dirname(sourcePath),
+  );
   if (aliases == null) return overlay ?? null;
   const paths = mergePathRewrites(overlay?.paths ?? null, aliases);
   const typeRoots = overlay?.typeRoots ?? null;
   const overlayPath = overlay?.path ?? isolatedTsconfigOverlayPath(sourcePath);
   const compilerOptions = { paths };
   if (typeRoots != null) compilerOptions.typeRoots = typeRoots;
-  if (isolatedOverlayBaseUrl(sourcePath, fixtureRoot) != null) compilerOptions.baseUrl = ".";
+  if (isolatedOverlayBaseUrl(sourcePath, fixtureRoot) != null)
+    compilerOptions.baseUrl = ".";
   writeFileSync(
     overlayPath,
     `${JSON.stringify({ extends: `./${basename(sourcePath)}`, compilerOptions }, null, 2)}\n`,
@@ -67,8 +89,17 @@ export function applyIsolatedAliasOverlay(fixtureRoot, sourceConfigPath, overlay
   return { path: overlayPath, paths, typeRoots };
 }
 
-function retargetAliasMapping(fixtureRoot, sourceDir, configDir, name, targets, markChanged) {
-  const relocated = targets.map((entry) => relocatePathEntry(sourceDir, configDir, entry));
+function retargetAliasMapping(
+  fixtureRoot,
+  sourceDir,
+  configDir,
+  name,
+  targets,
+  markChanged,
+) {
+  const relocated = targets.map((entry) =>
+    relocatePathEntry(sourceDir, configDir, entry),
+  );
   if (isPackageMappingName(name)) return relocated;
   const first = targets.find(
     (entry) => typeof entry === "string" && isExactOrTrailingStarPath(entry),
@@ -88,7 +119,9 @@ function retargetAliasMapping(fixtureRoot, sourceDir, configDir, name, targets, 
   const rewritten = star
     ? `${configRelativePath(configDir, localTarget)}/*`
     : configRelativePath(configDir, localTarget);
-  return relocated.map((entry, index) => (index === targets.indexOf(first) ? rewritten : entry));
+  return relocated.map((entry, index) =>
+    index === targets.indexOf(first) ? rewritten : entry,
+  );
 }
 
 function isPackageMappingName(name) {
@@ -98,12 +131,16 @@ function isPackageMappingName(name) {
 }
 
 function isExactOrTrailingStarPath(entry) {
-  return !entry.includes("*") || (entry.endsWith("/*") && !entry.slice(0, -2).includes("*"));
+  return (
+    !entry.includes("*") ||
+    (entry.endsWith("/*") && !entry.slice(0, -2).includes("*"))
+  );
 }
 
 function relocatePathEntry(sourceDir, configDir, entry) {
   if (typeof entry !== "string") return entry;
-  if (!entry.includes("*")) return configRelativePath(configDir, resolve(sourceDir, entry));
+  if (!entry.includes("*"))
+    return configRelativePath(configDir, resolve(sourceDir, entry));
   if (entry.endsWith("/*") && !entry.slice(0, -2).includes("*")) {
     return `${configRelativePath(configDir, resolve(sourceDir, entry.slice(0, -2)))}/*`;
   }
@@ -130,8 +167,14 @@ function nodeModulePackageName(packageRoot) {
   if (basename(parent) === "node_modules") {
     return { name: basename(packageRoot), root: packageRoot };
   }
-  if (basename(grandparent) === "node_modules" && basename(parent).startsWith("@")) {
-    return { name: `${basename(parent)}/${basename(packageRoot)}`, root: packageRoot };
+  if (
+    basename(grandparent) === "node_modules" &&
+    basename(parent).startsWith("@")
+  ) {
+    return {
+      name: `${basename(parent)}/${basename(packageRoot)}`,
+      root: packageRoot,
+    };
   }
   return null;
 }
@@ -140,7 +183,12 @@ function winningPaths(sourceConfigPath, fixtureRoot) {
   let paths;
   let dir;
   for (const { config, dir: configDir } of [
-    ...loadExtendsChain(sourceConfigPath, fixtureRoot),
+    ...loadTsconfigExtendsChain(
+      sourceConfigPath,
+      (fromConfig, specifier) =>
+        resolveRelativeExtends(fromConfig, specifier, fixtureRoot) ??
+        resolvePackageExtends(fromConfig, specifier, fixtureRoot),
+    ),
   ].reverse()) {
     const candidate = config?.compilerOptions?.paths;
     if (candidate != null && typeof candidate === "object") {
@@ -149,41 +197,6 @@ function winningPaths(sourceConfigPath, fixtureRoot) {
     }
   }
   return paths == null ? null : { paths, dir };
-}
-
-function loadExtendsChain(sourceConfigPath, fixtureRoot) {
-  const chain = [];
-  const seen = new Set();
-  let current = resolve(sourceConfigPath);
-  while (!seen.has(current)) {
-    seen.add(current);
-    const config = parseTsconfig(current);
-    if (config == null) break;
-    chain.push({ config, dir: dirname(current) });
-    let next = null;
-    for (const specifier of extendsSpecifiers(config.extends)) {
-      next =
-        resolveRelativeExtends(current, specifier, fixtureRoot) ??
-        resolvePackageExtends(current, specifier, fixtureRoot);
-      if (next != null) break;
-    }
-    if (next == null) break;
-    current = next;
-  }
-  return chain;
-}
-
-function parseTsconfig(configPath) {
-  try {
-    return JSON.parse(stripJsonc(readFileSync(configPath, "utf8")));
-  } catch {
-    return null;
-  }
-}
-
-function extendsSpecifiers(value) {
-  if (typeof value === "string") return [value];
-  return Array.isArray(value) ? value.filter((entry) => typeof entry === "string") : [];
 }
 
 function resolveRelativeExtends(fromConfig, specifier, fixtureRoot) {
@@ -208,38 +221,4 @@ function configRelativePath(from, to) {
   const path = relative(from, to).replaceAll("\\", "/");
   if (path.startsWith("/") || /^[A-Za-z]:\//u.test(path)) return path;
   return path.startsWith(".") ? path : `./${path}`;
-}
-
-function stripJsonc(text) {
-  let out = "";
-  let inString = false;
-  for (let i = 0; i < text.length; i += 1) {
-    const ch = text[i];
-    if (inString) {
-      out += ch;
-      if (ch === "\\") {
-        out += text[i + 1] ?? "";
-        i += 1;
-      } else if (ch === '"') inString = false;
-      continue;
-    }
-    if (ch === '"') {
-      inString = true;
-      out += ch;
-      continue;
-    }
-    if (ch === "/" && text[i + 1] === "/") {
-      while (i < text.length && text[i] !== "\n") i += 1;
-      out += "\n";
-      continue;
-    }
-    if (ch === "/" && text[i + 1] === "*") {
-      i += 2;
-      while (i + 1 < text.length && !(text[i] === "*" && text[i + 1] === "/")) i += 1;
-      i += 1;
-      continue;
-    }
-    out += ch;
-  }
-  return out.replace(/,(\s*[}\]])/g, "$1");
 }
