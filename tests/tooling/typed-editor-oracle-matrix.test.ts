@@ -113,38 +113,68 @@ const matrix: MatrixRow[] = [
   {
     evidence: [
       {
-        kind: "pending-pr",
-        pr: 4608,
-        reason: "LSP imported component hovers need marker-free component contracts.",
+        kind: "file",
+        path: "tests/tooling/lsp-imported-component-hover-type-backed.test.ts",
+        requiredText: [
+          "script hover describes imported SFC contracts instead of generated markers",
+          "const Child: VueComponent",
+          "__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor",
+        ],
+      },
+      {
+        kind: "file",
+        path: "tests/tooling/lsp-imported-component-reexport-hover-type-backed.test.ts",
+        requiredText: [
+          "script hover describes re-exported and package SFC component contracts",
+          "Vue component: PackageChild.vue",
+          "__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor",
+        ],
       },
     ],
     followUp: "#4591",
     id: "lsp-imported-component-contract-hover",
-    status: "known-gap",
+    status: "covered",
   },
   {
     evidence: [
       {
-        kind: "pending-pr",
-        pr: 4607,
-        reason: "Component v-model navigation needs authored defineModel targets.",
+        kind: "file",
+        path: "tests/tooling/lsp-component-v-model-type-backed.test.ts",
+        requiredText: [
+          "component v-model hover and definition use the child model contract",
+          "definition must jump to the child defineModel declaration",
+        ],
       },
     ],
     followUp: "#4592",
     id: "lsp-component-v-model-navigation",
-    status: "known-gap",
+    status: "covered",
   },
   {
     evidence: [
       {
-        kind: "pending-pr",
-        pr: 4609,
-        reason: "Non-VSCode host reactive hover coverage is pending merge.",
+        kind: "file",
+        path: "editors/nvim/test/ref_surface_hover.lua",
+        requiredText: [
+          "degraded to an unknown reactive type",
+          "script ref hover",
+          "template template-ref hover",
+        ],
+      },
+      {
+        kind: "file",
+        path: "editors/nvim/test/vize_e2e_expected.lua",
+        requiredText: [
+          "ref_surface_hovers",
+          "const count: Ref<number, number>",
+          "const doubled: ComputedRef<number>",
+          "const button: HTMLButtonElement | null",
+        ],
       },
     ],
     followUp: "#4589",
     id: "non-vscode-host-reactive-hover-surface",
-    status: "known-gap",
+    status: "covered",
   },
 ];
 
