@@ -240,7 +240,7 @@ below):
 | `ui.model read=<expr> write=<expr> @s:e`                                                | `attr` lines beneath                             |
 | `vue.directive <quoted>[ arg=<quoted>\|arg=<expr>][ mods=<quoted>][ value=<expr>] @s:e` | modifiers comma-joined inside quotes             |
 | `vue.css-bind value=<expr> @s:e`                                                        | SFC style `v-bind()`; span is CSS-block-relative |
-| `vue.sync name=<quoted>[ mods=<quoted>] value=<expr> @s:e`                              | Vue 2 `:foo.sync`; name is static                 |
+| `vue.sync name=<quoted>[ mods=<quoted>] value=<expr> @s:e`                              | Vue 2 `:foo.sync`; name is static                |
 | `vue.slot-scope[ name=<quoted>][ params=<expr>] @s:e`                                   | Vue 2 `slot-scope` / `scope` sugar               |
 | `attr <name>[=<quoted>] @s:e`                                                           | bare name for boolean attributes                 |
 

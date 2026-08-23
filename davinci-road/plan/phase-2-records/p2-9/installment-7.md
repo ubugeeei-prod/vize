@@ -9,11 +9,11 @@ because the ops, the admission, and the legalization have different
 review surfaces (the P2-5a "a dialect op lands with the transform that
 needs it" rule, plus the house 350-line budget):
 
-| PR | branch | what |
-| --- | --- | --- |
+| PR                                                       | branch                         | what                                                                                |
+| -------------------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------- |
 | [#4633](https://github.com/ubugeeei-prod/vize/pull/4633) | `feat/p2-9-legacy-dialect-ops` | `BindingOp::VueSync` / `VueSlotScope`, `ExprRef::Filter`, folio + verifier + canary |
-| [#4634](https://github.com/ubugeeei-prod/vize/pull/4634) | `feat/p2-9-legacy-lowering` | `LegacyCaps` + S1→S2 admission (`:foo.sync`, `slot-scope`/`scope`, pipe filters) |
-| [#4637](https://github.com/ubugeeei-prod/vize/pull/4637) | `feat/p2-9-legacy-pass` | `legacy-sugar` pass: expand / convert / wrap, Vue 3 table untouched |
+| [#4634](https://github.com/ubugeeei-prod/vize/pull/4634) | `feat/p2-9-legacy-lowering`    | `LegacyCaps` + S1→S2 admission (`:foo.sync`, `slot-scope`/`scope`, pipe filters)    |
+| [#4637](https://github.com/ubugeeei-prod/vize/pull/4637) | `feat/p2-9-legacy-pass`        | `legacy-sugar` pass: expand / convert / wrap, Vue 3 table untouched                 |
 
 ### No `_legacy` cargo feature (the plan line's zero-cost reading)
 

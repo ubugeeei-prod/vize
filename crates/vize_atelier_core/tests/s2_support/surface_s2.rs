@@ -9,7 +9,7 @@ use vize_davinci::id::NodeId;
 use vize_disegno::folio::{FolioAttribute, FolioBinding, FolioExpr, FolioName, FolioOp};
 
 use super::s2_lane::{S2Projection, Tables};
-use super::surface::{is_simple_ident, PBind, PDirective, PModel, PName, PSurface};
+use super::surface::{PBind, PDirective, PModel, PName, PSurface, is_simple_ident};
 
 fn expr_text(expr: &FolioExpr) -> String {
     match expr {
