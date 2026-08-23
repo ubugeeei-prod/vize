@@ -1,7 +1,7 @@
 //! P2-11 installment 5 witness: static native HTML, interpolations,
 //! mixed text siblings, static-name binds, static-name events including
-//! event/key/option modifiers, and native v-if, compared **byte-for-byte**
-//! including helper usage.
+//! event/key/option modifiers, native v-if, and native v-for, compared
+//! **byte-for-byte** including helper usage.
 //!
 //! `vize_atelier_dom` is published; the Davinci crates are not. The
 //! comparator therefore rides stripped-on-publish dev-deps (the same
@@ -102,6 +102,19 @@ const BATTERY: &[(&str, &str)] = &[
     (
         "v_if_elseif",
         r#"<div v-if="a">1</div><div v-else-if="b">2</div><div v-else>3</div>"#,
+    ),
+    (
+        "keyed_v_for",
+        r#"<div v-for="item in list" :key="item">{{ item }}</div>"#,
+    ),
+    (
+        "unkeyed_v_for",
+        r#"<div v-for="item in list">{{ item }}</div>"#,
+    ),
+    ("numeric_v_for", r#"<div v-for="n in 3">{{ n }}</div>"#),
+    (
+        "v_for_index",
+        r#"<div v-for="(item, i) in list" :key="i">{{ item }}</div>"#,
     ),
 ];
 
