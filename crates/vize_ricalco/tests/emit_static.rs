@@ -1,6 +1,6 @@
-//! P2-11 installment 4: static native HTML, interpolations, and
-//! mixed element+text siblings emit the same render function the
-//! shipped DOM lane does.
+//! P2-11 installment 5: static native HTML, interpolations, mixed
+//! text siblings, and static-name binds emit the same render function
+//! the shipped DOM lane does.
 
 #![allow(
     clippy::disallowed_macros,
@@ -147,8 +147,36 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn a_bound_attr_is_unsupported_this_installment() {
-    with_transformed(r#"<div :class="x"></div>"#, |lowered, _, facts, _| {
+fn a_bound_class_matches_the_shipped_snapshot() {
+    assert_eq!(
+        assembled(r#"<div :class="cls"></div>"#),
+        "\
+const { normalizeClass: _normalizeClass, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    class: _normalizeClass(cls)
+  }, null, 2 /* CLASS */))
+}"
+    );
+}
+
+#[test]
+fn a_bound_id_matches_the_shipped_snapshot() {
+    assert_eq!(
+        assembled(r#"<div :id="foo"></div>"#),
+        "\
+const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", { id: foo }, null, 8 /* PROPS */, [\"id\"]))
+}"
+    );
+}
+
+#[test]
+fn a_vbind_object_spread_is_unsupported_this_installment() {
+    with_transformed(r#"<div v-bind="attrs"></div>"#, |lowered, _, facts, _| {
         assert_eq!(emit_dom(lowered, facts), Err(EmitError::Unsupported));
     });
 }
