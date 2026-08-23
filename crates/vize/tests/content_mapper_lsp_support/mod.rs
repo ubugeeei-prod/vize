@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
-use std::path::Path;
-use std::str::FromStr;
+use std::{path::Path, str::FromStr};
 
 use corsa_lsp::{LspClient, LspOverlay};
 use lsp_types::{FileChangeType, FileEvent, Uri};
@@ -9,7 +8,6 @@ use serde_json::{Value, json};
 use vize_carton::String as CompactString;
 
 mod leak_assertions;
-#[allow(dead_code)]
 mod navigation;
 pub mod raw_requests;
 mod responder;
