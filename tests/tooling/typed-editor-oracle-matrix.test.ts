@@ -13,8 +13,24 @@ type MatrixRow = {
 };
 
 type Evidence =
+  | { kind: "ci"; label: string; path: string; requiredText: string[] }
   | { kind: "file"; path: string; requiredText: string[] }
   | { kind: "pending-pr"; pr: number; reason: string };
+
+const rowsRequiringExecutedEvidence = new Set([
+  "lsp-imported-component-contract-hover",
+  "lsp-component-v-model-navigation",
+  "non-vscode-host-reactive-hover-surface",
+]);
+
+const toolingTestCiEvidence: Evidence = {
+  kind: "ci",
+  label: "test-scripts runs tests/tooling with VIZE_TEST_REQUIRE_TSGO=1",
+  path: "tools/vite-plus/tasks/test-benchmark.ts",
+  requiredText: [
+    "VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 tests/tooling/*.test.ts",
+  ],
+};
 
 const matrix: MatrixRow[] = [
   {
@@ -130,6 +146,7 @@ const matrix: MatrixRow[] = [
           "__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor",
         ],
       },
+      toolingTestCiEvidence,
     ],
     followUp: "#4591",
     id: "lsp-imported-component-contract-hover",
@@ -145,6 +162,7 @@ const matrix: MatrixRow[] = [
           "definition must jump to the child defineModel declaration",
         ],
       },
+      toolingTestCiEvidence,
     ],
     followUp: "#4592",
     id: "lsp-component-v-model-navigation",
@@ -170,6 +188,12 @@ const matrix: MatrixRow[] = [
           "const doubled: ComputedRef<number>",
           "const button: HTMLButtonElement | null",
         ],
+      },
+      {
+        kind: "ci",
+        label: "editor-host-smoke runs the packaged Neovim real-server scenario",
+        path: ".github/actions/vscode-host-smoke/action.yml",
+        requiredText: ["vp run --workspace-root test:nvim-extension:real-server"],
       },
     ],
     followUp: "#4589",
@@ -202,6 +226,12 @@ test("typed editor oracle matrix covers or explicitly tracks every P0 slice", ()
         row.evidence.some((entry) => entry.kind === "file"),
         `${row.id} needs file proof`,
       );
+      if (rowsRequiringExecutedEvidence.has(row.id)) {
+        assert.ok(
+          row.evidence.some((entry) => entry.kind === "ci"),
+          `${row.id} needs mandatory CI execution proof`,
+        );
+      }
     } else {
       assert.ok(
         row.evidence.every((entry) => entry.kind === "pending-pr" && entry.reason.length > 0),
@@ -211,10 +241,10 @@ test("typed editor oracle matrix covers or explicitly tracks every P0 slice", ()
   }
 });
 
-test("covered typed editor oracle matrix rows point at live gate files", () => {
+test("covered typed editor oracle matrix rows point at live gate files and CI gates", () => {
   for (const row of matrix) {
     for (const evidence of row.evidence) {
-      if (evidence.kind !== "file") continue;
+      if (evidence.kind !== "file" && evidence.kind !== "ci") continue;
       const source = fs.readFileSync(path.join(root, evidence.path), "utf8");
       for (const text of evidence.requiredText) {
         assert.match(source, new RegExp(escapeRegExp(text)), `${row.id} missing ${text}`);
@@ -240,8 +270,15 @@ test("typed editor oracle matrix document mirrors the executable ledger", () => 
       }
     } else {
       for (const evidence of row.evidence) {
-        if (evidence.kind === "file") {
+        if (evidence.kind === "file" || evidence.kind === "ci") {
           assert.match(doc, new RegExp(escapeRegExp(evidence.path)), `${row.id} missing file`);
+          if (evidence.kind === "ci") {
+            assert.match(
+              doc,
+              new RegExp(escapeRegExp(evidence.label)),
+              `${row.id} missing CI evidence label`,
+            );
+          }
         }
       }
     }
