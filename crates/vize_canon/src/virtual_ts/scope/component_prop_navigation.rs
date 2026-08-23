@@ -1,7 +1,7 @@
 use std::ops::Range;
 
 use vize_carton::{String, append, cstr};
-use vize_croquis::croquis::{ComponentUsage, PassedProp};
+use vize_croquis::croquis::{ComponentUsage, PassedProp, SlotUsage};
 
 use crate::virtual_ts::component_reference::component_binding_reference;
 use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier_fragment};
@@ -50,6 +50,7 @@ pub(super) fn emit_references(
             usage,
             &tag_gen_range,
         );
+        emit_slot_references(ts, mappings, ctx, idx, usage);
     }
 }
 
@@ -136,4 +137,80 @@ fn prop_navigation_source_range(
     }
 
     None
+}
+
+fn emit_slot_references(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    ctx: &ComponentPropsContext<'_>,
+    idx: usize,
+    usage: &ComponentUsage,
+) {
+    let slots_ref = cstr!("__vize_slots_nav_{idx}");
+    let mut emitted_slots_ref = false;
+    for slot in &usage.slots {
+        if slot.name_is_dynamic {
+            continue;
+        }
+        let Some(source_range) = slot_navigation_source_range(ctx.template_source, slot) else {
+            continue;
+        };
+
+        if !emitted_slots_ref {
+            let component_ref = component_binding_reference(
+                ctx.summary,
+                ctx.options,
+                ctx.syntactic_type_only_imported_names,
+                usage.name.as_str(),
+            );
+            append!(
+                *ts,
+                "  const {slots_ref} = undefined as unknown as __VizeStructuralSlots<typeof {component_ref}>;\n"
+            );
+            emitted_slots_ref = true;
+        }
+
+        append!(*ts, "  void {slots_ref}");
+        let slot_gen_range = if is_ts_identifier(slot.name.as_str()) {
+            ts.push('.');
+            let slot_gen_start = ts.len();
+            ts.push_str(slot.name.as_str());
+            slot_gen_start..ts.len()
+        } else {
+            ts.push('[');
+            let range = push_ts_single_quoted_literal(ts, slot.name.as_str());
+            ts.push(']');
+            range
+        };
+        ts.push_str(";\n");
+        mappings.push(VizeMapping {
+            gen_range: slot_gen_range,
+            src_range: (ctx.template_offset as usize + source_range.start)
+                ..(ctx.template_offset as usize + source_range.end),
+            sub_spans: Vec::new(),
+        });
+    }
+}
+
+fn slot_navigation_source_range(
+    template_source: Option<&str>,
+    slot: &SlotUsage,
+) -> Option<Range<usize>> {
+    if slot.name_is_dynamic {
+        return None;
+    }
+    let name = slot.name.as_str();
+    if name.is_empty() {
+        return None;
+    }
+
+    let start = slot.start as usize;
+    let end = slot.end as usize;
+    let source = template_source?;
+    let raw = source.get(start..end)?;
+    if !(raw.contains('#') || raw.contains("v-slot")) {
+        return None;
+    }
+    raw.find(name)
+        .map(|relative_start| start + relative_start..start + relative_start + name.len())
 }

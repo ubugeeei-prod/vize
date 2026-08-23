@@ -11,6 +11,7 @@ mod inline_art;
 mod module_specifier;
 pub(crate) mod script;
 mod service;
+mod slot;
 mod template;
 #[cfg(test)]
 mod tests;

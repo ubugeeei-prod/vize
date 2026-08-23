@@ -155,6 +155,27 @@ test("hover and definition answer authored template anchors with backend type te
     assert.match(childTagText, /@save="save"/);
     assert.match(childTagText, /#default/);
     await assertDefinitionUri(session, uri, childTag.start, childUri, "Child component tag");
+
+    const slotName = rangeFor("default", source.indexOf("#default"));
+    const childDefaultSlot = rangeForIn(childSource, "default", childSource.indexOf("defineSlots"));
+    const slotNameHover = await hoverAt(session, uri, slotName.start);
+    assert.deepEqual(
+      slotNameHover?.range,
+      slotName,
+      "component slot hover must select the authored slot name",
+    );
+    const slotNameText = hoverToText(slotNameHover);
+    assert.match(slotNameText, /default/);
+    assert.match(slotNameText, /value: string/);
+    assertNoHeuristic(slotNameText);
+    await assertDefinitionUriAndRange(
+      session,
+      uri,
+      slotName.start,
+      childUri,
+      childDefaultSlot,
+      "Child default slot",
+    );
   } finally {
     if (initialized) {
       await session.shutdown();
@@ -234,12 +255,42 @@ async function assertDefinitionUri(
 }
 
 function rangeFor(symbol: string, nearOffset: number): Range {
-  const startOffset = source.indexOf(symbol, nearOffset);
+  return rangeForIn(source, symbol, nearOffset);
+}
+
+function rangeForIn(document: string, symbol: string, nearOffset: number): Range {
+  const startOffset = document.indexOf(symbol, nearOffset);
   assert.ok(startOffset >= 0, `missing ${symbol} near ${nearOffset}`);
   return {
-    start: offsetToPosition(source, startOffset),
-    end: offsetToPosition(source, startOffset + symbol.length),
+    start: offsetToPosition(document, startOffset),
+    end: offsetToPosition(document, startOffset + symbol.length),
   };
+}
+
+async function assertDefinitionUriAndRange(
+  session: LspSession,
+  uri: string,
+  position: Position,
+  expectedUri: string,
+  expectedRange: Range,
+  label: string,
+): Promise<void> {
+  const response = await session.request(
+    "textDocument/definition",
+    {
+      textDocument: { uri },
+      position,
+    },
+    120_000,
+  );
+  assert.deepEqual(
+    firstLocation(response as Parameters<typeof firstLocation>[0]),
+    {
+      range: expectedRange,
+      uri: expectedUri,
+    },
+    `${label} definition must jump to the authored slot declaration`,
+  );
 }
 
 function assertNoHeuristic(hoverText: string): void {

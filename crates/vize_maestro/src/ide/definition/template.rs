@@ -22,6 +22,10 @@ pub(crate) fn definition_in_template(ctx: &IdeContext) -> Option<GotoDefinitionR
         return Some(def);
     }
 
+    if let Some(def) = super::slot::component_slot_definition(ctx) {
+        return Some(def);
+    }
+
     let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
 
     if word.is_empty() {
@@ -575,7 +579,7 @@ fn component_file_location(ctx: &IdeContext<'_>, path: &std::path::Path) -> Opti
     })
 }
 
-fn art_component_path(ctx: &IdeContext<'_>, component_name: &str) -> Option<String> {
+pub(super) fn art_component_path(ctx: &IdeContext<'_>, component_name: &str) -> Option<String> {
     if !ctx.uri.path().ends_with(".art.vue") {
         return None;
     }
