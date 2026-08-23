@@ -21,12 +21,36 @@ use scan::{
 /// at depth 32 (#2944) cannot be caught, so every entry point shares this guard.
 pub const MAX_EXPRESSION_NESTING_DEPTH: usize = 31;
 
+/// Per-operator branch depth counted by the cumulative speculative type-angle
+/// budget.
+///
+/// Logical/nullish operators stop one parser branch, so low-depth comparison
+/// chains (`a < b && c < d`) must stay accepted. OXC still retains allocations
+/// from failed medium-depth type-argument attempts across those branches,
+/// however; enough of them OOM even when no single branch crosses
+/// [`MAX_EXPRESSION_NESTING_DEPTH`] (#4618). Counting only latched branches at
+/// half the hard limit keeps ordinary comparisons out of the cumulative budget.
+const CUMULATIVE_SPECULATIVE_TYPE_ANGLE_MIN_DEPTH: usize = MAX_EXPRESSION_NESTING_DEPTH / 2;
+
+struct ExpressionNestingAnalysis {
+    max_depth: usize,
+    delimiters_balanced: bool,
+    cumulative_speculative_type_angle_depth: usize,
+}
+
+fn flush_speculative_type_angle_segment(cumulative: &mut usize, segment_depth: &mut usize) {
+    if *segment_depth >= CUMULATIVE_SPECULATIVE_TYPE_ANGLE_MIN_DEPTH {
+        *cumulative += *segment_depth;
+    }
+    *segment_depth = 0;
+}
+
 /// Returns the maximum parser-recursion depth in `content`.
 ///
 /// Brackets and unambiguous TypeScript angles are paired, while decorator markers
 /// accumulate for OXC's recursive parser. Strings, template text, comments, and
 /// regexes are skipped; `${...}` template interpolations are scanned.
-fn analyze_expression_nesting(content: &str) -> (usize, bool) {
+fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
     let bytes = content.as_bytes();
     let (mut angle_depth, mut decorator_depth) = (0usize, 0usize);
     let mut max_depth = 0usize;
@@ -53,6 +77,8 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
     // angles, drops a 10.7KB input from 1.47s to ~25us.
     let mut speculative_type_angle_opens = 0usize;
     let mut malformed_type_escape_opens = 0usize;
+    let mut segment_speculative_type_angle_depth = 0usize;
+    let mut cumulative_speculative_type_angle_depth = 0usize;
     let mut track_type_angles = false;
     let mut i = 0;
 
@@ -214,6 +240,10 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
             // `&`/`|`/`?` (bitwise, union/intersection type, optional/ternary)
             // stays inside the speculation and is handled below.
             b'&' | b'|' if bytes.get(i + 1) == Some(&b) => {
+                flush_speculative_type_angle_segment(
+                    &mut cumulative_speculative_type_angle_depth,
+                    &mut segment_speculative_type_angle_depth,
+                );
                 speculative_type_angle_opens = 0;
                 malformed_type_escape_opens = 0;
                 track_type_angles = false;
@@ -222,6 +252,10 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
                 can_start_regex = true;
             }
             b'?' if bytes.get(i + 1) == Some(&b'?') => {
+                flush_speculative_type_angle_segment(
+                    &mut cumulative_speculative_type_angle_depth,
+                    &mut segment_speculative_type_angle_depth,
+                );
                 speculative_type_angle_opens = 0;
                 malformed_type_escape_opens = 0;
                 track_type_angles = false;
@@ -268,31 +302,45 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
         } else {
             0
         };
+        if track_type_angles {
+            segment_speculative_type_angle_depth =
+                segment_speculative_type_angle_depth.max(angle_depth + malformed_escape_depth);
+        }
         max_depth = max_depth.max(
             delimiters.len() + effective_angle_depth + malformed_escape_depth + decorator_depth,
         );
         i += 1;
     }
 
-    (
+    flush_speculative_type_angle_segment(
+        &mut cumulative_speculative_type_angle_depth,
+        &mut segment_speculative_type_angle_depth,
+    );
+
+    ExpressionNestingAnalysis {
         max_depth,
-        delimiters_balanced && delimiters.is_empty() && template_interpolation_depths.is_empty(),
-    )
+        delimiters_balanced: delimiters_balanced
+            && delimiters.is_empty()
+            && template_interpolation_depths.is_empty(),
+        cumulative_speculative_type_angle_depth,
+    }
 }
 
 pub fn expression_nesting_depth(content: &str) -> usize {
-    analyze_expression_nesting(content).0
+    analyze_expression_nesting(content).max_depth
 }
 
 /// Returns whether parentheses, brackets, and braces are correctly paired.
 pub fn expression_has_balanced_delimiters(content: &str) -> bool {
-    analyze_expression_nesting(content).1
+    analyze_expression_nesting(content).delimiters_balanced
 }
 
 /// Returns whether an expression can be handed to OXC's recursive parser safely.
 pub fn expression_is_safe_to_parse(content: &str) -> bool {
-    let (depth, balanced) = analyze_expression_nesting(content);
-    balanced && depth <= MAX_EXPRESSION_NESTING_DEPTH
+    let analysis = analyze_expression_nesting(content);
+    analysis.delimiters_balanced
+        && analysis.max_depth <= MAX_EXPRESSION_NESTING_DEPTH
+        && analysis.cumulative_speculative_type_angle_depth <= MAX_EXPRESSION_NESTING_DEPTH
 }
 
 /// Returns true if `content` exceeds [`MAX_EXPRESSION_NESTING_DEPTH`].
