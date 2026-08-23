@@ -21,7 +21,8 @@ export function packageNameFromExtendsSpecifier(specifier) {
     if (slash < 0) return null;
     const rest = specifier.slice(slash + 1);
     const second = rest.indexOf("/");
-    const name = second < 0 ? specifier : `${specifier.slice(0, slash + 1)}${rest.slice(0, second)}`;
+    const name =
+      second < 0 ? specifier : `${specifier.slice(0, slash + 1)}${rest.slice(0, second)}`;
     return packageNamePattern.test(name) ? name : null;
   }
   const name = specifier.split("/")[0];

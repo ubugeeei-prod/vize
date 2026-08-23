@@ -46,10 +46,7 @@ function writeStoreCopy(fixtureRoot: string) {
 
 test("package-name extends specifiers resolve to the package, not a subpath", () => {
   assert.equal(packageNameFromExtendsSpecifier("@vue/tsconfig"), "@vue/tsconfig");
-  assert.equal(
-    packageNameFromExtendsSpecifier("@vue/tsconfig/tsconfig.dom.json"),
-    "@vue/tsconfig",
-  );
+  assert.equal(packageNameFromExtendsSpecifier("@vue/tsconfig/tsconfig.dom.json"), "@vue/tsconfig");
   assert.equal(packageNameFromExtendsSpecifier("nuxt"), "nuxt");
   assert.equal(packageNameFromExtendsSpecifier("nuxt/tsconfig"), "nuxt");
   assert.equal(packageNameFromExtendsSpecifier("./tsconfig.app.json"), null);
