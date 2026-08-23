@@ -48,12 +48,11 @@ pub struct DiagnosticService;
 impl DiagnosticService {
     /// Collect all diagnostics for a document.
     pub fn collect(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {
-        let Some(doc) = state.documents.get(uri) else {
+        let Some(content) = state.documents.text(uri) else {
             tracing::warn!("collect: document not found for {}", uri);
             return vec![];
         };
 
-        let content = doc.text();
         let mut diagnostics = Vec::new();
         let features = state.lsp_features();
 
@@ -218,11 +217,10 @@ impl DiagnosticService {
     /// returned set is byte-for-byte the lint/musea subset of `collect`'s
     /// output for every document shape (Art file, standalone HTML, SFC).
     pub fn collect_lint_only(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {
-        let Some(doc) = state.documents.get(uri) else {
+        let Some(content) = state.documents.text(uri) else {
             return vec![];
         };
 
-        let content = doc.text();
         let features = state.lsp_features();
         let mut diagnostics = Vec::new();
 

@@ -241,6 +241,20 @@ impl CorsaProjectClient {
         self.editor_lsp_documents_dirty = true;
         result
     }
+
+    /// Drop the editor session immediately after an external project-shape
+    /// change. Unlike [`Self::retire_editor_lsp`], this does not wait for a
+    /// protocol `shutdown` response from the stale process, so file-operation
+    /// notifications cannot hold the foreground LSP queue hostage.
+    pub(in crate::lsp_client) fn discard_editor_lsp(&mut self) -> Result<(), String> {
+        let result = match self.editor_lsp.as_mut() {
+            Some(session) => session.discard(),
+            None => Ok(()),
+        };
+        self.editor_lsp = None;
+        self.editor_lsp_documents_dirty = true;
+        result
+    }
 }
 
 fn document_maps_equal(lhs: &FxHashMap<String, String>, rhs: &FxHashMap<String, String>) -> bool {

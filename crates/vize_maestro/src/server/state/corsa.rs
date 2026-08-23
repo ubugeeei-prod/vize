@@ -42,8 +42,12 @@ impl ServerState {
         }
 
         // If already initialized successfully, return it
-        if let Some(bridge) = self.corsa_bridge.read().clone() {
-            return Some(bridge);
+        let existing_bridge = { self.corsa_bridge.read().clone() };
+        if let Some(bridge) = existing_bridge {
+            if self.flush_corsa_disk_state_if_dirty(&bridge).await {
+                return Some(bridge);
+            }
+            self.retire_corsa_bridge(&bridge);
         }
 
         // If initialization already failed, don't retry
@@ -54,8 +58,12 @@ impl ServerState {
         let _guard = self.corsa_init_lock.lock().await;
 
         // Another request may have completed initialization while we were waiting.
-        if let Some(bridge) = self.corsa_bridge.read().clone() {
-            return Some(bridge);
+        let existing_bridge = { self.corsa_bridge.read().clone() };
+        if let Some(bridge) = existing_bridge {
+            if self.flush_corsa_disk_state_if_dirty(&bridge).await {
+                return Some(bridge);
+            }
+            self.retire_corsa_bridge(&bridge);
         }
 
         if self.corsa_init_failed.load(Ordering::SeqCst) {
@@ -98,7 +106,12 @@ impl ServerState {
                 tracing::info!("corsa bridge initialized successfully");
                 let bridge = Arc::new(bridge);
                 *self.corsa_bridge.write() = Some(bridge.clone());
-                Some(bridge)
+                if self.flush_corsa_disk_state_if_dirty(&bridge).await {
+                    Some(bridge)
+                } else {
+                    self.retire_corsa_bridge(&bridge);
+                    None
+                }
             }
             Err(CorsaBridgeError::Timeout) => {
                 let reason = vize_carton::cstr!(
@@ -115,6 +128,32 @@ impl ServerState {
                 tracing::warn!("corsa bridge {}", reason);
                 self.record_corsa_init_failure(reason.as_str());
                 None
+            }
+        }
+    }
+
+    /// Mark the reusable editor-side project view dirty without touching the
+    /// backend from the file-operation notification itself.
+    ///
+    /// `workspace/didCreateFiles`, `didRenameFiles`, and watched declaration
+    /// changes run on the same foreground LSP queue as ordinary requests. A
+    /// direct Corsa call there can park `workspace/symbol` or completion behind
+    /// a backend timeout even though those requests do not need the
+    /// invalidation to answer. The next Corsa-using request flushes this bit
+    /// instead.
+    pub(crate) fn mark_corsa_disk_state_dirty(&self) {
+        let bridge = { self.corsa_bridge.read().clone() };
+        if let Some(bridge) = bridge {
+            bridge.mark_disk_project_state_dirty();
+        }
+    }
+
+    async fn flush_corsa_disk_state_if_dirty(&self, bridge: &Arc<CorsaBridge>) -> bool {
+        match bridge.flush_disk_project_state_if_dirty().await {
+            Ok(()) => true,
+            Err(error) => {
+                tracing::warn!("failed to invalidate cached Corsa disk project state: {error}");
+                false
             }
         }
     }

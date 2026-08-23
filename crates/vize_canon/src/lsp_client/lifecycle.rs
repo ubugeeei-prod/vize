@@ -262,7 +262,7 @@ impl CorsaProjectClient {
     /// freshly spawned session to see the current workspace.
     pub fn invalidate_disk_project_state(&mut self) -> Result<(), String> {
         self.clear_diagnostics_cache();
-        self.retire_editor_lsp()
+        self.discard_editor_lsp()
     }
 
     pub(crate) fn diagnostics_cache_len(&self) -> usize {

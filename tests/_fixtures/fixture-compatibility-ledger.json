@@ -766,7 +766,8 @@
         "fixturePaths": [
           "tests/_fixtures/_git/reka-ui",
           "tests/_fixtures/_git/elk",
-          "tests/_fixtures/_git/misskey"
+          "tests/_fixtures/_git/misskey",
+          "tests/_fixtures/_git/create-vue"
         ]
       },
       "evidence": {

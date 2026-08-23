@@ -100,7 +100,7 @@ pub(super) async fn did_change_watched_files(
             return;
         }
         if changes_invalidate_disk_project_state(&server.state, &changes) {
-            invalidate_corsa_disk_state(&server.state).await;
+            invalidate_corsa_disk_state(&server.state);
         }
         // Any watched change can affect an open importer; declaration changes
         // additionally invalidate the discoverable global-component cache.
@@ -173,7 +173,7 @@ pub(super) async fn invalidate_changed_document_disk_project_state(
             typ: FileChangeType::CHANGED,
         }],
     ) {
-        invalidate_corsa_disk_state(&server.state).await;
+        invalidate_corsa_disk_state(&server.state);
     }
 }
 
@@ -185,7 +185,7 @@ pub(super) async fn did_create_files(server: &MaestroServer, params: &CreateFile
             params.files.iter().map(|file| file.uri.as_str()),
         );
         record_created_files(&server.state, params);
-        invalidate_corsa_disk_state(&server.state).await;
+        invalidate_corsa_disk_state(&server.state);
         publish_versioned_dependents(server, dependents).await;
     }
     #[cfg(not(feature = "native"))]
@@ -221,7 +221,7 @@ pub(super) async fn did_delete_files(server: &MaestroServer, params: &DeleteFile
         );
         record_deleted_files(&server.state, params);
         forget_corsa_vue_files(&server.state, &deleted_paths).await;
-        invalidate_corsa_disk_state(&server.state).await;
+        invalidate_corsa_disk_state(&server.state);
         publish_versioned_dependents(server, dependents).await;
     }
     #[cfg(not(feature = "native"))]
@@ -284,7 +284,7 @@ pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFile
         }
         server.state.invalidate_batch_cache();
         forget_corsa_vue_files(&server.state, &renamed_paths).await;
-        invalidate_corsa_disk_state(&server.state).await;
+        invalidate_corsa_disk_state(&server.state);
         publish_versioned_dependents(server, dependents).await;
     }
     if !server.state.lsp_features().file_rename {

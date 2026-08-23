@@ -1,5 +1,7 @@
 //! Open-document lifecycle and diagnostic requests.
 
+use std::sync::atomic::Ordering;
+
 use vize_carton::{String, cstr};
 
 use super::CorsaBridge;
@@ -110,6 +112,20 @@ impl CorsaBridge {
                 .map_err(CorsaBridgeError::CommunicationError)
         })
         .await
+    }
+
+    /// Record an external disk project-shape change without touching the
+    /// backend on the foreground LSP notification path.
+    pub fn mark_disk_project_state_dirty(&self) {
+        self.disk_project_state_dirty.store(true, Ordering::SeqCst);
+    }
+
+    /// Flush a deferred disk-state invalidation just before a Corsa request.
+    pub async fn flush_disk_project_state_if_dirty(&self) -> Result<(), CorsaBridgeError> {
+        if !self.disk_project_state_dirty.swap(false, Ordering::SeqCst) {
+            return Ok(());
+        }
+        self.invalidate_disk_project_state().await
     }
 
     pub async fn get_diagnostics(&self, uri: &str) -> Result<Vec<LspDiagnostic>, CorsaBridgeError> {

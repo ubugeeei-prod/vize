@@ -22,18 +22,11 @@ impl WorkspaceSymbolsService {
         let mut symbols = Vec::new();
         let query_lower = query.to_lowercase();
 
-        // Search in all open documents
-        for entry in state.documents.iter() {
-            let uri = entry.key();
-            let doc = entry.value();
-            let content = doc.text();
-
-            // Only process .vue files
-            if !uri.path().ends_with(".vue") {
-                continue;
-            }
-
-            Self::collect_symbols_from_document(uri, &content, &query_lower, &mut symbols);
+        // Search in all open documents. Snapshot the text before parsing so a
+        // workspace-wide request never keeps a DashMap document guard alive
+        // while doing SFC work (#3952).
+        for (uri, content) in state.documents.vue_texts() {
+            Self::collect_symbols_from_document(&uri, &content, &query_lower, &mut symbols);
         }
 
         #[cfg(feature = "native")]

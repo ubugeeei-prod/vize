@@ -27,6 +27,8 @@ pub struct CorsaBridge {
     worker: BoundedWorker<Option<CorsaProjectClient>>,
     /// Whether the bridge is initialized
     initialized: AtomicBool,
+    /// Whether the reusable editor LSP session may have read stale disk state.
+    disk_project_state_dirty: AtomicBool,
     /// Profiler for performance tracking
     profiler: Profiler,
     /// Cache statistics
@@ -72,6 +74,7 @@ impl CorsaBridge {
             ),
             config,
             initialized: AtomicBool::new(false),
+            disk_project_state_dirty: AtomicBool::new(false),
             profiler,
             cache_stats: CacheStats::new(),
             package_route_resolver,

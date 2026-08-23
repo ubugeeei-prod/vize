@@ -51,24 +51,20 @@ pub(super) fn affected_vue_source_paths<'a>(
     sources
 }
 
-/// Drop the on-disk project view the reusable Corsa editor session cached.
+/// Mark the on-disk project view cached by the reusable Corsa editor session stale.
 ///
 /// The session keeps one long-lived type-checker process, so files it read from
 /// disk while building its program stay pinned until the session is retired.
 /// Declaration edits and file create, delete, or rename events change that view
 /// without touching any synchronized virtual document, so the change is only
-/// visible to the next request once the cached view is dropped.
-pub(super) async fn invalidate_corsa_disk_state(state: &ServerState) {
-    if !state.has_corsa_bridge() {
-        return;
-    }
-    let Some(bridge) = state.get_corsa_bridge().await else {
-        return;
-    };
-    if let Err(error) = bridge.invalidate_disk_project_state().await {
-        tracing::warn!("failed to invalidate cached Corsa disk project state: {error}");
-        state.retire_corsa_bridge(&bridge);
-    }
+/// visible to the next Corsa-using request once the cached view is dropped.
+///
+/// The file-operation notification itself must stay non-blocking for
+/// Corsa-free editor requests. In particular, the authored fixture asks
+/// `workspace/symbol` immediately after `workspace/didCreateFiles`; that
+/// request only needs the tracked file URI, not a TypeScript backend flush.
+pub(super) fn invalidate_corsa_disk_state(state: &ServerState) {
+    state.mark_corsa_disk_state_dirty();
 }
 
 pub(super) async fn forget_corsa_vue_files(state: &ServerState, deleted: &[PathBuf]) {

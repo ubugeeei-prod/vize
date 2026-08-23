@@ -283,6 +283,26 @@ impl EditorLspSession {
                 "Failed to gracefully close editor LSP process: {error}"
             ));
         }
+        self.finish_close(first_error)
+    }
+
+    /// Tear down the editor process without waiting for a protocol shutdown
+    /// response. Workspace file events use this path when the reusable editor
+    /// project view has to be discarded before the next semantic request; a
+    /// stuck old server must not block the foreground LSP notification queue.
+    fn discard(&mut self) -> Result<(), String> {
+        if self.closed {
+            return Ok(());
+        }
+
+        let mut first_error = None;
+        if let Err(error) = block_on(self.client.close()) {
+            first_error = Some(cstr!("Failed to close editor LSP process: {error}"));
+        }
+        self.finish_close(first_error)
+    }
+
+    fn finish_close(&mut self, mut first_error: Option<String>) -> Result<(), String> {
         self.stop.store(true, Ordering::Relaxed);
         if let Some(responder) = self.responder.take()
             && responder.join().is_err()

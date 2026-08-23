@@ -45,11 +45,9 @@ impl TypeService {
         uri: &Url,
         lsp_options: &LspTypeCheckOptions,
     ) -> Vec<Diagnostic> {
-        let Some(doc) = state.documents.get(uri) else {
+        let Some(content) = state.documents.text(uri) else {
             return vec![];
         };
-
-        let content = doc.text();
 
         // Use vize_canon's strict type checker
         let options = TypeCheckOptions {
@@ -178,11 +176,9 @@ impl TypeService {
     /// This is kept for backwards compatibility and can be removed later.
     #[deprecated(note = "Use collect_diagnostics which uses the stricter vize_canon type checker")]
     pub fn collect_diagnostics_legacy(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {
-        let Some(doc) = state.documents.get(uri) else {
+        let Some(content) = state.documents.text(uri) else {
             return vec![];
         };
-
-        let content = doc.text();
 
         let options = vize_atelier_sfc::SfcParseOptions {
             filename: uri.path().to_string().into(),
