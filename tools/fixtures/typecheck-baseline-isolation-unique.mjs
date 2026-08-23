@@ -230,3 +230,10 @@ export function isolateUniqueUiLibraryPackages(fixtureRoot) {
 export function isolateUniqueVueFormPackages(fixtureRoot) {
   return isolateUniqueNamedLocalTypePackages(fixtureRoot, ["@formkit/vue", "vee-validate"]);
 }
+
+export function isolateUniqueVueQueryPackages(fixtureRoot) {
+  return isolateUniqueNamedLocalTypePackages(fixtureRoot, [
+    "@tanstack/vue-query",
+    "@vue/apollo-composable",
+  ]);
+}

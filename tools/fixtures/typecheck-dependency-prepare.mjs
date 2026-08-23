@@ -12,6 +12,7 @@ import {
   isolateUniqueUiLibraryPackages,
   isolateUniqueVueFormPackages,
   isolateUniqueVueI18nPackages,
+  isolateUniqueVueQueryPackages,
   isolateUniqueVueRuntimePackages,
   isolateUniqueVueUsePackages,
 } from "./typecheck-baseline-isolation-unique.mjs";
@@ -131,10 +132,9 @@ function prepareProjectDependencies({ args, commitSha, project }) {
 
 /**
  * Link packages the fixture config maps but its package manager did not hoist,
- * so a `/// <reference types="..." />` cannot be answered by Vize's
- * `node_modules` further up the tree (run 31979524200). When Vize's
- * `--tsconfig` and vue-tsc's baseline differ (Nuxt Volt), both are walked and
- * overlaid. Reported on stdout; `typecheck-baseline-ambient.mjs` proves it.
+ * so `/// <reference types />` cannot climb into Vize's `node_modules`
+ * (run 31979524200). Differing Vize `--tsconfig` and vue-tsc baselines are
+ * both walked and overlaid. Proven by `typecheck-baseline-ambient.mjs`.
  */
 export function isolationTsconfigPaths(project) {
   const paths = [];
@@ -167,6 +167,7 @@ function isolateFixture(project, fixtureRoot) {
     isolateUniqueVueUsePackages,
     isolateUniqueUiLibraryPackages,
     isolateUniqueVueFormPackages,
+    isolateUniqueVueQueryPackages,
   ]) {
     for (const entry of isolate(fixtureRoot)) {
       if (seen.has(entry.name)) continue;
