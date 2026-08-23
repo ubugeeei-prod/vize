@@ -2,7 +2,7 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{String, ToCompactString, ensure_sufficient_stack};
+use vize_carton::{String, ensure_sufficient_stack};
 use vize_disegno::op::{Attribute, ElementOp, Namespace, Op, Region, TextOp};
 
 use super::EmitCx;
@@ -12,7 +12,7 @@ use super::children::{
     children_need_text_flag, emit_create_text_vnode, emit_interpolation, emit_text_like,
 };
 use super::js::{escape_js_string, is_valid_js_identifier};
-use super::props::{admit_bindings, bind_patch, emit_bind_props, patch_flag_comment};
+use super::props::{admit_bindings, bind_patch, emit_bind_props, emit_patch_flag};
 
 pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), EmitError> {
     admit_unique_root(root)?;
@@ -108,11 +108,7 @@ fn emit_call(cx: &mut EmitCx<'_>, element: &ElementOp<'_>, block: bool) -> Resul
         cx.buf.push(", null");
     }
     if emit_flag {
-        cx.buf.push(", ");
-        cx.buf.push(flag.to_compact_string().as_str());
-        cx.buf.push(" /* ");
-        cx.buf.push(patch_flag_comment(flag));
-        cx.buf.push(" */");
+        emit_patch_flag(cx, flag);
     }
     if !patch.dynamic_props.is_empty() {
         cx.buf.push(", [");
@@ -121,7 +117,7 @@ fn emit_call(cx: &mut EmitCx<'_>, element: &ElementOp<'_>, block: bool) -> Resul
                 cx.buf.push(", ");
             }
             cx.buf.push("\"");
-            cx.buf.push(name);
+            cx.buf.push(name.as_str());
             cx.buf.push("\"");
         }
         cx.buf.push("]");
