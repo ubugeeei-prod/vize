@@ -170,7 +170,10 @@ impl Parser {
                 Some(Frame::Component(component, _)) => {
                     component.bindings.push(FolioBinding::Model(model));
                 }
-                _ => unreachable!("model frames only open under an element"),
+                Some(Frame::Slot(slot, _)) => {
+                    slot.bindings.push(FolioBinding::Model(model));
+                }
+                _ => unreachable!("model frames only open under an element-like owner"),
             },
         }
     }
