@@ -25,8 +25,9 @@ import { readDeclaredPackagePaths } from "./typecheck-baseline-isolation.mjs";
  * Declared names come from the same `extends` / `references` walk isolation
  * uses, so a check tsconfig that only extends the generated app config still
  * sees the outside mapping (reka-ui's `tsconfig.check.json`). Package-name
- * `extends` specifiers are included as ancestor targets so this can link the
- * fixture's own `@vue/tsconfig` (or `nuxt`) before TypeScript climbs into Vize.
+ * `extends` specifiers and `compilerOptions.types` entries are included as
+ * ancestor targets so this can link the fixture's own `@vue/tsconfig`, `vite`,
+ * or `@types/node` before TypeScript climbs into Vize.
  */
 
 export function isolateUniqueLocalTypePackages(fixtureRoot, sourceConfigPath) {
