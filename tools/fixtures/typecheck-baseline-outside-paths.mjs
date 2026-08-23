@@ -39,14 +39,9 @@ import { loadTsconfigExtendsChain } from "./typecheck-baseline-extends-chain.mjs
  * from that directory; a rewrite then pins overlay `baseUrl` to `"."`.
  */
 
-const packageNamePattern =
-  /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/u;
+const packageNamePattern = /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/u;
 
-export function rewriteOutsidePackagePaths(
-  fixtureRoot,
-  sourceConfigPath,
-  configDir,
-) {
+export function rewriteOutsidePackagePaths(fixtureRoot, sourceConfigPath, configDir) {
   const root = resolve(fixtureRoot);
   const declared = winningPaths(sourceConfigPath, root);
   if (declared == null) return null;
@@ -55,16 +50,9 @@ export function rewriteOutsidePackagePaths(
   let changed = false;
   for (const [name, targets] of Object.entries(declared.paths)) {
     if (!Array.isArray(targets)) continue;
-    rewritten[name] = retargetPathMapping(
-      root,
-      mapping,
-      configDir,
-      name,
-      targets,
-      () => {
-        changed = true;
-      },
-    );
+    rewritten[name] = retargetPathMapping(root, mapping, configDir, name, targets, () => {
+      changed = true;
+    });
   }
   return changed ? rewritten : null;
 }
@@ -81,16 +69,10 @@ export function isolatedOverlayBaseUrl(sourceConfigPath, fixtureRoot) {
 export function isolatedTsconfigOverlayPath(sourceConfigPath) {
   const dir = dirname(sourceConfigPath).replaceAll("\\", "/");
   const name = basename(sourceConfigPath);
-  return dir === "."
-    ? `.vize-isolated-${name}`
-    : `${dir}/.vize-isolated-${name}`;
+  return dir === "." ? `.vize-isolated-${name}` : `${dir}/.vize-isolated-${name}`;
 }
 
-export function rewriteOutsideTypeRoots(
-  fixtureRoot,
-  sourceConfigPath,
-  configDir,
-) {
+export function rewriteOutsideTypeRoots(fixtureRoot, sourceConfigPath, configDir) {
   const root = resolve(fixtureRoot);
   const declared = winningTypeRoots(sourceConfigPath, root);
   if (declared == null) return null;
@@ -115,10 +97,7 @@ export function writeIsolatedTsconfigOverlay(fixtureRoot, sourceConfigPath) {
   const compilerOptions = {};
   if (paths != null) compilerOptions.paths = paths;
   if (typeRoots != null) compilerOptions.typeRoots = typeRoots;
-  if (
-    paths != null &&
-    isolatedOverlayBaseUrl(sourcePath, fixtureRoot) != null
-  ) {
+  if (paths != null && isolatedOverlayBaseUrl(sourcePath, fixtureRoot) != null) {
     compilerOptions.baseUrl = ".";
   }
   const overlayPath = isolatedTsconfigOverlayPath(sourcePath);
@@ -129,44 +108,23 @@ export function writeIsolatedTsconfigOverlay(fixtureRoot, sourceConfigPath) {
   return { path: overlayPath, paths, typeRoots };
 }
 
-function retargetPathMapping(
-  fixtureRoot,
-  sourceDir,
-  configDir,
-  name,
-  targets,
-  markChanged,
-) {
-  const relocated = targets.map((entry) =>
-    relocatePathEntry(sourceDir, configDir, entry),
-  );
+function retargetPathMapping(fixtureRoot, sourceDir, configDir, name, targets, markChanged) {
+  const relocated = targets.map((entry) => relocatePathEntry(sourceDir, configDir, entry));
   const packageName = packageNameFromPathMapping(name);
   const first = targets.find(
     (entry) => typeof entry === "string" && isExactOrTrailingStarPath(entry),
   );
   if (first == null) return relocated;
-  const original = resolve(
-    sourceDir,
-    first.endsWith("/*") ? first.slice(0, -2) : first,
-  );
+  const original = resolve(sourceDir, first.endsWith("/*") ? first.slice(0, -2) : first);
   if (isInside(fixtureRoot, original)) return relocated;
   let local;
   if (packageName != null) {
-    const localPackage = join(
-      fixtureRoot,
-      "node_modules",
-      ...packageName.split("/"),
-    );
+    const localPackage = join(fixtureRoot, "node_modules", ...packageName.split("/"));
     if (!existsSync(join(localPackage, "package.json"))) return relocated;
     const subpath = packageSubpathAfterNodeModules(original, packageName);
     local = subpath ? join(localPackage, subpath) : localPackage;
-    if (subpath && !existsSync(local) && !existsSync(`${local}.d.ts`))
-      return relocated;
-  } else if (
-    name === "*" &&
-    first.endsWith("/*") &&
-    basename(original) === "node_modules"
-  ) {
+    if (subpath && !existsSync(local) && !existsSync(`${local}.d.ts`)) return relocated;
+  } else if (name === "*" && first.endsWith("/*") && basename(original) === "node_modules") {
     local = join(fixtureRoot, "node_modules");
     if (!existsSync(local)) return relocated;
   } else {
@@ -176,9 +134,7 @@ function retargetPathMapping(
   const rewritten = first.endsWith("/*")
     ? `${configRelativePath(configDir, local)}/*`
     : configRelativePath(configDir, local);
-  return relocated.map((entry, index) =>
-    index === targets.indexOf(first) ? rewritten : entry,
-  );
+  return relocated.map((entry, index) => (index === targets.indexOf(first) ? rewritten : entry));
 }
 
 function packageSubpathAfterNodeModules(original, packageName) {
@@ -197,10 +153,7 @@ function packageNameFromPathMapping(name) {
 }
 
 function isExactOrTrailingStarPath(entry) {
-  return (
-    !entry.includes("*") ||
-    (entry.endsWith("/*") && !entry.slice(0, -2).includes("*"))
-  );
+  return !entry.includes("*") || (entry.endsWith("/*") && !entry.slice(0, -2).includes("*"));
 }
 
 function relocatePathEntry(sourceDir, configDir, entry) {
@@ -208,13 +161,7 @@ function relocatePathEntry(sourceDir, configDir, entry) {
   return configRelativePath(configDir, resolve(sourceDir, entry));
 }
 
-function retargetTypeRoot(
-  fixtureRoot,
-  sourceDir,
-  configDir,
-  entry,
-  markChanged,
-) {
+function retargetTypeRoot(fixtureRoot, sourceDir, configDir, entry, markChanged) {
   if (typeof entry !== "string") return entry;
   const relocated = relocatePathEntry(sourceDir, configDir, entry);
   const original = resolve(sourceDir, entry);
@@ -253,18 +200,14 @@ function winningPaths(sourceConfigPath, fixtureRoot) {
 
 function winningTypeRoots(sourceConfigPath, fixtureRoot) {
   const won = winningCompilerOption(sourceConfigPath, fixtureRoot, (config) =>
-    Array.isArray(config?.compilerOptions?.typeRoots)
-      ? config.compilerOptions.typeRoots
-      : null,
+    Array.isArray(config?.compilerOptions?.typeRoots) ? config.compilerOptions.typeRoots : null,
   );
   return won == null ? null : { typeRoots: won.value, dir: won.dir };
 }
 
 function winningBaseUrl(sourceConfigPath, fixtureRoot) {
   return winningCompilerOption(sourceConfigPath, fixtureRoot, (config) =>
-    typeof config?.compilerOptions?.baseUrl === "string"
-      ? config.compilerOptions.baseUrl
-      : null,
+    typeof config?.compilerOptions?.baseUrl === "string" ? config.compilerOptions.baseUrl : null,
   );
 }
 
@@ -273,8 +216,7 @@ function resolveExtends(fromConfig, specifier, fixtureRoot) {
   if (specifier.startsWith("./") || specifier.startsWith("../")) {
     const resolved = resolve(dirname(fromConfig), specifier);
     if (existsSync(resolved)) return resolved;
-    if (!resolved.endsWith(".json") && existsSync(`${resolved}.json`))
-      return `${resolved}.json`;
+    if (!resolved.endsWith(".json") && existsSync(`${resolved}.json`)) return `${resolved}.json`;
     return null;
   }
   return resolvePackageExtends(fromConfig, specifier, fixtureRoot);
@@ -327,8 +269,7 @@ function packageExtendsFile(pkg, subpath) {
   }
   const file = join(pkg, subpath);
   if (existsSync(file)) return file;
-  if (!file.endsWith(".json") && existsSync(`${file}.json`))
-    return `${file}.json`;
+  if (!file.endsWith(".json") && existsSync(`${file}.json`)) return `${file}.json`;
   return null;
 }
 

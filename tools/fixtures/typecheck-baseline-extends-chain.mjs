@@ -5,12 +5,7 @@ import { stripJsonc } from "./typecheck-baseline-jsonc.mjs";
 
 export function loadTsconfigExtendsChain(sourceConfigPath, resolveExtends) {
   const chain = [];
-  appendExtendsChain(
-    chain,
-    new Set(),
-    resolve(sourceConfigPath),
-    resolveExtends,
-  );
+  appendExtendsChain(chain, new Set(), resolve(sourceConfigPath), resolveExtends);
   return chain;
 }
 
@@ -38,7 +33,5 @@ function parseTsconfig(configPath) {
 
 function extendsSpecifiers(value) {
   if (typeof value === "string") return [value];
-  return Array.isArray(value)
-    ? value.filter((entry) => typeof entry === "string")
-    : [];
+  return Array.isArray(value) ? value.filter((entry) => typeof entry === "string") : [];
 }

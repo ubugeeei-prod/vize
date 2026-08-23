@@ -23,9 +23,7 @@ import { materializeBaselineProject } from "../../tools/fixtures/typecheck-basel
 
 function scaffold() {
   const outer = fs.realpathSync(
-    fs.mkdtempSync(
-      path.join(os.tmpdir(), "vize-baseline-outside-paths-baseurl-"),
-    ),
+    fs.mkdtempSync(path.join(os.tmpdir(), "vize-baseline-outside-paths-baseurl-")),
   );
   const fixtureRoot = path.join(outer, "fixture");
   fs.mkdirSync(path.join(fixtureRoot, "src"), { recursive: true });
@@ -35,10 +33,7 @@ function scaffold() {
   const outsideNuxt = path.join(outer, "node_modules", "nuxt");
   fs.mkdirSync(path.join(outsideNuxt, "dist", "app"), { recursive: true });
   fs.writeFileSync(path.join(outsideNuxt, "package.json"), `{"name":"nuxt"}\n`);
-  fs.writeFileSync(
-    path.join(outsideNuxt, "dist", "app", "index.d.ts"),
-    "export {}\n",
-  );
+  fs.writeFileSync(path.join(outsideNuxt, "dist", "app", "index.d.ts"), "export {}\n");
   return { fixtureRoot, outer, outsideNuxt, outsideVue };
 }
 
@@ -53,17 +48,11 @@ function writeLocalNuxt(fixtureRoot: string) {
   const local = path.join(fixtureRoot, "node_modules", "nuxt");
   fs.mkdirSync(path.join(local, "dist", "app"), { recursive: true });
   fs.writeFileSync(path.join(local, "package.json"), `{"name":"nuxt"}\n`);
-  fs.writeFileSync(
-    path.join(local, "dist", "app", "index.d.ts"),
-    "export {}\n",
-  );
+  fs.writeFileSync(path.join(local, "dist", "app", "index.d.ts"), "export {}\n");
   return local;
 }
 
-function writeNuxtTsconfig(
-  fixtureRoot: string,
-  paths: Record<string, string[]>,
-) {
+function writeNuxtTsconfig(fixtureRoot: string, paths: Record<string, string[]>) {
   const nuxtDir = path.join(fixtureRoot, ".nuxt");
   fs.mkdirSync(nuxtDir, { recursive: true });
   const sourcePath = path.join(nuxtDir, "tsconfig.json");
@@ -83,11 +72,7 @@ test("a Nuxt baseUrl resolves outside package mappings from the fixture root", (
       vue: [path.relative(fixtureRoot, outsideVue)],
     });
     assert.deepEqual(
-      rewriteOutsidePackagePaths(
-        fixtureRoot,
-        sourcePath,
-        path.join(fixtureRoot, ".vize-baseline"),
-      ),
+      rewriteOutsidePackagePaths(fixtureRoot, sourcePath, path.join(fixtureRoot, ".vize-baseline")),
       {
         "#imports": ["../src/imports.d.ts"],
         vue: ["../node_modules/vue"],
@@ -107,10 +92,7 @@ test("an isolated overlay pins baseUrl so rewritten paths stay beside the source
       vue: [path.relative(fixtureRoot, outsideVue)],
     });
     const overlay = writeIsolatedTsconfigOverlay(fixtureRoot, sourcePath);
-    assert.equal(
-      overlay.path,
-      path.join(fixtureRoot, ".nuxt", ".vize-isolated-tsconfig.json"),
-    );
+    assert.equal(overlay.path, path.join(fixtureRoot, ".nuxt", ".vize-isolated-tsconfig.json"));
     assert.deepEqual(JSON.parse(fs.readFileSync(overlay.path, "utf8")), {
       extends: "./tsconfig.json",
       compilerOptions: {
@@ -131,16 +113,10 @@ test("a Nuxt baseUrl resolves outside hash aliases from the fixture root", () =>
   try {
     writeLocalNuxt(fixtureRoot);
     const sourcePath = writeNuxtTsconfig(fixtureRoot, {
-      "#app": [
-        path.relative(fixtureRoot, path.join(outsideNuxt, "dist", "app")),
-      ],
+      "#app": [path.relative(fixtureRoot, path.join(outsideNuxt, "dist", "app"))],
     });
     assert.deepEqual(
-      rewriteOutsideAliasPaths(
-        fixtureRoot,
-        sourcePath,
-        path.join(fixtureRoot, ".vize-baseline"),
-      ),
+      rewriteOutsideAliasPaths(fixtureRoot, sourcePath, path.join(fixtureRoot, ".vize-baseline")),
       { "#app": ["../node_modules/nuxt/dist/app"] },
     );
     const overlay = applyIsolatedAliasOverlay(fixtureRoot, sourcePath, null);
@@ -198,16 +174,9 @@ test("array extends applies later package paths with an earlier baseUrl", () => 
       })}\n`,
     );
     const sourcePath = path.join(fixtureRoot, "tsconfig.json");
-    fs.writeFileSync(
-      sourcePath,
-      `{ "extends": ["./base-url.json", "./paths.json"] }\n`,
-    );
+    fs.writeFileSync(sourcePath, `{ "extends": ["./base-url.json", "./paths.json"] }\n`);
     assert.deepEqual(
-      rewriteOutsidePackagePaths(
-        fixtureRoot,
-        sourcePath,
-        path.join(fixtureRoot, ".vize-baseline"),
-      ),
+      rewriteOutsidePackagePaths(fixtureRoot, sourcePath, path.join(fixtureRoot, ".vize-baseline")),
       { vue: ["../node_modules/vue"] },
     );
   } finally {
@@ -229,24 +198,15 @@ test("array extends applies later hash aliases with an earlier baseUrl", () => {
       `${JSON.stringify({
         compilerOptions: {
           paths: {
-            "#app": [
-              path.relative(sourceRoot, path.join(outsideNuxt, "dist", "app")),
-            ],
+            "#app": [path.relative(sourceRoot, path.join(outsideNuxt, "dist", "app"))],
           },
         },
       })}\n`,
     );
     const sourcePath = path.join(fixtureRoot, "tsconfig.json");
-    fs.writeFileSync(
-      sourcePath,
-      `{ "extends": ["./base-url.json", "./paths.json"] }\n`,
-    );
+    fs.writeFileSync(sourcePath, `{ "extends": ["./base-url.json", "./paths.json"] }\n`);
     assert.deepEqual(
-      rewriteOutsideAliasPaths(
-        fixtureRoot,
-        sourcePath,
-        path.join(fixtureRoot, ".vize-baseline"),
-      ),
+      rewriteOutsideAliasPaths(fixtureRoot, sourcePath, path.join(fixtureRoot, ".vize-baseline")),
       { "#app": ["../node_modules/nuxt/dist/app"] },
     );
   } finally {
