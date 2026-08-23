@@ -55,7 +55,10 @@ export function isolateUniqueLocalTypePackages(fixtureRoot, sourceConfigPath) {
 }
 
 export function isolateUniqueVueRuntimePackages(fixtureRoot) {
-  return isolateUniqueNamedLocalTypePackages(fixtureRoot, vueRuntimePackages);
+  return [
+    ...isolateUniqueNamedLocalTypePackages(fixtureRoot, vueRuntimePackages),
+    ...isolateUniqueVueVisualizationPackages(fixtureRoot),
+  ];
 }
 
 export function isolateUniqueVueI18nPackages(fixtureRoot) {
@@ -241,4 +244,8 @@ export function isolateUniqueVueQueryPackages(fixtureRoot) {
 
 export function isolateUniqueVueEditorPackages(fixtureRoot) {
   return isolateUniqueNamedLocalTypePackages(fixtureRoot, ["@tiptap/vue-3", "@vue-flow/core"]);
+}
+
+export function isolateUniqueVueVisualizationPackages(fixtureRoot) {
+  return isolateUniqueNamedLocalTypePackages(fixtureRoot, ["@tresjs/core", "vue-chartjs"]);
 }
