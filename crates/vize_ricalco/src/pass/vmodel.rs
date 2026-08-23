@@ -282,7 +282,9 @@ fn owner_bindings<'a>(
             BindingOp::Bind(_)
             | BindingOp::On(_)
             | BindingOp::VueDirective(_)
-            | BindingOp::VueCssBind(_) => {}
+            | BindingOp::VueCssBind(_)
+            | BindingOp::VueSync(_)
+            | BindingOp::VueSlotScope(_) => {}
         }
     }
     slot_name.flatten()

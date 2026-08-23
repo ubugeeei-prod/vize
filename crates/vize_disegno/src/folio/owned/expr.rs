@@ -46,6 +46,13 @@ pub enum FolioExpr {
         /// The authored range of `source`.
         span: Span,
     },
+    /// `vue.filter(...)` - Vue 2 pipe-filter chain as authored text.
+    Filter {
+        /// The exact authored text, pipes included.
+        source: String,
+        /// The authored range of `source`.
+        span: Span,
+    },
 }
 
 /// Mirror of [`crate::op::ForBinding`].
@@ -89,6 +96,10 @@ pub(in crate::folio) fn own_expr(expr: &ExprRef<'_>) -> FolioExpr {
             reason: opaque.reason,
             source: String::from(opaque.source),
             span: opaque.span,
+        },
+        ExprRef::Filter(filter) => FolioExpr::Filter {
+            source: String::from(filter.source),
+            span: filter.span,
         },
     }
 }

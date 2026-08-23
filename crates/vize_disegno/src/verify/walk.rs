@@ -163,6 +163,12 @@ fn body(
             FolioBinding::VueCssBind(bind) => {
                 line_checks("vue.css-bind", bind.span, owner, out);
             }
+            FolioBinding::VueSync(sync) => {
+                line_checks("vue.sync", sync.span, owner, out);
+            }
+            FolioBinding::VueSlotScope(scope) => {
+                line_checks("vue.slot-scope", scope.span, owner, out);
+            }
         }
     }
     for child in children {

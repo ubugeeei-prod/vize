@@ -18,7 +18,9 @@
 //! whatever is genuinely Vue-specific is a `vue.*` dialect op. A dialect
 //! op lands with the transform that needs it, never speculatively:
 //! custom directives as [`BindingOp::VueDirective`], SFC style
-//! `v-bind()` as [`BindingOp::VueCssBind`].
+//! `v-bind()` as [`BindingOp::VueCssBind`], Vue 2 `.sync` /
+//! `slot-scope` as [`BindingOp::VueSync`] / [`BindingOp::VueSlotScope`],
+//! and Vue 2 pipe filters as [`crate::expr::ExprRef::Filter`].
 //!
 //! # `Drop`-free by construction
 //!
@@ -46,7 +48,7 @@ pub use element::{Attribute, ComponentOp, ElementOp, Namespace};
 pub use model::{BindingContract, ModelOp};
 pub use slot::{DynamicName, SlotContentOp, SlotOp};
 pub use text::{InterpolationOp, TextOp};
-pub use vue::{VueCssBindOp, VueDirectiveOp};
+pub use vue::{VueCssBindOp, VueDirectiveOp, VueSlotScopeOp, VueSyncOp};
 
 /// One S2 op standing in a region (a child position).
 ///
@@ -120,6 +122,10 @@ pub enum BindingOp<'a> {
     VueDirective(Box<'a, VueDirectiveOp<'a>>),
     /// `vue.css-bind` - one CSS `v-bind()` in an SFC style block (P2-10).
     VueCssBind(Box<'a, VueCssBindOp<'a>>),
+    /// `vue.sync` - Vue 2 `:foo.sync` two-way bind sugar.
+    VueSync(Box<'a, VueSyncOp<'a>>),
+    /// `vue.slot-scope` - Vue 2 `slot-scope` / `scope` scoped-slot sugar.
+    VueSlotScope(Box<'a, VueSlotScopeOp<'a>>),
 }
 
 impl BindingOp<'_> {
@@ -134,6 +140,8 @@ impl BindingOp<'_> {
             Self::SlotContent(_) => "ui.slot-content",
             Self::VueDirective(_) => "vue.directive",
             Self::VueCssBind(_) => "vue.css-bind",
+            Self::VueSync(_) => "vue.sync",
+            Self::VueSlotScope(_) => "vue.slot-scope",
         }
     }
 }

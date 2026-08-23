@@ -59,8 +59,7 @@ pub fn constant_for_hoist(expr: &ExprRef<'_>) -> bool {
     match expr {
         // Pessimal law 3, consumed: never constant, no exceptions.
         ExprRef::Opaque(opaque) => opaque.is_constant(),
-        // No foreign dialect ships until phase 6; pessimal by default.
-        ExprRef::Foreign(_) => false,
+        ExprRef::Foreign(_) | ExprRef::Filter(_) => false,
         ExprRef::Js(retained) => {
             let source = retained.source;
             // The shipped classifier's literal substring refusals,

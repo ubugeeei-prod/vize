@@ -15,7 +15,8 @@ fn expr_text(expr: &FolioExpr) -> String {
     match expr {
         FolioExpr::Js { source, .. }
         | FolioExpr::Foreign { source, .. }
-        | FolioExpr::Opaque { source, .. } => String::from(source.trim()),
+        | FolioExpr::Opaque { source, .. }
+        | FolioExpr::Filter { source, .. } => String::from(source.trim()),
     }
 }
 
@@ -124,6 +125,15 @@ pub fn surface_of(
                 value: directive.value.as_ref().map(|value| Some(expr_text(value))),
             }),
             FolioBinding::VueCssBind(_) => {}
+            // Pre-pass only: the legacy pass desugars these before the
+            // comparator runs. Arms exist so a missed desugar is a
+            // surface mismatch, never a compile-time silence.
+            FolioBinding::VueSync(sync) => surface.binds.push(PBind {
+                name: p_name(&sync.name),
+                mods: sync.modifiers.iter().map(|m| m.as_str().into()).collect(),
+                value: Some(Some(expr_text(&sync.value))),
+            }),
+            FolioBinding::VueSlotScope(_) => {}
         }
     }
     surface

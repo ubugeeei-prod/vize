@@ -22,6 +22,9 @@
 //!   never constant, equal to nothing, emit verbatim or refuse.
 //! - [`ExprRef::Foreign`](super::ExprRef::Foreign): the dialect answers.
 //!   No implementation ships until phase 6 (charter #28).
+//! - [`ExprRef::Filter`](super::ExprRef::Filter): Vue 2 pipe filters.
+//!   Until the S2 legacy pass legalizes the chain, treat the payload as
+//!   non-constant authored text (never a JS parse of the `|`).
 //!
 //! # The P1-8 note (issue #4365)
 //!

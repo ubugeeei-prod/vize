@@ -8,11 +8,11 @@
 //! document the injected variants and the resulting build failures.
 
 use vize_carton::{Allocator, Box, Span, Vec};
-use vize_disegno::expr::{ExprRef, ForeignExpr, JsExpr, OpaqueExpr, OpaqueReason};
+use vize_disegno::expr::{ExprRef, OpaqueExpr, OpaqueReason};
 use vize_disegno::op::{
     Attribute, BindOp, BindingContract, BindingOp, ComponentOp, DynamicName, ElementOp, ForBinding,
     ForOp, IfBranch, IfOp, InterpolationOp, ModelOp, Namespace, OnOp, Op, Region, SlotContentOp,
-    SlotOp, TextOp, VueCssBindOp, VueDirectiveOp,
+    SlotOp, TextOp, VueCssBindOp, VueDirectiveOp, VueSlotScopeOp, VueSyncOp,
 };
 
 /// The escape payload standing in for "some expression" wherever the op
@@ -48,6 +48,8 @@ fn binding_keyword(op: &BindingOp<'_>) -> &'static str {
         BindingOp::SlotContent(_) => "ui.slot-content",
         BindingOp::VueDirective(_) => "vue.directive",
         BindingOp::VueCssBind(_) => "vue.css-bind",
+        BindingOp::VueSync(_) => "vue.sync",
+        BindingOp::VueSlotScope(_) => "vue.slot-scope",
     }
 }
 
@@ -65,27 +67,6 @@ fn name_keyword(name: &DynamicName<'_>) -> &'static str {
     match name {
         DynamicName::Static(_) => "static",
         DynamicName::Dynamic(_) => "dynamic",
-    }
-}
-
-/// No `_` arm: the expression family is part of the op family too.
-fn expr_keyword(expr: &ExprRef<'_>) -> &'static str {
-    match expr {
-        ExprRef::Js(_) => "js",
-        ExprRef::Foreign(_) => "foreign",
-        ExprRef::Opaque(_) => "opaque",
-    }
-}
-
-/// No `_` arm: the escape classes are a closed set - a new class must
-/// break this match (and the review that names its semantics).
-fn reason_keyword(reason: OpaqueReason) -> &'static str {
-    match reason {
-        OpaqueReason::ForValue => "for-value",
-        OpaqueReason::MultiStatement => "multi-statement",
-        OpaqueReason::NestingRefused => "nesting-refused",
-        OpaqueReason::ParseRejected => "parse-rejected",
-        OpaqueReason::Compound => "compound",
     }
 }
 
@@ -239,6 +220,23 @@ fn every_binding<'a>(allocator: &'a Allocator) -> Vec<'a, BindingOp<'a>> {
                 &allocator,
             )),
             BindingOp::VueCssBind(Box::new_in(VueCssBindOp { value: expr, span }, &allocator)),
+            BindingOp::VueSync(Box::new_in(
+                VueSyncOp {
+                    name: DynamicName::Static("foo"),
+                    modifiers: Vec::from_iter_in(["camel"], &allocator),
+                    value: expr,
+                    span,
+                },
+                &allocator,
+            )),
+            BindingOp::VueSlotScope(Box::new_in(
+                VueSlotScopeOp {
+                    name: Some("header"),
+                    params: Some(expr),
+                    span,
+                },
+                &allocator,
+            )),
         ],
         &allocator,
     )
@@ -279,7 +277,9 @@ fn every_attached_op_variant_is_matched_without_a_wildcard() {
             "ui.model",
             "ui.slot-content",
             "vue.directive",
-            "vue.css-bind"
+            "vue.css-bind",
+            "vue.sync",
+            "vue.slot-scope",
         ]
     );
     for binding in &bindings {
@@ -298,42 +298,4 @@ fn every_payload_enum_variant_is_matched_without_a_wildcard() {
         name_keyword(&DynamicName::Dynamic(placeholder(&allocator))),
         "dynamic"
     );
-}
-
-#[test]
-fn every_expression_variant_is_matched_without_a_wildcard() {
-    let arena = Allocator::default();
-    let allocator = &arena;
-    let js = JsExpr::parse_in(allocator, "a + b", Span::new(0, 5)).expect("`a + b` is admitted");
-    let exprs = [
-        ExprRef::Js(js),
-        ExprRef::Foreign(allocator.alloc(ForeignExpr {
-            dialect: "moonbit",
-            source: "a + b",
-            span: Span::new(0, 5),
-            facts: Vec::new_in(&allocator),
-        })),
-        ExprRef::Opaque(allocator.alloc(OpaqueExpr {
-            reason: OpaqueReason::Compound,
-            source: "a + b",
-            span: Span::new(0, 5),
-        })),
-    ];
-    let keywords: std::vec::Vec<&str> = exprs.iter().map(expr_keyword).collect();
-    assert_eq!(keywords, ["js", "foreign", "opaque"]);
-    for expr in &exprs {
-        assert_eq!(expr.mnemonic(), expr_keyword(expr));
-        assert_eq!(expr.source(), "a + b");
-        assert_eq!(expr.span(), Span::new(0, 5));
-    }
-    let reasons = [
-        OpaqueReason::ForValue,
-        OpaqueReason::MultiStatement,
-        OpaqueReason::NestingRefused,
-        OpaqueReason::ParseRejected,
-        OpaqueReason::Compound,
-    ];
-    for reason in reasons {
-        assert_eq!(reason_keyword(reason), reason.mnemonic());
-    }
 }

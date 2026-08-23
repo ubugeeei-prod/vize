@@ -169,7 +169,8 @@ pub fn s2_outlet(name: &FolioName) -> POutlet {
                 let source = match expr {
                     vize_disegno::folio::FolioExpr::Js { source, .. }
                     | vize_disegno::folio::FolioExpr::Foreign { source, .. }
-                    | vize_disegno::folio::FolioExpr::Opaque { source, .. } => source,
+                    | vize_disegno::folio::FolioExpr::Opaque { source, .. }
+                    | vize_disegno::folio::FolioExpr::Filter { source, .. } => source,
                 };
                 PName::Dynamic(trimmed(source.as_str()))
             }
