@@ -32,7 +32,7 @@ import { ancestorPackagePath } from "./typecheck-baseline-isolation-package-exte
  * `vue` JSX runtime before TypeScript climbs into Vize.
  */
 
-const vueRuntimePackages = ["@vue/runtime-core", "@vue/runtime-dom", "vue"];
+const vueRuntimePackages = ["@vue/runtime-core", "@vue/runtime-dom", "vue", "vue-router"];
 
 export function isolateUniqueLocalTypePackages(fixtureRoot, sourceConfigPath) {
   const root = resolve(fixtureRoot);
