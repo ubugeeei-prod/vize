@@ -70,6 +70,13 @@ vize_sinopia = { workspace = true }
 name = "davinci_s2_transform_corpus"
 required-features = ["davinci-differential"]
 
+# Vue 2 dialect dual-run. The shipped `.sync` / `slot-scope` / filter
+# expansion lives behind `legacy`, so this witness cannot ride the
+# default workspace test; clippy-and-test invokes it explicitly.
+[[test]]
+name = "davinci_s2_transform_vue2"
+required-features = ["legacy"]
+
 [[bench]]
 name = "davinci"
 harness = false

@@ -136,7 +136,57 @@ pub fn surface_of(
             FolioBinding::VueSlotScope(_) => {}
         }
     }
+    fold_sync_products(&mut surface);
     surface
+}
+
+/// Vue 2 `.sync` legalizes to a bind + `update:` listener that share
+/// the authored span. The legacy collector reconstructs that product
+/// as a model (span-shared bind/on). After legalize, S2 has the same
+/// pair as ordinary bind+on; fold them back so the projection is
+/// lane-neutral. The handler text is the legalize product, not a
+/// user-authored `@update:` listener.
+fn fold_sync_products(surface: &mut PSurface) {
+    let mut bind_index = 0;
+    while bind_index < surface.binds.len() {
+        let PName::Static(prop) = &surface.binds[bind_index].name else {
+            bind_index += 1;
+            continue;
+        };
+        let prop = prop.clone();
+        let Some(Some(value)) = surface.binds[bind_index].value.clone() else {
+            bind_index += 1;
+            continue;
+        };
+        let mut want_on = String::from("update:");
+        want_on.push_str(prop.as_str());
+        let mut want_handler = String::from("$event => ((");
+        want_handler.push_str(value.as_str());
+        want_handler.push_str(") = $event)");
+        let Some(on_index) = surface.ons.iter().position(|on| {
+            matches!(&on.name, PName::Static(name) if name.as_str() == want_on.as_str())
+                && on
+                    .value
+                    .as_ref()
+                    .and_then(|inner| inner.as_ref().map(String::as_str))
+                    == Some(want_handler.as_str())
+        }) else {
+            bind_index += 1;
+            continue;
+        };
+        let _bind = surface.binds.remove(bind_index);
+        let _on = surface.ons.remove(on_index);
+        surface.models.push(PModel {
+            value: Some(value),
+            prop: Some(prop),
+            // Legacy reconstructs the span-shared product without the
+            // leftover bind modifiers (`.camel` rides a stub product
+            // bind the S2 legalize does not emit). Empty matches that.
+            mods: Vec::new(),
+            component: true,
+            dynamic_arg: false,
+        });
+    }
 }
 
 pub fn p_name(name: &FolioName) -> PName {
