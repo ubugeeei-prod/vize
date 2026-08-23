@@ -105,10 +105,17 @@ fn branch_key_js(
 }
 
 fn emit_branch(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<(), EmitError> {
-    let [Op::Element(element)] = branch.region.ops.as_slice() else {
-        return Err(EmitError::Unsupported);
-    };
-    let _id = cx.walk.mint();
-    cx.walk.skip(element.bindings.len());
-    super::emit_if_branch_call(cx, element, key)
+    match branch.region.ops.as_slice() {
+        [Op::Element(element)] => {
+            let _id = cx.walk.mint();
+            cx.walk.skip(element.bindings.len());
+            super::emit_if_branch_call(cx, element, key)
+        }
+        [Op::Component(component)] => {
+            let _id = cx.walk.mint();
+            cx.walk.skip(component.bindings.len());
+            super::component::emit_if_branch(cx, component, key)
+        }
+        _ => Err(EmitError::Unsupported),
+    }
 }

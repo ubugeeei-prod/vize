@@ -1,7 +1,8 @@
 //! P2-11 installment 5 witness: static native HTML, interpolations,
 //! mixed text siblings, static-name binds, static-name events including
-//! event/key/option modifiers, native v-if, native v-for, and
-//! object-spread v-bind, compared **byte-for-byte** including helper usage.
+//! event/key/option modifiers, native v-if, native v-for,
+//! object-spread v-bind, and static-name components, compared
+//! **byte-for-byte** including helper usage.
 //!
 //! `vize_atelier_dom` is published; the Davinci crates are not. The
 //! comparator therefore rides stripped-on-publish dev-deps (the same
@@ -149,6 +150,30 @@ const BATTERY: &[(&str, &str)] = &[
     (
         "class_object_then_dynamic_class",
         r#"<div class="a" v-bind="obj" :class="cls"></div>"#,
+    ),
+    ("empty_component", "<Foo />"),
+    ("nested_component", "<div><Foo /></div>"),
+    ("kebab_component", "<foo-bar />"),
+    ("component_static_class", r#"<Foo class="x" />"#),
+    ("component_bind_id", r#"<Foo :id="x" />"#),
+    ("component_bind_class", r#"<Foo :class="cls" />"#),
+    ("component_click", r#"<Foo @click="h" />"#),
+    ("component_keyup", r#"<Foo @keyup="h" />"#),
+    ("component_v_if", r#"<Foo v-if="ok" />"#),
+    (
+        "component_v_for",
+        r#"<Foo v-for="item in list" :key="item" />"#,
+    ),
+    ("component_siblings", "<div><Foo /><Bar /></div>"),
+    ("component_duplicate", "<div><Foo /><Foo /></div>"),
+    ("component_then_span", "<div><Foo /><span></span></div>"),
+    ("nested_component_v_if", r#"<div><Foo v-if="ok" /></div>"#),
+    ("component_class_and_id", r#"<Foo class="x" :id="y" />"#),
+    ("component_click_stop", r#"<Foo @click.stop="h" />"#),
+    ("component_object_bind", r#"<Foo v-bind="obj" />"#),
+    (
+        "component_attr_then_object",
+        r#"<Foo id="x" v-bind="obj" />"#,
     ),
 ];
 

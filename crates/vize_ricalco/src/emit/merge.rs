@@ -5,7 +5,7 @@
 use alloc::vec::Vec as StdVec;
 
 use vize_carton::String;
-use vize_disegno::op::{BindOp, BindingOp, ElementOp};
+use vize_disegno::op::{Attribute, BindOp, BindingOp};
 
 use super::EmitCx;
 use super::EmitError;
@@ -13,9 +13,8 @@ use super::buf::Buf;
 use super::on::{event_key_for, needs_hydration};
 use super::props::{Patch, Piece, emit_props_object, js_value, pieces, static_bind_name};
 
-pub(super) fn has_object_bind(element: &ElementOp<'_>) -> bool {
-    element
-        .bindings
+pub(super) fn has_object_bind(bindings: &[BindingOp<'_>]) -> bool {
+    bindings
         .iter()
         .any(|binding| matches!(binding, BindingOp::Bind(bind) if bind.name.is_none()))
 }
@@ -27,10 +26,10 @@ pub(super) fn admit_object(bind: &BindOp<'_>) -> Result<(), EmitError> {
     js_value(bind).map(|_| ())
 }
 
-pub(super) fn object_patch(element: &ElementOp<'_>) -> Patch {
+pub(super) fn object_patch(bindings: &[BindingOp<'_>], is_component: bool) -> Patch {
     let mut dynamic_props = StdVec::new();
     let mut flag = 16i32;
-    for binding in element.bindings.iter() {
+    for binding in bindings.iter() {
         match binding {
             BindingOp::Bind(bind) if bind.name.is_none() => {}
             BindingOp::Bind(bind) => {
@@ -52,7 +51,7 @@ pub(super) fn object_patch(element: &ElementOp<'_>) -> Patch {
                 if !dynamic_props.contains(&key) {
                     dynamic_props.push(key.clone());
                 }
-                if needs_hydration(key.as_str(), on) {
+                if !is_component && needs_hydration(key.as_str(), on) {
                     flag |= 32;
                 }
             }
@@ -67,10 +66,11 @@ pub(super) fn object_patch(element: &ElementOp<'_>) -> Patch {
 
 pub(super) fn emit_spread_props(
     cx: &mut EmitCx<'_>,
-    element: &ElementOp<'_>,
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
     if_key: Option<&str>,
 ) -> Result<(), EmitError> {
-    let args = merge_args(element, if_key)?;
+    let args = merge_args(attributes, bindings, if_key)?;
     let only_spread = args.iter().all(|arg| matches!(arg, Arg::Spread(_)));
     if only_spread {
         let Arg::Spread(bind) = args[0] else {
@@ -105,12 +105,13 @@ enum Arg<'a> {
 }
 
 fn merge_args<'a>(
-    element: &'a ElementOp<'a>,
+    attributes: &'a [Attribute<'a>],
+    bindings: &'a [BindingOp<'a>],
     if_key: Option<&'a str>,
 ) -> Result<StdVec<Arg<'a>>, EmitError> {
     let mut args = StdVec::new();
     let mut current = StdVec::new();
-    for piece in pieces(element)? {
+    for piece in pieces(attributes, bindings)? {
         if let Piece::Bind(bind) = piece
             && bind.name.is_none()
         {

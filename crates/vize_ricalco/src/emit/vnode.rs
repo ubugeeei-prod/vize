@@ -38,6 +38,10 @@ pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), Em
             Op::Interpolation(interp) => emit_interpolation(cx, interp, id)?,
             Op::If(if_op) => super::emit_if_op(cx, if_op, id)?,
             Op::For(for_op) => super::emit_for_op(cx, for_op)?,
+            Op::Component(component) => {
+                cx.walk.skip(component.bindings.len());
+                super::component::emit_root(cx, component)?;
+            }
             _ => return Err(EmitError::Unsupported),
         }
     }
@@ -49,7 +53,9 @@ fn admit_unique_root(root: &Region<'_>) -> Result<(), EmitError> {
     for op in root.ops.iter() {
         match op {
             Op::Text(text) if is_ignorable_root_text(text) => {}
-            Op::Element(_) | Op::Interpolation(_) | Op::If(_) | Op::For(_) if !found => {
+            Op::Element(_) | Op::Component(_) | Op::Interpolation(_) | Op::If(_) | Op::For(_)
+                if !found =>
+            {
                 found = true
             }
             _ => return Err(EmitError::Unsupported),
@@ -137,7 +143,7 @@ fn emit_call(
     let has_children = !element.children.ops.is_empty();
     let has_binds = !element.bindings.is_empty();
     let hoist = allow_hoist && block && if_key.is_none() && root_props_should_hoist(element);
-    let patch = bind_patch(element);
+    let patch = bind_patch(&element.bindings, false);
     let text_flag = children_need_text_flag(&element.children);
     let mut flag = patch.flag;
     if text_flag {
@@ -153,7 +159,7 @@ fn emit_call(
         cx.buf.push(Buf::hoisted_props_alias());
     } else if if_key.is_some() || has_binds {
         cx.buf.push(", ");
-        emit_bind_props(cx, element, if_key)?;
+        emit_bind_props(cx, &element.attributes, &element.bindings, if_key)?;
     } else if !element.attributes.is_empty() {
         cx.buf.push(", ");
         emit_static_props_inline(cx, element.attributes.iter());
@@ -278,7 +284,7 @@ fn admit_native(element: &ElementOp<'_>) -> Result<(), EmitError> {
     if element.namespace != Namespace::Html {
         return Err(EmitError::Unsupported);
     }
-    admit_bindings(element)
+    admit_bindings(&element.attributes, &element.bindings)
 }
 
 fn emit_children(cx: &mut EmitCx<'_>, children: &Region<'_>) -> Result<(), EmitError> {
@@ -328,10 +334,12 @@ fn emit_array_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
             cx.walk.skip(element.bindings.len());
             emit_nested(cx, element)
         }
+        Op::Component(component) => {
+            cx.walk.skip(component.bindings.len());
+            super::component::emit_nested(cx, component)
+        }
         Op::If(if_op) => super::emit_if_op(cx, if_op, id),
         Op::For(for_op) => super::emit_for_op(cx, for_op),
-        Op::Text(_) | Op::Component(_) | Op::Interpolation(_) | Op::Slot(_) => {
-            Err(EmitError::Unsupported)
-        }
+        Op::Text(_) | Op::Interpolation(_) | Op::Slot(_) => Err(EmitError::Unsupported),
     })
 }

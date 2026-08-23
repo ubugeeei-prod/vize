@@ -10,16 +10,20 @@
 //! Installment 5 emits **static native HTML**, interpolations,
 //! mixed text siblings, static-name `ui.bind`, static-name `ui.on`
 //! (including event/key/option modifiers), native `ui.if`, **native
-//! `ui.for`**, and **object-spread `v-bind`** (`normalizeProps` /
-//! `mergeProps`). Object `v-on`, `.native`, template fragments, filters,
-//! and components stay [`EmitError::Unsupported`]. The old lane stays
-//! the shipped compile path; [`super::DOM_LANE_FLAG`] is named here and
-//! *read* in the atelier_dom witness.
+//! `ui.for`**, **object-spread `v-bind`** (`normalizeProps` /
+//! `mergeProps`), and **static-name components** (`resolveComponent` /
+//! `createVNode` / `createBlock`). Object `v-on`, `.native`, template
+//! fragments, filters, slots, and builtins stay
+//! [`EmitError::Unsupported`]. The old lane stays the shipped compile
+//! path; [`super::DOM_LANE_FLAG`] is named here and *read* in the
+//! atelier_dom witness.
 
 #[path = "emit/buf.rs"]
 mod buf;
 #[path = "emit/children.rs"]
 mod children;
+#[path = "emit/component.rs"]
+mod component;
 #[path = "emit/flag.rs"]
 mod flag;
 #[path = "emit/js.rs"]
@@ -139,6 +143,11 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
         .push("function render(_ctx, _cache, $props, $setup, $data, $options) {");
     cx.buf.indent();
     cx.buf.newline();
+    let names = component::collect_names(&lowered.root);
+    if !names.is_empty() {
+        component::emit_resolves(&mut cx, &names);
+        cx.buf.newline();
+    }
     cx.buf.push("return ");
     emit_root(&mut cx, &lowered.root)?;
     cx.buf.deindent();

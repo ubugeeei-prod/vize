@@ -12,7 +12,7 @@ mod support;
 
 use support::with_transformed;
 use vize_carton::Allocator;
-use vize_ricalco::{EmitError, emit_dom, emit_dom_source};
+use vize_ricalco::{emit_dom, emit_dom_source};
 
 fn assembled(source: &str) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {
@@ -172,13 +172,6 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock(\"div\", { id: foo }, null, 8 /* PROPS */, [\"id\"]))
 }"
     );
-}
-
-#[test]
-fn a_component_root_is_unsupported_this_installment() {
-    with_transformed("<MyComp/>", |lowered, _, facts, _| {
-        assert_eq!(emit_dom(lowered, facts), Err(EmitError::Unsupported));
-    });
 }
 
 #[test]

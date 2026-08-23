@@ -3,24 +3,27 @@
 use vize_carton::String;
 
 /// Vue helpers this installment can mention, ranked the way
-/// `vue_helper_import_rank` orders the shipped preamble (`withKeys` /
-/// `withModifiers` before `toDisplayString` before vnode creates before
-/// class/style / props normalizers before `openBlock` before block creates
-/// before `Fragment` before `createTextVNode` / `createCommentVNode`
-/// before `renderList`). Same-rank helpers keep this array order
-/// (`withKeys` before `withModifiers`).
+/// `vue_helper_import_rank` orders the shipped preamble (`resolveComponent`
+/// first, then `withKeys` / `withModifiers`, `toDisplayString`, vnode
+/// creates, class/style / props normalizers, `openBlock`, block creates,
+/// `Fragment`, `createTextVNode` / `createCommentVNode`, `renderList`).
+/// Same-rank helpers keep this array order (`createElementVNode` before
+/// `createVNode`, `createBlock` before `createElementBlock`).
 #[derive(Clone, Copy)]
 enum Helper {
+    ResolveComponent,
     WithKeys,
     WithModifiers,
     ToDisplayString,
     CreateElementVNode,
+    CreateVNode,
     NormalizeClass,
     NormalizeStyle,
     NormalizeProps,
     GuardReactiveProps,
     MergeProps,
     OpenBlock,
+    CreateBlock,
     CreateElementBlock,
     Fragment,
     CreateComment,
@@ -29,17 +32,20 @@ enum Helper {
 }
 
 impl Helper {
-    const ALL: [Self; 15] = [
+    const ALL: [Self; 18] = [
+        Self::ResolveComponent,
         Self::WithKeys,
         Self::WithModifiers,
         Self::ToDisplayString,
         Self::CreateElementVNode,
+        Self::CreateVNode,
         Self::NormalizeClass,
         Self::NormalizeStyle,
         Self::NormalizeProps,
         Self::GuardReactiveProps,
         Self::MergeProps,
         Self::OpenBlock,
+        Self::CreateBlock,
         Self::CreateElementBlock,
         Self::Fragment,
         Self::CreateComment,
@@ -47,7 +53,7 @@ impl Helper {
         Self::RenderList,
     ];
 
-    const fn bit(self) -> u16 {
+    const fn bit(self) -> u32 {
         match self {
             Self::ToDisplayString => 1,
             Self::CreateElementVNode => 2,
@@ -64,21 +70,27 @@ impl Helper {
             Self::NormalizeProps => 4096,
             Self::GuardReactiveProps => 8192,
             Self::MergeProps => 16384,
+            Self::ResolveComponent => 32768,
+            Self::CreateVNode => 65536,
+            Self::CreateBlock => 131072,
         }
     }
 
     const fn name(self) -> &'static str {
         match self {
+            Self::ResolveComponent => "resolveComponent",
             Self::WithKeys => "withKeys",
             Self::WithModifiers => "withModifiers",
             Self::ToDisplayString => "toDisplayString",
             Self::CreateElementVNode => "createElementVNode",
+            Self::CreateVNode => "createVNode",
             Self::NormalizeClass => "normalizeClass",
             Self::NormalizeStyle => "normalizeStyle",
             Self::NormalizeProps => "normalizeProps",
             Self::GuardReactiveProps => "guardReactiveProps",
             Self::MergeProps => "mergeProps",
             Self::OpenBlock => "openBlock",
+            Self::CreateBlock => "createBlock",
             Self::CreateElementBlock => "createElementBlock",
             Self::Fragment => "Fragment",
             Self::CreateText => "createTextVNode",
@@ -89,16 +101,19 @@ impl Helper {
 
     const fn alias(self) -> &'static str {
         match self {
+            Self::ResolveComponent => "_resolveComponent",
             Self::WithKeys => "_withKeys",
             Self::WithModifiers => "_withModifiers",
             Self::ToDisplayString => "_toDisplayString",
             Self::CreateElementVNode => "_createElementVNode",
+            Self::CreateVNode => "_createVNode",
             Self::NormalizeClass => "_normalizeClass",
             Self::NormalizeStyle => "_normalizeStyle",
             Self::NormalizeProps => "_normalizeProps",
             Self::GuardReactiveProps => "_guardReactiveProps",
             Self::MergeProps => "_mergeProps",
             Self::OpenBlock => "_openBlock",
+            Self::CreateBlock => "_createBlock",
             Self::CreateElementBlock => "_createElementBlock",
             Self::Fragment => "_Fragment",
             Self::CreateText => "_createTextVNode",
@@ -112,7 +127,7 @@ impl Helper {
 pub(super) struct Buf {
     pub code: String,
     indent: u32,
-    used: u16,
+    used: u32,
     /// Compact static-props object hoisted as `_hoisted_1` (root only).
     hoisted_props: Option<String>,
 }
@@ -148,64 +163,63 @@ impl Buf {
         }
     }
 
+    fn mark(&mut self, helper: Helper) {
+        self.used |= helper.bit();
+    }
+
     pub(super) fn use_to_display_string(&mut self) {
-        self.used |= Helper::ToDisplayString.bit();
+        self.mark(Helper::ToDisplayString);
     }
-
     pub(super) fn use_with_keys(&mut self) {
-        self.used |= Helper::WithKeys.bit();
+        self.mark(Helper::WithKeys);
     }
-
     pub(super) fn use_with_modifiers(&mut self) {
-        self.used |= Helper::WithModifiers.bit();
+        self.mark(Helper::WithModifiers);
     }
-
     pub(super) fn use_open_block(&mut self) {
-        self.used |= Helper::OpenBlock.bit();
+        self.mark(Helper::OpenBlock);
     }
-
     pub(super) fn use_create_element_block(&mut self) {
-        self.used |= Helper::CreateElementBlock.bit();
+        self.mark(Helper::CreateElementBlock);
     }
-
     pub(super) fn use_create_element_vnode(&mut self) {
-        self.used |= Helper::CreateElementVNode.bit();
+        self.mark(Helper::CreateElementVNode);
     }
-
     pub(super) fn use_create_text(&mut self) {
-        self.used |= Helper::CreateText.bit();
+        self.mark(Helper::CreateText);
     }
-
     pub(super) fn use_normalize_class(&mut self) {
-        self.used |= Helper::NormalizeClass.bit();
+        self.mark(Helper::NormalizeClass);
     }
-
     pub(super) fn use_normalize_style(&mut self) {
-        self.used |= Helper::NormalizeStyle.bit();
+        self.mark(Helper::NormalizeStyle);
     }
-
     pub(super) fn use_normalize_props(&mut self) {
-        self.used |= Helper::NormalizeProps.bit();
+        self.mark(Helper::NormalizeProps);
     }
-
     pub(super) fn use_guard_reactive_props(&mut self) {
-        self.used |= Helper::GuardReactiveProps.bit();
+        self.mark(Helper::GuardReactiveProps);
     }
-
     pub(super) fn use_merge_props(&mut self) {
-        self.used |= Helper::MergeProps.bit();
+        self.mark(Helper::MergeProps);
     }
-
     pub(super) fn use_create_comment(&mut self) {
-        self.used |= Helper::CreateComment.bit();
+        self.mark(Helper::CreateComment);
     }
-
     pub(super) fn use_fragment(&mut self) {
-        self.used |= Helper::Fragment.bit();
+        self.mark(Helper::Fragment);
     }
-
     pub(super) fn use_render_list(&mut self) {
-        self.used |= Helper::RenderList.bit();
+        self.mark(Helper::RenderList);
+    }
+    pub(super) fn use_resolve_component(&mut self) {
+        self.mark(Helper::ResolveComponent);
+    }
+    pub(super) fn use_create_vnode(&mut self) {
+        self.mark(Helper::CreateVNode);
+    }
+    pub(super) fn use_create_block(&mut self) {
+        self.mark(Helper::CreateBlock);
     }
 
     pub(super) fn to_display_string_alias() -> &'static str {
@@ -268,6 +282,18 @@ impl Buf {
         Helper::RenderList.alias()
     }
 
+    pub(super) fn resolve_component_alias() -> &'static str {
+        Helper::ResolveComponent.alias()
+    }
+
+    pub(super) fn create_vnode_alias() -> &'static str {
+        Helper::CreateVNode.alias()
+    }
+
+    pub(super) fn create_block_alias() -> &'static str {
+        Helper::CreateBlock.alias()
+    }
+
     pub(super) fn hoist_root_props(&mut self, object: String) {
         self.hoisted_props = Some(object);
     }
@@ -280,7 +306,7 @@ impl Buf {
     /// root static-props hoist (the shipped codegen appends hoists to
     /// the helper preamble).
     pub(super) fn preamble(&self) -> String {
-        let listed: [Helper; 15] = Helper::ALL;
+        let listed: [Helper; 18] = Helper::ALL;
         let mut n = 0;
         for helper in listed {
             if self.used & helper.bit() != 0 {

@@ -92,14 +92,6 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn a_component_v_if_is_unsupported_this_installment() {
-    assert_eq!(
-        refused(r#"<MyComp v-if="ok"></MyComp>"#),
-        EmitError::Unsupported
-    );
-}
-
-#[test]
 fn a_template_fragment_v_if_is_unsupported_this_installment() {
     assert_eq!(
         refused(r#"<template v-if="ok"><span></span><span></span></template>"#),

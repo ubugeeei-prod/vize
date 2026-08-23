@@ -4,7 +4,7 @@ use alloc::vec::Vec as StdVec;
 
 use vize_carton::String;
 use vize_disegno::expr::{ExprRef, JsExpr};
-use vize_disegno::op::{Attribute, BindOp, BindingOp, DynamicName, ElementOp, OnOp};
+use vize_disegno::op::{Attribute, BindOp, BindingOp, DynamicName, OnOp};
 
 use super::EmitCx;
 use super::EmitError;
@@ -19,11 +19,14 @@ pub(super) struct Patch {
     pub dynamic_props: StdVec<String>,
 }
 
-pub(super) fn admit_bindings(element: &ElementOp<'_>) -> Result<(), EmitError> {
+pub(super) fn admit_bindings(
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+) -> Result<(), EmitError> {
     let mut class = false;
     let mut style = false;
     let mut events = StdVec::new();
-    for binding in element.bindings.iter() {
+    for binding in bindings.iter() {
         match binding {
             BindingOp::Bind(bind) if bind.name.is_none() => {
                 super::merge::admit_object(bind)?;
@@ -48,28 +51,28 @@ pub(super) fn admit_bindings(element: &ElementOp<'_>) -> Result<(), EmitError> {
             _ => return Err(EmitError::Unsupported),
         }
     }
-    if style && has_attr(element, "style") {
+    if style && has_attr(attributes, "style") {
         // Static+dynamic style merge parses CSS declarations; next installment.
         return Err(EmitError::Unsupported);
     }
     Ok(())
 }
 
-pub(super) fn bind_patch(element: &ElementOp<'_>) -> Patch {
-    if super::merge::has_object_bind(element) {
-        return super::merge::object_patch(element);
+pub(super) fn bind_patch(bindings: &[BindingOp<'_>], is_component: bool) -> Patch {
+    if super::merge::has_object_bind(bindings) {
+        return super::merge::object_patch(bindings, is_component);
     }
     let mut flag = 0i32;
     let mut dynamic_props = StdVec::new();
-    for binding in element.bindings.iter() {
+    for binding in bindings.iter() {
         match binding {
             BindingOp::Bind(bind) => {
                 let Ok(name) = static_bind_name(bind) else {
                     continue;
                 };
                 match name {
-                    "class" => flag |= 2,
-                    "style" => flag |= 4,
+                    "class" if !is_component => flag |= 2,
+                    "style" if !is_component => flag |= 4,
                     "key" => {}
                     _ => {
                         flag |= 8;
@@ -88,7 +91,7 @@ pub(super) fn bind_patch(element: &ElementOp<'_>) -> Patch {
                 if !dynamic_props.contains(&key) {
                     dynamic_props.push(key.clone());
                 }
-                if needs_hydration(key.as_str(), on) {
+                if !is_component && needs_hydration(key.as_str(), on) {
                     flag |= 32;
                 }
             }
@@ -103,13 +106,14 @@ pub(super) fn bind_patch(element: &ElementOp<'_>) -> Patch {
 
 pub(super) fn emit_bind_props(
     cx: &mut EmitCx<'_>,
-    element: &ElementOp<'_>,
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
     if_key: Option<&str>,
 ) -> Result<(), EmitError> {
-    if super::merge::has_object_bind(element) {
-        return super::merge::emit_spread_props(cx, element, if_key);
+    if super::merge::has_object_bind(bindings) {
+        return super::merge::emit_spread_props(cx, attributes, bindings, if_key);
     }
-    let pieces = pieces(element)?;
+    let pieces = pieces(attributes, bindings)?;
     emit_props_object(cx, &pieces, if_key, false)
 }
 
@@ -191,12 +195,15 @@ pub(super) enum Piece<'a> {
     On(&'a OnOp<'a>),
 }
 
-pub(super) fn pieces<'a>(element: &'a ElementOp<'a>) -> Result<StdVec<Piece<'a>>, EmitError> {
+pub(super) fn pieces<'a>(
+    attributes: &'a [Attribute<'a>],
+    bindings: &'a [BindingOp<'a>],
+) -> Result<StdVec<Piece<'a>>, EmitError> {
     let mut out = StdVec::new();
-    for attr in element.attributes.iter() {
+    for attr in attributes.iter() {
         out.push(Piece::Attr(attr));
     }
-    for binding in element.bindings.iter() {
+    for binding in bindings.iter() {
         match binding {
             BindingOp::Bind(bind) => out.push(Piece::Bind(bind)),
             BindingOp::On(on) => out.push(Piece::On(on)),
@@ -218,8 +225,8 @@ pub(super) fn static_bind_name<'a>(bind: &'a BindOp<'a>) -> Result<&'a str, Emit
     }
 }
 
-fn has_attr(element: &ElementOp<'_>, name: &str) -> bool {
-    element.attributes.iter().any(|attr| attr.name == name)
+fn has_attr(attributes: &[Attribute<'_>], name: &str) -> bool {
+    attributes.iter().any(|attr| attr.name == name)
 }
 
 fn pieces_have_named(pieces: &[Piece<'_>], name: &str) -> bool {

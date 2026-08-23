@@ -2,7 +2,7 @@
 
 use vize_carton::ToCompactString;
 use vize_disegno::expr::ExprRef;
-use vize_disegno::op::{BindingOp, DynamicName, ElementOp, ForOp, Op};
+use vize_disegno::op::{Attribute, BindingOp, DynamicName, ForOp, Op};
 
 use super::EmitCx;
 use super::EmitError;
@@ -14,13 +14,21 @@ pub(super) fn emit_for(cx: &mut EmitCx<'_>, for_op: &ForOp<'_>) -> Result<(), Em
     let value = value_alias(&for_op.binding.value)?;
     let key_alias = optional_ident(&for_op.binding.key)?;
     let index_alias = optional_ident(&for_op.binding.index)?;
-    let [Op::Element(element)] = for_op.region.ops.as_slice() else {
-        return Err(EmitError::Unsupported);
+    let (bind_len, keyed) = match for_op.region.ops.as_slice() {
+        [Op::Element(element)] => (
+            element.bindings.len(),
+            has_item_key(&element.attributes, &element.bindings),
+        ),
+        [Op::Component(component)] => (
+            component.bindings.len(),
+            has_item_key(&component.attributes, &component.bindings),
+        ),
+        _ => return Err(EmitError::Unsupported),
     };
     let stable = is_numeric(source);
     let flag = if stable {
         64
-    } else if has_item_key(element) {
+    } else if keyed {
         128
     } else {
         256
@@ -65,8 +73,12 @@ pub(super) fn emit_for(cx: &mut EmitCx<'_>, for_op: &ForOp<'_>) -> Result<(), Em
     cx.buf.newline();
     cx.buf.push("return ");
     let _id = cx.walk.mint();
-    cx.walk.skip(element.bindings.len());
-    super::emit_for_item_call(cx, element, stable)?;
+    cx.walk.skip(bind_len);
+    match for_op.region.ops.as_slice() {
+        [Op::Element(element)] => super::emit_for_item_call(cx, element, stable)?,
+        [Op::Component(component)] => super::component::emit_for_item(cx, component)?,
+        _ => return Err(EmitError::Unsupported),
+    }
     cx.buf.deindent();
     cx.buf.newline();
     cx.buf.push("}), ");
@@ -103,9 +115,9 @@ fn is_numeric(source: &str) -> bool {
     !source.is_empty() && source.chars().all(|c| c.is_ascii_digit())
 }
 
-fn has_item_key(element: &ElementOp<'_>) -> bool {
-    element.attributes.iter().any(|attr| attr.name == "key")
-        || element.bindings.iter().any(|binding| {
+fn has_item_key(attributes: &[Attribute<'_>], bindings: &[BindingOp<'_>]) -> bool {
+    attributes.iter().any(|attr| attr.name == "key")
+        || bindings.iter().any(|binding| {
             matches!(
                 binding,
                 BindingOp::Bind(bind) if matches!(bind.name, Some(DynamicName::Static("key")))

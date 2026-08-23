@@ -2,7 +2,7 @@
 //! cannot depend on `vize_atelier_core` (published, `std`; ricalco stays
 //! `no_std + alloc`). Byte-identical output is the P2-11 bar.
 
-use vize_carton::String;
+use vize_carton::{String, ToCompactString};
 
 fn decode_html_entities(s: &str) -> String {
     if !s.contains('&') {
@@ -104,4 +104,23 @@ pub(super) fn escape_js_string(s: &str) -> String {
         }
     }
     result
+}
+
+/// Mirror Vue's `toValidAssetId` (compiler-core utils, issue #4422):
+/// word characters pass through, `-` becomes `_`, every other character
+/// is replaced by its char code as a decimal string.
+pub(super) fn asset_ident(kind: &str, name: &str) -> String {
+    let mut ident = String::from("_");
+    ident.push_str(kind);
+    ident.push('_');
+    for c in name.chars() {
+        if c.is_ascii_alphanumeric() || c == '_' {
+            ident.push(c);
+        } else if c == '-' {
+            ident.push('_');
+        } else {
+            ident.push_str((c as u32).to_compact_string().as_str());
+        }
+    }
+    ident
 }
