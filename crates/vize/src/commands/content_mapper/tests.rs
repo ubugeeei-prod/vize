@@ -5,7 +5,7 @@ use super::test_support::{
 };
 
 #[test]
-fn negotiates_utf8_and_transforms_vue_sfc() {
+fn accepts_legacy_initialize_version_without_echoing_it() {
     let input = frames(&[
         json!({
             "jsonrpc": "2.0",
@@ -25,7 +25,7 @@ fn negotiates_utf8_and_transforms_vue_sfc() {
     ]);
     let responses = exchange(&input);
 
-    assert_eq!(responses[0]["result"]["protocolVersion"], 1);
+    assert!(responses[0]["result"].get("protocolVersion").is_none());
     assert_eq!(responses[0]["result"]["positionEncoding"], "utf-8");
     assert_eq!(responses[0]["result"]["diagnosticSource"], "vize");
     assert!(responses[2]["result"].get("scriptKind").is_none());
@@ -57,7 +57,7 @@ fn negotiates_utf8_without_legacy_protocol_version() {
     })]);
     let responses = exchange(&input);
 
-    assert_eq!(responses[0]["result"]["protocolVersion"], Value::Null);
+    assert!(responses[0]["result"].get("protocolVersion").is_none());
     assert_eq!(responses[0]["result"]["positionEncoding"], "utf-8");
     assert_eq!(responses[0]["result"]["diagnosticSource"], "vize");
 }

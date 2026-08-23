@@ -104,7 +104,7 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
-  CONTENT_MAPPER_TSGO_SHA: "01b9e721f3d7f8037d700daff94f5808c1afb97e"
+  CONTENT_MAPPER_TYPESCRIPT_SHA: "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799"
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -119,18 +119,20 @@ jobs:
       - name: Checkout exact TypeScript Content Mapper revision
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          repository: microsoft/typescript-go
-          ref: ${{ env.CONTENT_MAPPER_TSGO_SHA }}
-          path: typescript-go-content-mapper
+          repository: microsoft/TypeScript
+          ref: ${{ env.CONTENT_MAPPER_TYPESCRIPT_SHA }}
+          path: typescript-content-mapper
           persist-credentials: false
       - name: Setup Go
         uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
         with:
-          go-version-file: typescript-go-content-mapper/go.mod
-          cache-dependency-path: typescript-go-content-mapper/go.sum
-      - name: Verify upstream watcher close regression
-        working-directory: typescript-go-content-mapper
-        run: go test ./internal/lsp/lspwatcher -run '^TestWatcher_CloseWhileWatchFilesReconciles$' -count=1
+          go-version-file: typescript-content-mapper/tsc/go.mod
+          cache-dependency-path: typescript-content-mapper/tsc/go.sum
+      - name: Verify upstream content mapper protocol regressions
+        working-directory: typescript-content-mapper/tsc
+        run: |
+          go test ./internal/contentmapper -run '^(TestRunnerTransform|TestRunnerTransformResponseValidation)$' -count=1
+          go test ./internal/spanmap -run '^(TestOriginalToVirtualOverlappingSpans|TestValidateOriginalOverlapAndFeatures)$' -count=1
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
@@ -149,9 +151,9 @@ jobs:
       - name: Install JavaScript dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Build exact upstream tsgo
-        working-directory: typescript-go-content-mapper
+        working-directory: typescript-content-mapper/tsc
         run: |
-          go build -tags=noembed -trimpath -o "$RUNNER_TEMP/tsgo" ./cmd/tsgo
+          go build -tags=noembed -trimpath -o "$RUNNER_TEMP/tsgo" ./cmd/tsc
           cp internal/bundled/libs/*.d.ts "$RUNNER_TEMP/"
       - name: Build packed Content Mapper runtime
         run: |

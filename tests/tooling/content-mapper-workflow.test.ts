@@ -5,10 +5,12 @@ import { parse } from "yaml";
 
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
-const UPSTREAM_SHA = "01b9e721f3d7f8037d700daff94f5808c1afb97e";
-const WATCHER_CLOSE_TEST = "TestWatcher_CloseWhileWatchFilesReconciles";
-const WATCHER_COMMAND = `go test ./internal/lsp/lspwatcher -run '^${WATCHER_CLOSE_TEST}$' -count=1`;
-const TSGO_BUILD_COMMAND = 'go build -tags=noembed -trimpath -o "$RUNNER_TEMP/tsgo" ./cmd/tsgo';
+const UPSTREAM_SHA = "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799";
+const CONTENT_MAPPER_PROTOCOL_COMMAND =
+  "go test ./internal/contentmapper -run '^(TestRunnerTransform|TestRunnerTransformResponseValidation)$' -count=1";
+const SPANMAP_PROTOCOL_COMMAND =
+  "go test ./internal/spanmap -run '^(TestOriginalToVirtualOverlappingSpans|TestValidateOriginalOverlapAndFeatures)$' -count=1";
+const TSGO_BUILD_COMMAND = 'go build -tags=noembed -trimpath -o "$RUNNER_TEMP/tsgo" ./cmd/tsc';
 const MAESTRO_COMMAND = "cargo test -p vize_maestro -- --quiet";
 const MAESTRO_LOOP = "for iteration in $(seq 1 20); do";
 const MAESTRO_SUCCESS_LOG = 'echo "Content Mapper Maestro lifecycle cycle $iteration/20 passed"';
@@ -74,23 +76,40 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
     assert.match(workflow, new RegExp(relevantPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
 
-  assert.match(workflow, new RegExp(`CONTENT_MAPPER_TSGO_SHA: "${UPSTREAM_SHA}"`));
-  assert.match(job, /repository: microsoft\/typescript-go/);
-  assert.match(job, /ref: \$\{\{ env\.CONTENT_MAPPER_TSGO_SHA \}\}/);
+  assert.match(workflow, new RegExp(`CONTENT_MAPPER_TYPESCRIPT_SHA: "${UPSTREAM_SHA}"`));
+  assert.match(job, /repository: microsoft\/TypeScript/);
+  assert.match(job, /ref: \$\{\{ env\.CONTENT_MAPPER_TYPESCRIPT_SHA \}\}/);
   assert.match(job, /uses: actions\/setup-go@[0-9a-f]{40}\s+# v6\.1\.0/);
   assert.match(
     job,
     /uses: \.\/\.github\/actions\/setup-rust-sticky-cache\n\s+with:\n\s+key: content-mapper-conformance\n\s+cache-key-suffix: \$\{\{ runner\.os \}\}-\$\{\{ runner\.arch \}\}/,
   );
-  assert.match(job, /go-version-file: typescript-go-content-mapper\/go\.mod/);
-  const watcherSteps = stepsRunning(steps, WATCHER_COMMAND);
+  assert.match(job, /go-version-file: typescript-content-mapper\/tsc\/go\.mod/);
+  const contentMapperProtocolSteps = stepsRunning(steps, CONTENT_MAPPER_PROTOCOL_COMMAND);
+  const spanmapProtocolSteps = stepsRunning(steps, SPANMAP_PROTOCOL_COMMAND);
   const buildSteps = stepsRunning(steps, TSGO_BUILD_COMMAND);
-  assert.equal(watcherSteps.length, 1, "expected exactly one watcher regression step");
+  assert.equal(
+    contentMapperProtocolSteps.length,
+    1,
+    "expected exactly one upstream content mapper protocol regression step",
+  );
+  assert.equal(
+    spanmapProtocolSteps.length,
+    1,
+    "expected exactly one upstream spanmap regression step",
+  );
   assert.equal(buildSteps.length, 1, "expected exactly one exact tsgo build step");
-  assert.equal(steps[watcherSteps[0]]["working-directory"], "typescript-go-content-mapper");
+  assert.equal(
+    steps[contentMapperProtocolSteps[0]]["working-directory"],
+    "typescript-content-mapper/tsc",
+  );
+  assert.equal(
+    steps[spanmapProtocolSteps[0]]["working-directory"],
+    "typescript-content-mapper/tsc",
+  );
   assert.ok(
-    watcherSteps[0] < buildSteps[0],
-    "watcher regression must run before the exact tsgo build",
+    contentMapperProtocolSteps[0] < buildSteps[0] && spanmapProtocolSteps[0] < buildSteps[0],
+    "upstream protocol regressions must run before the exact tsgo build",
   );
   assert.match(job, /cp internal\/bundled\/libs\/\*\.d\.ts "\$RUNNER_TEMP\/"/);
   assert.match(job, /VIZE_TEST_CONTENT_MAPPER_TSGO: \$\{\{ runner\.temp \}\}\/tsgo/);

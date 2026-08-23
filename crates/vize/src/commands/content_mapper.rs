@@ -1,7 +1,7 @@
 //! TypeScript content-mapper protocol server.
 //!
 //! Speaks the TypeScript content-mapper protocol:
-//! `initialize` negotiates the position encoding, `openProject` and
+//! `initialize` negotiates capabilities and the position encoding, `openProject` and
 //! `closeProject` bracket each TypeScript project's mapper options and
 //! compiler options, and `transform` projects one Vue SFC into virtual
 //! TypeScript for an opened project handle.
@@ -115,13 +115,10 @@ fn serve<R: BufRead, W: Write>(reader: &mut R, writer: &mut W) -> io::Result<()>
                 }
 
                 initialized = true;
-                let mut result = json!({
+                let result = json!({
                     "positionEncoding": "utf-8",
                     "diagnosticSource": "vize",
                 });
-                if params.protocol_version.is_some() {
-                    result["protocolVersion"] = json!(PROTOCOL_VERSION);
-                }
                 write_result(writer, id, result)?;
             }
             "openProject" | "closeProject" | "transform" if !initialized => {
