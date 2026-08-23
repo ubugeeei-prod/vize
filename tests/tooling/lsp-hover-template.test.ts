@@ -26,12 +26,13 @@ test("vize lsp hovers template interpolation of a script ref", async () => {
     });
 
     const source = `<script setup lang="ts">
-import { ref } from 'vue'
-const greeting = ref('hello')
+import { computed, ref } from 'vue'
+const greeting=ref('hello')
+const doubled=computed(()=> 21 * 2)
 </script>
 
 <template>
-  <p>{{ greeting }}</p>
+  <p>{{ greeting }} {{ doubled }}</p>
 </template>
 `;
     const filePath = path.join(workspaceDir, "HoverTemplate.vue");
@@ -62,6 +63,16 @@ const greeting = ref('hello')
     assert.match(hoverText, /greeting/);
     assert.match(hoverText, /Ref<string>/);
     assert.match(hoverText, /Template binding from script/);
+
+    const computedOffset = source.lastIndexOf("doubled") + "doubled".length;
+    const computedHover = (await session.request("textDocument/hover", {
+      textDocument: { uri },
+      position: offsetToPosition(source, computedOffset),
+    })) as { contents?: unknown } | null;
+    const computedText = hoverToText(computedHover);
+    assert.match(computedText, /doubled/);
+    assert.match(computedText, /ComputedRef<number>/);
+    assert.doesNotMatch(computedText, /ComputedRef<unknown>/);
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });
