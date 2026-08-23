@@ -82,6 +82,36 @@ test("an outside mapping reached only through references still links the unique 
   }
 });
 
+function writeFixtureVue(fixtureRoot: string, version: string) {
+  const packageRoot = path.join(fixtureRoot, "node_modules", "vue");
+  fs.mkdirSync(packageRoot, { recursive: true });
+  fs.writeFileSync(
+    path.join(packageRoot, "package.json"),
+    `{"name":"vue","version":"${version}"}\n`,
+  );
+}
+
+test("several copies reached through extends collapse to the matching Vue peer", () => {
+  const { outer, fixtureRoot } = scaffold();
+  try {
+    writeFixtureVue(fixtureRoot, "3.5.30");
+    writeStoreCopy(fixtureRoot, "vue-router@5.1.0_vue@3.5.30", "vue-router");
+    writeStoreCopy(fixtureRoot, "vue-router@5.1.0_vue@3.5.13", "vue-router");
+    writeStoreCopy(fixtureRoot, "vue-router@5.1.0_vue@3.4.38", "vue-router");
+    writeAppPaths(fixtureRoot);
+    const configPath = path.join(fixtureRoot, ".nuxt", "tsconfig.check.json");
+    fs.writeFileSync(configPath, `{ "extends": "./tsconfig.app.json" }\n`);
+    assert.deepEqual(isolateUniqueLocalTypePackages(fixtureRoot, configPath), [
+      {
+        name: "vue-router",
+        target: "node_modules/.pnpm/vue-router@5.1.0_vue@3.5.30/node_modules/vue-router",
+      },
+    ]);
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
 test("several copies reached through extends are still not guessed between", () => {
   const { outer, fixtureRoot } = scaffold();
   try {

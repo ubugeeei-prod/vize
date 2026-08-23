@@ -9,8 +9,9 @@ import { isolateUniqueLocalTypePackages } from "../../tools/fixtures/typecheck-b
 /**
  * Nuxt writes `paths` to a package it resolved above the fixture. Isolation
  * will not link that target in. If the fixture's pnpm store holds exactly one
- * copy of the name, this repair uses that copy; if it holds several, it does
- * not guess (#4461).
+ * copy of the name, this repair uses that copy. If it holds several, it uses
+ * the fixture's own `vue` version to pick the matching peer suffix, and still
+ * does not guess when that does not select exactly one copy (#4461).
  */
 
 function scaffold() {
@@ -39,6 +40,15 @@ function writeConfig(fixtureRoot: string, paths: Record<string, string[]>) {
     `// generated\n${JSON.stringify({ compilerOptions: { paths } }, null, 2)}\n`,
   );
   return configPath;
+}
+
+function writeFixtureVue(fixtureRoot: string, version: string) {
+  const packageRoot = path.join(fixtureRoot, "node_modules", "vue");
+  fs.mkdirSync(packageRoot, { recursive: true });
+  fs.writeFileSync(
+    path.join(packageRoot, "package.json"),
+    `{"name":"vue","version":"${version}"}\n`,
+  );
 }
 
 test("an outside target with exactly one in-fixture copy is linked from that copy", () => {
@@ -97,6 +107,59 @@ test("a name no ancestor provides is left alone", () => {
     });
     assert.deepEqual(isolateUniqueLocalTypePackages(fixtureRoot, configPath), []);
     assert.equal(fs.existsSync(path.join(fixtureRoot, "node_modules", "defu")), false);
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test("several copies collapse to the one whose Vue peer matches the fixture", () => {
+  const { outer, fixtureRoot } = scaffold();
+  try {
+    writeFixtureVue(fixtureRoot, "3.5.30");
+    writeStoreCopy(fixtureRoot, "vue-router@5.1.0_vue@3.5.30", "vue-router");
+    writeStoreCopy(fixtureRoot, "vue-router@5.1.0_vue@3.5.13", "vue-router");
+    writeStoreCopy(fixtureRoot, "vue-router@5.1.0_vue@3.4.38", "vue-router");
+    const configPath = writeConfig(fixtureRoot, {
+      "vue-router": ["../../node_modules/vue-router"],
+    });
+    assert.deepEqual(isolateUniqueLocalTypePackages(fixtureRoot, configPath), [
+      {
+        name: "vue-router",
+        target: "node_modules/.pnpm/vue-router@5.1.0_vue@3.5.30/node_modules/vue-router",
+      },
+    ]);
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test("several copies whose Vue peers miss the fixture stay unlinked", () => {
+  const { outer, fixtureRoot } = scaffold();
+  try {
+    writeFixtureVue(fixtureRoot, "3.5.30");
+    writeStoreCopy(fixtureRoot, "vue-router@5.1.0_vue@3.5.13", "vue-router");
+    writeStoreCopy(fixtureRoot, "vue-router@5.1.0_vue@3.4.38", "vue-router");
+    const configPath = writeConfig(fixtureRoot, {
+      "vue-router": ["../../node_modules/vue-router"],
+    });
+    assert.deepEqual(isolateUniqueLocalTypePackages(fixtureRoot, configPath), []);
+    assert.equal(fs.existsSync(path.join(fixtureRoot, "node_modules", "vue-router")), false);
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test("several copies that share the fixture Vue peer are still not guessed between", () => {
+  const { outer, fixtureRoot } = scaffold();
+  try {
+    writeFixtureVue(fixtureRoot, "3.5.30");
+    writeStoreCopy(fixtureRoot, "vue-router@5.1.0_vue@3.5.30", "vue-router");
+    writeStoreCopy(fixtureRoot, "vue-router@4.5.1_vue@3.5.30", "vue-router");
+    const configPath = writeConfig(fixtureRoot, {
+      "vue-router": ["../../node_modules/vue-router"],
+    });
+    assert.deepEqual(isolateUniqueLocalTypePackages(fixtureRoot, configPath), []);
+    assert.equal(fs.existsSync(path.join(fixtureRoot, "node_modules", "vue-router")), false);
   } finally {
     fs.rmSync(outer, { recursive: true, force: true });
   }
