@@ -5,7 +5,7 @@ use vize_carton::String;
 /// Vue helpers this installment can mention, ranked the way
 /// `vue_helper_import_rank` orders the shipped preamble (`withKeys` /
 /// `withModifiers` before `toDisplayString` before vnode creates before
-/// class/style normalizers before `openBlock` before block creates
+/// class/style / props normalizers before `openBlock` before block creates
 /// before `Fragment` before `createTextVNode` / `createCommentVNode`
 /// before `renderList`). Same-rank helpers keep this array order
 /// (`withKeys` before `withModifiers`).
@@ -17,6 +17,9 @@ enum Helper {
     CreateElementVNode,
     NormalizeClass,
     NormalizeStyle,
+    NormalizeProps,
+    GuardReactiveProps,
+    MergeProps,
     OpenBlock,
     CreateElementBlock,
     Fragment,
@@ -26,13 +29,16 @@ enum Helper {
 }
 
 impl Helper {
-    const ALL: [Self; 12] = [
+    const ALL: [Self; 15] = [
         Self::WithKeys,
         Self::WithModifiers,
         Self::ToDisplayString,
         Self::CreateElementVNode,
         Self::NormalizeClass,
         Self::NormalizeStyle,
+        Self::NormalizeProps,
+        Self::GuardReactiveProps,
+        Self::MergeProps,
         Self::OpenBlock,
         Self::CreateElementBlock,
         Self::Fragment,
@@ -55,6 +61,9 @@ impl Helper {
             Self::CreateComment => 512,
             Self::Fragment => 1024,
             Self::RenderList => 2048,
+            Self::NormalizeProps => 4096,
+            Self::GuardReactiveProps => 8192,
+            Self::MergeProps => 16384,
         }
     }
 
@@ -66,6 +75,9 @@ impl Helper {
             Self::CreateElementVNode => "createElementVNode",
             Self::NormalizeClass => "normalizeClass",
             Self::NormalizeStyle => "normalizeStyle",
+            Self::NormalizeProps => "normalizeProps",
+            Self::GuardReactiveProps => "guardReactiveProps",
+            Self::MergeProps => "mergeProps",
             Self::OpenBlock => "openBlock",
             Self::CreateElementBlock => "createElementBlock",
             Self::Fragment => "Fragment",
@@ -83,6 +95,9 @@ impl Helper {
             Self::CreateElementVNode => "_createElementVNode",
             Self::NormalizeClass => "_normalizeClass",
             Self::NormalizeStyle => "_normalizeStyle",
+            Self::NormalizeProps => "_normalizeProps",
+            Self::GuardReactiveProps => "_guardReactiveProps",
+            Self::MergeProps => "_mergeProps",
             Self::OpenBlock => "_openBlock",
             Self::CreateElementBlock => "_createElementBlock",
             Self::Fragment => "_Fragment",
@@ -169,6 +184,18 @@ impl Buf {
         self.used |= Helper::NormalizeStyle.bit();
     }
 
+    pub(super) fn use_normalize_props(&mut self) {
+        self.used |= Helper::NormalizeProps.bit();
+    }
+
+    pub(super) fn use_guard_reactive_props(&mut self) {
+        self.used |= Helper::GuardReactiveProps.bit();
+    }
+
+    pub(super) fn use_merge_props(&mut self) {
+        self.used |= Helper::MergeProps.bit();
+    }
+
     pub(super) fn use_create_comment(&mut self) {
         self.used |= Helper::CreateComment.bit();
     }
@@ -217,6 +244,18 @@ impl Buf {
         Helper::NormalizeStyle.alias()
     }
 
+    pub(super) fn normalize_props_alias() -> &'static str {
+        Helper::NormalizeProps.alias()
+    }
+
+    pub(super) fn guard_reactive_props_alias() -> &'static str {
+        Helper::GuardReactiveProps.alias()
+    }
+
+    pub(super) fn merge_props_alias() -> &'static str {
+        Helper::MergeProps.alias()
+    }
+
     pub(super) fn create_comment_alias() -> &'static str {
         Helper::CreateComment.alias()
     }
@@ -241,7 +280,7 @@ impl Buf {
     /// root static-props hoist (the shipped codegen appends hoists to
     /// the helper preamble).
     pub(super) fn preamble(&self) -> String {
-        let listed: [Helper; 12] = Helper::ALL;
+        let listed: [Helper; 15] = Helper::ALL;
         let mut n = 0;
         for helper in listed {
             if self.used & helper.bit() != 0 {

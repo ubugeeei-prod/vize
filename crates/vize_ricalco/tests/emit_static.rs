@@ -175,13 +175,6 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn a_vbind_object_spread_is_unsupported_this_installment() {
-    with_transformed(r#"<div v-bind="attrs"></div>"#, |lowered, _, facts, _| {
-        assert_eq!(emit_dom(lowered, facts), Err(EmitError::Unsupported));
-    });
-}
-
-#[test]
 fn a_component_root_is_unsupported_this_installment() {
     with_transformed("<MyComp/>", |lowered, _, facts, _| {
         assert_eq!(emit_dom(lowered, facts), Err(EmitError::Unsupported));

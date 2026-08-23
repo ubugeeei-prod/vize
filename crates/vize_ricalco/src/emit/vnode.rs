@@ -11,8 +11,9 @@ use super::buf::Buf;
 use super::children::{
     children_need_text_flag, emit_create_text_vnode, emit_interpolation, emit_text_like,
 };
+use super::flag::emit_patch_flag;
 use super::js::{escape_js_string, is_valid_js_identifier};
-use super::props::{admit_bindings, bind_patch, emit_bind_props, emit_patch_flag};
+use super::props::{admit_bindings, bind_patch, emit_bind_props};
 
 pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), EmitError> {
     admit_unique_root(root)?;

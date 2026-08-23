@@ -9,19 +9,23 @@
 //!
 //! Installment 5 emits **static native HTML**, interpolations,
 //! mixed text siblings, static-name `ui.bind`, static-name `ui.on`
-//! (including event/key/option modifiers), native `ui.if`, and
-//! **native `ui.for`** (single HTML element `v-for`, identifier
-//! aliases). Object-spread `v-bind`/`v-on`, `.native`, template
-//! fragments, filters, and components stay [`EmitError::Unsupported`].
-//! The old lane stays the shipped compile path; [`super::DOM_LANE_FLAG`]
-//! is named here and *read* in the atelier_dom witness.
+//! (including event/key/option modifiers), native `ui.if`, **native
+//! `ui.for`**, and **object-spread `v-bind`** (`normalizeProps` /
+//! `mergeProps`). Object `v-on`, `.native`, template fragments, filters,
+//! and components stay [`EmitError::Unsupported`]. The old lane stays
+//! the shipped compile path; [`super::DOM_LANE_FLAG`] is named here and
+//! *read* in the atelier_dom witness.
 
 #[path = "emit/buf.rs"]
 mod buf;
 #[path = "emit/children.rs"]
 mod children;
+#[path = "emit/flag.rs"]
+mod flag;
 #[path = "emit/js.rs"]
 mod js;
+#[path = "emit/merge.rs"]
+mod merge;
 #[path = "emit/on.rs"]
 mod on;
 #[path = "emit/props.rs"]

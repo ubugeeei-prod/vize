@@ -1,7 +1,7 @@
 //! P2-11 installment 5 witness: static native HTML, interpolations,
 //! mixed text siblings, static-name binds, static-name events including
-//! event/key/option modifiers, native v-if, and native v-for, compared
-//! **byte-for-byte** including helper usage.
+//! event/key/option modifiers, native v-if, native v-for, and
+//! object-spread v-bind, compared **byte-for-byte** including helper usage.
 //!
 //! `vize_atelier_dom` is published; the Davinci crates are not. The
 //! comparator therefore rides stripped-on-publish dev-deps (the same
@@ -115,6 +115,22 @@ const BATTERY: &[(&str, &str)] = &[
     (
         "v_for_index",
         r#"<div v-for="(item, i) in list" :key="i">{{ item }}</div>"#,
+    ),
+    ("object_bind", r#"<div v-bind="obj"></div>"#),
+    ("attr_then_object_bind", r#"<div id="x" v-bind="obj"></div>"#),
+    ("object_bind_then_attr", r#"<div v-bind="obj" id="x"></div>"#),
+    ("named_bind_then_object", r#"<div :id="foo" v-bind="obj"></div>"#),
+    ("class_then_object_bind", r#"<div class="a" v-bind="obj"></div>"#),
+    (
+        "static_dynamic_class_then_object",
+        r#"<div class="a" :class="cls" v-bind="obj"></div>"#,
+    ),
+    ("click_then_object_bind", r#"<div @click="h" v-bind="obj"></div>"#),
+    ("keyup_then_object_bind", r#"<div @keyup="h" v-bind="obj"></div>"#),
+    ("v_if_object_bind", r#"<div v-if="ok" v-bind="obj">x</div>"#),
+    (
+        "class_object_then_dynamic_class",
+        r#"<div class="a" v-bind="obj" :class="cls"></div>"#,
     ),
 ];
 

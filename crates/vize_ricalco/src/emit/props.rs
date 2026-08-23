@@ -2,7 +2,7 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{String, ToCompactString};
+use vize_carton::String;
 use vize_disegno::expr::{ExprRef, JsExpr};
 use vize_disegno::op::{Attribute, BindOp, BindingOp, DynamicName, ElementOp, OnOp};
 
@@ -25,6 +25,9 @@ pub(super) fn admit_bindings(element: &ElementOp<'_>) -> Result<(), EmitError> {
     let mut events = StdVec::new();
     for binding in element.bindings.iter() {
         match binding {
+            BindingOp::Bind(bind) if bind.name.is_none() => {
+                super::merge::admit_object(bind)?;
+            }
             BindingOp::Bind(bind) => {
                 let name = static_bind_name(bind)?;
                 if name == "ref" || !bind.modifiers.is_empty() {
@@ -53,6 +56,9 @@ pub(super) fn admit_bindings(element: &ElementOp<'_>) -> Result<(), EmitError> {
 }
 
 pub(super) fn bind_patch(element: &ElementOp<'_>) -> Patch {
+    if super::merge::has_object_bind(element) {
+        return super::merge::object_patch(element);
+    }
     let mut flag = 0i32;
     let mut dynamic_props = StdVec::new();
     for binding in element.bindings.iter() {
@@ -100,8 +106,20 @@ pub(super) fn emit_bind_props(
     element: &ElementOp<'_>,
     if_key: Option<&str>,
 ) -> Result<(), EmitError> {
+    if super::merge::has_object_bind(element) {
+        return super::merge::emit_spread_props(cx, element, if_key);
+    }
     let pieces = pieces(element)?;
-    let skip_class = has_bind_named(element, "class");
+    emit_props_object(cx, &pieces, if_key, false)
+}
+
+pub(super) fn emit_props_object(
+    cx: &mut EmitCx<'_>,
+    pieces: &[Piece<'_>],
+    if_key: Option<&str>,
+    skip_normalize: bool,
+) -> Result<(), EmitError> {
+    let skip_class = pieces_have_named(pieces, "class");
     let skip_key = if_key.is_some();
     let visible: StdVec<&Piece<'_>> = pieces
         .iter()
@@ -123,9 +141,9 @@ pub(super) fn emit_bind_props(
     }
     let extra = usize::from(if_key.is_some());
     let multiline = visible.len() + extra > 1
-        || has_bind_named(element, "class")
-        || has_bind_named(element, "style")
-        || has_inline_on(element);
+        || pieces_have_named(pieces, "class")
+        || pieces_have_named(pieces, "style")
+        || pieces_have_inline_on(pieces);
     if multiline {
         cx.buf.push("{");
         cx.buf.indent();
@@ -152,7 +170,7 @@ pub(super) fn emit_bind_props(
         }
         match piece {
             Piece::Attr(attr) => emit_static_pair(cx, attr),
-            Piece::Bind(bind) => emit_bind_pair(cx, element, bind)?,
+            Piece::Bind(bind) => emit_bind_pair(cx, pieces, bind, skip_normalize)?,
             Piece::On(on) => emit_on_pair(cx, on)?,
         }
         i += 1;
@@ -167,43 +185,13 @@ pub(super) fn emit_bind_props(
     Ok(())
 }
 
-const PATCH_NAMES: [(i32, &str); 6] = [
-    (1, "TEXT"),
-    (2, "CLASS"),
-    (4, "STYLE"),
-    (8, "PROPS"),
-    (16, "FULL_PROPS"),
-    (32, "NEED_HYDRATION"),
-];
-
-pub(super) fn emit_patch_flag(cx: &mut EmitCx<'_>, flag: i32) {
-    cx.buf.push(", ");
-    cx.buf.push(flag.to_compact_string().as_str());
-    cx.buf.push(" /* ");
-    let mut first = true;
-    for (bit, name) in PATCH_NAMES {
-        if flag & bit == 0 {
-            continue;
-        }
-        if !first {
-            cx.buf.push(", ");
-        }
-        first = false;
-        cx.buf.push(name);
-    }
-    if first {
-        cx.buf.push("UNKNOWN");
-    }
-    cx.buf.push(" */");
-}
-
-enum Piece<'a> {
+pub(super) enum Piece<'a> {
     Attr(&'a Attribute<'a>),
     Bind(&'a BindOp<'a>),
     On(&'a OnOp<'a>),
 }
 
-fn pieces<'a>(element: &'a ElementOp<'a>) -> Result<StdVec<Piece<'a>>, EmitError> {
+pub(super) fn pieces<'a>(element: &'a ElementOp<'a>) -> Result<StdVec<Piece<'a>>, EmitError> {
     let mut out = StdVec::new();
     for attr in element.attributes.iter() {
         out.push(Piece::Attr(attr));
@@ -223,16 +211,26 @@ fn pieces<'a>(element: &'a ElementOp<'a>) -> Result<StdVec<Piece<'a>>, EmitError
     Ok(out)
 }
 
-fn static_bind_name<'a>(bind: &'a BindOp<'a>) -> Result<&'a str, EmitError> {
+pub(super) fn static_bind_name<'a>(bind: &'a BindOp<'a>) -> Result<&'a str, EmitError> {
     match bind.name {
         Some(DynamicName::Static(name)) => Ok(name),
         Some(DynamicName::Dynamic(_)) | None => Err(EmitError::Unsupported),
     }
 }
 
-fn has_inline_on(element: &ElementOp<'_>) -> bool {
-    element.bindings.iter().any(|binding| match binding {
-        BindingOp::On(on) => {
+fn has_attr(element: &ElementOp<'_>, name: &str) -> bool {
+    element.attributes.iter().any(|attr| attr.name == name)
+}
+
+fn pieces_have_named(pieces: &[Piece<'_>], name: &str) -> bool {
+    pieces.iter().any(|piece| {
+        matches!(piece, Piece::Bind(bind) if matches!(bind.name, Some(DynamicName::Static(n)) if n == name))
+    })
+}
+
+fn pieces_have_inline_on(pieces: &[Piece<'_>]) -> bool {
+    pieces.iter().any(|piece| match piece {
+        Piece::On(on) => {
             wraps_on(on)
                 || match on.handler {
                     Some(ExprRef::Js(js)) => is_inline_handler_source(js.source),
@@ -240,16 +238,6 @@ fn has_inline_on(element: &ElementOp<'_>) -> bool {
                 }
         }
         _ => false,
-    })
-}
-
-fn has_attr(element: &ElementOp<'_>, name: &str) -> bool {
-    element.attributes.iter().any(|attr| attr.name == name)
-}
-
-fn has_bind_named(element: &ElementOp<'_>, name: &str) -> bool {
-    element.bindings.iter().any(|binding| {
-        matches!(binding, BindingOp::Bind(bind) if matches!(bind.name, Some(DynamicName::Static(n)) if n == name))
     })
 }
 
@@ -264,39 +252,39 @@ fn emit_static_pair(cx: &mut EmitCx<'_>, attr: &Attribute<'_>) {
 
 fn emit_bind_pair(
     cx: &mut EmitCx<'_>,
-    element: &ElementOp<'_>,
+    pieces: &[Piece<'_>],
     bind: &BindOp<'_>,
+    skip_normalize: bool,
 ) -> Result<(), EmitError> {
     let name = static_bind_name(bind)?;
     let js = js_value(bind)?;
     push_key(cx, name);
     cx.buf.push(": ");
     match name {
-        "class" => emit_class_value(cx, element, js),
-        "style" => emit_style_value(cx, js),
+        "class" => emit_class_value(cx, pieces, bind, js, skip_normalize),
+        "style" => emit_style_value(cx, js, skip_normalize),
         _ => cx.buf.push(js.source),
     }
     Ok(())
 }
 
-fn emit_class_value(cx: &mut EmitCx<'_>, element: &ElementOp<'_>, js: &JsExpr<'_>) {
-    cx.buf.use_normalize_class();
-    cx.buf.push(Buf::normalize_class_alias());
-    cx.buf.push("(");
-    if let Some(static_class) = element.attributes.iter().find(|attr| attr.name == "class") {
-        let before = static_class.span.start
-            <= element
-                .bindings
-                .iter()
-                .find_map(|binding| match binding {
-                    BindingOp::Bind(bind)
-                        if matches!(bind.name, Some(DynamicName::Static("class"))) =>
-                    {
-                        Some(bind.span.start)
-                    }
-                    _ => None,
-                })
-                .unwrap_or(u32::MAX);
+fn emit_class_value(
+    cx: &mut EmitCx<'_>,
+    pieces: &[Piece<'_>],
+    bind: &BindOp<'_>,
+    js: &JsExpr<'_>,
+    skip_normalize: bool,
+) {
+    if !skip_normalize {
+        cx.buf.use_normalize_class();
+        cx.buf.push(Buf::normalize_class_alias());
+        cx.buf.push("(");
+    }
+    if let Some(static_class) = pieces.iter().find_map(|piece| match piece {
+        Piece::Attr(attr) if attr.name == "class" => Some(*attr),
+        _ => None,
+    }) {
+        let before = static_class.span.start <= bind.span.start;
         cx.buf.push("[");
         if before {
             cx.buf.push("\"");
@@ -315,23 +303,26 @@ fn emit_class_value(cx: &mut EmitCx<'_>, element: &ElementOp<'_>, js: &JsExpr<'_
     } else {
         cx.buf.push(js.source);
     }
-    cx.buf.push(")");
+    if !skip_normalize {
+        cx.buf.push(")");
+    }
 }
 
-fn emit_style_value(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {
+fn emit_style_value(cx: &mut EmitCx<'_>, js: &JsExpr<'_>, skip_normalize: bool) {
     let object_literal = js.source.trim_start().starts_with('{');
-    if !object_literal {
+    let wrap = !skip_normalize && !object_literal;
+    if wrap {
         cx.buf.use_normalize_style();
         cx.buf.push(Buf::normalize_style_alias());
         cx.buf.push("(");
     }
     cx.buf.push(js.source);
-    if !object_literal {
+    if wrap {
         cx.buf.push(")");
     }
 }
 
-fn js_value<'a>(bind: &'a BindOp<'a>) -> Result<&'a JsExpr<'a>, EmitError> {
+pub(super) fn js_value<'a>(bind: &'a BindOp<'a>) -> Result<&'a JsExpr<'a>, EmitError> {
     match bind.value {
         Some(ExprRef::Js(js)) => Ok(js),
         _ => Err(EmitError::Unsupported),
