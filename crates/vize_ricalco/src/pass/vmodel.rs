@@ -77,15 +77,18 @@
 use alloc::vec::Vec as StdVec;
 
 use vize_carton::String;
-use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
-use vize_davinci::id::NodeId;
+use vize_davinci::diagnostic::Diagnostic;
 use vize_davinci::pass::{Fusability, PassDesc, PassKind, Preserved};
 use vize_davinci::side_table::SideTable;
-use vize_disegno::op::{BindingOp, ModelOp, Op};
+use vize_disegno::op::{BindingOp, Op};
 use vize_disegno::provenance::ProvenanceRecord;
 
-use super::walk::{PageWalk, assert_accounting};
+use super::walk::{assert_accounting, PageWalk};
 use crate::lower::Lowered;
+
+#[path = "vmodel/check.rs"]
+mod check;
+use check::check_model;
 
 /// The pass name in pipeline strings and folio pages.
 pub const NAME: &str = "v-model";
@@ -174,10 +177,10 @@ pub fn run(lowered: &mut Lowered<'_>) -> SideTable<ModelFacts> {
     channels.facts
 }
 
-struct Channels<'l> {
-    diagnostics: &'l mut StdVec<Diagnostic>,
-    provenance: &'l mut StdVec<ProvenanceRecord>,
-    facts: SideTable<ModelFacts>,
+pub(super) struct Channels<'l> {
+    pub(super) diagnostics: &'l mut StdVec<Diagnostic>,
+    pub(super) provenance: &'l mut StdVec<ProvenanceRecord>,
+    pub(super) facts: SideTable<ModelFacts>,
 }
 
 fn region<'a>(
@@ -298,54 +301,5 @@ fn with_slot_scope(
             env.pop();
         }
         None => body(env),
-    }
-}
-
-/// The two legacy checks, in the legacy order, first failure wins.
-fn check_model(
-    channels: &mut Channels<'_>,
-    env: &StdVec<String>,
-    id: Option<NodeId>,
-    model: &ModelOp<'_>,
-) {
-    let read = model.contract.read.source();
-    let (fault, message, rule) = if env.iter().any(|name| name.as_str() == read) {
-        (
-            ModelFault::OnScope,
-            ON_SCOPE_MESSAGE,
-            "error.v-model-on-scope",
-        )
-    } else {
-        let component = model.attributes.iter().any(|attribute| {
-            attribute.name == "element-kind" && attribute.value == Some("component")
-        });
-        let argument = model
-            .attributes
-            .iter()
-            .any(|attribute| attribute.name == "argument");
-        if component || !argument {
-            return;
-        }
-        (
-            ModelFault::ArgOnElement,
-            ARG_ON_ELEMENT_MESSAGE,
-            "error.v-model-arg-on-element",
-        )
-    };
-    channels.diagnostics.push(Diagnostic::new(
-        Severity::Error,
-        Stage::Semantic,
-        model.span,
-        String::from(message),
-    ));
-    channels.provenance.push(ProvenanceRecord {
-        rule: String::from(rule),
-        node: id,
-        before: String::from(read),
-        after: String::default(),
-        span: model.span,
-    });
-    if let Some(id) = id {
-        channels.facts.insert(id, ModelFacts { fault });
     }
 }
