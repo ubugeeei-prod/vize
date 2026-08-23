@@ -1,24 +1,6 @@
-/// Publishes a single npm package directory in a rerun-safe way.
-/// The script is intentionally defensive because GitHub Actions releases often
-/// fail in the gap between "the registry accepted the publish" and "the version
-/// is visible from registry reads". To make the workflow resilient, the script:
-/// 1. Reads the package name and version from `package.json`.
-/// 2. Checks whether the exact version is already visible in the registry.
-/// 3. Runs `vp pm publish` with retry/backoff when needed.
-/// 4. Treats "publish returned non-zero but the version is now visible" as a
-///    success, because that usually means the server-side publish completed.
-/// 5. Normalizes publish manifests so detached release artifacts do not retain
-///    unresolved `workspace:*` or `catalog:*` dependency specs.
-/// 6. Waits for both the published version and the expected dist-tag to become
-///    readable before reporting success.
-/// This makes the script suitable for trusted publishing flows where the most
-/// common failures are transient registry propagation issues rather than actual
-/// package content problems.
+/// Publishes one npm package with rerun-safe registry visibility checks.
 
-/// Minimal package metadata that we need to reason about registry state.
-/// Keeping the data in a small struct makes the retry / visibility helpers read
-/// more clearly and avoids repeatedly recomputing name, version, and dist-tag
-/// from the package manifest.
+/// Minimal package metadata for registry checks.
 struct NpmPackageInfo {
   name : String
   version : String
@@ -113,10 +95,7 @@ fn find_repo_root(start : String) -> String? {
   }
 }
 
-/// Reads and parses a `package.json` file, returning `None` on any failure.
-/// We intentionally collapse IO and JSON parsing failures into a single
-/// optional result because the caller only needs to know whether manifest
-/// discovery succeeded before producing a human-readable CLI error.
+/// Reads and parses a `package.json`, returning `None` on failure.
 fn read_package_json(path : String) -> Json? {
   try {
     Some(@json.parse(@xfs.read_file_to_string(path)))
@@ -139,10 +118,7 @@ fn package_version(json : Json) -> String? {
   Some(version)
 }
 
-/// Parses a positive integer from a string and falls back on invalid input.
-/// Retry and delay settings are user-configurable through environment
-/// variables and CLI flags, so we keep the parser forgiving and preserve a
-/// safe default instead of aborting on malformed values.
+/// Parses a positive integer and falls back on invalid input.
 fn positive_int_or(value : String, fallback : Int) -> Int {
   try {
     let parsed = @string.parse_int(value)
@@ -156,7 +132,6 @@ fn positive_int_or(value : String, fallback : Int) -> Int {
   }
 }
 
-/// Reads a retry-related integer from the environment with a validated default.
 fn env_positive_int(name : String, fallback : Int) -> Int {
   match @env.get_env_var(name) {
     Some(value) if value != "" => positive_int_or(value, fallback)
@@ -165,9 +140,6 @@ fn env_positive_int(name : String, fallback : Int) -> Int {
 }
 
 /// Derives the npm dist-tag for a package version.
-/// `NPM_TAG` is allowed to override the heuristic so the workflow can force a
-/// tag explicitly. Otherwise, prerelease suffixes map to the conventional
-/// `alpha`, `beta`, and `rc` tags, while stable releases use `latest`.
 fn npm_tag(version : String) -> String {
   match @env.get_env_var("NPM_TAG") {
     Some(value) if value != "" => value
@@ -477,7 +449,19 @@ async fn run_app() -> Int {
     println(
       "Attempt \{attempt}/\{max_attempts}: publish \{info.name}@\{info.version} with \{vp_bin} \{command_display}",
     )
-    let exit_code = @process.run(vp_bin, publish_args, cwd=directory)
+    let (exit_code, stdout, stderr) = @process.collect_output(
+      vp_bin,
+      publish_args,
+      cwd=directory,
+    )
+    let stdout_text = stdout.text().trim()
+    let stderr_text = stderr.text().trim()
+    if stdout_text != "" {
+      println(stdout_text)
+    }
+    if stderr_text != "" {
+      @stdio.stderr.write(stderr_text + "\n")
+    }
     if exit_code == 0 {
       return wait_for_registry_visibility(
         vp_bin,
@@ -489,6 +473,18 @@ async fn run_app() -> Int {
     if npm_version_is_visible(vp_bin, info.name, info.version) {
       println(
         "\{info.name}@\{info.version} appears in npm despite a non-zero publish exit. Verifying registry visibility.",
+      )
+      return wait_for_registry_visibility(
+        vp_bin,
+        info,
+        resolution_retries,
+        resolution_delay_seconds,
+      )
+    }
+    let publish_detail = stdout_text + "\n" + stderr_text
+    if publish_detail.contains("Cannot publish over previously staged version") {
+      println(
+        "\{info.name}@\{info.version} is staged in npm but not yet visible. Waiting for registry visibility before retrying.",
       )
       return wait_for_registry_visibility(
         vp_bin,
