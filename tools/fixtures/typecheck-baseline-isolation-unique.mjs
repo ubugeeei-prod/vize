@@ -30,9 +30,21 @@ import { ancestorPackagePath } from "./typecheck-baseline-isolation-package-exte
  * `jsxImportSource` are included as ancestor targets so this can link the
  * fixture's own `@vue/tsconfig`, `vite`, `@types/node`, language plugin, or
  * `vue` JSX runtime before TypeScript climbs into Vize.
+ *
+ * Undeclared Vue compiler packages (`@vue/compiler-sfc` and friends) live in
+ * Vize's `tests/package.json`, so TypeScript can still climb into them and
+ * load Vize's Vue beside the fixture.
  */
 
-const vueRuntimePackages = ["@vue/runtime-core", "@vue/runtime-dom", "vue", "vue-router"];
+const vueRuntimePackages = [
+  "@vue/compiler-core",
+  "@vue/compiler-dom",
+  "@vue/compiler-sfc",
+  "@vue/runtime-core",
+  "@vue/runtime-dom",
+  "vue",
+  "vue-router",
+];
 
 export function isolateUniqueLocalTypePackages(fixtureRoot, sourceConfigPath) {
   const root = resolve(fixtureRoot);

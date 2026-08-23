@@ -89,6 +89,50 @@ test("an already hoisted vue is left for isolation; this repair does not relink 
   }
 });
 
+test("an ancestor @vue/compiler-sfc with exactly one in-fixture copy is linked", () => {
+  const { fixtureRoot, outer } = scaffold(["@vue/compiler-sfc"]);
+  try {
+    writeStoreCopy(fixtureRoot, "@vue+compiler-sfc@3.5.30", "@vue/compiler-sfc");
+    assert.deepEqual(isolateUniqueVueRuntimePackages(fixtureRoot), [
+      {
+        name: "@vue/compiler-sfc",
+        target: "node_modules/.pnpm/@vue+compiler-sfc@3.5.30/node_modules/@vue/compiler-sfc",
+      },
+    ]);
+    assert.equal(
+      fs.realpathSync(path.join(fixtureRoot, "node_modules", "@vue", "compiler-sfc")),
+      fs.realpathSync(
+        path.join(
+          fixtureRoot,
+          "node_modules",
+          ".pnpm",
+          "@vue+compiler-sfc@3.5.30",
+          "node_modules",
+          "@vue",
+          "compiler-sfc",
+        ),
+      ),
+    );
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test("an ancestor @vue/compiler-dom with exactly one in-fixture copy is linked", () => {
+  const { fixtureRoot, outer } = scaffold(["@vue/compiler-dom"]);
+  try {
+    writeStoreCopy(fixtureRoot, "@vue+compiler-dom@3.5.30", "@vue/compiler-dom");
+    assert.deepEqual(isolateUniqueVueRuntimePackages(fixtureRoot), [
+      {
+        name: "@vue/compiler-dom",
+        target: "node_modules/.pnpm/@vue+compiler-dom@3.5.30/node_modules/@vue/compiler-dom",
+      },
+    ]);
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
 test("an ancestor @vue/runtime-core with exactly one in-fixture copy is linked", () => {
   const { fixtureRoot, outer } = scaffold(["@vue/runtime-core"]);
   try {
