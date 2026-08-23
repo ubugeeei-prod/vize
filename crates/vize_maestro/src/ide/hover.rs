@@ -3,8 +3,6 @@
 //! Provides contextual hover information for:
 //! - Template expressions and bindings
 //! - Vue directives
-//! - Script bindings and imports
-//! - CSS properties and Vue-specific selectors
 #![allow(
     clippy::disallowed_types,
     clippy::disallowed_methods,
