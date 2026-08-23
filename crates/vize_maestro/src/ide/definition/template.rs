@@ -415,7 +415,8 @@ pub(crate) fn find_component_prop_definition(
     if let Some(ref script_setup) = descriptor.script_setup {
         let content = &script_setup.content;
 
-        if let Some(define_props_pos) = content.find("defineProps") {
+        let define_props_pos = content.find("defineProps");
+        if let Some(define_props_pos) = define_props_pos {
             let after_define_props = &content[define_props_pos..];
 
             if let Some(prop_pos) =
@@ -436,7 +437,28 @@ pub(crate) fn find_component_prop_definition(
                     },
                 }));
             }
+        }
 
+        if let Some((model_pos, model_len)) =
+            helpers::find_prop_in_define_model(content, &prop_name)
+        {
+            let sfc_offset = script_setup.loc.start + model_pos;
+            let (line, character) = helpers::offset_to_position(&component_content, sfc_offset);
+
+            let file_uri = tower_lsp::lsp_types::Url::from_file_path(&resolved_path).ok()?;
+            return Some(GotoDefinitionResponse::Scalar(Location {
+                uri: file_uri,
+                range: Range {
+                    start: Position { line, character },
+                    end: Position {
+                        line,
+                        character: character + model_len as u32,
+                    },
+                },
+            }));
+        }
+
+        if let Some(define_props_pos) = define_props_pos {
             // Fallback: jump to defineProps
             let sfc_offset = script_setup.loc.start + define_props_pos;
             let (line, character) = helpers::offset_to_position(&component_content, sfc_offset);

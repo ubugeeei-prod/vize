@@ -125,13 +125,6 @@ impl HoverService {
     ) -> Option<Hover> {
         let word = Self::get_word_at_offset(&ctx.content, ctx.offset);
 
-        // Check for Vue directives first; these do not need Corsa.
-        if !word.is_empty()
-            && let Some(hover) = Self::hover_directive(&word)
-        {
-            return Some(hover);
-        }
-
         if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset)
             && let Some(mut hover) = Self::hover_component_tag(ctx)
         {
@@ -147,6 +140,12 @@ impl HoverService {
             if hover.range.is_none() {
                 hover.range = authored_hover_token_range(ctx);
             }
+            return Some(hover);
+        }
+
+        if !word.is_empty()
+            && let Some(hover) = Self::hover_directive(&word)
+        {
             return Some(hover);
         }
 
@@ -325,6 +324,15 @@ impl HoverService {
 }
 
 fn authored_hover_token_range(ctx: &IdeContext<'_>) -> Option<Range> {
+    if let Some((start, end)) = v_model_argument_token_span(&ctx.content, ctx.offset) {
+        let (start_line, start_character) = crate::ide::offset_to_position(&ctx.content, start);
+        let (end_line, end_character) = crate::ide::offset_to_position(&ctx.content, end);
+        return Some(Range::new(
+            Position::new(start_line, start_character),
+            Position::new(end_line, end_character),
+        ));
+    }
+
     let (start, end) =
         crate::ide::token_span_at_offset(&ctx.content, ctx.offset, HoverService::is_word_char)?;
     let (start_line, start_character) = crate::ide::offset_to_position(&ctx.content, start);
@@ -333,4 +341,24 @@ fn authored_hover_token_range(ctx: &IdeContext<'_>) -> Option<Range> {
         Position::new(start_line, start_character),
         Position::new(end_line, end_character),
     ))
+}
+
+fn v_model_argument_token_span(content: &str, offset: usize) -> Option<(usize, usize)> {
+    let (token_start, token_end) =
+        crate::ide::token_span_at_offset(content, offset, HoverService::is_word_char)?;
+    let token = content.get(token_start..token_end)?;
+    let argument = token.strip_prefix("v-model:")?;
+    if argument.starts_with('[') {
+        return None;
+    }
+
+    let argument_len = argument
+        .split_once('.')
+        .map_or(argument.len(), |(name, _)| name.len());
+    if argument_len == 0 {
+        return None;
+    }
+
+    let start = token_start + "v-model:".len();
+    Some((start, start + argument_len))
 }

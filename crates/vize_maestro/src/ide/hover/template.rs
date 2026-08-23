@@ -24,15 +24,15 @@ impl HoverService {
             return None;
         }
 
-        if let Some(hover) = Self::hover_directive(&word) {
-            return Some(hover);
-        }
-
         if let Some(hover) = Self::hover_component_tag(ctx) {
             return Some(hover);
         }
 
         if let Some(hover) = super::component_prop::hover_attribute(ctx) {
+            return Some(hover);
+        }
+
+        if let Some(hover) = Self::hover_directive(&word) {
             return Some(hover);
         }
 
