@@ -13,6 +13,8 @@
 
 mod backend;
 mod builder;
+#[cfg(feature = "native")]
+mod component_import;
 mod component_prop;
 mod component_tag;
 #[cfg(feature = "native")]

@@ -96,6 +96,7 @@ impl HoverService {
             {
                 return Some(fallback);
             }
+            super::component_import::rewrite_vue_component_import_hover(ctx, &word, &mut converted);
             return Some(converted);
         }
 
