@@ -221,7 +221,7 @@ discards it — normalization by the first print), then `[disegno.ops]`
 holding the tree, omitted when empty. Nesting is two-space indentation;
 a shallower line closes every deeper op. Under an element or component the
 grouping is fixed: `attr` lines, then attached bindings (`ui.model`,
-`vue.directive`), then children. Under `ui.if` only `branch` lines are
+`vue.directive`, `vue.css-bind`), then children. Under `ui.if` only `branch` lines are
 legal; under `ui.model` only `attr` lines. Blank lines are separators and
 vanish; every other spelling is strict with exact, tested rejections.
 
@@ -239,6 +239,7 @@ below):
 | `ui.slot name=<quoted>\|name=<expr> @s:e`                                               | fallback region beneath              |
 | `ui.model read=<expr> write=<expr> @s:e`                                                | `attr` lines beneath                 |
 | `vue.directive <quoted>[ arg=<quoted>\|arg=<expr>][ mods=<quoted>][ value=<expr>] @s:e` | modifiers comma-joined inside quotes |
+| `vue.css-bind value=<expr> @s:e`                                                        | SFC style `v-bind()`; span is CSS-block-relative |
 | `attr <name>[=<quoted>] @s:e`                                                           | bare name for boolean attributes     |
 
 **Expression payloads** (P2-5b): every expression position serializes as

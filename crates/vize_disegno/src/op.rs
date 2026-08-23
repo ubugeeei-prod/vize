@@ -15,10 +15,10 @@
 //! # The core is fair, dialect ops are named
 //!
 //! The neutral core (`ui.*`) is a fair abstraction, not Vue's AST renamed;
-//! whatever is genuinely Vue-specific is a `vue.*` dialect op
-//! ([`BindingOp::VueDirective`] today). A dialect op lands with the
-//! transform that needs it (P2-9), never speculatively - which is why the
-//! dialect family holds exactly one op.
+//! whatever is genuinely Vue-specific is a `vue.*` dialect op. A dialect
+//! op lands with the transform that needs it, never speculatively:
+//! custom directives as [`BindingOp::VueDirective`], SFC style
+//! `v-bind()` as [`BindingOp::VueCssBind`].
 //!
 //! # `Drop`-free by construction
 //!
@@ -46,7 +46,7 @@ pub use element::{Attribute, ComponentOp, ElementOp, Namespace};
 pub use model::{BindingContract, ModelOp};
 pub use slot::{DynamicName, SlotContentOp, SlotOp};
 pub use text::{InterpolationOp, TextOp};
-pub use vue::VueDirectiveOp;
+pub use vue::{VueCssBindOp, VueDirectiveOp};
 
 /// One S2 op standing in a region (a child position).
 ///
@@ -118,6 +118,8 @@ pub enum BindingOp<'a> {
     /// `vue.directive` - a Vue custom directive carried through as a
     /// dialect op.
     VueDirective(Box<'a, VueDirectiveOp<'a>>),
+    /// `vue.css-bind` - one CSS `v-bind()` in an SFC style block (P2-10).
+    VueCssBind(Box<'a, VueCssBindOp<'a>>),
 }
 
 impl BindingOp<'_> {
@@ -131,6 +133,7 @@ impl BindingOp<'_> {
             Self::Model(_) => "ui.model",
             Self::SlotContent(_) => "ui.slot-content",
             Self::VueDirective(_) => "vue.directive",
+            Self::VueCssBind(_) => "vue.css-bind",
         }
     }
 }

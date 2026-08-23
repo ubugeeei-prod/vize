@@ -19,7 +19,8 @@ mod binding;
 mod expr;
 
 pub use binding::{
-    FolioBind, FolioBinding, FolioModel, FolioOn, FolioSlotContent, FolioVueDirective,
+    FolioBind, FolioBinding, FolioModel, FolioOn, FolioSlotContent, FolioVueCssBind,
+    FolioVueDirective,
 };
 pub use expr::{FolioContract, FolioExpr, FolioForBinding};
 

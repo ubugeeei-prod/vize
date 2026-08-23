@@ -12,7 +12,7 @@ use vize_disegno::expr::{ExprRef, ForeignExpr, JsExpr, OpaqueExpr, OpaqueReason}
 use vize_disegno::op::{
     Attribute, BindOp, BindingContract, BindingOp, ComponentOp, DynamicName, ElementOp, ForBinding,
     ForOp, IfBranch, IfOp, InterpolationOp, ModelOp, Namespace, OnOp, Op, Region, SlotContentOp,
-    SlotOp, TextOp, VueDirectiveOp,
+    SlotOp, TextOp, VueCssBindOp, VueDirectiveOp,
 };
 
 /// The escape payload standing in for "some expression" wherever the op
@@ -47,6 +47,7 @@ fn binding_keyword(op: &BindingOp<'_>) -> &'static str {
         BindingOp::Model(_) => "ui.model",
         BindingOp::SlotContent(_) => "ui.slot-content",
         BindingOp::VueDirective(_) => "vue.directive",
+        BindingOp::VueCssBind(_) => "vue.css-bind",
     }
 }
 
@@ -237,6 +238,7 @@ fn every_binding<'a>(allocator: &'a Allocator) -> Vec<'a, BindingOp<'a>> {
                 },
                 &allocator,
             )),
+            BindingOp::VueCssBind(Box::new_in(VueCssBindOp { value: expr, span }, &allocator)),
         ],
         &allocator,
     )
@@ -276,7 +278,8 @@ fn every_attached_op_variant_is_matched_without_a_wildcard() {
             "ui.on",
             "ui.model",
             "ui.slot-content",
-            "vue.directive"
+            "vue.directive",
+            "vue.css-bind"
         ]
     );
     for binding in &bindings {
