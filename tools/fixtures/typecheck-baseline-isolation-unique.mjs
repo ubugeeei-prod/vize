@@ -213,3 +213,7 @@ export function isolateUniqueVueUsePackages(fixtureRoot) {
 export function isolateUniqueNuxtUiPackages(fixtureRoot) {
   return isolateUniqueNamedLocalTypePackages(fixtureRoot, ["@nuxt/ui"]);
 }
+
+export function isolateUniqueUiLibraryPackages(fixtureRoot) {
+  return isolateUniqueNamedLocalTypePackages(fixtureRoot, ["@nuxt/ui", "primevue", "reka-ui"]);
+}
