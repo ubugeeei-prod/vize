@@ -35,11 +35,27 @@ local formatted_source =
 local renamed_source = replace_once(formatted_source, "const total =", "const quantity =")
 renamed_source = replace_once(renamed_source, ':count="total"', ':count="quantity"')
 
+local ref_surface_source = table.concat({
+  '<script setup lang="ts">',
+  'import { computed, ref, useTemplateRef } from "vue";',
+  "",
+  "const count = ref(1);",
+  "const doubled = computed(() => count.value * 2);",
+  'const button = useTemplateRef<HTMLButtonElement>("button");',
+  "</script>",
+  "",
+  "<template>",
+  '  <button ref="button">{{ count }} {{ doubled }} {{ button }}</button>',
+  "</template>",
+  "",
+}, "\n")
+
 return {
   authored_source = authored_source,
   quick_fixed_source = quick_fixed_source,
   formatted_source = formatted_source,
   renamed_source = renamed_source,
+  ref_surface_source = ref_surface_source,
 
   -- The authored `<Child  :count="total" />` carries two independent authored
   -- bugs on one line: two spaces after the tag name (a fixable lint warning)
@@ -82,6 +98,69 @@ return {
     range = {
       ["end"] = { character = 11, line = 3 },
       start = { character = 6, line = 3 },
+    },
+  },
+
+  ref_surface_hovers = {
+    script_count = {
+      contents = {
+        kind = "markdown",
+        value = "```typescript\nconst count: Ref<number, number>\n```",
+      },
+      range = {
+        ["end"] = { character = 11, line = 3 },
+        start = { character = 6, line = 3 },
+      },
+    },
+    script_doubled = {
+      contents = {
+        kind = "markdown",
+        value = "```typescript\nconst doubled: ComputedRef<number>\n```",
+      },
+      range = {
+        ["end"] = { character = 13, line = 4 },
+        start = { character = 6, line = 4 },
+      },
+    },
+    script_button = {
+      contents = {
+        kind = "markdown",
+        value = "```typescript\nconst button: Readonly<ShallowRef<HTMLButtonElement | null, HTMLButtonElement | null>>\n```",
+      },
+      range = {
+        ["end"] = { character = 12, line = 5 },
+        start = { character = 6, line = 5 },
+      },
+    },
+    template_count = {
+      contents = {
+        kind = "markdown",
+        value = "```typescript\nconst count: number\n```",
+      },
+      range = {
+        ["end"] = { character = 31, line = 9 },
+        start = { character = 26, line = 9 },
+      },
+    },
+    template_doubled = {
+      contents = {
+        kind = "markdown",
+        value = "```typescript\nconst doubled: number\n```",
+      },
+      range = {
+        ["end"] = { character = 45, line = 9 },
+        start = { character = 38, line = 9 },
+      },
+    },
+    template_button = {
+      contents = {
+        kind = "markdown",
+        value = "```typescript\nconst button: HTMLButtonElement | null\n```",
+      },
+      range = {
+        ["end"] = { character = 58, line = 9 },
+        start = { character = 52, line = 9 },
+      },
     },
   },
 
