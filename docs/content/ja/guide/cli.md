@@ -210,18 +210,18 @@ vize check --profile src
 
 主なオプション:
 
-| オプション | 説明 |
-| ------------------- | --------------------------------------------------------------- | ------------------------ |
-| `-s, --socket` | 実行中の `check-server` | に接続します。 |
-| `--tsconfig` | `tsconfig.json` | をオーバーライドします。 |
-| `-f, --format` | 出力形式: `text` または `json` |
-| `--show-virtual-ts` | 生成された仮想 TypeScript を印刷する |
-| `-q, --quiet` | 概要のみを表示 |
-| `--profile` | プロファイル アーティファクトを `node_modules/.vize` に書き込む |
-| `--corsa-path` | Corsa 実行可能ファイルのパスをオーバーライドする |
-| `--servers` | 予約済み Corsa サーバー数。 `1` のみがサポートされています。 |
-| `--declaration` | `.d.ts` 出力を出力する |
-| `--declaration-dir` | 発行された宣言の出力ディレクトリ |
+| オプション          | 説明                                                            |
+| ------------------- | --------------------------------------------------------------- |
+| `-s, --socket`      | 実行中の `check-server` に接続します。                          |
+| `--tsconfig`        | `tsconfig.json` をオーバーライドします。                        |
+| `-f, --format`      | 出力形式: `text` または `json`                                  |
+| `--show-virtual-ts` | 生成された仮想 TypeScript を印刷する                            |
+| `-q, --quiet`       | 概要のみを表示                                                  |
+| `--profile`         | プロファイル アーティファクトを `node_modules/.vize` に書き込む |
+| `--corsa-path`      | Corsa 実行可能ファイルのパスをオーバーライドする                |
+| `--servers`         | 予約済み Corsa サーバー数。 `1` のみがサポートされています。    |
+| `--declaration`     | `.d.ts` 出力を出力する                                          |
+| `--declaration-dir` | 発行された宣言の出力ディレクトリ                                |
 
 Vize の開発中またはテスト中にカスタム Corsa 実行可能ファイルを固定したい場合は、`--corsa-path` を使用します。
 ローカル `corsa-bind` チェックアウト。共有構成キーは `typeChecker.corsaPath` です。 `typeChecker.tsgoPath`

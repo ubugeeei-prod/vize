@@ -92,6 +92,10 @@ fn custom_elements_flag_compiles_matched_pascal_case_tags_as_elements() {
             "--no-config",
             "--custom-renderer",
             "--custom-elements",
+            "TresMesh",
+            "--custom-elements",
+            "TresSpotLight",
+            "--custom-elements",
             "Tres*",
         ],
     );
@@ -142,7 +146,6 @@ fn custom_elements_config_compiles_matched_pascal_case_tags_as_elements() {
         "vize.config.json",
         r#"{
   "compiler": {
-    "customRenderer": true,
     "customElements": ["Tres*"]
   }
 }
