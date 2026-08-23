@@ -51,6 +51,10 @@ function addVueCompilerPlugins(names, seen, plugins) {
     }
     if (Array.isArray(plugin) && typeof plugin[0] === "string") {
       addName(names, seen, plugin[0]);
+      continue;
+    }
+    if (plugin != null && typeof plugin.name === "string") {
+      addName(names, seen, plugin.name);
     }
   }
 }
