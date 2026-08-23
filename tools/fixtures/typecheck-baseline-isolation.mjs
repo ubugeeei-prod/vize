@@ -16,6 +16,7 @@ import {
 import { recordCompilerOptionJsxImportSource } from "./typecheck-baseline-isolation-jsx.mjs";
 import { recordCompilerOptionPlugins } from "./typecheck-baseline-isolation-plugins.mjs";
 import { recordCompilerOptionTypes } from "./typecheck-baseline-isolation-types.mjs";
+import { loadTsconfigExtendsChain } from "./typecheck-baseline-extends-chain.mjs";
 import { pathMappingRoot } from "./typecheck-baseline-outside-paths.mjs";
 
 /**
@@ -177,25 +178,7 @@ function mergeDeclared(declared, conflicts, local) {
 }
 
 function loadExtendsChain(sourceConfigPath) {
-  const chain = [];
-  appendExtendsChain(chain, new Set(), resolve(sourceConfigPath));
-  return chain;
-}
-
-function appendExtendsChain(chain, seen, current) {
-  if (seen.has(current)) return;
-  seen.add(current);
-  const config = parseTsconfig(current);
-  if (config == null) return;
-  chain.push({ config, dir: dirname(current) });
-  // Later array `extends` entries override earlier ones, matching tsc. Walk them
-  // last-to-first so the reverse last-wins pass still sees the later parent.
-  for (const next of extendsSpecifiers(config.extends)
-    .map((specifier) => resolveExtends(current, specifier))
-    .filter((entry) => entry != null)
-    .reverse()) {
-    appendExtendsChain(chain, seen, next);
-  }
+  return loadTsconfigExtendsChain(sourceConfigPath, resolveExtends);
 }
 
 function parseTsconfig(configPath) {

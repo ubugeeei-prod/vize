@@ -103,3 +103,38 @@ test("an earlier array extends entry does not hide a later paths mapping", () =>
     fs.rmSync(outer, { recursive: true, force: true });
   }
 });
+
+test("a later array extends paths mapping still honors an earlier baseUrl", () => {
+  const { outer, fixtureRoot, storeId } = scaffold();
+  try {
+    const nuxtDir = path.join(fixtureRoot, ".nuxt");
+    fs.mkdirSync(nuxtDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(nuxtDir, "base.json"),
+      `${JSON.stringify({ compilerOptions: { baseUrl: ".." } })}\n`,
+    );
+    fs.writeFileSync(
+      path.join(nuxtDir, "tsconfig.app.json"),
+      `${JSON.stringify({
+        compilerOptions: {
+          paths: {
+            "vue-router": [`node_modules/.pnpm/${storeId}/node_modules/vue-router`],
+          },
+        },
+      })}\n`,
+    );
+    const configPath = path.join(nuxtDir, "tsconfig.json");
+    fs.writeFileSync(
+      configPath,
+      `${JSON.stringify({ extends: ["./base.json", "./tsconfig.app.json"] })}\n`,
+    );
+    assert.deepEqual(isolateFixtureTypePackages(fixtureRoot, configPath), [
+      {
+        name: "vue-router",
+        target: `node_modules/.pnpm/${storeId}/node_modules/vue-router`,
+      },
+    ]);
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
