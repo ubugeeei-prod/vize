@@ -1,3 +1,7 @@
+export function typecheckCorpusGlobs(project) {
+  return project.typecheckPerformance?.corpusGlobs ?? project.vueGlobs;
+}
+
 export function toolArgs(project, tool, compilerOutputDir) {
   if (tool === "compiler") {
     return [
@@ -25,7 +29,11 @@ export function toolArgs(project, tool, compilerOutputDir) {
     ];
   }
   if (tool === "typechecker") {
-    const args = ["check", ...project.vueGlobs, "--format", "json", "--no-config"];
+    // One `--tsconfig` cannot answer for sibling apps that `vueGlobs` still
+    // cover for compiler/linter/formatter. Narrow the typecheck corpus to the
+    // files that config owns, or vue-tsc's baseline inherits the same
+    // unresolvable aliases and the comparison reports fake FNs (#4454).
+    const args = ["check", ...typecheckCorpusGlobs(project), "--format", "json", "--no-config"];
     if (project.tsconfig != null) args.push("--tsconfig", project.tsconfig);
     return args;
   }

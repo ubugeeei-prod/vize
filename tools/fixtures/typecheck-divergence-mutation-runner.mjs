@@ -2,7 +2,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
-import { displayCommand, toolArgs } from "./tool-matrix-command.mjs";
+import { displayCommand, toolArgs, typecheckCorpusGlobs } from "./tool-matrix-command.mjs";
 import { collectTypecheckerAuthoredPaths, collectVueInputPaths } from "./tool-matrix-inputs.mjs";
 import { validateTypecheckerOutput } from "./tool-matrix-typechecker.mjs";
 import { compareTypecheckDiagnostics } from "./typecheck-divergence.mjs";
@@ -62,7 +62,7 @@ function runVizeTypecheck(project, fixtureRoot, launch) {
     project,
     parsed,
     result.status,
-    collectVueInputPaths(fixtureRoot, project.vueGlobs),
+    collectVueInputPaths(fixtureRoot, typecheckCorpusGlobs(project)),
     collectTypecheckerAuthoredPaths(fixtureRoot),
   );
   return executionEvidence({

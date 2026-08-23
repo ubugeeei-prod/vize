@@ -129,8 +129,10 @@ test("fixture tool matrix emits read-only commands with machine-readable diagnos
     assert.match(compilerCommand, /--no-config(?:\s|$)/);
     assert.match(
       runs.typechecker.command,
-      /check .*--format json --no-config --tsconfig playground\/tsconfig\.json/,
+      /check playground\/src\/\*\*\/\*\.vue --format json --no-config --tsconfig playground\/tsconfig\.json/,
     );
+    assert.doesNotMatch(runs.typechecker.command, /apps\/\*\*\/\*\.vue/);
+    assert.match(runs.compiler.command, /apps\/\*\*\/\*\.vue/);
     assert.match(runs.linter.command, /lint .*--format json --preset ecosystem --no-config/);
     assert.match(runs.formatter.command, /fmt .*--check --no-config/);
     for (const entry of Object.values(runs)) {

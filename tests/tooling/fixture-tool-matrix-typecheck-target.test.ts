@@ -91,6 +91,19 @@ test("fixture tool matrix requires an exact baseline tsconfig for performance ta
       ),
     );
 
+    assert.doesNotThrow(() =>
+      validateTypecheckPerformanceTarget(
+        {
+          ...project,
+          typecheckPerformance: {
+            ...project.typecheckPerformance,
+            corpusGlobs: ["src/**/*.vue"],
+          },
+        },
+        fixtureRoot,
+      ),
+    );
+
     for (const [candidate, message] of [
       [{ ...project, typecheckPerformance: { enabled: true, compareTo: "tsc" } }, /compareTo/],
       [{ ...project, tsconfig: undefined }, /normalized relative path/],
@@ -139,6 +152,30 @@ test("fixture tool matrix requires an exact baseline tsconfig for performance ta
           typecheckPerformance: { ...project.typecheckPerformance, lockfile: "../pnpm-lock.yaml" },
         },
         /lockfile must be pnpm-lock.yaml/,
+      ],
+      [
+        {
+          ...project,
+          typecheckPerformance: { ...project.typecheckPerformance, corpusGlobs: [] },
+        },
+        /corpusGlobs must be a non-empty array when present/,
+      ],
+      [
+        {
+          ...project,
+          typecheckPerformance: { ...project.typecheckPerformance, corpusGlobs: [""] },
+        },
+        /corpusGlobs entries must be non-empty strings/,
+      ],
+      [
+        {
+          ...project,
+          typecheckPerformance: {
+            ...project.typecheckPerformance,
+            corpusGlobs: ["../src/**/*.vue"],
+          },
+        },
+        /normalized relative path/,
       ],
     ] as const) {
       assert.throws(() => validateTypecheckPerformanceTarget(candidate, fixtureRoot), message);

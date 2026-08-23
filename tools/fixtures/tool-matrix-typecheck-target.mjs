@@ -11,6 +11,21 @@ export function validateTypecheckPerformanceTarget(
     invalid(project, "compareTo must be vue-tsc");
   }
   requireFile(project, fixtureRoot, project.tsconfig, "tsconfig");
+  // Optional: when shared `vueGlobs` reach past what `tsconfig` owns, the
+  // typechecker corpus is narrowed here so one config is never asked to
+  // answer for files it never included (#4454).
+  const corpus = project.typecheckPerformance.corpusGlobs;
+  if (corpus !== undefined) {
+    if (!Array.isArray(corpus) || corpus.length === 0) {
+      invalid(project, "corpusGlobs must be a non-empty array when present");
+    }
+    for (const glob of corpus) {
+      if (typeof glob !== "string" || glob.length === 0) {
+        invalid(project, "corpusGlobs entries must be non-empty strings");
+      }
+      requireRelativePath(project, glob, "corpusGlobs entry");
+    }
+  }
   const manager = project.typecheckPerformance.packageManager;
   const lockfiles = { npm: "package-lock.json", pnpm: "pnpm-lock.yaml", yarn: "yarn.lock" };
   if (!Object.hasOwn(lockfiles, manager)) {

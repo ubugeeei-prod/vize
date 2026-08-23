@@ -15,7 +15,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { expectedCompilerOutputs } from "./tool-matrix-compiler-paths.mjs";
-import { displayCommand, toolArgs } from "./tool-matrix-command.mjs";
+import { displayCommand, toolArgs, typecheckCorpusGlobs } from "./tool-matrix-command.mjs";
 import { snapshotFormatterInputs, validateFormatterOutput } from "./tool-matrix-formatter.mjs";
 import { collectTypecheckerAuthoredPaths, collectVueInputPaths } from "./tool-matrix-inputs.mjs";
 import { validateLinterOutput } from "./tool-matrix-linter.mjs";
@@ -92,7 +92,7 @@ function prepareToolRun(project, tool, args, launch, outputDir) {
     tool === "formatter" ? snapshotFormatterInputs(cwd, project.vueGlobs) : null;
   const expectedToolFiles =
     tool === "typechecker" || tool === "linter" || tool === "formatter"
-      ? collectVueInputPaths(cwd, project.vueGlobs)
+      ? collectVueInputPaths(cwd, tool === "typechecker" ? typecheckCorpusGlobs(project) : project.vueGlobs)
       : null;
   return {
     base,

@@ -37,6 +37,7 @@ interface FixtureProject {
     lockfile: "pnpm-lock.yaml" | "yarn.lock";
     baseline?: { tsconfig: string; prepare?: string[] };
     hangTimeoutMs: number;
+    corpusGlobs?: string[];
     maxFalsePositiveRatio: number;
     maxFalseNegativeRatio: number;
     largeProjectRegressionTarget?: boolean;

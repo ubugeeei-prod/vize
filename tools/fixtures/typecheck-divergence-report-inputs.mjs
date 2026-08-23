@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { typecheckCorpusGlobs } from "./tool-matrix-command.mjs";
 import { collectTypecheckerAuthoredPaths, collectVueInputPaths } from "./tool-matrix-inputs.mjs";
 import {
   summarizeTypecheckerCoverage,
@@ -100,7 +101,7 @@ export function readAndValidateVizeRun(reportDir, project, summary) {
     project,
     payload.parsed,
     payload.exitCode,
-    collectVueInputPaths(fixtureRoot, project.vueGlobs),
+    collectVueInputPaths(fixtureRoot, typecheckCorpusGlobs(project)),
     collectTypecheckerAuthoredPaths(fixtureRoot),
   );
   if (canonicalJson(expectedCoverage) !== canonicalJson(payload.typecheckerCoverage)) {
