@@ -9,6 +9,7 @@ import {
   pathMappingRoot,
   resolvePackageExtends,
 } from "./typecheck-baseline-outside-paths.mjs";
+import { rewriteOutsideVueCompilerOptions } from "./typecheck-baseline-outside-vue-compiler.mjs";
 
 /**
  * Close the remaining `compilerOptions.paths` escape for keys that are not
@@ -62,21 +63,26 @@ export function mergePathRewrites(packages, aliases) {
 
 export function applyIsolatedAliasOverlay(fixtureRoot, sourceConfigPath, overlay) {
   const sourcePath = resolve(sourceConfigPath);
-  const aliases = rewriteOutsideAliasPaths(fixtureRoot, sourcePath, dirname(sourcePath));
-  if (aliases == null) return overlay ?? null;
+  const configDir = dirname(sourcePath);
+  const aliases = rewriteOutsideAliasPaths(fixtureRoot, sourcePath, configDir);
+  const vueCompilerOptions = rewriteOutsideVueCompilerOptions(fixtureRoot, sourcePath, configDir);
+  if (aliases == null && vueCompilerOptions == null) return overlay ?? null;
   const paths = mergePathRewrites(overlay?.paths ?? null, aliases);
   const typeRoots = overlay?.typeRoots ?? null;
   const rootDirs = overlay?.rootDirs ?? null;
   const overlayPath = overlay?.path ?? isolatedTsconfigOverlayPath(sourcePath);
-  const compilerOptions = { paths };
+  const compilerOptions = {};
+  if (paths != null) compilerOptions.paths = paths;
   if (typeRoots != null) compilerOptions.typeRoots = typeRoots;
   if (rootDirs != null) compilerOptions.rootDirs = rootDirs;
-  if (isolatedOverlayBaseUrl(sourcePath, fixtureRoot) != null) compilerOptions.baseUrl = ".";
-  writeFileSync(
-    overlayPath,
-    `${JSON.stringify({ extends: `./${basename(sourcePath)}`, compilerOptions }, null, 2)}\n`,
-  );
-  return { path: overlayPath, paths, typeRoots, rootDirs };
+  if (paths != null && isolatedOverlayBaseUrl(sourcePath, fixtureRoot) != null) {
+    compilerOptions.baseUrl = ".";
+  }
+  const document = { extends: `./${basename(sourcePath)}` };
+  if (Object.keys(compilerOptions).length > 0) document.compilerOptions = compilerOptions;
+  if (vueCompilerOptions != null) document.vueCompilerOptions = vueCompilerOptions;
+  writeFileSync(overlayPath, `${JSON.stringify(document, null, 2)}\n`);
+  return { path: overlayPath, paths, typeRoots, rootDirs, vueCompilerOptions };
 }
 
 function retargetAliasMapping(

@@ -11,6 +11,7 @@ import {
   rewriteOutsideRootDirs,
   rewriteOutsideTypeRoots,
 } from "./typecheck-baseline-outside-paths.mjs";
+import { rewriteOutsideVueCompilerOptions } from "./typecheck-baseline-outside-vue-compiler.mjs";
 import { typecheckCorpusGlobs } from "./tool-matrix-command.mjs";
 
 /**
@@ -117,6 +118,8 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
     exclude: ambientRoots.flatMap((root) => [`${root}/**/node_modules/**`, `${root}/**/dist/**`]),
     references: [],
   };
+  const vueCompilerOptions = rewriteOutsideVueCompilerOptions(fixtureRoot, sourcePath, configDir);
+  if (vueCompilerOptions != null) config.vueCompilerOptions = vueCompilerOptions;
   const source = `${JSON.stringify(config, null, 2)}\n`;
   mkdirSync(configDir, { recursive: true });
   writeFileSync(outputPath, source);
