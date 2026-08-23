@@ -97,7 +97,7 @@ test("GitHub workflows declare the expected cross-platform runner matrix", () =>
   // `github.event_name == 'pull_request' && 'ubuntu-latest' || 'ubuntu-24.04'`)
   // and is asserted shape-by-shape further down.
   const allowedRunnerPattern =
-    /^(?:ubuntu-(?:latest|24\.04)(?:-arm)?|blacksmith-\d+vcpu-ubuntu-2404(?:-arm)?|macos-15(?:-intel)?|blacksmith-(?:6|12)vcpu-macos-15|windows-(?:2025|11-arm)|blacksmith-\d+vcpu-windows-2025)$/;
+    /^(?:ubuntu-(?:latest|2[24]\.04)(?:-arm)?|blacksmith-\d+vcpu-ubuntu-2404(?:-arm)?|macos-15(?:-intel)?|blacksmith-(?:6|12)vcpu-macos-15|windows-(?:2025|11-arm)|blacksmith-\d+vcpu-windows-2025)$/;
   const matrixRunnerPattern = /(?:runner|host):\s*([A-Za-z0-9._-]+)/g;
   const violations: string[] = [];
 
@@ -120,12 +120,12 @@ test("GitHub workflows declare the expected cross-platform runner matrix", () =>
   // GitHub-hosted label or any Blacksmith Ubuntu SKU so changing vCPU size
   // (or temporarily reverting to GitHub-hosted) doesn't churn this test.
   assert.match(checkWorkflow, new RegExp(`runs-on:\\s*${hostedOrBlacksmith("ubuntu-24.04")}`));
-  assert.match(nativeWorkflow, new RegExp(`runner:\\s*${hostedOrBlacksmith("ubuntu-24.04-arm")}`));
+  assert.match(nativeWorkflow, new RegExp(`runner:\\s*${hostedOrBlacksmith("ubuntu-22.04-arm")}`));
   assert.match(nativeWorkflow, new RegExp(`runner:\\s*${hostedOrBlacksmith("macos-15")}`));
   assert.match(nativeWorkflow, new RegExp(`runner:\\s*${hostedOrBlacksmith("windows-2025")}`));
   assert.match(
     releasePlatforms,
-    new RegExp(`host:\\s*"${hostedOrBlacksmith("ubuntu-24.04-arm")}"`),
+    new RegExp(`host:\\s*"${hostedOrBlacksmith("ubuntu-22.04-arm")}"`),
   );
   assert.match(releasePlatforms, new RegExp(`host:\\s*"${hostedOrBlacksmith("macos-15")}"`));
   assert.match(releasePlatforms, new RegExp(`host:\\s*"${hostedOrBlacksmith("windows-2025")}"`));

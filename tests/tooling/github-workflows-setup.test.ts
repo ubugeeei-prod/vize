@@ -194,8 +194,8 @@ test("native smoke workflow covers host platforms before release tags", () => {
     /Full native\/fresh-install smoke is release evidence, not a per-push gate/,
   );
   for (const [runner, target] of [
-    [hostedOrBlacksmith("ubuntu-24.04"), "linux-x64-gnu"],
-    [hostedOrBlacksmith("ubuntu-24.04-arm"), "linux-arm64-gnu"],
+    [hostedOrBlacksmith("ubuntu-22.04"), "linux-x64-gnu"],
+    [hostedOrBlacksmith("ubuntu-22.04-arm"), "linux-arm64-gnu"],
     ["macos-15-intel", "darwin-x64"],
     [hostedOrBlacksmith("macos-15"), "darwin-arm64"],
     [hostedOrBlacksmith("windows-2025"), "win32-x64-msvc"],
@@ -205,6 +205,7 @@ test("native smoke workflow covers host platforms before release tags", () => {
   }
   assert.match(job, /cargo build --profile ci -p vize/);
   assert.match(job, /vp run --filter '\.\/npm\/native' build:ci/);
+  assert.match(job, /verify-glibc-symbols\.mjs --max 2\.36 npm\/native\/\*\.linux-\*-gnu\.node/);
   assert.match(job, /require\('\.\/npm\/native'\)/);
   assert.match(job, /smoke-release-install\.mjs --prepare-manifests npm\/native/);
 });
@@ -214,8 +215,8 @@ test("native smoke workflow fresh-installs runtime tarballs across supported tar
   const job = workflowJobBody(workflow, "fresh-install-smoke");
 
   for (const [runner, target] of [
-    [hostedOrBlacksmith("ubuntu-24.04"), "linux-x64-gnu"],
-    [hostedOrBlacksmith("ubuntu-24.04-arm"), "linux-arm64-gnu"],
+    [hostedOrBlacksmith("ubuntu-22.04"), "linux-x64-gnu"],
+    [hostedOrBlacksmith("ubuntu-22.04-arm"), "linux-arm64-gnu"],
     ["macos-15-intel", "darwin-x64"],
     [hostedOrBlacksmith("macos-15"), "darwin-arm64"],
     [hostedOrBlacksmith("windows-2025"), "win32-x64-msvc"],

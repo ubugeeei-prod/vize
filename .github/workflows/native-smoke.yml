@@ -29,10 +29,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: blacksmith-32vcpu-ubuntu-2404
+          - runner: ubuntu-22.04
             target: linux-x64-gnu
             msvc_arch: amd64
-          - runner: blacksmith-32vcpu-ubuntu-2404-arm
+          - runner: ubuntu-22.04-arm
             target: linux-arm64-gnu
             msvc_arch: amd64
           - runner: macos-15-intel
@@ -95,6 +95,9 @@ jobs:
           fi
       - name: Build @vizejs/native
         run: vp run --filter './npm/native' build:ci
+      - name: Verify GNU native glibc compatibility
+        if: runner.os == 'Linux' && endsWith(matrix.target, '-gnu')
+        run: node tools/github/verify-glibc-symbols.mjs --max 2.36 npm/native/*.linux-*-gnu.node
       - name: Smoke @vizejs/native
         run: node -e "const native = require('./npm/native'); if (typeof native.compileSfc !== 'function') throw new Error('compileSfc missing')"
       - name: Package-install smoke for host native package
@@ -114,10 +117,10 @@ jobs:
         # known-limitation policy in docs/content/stability.md in sync when
         # containerized musl tarball staging is added.
         platform:
-          - runner: blacksmith-32vcpu-ubuntu-2404
+          - runner: ubuntu-22.04
             target: linux-x64-gnu
             msvc_arch: amd64
-          - runner: blacksmith-32vcpu-ubuntu-2404-arm
+          - runner: ubuntu-22.04-arm
             target: linux-arm64-gnu
             msvc_arch: amd64
           - runner: macos-15-intel

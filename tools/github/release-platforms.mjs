@@ -79,7 +79,7 @@ export const nativeReleasePlatforms = [
     cross_compile: false,
   },
   {
-    host: "blacksmith-32vcpu-ubuntu-2404",
+    host: "ubuntu-22.04",
     target: "x86_64-unknown-linux-gnu",
     cross_compile: false,
   },
@@ -89,7 +89,7 @@ export const nativeReleasePlatforms = [
     cross_compile: true,
   },
   {
-    host: "blacksmith-32vcpu-ubuntu-2404-arm",
+    host: "ubuntu-22.04-arm",
     target: "aarch64-unknown-linux-gnu",
     cross_compile: false,
   },

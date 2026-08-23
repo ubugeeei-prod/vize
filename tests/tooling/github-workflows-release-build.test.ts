@@ -173,15 +173,32 @@ test("release workflow builds native targets on MoonBit-supported runners", () =
   for (const [host, target] of [
     [hostedOrBlacksmith("macos-15"), "x86_64-apple-darwin"],
     [hostedOrBlacksmith("macos-15"), "aarch64-apple-darwin"],
-    [hostedOrBlacksmith("ubuntu-24.04"), "x86_64-unknown-linux-gnu"],
+    [hostedOrBlacksmith("ubuntu-22.04"), "x86_64-unknown-linux-gnu"],
     [hostedOrBlacksmith("ubuntu-24.04"), "x86_64-unknown-linux-musl"],
-    [hostedOrBlacksmith("ubuntu-24.04-arm"), "aarch64-unknown-linux-gnu"],
+    [hostedOrBlacksmith("ubuntu-22.04-arm"), "aarch64-unknown-linux-gnu"],
     [hostedOrBlacksmith("ubuntu-24.04"), "aarch64-unknown-linux-musl"],
     [hostedOrBlacksmith("windows-2025"), "x86_64-pc-windows-msvc"],
     ["windows-11-arm", "aarch64-pc-windows-msvc"],
   ] as const) {
     assert.match(releasePlatforms, new RegExp(`host:\\s*"${host}"[\\s\\S]*target:\\s*"${target}"`));
   }
+});
+
+test("release workflow gates GNU native binaries against the Debian bookworm glibc ceiling", () => {
+  const workflow = readRepoFile(".github", "workflows", "release.yml");
+  const buildNativeJob = workflowJobBody(workflow, "build-native-all");
+  const nativeHosts = new Map(nativeReleasePlatforms.map(({ host, target }) => [target, host]));
+
+  assert.equal(nativeHosts.get("x86_64-unknown-linux-gnu"), "ubuntu-22.04");
+  assert.equal(nativeHosts.get("aarch64-unknown-linux-gnu"), "ubuntu-22.04-arm");
+  assert.match(
+    buildNativeJob,
+    /name:\s*Verify vize-native GNU glibc compatibility[\s\S]*verify-glibc-symbols\.mjs --max 2\.36 npm\/native\/\*\.linux-\*-gnu\.node/,
+  );
+  assert.match(
+    buildNativeJob,
+    /name:\s*Verify fresco-native GNU glibc compatibility[\s\S]*verify-glibc-symbols\.mjs --max 2\.36 npm\/fresco-native\/\*\.linux-\*-gnu\.node/,
+  );
 });
 
 test("release workflow keeps the Windows ARM64 CLI cross build on a compatible hosted runner", () => {

@@ -81,6 +81,12 @@ const LABEL_BOUNDARY = "(?![\\w.-])";
 // runner-pool vendor; switching back to GitHub-hosted shouldn't break the test
 // and vice versa.
 export function hostedOrBlacksmith(hostedLabel: string): string {
+  if (hostedLabel === "ubuntu-22.04") {
+    return `ubuntu-22\\.04${LABEL_BOUNDARY}`;
+  }
+  if (hostedLabel === "ubuntu-22.04-arm") {
+    return `ubuntu-22\\.04-arm${LABEL_BOUNDARY}`;
+  }
   if (hostedLabel === "ubuntu-24.04") {
     return `(?:ubuntu-24\\.04|blacksmith-\\d+vcpu-ubuntu-2404)${LABEL_BOUNDARY}`;
   }
