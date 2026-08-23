@@ -51,7 +51,7 @@ const marker = 1;
 </script>
 
 <template>
-  <header>top</header>
+  <header :class="$attrs.class">top</header>
   <main>body</main>
 </template>
 "#
@@ -74,6 +74,36 @@ const marker = 1;
             line: 5,
             character: 2
         }
+    );
+}
+
+#[test]
+fn collect_diagnostics_keeps_plain_fragments_diagnostic_free() {
+    let state = ServerState::new();
+    let uri = Url::parse("file:///PlainFragment.vue").unwrap();
+    state.documents.open(
+        uri.clone(),
+        r#"<script setup lang="ts">
+const marker = 1;
+</script>
+
+<template>
+  <header>top</header>
+  <main>body</main>
+</template>
+"#
+        .to_string(),
+        1,
+        "vue".to_string(),
+    );
+
+    let diagnostics = TypeService::collect_diagnostics(&state, &uri);
+
+    assert!(
+        diagnostics.iter().all(|diagnostic| {
+            diagnostic.code != Some(NumberOrString::String("fallthrough-attrs".to_string()))
+        }),
+        "plain Vue 3 fragments should not warn until attrs are observed: {diagnostics:#?}"
     );
 }
 

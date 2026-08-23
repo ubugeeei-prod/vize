@@ -81,7 +81,14 @@ const matrix: MatrixRow[] = [
       {
         kind: "file",
         path: "tests/tooling/lsp-fallthrough-attrs.test.ts",
-        requiredText: ["publishes and clears fallthrough attribute diagnostics", 'id="outer"'],
+        requiredText: [
+          "publishes and clears fallthrough attribute diagnostics",
+          'id="outer"',
+          'diagnostic.code === "fallthrough-attrs"',
+          "$attrs.class",
+          "PlainFragment.vue",
+          "line: 5, character: 2",
+        ],
       },
     ],
     followUp: "#4586",

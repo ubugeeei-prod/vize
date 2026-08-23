@@ -5,9 +5,81 @@ import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { isDiagnosticsForUri } from "./support/lsp/assertions.ts";
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
-import type { PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
+import type { LspDiagnostic, PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
 import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
+
+test("vize lsp anchors fallthrough attribute diagnostics on the authored template root", async () => {
+  const testRootDir = path.join(testOutputRoot, "lsp-fallthrough-template-range");
+  fs.mkdirSync(testRootDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
+  const session = new LspSession();
+
+  try {
+    const sourceDir = path.join(workspaceDir, "src");
+    fs.mkdirSync(sourceDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(workspaceDir, "vize.config.json"),
+      JSON.stringify({ lsp: { lint: false, typecheck: true } }),
+      "utf8",
+    );
+    await session.initialize(workspaceDir, { editor: true, lint: false, typecheck: true });
+
+    const multiRoot = `<script setup lang="ts">
+const marker = 1
+</script>
+
+<template>
+  <header :class="$attrs.class">top</header>
+  <main>body</main>
+</template>
+`;
+    const multiRootPath = path.join(sourceDir, "MultiRoot.vue");
+    const multiRootUri = pathToFileURL(multiRootPath).href;
+    fs.writeFileSync(multiRootPath, multiRoot, "utf8");
+
+    session.notify("textDocument/didOpen", {
+      textDocument: { uri: multiRootUri, languageId: "vue", version: 1, text: multiRoot },
+    });
+    const fallthroughPublish = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) =>
+        isDiagnosticsForUri(params, multiRootUri) &&
+        fallthroughDiagnostic(params as PublishDiagnosticsParams) != null,
+    )) as PublishDiagnosticsParams;
+    const fallthrough = fallthroughDiagnostic(fallthroughPublish);
+    assert.deepEqual(fallthrough?.range?.start, { line: 5, character: 2 });
+    assert.ok(
+      fallthrough?.message?.includes("Multi-root component may lose fallthrough attributes"),
+      fallthroughPublish.diagnostics.map((diagnostic) => diagnostic.message),
+    );
+
+    const plainFragment = multiRoot.replace(' :class="$attrs.class"', "");
+    const plainFragmentPath = path.join(sourceDir, "PlainFragment.vue");
+    const plainFragmentUri = pathToFileURL(plainFragmentPath).href;
+    fs.writeFileSync(plainFragmentPath, plainFragment, "utf8");
+    session.notify("textDocument/didOpen", {
+      textDocument: {
+        uri: plainFragmentUri,
+        languageId: "vue",
+        version: 1,
+        text: plainFragment,
+      },
+    });
+    const plainFragmentPublish = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) =>
+        isDiagnosticsForUri(params, plainFragmentUri) &&
+        fallthroughDiagnostic(params as PublishDiagnosticsParams) == null,
+      10_000,
+    )) as PublishDiagnosticsParams;
+    assert.deepEqual(plainFragmentPublish.diagnostics, []);
+  } finally {
+    await session.shutdown();
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
+    fs.rmSync(testRootDir, { recursive: true, force: true });
+  }
+});
 
 test("vize lsp publishes and clears fallthrough attribute diagnostics", async (t) => {
   const corsaPath = requireTypecheckDependency(
@@ -117,6 +189,10 @@ import Child from './Child.vue'
     fs.rmSync(testRootDir, { recursive: true, force: true });
   }
 });
+
+function fallthroughDiagnostic(params: PublishDiagnosticsParams): LspDiagnostic | undefined {
+  return params.diagnostics.find((diagnostic) => diagnostic.code === "fallthrough-attrs");
+}
 
 function hasUnknownIdDiagnostic(params: PublishDiagnosticsParams): boolean {
   return params.diagnostics.some(

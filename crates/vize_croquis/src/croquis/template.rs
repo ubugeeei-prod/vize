@@ -30,10 +30,13 @@ impl TemplateInfo {
         self.root_element_count > 1
     }
 
-    /// Check if fallthrough attrs may be lost (multi-root without explicit binding).
+    /// Check if observed fallthrough attrs may be lost.
     #[inline]
     pub fn may_lose_fallthrough_attrs(&self) -> bool {
-        self.has_multiple_roots() && !self.binds_attrs_explicitly
+        self.has_multiple_roots()
+            && self.uses_attrs
+            && !self.binds_attrs_explicitly
+            && !self.inherit_attrs_disabled
     }
 }
 

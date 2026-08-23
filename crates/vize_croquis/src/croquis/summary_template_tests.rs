@@ -144,5 +144,5 @@ fn semantic_summary_collects_template_and_export_counts() {
     assert!(summary.uses_attrs);
     assert!(!summary.binds_attrs_explicitly);
     assert!(summary.inherit_attrs_disabled);
-    assert!(summary.may_lose_fallthrough_attrs());
+    assert!(!summary.may_lose_fallthrough_attrs());
 }

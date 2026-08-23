@@ -1410,60 +1410,6 @@ export const foo = 'bar'
     assert!(!has_invalid, "Should not check when disabled");
 }
 
-// ========== Fallthrough Attrs Tests ==========
-
-#[test]
-fn test_check_fallthrough_attrs_multi_root() {
-    let source = r#"<script setup>
-const msg = 'hello'
-</script>
-<template>
-  <div>first</div>
-  <div>second</div>
-</template>"#;
-    let options = SfcTypeCheckOptions::new("test.vue");
-    let result = type_check_sfc(source, &options);
-    let has_fallthrough = result
-        .diagnostics
-        .iter()
-        .any(|d| d.code.as_deref() == Some("fallthrough-attrs"));
-    assert!(has_fallthrough, "Should detect multi-root fallthrough");
-}
-
-#[test]
-fn test_check_fallthrough_attrs_single_root_ok() {
-    let source = r#"<script setup>
-const msg = 'hello'
-</script>
-<template>
-  <div>{{ msg }}</div>
-</template>"#;
-    let options = SfcTypeCheckOptions::new("test.vue");
-    let result = type_check_sfc(source, &options);
-    let has_fallthrough = result
-        .diagnostics
-        .iter()
-        .any(|d| d.code.as_deref() == Some("fallthrough-attrs"));
-    assert!(!has_fallthrough, "Single root should not warn");
-}
-
-#[test]
-fn test_check_fallthrough_attrs_strict() {
-    let source = r#"<script setup>
-const msg = 'hello'
-</script>
-<template>
-  <div>first</div>
-  <div>second</div>
-</template>"#;
-    let options = SfcTypeCheckOptions::new("test.vue").strict();
-    let result = type_check_sfc(source, &options);
-    let has_error = result.diagnostics.iter().any(|d| {
-        d.code.as_deref() == Some("fallthrough-attrs") && d.severity == SfcTypeSeverity::Error
-    });
-    assert!(has_error, "Strict mode should report as Error");
-}
-
 #[test]
 fn imported_heritage_props_are_not_undefined_bindings() {
     // Regression: props inherited through an imported type

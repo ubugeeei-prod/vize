@@ -333,7 +333,7 @@ pub fn check_invalid_exports(
     }
 }
 
-/// Check for fallthrough attrs issues with multi-root components.
+/// Check for observed fallthrough attrs issues with multi-root components.
 pub fn check_fallthrough_attrs(
     summary: &vize_croquis::Croquis,
     template_offset: u32,

@@ -1,10 +1,9 @@
 //! The diagnostic service: aggregation orchestration and shared types.
 
-use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Range, Url};
-
 use crate::ide::ecosystem;
 use crate::server::ServerState;
 use crate::utils::{is_jsx_path, is_standalone_html_path};
+use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Range, Url};
 
 use super::{LineIndex, Severity};
 
@@ -138,6 +137,7 @@ impl DiagnosticService {
             sfc_compile_diags.len()
         );
         diagnostics.extend(sfc_compile_diags);
+        Self::extend_vize_sfc_type_diagnostics(state, uri, &content, &line_index, &mut diagnostics);
 
         Self::extend_component_required_prop_diagnostics(
             state,

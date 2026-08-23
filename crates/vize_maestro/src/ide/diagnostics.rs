@@ -23,12 +23,15 @@ mod editor_typecheck_tests;
 mod line_index;
 mod service;
 mod severity;
+mod vize_sfc_type;
 // `insta`'s snapshot macros expand through the disallowed `std::format!`; the
 // expansion is inside `insta`, so only an allow at the test module can silence
 // it. See CONTRIBUTING.md, "Snapshot assertions in test targets".
 #[allow(clippy::disallowed_macros)]
 #[cfg(test)]
 mod tests;
+#[cfg(all(test, feature = "native"))]
+mod vize_sfc_type_tests;
 
 pub use builder::DiagnosticBuilder;
 pub use service::DiagnosticService;

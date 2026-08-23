@@ -176,10 +176,13 @@ impl CroquisSemanticSummary {
         summary
     }
 
-    /// Whether fallthrough attributes may be dropped by a fragment root.
+    /// Whether observed fallthrough attributes may be dropped by a fragment root.
     #[inline]
     pub const fn may_lose_fallthrough_attrs(self) -> bool {
-        self.has_multiple_roots && !self.binds_attrs_explicitly
+        self.has_multiple_roots
+            && self.uses_attrs
+            && !self.binds_attrs_explicitly
+            && !self.inherit_attrs_disabled
     }
 }
 
