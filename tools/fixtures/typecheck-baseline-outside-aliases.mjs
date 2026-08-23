@@ -2,7 +2,9 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 
 import {
+  isolatedOverlayBaseUrl,
   isolatedTsconfigOverlayPath,
+  pathMappingRoot,
   resolvePackageExtends,
 } from "./typecheck-baseline-outside-paths.mjs";
 
@@ -26,11 +28,12 @@ export function rewriteOutsideAliasPaths(fixtureRoot, sourceConfigPath, configDi
   const root = resolve(fixtureRoot);
   const declared = winningPaths(sourceConfigPath, root);
   if (declared == null) return null;
+  const mapping = pathMappingRoot(sourceConfigPath, root, declared.dir);
   const rewritten = {};
   let changed = false;
   for (const [name, targets] of Object.entries(declared.paths)) {
     if (!Array.isArray(targets)) continue;
-    rewritten[name] = retargetAliasMapping(root, declared.dir, configDir, name, targets, () => {
+    rewritten[name] = retargetAliasMapping(root, mapping, configDir, name, targets, () => {
       changed = true;
     });
   }
@@ -56,6 +59,7 @@ export function applyIsolatedAliasOverlay(fixtureRoot, sourceConfigPath, overlay
   const overlayPath = overlay?.path ?? isolatedTsconfigOverlayPath(sourcePath);
   const compilerOptions = { paths };
   if (typeRoots != null) compilerOptions.typeRoots = typeRoots;
+  if (isolatedOverlayBaseUrl(sourcePath, fixtureRoot) != null) compilerOptions.baseUrl = ".";
   writeFileSync(
     overlayPath,
     `${JSON.stringify({ extends: `./${basename(sourcePath)}`, compilerOptions }, null, 2)}\n`,

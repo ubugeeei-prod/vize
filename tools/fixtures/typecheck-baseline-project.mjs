@@ -6,6 +6,7 @@ import {
   rewriteOutsideAliasPaths,
 } from "./typecheck-baseline-outside-aliases.mjs";
 import {
+  isolatedOverlayBaseUrl,
   rewriteOutsidePackagePaths,
   rewriteOutsideTypeRoots,
 } from "./typecheck-baseline-outside-paths.mjs";
@@ -129,6 +130,9 @@ function outsideCompilerOptions(fixtureRoot, sourcePath, configDir) {
     rewriteOutsideAliasPaths(fixtureRoot, sourcePath, configDir),
   );
   if (paths != null) options.paths = paths;
+  if (paths != null && isolatedOverlayBaseUrl(sourcePath, fixtureRoot) != null) {
+    options.baseUrl = ".";
+  }
   const typeRoots = rewriteOutsideTypeRoots(fixtureRoot, sourcePath, configDir);
   if (typeRoots != null) options.typeRoots = typeRoots;
   return options;

@@ -1,6 +1,8 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 
+import { stripJsonc } from "./typecheck-baseline-jsonc.mjs";
+
 /**
  * Close the vue-tsc path escape unique isolation cannot see (#4461).
  *
@@ -37,6 +39,9 @@ import { basename, dirname, join, relative, resolve } from "node:path";
  *
  * A package mapping whose outside target sits under `node_modules/<name>/...`
  * keeps that subpath on the fixture copy (Nuxt's `vue/dist/vue` JSX entry).
+ *
+ * `compilerOptions.baseUrl` is last-wins on the extends chain. Mappings resolve
+ * from that directory; a rewrite then pins overlay `baseUrl` to `"."`.
  */
 
 const packageNamePattern = /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/u;
@@ -45,15 +50,25 @@ export function rewriteOutsidePackagePaths(fixtureRoot, sourceConfigPath, config
   const root = resolve(fixtureRoot);
   const declared = winningPaths(sourceConfigPath, root);
   if (declared == null) return null;
+  const mapping = pathMappingRoot(sourceConfigPath, root, declared.dir);
   const rewritten = {};
   let changed = false;
   for (const [name, targets] of Object.entries(declared.paths)) {
     if (!Array.isArray(targets)) continue;
-    rewritten[name] = retargetPathMapping(root, declared.dir, configDir, name, targets, () => {
+    rewritten[name] = retargetPathMapping(root, mapping, configDir, name, targets, () => {
       changed = true;
     });
   }
   return changed ? rewritten : null;
+}
+
+export function pathMappingRoot(sourceConfigPath, fixtureRoot, pathsDir) {
+  const base = winningBaseUrl(sourceConfigPath, fixtureRoot);
+  return base == null ? pathsDir : resolve(base.dir, base.value);
+}
+
+export function isolatedOverlayBaseUrl(sourceConfigPath, fixtureRoot) {
+  return winningBaseUrl(sourceConfigPath, fixtureRoot) == null ? null : ".";
 }
 
 export function isolatedTsconfigOverlayPath(sourceConfigPath) {
@@ -87,6 +102,9 @@ export function writeIsolatedTsconfigOverlay(fixtureRoot, sourceConfigPath) {
   const compilerOptions = {};
   if (paths != null) compilerOptions.paths = paths;
   if (typeRoots != null) compilerOptions.typeRoots = typeRoots;
+  if (paths != null && isolatedOverlayBaseUrl(sourcePath, fixtureRoot) != null) {
+    compilerOptions.baseUrl = ".";
+  }
   const overlayPath = isolatedTsconfigOverlayPath(sourcePath);
   writeFileSync(
     overlayPath,
@@ -160,34 +178,38 @@ function retargetTypeRoot(fixtureRoot, sourceDir, configDir, entry, markChanged)
   return configRelativePath(configDir, local);
 }
 
-function winningPaths(sourceConfigPath, fixtureRoot) {
-  let paths;
+function winningCompilerOption(sourceConfigPath, fixtureRoot, pick) {
+  let value;
   let dir;
-  for (const { config, dir: configDir } of [
-    ...loadExtendsChain(sourceConfigPath, fixtureRoot),
-  ].reverse()) {
-    const candidate = config?.compilerOptions?.paths;
-    if (candidate != null && typeof candidate === "object") {
-      paths = candidate;
-      dir = configDir;
+  for (const entry of [...loadExtendsChain(sourceConfigPath, fixtureRoot)].reverse()) {
+    const candidate = pick(entry.config);
+    if (candidate != null) {
+      value = candidate;
+      dir = entry.dir;
     }
   }
-  return paths == null ? null : { paths, dir };
+  return value == null ? null : { value, dir };
+}
+
+function winningPaths(sourceConfigPath, fixtureRoot) {
+  const won = winningCompilerOption(sourceConfigPath, fixtureRoot, (config) => {
+    const value = config?.compilerOptions?.paths;
+    return value != null && typeof value === "object" ? value : null;
+  });
+  return won == null ? null : { paths: won.value, dir: won.dir };
 }
 
 function winningTypeRoots(sourceConfigPath, fixtureRoot) {
-  let typeRoots;
-  let dir;
-  for (const { config, dir: configDir } of [
-    ...loadExtendsChain(sourceConfigPath, fixtureRoot),
-  ].reverse()) {
-    const candidate = config?.compilerOptions?.typeRoots;
-    if (Array.isArray(candidate)) {
-      typeRoots = candidate;
-      dir = configDir;
-    }
-  }
-  return typeRoots == null ? null : { typeRoots, dir };
+  const won = winningCompilerOption(sourceConfigPath, fixtureRoot, (config) =>
+    Array.isArray(config?.compilerOptions?.typeRoots) ? config.compilerOptions.typeRoots : null,
+  );
+  return won == null ? null : { typeRoots: won.value, dir: won.dir };
+}
+
+function winningBaseUrl(sourceConfigPath, fixtureRoot) {
+  return winningCompilerOption(sourceConfigPath, fixtureRoot, (config) =>
+    typeof config?.compilerOptions?.baseUrl === "string" ? config.compilerOptions.baseUrl : null,
+  );
 }
 
 function loadExtendsChain(sourceConfigPath, fixtureRoot) {
@@ -297,40 +319,4 @@ function configRelativePath(from, to) {
   const path = relative(from, to).replaceAll("\\", "/");
   if (path.startsWith("/") || /^[A-Za-z]:\//u.test(path)) return path;
   return path.startsWith(".") ? path : `./${path}`;
-}
-
-function stripJsonc(text) {
-  let out = "";
-  let inString = false;
-  for (let i = 0; i < text.length; i += 1) {
-    const ch = text[i];
-    if (inString) {
-      out += ch;
-      if (ch === "\\") {
-        out += text[i + 1] ?? "";
-        i += 1;
-      } else if (ch === '"') {
-        inString = false;
-      }
-      continue;
-    }
-    if (ch === '"') {
-      inString = true;
-      out += ch;
-      continue;
-    }
-    if (ch === "/" && text[i + 1] === "/") {
-      while (i < text.length && text[i] !== "\n") i += 1;
-      out += "\n";
-      continue;
-    }
-    if (ch === "/" && text[i + 1] === "*") {
-      i += 2;
-      while (i + 1 < text.length && !(text[i] === "*" && text[i + 1] === "/")) i += 1;
-      i += 1;
-      continue;
-    }
-    out += ch;
-  }
-  return out.replace(/,(\s*[}\]])/g, "$1");
 }
