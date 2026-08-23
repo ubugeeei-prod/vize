@@ -415,10 +415,7 @@ jobs:
         run: moon run --target native tools/moon/cmd/github/clean_node_binaries -- npm/native npm/fresco-native
       - name: Build vize-native
         shell: bash
-        run: moon run --target native tools/moon/cmd/github/build_napi_package -- npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }}
-      - name: Verify vize-native GNU glibc compatibility
-        if: runner.os == 'Linux' && endsWith(matrix.settings.target, '-gnu')
-        run: node tools/github/verify-glibc-symbols.mjs --max 2.36 npm/native/*.linux-*-gnu.node
+        run: moon run --target native tools/moon/cmd/github/build_napi_package -- npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }} && if [[ "$RUNNER_OS" == Linux && "${{ matrix.settings.target }}" == *-gnu ]]; then node tools/github/verify-glibc-symbols.mjs --max 2.36 npm/native/*.linux-*-gnu.node; fi
       - name: Collect vize-native artifact
         shell: bash
         run: moon run --target native tools/moon/cmd/github/collect_native_artifacts -- npm/native .artifacts/vize-native vize-native
@@ -431,10 +428,7 @@ jobs:
           compression-level: 0
       - name: Build fresco-native
         shell: bash
-        run: moon run --target native tools/moon/cmd/github/build_napi_package -- npm/fresco-native ../../crates/vize_fresco/Cargo.toml vize_fresco ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }}
-      - name: Verify fresco-native GNU glibc compatibility
-        if: runner.os == 'Linux' && endsWith(matrix.settings.target, '-gnu')
-        run: node tools/github/verify-glibc-symbols.mjs --max 2.36 npm/fresco-native/*.linux-*-gnu.node
+        run: moon run --target native tools/moon/cmd/github/build_napi_package -- npm/fresco-native ../../crates/vize_fresco/Cargo.toml vize_fresco ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }} && if [[ "$RUNNER_OS" == Linux && "${{ matrix.settings.target }}" == *-gnu ]]; then node tools/github/verify-glibc-symbols.mjs --max 2.36 npm/fresco-native/*.linux-*-gnu.node; fi
       - name: Collect fresco-native artifact
         shell: bash
         run: moon run --target native tools/moon/cmd/github/collect_native_artifacts -- npm/fresco-native .artifacts/fresco-native fresco-native
