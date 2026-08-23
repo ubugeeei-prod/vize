@@ -43,9 +43,17 @@ export function isolateUniqueLocalTypePackages(fixtureRoot, sourceConfigPath) {
 }
 
 export function isolateUniqueVueRuntimePackages(fixtureRoot) {
+  return isolateUniqueNamedLocalTypePackages(fixtureRoot, vueRuntimePackages);
+}
+
+export function isolateUniqueVueI18nPackages(fixtureRoot) {
+  return isolateUniqueNamedLocalTypePackages(fixtureRoot, ["vue-i18n"]);
+}
+
+function isolateUniqueNamedLocalTypePackages(fixtureRoot, names) {
   const root = resolve(fixtureRoot);
   const declared = new Map();
-  for (const name of vueRuntimePackages) {
+  for (const name of names) {
     const ancestor = ancestorPackagePath(root, name);
     if (ancestor == null) continue;
     declared.set(name, ancestor);

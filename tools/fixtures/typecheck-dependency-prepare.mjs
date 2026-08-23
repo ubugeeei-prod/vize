@@ -9,6 +9,7 @@ import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-targ
 import { isolateFixtureTypePackages } from "./typecheck-baseline-isolation.mjs";
 import {
   isolateUniqueLocalTypePackages,
+  isolateUniqueVueI18nPackages,
   isolateUniqueVueRuntimePackages,
 } from "./typecheck-baseline-isolation-unique.mjs";
 import { applyIsolatedAliasOverlay } from "./typecheck-baseline-outside-aliases.mjs";
@@ -161,6 +162,11 @@ function isolateFixture(project, fixtureRoot) {
     }
   }
   for (const entry of isolateUniqueVueRuntimePackages(fixtureRoot)) {
+    if (seen.has(entry.name)) continue;
+    seen.add(entry.name);
+    shadowed.push(entry);
+  }
+  for (const entry of isolateUniqueVueI18nPackages(fixtureRoot)) {
     if (seen.has(entry.name)) continue;
     seen.add(entry.name);
     shadowed.push(entry);
