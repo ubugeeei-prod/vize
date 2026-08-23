@@ -31,8 +31,9 @@ import { basename, dirname, join, relative, resolve } from "node:path";
  * `node_modules/@types` is retargeted to the fixture-local copy when it exists.
  *
  * A trailing `/*` on a package mapping is the same walk: TypeScript still
- * loads that outside tree. Interior `*` patterns and `#alias/*` keys are not
- * guessed.
+ * loads that outside tree. A mapping named `*` whose target is an outside
+ * `node_modules` directory is retargeted to the fixture copy. Interior `*`
+ * patterns and `#alias/*` keys are not guessed.
  */
 
 const packageNamePattern = /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/u;
@@ -94,15 +95,22 @@ export function writeIsolatedTsconfigOverlay(fixtureRoot, sourceConfigPath) {
 function retargetPathMapping(fixtureRoot, sourceDir, configDir, name, targets, markChanged) {
   const relocated = targets.map((entry) => relocatePathEntry(sourceDir, configDir, entry));
   const packageName = packageNameFromPathMapping(name);
-  if (packageName == null) return relocated;
   const first = targets.find(
     (entry) => typeof entry === "string" && isExactOrTrailingStarPath(entry),
   );
   if (first == null) return relocated;
   const original = resolve(sourceDir, first.endsWith("/*") ? first.slice(0, -2) : first);
   if (isInside(fixtureRoot, original)) return relocated;
-  const local = join(fixtureRoot, "node_modules", ...packageName.split("/"));
-  if (!existsSync(join(local, "package.json"))) return relocated;
+  let local;
+  if (packageName != null) {
+    local = join(fixtureRoot, "node_modules", ...packageName.split("/"));
+    if (!existsSync(join(local, "package.json"))) return relocated;
+  } else if (name === "*" && first.endsWith("/*") && basename(original) === "node_modules") {
+    local = join(fixtureRoot, "node_modules");
+    if (!existsSync(local)) return relocated;
+  } else {
+    return relocated;
+  }
   markChanged();
   const rewritten = first.endsWith("/*")
     ? `${configRelativePath(configDir, local)}/*`
