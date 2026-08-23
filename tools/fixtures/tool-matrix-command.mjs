@@ -10,14 +10,24 @@ export function typecheckCorpusGlobs(project) {
   return project.typecheckPerformance?.corpusGlobs ?? project.vueGlobs;
 }
 
+export function typecheckSourceTsconfig(project) {
+  const baseline = project.typecheckPerformance?.baseline?.tsconfig;
+  if (typeof baseline === "string") return baseline;
+  return typeof project.tsconfig === "string" ? project.tsconfig : null;
+}
+
 export function typecheckTsconfigPath(project) {
-  if (typeof project.tsconfig !== "string") return null;
-  const overlayRel = isolatedTsconfigOverlayPath(project.tsconfig);
+  // vue-tsc measures `baseline.tsconfig` when it is set. Elk's root config is
+  // a solution (`files: []` + `references`); using it would compare a different
+  // program than the baseline (#4461).
+  const source = typecheckSourceTsconfig(project);
+  if (source == null) return null;
+  const overlayRel = isolatedTsconfigOverlayPath(source);
   const overlayAbs =
     typeof project.fixturePath === "string"
       ? resolve(repoRoot, project.fixturePath, overlayRel)
       : resolve(overlayRel);
-  return existsSync(overlayAbs) ? overlayRel : project.tsconfig;
+  return existsSync(overlayAbs) ? overlayRel : source;
 }
 
 export function toolArgs(project, tool, compilerOutputDir) {

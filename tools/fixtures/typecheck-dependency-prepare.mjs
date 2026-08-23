@@ -132,9 +132,10 @@ function prepareProjectDependencies({ args, commitSha, project }) {
  * answered by Vize's own `node_modules` further up the tree (run 31979524200).
  * When Vize's `--tsconfig` and vue-tsc's baseline config differ (Nuxt Volt:
  * `apps/volt/tsconfig.json` vs `apps/volt/.nuxt/tsconfig.json`), both are
- * walked. Reported on stdout rather than into the artifact: what the run has
- * to prove is the outcome, and `typecheck-baseline-ambient.mjs` proves that
- * from the program listing regardless of how the tree got there.
+ * walked and both receive an overlay. Reported on stdout rather than into the
+ * artifact: what the run has to prove is the outcome, and
+ * `typecheck-baseline-ambient.mjs` proves that from the program listing
+ * regardless of how the tree got there.
  */
 export function isolationTsconfigPaths(project) {
   const paths = [];
@@ -161,30 +162,28 @@ function isolateFixture(project, fixtureRoot) {
       shadowed.push(entry);
     }
   }
-  for (const entry of isolateUniqueVueRuntimePackages(fixtureRoot)) {
-    if (seen.has(entry.name)) continue;
-    seen.add(entry.name);
-    shadowed.push(entry);
-  }
-  for (const entry of isolateUniqueVueI18nPackages(fixtureRoot)) {
-    if (seen.has(entry.name)) continue;
-    seen.add(entry.name);
-    shadowed.push(entry);
+  for (const isolate of [isolateUniqueVueRuntimePackages, isolateUniqueVueI18nPackages]) {
+    for (const entry of isolate(fixtureRoot)) {
+      if (seen.has(entry.name)) continue;
+      seen.add(entry.name);
+      shadowed.push(entry);
+    }
   }
   for (const entry of shadowed) {
     process.stdout.write(`Linked ${project.id} node_modules/${entry.name} -> ${entry.target}\n`);
   }
-  if (typeof project.tsconfig !== "string") return;
-  const sourceConfig = resolve(fixtureRoot, project.tsconfig);
-  const overlay = applyIsolatedAliasOverlay(
-    fixtureRoot,
-    sourceConfig,
-    writeIsolatedTsconfigOverlay(fixtureRoot, sourceConfig),
-  );
-  if (overlay != null) {
-    process.stdout.write(
-      `Rewrote ${project.id} tsconfig overlay -> ${relative(fixtureRoot, overlay.path)}\n`,
+  for (const relativeConfig of isolationTsconfigPaths(project)) {
+    const sourceConfig = resolve(fixtureRoot, relativeConfig);
+    const overlay = applyIsolatedAliasOverlay(
+      fixtureRoot,
+      sourceConfig,
+      writeIsolatedTsconfigOverlay(fixtureRoot, sourceConfig),
     );
+    if (overlay != null) {
+      process.stdout.write(
+        `Rewrote ${project.id} tsconfig overlay -> ${relative(fixtureRoot, overlay.path)}\n`,
+      );
+    }
   }
 }
 
