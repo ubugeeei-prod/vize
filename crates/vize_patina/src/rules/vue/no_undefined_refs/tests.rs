@@ -115,12 +115,16 @@ const known = 1
     let result = Linter::new()
         .with_additional_rules(vec![RULE.into()])
         .lint_sfc(sfc, "Probe.vue");
-    assert!(
-        result.diagnostics.iter().any(|diagnostic| {
-            diagnostic.rule_name == RULE && diagnostic.message.as_str().contains("missing")
-        }),
-        "config-enable must instantiate the rule: {:#?}",
-        result.diagnostics
+    let expected = undefined_at(sfc, "missing");
+    assert_eq!(
+        findings(&result)
+            .into_iter()
+            .filter(|(rule, _, _, _, _)| *rule == RULE)
+            .map(|(rule, severity, start, end, message)| {
+                (rule, severity, start, end, message.to_string())
+            })
+            .collect::<Vec<_>>(),
+        vec![expected]
     );
 }
 

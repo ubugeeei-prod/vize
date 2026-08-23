@@ -187,6 +187,7 @@ export const LINT_RULE_NAMES = [
   "vue/no-template-shadow",
   "vue/no-template-target-blank",
   "vue/no-textarea-mustache",
+  "vue/no-undefined-refs",
   "vue/no-unsafe-url",
   "vue/no-unsandboxed-iframe",
   "vue/no-unused-components",

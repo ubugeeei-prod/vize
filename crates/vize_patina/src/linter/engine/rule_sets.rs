@@ -55,14 +55,16 @@ mod tests {
                 .iter()
                 .copied(),
         );
-        for name in SEMANTIC_TEMPLATE_RULES
+        let missing: Vec<&str> = SEMANTIC_TEMPLATE_RULES
             .iter()
             .chain(SHARED_SFC_DESCRIPTOR_RULES)
-        {
-            assert!(
-                available.contains(name),
-                "{name} is named in an engine rule-name set but no registry can instantiate it"
-            );
-        }
+            .copied()
+            .filter(|name| !available.contains(name))
+            .collect();
+        assert_eq!(
+            missing,
+            Vec::<&str>::new(),
+            "engine rule-name sets must only name rules a registry can instantiate"
+        );
     }
 }

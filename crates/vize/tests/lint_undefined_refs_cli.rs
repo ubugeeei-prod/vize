@@ -54,14 +54,31 @@ const known = 1
         ])
         .output()
         .unwrap();
-    let enabled_stdout = String::from_utf8_lossy(&enabled.stdout);
     assert!(
-        enabled_stdout.contains("vue/no-undefined-refs"),
-        "config-enable must report the undefined template ref: {}",
+        enabled.status.success(),
+        "config-enable must keep the warning exit: {}",
         output_details(&enabled)
     );
-    assert!(
-        enabled_stdout.contains("missing"),
+    let enabled_json: serde_json::Value = serde_json::from_slice(&enabled.stdout)
+        .unwrap_or_else(|_| panic!("config-enable must emit JSON: {}", output_details(&enabled)));
+    assert_eq!(
+        enabled_json,
+        serde_json::json!([{
+            "file": "src/App.vue",
+            "messages": [{
+                "ruleId": "vue/no-undefined-refs",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "severity": 1,
+                "message": "[vize:vue/no-undefined-refs] Variable 'missing' is not defined",
+                "line": 5,
+                "column": 21,
+                "endLine": 5,
+                "endColumn": 28,
+                "help": "Define in <script setup> or ensure it's imported"
+            }],
+            "errorCount": 0,
+            "warningCount": 1
+        }]),
         "{}",
         output_details(&enabled)
     );
@@ -71,10 +88,27 @@ const known = 1
         .args(["lint", "--no-config", "--format", "json", "src/App.vue"])
         .output()
         .unwrap();
-    let default_stdout = String::from_utf8_lossy(&default.stdout);
     assert!(
-        !default_stdout.contains("vue/no-undefined-refs"),
+        default.status.success(),
         "default preset must stay silent: {}",
+        output_details(&default)
+    );
+    let default_json: serde_json::Value =
+        serde_json::from_slice(&default.stdout).unwrap_or_else(|_| {
+            panic!(
+                "default preset must emit JSON: {}",
+                output_details(&default)
+            )
+        });
+    assert_eq!(
+        default_json,
+        serde_json::json!([{
+            "file": "src/App.vue",
+            "messages": [],
+            "errorCount": 0,
+            "warningCount": 0
+        }]),
+        "{}",
         output_details(&default)
     );
 }
