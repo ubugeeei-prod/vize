@@ -33,6 +33,7 @@ use vize_disegno::scope::ScopeFacts;
 
 mod binding;
 mod bindop;
+mod css;
 mod cx;
 mod directive;
 mod element;
@@ -49,6 +50,7 @@ mod vfor;
 pub(crate) use expr::simple_identifier;
 // The wrapper-key channel (P2-9 series 5): captured `<template v-if>`
 // keys, folded into branch-key facts by the v-if pass.
+pub use css::lower_style_block;
 pub use structural::{WrapperKey, WrapperKeys};
 // The one-rebuild rule (the same discipline): the text pass re-derives a
 // compound's source with exactly the spelling the lowering minted.
