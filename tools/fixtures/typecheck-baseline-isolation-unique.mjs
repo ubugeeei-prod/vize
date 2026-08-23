@@ -16,8 +16,9 @@ import { dirname, join, relative, resolve } from "node:path";
  * `typecheck-baseline-isolation.mjs` will not materialize an outside target —
  * that would import the contamination. If the fixture's own pnpm store holds
  * exactly one copy of that name, this links that copy instead of walking out to
- * Vize's. Multiple copies are different peer suffixes; this does not guess
- * which Vue they were built against.
+ * Vize's. Several copies are different Vue peer suffixes: this then picks the
+ * copy whose pnpm id matches the fixture's own `vue` version, and still does
+ * not guess when zero or several copies match.
  */
 
 const packageNamePattern = /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/u;
@@ -34,8 +35,8 @@ export function isolateUniqueLocalTypePackages(fixtureRoot, sourceConfigPath) {
     if (existsSync(link) || isDanglingLink(link)) continue;
     if (isPackageDirectory(target) && isInside(root, target)) continue;
     const copies = findLocalCopies(root, name);
-    if (copies.length !== 1) continue;
-    const local = copies[0];
+    const local = selectLocalCopy(root, name, copies);
+    if (local == null) continue;
     mkdirSync(dirname(link), { recursive: true });
     symlinkSync(relative(dirname(link), local), link);
     shadowed.push({ name, target: relative(root, local).replaceAll("\\", "/") });
@@ -76,6 +77,45 @@ function findLocalCopies(fixtureRoot, name) {
     copies.set(real, packageDir);
   }
   return [...copies.values()].sort(compare);
+}
+
+function selectLocalCopy(fixtureRoot, name, copies) {
+  if (copies.length === 1) return copies[0];
+  if (copies.length === 0) return null;
+  const vueVersion = readFixtureVueVersion(fixtureRoot);
+  if (vueVersion == null) return null;
+  const matched = copies.filter((copy) => copyMatchesVue(fixtureRoot, name, copy, vueVersion));
+  return matched.length === 1 ? matched[0] : null;
+}
+
+function readFixtureVueVersion(fixtureRoot) {
+  const hoisted = readPackageVersion(join(fixtureRoot, "node_modules", "vue"));
+  if (hoisted != null) return hoisted;
+  const copies = findLocalCopies(fixtureRoot, "vue");
+  if (copies.length !== 1) return null;
+  return readPackageVersion(copies[0]);
+}
+
+function readPackageVersion(packageDir) {
+  try {
+    const pkg = JSON.parse(readFileSync(join(packageDir, "package.json"), "utf8"));
+    return typeof pkg.version === "string" && pkg.version !== "" ? pkg.version : null;
+  } catch {
+    return null;
+  }
+}
+
+function copyMatchesVue(fixtureRoot, name, packageDir, vueVersion) {
+  const store = join(fixtureRoot, "node_modules", ".pnpm");
+  const relativePath = relative(store, packageDir);
+  if (relativePath.startsWith("..") || relativePath.startsWith("/")) return false;
+  const id = relativePath.split(/[\\/]/)[0];
+  const marker = name === "vue" ? `vue@${vueVersion}` : `_vue@${vueVersion}`;
+  const index = id.indexOf(marker);
+  if (index === -1) return false;
+  if (name === "vue" && index !== 0) return false;
+  const end = index + marker.length;
+  return end === id.length || id[end] === "_" || id[end] === "(";
 }
 
 function parseTsconfig(configPath) {
