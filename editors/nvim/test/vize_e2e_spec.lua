@@ -19,6 +19,7 @@ local plugin_root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:
 vim.opt.runtimepath:prepend(plugin_root)
 
 local expected = dofile(plugin_root .. "/test/vize_e2e_expected.lua")
+local ref_surface_hover = dofile(plugin_root .. "/test/ref_surface_hover.lua")
 local config = require("vize.config")
 
 local server_path = os.getenv("VIZE_E2E_SERVER")
@@ -51,12 +52,6 @@ local function read_file(path)
   local contents = handle:read("*a")
   handle:close()
   return contents
-end
-
-local function write_file(path, contents)
-  local handle = assert(io.open(path, "w"))
-  handle:write(contents)
-  handle:close()
 end
 
 local function sorted_by_start(diagnostics)
@@ -136,91 +131,6 @@ local function step_hover(client, bufnr, uri)
     textDocument = { uri = uri },
   })
   assert_eq(result, expected.hover, "script binding hover")
-end
-
-local function assert_ref_surface_hover(client, bufnr, uri, position, expected_hover, label)
-  local result = request(client, bufnr, "textDocument/hover", {
-    position = position,
-    textDocument = { uri = uri },
-  })
-  assert_eq(result, expected_hover, label)
-  assert(
-    not result.contents.value:match("Ref<unknown>")
-      and not result.contents.value:match("ComputedRef<unknown>")
-      and not result.contents.value:match("MaybeRef<unknown>"),
-    label .. " degraded to an unknown reactive type: " .. result.contents.value
-  )
-end
-
---- Step 3b: ref/computed/template-ref hover text stays precise outside VS Code.
-local function step_typed_ref_hover_surfaces(client, scenario_bufnr, published)
-  local ref_path = workspace_path .. "/src/RefSurface.vue"
-  write_file(ref_path, expected.ref_surface_source)
-  vim.cmd("edit " .. vim.fn.fnameescape(ref_path))
-
-  local ref_bufnr = vim.api.nvim_get_current_buf()
-  assert_eq(vim.bo[ref_bufnr].filetype, "vue", "RefSurface fixture filetype")
-  assert(vim.lsp.buf_attach_client(ref_bufnr, client.id), "RefSurface buffer did not attach")
-
-  local ref_uri = vim.uri_from_bufnr(ref_bufnr)
-  local settled = vim.wait(180000, function()
-    return published[ref_uri] ~= nil
-  end, 100)
-  if not settled then
-    fail("real server did not publish RefSurface diagnostics", published)
-  end
-  assert_eq(published[ref_uri], {}, "RefSurface diagnostics")
-
-  assert_ref_surface_hover(
-    client,
-    ref_bufnr,
-    ref_uri,
-    { character = 8, line = 3 },
-    expected.ref_surface_hovers.script_count,
-    "script ref hover"
-  )
-  assert_ref_surface_hover(
-    client,
-    ref_bufnr,
-    ref_uri,
-    { character = 8, line = 4 },
-    expected.ref_surface_hovers.script_doubled,
-    "script computed hover"
-  )
-  assert_ref_surface_hover(
-    client,
-    ref_bufnr,
-    ref_uri,
-    { character = 8, line = 5 },
-    expected.ref_surface_hovers.script_button,
-    "script template-ref hover"
-  )
-  assert_ref_surface_hover(
-    client,
-    ref_bufnr,
-    ref_uri,
-    { character = 28, line = 9 },
-    expected.ref_surface_hovers.template_count,
-    "template ref hover"
-  )
-  assert_ref_surface_hover(
-    client,
-    ref_bufnr,
-    ref_uri,
-    { character = 40, line = 9 },
-    expected.ref_surface_hovers.template_doubled,
-    "template computed hover"
-  )
-  assert_ref_surface_hover(
-    client,
-    ref_bufnr,
-    ref_uri,
-    { character = 54, line = 9 },
-    expected.ref_surface_hovers.template_button,
-    "template template-ref hover"
-  )
-
-  vim.api.nvim_set_current_buf(scenario_bufnr)
 end
 
 --- Step 4: the quick fix the server offers on the lint warning's own span.
@@ -375,7 +285,16 @@ local function main()
   step_diagnostics(uri, published)
   step_completion(client, bufnr, uri)
   step_hover(client, bufnr, uri)
-  step_typed_ref_hover_surfaces(client, bufnr, published)
+  ref_surface_hover.run({
+    assert_eq = assert_eq,
+    client = client,
+    expected = expected,
+    fail = fail,
+    published = published,
+    request = request,
+    scenario_bufnr = bufnr,
+    workspace_path = workspace_path,
+  })
   step_quick_fix(client, bufnr, uri, offset_encoding)
   step_format_on_save(client, bufnr, uri, scenario_path, published_version_counts)
   step_semantic_tokens(client, bufnr, uri)
