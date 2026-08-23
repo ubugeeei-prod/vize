@@ -71,7 +71,7 @@ export function isolateFixtureTypePackages(fixtureRoot, sourceConfigPath) {
   return shadowed;
 }
 
-function readDeclaredPackagePaths(fixtureRoot, sourceConfigPath) {
+export function readDeclaredPackagePaths(fixtureRoot, sourceConfigPath) {
   const declared = new Map();
   const conflicts = new Set();
   const seen = new Set();

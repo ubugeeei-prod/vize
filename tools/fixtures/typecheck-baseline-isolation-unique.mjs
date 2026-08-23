@@ -1,13 +1,7 @@
-import {
-  existsSync,
-  lstatSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  realpathSync,
-  symlinkSync,
-} from "node:fs";
+import { existsSync, lstatSync, mkdirSync, readdirSync, realpathSync, symlinkSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
+
+import { readDeclaredPackagePaths } from "./typecheck-baseline-isolation.mjs";
 
 /**
  * Close the remaining type-reference escape when Nuxt (or another generator)
@@ -18,13 +12,15 @@ import { dirname, join, relative, resolve } from "node:path";
  * exactly one copy of that name, this links that copy instead of walking out to
  * Vize's. Multiple copies are different peer suffixes; this does not guess
  * which Vue they were built against.
+ *
+ * Declared names come from the same `extends` / `references` walk isolation
+ * uses, so a check tsconfig that only extends the generated app config still
+ * sees the outside mapping (reka-ui's `tsconfig.check.json`).
  */
-
-const packageNamePattern = /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/u;
 
 export function isolateUniqueLocalTypePackages(fixtureRoot, sourceConfigPath) {
   const root = resolve(fixtureRoot);
-  const declared = readOwnPackagePaths(sourceConfigPath);
+  const declared = readDeclaredPackagePaths(root, sourceConfigPath);
   if (declared.size === 0) return [];
   const reachable = collectAncestorPackageNames(root);
   const shadowed = [];
@@ -41,21 +37,6 @@ export function isolateUniqueLocalTypePackages(fixtureRoot, sourceConfigPath) {
     shadowed.push({ name, target: relative(root, local).replaceAll("\\", "/") });
   }
   return shadowed;
-}
-
-function readOwnPackagePaths(sourceConfigPath) {
-  const declared = new Map();
-  const config = parseTsconfig(sourceConfigPath);
-  const paths = config?.compilerOptions?.paths;
-  if (paths == null || typeof paths !== "object") return declared;
-  const configDir = dirname(resolve(sourceConfigPath));
-  for (const [name, targets] of Object.entries(paths)) {
-    if (!packageNamePattern.test(name) || !Array.isArray(targets)) continue;
-    const first = targets.find((entry) => typeof entry === "string" && !entry.includes("*"));
-    if (first == null) continue;
-    declared.set(name, resolve(configDir, first));
-  }
-  return declared;
 }
 
 function findLocalCopies(fixtureRoot, name) {
@@ -76,14 +57,6 @@ function findLocalCopies(fixtureRoot, name) {
     copies.set(real, packageDir);
   }
   return [...copies.values()].sort(compare);
-}
-
-function parseTsconfig(configPath) {
-  try {
-    return JSON.parse(stripJsonc(readFileSync(configPath, "utf8")));
-  } catch {
-    return null;
-  }
 }
 
 function collectAncestorPackageNames(fixtureRoot) {
@@ -139,40 +112,4 @@ function isDanglingLink(link) {
 
 function compare(left, right) {
   return left < right ? -1 : left > right ? 1 : 0;
-}
-
-function stripJsonc(text) {
-  let out = "";
-  let inString = false;
-  for (let i = 0; i < text.length; i += 1) {
-    const ch = text[i];
-    if (inString) {
-      out += ch;
-      if (ch === "\\") {
-        out += text[i + 1] ?? "";
-        i += 1;
-      } else if (ch === '"') {
-        inString = false;
-      }
-      continue;
-    }
-    if (ch === '"') {
-      inString = true;
-      out += ch;
-      continue;
-    }
-    if (ch === "/" && text[i + 1] === "/") {
-      while (i < text.length && text[i] !== "\n") i += 1;
-      out += "\n";
-      continue;
-    }
-    if (ch === "/" && text[i + 1] === "*") {
-      i += 2;
-      while (i + 1 < text.length && !(text[i] === "*" && text[i + 1] === "/")) i += 1;
-      i += 1;
-      continue;
-    }
-    out += ch;
-  }
-  return out.replace(/,(\s*[}\]])/g, "$1");
 }
