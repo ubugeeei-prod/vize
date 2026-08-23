@@ -67,3 +67,17 @@ fn rebase_slice(css: &str, slice: &str, block_start: u32) -> Span {
     };
     rebase(block_start, start, start + slice.len())
 }
+
+impl<'a> super::Lowered<'a> {
+    /// Append one style block's carrier to the already-lowered template
+    /// tree and keep [`super::Lowered::op_count`] equal to the folio.
+    pub fn push_style_block(&mut self, allocator: &'a Allocator, css: &'a str, block_start: u32) {
+        let op = lower_style_block(allocator, css, block_start);
+        let extra = match &op {
+            Op::Element(element) => 1 + element.bindings.len() as u32,
+            _ => 1,
+        };
+        self.root.ops.push(op);
+        self.op_count = self.op_count.saturating_add(extra);
+    }
+}
