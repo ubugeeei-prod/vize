@@ -5,8 +5,6 @@
 //! - Vue directives
 //! - Script bindings and imports
 //! - CSS properties and Vue-specific selectors
-//! - TypeScript type information from croquis analysis
-//! - Real type information from Corsa (when available)
 #![allow(
     clippy::disallowed_types,
     clippy::disallowed_methods,
