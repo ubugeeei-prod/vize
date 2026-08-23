@@ -784,6 +784,12 @@ export declare function parseArt(
   options?: ArtParseOptionsNapi | undefined | null,
 ): ArtDescriptorNapi;
 
+/** Return unknown-status warnings for an Art file (`*.art.vue`). */
+export declare function parseArtStatusWarnings(
+  source: string,
+  options?: ArtParseOptionsNapi | undefined | null,
+): Array<string>;
+
 export declare function parseCssAst(
   source: string,
   options?: CssCompileOptionsNapi | undefined | null,

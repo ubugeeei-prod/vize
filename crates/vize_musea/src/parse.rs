@@ -3,7 +3,7 @@
 //! High-performance zero-copy parser using arena allocation.
 //! All string data is borrowed directly from the source.
 
-mod art_block;
+pub(crate) mod art_block;
 mod status;
 mod variant;
 

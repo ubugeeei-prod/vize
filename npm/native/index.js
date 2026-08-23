@@ -61,6 +61,7 @@ module.exports.normalizeViteResolvedVuePath = nativeBinding.normalizeViteResolve
 module.exports.normalizeViteVirtualVueModuleId = nativeBinding.normalizeViteVirtualVueModuleId;
 module.exports.normalizeVizeConfig = nativeBinding.normalizeVizeConfig;
 module.exports.parseArt = nativeBinding.parseArt;
+module.exports.parseArtStatusWarnings = nativeBinding.parseArtStatusWarnings;
 module.exports.parseCssAst = nativeBinding.parseCssAst;
 module.exports.parseDesignTokensFromJson = nativeBinding.parseDesignTokensFromJson;
 module.exports.parseDesignTokensFromPath = nativeBinding.parseDesignTokensFromPath;

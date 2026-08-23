@@ -72,6 +72,7 @@ pub mod autogen;
 pub mod docs;
 pub mod palette;
 pub mod parse;
+mod status_warnings;
 pub mod tokens;
 pub mod transform;
 pub mod types;
@@ -79,6 +80,7 @@ pub mod vrt;
 
 // Re-exports for convenience
 pub use parse::parse_art;
+pub use status_warnings::parse_art_status_warnings;
 pub use tokens::{
     build_token_map, find_dependent_tokens, flatten_token_categories, generate_tokens_markdown,
     parse_tokens_from_json, parse_tokens_from_path, parse_tokens_from_value,

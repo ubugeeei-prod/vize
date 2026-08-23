@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { processMuseaArtFile } from "./art-processing.js";
+import { processMuseaArtFile, reportArtStatusWarnings } from "./art-processing.js";
 
 void test("processMuseaArtFile forwards parser diagnostics during build", async () => {
   const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-bad-art-"));
@@ -54,4 +54,31 @@ void test("processMuseaArtFile keeps dev processing non-fatal", async () => {
   } finally {
     await fs.promises.rm(tempDir, { recursive: true, force: true });
   }
+});
+
+void test("reportArtStatusWarnings prints native unknown-status diagnostics", () => {
+  const messages: string[] = [];
+  reportArtStatusWarnings(
+    {
+      parseArtStatusWarnings: (source, options) => {
+        assert.equal(source, '<art title="Button" status="wip"></art>');
+        assert.equal(options?.filename, "button.art.vue");
+        return [
+          'button.art.vue: unknown status "wip"; falling back to "draft" (expected "draft" | "ready" | "deprecated")',
+        ];
+      },
+    },
+    '<art title="Button" status="wip"></art>',
+    "button.art.vue",
+    (message) => messages.push(message),
+  );
+  assert.deepEqual(messages, [
+    '[musea] button.art.vue: unknown status "wip"; falling back to "draft" (expected "draft" | "ready" | "deprecated")',
+  ]);
+});
+
+void test("reportArtStatusWarnings is a no-op when the native export is missing", () => {
+  const messages: string[] = [];
+  reportArtStatusWarnings({}, "<art></art>", "button.art.vue", (message) => messages.push(message));
+  assert.deepEqual(messages, []);
 });

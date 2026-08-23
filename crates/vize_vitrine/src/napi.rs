@@ -9,6 +9,7 @@
 //! - `config`: Public config normalization helpers
 
 mod art;
+mod art_status;
 mod cli;
 mod config;
 mod format;
@@ -26,6 +27,7 @@ mod napi_typecheck;
 pub use napi_typecheck::*;
 
 pub use art::*;
+pub use art_status::*;
 pub use cli::*;
 pub use config::*;
 pub use format::*;

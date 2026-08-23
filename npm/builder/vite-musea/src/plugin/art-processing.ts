@@ -3,6 +3,7 @@ import path from "node:path";
 
 import { extractScriptSetupContent, extractScriptSetupIsolated } from "../art-module.js";
 import { loadNative } from "../native-loader.js";
+import type { NativeBinding } from "../native-loader.js";
 import type { ArtFileInfo, ArtMetadata } from "../types/index.js";
 
 export interface ArtProcessingContext {
@@ -92,6 +93,19 @@ function stringifyUnknown(value: unknown): string {
   }
 }
 
+export function reportArtStatusWarnings(
+  binding: Pick<NativeBinding, "parseArtStatusWarnings">,
+  source: string,
+  filename: string,
+  warn: (message: string) => void = console.warn,
+): void {
+  const warnings = binding.parseArtStatusWarnings?.(source, { filename });
+  if (warnings == null) return;
+  for (const warning of warnings) {
+    warn(`[musea] ${warning}`);
+  }
+}
+
 export async function processMuseaArtFile(
   filePath: string,
   ctx: ArtProcessingContext,
@@ -100,6 +114,7 @@ export async function processMuseaArtFile(
     const source = await fs.promises.readFile(filePath, "utf-8");
     const binding = loadNative();
     const parsed = binding.parseArt(source, { filename: filePath });
+    reportArtStatusWarnings(binding, source, filePath);
     const customMetadata = extractCustomArtMetadata(source);
 
     if (!parsed.variants || parsed.variants.length === 0) return null;
