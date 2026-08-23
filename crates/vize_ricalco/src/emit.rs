@@ -7,10 +7,10 @@
 //! P2-9 carve-out. This module writes the JS string **directly from
 //! S2 ops** — it does not mint relief codegen-nodes (`NodeType` 13–20).
 //!
-//! Installment 3 emits **static native HTML** plus **Js interpolations**
-//! (and mixed text+interpolation compounds compiled from [`TextFacts`],
-//! never from the opaque source). Bindings, filters, components, and
-//! mixed element+text siblings stay [`EmitError::Unsupported`]: the
+//! Installment 4 emits **static native HTML**, **Js interpolations**
+//! (compounds from [`TextFacts`], never the opaque source), and
+//! **mixed element+text siblings** as `_createTextVNode`. Bindings,
+//! filters, and components stay [`EmitError::Unsupported`]: the
 //! comparator counts those, it does not invent output. The old lane
 //! stays the shipped compile path; [`super::DOM_LANE_FLAG`] is named
 //! here and *read* in the atelier_dom witness.

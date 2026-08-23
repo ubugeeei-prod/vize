@@ -8,7 +8,9 @@ use vize_disegno::op::{Attribute, ElementOp, Namespace, Op, Region, TextOp};
 use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
-use super::children::{children_need_text_flag, emit_interpolation, emit_text_like};
+use super::children::{
+    children_need_text_flag, emit_create_text_vnode, emit_interpolation, emit_text_like,
+};
 use super::js::{escape_js_string, is_valid_js_identifier};
 
 pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), EmitError> {
@@ -215,12 +217,29 @@ fn emit_children(cx: &mut EmitCx<'_>, children: &Region<'_>) -> Result<(), EmitE
     }
     cx.buf.push("[");
     cx.buf.indent();
-    for (i, op) in ops.iter().enumerate() {
-        if i > 0 {
+    let mut i = 0;
+    let mut first = true;
+    while i < ops.len() {
+        if matches!(ops[i], Op::Text(_) | Op::Interpolation(_)) {
+            let start = i;
+            while i < ops.len() && matches!(ops[i], Op::Text(_) | Op::Interpolation(_)) {
+                i += 1;
+            }
+            if !first {
+                cx.buf.push(",");
+            }
+            cx.buf.newline();
+            first = false;
+            emit_create_text_vnode(cx, &ops[start..i])?;
+            continue;
+        }
+        if !first {
             cx.buf.push(",");
         }
         cx.buf.newline();
-        emit_array_child(cx, op)?;
+        first = false;
+        emit_array_child(cx, &ops[i])?;
+        i += 1;
     }
     cx.buf.deindent();
     cx.buf.newline();
