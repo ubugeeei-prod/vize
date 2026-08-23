@@ -13,7 +13,7 @@ use vize_disegno::folio::DisegnoFolio;
 use vize_disegno::provenance::ProvenanceRecord;
 use vize_disegno::scope::ScopeFacts;
 use vize_disegno::verify::{Rigor, Violation, verify, verify_table};
-use vize_ricalco::{LegacyCaps, Lowered, lower, lower_with_caps};
+use vize_ricalco::{LegacyCaps, Lowered, lower_with_caps};
 use vize_sinopia::parse;
 
 /// The owned snapshot of one lowering, for exact-equality pins.
@@ -82,9 +82,23 @@ pub fn with_transformed<R>(
         &vize_davinci::pass::BudgetObserver,
     ) -> R,
 ) -> R {
+    with_transformed_caps(source, LegacyCaps::VUE3, f)
+}
+
+/// [`with_transformed`] under an explicit Vue dialect.
+pub fn with_transformed_caps<R>(
+    source: &str,
+    caps: LegacyCaps,
+    f: impl FnOnce(
+        &Lowered<'_>,
+        &DisegnoFolio,
+        &vize_ricalco::pass::S2Facts,
+        &vize_davinci::pass::BudgetObserver,
+    ) -> R,
+) -> R {
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, source);
-    let mut lowered = lower(&allocator, &tree, &errors);
+    let mut lowered = lower_with_caps(&allocator, &tree, &errors, caps);
     let mut budget = vize_davinci::pass::BudgetObserver::new();
     let facts = vize_ricalco::pass::run_transform(&mut lowered, &mut budget);
     let folio = DisegnoFolio::of(&lowered.root.ops);
@@ -95,7 +109,12 @@ pub fn with_transformed<R>(
 /// transform pipeline ran: the pass may move facts, never break the
 /// accounting, the invariants, a side-table key, or the round-trip.
 pub fn assert_transformed_sound(source: &str, context: &str) {
-    with_transformed(source, |lowered, folio, facts, _budget| {
+    assert_transformed_sound_caps(source, LegacyCaps::VUE3, context);
+}
+
+/// [`assert_transformed_sound`] under an explicit Vue dialect.
+pub fn assert_transformed_sound_caps(source: &str, caps: LegacyCaps, context: &str) {
+    with_transformed_caps(source, caps, |lowered, folio, facts, _budget| {
         assert_eq!(
             u64::from(lowered.op_count),
             folio.op_count(),

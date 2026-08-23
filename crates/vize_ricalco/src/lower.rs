@@ -21,6 +21,7 @@
 //! [`SurfaceError`]: vize_sinopia::SurfaceError
 
 use alloc::vec::Vec as StdVec;
+use core::fmt;
 
 use vize_carton::{Allocator, Span, String};
 use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
@@ -61,8 +62,10 @@ pub use text::{TextPart, TextParts, rebuild_source};
 /// The S2 artifact one lowering produces: the op tree plus the three
 /// fact channels, all live even when diagnostics are present (the
 /// Lean-InfoTree survival property — kept fragments, not rollback).
-#[derive(Debug)]
 pub struct Lowered<'a> {
+    /// The compile arena this artifact was lowered into. The legalizing
+    /// pass allocates rewritten expressions and inserted listeners here.
+    pub allocator: &'a Allocator,
     /// The root region's ops, in document order.
     pub root: Region<'a>,
     /// How many ops were numbered (page order: every region op and
@@ -130,6 +133,7 @@ pub fn lower_with_caps<'a>(
     }
     let ops = structural::lower_children(&mut cx, &tree.children, Namespace::Html);
     Lowered {
+        allocator,
         root: Region { ops },
         op_count: cx.op_count(),
         diagnostics: cx.diagnostics,
@@ -138,5 +142,20 @@ pub fn lower_with_caps<'a>(
         texts: cx.texts,
         wrappers: cx.wrappers,
         caps,
+    }
+}
+
+impl fmt::Debug for Lowered<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Lowered")
+            .field("root", &self.root)
+            .field("op_count", &self.op_count)
+            .field("diagnostics", &self.diagnostics)
+            .field("provenance", &self.provenance)
+            .field("scopes", &self.scopes)
+            .field("texts", &self.texts)
+            .field("wrappers", &self.wrappers)
+            .field("caps", &self.caps)
+            .finish_non_exhaustive()
     }
 }
