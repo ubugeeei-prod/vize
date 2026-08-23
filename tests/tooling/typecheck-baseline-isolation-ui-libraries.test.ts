@@ -35,6 +35,7 @@ function writeStoreCopy(fixtureRoot: string, id: string, name: string) {
 
 test("ancestor UI libraries with one in-fixture copy each are linked from those copies", () => {
   const libraries = [
+    ["@ionic/vue", "@ionic+vue@8.8.9"],
     ["@nuxt/ui", "@nuxt+ui@4.8.2"],
     ["ant-design-vue", "ant-design-vue@4.2.6"],
     ["element-plus", "element-plus@2.14.1"],

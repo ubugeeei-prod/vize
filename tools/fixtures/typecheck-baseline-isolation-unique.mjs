@@ -216,6 +216,7 @@ export function isolateUniqueNuxtUiPackages(fixtureRoot) {
 
 export function isolateUniqueUiLibraryPackages(fixtureRoot) {
   return isolateUniqueNamedLocalTypePackages(fixtureRoot, [
+    "@ionic/vue",
     "@nuxt/ui",
     "ant-design-vue",
     "element-plus",
