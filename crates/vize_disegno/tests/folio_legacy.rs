@@ -7,11 +7,11 @@ use vize_carton::{Allocator, Box, Span, String, Vec as ArenaVec};
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_disegno::expr::{ExprRef, JsExpr, VueFilterExpr};
 use vize_disegno::folio::{
-    DisegnoFolio, FolioBinding, FolioComponent, FolioExpr, FolioInterpolation, FolioName, FolioOp,
+    DisegnoFolio, FolioBinding, FolioComponent, FolioExpr, FolioInterpolation, FolioOp,
     FolioVueSlotScope, FolioVueSync,
 };
 use vize_disegno::op::{
-    BindingOp, ComponentOp, DynamicName, InterpolationOp, Op, Region, VueSlotScopeOp, VueSyncOp,
+    BindingOp, ComponentOp, InterpolationOp, Op, Region, VueSlotScopeOp, VueSyncOp,
 };
 
 const CANONICAL: &str = "\
@@ -40,7 +40,7 @@ fn hand_built() -> DisegnoFolio {
             attributes: vec![],
             bindings: vec![
                 FolioBinding::VueSync(FolioVueSync {
-                    name: FolioName::Static(String::from("title")),
+                    name: String::from("title"),
                     modifiers: vec![String::from("camel")],
                     value: js("heading", 10, 17),
                     span: Span::new(0, 18),
@@ -95,7 +95,7 @@ fn an_arena_tree_mirrors_the_legacy_dialect_ops() {
                     [
                         BindingOp::VueSync(Box::new_in(
                             VueSyncOp {
-                                name: DynamicName::Static("title"),
+                                name: "title",
                                 modifiers: ArenaVec::from_iter_in(["camel"], &allocator),
                                 value: heading,
                                 span: Span::new(0, 18),

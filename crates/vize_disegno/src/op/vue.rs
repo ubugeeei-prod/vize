@@ -59,11 +59,13 @@ pub struct VueCssBindOp<'a> {
 /// argument, a value expression, and the `sync` modifier. Remaining
 /// modifiers (`camel`, …) ride here so the desugar pass can put them
 /// on the resulting `ui.bind`. Dynamic-argument `:\[foo].sync` stays
-/// `ui.bind` — the shipped lane skips it the same way.
+/// `ui.bind` — the shipped lane skips it the same way. The name is a
+/// static identifier because desugar emits `update:<name>` and cannot
+/// spell that from a computed argument.
 #[derive(Debug)]
 pub struct VueSyncOp<'a> {
-    /// The bound prop name; static by the bounded-subset rule.
-    pub name: DynamicName<'a>,
+    /// The bound prop name (static; dynamic `.sync` never reaches here).
+    pub name: &'a str,
     /// Modifiers other than `sync`, in authored order.
     pub modifiers: Vec<'a, &'a str>,
     /// The value written back into on `update:<name>`.
@@ -93,6 +95,6 @@ pub struct VueSlotScopeOp<'a> {
 const _: () = {
     assert!(core::mem::size_of::<VueDirectiveOp<'_>>() == 88);
     assert!(core::mem::size_of::<VueCssBindOp<'_>>() == 24);
-    assert!(core::mem::size_of::<VueSyncOp<'_>>() == 72);
+    assert!(core::mem::size_of::<VueSyncOp<'_>>() == 64);
     assert!(core::mem::size_of::<VueSlotScopeOp<'_>>() == 40);
 };

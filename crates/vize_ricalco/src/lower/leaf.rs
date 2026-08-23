@@ -14,7 +14,7 @@ use vize_sinopia::{Interpolation, SurfaceChild, Token};
 use vize_disegno::op::{InterpolationOp, Op, TextOp};
 
 use super::cx::Cx;
-use super::expr::{desc, expr_at};
+use super::expr::{desc, filter_expr_at};
 
 /// Lower one non-element child.
 pub(crate) fn lower_leaf<'a>(cx: &mut Cx<'a>, child: &SurfaceChild<'a>, out: &mut Vec<'a, Op<'a>>) {
@@ -77,7 +77,7 @@ pub(crate) fn lower_text<'a>(
 fn lower_interpolation<'a>(cx: &mut Cx<'a>, node: &Interpolation<'a>, out: &mut Vec<'a, Op<'a>>) {
     let id = cx.mint_op();
     let span = Span::new(cx.offset(node.open.text), cx.token_span(&node.close).end);
-    let expression = expr_at(cx, node.content.text);
+    let expression = filter_expr_at(cx, node.content.text);
     cx.record(
         "lower.interpolation",
         id,

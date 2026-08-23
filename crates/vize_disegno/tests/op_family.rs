@@ -222,7 +222,7 @@ fn every_binding<'a>(allocator: &'a Allocator) -> Vec<'a, BindingOp<'a>> {
             BindingOp::VueCssBind(Box::new_in(VueCssBindOp { value: expr, span }, &allocator)),
             BindingOp::VueSync(Box::new_in(
                 VueSyncOp {
-                    name: DynamicName::Static("foo"),
+                    name: "foo",
                     modifiers: Vec::from_iter_in(["camel"], &allocator),
                     value: expr,
                     span,

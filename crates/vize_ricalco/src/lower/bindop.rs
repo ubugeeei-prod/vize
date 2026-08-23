@@ -27,7 +27,7 @@ use vize_disegno::op::{BindOp, BindingOp, DynamicName, OnOp, VueSyncOp};
 use super::cx::{Cx, attr_slice, attr_span};
 use super::directive::{Arg, Directive};
 use super::element::attr_value_text;
-use super::expr::{desc, expr_at};
+use super::expr::{desc, expr_at, filter_expr_at};
 
 /// The provenance rule of the same-name expansion.
 pub(crate) const RULE_SAME_NAME: &str = "normalize.bind.same-name";
@@ -79,7 +79,7 @@ pub(crate) fn lower_bind<'a>(
         // caught by the corpus lane on the first run (directus
         // `@contextmenu.stop=""`).
         Some(text) if text.trim().is_empty() => None,
-        Some(text) => Some(expr_at(cx, text)),
+        Some(text) => Some(filter_expr_at(cx, text)),
         None => match directive.arg {
             // Same-name shorthand: static argument, no authored value.
             // The synthesized text is not a source slice, so the
@@ -110,8 +110,7 @@ pub(crate) fn lower_bind<'a>(
     // the shipped pre-transform's skip. `ExprRef`/`DynamicName` are
     // `Copy`, so the Bind arm still sees the original positions.
     if cx.caps.scoped_slot_attrs
-        && let Some(name) = name
-        && matches!(name, DynamicName::Static(_))
+        && let Some(DynamicName::Static(name)) = name
         && let Some(value) = value
         && modifiers.contains(&"sync")
     {
@@ -128,7 +127,7 @@ pub(crate) fn lower_bind<'a>(
             "lower.sync",
             node,
             attr_slice(cx, attr),
-            name_desc("vue.sync", &Some(name)),
+            name_desc("vue.sync", &Some(DynamicName::Static(name))),
             span,
         );
         return BindingOp::VueSync(Box::new_in(

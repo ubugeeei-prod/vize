@@ -25,9 +25,7 @@ pub(super) fn expand<'a>(allocator: &'a Allocator, bindings: &mut Vec<'a, Bindin
         match binding {
             BindingOp::VueSync(sync) => {
                 out.push(to_bind(allocator, &sync));
-                if let DynamicName::Static(name) = sync.name {
-                    out.push(to_on(allocator, &sync, name));
-                }
+                out.push(to_on(allocator, &sync, sync.name));
             }
             other => out.push(other),
         }
@@ -42,7 +40,7 @@ fn to_bind<'a>(allocator: &'a Allocator, sync: &VueSyncOp<'a>) -> BindingOp<'a> 
     }
     BindingOp::Bind(Box::new_in(
         BindOp {
-            name: Some(sync.name),
+            name: Some(DynamicName::Static(sync.name)),
             modifiers,
             value: Some(sync.value),
             span: sync.span,

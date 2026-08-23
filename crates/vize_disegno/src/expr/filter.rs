@@ -157,16 +157,7 @@ fn split_filters(exp: &str) -> Option<Split<'_>> {
                 _ => {}
             }
             if c == b'/' {
-                let mut j = i as isize - 1;
-                let mut p: Option<char> = None;
-                while j >= 0 {
-                    let pc = exp[j as usize..].chars().next().unwrap_or(' ');
-                    if pc != ' ' {
-                        p = Some(pc);
-                        break;
-                    }
-                    j -= 1;
-                }
+                let p = exp[..i].chars().rev().find(|&pc| pc != ' ');
                 if p.is_none_or(|pc| !is_valid_division_char(pc)) {
                     in_regex = true;
                 }
@@ -301,5 +292,13 @@ mod tests {
     fn a_malformed_filter_name_refuses_the_chain() {
         let allocator = Allocator::default();
         assert!(VueFilterExpr::parse_in(&allocator, "a | ", Span::new(0, 4)).is_none());
+    }
+
+    #[test]
+    fn unicode_before_slash_does_not_slice_mid_char() {
+        let _ = split_filters("λ / re | f");
+        let split = split_filters("café | cap").expect("unicode base");
+        assert_eq!(split.base, "café");
+        assert_eq!(split.filters[0].text, "cap");
     }
 }

@@ -199,7 +199,7 @@ pub(super) fn sync(rest: &str, line_no: usize) -> Result<Item, FolioError> {
     let Some(rest) = rest.strip_prefix("name=") else {
         return Err(err(line_no, cstr!("expected `name=`")));
     };
-    let (name, rest) = name_value(rest, line_no)?;
+    let (name, rest) = take_quoted(rest, line_no)?;
     let mut rest = rest;
     let mut modifiers = Vec::new();
     if let Some(after) = rest.strip_prefix(" mods=") {

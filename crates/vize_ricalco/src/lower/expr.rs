@@ -5,8 +5,10 @@
 //! through [`ExprRef::parse_js_in`] — the one shared home of the P1-5
 //! guard → parse → whole-coverage rule — and comes back `Js` when
 //! admitted or `Opaque` with the text-classified reason when not. Vue 2
-//! pipe filters are an exception that is still total: when the dialect
-//! asks, [`VueFilterExpr::parse_in`] runs first so `|` is not bitwise-OR.
+//! pipe filters are an exception that is still total: interpolations
+//! and `v-bind` values run [`VueFilterExpr::parse_in`] first so `|` is
+//! not bitwise-OR. Other positions (`v-on`, dynamic arguments, …) stay
+//! on the JS rule — Vue 2 never treated those as filter sites.
 //! The position-classified reasons (`ForValue` here; `MultiStatement` and
 //! `Compound` have no P2-8 producer, see the record) are assigned by
 //! [`opaque_at`], the only constructor that names a reason directly.
@@ -24,10 +26,16 @@ pub(crate) fn trimmed<'a>(cx: &Cx<'a>, text: &'a str) -> (&'a str, Span) {
 }
 
 /// Lower one expression position: trim, then admit through the shared
-/// rule. Total — refused text comes back as the classified escape.
-/// Vue 2 pipe filters are admitted as [`ExprRef::Filter`] when the
-/// dialect asks for them, *before* a JS parse would read `|` as OR.
+/// JS rule. Total — refused text comes back as the classified escape.
 pub(crate) fn expr_at<'a>(cx: &Cx<'a>, text: &'a str) -> ExprRef<'a> {
+    let (slice, span) = trimmed(cx, text);
+    ExprRef::parse_js_in(cx.allocator, slice, span)
+}
+
+/// Interpolation / `v-bind` value admission: Vue 2 pipe filters first
+/// when the dialect asks, so `|` is not bitwise-OR. Other directive
+/// expressions stay on [`expr_at`].
+pub(crate) fn filter_expr_at<'a>(cx: &Cx<'a>, text: &'a str) -> ExprRef<'a> {
     let (slice, span) = trimmed(cx, text);
     if cx.caps.supports_filters
         && let Some(filter) = VueFilterExpr::parse_in(cx.allocator, slice, span)

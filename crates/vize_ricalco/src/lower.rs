@@ -34,8 +34,8 @@ use vize_disegno::scope::ScopeFacts;
 
 mod binding;
 mod bindop;
-mod css;
 mod caps;
+mod css;
 mod cx;
 mod directive;
 mod element;

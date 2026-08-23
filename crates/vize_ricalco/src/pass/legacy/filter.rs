@@ -88,10 +88,8 @@ fn rewrite_bindings<'a>(allocator: &'a Allocator, bindings: &mut [BindingOp<'a>]
                     rewrite_expr(allocator, value);
                 }
             }
-            BindingOp::VueSync(sync) => {
-                rewrite_name(allocator, &mut sync.name);
-                rewrite_expr(allocator, &mut sync.value);
-            }
+            BindingOp::VueCssBind(bind) => rewrite_expr(allocator, &mut bind.value),
+            BindingOp::VueSync(sync) => rewrite_expr(allocator, &mut sync.value),
             BindingOp::VueSlotScope(scope) => {
                 if let Some(params) = &mut scope.params {
                     rewrite_expr(allocator, params);

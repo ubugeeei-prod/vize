@@ -9,7 +9,7 @@ use vize_davinci::id::NodeId;
 use vize_disegno::folio::{FolioAttribute, FolioBinding, FolioExpr, FolioName, FolioOp};
 
 use super::s2_lane::{S2Projection, Tables};
-use super::surface::{PBind, PDirective, PModel, PName, PSurface, is_simple_ident};
+use super::surface::{is_simple_ident, PBind, PDirective, PModel, PName, PSurface};
 
 fn expr_text(expr: &FolioExpr) -> String {
     match expr {
@@ -129,7 +129,7 @@ pub fn surface_of(
             // comparator runs. Arms exist so a missed desugar is a
             // surface mismatch, never a compile-time silence.
             FolioBinding::VueSync(sync) => surface.binds.push(PBind {
-                name: p_name(&sync.name),
+                name: PName::Static(sync.name.as_str().into()),
                 mods: sync.modifiers.iter().map(|m| m.as_str().into()).collect(),
                 value: Some(Some(expr_text(&sync.value))),
             }),

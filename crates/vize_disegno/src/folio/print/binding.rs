@@ -171,7 +171,7 @@ fn print_css_bind<W: Write>(
 fn print_sync<W: Write>(w: &mut W, sync: &FolioVueSync, depth: usize, mode: FolioMode) -> Result {
     indent(w, depth)?;
     w.write_str("vue.sync name=")?;
-    print_name(w, &sync.name, mode)?;
+    quoted(w, sync.name.as_str())?;
     print_mods(w, &sync.modifiers)?;
     w.write_str(" value=")?;
     print_expr(w, &sync.value, mode)?;

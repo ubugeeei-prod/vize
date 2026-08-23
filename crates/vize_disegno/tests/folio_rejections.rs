@@ -198,6 +198,11 @@ const OPS_REJECTIONS: &[(&str, usize, &str)] = &[
         6,
         "expected an expression payload",
     ),
+    (
+        "ui.element d @1:2\n  vue.sync name=js(\"foo\" @1:2) value=js(\"bar\" @1:2) @1:2\n",
+        6,
+        "expected quoted string",
+    ),
     // -- expression payload tokens -------------------------------------------
     ("ui.interpolation js(x) @1:2\n", 5, "expected quoted string"),
     ("ui.interpolation js(\"x\") @1:2\n", 5, "missing span"),

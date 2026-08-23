@@ -86,8 +86,8 @@ pub struct FolioSlotContent {
 /// Mirror of [`crate::op::VueSyncOp`].
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FolioVueSync {
-    /// The bound prop name.
-    pub name: FolioName,
+    /// The bound prop name (always static).
+    pub name: String,
     /// Modifiers other than `sync`, in order.
     pub modifiers: Vec<String>,
     /// The value written back into.
@@ -171,7 +171,7 @@ pub(super) fn own_binding(binding: &BindingOp<'_>) -> FolioBinding {
             span: bind.span,
         }),
         BindingOp::VueSync(sync) => FolioBinding::VueSync(FolioVueSync {
-            name: own_name(&sync.name),
+            name: String::from(sync.name),
             modifiers: own_modifiers(&sync.modifiers),
             value: own_expr(&sync.value),
             span: sync.span,

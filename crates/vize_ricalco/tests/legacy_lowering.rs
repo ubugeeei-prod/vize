@@ -209,3 +209,73 @@ fn vue1_admits_filters_but_not_sync() {
     );
     assert_sound_caps("{{msg | cap}}", caps, "vue1-filter");
 }
+
+#[test]
+fn vue2_admits_a_pipe_on_a_bind_value() {
+    let source = r#"<div :id="raw | formatId"/>"#;
+    let art = artifact_caps(source, vue2());
+    assert!(
+        art.folio.contains("vue.filter(\"raw | formatId\""),
+        "v-bind values are filter sites: {}",
+        art.folio
+    );
+    assert_sound_caps(source, vue2(), "vue2-bind-filter");
+}
+
+#[test]
+fn vue2_reads_an_event_handler_pipe_as_js() {
+    let source = r#"<div @click="left | right"/>"#;
+    let art = artifact_caps(source, vue2());
+    assert!(
+        art.folio.contains("js(\"left | right\""),
+        "v-on handlers are not filter sites: {}",
+        art.folio
+    );
+    assert!(
+        !art.folio.contains("vue.filter"),
+        "v-on must not admit vue.filter: {}",
+        art.folio
+    );
+    assert_sound_caps(source, vue2(), "vue2-on-bitwise-or");
+}
+
+#[test]
+fn vue2_scope_on_template_is_the_dialect_op() {
+    let source = r#"<Comp><template scope="props">x</template></Comp>"#;
+    let art = artifact_caps(source, vue2());
+    assert!(
+        art.folio.contains("vue.slot-scope params=js(\"props\""),
+        "template scope is the 2.1 alias: {}",
+        art.folio
+    );
+    assert_sound_caps(source, vue2(), "vue2-template-scope");
+}
+
+#[test]
+fn vue2_scope_on_a_div_stays_an_attribute() {
+    let source = r#"<div scope="props">x</div>"#;
+    let art = artifact_caps(source, vue2());
+    assert!(
+        art.folio.contains("attr scope=\"props\""),
+        "div scope is ordinary HTML: {}",
+        art.folio
+    );
+    assert!(
+        !art.folio.contains("vue.slot-scope"),
+        "div scope must not become vue.slot-scope: {}",
+        art.folio
+    );
+    assert_sound_caps(source, vue2(), "vue2-div-scope");
+}
+
+#[test]
+fn vue2_slot_scope_on_a_div_is_the_dialect_op() {
+    let source = r#"<div slot-scope="props">x</div>"#;
+    let art = artifact_caps(source, vue2());
+    assert!(
+        art.folio.contains("vue.slot-scope params=js(\"props\""),
+        "slot-scope is legal on any element: {}",
+        art.folio
+    );
+    assert_sound_caps(source, vue2(), "vue2-div-slot-scope");
+}

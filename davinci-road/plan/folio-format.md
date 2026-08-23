@@ -240,7 +240,7 @@ below):
 | `ui.model read=<expr> write=<expr> @s:e`                                                | `attr` lines beneath                             |
 | `vue.directive <quoted>[ arg=<quoted>\|arg=<expr>][ mods=<quoted>][ value=<expr>] @s:e` | modifiers comma-joined inside quotes             |
 | `vue.css-bind value=<expr> @s:e`                                                        | SFC style `v-bind()`; span is CSS-block-relative |
-| `vue.sync name=<quoted>\|name=<expr>[ mods=<quoted>] value=<expr> @s:e`                 | Vue 2 `:foo.sync` sugar                          |
+| `vue.sync name=<quoted>[ mods=<quoted>] value=<expr> @s:e`                              | Vue 2 `:foo.sync`; name is static                 |
 | `vue.slot-scope[ name=<quoted>][ params=<expr>] @s:e`                                   | Vue 2 `slot-scope` / `scope` sugar               |
 | `attr <name>[=<quoted>] @s:e`                                                           | bare name for boolean attributes                 |
 
@@ -256,7 +256,7 @@ text-classified reason).
 | `js(<quoted> @s:e)`                | retained-AST text (the P1-5 admission: one complete TS expression covering the text) plus its authored span                                            |
 | `opaque(<reason> <quoted> @s:e)`   | the escape variant: classified reason + exact text + span; reasons are `for-value`, `multi-statement`, `nesting-refused`, `parse-rejected`, `compound` |
 | `foreign(<dialect> <quoted> @s:e)` | dialect id + text + span (type-only until phase 6; side tables have no spelling until the phase-6 dialect contract defines one)                        |
-| `vue.filter(<quoted> @s:e)`        | Vue 2 pipe-filter chain as authored text (`msg \| capitalize`); the `|` is not bitwise-OR. Reloads via `VueFilterExpr::parse_in`                       |
+| `vue.filter(<quoted> @s:e)`        | Vue 2 pipe-filter chain as authored text (`msg \| capitalize`); the pipe is not bitwise-OR. Reloads via `VueFilterExpr::parse_in`                      |
 
 Quoted strings escape `\\`, `\"`, `\n`, `\r`, `\t`. `Display` elides every
 ` @s:e` span — line tails and the spans inside expression payloads alike —
