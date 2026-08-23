@@ -1,6 +1,7 @@
 "use strict";
 
 const path = require("node:path");
+const { isRelativeSpecifier, resolveExistingModuleSpecifier } = require("./module-resolution.cjs");
 
 const vueExtension = ".vue";
 
@@ -20,7 +21,7 @@ function resolveVueImportDefinition(ts, support, fileName, position) {
     : undefined;
   const vueImport = directVuePath
     ? { ...directImport, vuePath: directVuePath }
-    : findVueBarrelImportAtPosition(ts, support, fileName, sourceText, position);
+    : findVueReExportImportAtPosition(ts, support, fileName, sourceText, position);
   if (!vueImport?.vuePath) {
     return undefined;
   }
@@ -112,8 +113,13 @@ function findVueImportAtPosition(ts, sourceText, position) {
   };
 }
 
-function findVueBarrelImportAtPosition(ts, support, fileName, sourceText, position) {
-  const importBinding = findRelativeImportBindingAtPosition(ts, sourceText, position);
+function findVueReExportImportAtPosition(ts, support, fileName, sourceText, position) {
+  const importBinding = findNamedImportBindingAtPosition(
+    ts,
+    sourceText,
+    position,
+    (specifier) => !isRelativeVueSpecifier(specifier),
+  );
   if (!importBinding) {
     return undefined;
   }
@@ -127,7 +133,7 @@ function findVueBarrelImportAtPosition(ts, support, fileName, sourceText, positi
   return vuePath ? { ...importBinding, vuePath } : undefined;
 }
 
-function findRelativeImportBindingAtPosition(ts, sourceText, position) {
+function findNamedImportBindingAtPosition(ts, sourceText, position, acceptsSpecifier) {
   const sourceFile = ts.createSourceFile(
     "vize-vue-import.ts",
     sourceText,
@@ -142,7 +148,7 @@ function findRelativeImportBindingAtPosition(ts, sourceText, position) {
       return;
     }
     const specifier = node.moduleSpecifier.text;
-    if (!isRelativeSpecifier(specifier) || isRelativeVueSpecifier(specifier)) {
+    if (!acceptsSpecifier(specifier)) {
       return;
     }
     const importClause = node.importClause;
@@ -179,7 +185,12 @@ function resolveVueReExport(
   exportedName,
   seen = new Set(),
 ) {
-  const barrelPath = resolveExistingModuleSpecifier(containingFile, specifier, support.fileExists);
+  const barrelPath = resolveExistingModuleSpecifier(
+    containingFile,
+    specifier,
+    support.fileExists,
+    support.readFile,
+  );
   if (!barrelPath || seen.has(barrelPath)) {
     return undefined;
   }
@@ -255,32 +266,6 @@ function resolveExistingVueSpecifier(containingFile, specifier, fileExists) {
 
   const vuePath = path.resolve(path.dirname(containingFile), specifier);
   return fileExists(vuePath) ? vuePath : undefined;
-}
-
-function resolveExistingModuleSpecifier(containingFile, specifier, fileExists) {
-  if (!isRelativeSpecifier(specifier) || typeof containingFile !== "string") {
-    return undefined;
-  }
-
-  const basePath = path.resolve(path.dirname(containingFile), specifier);
-  const candidates = [
-    basePath,
-    `${basePath}.ts`,
-    `${basePath}.tsx`,
-    `${basePath}.js`,
-    `${basePath}.jsx`,
-    path.join(basePath, "index.ts"),
-    path.join(basePath, "index.tsx"),
-    path.join(basePath, "index.js"),
-    path.join(basePath, "index.jsx"),
-  ];
-  return candidates.find((candidate) => fileExists(candidate));
-}
-
-function isRelativeSpecifier(specifier) {
-  return (
-    typeof specifier === "string" && (specifier.startsWith("./") || specifier.startsWith("../"))
-  );
 }
 
 function isRelativeVueSpecifier(specifier) {

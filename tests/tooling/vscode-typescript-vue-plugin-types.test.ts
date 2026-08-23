@@ -79,6 +79,27 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
         ?.fileName,
       project.appVue,
     );
+    const packageInfo = service.getQuickInfoAtPosition(
+      project.mainTs,
+      source.indexOf("PackageApp }") + 1,
+    );
+    const packageDisplay = displayPartsText(packageInfo?.displayParts);
+    assert.match(packageDisplay, /^const PackageApp: VueComponent/);
+    assert.match(packageDisplay, /props: \{ packageTitle: string \}/);
+    assert.doesNotMatch(
+      packageDisplay,
+      /__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor/,
+    );
+    assert.equal(
+      service.getDefinitionAtPosition(project.mainTs, source.indexOf("PackageApp;") + 1)?.[0]
+        ?.fileName,
+      project.packageVue,
+    );
+    assert.equal(
+      service.getTypeDefinitionAtPosition(project.mainTs, source.indexOf("PackageApp;") + 1)?.[0]
+        ?.fileName,
+      project.packageVue,
+    );
     assert.match(
       formatDiagnostics(service.getSemanticDiagnostics(project.mainTs)),
       /Property 'title' is missing/,
@@ -127,9 +148,11 @@ function createProject() {
     [
       'import App from "./App.vue";',
       'import { BarrelApp } from "./components";',
+      'import { PackageApp } from "@acme/ui";',
       'import "./SideEffect.vue";',
       'const props: InstanceType<typeof App>["$props"] = {};',
       "BarrelApp;",
+      "PackageApp;",
       "props;",
       "",
     ].join("\n"),
@@ -155,6 +178,21 @@ function createProject() {
   fs.writeFileSync(
     path.join(componentsDir, "index.ts"),
     'export { default as BarrelApp } from "../App.vue";\n',
+  );
+  const packageDir = path.join(rootDir, "node_modules/@acme/ui");
+  fs.mkdirSync(packageDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(packageDir, "package.json"),
+    JSON.stringify({ name: "@acme/ui", types: "index.ts", version: "1.0.0" }),
+  );
+  fs.writeFileSync(
+    path.join(packageDir, "index.ts"),
+    'export { default as PackageApp } from "./PackageApp.vue";\n',
+  );
+  const packageVue = path.join(packageDir, "PackageApp.vue");
+  fs.writeFileSync(
+    packageVue,
+    '<script setup lang="ts">\ndefineProps<{ packageTitle: string }>();\n</script>\n',
   );
 
   const ambientDts = path.join(srcDir, "vite-client.d.ts");
@@ -196,7 +234,7 @@ function createProject() {
     ].join("\n"),
   );
 
-  return { ambientDts, appVue, mainTs, nativeCalls, root: rootDir };
+  return { ambientDts, appVue, mainTs, nativeCalls, packageVue, root: rootDir };
 }
 
 function createHost(rootDir: string, rootFiles: string[]) {
