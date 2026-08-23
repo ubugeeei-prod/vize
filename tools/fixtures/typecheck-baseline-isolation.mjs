@@ -13,6 +13,7 @@ import {
   ancestorPackagePath,
   packageNameFromExtendsSpecifier,
 } from "./typecheck-baseline-isolation-package-extends.mjs";
+import { recordCompilerOptionPlugins } from "./typecheck-baseline-isolation-plugins.mjs";
 import { recordCompilerOptionTypes } from "./typecheck-baseline-isolation-types.mjs";
 
 /**
@@ -53,10 +54,10 @@ import { recordCompilerOptionTypes } from "./typecheck-baseline-isolation-types.
  * from relative `references` when that chain declares none — elk's root
  * `tsconfig.json` is solution-style and parks the real paths on referenced
  * `.nuxt` projects (#4461). Conflicting targets for one name are dropped
- * rather than guessed. Package-name `extends` specifiers and
- * `compilerOptions.types` entries are recorded as ancestor targets so unique
- * isolation can link a fixture-local copy; those package configs are not
- * walked for `paths` or `types`.
+ * rather than guessed. Package-name `extends` specifiers,
+ * `compilerOptions.types` entries, and plugin packages are recorded as
+ * ancestor targets so unique isolation can link a fixture-local copy; those
+ * package configs are not walked for `paths`, `types`, or plugins.
  */
 
 /** `paths` also carries `#imports`-style aliases and `foo/*` patterns, which are not packages. */
@@ -117,12 +118,19 @@ function mergePackageExtends(declared, conflicts, configPaths, fixtureRoot) {
       if (ancestor == null) continue;
       declared.set(name, ancestor);
     }
+    const chain = loadExtendsChain(configPath);
     let types;
-    for (const { config: chained } of [...loadExtendsChain(configPath)].reverse()) {
+    for (const { config: chained } of [...chain].reverse()) {
       const candidate = chained?.compilerOptions?.types;
       if (Array.isArray(candidate)) types = candidate;
     }
     recordCompilerOptionTypes(declared, conflicts, fixtureRoot, types);
+    recordCompilerOptionPlugins(
+      declared,
+      conflicts,
+      fixtureRoot,
+      chain.map(({ config }) => config),
+    );
   }
 }
 
