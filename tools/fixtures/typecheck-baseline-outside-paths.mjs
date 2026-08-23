@@ -34,6 +34,9 @@ import { basename, dirname, join, relative, resolve } from "node:path";
  * loads that outside tree. A mapping named `*` whose target is an outside
  * `node_modules` directory is retargeted to the fixture copy. Interior `*`
  * patterns and `#alias/*` keys are not guessed.
+ *
+ * A package mapping whose outside target sits under `node_modules/<name>/...`
+ * keeps that subpath on the fixture copy (Nuxt's `vue/dist/vue` JSX entry).
  */
 
 const packageNamePattern = /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/u;
@@ -103,8 +106,11 @@ function retargetPathMapping(fixtureRoot, sourceDir, configDir, name, targets, m
   if (isInside(fixtureRoot, original)) return relocated;
   let local;
   if (packageName != null) {
-    local = join(fixtureRoot, "node_modules", ...packageName.split("/"));
-    if (!existsSync(join(local, "package.json"))) return relocated;
+    const localPackage = join(fixtureRoot, "node_modules", ...packageName.split("/"));
+    if (!existsSync(join(localPackage, "package.json"))) return relocated;
+    const subpath = packageSubpathAfterNodeModules(original, packageName);
+    local = subpath ? join(localPackage, subpath) : localPackage;
+    if (subpath && !existsSync(local) && !existsSync(`${local}.d.ts`)) return relocated;
   } else if (name === "*" && first.endsWith("/*") && basename(original) === "node_modules") {
     local = join(fixtureRoot, "node_modules");
     if (!existsSync(local)) return relocated;
@@ -116,6 +122,15 @@ function retargetPathMapping(fixtureRoot, sourceDir, configDir, name, targets, m
     ? `${configRelativePath(configDir, local)}/*`
     : configRelativePath(configDir, local);
   return relocated.map((entry, index) => (index === targets.indexOf(first) ? rewritten : entry));
+}
+
+function packageSubpathAfterNodeModules(original, packageName) {
+  const normalized = original.replaceAll("\\", "/");
+  const folder = `/node_modules/${packageName}`;
+  const nested = `${folder}/`;
+  const index = normalized.lastIndexOf(nested);
+  if (index !== -1) return normalized.slice(index + nested.length);
+  return normalized.endsWith(folder) ? "" : null;
 }
 
 function packageNameFromPathMapping(name) {
