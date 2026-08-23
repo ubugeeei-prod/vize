@@ -1,5 +1,5 @@
 //! P2-11 installment 5 witness: static native HTML, interpolations,
-//! mixed text siblings, static-name binds, and static-name events,
+//! mixed text siblings, static-name binds, static-name events, and native v-if,
 //! compared **byte-for-byte** including helper usage.
 //!
 //! `vize_atelier_dom` is published; the Davinci crates are not. The
@@ -62,6 +62,22 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<div @click="handler">{{ msg }}</div>"#,
     ),
     ("inline_click", r#"<div @click="count++"></div>"#),
+    ("simple_v_if", r#"<div v-if="ok">hello</div>"#),
+    (
+        "v_if_else",
+        r#"<div v-if="ok">yes</div><div v-else>no</div>"#,
+    ),
+    ("nested_v_if", r#"<div><p v-if="ok">x</p></div>"#),
+    ("v_if_class", r#"<div v-if="ok" class="x"></div>"#),
+    ("v_if_static_key", r#"<div v-if="ok" key="k"></div>"#),
+    (
+        "sibling_v_if",
+        r#"<div><p v-if="a">1</p><span v-if="b">2</span></div>"#,
+    ),
+    (
+        "v_if_elseif",
+        r#"<div v-if="a">1</div><div v-else-if="b">2</div><div v-else>3</div>"#,
+    ),
 ];
 
 fn shipped(src: &str) -> String {
