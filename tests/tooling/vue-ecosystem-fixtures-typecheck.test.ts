@@ -22,6 +22,7 @@ interface TypecheckPerformance {
   lockfile: "pnpm-lock.yaml" | "yarn.lock";
   baseline?: { tsconfig: string; prepare?: string[] };
   hangTimeoutMs: number;
+  corpusGlobs?: string[];
   maxFalsePositiveRatio: number;
   maxFalseNegativeRatio: number;
   largeProjectRegressionTarget?: boolean;
@@ -29,6 +30,8 @@ interface TypecheckPerformance {
 
 interface FixtureProject {
   id: string;
+  fixturePath?: string;
+  tsconfig?: string;
   typecheckPerformance?: TypecheckPerformance;
 }
 
@@ -45,7 +48,7 @@ test("typecheck baselines have complete budgets and bounded release coverage", (
     return true;
   });
 
-  assert.equal(targets.length, 11);
+  assert.equal(targets.length, 12);
   for (const project of targets) {
     const performance = project.typecheckPerformance!;
     assert.equal(performance.compareTo, "vue-tsc", `${project.id} baseline`);
@@ -81,4 +84,22 @@ test("large typechecker fixtures have performance safeguards and bench wiring", 
     ?.baseline;
   assert.equal(baseline?.tsconfig, ".nuxt/tsconfig.app.json");
   assert.deepEqual(baseline?.prepare, ["pnpm", "exec", "nuxt", "prepare"]);
+});
+
+test("PrimeVue Volt is measured under the app tsconfig, sharing the PrimeVue fixture", () => {
+  const registry = readRegistry();
+  const library = registry.projects.find((project) => project.id === "primevue");
+  const volt = registry.projects.find((project) => project.id === "primevue-volt");
+  assert.equal(volt?.fixturePath, library?.fixturePath);
+  assert.equal(volt?.tsconfig, "apps/volt/tsconfig.json");
+  assert.deepEqual(volt?.typecheckPerformance?.corpusGlobs, ["apps/volt/**/*.vue"]);
+  assert.equal(volt?.typecheckPerformance?.baseline?.tsconfig, "apps/volt/.nuxt/tsconfig.json");
+  assert.deepEqual(volt?.typecheckPerformance?.baseline?.prepare, [
+    "pnpm",
+    "--filter",
+    "volt",
+    "exec",
+    "nuxt",
+    "prepare",
+  ]);
 });

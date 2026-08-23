@@ -300,6 +300,44 @@
       }
     },
     {
+      "id": "primevue-volt",
+      "displayName": "PrimeVue Volt",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/primevue",
+      "repository": "https://github.com/primefaces/primevue",
+      "revision": "d4374cb7c1267f35eba7cee5d0a266f50ca8ec84",
+      "license": {
+        "spdx": "MIT",
+        "files": ["LICENSE.md"]
+      },
+      "vueGlobs": ["apps/volt/**/*.vue"],
+      "tsconfig": "apps/volt/tsconfig.json",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare",
+      "typecheckPerformance": {
+        "enabled": true,
+        "compareTo": "vue-tsc",
+        "packageManager": "pnpm",
+        "packageManagerVersion": "9.6.0",
+        "lockfile": "pnpm-lock.yaml",
+        "baseline": {
+          "tsconfig": "apps/volt/.nuxt/tsconfig.json",
+          "prepare": ["pnpm", "--filter", "volt", "exec", "nuxt", "prepare"]
+        },
+        "hangTimeoutMs": 300000,
+        "corpusGlobs": ["apps/volt/**/*.vue"],
+        "maxFalsePositiveRatio": 0.05,
+        "maxFalseNegativeRatio": 0.05
+      }
+    },
+    {
       "id": "vuetify",
       "displayName": "Vuetify",
       "kind": "component-library",

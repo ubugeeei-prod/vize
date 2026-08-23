@@ -12,6 +12,7 @@ const expectedCorpus = {
   hoppscotch: ["packages/hoppscotch-common/src/**/*.vue"],
   "reka-ui": ["packages/core/**/*.vue"],
   primevue: ["packages/primevue/src/**/*.vue"],
+  "primevue-volt": ["apps/volt/**/*.vue"],
 } as const;
 
 test("typecheck corpus globs pin the tsconfig-owned Vue sources", () => {

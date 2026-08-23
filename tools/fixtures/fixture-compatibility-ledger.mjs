@@ -332,10 +332,13 @@ function validateRatchets(oracles, fixtureMap, context) {
   );
   deepEqual(
     [...oracles.get("vue-tsc-parity")].sort(compareCodepoints),
-    context.registry.projects
-      .filter((project) => project.typecheckPerformance?.enabled === true)
-      .map((project) => project.fixturePath)
-      .sort(compareCodepoints),
+    [
+      ...new Set(
+        context.registry.projects
+          .filter((project) => project.typecheckPerformance?.enabled === true)
+          .map((project) => project.fixturePath),
+      ),
+    ].sort(compareCodepoints),
     "vue-tsc parity membership drifted",
   );
 }
