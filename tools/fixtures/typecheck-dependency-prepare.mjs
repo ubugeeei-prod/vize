@@ -7,7 +7,10 @@ import { fileURLToPath } from "node:url";
 
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
 import { isolateFixtureTypePackages } from "./typecheck-baseline-isolation.mjs";
-import { isolateUniqueLocalTypePackages } from "./typecheck-baseline-isolation-unique.mjs";
+import {
+  isolateUniqueLocalTypePackages,
+  isolateUniqueVueRuntimePackages,
+} from "./typecheck-baseline-isolation-unique.mjs";
 import { applyIsolatedAliasOverlay } from "./typecheck-baseline-outside-aliases.mjs";
 import { writeIsolatedTsconfigOverlay } from "./typecheck-baseline-outside-paths.mjs";
 import { selectTypecheckPerformanceProjects } from "./typecheck-performance-shard.mjs";
@@ -156,6 +159,11 @@ function isolateFixture(project, fixtureRoot) {
       seen.add(entry.name);
       shadowed.push(entry);
     }
+  }
+  for (const entry of isolateUniqueVueRuntimePackages(fixtureRoot)) {
+    if (seen.has(entry.name)) continue;
+    seen.add(entry.name);
+    shadowed.push(entry);
   }
   for (const entry of shadowed) {
     process.stdout.write(`Linked ${project.id} node_modules/${entry.name} -> ${entry.target}\n`);

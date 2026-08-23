@@ -10,6 +10,7 @@ import {
 import { dirname, join, relative, resolve } from "node:path";
 
 import { readDeclaredPackagePaths } from "./typecheck-baseline-isolation.mjs";
+import { ancestorPackagePath } from "./typecheck-baseline-isolation-package-extends.mjs";
 
 /**
  * Close the remaining type-reference escape when Nuxt (or another generator)
@@ -31,9 +32,28 @@ import { readDeclaredPackagePaths } from "./typecheck-baseline-isolation.mjs";
  * climbs into Vize.
  */
 
+const vueRuntimePackages = ["@vue/runtime-core", "@vue/runtime-dom", "vue"];
+
 export function isolateUniqueLocalTypePackages(fixtureRoot, sourceConfigPath) {
   const root = resolve(fixtureRoot);
-  const declared = readDeclaredPackagePaths(root, sourceConfigPath);
+  return isolateUniqueDeclaredLocalTypePackages(
+    root,
+    readDeclaredPackagePaths(root, sourceConfigPath),
+  );
+}
+
+export function isolateUniqueVueRuntimePackages(fixtureRoot) {
+  const root = resolve(fixtureRoot);
+  const declared = new Map();
+  for (const name of vueRuntimePackages) {
+    const ancestor = ancestorPackagePath(root, name);
+    if (ancestor == null) continue;
+    declared.set(name, ancestor);
+  }
+  return isolateUniqueDeclaredLocalTypePackages(root, declared);
+}
+
+function isolateUniqueDeclaredLocalTypePackages(root, declared) {
   if (declared.size === 0) return [];
   const reachable = collectAncestorPackageNames(root);
   const shadowed = [];
