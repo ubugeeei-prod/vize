@@ -197,9 +197,9 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 
 **Steps:**
 
-- [ ] Surface the existing css-vars coordination as S2 binding ops. It is spread across five sites, all in `crates/vize_atelier_sfc/src/`: `css/transform.rs` (`extract_and_transform_v_bind_with_scope`), `css.rs:31` (`transform_css_v_bind`), `style.rs:644` (`extract_css_vars`), `parse/parse_sfc.rs:197` → `descriptor.css_vars` (`types.rs:42`), and emission in `compile_script/inline/compiler/setup_emit.rs`
-- [ ] The op carries the **CSS-block span**, not only the expression, so a diagnostic points into the style block; spans are block-relative via `Span::to_block_relative` (`crates/vize_carton/src/span.rs:82`)
-- [ ] The bound expression rides as an `ExprRef` under P2-5b's contract — CSS `v-bind()` contents are exactly the kind of text that may have no retained AST, so the class decision applies here first
+- [x] Surface the existing css-vars coordination as S2 binding ops _(the five atelier_sfc sites stay the compile path; S2 ops land in ricalco so the published crate never depends on Davinci and css-var names stay frozen — [record](./phase-2-records/p2-10.md))_
+- [x] The op carries the **CSS-block span**, not only the expression, so a diagnostic points into the style block; spans are block-relative via `Span::to_block_relative` (`crates/vize_carton/src/span.rs:82`)
+- [x] The bound expression rides as an `ExprRef` under P2-5b's contract — CSS `v-bind()` contents are exactly the kind of text that may have no retained AST, so the class decision applies here first
 
 **Acceptance:** the facts are visible in the S2 folio — a committed `v-bind()`-bearing SFC fixture whose folio pins them (TS-16, TS-17); **compile output unchanged**, `corpus-diff --surface compiler` empty (TS-11); TS-1. **Deps:** P2-9. **Non-goals:** lint rules or lattice consumers reading them (phase 4); a CSS S1 dialect (the `lightningcss` boundary is P2-14's audit, not this task); changing the emitted css-var naming (`scoped_v_bind_name` / `prod_scoped_v_bind_name` output is byte-frozen by TS-11).
 
