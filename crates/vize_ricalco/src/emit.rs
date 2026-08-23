@@ -9,11 +9,12 @@
 //!
 //! Installment 5 emits **static native HTML**, interpolations,
 //! mixed text siblings, static-name `ui.bind`, static-name `ui.on`,
-//! and **native `ui.if`** (root and nested `v-if`/`v-else` on HTML
-//! elements). Object-spread `v-bind`/`v-on`, modifiers, fragments,
-//! filters, and components stay [`EmitError::Unsupported`]. The old lane
-//! stays the shipped compile path; [`super::DOM_LANE_FLAG`] is named
-//! here and *read* in the atelier_dom witness.
+//! native `ui.if`, and **native `ui.for`** (single HTML element
+//! `v-for`, identifier aliases). Object-spread `v-bind`/`v-on`,
+//! modifiers, template fragments, filters, and components stay
+//! [`EmitError::Unsupported`]. The old lane stays the shipped compile
+//! path; [`super::DOM_LANE_FLAG`] is named here and *read* in the
+//! atelier_dom witness.
 
 #[path = "emit/buf.rs"]
 mod buf;
@@ -25,6 +26,8 @@ mod js;
 mod on;
 #[path = "emit/props.rs"]
 mod props;
+#[path = "emit/vfor.rs"]
+mod vfor;
 #[path = "emit/vif.rs"]
 mod vif;
 #[path = "emit/vnode.rs"]
@@ -34,7 +37,7 @@ use vize_carton::{Allocator, String};
 use vize_davinci::diagnostic::Severity;
 use vize_davinci::id::NodeId;
 use vize_davinci::pass::BudgetObserver;
-use vize_disegno::op::{ElementOp, IfOp};
+use vize_disegno::op::{ElementOp, ForOp, IfOp};
 use vize_sinopia::parse;
 
 use crate::lower::{Lowered, lower};
@@ -54,6 +57,18 @@ fn emit_if_branch_call(
     key: &str,
 ) -> Result<(), EmitError> {
     vnode::emit_if_branch_element(cx, element, key)
+}
+
+fn emit_for_op(cx: &mut EmitCx<'_>, for_op: &ForOp<'_>) -> Result<(), EmitError> {
+    vfor::emit_for(cx, for_op)
+}
+
+fn emit_for_item_call(
+    cx: &mut EmitCx<'_>,
+    element: &ElementOp<'_>,
+    stable: bool,
+) -> Result<(), EmitError> {
+    vnode::emit_for_item_element(cx, element, stable)
 }
 
 /// Per-emit numbering + helper buffer. Page-order ids re-derive the

@@ -5,7 +5,8 @@ use vize_carton::String;
 /// Vue helpers this installment can mention, ranked the way
 /// `vue_helper_import_rank` orders the shipped preamble (`toDisplayString`
 /// before vnode creates before class/style normalizers before `openBlock`
-/// before block creates before `createTextVNode` / `createCommentVNode`).
+/// before block creates before `Fragment` before `createTextVNode` /
+/// `createCommentVNode` before `renderList`).
 #[derive(Clone, Copy)]
 enum Helper {
     ToDisplayString,
@@ -14,23 +15,27 @@ enum Helper {
     NormalizeStyle,
     OpenBlock,
     CreateElementBlock,
-    CreateText,
+    Fragment,
     CreateComment,
+    CreateText,
+    RenderList,
 }
 
 impl Helper {
-    const ALL: [Self; 8] = [
+    const ALL: [Self; 10] = [
         Self::ToDisplayString,
         Self::CreateElementVNode,
         Self::NormalizeClass,
         Self::NormalizeStyle,
         Self::OpenBlock,
         Self::CreateElementBlock,
+        Self::Fragment,
         Self::CreateComment,
         Self::CreateText,
+        Self::RenderList,
     ];
 
-    const fn bit(self) -> u8 {
+    const fn bit(self) -> u16 {
         match self {
             Self::ToDisplayString => 1,
             Self::CreateElementVNode => 2,
@@ -40,6 +45,8 @@ impl Helper {
             Self::NormalizeClass => 32,
             Self::NormalizeStyle => 64,
             Self::CreateComment => 128,
+            Self::Fragment => 256,
+            Self::RenderList => 512,
         }
     }
 
@@ -51,8 +58,10 @@ impl Helper {
             Self::NormalizeStyle => "normalizeStyle",
             Self::OpenBlock => "openBlock",
             Self::CreateElementBlock => "createElementBlock",
+            Self::Fragment => "Fragment",
             Self::CreateText => "createTextVNode",
             Self::CreateComment => "createCommentVNode",
+            Self::RenderList => "renderList",
         }
     }
 
@@ -64,8 +73,10 @@ impl Helper {
             Self::NormalizeStyle => "_normalizeStyle",
             Self::OpenBlock => "_openBlock",
             Self::CreateElementBlock => "_createElementBlock",
+            Self::Fragment => "_Fragment",
             Self::CreateText => "_createTextVNode",
             Self::CreateComment => "_createCommentVNode",
+            Self::RenderList => "_renderList",
         }
     }
 }
@@ -74,7 +85,7 @@ impl Helper {
 pub(super) struct Buf {
     pub code: String,
     indent: u32,
-    used: u8,
+    used: u16,
     /// Compact static-props object hoisted as `_hoisted_1` (root only).
     hoisted_props: Option<String>,
 }
@@ -142,6 +153,14 @@ impl Buf {
         self.used |= Helper::CreateComment.bit();
     }
 
+    pub(super) fn use_fragment(&mut self) {
+        self.used |= Helper::Fragment.bit();
+    }
+
+    pub(super) fn use_render_list(&mut self) {
+        self.used |= Helper::RenderList.bit();
+    }
+
     pub(super) fn to_display_string_alias() -> &'static str {
         Helper::ToDisplayString.alias()
     }
@@ -174,6 +193,14 @@ impl Buf {
         Helper::CreateComment.alias()
     }
 
+    pub(super) fn fragment_alias() -> &'static str {
+        Helper::Fragment.alias()
+    }
+
+    pub(super) fn render_list_alias() -> &'static str {
+        Helper::RenderList.alias()
+    }
+
     pub(super) fn hoist_root_props(&mut self, object: String) {
         self.hoisted_props = Some(object);
     }
@@ -186,7 +213,7 @@ impl Buf {
     /// root static-props hoist (the shipped codegen appends hoists to
     /// the helper preamble).
     pub(super) fn preamble(&self) -> String {
-        let listed: [Helper; 8] = Helper::ALL;
+        let listed: [Helper; 10] = Helper::ALL;
         let mut n = 0;
         for helper in listed {
             if self.used & helper.bit() != 0 {
