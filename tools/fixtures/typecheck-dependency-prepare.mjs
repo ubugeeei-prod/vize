@@ -9,6 +9,7 @@ import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-targ
 import { isolateFixtureTypePackages } from "./typecheck-baseline-isolation.mjs";
 import {
   isolateUniqueLocalTypePackages,
+  isolateUniqueNuxtUiPackages,
   isolateUniqueVueI18nPackages,
   isolateUniqueVueRuntimePackages,
   isolateUniqueVueUsePackages,
@@ -167,6 +168,7 @@ function isolateFixture(project, fixtureRoot) {
     isolateUniqueVueRuntimePackages,
     isolateUniqueVueI18nPackages,
     isolateUniqueVueUsePackages,
+    isolateUniqueNuxtUiPackages,
   ]) {
     for (const entry of isolate(fixtureRoot)) {
       if (seen.has(entry.name)) continue;

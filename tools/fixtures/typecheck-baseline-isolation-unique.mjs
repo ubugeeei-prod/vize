@@ -207,12 +207,9 @@ function compare(left, right) {
 }
 
 export function isolateUniqueVueUsePackages(fixtureRoot) {
-  const root = resolve(fixtureRoot);
-  const declared = new Map();
-  for (const name of ["@vueuse/core", "@vueuse/shared"]) {
-    const ancestor = ancestorPackagePath(root, name);
-    if (ancestor == null) continue;
-    declared.set(name, ancestor);
-  }
-  return isolateUniqueDeclaredLocalTypePackages(root, declared);
+  return isolateUniqueNamedLocalTypePackages(fixtureRoot, ["@vueuse/core", "@vueuse/shared"]);
+}
+
+export function isolateUniqueNuxtUiPackages(fixtureRoot) {
+  return isolateUniqueNamedLocalTypePackages(fixtureRoot, ["@nuxt/ui"]);
 }
