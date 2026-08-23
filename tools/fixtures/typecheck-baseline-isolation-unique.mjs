@@ -185,3 +185,14 @@ function isDanglingLink(link) {
 function compare(left, right) {
   return left < right ? -1 : left > right ? 1 : 0;
 }
+
+export function isolateUniqueVueUsePackages(fixtureRoot) {
+  const root = resolve(fixtureRoot);
+  const declared = new Map();
+  for (const name of ["@vueuse/core", "@vueuse/shared"]) {
+    const ancestor = ancestorPackagePath(root, name);
+    if (ancestor == null) continue;
+    declared.set(name, ancestor);
+  }
+  return isolateUniqueDeclaredLocalTypePackages(root, declared);
+}

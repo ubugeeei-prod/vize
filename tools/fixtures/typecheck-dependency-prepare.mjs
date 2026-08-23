@@ -10,6 +10,7 @@ import { isolateFixtureTypePackages } from "./typecheck-baseline-isolation.mjs";
 import {
   isolateUniqueLocalTypePackages,
   isolateUniqueVueRuntimePackages,
+  isolateUniqueVueUsePackages,
 } from "./typecheck-baseline-isolation-unique.mjs";
 import { applyIsolatedAliasOverlay } from "./typecheck-baseline-outside-aliases.mjs";
 import { writeIsolatedTsconfigOverlay } from "./typecheck-baseline-outside-paths.mjs";
@@ -166,6 +167,11 @@ function isolateFixture(project, fixtureRoot) {
     shadowed.push(entry);
   }
   for (const entry of shadowed) {
+    process.stdout.write(`Linked ${project.id} node_modules/${entry.name} -> ${entry.target}\n`);
+  }
+  for (const entry of isolateUniqueVueUsePackages(fixtureRoot)) {
+    if (seen.has(entry.name)) continue;
+    seen.add(entry.name);
     process.stdout.write(`Linked ${project.id} node_modules/${entry.name} -> ${entry.target}\n`);
   }
   if (typeof project.tsconfig !== "string") return;
