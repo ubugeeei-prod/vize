@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
 import { isolateFixtureTypePackages } from "./typecheck-baseline-isolation.mjs";
 import { isolateUniqueLocalTypePackages } from "./typecheck-baseline-isolation-unique.mjs";
+import { applyIsolatedAliasOverlay } from "./typecheck-baseline-outside-aliases.mjs";
 import { writeIsolatedTsconfigOverlay } from "./typecheck-baseline-outside-paths.mjs";
 import { selectTypecheckPerformanceProjects } from "./typecheck-performance-shard.mjs";
 
@@ -160,7 +161,12 @@ function isolateFixture(project, fixtureRoot) {
     process.stdout.write(`Linked ${project.id} node_modules/${entry.name} -> ${entry.target}\n`);
   }
   if (typeof project.tsconfig !== "string") return;
-  const overlay = writeIsolatedTsconfigOverlay(fixtureRoot, resolve(fixtureRoot, project.tsconfig));
+  const sourceConfig = resolve(fixtureRoot, project.tsconfig);
+  const overlay = applyIsolatedAliasOverlay(
+    fixtureRoot,
+    sourceConfig,
+    writeIsolatedTsconfigOverlay(fixtureRoot, sourceConfig),
+  );
   if (overlay != null) {
     process.stdout.write(
       `Rewrote ${project.id} tsconfig overlay -> ${relative(fixtureRoot, overlay.path)}\n`,

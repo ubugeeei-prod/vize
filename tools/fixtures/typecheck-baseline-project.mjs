@@ -2,6 +2,10 @@ import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 
 import {
+  mergePathRewrites,
+  rewriteOutsideAliasPaths,
+} from "./typecheck-baseline-outside-aliases.mjs";
+import {
   rewriteOutsidePackagePaths,
   rewriteOutsideTypeRoots,
 } from "./typecheck-baseline-outside-paths.mjs";
@@ -120,7 +124,10 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
 
 function outsideCompilerOptions(fixtureRoot, sourcePath, configDir) {
   const options = {};
-  const paths = rewriteOutsidePackagePaths(fixtureRoot, sourcePath, configDir);
+  const paths = mergePathRewrites(
+    rewriteOutsidePackagePaths(fixtureRoot, sourcePath, configDir),
+    rewriteOutsideAliasPaths(fixtureRoot, sourcePath, configDir),
+  );
   if (paths != null) options.paths = paths;
   const typeRoots = rewriteOutsideTypeRoots(fixtureRoot, sourcePath, configDir);
   if (typeRoots != null) options.typeRoots = typeRoots;
