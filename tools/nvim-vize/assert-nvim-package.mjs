@@ -38,6 +38,7 @@ const requiredFiles = [
   "nvim/lua/vize/config.lua",
   "nvim/lua/vize/init.lua",
   "nvim/plugin/vize.lua",
+  "nvim/test/ref_surface_hover.lua",
   "nvim/test/vize_e2e_expected.lua",
   "nvim/test/vize_e2e_spec.lua",
   "nvim/test/vize_spec.lua",
@@ -60,6 +61,7 @@ const allowedEntries = [
   /^nvim\/plugin\/$/,
   /^nvim\/plugin\/vize\.lua$/,
   /^nvim\/test\/$/,
+  /^nvim\/test\/ref_surface_hover\.lua$/,
   /^nvim\/test\/vize_e2e_(?:expected|spec)\.lua$/,
   /^nvim\/test\/vize_spec\.lua$/,
 ];
