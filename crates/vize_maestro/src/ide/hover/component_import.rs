@@ -1,10 +1,4 @@
 //! Hover presentation for imported Vue SFC component contracts.
-//!
-//! Corsa correctly resolves an imported `.vue` component through Vize's
-//! generated virtual module, but its raw quick-info can expose the internal
-//! `__vize*` carrier fields to users. This module keeps the checker-backed
-//! resolution and replaces only that generated presentation with an authored
-//! component contract.
 #![cfg(feature = "native")]
 #![allow(
     clippy::disallowed_types,

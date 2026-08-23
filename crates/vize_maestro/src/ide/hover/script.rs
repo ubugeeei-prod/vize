@@ -1,7 +1,7 @@
 //! Script hover provider.
 //!
 //! Provides hover information for Vue Composition API, compiler macros,
-//! and script bindings with type analysis.
+//! and script bindings.
 #![allow(
     clippy::disallowed_types,
     clippy::disallowed_methods,
