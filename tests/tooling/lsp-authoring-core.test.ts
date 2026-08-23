@@ -29,9 +29,12 @@ test("vize lsp supports production Vue authoring requests in one editor session"
 
     const source = `<script setup lang="ts">
 import { ref } from 'vue'
+import Child from './Child.vue'
 const count = ref(0)
 const items = [1, 2]
 const row = 'outer'
+
+Child
 </script>
 
 <template>
@@ -56,6 +59,18 @@ const row = 'outer'
 `;
     const filePath = path.join(workspaceDir, "AuthoringCore.vue");
     const uri = pathToFileURL(filePath).href;
+    fs.writeFileSync(
+      path.join(workspaceDir, "Child.vue"),
+      [
+        '<script setup lang="ts">',
+        "defineProps<{ label: string; count?: number }>()",
+        "defineEmits<{ save: [value: string] }>()",
+        "defineSlots<{ default(props: { value: string }): unknown }>()",
+        "</script>",
+        "",
+      ].join("\n"),
+      "utf8",
+    );
     fs.writeFileSync(filePath, source, "utf8");
 
     session.notify("textDocument/didOpen", {
@@ -144,6 +159,22 @@ const row = 'outer'
     const forDefinitionLocation = firstLocation(forDefinition as never);
     assert.equal(forDefinitionLocation.uri, uri);
     assert.deepEqual(forDefinitionLocation.range.start, offsetToPosition(source, forAliasOffset));
+
+    const childUsageOffset = source.indexOf("\nChild\n") + "\n".length + "Child".length;
+    const childHover = (await session.request("textDocument/hover", {
+      textDocument: { uri },
+      position: offsetToPosition(source, childUsageOffset),
+    })) as { contents?: unknown } | null;
+    const childHoverText = hoverToText(childHover);
+    assert.match(childHoverText, /const Child: VueComponent/);
+    assert.match(childHoverText, /props: \{ label: string; count\?: number \};/);
+    assert.match(childHoverText, /emits: \{ save: \[value: string\] \};/);
+    assert.match(childHoverText, /slots: \{ default\(props: \{ value: string \}\): unknown \};/);
+    assert.match(childHoverText, /Vue component: Child\.vue/);
+    assert.doesNotMatch(
+      childHoverText,
+      /__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor/,
+    );
 
     const slotPropOffset = source.indexOf("row.id") + "row".length;
     const slotPropPosition = offsetToPosition(source, slotPropOffset);

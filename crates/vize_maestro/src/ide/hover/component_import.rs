@@ -14,6 +14,9 @@ use super::HoverService;
 use crate::ide::IdeContext;
 use crate::ide::markup;
 
+mod fallback;
+pub(super) use fallback::vue_component_import_hover;
+
 pub(super) fn rewrite_vue_component_import_hover(
     ctx: &IdeContext<'_>,
     local_name: &str,
@@ -41,7 +44,10 @@ fn contains_generated_component_marker(markdown: &str) -> bool {
         || markdown.contains("__vize_component__")
 }
 
-fn component_contract_markdown(ctx: &IdeContext<'_>, local_name: &str) -> Option<String> {
+pub(super) fn component_contract_markdown(
+    ctx: &IdeContext<'_>,
+    local_name: &str,
+) -> Option<String> {
     let resolved_path = imported_vue_component_path(ctx, local_name)?;
     let source = component_source(ctx, &resolved_path)?;
     let filename = resolved_path.to_string_lossy();
@@ -304,7 +310,7 @@ fn consume_quoted(source: &str, start: usize, quote: u8) -> usize {
     source.len()
 }
 
-fn authored_token_range(ctx: &IdeContext<'_>) -> Option<Range> {
+pub(super) fn authored_token_range(ctx: &IdeContext<'_>) -> Option<Range> {
     let (start, end) =
         crate::ide::token_span_at_offset(&ctx.content, ctx.offset, HoverService::is_word_char)?;
     let (start_line, start_character) = crate::ide::offset_to_position(&ctx.content, start);

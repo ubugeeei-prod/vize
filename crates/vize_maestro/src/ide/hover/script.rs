@@ -65,12 +65,10 @@ impl HoverService {
             return None;
         }
 
-        // Check for Vue Composition API and macros first
-        if let Some(hover) = Self::hover_vue_api(&word) {
-            return Some(hover);
-        }
-
-        if is_setup && let Some(hover) = Self::hover_vue_macro(&word) {
+        if let Some(hover) = Self::hover_vue_api(&word)
+            .or_else(|| is_setup.then(|| Self::hover_vue_macro(&word)).flatten())
+            .or_else(|| super::component_import::vue_component_import_hover(ctx, &word))
+        {
             return Some(hover);
         }
 
