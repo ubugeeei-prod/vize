@@ -11,10 +11,7 @@ import { extractWithDefaults } from "./with-defaults.js";
 
 // Native binding types
 export interface NativeBinding {
-  parseArtStatusWarnings?: (
-    source: string,
-    options?: { filename?: string },
-  ) => string[];
+  parseArtStatusWarnings?: (source: string, options?: { filename?: string }) => string[];
   parseArt: (
     source: string,
     options?: { filename?: string },
