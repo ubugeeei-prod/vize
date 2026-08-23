@@ -59,7 +59,7 @@ impl PageWalk {
 
     /// Skip `count` ids (an owner's attached bindings, numbered between
     /// its line and its children).
-    fn skip(&mut self, count: usize) {
+    pub(crate) fn skip(&mut self, count: usize) {
         if self.exhausted {
             return;
         }

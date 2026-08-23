@@ -1,6 +1,6 @@
-//! P2-11 installment 2 witness: static native HTML elements (with
-//! static attributes), old DOM lane vs S2 emit, compared **byte-for-byte**
-//! including helper usage.
+//! P2-11 installment 3 witness: static native HTML plus interpolations,
+//! old DOM lane vs S2 emit, compared **byte-for-byte** including helper
+//! usage.
 //!
 //! `vize_atelier_dom` is published; the Davinci crates are not. The
 //! comparator therefore rides stripped-on-publish dev-deps (the same
@@ -32,6 +32,12 @@ const BATTERY: &[(&str, &str)] = &[
     ("data_attr", r#"<div data-id="1"></div>"#),
     ("boolean_attr", "<div disabled></div>"),
     ("nested_class", r#"<div><span class="x">hello</span></div>"#),
+    ("simple_interpolation", "{{ msg }}"),
+    ("interpolation_in_element", "<div>{{ msg }}</div>"),
+    ("mixed_text_interp", "<div>hello {{ msg }}</div>"),
+    ("hoisted_class_interp", r#"<div class="x">{{ msg }}</div>"#),
+    ("nested_interp", "<div><span>{{ msg }}</span></div>"),
+    ("compound_two_dyn", "<p>Hi {{ name }}!</p>"),
 ];
 
 fn shipped(src: &str) -> String {
@@ -42,7 +48,7 @@ fn shipped(src: &str) -> String {
 }
 
 #[test]
-fn s2_static_elements_match_the_shipped_dom_lane_byte_for_byte() {
+fn s2_native_html_and_interpolations_match_the_shipped_dom_lane_byte_for_byte() {
     let mut compared = 0u64;
     let mut skipped_legacy_flag = 0u64;
     if std::env::var(DOM_LANE_FLAG).is_ok_and(|value| value == "legacy") {

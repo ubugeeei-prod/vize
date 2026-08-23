@@ -64,7 +64,7 @@ pub mod vmodel;
 #[path = "pass/vslot.rs"]
 pub mod vslot;
 #[path = "pass/walk.rs"]
-mod walk;
+pub(crate) mod walk;
 
 pub use hoist::{StaticFacts, StaticLevel};
 pub use text::TextFacts;
