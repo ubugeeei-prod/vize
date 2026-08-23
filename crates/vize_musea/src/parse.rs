@@ -73,7 +73,7 @@ pub fn parse_art<'a>(
         .and_then(|script| parse_define_art_metadata(allocator, script.content));
 
     // Parse metadata from <art> attributes and defineArt() fallback.
-    let (metadata, warnings) =
+    let (metadata, _warnings) =
         art_block::parse_metadata(allocator, &art_block, define_art.as_ref(), filename)?;
 
     // Parse <variant> blocks inside <art>
@@ -92,7 +92,6 @@ pub fn parse_art<'a>(
         script_setup,
         script,
         styles,
-        warnings,
     })
 }
 

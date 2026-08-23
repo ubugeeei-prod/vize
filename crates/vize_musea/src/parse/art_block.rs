@@ -207,4 +207,20 @@ mod tests {
         assert_eq!(parse_status(r#"deprecated"#), Some(ArtStatus::Deprecated));
         assert_eq!(parse_status(r#""#), None);
     }
+
+    #[test]
+    fn test_parse_metadata_unknown_status_warns() {
+        let allocator = Allocator::new();
+        let source = r#"<art title="Button" status="wip"></art>"#;
+        let block = find_art_block(source.as_bytes(), source).unwrap();
+        let (metadata, warnings) =
+            parse_metadata(&allocator, &block, None, "button.art.vue").unwrap();
+        assert_eq!(metadata.status, ArtStatus::Draft);
+        assert_eq!(
+            warnings.as_slice(),
+            [
+                "button.art.vue: unknown status \"wip\"; falling back to \"draft\" (expected \"draft\" | \"ready\" | \"deprecated\")"
+            ]
+        );
+    }
 }

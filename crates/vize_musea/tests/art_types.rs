@@ -7,7 +7,6 @@ fn art_descriptor_new_starts_empty() {
     let desc = ArtDescriptor::new(&allocator, "test.art.vue", "<art></art>");
     assert_eq!(desc.filename, "test.art.vue");
     assert_eq!(desc.variants.len(), 0);
-    assert_eq!(desc.warnings().len(), 0);
 }
 
 #[test]

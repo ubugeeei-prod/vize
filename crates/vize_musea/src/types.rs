@@ -34,9 +34,6 @@ pub struct ArtDescriptor<'a> {
 
     /// Style blocks (arena-allocated)
     pub styles: ArenaVec<'a, ArtStyleBlock<'a>>,
-
-    /// Recoverable parse warnings
-    pub(crate) warnings: ArenaVec<'a, &'a str>,
 }
 
 /// Art metadata extracted from `<art>` block attributes.
@@ -210,7 +207,6 @@ impl<'a> ArtDescriptor<'a> {
             script_setup: None,
             script: None,
             styles: ArenaVec::new_in(&allocator),
-            warnings: ArenaVec::new_in(&allocator),
         }
     }
 
@@ -221,12 +217,6 @@ impl<'a> ArtDescriptor<'a> {
             .iter()
             .find(|v| v.is_default)
             .or_else(|| self.variants.first())
-    }
-
-    /// Recoverable parse warnings.
-    #[inline]
-    pub fn warnings(&self) -> &[&str] {
-        self.warnings.as_slice()
     }
 }
 

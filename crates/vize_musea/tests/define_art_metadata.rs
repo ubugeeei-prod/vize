@@ -1,9 +1,6 @@
 use vize_carton::Allocator;
 use vize_musea::{ArtParseOptions, ArtStatus, parse_art};
 
-const BUTTON_WIP_WARNING: &str = "button.art.vue: unknown status \"wip\"; falling back to \"draft\" (expected \"draft\" | \"ready\" | \"deprecated\")";
-const ANON_WIP_WARNING: &str = "anonymous.art.vue: unknown status \"wip\"; falling back to \"draft\" (expected \"draft\" | \"ready\" | \"deprecated\")";
-
 fn parse<'a>(
     allocator: &'a Allocator,
     source: &'a str,
@@ -52,7 +49,6 @@ defineArt(AliasButton, {
     assert_eq!(desc.metadata.category, Some("Components"));
     assert_eq!(desc.metadata.tags.as_slice(), ["alias"]);
     assert_eq!(desc.metadata.status, ArtStatus::Ready);
-    assert_eq!(desc.warnings(), [] as [&str; 0]);
 }
 
 #[test]
@@ -77,11 +73,10 @@ defineArt(Button, {
 
     let desc = parse(&allocator, source, "button.art.vue");
     assert_eq!(desc.metadata.status, ArtStatus::Draft);
-    assert_eq!(desc.warnings(), [BUTTON_WIP_WARNING]);
 }
 
 #[test]
-fn omitted_define_art_status_stays_ready_without_warning() {
+fn omitted_define_art_status_stays_ready() {
     let allocator = Allocator::new();
     let source = r#"
 <script setup>
@@ -101,7 +96,6 @@ defineArt(Button, {
 
     let desc = parse(&allocator, source, "button.art.vue");
     assert_eq!(desc.metadata.status, ArtStatus::Ready);
-    assert_eq!(desc.warnings(), [] as [&str; 0]);
 }
 
 #[test]
@@ -117,7 +111,6 @@ fn unknown_art_status_attr_falls_back_to_draft() {
 
     let desc = parse(&allocator, source, "button.art.vue");
     assert_eq!(desc.metadata.status, ArtStatus::Draft);
-    assert_eq!(desc.warnings(), [BUTTON_WIP_WARNING]);
 }
 
 #[test]
@@ -136,5 +129,4 @@ defineArt("./Button.vue", { title: "Button", status: "wip" });
 
     let desc = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
     assert_eq!(desc.metadata.status, ArtStatus::Draft);
-    assert_eq!(desc.warnings(), [ANON_WIP_WARNING]);
 }
