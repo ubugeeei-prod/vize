@@ -100,7 +100,7 @@ impl TypeService {
                 if let Some(binding_name) = Self::find_binding_before(script, abs_fn_pos) {
                     let type_info = match kind {
                         vize_canon::BindingKind::Ref => {
-                            vize_canon::TypeInfo::new("Ref<unknown>", vize_canon::TypeKind::Ref)
+                            Self::infer_ref_call_type(&script[abs_fn_pos..])
                         }
                         vize_canon::BindingKind::Computed => vize_canon::TypeInfo::new(
                             "ComputedRef<unknown>",
@@ -221,8 +221,17 @@ impl TypeService {
             }
 
             // ref()
+            if let Some(type_arg) = value
+                .strip_prefix("ref<")
+                .and_then(|rest| rest.split_once('>').map(|(type_arg, _)| type_arg.trim()))
+            {
+                return vize_canon::TypeInfo::new(
+                    format!("Ref<{type_arg}>"),
+                    vize_canon::TypeKind::Ref,
+                );
+            }
             if value.starts_with("ref(") {
-                return vize_canon::TypeInfo::new("Ref<unknown>", vize_canon::TypeKind::Ref);
+                return Self::infer_ref_call_type(value);
             }
 
             // computed()

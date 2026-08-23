@@ -131,6 +131,37 @@ impl TypeService {
         let checker = vize_canon::TypeChecker::new();
         checker.get_completions(&template.content, template_offset as u32, &type_ctx)
     }
+
+    fn infer_ref_call_type(value: &str) -> vize_canon::TypeInfo {
+        let inner = value
+            .strip_prefix("ref(")
+            .and_then(Self::infer_literal_value_type)
+            .unwrap_or("unknown");
+
+        vize_canon::TypeInfo::new(format!("Ref<{inner}>"), vize_canon::TypeKind::Ref)
+    }
+
+    fn infer_literal_value_type(value: &str) -> Option<&'static str> {
+        let value = value.trim_start();
+
+        if value.starts_with('"') || value.starts_with('\'') || value.starts_with('`') {
+            Some("string")
+        } else if value.starts_with("true") || value.starts_with("false") {
+            Some("boolean")
+        } else if value.starts_with(|c: char| c.is_ascii_digit() || c == '-') {
+            Some("number")
+        } else if value.starts_with('[') {
+            Some("unknown[]")
+        } else if value.starts_with('{') {
+            Some("object")
+        } else if value.starts_with("null") {
+            Some("null")
+        } else if value.starts_with("undefined") {
+            Some("undefined")
+        } else {
+            None
+        }
+    }
 }
 
 #[cfg(test)]
@@ -167,5 +198,14 @@ mod tests {
 
         let t = TypeService::infer_binding_type("= ref(0)", "count");
         assert_eq!(t.kind, vize_canon::TypeKind::Ref);
+        assert_eq!(t.display, "Ref<number>");
+
+        let t = TypeService::infer_binding_type("= ref('hello')", "message");
+        assert_eq!(t.kind, vize_canon::TypeKind::Ref);
+        assert_eq!(t.display, "Ref<string>");
+
+        let t = TypeService::infer_binding_type("= ref<boolean>(false)", "flag");
+        assert_eq!(t.kind, vize_canon::TypeKind::Ref);
+        assert_eq!(t.display, "Ref<boolean>");
     }
 }
