@@ -36,7 +36,7 @@ pub struct ArtDescriptor<'a> {
     pub styles: ArenaVec<'a, ArtStyleBlock<'a>>,
 
     /// Recoverable parse warnings
-    pub warnings: ArenaVec<'a, &'a str>,
+    pub(crate) warnings: ArenaVec<'a, &'a str>,
 }
 
 /// Art metadata extracted from `<art>` block attributes.
@@ -222,6 +222,12 @@ impl<'a> ArtDescriptor<'a> {
             .find(|v| v.is_default)
             .or_else(|| self.variants.first())
     }
+
+    /// Recoverable parse warnings.
+    #[inline]
+    pub fn warnings(&self) -> &[&str] {
+        self.warnings.as_slice()
+    }
 }
 
 impl<'a> ArtMetadata<'a> {
@@ -295,8 +301,6 @@ pub struct ArtDescriptorOwned {
     pub script_setup: Option<ArtScriptBlockOwned>,
     pub script: Option<ArtScriptBlockOwned>,
     pub styles: Vec<ArtStyleBlockOwned>,
-    #[serde(default)]
-    pub warnings: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -352,11 +356,6 @@ impl<'a> ArtDescriptor<'a> {
             script_setup: self.script_setup.map(|s| s.into_owned()),
             script: self.script.map(|s| s.into_owned()),
             styles: self.styles.into_iter().map(|s| s.into_owned()).collect(),
-            warnings: self
-                .warnings
-                .into_iter()
-                .map(|s| s.to_compact_string())
-                .collect(),
         }
     }
 }

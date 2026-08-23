@@ -52,7 +52,7 @@ defineArt(AliasButton, {
     assert_eq!(desc.metadata.category, Some("Components"));
     assert_eq!(desc.metadata.tags.as_slice(), ["alias"]);
     assert_eq!(desc.metadata.status, ArtStatus::Ready);
-    assert_eq!(desc.warnings.as_slice(), [] as [&str; 0]);
+    assert_eq!(desc.warnings(), [] as [&str; 0]);
 }
 
 #[test]
@@ -77,7 +77,7 @@ defineArt(Button, {
 
     let desc = parse(&allocator, source, "button.art.vue");
     assert_eq!(desc.metadata.status, ArtStatus::Draft);
-    assert_eq!(desc.warnings.as_slice(), [BUTTON_WIP_WARNING]);
+    assert_eq!(desc.warnings(), [BUTTON_WIP_WARNING]);
 }
 
 #[test]
@@ -101,7 +101,7 @@ defineArt(Button, {
 
     let desc = parse(&allocator, source, "button.art.vue");
     assert_eq!(desc.metadata.status, ArtStatus::Ready);
-    assert_eq!(desc.warnings.as_slice(), [] as [&str; 0]);
+    assert_eq!(desc.warnings(), [] as [&str; 0]);
 }
 
 #[test]
@@ -117,7 +117,7 @@ fn unknown_art_status_attr_falls_back_to_draft() {
 
     let desc = parse(&allocator, source, "button.art.vue");
     assert_eq!(desc.metadata.status, ArtStatus::Draft);
-    assert_eq!(desc.warnings.as_slice(), [BUTTON_WIP_WARNING]);
+    assert_eq!(desc.warnings(), [BUTTON_WIP_WARNING]);
 }
 
 #[test]
@@ -136,5 +136,5 @@ defineArt("./Button.vue", { title: "Button", status: "wip" });
 
     let desc = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
     assert_eq!(desc.metadata.status, ArtStatus::Draft);
-    assert_eq!(desc.warnings.as_slice(), [ANON_WIP_WARNING]);
+    assert_eq!(desc.warnings(), [ANON_WIP_WARNING]);
 }
