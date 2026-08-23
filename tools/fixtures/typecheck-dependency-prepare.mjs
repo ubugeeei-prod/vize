@@ -125,18 +125,37 @@ function prepareProjectDependencies({ args, commitSha, project }) {
  * Link the packages the fixture's own config maps but its package manager did
  * not hoist, so a `/// <reference types="..." />` inside the fixture cannot be
  * answered by Vize's own `node_modules` further up the tree (run 31979524200).
- * Reported on
- * stdout rather than into the artifact: what the run has to prove is the
- * outcome, and `typecheck-baseline-ambient.mjs` proves that from the program
- * listing regardless of how the tree got there.
+ * When Vize's `--tsconfig` and vue-tsc's baseline config differ (Nuxt Volt:
+ * `apps/volt/tsconfig.json` vs `apps/volt/.nuxt/tsconfig.json`), both are
+ * walked. Reported on stdout rather than into the artifact: what the run has
+ * to prove is the outcome, and `typecheck-baseline-ambient.mjs` proves that
+ * from the program listing regardless of how the tree got there.
  */
+export function isolationTsconfigPaths(project) {
+  const paths = [];
+  const seen = new Set();
+  for (const candidate of [project.typecheckPerformance?.baseline?.tsconfig, project.tsconfig]) {
+    if (typeof candidate !== "string" || seen.has(candidate)) continue;
+    seen.add(candidate);
+    paths.push(candidate);
+  }
+  return paths;
+}
+
 function isolateFixture(project, fixtureRoot) {
-  const sourceProject = project.typecheckPerformance.baseline?.tsconfig ?? project.tsconfig;
-  const sourceConfig = resolve(fixtureRoot, sourceProject);
-  const shadowed = [
-    ...isolateFixtureTypePackages(fixtureRoot, sourceConfig),
-    ...isolateUniqueLocalTypePackages(fixtureRoot, sourceConfig),
-  ];
+  const shadowed = [];
+  const seen = new Set();
+  for (const relativeConfig of isolationTsconfigPaths(project)) {
+    const sourceConfig = resolve(fixtureRoot, relativeConfig);
+    for (const entry of [
+      ...isolateFixtureTypePackages(fixtureRoot, sourceConfig),
+      ...isolateUniqueLocalTypePackages(fixtureRoot, sourceConfig),
+    ]) {
+      if (seen.has(entry.name)) continue;
+      seen.add(entry.name);
+      shadowed.push(entry);
+    }
+  }
   for (const entry of shadowed) {
     process.stdout.write(`Linked ${project.id} node_modules/${entry.name} -> ${entry.target}\n`);
   }
