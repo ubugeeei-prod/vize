@@ -51,6 +51,11 @@ test("package-name extends specifiers resolve to the package, not a subpath", ()
   assert.equal(packageNameFromExtendsSpecifier("nuxt/tsconfig"), "nuxt");
   assert.equal(packageNameFromExtendsSpecifier("./tsconfig.app.json"), null);
   assert.equal(packageNameFromExtendsSpecifier("../tsconfig.json"), null);
+  assert.equal(
+    packageNameFromExtendsSpecifier("../node_modules/@vue/tsconfig/tsconfig.json"),
+    "@vue/tsconfig",
+  );
+  assert.equal(packageNameFromExtendsSpecifier("../../node_modules/nuxt/tsconfig"), "nuxt");
 });
 
 test("an ancestor package-name extends is recorded as the ancestor directory", () => {
@@ -75,6 +80,24 @@ test("a subpath package-name extends still names the package", () => {
     assert.deepEqual(Object.fromEntries(readDeclaredPackagePaths(fixtureRoot, configPath)), {
       "@vue/tsconfig": ancestor,
     });
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test("unique isolation links a relative node_modules package-name extends", () => {
+  const { fixtureRoot, outer } = scaffold();
+  try {
+    writeStoreCopy(fixtureRoot);
+    const configPath = path.join(fixtureRoot, ".nuxt", "tsconfig.json");
+    fs.mkdirSync(path.dirname(configPath), { recursive: true });
+    fs.writeFileSync(configPath, `{ "extends": "../node_modules/@vue/tsconfig/tsconfig.json" }\n`);
+    assert.deepEqual(isolateUniqueLocalTypePackages(fixtureRoot, configPath), [
+      {
+        name: "@vue/tsconfig",
+        target: "node_modules/.pnpm/@vue+tsconfig@0.5.0/node_modules/@vue/tsconfig",
+      },
+    ]);
   } finally {
     fs.rmSync(outer, { recursive: true, force: true });
   }
