@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
 import { isolateFixtureTypePackages } from "./typecheck-baseline-isolation.mjs";
+import { isolateUniqueLocalTypePackages } from "./typecheck-baseline-isolation-unique.mjs";
 import { selectTypecheckPerformanceProjects } from "./typecheck-performance-shard.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -130,7 +131,11 @@ function prepareProjectDependencies({ args, commitSha, project }) {
  */
 function isolateFixture(project, fixtureRoot) {
   const sourceProject = project.typecheckPerformance.baseline?.tsconfig ?? project.tsconfig;
-  const shadowed = isolateFixtureTypePackages(fixtureRoot, resolve(fixtureRoot, sourceProject));
+  const sourceConfig = resolve(fixtureRoot, sourceProject);
+  const shadowed = [
+    ...isolateFixtureTypePackages(fixtureRoot, sourceConfig),
+    ...isolateUniqueLocalTypePackages(fixtureRoot, sourceConfig),
+  ];
   for (const entry of shadowed) {
     process.stdout.write(`Linked ${project.id} node_modules/${entry.name} -> ${entry.target}\n`);
   }
