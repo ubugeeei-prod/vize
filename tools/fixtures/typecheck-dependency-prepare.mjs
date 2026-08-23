@@ -10,6 +10,7 @@ import { isolateFixtureTypePackages } from "./typecheck-baseline-isolation.mjs";
 import {
   isolateUniqueLocalTypePackages,
   isolateUniqueUiLibraryPackages,
+  isolateUniqueVueFormPackages,
   isolateUniqueVueI18nPackages,
   isolateUniqueVueRuntimePackages,
   isolateUniqueVueUsePackages,
@@ -129,15 +130,11 @@ function prepareProjectDependencies({ args, commitSha, project }) {
 }
 
 /**
- * Link the packages the fixture's own config maps but its package manager did
- * not hoist, so a `/// <reference types="..." />` inside the fixture cannot be
- * answered by Vize's own `node_modules` further up the tree (run 31979524200).
- * When Vize's `--tsconfig` and vue-tsc's baseline config differ (Nuxt Volt:
- * `apps/volt/tsconfig.json` vs `apps/volt/.nuxt/tsconfig.json`), both are
- * walked and both receive an overlay. Reported on stdout rather than into the
- * artifact: what the run has to prove is the outcome, and
- * `typecheck-baseline-ambient.mjs` proves that from the program listing
- * regardless of how the tree got there.
+ * Link packages the fixture config maps but its package manager did not hoist,
+ * so a `/// <reference types="..." />` cannot be answered by Vize's
+ * `node_modules` further up the tree (run 31979524200). When Vize's
+ * `--tsconfig` and vue-tsc's baseline differ (Nuxt Volt), both are walked and
+ * overlaid. Reported on stdout; `typecheck-baseline-ambient.mjs` proves it.
  */
 export function isolationTsconfigPaths(project) {
   const paths = [];
@@ -169,6 +166,7 @@ function isolateFixture(project, fixtureRoot) {
     isolateUniqueVueI18nPackages,
     isolateUniqueVueUsePackages,
     isolateUniqueUiLibraryPackages,
+    isolateUniqueVueFormPackages,
   ]) {
     for (const entry of isolate(fixtureRoot)) {
       if (seen.has(entry.name)) continue;

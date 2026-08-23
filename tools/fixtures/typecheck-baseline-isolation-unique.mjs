@@ -217,3 +217,7 @@ export function isolateUniqueNuxtUiPackages(fixtureRoot) {
 export function isolateUniqueUiLibraryPackages(fixtureRoot) {
   return isolateUniqueNamedLocalTypePackages(fixtureRoot, ["@nuxt/ui", "primevue", "reka-ui"]);
 }
+
+export function isolateUniqueVueFormPackages(fixtureRoot) {
+  return isolateUniqueNamedLocalTypePackages(fixtureRoot, ["@formkit/vue", "vee-validate"]);
+}
