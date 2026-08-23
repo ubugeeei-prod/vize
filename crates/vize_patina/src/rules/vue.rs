@@ -231,10 +231,16 @@ pub(crate) fn register_security(registry: &mut crate::rule::RuleRegistry) {
 
 /// Register Vue rules that require explicit opt-in.
 ///
-/// This includes contextual contracts such as Nuxt's single-root pages and
-/// migration checks for deprecated Vue 2 syntax. Keeping them outside every
+/// This includes contextual contracts such as Nuxt's single-root pages,
+/// migration checks for deprecated Vue 2 syntax, and documented semantic
+/// checks that are not in the default preset. Keeping them outside every
 /// preset avoids imposing those narrower contracts on general Vue 3 projects.
+/// A documented rule still has to be instantiable here: config-enabling a
+/// name that no registry entry owns is a silent false negative (#4636).
 pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
+    if !registry.has_rule("vue/no-undefined-refs") {
+        registry.register(Box::new(NoUndefinedRefs));
+    }
     if !registry.has_rule("vue/no-multiple-template-root") {
         registry.register(Box::new(NoMultipleTemplateRoot));
     }

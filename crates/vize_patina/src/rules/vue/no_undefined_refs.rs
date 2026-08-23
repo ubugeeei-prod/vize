@@ -57,14 +57,4 @@ impl Rule for NoUndefinedRefs {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::NoUndefinedRefs;
-    use crate::rule::{Rule, RuleCategory};
-
-    #[test]
-    fn test_meta() {
-        let rule = NoUndefinedRefs;
-        assert_eq!(rule.meta().name, "vue/no-undefined-refs");
-        assert_eq!(rule.meta().category, RuleCategory::Recommended);
-    }
-}
+mod tests;

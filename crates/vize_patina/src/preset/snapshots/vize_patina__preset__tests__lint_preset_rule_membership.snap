@@ -544,6 +544,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "petite-vue/no-unsupported-directive",
     "petite-vue/valid-v-effect",
     "petite-vue/valid-v-scope",
+    "vue/no-undefined-refs",
     "vue/no-multiple-template-root",
     "vue/no-use-v-else-with-v-for",
     "vue/no-deprecated-v-on-native-modifier",

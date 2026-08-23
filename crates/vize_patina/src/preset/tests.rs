@@ -66,7 +66,9 @@ fn happy_path_keeps_opinionated_rules_opt_in() {
     assert!(!happy_path.has_rule("type/no-reactivity-loss"));
     assert!(happy_path.has_rule("html/no-empty-palpable-content"));
     assert!(!happy_path.has_rule("vue/multi-word-component-names"));
+    assert!(!happy_path.has_rule("vue/no-undefined-refs"));
     assert!(!happy_path.has_rule("a11y/use-list"));
+    assert!(RuleRegistry::with_opt_in_rules().has_rule("vue/no-undefined-refs"));
     assert!(opinionated.has_rule("vue/attribute-order"));
     assert!(opinionated.has_rule("vue/component-definition-name-casing"));
     assert!(opinionated.has_rule("vue/html-quotes"));

@@ -50,13 +50,18 @@ _mechanism_ is proven green both ways in CI (a synthetic diagnostic set
 matching the manifest passes; a same-count wrong-location set fails listing
 the exact miss).
 
-**Disposition:** `deferred-with-issue` — registering the rule in a preset
-changes default lint behavior, which the phase-0 exit gate (corpus-diff
-empty, zero behavior change) forbids in this phase; needs a charter-level
-preset-placement decision. The CI expectation
-(`tests/_fixtures/davinci-fpfn/expected/assert-report.json`) pins the
-measured 0/3 so the day the rule gains a consumer the pilot test fails
-loudly and this entry must flip in the same change.
+**Disposition:** `justified-with-witness` for default-preset recall;
+config-enable is fixed.
+
+- Default presets still do not instantiate the rule, so the seeded-defect
+  pilot remains 0/3 (`tests/_fixtures/davinci-fpfn/expected/assert-report.json`).
+  Putting it on a default preset is a separate FP-audit change.
+- `#4636` / `fix/patina-undefined-refs-dispatch` registers the rule on the
+  opt-in path. `"vue/no-undefined-refs": "warn"` now instantiates and runs
+  the rule. The engine rule-name set is no longer a dead gate entry.
+
+The CI expectation still pins the measured default-preset 0/3. Flip that
+pin in the same change that adds the rule to a default preset.
 
 ## FN-2 — class (b) unused-binding: `unused_bindings` has no lint consumer
 

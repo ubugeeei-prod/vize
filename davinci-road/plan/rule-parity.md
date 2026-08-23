@@ -26,17 +26,17 @@ Per-rule registration surface, SFC/JSX path membership, croquis usage, and a fir
 
 ## File accounting
 
-- `.rs` files under `crates/vize_patina/src/rules/**`: **356**
+- `.rs` files under `crates/vize_patina/src/rules/**`: **357**
 - rule-defining files (exactly one `static META` each): **245** → **245 rules**
-- non-rule files: **111** — 27 module organizers (a `<name>.rs` with a `<name>/` directory beside it), 17 `*_tests.rs` companions, 67 helper/data files (rule submodules, shared tables, private utilities)
+- non-rule files: **112** — 27 module organizers (a `<name>.rs` with a `<name>/` directory beside it), 17 `*_tests.rs` companions, 68 helper/data files (rule submodules, shared tables, private utilities)
 
 ## Summary
 
 - **total rules: 245**
 - by family: template-family 158, script 71, css 10, musea 6
 - by surface (a rule can have several): `css-text` 10, `markup-facade` 13, `musea-blocks` 6, `script-oxc` 65, `script-source` 6, `sfc-source` 9, `template-ast` 152, `type-aware-corsa` 5
-- path membership: SFC `lint_sfc` 238 · JSX `lint_jsx` 146 · **SFC∩JSX 146** · SFC-only 92 · JSX-only 0 · neither 7 (6 musea + 1 unregistered)
-- JSX lanes: `fallback` 133, `ir` 12, `ir-lowered` 1, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (13 = 13 `markup-facade` rules)
+- path membership: SFC `lint_sfc` 239 · JSX `lint_jsx` 147 · **SFC∩JSX 147** · SFC-only 92 · JSX-only 0 · neither 6 (6 musea + 0 unregistered)
+- JSX lanes: `fallback` 134, `ir` 12, `ir-lowered` 1, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (13 = 13 `markup-facade` rules)
 - classification: neutral-core-candidate **85** · vue-dialect-bound **138** · container-bound **22** (0 overridden)
 - croquis adoption: **24** rules touch vize_croquis (19 direct imports, 12 via context analysis)
 
@@ -237,7 +237,7 @@ Sorted by rule name. File paths are relative to `crates/vize_patina/src/rules/`.
 | `vue/no-template-shadow`                        | template-family | `opinionated/vue/no_template_shadow.rs`                | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `vue/no-template-target-blank`                  | template-family | `vue/no_template_target_blank.rs`                      | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | vue-dialect-bound      |
 | `vue/no-textarea-mustache`                      | template-family | `vue/no_textarea_mustache.rs`                          | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
-| `vue/no-undefined-refs`                         | template-family | `vue/no_undefined_refs.rs`                             | template-ast                   | no                               | no                          | ctx 1                                                                                               | neutral-core-candidate |
+| `vue/no-undefined-refs`                         | template-family | `vue/no_undefined_refs.rs`                             | template-ast                   | yes (template-visitor)           | yes (fallback)              | ctx 1                                                                                               | neutral-core-candidate |
 | `vue/no-unsafe-url`                             | template-family | `vue/no_unsafe_url.rs`                                 | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `vue/no-unsandboxed-iframe`                     | template-family | `vue/no_unsandboxed_iframe.rs`                         | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | vue-dialect-bound      |
 | `vue/no-unused-components`                      | template-family | `vue/no_unused_components.rs`                          | template-ast                   | yes (template-visitor)           | yes (fallback)              | direct 6: `Croquis`, `ScopeData`, `naming::is_pascal_case`, +2; ctx 2                               | container-bound        |
@@ -298,8 +298,8 @@ None. Hand-corrections go in `davinci-road/plan/rule-parity-overrides.toml`, nev
 
 ## Cross-checks
 
-- Rules defined but registered on no dispatch path (dead or host-only until wired): `vue/no-undefined-refs`
-- Engine rule-name sets referencing rules outside the registered set (gate entries that can never activate): `SEMANTIC_TEMPLATE_RULES` names `vue/no-undefined-refs`, which no preset registers
+- Every non-musea rule is registered on at least one dispatch path.
+- Every engine rule-name set entry resolves to a registered rule.
 - `SEMANTIC_TEMPLATE_RULES` (engine-side croquis gate, `linter/engine/rule_sets.rs`) lists 9 rules; all of them show croquis usage above.
 - Context-lane croquis users outside that gate (their template pass runs without analysis unless another path supplies it): `type/require-typed-emits`, `type/require-typed-props`, `vue/use-unique-element-ids`
 - Script registry: 71 dispatch entries vs 71 names in `ALL_BUILTIN_SCRIPT_RULE_NAMES` (agree).
