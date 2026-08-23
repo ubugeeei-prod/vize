@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 
+import { rewriteOutsidePackagePaths } from "./typecheck-baseline-outside-paths.mjs";
 import { typecheckCorpusGlobs } from "./tool-matrix-command.mjs";
 
 /**
@@ -94,6 +95,7 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
       // that directory becomes TS6059 noise and the baseline stops measuring
       // Vize. Pin it to the fixture corpus root instead.
       rootDir: configRelativePath(configDir, fixtureRoot),
+      ...outsidePackagePaths(fixtureRoot, sourcePath, configDir),
     },
     files: vizeReport.files
       .slice(0, vizeReport.fileCount)
@@ -111,6 +113,11 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
   writeFileSync(outputPath, source);
   writeFileSync(artifactPath, source);
   return { path: outputPath, source, sourceProject };
+}
+
+function outsidePackagePaths(fixtureRoot, sourcePath, configDir) {
+  const paths = rewriteOutsidePackagePaths(fixtureRoot, sourcePath, configDir);
+  return paths == null ? {} : { paths };
 }
 
 function configRelativePath(from, to) {
