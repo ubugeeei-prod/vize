@@ -1,7 +1,10 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 
-import { isolatedTsconfigOverlayPath } from "./typecheck-baseline-outside-paths.mjs";
+import {
+  isolatedTsconfigOverlayPath,
+  resolvePackageExtends,
+} from "./typecheck-baseline-outside-paths.mjs";
 
 /**
  * Close the remaining `compilerOptions.paths` escape for keys that are not
@@ -12,6 +15,9 @@ import { isolatedTsconfigOverlayPath } from "./typecheck-baseline-outside-paths.
  * A mapping is retargeted only when its target sits under an outside
  * `node_modules/<name>` (or `@scope/name`) directory and the fixture already
  * has that package. Interior `*` patterns are not guessed.
+ *
+ * Package-name `extends` is followed only inside the fixture, matching the
+ * package-name overlay. Climbing into Vize would load Vize's `#app` mappings.
  */
 
 const packageNamePattern = /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/u;
@@ -152,7 +158,9 @@ function loadExtendsChain(sourceConfigPath, fixtureRoot) {
     chain.push({ config, dir: dirname(current) });
     let next = null;
     for (const specifier of extendsSpecifiers(config.extends)) {
-      next = resolveRelativeExtends(current, specifier, fixtureRoot);
+      next =
+        resolveRelativeExtends(current, specifier, fixtureRoot) ??
+        resolvePackageExtends(current, specifier, fixtureRoot);
       if (next != null) break;
     }
     if (next == null) break;

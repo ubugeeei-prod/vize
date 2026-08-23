@@ -220,7 +220,7 @@ function resolveExtends(fromConfig, specifier, fixtureRoot) {
   return resolvePackageExtends(fromConfig, specifier, fixtureRoot);
 }
 
-function resolvePackageExtends(fromConfig, specifier, fixtureRoot) {
+export function resolvePackageExtends(fromConfig, specifier, fixtureRoot) {
   const parsed = splitPackageExtends(specifier);
   if (parsed == null) return null;
   const root = resolve(fixtureRoot);
