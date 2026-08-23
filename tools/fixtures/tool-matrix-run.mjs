@@ -92,7 +92,10 @@ function prepareToolRun(project, tool, args, launch, outputDir) {
     tool === "formatter" ? snapshotFormatterInputs(cwd, project.vueGlobs) : null;
   const expectedToolFiles =
     tool === "typechecker" || tool === "linter" || tool === "formatter"
-      ? collectVueInputPaths(cwd, tool === "typechecker" ? typecheckCorpusGlobs(project) : project.vueGlobs)
+      ? collectVueInputPaths(
+          cwd,
+          tool === "typechecker" ? typecheckCorpusGlobs(project) : project.vueGlobs,
+        )
       : null;
   return {
     base,
