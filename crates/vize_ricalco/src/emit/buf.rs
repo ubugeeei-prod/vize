@@ -3,23 +3,29 @@
 use vize_carton::String;
 
 /// Vue helpers this installment can mention, ranked the way
-/// `vue_helper_import_rank` orders the shipped preamble (`toDisplayString`
-/// before vnode creates before class/style normalizers before `openBlock`
-/// before block creates before `createTextVNode` / `createCommentVNode`).
+/// `vue_helper_import_rank` orders the shipped preamble (`withKeys` /
+/// `withModifiers` before `toDisplayString` before vnode creates before
+/// class/style normalizers before `openBlock` before block creates
+/// before `createTextVNode` / `createCommentVNode`). Same-rank helpers
+/// keep this array order (`withKeys` before `withModifiers`).
 #[derive(Clone, Copy)]
 enum Helper {
+    WithKeys,
+    WithModifiers,
     ToDisplayString,
     CreateElementVNode,
     NormalizeClass,
     NormalizeStyle,
     OpenBlock,
     CreateElementBlock,
-    CreateText,
     CreateComment,
+    CreateText,
 }
 
 impl Helper {
-    const ALL: [Self; 8] = [
+    const ALL: [Self; 10] = [
+        Self::WithKeys,
+        Self::WithModifiers,
         Self::ToDisplayString,
         Self::CreateElementVNode,
         Self::NormalizeClass,
@@ -30,7 +36,7 @@ impl Helper {
         Self::CreateText,
     ];
 
-    const fn bit(self) -> u8 {
+    const fn bit(self) -> u16 {
         match self {
             Self::ToDisplayString => 1,
             Self::CreateElementVNode => 2,
@@ -39,12 +45,16 @@ impl Helper {
             Self::CreateText => 16,
             Self::NormalizeClass => 32,
             Self::NormalizeStyle => 64,
-            Self::CreateComment => 128,
+            Self::WithKeys => 128,
+            Self::WithModifiers => 256,
+            Self::CreateComment => 512,
         }
     }
 
     const fn name(self) -> &'static str {
         match self {
+            Self::WithKeys => "withKeys",
+            Self::WithModifiers => "withModifiers",
             Self::ToDisplayString => "toDisplayString",
             Self::CreateElementVNode => "createElementVNode",
             Self::NormalizeClass => "normalizeClass",
@@ -58,6 +68,8 @@ impl Helper {
 
     const fn alias(self) -> &'static str {
         match self {
+            Self::WithKeys => "_withKeys",
+            Self::WithModifiers => "_withModifiers",
             Self::ToDisplayString => "_toDisplayString",
             Self::CreateElementVNode => "_createElementVNode",
             Self::NormalizeClass => "_normalizeClass",
@@ -74,7 +86,7 @@ impl Helper {
 pub(super) struct Buf {
     pub code: String,
     indent: u32,
-    used: u8,
+    used: u16,
     /// Compact static-props object hoisted as `_hoisted_1` (root only).
     hoisted_props: Option<String>,
 }
@@ -114,6 +126,14 @@ impl Buf {
         self.used |= Helper::ToDisplayString.bit();
     }
 
+    pub(super) fn use_with_keys(&mut self) {
+        self.used |= Helper::WithKeys.bit();
+    }
+
+    pub(super) fn use_with_modifiers(&mut self) {
+        self.used |= Helper::WithModifiers.bit();
+    }
+
     pub(super) fn use_open_block(&mut self) {
         self.used |= Helper::OpenBlock.bit();
     }
@@ -144,6 +164,14 @@ impl Buf {
 
     pub(super) fn to_display_string_alias() -> &'static str {
         Helper::ToDisplayString.alias()
+    }
+
+    pub(super) fn with_keys_alias() -> &'static str {
+        Helper::WithKeys.alias()
+    }
+
+    pub(super) fn with_modifiers_alias() -> &'static str {
+        Helper::WithModifiers.alias()
     }
 
     pub(super) fn open_block_alias() -> &'static str {
@@ -186,7 +214,7 @@ impl Buf {
     /// root static-props hoist (the shipped codegen appends hoists to
     /// the helper preamble).
     pub(super) fn preamble(&self) -> String {
-        let listed: [Helper; 8] = Helper::ALL;
+        let listed: [Helper; 10] = Helper::ALL;
         let mut n = 0;
         for helper in listed {
             if self.used & helper.bit() != 0 {

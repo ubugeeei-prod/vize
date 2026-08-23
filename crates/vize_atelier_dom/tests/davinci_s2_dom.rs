@@ -1,6 +1,7 @@
 //! P2-11 installment 5 witness: static native HTML, interpolations,
-//! mixed text siblings, static-name binds, static-name events, and native v-if,
-//! compared **byte-for-byte** including helper usage.
+//! mixed text siblings, static-name binds, static-name events including
+//! event/key/option modifiers, and native v-if, compared **byte-for-byte**
+//! including helper usage.
 //!
 //! `vize_atelier_dom` is published; the Davinci crates are not. The
 //! comparator therefore rides stripped-on-publish dev-deps (the same
@@ -62,6 +63,30 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<div @click="handler">{{ msg }}</div>"#,
     ),
     ("inline_click", r#"<div @click="count++"></div>"#),
+    ("click_stop", r#"<div @click.stop="handler"></div>"#),
+    (
+        "click_prevent_stop",
+        r#"<div @click.prevent.stop="handler"></div>"#,
+    ),
+    ("click_capture", r#"<div @click.capture="handler"></div>"#),
+    ("click_once", r#"<div @click.once="handler"></div>"#),
+    ("click_passive", r#"<div @click.passive="handler"></div>"#),
+    ("click_right", r#"<div @click.right="handler"></div>"#),
+    ("click_middle", r#"<div @click.middle="handler"></div>"#),
+    ("click_left", r#"<div @click.left="handler"></div>"#),
+    ("keyup_enter", r#"<div @keyup.enter="handler"></div>"#),
+    ("keyup_left", r#"<div @keyup.left="handler"></div>"#),
+    (
+        "keyup_enter_stop",
+        r#"<div @keyup.enter.stop="handler"></div>"#,
+    ),
+    ("inline_click_stop", r#"<div @click.stop="count++"></div>"#),
+    ("bare_submit_prevent", r#"<div @submit.prevent></div>"#),
+    (
+        "click_once_capture",
+        r#"<div @click.once.capture="handler"></div>"#,
+    ),
+    ("unknown_click_key", r#"<div @click.foo="handler"></div>"#),
     ("simple_v_if", r#"<div v-if="ok">hello</div>"#),
     (
         "v_if_else",

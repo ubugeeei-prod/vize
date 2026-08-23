@@ -8,12 +8,12 @@
 //! S2 ops** — it does not mint relief codegen-nodes (`NodeType` 13–20).
 //!
 //! Installment 5 emits **static native HTML**, interpolations,
-//! mixed text siblings, static-name `ui.bind`, static-name `ui.on`,
-//! and **native `ui.if`** (root and nested `v-if`/`v-else` on HTML
-//! elements). Object-spread `v-bind`/`v-on`, modifiers, fragments,
-//! filters, and components stay [`EmitError::Unsupported`]. The old lane
-//! stays the shipped compile path; [`super::DOM_LANE_FLAG`] is named
-//! here and *read* in the atelier_dom witness.
+//! mixed text siblings, static-name `ui.bind`, static-name `ui.on`
+//! (including event/key/option modifiers), and **native `ui.if`**.
+//! Object-spread `v-bind`/`v-on`, `.native`, fragments, filters, and
+//! components stay [`EmitError::Unsupported`]. The old lane stays the
+//! shipped compile path; [`super::DOM_LANE_FLAG`] is named here and
+//! *read* in the atelier_dom witness.
 
 #[path = "emit/buf.rs"]
 mod buf;

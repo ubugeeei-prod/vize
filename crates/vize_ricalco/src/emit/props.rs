@@ -11,7 +11,7 @@ use super::EmitError;
 use super::buf::Buf;
 use super::js::{escape_js_string, is_valid_js_identifier};
 use super::on::{
-    admit_on, emit_on_pair, event_key, is_inline_handler_source, needs_hydration, static_on_name,
+    admit_on, emit_on_pair, event_key_for, is_inline_handler_source, needs_hydration, wraps_on,
 };
 
 pub(super) struct Patch {
@@ -75,15 +75,14 @@ pub(super) fn bind_patch(element: &ElementOp<'_>) -> Patch {
                 }
             }
             BindingOp::On(on) => {
-                let Ok(name) = static_on_name(on) else {
+                let Ok(key) = event_key_for(on) else {
                     continue;
                 };
-                let key = event_key(name);
                 flag |= 8;
                 if !dynamic_props.contains(&key) {
-                    dynamic_props.push(key);
+                    dynamic_props.push(key.clone());
                 }
-                if needs_hydration(name) {
+                if needs_hydration(key.as_str(), on) {
                     flag |= 32;
                 }
             }
@@ -233,10 +232,13 @@ fn static_bind_name<'a>(bind: &'a BindOp<'a>) -> Result<&'a str, EmitError> {
 
 fn has_inline_on(element: &ElementOp<'_>) -> bool {
     element.bindings.iter().any(|binding| match binding {
-        BindingOp::On(on) => match on.handler {
-            Some(ExprRef::Js(js)) => is_inline_handler_source(js.source),
-            _ => false,
-        },
+        BindingOp::On(on) => {
+            wraps_on(on)
+                || match on.handler {
+                    Some(ExprRef::Js(js)) => is_inline_handler_source(js.source),
+                    _ => false,
+                }
+        }
         _ => false,
     })
 }

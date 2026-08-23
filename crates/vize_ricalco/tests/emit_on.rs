@@ -68,9 +68,97 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn a_click_modifier_is_unsupported_this_installment() {
+fn a_click_stop_wraps_with_modifiers() {
     assert_eq!(
-        refused(r#"<div @click.stop="handler"></div>"#),
+        assembled(r#"<div @click.stop="handler"></div>"#),
+        "\
+const { withModifiers: _withModifiers, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    onClick: _withModifiers(handler, [\"stop\"])
+  }, null, 8 /* PROPS */, [\"onClick\"]))
+}"
+    );
+}
+
+#[test]
+fn a_click_prevent_stop_keeps_author_order() {
+    assert_eq!(
+        assembled(r#"<div @click.prevent.stop="handler"></div>"#),
+        "\
+const { withModifiers: _withModifiers, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    onClick: _withModifiers(handler, [\"prevent\",\"stop\"])
+  }, null, 8 /* PROPS */, [\"onClick\"]))
+}"
+    );
+}
+
+#[test]
+fn a_click_capture_suffixes_the_event_key() {
+    assert_eq!(
+        assembled(r#"<div @click.capture="handler"></div>"#),
+        "\
+const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", { onClickCapture: handler }, null, 40 /* PROPS, NEED_HYDRATION */, [\"onClickCapture\"]))
+}"
+    );
+}
+
+#[test]
+fn a_click_right_remaps_to_contextmenu() {
+    assert_eq!(
+        assembled(r#"<div @click.right="handler"></div>"#),
+        "\
+const { withModifiers: _withModifiers, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    onContextmenu: _withModifiers(handler, [\"right\"])
+  }, null, 40 /* PROPS, NEED_HYDRATION */, [\"onContextmenu\"]))
+}"
+    );
+}
+
+#[test]
+fn a_keyup_enter_wraps_with_keys() {
+    assert_eq!(
+        assembled(r#"<div @keyup.enter="handler"></div>"#),
+        "\
+const { withKeys: _withKeys, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    onKeyup: _withKeys(handler, [\"enter\"])
+  }, null, 40 /* PROPS, NEED_HYDRATION */, [\"onKeyup\"]))
+}"
+    );
+}
+
+#[test]
+fn a_keyup_enter_stop_nests_keys_outside_modifiers() {
+    assert_eq!(
+        assembled(r#"<div @keyup.enter.stop="handler"></div>"#),
+        "\
+const { withKeys: _withKeys, withModifiers: _withModifiers, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    onKeyup: _withKeys(_withModifiers(handler, [\"stop\"]), [\"enter\"])
+  }, null, 40 /* PROPS, NEED_HYDRATION */, [\"onKeyup\"]))
+}"
+    );
+}
+
+#[test]
+fn a_click_native_is_unsupported_this_installment() {
+    assert_eq!(
+        refused(r#"<div @click.native="handler"></div>"#),
         EmitError::Unsupported
     );
 }
