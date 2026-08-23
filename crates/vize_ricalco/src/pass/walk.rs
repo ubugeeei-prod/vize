@@ -52,6 +52,11 @@ impl PageWalk {
         }
     }
 
+    /// How many ids this walk has minted (the page's `ops=` count).
+    pub(crate) fn minted(&self) -> u32 {
+        self.next
+    }
+
     /// Skip `count` ids (an owner's attached bindings, numbered between
     /// its line and its children).
     fn skip(&mut self, count: usize) {

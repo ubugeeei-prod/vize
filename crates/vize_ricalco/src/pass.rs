@@ -51,6 +51,8 @@ use crate::lower::Lowered;
 
 #[path = "pass/hoist.rs"]
 pub mod hoist;
+#[path = "pass/legacy.rs"]
+pub mod legacy;
 #[path = "pass/text.rs"]
 pub mod text;
 #[path = "pass/vfor.rs"]
@@ -171,9 +173,12 @@ pub fn run_transform<'a, O: PassObserver>(lowered: &mut Lowered<'a>, observer: &
     #[cfg(debug_assertions)]
     let mut verify = vize_disegno::verify::VerifyObserver::new();
 
-    let outcome = run_pipeline(&TRANSFORM, observer, |event| {
+    let pipeline = legacy::pipeline_for(lowered.caps);
+    let outcome = run_pipeline(&pipeline, observer, |event| {
         let name = event.desc().name;
-        if name == vif::DESC.name {
+        if name == legacy::DESC.name {
+            legacy::run(lowered);
+        } else if name == vif::DESC.name {
             facts.if_facts = vif::run(lowered);
         } else if name == vfor::DESC.name {
             facts.for_facts = vfor::run(lowered);
