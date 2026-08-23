@@ -29,6 +29,10 @@ import { basename, dirname, join, relative, resolve } from "node:path";
  * `compilerOptions.typeRoots` is the same class of hole: TypeScript searches
  * those directories instead of the fixture's `node_modules/@types`. An outside
  * `node_modules/@types` is retargeted to the fixture-local copy when it exists.
+ *
+ * A trailing `/*` on a package mapping is the same walk: TypeScript still
+ * loads that outside tree. Interior `*` patterns and `#alias/*` keys are not
+ * guessed.
  */
 
 const packageNamePattern = /^(?:@[a-z0-9][a-z0-9-._]*\/)?[a-z0-9][a-z0-9-._]*$/u;
@@ -89,17 +93,31 @@ export function writeIsolatedTsconfigOverlay(fixtureRoot, sourceConfigPath) {
 
 function retargetPathMapping(fixtureRoot, sourceDir, configDir, name, targets, markChanged) {
   const relocated = targets.map((entry) => relocatePathEntry(sourceDir, configDir, entry));
-  if (!packageNamePattern.test(name)) return relocated;
-  const first = targets.find((entry) => typeof entry === "string" && !entry.includes("*"));
+  const packageName = packageNameFromPathMapping(name);
+  if (packageName == null) return relocated;
+  const first = targets.find(
+    (entry) => typeof entry === "string" && isExactOrTrailingStarPath(entry),
+  );
   if (first == null) return relocated;
-  const original = resolve(sourceDir, first);
+  const original = resolve(sourceDir, first.endsWith("/*") ? first.slice(0, -2) : first);
   if (isInside(fixtureRoot, original)) return relocated;
-  const local = join(fixtureRoot, "node_modules", ...name.split("/"));
+  const local = join(fixtureRoot, "node_modules", ...packageName.split("/"));
   if (!existsSync(join(local, "package.json"))) return relocated;
   markChanged();
-  return relocated.map((entry, index) =>
-    index === targets.indexOf(first) ? configRelativePath(configDir, local) : entry,
-  );
+  const rewritten = first.endsWith("/*")
+    ? `${configRelativePath(configDir, local)}/*`
+    : configRelativePath(configDir, local);
+  return relocated.map((entry, index) => (index === targets.indexOf(first) ? rewritten : entry));
+}
+
+function packageNameFromPathMapping(name) {
+  if (typeof name !== "string") return null;
+  const base = name.endsWith("/*") ? name.slice(0, -2) : name;
+  return packageNamePattern.test(base) ? base : null;
+}
+
+function isExactOrTrailingStarPath(entry) {
+  return !entry.includes("*") || (entry.endsWith("/*") && !entry.slice(0, -2).includes("*"));
 }
 
 function relocatePathEntry(sourceDir, configDir, entry) {
