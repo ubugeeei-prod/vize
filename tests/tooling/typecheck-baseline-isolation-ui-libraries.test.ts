@@ -7,10 +7,9 @@ import { test } from "node:test";
 import { isolateUniqueUiLibraryPackages } from "../../tools/fixtures/typecheck-baseline-isolation-unique.mjs";
 
 /**
- * PrimeVue, Reka UI, and Nuxt UI live in Vize's `tests/package.json`.
- * TypeScript can climb into those copies and load Vize's Vue beside the
- * fixture (#4461). Unique isolation links the fixture store copy when an
- * ancestor is reachable.
+ * Vue UI libraries in Vize's `tests/package.json` still climb out of a
+ * fixture that does not declare them (#4461). Unique isolation links the
+ * fixture store copy when an ancestor is reachable.
  */
 
 function scaffold(names: string[]) {
@@ -35,19 +34,26 @@ function writeStoreCopy(fixtureRoot: string, id: string, name: string) {
 }
 
 test("ancestor UI libraries with one in-fixture copy each are linked from those copies", () => {
-  const { fixtureRoot, outer } = scaffold(["@nuxt/ui", "primevue", "reka-ui"]);
+  const libraries = [
+    ["@nuxt/ui", "@nuxt+ui@4.8.2"],
+    ["ant-design-vue", "ant-design-vue@4.2.6"],
+    ["element-plus", "element-plus@2.14.1"],
+    ["naive-ui", "naive-ui@2.44.1"],
+    ["primevue", "primevue@4.5.5"],
+    ["quasar", "quasar@2.19.3"],
+    ["reka-ui", "reka-ui@2.9.10"],
+    ["vant", "vant@4.9.24"],
+  ];
+  const { fixtureRoot, outer } = scaffold(libraries.map(([name]) => name));
   try {
-    writeStoreCopy(fixtureRoot, "@nuxt+ui@4.8.2", "@nuxt/ui");
-    writeStoreCopy(fixtureRoot, "primevue@4.5.5", "primevue");
-    writeStoreCopy(fixtureRoot, "reka-ui@2.9.10", "reka-ui");
-    assert.deepEqual(isolateUniqueUiLibraryPackages(fixtureRoot), [
-      {
-        name: "@nuxt/ui",
-        target: "node_modules/.pnpm/@nuxt+ui@4.8.2/node_modules/@nuxt/ui",
-      },
-      { name: "primevue", target: "node_modules/.pnpm/primevue@4.5.5/node_modules/primevue" },
-      { name: "reka-ui", target: "node_modules/.pnpm/reka-ui@2.9.10/node_modules/reka-ui" },
-    ]);
+    for (const [name, id] of libraries) writeStoreCopy(fixtureRoot, id, name);
+    assert.deepEqual(
+      isolateUniqueUiLibraryPackages(fixtureRoot),
+      libraries.map(([name, id]) => ({
+        name,
+        target: `node_modules/.pnpm/${id}/node_modules/${name}`,
+      })),
+    );
   } finally {
     fs.rmSync(outer, { recursive: true, force: true });
   }

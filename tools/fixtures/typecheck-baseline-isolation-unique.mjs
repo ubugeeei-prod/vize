@@ -215,5 +215,14 @@ export function isolateUniqueNuxtUiPackages(fixtureRoot) {
 }
 
 export function isolateUniqueUiLibraryPackages(fixtureRoot) {
-  return isolateUniqueNamedLocalTypePackages(fixtureRoot, ["@nuxt/ui", "primevue", "reka-ui"]);
+  return isolateUniqueNamedLocalTypePackages(fixtureRoot, [
+    "@nuxt/ui",
+    "ant-design-vue",
+    "element-plus",
+    "naive-ui",
+    "primevue",
+    "quasar",
+    "reka-ui",
+    "vant",
+  ]);
 }
