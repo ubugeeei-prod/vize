@@ -27,14 +27,14 @@ then follows `lowered.caps`, `walks=7`).
 
 Six templates, zero divergence, counters pinned in the witness:
 
-| name              | what it pins                                                     |
-| ----------------- | ---------------------------------------------------------------- |
-| `sync`             | `:title.sync` reconstructs as a component model on both lanes    |
-| `sync-camel`       | leftover `.camel` does not leak onto the reconstructed model     |
-| `slot-scope`       | default `slot-scope` groups as invented slot content             |
-| `named-slot-scope` | named `slot` + `slot-scope`                                      |
-| `if`               | sugar-free `v-if` still agrees under the 7-walk Vue 2 table      |
-| `native-keycode`   | `.native` strip + numeric keyCode rewrite                        |
+| name               | what it pins                                                  |
+| ------------------ | ------------------------------------------------------------- |
+| `sync`             | `:title.sync` reconstructs as a component model on both lanes |
+| `sync-camel`       | leftover `.camel` does not leak onto the reconstructed model  |
+| `slot-scope`       | default `slot-scope` groups as invented slot content          |
+| `named-slot-scope` | named `slot` + `slot-scope`                                   |
+| `if`               | sugar-free `v-if` still agrees under the 7-walk Vue 2 table   |
+| `native-keycode`   | `.native` strip + numeric keyCode rewrite                     |
 
 `.sync` legalize emits bind + `update:` listener. The legacy collector
 already folds that span-shared product into `PModel`. S2's surface
