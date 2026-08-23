@@ -226,7 +226,7 @@ impl TypeService {
                 .and_then(|rest| rest.split_once('>').map(|(type_arg, _)| type_arg.trim()))
             {
                 return vize_canon::TypeInfo::new(
-                    format!("Ref<{type_arg}>"),
+                    vize_carton::cstr!("Ref<{type_arg}>"),
                     vize_canon::TypeKind::Ref,
                 );
             }
