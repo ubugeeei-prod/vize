@@ -10,6 +10,7 @@ import { isolateFixtureTypePackages } from "./typecheck-baseline-isolation.mjs";
 import {
   isolateUniqueLocalTypePackages,
   isolateUniqueUiLibraryPackages,
+  isolateUniqueVueEditorPackages,
   isolateUniqueVueFormPackages,
   isolateUniqueVueI18nPackages,
   isolateUniqueVueQueryPackages,
@@ -131,10 +132,8 @@ function prepareProjectDependencies({ args, commitSha, project }) {
 }
 
 /**
- * Link packages the fixture config maps but its package manager did not hoist,
- * so `/// <reference types />` cannot climb into Vize's `node_modules`
- * (run 31979524200). Differing Vize `--tsconfig` and vue-tsc baselines are
- * both walked and overlaid. Proven by `typecheck-baseline-ambient.mjs`.
+ * Overlay unhoisted declared packages from both Vize and vue-tsc configs so
+ * type-reference walks cannot climb into Vize (run 31979524200).
  */
 export function isolationTsconfigPaths(project) {
   const paths = [];
@@ -168,6 +167,7 @@ function isolateFixture(project, fixtureRoot) {
     isolateUniqueUiLibraryPackages,
     isolateUniqueVueFormPackages,
     isolateUniqueVueQueryPackages,
+    isolateUniqueVueEditorPackages,
   ]) {
     for (const entry of isolate(fixtureRoot)) {
       if (seen.has(entry.name)) continue;

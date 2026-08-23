@@ -238,3 +238,7 @@ export function isolateUniqueVueQueryPackages(fixtureRoot) {
     "@vue/apollo-composable",
   ]);
 }
+
+export function isolateUniqueVueEditorPackages(fixtureRoot) {
+  return isolateUniqueNamedLocalTypePackages(fixtureRoot, ["@tiptap/vue-3", "@vue-flow/core"]);
+}
