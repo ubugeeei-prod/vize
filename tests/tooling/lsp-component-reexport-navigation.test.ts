@@ -4,7 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
-import { firstLocation, offsetToPosition } from "./support/lsp/assertions.ts";
+import { firstLocation, hoverToText, offsetToPosition } from "./support/lsp/assertions.ts";
 import { testOutputRoot } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
 
@@ -38,7 +38,7 @@ defineProps<{ mode: 'wide' | 'narrow' }>()
 <template><span>{{ mode }}</span></template>
 `;
 
-test("component definition follows re-exported barrel and package component tags", async () => {
+test("component definition and prop hovers survive re-exported barrel and package boundaries", async () => {
   const testRootDir = path.join(testOutputRoot, "lsp-component-reexport-navigation");
   fs.mkdirSync(testRootDir, { recursive: true });
   const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
@@ -120,6 +120,31 @@ test("component definition follows re-exported barrel and package component tags
       packageChildUri,
       rangeForIn(packageChildSource, "tone", packageChildSource.indexOf("defineProps")),
     );
+
+    await assertComponentPropHover(
+      session,
+      uri,
+      positionOf(":label") + 1,
+      rangeForIn(appSource, ":label", positionOf(":label")),
+      [/Component prop/, /label: string/],
+      "barrel dynamic prop",
+    );
+    await assertComponentPropHover(
+      session,
+      uri,
+      positionOf("mode="),
+      rangeForIn(appSource, "mode", positionOf("mode=")),
+      [/Component prop/, /mode: 'wide' \| 'narrow'/],
+      "star re-exported static prop",
+    );
+    await assertComponentPropHover(
+      session,
+      uri,
+      positionOf("tone="),
+      rangeForIn(appSource, "tone", positionOf("tone=")),
+      [/Component prop/, /tone: 'info' \| 'warn'/],
+      "package static prop",
+    );
   } finally {
     if (initialized) {
       await session.shutdown();
@@ -130,6 +155,35 @@ test("component definition follows re-exported barrel and package component tags
     fs.rmSync(testRootDir, { recursive: true, force: true });
   }
 });
+
+async function assertComponentPropHover(
+  session: LspSession,
+  uri: string,
+  offset: number,
+  expectedRange: Range,
+  expectedText: RegExp[],
+  label: string,
+): Promise<void> {
+  const hover = (await session.request(
+    "textDocument/hover",
+    {
+      textDocument: { uri },
+      position: offsetToPosition(appSource, offset),
+    },
+    120_000,
+  )) as Parameters<typeof hoverToText>[0];
+  assert.deepEqual(hover?.range, expectedRange, `${label} hover range`);
+  const text = hoverToText(hover);
+  for (const expected of expectedText) {
+    assert.match(text, expected, `${label} hover text`);
+  }
+  assert.doesNotMatch(
+    text,
+    /Vue attribute \/ prop binding/,
+    `${label} must not use v-bind fallback`,
+  );
+  assert.notEqual(text.trim(), "", `${label} must not be empty`);
+}
 
 async function assertDefinitionUri(
   session: LspSession,

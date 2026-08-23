@@ -3,43 +3,64 @@
 use vize_carton::String;
 
 /// Vue helpers this installment can mention, ranked the way
-/// `vue_helper_import_rank` orders the shipped preamble (vnode creates
-/// before `openBlock` before block creates).
+/// `vue_helper_import_rank` orders the shipped preamble (`toDisplayString`
+/// before vnode creates before class/style normalizers before `openBlock`
+/// before block creates before `createTextVNode`).
 #[derive(Clone, Copy)]
 enum Helper {
+    ToDisplayString,
     CreateElementVNode,
+    NormalizeClass,
+    NormalizeStyle,
     OpenBlock,
     CreateElementBlock,
+    CreateText,
 }
 
 impl Helper {
-    const ALL: [Self; 3] = [
+    const ALL: [Self; 7] = [
+        Self::ToDisplayString,
         Self::CreateElementVNode,
+        Self::NormalizeClass,
+        Self::NormalizeStyle,
         Self::OpenBlock,
         Self::CreateElementBlock,
+        Self::CreateText,
     ];
 
     const fn bit(self) -> u8 {
         match self {
-            Self::CreateElementVNode => 1,
-            Self::OpenBlock => 2,
-            Self::CreateElementBlock => 4,
+            Self::ToDisplayString => 1,
+            Self::CreateElementVNode => 2,
+            Self::OpenBlock => 4,
+            Self::CreateElementBlock => 8,
+            Self::CreateText => 16,
+            Self::NormalizeClass => 32,
+            Self::NormalizeStyle => 64,
         }
     }
 
     const fn name(self) -> &'static str {
         match self {
+            Self::ToDisplayString => "toDisplayString",
             Self::CreateElementVNode => "createElementVNode",
+            Self::NormalizeClass => "normalizeClass",
+            Self::NormalizeStyle => "normalizeStyle",
             Self::OpenBlock => "openBlock",
             Self::CreateElementBlock => "createElementBlock",
+            Self::CreateText => "createTextVNode",
         }
     }
 
     const fn alias(self) -> &'static str {
         match self {
+            Self::ToDisplayString => "_toDisplayString",
             Self::CreateElementVNode => "_createElementVNode",
+            Self::NormalizeClass => "_normalizeClass",
+            Self::NormalizeStyle => "_normalizeStyle",
             Self::OpenBlock => "_openBlock",
             Self::CreateElementBlock => "_createElementBlock",
+            Self::CreateText => "_createTextVNode",
         }
     }
 }
@@ -84,6 +105,10 @@ impl Buf {
         }
     }
 
+    pub(super) fn use_to_display_string(&mut self) {
+        self.used |= Helper::ToDisplayString.bit();
+    }
+
     pub(super) fn use_open_block(&mut self) {
         self.used |= Helper::OpenBlock.bit();
     }
@@ -94,6 +119,22 @@ impl Buf {
 
     pub(super) fn use_create_element_vnode(&mut self) {
         self.used |= Helper::CreateElementVNode.bit();
+    }
+
+    pub(super) fn use_create_text(&mut self) {
+        self.used |= Helper::CreateText.bit();
+    }
+
+    pub(super) fn use_normalize_class(&mut self) {
+        self.used |= Helper::NormalizeClass.bit();
+    }
+
+    pub(super) fn use_normalize_style(&mut self) {
+        self.used |= Helper::NormalizeStyle.bit();
+    }
+
+    pub(super) fn to_display_string_alias() -> &'static str {
+        Helper::ToDisplayString.alias()
     }
 
     pub(super) fn open_block_alias() -> &'static str {
@@ -108,6 +149,18 @@ impl Buf {
         Helper::CreateElementVNode.alias()
     }
 
+    pub(super) fn create_text_alias() -> &'static str {
+        Helper::CreateText.alias()
+    }
+
+    pub(super) fn normalize_class_alias() -> &'static str {
+        Helper::NormalizeClass.alias()
+    }
+
+    pub(super) fn normalize_style_alias() -> &'static str {
+        Helper::NormalizeStyle.alias()
+    }
+
     pub(super) fn hoist_root_props(&mut self, object: String) {
         self.hoisted_props = Some(object);
     }
@@ -120,7 +173,7 @@ impl Buf {
     /// root static-props hoist (the shipped codegen appends hoists to
     /// the helper preamble).
     pub(super) fn preamble(&self) -> String {
-        let listed: [Helper; 3] = Helper::ALL;
+        let listed: [Helper; 7] = Helper::ALL;
         let mut n = 0;
         for helper in listed {
             if self.used & helper.bit() != 0 {

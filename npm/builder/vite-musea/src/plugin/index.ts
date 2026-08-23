@@ -36,6 +36,7 @@ import {
 import { resolveMuseaSharedConfig } from "./config.js";
 import { processMuseaArtFile } from "./art-processing.js";
 import { transformMuseaVirtualModule } from "./virtual-transform.js";
+import { resolvePreviewCssPath } from "./preview-css.js";
 import { resolveStaticPreviewVueVersion } from "./static-preview.js";
 
 export function musea(options: MuseaOptions = {}): Plugin[] {
@@ -128,7 +129,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
       virtualState.basePath = basePath;
 
       resolvedPreviewCss = previewCss.map((cssPath) =>
-        path.isAbsolute(cssPath) ? cssPath : path.resolve(resolvedConfig.root, cssPath),
+        resolvePreviewCssPath(resolvedConfig.root, cssPath),
       );
 
       if (previewSetup) {

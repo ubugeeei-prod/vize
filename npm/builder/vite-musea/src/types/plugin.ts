@@ -127,8 +127,10 @@ export interface MuseaOptions {
    * Useful for loading global styles (custom properties, resets, fonts, etc.)
    * that components depend on.
    *
-   * Paths are resolved relative to the project root.
-   * @example ['app/assets/styles/main.css']
+   * Project-relative and `./` paths resolve against the project root.
+   * Bare specifiers (`normalize.css`, `@fontsource/inter/index.css`) are
+   * left for Vite to resolve.
+   * @example ['app/assets/styles/main.css', 'normalize.css']
    */
   previewCss?: string[];
 

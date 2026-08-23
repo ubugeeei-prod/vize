@@ -4,7 +4,12 @@ import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
-import { hoverToText, isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.ts";
+import {
+  firstLocation,
+  hoverToText,
+  isDiagnosticsForUri,
+  offsetToPosition,
+} from "./support/lsp/assertions.ts";
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
 import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
@@ -112,6 +117,16 @@ test("type-backed hover keeps reactive script and template surfaces precise", as
       rangeFor("doubled", source.indexOf("{{ doubled")),
       /const doubled: number/,
     );
+    const templateRefDeclaration = rangeFor("button", source.indexOf("button = useTemplateRef"));
+    const templateRefValue = rangeFor("button", source.indexOf('ref="button"'));
+    await assertHover(session, uri, templateRefValue, /const button: .*HTMLButtonElement.*null/);
+    await assertDefinition(
+      session,
+      uri,
+      templateRefValue,
+      templateRefDeclaration,
+      "static template ref value",
+    );
   } finally {
     if (initialized) {
       await session.shutdown();
@@ -150,6 +165,31 @@ async function assertHover(
   assert.match(hoverText, /^```typescript\n/);
   assert.match(hoverText, expectedText);
   assert.doesNotMatch(hoverText, /Ref<unknown>|ComputedRef<unknown>|MaybeRef<unknown>/);
+}
+
+async function assertDefinition(
+  session: LspSession,
+  uri: string,
+  usage: Range,
+  expectedRange: Range,
+  label: string,
+): Promise<void> {
+  const response = await session.request(
+    "textDocument/definition",
+    {
+      position: usage.start,
+      textDocument: { uri },
+    },
+    120_000,
+  );
+  assert.deepEqual(
+    firstLocation(response as Parameters<typeof firstLocation>[0]),
+    {
+      range: expectedRange,
+      uri,
+    },
+    `${label} definition must jump to the authored useTemplateRef binding`,
+  );
 }
 
 function rangeFor(symbol: string, nearOffset: number): Range {

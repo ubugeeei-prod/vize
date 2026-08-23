@@ -4,11 +4,12 @@
 //! All string data is borrowed directly from the source.
 
 mod art_block;
+mod status;
 mod variant;
 
 use crate::types::{
-    ArtDescriptor, ArtParseError, ArtParseOptions, ArtParseResult, ArtScriptBlock, ArtStatus,
-    ArtStyleBlock, SourceLocation,
+    ArtDescriptor, ArtParseError, ArtParseOptions, ArtParseResult, ArtScriptBlock, ArtStyleBlock,
+    SourceLocation,
 };
 use memchr::{memchr, memmem};
 use vize_carton::Allocator;
@@ -72,7 +73,8 @@ pub fn parse_art<'a>(
         .and_then(|script| parse_define_art_metadata(allocator, script.content));
 
     // Parse metadata from <art> attributes and defineArt() fallback.
-    let metadata = art_block::parse_metadata(allocator, &art_block, define_art.as_ref())?;
+    let (metadata, _warnings) =
+        art_block::parse_metadata(allocator, &art_block, define_art.as_ref(), filename)?;
 
     // Parse <variant> blocks inside <art>
     let variants = variant::parse_variants(
@@ -112,7 +114,7 @@ pub(crate) struct DefineArtMetadata<'a> {
     pub description: Option<&'a str>,
     pub category: Option<&'a str>,
     pub tags: vize_carton::Vec<'a, &'a str>,
-    pub status: Option<ArtStatus>,
+    pub status: Option<&'a str>,
     pub order: Option<u32>,
 }
 
@@ -231,23 +233,13 @@ fn parse_define_art_metadata<'a>(
     meta.status = art
         .status
         .as_ref()
-        .map(|value| parse_status_value(value.as_str()));
+        .map(|value| allocator.alloc_str(value.as_str()));
     meta.order = art.order;
     for tag in &art.tags {
         meta.tags.push(allocator.alloc_str(tag.as_str()));
     }
 
     Some(meta)
-}
-
-fn parse_status_value(value: &str) -> ArtStatus {
-    if value.eq_ignore_ascii_case("draft") {
-        ArtStatus::Draft
-    } else if value.eq_ignore_ascii_case("deprecated") {
-        ArtStatus::Deprecated
-    } else {
-        ArtStatus::Ready
-    }
 }
 
 /// Parse a script block starting at `start`.

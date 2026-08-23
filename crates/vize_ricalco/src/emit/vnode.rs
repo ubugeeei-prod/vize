@@ -2,87 +2,137 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{String, ensure_sufficient_stack};
+use vize_carton::{String, ToCompactString, ensure_sufficient_stack};
 use vize_disegno::op::{Attribute, ElementOp, Namespace, Op, Region, TextOp};
 
+use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
+use super::children::{
+    children_need_text_flag, emit_create_text_vnode, emit_interpolation, emit_text_like,
+};
 use super::js::{escape_js_string, is_valid_js_identifier};
+use super::props::{admit_bindings, bind_patch, emit_bind_props, patch_flag_comment};
 
-pub(super) fn emit_root(buf: &mut Buf, root: &Region<'_>) -> Result<(), EmitError> {
-    let element = unique_root_element(root)?;
-    buf.use_open_block();
-    buf.use_create_element_block();
-    buf.push("(");
-    buf.push(Buf::open_block_alias());
-    buf.push("(), ");
-    emit_call(buf, element, /* block */ true)?;
-    buf.push(")");
-    Ok(())
-}
-
-fn unique_root_element<'a>(root: &'a Region<'a>) -> Result<&'a ElementOp<'a>, EmitError> {
-    let mut found = None;
+pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), EmitError> {
+    admit_unique_root(root)?;
     for op in root.ops.iter() {
+        let id = cx.walk.mint();
         match op {
             Op::Text(text) if is_ignorable_root_text(text) => {}
-            Op::Element(element) if found.is_none() => found = Some(&**element),
+            Op::Element(element) => {
+                // Descendants mint before later root siblings (page order:
+                // owner, bindings, children, then the next root op).
+                cx.walk.skip(element.bindings.len());
+                cx.buf.use_open_block();
+                cx.buf.use_create_element_block();
+                cx.buf.push("(");
+                cx.buf.push(Buf::open_block_alias());
+                cx.buf.push("(), ");
+                emit_call(cx, element, /* block */ true)?;
+                cx.buf.push(")");
+            }
+            Op::Interpolation(interp) => emit_interpolation(cx, interp, id)?,
             _ => return Err(EmitError::Unsupported),
         }
     }
-    found.ok_or(EmitError::Unsupported)
+    Ok(())
+}
+
+fn admit_unique_root(root: &Region<'_>) -> Result<(), EmitError> {
+    let mut found = false;
+    for op in root.ops.iter() {
+        match op {
+            Op::Text(text) if is_ignorable_root_text(text) => {}
+            Op::Element(_) | Op::Interpolation(_) if !found => found = true,
+            _ => return Err(EmitError::Unsupported),
+        }
+    }
+    if found {
+        Ok(())
+    } else {
+        Err(EmitError::Unsupported)
+    }
 }
 
 fn is_ignorable_root_text(text: &TextOp<'_>) -> bool {
     text.content.chars().all(char::is_whitespace)
 }
 
-fn emit_nested(buf: &mut Buf, element: &ElementOp<'_>) -> Result<(), EmitError> {
-    buf.use_create_element_vnode();
-    emit_call(buf, element, /* block */ false)
+fn emit_nested(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) -> Result<(), EmitError> {
+    cx.buf.use_create_element_vnode();
+    emit_call(cx, element, /* block */ false)
 }
 
-fn emit_call(buf: &mut Buf, element: &ElementOp<'_>, block: bool) -> Result<(), EmitError> {
-    admit_static_native(element)?;
+fn emit_call(cx: &mut EmitCx<'_>, element: &ElementOp<'_>, block: bool) -> Result<(), EmitError> {
+    admit_native(element)?;
     let alias = if block {
         Buf::create_element_block_alias()
     } else {
         Buf::create_element_vnode_alias()
     };
-    buf.push(alias);
-    buf.push("(\"");
-    buf.push(element.tag);
-    buf.push("\"");
+    cx.buf.push(alias);
+    cx.buf.push("(\"");
+    cx.buf.push(element.tag);
+    cx.buf.push("\"");
     let has_children = !element.children.ops.is_empty();
-    // Root (block) elements with a fully hoistable static props surface
-    // match the shipped `is_root` + `has_static_props` arm: hoist the
-    // object, do not whole-hoist the vnode. Nested native children keep
-    // inline props (`hoist_static_vnodes` is false without directives).
-    if block && root_props_should_hoist(element) {
-        buf.hoist_root_props(compact_props_object(element.attributes.iter()));
-        buf.push(", ");
-        buf.push(Buf::hoisted_props_alias());
-        if has_children {
-            buf.push(", ");
-            emit_children(buf, &element.children)?;
-        }
-    } else if !element.attributes.is_empty() {
-        buf.push(", ");
-        emit_static_props_inline(buf, element.attributes.iter());
-        if has_children {
-            buf.push(", ");
-            emit_children(buf, &element.children)?;
-        }
-    } else if has_children {
-        buf.push(", null, ");
-        emit_children(buf, &element.children)?;
+    let has_binds = !element.bindings.is_empty();
+    let hoist = block && root_props_should_hoist(element);
+    let patch = bind_patch(element);
+    let text_flag = children_need_text_flag(&element.children);
+    let mut flag = patch.flag;
+    if text_flag {
+        flag |= 1;
     }
-    buf.push(")");
+    let omit_text_only = hoist && flag == 1;
+    let emit_flag = flag != 0 && !omit_text_only;
+    let has_props = hoist || !element.attributes.is_empty() || has_binds;
+    if hoist {
+        cx.buf
+            .hoist_root_props(compact_props_object(element.attributes.iter()));
+        cx.buf.push(", ");
+        cx.buf.push(Buf::hoisted_props_alias());
+    } else if has_binds {
+        cx.buf.push(", ");
+        emit_bind_props(cx, element)?;
+    } else if !element.attributes.is_empty() {
+        cx.buf.push(", ");
+        emit_static_props_inline(cx, element.attributes.iter());
+    } else if has_children || emit_flag {
+        cx.buf.push(", null");
+    }
+    if has_children {
+        cx.buf.push(", ");
+        emit_children(cx, &element.children)?;
+    } else if emit_flag && has_props {
+        cx.buf.push(", null");
+    }
+    if emit_flag {
+        cx.buf.push(", ");
+        cx.buf.push(flag.to_compact_string().as_str());
+        cx.buf.push(" /* ");
+        cx.buf.push(patch_flag_comment(flag));
+        cx.buf.push(" */");
+    }
+    if !patch.dynamic_props.is_empty() {
+        cx.buf.push(", [");
+        for (i, name) in patch.dynamic_props.iter().enumerate() {
+            if i > 0 {
+                cx.buf.push(", ");
+            }
+            cx.buf.push("\"");
+            cx.buf.push(name);
+            cx.buf.push("\"");
+        }
+        cx.buf.push("]");
+    }
+    cx.buf.push(")");
     Ok(())
 }
 
 fn root_props_should_hoist(element: &ElementOp<'_>) -> bool {
-    !element.attributes.is_empty()
+    element.bindings.is_empty()
+        && !element.attributes.is_empty()
         && element
             .attributes
             .iter()
@@ -107,36 +157,36 @@ fn compact_props_object<'a>(attributes: impl Iterator<Item = &'a Attribute<'a>>)
 /// First-occurrence static attrs, matching
 /// `vize_atelier_core::codegen::props::generate::try_generate_static_attrs`.
 fn emit_static_props_inline<'a>(
-    buf: &mut Buf,
+    cx: &mut EmitCx<'_>,
     attributes: impl Iterator<Item = &'a Attribute<'a>>,
 ) {
     let unique = unique_attrs(attributes);
     let multiline = unique.len() > 1;
     if multiline {
-        buf.push("{");
-        buf.indent();
+        cx.buf.push("{");
+        cx.buf.indent();
     } else {
-        buf.push("{ ");
+        cx.buf.push("{ ");
     }
     for (i, attr) in unique.iter().enumerate() {
         if i > 0 {
-            buf.push(",");
+            cx.buf.push(",");
         }
         if multiline {
-            buf.newline();
+            cx.buf.newline();
         } else if i > 0 {
-            buf.push(" ");
+            cx.buf.push(" ");
         }
         let mut pair = String::default();
         push_attr_pair(&mut pair, attr);
-        buf.push(pair.as_str());
+        cx.buf.push(pair.as_str());
     }
     if multiline {
-        buf.deindent();
-        buf.newline();
-        buf.push("}");
+        cx.buf.deindent();
+        cx.buf.newline();
+        cx.buf.push("}");
     } else {
-        buf.push(" }");
+        cx.buf.push(" }");
     }
 }
 
@@ -169,44 +219,60 @@ fn push_attr_pair(out: &mut String, attr: &Attribute<'_>) {
     out.push('"');
 }
 
-fn admit_static_native(element: &ElementOp<'_>) -> Result<(), EmitError> {
+fn admit_native(element: &ElementOp<'_>) -> Result<(), EmitError> {
     if element.namespace != Namespace::Html {
         return Err(EmitError::Unsupported);
     }
-    if !element.bindings.is_empty() {
-        return Err(EmitError::Unsupported);
-    }
-    Ok(())
+    admit_bindings(element)
 }
 
-fn emit_children(buf: &mut Buf, children: &Region<'_>) -> Result<(), EmitError> {
+fn emit_children(cx: &mut EmitCx<'_>, children: &Region<'_>) -> Result<(), EmitError> {
     let ops = &children.ops;
-    if ops.len() == 1
-        && let Op::Text(text) = &ops[0]
+    if ops
+        .iter()
+        .all(|op| matches!(op, Op::Text(_) | Op::Interpolation(_)))
     {
-        buf.push("\"");
-        buf.push(escape_js_string(text.content).as_str());
-        buf.push("\"");
-        return Ok(());
+        return emit_text_like(cx, ops);
     }
-    buf.push("[");
-    buf.indent();
-    for (i, op) in ops.iter().enumerate() {
-        if i > 0 {
-            buf.push(",");
+    cx.buf.push("[");
+    cx.buf.indent();
+    let mut i = 0;
+    let mut first = true;
+    while i < ops.len() {
+        if matches!(ops[i], Op::Text(_) | Op::Interpolation(_)) {
+            let start = i;
+            while i < ops.len() && matches!(ops[i], Op::Text(_) | Op::Interpolation(_)) {
+                i += 1;
+            }
+            if !first {
+                cx.buf.push(",");
+            }
+            cx.buf.newline();
+            first = false;
+            emit_create_text_vnode(cx, &ops[start..i])?;
+            continue;
         }
-        buf.newline();
-        emit_array_child(buf, op)?;
+        if !first {
+            cx.buf.push(",");
+        }
+        cx.buf.newline();
+        first = false;
+        emit_array_child(cx, &ops[i])?;
+        i += 1;
     }
-    buf.deindent();
-    buf.newline();
-    buf.push("]");
+    cx.buf.deindent();
+    cx.buf.newline();
+    cx.buf.push("]");
     Ok(())
 }
 
-fn emit_array_child(buf: &mut Buf, op: &Op<'_>) -> Result<(), EmitError> {
+fn emit_array_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
+    let _id = cx.walk.mint();
     ensure_sufficient_stack(|| match op {
-        Op::Element(element) => emit_nested(buf, element),
+        Op::Element(element) => {
+            cx.walk.skip(element.bindings.len());
+            emit_nested(cx, element)
+        }
         Op::Text(_)
         | Op::Component(_)
         | Op::Interpolation(_)

@@ -32,6 +32,10 @@ impl DefinitionService {
             return Some(definition);
         }
 
+        if let Some(target) = crate::ide::template_ref::target_at_offset(ctx) {
+            return Some(GotoDefinitionResponse::Scalar(target.binding_location(ctx)));
+        }
+
         #[cfg(feature = "native")]
         if let Some(definition) = Self::definition_for_native_html_attribute(ctx) {
             return Some(definition);

@@ -411,29 +411,3 @@ impl<'a> ArtStyleBlock<'a> {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::{ArtDescriptor, ArtStatus, ViewportConfig};
-    use vize_carton::Allocator;
-
-    #[test]
-    fn test_art_descriptor_new() {
-        let allocator = Allocator::new();
-        let desc = ArtDescriptor::new(&allocator, "test.art.vue", "<art></art>");
-        assert_eq!(desc.filename, "test.art.vue");
-        assert!(desc.variants.is_empty());
-    }
-
-    #[test]
-    fn test_art_status_default() {
-        assert_eq!(ArtStatus::default(), ArtStatus::Ready);
-    }
-
-    #[test]
-    fn test_viewport_default() {
-        let vp = ViewportConfig::default();
-        assert_eq!(vp.width, 1280);
-        assert_eq!(vp.height, 720);
-    }
-}

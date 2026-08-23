@@ -98,6 +98,14 @@ pub(crate) fn component_metadata(
         names.push(pascal);
     }
 
+    for name in &names {
+        if let Some(resolved) =
+            crate::ide::definition::component_import::resolve_component_file(ctx, name)
+        {
+            return cached_component_metadata(ctx, &resolved);
+        }
+    }
+
     for name in names {
         let Some(import_path) = definition_helpers::find_import_path(ctx, &name) else {
             continue;
@@ -424,19 +432,4 @@ fn is_valid_destructure_key(name: &str) -> bool {
 }
 
 #[cfg(test)]
-mod slot_prop_name_tests {
-    use super::extract_slot_prop_names;
-
-    #[test]
-    fn extracts_slot_prop_names_with_ts_ast() {
-        assert_eq!(
-            extract_slot_prop_names("Readonly<{ foo: string; $bar?: number; 'not-valid': Date }>"),
-            Some(vec!["foo".to_string(), "$bar".to_string()])
-        );
-    }
-
-    #[test]
-    fn returns_none_for_non_object_slot_props() {
-        assert_eq!(extract_slot_prop_names("Props"), None);
-    }
-}
+mod tests;

@@ -7,18 +7,21 @@
 //! P2-9 carve-out. This module writes the JS string **directly from
 //! S2 ops** — it does not mint relief codegen-nodes (`NodeType` 13–20).
 //!
-//! Installment 2 emits **static native HTML elements** with static
-//! attributes (and nested static native children / a single inlined
-//! text node). Bindings, interpolations, components, and hoist
-//! realization stay [`EmitError::Unsupported`]: the comparator counts
-//! those, it does not invent output. The old lane stays the shipped
-//! compile path; [`super::DOM_LANE_FLAG`] is named here and *read* in
-//! the atelier_dom witness.
+//! Installment 5 emits **static native HTML**, interpolations,
+//! mixed text siblings, and **static-name `ui.bind`** (`:class` /
+//! `:style` / `:id`, patch flags). Object-spread `v-bind`, events,
+//! filters, and components stay [`EmitError::Unsupported`]. The old lane
+//! stays the shipped compile path; [`super::DOM_LANE_FLAG`] is named
+//! here and *read* in the atelier_dom witness.
 
 #[path = "emit/buf.rs"]
 mod buf;
+#[path = "emit/children.rs"]
+mod children;
 #[path = "emit/js.rs"]
 mod js;
+#[path = "emit/props.rs"]
+mod props;
 #[path = "emit/vnode.rs"]
 mod vnode;
 
@@ -28,10 +31,19 @@ use vize_davinci::pass::BudgetObserver;
 use vize_sinopia::parse;
 
 use crate::lower::{Lowered, lower};
-use crate::pass::run_transform;
+use crate::pass::walk::PageWalk;
+use crate::pass::{S2Facts, run_transform};
 
 use self::buf::Buf;
 use self::vnode::emit_root;
+
+/// Per-emit numbering + helper buffer. Page-order ids re-derive the
+/// same arithmetic the S2 passes use so compound text facts resolve.
+struct EmitCx<'facts> {
+    buf: Buf,
+    facts: &'facts S2Facts,
+    walk: PageWalk,
+}
 
 /// One DOM render module, split the way the shipped codegen splits it
 /// (`CodegenResult::{preamble, code}`) so a dual-run can compare each
@@ -67,8 +79,9 @@ pub enum EmitError {
 }
 
 /// Emit a DOM render function from an already-lowered (and typically
-/// transformed) S2 artifact.
-pub fn emit_dom(lowered: &Lowered<'_>) -> Result<DomEmit, EmitError> {
+/// transformed) S2 artifact. `facts` is the transform product compounds
+/// compile from.
+pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitError> {
     if lowered
         .diagnostics
         .iter()
@@ -76,18 +89,23 @@ pub fn emit_dom(lowered: &Lowered<'_>) -> Result<DomEmit, EmitError> {
     {
         return Err(EmitError::Diagnostics);
     }
-    let mut buf = Buf::new();
-    buf.push("function render(_ctx, _cache, $props, $setup, $data, $options) {");
-    buf.indent();
-    buf.newline();
-    buf.push("return ");
-    emit_root(&mut buf, &lowered.root)?;
-    buf.deindent();
-    buf.newline();
-    buf.push("}");
+    let mut cx = EmitCx {
+        buf: Buf::new(),
+        facts,
+        walk: PageWalk::new(),
+    };
+    cx.buf
+        .push("function render(_ctx, _cache, $props, $setup, $data, $options) {");
+    cx.buf.indent();
+    cx.buf.newline();
+    cx.buf.push("return ");
+    emit_root(&mut cx, &lowered.root)?;
+    cx.buf.deindent();
+    cx.buf.newline();
+    cx.buf.push("}");
     Ok(DomEmit {
-        preamble: buf.preamble(),
-        code: buf.code,
+        preamble: cx.buf.preamble(),
+        code: cx.buf.code,
     })
 }
 
@@ -100,6 +118,6 @@ pub fn emit_dom_source<'a>(
     let (tree, errors) = parse(allocator, source);
     let mut lowered = lower(allocator, &tree, &errors);
     let mut budget = BudgetObserver::new();
-    let _facts = run_transform(&mut lowered, &mut budget);
-    emit_dom(&lowered)
+    let facts = run_transform(&mut lowered, &mut budget);
+    emit_dom(&lowered, &facts)
 }
