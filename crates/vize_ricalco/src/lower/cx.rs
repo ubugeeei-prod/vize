@@ -41,10 +41,15 @@ pub(crate) struct Cx<'a> {
     pub scopes: SideTable<ScopeFacts>,
     pub texts: SideTable<super::text::TextParts>,
     pub wrappers: SideTable<super::structural::WrapperKeys>,
+    pub caps: super::caps::LegacyCaps,
 }
 
 impl<'a> Cx<'a> {
-    pub(crate) fn new(allocator: &'a Allocator, source: &'a str) -> Self {
+    pub(crate) fn with_caps(
+        allocator: &'a Allocator,
+        source: &'a str,
+        caps: super::caps::LegacyCaps,
+    ) -> Self {
         Self {
             allocator,
             source,
@@ -57,6 +62,7 @@ impl<'a> Cx<'a> {
             scopes: SideTable::new(),
             texts: SideTable::new(),
             wrappers: SideTable::new(),
+            caps,
         }
     }
 
