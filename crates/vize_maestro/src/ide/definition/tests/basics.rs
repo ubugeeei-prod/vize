@@ -2,7 +2,7 @@ use std::fs;
 
 use tower_lsp::lsp_types::Url;
 
-use super::super::{BindingKind, bindings, helpers, script};
+use super::super::{BindingKind, bindings, component_model, helpers, script};
 use crate::{ide::IdeContext, server::ServerState};
 
 #[test]
@@ -238,13 +238,13 @@ const value = defineModel<string>({ required: true })
 const title = defineModel<number>('title')
 "#;
 
-    let default = helpers::find_prop_in_define_model(content, "modelValue").unwrap();
+    let default = component_model::find_prop_in_define_model(content, "modelValue").unwrap();
     assert_eq!(&content[default.0..default.0 + default.1], "defineModel");
 
-    let title = helpers::find_prop_in_define_model(content, "title").unwrap();
+    let title = component_model::find_prop_in_define_model(content, "title").unwrap();
     assert_eq!(&content[title.0..title.0 + title.1], "title");
 
-    assert!(helpers::find_prop_in_define_model(content, "missing").is_none());
+    assert!(component_model::find_prop_in_define_model(content, "missing").is_none());
 }
 
 #[test]

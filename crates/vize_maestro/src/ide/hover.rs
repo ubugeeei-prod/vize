@@ -27,6 +27,8 @@ mod html;
 mod petite_vue;
 mod script;
 mod template;
+#[cfg(feature = "native")]
+mod v_model;
 
 pub use builder::HoverBuilder;
 #[cfg(feature = "native")]
