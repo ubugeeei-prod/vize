@@ -99,14 +99,31 @@ pub(super) fn bind_patch(element: &ElementOp<'_>) -> Patch {
 pub(super) fn emit_bind_props(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
+    if_key: Option<&str>,
 ) -> Result<(), EmitError> {
     let pieces = pieces(element)?;
     let skip_class = has_bind_named(element, "class");
+    let skip_key = if_key.is_some();
     let visible: StdVec<&Piece<'_>> = pieces
         .iter()
-        .filter(|piece| !matches!(piece, Piece::Attr(attr) if skip_class && attr.name == "class"))
+        .filter(|piece| {
+            !matches!(
+                piece,
+                Piece::Attr(attr) if (skip_class && attr.name == "class")
+                    || (skip_key && attr.name == "key")
+            )
+        })
         .collect();
-    let multiline = visible.len() > 1
+    if let Some(key) = if_key
+        && visible.is_empty()
+    {
+        cx.buf.push("{ key: ");
+        cx.buf.push(key);
+        cx.buf.push(" }");
+        return Ok(());
+    }
+    let extra = usize::from(if_key.is_some());
+    let multiline = visible.len() + extra > 1
         || has_bind_named(element, "class")
         || has_bind_named(element, "style")
         || has_inline_on(element);
@@ -116,7 +133,16 @@ pub(super) fn emit_bind_props(
     } else {
         cx.buf.push("{ ");
     }
-    for (i, piece) in visible.iter().enumerate() {
+    let mut i = 0;
+    if let Some(key) = if_key {
+        if multiline {
+            cx.buf.newline();
+        }
+        cx.buf.push("key: ");
+        cx.buf.push(key);
+        i = 1;
+    }
+    for piece in visible.iter() {
         if i > 0 {
             cx.buf.push(",");
         }
@@ -130,6 +156,7 @@ pub(super) fn emit_bind_props(
             Piece::Bind(bind) => emit_bind_pair(cx, element, bind)?,
             Piece::On(on) => emit_on_pair(cx, on)?,
         }
+        i += 1;
     }
     if multiline {
         cx.buf.deindent();
