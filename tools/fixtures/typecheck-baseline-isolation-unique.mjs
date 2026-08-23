@@ -31,9 +31,9 @@ import { ancestorPackagePath } from "./typecheck-baseline-isolation-package-exte
  * fixture's own `@vue/tsconfig`, `vite`, `@types/node`, language plugin, or
  * `vue` JSX runtime before TypeScript climbs into Vize.
  *
- * Undeclared Vue compiler packages (`@vue/compiler-sfc` and friends) live in
- * Vize's `tests/package.json`, so TypeScript can still climb into them and
- * load Vize's Vue beside the fixture.
+ * Undeclared Vue compiler packages (`@vue/compiler-sfc` and friends) and
+ * class-component helpers live in Vize's `tests/package.json`, so TypeScript
+ * can still climb into them and load Vize's Vue beside the fixture.
  */
 
 const vueRuntimePackages = [
@@ -43,6 +43,8 @@ const vueRuntimePackages = [
   "@vue/runtime-core",
   "@vue/runtime-dom",
   "vue",
+  "vue-class-component",
+  "vue-property-decorator",
   "vue-router",
 ];
 
