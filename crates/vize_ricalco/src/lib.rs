@@ -61,4 +61,4 @@ pub mod lower;
 pub mod pass;
 
 pub use dom::DOM_LANE_FLAG;
-pub use lower::{Lowered, lower};
+pub use lower::{Lowered, lower, lower_style_block};
