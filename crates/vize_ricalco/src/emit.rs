@@ -29,8 +29,9 @@
 //! `v-model`), **colon / vnode-hook events** (`@update:…`,
 //! `@vue:mounted`) including merged duplicate handlers, and
 //! **destructured `v-for` aliases** (`({ id })`, `[a, b]`, defaults),
-//! and **`createSlots` + `v-slots`** (`...expr` on the `{ _: 2 }` base).
-//! `.native` and filters stay [`EmitError::Unsupported`].
+//! **`createSlots` + `v-slots`** (`...expr` on the `{ _: 2 }` base), and
+//! **dynamic `v-if` keys** (`:key="expr"`). `.native` and filters stay
+//! [`EmitError::Unsupported`].
 //! The old lane stays the shipped compile path; [`super::DOM_LANE_FLAG`]
 //! is named here and *read* in the atelier_dom witness.
 

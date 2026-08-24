@@ -97,6 +97,21 @@ const BATTERY: &[(&str, &str)] = &[
     ("nested_v_if", r#"<div><p v-if="ok">x</p></div>"#),
     ("v_if_class", r#"<div v-if="ok" class="x"></div>"#),
     ("v_if_static_key", r#"<div v-if="ok" key="k"></div>"#),
+    ("v_if_dyn_key", r#"<div v-if="ok" :key="k"></div>"#),
+    (
+        "v_if_dyn_key_expr",
+        r#"<div v-if="ok" :key="item.id">x</div>"#,
+    ),
+    ("v_if_dyn_key_same", r#"<div v-if="ok" :key></div>"#),
+    ("component_v_if_dyn_key", r#"<Foo v-if="ok" :key="k" />"#),
+    (
+        "v_if_dyn_key_chain",
+        r#"<div v-if="a" :key="ka">a</div><div v-else-if="b" :key="kb">b</div><div v-else :key="kc">c</div>"#,
+    ),
+    (
+        "tpl_v_if_dyn_key",
+        r#"<template v-if="ok" :key="k"><span>x</span></template>"#,
+    ),
     (
         "sibling_v_if",
         r#"<div><p v-if="a">1</p><span v-if="b">2</span></div>"#,
