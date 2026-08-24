@@ -2,10 +2,8 @@
 //! option modifiers (`withModifiers` / `withKeys`, `onClickOnce`, …).
 //! Object `v-on` lives in [`super::merge`].
 
-use alloc::vec::Vec as StdVec;
-
 use oxc_ast::ast::{ChainElement, Expression};
-use vize_s0::{String, camelize, capitalize};
+use vize_s0::{SmallVec, String, camelize, capitalize};
 use vize_s2::expr::{ExprRef, JsExpr};
 use vize_s2::op::{DynamicName, OnOp};
 
@@ -13,10 +11,22 @@ use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
 
+// The committed Vue corpus and emitter fixtures currently peak at two
+// modifiers in each bucket (242 modifier-bearing `v-on` spellings sampled).
+// Authored directives remain unbounded: `SmallVec` spills beyond these common
+// two-entry shapes without changing order or output.
+const OPTION_INLINE_CAP: usize = 2;
+const EVENT_INLINE_CAP: usize = 2;
+const KEY_INLINE_CAP: usize = 2;
+
+type OptionModifiers<'a> = SmallVec<[&'a str; OPTION_INLINE_CAP]>;
+type EventModifiers<'a> = SmallVec<[&'a str; EVENT_INLINE_CAP]>;
+type KeyModifiers<'a> = SmallVec<[&'a str; KEY_INLINE_CAP]>;
+
 struct Classified<'a> {
-    options: StdVec<&'a str>,
-    event: StdVec<&'a str>,
-    keys: StdVec<&'a str>,
+    options: OptionModifiers<'a>,
+    event: EventModifiers<'a>,
+    keys: KeyModifiers<'a>,
 }
 
 pub(super) fn admit_on(on: &OnOp<'_>) -> Result<(), EmitError> {
@@ -182,28 +192,35 @@ fn emit_handler(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {
 
 fn classify<'a>(on: &'a OnOp<'a>) -> Result<Classified<'a>, EmitError> {
     let name = static_on_name(on)?;
+    Ok(classify_modifiers(name, on.modifiers.iter().copied()))
+}
+
+fn classify_modifiers<'a>(
+    name: &str,
+    modifiers: impl IntoIterator<Item = &'a str>,
+) -> Classified<'a> {
     let keyboard = matches!(name, "keydown" | "keyup" | "keypress");
-    let mut options = StdVec::new();
-    let mut event = StdVec::new();
-    let mut keys = StdVec::new();
-    for modifier in on.modifiers.iter() {
-        match *modifier {
+    let mut options = OptionModifiers::new();
+    let mut event = EventModifiers::new();
+    let mut keys = KeyModifiers::new();
+    for modifier in modifiers {
+        match modifier {
             // Vue 2's `.native` event sugar is stripped by the shipped
             // lane before handler wrapping, and does not affect the event
             // key. Keep the authored modifier accepted but inert here.
             "native" => {}
-            "capture" | "once" | "passive" => options.push(*modifier),
-            "left" | "right" if keyboard => keys.push(*modifier),
+            "capture" | "once" | "passive" => options.push(modifier),
+            "left" | "right" if keyboard => keys.push(modifier),
             "stop" | "prevent" | "self" | "ctrl" | "shift" | "alt" | "meta" | "middle"
-            | "exact" | "left" | "right" => event.push(*modifier),
-            _ => keys.push(*modifier),
+            | "exact" | "left" | "right" => event.push(modifier),
+            _ => keys.push(modifier),
         }
     }
-    Ok(Classified {
+    Classified {
         options,
         event,
         keys,
-    })
+    }
 }
 
 fn has_native_modifier(on: &OnOp<'_>) -> bool {
@@ -239,4 +256,41 @@ fn is_function(expr: &Expression<'_>) -> bool {
         expr,
         Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_)
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::classify_modifiers;
+
+    #[test]
+    fn common_two_modifier_buckets_stay_inline() {
+        let classified = classify_modifiers(
+            "keyup",
+            ["capture", "once", "stop", "prevent", "enter", "escape"],
+        );
+
+        assert!(!classified.options.spilled());
+        assert!(!classified.event.spilled());
+        assert!(!classified.keys.spilled());
+    }
+
+    #[test]
+    fn authored_modifiers_spill_without_a_length_ceiling() {
+        let classified = classify_modifiers(
+            "keyup",
+            [
+                "capture", "once", "passive", "stop", "prevent", "self", "enter", "escape", "space",
+            ],
+        );
+
+        assert!(classified.options.spilled());
+        assert!(classified.event.spilled());
+        assert!(classified.keys.spilled());
+        assert_eq!(
+            classified.options.as_slice(),
+            ["capture", "once", "passive"]
+        );
+        assert_eq!(classified.event.as_slice(), ["stop", "prevent", "self"]);
+        assert_eq!(classified.keys.as_slice(), ["enter", "escape", "space"]);
+    }
 }

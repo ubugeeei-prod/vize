@@ -161,6 +161,26 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn two_modifiers_per_bucket_keep_the_authored_output() {
+    let output = assembled(r#"<div @keyup.capture.once.stop.prevent.enter.esc="handler"></div>"#);
+
+    assert!(output.contains(
+        "onKeyupCaptureOnce: _withKeys(_withModifiers(handler, [\"stop\",\"prevent\"]), [\"enter\",\"esc\"])"
+    ));
+}
+
+#[test]
+fn spilled_modifier_buckets_keep_the_authored_output() {
+    let output = assembled(
+        r#"<div @keyup.capture.once.passive.stop.prevent.self.enter.esc.space="handler"></div>"#,
+    );
+
+    assert!(output.contains(
+        "onKeyupCaptureOncePassive: _withKeys(_withModifiers(handler, [\"stop\",\"prevent\",\"self\"]), [\"enter\",\"esc\",\"space\"])"
+    ));
+}
+
+#[test]
 fn a_click_native_strips_the_modifier_but_keeps_need_hydration() {
     assert_eq!(
         assembled(r#"<div @click.native="handler"></div>"#),
