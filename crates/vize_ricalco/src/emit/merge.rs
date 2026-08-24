@@ -53,6 +53,10 @@ pub(super) fn object_patch(bindings: &[BindingOp<'_>], is_component: bool) -> Pa
                 let Ok(name) = static_bind_name(bind) else {
                     continue;
                 };
+                if name == "ref" {
+                    flag |= 512;
+                    continue;
+                }
                 if matches!(name, "class" | "style" | "key") {
                     continue;
                 }

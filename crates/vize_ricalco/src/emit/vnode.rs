@@ -11,7 +11,7 @@ use super::directive;
 use super::flag::emit_patch_flag;
 use super::hoist::{compact_props_object, push_attr_pair, unique_attrs};
 use super::namespace;
-use super::props::{admit_bindings, bind_patch, emit_bind_props};
+use super::props::{admit_bindings, apply_static_ref_patch, bind_patch, emit_bind_props};
 
 pub(super) fn emit_unique_element(
     cx: &mut EmitCx<'_>,
@@ -157,6 +157,7 @@ fn emit_call(
     if text_flag {
         flag |= 1;
     }
+    apply_static_ref_patch(&element.attributes, &mut flag);
     if for_item {
         flag &= !512;
     }
@@ -230,7 +231,7 @@ fn emit_static_props_inline<'a>(
     attributes: impl Iterator<Item = &'a Attribute<'a>>,
 ) {
     let unique = unique_attrs(attributes);
-    let multiline = unique.len() > 1;
+    let multiline = unique.len() > 1 && !cx.in_v_for;
     if multiline {
         cx.buf.push("{");
         cx.buf.indent();
@@ -245,6 +246,9 @@ fn emit_static_props_inline<'a>(
             cx.buf.newline();
         } else if i > 0 {
             cx.buf.push(" ");
+        }
+        if cx.in_v_for && attr.name == "ref" {
+            cx.buf.push("ref_for: true, ");
         }
         let mut pair = String::default();
         push_attr_pair(&mut pair, attr);

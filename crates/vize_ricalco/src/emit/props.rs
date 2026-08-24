@@ -33,7 +33,7 @@ pub(super) fn admit_bindings(
             }
             BindingOp::Bind(bind) => {
                 let name = static_bind_name(bind)?;
-                if name == "ref" || !bind.modifiers.is_empty() {
+                if !bind.modifiers.is_empty() {
                     return Err(EmitError::Unsupported);
                 }
                 let vize_disegno::expr::ExprRef::Js(_) =
@@ -76,6 +76,7 @@ pub(super) fn bind_patch(bindings: &[BindingOp<'_>], is_component: bool) -> Patc
                     continue;
                 };
                 match name {
+                    "ref" => flag |= 512,
                     "class" if !is_component => flag |= 2,
                     "style" if !is_component => flag |= 4,
                     "key" => {}
@@ -144,6 +145,13 @@ pub(super) fn emit_bind_props(
         for_item && super::directive::has_custom(bindings),
         is_plain_element,
     )
+}
+
+pub(super) fn apply_static_ref_patch(attributes: &[Attribute<'_>], flag: &mut i32) {
+    let has_static_ref = attributes.iter().any(|attr| attr.name == "ref");
+    if has_static_ref && *flag & (2 | 4 | 8 | 16 | 32 | 1024) == 0 {
+        *flag |= 512;
+    }
 }
 
 fn has_attr(attributes: &[Attribute<'_>], name: &str) -> bool {

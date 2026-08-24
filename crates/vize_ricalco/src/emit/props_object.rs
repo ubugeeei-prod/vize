@@ -46,10 +46,12 @@ pub(super) fn emit_props_object(
         return Ok(());
     }
     let extra = usize::from(if_key.is_some());
-    let multiline = visible.len() + extra > 1
-        || pieces_have_named(pieces, "class")
-        || pieces_have_named(pieces, "style")
-        || pieces_have_inline_on(pieces);
+    let multiline = (if_key.is_some() && !visible.is_empty())
+        || pieces_have_inline_on(pieces)
+        || (!cx.in_v_for
+            && (visible.len() + extra > 1
+                || pieces_have_named(pieces, "class")
+                || pieces_have_named(pieces, "style")));
     if multiline {
         cx.buf.push("{");
         cx.buf.indent();
@@ -217,6 +219,7 @@ fn pieces_have_inline_on(pieces: &[Piece<'_>]) -> bool {
 }
 
 fn emit_static_pair(cx: &mut EmitCx<'_>, attr: &Attribute<'_>) {
+    emit_ref_for(cx, attr.name);
     push_ident_key(cx, attr.name);
     cx.buf.push(": \"");
     if let Some(value) = attr.value {
@@ -233,6 +236,7 @@ fn emit_bind_pair(
 ) -> Result<(), EmitError> {
     let name = static_bind_name(bind)?;
     let js = js_value(bind)?;
+    emit_ref_for(cx, name);
     push_ident_key(cx, name);
     cx.buf.push(": ");
     match name {
@@ -241,6 +245,12 @@ fn emit_bind_pair(
         _ => cx.buf.push(js.source),
     }
     Ok(())
+}
+
+fn emit_ref_for(cx: &mut EmitCx<'_>, name: &str) {
+    if cx.in_v_for && name == "ref" {
+        cx.buf.push("ref_for: true, ");
+    }
 }
 
 fn emit_class_value(

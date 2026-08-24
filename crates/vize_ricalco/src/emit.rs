@@ -33,8 +33,9 @@
 //! **`createSlots` + `v-slots`** (`...expr` on the `{ _: 2 }` base), and
 //! **dynamic `v-if` keys** (`:key="expr"`), plus **foreign namespace
 //! boundaries** (`<svg>` / `<math>` enter blocks, same-namespace descendants
-//! stay VNodes, integration points re-enter HTML). `.native` and filters
-//! stay [`EmitError::Unsupported`].
+//! stay VNodes, integration points re-enter HTML), and **template refs**
+//! (static refs, dynamic `:ref`, and `ref_for` in `v-for`). `.native`
+//! and filters stay [`EmitError::Unsupported`].
 //! The old lane stays the shipped compile path; [`super::DOM_LANE_FLAG`]
 //! is named here and *read* in the atelier_dom witness.
 

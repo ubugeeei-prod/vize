@@ -20,7 +20,7 @@ use super::directive;
 use super::flag::emit_patch_flag;
 use super::hoist::compact_props_object;
 use super::js::asset_ident;
-use super::props::{admit_bindings, bind_patch, emit_bind_props};
+use super::props::{admit_bindings, apply_static_ref_patch, bind_patch, emit_bind_props};
 use super::slots;
 
 pub(super) fn collect_names<'a>(root: &Region<'a>) -> StdVec<&'a str> {
@@ -243,6 +243,7 @@ fn emit_call(
     {
         flag |= 1024;
     }
+    apply_static_ref_patch(&component.attributes, &mut flag);
     if for_item {
         flag &= !512;
     }
