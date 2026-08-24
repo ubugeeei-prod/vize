@@ -214,7 +214,7 @@ fn push_from<'a>(bindings: &'a [BindingOp<'a>], names: &mut StdVec<&'a str>) {
         let Some(name) = custom_name(binding) else {
             continue;
         };
-        if !names.iter().any(|seen| *seen == name) {
+        if !names.contains(&name) {
             names.push(name);
         }
     }

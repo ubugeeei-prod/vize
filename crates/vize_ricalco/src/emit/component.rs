@@ -183,10 +183,10 @@ fn emit_call(
     }
     let skip_is = builtin::is_dynamic_component(component);
     let has_binds = component.bindings.iter().any(|binding| {
-        !matches!(binding, BindingOp::SlotContent(_))
-            && !slots::is_slots_spread(binding)
-            && !directive::is_custom(binding)
-            && !(skip_is && builtin::is_is_bind(binding))
+        !(matches!(binding, BindingOp::SlotContent(_))
+            || slots::is_slots_spread(binding)
+            || directive::is_custom(binding)
+            || (skip_is && builtin::is_is_bind(binding)))
     });
     let has_attrs = component
         .attributes

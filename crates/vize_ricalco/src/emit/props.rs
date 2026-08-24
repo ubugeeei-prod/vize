@@ -205,7 +205,7 @@ pub(super) fn emit_props_object(
         if let Some(key) = piece_event_key(piece, is_plain_element)
             && merge_count(&visible, key.as_str(), is_plain_element) > 1
         {
-            if emitted_merged.iter().any(|seen: &String| seen == &key) {
+            if emitted_merged.contains(&key) {
                 continue;
             }
             if i > 0 {
