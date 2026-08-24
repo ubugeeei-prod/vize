@@ -1,12 +1,9 @@
-//! Expression nesting guard: whether text is safe to hand to OXC's
-//! recursive parser.
+//! Expression nesting guard: whether text is safe to hand to OXC's recursive parser.
 //!
-//! Lives in `vize_carton` (moved from
-//! `vize_atelier_core::transforms::transform_expression::nesting` in Davinci
-//! P1-5, original import paths preserved by a re-export shim there) so the
-//! armature retained-expression parse site shares the exact guard the
-//! transform/codegen entry points use — one guard, every entry point.
+//! Lives in `vize_carton` so armature, transform, and codegen entry points all
+//! share one guard through the existing re-export shim.
 
+mod operators;
 pub mod scan;
 
 use scan::{
@@ -341,6 +338,7 @@ pub fn expression_is_safe_to_parse(content: &str) -> bool {
     analysis.delimiters_balanced
         && analysis.max_depth <= MAX_EXPRESSION_NESTING_DEPTH
         && analysis.cumulative_speculative_type_angle_depth <= MAX_EXPRESSION_NESTING_DEPTH
+        && !operators::has_excessive_prefix_operator_run(content)
 }
 
 /// Returns true if `content` exceeds [`MAX_EXPRESSION_NESTING_DEPTH`].
