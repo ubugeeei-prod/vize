@@ -135,11 +135,15 @@ fn invalidation_classifies_every_boundary_in_stable_order() {
     assert_eq!(invalidation.added_inputs(), ["c"]);
     assert_eq!(invalidation.removed_inputs(), ["a"]);
     assert_eq!(invalidation.changed_inputs(), ["d"]);
-    assert_eq!(invalidation.telemetry().added_input_count(), 1);
-    assert_eq!(invalidation.telemetry().removed_input_count(), 1);
-    assert_eq!(invalidation.telemetry().changed_input_count(), 1);
+    let telemetry = invalidation.telemetry();
+    assert_eq!(telemetry.added_input_count(), 1);
+    assert_eq!(telemetry.removed_input_count(), 1);
+    assert_eq!(telemetry.changed_input_count(), 1);
+    assert_eq!(telemetry.added_inputs(), ["c"]);
+    assert_eq!(telemetry.removed_inputs(), ["a"]);
+    assert_eq!(telemetry.changed_inputs(), ["d"]);
     assert_eq!(
-        serde_json::to_value(invalidation.telemetry()).unwrap(),
+        serde_json::to_value(telemetry).unwrap(),
         json!({
             "reusable": false,
             "capabilityChanged": true,
@@ -147,13 +151,31 @@ fn invalidation_classifies_every_boundary_in_stable_order() {
             "configurationChanged": true,
             "addedInputCount": 1,
             "removedInputCount": 1,
-            "changedInputCount": 1
+            "changedInputCount": 1,
+            "addedInputs": ["c"],
+            "removedInputs": ["a"],
+            "changedInputs": ["d"]
         })
     );
 
     let reusable = current.invalidation_from(&current);
     assert!(reusable.is_reusable());
     assert!(reusable.telemetry().is_reusable());
+    assert_eq!(
+        serde_json::to_value(reusable.telemetry()).unwrap(),
+        json!({
+            "reusable": true,
+            "capabilityChanged": false,
+            "implementationChanged": false,
+            "configurationChanged": false,
+            "addedInputCount": 0,
+            "removedInputCount": 0,
+            "changedInputCount": 0,
+            "addedInputs": [],
+            "removedInputs": [],
+            "changedInputs": []
+        })
+    );
     assert_eq!(
         serde_json::to_value(reusable).unwrap(),
         json!({

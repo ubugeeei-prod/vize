@@ -1,4 +1,5 @@
 use serde::Serialize;
+use vize_carton::String;
 
 use super::CapabilityInvalidation;
 
@@ -13,6 +14,9 @@ pub struct CapabilityInvalidationTelemetry {
     added_input_count: usize,
     removed_input_count: usize,
     changed_input_count: usize,
+    added_inputs: Vec<String>,
+    removed_inputs: Vec<String>,
+    changed_inputs: Vec<String>,
 }
 
 impl CapabilityInvalidationTelemetry {
@@ -25,6 +29,9 @@ impl CapabilityInvalidationTelemetry {
             added_input_count: invalidation.added_inputs().len(),
             removed_input_count: invalidation.removed_inputs().len(),
             changed_input_count: invalidation.changed_inputs().len(),
+            added_inputs: invalidation.added_inputs().to_vec(),
+            removed_inputs: invalidation.removed_inputs().to_vec(),
+            changed_inputs: invalidation.changed_inputs().to_vec(),
         }
     }
 
@@ -61,6 +68,21 @@ impl CapabilityInvalidationTelemetry {
     /// Returns the number of content-changed invalidation inputs.
     pub const fn changed_input_count(&self) -> usize {
         self.changed_input_count
+    }
+
+    /// Returns newly declared inputs in stable order.
+    pub fn added_inputs(&self) -> &[String] {
+        &self.added_inputs
+    }
+
+    /// Returns no-longer-declared inputs in stable order.
+    pub fn removed_inputs(&self) -> &[String] {
+        &self.removed_inputs
+    }
+
+    /// Returns content-changed inputs in stable order.
+    pub fn changed_inputs(&self) -> &[String] {
+        &self.changed_inputs
     }
 }
 
