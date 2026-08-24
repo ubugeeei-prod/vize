@@ -21,6 +21,7 @@ pub use navigation::{
     rename,
 };
 pub use package_install::install_packages;
+#[allow(unused_imports)]
 pub use process_output::output_text;
 pub use responder::EditorResponder;
 pub use stop::StopOnDrop;
@@ -28,6 +29,7 @@ pub use stop::StopOnDrop;
 struct RawDocumentDiagnostic;
 struct RawHover;
 struct RawDefinition;
+struct RawTypeDefinition;
 struct RawCompletion;
 struct RawCompletionResolve;
 
@@ -47,6 +49,12 @@ impl lsp_types::request::Request for RawDefinition {
     type Params = Value;
     type Result = Value;
     const METHOD: &'static str = "textDocument/definition";
+}
+
+impl lsp_types::request::Request for RawTypeDefinition {
+    type Params = Value;
+    type Result = Value;
+    const METHOD: &'static str = "textDocument/typeDefinition";
 }
 
 impl lsp_types::request::Request for RawCompletion {
@@ -71,6 +79,16 @@ pub async fn hover(client: &LspClient, uri: &str, position: &Value) -> Value {
 pub async fn definition(client: &LspClient, uri: &str, position: &Value) -> Value {
     client
         .request::<RawDefinition>(json!({ "textDocument": { "uri": uri }, "position": position }))
+        .await
+        .unwrap()
+}
+
+pub async fn type_definition(client: &LspClient, uri: &str, position: &Value) -> Value {
+    client
+        .request::<RawTypeDefinition>(json!({
+            "textDocument": { "uri": uri },
+            "position": position
+        }))
         .await
         .unwrap()
 }
@@ -313,6 +331,7 @@ pub fn editor_capabilities() -> Value {
             "signatureHelp": { "dynamicRegistration": true },
             "hover": { "dynamicRegistration": true },
             "definition": { "dynamicRegistration": true },
+            "typeDefinition": { "dynamicRegistration": true },
             "documentHighlight": { "dynamicRegistration": true },
             "references": { "dynamicRegistration": true },
             "rename": { "dynamicRegistration": true }
