@@ -58,7 +58,7 @@ pub(crate) fn extract_macro_artifacts(
             continue;
         }
 
-        let source = (&content[start..end]).to_compact_string();
+        let source = content[start..end].to_compact_string();
         let payload = call
             .arguments
             .first()
@@ -188,7 +188,7 @@ fn argument_source(arg: &Argument<'_>, source: &str) -> String {
     if start > end || end > source.len() {
         return String::default();
     }
-    (&source[start..end]).to_compact_string()
+    source[start..end].to_compact_string()
 }
 
 fn collect_static_imports<'a>(

@@ -258,7 +258,7 @@ fn argument_source(arg: &Argument<'_>, source: &str) -> Option<String> {
     if start > end || end > source.len() {
         return None;
     }
-    Some((&source[start..end]).to_compact_string())
+    Some(source[start..end].to_compact_string())
 }
 
 fn build_lazy_hydration_preamble(strategies: &[LazyHydrationStrategy]) -> String {

@@ -247,7 +247,7 @@ fn expression_key_name(expression: &Expression<'_>, source: &str) -> Option<Stri
 }
 
 fn span_text(span: Span, source: &str) -> String {
-    (&source[span.start as usize..span.end as usize]).to_compact_string()
+    source[span.start as usize..span.end as usize].to_compact_string()
 }
 
 pub(super) fn property_text_ranges(
@@ -272,7 +272,7 @@ pub(super) fn property_text_ranges(
         } else {
             property_end
         };
-        let mut text = (&source[range_end..last_range]).to_compact_string();
+        let mut text = source[range_end..last_range].to_compact_string();
         if !has_comma && next_token == close_brace {
             text.push(',');
         }

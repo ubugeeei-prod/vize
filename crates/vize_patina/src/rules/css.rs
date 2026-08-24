@@ -270,7 +270,7 @@ impl DisabledRules {
             }
         }
 
-        (&source[start..end]).to_compact_string()
+        source[start..end].to_compact_string()
     }
 
     /// Check if a rule is disabled at a given line

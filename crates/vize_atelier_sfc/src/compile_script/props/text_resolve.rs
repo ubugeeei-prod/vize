@@ -194,7 +194,7 @@ fn extract_prop_type_info(segment: &str, props: &mut Vec<(String, PropTypeInfo)>
             let optional = before_paren.trim_end().ends_with('?');
             let name = before_paren.trim_end_matches('?').trim();
             if !name.is_empty() && is_valid_identifier(name) {
-                let ts_type_str: String = (&trimmed[paren_pos..]).to_compact_string();
+                let ts_type_str: String = trimmed[paren_pos..].to_compact_string();
                 if !props.iter().any(|(n, _)| n == name) {
                     props.push((
                         name.to_compact_string(),
