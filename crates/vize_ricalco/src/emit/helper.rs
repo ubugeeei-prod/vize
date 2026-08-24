@@ -8,6 +8,11 @@
 pub(super) enum Helper {
     ResolveComponent,
     ResolveDynamicComponent,
+    VModelText,
+    VModelCheckbox,
+    VModelRadio,
+    VModelSelect,
+    WithDirectives,
     WithKeys,
     WithModifiers,
     ToDisplayString,
@@ -38,9 +43,14 @@ pub(super) enum Helper {
 }
 
 impl Helper {
-    pub(super) const ALL: [Self; 29] = [
+    pub(super) const ALL: [Self; 34] = [
         Self::ResolveComponent,
         Self::ResolveDynamicComponent,
+        Self::VModelText,
+        Self::VModelCheckbox,
+        Self::VModelRadio,
+        Self::VModelSelect,
+        Self::WithDirectives,
         Self::WithKeys,
         Self::WithModifiers,
         Self::ToDisplayString,
@@ -73,7 +83,8 @@ impl Helper {
     pub(super) const fn rank(self) -> u8 {
         match self {
             Self::ResolveComponent | Self::ResolveDynamicComponent => 0,
-            Self::WithKeys | Self::WithModifiers => 2,
+            Self::VModelText | Self::VModelCheckbox | Self::VModelRadio | Self::VModelSelect => 1,
+            Self::WithDirectives | Self::WithKeys | Self::WithModifiers => 2,
             Self::ToDisplayString => 3,
             Self::RenderSlot | Self::CreateElementVNode | Self::CreateVNode => 4,
             Self::NormalizeClass
@@ -98,7 +109,7 @@ impl Helper {
         }
     }
 
-    pub(super) const fn bit(self) -> u32 {
+    pub(super) const fn bit(self) -> u64 {
         match self {
             Self::ToDisplayString => 1,
             Self::CreateElementVNode => 2,
@@ -116,6 +127,11 @@ impl Helper {
             Self::GuardReactiveProps => 8192,
             Self::MergeProps => 16384,
             Self::ToHandlers => 268_435_456,
+            Self::VModelText => 536_870_912,
+            Self::VModelCheckbox => 1_073_741_824,
+            Self::VModelRadio => 2_147_483_648,
+            Self::VModelSelect => 4_294_967_296,
+            Self::WithDirectives => 8_589_934_592,
             Self::ResolveComponent => 32768,
             Self::ResolveDynamicComponent => 134_217_728,
             Self::CreateVNode => 65536,
@@ -136,6 +152,11 @@ impl Helper {
         match self {
             Self::ResolveComponent => "resolveComponent",
             Self::ResolveDynamicComponent => "resolveDynamicComponent",
+            Self::VModelText => "vModelText",
+            Self::VModelCheckbox => "vModelCheckbox",
+            Self::VModelRadio => "vModelRadio",
+            Self::VModelSelect => "vModelSelect",
+            Self::WithDirectives => "withDirectives",
             Self::WithKeys => "withKeys",
             Self::WithModifiers => "withModifiers",
             Self::ToDisplayString => "toDisplayString",
@@ -170,6 +191,11 @@ impl Helper {
         match self {
             Self::ResolveComponent => "_resolveComponent",
             Self::ResolveDynamicComponent => "_resolveDynamicComponent",
+            Self::VModelText => "_vModelText",
+            Self::VModelCheckbox => "_vModelCheckbox",
+            Self::VModelRadio => "_vModelRadio",
+            Self::VModelSelect => "_vModelSelect",
+            Self::WithDirectives => "_withDirectives",
             Self::WithKeys => "_withKeys",
             Self::WithModifiers => "_withModifiers",
             Self::ToDisplayString => "_toDisplayString",

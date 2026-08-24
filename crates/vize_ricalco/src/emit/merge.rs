@@ -11,11 +11,11 @@ use vize_carton::String;
 use vize_disegno::expr::ExprRef;
 use vize_disegno::op::{Attribute, BindOp, BindingOp, OnOp};
 
-use super::buf::Buf;
-use super::on::{event_key_for, needs_hydration};
-use super::props::{emit_props_object, js_value, pieces, static_bind_name, Patch, Piece};
 use super::EmitCx;
 use super::EmitError;
+use super::buf::Buf;
+use super::on::{event_key_for, needs_hydration};
+use super::props::{Patch, Piece, emit_props_object, js_value, pieces, static_bind_name};
 
 pub(super) fn has_object_spread(bindings: &[BindingOp<'_>]) -> bool {
     bindings.iter().any(|binding| match binding {
@@ -71,6 +71,9 @@ pub(super) fn object_patch(bindings: &[BindingOp<'_>], is_component: bool) -> Pa
                 if !is_component && needs_hydration(key.as_str(), on) {
                     flag |= 32;
                 }
+            }
+            BindingOp::Model(model) => {
+                super::model::patch_keys(model, is_component, &mut dynamic_props);
             }
             _ => {}
         }

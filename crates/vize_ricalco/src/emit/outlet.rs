@@ -9,6 +9,8 @@ use vize_carton::camelize;
 use vize_disegno::expr::{ExprRef, OpaqueReason};
 use vize_disegno::op::{BindingOp, DynamicName, InterpolationOp, Op, Region, SlotOp};
 
+use super::EmitCx;
+use super::EmitError;
 use super::buf::Buf;
 use super::children::{
     emit_create_text_vnode, emit_interpolation, emit_plain_text_vnode, emit_to_display_string,
@@ -16,11 +18,9 @@ use super::children::{
 use super::hoist::{emit_hoisted_element, is_hoistable};
 use super::js::{escape_js_string, is_valid_js_identifier};
 use super::merge;
-use super::props::{js_value, pieces, Piece};
+use super::props::{Piece, js_value, pieces};
 use super::slots::is_whitespace_text;
 use super::vnode::emit_array_child;
-use super::EmitCx;
-use super::EmitError;
 
 pub(super) fn has_forwarded_outlet(region: &Region<'_>) -> bool {
     region.ops.iter().any(op_forwards)
@@ -151,7 +151,10 @@ fn emit_props(cx: &mut EmitCx<'_>, slot: &SlotOp<'_>, key: Option<&str>) -> Resu
                 cx.buf.push(": ");
                 cx.buf.push(js.source);
             }
-            Piece::On(_) => return Err(EmitError::Unsupported),
+            Piece::On(_)
+            | Piece::ModelValue { .. }
+            | Piece::ModelUpdate { .. }
+            | Piece::ModelModifiers { .. } => return Err(EmitError::Unsupported),
         }
     }
     if !first {

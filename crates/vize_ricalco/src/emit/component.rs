@@ -100,6 +100,7 @@ pub(super) fn emit_for_item(
     cx: &mut EmitCx<'_>,
     component: &ComponentOp<'_>,
     id: Option<NodeId>,
+    key: Option<&str>,
 ) -> Result<(), EmitError> {
     cx.buf.use_open_block();
     cx.buf.use_create_block();
@@ -107,7 +108,7 @@ pub(super) fn emit_for_item(
     cx.buf.push(Buf::open_block_alias());
     cx.buf.push("(), ");
     emit_call(
-        cx, component, /* block */ true, None, /* for_item */ true, id,
+        cx, component, /* block */ true, key, /* for_item */ true, id,
     )?;
     cx.buf.push(")");
     Ok(())
