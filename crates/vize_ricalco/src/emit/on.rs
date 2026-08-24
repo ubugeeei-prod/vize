@@ -11,15 +11,15 @@ use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
 
-// The natural committed Vue corpus and emitter fixtures peak at two modifiers
-// in each bucket (242 modifier-bearing spellings). The reproducible inventory
-// lives in `tests/tooling/davinci-v-on-storage.test.ts`; it excludes the
-// marked synthetic inline/spill boundary cases. Authored directives remain
-// unbounded: `SmallVec` spills beyond these common two-entry shapes without
-// changing order or output. On 64-bit targets this trades 48 bytes of transient
-// stack space (`Classified`: 120 rather than three 24-byte `Vec`s) for removing
-// the three common-path heap allocations; the allocation benchmark owns the
-// measured budget proof.
+// A reviewed inventory of 178 natural modified `v-on` attributes currently
+// uses up to two entries in each of the three classifier buckets. The checked
+// inventory in `tests/tooling/davinci-v-on-storage.test.ts` selects this inline
+// capacity; it is not a syntax limit. Authored directives remain unbounded and
+// spill without changing order or output. On 64-bit targets this trades 48
+// bytes of transient stack space (`Classified`: 120 rather than three 24-byte
+// `Vec`s) for inline storage. The `ricalco_emit_von_two_per_bucket` allocation
+// budget in `davinci-road/plan/budgets.toml`, measured by
+// `crates/vize_ricalco/benches/davinci_storage.rs`, owns the allocation proof.
 const OPTION_INLINE_CAP: usize = 2;
 const EVENT_INLINE_CAP: usize = 2;
 const KEY_INLINE_CAP: usize = 2;
