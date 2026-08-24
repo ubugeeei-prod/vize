@@ -68,6 +68,9 @@ This baseline does not prove:
 - Davinci/S2 projection parity or readiness;
 - full-corpus `vize check` false-positive/false-negative parity;
 - complete tsgo Content Mapper editor-feature coverage;
+- static slot-name navigation mappings (the Options API slot fixture retains
+  structural slot coverage, while only its mapped `message` expression is an
+  authored navigation anchor);
 - incremental, watch, or multi-project invalidation;
 - that either current generator can be switched or deleted.
 

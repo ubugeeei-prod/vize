@@ -104,6 +104,7 @@ pub(super) fn capture_canon(fixture: &Fixture, source: &str, mapper: &LaneRecord
                 diagnostics_sha256,
                 authored_hit_count: 0,
                 authored_hits_sha256: sha256(""),
+                authored_hit_anchors: SmallVec::new(),
             }
         }
         Err(error) => LaneRecord::error(error),
@@ -174,8 +175,9 @@ pub(super) fn capture_content_mapper(fixture: &Fixture, source: &str) -> LaneRec
                 semantic_links_sha256: sha256(&links),
                 diagnostic_count: transform.diagnostics.len(),
                 diagnostics_sha256: sha256(&diagnostics),
-                authored_hit_count: authored_hits.lines().count(),
-                authored_hits_sha256: sha256(&authored_hits),
+                authored_hit_count: authored_hits.details.lines().count(),
+                authored_hits_sha256: sha256(&authored_hits.details),
+                authored_hit_anchors: authored_hits.anchors,
             }
         }
         Err(error) => LaneRecord::error(error),
@@ -186,9 +188,11 @@ fn content_mapper_anchor_hits(
     fixture: &Fixture,
     source: &str,
     mappings: &[vize_canon::ContentMapperSpan],
-) -> String {
+) -> AuthoredHits {
     let mut hits = SmallVec::<[String; 8]>::new();
+    let mut hit_anchors = SmallVec::<[String; 8]>::new();
     for anchor in &fixture.anchors {
+        let previous_hit_count = hits.len();
         for (offset, _) in source.match_indices(anchor.as_str()) {
             for mapping in mappings {
                 let [
@@ -199,15 +203,30 @@ fn content_mapper_anchor_hits(
                     kind,
                     features,
                 ] = mapping.0;
-                if offset >= original && offset < original + original_len {
+                let anchor_end = offset + anchor.len();
+                let Some(original_end) = original.checked_add(original_len) else {
+                    continue;
+                };
+                if offset >= original && anchor_end <= original_end {
                     hits.push(cstr!(
                         "{anchor}@{offset}|{generated}:{generated_len}>{original}:{original_len}|{kind}:{features}"
                     ));
                 }
             }
         }
+        if hits.len() > previous_hit_count {
+            hit_anchors.push(anchor.clone());
+        }
     }
-    ordered_lines(hits)
+    AuthoredHits {
+        details: ordered_lines(hits),
+        anchors: hit_anchors,
+    }
+}
+
+struct AuthoredHits {
+    details: String,
+    anchors: SmallVec<[String; 8]>,
 }
 
 struct ImportSourceMapFacts {

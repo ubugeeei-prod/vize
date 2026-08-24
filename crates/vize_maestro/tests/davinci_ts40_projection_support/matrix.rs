@@ -52,7 +52,15 @@ pub fn load_matrix() -> Matrix {
     assert_eq!(matrix.schema_version, 1);
     assert_eq!(matrix.claim, "current-canon-maestro-behavior-only");
     assert!(!matrix.normalization.is_empty());
-    assert!(!matrix.unproven.is_empty());
+    let expected_unproven = [
+        "Davinci or S2 projection parity",
+        "full-corpus vize check diagnostic parity",
+        "all tsgo Content Mapper editor features",
+        "static slot-name navigation mappings",
+        "incremental or multi-project invalidation",
+        "safe deletion of either current generator",
+    ];
+    assert_exact_strings(&matrix.unproven, &expected_unproven);
     let expected_required_coverage = [
         "utf8",
         "crlf",

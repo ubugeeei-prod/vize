@@ -14,7 +14,7 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
     {
       "diagnostics": [],
       "file": "src/dual-scripts-emits.vue",
-      "virtualTs": "// TS-40 dual-scripts-emits.vue 24f370db1df2801011a2b32dd208c4ba41ce25cf67f7697607081d8f4a93afc3"
+      "virtualTs": "// TS-40 dual-scripts-emits.vue bfc8dfc8a4c474de728523794e7340927f25f96fbc3bcdf5d487d7a3990b90d0"
     },
     {
       "diagnostics": [],

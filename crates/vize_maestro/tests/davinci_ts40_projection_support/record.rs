@@ -1,4 +1,4 @@
-use vize_carton::{String, append, cstr};
+use vize_carton::{SmallVec, String, append, cstr};
 
 use super::canon::{capture_canon, capture_content_mapper};
 use super::maestro::capture_maestro;
@@ -33,6 +33,7 @@ pub struct LaneRecord {
     pub diagnostics_sha256: String,
     pub authored_hit_count: usize,
     pub authored_hits_sha256: String,
+    pub authored_hit_anchors: SmallVec<[String; 8]>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -84,6 +85,7 @@ impl LaneRecord {
             diagnostics_sha256: sha256(""),
             authored_hit_count: 0,
             authored_hits_sha256: sha256(""),
+            authored_hit_anchors: SmallVec::new(),
         }
     }
 
@@ -113,7 +115,7 @@ impl ProjectionRecord {
             assert_eq!(self.canon.status, "feature-disabled:vize_canon/legacy");
             assert_eq!(self.maestro.status, "feature-disabled:vize_maestro/legacy");
             assert!(self.content_mapper.mapping_count > 0);
-            assert!(self.content_mapper.authored_hit_count > 0);
+            assert_exact_authored_hit_anchors("content-mapper", fixture, &self.content_mapper);
             return;
         }
         if fixture
@@ -143,8 +145,8 @@ impl ProjectionRecord {
         assert!(self.canon.mapping_count > 0);
         assert!(self.content_mapper.mapping_count > 0);
         assert!(self.maestro.mapping_count > 0);
-        assert!(self.content_mapper.authored_hit_count > 0);
-        assert!(self.maestro.authored_hit_count > 0);
+        assert_exact_authored_hit_anchors("content-mapper", fixture, &self.content_mapper);
+        assert_exact_authored_hit_anchors("maestro", fixture, &self.maestro);
         if fixture
             .coverage
             .iter()
@@ -168,7 +170,7 @@ impl ProjectionRecord {
         ] {
             append!(
                 out,
-                "[{name}]\nstatus={}\ntext={}:{}\npre-rewrite-text={}:{}\nimport-source-map={}:{}\nimport-source-map-probes={}:{}\nmappings={}:{}\nsemantic-links={}:{}\ndiagnostics={}:{}\nauthored-hits={}:{}\n",
+                "[{name}]\nstatus={}\ntext={}:{}\npre-rewrite-text={}:{}\nimport-source-map={}:{}\nimport-source-map-probes={}:{}\nmappings={}:{}\nsemantic-links={}:{}\ndiagnostics={}:{}\nauthored-hits={}:{}\nauthored-hit-anchors={:?}\n",
                 lane.status,
                 lane.text_bytes,
                 lane.text_sha256,
@@ -185,10 +187,29 @@ impl ProjectionRecord {
                 lane.diagnostic_count,
                 lane.diagnostics_sha256,
                 lane.authored_hit_count,
-                lane.authored_hits_sha256
+                lane.authored_hits_sha256,
+                lane.authored_hit_anchors
             );
         }
         out
+    }
+}
+
+fn assert_exact_authored_hit_anchors(lane_name: &str, fixture: &Fixture, lane: &LaneRecord) {
+    assert_eq!(
+        lane.authored_hit_anchors.len(),
+        fixture.anchors.len(),
+        "{}: {lane_name} must map every declared anchor; expected {:?}, got {:?}",
+        fixture.id,
+        fixture.anchors,
+        lane.authored_hit_anchors
+    );
+    for (actual, expected) in lane.authored_hit_anchors.iter().zip(fixture.anchors.iter()) {
+        assert_eq!(
+            actual, expected,
+            "{}: {lane_name} authored anchor identity or order drifted",
+            fixture.id
+        );
     }
 }
 

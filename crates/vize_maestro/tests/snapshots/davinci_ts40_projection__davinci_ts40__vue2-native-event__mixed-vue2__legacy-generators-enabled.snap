@@ -14,6 +14,7 @@ mappings=6:33a5747764cb7fd582285f14901a0a6d8fa2b9c7625403fdf6f9be7c90d6bd92
 semantic-links=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 diagnostics=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 authored-hits=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+authored-hit-anchors=[]
 [content-mapper]
 status=ok:vue3-fixed-production
 text=12839:cf5f8956c944d3aea37f2a326156cb653ae6b2ce3328766a579eea1b1c756c31
@@ -24,6 +25,7 @@ mappings=6:ca7df15df476b515c3e1db517dc4fde4eaf9df99081c55d098c0cc3562db6420
 semantic-links=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 diagnostics=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 authored-hits=4:ba608653459badc651039010a7b4eded82faf9c9641627d2a150d7e7b53e88c9
+authored-hit-anchors=["message", "input"]
 [maestro]
 status=ok:legacy-feature-projection
 text=427:8ac3c8f75d324f830e7c10aaa03aeab1ff5a32218eb40693a05863f96fc14ad3
@@ -34,3 +36,4 @@ mappings=3:a75e531bbaf9e06e1447e0b8203e7d880b4235bd77e4ee8459e023a9201c5337
 semantic-links=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 diagnostics=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 authored-hits=4:a86c3df107e683dd11d5f05c16b9f7fcabcbcbf405af4b8631f7187f58d69f40
+authored-hit-anchors=["message", "input"]

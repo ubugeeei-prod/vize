@@ -11,6 +11,7 @@
     "Davinci or S2 projection parity",
     "full-corpus vize check diagnostic parity",
     "all tsgo Content Mapper editor features",
+    "static slot-name navigation mappings",
     "incremental or multi-project invalidation",
     "safe deletion of either current generator"
   ],
@@ -63,7 +64,7 @@
       "file": "tests/_fixtures/davinci-ts40-projection/options-api-slots.vue",
       "coverage": ["options-api", "slots", "props", "navigation-ranges"],
       "lineEnding": "lf",
-      "anchors": ["message", "header"],
+      "anchors": ["message"],
       "optionsApi": true,
       "legacyVue2": false
     },

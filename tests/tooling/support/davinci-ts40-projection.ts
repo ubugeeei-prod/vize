@@ -51,7 +51,8 @@ export function validateProjectionMatrix(root: string, matrix: ProjectionMatrix)
     fixture.coverage.forEach((item) => coverage.add(item));
 
     const sourcePath = path.join(root, fixture.file);
-    assert(fs.statSync(sourcePath).isFile(), `${fixture.id} source fixture is missing`);
+    assert(fs.existsSync(sourcePath), `${fixture.id} source fixture is missing: ${fixture.file}`);
+    assert(fs.statSync(sourcePath).isFile(), `${fixture.id} source fixture is not a file`);
     const source = fs.readFileSync(sourcePath, "utf8");
     assert(source.length > 0, `${fixture.id} source fixture must not be empty`);
     for (const anchor of fixture.anchors) {

@@ -7,13 +7,18 @@
 #![cfg(unix)]
 
 use std::collections::BTreeMap;
-use std::io::{BufRead, Write};
-use std::os::unix::net::UnixListener;
+use std::io::{BufRead, ErrorKind, Write};
+use std::os::unix::net::{UnixListener, UnixStream};
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::time::{Duration, Instant};
 
 use sha2::{Digest, Sha256};
-use vize_carton::{String, append, cstr};
+use vize_carton::{String, ToCompactString, append, cstr};
+
+const SOCKET_ORACLE_TIMEOUT: Duration = Duration::from_secs(5);
+const SOCKET_ACCEPT_POLL_INTERVAL: Duration = Duration::from_millis(10);
+const NO_CONNECT_TEST_TIMEOUT: Duration = Duration::from_millis(25);
 
 #[test]
 #[allow(clippy::disallowed_macros)] // `insta` expands to `format!`.
@@ -53,7 +58,10 @@ fn show_virtual_ts_presents_the_exact_fixture_matrix() {
     let listener = UnixListener::bind(&socket).unwrap();
     let expected_count = expected.len();
     let server = std::thread::spawn(move || {
-        let (mut stream, _) = listener.accept().unwrap();
+        let mut stream = accept_with_deadline(&listener, SOCKET_ORACLE_TIMEOUT).unwrap();
+        stream
+            .set_read_timeout(Some(SOCKET_ORACLE_TIMEOUT))
+            .unwrap();
         let mut reader = std::io::BufReader::new(stream.try_clone().unwrap());
         for _ in 0..expected_count {
             #[allow(clippy::disallowed_types)]
@@ -104,7 +112,7 @@ fn show_virtual_ts_presents_the_exact_fixture_matrix() {
         ])
         .output()
         .unwrap();
-    server.join().unwrap();
+    let server_result = server.join();
     let _ = std::fs::remove_file(&socket);
 
     assert!(
@@ -112,6 +120,7 @@ fn show_virtual_ts_presents_the_exact_fixture_matrix() {
         "check failed: {}",
         std::str::from_utf8(&output.stderr).unwrap_or("<non-UTF-8 stderr>")
     );
+    server_result.unwrap();
     let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(json["fileCount"], fixtures.len());
     assert_eq!(json["warningCount"], 1);
@@ -139,6 +148,62 @@ fn show_virtual_ts_presents_the_exact_fixture_matrix() {
     }
     assert_eq!(stderr, expected_stderr);
     let _ = std::fs::remove_dir_all(&project);
+}
+
+#[test]
+fn socket_oracle_times_out_when_the_cli_exits_before_connecting() {
+    let socket_name = cstr!("/tmp/vize-ts40-cli-no-connect-{}.sock", std::process::id());
+    let socket = PathBuf::from(socket_name.as_str());
+    let _ = std::fs::remove_file(&socket);
+    let listener = UnixListener::bind(&socket).unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .args([
+            "check",
+            "--socket",
+            socket.to_str().unwrap(),
+            "--davinci-no-connect-probe",
+        ])
+        .output()
+        .unwrap();
+    let accept_error = accept_with_deadline(&listener, NO_CONNECT_TEST_TIMEOUT).unwrap_err();
+    let _ = std::fs::remove_file(&socket);
+
+    assert_eq!(output.status.code(), Some(2));
+    assert_eq!(output.stdout, b"");
+    assert_eq!(
+        std::str::from_utf8(&output.stderr).unwrap(),
+        "error: unexpected argument '--davinci-no-connect-probe' found\n\n  tip: to pass '--davinci-no-connect-probe' as a value, use '-- --davinci-no-connect-probe'\n\nUsage: vize check --socket <SOCKET> [PATTERNS]...\n\nFor more information, try '--help'.\n"
+    );
+    assert_eq!(accept_error.kind(), ErrorKind::TimedOut);
+    assert_eq!(
+        accept_error.to_compact_string(),
+        "vize check did not connect to the TS-40 oracle socket before its deadline"
+    );
+}
+
+fn accept_with_deadline(listener: &UnixListener, timeout: Duration) -> std::io::Result<UnixStream> {
+    listener.set_nonblocking(true)?;
+    let deadline = Instant::now() + timeout;
+    loop {
+        match listener.accept() {
+            Ok((stream, _)) => {
+                stream.set_nonblocking(false)?;
+                return Ok(stream);
+            }
+            Err(error) if error.kind() == ErrorKind::WouldBlock => {
+                let remaining = deadline.saturating_duration_since(Instant::now());
+                if remaining.is_zero() {
+                    return Err(std::io::Error::new(
+                        ErrorKind::TimedOut,
+                        "vize check did not connect to the TS-40 oracle socket before its deadline",
+                    ));
+                }
+                std::thread::sleep(remaining.min(SOCKET_ACCEPT_POLL_INTERVAL));
+            }
+            Err(error) => return Err(error),
+        }
+    }
 }
 
 fn digest(source: &str) -> String {
