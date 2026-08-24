@@ -1,9 +1,10 @@
 # Davinci — Architecture
 
 > [!NOTE]
-> This is the design-phase architecture. Names of stages and crates are
-> provisional (see [Open Questions](./open-questions.md#naming)). The decided
-> positions it implements are recorded in the [charter](./README.md#decided-positions).
+> This is the design-phase architecture. Stage contracts are stable; new
+> implementation code uses the short stage aliases recorded in
+> [charter #11](./README.md#decided-positions). Historical art-name package ids
+> stay visible during the mechanical rename window.
 
 ## What we take from MLIR, and what we refuse
 
@@ -81,7 +82,7 @@ and autofixes rely on. Vue 2 is an S1/S2 dialect using
 the existing `legacy` capability model (resolve once per file, feature-gated,
 zero cost when off).
 
-### S2 — Disegno, the semantic IR (the pivot; crate `vize_disegno`)
+### S2 — semantic IR (the pivot; alias `vize_s2`, package `vize_disegno`)
 
 The normalized, input-neutral representation of UI semantics, and the **primary
 consumer surface**: element/component/text/interpolation nodes, structured
@@ -163,7 +164,7 @@ Corsa/tsgo API surface (native project sessions), the existing
 host interface), and Maestro's editor features. One mapping model, three
 transports — this is what retires the current canon/maestro mapping split.
 
-### S3 — Impeto, the reactivity IR (crate `vize_impeto`)
+### S3 — reactivity IR (future alias `vize_s3`, planned package `vize_impeto`)
 
 Named for Leonardo's concept of impetus — how motion propagates. The
 generalization of today's Vapor IR: flat, id-based operations
@@ -285,7 +286,8 @@ Non-negotiable, inherited from "Be Fast Above All":
 
 ## Portability: `no_std` core, WASI as a first-class target
 
-Davinci-owned crates (`vize_davinci`, `vize_disegno`, `vize_impeto`) are
+Davinci-owned crates (`vize_davinci`, `vize_s2`/`vize_disegno`,
+`vize_s3`/`vize_impeto`) are
 written `no_std + alloc` from birth: stage data, passes, and emitters depend on
 the arena and core types only, with `std` gated to the edges (filesystem,
 threads/rayon, process spawning, clocks). CI builds the core for

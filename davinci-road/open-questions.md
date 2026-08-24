@@ -7,9 +7,9 @@
 
 ## Decided (stubs)
 
-- **Naming** → charter #11. Disegno (S2), Impeto (S3), Folio (dumps — "Codex"
-  was rejected for its AI-product collision), `vize_davinci` (infra); croquis
-  survives as the semantic engine. VIR absorbed as the croquis folio.
+- **Naming** → charter #11. Stage aliases are the primary implementation names
+  (`vize_s1`, `vize_s2`, `vize_s1_to_s2`, future `vize_s3`); art names remain
+  historical package ids/courtesy aliases until mechanical rename PRs land.
 - **S3 scope** → charter #9. DOM + Vapor through S3; SSR thin S2→S4 path
   reading partition facts. Phase 3 measurements keep veto power.
 - **Incrementality** → charter #10. salsa in the resident tier only; fused

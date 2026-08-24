@@ -20,7 +20,9 @@
 //! - [`folio`] — the textual stage-dump contract (`trait Folio`).
 //!
 //! The stage IRs themselves land in their own crates (`vize_disegno` for S2);
-//! see `davinci-road/architecture.md`.
+//! see `davinci-road/architecture.md`. New implementation code should prefer
+//! the stage aliases recorded in [`stage`] (`vize_s1`, `vize_s2`,
+//! `vize_s1_to_s2`) over the historical art-name package ids.
 //!
 //! The crate is `no_std + alloc` from birth so every future stage artifact
 //! can print and parse on any target (wasm32-wasip2 included). Host-only
@@ -41,3 +43,4 @@ pub mod id;
 pub mod legacy_plan;
 pub mod pass;
 pub mod side_table;
+pub mod stage;

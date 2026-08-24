@@ -797,6 +797,10 @@ dependencies = [
  "serde_json",
  "tempfile",
  "thiserror 2.0.20",
+ "vize_carton",
+ "vize_disegno",
+ "vize_ricalco",
+ "vize_sinopia",
 ]
 
 [[package]]

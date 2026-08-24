@@ -23,6 +23,10 @@ libc = { workspace = true }
 
 [dev-dependencies]
 tempfile = { workspace = true }
+vize_carton = { workspace = true }
+vize_s1 = { workspace = true }
+vize_s1_to_s2 = { workspace = true }
+vize_s2 = { workspace = true }
 
 [[bench]]
 name = "selfcheck"
