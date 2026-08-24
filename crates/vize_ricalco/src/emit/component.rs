@@ -1,19 +1,20 @@
 //! Static-name component emission (`resolveComponent` / `createVNode` /
-//! `createBlock`) plus implicit default **text** slots. Named slots,
-//! builtins, and `<component :is>` stay unsupported this installment.
+//! `createBlock`) plus implicit default slots (text, native HTML,
+//! nested components). Named slots, builtins, and `<component :is>`
+//! stay unsupported this installment.
 
 use alloc::vec::Vec as StdVec;
 
 use vize_disegno::op::{ComponentOp, Op, Region};
 
-use super::EmitCx;
-use super::EmitError;
 use super::buf::Buf;
 use super::flag::emit_patch_flag;
 use super::js::asset_ident;
 use super::props::{admit_bindings, bind_patch, emit_bind_props};
 use super::slots;
 use super::vnode::compact_props_object;
+use super::EmitCx;
+use super::EmitError;
 
 pub(super) fn collect_names<'a>(root: &Region<'a>) -> StdVec<&'a str> {
     let mut names = StdVec::new();
@@ -150,7 +151,9 @@ fn emit_call(
     if if_key.is_some() || has_binds || !component.attributes.is_empty() {
         cx.buf.push(", ");
         emit_bind_props(cx, &component.attributes, &component.bindings, if_key)?;
-    } else if emit_flag || has_slots {
+    } else if emit_flag || has_slots || for_item {
+        // Vue's v-for item `createBlock` keeps an explicit null props
+        // even when the component has no props, slots, or patch flag.
         cx.buf.push(", null");
     }
     if has_slots {
@@ -183,7 +186,7 @@ fn admit(component: &ComponentOp<'_>) -> Result<(), EmitError> {
         return Err(EmitError::Unsupported);
     }
     if slots::has_implicit_default(&component.children) {
-        slots::admit_text_default(&component.children)?;
+        slots::admit_default(&component.children)?;
     }
     admit_bindings(&component.attributes, &component.bindings)
 }

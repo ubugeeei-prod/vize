@@ -184,8 +184,11 @@ impl Buf {
         Helper::WithCtx.alias()
     }
 
-    pub(super) fn push_hoist(&mut self, rhs: String) {
+    pub(super) fn push_hoist(&mut self, rhs: String) -> String {
         self.hoists.push(rhs);
+        let mut alias = String::from("_hoisted_");
+        alias.push_str(self.hoists.len().to_compact_string().as_str());
+        alias
     }
 
     pub(super) fn hoist_root_props(&mut self, object: String) {
