@@ -193,7 +193,12 @@ fn emit_call(
         .iter()
         .any(|attr| !skip_is || attr.name != "is");
     let has_custom = directive::has_custom(&component.bindings);
-    let has_hoist_attrs = !component.attributes.is_empty();
+    let hoist_attrs: StdVec<_> = component
+        .attributes
+        .iter()
+        .filter(|attr| !skip_is || attr.name != "is")
+        .collect();
+    let has_hoist_attrs = !hoist_attrs.is_empty();
     let static_nested = builtin::has_static_nested(&component.children);
     let builtin_helper = builtin::helper(component.name).is_some();
     let hoisted_static_props = if !has_binds
@@ -205,7 +210,7 @@ fn emit_call(
     {
         Some(
             cx.buf
-                .push_hoist(compact_props_object(component.attributes.iter())),
+                .push_hoist(compact_props_object(hoist_attrs.iter().copied())),
         )
     } else {
         None
@@ -218,7 +223,7 @@ fn emit_call(
         && static_nested;
     if unused_hoist {
         cx.buf
-            .push_hoist(compact_props_object(component.attributes.iter()));
+            .push_hoist(compact_props_object(hoist_attrs.iter().copied()));
     }
     let mut patch = bind_patch(&component.bindings, true);
     if skip_is {

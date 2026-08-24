@@ -13,11 +13,15 @@ pub(super) fn create_props_expression<'a>(
     allocator: &'a Allocator,
     props: &[PropNode<'a>],
     scope_id: Option<&'a str>,
+    skip_is: bool,
 ) -> Option<PropsExpression<'a>> {
     let mut obj_props = Vec::new_in(&allocator);
     let mut seen: vize_carton::FxHashSet<String> = vize_carton::FxHashSet::default();
 
     for prop in props {
+        if skip_is && is_is_prop(prop) {
+            continue;
+        }
         match prop {
             PropNode::Attribute(attr) => {
                 if seen.contains(attr.name) {
@@ -181,6 +185,7 @@ pub(super) fn hoist_element_props<'a>(
             .scope_id
             .as_deref()
             .map(|id| allocator.alloc_str(id)),
+        skip_is_on_dynamic_component(el),
     ) else {
         return;
     };
@@ -188,6 +193,22 @@ pub(super) fn hoist_element_props<'a>(
     let js_node = JsChildNode::Object(obj_expr);
     let hoist_index = ctx.hoist(js_node);
     el.hoisted_props_index = Some(hoist_index + 1);
+}
+
+/// Vue's `buildProps` drops `is` / `:is` on `<component>` / `<Component>`
+/// before `hoistStatic` runs, so the hoisted object must not keep it.
+fn skip_is_on_dynamic_component(el: &ElementNode<'_>) -> bool {
+    el.tag == "component" || (el.tag == "Component" && el.props.iter().any(is_is_prop))
+}
+
+fn is_is_prop(prop: &PropNode<'_>) -> bool {
+    match prop {
+        PropNode::Attribute(attr) => attr.name == "is",
+        PropNode::Directive(dir) => {
+            dir.name == "bind"
+                && matches!(&dir.arg, Some(ExpressionNode::Simple(arg)) if arg.content == "is")
+        }
+    }
 }
 
 fn clone_expression_for_hoist<'a>(exp: &SimpleExpressionNode<'a>) -> SimpleExpressionNode<'a> {

@@ -166,3 +166,20 @@ fn constant_bind_modifiers_are_preserved_in_hoisted_props() {
         "hoisted props were not used:\n{code}"
     );
 }
+
+#[test]
+fn dynamic_component_hoisted_props_omit_is() {
+    let (preamble, code) = compile_hoisted(r#"<component is="Foo" id="a">hello</component>"#);
+    assert!(
+        preamble.contains("const _hoisted_1 = { id: \"a\" }"),
+        "hoisted props should keep id and drop is:\n{preamble}\n{code}"
+    );
+    assert!(
+        !preamble.contains("is:"),
+        "hoisted props must not retain is:\n{preamble}"
+    );
+    assert!(
+        code.contains("_resolveDynamicComponent(\"Foo\"), _hoisted_1"),
+        "dynamic component should consume the filtered hoist:\n{code}"
+    );
+}

@@ -177,7 +177,7 @@ fn create_vnode_call_from_element<'a>(
     scope_id: Option<&'a str>,
 ) -> JsChildNode<'a> {
     let tag = VNodeTag::String(el.tag);
-    let props = create_props_expression(allocator, &el.props, scope_id);
+    let props = create_props_expression(allocator, &el.props, scope_id, false);
     let children = create_children_expression(allocator, &mut el.children, scope_id);
 
     let vnode_call = VNodeCall {

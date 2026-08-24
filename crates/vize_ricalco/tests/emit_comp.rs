@@ -260,6 +260,26 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn a_static_is_slot_hoists_props_without_is() {
+    assert_eq!(
+        assembled(r#"<component is="Foo" id="a">hello</component>"#),
+        pin("\
+const { resolveDynamicComponent: _resolveDynamicComponent, openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue
+
+const _hoisted_1 = { id: \"a\" }
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createBlock(_resolveDynamicComponent(\"Foo\"), _hoisted_1, {
+    default: _withCtx(() => [
+      _createTextVNode(\"hello\")
+    ]),
+    _: 1 /* STABLE */
+  }))
+}")
+    );
+}
+
+#[test]
 fn a_component_object_on_uses_to_handlers() {
     assert_eq!(
         assembled(r#"<Foo v-on="handlers" />"#),
