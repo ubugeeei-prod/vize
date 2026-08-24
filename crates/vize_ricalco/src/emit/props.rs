@@ -11,7 +11,8 @@ use super::EmitError;
 use super::buf::Buf;
 use super::js::{escape_js_string, push_ident_key};
 use super::on::{
-    admit_on, emit_on_pair, event_key_for, is_inline_handler_source, needs_hydration, wraps_on,
+    admit_on, emit_on_pair, emit_on_value, event_key_for, is_inline_handler_source,
+    needs_hydration, wraps_on,
 };
 
 pub(super) struct Patch {
@@ -25,7 +26,6 @@ pub(super) fn admit_bindings(
 ) -> Result<(), EmitError> {
     let mut class = false;
     let mut style = false;
-    let mut events = StdVec::new();
     for binding in bindings.iter() {
         match binding {
             BindingOp::Bind(bind) if bind.name.is_none() => {
@@ -50,7 +50,7 @@ pub(super) fn admit_bindings(
                     _ => {}
                 }
             }
-            BindingOp::On(on) => admit_on(on, &mut events)?,
+            BindingOp::On(on) => admit_on(on)?,
             BindingOp::Model(model) => super::model::admit(model)?,
             BindingOp::SlotContent(_) => {}
             BindingOp::VueDirective(_) if super::slots::is_slots_spread(binding) => {}
@@ -90,7 +90,7 @@ pub(super) fn bind_patch(bindings: &[BindingOp<'_>], is_component: bool) -> Patc
                 }
             }
             BindingOp::On(on) => {
-                let Ok(key) = event_key_for(on) else {
+                let Ok(key) = event_key_for(on, !is_component) else {
                     continue;
                 };
                 flag |= 8;
@@ -122,13 +122,29 @@ pub(super) fn emit_bind_props(
     bindings: &[BindingOp<'_>],
     if_key: Option<&str>,
     skip_is: bool,
-    empty_key_multiline: bool,
+    for_item: bool,
+    is_plain_element: bool,
 ) -> Result<(), EmitError> {
     if super::merge::has_object_spread(bindings) {
-        return super::merge::emit_spread_props(cx, attributes, bindings, if_key, skip_is);
+        return super::merge::emit_spread_props(
+            cx,
+            attributes,
+            bindings,
+            if_key,
+            skip_is,
+            for_item,
+            is_plain_element,
+        );
     }
     let pieces = pieces(attributes, bindings, skip_is)?;
-    emit_props_object(cx, &pieces, if_key, false, empty_key_multiline)
+    emit_props_object(
+        cx,
+        &pieces,
+        if_key,
+        false,
+        for_item && super::directive::has_custom(bindings),
+        is_plain_element,
+    )
 }
 
 pub(super) fn emit_props_object(
@@ -137,6 +153,7 @@ pub(super) fn emit_props_object(
     if_key: Option<&str>,
     skip_normalize: bool,
     empty_key_multiline: bool,
+    is_plain_element: bool,
 ) -> Result<(), EmitError> {
     let skip_class = pieces_have_named(pieces, "class");
     let skip_key = if_key.is_some();
@@ -183,7 +200,27 @@ pub(super) fn emit_props_object(
         cx.buf.push(key);
         i = 1;
     }
+    let mut emitted_merged = StdVec::new();
     for piece in visible.iter() {
+        if let Some(key) = piece_event_key(piece, is_plain_element)
+            && merge_count(&visible, key.as_str(), is_plain_element) > 1
+        {
+            if emitted_merged.iter().any(|seen: &String| seen == &key) {
+                continue;
+            }
+            if i > 0 {
+                cx.buf.push(",");
+            }
+            if multiline {
+                cx.buf.newline();
+            } else if i > 0 {
+                cx.buf.push(" ");
+            }
+            emit_merged_handlers(cx, &visible, key.as_str(), is_plain_element)?;
+            emitted_merged.push(key);
+            i += 1;
+            continue;
+        }
         if i > 0 {
             cx.buf.push(",");
         }
@@ -195,7 +232,7 @@ pub(super) fn emit_props_object(
         match piece {
             Piece::Attr(attr) => emit_static_pair(cx, attr),
             Piece::Bind(bind) => emit_bind_pair(cx, pieces, bind, skip_normalize)?,
-            Piece::On(on) => emit_on_pair(cx, on)?,
+            Piece::On(on) => emit_on_pair(cx, on, is_plain_element)?,
             Piece::ModelValue { name, source, .. } => super::model::emit_value(cx, name, source),
             Piece::ModelUpdate { key, source, .. } => {
                 super::model::emit_update(cx, key.as_str(), source)
@@ -406,6 +443,48 @@ fn emit_style_value(cx: &mut EmitCx<'_>, js: &JsExpr<'_>, skip_normalize: bool) 
     if wrap {
         cx.buf.push(")");
     }
+}
+
+fn piece_event_key(piece: &Piece<'_>, is_plain_element: bool) -> Option<String> {
+    match piece {
+        Piece::On(on) => event_key_for(on, is_plain_element).ok(),
+        Piece::ModelUpdate { key, .. } => Some(key.clone()),
+        _ => None,
+    }
+}
+
+fn merge_count(visible: &[&Piece<'_>], key: &str, is_plain_element: bool) -> usize {
+    visible
+        .iter()
+        .filter(|piece| piece_event_key(piece, is_plain_element).as_deref() == Some(key))
+        .count()
+}
+
+fn emit_merged_handlers(
+    cx: &mut EmitCx<'_>,
+    visible: &[&Piece<'_>],
+    key: &str,
+    is_plain_element: bool,
+) -> Result<(), EmitError> {
+    push_ident_key(cx, key);
+    cx.buf.push(": [");
+    let mut first = true;
+    for piece in visible.iter() {
+        if piece_event_key(piece, is_plain_element).as_deref() != Some(key) {
+            continue;
+        }
+        if !first {
+            cx.buf.push(", ");
+        }
+        first = false;
+        match piece {
+            Piece::On(on) => emit_on_value(cx, on)?,
+            Piece::ModelUpdate { source, .. } => super::model::emit_assignment(cx, source),
+            _ => {}
+        }
+    }
+    cx.buf.push("]");
+    Ok(())
 }
 
 pub(super) fn js_value<'a>(bind: &'a BindOp<'a>) -> Result<&'a JsExpr<'a>, EmitError> {

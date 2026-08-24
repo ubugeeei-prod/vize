@@ -26,6 +26,11 @@ fn refused(source: &str) -> EmitError {
     })
 }
 
+/// Vue's extra `newline()` after `genAssets` leaves indent on the blank line.
+fn pin(visual: &str) -> String {
+    visual.replace(")\n\n  return", ")\n  \n  return")
+}
+
 #[test]
 fn a_click_handler_matches_the_shipped_snapshot() {
     assert_eq!(
@@ -185,9 +190,88 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn duplicate_click_handlers_are_unsupported_this_installment() {
+fn duplicate_click_handlers_merge_into_an_array() {
     assert_eq!(
-        refused(r#"<div @click="a" @click="b"></div>"#),
-        EmitError::Unsupported
+        assembled(r#"<div @click="a" @click="b"></div>"#),
+        "\
+const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    onClick: [a, b]
+  }, null, 8 /* PROPS */, [\"onClick\"]))
+}"
+    );
+}
+
+#[test]
+fn a_colon_event_on_a_component_camelizes() {
+    assert_eq!(
+        assembled(r#"<Foo @update:modelValue="h" />"#),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, { \"onUpdate:modelValue\": h }, null, 8 /* PROPS */, [\"onUpdate:modelValue\"]))
+}")
+    );
+}
+
+#[test]
+fn a_colon_event_on_a_plain_element_preserves_case() {
+    assert_eq!(
+        assembled(r#"<div @update:modelValue="h"></div>"#),
+        "\
+const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", { \"on:update:modelValue\": h }, null, 40 /* PROPS, NEED_HYDRATION */, [\"on:update:modelValue\"]))
+}"
+    );
+}
+
+#[test]
+fn a_vue_hook_rewrites_to_on_vnode() {
+    assert_eq!(
+        assembled(r#"<div @vue:mounted="h"></div>"#),
+        "\
+const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", { onVnodeMounted: h }, null, 8 /* PROPS */, [\"onVnodeMounted\"]))
+}"
+    );
+}
+
+#[test]
+fn click_and_click_ctrl_merge_on_the_same_key() {
+    assert_eq!(
+        assembled(r#"<div @click="a" @click.ctrl="b"></div>"#),
+        "\
+const { withModifiers: _withModifiers, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    onClick: [a, _withModifiers(b, [\"ctrl\"])]
+  }, null, 8 /* PROPS */, [\"onClick\"]))
+}"
+    );
+}
+
+#[test]
+fn click_and_click_once_keep_distinct_keys() {
+    assert_eq!(
+        assembled(r#"<div @click="a" @click.once="b"></div>"#),
+        "\
+const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    onClick: a,
+    onClickOnce: b
+  }, null, 40 /* PROPS, NEED_HYDRATION */, [\"onClick\", \"onClickOnce\"]))
+}"
     );
 }
