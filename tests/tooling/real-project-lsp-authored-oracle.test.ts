@@ -52,11 +52,16 @@ test("real-project LSP exercises authored binding and component boundary feature
     assertOrderedEvents(session.events, [
       ["textDocument/didOpen:1:Binding.vue", "textDocument/publishDiagnostics:1:Binding.vue"],
       ["textDocument/didOpen:1:FeatureChild.vue", "textDocument/didChange:2:FeatureChild.vue"],
+      [
+        "textDocument/publishDiagnostics:1:FeatureParent.vue",
+        "textDocument/didChange:2:FeatureParent.vue",
+      ],
+      ["textDocument/didChange:2:FeatureParent.vue", "workspace/didCreateFiles"],
       ["workspace/didCreateFiles", "workspace/symbol"],
       ["workspace/willRenameFiles", "workspace/didRenameFiles"],
-      ["workspace/didDeleteFiles", "textDocument/publishDiagnostics:3:FeatureParent.vue"],
-      ["workspace/didDeleteFiles", "textDocument/didChange:4:FeatureParent.vue"],
-      ["textDocument/didChange:4:FeatureParent.vue", "textDocument/didClose:FeatureParent.vue"],
+      ["workspace/didDeleteFiles", "textDocument/publishDiagnostics:4:FeatureParent.vue"],
+      ["workspace/didDeleteFiles", "textDocument/didChange:5:FeatureParent.vue"],
+      ["textDocument/didChange:5:FeatureParent.vue", "textDocument/didClose:FeatureParent.vue"],
       ["textDocument/didClose:FeatureParent.vue", "textDocument/didClose:FeatureChild.vue"],
       ["textDocument/didClose:FeatureChild.vue", "textDocument/didClose:Binding.vue"],
     ]);
