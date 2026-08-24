@@ -5,10 +5,10 @@ use vize_davinci::id::NodeId;
 use vize_disegno::expr::ExprRef;
 use vize_disegno::op::{IfBranch, IfOp, Op};
 
-use super::EmitCx;
-use super::EmitError;
 use super::buf::Buf;
 use super::js::escape_js_string;
+use super::EmitCx;
+use super::EmitError;
 use crate::pass::{BranchKeyKind, IfFacts};
 
 pub(super) fn emit_if(
@@ -114,7 +114,7 @@ fn emit_branch(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<
         [Op::Component(component)] => {
             let _id = cx.walk.mint();
             cx.walk.skip(component.bindings.len());
-            super::component::emit_if_branch(cx, component, key)
+            super::component::emit_if_branch(cx, component, key, _id)
         }
         _ => Err(EmitError::Unsupported),
     }

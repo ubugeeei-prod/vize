@@ -298,9 +298,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn named_slot_templates_are_unsupported_this_installment() {
+fn create_slots_templates_are_unsupported_this_installment() {
     assert_eq!(
-        refused("<Foo><template #header>x</template></Foo>"),
+        refused(r#"<Foo><template #header v-if="ok">x</template></Foo>"#),
         EmitError::Unsupported
     );
 }

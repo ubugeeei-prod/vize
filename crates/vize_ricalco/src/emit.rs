@@ -14,9 +14,9 @@
 //! `mergeProps`), **static-name components** (`resolveComponent` /
 //! `createVNode` / `createBlock`), and **implicit default text slots**
 //! (`withCtx` / `_: 1|2`, including native / component children,
-//! static-vnode hoists, and hoisted static `ui.for` items). Object
-//! `v-on`, `.native`, template
-//! fragments, filters, named / scoped slots, slot outlets, and builtins stay
+//! static-vnode hoists, hoisted static `ui.for` items, and named /
+//! scoped `<template>` slots). Object `v-on`, `.native`, template
+//! fragments, filters, `createSlots`, slot outlets, and builtins stay
 //! [`EmitError::Unsupported`]. The old lane stays the shipped compile
 //! path; [`super::DOM_LANE_FLAG`] is named here and *read* in the
 //! atelier_dom witness.

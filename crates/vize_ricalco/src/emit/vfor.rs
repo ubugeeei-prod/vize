@@ -83,7 +83,7 @@ pub(super) fn emit_for(cx: &mut EmitCx<'_>, for_op: &ForOp<'_>) -> Result<(), Em
             Ok(())
         }
         [Op::Element(element)] => super::emit_for_item_call(cx, element, stable),
-        [Op::Component(component)] => super::component::emit_for_item(cx, component),
+        [Op::Component(component)] => super::component::emit_for_item(cx, component, _id),
         _ => Err(EmitError::Unsupported),
     };
     cx.in_v_for = prev_in_v_for;
