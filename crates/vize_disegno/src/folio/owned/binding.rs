@@ -31,6 +31,10 @@ pub enum FolioBinding {
     VueSync(FolioVueSync),
     /// `vue.slot-scope`.
     VueSlotScope(FolioVueSlotScope),
+    /// `vue.once`.
+    VueOnce(FolioVueOnce),
+    /// `vue.memo`.
+    VueMemo(FolioVueMemo),
 }
 
 /// Mirror of [`crate::op::BindOp`].
@@ -131,6 +135,22 @@ pub struct FolioVueCssBind {
     pub span: Span,
 }
 
+/// Mirror of [`crate::op::VueOnceOp`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FolioVueOnce {
+    /// Source range.
+    pub span: Span,
+}
+
+/// Mirror of [`crate::op::VueMemoOp`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FolioVueMemo {
+    /// The memo dependency expression.
+    pub value: FolioExpr,
+    /// Source range.
+    pub span: Span,
+}
+
 pub(super) fn own_binding(binding: &BindingOp<'_>) -> FolioBinding {
     match binding {
         BindingOp::Bind(bind) => FolioBinding::Bind(FolioBind {
@@ -180,6 +200,11 @@ pub(super) fn own_binding(binding: &BindingOp<'_>) -> FolioBinding {
             name: scope.name.map(String::from),
             params: scope.params.as_ref().map(own_expr),
             span: scope.span,
+        }),
+        BindingOp::VueOnce(once) => FolioBinding::VueOnce(FolioVueOnce { span: once.span }),
+        BindingOp::VueMemo(memo) => FolioBinding::VueMemo(FolioVueMemo {
+            value: own_expr(&memo.value),
+            span: memo.span,
         }),
     }
 }

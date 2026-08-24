@@ -78,7 +78,9 @@ fn is_key_bind(binding: &BindingOp<'_>) -> bool {
         | BindingOp::VueDirective(_)
         | BindingOp::VueCssBind(_)
         | BindingOp::VueSync(_)
-        | BindingOp::VueSlotScope(_) => false,
+        | BindingOp::VueSlotScope(_)
+        | BindingOp::VueOnce(_)
+        | BindingOp::VueMemo(_) => false,
     }
 }
 
@@ -154,5 +156,7 @@ fn binding_span(binding: &BindingOp<'_>) -> Span {
         BindingOp::VueCssBind(bind) => bind.span,
         BindingOp::VueSync(sync) => sync.span,
         BindingOp::VueSlotScope(scope) => scope.span,
+        BindingOp::VueOnce(once) => once.span,
+        BindingOp::VueMemo(memo) => memo.span,
     }
 }

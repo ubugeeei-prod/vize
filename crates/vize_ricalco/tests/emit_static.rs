@@ -12,7 +12,7 @@ mod support;
 
 use support::with_transformed;
 use vize_carton::Allocator;
-use vize_ricalco::{emit_dom, emit_dom_source};
+use vize_ricalco::{EmitError, emit_dom, emit_dom_source};
 
 fn assembled(source: &str) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {
@@ -302,5 +302,24 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     _createElementVNode(\"span\")
   ]))
 }"
+    );
+}
+
+fn refused(source: &str) -> EmitError {
+    with_transformed(source, |lowered, _, facts, _| {
+        emit_dom(lowered, facts).expect_err("expected Unsupported")
+    })
+}
+
+#[test]
+fn v_once_is_unsupported_until_realization() {
+    assert_eq!(refused("<div v-once>x</div>"), EmitError::Unsupported);
+}
+
+#[test]
+fn v_memo_is_unsupported_until_realization() {
+    assert_eq!(
+        refused(r#"<div v-memo="[id]">x</div>"#),
+        EmitError::Unsupported
     );
 }

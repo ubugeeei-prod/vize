@@ -1,23 +1,19 @@
 //! Attached bindings: `v-bind`/`v-on` into the normalized one-way ops
 //! ([`super::bindop`], P2-9 series 5), `v-model` into the `ui.model`
 //! contract, `v-slot` into `ui.slot-content`, custom directives into
-//! `vue.directive`, and the deferral of what remains.
+//! `vue.directive`, well-formed `v-once`/`v-memo` into `vue.once` /
+//! `vue.memo` ([`super::once_memo`]), and the deferral of what remains.
 //!
 //! # Unmappable means diagnostic, never a new op
 //!
-//! `v-html`, `v-text`, `v-show`, `v-cloak`, `v-once`, `v-memo` and
-//! `v-pre` still have **no S2 op**, and forcing them into
-//! `vue.directive` would break its documented contract ("built-in
-//! directives never appear here"). Each is deferred: an `Info`
-//! diagnostic — the input is not wrong, the stage is younger than the
-//! construct — plus a provenance record naming the rule, with the owner
-//! op kept as the fragment. The owner of the remaining set is **DOM
-//! realization (P2-11)**, a measured statement: the element-family port
-//! found every one of their old transform files dead in the shipped
-//! lane — the living reads are all codegen-time (`has_v_once`,
-//! `get_memo_exp`, `has_vshow_directive`, ... in `codegen/element/`) —
-//! so there is no transform-time behaviour left for an S2 pass to
-//! carry, and their ops land with the stage that reads them.
+//! `v-html`, `v-text`, `v-show`, `v-cloak` and `v-pre` still have **no
+//! S2 op**, and forcing them into `vue.directive` would break its
+//! documented contract ("built-in directives never appear here"). Each
+//! is deferred: an `Info` diagnostic — the input is not wrong, the
+//! stage is younger than the construct — plus a provenance record
+//! naming the rule, with the owner op kept as the fragment. `v-once`
+//! and `v-memo` now have dialect ops; only ill-formed spellings still
+//! defer. The remaining set is still DOM realization (P2-11).
 
 use alloc::vec::Vec as StdVec;
 
@@ -63,6 +59,16 @@ pub(crate) fn lower_attr<'a>(
         }
         Head::Custom => bindings.push(lower_custom(cx, element, index, directive)),
         Head::Slot => bindings.push(lower_slot_content(cx, element, index, directive)),
+        Head::Once => {
+            if let Some(op) = super::once_memo::lower_once(cx, element, index, directive) {
+                bindings.push(op);
+            }
+        }
+        Head::Memo => {
+            if let Some(op) = super::once_memo::lower_memo(cx, element, index, directive) {
+                bindings.push(op);
+            }
+        }
         Head::Pre => defer(
             cx,
             "defer.v-pre",
@@ -72,14 +78,12 @@ pub(crate) fn lower_attr<'a>(
                 "`v-pre` has no S2 representation; its subtree lowers as ordinary content",
             ),
         ),
-        Head::Html | Head::Text | Head::Show | Head::Cloak | Head::Once | Head::Memo => {
+        Head::Html | Head::Text | Head::Show | Head::Cloak => {
             let rule = match directive.head {
                 Head::Html => "defer.v-html",
                 Head::Text => "defer.v-text",
                 Head::Show => "defer.v-show",
-                Head::Cloak => "defer.v-cloak",
-                Head::Once => "defer.v-once",
-                _ => "defer.v-memo",
+                _ => "defer.v-cloak",
             };
             defer(
                 cx,
