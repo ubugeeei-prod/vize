@@ -11,10 +11,15 @@ use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
 
-// The committed Vue corpus and emitter fixtures currently peak at two
-// modifiers in each bucket (242 modifier-bearing `v-on` spellings sampled).
-// Authored directives remain unbounded: `SmallVec` spills beyond these common
-// two-entry shapes without changing order or output.
+// The natural committed Vue corpus and emitter fixtures peak at two modifiers
+// in each bucket (242 modifier-bearing spellings). The reproducible inventory
+// lives in `tests/tooling/davinci-v-on-storage.test.ts`; it excludes the
+// marked synthetic inline/spill boundary cases. Authored directives remain
+// unbounded: `SmallVec` spills beyond these common two-entry shapes without
+// changing order or output. On 64-bit targets this trades 48 bytes of transient
+// stack space (`Classified`: 120 rather than three 24-byte `Vec`s) for removing
+// the three common-path heap allocations; the allocation benchmark owns the
+// measured budget proof.
 const OPTION_INLINE_CAP: usize = 2;
 const EVENT_INLINE_CAP: usize = 2;
 const KEY_INLINE_CAP: usize = 2;
@@ -260,6 +265,8 @@ fn is_function(expr: &Expression<'_>) -> bool {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(target_pointer_width = "64")]
+    use super::Classified;
     use super::classify_modifiers;
 
     #[test]
@@ -292,5 +299,12 @@ mod tests {
         );
         assert_eq!(classified.event.as_slice(), ["stop", "prevent", "self"]);
         assert_eq!(classified.keys.as_slice(), ["enter", "escape", "space"]);
+    }
+
+    #[cfg(target_pointer_width = "64")]
+    #[test]
+    fn inline_storage_stack_tradeoff_is_pinned() {
+        assert_eq!(core::mem::size_of::<Classified<'_>>(), 120);
+        assert_eq!(core::mem::size_of::<alloc::vec::Vec<&str>>() * 3, 72);
     }
 }
