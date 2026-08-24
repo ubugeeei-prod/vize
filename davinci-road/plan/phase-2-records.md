@@ -20,8 +20,12 @@ and fixture inventory are checked by
 [`davinci-phase2-ledger.test.ts`](../../tests/tooling/davinci-phase2-ledger.test.ts).
 There are **16 of 22 complete**, **2 active and blocked** (P2-9, P2-11), and
 **4 untouched and dependency-blocked** (P2-12b, P2-16, P2-17, P2-20).
+Rows use executable witnesses except where a task's acceptance was explicitly
+a review point. P2-19 is that exception: its decision record is review evidence,
+and the adjacent TS-52 tests execute the shared feed contract, not a production
+transport implementation.
 
-| task   | merged PR                                                | current executable evidence                                                                                                                                                            |
+| task   | merged PR                                                | current evidence                                                                                                                                                                       |
 | ------ | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | P2-1   | [#4452](https://github.com/ubugeeei-prod/vize/pull/4452) | [`NodeId`](../../crates/vize_davinci/src/id.rs), [`SideTable`](../../crates/vize_davinci/src/side_table.rs) and [`Diagnostic`](../../crates/vize_davinci/src/diagnostic.rs) unit tests |
 | P2-2   | [#4452](https://github.com/ubugeeei-prod/vize/pull/4452) | [`pass` laws](../../crates/vize_davinci/src/pass.rs) and [`pass_pipeline_syntax`](../../crates/vize_davinci/tests/pass_pipeline_syntax.rs)                                             |
@@ -38,7 +42,7 @@ There are **16 of 22 complete**, **2 active and blocked** (P2-9, P2-11), and
 | P2-14  | [#4509](https://github.com/ubugeeei-prod/vize/pull/4509) | [`davinci-portability-lane`](../../tests/tooling/davinci-portability-lane.test.ts)                                                                                                     |
 | P2-15  | [#4547](https://github.com/ubugeeei-prod/vize/pull/4547) | [`davinci-matrices`](../../tests/tooling/davinci-matrices.test.ts) and [`davinci-metamorphic-corpus`](../../tests/tooling/davinci-metamorphic-corpus.test.ts)                          |
 | P2-18  | [#4543](https://github.com/ubugeeei-prod/vize/pull/4543) | TS-52: [`spolvero_feed`](../../crates/vize_davinci/tests/spolvero_feed.rs) and [`spolvero_payload`](../../crates/vize_curator/tests/spolvero_payload.rs)                               |
-| P2-19  | [#4543](https://github.com/ubugeeei-prod/vize/pull/4543) | transport decision assertions in [`davinci-phase2-ledger`](../../tests/tooling/davinci-phase2-ledger.test.ts)                                                                          |
+| P2-19  | [#4543](https://github.com/ubugeeei-prod/vize/pull/4543) | **Review evidence:** [`p2-19.md`](./phase-2-records/p2-19.md). **Executable adjacent contract:** TS-52 feed tests above; this is not a transport implementation witness.               |
 
 The executable corpus inventory is **146 gitlinks / 142 ecosystem projects**,
 from [`fixture-compatibility-ledger.test.ts`](../../tests/tooling/fixture-compatibility-ledger.test.ts).
