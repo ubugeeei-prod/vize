@@ -5,6 +5,10 @@ use vize_carton::String;
 
 use super::CapabilityCacheIdentity;
 
+mod telemetry;
+
+pub use telemetry::CapabilityInvalidationTelemetry;
+
 /// Exact reasons a previous capability result cannot be reused.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
