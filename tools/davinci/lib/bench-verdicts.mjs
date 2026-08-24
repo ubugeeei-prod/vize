@@ -85,16 +85,23 @@ export function compare(budgets, baselineReports, currentReports) {
           `(exact gate against budgets.toml: allocs are deterministic and machine-independent)`,
       );
     }
-    if (budget.allocBytesPeak !== undefined && current.alloc_bytes_peak !== budget.allocBytesPeak) {
+    const peakBudgets = budget.allocBytesPeakByPlatform;
+    const peakBudget = peakBudgets?.[current.platform];
+    if (peakBudgets !== undefined && peakBudget === undefined) {
       benchRows.push(
-        `FAIL ${id} alloc_bytes_peak ${formatCount(budget.allocBytesPeak)} -> ` +
-          `${formatCount(current.alloc_bytes_peak)} (exact deterministic peak gate)`,
+        `FAIL ${id} alloc_bytes_peak platform ${current.platform} has no exact budget ` +
+          `(registered: ${Object.keys(peakBudgets).sort().join(", ")})`,
+      );
+    } else if (peakBudget !== undefined && current.alloc_bytes_peak !== peakBudget) {
+      benchRows.push(
+        `FAIL ${id} alloc_bytes_peak[${current.platform}] ${formatCount(peakBudget)} -> ` +
+          `${formatCount(current.alloc_bytes_peak)} (exact platform-aware peak gate)`,
       );
     }
     const peak =
-      budget.allocBytesPeak === undefined
+      peakBudgets === undefined
         ? ""
-        : ` alloc_bytes_peak ${formatCount(current.alloc_bytes_peak)}B`;
+        : ` alloc_bytes_peak[${current.platform}] ${formatCount(current.alloc_bytes_peak)}B`;
     if (benchRows.length > 0) {
       rows.push(...benchRows);
       breaches += benchRows.length;

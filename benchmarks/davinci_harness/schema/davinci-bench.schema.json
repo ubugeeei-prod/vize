@@ -8,6 +8,7 @@
   "required": [
     "bench_id",
     "fixture",
+    "platform",
     "wall_ns",
     "allocs",
     "alloc_bytes_peak",
@@ -25,6 +26,12 @@
       "type": "string",
       "minLength": 1,
       "description": "Fixture identity the bench ran against (fixture path or a synthetic: tag)."
+    },
+    "platform": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9_]+$",
+      "description": "Rust target operating-system name that produced the report (std::env::consts::OS). Exact allocation-byte budgets are selected by this field."
     },
     "wall_ns": {
       "type": "object",

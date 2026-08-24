@@ -160,6 +160,7 @@ pub fn bench_stage_with_metrics<T>(
     let report = BenchReport {
         bench_id,
         fixture,
+        platform: std::env::consts::OS,
         wall_ns,
         allocs: alloc_metrics.map(|metrics| metrics.calls),
         alloc_bytes_peak: alloc_metrics.map(|metrics| metrics.peak_bytes_over_start),

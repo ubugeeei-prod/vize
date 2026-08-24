@@ -35,7 +35,7 @@ criterion with allocation and RSS metrics, used by every later bench.
 - [x] Create `benchmarks/davinci_harness/` (add to `[workspace] members` in root `Cargo.toml`); `publish = false`, stability `experimental`
 - [x] `src/alloc.rs`: `CountingAllocator` (wraps the global allocator; counts `alloc` calls + running/peak bytes; `#[global_allocator]` opt-in via `davinci_harness::main!` macro; default inner allocator is mimalloc, matching the shipped `vize` binary)
 - [x] `src/rss.rs`: peak-RSS sampling (`ru_maxrss` via `libc::getrusage` on macOS/Linux; stub returning `None` elsewhere). Platform semantics documented and normalized: `ru_maxrss` is KB on Linux, bytes on macOS, and is a **process-wide peak** — report baseline-subtracted deltas per bench process, never raw values
-- [x] `src/report.rs`: JSON exporter — schema `{bench_id, fixture, wall_ns: {p50,p95}, allocs, alloc_bytes_peak, rss_peak_bytes, harness_version}` written to `bench/results/davinci/<bench_id>.json`
+- [x] `src/report.rs`: JSON exporter — schema `{bench_id, fixture, platform, wall_ns: {p50,p95}, allocs, alloc_bytes_peak, rss_peak_bytes, harness_version}` written to `bench/results/davinci/<bench_id>.json`; exact peak-byte gates select an explicit per-platform budget and fail closed for unknown platforms
 - [x] `schema/davinci-bench.schema.json` committed; exporter validates against it in debug (strict subset validator: unimplemented schema keywords are errors, not skipped checks)
 - [x] One sample bench (`benches/selfcheck.rs`) exercising all metrics
 - [x] Wire a `vp` task: `bench:davinci` at workspace root

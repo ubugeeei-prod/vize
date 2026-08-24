@@ -4,6 +4,7 @@ fn sample_report() -> BenchReport<'static> {
     BenchReport {
         bench_id: "unit-sample",
         fixture: "synthetic:unit",
+        platform: "macos",
         wall_ns: WallNs {
             p50: 1200,
             p95: 3400,
@@ -46,6 +47,7 @@ fn written_report_bytes_are_exact_and_schema_valid() {
         "{\n",
         "  \"bench_id\": \"unit-sample\",\n",
         "  \"fixture\": \"synthetic:unit\",\n",
+        "  \"platform\": \"macos\",\n",
         "  \"wall_ns\": {\n",
         "    \"p50\": 1200,\n",
         "    \"p95\": 3400\n",

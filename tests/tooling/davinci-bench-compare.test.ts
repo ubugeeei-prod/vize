@@ -160,7 +160,7 @@ test("--bench selects the storage probe and gates its deterministic peak", () =>
       "rss_peak_bytes = 0, wall_tolerance = 0.05 }\n" +
       "fixture_transform_medium = { wall_p50_ns = 200000, allocs = 1000, " +
       "rss_peak_bytes = 0, wall_tolerance = 0.10 }\n" +
-      "[allocation_peak]\nfixture_parse_small = 4096\n",
+      "[allocation_peak]\nfixture_parse_small = { linux = 4096, macos = 4096 }\n",
   );
   const report = JSON.parse(
     fs.readFileSync(
@@ -184,7 +184,10 @@ test("--bench selects the storage probe and gates its deterministic peak", () =>
     const passing = runCompare(args);
     assert.equal(passing.stderr, "");
     assert.equal(passing.status, 0, passing.stdout);
-    assert.match(passing.stdout, /ok fixture_parse_small .*allocs 42 alloc_bytes_peak 4096B .*\n/u);
+    assert.match(
+      passing.stdout,
+      /ok fixture_parse_small .*allocs 42 alloc_bytes_peak\[linux\] 4096B .*\n/u,
+    );
     assert.match(passing.stdout, /registered=1\n$/u);
     assert.doesNotMatch(passing.stdout, /fixture_transform_medium/u);
 
@@ -194,7 +197,7 @@ test("--bench selects the storage probe and gates its deterministic peak", () =>
     assert.equal(breach.status, 1, breach.stdout);
     assert.match(
       breach.stdout,
-      /FAIL fixture_parse_small alloc_bytes_peak 4096 -> 4097 \(exact deterministic peak gate\)/u,
+      /FAIL fixture_parse_small alloc_bytes_peak\[linux\] 4096 -> 4097 \(exact platform-aware peak gate\)/u,
     );
   } finally {
     fs.rmSync(tmpRoot, { recursive: true, force: true });

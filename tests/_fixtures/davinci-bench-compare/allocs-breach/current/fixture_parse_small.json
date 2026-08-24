@@ -1,6 +1,7 @@
 {
   "bench_id": "fixture_parse_small",
   "fixture": "synthetic:bench-compare-fixture",
+  "platform": "linux",
   "wall_ns": { "p50": 104000, "p95": 125000 },
   "allocs": 43,
   "alloc_bytes_peak": 4128,

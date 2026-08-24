@@ -4,8 +4,8 @@
 //! accounts lowering's textual split and alias collection, while the `v-on`
 //! case accounts only S2 DOM emission, including modifier classification.
 //! Exact `allocs` budgets make both probes deterministic and
-//! machine-independent; wall time remains report-only until the reference
-//! runner records it.
+//! machine-independent. Exact peak-byte budgets are platform-specific; wall
+//! time remains report-only until the reference runner records it.
 
 use criterion::{Criterion, criterion_group};
 use davinci_harness::stage::bench_stage_with_metrics;

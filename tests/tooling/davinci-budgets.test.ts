@@ -28,7 +28,7 @@ const budgetsPath = path.join(repoRoot, "davinci-road", "plan", "budgets.toml");
 const budgetsText = fs.readFileSync(budgetsPath, "utf8");
 const budgets = parseTomlLite(budgetsText) as {
   bench: Record<string, Record<string, unknown>>;
-  allocation_peak: Record<string, number>;
+  allocation_peak: Record<string, Record<string, number>>;
 };
 
 // --- bench-id enumeration from the bench sources -------------------------
@@ -199,14 +199,21 @@ test("every bench entry is one single-line inline table", () => {
   }
 });
 
-test("compact-storage allocation peaks are exact deterministic budgets", () => {
+test("compact-storage peaks are exact per-platform allocation budgets", () => {
   assert.deepEqual(budgets.allocation_peak, {
-    ricalco_lower_vfor_three_aliases: 1246,
-    ricalco_emit_von_two_per_bucket: 648,
+    ricalco_lower_vfor_three_aliases: { linux: 1254, macos: 1246 },
+    ricalco_emit_von_two_per_bucket: { linux: 648, macos: 648 },
   });
-  for (const [id, peak] of Object.entries(budgets.allocation_peak)) {
+  for (const [id, peaks] of Object.entries(budgets.allocation_peak)) {
     assert.ok(id in budgets.bench, `${id} must also have a [bench] budget`);
-    assert.ok(Number.isSafeInteger(peak) && peak >= 0);
+    assert.deepEqual(
+      Object.keys(peaks).sort(),
+      ["linux", "macos"],
+      `${id} must fail closed unless every required platform is explicit`,
+    );
+    for (const peak of Object.values(peaks)) {
+      assert.ok(Number.isSafeInteger(peak) && peak >= 0);
+    }
   }
 });
 

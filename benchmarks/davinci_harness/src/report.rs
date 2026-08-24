@@ -39,6 +39,8 @@ pub struct BenchReport<'a> {
     pub bench_id: &'a str,
     /// Fixture identity (fixture path or a `synthetic:` tag).
     pub fixture: &'a str,
+    /// Operating system that produced allocation metrics.
+    pub platform: &'a str,
     /// Wall-clock percentiles.
     pub wall_ns: WallNs,
     /// Allocation-like calls; `None` when the counting allocator is not installed.

@@ -1,6 +1,7 @@
 {
   "bench_id": "fixture_transform_medium",
   "fixture": "synthetic:bench-compare-fixture",
+  "platform": "linux",
   "wall_ns": { "p50": 216000, "p95": 260000 },
   "allocs": 1000,
   "alloc_bytes_peak": 65536,

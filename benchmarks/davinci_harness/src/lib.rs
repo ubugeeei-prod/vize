@@ -9,7 +9,8 @@
 //! - [`alloc::CountingAllocator`]: `GlobalAlloc` wrapper counting
 //!   allocation-like calls plus live/peak heap bytes, installed by [`main!`].
 //!   Wraps mimalloc so benches run on the allocator the shipped `vize`
-//!   binary uses.
+//!   binary uses. Reports stamp the target OS so exact peak-byte gates can
+//!   select a platform-specific contract.
 //! - [`rss`]: `ru_maxrss` peak-RSS sampling, normalized to bytes and always
 //!   reported as a baseline-subtracted delta.
 //! - [`report`]: the JSON exporter, checked against
@@ -129,6 +130,7 @@ pub fn bench_with_metrics<T>(
     let report = BenchReport {
         bench_id,
         fixture,
+        platform: std::env::consts::OS,
         wall_ns,
         allocs: alloc_metrics.map(|metrics| metrics.calls),
         alloc_bytes_peak: alloc_metrics.map(|metrics| metrics.peak_bytes_over_start),
