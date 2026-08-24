@@ -51,6 +51,7 @@ pub(super) fn admit_bindings(
             BindingOp::Model(model) => super::model::admit(model)?,
             BindingOp::SlotContent(_) => {}
             BindingOp::VueDirective(_) if super::slots::is_slots_spread(binding) => {}
+            BindingOp::VueDirective(directive) => super::directive::admit(directive)?,
             _ => return Err(EmitError::Unsupported),
         }
     }
@@ -103,6 +104,9 @@ pub(super) fn bind_patch(bindings: &[BindingOp<'_>], is_component: bool) -> Patc
             _ => {}
         }
     }
+    if super::directive::has_custom(bindings) && flag & (2 | 4 | 8 | 16) == 0 {
+        flag |= 512;
+    }
     Patch {
         flag,
         dynamic_props,
@@ -115,12 +119,13 @@ pub(super) fn emit_bind_props(
     bindings: &[BindingOp<'_>],
     if_key: Option<&str>,
     skip_is: bool,
+    empty_key_multiline: bool,
 ) -> Result<(), EmitError> {
     if super::merge::has_object_spread(bindings) {
         return super::merge::emit_spread_props(cx, attributes, bindings, if_key, skip_is);
     }
     let pieces = pieces(attributes, bindings, skip_is)?;
-    emit_props_object(cx, &pieces, if_key, false)
+    emit_props_object(cx, &pieces, if_key, false, empty_key_multiline)
 }
 
 pub(super) fn emit_props_object(
@@ -128,6 +133,7 @@ pub(super) fn emit_props_object(
     pieces: &[Piece<'_>],
     if_key: Option<&str>,
     skip_normalize: bool,
+    empty_key_multiline: bool,
 ) -> Result<(), EmitError> {
     let skip_class = pieces_have_named(pieces, "class");
     let skip_key = if_key.is_some();
@@ -138,9 +144,20 @@ pub(super) fn emit_props_object(
     if let Some(key) = if_key
         && visible.is_empty()
     {
-        cx.buf.push("{ key: ");
-        cx.buf.push(key);
-        cx.buf.push(" }");
+        if empty_key_multiline {
+            cx.buf.push("{");
+            cx.buf.indent();
+            cx.buf.newline();
+            cx.buf.push("key: ");
+            cx.buf.push(key);
+            cx.buf.deindent();
+            cx.buf.newline();
+            cx.buf.push("}");
+        } else {
+            cx.buf.push("{ key: ");
+            cx.buf.push(key);
+            cx.buf.push(" }");
+        }
         return Ok(());
     }
     let extra = usize::from(if_key.is_some());
@@ -237,7 +254,7 @@ pub(super) fn pieces<'a>(
             BindingOp::On(on) => out.push(Piece::On(on)),
             BindingOp::Model(model) => super::model::expand(model, &mut out)?,
             BindingOp::SlotContent(_) => {}
-            BindingOp::VueDirective(_) if super::slots::is_slots_spread(binding) => {}
+            BindingOp::VueDirective(_) => {}
             _ => return Err(EmitError::Unsupported),
         }
     }

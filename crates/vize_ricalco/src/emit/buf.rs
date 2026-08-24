@@ -128,6 +128,9 @@ impl Buf {
     pub(super) fn use_resolve_component(&mut self) {
         self.mark(Helper::ResolveComponent);
     }
+    pub(super) fn use_resolve_directive(&mut self) {
+        self.mark(Helper::ResolveDirective);
+    }
     pub(super) fn use_create_vnode(&mut self) {
         self.mark(Helper::CreateVNode);
     }
@@ -214,6 +217,10 @@ impl Buf {
 
     pub(super) fn resolve_component_alias() -> &'static str {
         Helper::ResolveComponent.alias()
+    }
+
+    pub(super) fn resolve_directive_alias() -> &'static str {
+        Helper::ResolveDirective.alias()
     }
 
     pub(super) fn create_vnode_alias() -> &'static str {

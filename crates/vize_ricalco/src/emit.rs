@@ -22,12 +22,13 @@
 //! fragments** (empty → `null`, multi-root / compound-root
 //! `_Fragment` + `STABLE_FRAGMENT`), **`<template v-if>` /
 //! `<template v-for>` fragments** (`STABLE_FRAGMENT` / unwrap after
-//! hoist), **object `v-on`** (`toHandlers(..., true)`), and **`v-model`**
+//! hoist), **object `v-on`** (`toHandlers(..., true)`), **`v-model`**
 //! (native `withDirectives` + `vModelText`-family helpers; component
-//! `modelValue` / `onUpdate:` product props). Custom directives,
-//! `.native` and filters stay [`EmitError::Unsupported`]. The old
-//! lane stays the shipped compile path; [`super::DOM_LANE_FLAG`] is
-//! named here and *read* in the atelier_dom witness.
+//! `modelValue` / `onUpdate:` product props), and **custom directives**
+//! (`resolveDirective` + `_withDirectives`, merged with native
+//! `v-model`). `.native` and filters stay [`EmitError::Unsupported`].
+//! The old lane stays the shipped compile path; [`super::DOM_LANE_FLAG`]
+//! is named here and *read* in the atelier_dom witness.
 
 #[path = "emit/buf.rs"]
 mod buf;
@@ -39,6 +40,8 @@ mod children;
 mod component;
 #[path = "emit/create_slots.rs"]
 mod create_slots;
+#[path = "emit/directive.rs"]
+mod directive;
 #[path = "emit/flag.rs"]
 mod flag;
 #[path = "emit/fragment.rs"]
@@ -94,10 +97,12 @@ fn prefer_transform_helpers(buf: &mut Buf, region: &Region<'_>) {
     for op in region.ops.iter() {
         match op {
             Op::Element(element) => {
+                directive::prefer_helpers(buf, &element.bindings);
                 buf.prefer(Helper::CreateElementVNode);
                 prefer_transform_helpers(buf, &element.children);
             }
             Op::Component(component) => {
+                directive::prefer_helpers(buf, &component.bindings);
                 buf.prefer(Helper::ResolveComponent);
                 prefer_transform_helpers(buf, &component.children);
             }
@@ -235,8 +240,14 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
     cx.buf.indent();
     cx.buf.newline();
     let names = component::collect_names(&lowered.root);
+    let dirs = directive::collect_names(&lowered.root);
     if !names.is_empty() {
         component::emit_resolves(&mut cx, &names);
+    }
+    if !dirs.is_empty() {
+        directive::emit_resolves(&mut cx, &dirs);
+    }
+    if !names.is_empty() || !dirs.is_empty() {
         cx.buf.newline();
     }
     cx.buf.push("return ");
