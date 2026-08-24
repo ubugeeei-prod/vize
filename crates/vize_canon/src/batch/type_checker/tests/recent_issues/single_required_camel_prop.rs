@@ -67,8 +67,18 @@ import OptionalProp from './OptionalProp.vue'
     let Some(snapshot) = snapshot else {
         return;
     };
+    let snapshot: Vec<_> = snapshot
+        .into_iter()
+        .map(|(file, code, message)| {
+            (
+                file,
+                code,
+                String::from(super::normalize_component_check_props_tail(&message)),
+            )
+        })
+        .collect();
 
-    let param_type = "__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<.....";
+    let param_type = "__VizeComponentCheckProps<Props, __VizeFallthroughAttrs>";
     assert_eq!(
         snapshot,
         vec![

@@ -31,6 +31,27 @@ mod ts_extension_substitution;
 mod unmapped_template_fallback;
 mod v_for_source_callbacks;
 mod vapor_anchors;
+
+fn normalize_component_check_props_tail(message: &str) -> std::string::String {
+    const START: &str = "__VizeComponentCheckProps<Props, ";
+    const STABLE_TYPE: &str = "__VizeComponentCheckProps<Props, __VizeFallthroughAttrs>";
+
+    let mut output = std::string::String::with_capacity(message.len());
+    let mut rest = message;
+    while let Some(start) = rest.find(START) {
+        output.push_str(&rest[..start]);
+        let from_type = &rest[start..];
+        let Some(end) = from_type.find("'.") else {
+            output.push_str(from_type);
+            return output;
+        };
+        output.push_str(STABLE_TYPE);
+        rest = &from_type[end..];
+    }
+    output.push_str(rest);
+    output
+}
+
 #[test]
 fn issue_2645_infers_generic_sfc_props_in_tsx() {
     if resolve_test_tsgo_binary().is_none() {
