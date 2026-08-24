@@ -11,7 +11,7 @@ use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
 
-// A reviewed inventory of 178 natural modified `v-on` attributes currently
+// A reviewed inventory of 179 natural modified `v-on` attributes currently
 // uses up to two entries in each of the three classifier buckets. The checked
 // inventory in `tests/tooling/davinci-v-on-storage.test.ts` selects this inline
 // capacity; it is not a syntax limit. Authored directives remain unbounded and
