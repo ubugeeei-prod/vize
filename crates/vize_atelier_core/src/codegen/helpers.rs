@@ -1,6 +1,5 @@
 //! Utility functions for code generation.
 
-#[path = "helpers/constant_expression.rs"]
 mod constant_expression;
 
 pub use self::constant_expression::is_constant_simple_expression;

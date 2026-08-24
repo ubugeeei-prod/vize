@@ -259,9 +259,7 @@ impl<'a> Visit<'a> for JsModuleCompatScan {
 
 /// Dual-run instrumentation for the differential lane (see module docs);
 /// P1-9 adds the transform-lane legacy classification counters there.
-#[path = "retained/differential.rs"]
 pub mod differential;
 
 #[cfg(test)]
-#[path = "retained/tests.rs"]
 mod tests;

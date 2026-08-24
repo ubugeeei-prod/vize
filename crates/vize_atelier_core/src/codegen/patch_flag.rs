@@ -1,6 +1,5 @@
 //! Patch flag calculation and naming functions.
 
-#[path = "patch_flag/static_literal.rs"]
 mod static_literal;
 
 use self::static_literal::{is_static_object_or_array_literal_node, is_string_literal};

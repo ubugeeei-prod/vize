@@ -1,28 +1,16 @@
 //! Expression transform steps for identifier prefixing and TS cleanup.
 
-#[path = "transform_expression/collector.rs"]
 mod collector;
-#[path = "transform_expression/collector_targets.rs"]
 mod collector_targets;
-#[path = "transform_expression/inline_handler.rs"]
 mod inline_handler;
-#[path = "transform_expression/nesting.rs"]
 pub(crate) mod nesting;
-#[path = "transform_expression/parse_checks.rs"]
 mod parse_checks;
-#[path = "transform_expression/prefix.rs"]
 pub(crate) mod prefix;
-#[path = "transform_expression/reparse.rs"]
 mod reparse;
-#[path = "transform_expression/retained_rewrite.rs"]
 mod retained_rewrite;
-#[path = "transform_expression/rewrite.rs"]
 mod rewrite;
-#[path = "transform_expression/shape_checks.rs"]
 mod shape_checks;
-#[path = "transform_expression/splice.rs"]
 mod splice;
-#[path = "transform_expression/typescript.rs"]
 mod typescript;
 
 use oxc_parser::Parser;
@@ -297,7 +285,6 @@ pub(crate) fn normalize_expression<'a>(
 }
 
 #[cfg(test)]
-#[path = "transform_expression/tests.rs"]
 mod tests;
 
 // Note: Multiline arrow function handling and ES6 shorthand expansion

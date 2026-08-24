@@ -3,9 +3,7 @@
 //! Generates hoisted variable declarations and serializes JS child nodes,
 //! VNode calls, props expressions, and children to byte output.
 
-#[path = "generate/collect_helpers.rs"]
 mod collect_helpers;
-#[path = "generate/static_vnode.rs"]
 mod static_vnode;
 
 use crate::{

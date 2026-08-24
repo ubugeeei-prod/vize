@@ -9,12 +9,9 @@ use crate::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode,
 };
 
-#[path = "v_slot/params.rs"]
 mod params;
 #[cfg(test)]
-#[path = "v_slot/tests.rs"]
 mod tests;
-#[path = "v_slot/validate.rs"]
 mod validate;
 
 pub use params::extract_slot_prop_names;

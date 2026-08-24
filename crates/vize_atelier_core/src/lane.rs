@@ -2,19 +2,13 @@
 //!
 //! This module provides the transform context, traversal, and base transform traits.
 
-#[path = "transform/context.rs"]
 mod context;
-#[path = "transform/element.rs"]
 pub mod element;
 mod extensions;
 mod options;
-#[path = "transform/patterned_template.rs"]
 pub mod patterned_template;
-#[path = "transform/structural.rs"]
 pub mod structural;
-#[path = "transform/structural_keys.rs"]
 mod structural_keys;
-#[path = "transform/traverse.rs"]
 pub mod traverse;
 
 use vize_carton::{Allocator, Box, SmallVec, String, Vec, interner::Interner, profile};

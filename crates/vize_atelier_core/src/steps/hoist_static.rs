@@ -2,12 +2,9 @@
 //!
 //! Hoists static nodes to reduce runtime overhead.
 
-#[path = "hoist_static/props.rs"]
 mod props;
-#[path = "hoist_static/static_type.rs"]
 mod static_type;
 #[cfg(test)]
-#[path = "hoist_static/tests.rs"]
 mod tests;
 
 use props::{

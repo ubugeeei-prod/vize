@@ -146,9 +146,10 @@ the `insta` crate, so no call-site rewrite can avoid the disallowed macro. Those
 one sanctioned exception. Put `#[allow(clippy::disallowed_macros)]` on the `#[cfg(test)] mod …` item
 that hosts the snapshot assertions — never at the crate root, never on the lint globally, and never
 on a module that also contains production code — and leave a comment pointing back to this section.
-When the test module is inline inside an over-budget file, split it out to a sibling file first; keep
-it in the same directory (with `#[path = "…"]` if needed) so `insta` still resolves the recorded
-snapshots.
+When the test module is inline inside an over-budget file, split it out to the ordinary module path
+next to its parent (for example, `feature/tests.rs` for `mod tests;`). Keep the corresponding
+`snapshots/` directory beside that module so `insta` still resolves the recorded snapshots. Do not
+use `#[path = "…"]`; Vize modules must follow Rust's ordinary module discovery layout.
 
 ## Language Processor Change Discipline
 

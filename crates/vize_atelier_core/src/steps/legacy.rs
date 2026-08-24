@@ -302,5 +302,4 @@ pub(crate) fn desugar_v2_v_on_modifiers(dir: &mut DirectiveNode<'_>) {
 
 #[cfg(test)]
 #[allow(clippy::disallowed_macros)]
-#[path = "legacy/tests.rs"]
 mod tests;

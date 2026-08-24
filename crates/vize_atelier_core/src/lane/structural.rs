@@ -504,5 +504,4 @@ pub fn transform_v_for<'a>(
 
 #[cfg(test)]
 #[allow(clippy::disallowed_macros)]
-#[path = "structural/tests.rs"]
 mod tests;

@@ -16,7 +16,6 @@ use crate::{
 
 use super::{ExitFns, TransformContext};
 
-#[path = "element/directive_expressions.rs"]
 mod directive_expressions;
 
 use directive_expressions::process_directive_expressions;
@@ -541,5 +540,4 @@ pub fn transform_interpolation<'a>(
 
 #[cfg(test)]
 #[allow(clippy::disallowed_macros)]
-#[path = "element/tests.rs"]
 mod tests;
