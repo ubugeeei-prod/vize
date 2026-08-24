@@ -9,15 +9,21 @@ use vize_carton::String as CompactString;
 
 mod leak_assertions;
 mod navigation;
+mod package_install;
+mod process_output;
 pub mod raw_requests;
 mod responder;
+mod stop;
 pub use leak_assertions::{assert_no_generated_uri, assert_no_generated_uri_or_zero_range};
 #[allow(unused_imports)]
 pub use navigation::{
     contains_location_range, contains_range, contains_text_edit, document_highlights, references,
     rename,
 };
+pub use package_install::install_packages;
+pub use process_output::output_text;
 pub use responder::EditorResponder;
+pub use stop::StopOnDrop;
 
 struct RawDocumentDiagnostic;
 struct RawHover;
@@ -252,40 +258,6 @@ pub fn copy_fixture(source: &Path, destination: &Path) {
             std::fs::copy(source_path, destination_path).unwrap();
         }
     }
-}
-
-pub fn install_packages(project_root: &Path) {
-    let mapper_root = project_root.join("node_modules/vize");
-    std::fs::create_dir_all(&mapper_root).unwrap();
-    std::fs::write(
-        mapper_root.join("package.json"),
-        serde_json::to_vec_pretty(&json!({
-            "name": "vize",
-            "private": true,
-            "typescript": { "contentMapper": {
-                "exec": [env!("CARGO_BIN_EXE_vize"), "content-mapper"],
-                "compilerOptions": ["noUnusedLocals"],
-            } },
-        }))
-        .unwrap(),
-    )
-    .unwrap();
-
-    let store = workspace_root().join("node_modules/.pnpm");
-    let mut candidates = std::fs::read_dir(&store)
-        .unwrap()
-        .filter_map(Result::ok)
-        .filter(|entry| entry.file_name().to_string_lossy().starts_with("vue@3."))
-        .map(|entry| entry.path().join("node_modules/vue"))
-        .filter(|path| path.join("package.json").is_file())
-        .collect::<Vec<_>>();
-    candidates.sort();
-    let source = candidates.pop().expect("workspace Vue package");
-    let target = project_root.join("node_modules/vue");
-    #[cfg(unix)]
-    std::os::unix::fs::symlink(source, target).unwrap();
-    #[cfg(windows)]
-    std::os::windows::fs::symlink_dir(source, target).unwrap();
 }
 
 pub fn file_uri(path: &Path) -> CompactString {
