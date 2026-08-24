@@ -5,8 +5,8 @@ use serde_json::Value;
 use vize_carton::{String, ToCompactString};
 use vize_marquette::{
     ADAPTER_CAPABILITY_MANIFEST_JSON_SCHEMA, AdapterCapabilityManifest, ApplicationContract,
-    CapabilityDefinition, NATIVE_ENGINE_CAPABILITY_IDS, NATIVE_ENGINE_CAPABILITY_VERSION,
-    compare_adapter_capabilities, contract_fingerprint, native_engine_capability_profile,
+    NATIVE_ENGINE_CAPABILITY_IDS, NATIVE_ENGINE_CAPABILITY_VERSION, compare_adapter_capabilities,
+    contract_fingerprint, native_engine_capability_definitions, native_engine_capability_profile,
     negotiate_adapter_capabilities, validate_adapter_capability_manifest,
 };
 
@@ -63,12 +63,22 @@ fn native_engine_profile_matches_the_shared_contract_and_negotiates_fail_closed(
             && support.max_version == NATIVE_ENGINE_CAPABILITY_VERSION
     }));
 
+    let definitions = native_engine_capability_definitions();
+    let definition_ids = definitions
+        .iter()
+        .map(|definition| definition.id.as_str())
+        .collect::<Vec<_>>();
+    assert_eq!(definition_ids, NATIVE_ENGINE_CAPABILITY_IDS.to_vec());
+    assert!(definitions.iter().all(|definition| {
+        definition.version == NATIVE_ENGINE_CAPABILITY_VERSION
+            && !definition.description.trim().is_empty()
+    }));
+
     let mut contract = ApplicationContract::new("native-profile");
-    for id in NATIVE_ENGINE_CAPABILITY_IDS {
-        contract.capabilities.insert(
-            id.into(),
-            CapabilityDefinition::new(id, "Native engine contract"),
-        );
+    for definition in definitions {
+        contract
+            .capabilities
+            .insert(definition.id.clone(), definition);
     }
     let compatible =
         negotiate_adapter_capabilities(&contract, NATIVE_ENGINE_CAPABILITY_IDS, &actual);

@@ -57,7 +57,8 @@ pub use adapter::{
     AdapterCapabilityDiagnostic, AdapterCapabilityDiagnosticCode, AdapterCapabilityManifest,
     AdapterCapabilityMismatch, AdapterCapabilityMismatchCode, AdapterCapabilityNegotiation,
     AdapterCapabilitySupport, NATIVE_ENGINE_CAPABILITY_IDS, NATIVE_ENGINE_CAPABILITY_VERSION,
-    compare_adapter_capabilities, native_engine_capability_profile, negotiate_adapter_capabilities,
+    compare_adapter_capabilities, native_engine_capability_definitions,
+    native_engine_capability_profile, negotiate_adapter_capabilities,
     validate_adapter_capability_manifest,
 };
 pub use canonical::{CanonicalContractError, canonical_json, contract_fingerprint};

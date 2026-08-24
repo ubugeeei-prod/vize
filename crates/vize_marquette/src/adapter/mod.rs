@@ -14,7 +14,7 @@ pub use model::{
 };
 pub use native_profile::{
     NATIVE_ENGINE_CAPABILITY_IDS, NATIVE_ENGINE_CAPABILITY_VERSION,
-    native_engine_capability_profile,
+    native_engine_capability_definitions, native_engine_capability_profile,
 };
 pub use negotiate::negotiate_adapter_capabilities;
 pub use validate::validate_adapter_capability_manifest;
