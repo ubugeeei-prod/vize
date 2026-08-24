@@ -35,6 +35,30 @@ fn a_v_for_scope_records_its_authored_bindings_in_position_order() {
 }
 
 #[test]
+fn aliases_after_the_three_position_contract_do_not_change_lowering() {
+    // The splitter retains the complete authored spelling (and spills its
+    // inline buffer), while lowering intentionally consumes only Vue's
+    // value/key/index contract. Pin that established behavior so the
+    // storage optimization cannot turn into silent positional drift.
+    let art = artifact("<li v-for=\"(value, key, index, extra) in items\">x</li>");
+    assert_eq!(
+        art.scopes,
+        vec![(
+            0,
+            ScopeFacts {
+                tag: ScopeTag::from_index(0),
+                bindings: vec![
+                    authored("value", 12, 17),
+                    authored("key", 19, 22),
+                    authored("index", 24, 29),
+                ],
+            }
+        )]
+    );
+    assert_eq!(art.diagnostics, Vec::new());
+}
+
+#[test]
 fn a_destructuring_alias_contributes_no_names_but_the_scope_stands() {
     // Names inside patterns wait for the one identifier-enumeration seam
     // (`ExprDialect::enumerate_bindings`, #4365); the simple-identifier

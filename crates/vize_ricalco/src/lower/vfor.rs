@@ -17,6 +17,16 @@
 //! shared rule ([`super::expr`]); a value that cannot split at all rides
 //! whole as `Opaque(ForValue)` with pessimal semantics.
 
+use vize_s0::SmallVec;
+
+/// Vue gives `v-for` exactly three binding positions: value, key, and
+/// index. Keep that overwhelmingly common shape inline while retaining
+/// every additional authored alias so malformed or future syntax is not
+/// silently truncated.
+const FOR_ALIAS_INLINE_CAPACITY: usize = 3;
+
+type ForAliases<'a> = SmallVec<[&'a str; FOR_ALIAS_INLINE_CAPACITY]>;
+
 /// The split of a v-for value: byte ranges of the alias part and the
 /// source part inside the value text.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -30,33 +40,31 @@ pub(crate) struct ForSplit {
 /// Find the first viable ` in ` / ` of ` separator: the keyword with
 /// whitespace on both sides, exactly the shipped grammar.
 pub(crate) fn split_for(content: &str) -> Option<ForSplit> {
-    let chars: alloc::vec::Vec<(usize, char)> = content.char_indices().collect();
-    for keyword_idx in 0..chars.len().saturating_sub(1) {
-        match (chars[keyword_idx].1, chars[keyword_idx + 1].1) {
-            ('i', 'n') | ('o', 'f') => {}
+    for (keyword_start, first) in content.char_indices() {
+        let keyword = match first {
+            'i' if content[keyword_start..].starts_with("in") => "in",
+            'o' if content[keyword_start..].starts_with("of") => "of",
             _ => continue,
-        }
-        let has_space_before = keyword_idx > 0 && chars[keyword_idx - 1].1.is_whitespace();
-        let after_keyword_idx = keyword_idx + 2;
-        let has_space_after = chars
-            .get(after_keyword_idx)
-            .is_some_and(|(_, ch)| ch.is_whitespace());
-        if !has_space_before || !has_space_after {
+        };
+        let has_space_before = content[..keyword_start]
+            .chars()
+            .next_back()
+            .is_some_and(char::is_whitespace);
+        let after_keyword = keyword_start + keyword.len();
+        let has_space_after = content[after_keyword..]
+            .chars()
+            .next()
+            .is_some_and(char::is_whitespace);
+        if !(has_space_before && has_space_after) {
             continue;
         }
-        let mut alias_idx = keyword_idx;
-        while alias_idx > 0 && chars[alias_idx - 1].1.is_whitespace() {
-            alias_idx -= 1;
+
+        let alias_end = content[..keyword_start].trim_end().len();
+        let source = content[after_keyword..].trim_start();
+        if source.is_empty() {
+            return None;
         }
-        let alias_end = chars
-            .get(alias_idx)
-            .map(|(byte_idx, _)| *byte_idx)
-            .unwrap_or(content.len());
-        let mut source_idx = after_keyword_idx;
-        while source_idx < chars.len() && chars[source_idx].1.is_whitespace() {
-            source_idx += 1;
-        }
-        let source_start = chars.get(source_idx)?.0;
+        let source_start = content.len() - source.len();
         return Some(ForSplit {
             alias_end,
             source_start,
@@ -70,10 +78,10 @@ pub(crate) fn split_for(content: &str) -> Option<ForSplit> {
 /// paren is malformed (`None`), matching the shipped splitter's default
 /// (the `template_syntax_quirks` compatibility path is deliberately not
 /// offered here).
-pub(crate) fn split_aliases(alias: &str) -> Option<alloc::vec::Vec<&str>> {
+pub(crate) fn split_aliases(alias: &str) -> Option<ForAliases<'_>> {
     let trimmed = alias.trim();
     if trimmed.is_empty() {
-        return Some(alloc::vec::Vec::new());
+        return Some(ForAliases::new());
     }
     let starts = trimmed.starts_with('(');
     let ends = trimmed.ends_with(')');
@@ -91,9 +99,9 @@ pub(crate) fn split_aliases(alias: &str) -> Option<alloc::vec::Vec<&str>> {
 }
 
 /// Split on top-level commas, string- and bracket-aware.
-fn split_top_level(input: &str) -> alloc::vec::Vec<&str> {
+fn split_top_level(input: &str) -> ForAliases<'_> {
     let bytes = input.as_bytes();
-    let mut aliases = alloc::vec::Vec::with_capacity(3);
+    let mut aliases = ForAliases::new();
     let mut start = 0usize;
     let mut paren = 0u32;
     let mut brace = 0u32;
@@ -137,7 +145,6 @@ fn split_top_level(input: &str) -> alloc::vec::Vec<&str> {
 #[cfg(test)]
 mod tests {
     use super::{split_aliases, split_for};
-    use alloc::vec;
 
     fn split(content: &str) -> (&str, &str) {
         let s = split_for(content).expect("the value splits");
@@ -158,19 +165,50 @@ mod tests {
         assert_eq!(split_for("items"), None);
         assert_eq!(split_for("in items"), None);
         assert_eq!(split_for("kind of"), None);
+        assert_eq!(split_for("item in   "), None);
         assert_eq!(split("index in indexes"), ("index", "indexes"));
+    }
+
+    #[test]
+    fn separator_scan_preserves_unicode_boundaries_and_whitespace() {
+        assert_eq!(split("値\u{2003}in\u{2003}一覧"), ("値", "一覧"));
     }
 
     #[test]
     fn aliases_split_at_top_level_commas_only() {
         assert_eq!(
-            split_aliases("(item, key, index)"),
-            Some(vec!["item", "key", "index"])
+            split_aliases("(item, key, index)").as_deref(),
+            Some(["item", "key", "index"].as_slice())
         );
-        assert_eq!(split_aliases("item, index"), Some(vec!["item", "index"]));
-        assert_eq!(split_aliases("({ a, b }, i)"), Some(vec!["{ a, b }", "i"]));
-        assert_eq!(split_aliases("[a, b]"), Some(vec!["[a, b]"]));
-        assert_eq!(split_aliases(""), Some(vec![]));
+        assert_eq!(
+            split_aliases("item, index").as_deref(),
+            Some(["item", "index"].as_slice())
+        );
+        assert_eq!(
+            split_aliases("({ a, b }, i)").as_deref(),
+            Some(["{ a, b }", "i"].as_slice())
+        );
+        assert_eq!(
+            split_aliases("[a, b]").as_deref(),
+            Some(["[a, b]"].as_slice())
+        );
+        assert_eq!(split_aliases("").as_deref(), Some([].as_slice()));
+    }
+
+    #[test]
+    fn contract_aliases_stay_inline() {
+        let aliases = split_aliases("(value, key, index)").expect("aliases split");
+
+        assert_eq!(aliases.as_slice(), ["value", "key", "index"]);
+        assert!(!aliases.spilled());
+    }
+
+    #[test]
+    fn additional_authored_aliases_spill_without_truncation() {
+        let aliases = split_aliases("(value, key, index, extra)").expect("aliases split");
+
+        assert_eq!(aliases.as_slice(), ["value", "key", "index", "extra"]);
+        assert!(aliases.spilled());
     }
 
     #[test]
