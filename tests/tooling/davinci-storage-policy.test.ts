@@ -256,6 +256,23 @@ test("scanner rejects escape hatches and masks only cfg(test) items", () => {
     type Production = Prod<u8>;
   `;
   assert.deepEqual(scanStorage(blockConst).storage.allocVec, { directPaths: 1, boundUses: 1 });
+  const qualifiedFunctions = [
+    "const unsafe fn",
+    "pub(crate) async unsafe fn",
+    'pub(crate) unsafe extern "C" fn',
+    'pub const unsafe extern r#"C"# fn',
+  ];
+  for (const qualifiers of qualifiedFunctions) {
+    const qualifiedFunction = `
+      #[cfg(test)] ${qualifiers} helper() {}
+      use alloc::vec::Vec as Prod;
+      type Production = Prod<u8>;
+    `;
+    assert.deepEqual(scanStorage(qualifiedFunction).storage.allocVec, {
+      directPaths: 1,
+      boundUses: 1,
+    });
+  }
   assert.deepEqual(scanStorage('let text = "alloc::vec::Vec"; // use alloc::*').storage.allocVec, {
     directPaths: 0,
     boundUses: 0,

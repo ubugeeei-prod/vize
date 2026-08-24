@@ -107,8 +107,25 @@ function attributeEnd(source: string, start: number): number {
   return source.length;
 }
 
+function isFunctionItem(tokens: readonly RustToken[]): boolean {
+  let parens = 0;
+  let brackets = 0;
+  for (const token of tokens) {
+    if (token.value === "(") parens += 1;
+    else if (token.value === ")") parens -= 1;
+    else if (token.value === "[") brackets += 1;
+    else if (token.value === "]") brackets -= 1;
+    else if (parens === 0 && brackets === 0) {
+      if (token.value === "fn") return true;
+      if ([":", "=", ";", "{"].includes(token.value)) return false;
+    }
+  }
+  return false;
+}
+
 function itemEnd(source: string, start: number): number {
   const tokens = tokensOf(source.slice(start));
+  const functionItem = isFunctionItem(tokens);
   const kinds = new Set([
     "const",
     "enum",
@@ -133,12 +150,13 @@ function itemEnd(source: string, start: number): number {
       break;
     }
     if (kinds.has(token.value)) {
-      itemKind = token.value === "const" && tokens[index + 1]?.value === "fn" ? "fn" : token.value;
+      itemKind = token.value;
       break;
     }
     if (token.value === "{" || token.value === ";") break;
   }
-  const semicolonItem = externCrate || ["const", "static", "type", "use"].includes(itemKind ?? "");
+  const semicolonItem =
+    !functionItem && (externCrate || ["const", "static", "type", "use"].includes(itemKind ?? ""));
   let parens = 0;
   let brackets = 0;
   let braces = 0;
@@ -180,7 +198,7 @@ export function maskRustSource(source: string): string {
 
 export function tokensOf(source: string): RustToken[] {
   const tokens: RustToken[] = [];
-  const pattern = /r#[A-Za-z_]\w*|[A-Za-z_]\w*|::|[#()[\]{};,*!]/gu;
+  const pattern = /r#[A-Za-z_]\w*|[A-Za-z_]\w*|::|[#()[\]{}:;=,*!]/gu;
   for (const match of source.matchAll(pattern)) {
     tokens.push({ value: match[0], start: match.index, end: match.index + match[0].length });
   }
