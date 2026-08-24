@@ -55,7 +55,8 @@ function scopeFor(file: string): StorageScope {
 }
 
 const sources = libraryRoots.flatMap((root) => rustFiles(path.join(repoRoot, root)));
-const expectedRows = parseStorageInventory(fs.readFileSync(inventoryPath, "utf8"));
+const inventorySource = fs.readFileSync(inventoryPath, "utf8");
+const expectedRows = parseStorageInventory(inventorySource);
 
 function measureInventory(): { storage: Map<string, FileStorage>; issues: string[] } {
   const storage = new Map<string, FileStorage>();
@@ -140,6 +141,12 @@ test("production inventory excludes cfg(test) size evidence", () => {
   });
 });
 
+test("alloc Vec categories cover module-bound uses without a direct path", () => {
+  const header = inventorySource.split("\n", 1)[0];
+  const uncategorized = `${header}\ninfra\t-\tfixture.rs\t0\t1\t0\t0\t0\t0\t0\t0\n`;
+  assert.throws(() => parseStorageInventory(uncategorized), /alloc Vec category mismatch/u);
+});
+
 test("the plan summaries are generated from the exact inventory", () => {
   const plan = fs.readFileSync(
     path.join(repoRoot, "davinci-road/plan/storage-boundary.md"),
@@ -200,6 +207,8 @@ test("scanner resolves root, self, group, module, and raw aliases", () => {
     ["use self::alloc::vec as heap; type T = heap::Vec<u8>;", 0, 1],
     ["use {alloc::vec as heap}; type T = heap::Vec<u8>;", 0, 1],
     ["use alloc::{self as heap}; type T = heap::vec::Vec<u8>;", 0, 1],
+    ["use alloc::vec::{self}; type T = vec::Vec<u8>;", 0, 1],
+    ["use {alloc::{vec::{self}}}; type T = vec::Vec<u8>;", 0, 1],
     ["extern crate alloc as heap; type T = heap::vec::Vec<u8>;", 0, 1],
     [
       "use alloc::vec::{self as heap, Vec as r#Items}; type A=heap::Vec<u8>; type B=r#Items<u8>;",
@@ -222,6 +231,10 @@ test("scanner rejects escape hatches and masks only cfg(test) items", () => {
     { directPaths: 0, boundUses: 1 },
   );
   assert.deepEqual(
+    scanStorage("use alloc::string::{self}; type T=string::String;").storage.allocString,
+    { directPaths: 0, boundUses: 1 },
+  );
+  assert.deepEqual(
     scanStorage("#[cfg(test)] mod tests { use alloc::vec::Vec; type T=Vec<u8>; }").storage.allocVec,
     { directPaths: 0, boundUses: 0 },
   );
@@ -229,6 +242,20 @@ test("scanner rejects escape hatches and masks only cfg(test) items", () => {
     scanStorage("#[cfg(not(test))] use alloc::vec::Vec; type T=Vec<u8>;").storage.allocVec,
     { directPaths: 1, boundUses: 1 },
   );
+  const arrayStatic = `
+    #[cfg(test)]
+    static TEST_STORAGE: [Option<alloc::vec::Vec<u8>>; 2] = [None, None];
+    use alloc::vec::Vec as Prod;
+    type Production = Prod<u8>;
+  `;
+  assert.deepEqual(scanStorage(arrayStatic).storage.allocVec, { directPaths: 1, boundUses: 1 });
+  const blockConst = `
+    #[cfg(test)]
+    const TEST_STORAGE: usize = { let _: Option<alloc::vec::Vec<u8>> = None; 1 };
+    use alloc::vec::Vec as Prod;
+    type Production = Prod<u8>;
+  `;
+  assert.deepEqual(scanStorage(blockConst).storage.allocVec, { directPaths: 1, boundUses: 1 });
   assert.deepEqual(scanStorage('let text = "alloc::vec::Vec"; // use alloc::*').storage.allocVec, {
     directPaths: 0,
     boundUses: 0,

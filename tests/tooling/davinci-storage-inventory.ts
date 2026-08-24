@@ -72,7 +72,8 @@ export function parseStorageInventory(source: string): InventoryRow[] {
     [storage.s0String.directPaths, storage.s0String.boundUses] = counts.slice(2, 4);
     [storage.arenaVec.directPaths, storage.arenaVec.boundUses] = counts.slice(4, 6);
     [storage.smallVec.directPaths, storage.smallVec.boundUses] = counts.slice(6, 8);
-    if (storage.allocVec.directPaths > 0 !== (category !== "-")) {
+    const hasAllocVec = storage.allocVec.directPaths > 0 || storage.allocVec.boundUses > 0;
+    if (hasAllocVec !== (category !== "-")) {
       throw new Error(`line ${index + 2}: alloc Vec category mismatch`);
     }
     return {

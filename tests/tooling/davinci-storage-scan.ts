@@ -52,6 +52,7 @@ function flattenUse(tokens: RustToken[], start: number, end: number): UseImport[
       }
       cursor += 1;
     }
+    const bareSelf = segments.length === 1 && segments[0] === "self";
     const path = [...prefix, ...segments.filter((segment) => segment !== "self")];
     if (tokens[cursor]?.value === "{") {
       cursor += 1;
@@ -67,7 +68,7 @@ function flattenUse(tokens: RustToken[], start: number, end: number): UseImport[
       glob = true;
       cursor += 1;
     }
-    let alias = segments.at(-1) ?? "";
+    let alias = bareSelf ? (prefix.at(-1) ?? "") : (segments.at(-1) ?? "");
     if (tokens[cursor]?.value === "as") {
       cursor += 1;
       alias = ident(tokens[cursor]) ?? alias;
