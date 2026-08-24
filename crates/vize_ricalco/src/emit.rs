@@ -11,9 +11,10 @@
 //! mixed text siblings, static-name `ui.bind`, static-name `ui.on`
 //! (including event/key/option modifiers), native `ui.if`, **native
 //! `ui.for`**, **object-spread `v-bind`** (`normalizeProps` /
-//! `mergeProps`), **static-name components** (`resolveComponent` /
-//! `createVNode` / `createBlock`), and **object `v-on`** (`toHandlers`).
-//! `.native`, template fragments, filters, slots, and builtins stay
+//! `createVNode` / `createBlock`), **object `v-on`** (`toHandlers`),
+//! and **implicit default text slots** (`withCtx` / `_: 1|2`).
+//! `.native`, template fragments, filters, named / scoped slots, slot
+//! outlets, element children, and builtins stay
 //! [`EmitError::Unsupported`]. The old lane stays the shipped compile
 //! path; [`super::DOM_LANE_FLAG`] is named here and *read* in the
 //! atelier_dom witness.
@@ -36,6 +37,8 @@ mod merge;
 mod on;
 #[path = "emit/props.rs"]
 mod props;
+#[path = "emit/slots.rs"]
+mod slots;
 #[path = "emit/vfor.rs"]
 mod vfor;
 #[path = "emit/vif.rs"]
@@ -89,6 +92,8 @@ struct EmitCx<'facts> {
     walk: PageWalk,
     /// Sibling `v-if` chains share one counter; nested chains reset.
     if_branch_key: u32,
+    /// Slot objects inside `v-for` carry `_: 2 /* DYNAMIC */`.
+    in_v_for: bool,
 }
 
 /// One DOM render module, split the way the shipped codegen splits it
@@ -140,6 +145,7 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
         facts,
         walk: PageWalk::new(),
         if_branch_key: 0,
+        in_v_for: false,
     };
     cx.buf
         .push("function render(_ctx, _cache, $props, $setup, $data, $options) {");

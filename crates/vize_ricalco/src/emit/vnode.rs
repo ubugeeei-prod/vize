@@ -153,10 +153,11 @@ fn emit_call(
     let emit_flag = flag != 0 && !omit_text_only;
     let has_props = hoist || !element.attributes.is_empty() || has_binds || if_key.is_some();
     if hoist {
-        cx.buf
+        let props_alias = cx
+            .buf
             .hoist_root_props(compact_props_object(element.attributes.iter()));
         cx.buf.push(", ");
-        cx.buf.push(Buf::hoisted_props_alias());
+        cx.buf.push(props_alias.as_str());
     } else if if_key.is_some() || has_binds {
         cx.buf.push(", ");
         emit_bind_props(cx, &element.attributes, &element.bindings, if_key)?;
@@ -202,7 +203,9 @@ fn root_props_should_hoist(element: &ElementOp<'_>) -> bool {
 
 /// First-occurrence static attrs as a single-line object, matching
 /// hoisted `JsChildNode::Object` emission.
-fn compact_props_object<'a>(attributes: impl Iterator<Item = &'a Attribute<'a>>) -> String {
+pub(super) fn compact_props_object<'a>(
+    attributes: impl Iterator<Item = &'a Attribute<'a>>,
+) -> String {
     let unique = unique_attrs(attributes);
     let mut out = String::from("{ ");
     for (i, attr) in unique.iter().enumerate() {

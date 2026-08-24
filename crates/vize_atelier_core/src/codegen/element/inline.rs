@@ -296,6 +296,7 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             // slot structure is dynamic.
             if el.tag == "KeepAlive"
                 || el.tag == "keep-alive"
+                || (ctx.in_v_for && has_slot_children(el))
                 || has_dynamic_slots_flag(el, &ctx.source)
                 || (ctx.has_slot_params() && has_forwarded_slot_outlet(el))
             {
@@ -312,7 +313,10 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             } else {
                 has_renderable_props(el)
             };
-            if effective_has_props {
+            if let Some(hoisted_index) = el.hoisted_props_index {
+                ctx.push(", _hoisted_");
+                ctx.push(&hoisted_index.to_compact_string());
+            } else if effective_has_props {
                 ctx.push(", ");
                 if is_dynamic {
                     ctx.skip_is_prop = true;

@@ -122,3 +122,53 @@ pub(super) fn emit_create_text_vnode(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Res
     cx.buf.push(")");
     Ok(())
 }
+
+/// Slot default children: each S2 text/interp op is one or more
+/// `_createTextVNode`s. A compound interpolation expands to one vnode
+/// per [`TextPart`] so the object matches Vue's separate text + interp
+/// children, not the element-children ` + ` concat.
+pub(super) fn emit_slot_text_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
+    let Op::Interpolation(interp) = op else {
+        return emit_create_text_vnode(cx, core::slice::from_ref(op));
+    };
+    match interp.expression {
+        ExprRef::Js(_) => emit_create_text_vnode(cx, core::slice::from_ref(op)),
+        ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound => {
+            let id = cx.walk.mint().ok_or(EmitError::Unsupported)?;
+            let parts = cx
+                .facts
+                .text_facts
+                .get(id)
+                .ok_or(EmitError::Unsupported)?
+                .parts
+                .clone();
+            emit_slot_compound_parts(cx, &parts)
+        }
+        ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => {
+            Err(EmitError::Unsupported)
+        }
+    }
+}
+
+fn emit_slot_compound_parts(cx: &mut EmitCx<'_>, parts: &[TextPart]) -> Result<(), EmitError> {
+    if parts.is_empty() {
+        return Err(EmitError::Unsupported);
+    }
+    for (i, part) in parts.iter().enumerate() {
+        if i > 0 {
+            cx.buf.push(",");
+            cx.buf.newline();
+        }
+        cx.buf.use_create_text();
+        cx.buf.push(Buf::create_text_alias());
+        cx.buf.push("(");
+        if part.dynamic {
+            emit_to_display_string(cx, part.text.as_str());
+            cx.buf.push(", 1 /* TEXT */");
+        } else {
+            emit_quoted_text(cx, part.text.as_str());
+        }
+        cx.buf.push(")");
+    }
+    Ok(())
+}

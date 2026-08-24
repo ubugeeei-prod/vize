@@ -1,6 +1,8 @@
 //! Indenting JS buffer. Helper names live in [`super::helper`].
 
-use vize_carton::String;
+use alloc::vec::Vec as StdVec;
+
+use vize_carton::{String, ToCompactString};
 
 use super::helper::Helper;
 
@@ -9,8 +11,8 @@ pub(super) struct Buf {
     pub code: String,
     indent: u32,
     used: u32,
-    /// Compact static-props object hoisted as `_hoisted_1` (root only).
-    hoisted_props: Option<String>,
+    /// Compact static-props / vnode RHS values, `_hoisted_1` first.
+    hoists: StdVec<String>,
 }
 
 impl Buf {
@@ -19,7 +21,7 @@ impl Buf {
             code: String::default(),
             indent: 0,
             used: 0,
-            hoisted_props: None,
+            hoists: StdVec::new(),
         }
     }
 
@@ -105,6 +107,9 @@ impl Buf {
     pub(super) fn use_create_block(&mut self) {
         self.mark(Helper::CreateBlock);
     }
+    pub(super) fn use_with_ctx(&mut self) {
+        self.mark(Helper::WithCtx);
+    }
 
     pub(super) fn to_display_string_alias() -> &'static str {
         Helper::ToDisplayString.alias()
@@ -182,19 +187,27 @@ impl Buf {
         Helper::CreateBlock.alias()
     }
 
-    pub(super) fn hoist_root_props(&mut self, object: String) {
-        self.hoisted_props = Some(object);
+    pub(super) fn with_ctx_alias() -> &'static str {
+        Helper::WithCtx.alias()
     }
 
-    pub(super) fn hoisted_props_alias() -> &'static str {
-        "_hoisted_1"
+    pub(super) fn push_hoist(&mut self, rhs: String) -> String {
+        let alias_index = self.hoists.len() + 1;
+        self.hoists.push(rhs);
+        let mut alias = String::from("_hoisted_");
+        alias.push_str(alias_index.to_compact_string().as_str());
+        alias
+    }
+
+    pub(super) fn hoist_root_props(&mut self, object: String) -> String {
+        self.push_hoist(object)
     }
 
     /// Function-mode preamble, helpers in import-rank order, then any
     /// root static-props hoist (the shipped codegen appends hoists to
     /// the helper preamble).
     pub(super) fn preamble(&self) -> String {
-        let listed: [Helper; 19] = Helper::ALL;
+        let listed: [Helper; 20] = Helper::ALL;
         let mut n = 0;
         for helper in listed {
             if self.used & helper.bit() != 0 {
@@ -219,13 +232,15 @@ impl Buf {
             preamble.push_str(helper.alias());
         }
         preamble.push_str(" } = Vue\n");
-        if let Some(object) = &self.hoisted_props {
+        if !self.hoists.is_empty() {
             preamble.push('\n');
-            preamble.push_str("const ");
-            preamble.push_str(Self::hoisted_props_alias());
-            preamble.push_str(" = ");
-            preamble.push_str(object.as_str());
-            preamble.push('\n');
+            for (i, rhs) in self.hoists.iter().enumerate() {
+                preamble.push_str("const _hoisted_");
+                preamble.push_str((i + 1).to_compact_string().as_str());
+                preamble.push_str(" = ");
+                preamble.push_str(rhs.as_str());
+                preamble.push('\n');
+            }
         }
         preamble
     }
