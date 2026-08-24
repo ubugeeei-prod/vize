@@ -35,7 +35,8 @@
 //! boundaries** (`<svg>` / `<math>` enter blocks, same-namespace descendants
 //! stay VNodes, integration points re-enter HTML), and **template refs**
 //! (static refs, dynamic `:ref`, and `ref_for` in `v-for`), and **Vue 2
-//! `.native` event sugar** (accepted and stripped like the shipped lane).
+//! `.native` event sugar** (accepted and stripped like the shipped lane),
+//! and **static+dynamic `style` merge** (`[{"color":"red"}, s]`).
 //! Filters stay [`EmitError::Unsupported`].
 //! The old lane stays the shipped compile path; [`super::DOM_LANE_FLAG`]
 //! is named here and *read* in the atelier_dom witness.
@@ -82,6 +83,8 @@ mod props_bind;
 mod props_object;
 #[path = "emit/slots.rs"]
 mod slots;
+#[path = "emit/style.rs"]
+mod style;
 #[path = "emit/tpl.rs"]
 mod tpl;
 #[path = "emit/vfor.rs"]

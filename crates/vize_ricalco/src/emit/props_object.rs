@@ -21,10 +21,11 @@ pub(super) fn emit_props_object(
     is_plain_element: bool,
 ) -> Result<(), EmitError> {
     let skip_class = pieces_have_named(pieces, "class");
+    let skip_style = pieces_have_named(pieces, "style");
     let skip_key = if_key.is_some();
     let visible: StdVec<&Piece<'_>> = pieces
         .iter()
-        .filter(|piece| !skip_emitted_key(piece, if_key, skip_class, skip_key))
+        .filter(|piece| !skip_emitted_key(piece, if_key, skip_class, skip_style, skip_key))
         .collect();
     if let Some(key) = if_key
         && visible.is_empty()
@@ -178,11 +179,14 @@ fn skip_emitted_key(
     piece: &Piece<'_>,
     if_key: Option<&str>,
     skip_class: bool,
+    skip_style: bool,
     skip_key: bool,
 ) -> bool {
     match piece {
         Piece::Attr(attr) => {
-            (skip_class && attr.name == "class") || (skip_key && attr.name == "key")
+            (skip_class && attr.name == "class")
+                || (skip_style && attr.name == "style" && attr.value.is_some())
+                || (skip_key && attr.name == "key")
         }
         Piece::Bind(bind)
             if skip_key
@@ -241,7 +245,9 @@ fn emit_bind_pair(
     cx.buf.push(": ");
     match name {
         "class" => emit_class_value(cx, pieces, bind, js, skip_normalize),
-        "style" => emit_style_value(cx, js, skip_normalize),
+        "style" => {
+            super::style::emit_style_value(cx, static_style_piece(pieces), bind, js, skip_normalize)
+        }
         _ => cx.buf.push(js.source),
     }
     Ok(())
@@ -293,18 +299,11 @@ fn emit_class_value(
     }
 }
 
-fn emit_style_value(cx: &mut EmitCx<'_>, js: &JsExpr<'_>, skip_normalize: bool) {
-    let object_literal = js.source.trim_start().starts_with('{');
-    let wrap = !skip_normalize && !object_literal;
-    if wrap {
-        cx.buf.use_normalize_style();
-        cx.buf.push(Buf::normalize_style_alias());
-        cx.buf.push("(");
-    }
-    cx.buf.push(js.source);
-    if wrap {
-        cx.buf.push(")");
-    }
+fn static_style_piece<'a>(pieces: &'a [Piece<'a>]) -> Option<(&'a Attribute<'a>, &'a str)> {
+    pieces.iter().find_map(|piece| match piece {
+        Piece::Attr(attr) if attr.name == "style" => attr.value.map(|value| (*attr, value)),
+        _ => None,
+    })
 }
 
 fn piece_event_key(piece: &Piece<'_>, is_plain_element: bool) -> Option<String> {

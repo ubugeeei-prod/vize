@@ -57,7 +57,7 @@ pub(super) fn admit_bindings(
             _ => return Err(EmitError::Unsupported),
         }
     }
-    if style && has_attr(attributes, "style") {
+    if style && has_attr(attributes, "style") && static_attr_value(attributes, "style").is_none() {
         return Err(EmitError::Unsupported);
     }
     Ok(())
@@ -156,4 +156,11 @@ pub(super) fn apply_static_ref_patch(attributes: &[Attribute<'_>], flag: &mut i3
 
 fn has_attr(attributes: &[Attribute<'_>], name: &str) -> bool {
     attributes.iter().any(|attr| attr.name == name)
+}
+
+fn static_attr_value<'a>(attributes: &'a [Attribute<'a>], name: &str) -> Option<&'a str> {
+    attributes
+        .iter()
+        .find(|attr| attr.name == name)
+        .and_then(|attr| attr.value)
 }
