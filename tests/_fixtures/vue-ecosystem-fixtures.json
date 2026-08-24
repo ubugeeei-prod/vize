@@ -2,7 +2,7 @@
   "schemaVersion": 7,
   "requiredToolCoverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
   "lspAuthoredOracleGate": {
-    "minimumProjectCount": 7,
+    "minimumProjectCount": 8,
     "trackingIssue": 3952
   },
   "projects": [
@@ -789,7 +789,85 @@
       "vueGlobs": ["packages/**/*.vue", "playground/**/*.vue"],
       "tsconfig": "packages/vaul-vue/tsconfig.json",
       "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
-      "diff": "curator-compare"
+      "diff": "curator-compare",
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "packages/vaul-vue/src/DrawerHandle.vue",
+          "symbol": "handleStartCycle",
+          "usageAnchor": "@click=\"handleStartCycle\"",
+          "declarationAnchor": "function handleStartCycle() {",
+          "hoverContains": ["function handleStartCycle(): void"],
+          "renameTo": "__vizeRenamedHandleStartCycle"
+        },
+        "componentBoundary": {
+          "importerFile": "packages/vaul-vue/src/DrawerRootNested.vue",
+          "componentFile": "packages/vaul-vue/src/DrawerRoot.vue",
+          "tagName": "DrawerRoot",
+          "tagAnchor": "<DrawerRoot\n",
+          "completionItemCount": 45,
+          "completionItems": [
+            { "label": "v-if", "rank": 0 },
+            { "label": "v-else-if", "rank": 1 },
+            { "label": "v-else", "rank": 2 },
+            { "label": "v-for", "rank": 3 },
+            { "label": "v-on", "rank": 4 },
+            { "label": "v-bind", "rank": 5 },
+            { "label": "v-model", "rank": 6 },
+            { "label": "v-slot", "rank": 7 },
+            { "label": "v-show", "rank": 8 },
+            { "label": "v-pre", "rank": 9 },
+            { "label": "v-once", "rank": 10 },
+            { "label": "v-memo", "rank": 11 },
+            { "label": "v-cloak", "rank": 12 },
+            { "label": "v-text", "rank": 13 },
+            { "label": "v-html", "rank": 14 },
+            { "label": "@", "rank": 15 },
+            { "label": ":", "rank": 16 },
+            { "label": "#", "rank": 17 },
+            { "label": "@click", "rank": 18 },
+            { "label": "@input", "rank": 19 },
+            { "label": "@change", "rank": 20 },
+            { "label": "@submit", "rank": 21 },
+            { "label": "@keydown", "rank": 22 },
+            { "label": "@keyup", "rank": 23 },
+            { "label": "@focus", "rank": 24 },
+            { "label": "@blur", "rank": 25 },
+            { "label": "@mouseenter", "rank": 26 },
+            { "label": "@mouseleave", "rank": 27 },
+            { "label": "active-snap-point", "rank": 28 },
+            { "label": "close-threshold", "rank": 29 },
+            { "label": "should-scale-background", "rank": 30 },
+            { "label": "set-background-color-on-scale", "rank": 31 },
+            { "label": "scroll-lock-timeout", "rank": 32 },
+            { "label": "fixed", "rank": 33 },
+            { "label": "dismissible", "rank": 34 },
+            { "label": "modal", "rank": 35 },
+            { "label": "open", "rank": 36 },
+            { "label": "default-open", "rank": 37 },
+            { "label": "nested", "rank": 38 },
+            { "label": "direction", "rank": 39 },
+            { "label": "no-body-styles", "rank": 40 },
+            { "label": "handle-only", "rank": 41 },
+            { "label": "prevent-scroll-restoration", "rank": 42 },
+            { "label": "snap-points", "rank": 43 },
+            { "label": "fade-from-index", "rank": 44 }
+          ],
+          "dependencyEdit": {
+            "anchor": "defineProps<DrawerRootProps>(), {",
+            "replacement": "defineProps<DrawerRootProps & { vizeOracleProbe?: boolean }>(), {",
+            "completionLabel": "vize-oracle-probe"
+          }
+        },
+        "fileLifecycle": {
+          "copiedFile": "packages/vaul-vue/src/__VizeOracleDrawerRoot.vue",
+          "renamedFile": "packages/vaul-vue/src/__VizeOracleRenamedDrawerRoot.vue",
+          "originalImportSpecifier": "./DrawerRoot.vue",
+          "copiedImportSpecifier": "./__VizeOracleDrawerRoot.vue",
+          "renamedImportSpecifier": "./__VizeOracleRenamedDrawerRoot.vue",
+          "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
+          "markerSymbol": "__vizeVaulVueFileLifecycleMarker__"
+        }
+      }
     },
     {
       "id": "vee-validate",

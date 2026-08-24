@@ -770,7 +770,8 @@
           "tests/_fixtures/_git/create-vue",
           "tests/_fixtures/_git/vue-router",
           "tests/_fixtures/_git/pinia",
-          "tests/_fixtures/_git/vuefes-japan-speakers"
+          "tests/_fixtures/_git/vuefes-japan-speakers",
+          "tests/_fixtures/_git/vaul-vue"
         ]
       },
       "evidence": {
