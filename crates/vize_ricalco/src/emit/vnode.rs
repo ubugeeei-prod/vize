@@ -155,7 +155,8 @@ fn emit_call(
             &element.bindings,
             if_key,
             false,
-            for_item && has_custom,
+            for_item,
+            true,
         )?;
     } else if !element.attributes.is_empty() {
         cx.buf.push(", ");

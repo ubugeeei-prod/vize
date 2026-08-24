@@ -218,6 +218,42 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn a_component_model_merges_an_update_listener_in_source_order() {
+    assert_eq!(
+        assembled(r#"<Foo v-model="x" @update:modelValue="h" />"#),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, {
+    modelValue: x,
+    \"onUpdate:modelValue\": [$event => ((x) = $event), h]
+  }, null, 8 /* PROPS */, [\"modelValue\", \"onUpdate:modelValue\"]))
+}")
+    );
+}
+
+#[test]
+fn a_listener_before_v_model_keeps_source_order() {
+    assert_eq!(
+        assembled(r#"<Foo @update:modelValue="h" v-model="x" />"#),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, {
+    \"onUpdate:modelValue\": [h, $event => ((x) = $event)],
+    modelValue: x
+  }, null, 8 /* PROPS */, [\"onUpdate:modelValue\", \"modelValue\"]))
+}")
+    );
+}
+
+#[test]
 fn a_missing_expression_is_a_diagnostic_refusal() {
     assert_eq!(refused(r#"<input v-model>"#), EmitError::Diagnostics);
 }

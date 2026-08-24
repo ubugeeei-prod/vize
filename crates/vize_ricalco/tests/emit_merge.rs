@@ -250,3 +250,39 @@ fn an_object_bind_with_modifiers_is_unsupported_this_installment() {
         EmitError::Unsupported
     );
 }
+
+#[test]
+fn a_v_for_spread_key_uses_a_multiline_key_object() {
+    assert_eq!(
+        assembled(r#"<div v-for="n in list" :key="i" v-bind="obj"></div>"#),
+        "\
+const { mergeProps: _mergeProps, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, renderList: _renderList } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (n) => {
+    return (_openBlock(), _createElementBlock(\"div\", _mergeProps({
+      key: i
+    }, obj), null, 16 /* FULL_PROPS */))
+  }), 128 /* KEYED_FRAGMENT */))
+}"
+    );
+}
+
+#[test]
+fn a_v_for_spread_merges_duplicate_handlers_after_the_spread() {
+    assert_eq!(
+        assembled(r#"<li v-for="item in items" :key="item.id" v-bind="item.props" @keydown="a" @keydown.enter.prevent="b"></li>"#),
+        "\
+const { withKeys: _withKeys, withModifiers: _withModifiers, mergeProps: _mergeProps, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, renderList: _renderList } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => {
+    return (_openBlock(), _createElementBlock(\"li\", _mergeProps({
+      key: item.id
+    }, item.props, {
+      onKeydown: [a, _withKeys(_withModifiers(b, [\"prevent\"]), [\"enter\"])]
+    }), null, 48 /* FULL_PROPS, NEED_HYDRATION */, [\"onKeydown\"]))
+  }), 128 /* KEYED_FRAGMENT */))
+}"
+    );
+}
