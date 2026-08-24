@@ -1,7 +1,7 @@
 //! Static native HTML element / children emission.
 
 use vize_carton::{String, ensure_sufficient_stack};
-use vize_disegno::op::{Attribute, BindingOp, ElementOp, Namespace, Op, Region};
+use vize_disegno::op::{Attribute, BindingOp, ElementOp, Op, Region};
 
 use super::EmitCx;
 use super::EmitError;
@@ -10,6 +10,7 @@ use super::children::{children_need_text_flag, emit_create_text_vnode, emit_text
 use super::directive;
 use super::flag::emit_patch_flag;
 use super::hoist::{compact_props_object, push_attr_pair, unique_attrs};
+use super::namespace;
 use super::props::{admit_bindings, bind_patch, emit_bind_props};
 
 pub(super) fn emit_unique_element(
@@ -35,6 +36,9 @@ pub(super) fn emit_fragment_element(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
 ) -> Result<(), EmitError> {
+    if namespace::crosses_boundary(cx, element) {
+        return emit_nested_block(cx, element);
+    }
     directive::wrap_element(cx, element, |cx| {
         cx.buf.use_create_element_vnode();
         emit_call(
@@ -45,12 +49,31 @@ pub(super) fn emit_fragment_element(
 }
 
 fn emit_nested(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) -> Result<(), EmitError> {
+    if namespace::crosses_boundary(cx, element) {
+        return emit_nested_block(cx, element);
+    }
     directive::wrap_element(cx, element, |cx| {
         cx.buf.use_create_element_vnode();
         emit_call(
             cx, element, /* block */ false, None, /* hoist */ false,
             /* for_item */ false,
         )
+    })
+}
+
+fn emit_nested_block(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) -> Result<(), EmitError> {
+    directive::wrap_element(cx, element, |cx| {
+        cx.buf.use_open_block();
+        cx.buf.use_create_element_block();
+        cx.buf.push("(");
+        cx.buf.push(Buf::open_block_alias());
+        cx.buf.push("(), ");
+        emit_call(
+            cx, element, /* block */ true, None, /* hoist */ false,
+            /* for_item */ false,
+        )?;
+        cx.buf.push(")");
+        Ok(())
     })
 }
 
@@ -168,7 +191,9 @@ fn emit_call(
     }
     if has_children {
         cx.buf.push(", ");
-        emit_children(cx, &element.children, has_custom && allow_hoist && block)?;
+        namespace::with_child(cx, element, |cx| {
+            emit_children(cx, &element.children, has_custom && allow_hoist && block)
+        })?;
     } else if emit_flag {
         cx.buf.push(", null");
     }
@@ -235,9 +260,6 @@ fn emit_static_props_inline<'a>(
 }
 
 fn admit_native(element: &ElementOp<'_>) -> Result<(), EmitError> {
-    if element.namespace != Namespace::Html {
-        return Err(EmitError::Unsupported);
-    }
     admit_bindings(&element.attributes, &element.bindings)
 }
 

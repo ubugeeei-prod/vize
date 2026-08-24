@@ -7,7 +7,8 @@
 //! P2-9 carve-out. This module writes the JS string **directly from
 //! S2 ops** — it does not mint relief codegen-nodes (`NodeType` 13–20).
 //!
-//! This installment emits **static native HTML**, interpolations,
+//! This installment emits **static native HTML / SVG / MathML**,
+//! interpolations,
 //! mixed text siblings, static-name `ui.bind`, static-name `ui.on`
 //! (including event/key/option modifiers), native `ui.if`, **native
 //! `ui.for`**, **object-spread `v-bind`** (`normalizeProps` /
@@ -30,8 +31,10 @@
 //! `@vue:mounted`) including merged duplicate handlers, and
 //! **destructured `v-for` aliases** (`({ id })`, `[a, b]`, defaults),
 //! **`createSlots` + `v-slots`** (`...expr` on the `{ _: 2 }` base), and
-//! **dynamic `v-if` keys** (`:key="expr"`). `.native` and filters stay
-//! [`EmitError::Unsupported`].
+//! **dynamic `v-if` keys** (`:key="expr"`), plus **foreign namespace
+//! boundaries** (`<svg>` / `<math>` enter blocks, same-namespace descendants
+//! stay VNodes, integration points re-enter HTML). `.native` and filters
+//! stay [`EmitError::Unsupported`].
 //! The old lane stays the shipped compile path; [`super::DOM_LANE_FLAG`]
 //! is named here and *read* in the atelier_dom witness.
 
@@ -63,6 +66,8 @@ mod js;
 mod merge;
 #[path = "emit/model.rs"]
 mod model;
+#[path = "emit/namespace.rs"]
+mod namespace;
 #[path = "emit/on.rs"]
 mod on;
 #[path = "emit/outlet.rs"]
@@ -89,7 +94,7 @@ use vize_davinci::diagnostic::Severity;
 use vize_davinci::id::NodeId;
 use vize_davinci::pass::BudgetObserver;
 use vize_davinci::side_table::SideTable;
-use vize_disegno::op::{ElementOp, ForOp, IfOp, Op, Region};
+use vize_disegno::op::{ElementOp, ForOp, IfOp, Namespace, Op, Region};
 use vize_sinopia::parse;
 
 use crate::lower::{ForWrapper, Lowered, WrapperKeys, lower};
@@ -188,6 +193,10 @@ struct EmitCx<'facts> {
     /// Nested components inside a scoped `withCtx` treat forwarded
     /// outlets as `_: 2` + `DYNAMIC_SLOTS` (Vue `has_slot_params`).
     slot_param_depth: u32,
+    /// Current native parent namespace. DOM runtime namespace inference
+    /// depends on SVG/MathML boundaries staying block-local while same-namespace
+    /// descendants remain inline VNodes.
+    parent_ns: Namespace,
 }
 
 /// One DOM render module, split the way the shipped codegen splits it
@@ -243,6 +252,7 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
         if_branch_key: 0,
         in_v_for: false,
         slot_param_depth: 0,
+        parent_ns: Namespace::Html,
     };
     prefer_transform_helpers(&mut cx.buf, &lowered.root);
     fragment::prefer_root_fragment(&mut cx.buf, &lowered.root);
