@@ -9,7 +9,7 @@
 mod support;
 
 use support::with_transformed;
-use vize_ricalco::{EmitError, emit_dom};
+use vize_ricalco::emit_dom;
 
 fn assembled(source: &str) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {
@@ -20,10 +20,9 @@ fn assembled(source: &str) -> String {
     })
 }
 
-fn refused(source: &str) -> EmitError {
-    with_transformed(source, |lowered, _, facts, _| {
-        emit_dom(lowered, facts).expect_err("expected Unsupported")
-    })
+/// Vue's extra `newline()` after `genAssets` leaves indent on the blank line.
+fn pin(visual: &str) -> String {
+    visual.replace(")\n\n  return", ")\n  \n  return")
 }
 
 #[test]
@@ -91,10 +90,79 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn a_destructured_v_for_is_unsupported_this_installment() {
+fn an_object_destructured_v_for_emits_the_pattern() {
     assert_eq!(
-        refused(r#"<div v-for="{ id } in list" :key="id"></div>"#),
-        EmitError::Unsupported
+        assembled(r#"<div v-for="{ id } in list" :key="id">{{ id }}</div>"#),
+        "\
+const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, renderList: _renderList } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, ({ id }) => {
+    return (_openBlock(), _createElementBlock(\"div\", { key: id }, _toDisplayString(id), 1 /* TEXT */))
+  }), 128 /* KEYED_FRAGMENT */))
+}"
+    );
+}
+
+#[test]
+fn an_array_destructured_v_for_emits_the_pattern() {
+    assert_eq!(
+        assembled(r#"<div v-for="[a, b] in list">{{ a }}</div>"#),
+        "\
+const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, renderList: _renderList } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, ([a, b]) => {
+    return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(a), 1 /* TEXT */))
+  }), 256 /* UNKEYED_FRAGMENT */))
+}"
+    );
+}
+
+#[test]
+fn a_defaulted_destructure_emits_the_authored_pattern() {
+    assert_eq!(
+        assembled(r#"<div v-for="{ id = 1 } in list" :key="id">{{ id }}</div>"#),
+        "\
+const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, renderList: _renderList } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, ({ id = 1 }) => {
+    return (_openBlock(), _createElementBlock(\"div\", { key: id }, _toDisplayString(id), 1 /* TEXT */))
+  }), 128 /* KEYED_FRAGMENT */))
+}"
+    );
+}
+
+#[test]
+fn a_middle_hole_drops_the_empty_key_alias() {
+    assert_eq!(
+        assembled(r#"<div v-for="(item, , i) in list" :key="i">{{ item }}</div>"#),
+        "\
+const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, renderList: _renderList } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (item, i) => {
+    return (_openBlock(), _createElementBlock(\"div\", { key: i }, _toDisplayString(item), 1 /* TEXT */))
+  }), 128 /* KEYED_FRAGMENT */))
+}"
+    );
+}
+
+#[test]
+fn a_destructured_v_for_component_uses_the_pattern() {
+    assert_eq!(
+        assembled(r#"<Foo v-for="{ id } in list" :key="id" />"#),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, renderList: _renderList } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, ({ id }) => {
+    return (_openBlock(), _createBlock(_component_Foo, { key: id }))
+  }), 128 /* KEYED_FRAGMENT */))
+}")
     );
 }
 
