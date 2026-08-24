@@ -269,7 +269,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn a_nested_v_for_component_keeps_null_props() {
+fn a_nested_v_for_component_omits_empty_props() {
     assert_eq!(
         assembled(r#"<Foo><Bar v-for="i in n" /></Foo>"#),
         pin("\
@@ -282,7 +282,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createBlock(_component_Foo, null, {
     default: _withCtx(() => [
       (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(n, (i) => {
-        return (_openBlock(), _createBlock(_component_Bar, null))
+        return (_openBlock(), _createBlock(_component_Bar))
       }), 256 /* UNKEYED_FRAGMENT */))
     ]),
     _: 1 /* STABLE */

@@ -71,18 +71,16 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn a_static_v_for_item_hoists() {
+fn a_static_v_for_item_stays_a_block() {
     assert_eq!(
         assembled(r#"<div><span v-for="i in n">x</span></div>"#),
         "\
-const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, renderList: _renderList } = Vue
-
-const _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"span\", null, \"x\")
+const { openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, renderList: _renderList } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock(\"div\", null, [
     (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(n, (i) => {
-      return _hoisted_1
+      return (_openBlock(), _createElementBlock(\"span\", null, \"x\"))
     }), 256 /* UNKEYED_FRAGMENT */))
   ]))
 }"

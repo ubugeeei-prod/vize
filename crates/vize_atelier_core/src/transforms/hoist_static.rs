@@ -127,15 +127,41 @@ fn hoist_static_inner<'a>(
                         }
                     }
                     TemplateChildNode::For(for_node) => {
-                        ensure_sufficient_stack(|| {
-                            hoist_static_inner(ctx, &mut for_node.children, false, true);
-                        });
+                        hoist_for_children(ctx, &mut for_node.children, allocator);
                     }
                     _ => {}
                 }
             }
         }
         i += 1;
+    }
+}
+
+fn hoist_for_children<'a>(
+    ctx: &mut TransformContext<'a>,
+    children: &mut Vec<'a, TemplateChildNode<'a>>,
+    allocator: &'a Allocator,
+) {
+    match children.as_mut_slice() {
+        [TemplateChildNode::Element(el)] if el.tag_type == ElementType::Template => {
+            hoist_for_children(ctx, &mut el.children, allocator);
+        }
+        [TemplateChildNode::Element(el)] => {
+            // A single v-for child is the loop item's block root, so the VNode
+            // itself must stay inline. Static props and nested static children
+            // can still be hoisted/cached independently.
+            if has_static_props(el) {
+                hoist_element_props(ctx, el, allocator);
+            }
+            ensure_sufficient_stack(|| {
+                hoist_static_inner(ctx, &mut el.children, false, true);
+            });
+        }
+        _ => {
+            ensure_sufficient_stack(|| {
+                hoist_static_inner(ctx, children, false, true);
+            });
+        }
     }
 }
 

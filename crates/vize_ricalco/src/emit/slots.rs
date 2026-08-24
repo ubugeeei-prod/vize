@@ -1,7 +1,8 @@
 //! Slot objects (`withCtx` / `_: 1|2`) from [`SlotFacts`].
 //!
 //! Implicit default, static / dynamic named `<template>` groups, and
-//! component-root `v-slot` (shipped codegen always keys that `default`).
+//! component-root `v-slot` (bare spellings key `default`; named spellings
+//! preserve their authored slot name).
 //! Conditional / looped slot templates go through [`super::create_slots`].
 //! Outlets (`renderSlot`) live in [`super::outlet`]. A `v-slots` spread
 //! is the children argument when it is the only slot source, or
@@ -119,7 +120,7 @@ pub(super) fn emit_slots(
     cx.buf.indent();
     for (i, group) in facts.groups.iter().enumerate() {
         cx.buf.newline();
-        emit_slot_key(cx, group.carrier, &group.name)?;
+        emit_slot_key(cx, &group.name)?;
         cx.buf.push(": ");
         cx.buf.push(Buf::with_ctx_alias());
         cx.buf.push("(");
@@ -164,10 +165,6 @@ fn collect_pieces(
     facts: &SlotFacts,
     buckets: &mut [StdVec<String>],
 ) -> Result<(), EmitError> {
-    let on_component = facts
-        .groups
-        .iter()
-        .any(|group| matches!(group.carrier, SlotCarrier::Component));
     let skip_ws = children
         .ops
         .iter()
@@ -196,7 +193,7 @@ fn collect_pieces(
                     matches!(
                         group.carrier,
                         SlotCarrier::Implicit | SlotCarrier::Component
-                    ) && (on_component || matches!(group.carrier, SlotCarrier::Implicit))
+                    )
                 });
                 let Some(idx) = idx else {
                     return Err(EmitError::Unsupported);
@@ -248,15 +245,7 @@ pub(super) fn emit_template_pieces(
     Ok(())
 }
 
-fn emit_slot_key(
-    cx: &mut EmitCx<'_>,
-    carrier: SlotCarrier,
-    name: &SlotName,
-) -> Result<(), EmitError> {
-    if matches!(carrier, SlotCarrier::Component) {
-        cx.buf.push("default");
-        return Ok(());
-    }
+fn emit_slot_key(cx: &mut EmitCx<'_>, name: &SlotName) -> Result<(), EmitError> {
     match name {
         SlotName::Static { text, .. } if is_valid_js_identifier(text.as_str()) => {
             cx.buf.push(text.as_str());

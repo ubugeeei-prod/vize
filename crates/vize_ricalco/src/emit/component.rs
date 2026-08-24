@@ -258,9 +258,7 @@ fn emit_call(
         )?;
     } else if for_item && directive::has_custom(&component.bindings) {
         cx.buf.push(", { }");
-    } else if emit_flag || has_slots || has_array || for_item {
-        // Vue's v-for item `createBlock` keeps an explicit null props
-        // even when the component has no props, slots, or patch flag.
+    } else if emit_flag || has_slots || has_array {
         cx.buf.push(", null");
     }
     if array {

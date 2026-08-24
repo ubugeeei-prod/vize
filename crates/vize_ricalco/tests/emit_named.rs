@@ -149,9 +149,29 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn a_component_root_v_slot_keys_default() {
+fn a_component_root_named_v_slot_preserves_its_key() {
     assert_eq!(
         assembled("<Foo v-slot:header>title</Foo>"),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, null, {
+    header: _withCtx(() => [
+      _createTextVNode(\"title\")
+    ]),
+    _: 1 /* STABLE */
+  }))
+}")
+    );
+}
+
+#[test]
+fn a_component_root_bare_v_slot_keys_default() {
+    assert_eq!(
+        assembled("<Foo v-slot>title</Foo>"),
         pin("\
 const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue
 

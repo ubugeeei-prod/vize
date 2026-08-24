@@ -141,7 +141,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn a_v_for_item_component_keeps_null_props() {
+fn a_v_for_item_component_omits_empty_props() {
     assert_eq!(
         assembled(r#"<Foo v-for="i in n" />"#),
         pin("\
@@ -151,7 +151,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_Foo = _resolveComponent(\"Foo\")
 
   return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(n, (i) => {
-    return (_openBlock(), _createBlock(_component_Foo, null))
+    return (_openBlock(), _createBlock(_component_Foo))
   }), 256 /* UNKEYED_FRAGMENT */))
 }")
     );

@@ -2,9 +2,9 @@
 //!
 //! The lowering unwraps the wrapper, so emit reads
 //! [`WrapperKeys::from_template`] / [`ForWrapper`] to recover the
-//! shipped hoist-then-codegen split: a still-dynamic single element
-//! unwraps to a block; a hoistable / text / multi child stays a
-//! `STABLE_FRAGMENT`.
+//! shipped codegen split: a single element unwraps to a block (including
+//! static nodes, because a `v-for` item must keep block tracking); text /
+//! multi child stays a `STABLE_FRAGMENT`.
 
 use vize_carton::String;
 use vize_disegno::expr::{ExprRef, OpaqueReason};
@@ -90,7 +90,7 @@ fn unwrap_if(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<()
 }
 
 pub(super) fn should_unwrap_for(ops: &[Op<'_>]) -> bool {
-    matches!(ops, [Op::Element(element)] if !is_hoistable(element))
+    matches!(ops, [Op::Element(_)])
 }
 
 pub(super) fn emit_for_template_item(

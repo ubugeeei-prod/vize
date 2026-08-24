@@ -126,11 +126,6 @@ fn emit_plain_item(
     let id = cx.walk.mint();
     cx.walk.skip(bind_len);
     match for_op.region.ops.as_slice() {
-        [Op::Element(element)] if super::hoist::is_hoistable(element) => {
-            let alias = super::hoist::hoist_static_element(cx, element);
-            cx.buf.push(alias.as_str());
-            Ok(())
-        }
         [Op::Element(element)] => {
             let key = item_key_js(&element.attributes, &element.bindings)?;
             super::emit_for_item_call(cx, element, stable, key.as_deref())

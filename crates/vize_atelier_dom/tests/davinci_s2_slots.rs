@@ -1,5 +1,5 @@
 //! P2-11 named / scoped slot witness: `<template #name>` groups,
-//! component-root `v-slot` (shipped keys that `default`), dynamic
+//! component-root `v-slot` (bare defaults, named keys preserved), dynamic
 //! names, simple scoped params, and `createSlots` (`v-if` / `v-for`
 //! slot templates), compared **byte-for-byte** including helper usage.
 
@@ -9,9 +9,9 @@
     clippy::disallowed_methods
 )]
 
-use vize_atelier_dom::compile_template;
-use vize_carton::Allocator;
-use vize_ricalco::{DOM_LANE_FLAG, emit_dom_source};
+mod support;
+
+use vize_ricalco::EmitError;
 
 const BATTERY: &[(&str, &str)] = &[
     (
@@ -113,37 +113,25 @@ const BATTERY: &[(&str, &str)] = &[
     ),
 ];
 
-fn shipped(src: &str) -> String {
-    let allocator = Allocator::new();
-    let (_, errors, result) = compile_template(&allocator, src);
-    assert!(errors.is_empty(), "shipped lane errors: {errors:?}");
-    format!("{}\n{}", result.preamble, result.code)
-}
+const UNSUPPORTED_BATTERY: &[(&str, &str, EmitError)] = &[
+    (
+        "mixed_component_root_and_named_template",
+        r#"<Foo v-slot><template #header>x</template></Foo>"#,
+        EmitError::Diagnostics,
+    ),
+    (
+        "slot_template_extra_attr",
+        r#"<Foo><template #header id="x">x</template></Foo>"#,
+        EmitError::Unsupported,
+    ),
+];
 
 #[test]
 fn s2_named_slots_match_the_shipped_dom_lane_byte_for_byte() {
-    let mut compared = 0u64;
-    let mut skipped_legacy_flag = 0u64;
-    if std::env::var(DOM_LANE_FLAG).is_ok_and(|value| value == "legacy") {
-        skipped_legacy_flag += 1;
-    } else {
-        let allocator = Allocator::new();
-        for (name, src) in BATTERY {
-            let old = shipped(src);
-            let new = emit_dom_source(&allocator, src)
-                .unwrap_or_else(|error| panic!("{name}: S2 emit refused: {error:?}"))
-                .assembled();
-            assert_eq!(
-                old.as_str(),
-                new.as_str(),
-                "{name}: S2 DOM emit diverged from the shipped lane"
-            );
-            compared += 1;
-        }
-    }
-    assert_eq!(
-        (compared, skipped_legacy_flag),
-        (BATTERY.len() as u64, 0),
-        "a cfg or {DOM_LANE_FLAG}=legacy regression disarmed the dual-run"
-    );
+    support::assert_s2_matches_shipped(BATTERY);
+}
+
+#[test]
+fn s2_slot_forms_that_stay_unsupported_are_pinned_negative_cases() {
+    support::assert_s2_refuses(UNSUPPORTED_BATTERY);
 }

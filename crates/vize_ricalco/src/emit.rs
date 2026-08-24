@@ -14,7 +14,7 @@
 //! `mergeProps`), **static-name components** (`resolveComponent` /
 //! `createVNode` / `createBlock`), **object `v-on`** (`toHandlers`),
 //! and **implicit default slots** (`withCtx` / `_: 1|2`, including text,
-//! static-vnode hoists, hoisted static `ui.for` items, named / scoped
+//! static-vnode hoists, static `ui.for` item blocks, named / scoped
 //! `<template>` slots, `createSlots` for `v-if` / `v-for` slot
 //! templates, **slot outlets** (`renderSlot` / `_: 3 FORWARDED`), and
 //! Vue builtins (`Teleport` / `KeepAlive` / `Transition` / `Suspense`),
