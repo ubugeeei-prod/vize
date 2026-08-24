@@ -91,6 +91,7 @@ export type AuthoredLspEvidence = {
   fileLifecycle: AuthoredFileLifecycleEvidence;
   hover: LspResponseEvidence;
   importerFile: string;
+  prepareRename: LspResponseEvidence;
   references: LspResponseEvidence;
   rename: LspResponseEvidence;
   templateBindingFile: string;

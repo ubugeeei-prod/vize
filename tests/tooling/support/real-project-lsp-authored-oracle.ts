@@ -128,11 +128,13 @@ export async function exerciseAuthoredLspOracle(
       "references must cover exactly the authored template use and declaration",
     );
 
-    const prepareRename = await session.request(
+    const prepareRenameRequest = await timedRequest<LspRange | null>(
+      session,
       "textDocument/prepareRename",
       textDocumentPosition(bindingDocument.uri, usageRange.start),
       timeoutMs(),
     );
+    const prepareRename = prepareRenameRequest.response;
     assert.deepEqual(prepareRename, usageRange, "prepareRename must select the template token");
     const renameRequest = await timedRequest<WorkspaceEdit | null>(
       session,
@@ -258,6 +260,7 @@ export async function exerciseAuthoredLspOracle(
       fileLifecycle,
       hover: evidence(hoverRequest, hover, 1),
       importerFile: boundary.importerFile,
+      prepareRename: evidence(prepareRenameRequest, prepareRename, 1),
       references: evidence(referencesRequest, sortLocations(references), references.length),
       rename: evidence(renameRequest, sortTextEdits(renameEdits), renameEdits.length),
       templateBindingDiagnostics: diagnosticEvidence(bindingDiagnostics.diagnostics),

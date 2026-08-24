@@ -270,6 +270,7 @@ function authoredEvidence(): AuthoredLspEvidence {
     },
     hover: response,
     importerFile: "FeatureParent.vue",
+    prepareRename: response,
     references: response,
     rename: response,
     templateBindingFile: "Binding.vue",
