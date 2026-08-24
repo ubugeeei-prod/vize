@@ -223,27 +223,36 @@ fn v_memo_may_carry_an_opaque_expression() {
 }
 
 #[test]
-fn an_ill_formed_v_once_still_defers() {
-    let art = artifact(r#"<div v-once="x">y</div>"#);
-    assert_eq!(
-        art.folio,
-        "[disegno]\n\
-         ops=2\n\
-         \n\
-         [disegno.ops]\n\
-         ui.element div @0:23\n\
-         \x20 ui.text \"y\" @16:17\n\
-         \n"
-    );
-    assert_eq!(
-        art.diagnostics,
-        vec![Diagnostic::new(
-            Severity::Info,
-            Stage::Semantic,
-            Span::new(5, 15),
-            "`v-once` is representable as `vue.once` only as the bare directive",
-        )]
-    );
+fn ill_formed_v_once_spellings_still_defer() {
+    for (src, element_end, text_start, attr_end) in [
+        (r#"<div v-once="x">y</div>"#, 23, 16, 15),
+        (r#"<div v-once="">y</div>"#, 22, 15, 14),
+        (r#"<div v-once=" ">y</div>"#, 23, 16, 15),
+    ] {
+        let art = artifact(src);
+        assert_eq!(
+            art.folio,
+            format!(
+                "[disegno]\n\
+                 ops=2\n\
+                 \n\
+                 [disegno.ops]\n\
+                 ui.element div @0:{element_end}\n\
+                 \x20 ui.text \"y\" @{text_start}:{}\n\
+                 \n",
+                text_start + 1
+            )
+        );
+        assert_eq!(
+            art.diagnostics,
+            vec![Diagnostic::new(
+                Severity::Info,
+                Stage::Semantic,
+                Span::new(5, attr_end),
+                "`v-once` is representable as `vue.once` only as the bare directive",
+            )]
+        );
+    }
 }
 
 #[test]

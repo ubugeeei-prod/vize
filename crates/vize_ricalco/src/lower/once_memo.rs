@@ -91,8 +91,5 @@ pub(crate) fn lower_memo<'a>(
 fn is_bare(directive: &Directive<'_>, element: &Element<'_>, index: usize) -> bool {
     directive.arg.is_none()
         && directive.modifiers.is_empty()
-        && attr_value_text(element, index)
-            .map(str::trim)
-            .filter(|text| !text.is_empty())
-            .is_none()
+        && attr_value_text(element, index).is_none()
 }
