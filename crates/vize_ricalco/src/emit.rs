@@ -28,7 +28,8 @@
 //! (`resolveDirective` + `_withDirectives`, merged with native
 //! `v-model`), **colon / vnode-hook events** (`@update:…`,
 //! `@vue:mounted`) including merged duplicate handlers, and
-//! **destructured `v-for` aliases** (`({ id })`, `[a, b]`, defaults).
+//! **destructured `v-for` aliases** (`({ id })`, `[a, b]`, defaults),
+//! and **`createSlots` + `v-slots`** (`...expr` on the `{ _: 2 }` base).
 //! `.native` and filters stay [`EmitError::Unsupported`].
 //! The old lane stays the shipped compile path; [`super::DOM_LANE_FLAG`]
 //! is named here and *read* in the atelier_dom witness.

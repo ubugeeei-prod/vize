@@ -138,6 +138,65 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn a_v_slots_spread_lands_on_the_create_slots_base() {
+    assert_eq!(
+        assembled(r#"<Foo v-slots="slots"><template #header v-if="ok">x</template></Foo>"#),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, createSlots: _createSlots, withCtx: _withCtx } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, null, _createSlots({
+    ...slots,
+    _: 2 /* DYNAMIC */
+  }, [
+    (ok)
+      ? {
+        name: \"header\",
+        fn: _withCtx(() => [
+          _createTextVNode(\"x\")
+        ]),
+        key: \"0\"
+      }
+    : undefined
+  ]), 1024 /* DYNAMIC_SLOTS */))
+}")
+    );
+}
+
+#[test]
+fn a_v_slots_spread_follows_the_implicit_default() {
+    assert_eq!(
+        assembled(r#"<Foo v-slots="slots">hello<template #header v-if="ok">x</template></Foo>"#),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, createSlots: _createSlots, withCtx: _withCtx } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, null, _createSlots({
+    default: _withCtx(() => [
+      _createTextVNode(\"hello\")
+    ]),
+    ...slots,
+    _: 2 /* DYNAMIC */
+  }, [
+    (ok)
+      ? {
+        name: \"header\",
+        fn: _withCtx(() => [
+          _createTextVNode(\"x\")
+        ]),
+        key: \"0\"
+      }
+    : undefined
+  ]), 1024 /* DYNAMIC_SLOTS */))
+}")
+    );
+}
+
+#[test]
 fn a_v_else_branch_omits_the_trailing_undefined() {
     assert_eq!(
         assembled(
