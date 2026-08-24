@@ -24,8 +24,11 @@ const SOURCE_REGEX_ASSERTION = /\.(?:match|doesNotMatch)\(\s*source\b/;
 const SFC_SOURCE_READ = /readFile\([^)]*\.vue/;
 const SOURCE_CONTRACT_PRAGMA = "source-contract:";
 const DEFINE_PROPS_TYPE = /defineProps\s*<\s*\{([\s\S]*?)\}\s*>\s*\(/g;
+const DEFINE_EMITS_TYPE = /defineEmits\s*<\s*\{([\s\S]*?)\}\s*>\s*\(/g;
 const PROP_DECLARATION =
   /(?:(\/\*\*[\s\S]*?\*\/)\s*)?readonly\s+(?:"([^"]+)"|'([^']+)'|([A-Za-z_$][\w$]*))\??\s*:/g;
+const EVENT_DECLARATION =
+  /(?:(\/\*\*[\s\S]*?\*\/)\s*)?(?:"([^"]+)"|'([^']+)'|([A-Za-z_$][\w$]*))\s*:\s*\[/g;
 const AUTHORING_RULE_IDS = new Set<AuthoringRule>(
   VIZE_UI_SFC_AUTHORING_RULES.map((rule) => rule.id),
 );
@@ -74,6 +77,7 @@ export async function auditComponentAuthoring(
     for (const message of propDefaultDocProblems(source, sfc)) {
       report(sfc, "prop-default-doc", message);
     }
+    for (const message of eventDocProblems(source, sfc)) report(sfc, "event-doc", message);
 
     if (!behaviorSources.some((table) => table.includes(basename))) {
       report(
@@ -164,6 +168,24 @@ function propDefaultDocProblems(source: string, filename: string): string[] {
       const propName = prop[2] ?? prop[3] ?? prop[4] ?? "<unknown>";
       problems.push(
         `Prop ${propName} is missing @default documentation; document the public default value`,
+      );
+    }
+  }
+  return problems;
+}
+
+function eventDocProblems(source: string, filename: string): string[] {
+  const { descriptor, errors } = parse(source, { filename });
+  if (errors.length > 0 || descriptor.scriptSetup === null) return [];
+
+  const problems: string[] = [];
+  for (const emitsType of descriptor.scriptSetup.content.matchAll(DEFINE_EMITS_TYPE)) {
+    const body = emitsType[1] ?? "";
+    for (const event of body.matchAll(EVENT_DECLARATION)) {
+      if ((event[1] ?? "").trim().length > 0) continue;
+      const eventName = event[2] ?? event[3] ?? event[4] ?? "<unknown>";
+      problems.push(
+        `Event ${eventName} is missing documentation; document dispatch timing and payload intent`,
       );
     }
   }

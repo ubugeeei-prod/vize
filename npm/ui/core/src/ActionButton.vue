@@ -57,6 +57,7 @@ defineSlots<{
 }>();
 
 const emit = defineEmits<{
+  /** Fired when pointer or keyboard activation reaches the rendered control. */
   press: [event: MouseEvent];
 }>();
 

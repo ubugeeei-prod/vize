@@ -73,6 +73,14 @@ export const VIZE_UI_SFC_AUTHORING_RULES = [
     remediation: "Add an `@default` tag to each public prop's documentation comment.",
   },
   {
+    id: "event-doc",
+    title: "Documented component events",
+    requirement:
+      "Every public event documents when it fires and what payload its typed tuple carries.",
+    evidence: ["defineEmits<T> event JSDoc"],
+    remediation: "Add documentation comments to each public event in the `defineEmits<T>` type.",
+  },
+  {
     id: "source-regex-behavior",
     title: "No source-regex behavior proof",
     requirement:
@@ -119,6 +127,14 @@ export const VIZE_UI_SFC_QUALITY_GATES = [
       "Public props expose their first-render defaults through documentation comments and editor hover.",
     evidence: ["defineProps<T> JSDoc `@default` tags"],
     enforcedByRules: ["prop-default-doc"],
+  },
+  {
+    id: "api-event-documentation",
+    title: "API event documentation",
+    requirement:
+      "Public events expose their dispatch timing and payload intent through documentation comments and editor hover.",
+    evidence: ["defineEmits<T> event JSDoc"],
+    enforcedByRules: ["event-doc"],
   },
 ] as const satisfies readonly SfcQualityGateContract<SfcAuthoringRuleId>[];
 
