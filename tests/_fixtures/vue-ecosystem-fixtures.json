@@ -2,7 +2,7 @@
   "schemaVersion": 7,
   "requiredToolCoverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
   "lspAuthoredOracleGate": {
-    "minimumProjectCount": 8,
+    "minimumProjectCount": 9,
     "trackingIssue": 3952
   },
   "projects": [
