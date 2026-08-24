@@ -16,6 +16,7 @@ use super::buf::Buf;
 use super::builtin;
 use super::children::children_need_text_flag;
 use super::create_slots;
+use super::directive;
 use super::flag::emit_patch_flag;
 use super::hoist::compact_props_object;
 use super::js::asset_ident;
@@ -47,16 +48,18 @@ pub(super) fn emit_root(
     component: &ComponentOp<'_>,
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
-    cx.buf.use_open_block();
-    cx.buf.use_create_block();
-    cx.buf.push("(");
-    cx.buf.push(Buf::open_block_alias());
-    cx.buf.push("(), ");
-    emit_call(
-        cx, component, /* block */ true, None, /* for_item */ false, id,
-    )?;
-    cx.buf.push(")");
-    Ok(())
+    directive::wrap_component(cx, component, |cx| {
+        cx.buf.use_open_block();
+        cx.buf.use_create_block();
+        cx.buf.push("(");
+        cx.buf.push(Buf::open_block_alias());
+        cx.buf.push("(), ");
+        emit_call(
+            cx, component, /* block */ true, None, /* for_item */ false, id,
+        )?;
+        cx.buf.push(")");
+        Ok(())
+    })
 }
 
 pub(super) fn emit_nested(
@@ -67,10 +70,12 @@ pub(super) fn emit_nested(
     if builtin::forces_block(component) {
         return emit_root(cx, component, id);
     }
-    cx.buf.use_create_vnode();
-    emit_call(
-        cx, component, /* block */ false, None, /* for_item */ false, id,
-    )
+    directive::wrap_component(cx, component, |cx| {
+        cx.buf.use_create_vnode();
+        emit_call(
+            cx, component, /* block */ false, None, /* for_item */ false, id,
+        )
+    })
 }
 
 pub(super) fn emit_if_branch(
@@ -79,38 +84,43 @@ pub(super) fn emit_if_branch(
     key: &str,
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
-    cx.buf.use_open_block();
-    cx.buf.use_create_block();
-    cx.buf.push("(");
-    cx.buf.push(Buf::open_block_alias());
-    cx.buf.push("(), ");
-    emit_call(
-        cx,
-        component,
-        /* block */ true,
-        Some(key),
-        /* for_item */ false,
-        id,
-    )?;
-    cx.buf.push(")");
-    Ok(())
+    directive::wrap_component(cx, component, |cx| {
+        cx.buf.use_open_block();
+        cx.buf.use_create_block();
+        cx.buf.push("(");
+        cx.buf.push(Buf::open_block_alias());
+        cx.buf.push("(), ");
+        emit_call(
+            cx,
+            component,
+            /* block */ true,
+            Some(key),
+            /* for_item */ false,
+            id,
+        )?;
+        cx.buf.push(")");
+        Ok(())
+    })
 }
 
 pub(super) fn emit_for_item(
     cx: &mut EmitCx<'_>,
     component: &ComponentOp<'_>,
     id: Option<NodeId>,
+    key: Option<&str>,
 ) -> Result<(), EmitError> {
-    cx.buf.use_open_block();
-    cx.buf.use_create_block();
-    cx.buf.push("(");
-    cx.buf.push(Buf::open_block_alias());
-    cx.buf.push("(), ");
-    emit_call(
-        cx, component, /* block */ true, None, /* for_item */ true, id,
-    )?;
-    cx.buf.push(")");
-    Ok(())
+    directive::wrap_component(cx, component, |cx| {
+        cx.buf.use_open_block();
+        cx.buf.use_create_block();
+        cx.buf.push("(");
+        cx.buf.push(Buf::open_block_alias());
+        cx.buf.push("(), ");
+        emit_call(
+            cx, component, /* block */ true, key, /* for_item */ true, id,
+        )?;
+        cx.buf.push(")");
+        Ok(())
+    })
 }
 
 fn collect_from<'a>(region: &Region<'a>, names: &mut StdVec<&'a str>) {
@@ -175,16 +185,19 @@ fn emit_call(
     let has_binds = component.bindings.iter().any(|binding| {
         !matches!(binding, BindingOp::SlotContent(_))
             && !slots::is_slots_spread(binding)
+            && !directive::is_custom(binding)
             && !(skip_is && builtin::is_is_bind(binding))
     });
     let has_attrs = component
         .attributes
         .iter()
         .any(|attr| !skip_is || attr.name != "is");
+    let has_custom = directive::has_custom(&component.bindings);
     let has_hoist_attrs = !component.attributes.is_empty();
     let static_nested = builtin::has_static_nested(&component.children);
     let builtin_helper = builtin::helper(component.name).is_some();
     let hoisted_static_props = if !has_binds
+        && !has_custom
         && if_key.is_none()
         && has_hoist_attrs
         && ((!array && (facts.is_some() || create) && (!builtin_helper || static_nested))
@@ -199,6 +212,7 @@ fn emit_call(
     };
     let unused_hoist = hoisted_static_props.is_none()
         && !has_binds
+        && !has_custom
         && if_key.is_none()
         && has_hoist_attrs
         && static_nested;
@@ -224,6 +238,9 @@ fn emit_call(
     {
         flag |= 1024;
     }
+    if for_item {
+        flag &= !512;
+    }
     let emit_flag = flag != 0;
     if let Some(alias) = hoisted_static_props.as_ref() {
         cx.buf.push(", ");
@@ -236,7 +253,10 @@ fn emit_call(
             &component.bindings,
             if_key,
             skip_is,
+            for_item && directive::has_custom(&component.bindings),
         )?;
+    } else if for_item && directive::has_custom(&component.bindings) {
+        cx.buf.push(", { }");
     } else if emit_flag || has_slots || has_array || for_item {
         // Vue's v-for item `createBlock` keeps an explicit null props
         // even when the component has no props, slots, or patch flag.

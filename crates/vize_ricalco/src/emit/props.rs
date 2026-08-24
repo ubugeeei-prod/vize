@@ -2,7 +2,7 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::String;
+use vize_carton::{Span, String};
 use vize_disegno::expr::{ExprRef, JsExpr};
 use vize_disegno::op::{Attribute, BindOp, BindingOp, DynamicName, OnOp};
 
@@ -51,8 +51,10 @@ pub(super) fn admit_bindings(
                 }
             }
             BindingOp::On(on) => admit_on(on, &mut events)?,
+            BindingOp::Model(model) => super::model::admit(model)?,
             BindingOp::SlotContent(_) => {}
             BindingOp::VueDirective(_) if super::slots::is_slots_spread(binding) => {}
+            BindingOp::VueDirective(directive) => super::directive::admit(directive)?,
             _ => return Err(EmitError::Unsupported),
         }
     }
@@ -99,8 +101,14 @@ pub(super) fn bind_patch(bindings: &[BindingOp<'_>], is_component: bool) -> Patc
                     flag |= 32;
                 }
             }
+            BindingOp::Model(model) => {
+                super::model::patch(model, is_component, &mut flag, &mut dynamic_props);
+            }
             _ => {}
         }
+    }
+    if super::directive::has_custom(bindings) && flag & (2 | 4 | 8 | 16) == 0 {
+        flag |= 512;
     }
     Patch {
         flag,
@@ -114,12 +122,13 @@ pub(super) fn emit_bind_props(
     bindings: &[BindingOp<'_>],
     if_key: Option<&str>,
     skip_is: bool,
+    empty_key_multiline: bool,
 ) -> Result<(), EmitError> {
     if super::merge::has_object_spread(bindings) {
         return super::merge::emit_spread_props(cx, attributes, bindings, if_key, skip_is);
     }
     let pieces = pieces(attributes, bindings, skip_is)?;
-    emit_props_object(cx, &pieces, if_key, false)
+    emit_props_object(cx, &pieces, if_key, false, empty_key_multiline)
 }
 
 pub(super) fn emit_props_object(
@@ -127,25 +136,31 @@ pub(super) fn emit_props_object(
     pieces: &[Piece<'_>],
     if_key: Option<&str>,
     skip_normalize: bool,
+    empty_key_multiline: bool,
 ) -> Result<(), EmitError> {
     let skip_class = pieces_have_named(pieces, "class");
     let skip_key = if_key.is_some();
     let visible: StdVec<&Piece<'_>> = pieces
         .iter()
-        .filter(|piece| {
-            !matches!(
-                piece,
-                Piece::Attr(attr) if (skip_class && attr.name == "class")
-                    || (skip_key && attr.name == "key")
-            )
-        })
+        .filter(|piece| !skip_emitted_key(piece, if_key, skip_class, skip_key))
         .collect();
     if let Some(key) = if_key
         && visible.is_empty()
     {
-        cx.buf.push("{ key: ");
-        cx.buf.push(key);
-        cx.buf.push(" }");
+        if empty_key_multiline {
+            cx.buf.push("{");
+            cx.buf.indent();
+            cx.buf.newline();
+            cx.buf.push("key: ");
+            cx.buf.push(key);
+            cx.buf.deindent();
+            cx.buf.newline();
+            cx.buf.push("}");
+        } else {
+            cx.buf.push("{ key: ");
+            cx.buf.push(key);
+            cx.buf.push(" }");
+        }
         return Ok(());
     }
     let extra = usize::from(if_key.is_some());
@@ -181,6 +196,13 @@ pub(super) fn emit_props_object(
             Piece::Attr(attr) => emit_static_pair(cx, attr),
             Piece::Bind(bind) => emit_bind_pair(cx, pieces, bind, skip_normalize)?,
             Piece::On(on) => emit_on_pair(cx, on)?,
+            Piece::ModelValue { name, source, .. } => super::model::emit_value(cx, name, source),
+            Piece::ModelUpdate { key, source, .. } => {
+                super::model::emit_update(cx, key.as_str(), source)
+            }
+            Piece::ModelModifiers {
+                name, modifiers, ..
+            } => super::model::emit_modifiers(cx, name.as_str(), modifiers),
         }
         i += 1;
     }
@@ -198,6 +220,21 @@ pub(super) enum Piece<'a> {
     Attr(&'a Attribute<'a>),
     Bind(&'a BindOp<'a>),
     On(&'a OnOp<'a>),
+    ModelValue {
+        name: &'a str,
+        source: &'a str,
+        span: Span,
+    },
+    ModelUpdate {
+        key: String,
+        source: &'a str,
+        span: Span,
+    },
+    ModelModifiers {
+        name: String,
+        modifiers: StdVec<&'a str>,
+        span: Span,
+    },
 }
 
 pub(super) fn pieces<'a>(
@@ -218,8 +255,9 @@ pub(super) fn pieces<'a>(
                 if skip_is && matches!(bind.name, Some(DynamicName::Static("is"))) => {}
             BindingOp::Bind(bind) => out.push(Piece::Bind(bind)),
             BindingOp::On(on) => out.push(Piece::On(on)),
+            BindingOp::Model(model) => super::model::expand(model, &mut out)?,
             BindingOp::SlotContent(_) => {}
-            BindingOp::VueDirective(_) if super::slots::is_slots_spread(binding) => {}
+            BindingOp::VueDirective(_) => {}
             _ => return Err(EmitError::Unsupported),
         }
     }
@@ -227,6 +265,9 @@ pub(super) fn pieces<'a>(
         Piece::Attr(attr) => attr.span.start,
         Piece::Bind(bind) => bind.span.start,
         Piece::On(on) => on.span.start,
+        Piece::ModelValue { span, .. }
+        | Piece::ModelUpdate { span, .. }
+        | Piece::ModelModifiers { span, .. } => span.start,
     });
     Ok(out)
 }
@@ -242,9 +283,33 @@ fn has_attr(attributes: &[Attribute<'_>], name: &str) -> bool {
     attributes.iter().any(|attr| attr.name == name)
 }
 
+fn skip_emitted_key(
+    piece: &Piece<'_>,
+    if_key: Option<&str>,
+    skip_class: bool,
+    skip_key: bool,
+) -> bool {
+    match piece {
+        Piece::Attr(attr) => {
+            (skip_class && attr.name == "class") || (skip_key && attr.name == "key")
+        }
+        Piece::Bind(bind)
+            if skip_key
+                && matches!(bind.name, Some(DynamicName::Static("key")))
+                && js_value(bind).is_ok_and(|js| if_key == Some(js.source)) =>
+        {
+            true
+        }
+        _ => false,
+    }
+}
+
 fn pieces_have_named(pieces: &[Piece<'_>], name: &str) -> bool {
-    pieces.iter().any(|piece| {
-        matches!(piece, Piece::Bind(bind) if matches!(bind.name, Some(DynamicName::Static(n)) if n == name))
+    pieces.iter().any(|piece| match piece {
+        Piece::Bind(bind) => matches!(bind.name, Some(DynamicName::Static(n)) if n == name),
+        Piece::ModelValue { name: prop, .. } => *prop == name,
+        Piece::ModelModifiers { name: prop, .. } => prop.as_str() == name,
+        _ => false,
     })
 }
 
@@ -257,6 +322,7 @@ fn pieces_have_inline_on(pieces: &[Piece<'_>]) -> bool {
                     _ => false,
                 }
         }
+        Piece::ModelUpdate { .. } => true,
         _ => false,
     })
 }

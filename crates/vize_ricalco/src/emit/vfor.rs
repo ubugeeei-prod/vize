@@ -1,6 +1,6 @@
 //! Native HTML `ui.for` (`v-for`) emission.
 
-use vize_carton::ToCompactString;
+use vize_carton::{String, ToCompactString};
 use vize_davinci::id::NodeId;
 use vize_disegno::expr::ExprRef;
 use vize_disegno::op::{Attribute, BindingOp, DynamicName, ForOp, Op};
@@ -8,7 +8,7 @@ use vize_disegno::op::{Attribute, BindingOp, DynamicName, ForOp, Op};
 use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
-use super::js::is_valid_js_identifier;
+use super::js::{escape_js_string, is_valid_js_identifier};
 
 pub(super) fn emit_for(
     cx: &mut EmitCx<'_>,
@@ -131,8 +131,14 @@ fn emit_plain_item(
             cx.buf.push(alias.as_str());
             Ok(())
         }
-        [Op::Element(element)] => super::emit_for_item_call(cx, element, stable, None),
-        [Op::Component(component)] => super::component::emit_for_item(cx, component, id),
+        [Op::Element(element)] => {
+            let key = item_key_js(&element.attributes, &element.bindings)?;
+            super::emit_for_item_call(cx, element, stable, key.as_deref())
+        }
+        [Op::Component(component)] => {
+            let key = item_key_js(&component.attributes, &component.bindings)?;
+            super::component::emit_for_item(cx, component, id, key.as_deref())
+        }
         [Op::Slot(slot)] => super::outlet::emit_outlet(cx, slot, None, false),
         _ => Err(EmitError::Unsupported),
     }
@@ -164,6 +170,28 @@ pub(super) fn optional_ident<'a>(
 
 fn is_numeric(source: &str) -> bool {
     !source.is_empty() && source.chars().all(|c| c.is_ascii_digit())
+}
+
+fn item_key_js(
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+) -> Result<Option<String>, EmitError> {
+    for binding in bindings {
+        if let BindingOp::Bind(bind) = binding
+            && matches!(bind.name, Some(DynamicName::Static("key")))
+        {
+            return Ok(Some(String::from(super::props::js_value(bind)?.source)));
+        }
+    }
+    for attr in attributes {
+        if attr.name == "key" {
+            let mut out = String::from("\"");
+            out.push_str(escape_js_string(attr.value.unwrap_or("")).as_str());
+            out.push('"');
+            return Ok(Some(out));
+        }
+    }
+    Ok(None)
 }
 
 fn has_item_key(attributes: &[Attribute<'_>], bindings: &[BindingOp<'_>]) -> bool {
