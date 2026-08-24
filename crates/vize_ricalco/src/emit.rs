@@ -20,9 +20,9 @@
 //! Vue builtins (`Teleport` / `KeepAlive` / `Transition` / `Suspense`),
 //! `<component :is>` (`resolveDynamicComponent`), and **template
 //! fragments** (empty → `null`, multi-root / compound-root
-//! `_Fragment` + `STABLE_FRAGMENT`).
-//! Object `v-on`, `.native`, and filters stay
-//! [`EmitError::Unsupported`]. The old
+//! `_Fragment` + `STABLE_FRAGMENT`), and **object `v-on`**
+//! (`toHandlers(..., true)`).
+//! `.native` and filters stay [`EmitError::Unsupported`]. The old
 //! lane stays the shipped compile path; [`super::DOM_LANE_FLAG`] is
 //! named here and *read* in the atelier_dom witness.
 
