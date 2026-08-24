@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { performance } from "node:perf_hooks";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { offsetToPosition } from "./lsp/assertions.ts";
@@ -160,14 +161,27 @@ export function responseEvidence(
   response: unknown,
   count: number,
   workspaceDir: string,
+  durationMs = 0,
 ): LspResponseEvidence {
   const normalized = normalizeResponse(response, workspaceDir);
   return {
     count,
+    durationMs,
     sha256: createHash("sha256")
       .update(`${JSON.stringify(normalized)}\n`)
       .digest("hex"),
   };
+}
+
+export async function timedRequest<T>(
+  session: OracleSession,
+  method: string,
+  params: unknown,
+  timeoutMs: number,
+): Promise<{ durationMs: number; response: T }> {
+  const started = performance.now();
+  const response = (await session.request(method, params, timeoutMs)) as T;
+  return { durationMs: elapsedMs(started), response };
 }
 
 export function normalizeDiagnostics(diagnostics: LspDiagnostic[]): string[] {
@@ -225,6 +239,10 @@ function normalizeResponse(value: unknown, workspaceDir: string): unknown {
 
 function compareKeys(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
+}
+
+function elapsedMs(started: number): number {
+  return Number(Math.max(0, performance.now() - started).toFixed(3));
 }
 
 function locationKey(location: Location): string {

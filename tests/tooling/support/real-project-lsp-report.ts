@@ -57,6 +57,7 @@ export type DiagnosticEvidence = {
 
 export type LspResponseEvidence = {
   count: number;
+  durationMs: number;
   sha256: string;
 };
 
@@ -139,7 +140,7 @@ export function createLspReport(
 ) {
   return {
     schema: "vize.realProjectLspLifecycle",
-    version: 2,
+    version: 3,
     commitSha: resolveCommitSha(environment),
     shard: { count: selection.shardCount, index: selection.shardIndex },
     summary: {
