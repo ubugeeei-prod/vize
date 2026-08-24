@@ -4,7 +4,7 @@
 //! The law under test: a printed folio carries everything an S2 tree
 //! needs to survive the arena it was built in. The mechanism that makes
 //! surviving *in place* impossible is the pool guard plus the debug
-//! arena-generation stamp (`crates/vize_s0/src/allocator/generation.rs`:
+//! arena-generation stamp (`crates/vize_carton/src/allocator/generation.rs`:
 //! a stamped value read after `Allocator::reset` panics) - so the folio
 //! stores owned text + span, and a `js(...)` payload re-parses into a
 //! fresh arena on load. This test drives the full cycle: build in a

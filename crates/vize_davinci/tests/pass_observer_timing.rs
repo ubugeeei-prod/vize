@@ -11,7 +11,7 @@
 //!
 //! `TimingObserver` records through `vize_s0::profiler::record_attributed`,
 //! which is the same serializer path P0-11's
-//! `crates/vize_s0/tests/davinci_profile_export.rs` already validates
+//! `crates/vize_carton/tests/davinci_profile_export.rs` already validates
 //! against `davinci-road/plan/profile-export.schema.json` — with a strict
 //! validator that errors on any schema keyword it does not implement. Copying
 //! that validator here would be a second implementation of the thing whose

@@ -24,7 +24,7 @@
 //!
 //! Every check body and the rigor field exist only under
 //! `debug_assertions`, the same cfg the arena-generation stamp uses
-//! (`crates/vize_s0/src/allocator/generation.rs`). In release the
+//! (`crates/vize_carton/src/allocator/generation.rs`). In release the
 //! struct is a ZST with empty bodies — const-asserted below — so a release
 //! pipeline makes **zero** verifier calls, and by the P2-3 zero-cost
 //! measurement (static dispatch; empty bodies inline away; the

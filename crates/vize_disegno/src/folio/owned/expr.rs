@@ -3,7 +3,7 @@
 //! The folio stores expressions as **owned text plus span**, never as AST
 //! references, because arena references cannot persist across a compile
 //! (P1-11's contract, enforced by the debug arena-generation stamp in
-//! `crates/vize_s0/src/allocator/generation.rs`): a `js(...)` payload
+//! `crates/vize_carton/src/allocator/generation.rs`): a `js(...)` payload
 //! re-parses into the arena on load through
 //! [`JsExpr::parse_in`](crate::expr::JsExpr::parse_in) (or totally via
 //! [`ExprRef::parse_js_in`](crate::expr::ExprRef::parse_js_in)). The
