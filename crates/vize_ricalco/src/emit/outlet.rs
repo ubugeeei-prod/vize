@@ -119,9 +119,9 @@ fn meaningful_fallback(region: &Region<'_>) -> bool {
 
 fn emit_props(cx: &mut EmitCx<'_>, slot: &SlotOp<'_>, key: Option<&str>) -> Result<(), EmitError> {
     if merge::has_object_spread(&slot.bindings) {
-        return merge::emit_spread_props(cx, &slot.attributes, &slot.bindings, key);
+        return merge::emit_spread_props(cx, &slot.attributes, &slot.bindings, key, false);
     }
-    let list = pieces(&slot.attributes, &slot.bindings)?;
+    let list = pieces(&slot.attributes, &slot.bindings, false)?;
     cx.buf.push("{");
     let mut first = true;
     if let Some(key) = key {
@@ -172,7 +172,11 @@ fn push_camel_key(cx: &mut EmitCx<'_>, name: &str) {
     }
 }
 
-fn emit_fallback(cx: &mut EmitCx<'_>, region: &Region<'_>, compact: bool) -> Result<(), EmitError> {
+pub(super) fn emit_fallback(
+    cx: &mut EmitCx<'_>,
+    region: &Region<'_>,
+    compact: bool,
+) -> Result<(), EmitError> {
     if !compact {
         cx.buf.indent();
     }

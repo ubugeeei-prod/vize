@@ -1,8 +1,9 @@
 //! Static-name component emission (`resolveComponent` / `createVNode` /
 //! `createBlock`) plus slot objects from [`SlotFacts`] (implicit
 //! default, named `<template>` groups, component-root `v-slot`) and
-//! `createSlots` for `v-if` / `v-for` slot templates, and the `v-slots`
-//! spread. builtins and `<component :is>` stay unsupported.
+//! `createSlots` for `v-if` / `v-for` slot templates, the `v-slots`
+//! spread, Vue builtins, and `<component :is>`
+//! (`resolveDynamicComponent`).
 
 use alloc::vec::Vec as StdVec;
 
@@ -12,6 +13,8 @@ use vize_disegno::op::{BindingOp, ComponentOp, Op, Region};
 use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
+use super::builtin;
+use super::children::children_need_text_flag;
 use super::create_slots;
 use super::flag::emit_patch_flag;
 use super::hoist::compact_props_object;
@@ -61,6 +64,9 @@ pub(super) fn emit_nested(
     component: &ComponentOp<'_>,
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
+    if builtin::forces_block(component) {
+        return emit_root(cx, component, id);
+    }
     cx.buf.use_create_vnode();
     emit_call(
         cx, component, /* block */ false, None, /* for_item */ false, id,
@@ -113,7 +119,9 @@ fn collect_from<'a>(region: &Region<'a>, names: &mut StdVec<&'a str>) {
             Op::Element(element) => collect_from(&element.children, names),
             Op::Component(component) => {
                 collect_from(&component.children, names);
-                if !is_builtin(component.name) && !names.iter().any(|seen| *seen == component.name)
+                if !is_builtin(component.name)
+                    && !builtin::is_dynamic_component(component)
+                    && !names.iter().any(|seen| *seen == component.name)
                 {
                     names.push(component.name);
                 }
@@ -141,10 +149,12 @@ fn emit_call(
     let facts = id.and_then(|id| cx.facts.slot_facts.get(id));
     let create = create_slots::needs_create_slots(&component.children);
     let spread = slots::slots_spread(&component.bindings)?;
-    if create && spread.is_some() {
+    let array = builtin::array_children(component.name);
+    if (create && spread.is_some()) || (array && (create || spread.is_some())) {
         return Err(EmitError::Unsupported);
     }
-    let has_slots = facts.is_some() || create || spread.is_some();
+    let has_array = array && slots::has_implicit_default(&component.children);
+    let has_slots = !array && (facts.is_some() || create || spread.is_some());
     let dynamic_names = create || facts.is_some_and(slots::has_dynamic_names) || spread.is_some();
     let alias = if block {
         Buf::create_block_alias()
@@ -153,15 +163,32 @@ fn emit_call(
     };
     cx.buf.push(alias);
     cx.buf.push("(");
-    cx.buf
-        .push(asset_ident("component", component.name).as_str());
+    if builtin::emit_dynamic_tag(cx, component)? {
+    } else if let Some(helper) = builtin::helper(component.name) {
+        cx.buf.use_helper(helper);
+        cx.buf.push(helper.alias());
+    } else {
+        cx.buf
+            .push(asset_ident("component", component.name).as_str());
+    }
+    let skip_is = builtin::is_dynamic_component(component);
     let has_binds = component.bindings.iter().any(|binding| {
-        !matches!(binding, BindingOp::SlotContent(_)) && !slots::is_slots_spread(binding)
+        !matches!(binding, BindingOp::SlotContent(_))
+            && !slots::is_slots_spread(binding)
+            && !(skip_is && builtin::is_is_bind(binding))
     });
-    let hoisted_static_props = if (facts.is_some() || create)
-        && !has_binds
+    let has_attrs = component
+        .attributes
+        .iter()
+        .any(|attr| !skip_is || attr.name != "is");
+    let has_hoist_attrs = !component.attributes.is_empty();
+    let static_nested = builtin::has_static_nested(&component.children);
+    let builtin_helper = builtin::helper(component.name).is_some();
+    let hoisted_static_props = if !has_binds
         && if_key.is_none()
-        && !component.attributes.is_empty()
+        && has_hoist_attrs
+        && ((!array && (facts.is_some() || create) && (!builtin_helper || static_nested))
+            || (array && static_nested))
     {
         Some(
             cx.buf
@@ -170,28 +197,59 @@ fn emit_call(
     } else {
         None
     };
-    let patch = bind_patch(&component.bindings, true);
+    let unused_hoist = hoisted_static_props.is_none()
+        && !has_binds
+        && if_key.is_none()
+        && has_hoist_attrs
+        && static_nested;
+    if unused_hoist {
+        cx.buf
+            .push_hoist(compact_props_object(component.attributes.iter()));
+    }
+    let mut patch = bind_patch(&component.bindings, true);
+    if skip_is {
+        patch.dynamic_props.retain(|name| name.as_str() != "is");
+        if patch.dynamic_props.is_empty() {
+            patch.flag &= !8;
+        }
+    }
     let mut flag = patch.flag;
+    if array && children_need_text_flag(&component.children) {
+        flag |= 1;
+    }
     if (cx.in_v_for && has_slots)
         || dynamic_names
+        || builtin::always_dynamic_slots(component.name)
         || (cx.slot_param_depth > 0 && super::outlet::has_forwarded_outlet(&component.children))
     {
         flag |= 1024;
     }
     let emit_flag = flag != 0;
-    let has_props = !component.attributes.is_empty() || has_binds || if_key.is_some();
     if let Some(alias) = hoisted_static_props.as_ref() {
         cx.buf.push(", ");
         cx.buf.push(alias.as_str());
-    } else if if_key.is_some() || has_binds || !component.attributes.is_empty() {
+    } else if if_key.is_some() || has_binds || has_attrs {
         cx.buf.push(", ");
-        emit_bind_props(cx, &component.attributes, &component.bindings, if_key)?;
-    } else if emit_flag || has_slots || for_item {
+        emit_bind_props(
+            cx,
+            &component.attributes,
+            &component.bindings,
+            if_key,
+            skip_is,
+        )?;
+    } else if emit_flag || has_slots || has_array || for_item {
         // Vue's v-for item `createBlock` keeps an explicit null props
         // even when the component has no props, slots, or patch flag.
         cx.buf.push(", null");
     }
-    if create {
+    if array {
+        if has_array {
+            cx.buf.push(", ");
+            builtin::emit_array_children(cx, &component.children, if_key.is_some())?;
+        } else if emit_flag {
+            cx.buf.push(", null");
+        }
+    } else if create {
         cx.buf.push(", ");
         create_slots::emit_create_slots(cx, &component.children)?;
     } else if let Some(facts) = facts {
@@ -200,7 +258,7 @@ fn emit_call(
     } else if let Some(spread) = spread {
         cx.buf.push(", ");
         cx.buf.push(spread);
-    } else if emit_flag && has_props {
+    } else if emit_flag {
         cx.buf.push(", null");
     }
     if emit_flag {
@@ -223,9 +281,6 @@ fn emit_call(
 }
 
 fn admit(component: &ComponentOp<'_>) -> Result<(), EmitError> {
-    if is_builtin(component.name) {
-        return Err(EmitError::Unsupported);
-    }
     if create_slots::needs_create_slots(&component.children)
         || slots::has_implicit_default(&component.children)
     {
