@@ -16,6 +16,7 @@ test("typed editor oracle matrix covers or explicitly tracks every P0 slice", ()
       "lsp-fallthrough-template-range",
       "lsp-hover-definition-template-anchors",
       "cli-jsx-intrinsic-globals",
+      "lsp-jsx-intrinsic-globals",
       "vscode-host-reactive-hover-surface",
       "lsp-imported-component-contract-hover",
       "lsp-component-event-contract-navigation",

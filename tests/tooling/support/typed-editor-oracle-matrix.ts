@@ -12,6 +12,7 @@ export type Evidence =
 
 export const rowsRequiringExecutedEvidence = new Set([
   "lsp-imported-component-contract-hover",
+  "lsp-jsx-intrinsic-globals",
   "lsp-component-prop-reexport-hover",
   "lsp-component-event-contract-navigation",
   "lsp-component-v-model-navigation",
@@ -115,6 +116,23 @@ export const matrix: MatrixRow[] = [
     ],
     followUp: "#4590",
     id: "cli-jsx-intrinsic-globals",
+    status: "covered",
+  },
+  {
+    evidence: [
+      {
+        kind: "file",
+        path: "tests/tooling/lsp-typecheck-jsx-component.test.ts",
+        requiredText: [
+          "standalone TSX intrinsic elements stay diagnostic-free in LSP",
+          "JSX.IntrinsicElements",
+          "[TS7026]",
+        ],
+      },
+      toolingTestCiEvidence,
+    ],
+    followUp: "#4590",
+    id: "lsp-jsx-intrinsic-globals",
     status: "covered",
   },
   {

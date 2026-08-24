@@ -125,6 +125,32 @@ export const view = <Counter {...props} />;
     )) as PublishDiagnosticsParams;
     assert.deepEqual(clean.diagnostics, []);
 
+    const intrinsic = `export const native = <main><h1>Dashboard</h1><button disabled>Save</button></main>;
+`;
+    const intrinsicPath = path.join(sourceDir, "Intrinsic.tsx");
+    const intrinsicUri = pathToFileURL(intrinsicPath).href;
+    fs.writeFileSync(intrinsicPath, intrinsic, "utf8");
+    session.notify("textDocument/didOpen", {
+      textDocument: {
+        uri: intrinsicUri,
+        languageId: "typescriptreact",
+        version: 1,
+        text: intrinsic,
+      },
+    });
+    const intrinsicPublish = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) =>
+        isDiagnosticsForUri(params, intrinsicUri) &&
+        params.version === 1 &&
+        params.diagnostics.length === 0,
+    )) as PublishDiagnosticsParams;
+    assert.deepEqual(
+      intrinsicPublish.diagnostics,
+      [],
+      "standalone TSX intrinsic elements stay diagnostic-free in LSP",
+    );
+
     session.notify("textDocument/didChange", {
       textDocument: { uri: consumerUri, version: 3 },
       contentChanges: [{ text: spreadBroken }],
@@ -176,6 +202,7 @@ export const view = <Counter count="wrong" />;
       "textDocument/publishDiagnostics",
       (params) => isDiagnosticsForUri(params, jsxUri),
     )) as PublishDiagnosticsParams;
+    assertNoIntrinsicElementDiagnostic(invalidJsx);
     const jsxPropOffset = jsxBroken.indexOf("count=");
     assert.notEqual(jsxPropOffset, -1);
     const jsxPropStart = offsetToPosition(jsxBroken, jsxPropOffset);
@@ -216,11 +243,24 @@ export const view = <Counter count="wrong" />;
 
 function resolveTsgoBinary(): string | undefined {
   const candidates = [
+    process.env.CORSA_BIN,
     path.join(root, "../corsa-bind/.cache/tsgo"),
     path.join(root, "node_modules/.bin/tsgo"),
     path.join(root, "tests/node_modules/.bin/tsgo"),
-  ];
+  ].filter((candidate): candidate is string => candidate != null && candidate.length > 0);
   return candidates.find((candidate) => fs.existsSync(candidate));
+}
+
+function assertNoIntrinsicElementDiagnostic(publish: PublishDiagnosticsParams): void {
+  const messages = publish.diagnostics.map((diagnostic) => diagnostic.message ?? "");
+  assert.ok(
+    messages.every((message) => !message.includes("JSX.IntrinsicElements")),
+    messages.join("\n"),
+  );
+  assert.ok(
+    messages.every((message) => !message.includes("[TS7026]")),
+    messages.join("\n"),
+  );
 }
 
 function resolveVuePackage(): string | undefined {
