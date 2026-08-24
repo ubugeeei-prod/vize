@@ -7,6 +7,7 @@ import { hostedOrBlacksmith, readRepoFile, workflowJobBody } from "./support/git
 type ReleaseJob = {
   env?: Record<string, string>;
   environment?: string;
+  if?: string;
   needs?: string | string[];
   permissions?: Record<string, string>;
   "runs-on"?: string;
@@ -28,6 +29,7 @@ function jobNeeds(job: ReleaseJob): string[] {
 function publicationJobNames(jobs: Record<string, ReleaseJob>): string[] {
   return Object.entries(jobs)
     .filter(([, job]) => {
+      if (job.if === "github.event_name == 'workflow_dispatch'") return false;
       const serialized = JSON.stringify(job);
       return (
         ["npm", "crates-io", "vscode-marketplace"].includes(job.environment ?? "") ||

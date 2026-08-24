@@ -3,8 +3,24 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        {
+          description: Published GitHub Release tag that contains the handoff command,
+          required: true,
+          type: string,
+        }
+      crate_set:
+        {
+          description: Manual handoff crate set to publish,
+          required: true,
+          default: jsx-patina,
+          type: choice,
+          options: [jsx-patina],
+        }
 concurrency:
-  group: release-${{ github.ref }}
+  group: ${{ github.event_name == 'workflow_dispatch' && format('release-crates-handoff-{0}-{1}', inputs.tag_name, inputs.crate_set) || format('release-{0}', github.ref) }}
   cancel-in-progress: false
 permissions: { contents: read }
 env:
@@ -17,6 +33,7 @@ env:
   NPM_TAG: ${{ contains(github.ref_name, '-alpha') && 'alpha' || contains(github.ref_name, '-beta') && 'beta' || contains(github.ref_name, '-rc') && 'rc' || 'latest' }}
 jobs:
   plan-release-platforms:
+    if: github.event_name == 'push'
     name: Plan release platforms
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
@@ -108,6 +125,7 @@ jobs:
           if-no-files-found: error
           compression-level: 0
   build-editor-extensions:
+    if: github.event_name == 'push'
     name: Build Editor Extensions
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
@@ -177,6 +195,7 @@ jobs:
       - name: Publish VS Code extension
         run: moon run --target native tools/moon/cmd/publish_vscode_extension -- editor-extension-artifacts/editors/vscode/dist/vize.vsix
   build-release-packages:
+    if: github.event_name == 'push'
     name: Build release npm packages
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
@@ -317,6 +336,7 @@ jobs:
             compression-level: 0,
           }
   build-wasm-package:
+    if: github.event_name == 'push'
     name: Build @vizejs/wasm package
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
@@ -532,6 +552,7 @@ jobs:
             npm/compose/core \
             npm/ui/core
   release-preflight:
+    if: github.event_name == 'push'
     permissions: { actions: write, contents: read, issues: read }
     uses: ./.github/workflows/release-preflight.yml
   rollback-unpublished-tag:
@@ -946,6 +967,41 @@ jobs:
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.crates-io-auth.outputs.token }}
         run: moon run --target native tools/moon/cmd/publish_crates --
+
+  release-crates-handoff:
+    if: github.event_name == 'workflow_dispatch'
+    name: Release crates.io handoff crates
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    environment: crates-io
+    permissions: { contents: read, id-token: write }
+    steps:
+      - name: Resolve published release tag
+        id: release
+        env: { GH_TOKEN: "${{ github.token }}", RELEASE_TAG_NAME: "${{ inputs.tag_name }}" }
+        run: |
+          test -n "$RELEASE_TAG_NAME"
+          resolved_tag=$(gh release view "$RELEASE_TAG_NAME" --repo "$GITHUB_REPOSITORY" --json isDraft,tagName --jq 'select(.isDraft == false) | .tagName')
+          test "$resolved_tag" = "$RELEASE_TAG_NAME"
+          printf 'tag_name=%s\n' "$resolved_tag" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ steps.release.outputs.tag_name }}", persist-credentials: false }
+      - uses: ./.github/actions/setup-moonbit
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          {
+            key: release-crates-handoff,
+            cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}-${{ inputs.crate_set }}",
+          }
+      - name: Get crates.io token via Trusted Publishing
+        id: crates-io-auth
+        uses: rust-lang/crates-io-auth-action@b7e9a28eded4986ec6b1fa40eeee8f8f165559ec # v1
+      - name: Publish JSX and Patina handoff crates
+        if: ${{ inputs.crate_set == 'jsx-patina' }}
+        env: { CARGO_REGISTRY_TOKEN: "${{ steps.crates-io-auth.outputs.token }}" }
+        run: moon run --target native tools/moon/cmd/publish_crates -- --crate vize_atelier_jsx --crate vize_patina
 
   # Create GitHub Release with CLI binaries
   create-github-release:

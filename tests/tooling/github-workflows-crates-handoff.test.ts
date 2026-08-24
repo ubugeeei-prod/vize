@@ -13,6 +13,7 @@ type WorkflowStep = {
 
 type WorkflowJob = {
   environment?: string;
+  if?: string;
   permissions?: Record<string, string>;
   "runs-on"?: string;
   steps?: WorkflowStep[];
@@ -20,8 +21,9 @@ type WorkflowJob = {
 };
 
 test("crates.io handoff workflow recovers the JSX and Patina release set", () => {
-  const source = readRepoFile(".github", "workflows", "release-crates-handoff.yml");
+  const source = readRepoFile(".github", "workflows", "release.yml");
   const workflow = parse(source) as {
+    concurrency?: { group?: string };
     jobs?: Record<string, WorkflowJob>;
     on?: Record<string, unknown>;
     permissions?: Record<string, string>;
@@ -34,9 +36,21 @@ test("crates.io handoff workflow recovers the JSX and Patina release set", () =>
   assert.equal(dispatch.inputs?.tag_name?.type, "string");
   assert.deepEqual(dispatch.inputs?.crate_set?.options, ["jsx-patina"]);
   assert.deepEqual(workflow.permissions, { contents: "read" });
+  assert.match(workflow.concurrency?.group ?? "", /release-crates-handoff/);
 
-  const job = workflow.jobs?.["publish-crates-handoff"];
+  for (const jobName of [
+    "plan-release-platforms",
+    "build-editor-extensions",
+    "build-release-packages",
+    "build-wasm-package",
+    "release-preflight",
+  ]) {
+    assert.equal(workflow.jobs?.[jobName]?.if, "github.event_name == 'push'", jobName);
+  }
+
+  const job = workflow.jobs?.["release-crates-handoff"];
   assert.ok(job);
+  assert.equal(job.if, "github.event_name == 'workflow_dispatch'");
   assert.equal(job.environment, "crates-io");
   assert.deepEqual(job.permissions, { contents: "read", "id-token": "write" });
   assert.match(job["runs-on"] ?? "", /^blacksmith-32vcpu-ubuntu-2404$/);
