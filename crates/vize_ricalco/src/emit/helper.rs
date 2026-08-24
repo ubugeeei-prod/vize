@@ -27,10 +27,16 @@ pub(super) enum Helper {
     RenderList,
     CreateSlots,
     WithCtx,
+    Teleport,
+    Suspense,
+    KeepAlive,
+    BaseTransition,
+    Transition,
+    TransitionGroup,
 }
 
 impl Helper {
-    pub(super) const ALL: [Self; 21] = [
+    pub(super) const ALL: [Self; 27] = [
         Self::ResolveComponent,
         Self::WithKeys,
         Self::WithModifiers,
@@ -52,6 +58,12 @@ impl Helper {
         Self::RenderList,
         Self::CreateSlots,
         Self::WithCtx,
+        Self::Teleport,
+        Self::Suspense,
+        Self::KeepAlive,
+        Self::BaseTransition,
+        Self::Transition,
+        Self::TransitionGroup,
     ];
 
     pub(super) const fn rank(self) -> u8 {
@@ -69,7 +81,15 @@ impl Helper {
             Self::CreateBlock | Self::CreateElementBlock => 7,
             Self::Fragment => 8,
             Self::CreateComment | Self::CreateText => 9,
-            Self::RenderList | Self::CreateSlots | Self::WithCtx => 10,
+            Self::RenderList
+            | Self::CreateSlots
+            | Self::WithCtx
+            | Self::Teleport
+            | Self::Suspense
+            | Self::KeepAlive
+            | Self::BaseTransition
+            | Self::Transition
+            | Self::TransitionGroup => 10,
         }
     }
 
@@ -96,6 +116,12 @@ impl Helper {
             Self::RenderSlot => 1_048_576,
             Self::CreateSlots => 524288,
             Self::WithCtx => 262144,
+            Self::Teleport => 2_097_152,
+            Self::Suspense => 4_194_304,
+            Self::KeepAlive => 8_388_608,
+            Self::BaseTransition => 16_777_216,
+            Self::Transition => 33_554_432,
+            Self::TransitionGroup => 67_108_864,
         }
     }
 
@@ -122,6 +148,12 @@ impl Helper {
             Self::RenderList => "renderList",
             Self::CreateSlots => "createSlots",
             Self::WithCtx => "withCtx",
+            Self::Teleport => "Teleport",
+            Self::Suspense => "Suspense",
+            Self::KeepAlive => "KeepAlive",
+            Self::BaseTransition => "BaseTransition",
+            Self::Transition => "Transition",
+            Self::TransitionGroup => "TransitionGroup",
         }
     }
 
@@ -148,6 +180,12 @@ impl Helper {
             Self::RenderList => "_renderList",
             Self::CreateSlots => "_createSlots",
             Self::WithCtx => "_withCtx",
+            Self::Teleport => "_Teleport",
+            Self::Suspense => "_Suspense",
+            Self::KeepAlive => "_KeepAlive",
+            Self::BaseTransition => "_BaseTransition",
+            Self::Transition => "_Transition",
+            Self::TransitionGroup => "_TransitionGroup",
         }
     }
 }

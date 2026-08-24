@@ -10,7 +10,7 @@
 mod support;
 
 use support::with_transformed;
-use vize_ricalco::{emit_dom, EmitError};
+use vize_ricalco::{EmitError, emit_dom};
 
 fn assembled(source: &str) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {
@@ -164,8 +164,16 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn a_builtin_transition_is_unsupported_this_installment() {
-    assert_eq!(refused("<Transition />"), EmitError::Unsupported);
+fn a_root_transition_uses_the_builtin_helper() {
+    assert_eq!(
+        assembled("<Transition />"),
+        pin("\
+const { openBlock: _openBlock, createBlock: _createBlock, Transition: _Transition } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createBlock(_Transition))
+}")
+    );
 }
 
 #[test]

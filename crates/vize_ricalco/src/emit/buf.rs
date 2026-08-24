@@ -13,6 +13,11 @@ pub(super) struct Buf {
     used: u32,
     /// Transform-analogue registration order (`root.helpers`).
     preferred: StdVec<Helper>,
+    /// First `use_*` order (`used_helpers`). Same-rank leftovers follow
+    /// this, not `Helper::ALL`, so a builtin tag used before `withCtx`
+    /// stays before it (`Transition` then `withCtx`; nested `KeepAlive`
+    /// after the parent's `withCtx`).
+    used_order: StdVec<Helper>,
     /// Compact static-props / vnode RHS values, `_hoisted_1` first.
     hoists: StdVec<String>,
 }
@@ -24,6 +29,7 @@ impl Buf {
             indent: 0,
             used: 0,
             preferred: StdVec::new(),
+            used_order: StdVec::new(),
             hoists: StdVec::new(),
         }
     }
@@ -50,7 +56,15 @@ impl Buf {
     }
 
     fn mark(&mut self, helper: Helper) {
+        if self.used & helper.bit() != 0 {
+            return;
+        }
         self.used |= helper.bit();
+        self.used_order.push(helper);
+    }
+
+    pub(super) fn use_helper(&mut self, helper: Helper) {
+        self.mark(helper);
     }
 
     pub(super) fn prefer(&mut self, helper: Helper) {
@@ -234,6 +248,9 @@ impl Buf {
             listed.push(helper);
         };
         for helper in self.preferred.iter().copied() {
+            push(helper);
+        }
+        for helper in self.used_order.iter().copied() {
             push(helper);
         }
         for helper in Helper::ALL {
