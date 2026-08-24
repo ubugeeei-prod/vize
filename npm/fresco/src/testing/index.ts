@@ -43,9 +43,11 @@ export {
   type MountFrescoOptions,
 } from "./mount.js";
 export {
+  getByDescription,
   getByRole,
   getByTestId,
   getByText,
+  queryAllByDescription,
   queryAllByRole,
   queryAllByTestId,
   queryAllByText,

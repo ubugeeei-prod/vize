@@ -6,6 +6,7 @@ export type FrescoTextMatcher = string | RegExp;
 
 export interface FrescoRoleQueryOptions {
   readonly name?: FrescoTextMatcher;
+  readonly description?: FrescoTextMatcher;
   readonly state?: AriaState;
 }
 
@@ -43,6 +44,12 @@ function accessibleName(node: FrescoNode): string {
     .join(" ");
 }
 
+function accessibleDescription(node: FrescoNode): string | undefined {
+  return stringValue(
+    node.props["aria-description"] ?? node.props.ariaDescription ?? node.props.description,
+  );
+}
+
 function matchesText(text: string, matcher: FrescoTextMatcher): boolean {
   if (typeof matcher === "string") return text === matcher;
   matcher.lastIndex = 0;
@@ -71,6 +78,7 @@ function matchesState(node: FrescoNode, expected: AriaState | undefined): boolea
 function describeRole(role: AriaRole, options: FrescoRoleQueryOptions): string {
   const parts = [`role ${JSON.stringify(role)}`];
   if (options.name !== undefined) parts.push(`name ${String(options.name)}`);
+  if (options.description !== undefined) parts.push(`description ${String(options.description)}`);
   if (options.state !== undefined) parts.push(`state ${JSON.stringify(options.state)}`);
   return parts.join(", ");
 }
@@ -89,6 +97,11 @@ export function queryAllByRole(
   return findNodes(root, (node) => {
     if (roleOf(node) !== role) return false;
     if (options.name !== undefined && !matchesText(accessibleName(node), options.name))
+      return false;
+    if (
+      options.description !== undefined &&
+      !matchesText(accessibleDescription(node) ?? "", options.description)
+    )
       return false;
     return matchesState(node, options.state);
   });
@@ -111,6 +124,20 @@ export function queryAllByText(root: FrescoNode, text: FrescoTextMatcher): Fresc
 
 export function getByText(root: FrescoNode, text: FrescoTextMatcher): FrescoNode {
   return uniqueNode(queryAllByText(root, text), `text ${String(text)}`);
+}
+
+export function queryAllByDescription(
+  root: FrescoNode,
+  description: FrescoTextMatcher,
+): FrescoNode[] {
+  return findNodes(root, (node) => {
+    const value = accessibleDescription(node);
+    return value !== undefined && matchesText(value, description);
+  });
+}
+
+export function getByDescription(root: FrescoNode, description: FrescoTextMatcher): FrescoNode {
+  return uniqueNode(queryAllByDescription(root, description), `description ${String(description)}`);
 }
 
 export function queryAllByTestId(root: FrescoNode, testId: string): FrescoNode[] {
