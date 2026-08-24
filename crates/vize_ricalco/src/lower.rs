@@ -57,7 +57,7 @@ pub(crate) use expr::simple_identifier;
 // The wrapper-key channel (P2-9 series 5): captured `<template v-if>`
 // keys, folded into branch-key facts by the v-if pass.
 pub use css::lower_style_block;
-pub use structural::{WrapperKey, WrapperKeys};
+pub use structural::{ForWrapper, WrapperKey, WrapperKeys};
 // The one-rebuild rule (the same discipline): the text pass re-derives a
 // compound's source with exactly the spelling the lowering minted.
 pub use text::{TextPart, TextParts, rebuild_source};
@@ -91,8 +91,12 @@ pub struct Lowered<'a> {
     pub texts: SideTable<TextParts>,
     /// Captured `<template v-if>` wrapper keys, keyed by the `ui.if`
     /// op's page-order id (P2-9 series 5, [`WrapperKeys`]); folded into
-    /// branch-key facts by `pass::vif`.
+    /// branch-key facts by `pass::vif`. `from_template` is the P2-11
+    /// emit signal for template-fragment vs branch-root blocks.
     pub wrappers: SideTable<WrapperKeys>,
+    /// Captured `<template v-for>` unwrap facts, keyed by the `ui.for`
+    /// op's page-order id. Presence means the carrier was a template.
+    pub for_wrappers: SideTable<ForWrapper>,
     /// Vue dialect sugar the lowering (and the legalizing pass) consult.
     /// [`LegacyCaps::VUE3`] unless the caller used [`lower_with_caps`].
     pub caps: LegacyCaps,
@@ -144,6 +148,7 @@ pub fn lower_with_caps<'a>(
         scopes: cx.scopes,
         texts: cx.texts,
         wrappers: cx.wrappers,
+        for_wrappers: cx.for_wrappers,
         caps,
     }
 }
@@ -158,6 +163,7 @@ impl fmt::Debug for Lowered<'_> {
             .field("scopes", &self.scopes)
             .field("texts", &self.texts)
             .field("wrappers", &self.wrappers)
+            .field("for_wrappers", &self.for_wrappers)
             .field("caps", &self.caps)
             .finish_non_exhaustive()
     }

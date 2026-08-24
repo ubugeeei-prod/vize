@@ -47,6 +47,21 @@ pub struct WrapperKeys {
     /// `branches[i]` is branch `i`'s wrapper key, when its carrier was
     /// an unwrapped `<template>` with one.
     pub branches: StdVec<Option<WrapperKey>>,
+    /// `from_template[i]` is true when branch `i`'s carrier was an
+    /// unwrapped `<template>` (slot-bearing templates stay wrapped and
+    /// stay false). P2-11 emit needs this: after hoist, a static child
+    /// of `<template v-if>` is a fragment, while the same element as a
+    /// `v-if` branch root is a block.
+    pub from_template: StdVec<bool>,
+}
+
+/// A `<template v-for>` the lowering unwraps: presence of this fact on
+/// a `ui.for` is the emit signal, and `key` is the wrapper `:key` /
+/// `key` the legacy lane keeps on the template vnode.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct ForWrapper {
+    /// The wrapper's captured key, when it authored one.
+    pub key: Option<WrapperKey>,
 }
 
 /// Facts cross compile boundaries with their artifact (P1-11).
@@ -54,13 +69,15 @@ const _: () = {
     const fn assert_owned<T: 'static>() {}
     assert_owned::<WrapperKey>();
     assert_owned::<WrapperKeys>();
+    assert_owned::<ForWrapper>();
 };
 
 /// 64-bit footprints, guarded like every fact-size assert.
 #[cfg(target_pointer_width = "64")]
 const _: () = {
     assert!(core::mem::size_of::<WrapperKey>() == 40);
-    assert!(core::mem::size_of::<WrapperKeys>() == 24);
+    assert!(core::mem::size_of::<WrapperKeys>() == 48);
+    assert!(core::mem::size_of::<ForWrapper>() == 40);
 };
 
 /// The first key-ish attribute of a `<template v-if>` wrapper: a static
@@ -69,7 +86,7 @@ const _: () = {
 /// `:[key]` is **not** captured (the legacy lane's arg-content match
 /// admits it — a recorded quirk the differential lane counts rather
 /// than imitates).
-pub(super) fn capture_wrapper_key<'a>(
+pub(crate) fn capture_wrapper_key<'a>(
     cx: &mut Cx<'a>,
     element: &Element<'a>,
     analyzed: &Analyzed<'a>,

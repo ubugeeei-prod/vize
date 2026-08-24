@@ -21,6 +21,9 @@ struct Classified<'a> {
 }
 
 pub(super) fn admit_on(on: &OnOp<'_>, seen: &mut StdVec<String>) -> Result<(), EmitError> {
+    if on.name.is_none() {
+        return super::merge::admit_object_on(on);
+    }
     let name = static_on_name(on)?;
     if name.contains(':') {
         return Err(EmitError::Unsupported);
