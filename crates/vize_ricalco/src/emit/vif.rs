@@ -109,7 +109,10 @@ fn branch_key_js(
             out.push('"');
             Ok(out)
         }
-        Some(BranchKeyKind::Dynamic { .. }) => Err(EmitError::Unsupported),
+        Some(BranchKeyKind::Dynamic { source, .. }) if source.is_empty() => {
+            Ok(allocated.to_compact_string())
+        }
+        Some(BranchKeyKind::Dynamic { source, .. }) => Ok(source.clone()),
     }
 }
 
