@@ -99,3 +99,26 @@ void test("rejects slot interface indirection before slot docs are inferred", as
     assert.match(formatAuthoringViolations(violations), /defineSlots types/);
   });
 });
+
+void test("rejects slot type alias indirection before slot docs are inferred", async () => {
+  const sfc = COMPLIANT_SFC.replace(
+    "</script>",
+    [
+      "type SlotShape = {",
+      "  /** Renders the widget body. */",
+      "  default: () => unknown;",
+      "};",
+      "const slots = defineSlots<SlotShape>();",
+      "void slots;",
+      "</script>",
+    ].join("\n"),
+  );
+  await withSlotFixture(sfc, async (directory) => {
+    const violations = await auditComponentAuthoring(directory);
+    assert.deepEqual(
+      violations.map((violation) => violation.rule),
+      ["explicit-sfc"],
+    );
+    assert.match(formatAuthoringViolations(violations), /defineSlots types/);
+  });
+});

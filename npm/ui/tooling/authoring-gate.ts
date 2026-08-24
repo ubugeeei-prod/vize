@@ -4,7 +4,11 @@ import path from "node:path";
 import { parse } from "@vue/compiler-sfc";
 
 import { VIZE_UI_SFC_AUTHORING_RULES, type SfcAuthoringRuleId } from "./authoring-contract.ts";
-import { splitTopLevelTypeMembers, typeLiteralCallBodies } from "./type-member-parser.ts";
+import {
+  nonLiteralTypeArgumentCalls,
+  splitTopLevelTypeMembers,
+  typeLiteralCallBodies,
+} from "./type-member-parser.ts";
 
 /** Rule identifiers enforced by the component authoring gate. */
 export type AuthoringRule = SfcAuthoringRuleId;
@@ -156,7 +160,10 @@ function explicitSfcProblems(source: string, filename: string): string[] {
     .filter((script): script is string => script !== undefined)
     .join("\n");
   if (/\bh\s*\(/.test(scripts)) problems.push("Render-function escape hatch h() is not allowed");
-  if (/defineOptions|withDefaults|interface (?:Props|Emits|Slots)/.test(scripts)) {
+  if (
+    /defineOptions|withDefaults|interface (?:Props|Emits|Slots)/.test(scripts) ||
+    nonLiteralTypeArgumentCalls(scripts, DEFINE_SLOTS).length > 0
+  ) {
     problems.push(
       "Use literal defineProps/defineEmits/defineSlots types without helper indirection",
     );

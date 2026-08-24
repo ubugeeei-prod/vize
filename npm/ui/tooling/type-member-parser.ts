@@ -29,6 +29,40 @@ export function typeLiteralCallBodies(source: string, callee: string): string[] 
   return bodies;
 }
 
+/** Find generic calls whose type argument is not an inline object literal. */
+export function nonLiteralTypeArgumentCalls(source: string, callee: string): string[] {
+  const typeArguments: string[] = [];
+  let cursor = 0;
+
+  while (cursor < source.length) {
+    const found = source.indexOf(callee, cursor);
+    if (found === -1) break;
+
+    cursor = found + callee.length;
+    if (isIdentifierPart(source[found - 1]) || isIdentifierPart(source[cursor])) continue;
+
+    const genericStart = skipTrivia(source, cursor);
+    if (source[genericStart] !== "<") continue;
+
+    const typeStart = skipTrivia(source, genericStart + 1);
+    if (source[typeStart] === "{") {
+      cursor = typeStart + 1;
+      continue;
+    }
+
+    const typeEnd = findMatchingTypeArgument(source, genericStart);
+    if (typeEnd === undefined) continue;
+
+    const afterType = skipTrivia(source, typeEnd + 1);
+    if (source[afterType] === "(") {
+      typeArguments.push(source.slice(typeStart, typeEnd).trim());
+    }
+    cursor = Math.max(cursor, afterType + 1);
+  }
+
+  return typeArguments;
+}
+
 /** Split only top-level members; nested tuple/object payload fields stay inside one member. */
 export function splitTopLevelTypeMembers(body: string): string[] {
   const members: string[] = [];
@@ -133,6 +167,59 @@ function findMatchingObject(source: string, openIndex: number): number | undefin
     }
     if (char === "{") depth += 1;
     if (char === "}" && --depth === 0) return index;
+  }
+
+  return undefined;
+}
+
+function findMatchingTypeArgument(source: string, openIndex: number): number | undefined {
+  let depth = 0;
+  let quote: '"' | "'" | "`" | undefined;
+  let inBlockComment = false;
+  let inLineComment = false;
+
+  for (let index = openIndex; index < source.length; index += 1) {
+    const char = source[index];
+    const next = source[index + 1];
+
+    if (inLineComment) {
+      if (char === "\n") inLineComment = false;
+      continue;
+    }
+    if (inBlockComment) {
+      if (char === "*" && next === "/") {
+        inBlockComment = false;
+        index += 1;
+      }
+      continue;
+    }
+    if (quote !== undefined) {
+      if (char === "\\") index += 1;
+      else if (char === quote) quote = undefined;
+      continue;
+    }
+    if (char === "/" && next === "/") {
+      inLineComment = true;
+      index += 1;
+      continue;
+    }
+    if (char === "/" && next === "*") {
+      inBlockComment = true;
+      index += 1;
+      continue;
+    }
+    if (char === '"' || char === "'" || char === "`") {
+      quote = char;
+      continue;
+    }
+    if (char === "<") {
+      depth += 1;
+      continue;
+    }
+    if (char === ">" && source[index - 1] !== "=") {
+      depth -= 1;
+      if (depth === 0) return index;
+    }
   }
 
   return undefined;
