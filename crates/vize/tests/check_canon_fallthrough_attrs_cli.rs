@@ -46,7 +46,7 @@ defineProps<{ title: string }>();
         r#"<script setup lang="ts">
 import Child from "./Child.vue";
 </script>
-<template><Child title="ok" model-value="draft" w-48px /></template>
+<template><Child title="ok" model-value="draft" data-test-id="base-input" w-48px /></template>
 "#,
         &[(
             "BaseInput.vue",

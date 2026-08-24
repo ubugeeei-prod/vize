@@ -8,20 +8,18 @@ mod resolver;
 mod stubs;
 #[cfg(test)]
 mod tests;
+mod vue;
 
 #[cfg(test)]
 pub(crate) use resolver::{test_env_var_os, with_test_env_overrides};
+#[cfg(test)]
+pub(crate) use stubs::VUE_RUNTIME_DOM_STUB_TYPES;
+#[cfg(test)]
+pub(crate) use vue::{write_vue_facade, write_vue_runtime_dom_stub};
 
-use resolver::{
-    VueRuntimePackages, resolve_package, resolve_vue_package, resolve_vue_runtime_packages,
-};
-use stubs::{
-    VITE_CLIENT_STUB, VITE_STUB_PACKAGE_JSON, VUE_FACADE_PACKAGE_JSON, VUE_FACADE_TYPES,
-    VUE_RUNTIME_DOM_STUB_PACKAGE_JSON,
-};
-pub(crate) use stubs::{
-    VUE_FACADE_JSX_GLOBAL_TYPES, VUE_FACADE_JSX_RUNTIME_TYPES, VUE_RUNTIME_DOM_STUB_TYPES,
-};
+use resolver::resolve_package;
+use stubs::{VITE_CLIENT_STUB, VITE_STUB_PACKAGE_JSON};
+use vue::materialize_vue_support;
 
 /// Materialize Canon's own runtime dependency entries.
 ///
@@ -44,38 +42,6 @@ pub(super) fn materialize_runtime_dependencies(
     Ok(())
 }
 
-fn materialize_vue_support(project_root: &Path, node_modules_dir: &Path) -> std::io::Result<()> {
-    let vue_target = node_modules_dir.join("vue");
-    let vue_namespace_target = node_modules_dir.join("@vue");
-
-    if let Some(vue_source) = resolve_vue_package(project_root)
-        && symlink_path(&package_link_source(&vue_source), &vue_target).is_ok()
-    {
-        match resolve_vue_runtime_packages(project_root, &vue_source) {
-            VueRuntimePackages::Namespace(vue_namespace_source) => {
-                if symlink_path(&vue_namespace_source, &vue_namespace_target).is_err() {
-                    remove_path(&vue_namespace_target)?;
-                }
-            }
-            VueRuntimePackages::RuntimeDom(runtime_dom_source) => {
-                link_vue_runtime_dom_package(node_modules_dir, &runtime_dom_source)?;
-            }
-            VueRuntimePackages::Stub => write_vue_runtime_dom_stub(node_modules_dir)?,
-        }
-        return Ok(());
-    }
-
-    if let Some(runtime_dom_source) = resolve_package(project_root, "@vue/runtime-dom") {
-        write_vue_facade(node_modules_dir)?;
-        link_vue_runtime_dom_package(node_modules_dir, &runtime_dom_source)?;
-        return Ok(());
-    }
-
-    write_vue_facade(node_modules_dir)?;
-    write_vue_runtime_dom_stub(node_modules_dir)?;
-    Ok(())
-}
-
 fn materialize_vite_support(project_root: &Path, node_modules_dir: &Path) -> std::io::Result<()> {
     let vite_target = node_modules_dir.join("vite");
 
@@ -90,59 +56,6 @@ fn materialize_vite_support(project_root: &Path, node_modules_dir: &Path) -> std
 
 fn package_link_source(source: &Path) -> PathBuf {
     vize_carton::path::canonicalize_non_verbatim(source)
-}
-
-pub(crate) fn write_vue_facade(node_modules_dir: &Path) -> std::io::Result<()> {
-    let vue_dir = node_modules_dir.join("vue");
-    ensure_stub_dir(&vue_dir)?;
-    write_if_changed(
-        &vue_dir.join("package.json"),
-        VUE_FACADE_PACKAGE_JSON.as_bytes(),
-    )?;
-    write_if_changed(&vue_dir.join("index.d.ts"), VUE_FACADE_TYPES.as_bytes())?;
-    write_if_changed(
-        &vue_dir.join("jsx-runtime.d.ts"),
-        VUE_FACADE_JSX_RUNTIME_TYPES.as_bytes(),
-    )?;
-    write_if_changed(
-        &vue_dir.join("jsx.d.ts"),
-        VUE_FACADE_JSX_GLOBAL_TYPES.as_bytes(),
-    )?;
-    prune_stub_dir(
-        &vue_dir,
-        &["package.json", "index.d.ts", "jsx-runtime.d.ts", "jsx.d.ts"],
-    )?;
-    Ok(())
-}
-
-fn link_vue_runtime_dom_package(
-    node_modules_dir: &Path,
-    runtime_dom_source: &Path,
-) -> std::io::Result<()> {
-    let vue_namespace_dir = node_modules_dir.join("@vue");
-    ensure_stub_dir(&vue_namespace_dir)?;
-    let runtime_dom_target = vue_namespace_dir.join("runtime-dom");
-    symlink_path(
-        &package_link_source(runtime_dom_source),
-        &runtime_dom_target,
-    )
-}
-
-pub(crate) fn write_vue_runtime_dom_stub(node_modules_dir: &Path) -> std::io::Result<()> {
-    let vue_namespace_dir = node_modules_dir.join("@vue");
-    ensure_stub_dir(&vue_namespace_dir)?;
-    let runtime_dom_dir = vue_namespace_dir.join("runtime-dom");
-    ensure_stub_dir(&runtime_dom_dir)?;
-    write_if_changed(
-        &runtime_dom_dir.join("package.json"),
-        VUE_RUNTIME_DOM_STUB_PACKAGE_JSON.as_bytes(),
-    )?;
-    write_if_changed(
-        &runtime_dom_dir.join("index.d.ts"),
-        VUE_RUNTIME_DOM_STUB_TYPES.as_bytes(),
-    )?;
-    prune_stub_dir(&runtime_dom_dir, &["package.json", "index.d.ts"])?;
-    Ok(())
 }
 
 fn write_vite_stub(node_modules_dir: &Path) -> std::io::Result<()> {

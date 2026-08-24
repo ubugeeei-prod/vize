@@ -115,12 +115,16 @@ fn slot_resolver_field(generic_decl: &str, generic_names: &str, slots_is_generic
 /// props should only be accepted by a real fallthrough target. `class` and
 /// `style` stay universally public component attrs.
 fn generic_check_props_param(generic_names: &str, fallthrough_props_ref: Option<&str>) -> String {
-    let mut param =
-        cstr!("Partial<Props<{generic_names}>> & {{ class?: unknown; style?: unknown }}");
+    let authored_key_witness = cstr!(
+        "{{ [K in Props<{generic_names}> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown }}"
+    );
+    let mut param = cstr!(
+        "Partial<Props<{generic_names}>> & {authored_key_witness} & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps"
+    );
     if let Some(fallthrough_ref) = fallthrough_props_ref {
         append!(
             param,
-            " & {{ [K in keyof {fallthrough_ref}]?: unknown }} & {{ [K in `aria${{string}}`]?: unknown }} & {{ [K in `data${{string}}`]?: unknown }} & Partial<{{ [K in keyof {fallthrough_ref} & string as K extends `aria-${{infer Tail}}` ? `aria${{Capitalize<Tail>}}` : K extends `data-${{infer Tail}}` ? `data${{Capitalize<Tail>}}` : never]: unknown }}>"
+            " & {{ [K in keyof ({fallthrough_ref})]?: unknown }} & Partial<{{ [K in keyof ({fallthrough_ref}) & string as K extends `aria-${{infer Tail}}` ? `aria${{Capitalize<Tail>}}` : K extends `data-${{infer Tail}}` ? `data${{Capitalize<Tail>}}` : never]: unknown }}>"
         );
     }
     param

@@ -1,9 +1,11 @@
 use std::path::{Path, PathBuf};
 
+use super::materialize_runtime_dependencies;
 use super::resolver::{
     VueRuntimePackages, resolve_package, resolve_vue_package, resolve_vue_runtime_packages,
     with_test_env_overrides,
 };
+use super::stubs::VUE_RUNTIME_CORE_STUB_TYPES;
 
 #[test]
 fn explicit_runtime_packages_override_project_packages() {
@@ -114,9 +116,107 @@ fn runtime_node_modules_supply_vue_and_vite_fallbacks() {
     );
 }
 
+#[test]
+fn materialized_runtime_dom_also_links_adjacent_runtime_core() {
+    let temp = tempfile::tempdir().unwrap();
+    let project = temp.path().join("project");
+    let explicit = temp.path().join("explicit");
+    let virtual_root = temp.path().join("virtual");
+    let runtime_dom = create_package_with_types(
+        &explicit,
+        "@vue/runtime-dom",
+        "export const runtimeDomLinked: unique symbol;",
+    );
+    create_package_with_types(
+        &explicit,
+        "@vue/runtime-core",
+        "export const runtimeCoreLinked: unique symbol;",
+    );
+
+    with_test_env_overrides(
+        &[
+            ("VIZE_VUE_PACKAGE", None),
+            ("VIZE_VUE_NAMESPACE_PACKAGE", None),
+            ("VIZE_VUE_RUNTIME_DOM_PACKAGE", Some(runtime_dom.as_path())),
+            ("VIZE_VITE_PACKAGE", None),
+            ("VIZE_RUNTIME_NODE_MODULES", None),
+            (
+                "VIZE_TEST_WORKSPACE_NODE_MODULES",
+                Some(Path::new("__none__")),
+            ),
+        ],
+        || {
+            materialize_runtime_dependencies(&project, &virtual_root, &[]).unwrap();
+            assert_eq!(
+                read_virtual_runtime_types(&virtual_root, "runtime-dom"),
+                "export const runtimeDomLinked: unique symbol;"
+            );
+            assert_eq!(
+                read_virtual_runtime_types(&virtual_root, "runtime-core"),
+                "export const runtimeCoreLinked: unique symbol;"
+            );
+        },
+    );
+}
+
+#[test]
+fn materialized_runtime_dom_writes_runtime_core_stub_when_core_is_absent() {
+    let temp = tempfile::tempdir().unwrap();
+    let project = temp.path().join("project");
+    let explicit = temp.path().join("explicit");
+    let virtual_root = temp.path().join("virtual");
+    let runtime_dom = create_package_with_types(
+        &explicit,
+        "@vue/runtime-dom",
+        "export const runtimeDomLinked: unique symbol;",
+    );
+
+    with_test_env_overrides(
+        &[
+            ("VIZE_VUE_PACKAGE", None),
+            ("VIZE_VUE_NAMESPACE_PACKAGE", None),
+            ("VIZE_VUE_RUNTIME_DOM_PACKAGE", Some(runtime_dom.as_path())),
+            ("VIZE_VITE_PACKAGE", None),
+            ("VIZE_RUNTIME_NODE_MODULES", None),
+            (
+                "VIZE_TEST_WORKSPACE_NODE_MODULES",
+                Some(Path::new("__none__")),
+            ),
+        ],
+        || {
+            materialize_runtime_dependencies(&project, &virtual_root, &[]).unwrap();
+            assert_eq!(
+                read_virtual_runtime_types(&virtual_root, "runtime-dom"),
+                "export const runtimeDomLinked: unique symbol;"
+            );
+            assert_eq!(
+                read_virtual_runtime_types(&virtual_root, "runtime-core"),
+                VUE_RUNTIME_CORE_STUB_TYPES
+            );
+        },
+    );
+}
+
 fn create_package(root: &Path, relative: &str) -> PathBuf {
     let dir = root.join(relative);
     std::fs::create_dir_all(&dir).unwrap();
     std::fs::write(dir.join("package.json"), "{}").unwrap();
     dir
+}
+
+fn create_package_with_types(root: &Path, relative: &str, types: &str) -> PathBuf {
+    let dir = create_package(root, relative);
+    std::fs::write(dir.join("index.d.ts"), types).unwrap();
+    dir
+}
+
+fn read_virtual_runtime_types(virtual_root: &Path, package: &str) -> String {
+    std::fs::read_to_string(
+        virtual_root
+            .join("node_modules")
+            .join("@vue")
+            .join(package)
+            .join("index.d.ts"),
+    )
+    .unwrap()
 }

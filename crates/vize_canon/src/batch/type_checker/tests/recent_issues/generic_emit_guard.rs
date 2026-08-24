@@ -7,9 +7,9 @@ use vize_carton::{String, cstr};
 
 /// The whole-props failure every usage here produces: it binds the optional
 /// `onSave` and never binds the required `count`.
-fn missing_count(line: u32, props: &str) -> String {
+fn missing_count(line: u32, parameter: &str, props: &str) -> String {
     cstr!(
-        "{line}:4:error Argument of type '{{ onSave: (_value: string) => void; }}' is not assignable to parameter of type '{props} & Record<string, unknown>'.\nProperty 'count' is missing in type '{{ onSave: (_value: string) => void; }}' but required in type '{props}'."
+        "{line}:4:error Argument of type '{{ onSave: (_value: string) => void; }}' is not assignable to parameter of type '{parameter}'.\nProperty 'count' is missing in type '{{ onSave: (_value: string) => void; }}' but required in type '{props}'."
     )
 }
 
@@ -87,36 +87,38 @@ const stringHandler = (_value: string) => {}
         return;
     };
 
-    // The readonly flatten (#3890) prints one structural shape for all four:
-    // the `Props` alias the first three share and `TypedOnlyChild`'s inline
-    // spelling flatten to the same object. Every usage binds a declared `on*`
-    // prop and none of them binds `count`: before #3569 a named binding
-    // switched the whole-props target to one where every unbound key was
-    // optional, and all four were silent.
+    // The public alias used for the parameter display differs between the
+    // imported `Props` cases and the inline `TypedOnlyChild` surface, but the
+    // required shape still flattens to the same object. Every usage binds a
+    // declared `on*` prop and none of them binds `count`: before #3569 a named
+    // binding switched the whole-props target to one where every unbound key
+    // was optional, and all four were silent.
     let flattened =
         "{ readonly count: number; readonly onSave?: ((value: string) => void) | undefined; }";
+    let props_parameter = "__VizeComponentCheckProps<Props, Record<string, unknown>>";
+    let inline_parameter = "__VizeComponentCheckProps<{ count: number; onSave?: ((value: string) => void) | undefined; }, Record<string, unknown>>";
     assert_eq!(
         snapshot,
         vec![
             (
                 String::from("src/Parent.vue"),
                 Some(2345),
-                missing_count(10, flattened),
+                missing_count(10, inline_parameter, flattened),
             ),
             (
                 String::from("src/Parent.vue"),
                 Some(2345),
-                missing_count(7, flattened),
+                missing_count(7, props_parameter, flattened),
             ),
             (
                 String::from("src/Parent.vue"),
                 Some(2345),
-                missing_count(8, flattened),
+                missing_count(8, props_parameter, flattened),
             ),
             (
                 String::from("src/Parent.vue"),
                 Some(2345),
-                missing_count(9, flattened),
+                missing_count(9, props_parameter, flattened),
             ),
         ],
         "generic-first and generic-last overloads must share one result, and every usage reports the required `count` it never binds"

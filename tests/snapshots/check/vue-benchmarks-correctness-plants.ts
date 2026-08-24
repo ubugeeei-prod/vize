@@ -213,11 +213,11 @@ defineProps<{
     },
     diagnostics: {
       "App.vue": [
-        `error:9:26 [TS2353] Object literal may only specify known properties, and '"notDeclared"' does not exist in type '{ readonly known: string; } & __VizePublicComponentAttrs'.`,
-        `error:10:26 [TS2353] Object literal may only specify known properties, and '"dataTest"' does not exist in type '{ readonly known: string; } & __VizePublicComponentAttrs'.`,
-        `error:11:24 [TS2353] Object literal may only specify known properties, and '"ghost"' does not exist in type '{} & __VizePublicComponentAttrs'.`,
-        `error:12:19 [TS2353] Object literal may only specify known properties, and '"ghost"' does not exist in type '{} & __VizePublicComponentAttrs'.`,
-        `error:13:37 [TS2353] Object literal may only specify known properties, and '"ghost"' does not exist in type 'Partial<Props<"ok">> & { class?: unknown; style?: unknown; }'.`,
+        `error:9:26 [TS2353] Object literal may only specify known properties, and '"notDeclared"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.`,
+        `error:10:26 [TS2353] Object literal may only specify known properties, and '"dataTest"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.`,
+        `error:11:24 [TS2353] Object literal may only specify known properties, and '"ghost"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.`,
+        `error:12:19 [TS2353] Object literal may only specify known properties, and '"ghost"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.`,
+        `error:13:37 [TS2353] Object literal may only specify known properties, and '"ghost"' does not exist in type 'Partial<Props<"ok">> & { value?: unknown; } & VNodeProps & AllowedComponentProps & ComponentCustomProps'.`,
       ],
       "DefaultInheritChild.vue": [],
       "GenericNoInheritChild.vue": [],

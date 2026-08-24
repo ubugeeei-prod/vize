@@ -68,7 +68,18 @@ pub(super) const VUE_RUNTIME_DOM_STUB_PACKAGE_JSON: &str = r#"{
 }
 "#;
 
-pub(crate) const VUE_RUNTIME_DOM_STUB_TYPES: &str = r#"export interface ComponentCustomProperties {}
+pub(super) const VUE_RUNTIME_CORE_STUB_PACKAGE_JSON: &str = r#"{
+  "name": "@vue/runtime-core",
+  "types": "index.d.ts"
+}
+"#;
+
+pub(crate) const VUE_RUNTIME_CORE_STUB_TYPES: &str = r#"export interface ComponentCustomProps {}
+"#;
+
+pub(crate) const VUE_RUNTIME_DOM_STUB_TYPES: &str = r#"import type { ComponentCustomProps as RuntimeCoreComponentCustomProps } from "@vue/runtime-core";
+
+export interface ComponentCustomProperties {}
 
 export interface ComponentPublicInstance<Props = {}> extends ComponentCustomProperties {
   $props: Props;
@@ -96,7 +107,7 @@ export interface AllowedComponentProps {
   style?: unknown;
 }
 
-export interface ComponentCustomProps {}
+export interface ComponentCustomProps extends RuntimeCoreComponentCustomProps {}
 
 export type PublicProps = VNodeProps & AllowedComponentProps & ComponentCustomProps;
 

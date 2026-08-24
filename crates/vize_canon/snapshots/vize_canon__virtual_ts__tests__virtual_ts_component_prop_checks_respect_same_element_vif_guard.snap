@@ -135,10 +135,15 @@ function __setup() {
   type __VizeIsGeneratedComponent<C> = C extends { readonly __vizeComponentMarker: true } ? true : false;
   type __VizeHasFallthroughProps<C> = __VizeIsGeneratedComponent<C> extends true ? C extends { readonly __vizeHasFallthroughProps: true } ? true : false : false;
   type __VizeFallthroughProps<C> = __VizeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? {} : NonNullable<__F> : {} : {};
-  type __VizePublicComponentAttrs = { class?: unknown; style?: unknown };
+  type __VizeVueVNodeProps = import('vue').VNodeProps;
+  type __VizeVueAllowedComponentProps = import('vue').AllowedComponentProps;
+  type __VizeVueComponentCustomProps = import('vue').ComponentCustomProps;
+  interface __VizePublicComponentAttrs extends __VizeVueVNodeProps, __VizeVueAllowedComponentProps, __VizeVueComponentCustomProps {}
   type __VizeFallthroughAttrCamel<S extends string> = S extends `${infer H}-${infer T}` ? `${H}${Capitalize<__VizeFallthroughAttrCamel<T>>}` : S;
-  type __VizeAllowedFallthroughAttrs<F> = [keyof F] extends [never] ? {} : { [K in keyof F]?: unknown } & { [K in `aria${string}`]?: unknown } & { [K in `data${string}`]?: unknown } & Partial<{ [K in keyof F & string as K extends `aria-${infer Tail}` ? `aria${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : K extends `data-${infer Tail}` ? `data${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : never]: unknown }>;
+  type __VizeCustomDataFallthroughAttrs = Partial<Record<`data${Capitalize<string>}`, unknown>>;
+  type __VizeAllowedFallthroughAttrs<F> = [keyof F] extends [never] ? {} : { [K in keyof F]?: unknown } & __VizeCustomDataFallthroughAttrs & Partial<{ [K in keyof F & string as K extends `aria-${infer Tail}` ? `aria${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : K extends `data-${infer Tail}` ? `data${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : never]: unknown }>;
   type __VizeComponentCheckTail<C, F = __VizeFallthroughProps<C>> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeAllowedFallthroughAttrs<F> : Record<string, unknown>;
+  type __VizeComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;
   type __VizePublicProps<C> = C extends { new (): { $props: infer __P } } ? __P : C extends (props: infer __P) => any ? __P : {};
   type __VizeInstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } } ? __VizeIsAny<__P> extends true ? __VizePublicProps<C> : __P : __VizePublicProps<C>;
   type __VizeStaticRawProps<C> = C extends { readonly __vizeRawProps?: infer __P } ? __VizeIsAny<__P> extends true ? __VizePublicProps<C> : __P : __VizePublicProps<C>;
@@ -147,7 +152,7 @@ function __setup() {
   type __VizeComponentRawProps<C> = __VizeHasInstanceRawProps<C> extends true ? __VizeInstanceRawProps<C> : __VizeStaticRawProps<C>;
   type __VizeHasRawProps<C> = __VizeHasInstanceRawProps<C> extends true ? true : __VizeHasStaticRawProps<C>;
   type __VizeFallthroughValue<C, K extends PropertyKey> = __VizeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? unknown : __VizePropValue<NonNullable<__F>, K, unknown> : unknown : unknown;
-  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? __VizeIsAny<__F> extends true ? (props: { readonly [K in keyof P]: P[K] } & __VizeComponentCheckTail<C>) => void : __F extends (...args: any[]) => any ? __F : (props: { readonly [K in keyof P]: P[K] } & __VizeComponentCheckTail<C>) => void : (props: { readonly [K in keyof P]: P[K] } & __VizeComponentCheckTail<C>) => void;
+  type __VizePropChecker<C, P, T = __VizeComponentCheckTail<C>> = __VizeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? __VizeIsAny<__F> extends true ? (props: __VizeComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: __VizeComponentCheckProps<P, T>) => void : (props: __VizeComponentCheckProps<P, T>) => void;
   type __VizePropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;
   type __VizeStructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;
   type __VizeRequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
@@ -155,10 +160,12 @@ function __setup() {
   type __VizeRequiredSlots<__S, __P> = __VizeIsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [__VizeMissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: __VizeMissingRequiredSlots<__S, __P> };
   // @vize-map: component -> 0:40
   type __LinkComp_Props_0 = typeof LinkComp extends { __vizeCheck: infer __F } ? (__VizeIsAny<__F> extends true ? __VizeComponentRawProps<typeof LinkComp> : Record<string, unknown>) : __VizeComponentRawProps<typeof LinkComp>;
-  type __LinkComp_CheckProps_0 = __LinkComp_Props_0 & __VizeEmitListeners<typeof LinkComp>;
-  type __LinkComp_ValueProps_0 = __LinkComp_Props_0 & __VizeEmitListeners<typeof LinkComp> & __VizePublicComponentAttrs;
-  type __LinkComp_FallthroughValue_0<K extends PropertyKey> = __VizeFallthroughValue<typeof LinkComp, K>;
-  type __LinkComp_Check_0 = __VizePropChecker<typeof LinkComp, __LinkComp_CheckProps_0>;
+  type __LinkComp_Component_0 = typeof LinkComp;
+  type __LinkComp_CheckProps_0 = __LinkComp_Props_0 & __VizeEmitListeners<__LinkComp_Component_0>;
+  type __LinkComp_CheckTail_0 = __VizeComponentCheckTail<__LinkComp_Component_0>;
+  type __LinkComp_ValueProps_0 = __LinkComp_Props_0 & __VizeEmitListeners<__LinkComp_Component_0> & __VizePublicComponentAttrs;
+  type __LinkComp_FallthroughValue_0<K extends PropertyKey> = __VizeFallthroughValue<__LinkComp_Component_0, K>;
+  type __LinkComp_Check_0 = __VizePropChecker<__LinkComp_Component_0, __LinkComp_CheckProps_0, __LinkComp_CheckTail_0>;
   type __LinkComp_0_prop_to = __VizePropValue<__LinkComp_ValueProps_0, 'to', __LinkComp_FallthroughValue_0<'to'>>;
 
   // Component template navigation references

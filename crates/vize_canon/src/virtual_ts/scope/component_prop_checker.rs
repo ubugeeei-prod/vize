@@ -101,6 +101,10 @@ pub(super) fn append_prop_checker_alias(
     component_ref: &str,
     idx: usize,
 ) {
+    append!(
+        *ts,
+        "  type __{component_type_name}_Component_{idx} = typeof {component_ref};\n",
+    );
     // The listener props synthesized from the child's `emits` join the check
     // target (#3890): they are part of Vue's public props contract, `vue-tsc`
     // lists them in the displayed parameter type, and their presence is what
@@ -108,21 +112,25 @@ pub(super) fn append_prop_checker_alias(
     // `unknown`. A component without the marker contributes `{}`.
     append!(
         *ts,
-        "  type __{component_type_name}_CheckProps_{idx} = __{component_type_name}_Props_{idx} & __VizeEmitListeners<typeof {component_ref}>;\n",
+        "  type __{component_type_name}_CheckProps_{idx} = __{component_type_name}_Props_{idx} & __VizeEmitListeners<__{component_type_name}_Component_{idx}>;\n",
+    );
+    append!(
+        *ts,
+        "  type __{component_type_name}_CheckTail_{idx} = __VizeComponentCheckTail<__{component_type_name}_Component_{idx}>;\n",
     );
     if usage_needs_per_prop_aliases(usage) {
         append!(
             *ts,
-            "  type __{component_type_name}_ValueProps_{idx} = __{component_type_name}_Props_{idx} & __VizeEmitListeners<typeof {component_ref}> & __VizePublicComponentAttrs;\n",
+            "  type __{component_type_name}_ValueProps_{idx} = __{component_type_name}_Props_{idx} & __VizeEmitListeners<__{component_type_name}_Component_{idx}> & __VizePublicComponentAttrs;\n",
         );
         append!(
             *ts,
-            "  type __{component_type_name}_FallthroughValue_{idx}<K extends PropertyKey> = __VizeFallthroughValue<typeof {component_ref}, K>;\n",
+            "  type __{component_type_name}_FallthroughValue_{idx}<K extends PropertyKey> = __VizeFallthroughValue<__{component_type_name}_Component_{idx}, K>;\n",
         );
     }
     append!(
         *ts,
-        "  type __{component_type_name}_Check_{idx} = __VizePropChecker<typeof {component_ref}, __{component_type_name}_CheckProps_{idx}>;\n",
+        "  type __{component_type_name}_Check_{idx} = __VizePropChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_CheckProps_{idx}, __{component_type_name}_CheckTail_{idx}>;\n",
     );
 }
 
@@ -155,15 +163,26 @@ pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &Comp
     ts.push_str(
         "  type __VizeFallthroughProps<C> = __VizeHasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? {} : NonNullable<__F> : {} : {};\n",
     );
-    ts.push_str("  type __VizePublicComponentAttrs = { class?: unknown; style?: unknown };\n");
+    ts.push_str("  type __VizeVueVNodeProps = import('vue').VNodeProps;\n");
+    ts.push_str("  type __VizeVueAllowedComponentProps = import('vue').AllowedComponentProps;\n");
+    ts.push_str("  type __VizeVueComponentCustomProps = import('vue').ComponentCustomProps;\n");
+    ts.push_str(
+        "  interface __VizePublicComponentAttrs extends __VizeVueVNodeProps, __VizeVueAllowedComponentProps, __VizeVueComponentCustomProps {}\n",
+    );
     ts.push_str(
         "  type __VizeFallthroughAttrCamel<S extends string> = S extends `${infer H}-${infer T}` ? `${H}${Capitalize<__VizeFallthroughAttrCamel<T>>}` : S;\n",
     );
     ts.push_str(
-        "  type __VizeAllowedFallthroughAttrs<F> = [keyof F] extends [never] ? {} : { [K in keyof F]?: unknown } & { [K in `aria${string}`]?: unknown } & { [K in `data${string}`]?: unknown } & Partial<{ [K in keyof F & string as K extends `aria-${infer Tail}` ? `aria${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : K extends `data-${infer Tail}` ? `data${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : never]: unknown }>;\n",
+        "  type __VizeCustomDataFallthroughAttrs = Partial<Record<`data${Capitalize<string>}`, unknown>>;\n",
+    );
+    ts.push_str(
+        "  type __VizeAllowedFallthroughAttrs<F> = [keyof F] extends [never] ? {} : { [K in keyof F]?: unknown } & __VizeCustomDataFallthroughAttrs & Partial<{ [K in keyof F & string as K extends `aria-${infer Tail}` ? `aria${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : K extends `data-${infer Tail}` ? `data${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : never]: unknown }>;\n",
     );
     ts.push_str(
         "  type __VizeComponentCheckTail<C, F = __VizeFallthroughProps<C>> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeAllowedFallthroughAttrs<F> : Record<string, unknown>;\n",
+    );
+    ts.push_str(
+        "  type __VizeComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;\n",
     );
     ts.push_str(
         "  type __VizePublicProps<C> = C extends { new (): { $props: infer __P } } ? __P : C extends (props: infer __P) => any ? __P : {};\n",
@@ -206,7 +225,7 @@ pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &Comp
         );
     }
     ts.push_str(
-        "  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? __VizeIsAny<__F> extends true ? (props: { readonly [K in keyof P]: P[K] } & __VizeComponentCheckTail<C>) => void : __F extends (...args: any[]) => any ? __F : (props: { readonly [K in keyof P]: P[K] } & __VizeComponentCheckTail<C>) => void : (props: { readonly [K in keyof P]: P[K] } & __VizeComponentCheckTail<C>) => void;\n",
+        "  type __VizePropChecker<C, P, T = __VizeComponentCheckTail<C>> = __VizeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? __VizeIsAny<__F> extends true ? (props: __VizeComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: __VizeComponentCheckProps<P, T>) => void : (props: __VizeComponentCheckProps<P, T>) => void;\n",
     );
     ts.push_str(
         "  type __VizePropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;\n",

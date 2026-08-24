@@ -55,7 +55,7 @@ fn link_workspace_vue(project_root: &Path) -> std::io::Result<()> {
 
 fn workspace_vue_package() -> Option<PathBuf> {
     let root = workspace_root();
-    [
+    let direct = [
         root.join("node_modules/vue"),
         root.join("tests/node_modules/vue"),
         root.join("playground/node_modules/vue"),
@@ -64,7 +64,45 @@ fn workspace_vue_package() -> Option<PathBuf> {
         root.join("npm/framework/nuxt/node_modules/vue"),
     ]
     .into_iter()
-    .find(|candidate| candidate.exists())
+    .find(|candidate| is_real_vue_package(candidate));
+    direct.or_else(|| pnpm_vue_package(&root))
+}
+
+fn pnpm_vue_package(root: &Path) -> Option<PathBuf> {
+    let store = root.join("node_modules/.pnpm");
+    let mut candidates = Vec::new();
+    for entry in std::fs::read_dir(store).ok()? {
+        let path = entry.ok()?.path();
+        let name = path.file_name()?.to_str()?;
+        if !name.starts_with("vue@") {
+            continue;
+        }
+        let candidate = path.join("node_modules/vue");
+        if is_real_vue_package(&candidate) {
+            candidates.push(candidate);
+        }
+    }
+    candidates.sort();
+    candidates.pop()
+}
+
+fn is_real_vue_package(candidate: &Path) -> bool {
+    if !candidate.exists() {
+        return false;
+    }
+    let Ok(package_json) = std::fs::read_to_string(candidate.join("package.json")) else {
+        return false;
+    };
+    let Ok(manifest) = serde_json::from_str::<serde_json::Value>(&package_json) else {
+        return false;
+    };
+    manifest
+        .get("name")
+        .and_then(serde_json::Value::as_str)
+        .is_some_and(|name| name == "vue")
+        && manifest
+            .get("version")
+            .is_some_and(serde_json::Value::is_string)
 }
 
 fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
@@ -154,14 +192,43 @@ pub(super) fn run_check_json(project_root: &Path, corsa_path: &Path) -> serde_js
     serde_json::from_str(stdout).unwrap()
 }
 
-fn diagnostics(report: &serde_json::Value) -> Vec<&str> {
+fn diagnostics(report: &serde_json::Value) -> Vec<String> {
     report["files"]
         .as_array()
         .into_iter()
         .flatten()
         .flat_map(|file| file["diagnostics"].as_array().into_iter().flatten())
         .filter_map(serde_json::Value::as_str)
+        .map(canonicalize_property_quote_style)
         .collect()
+}
+
+fn canonicalize_property_quote_style(diagnostic: &str) -> String {
+    let mut normalized = String::with_capacity(diagnostic.len());
+    let mut rest = diagnostic;
+    while let Some(start) = rest.find('"') {
+        normalized.push_str(&rest[..start]);
+        let after_start = &rest[start + 1..];
+        let Some(end) = after_start.find('"') else {
+            normalized.push('"');
+            normalized.push_str(after_start);
+            return normalized;
+        };
+        let key = &after_start[..end];
+        let after_end = &after_start[end + 1..];
+        if after_end.starts_with("?:") {
+            normalized.push('\'');
+            normalized.push_str(key);
+            normalized.push('\'');
+        } else {
+            normalized.push('"');
+            normalized.push_str(key);
+            normalized.push('"');
+        }
+        rest = after_end;
+    }
+    normalized.push_str(rest);
+    normalized
 }
 
 pub(super) fn assert_clean(case_id: &str, report: &serde_json::Value) {
@@ -179,9 +246,53 @@ pub(super) fn assert_error_diagnostics(
     expected: &[&str],
 ) {
     let diagnostics = diagnostics(report);
+    let expected = expected
+        .iter()
+        .map(|diagnostic| canonicalize_property_quote_style(diagnostic))
+        .collect::<Vec<_>>();
     // Exact oracle (assurance §4): the whole diagnostics vector, not fragments.
     assert_eq!(
         diagnostics, expected,
         "{case_id} diverged from the pinned diagnostics"
     );
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn package_dir(name: &str, package_json: &str) -> PathBuf {
+        let dir = workspace_root()
+            .join("target")
+            .join("vize-tests")
+            .join(cstr!("vue-package-manifest-{name}-{}", std::process::id()).as_str());
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join("package.json"), package_json).unwrap();
+        dir
+    }
+
+    #[test]
+    fn vue_package_detection_requires_vue_name_and_top_level_version() {
+        let valid = package_dir("valid", r#"{"name":"vue","version":"3.6.0-beta.10"}"#);
+        let unrelated = package_dir(
+            "unrelated",
+            r#"{"name":"vue-beta","version":"3.6.0-beta.10"}"#,
+        );
+        let metadata_only = package_dir(
+            "metadata",
+            r#"{"name":"vue","dist":{"version":"3.6.0-beta.10"}}"#,
+        );
+        let invalid_json = package_dir("invalid", r#"{"name":"vue","version":"3.6.0-beta.10""#);
+
+        assert!(is_real_vue_package(&valid));
+        assert!(!is_real_vue_package(&unrelated));
+        assert!(!is_real_vue_package(&metadata_only));
+        assert!(!is_real_vue_package(&invalid_json));
+
+        let _ = std::fs::remove_dir_all(valid);
+        let _ = std::fs::remove_dir_all(unrelated);
+        let _ = std::fs::remove_dir_all(metadata_only);
+        let _ = std::fs::remove_dir_all(invalid_json);
+    }
 }

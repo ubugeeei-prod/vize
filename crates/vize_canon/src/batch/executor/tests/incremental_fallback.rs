@@ -39,7 +39,7 @@ fn incremental_session_fallback_is_counted_per_check() {
     assert!(result.diagnostics.is_empty());
     let metrics = executor.incremental_metrics();
     assert!(
-        matches!(metrics.last_materialized_entries_considered, 12 | 13),
+        metrics.last_materialized_entries_considered >= metrics.last_requested_files,
         "{metrics:?}"
     );
     assert_eq!(

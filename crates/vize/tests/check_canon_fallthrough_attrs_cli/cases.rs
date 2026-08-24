@@ -7,33 +7,51 @@ pub(crate) struct Case<'a> {
     pub(crate) expected_diagnostics: &'a [&'a str],
 }
 
-pub(crate) fn cases() -> [Case<'static>; 17] {
+const MONO_DIV_CHILD: &str = r#"<script setup lang="ts">defineProps<{ title: string }>();</script>
+<template><div class="root">{{ title }}</div></template>
+"#;
+
+pub(crate) fn cases() -> [Case<'static>; 19] {
     [
         Case {
             id: "fallthrough-mono-ok",
-            child: r#"<script setup lang="ts">
-defineProps<{ title: string }>();
-</script>
-<template><div class="root">{{ title }}</div></template>
-"#,
+            child: MONO_DIV_CHILD,
             app: r#"<script setup lang="ts">
 import Child from "./Child.vue";
 </script>
-<template><Child title="ok" id="outer" aria-haspopup="menu" /></template>
+<template><Child title="ok" id="outer" aria-haspopup="menu" data-test-id="child" /></template>
 "#,
             expected_diagnostics: &[],
         },
         Case {
-            id: "fallthrough-data-aria-camel-ok",
-            child: r#"<script setup lang="ts">
-defineProps<{ title: string }>();
-</script>
-<template><button type="button">{{ title }}</button></template>
-"#,
+            id: "fallthrough-aria-camel-ok",
+            child: MONO_DIV_CHILD,
             app: r#"<script setup lang="ts">
 import Child from "./Child.vue";
 </script>
-<template><Child title="ok" data-id="outer" aria-label="Open" /></template>
+<template><Child title="ok" aria-label="Open" /></template>
+"#,
+            expected_diagnostics: &[],
+        },
+        Case {
+            id: "fallthrough-aria-prefix-bad",
+            child: MONO_DIV_CHILD,
+            app: r#"<script setup lang="ts">
+import Child from "./Child.vue";
+</script>
+<template><Child title="ok" aria-zzz="1" /></template>
+"#,
+            expected_diagnostics: &[
+                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"ariaZzz\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & Partial<...> & Partial<...>>'.",
+            ],
+        },
+        Case {
+            id: "fallthrough-data-custom-ok",
+            child: MONO_DIV_CHILD,
+            app: r#"<script setup lang="ts">
+import Child from "./Child.vue";
+</script>
+<template><Child title="ok" data-slot="root" data-scroll-anchor="1" /></template>
 "#,
             expected_diagnostics: &[],
         },
@@ -51,7 +69,7 @@ import Child from "./Child.vue";
 <template><Child title="ok" id="outer" class="card" style="color: red" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '{ readonly title: string; } & __VizePublicComponentAttrs'.",
+                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.",
             ],
         },
         Case {
@@ -68,7 +86,7 @@ import Child from "./Child.vue";
 <template><Child title="ok" :disabled="'nope'" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:30 [TS2353] Object literal may only specify known properties, and '\"disabled\"' does not exist in type '{ readonly title: string; } & __VizePublicComponentAttrs'.",
+                "error:4:30 [TS2353] Object literal may only specify known properties, and '\"disabled\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.",
             ],
         },
         Case {
@@ -91,7 +109,7 @@ import Child from "./Child.vue";
 <template><Child title="ok" id="outer" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '{ readonly title: string; } & __VizePublicComponentAttrs'.",
+                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '__VizeComponentCheckProps<__Child_CheckProps_0, __VizePublicComponentAttrs>'.",
             ],
         },
         Case {
@@ -110,7 +128,7 @@ import Child from "./Child.vue";
 <template><Child title="ok" id="outer" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '{ readonly title: string; } & __VizePublicComponentAttrs'.",
+                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.",
             ],
         },
         Case {
@@ -130,7 +148,7 @@ import Child from "./Child.vue";
 <template><Child title="ok" id="outer" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '{ readonly title: string; } & __VizePublicComponentAttrs'.",
+                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.",
             ],
         },
         Case {
@@ -187,7 +205,7 @@ const on = ref(true);
 <template><Child title="ok" :on="on" id="outer" /></template>
 "#,
             expected_diagnostics: &[
-                "error:6:38 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '{ readonly title: string; readonly on: boolean; } & __VizePublicComponentAttrs'.",
+                "error:6:38 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.",
             ],
         },
         Case {
@@ -211,7 +229,7 @@ const on = ref(true);
 <template><Child title="ok" :on="on" id="outer" /></template>
 "#,
             expected_diagnostics: &[
-                "error:6:38 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '{ readonly title: string; readonly on: boolean; } & __VizePublicComponentAttrs'.",
+                "error:6:38 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.",
             ],
         },
         Case {
@@ -229,7 +247,7 @@ import Child from "./Child.vue";
 <template><Child title="ok" :items="[1, 2]" id="outer" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:45 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '{ readonly title: string; readonly items: number[]; } & __VizePublicComponentAttrs'.",
+                "error:4:45 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.",
             ],
         },
         Case {
@@ -249,7 +267,7 @@ import Child from "./Child.vue";
 <template><Child title="ok" :items="[1, 2]" id="outer" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:45 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '{ readonly title: string; readonly items: number[]; } & __VizePublicComponentAttrs'.",
+                "error:4:45 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.",
             ],
         },
         Case {
@@ -304,7 +322,7 @@ import Child from "./Child.vue";
 <template><Child title="ok" id="outer" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '{ readonly title: string; } & __VizePublicComponentAttrs'.",
+                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.",
             ],
         },
         Case {

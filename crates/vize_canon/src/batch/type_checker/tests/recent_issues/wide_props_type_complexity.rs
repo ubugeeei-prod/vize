@@ -79,13 +79,14 @@ const pick = (_value: string, _index: number) => {}
     // middle members instead of overflowing.
     let authored = "{ variant0: \"solid\"; onSelect3: (_value: string, _index: number) => void; class: string; }";
     let flattened = "{ readonly title: string; readonly variant0?: \"ghost\" | \"link\" | \"outline\" | \"solid\" | undefined; readonly onSelect0?: ((value: string, index: number) => void) | undefined; readonly itemList0?: readonly { ...; }[] | undefined; ... 118 more ...; readonly onClose?: (() => any) | undefined; }";
+    let native_tail = "__VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; ... 186 more ...; ref_key?: unknown; } & Partial<...> & Partial<...>";
     assert_eq!(
         snapshot,
         vec![(
             String::from("src/Parent.vue"),
             Some(2345),
             cstr!(
-                "7:4:error Argument of type '{authored}' is not assignable to parameter of type '{flattened} & ... 4 more ... & Partial...'.\nProperty 'title' is missing in type '{authored}' but required in type '{flattened}'."
+                "7:4:error Argument of type '{authored}' is not assignable to parameter of type '__VizeComponentCheckProps<__Wide_CheckProps_0, {native_tail}>'.\nProperty 'title' is missing in type '{authored}' but required in type '{flattened}'."
             ),
         )],
         "a 121-prop child reports exactly its missing required prop, with no complexity error"
