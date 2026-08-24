@@ -20,6 +20,11 @@ fn assembled(source: &str) -> String {
     })
 }
 
+/// Vue's extra `newline()` after `genAssets` leaves indent on the blank line.
+fn pin(visual: &str) -> String {
+    visual.replace(")\n\n  return", ")\n  \n  return")
+}
+
 #[test]
 fn a_root_v_if_matches_the_shipped_snapshot() {
     assert_eq!(
@@ -83,12 +88,6 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     : _createCommentVNode(\"v-if\", true)
 }"
     );
-}
-
-#[test]
-/// Vue's extra `newline()` after `genAssets` leaves indent on the blank line.
-fn pin(visual: &str) -> String {
-    visual.replace(")\n\n  return", ")\n  \n  return")
 }
 
 #[test]
