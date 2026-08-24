@@ -173,7 +173,7 @@ pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &Comp
         "  type __VizeFallthroughAttrCamel<S extends string> = S extends `${infer H}-${infer T}` ? `${H}${Capitalize<__VizeFallthroughAttrCamel<T>>}` : S;\n",
     );
     ts.push_str(
-        "  type __VizeCustomDataFallthroughAttrs = Partial<Record<`data${Capitalize<string>}`, unknown>>;\n",
+        "  type __VizeCustomDataFallthroughAttrs = { [K in `data${string}`]?: unknown };\n",
     );
     ts.push_str(
         "  type __VizeAllowedFallthroughAttrs<F> = [keyof F] extends [never] ? {} : { [K in keyof F]?: unknown } & __VizeCustomDataFallthroughAttrs & Partial<{ [K in keyof F & string as K extends `aria-${infer Tail}` ? `aria${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : K extends `data-${infer Tail}` ? `data${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : never]: unknown }>;\n",

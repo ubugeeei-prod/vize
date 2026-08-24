@@ -42,12 +42,14 @@ import Child from "./Child.vue";
 <template><Child title="ok" aria-zzz="1" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"ariaZzz\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & Partial<...> & Partial<...>>'.",
+                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"ariaZzz\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<.....'.",
             ],
         },
         Case {
-            id: "fallthrough-data-custom-ok",
-            child: MONO_DIV_CHILD,
+            id: "fallthrough-generic-data-custom-ok",
+            child: r#"<script setup lang="ts" generic="T extends string">defineProps<{ title: T }>();</script>
+<template><div class="root">{{ title }}</div></template>
+"#,
             app: r#"<script setup lang="ts">
 import Child from "./Child.vue";
 </script>
