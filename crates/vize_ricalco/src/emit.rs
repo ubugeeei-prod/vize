@@ -20,9 +20,10 @@
 //! Vue builtins (`Teleport` / `KeepAlive` / `Transition` / `Suspense`),
 //! `<component :is>` (`resolveDynamicComponent`), and **template
 //! fragments** (empty → `null`, multi-root / compound-root
-//! `_Fragment` + `STABLE_FRAGMENT`).
-//! Object `v-on`, `.native`, and filters stay
-//! [`EmitError::Unsupported`]. The old
+//! `_Fragment` + `STABLE_FRAGMENT`), **`<template v-if>` /
+//! `<template v-for>` fragments** (`STABLE_FRAGMENT` / unwrap after
+//! hoist), and **object `v-on`** (`toHandlers(..., true)`).
+//! `.native` and filters stay [`EmitError::Unsupported`]. The old
 //! lane stays the shipped compile path; [`super::DOM_LANE_FLAG`] is
 //! named here and *read* in the atelier_dom witness.
 
@@ -56,6 +57,8 @@ mod outlet;
 mod props;
 #[path = "emit/slots.rs"]
 mod slots;
+#[path = "emit/tpl.rs"]
+mod tpl;
 #[path = "emit/vfor.rs"]
 mod vfor;
 #[path = "emit/vif.rs"]
@@ -67,10 +70,11 @@ use vize_carton::{Allocator, String};
 use vize_davinci::diagnostic::Severity;
 use vize_davinci::id::NodeId;
 use vize_davinci::pass::BudgetObserver;
+use vize_davinci::side_table::SideTable;
 use vize_disegno::op::{ElementOp, ForOp, IfOp, Op, Region};
 use vize_sinopia::parse;
 
-use crate::lower::{Lowered, lower};
+use crate::lower::{ForWrapper, Lowered, WrapperKeys, lower};
 use crate::pass::walk::PageWalk;
 use crate::pass::{S2Facts, run_transform};
 
@@ -131,16 +135,22 @@ fn emit_if_branch_call(
     vnode::emit_if_branch_element(cx, element, key)
 }
 
-fn emit_for_op(cx: &mut EmitCx<'_>, for_op: &ForOp<'_>) -> Result<(), EmitError> {
-    vfor::emit_for(cx, for_op)
+fn emit_for_op(
+    cx: &mut EmitCx<'_>,
+    for_op: &ForOp<'_>,
+    id: Option<NodeId>,
+    fragment_key: Option<&str>,
+) -> Result<(), EmitError> {
+    vfor::emit_for(cx, for_op, id, fragment_key)
 }
 
 fn emit_for_item_call(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
     stable: bool,
+    key: Option<&str>,
 ) -> Result<(), EmitError> {
-    vnode::emit_for_item_element(cx, element, stable)
+    vnode::emit_for_item_element(cx, element, stable, key)
 }
 
 /// Per-emit numbering + helper buffer. Page-order ids re-derive the
@@ -148,6 +158,8 @@ fn emit_for_item_call(
 struct EmitCx<'facts> {
     buf: Buf,
     facts: &'facts S2Facts,
+    wrappers: &'facts SideTable<WrapperKeys>,
+    for_wrappers: &'facts SideTable<ForWrapper>,
     walk: PageWalk,
     /// Sibling `v-if` chains share one counter; nested chains reset.
     if_branch_key: u32,
@@ -205,6 +217,8 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
     let mut cx = EmitCx {
         buf: Buf::new(),
         facts,
+        wrappers: &lowered.wrappers,
+        for_wrappers: &lowered.for_wrappers,
         walk: PageWalk::new(),
         if_branch_key: 0,
         in_v_for: false,

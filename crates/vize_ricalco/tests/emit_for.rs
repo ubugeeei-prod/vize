@@ -1,4 +1,4 @@
-//! Native `ui.for` emit pins and the shapes this installment refuses.
+//! Native `ui.for` emit pins, including `<template v-for>` fragments.
 
 #![allow(
     clippy::disallowed_macros,
@@ -99,9 +99,22 @@ fn a_destructured_v_for_is_unsupported_this_installment() {
 }
 
 #[test]
-fn a_template_v_for_is_unsupported_this_installment() {
+fn a_template_v_for_matches_the_shipped_snapshot() {
     assert_eq!(
-        refused(r#"<template v-for="item in list"><span></span><span></span></template>"#),
-        EmitError::Unsupported
+        assembled(r#"<template v-for="item in list"><span></span><span></span></template>"#),
+        "\
+const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, renderList: _renderList } = Vue
+
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"span\")
+const _hoisted_2 = /*#__PURE__*/ _createElementVNode(\"span\")
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (item) => {
+    return (_openBlock(), _createElementBlock(_Fragment, null, [
+      _hoisted_1,
+      _hoisted_2
+    ], 64 /* STABLE_FRAGMENT */))
+  }), 256 /* UNKEYED_FRAGMENT */))
+}"
     );
 }

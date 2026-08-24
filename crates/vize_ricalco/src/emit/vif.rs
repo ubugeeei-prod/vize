@@ -48,7 +48,15 @@ pub(super) fn emit_if(
         let key = branch_key_js(facts, i, allocated)?;
         let saved = cx.if_branch_key;
         cx.if_branch_key = 0;
-        emit_branch(cx, branch, key.as_str())?;
+        let from_template = id
+            .and_then(|id| cx.wrappers.get(id))
+            .and_then(|keys| keys.from_template.get(i).copied())
+            .unwrap_or(false);
+        if from_template {
+            super::tpl::emit_if_template_branch(cx, branch, key.as_str())?;
+        } else {
+            emit_branch(cx, branch, key.as_str())?;
+        }
         cx.if_branch_key = saved;
         if branch.condition.is_some() && i > 0 {
             cx.buf.deindent();

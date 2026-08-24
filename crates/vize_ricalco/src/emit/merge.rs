@@ -14,8 +14,7 @@ use vize_disegno::op::{Attribute, BindOp, BindingOp, OnOp};
 use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
-use super::on::event_key_for;
-use super::on::needs_hydration;
+use super::on::{event_key_for, needs_hydration};
 use super::props::{Patch, Piece, emit_props_object, js_value, pieces, static_bind_name};
 
 pub(super) fn has_object_spread(bindings: &[BindingOp<'_>]) -> bool {

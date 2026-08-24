@@ -1,4 +1,4 @@
-//! Native `ui.if` emit pins and the shapes this installment refuses.
+//! Native `ui.if` emit pins, including `<template v-if>` fragments.
 
 #![allow(
     clippy::disallowed_macros,
@@ -9,7 +9,7 @@
 mod support;
 
 use support::with_transformed;
-use vize_ricalco::{EmitError, emit_dom};
+use vize_ricalco::emit_dom;
 
 fn assembled(source: &str) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {
@@ -17,12 +17,6 @@ fn assembled(source: &str) -> String {
             .unwrap_or_else(|error| panic!("emit refused {source:?}: {error:?}"))
             .assembled()
             .to_string()
-    })
-}
-
-fn refused(source: &str) -> EmitError {
-    with_transformed(source, |lowered, _, facts, _| {
-        emit_dom(lowered, facts).expect_err("expected Unsupported")
     })
 }
 
@@ -92,9 +86,22 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn a_template_fragment_v_if_is_unsupported_this_installment() {
+fn a_template_fragment_v_if_matches_the_shipped_snapshot() {
     assert_eq!(
-        refused(r#"<template v-if="ok"><span></span><span></span></template>"#),
-        EmitError::Unsupported
+        assembled(r#"<template v-if="ok"><span></span><span></span></template>"#),
+        "\
+const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode } = Vue
+
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"span\")
+const _hoisted_2 = /*#__PURE__*/ _createElementVNode(\"span\")
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (ok)
+    ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
+      _hoisted_1,
+      _hoisted_2
+    ], 64 /* STABLE_FRAGMENT */))
+    : _createCommentVNode(\"v-if\", true)
+}"
     );
 }
