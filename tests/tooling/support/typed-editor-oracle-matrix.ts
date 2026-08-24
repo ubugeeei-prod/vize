@@ -11,6 +11,7 @@ export type Evidence =
   | { kind: "pending-pr"; pr: number; reason: string };
 
 export const rowsRequiringExecutedEvidence = new Set([
+  "vscode-host-reactive-hover-surface",
   "lsp-imported-component-contract-hover",
   "lsp-jsx-intrinsic-globals",
   "lsp-component-prop-reexport-hover",
@@ -27,6 +28,13 @@ const toolingTestCiEvidence: Evidence = {
   requiredText: [
     "VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 tests/tooling/*.test.ts",
   ],
+};
+
+const vscodeHostCiEvidence: Evidence = {
+  kind: "ci",
+  label: "editor-host-smoke runs the packaged VS Code host-real scenario",
+  path: ".github/actions/vscode-host-smoke/action.yml",
+  requiredText: ["vp run --workspace-root test:vscode-extension:host-real"],
 };
 
 export const matrix: MatrixRow[] = [
@@ -142,6 +150,7 @@ export const matrix: MatrixRow[] = [
         path: "editors/vscode/test/suite/real-scenario.cjs",
         requiredText: ["refSurfaceHovers", "Ref<unknown>|ComputedRef<unknown>|MaybeRef<unknown>"],
       },
+      vscodeHostCiEvidence,
     ],
     followUp: "#4589",
     id: "vscode-host-reactive-hover-surface",
