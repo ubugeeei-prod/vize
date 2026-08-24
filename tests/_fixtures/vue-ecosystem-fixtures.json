@@ -2,7 +2,7 @@
   "schemaVersion": 7,
   "requiredToolCoverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
   "lspAuthoredOracleGate": {
-    "minimumProjectCount": 9,
+    "minimumProjectCount": 10,
     "trackingIssue": 3952
   },
   "projects": [
@@ -1200,7 +1200,70 @@
       ],
       "tsconfig": "tsconfig.json",
       "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
-      "diff": "curator-compare"
+      "diff": "curator-compare",
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "packages/create-vue-termui/template/src/App.vue",
+          "symbol": "hint",
+          "usageAnchor": ":content=\"hint\"",
+          "declarationAnchor": "const hint = t`",
+          "hoverContains": ["const hint: any"],
+          "renameTo": "__vizeRenamedHint"
+        },
+        "componentBoundary": {
+          "importerFile": "playground/src/pages/demos/dominos.vue",
+          "componentFile": "playground/src/components/DominoHalf.vue",
+          "tagName": "DominoHalf",
+          "tagAnchor": "<template v-for=\"(half, index) in row\" :key=\"`top-${rowIndex}-${index}`\">\n        <Text :bg=\"BOARD\">{{ spaces(gapBeforeHalf(row, index)) }}</Text>\n        <DominoHalf ",
+          "completionItemCount": 30,
+          "completionItems": [
+            { "label": "v-if", "rank": 0 },
+            { "label": "v-else-if", "rank": 1 },
+            { "label": "v-else", "rank": 2 },
+            { "label": "v-for", "rank": 3 },
+            { "label": "v-on", "rank": 4 },
+            { "label": "v-bind", "rank": 5 },
+            { "label": "v-model", "rank": 6 },
+            { "label": "v-slot", "rank": 7 },
+            { "label": "v-show", "rank": 8 },
+            { "label": "v-pre", "rank": 9 },
+            { "label": "v-once", "rank": 10 },
+            { "label": "v-memo", "rank": 11 },
+            { "label": "v-cloak", "rank": 12 },
+            { "label": "v-text", "rank": 13 },
+            { "label": "v-html", "rank": 14 },
+            { "label": "@", "rank": 15 },
+            { "label": ":", "rank": 16 },
+            { "label": "#", "rank": 17 },
+            { "label": "@click", "rank": 18 },
+            { "label": "@input", "rank": 19 },
+            { "label": "@change", "rank": 20 },
+            { "label": "@submit", "rank": 21 },
+            { "label": "@keydown", "rank": 22 },
+            { "label": "@keyup", "rank": 23 },
+            { "label": "@focus", "rank": 24 },
+            { "label": "@blur", "rank": 25 },
+            { "label": "@mouseenter", "rank": 26 },
+            { "label": "@mouseleave", "rank": 27 },
+            { "label": "value", "rank": 28 },
+            { "label": "state", "rank": 29 }
+          ],
+          "dependencyEdit": {
+            "anchor": "    state?: TileState\n",
+            "replacement": "    state?: TileState\n    vizeOracleProbe?: boolean\n",
+            "completionLabel": "vize-oracle-probe"
+          }
+        },
+        "fileLifecycle": {
+          "copiedFile": "playground/src/components/__VizeOracleDominoHalf.vue",
+          "renamedFile": "playground/src/components/__VizeOracleRenamedDominoHalf.vue",
+          "originalImportSpecifier": "../../components/DominoHalf.vue",
+          "copiedImportSpecifier": "../../components/__VizeOracleDominoHalf.vue",
+          "renamedImportSpecifier": "../../components/__VizeOracleRenamedDominoHalf.vue",
+          "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
+          "markerSymbol": "__vizeVueTermuiFileLifecycleMarker__"
+        }
+      }
     },
     {
       "id": "vue-element-admin",
