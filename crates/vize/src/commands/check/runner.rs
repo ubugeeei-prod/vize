@@ -4,7 +4,10 @@
 
 #![allow(clippy::disallowed_macros)]
 
-use std::path::Path;
+use std::{
+    path::Path,
+    time::{Duration, Instant},
+};
 
 use super::{
     CheckArgs,
@@ -158,9 +161,11 @@ fn prepare_and_execute(
             .is_some_and(|path| tsconfig_allows_js(path, cache)),
         include_jsx: jsx_typecheck,
     };
+    let mut import_time = Duration::ZERO;
     let mut authored_imports = Vec::new();
     let mut package_routes = std::mem::take(&mut candidate.package_routes);
     if !args.patterns.is_empty() || candidate.rebuild_supporting_files {
+        let import_start = Instant::now();
         let discovered = register_transitive_local_imports(
             &mut candidate.files,
             LocalImportContext {
@@ -173,6 +178,7 @@ fn prepare_and_execute(
             canonical_paths,
             package_route_resolver,
         );
+        import_time += import_start.elapsed();
         authored_imports = discovered.authored;
         package_routes.extend(discovered.package_routes);
     }
@@ -183,6 +189,7 @@ fn prepare_and_execute(
             candidate.tsconfig_path.as_deref(),
             cache,
         );
+        let import_start = Instant::now();
         let discovered = register_transitive_local_imports(
             &mut candidate.files,
             LocalImportContext {
@@ -195,6 +202,7 @@ fn prepare_and_execute(
             canonical_paths,
             package_route_resolver,
         );
+        import_time += import_start.elapsed();
         package_routes.extend(discovered.package_routes);
     }
     validate_inputs_in_root(explicit_input_root, &candidate.files, validate_inputs)?;
@@ -226,6 +234,7 @@ fn prepare_and_execute(
     if !args.patterns.is_empty()
         && let Some(program_tsconfig_path) = program_tsconfig_path.as_deref()
     {
+        let import_start = Instant::now();
         package_routes.extend(register_explicit_ambient_imports(
             &mut candidate.files,
             ExplicitAmbientImportContext::new(
@@ -239,6 +248,7 @@ fn prepare_and_execute(
             canonical_paths,
             package_route_resolver,
         ));
+        import_time += import_start.elapsed();
     }
     let project_root =
         resolve_project_root(program_tsconfig_path.as_deref(), cwd, &candidate.files);
@@ -256,7 +266,7 @@ fn prepare_and_execute(
         ))
     });
     package_routes.dedup_by(|left, right| left == right);
-    execute_program(
+    let mut execution = execute_program(
         ProgramExecutionInput {
             files: &candidate.files,
             reported_files: candidate.reported,
@@ -268,8 +278,9 @@ fn prepare_and_execute(
             package_route_resolver: package_route_resolver.clone(),
         },
         settings,
-    )
-    .map(Some)
+    )?;
+    execution.import_time = import_time;
+    Ok(Some(execution))
 }
 
 fn validate_config_arg(args: &CheckArgs) {

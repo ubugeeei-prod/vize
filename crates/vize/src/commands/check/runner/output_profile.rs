@@ -13,6 +13,7 @@ pub(super) fn print_profile(
     total_errors: usize,
     total_time: Duration,
     collect_time: Duration,
+    import_time: Duration,
     gen_time: Duration,
     check_time: Duration,
     profile_artifact_time: Duration,
@@ -30,6 +31,12 @@ pub(super) fn print_profile(
             duration: collect_time,
             kind: ProfilePhaseKind::Wall,
             note: "tsconfig or explicit patterns",
+        },
+        ProfilePhase {
+            name: "resolve imports",
+            duration: import_time,
+            kind: ProfilePhaseKind::Wall,
+            note: "transitive local and package graph",
         },
         ProfilePhase {
             name: "virtual project",

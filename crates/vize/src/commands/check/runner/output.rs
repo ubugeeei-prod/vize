@@ -171,6 +171,10 @@ fn report_executions(
         .count();
     let emitted = emit_declarations(args, &executions, total_errors)?;
     let total_time = start.elapsed();
+    let import_time = executions
+        .iter()
+        .map(|execution| execution.import_time)
+        .sum();
     let gen_time = executions.iter().map(|execution| execution.gen_time).sum();
     let check_time = executions
         .iter()
@@ -184,6 +188,7 @@ fn report_executions(
             total_errors,
             total_time,
             collect_time,
+            import_time,
             gen_time,
             check_time,
             profile_artifact_time,
@@ -217,6 +222,7 @@ fn report_executions(
         total_warnings,
         total_time,
         collect_time,
+        import_time,
         gen_time,
         check_time,
         emitted.as_ref(),
@@ -232,6 +238,7 @@ fn print_text(
     total_warnings: usize,
     total_time: Duration,
     collect_time: Duration,
+    import_time: Duration,
     gen_time: Duration,
     check_time: Duration,
     emitted: Option<&DeclarationSummary>,
@@ -261,22 +268,24 @@ fn print_text(
     };
     if let Some(summary) = emitted {
         println!(
-            "\n{} Type checked {} files in {:.2?} (collect: {:.2?}, gen: {:.2?}, corsa: {:.2?}, dts: {:.2?})",
+            "\n{} Type checked {} files in {:.2?} (collect: {:.2?}, imports: {:.2?}, gen: {:.2?}, corsa: {:.2?}, dts: {:.2?})",
             status,
             virtual_files.len(),
             total_time,
             collect_time,
+            import_time,
             gen_time,
             check_time,
             summary.elapsed
         );
     } else {
         println!(
-            "\n{} Type checked {} files in {:.2?} (collect: {:.2?}, gen: {:.2?}, corsa: {:.2?})",
+            "\n{} Type checked {} files in {:.2?} (collect: {:.2?}, imports: {:.2?}, gen: {:.2?}, corsa: {:.2?})",
             status,
             virtual_files.len(),
             total_time,
             collect_time,
+            import_time,
             gen_time,
             check_time
         );

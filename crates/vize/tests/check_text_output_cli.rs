@@ -105,7 +105,7 @@ const count: string = 0;
     // fail the equality.
     assert_eq!(
         normalize_check_output(stdout, &project_root),
-        "\n<project>/src/App.vue\n  error:2:7 [TS2322] Type 'number' is not assignable to type 'string'. (source: const count: string = 0;)\n\n\u{2717} Type checked 1 files in <duration> (collect: <duration>, gen: <duration>, corsa: <duration>)\n  1 error(s)\n",
+        "\n<project>/src/App.vue\n  error:2:7 [TS2322] Type 'number' is not assignable to type 'string'. (source: const count: string = 0;)\n\n\u{2717} Type checked 1 files in <duration> (collect: <duration>, imports: <duration>, gen: <duration>, corsa: <duration>)\n  1 error(s)\n",
         "stderr:\n{stderr}"
     );
     assert_eq!(
