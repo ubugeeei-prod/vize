@@ -3,7 +3,8 @@
 //! Implicit default, static / dynamic named `<template>` groups, and
 //! component-root `v-slot` (shipped codegen always keys that `default`).
 //! Conditional / looped slot templates go through [`super::create_slots`].
-//! Slot outlets and `v-slots` stay [`EmitError::Unsupported`].
+//! Outlets (`renderSlot`) live in [`super::outlet`]; `v-slots` stays
+//! [`EmitError::Unsupported`].
 
 use alloc::vec::Vec as StdVec;
 
@@ -62,7 +63,7 @@ fn walk_admit(region: &Region<'_>) -> Result<(), EmitError> {
                 }
             }
             Op::For(for_op) => walk_admit(&for_op.region)?,
-            Op::Slot(_) => return Err(EmitError::Unsupported),
+            Op::Slot(slot) => walk_admit(&slot.fallback)?,
         }
     }
     Ok(())
@@ -106,7 +107,10 @@ pub(super) fn emit_slots(
         cx.buf.push("]),");
     }
     cx.buf.newline();
-    if cx.in_v_for || has_dynamic_names(facts) {
+    let forwarded = super::outlet::has_forwarded_outlet(children);
+    if forwarded && cx.slot_param_depth == 0 && !cx.in_v_for && !has_dynamic_names(facts) {
+        cx.buf.push("_: 3 /* FORWARDED */");
+    } else if cx.in_v_for || has_dynamic_names(facts) || (forwarded && cx.slot_param_depth > 0) {
         cx.buf.push("_: 2 /* DYNAMIC */");
     } else {
         cx.buf.push("_: 1 /* STABLE */");
@@ -145,7 +149,10 @@ fn collect_pieces(
                 ) else {
                     return Err(EmitError::Unsupported);
                 };
-                emit_template_pieces(cx, &element.children, &mut buckets[idx])?;
+                let scoped = matches!(facts.groups[idx].params, SlotParams::Scoped { .. });
+                super::outlet::with_slot_params(cx, scoped, |cx| {
+                    emit_template_pieces(cx, &element.children, &mut buckets[idx])
+                })?;
             }
             _ => {
                 let idx = facts.groups.iter().position(|group| {
@@ -157,7 +164,10 @@ fn collect_pieces(
                 let Some(idx) = idx else {
                     return Err(EmitError::Unsupported);
                 };
-                buckets[idx].push(capture_child(cx, op)?);
+                let scoped = matches!(facts.groups[idx].params, SlotParams::Scoped { .. });
+                buckets[idx].push(super::outlet::with_slot_params(cx, scoped, |cx| {
+                    capture_child(cx, op)
+                })?);
             }
         }
     }
@@ -258,8 +268,9 @@ fn emit_slot_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
     match op {
         Op::Text(_) | Op::Interpolation(_) => emit_slot_text_child(cx, op),
         Op::Element(element) if is_hoistable(element) => emit_hoisted_element(cx, element),
-        Op::Element(_) | Op::Component(_) | Op::If(_) | Op::For(_) => emit_array_child(cx, op),
-        Op::Slot(_) => Err(EmitError::Unsupported),
+        Op::Element(_) | Op::Component(_) | Op::If(_) | Op::For(_) | Op::Slot(_) => {
+            emit_array_child(cx, op)
+        }
     }
 }
 

@@ -15,9 +15,10 @@
 //! `createVNode` / `createBlock`), and **implicit default text slots**
 //! (`withCtx` / `_: 1|2`, including native / component children,
 //! static-vnode hoists, hoisted static `ui.for` items, named / scoped
-//! `<template>` slots, and `createSlots` for `v-if` / `v-for` slot
-//! templates). Object `v-on`, `.native`, template fragments, filters,
-//! slot outlets, and builtins stay [`EmitError::Unsupported`]. The old
+//! `<template>` slots, `createSlots` for `v-if` / `v-for` slot
+//! templates, and **slot outlets** (`renderSlot` / `_: 3 FORWARDED`)).
+//! Object `v-on`, `.native`, template fragments, filters, and builtins
+//! stay [`EmitError::Unsupported`]. The old
 //! lane stays the shipped compile path; [`super::DOM_LANE_FLAG`] is
 //! named here and *read* in the atelier_dom witness.
 
@@ -41,6 +42,8 @@ mod js;
 mod merge;
 #[path = "emit/on.rs"]
 mod on;
+#[path = "emit/outlet.rs"]
+mod outlet;
 #[path = "emit/props.rs"]
 mod props;
 #[path = "emit/slots.rs"]
@@ -56,7 +59,7 @@ use vize_carton::{Allocator, String};
 use vize_davinci::diagnostic::Severity;
 use vize_davinci::id::NodeId;
 use vize_davinci::pass::BudgetObserver;
-use vize_disegno::op::{ElementOp, ForOp, IfOp};
+use vize_disegno::op::{ElementOp, ForOp, IfOp, Op, Region};
 use vize_sinopia::parse;
 
 use crate::lower::{Lowered, lower};
@@ -64,7 +67,40 @@ use crate::pass::walk::PageWalk;
 use crate::pass::{S2Facts, run_transform};
 
 use self::buf::Buf;
+use self::helper::Helper;
 use self::vnode::emit_root;
+
+/// Transform visit order for helpers the shipped lane parks on
+/// `root.helpers` (`CreateElementVNode` on native elements,
+/// `ResolveComponent` on components, `RenderSlot` on outlets).
+fn prefer_transform_helpers(buf: &mut Buf, region: &Region<'_>) {
+    for op in region.ops.iter() {
+        match op {
+            Op::Element(element) => {
+                buf.prefer(Helper::CreateElementVNode);
+                prefer_transform_helpers(buf, &element.children);
+            }
+            Op::Component(component) => {
+                buf.prefer(Helper::ResolveComponent);
+                prefer_transform_helpers(buf, &component.children);
+            }
+            Op::Slot(slot) => {
+                buf.prefer(Helper::RenderSlot);
+                prefer_transform_helpers(buf, &slot.fallback);
+            }
+            Op::If(if_op) => {
+                for branch in if_op.branches.iter() {
+                    prefer_transform_helpers(buf, &branch.region);
+                }
+            }
+            Op::For(for_op) => {
+                buf.prefer(Helper::RenderList);
+                prefer_transform_helpers(buf, &for_op.region);
+            }
+            Op::Text(_) | Op::Interpolation(_) => {}
+        }
+    }
+}
 
 fn emit_if_op(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>, id: Option<NodeId>) -> Result<(), EmitError> {
     vif::emit_if(cx, if_op, id)
@@ -100,6 +136,9 @@ struct EmitCx<'facts> {
     if_branch_key: u32,
     /// Slot objects inside `v-for` carry `_: 2 /* DYNAMIC */`.
     in_v_for: bool,
+    /// Nested components inside a scoped `withCtx` treat forwarded
+    /// outlets as `_: 2` + `DYNAMIC_SLOTS` (Vue `has_slot_params`).
+    slot_param_depth: u32,
 }
 
 /// One DOM render module, split the way the shipped codegen splits it
@@ -152,7 +191,9 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
         walk: PageWalk::new(),
         if_branch_key: 0,
         in_v_for: false,
+        slot_param_depth: 0,
     };
+    prefer_transform_helpers(&mut cx.buf, &lowered.root);
     cx.buf
         .push("function render(_ctx, _cache, $props, $setup, $data, $options) {");
     cx.buf.indent();

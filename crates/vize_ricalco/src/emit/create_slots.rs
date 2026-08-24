@@ -222,7 +222,10 @@ fn emit_slot_object(
     cx.buf.push(" => [");
     let mut pieces = StdVec::new();
     cx.buf.indent();
-    emit_template_pieces(cx, &element.children, &mut pieces)?;
+    let scoped = matches!(&content.params, Some(expr) if !expr.source().is_empty());
+    super::outlet::with_slot_params(cx, scoped, |cx| {
+        emit_template_pieces(cx, &element.children, &mut pieces)
+    })?;
     for (i, piece) in pieces.iter().enumerate() {
         if i > 0 {
             cx.buf.push(",");
