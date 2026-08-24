@@ -151,7 +151,10 @@ fn emit_props(cx: &mut EmitCx<'_>, slot: &SlotOp<'_>, key: Option<&str>) -> Resu
                 cx.buf.push(": ");
                 cx.buf.push(js.source);
             }
-            Piece::On(_) => return Err(EmitError::Unsupported),
+            Piece::On(_)
+            | Piece::ModelValue { .. }
+            | Piece::ModelUpdate { .. }
+            | Piece::ModelModifiers { .. } => return Err(EmitError::Unsupported),
         }
     }
     if !first {
