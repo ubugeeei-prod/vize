@@ -1,80 +1,40 @@
 //! Static native HTML element / children emission.
 
 use vize_carton::{String, ensure_sufficient_stack};
-use vize_disegno::op::{Attribute, ElementOp, Namespace, Op, Region, TextOp};
+use vize_disegno::op::{Attribute, ElementOp, Namespace, Op, Region};
 
 use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
-use super::children::{
-    children_need_text_flag, emit_create_text_vnode, emit_interpolation, emit_text_like,
-};
+use super::children::{children_need_text_flag, emit_create_text_vnode, emit_text_like};
 use super::flag::emit_patch_flag;
 use super::hoist::{compact_props_object, push_attr_pair, unique_attrs};
 use super::props::{admit_bindings, bind_patch, emit_bind_props};
 
-pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), EmitError> {
-    admit_unique_root(root)?;
-    for op in root.ops.iter() {
-        let id = cx.walk.mint();
-        match op {
-            Op::Text(text) if is_ignorable_root_text(text) => {}
-            Op::Element(element) => {
-                cx.walk.skip(element.bindings.len());
-                cx.buf.use_open_block();
-                cx.buf.use_create_element_block();
-                cx.buf.push("(");
-                cx.buf.push(Buf::open_block_alias());
-                cx.buf.push("(), ");
-                emit_call(
-                    cx, element, /* block */ true, None, /* hoist */ true,
-                )?;
-                cx.buf.push(")");
-            }
-            Op::Interpolation(interp) => emit_interpolation(cx, interp, id)?,
-            Op::If(if_op) => super::emit_if_op(cx, if_op, id)?,
-            Op::For(for_op) => super::emit_for_op(cx, for_op)?,
-            Op::Component(component) => {
-                cx.walk.skip(component.bindings.len());
-                super::component::emit_root(cx, component, id)?;
-            }
-            Op::Slot(slot) => {
-                cx.walk.skip(slot.bindings.len());
-                super::outlet::emit_outlet(cx, slot, None, false)?;
-            }
-            _ => return Err(EmitError::Unsupported),
-        }
-    }
+pub(super) fn emit_unique_element(
+    cx: &mut EmitCx<'_>,
+    element: &ElementOp<'_>,
+) -> Result<(), EmitError> {
+    cx.buf.use_open_block();
+    cx.buf.use_create_element_block();
+    cx.buf.push("(");
+    cx.buf.push(Buf::open_block_alias());
+    cx.buf.push("(), ");
+    emit_call(
+        cx, element, /* block */ true, None, /* hoist */ true,
+    )?;
+    cx.buf.push(")");
     Ok(())
 }
 
-fn admit_unique_root(root: &Region<'_>) -> Result<(), EmitError> {
-    let mut found = false;
-    for op in root.ops.iter() {
-        match op {
-            Op::Text(text) if is_ignorable_root_text(text) => {}
-            Op::Element(_)
-            | Op::Component(_)
-            | Op::Interpolation(_)
-            | Op::If(_)
-            | Op::For(_)
-            | Op::Slot(_)
-                if !found =>
-            {
-                found = true
-            }
-            _ => return Err(EmitError::Unsupported),
-        }
-    }
-    if found {
-        Ok(())
-    } else {
-        Err(EmitError::Unsupported)
-    }
-}
-
-fn is_ignorable_root_text(text: &TextOp<'_>) -> bool {
-    text.content.chars().all(char::is_whitespace)
+pub(super) fn emit_fragment_element(
+    cx: &mut EmitCx<'_>,
+    element: &ElementOp<'_>,
+) -> Result<(), EmitError> {
+    cx.buf.use_create_element_vnode();
+    emit_call(
+        cx, element, /* block */ false, None, /* hoist */ true,
+    )
 }
 
 fn emit_nested(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) -> Result<(), EmitError> {
@@ -147,14 +107,14 @@ fn emit_call(
     cx.buf.push("\"");
     let has_children = !element.children.ops.is_empty();
     let has_binds = !element.bindings.is_empty();
-    let hoist = allow_hoist && block && if_key.is_none() && root_props_should_hoist(element);
+    let hoist = allow_hoist && if_key.is_none() && root_props_should_hoist(element);
     let patch = bind_patch(&element.bindings, false);
     let text_flag = children_need_text_flag(&element.children);
     let mut flag = patch.flag;
     if text_flag {
         flag |= 1;
     }
-    let omit_text_only = hoist && flag == 1;
+    let omit_text_only = hoist && block && flag == 1;
     let emit_flag = flag != 0 && !omit_text_only;
     let has_props = hoist || !element.attributes.is_empty() || has_binds || if_key.is_some();
     if hoist {
