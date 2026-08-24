@@ -19,6 +19,7 @@ pub(super) enum Helper {
     NormalizeProps,
     GuardReactiveProps,
     MergeProps,
+    ToHandlers,
     OpenBlock,
     CreateBlock,
     CreateElementBlock,
@@ -37,7 +38,7 @@ pub(super) enum Helper {
 }
 
 impl Helper {
-    pub(super) const ALL: [Self; 28] = [
+    pub(super) const ALL: [Self; 29] = [
         Self::ResolveComponent,
         Self::ResolveDynamicComponent,
         Self::WithKeys,
@@ -51,6 +52,7 @@ impl Helper {
         Self::NormalizeProps,
         Self::GuardReactiveProps,
         Self::MergeProps,
+        Self::ToHandlers,
         Self::OpenBlock,
         Self::CreateBlock,
         Self::CreateElementBlock,
@@ -78,7 +80,8 @@ impl Helper {
             | Self::NormalizeStyle
             | Self::NormalizeProps
             | Self::GuardReactiveProps
-            | Self::MergeProps => 5,
+            | Self::MergeProps
+            | Self::ToHandlers => 5,
             Self::OpenBlock => 6,
             Self::CreateBlock | Self::CreateElementBlock => 7,
             Self::Fragment => 8,
@@ -112,6 +115,7 @@ impl Helper {
             Self::NormalizeProps => 4096,
             Self::GuardReactiveProps => 8192,
             Self::MergeProps => 16384,
+            Self::ToHandlers => 268_435_456,
             Self::ResolveComponent => 32768,
             Self::ResolveDynamicComponent => 134_217_728,
             Self::CreateVNode => 65536,
@@ -143,6 +147,7 @@ impl Helper {
             Self::NormalizeProps => "normalizeProps",
             Self::GuardReactiveProps => "guardReactiveProps",
             Self::MergeProps => "mergeProps",
+            Self::ToHandlers => "toHandlers",
             Self::OpenBlock => "openBlock",
             Self::CreateBlock => "createBlock",
             Self::CreateElementBlock => "createElementBlock",
@@ -176,6 +181,7 @@ impl Helper {
             Self::NormalizeProps => "_normalizeProps",
             Self::GuardReactiveProps => "_guardReactiveProps",
             Self::MergeProps => "_mergeProps",
+            Self::ToHandlers => "_toHandlers",
             Self::OpenBlock => "_openBlock",
             Self::CreateBlock => "_createBlock",
             Self::CreateElementBlock => "_createElementBlock",

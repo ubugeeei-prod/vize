@@ -1,4 +1,5 @@
-//! Object-spread `v-bind` emit pins (`normalizeProps` / `mergeProps`).
+//! Object-spread `v-bind` / `v-on` emit pins (`normalizeProps` /
+//! `mergeProps` / `toHandlers`).
 
 #![allow(
     clippy::disallowed_macros,
@@ -9,7 +10,7 @@
 mod support;
 
 use support::with_transformed;
-use vize_ricalco::{EmitError, emit_dom};
+use vize_ricalco::{emit_dom, EmitError};
 
 fn assembled(source: &str) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {
@@ -176,10 +177,69 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn a_von_object_spread_is_unsupported_this_installment() {
+fn a_static_attr_before_object_on_uses_merge_props() {
     assert_eq!(
-        refused(r#"<div v-on="handlers"></div>"#),
-        EmitError::Unsupported
+        assembled(r#"<div id="x" v-on="handlers"></div>"#),
+        "\
+const { mergeProps: _mergeProps, toHandlers: _toHandlers, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", _mergeProps({ id: \"x\" }, _toHandlers(handlers, true)), null, 16 /* FULL_PROPS */))
+}"
+    );
+}
+
+#[test]
+fn an_object_on_before_a_static_attr_keeps_author_order() {
+    assert_eq!(
+        assembled(r#"<div v-on="handlers" id="x"></div>"#),
+        "\
+const { mergeProps: _mergeProps, toHandlers: _toHandlers, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", _mergeProps(_toHandlers(handlers, true), { id: \"x\" }), null, 16 /* FULL_PROPS */))
+}"
+    );
+}
+
+#[test]
+fn a_click_beside_object_on_lists_on_click() {
+    assert_eq!(
+        assembled(r#"<div @click="h" v-on="handlers"></div>"#),
+        "\
+const { mergeProps: _mergeProps, toHandlers: _toHandlers, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", _mergeProps({ onClick: h }, _toHandlers(handlers, true)), null, 16 /* FULL_PROPS */, [\"onClick\"]))
+}"
+    );
+}
+
+#[test]
+fn an_object_bind_beside_object_on_uses_merge_props() {
+    assert_eq!(
+        assembled(r#"<div v-bind="obj" v-on="handlers"></div>"#),
+        "\
+const { mergeProps: _mergeProps, toHandlers: _toHandlers, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", _mergeProps(obj, _toHandlers(handlers, true)), null, 16 /* FULL_PROPS */))
+}"
+    );
+}
+
+#[test]
+fn a_v_if_with_object_on_merges_the_branch_key() {
+    assert_eq!(
+        assembled(r#"<div v-if="ok" v-on="handlers">x</div>"#),
+        "\
+const { mergeProps: _mergeProps, toHandlers: _toHandlers, openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (ok)
+    ? (_openBlock(), _createElementBlock(\"div\", _mergeProps({ key: 0 }, _toHandlers(handlers, true)), \"x\", 16 /* FULL_PROPS */))
+    : _createCommentVNode(\"v-if\", true)
+}"
     );
 }
 

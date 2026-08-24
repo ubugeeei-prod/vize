@@ -1,17 +1,18 @@
 //! Static-name `ui.on` (`@click` / `v-on:click`), including event / key /
 //! option modifiers (`withModifiers` / `withKeys`, `onClickOnce`, …).
+//! Object `v-on` lives in [`super::merge`].
 
 use alloc::vec::Vec as StdVec;
 
 use oxc_ast::ast::{ChainElement, Expression};
-use vize_carton::{String, camelize, capitalize};
+use vize_carton::{camelize, capitalize, String};
 use vize_disegno::expr::{ExprRef, JsExpr};
 use vize_disegno::op::{DynamicName, OnOp};
 
-use super::EmitCx;
-use super::EmitError;
 use super::buf::Buf;
 use super::js::is_valid_js_identifier;
+use super::EmitCx;
+use super::EmitError;
 
 struct Classified<'a> {
     options: StdVec<&'a str>,
@@ -20,6 +21,9 @@ struct Classified<'a> {
 }
 
 pub(super) fn admit_on(on: &OnOp<'_>, seen: &mut StdVec<String>) -> Result<(), EmitError> {
+    if on.name.is_none() {
+        return super::merge::admit_object_on(on);
+    }
     let name = static_on_name(on)?;
     if name.contains(':') {
         return Err(EmitError::Unsupported);

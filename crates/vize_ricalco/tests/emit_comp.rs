@@ -184,6 +184,21 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn a_component_object_on_uses_to_handlers() {
+    assert_eq!(
+        assembled(r#"<Foo v-on="handlers" />"#),
+        pin("\
+const { resolveComponent: _resolveComponent, toHandlers: _toHandlers, openBlock: _openBlock, createBlock: _createBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, _toHandlers(handlers, true), null, 16 /* FULL_PROPS */))
+}")
+    );
+}
+
+#[test]
 fn a_component_object_bind_uses_normalize_props() {
     assert_eq!(
         assembled(r#"<Foo v-bind="obj" />"#),

@@ -110,6 +110,9 @@ impl Buf {
     pub(super) fn use_merge_props(&mut self) {
         self.mark(Helper::MergeProps);
     }
+    pub(super) fn use_to_handlers(&mut self) {
+        self.mark(Helper::ToHandlers);
+    }
     pub(super) fn use_create_comment(&mut self) {
         self.mark(Helper::CreateComment);
     }
@@ -184,6 +187,10 @@ impl Buf {
 
     pub(super) fn merge_props_alias() -> &'static str {
         Helper::MergeProps.alias()
+    }
+
+    pub(super) fn to_handlers_alias() -> &'static str {
+        Helper::ToHandlers.alias()
     }
 
     pub(super) fn create_comment_alias() -> &'static str {

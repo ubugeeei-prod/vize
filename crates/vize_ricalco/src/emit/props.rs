@@ -60,7 +60,7 @@ pub(super) fn admit_bindings(
 }
 
 pub(super) fn bind_patch(bindings: &[BindingOp<'_>], is_component: bool) -> Patch {
-    if super::merge::has_object_bind(bindings) {
+    if super::merge::has_object_spread(bindings) {
         return super::merge::object_patch(bindings, is_component);
     }
     let mut flag = 0i32;
@@ -112,7 +112,7 @@ pub(super) fn emit_bind_props(
     if_key: Option<&str>,
     skip_is: bool,
 ) -> Result<(), EmitError> {
-    if super::merge::has_object_bind(bindings) {
+    if super::merge::has_object_spread(bindings) {
         return super::merge::emit_spread_props(cx, attributes, bindings, if_key, skip_is);
     }
     let pieces = pieces(attributes, bindings, skip_is)?;

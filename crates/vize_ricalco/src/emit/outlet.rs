@@ -9,8 +9,6 @@ use vize_carton::camelize;
 use vize_disegno::expr::{ExprRef, OpaqueReason};
 use vize_disegno::op::{BindingOp, DynamicName, InterpolationOp, Op, Region, SlotOp};
 
-use super::EmitCx;
-use super::EmitError;
 use super::buf::Buf;
 use super::children::{
     emit_create_text_vnode, emit_interpolation, emit_plain_text_vnode, emit_to_display_string,
@@ -18,9 +16,11 @@ use super::children::{
 use super::hoist::{emit_hoisted_element, is_hoistable};
 use super::js::{escape_js_string, is_valid_js_identifier};
 use super::merge;
-use super::props::{Piece, js_value, pieces};
+use super::props::{js_value, pieces, Piece};
 use super::slots::is_whitespace_text;
 use super::vnode::emit_array_child;
+use super::EmitCx;
+use super::EmitError;
 
 pub(super) fn has_forwarded_outlet(region: &Region<'_>) -> bool {
     region.ops.iter().any(op_forwards)
@@ -118,7 +118,7 @@ fn meaningful_fallback(region: &Region<'_>) -> bool {
 }
 
 fn emit_props(cx: &mut EmitCx<'_>, slot: &SlotOp<'_>, key: Option<&str>) -> Result<(), EmitError> {
-    if merge::has_object_bind(&slot.bindings) {
+    if merge::has_object_spread(&slot.bindings) {
         return merge::emit_spread_props(cx, &slot.attributes, &slot.bindings, key, false);
     }
     let list = pieces(&slot.attributes, &slot.bindings, false)?;
