@@ -78,10 +78,20 @@ Nuxt apps should use `@vizejs/nuxt` instead of wiring the Vite plugin by hand.
 
 ### New setup
 
-Create a Vue + Vite (or Nuxt) app first, then let `vize init` wire the toolchain:
+Create a Vue + Vite or Nuxt app first, then let `vize init` wire the toolchain.
+
+Vue + Vite:
 
 ```bash
 npm create vue@latest
+cd my-app
+npx vize init
+```
+
+Nuxt:
+
+```bash
+npm create nuxt@latest
 cd my-app
 npx vize init
 ```
@@ -99,7 +109,10 @@ npx vize init --dry-run
 npx vize init
 ```
 
-`init` is idempotent and lets you choose surfaces. Already-configured files stay untouched.
+`init` is idempotent and lets you choose surfaces. Existing `vize.config.*` is left as-is. A second
+run adds no duplicate plugin, script, or dependency. The first run may still add `vize:*` scripts
+and update a plain `vite.config.*` or `nuxt.config.*`.
+
 Non-interactive:
 
 ```bash
