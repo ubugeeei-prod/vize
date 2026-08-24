@@ -22,7 +22,7 @@
 //! The stage IRs themselves land in their own crates (`vize_s2`, package
 //! `vize_disegno`, for S2);
 //! see `davinci-road/architecture.md`. New implementation code should prefer
-//! the stage aliases recorded in [`stage`] (`vize_s1`, `vize_s2`,
+//! the stage aliases recorded in [`stage`] (`vize_s0`, `vize_s1`, `vize_s2`,
 //! `vize_s1_to_s2`) over the historical art-name package ids.
 //!
 //! The crate is `no_std + alloc` from birth so every future stage artifact

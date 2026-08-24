@@ -1,4 +1,4 @@
-# Sinopia — the S1 Vue-template surface tree (Davinci P2-7).
+# S1 — the Vue-template surface tree (codename Sinopia, Davinci P2-7).
 #
 # A sinopia is the preparatory underdrawing beneath a fresco: when the
 # finished layer is detached, the sinopia survives as the byte-faithful
@@ -12,7 +12,7 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Sinopia - the lossless S1 Vue-template surface tree (Davinci P2-7)"
+description = "S1 - the lossless Vue-template surface tree (codename Sinopia, Davinci P2-7)"
 publish = false
 metadata.vize.stability = "experimental"
 

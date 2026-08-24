@@ -1,4 +1,4 @@
-//! Sinopia — the lossless S1 Vue-template surface tree (Davinci P2-7).
+//! S1 — the lossless Vue-template surface tree (codename Sinopia, Davinci P2-7).
 //!
 //! A *sinopia* is the preparatory underdrawing beneath a fresco. When the
 //! finished layer is detached from the wall, the sinopia survives as the

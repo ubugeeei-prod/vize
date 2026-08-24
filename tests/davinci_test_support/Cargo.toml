@@ -9,7 +9,7 @@ description = "Shared fixtures and strict schema validation for Davinci tests"
 publish = false
 
 [dependencies]
-compact_str = { workspace = true }
 regex-lite = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
+vize_s0 = { workspace = true }

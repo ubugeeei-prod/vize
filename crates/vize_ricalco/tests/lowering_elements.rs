@@ -7,7 +7,7 @@ mod support;
 
 use support::artifact;
 use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
-use vize_s0::Span;
+use vize_s0::{Span, cstr};
 
 #[test]
 fn a_non_native_tag_lowers_as_a_component() {
@@ -232,7 +232,7 @@ fn ill_formed_v_once_spellings_still_defer() {
         let art = artifact(src);
         assert_eq!(
             art.folio,
-            format!(
+            cstr!(
                 "[disegno]\n\
                  ops=2\n\
                  \n\

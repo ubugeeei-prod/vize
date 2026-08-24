@@ -3,9 +3,9 @@
 //! Implements exactly the keywords used by the committed Davinci schemas and
 //! rejects any unsupported validation keyword instead of silently skipping it.
 
-use compact_str::{CompactString, format_compact};
 use serde_json::Value;
 use thiserror::Error;
+use vize_s0::{CompactString, cstr};
 
 /// A precise validation or validator-capability failure.
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -71,7 +71,7 @@ impl SchemaError {
     /// Render the stable diagnostic text without allocating a standard string.
     #[must_use]
     pub fn message(&self) -> CompactString {
-        format_compact!("{self}")
+        cstr!("{self}")
     }
 }
 
@@ -214,7 +214,7 @@ fn check_object_keywords(schema: &Value, instance: &Value, path: &str) -> Result
     if let Some(entries) = properties {
         for (key, subschema) in entries {
             if let Some(child) = instance_object.get(key.as_str()) {
-                validate(subschema, child, &format_compact!("{path}.{key}"))?;
+                validate(subschema, child, &cstr!("{path}.{key}"))?;
             }
         }
     }
@@ -229,7 +229,7 @@ fn check_array_items(schema: &Value, instance: &Value, path: &str) -> Result<(),
         return Ok(());
     };
     for (index, entry) in entries.iter().enumerate() {
-        validate(items, entry, &format_compact!("{path}[{index}]"))?;
+        validate(items, entry, &cstr!("{path}[{index}]"))?;
     }
     Ok(())
 }

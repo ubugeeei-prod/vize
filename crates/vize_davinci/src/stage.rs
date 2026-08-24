@@ -1,12 +1,12 @@
 //! Canonical Davinci stage names and their current crate spellings.
 //!
 //! Human-facing implementation names are the short stage aliases (`s0`, `s1`,
-//! `s2`, `s1-to-s2`). The art-name packages are historical package ids kept
+//! `s2`, `s1_to_s2`). The art-name packages are historical package ids kept
 //! for compatibility until each crate can be mechanically renamed.
 
-/// A Davinci artifact-producing stage crate.
+/// A Davinci layer crate.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct StageCrate {
+pub struct LayerCrate {
     /// Short stage id used in implementation names and docs.
     pub id: &'static str,
     /// Preferred Rust dependency alias for new code.
@@ -35,7 +35,7 @@ pub struct ConversionCrate {
 }
 
 /// S0: the source, arena, compact-storage, and span foundation.
-pub const S0: StageCrate = StageCrate {
+pub const S0: LayerCrate = LayerCrate {
     id: "s0",
     crate_alias: "vize_s0",
     package: "vize_carton",
@@ -43,7 +43,7 @@ pub const S0: StageCrate = StageCrate {
 };
 
 /// S1: the lossless Vue-template surface tree.
-pub const S1: StageCrate = StageCrate {
+pub const S1: LayerCrate = LayerCrate {
     id: "s1",
     crate_alias: "vize_s1",
     package: "vize_sinopia",
@@ -51,7 +51,7 @@ pub const S1: StageCrate = StageCrate {
 };
 
 /// S2: the semantic IR.
-pub const S2: StageCrate = StageCrate {
+pub const S2: LayerCrate = LayerCrate {
     id: "s2",
     crate_alias: "vize_s2",
     package: "vize_disegno",
@@ -60,7 +60,7 @@ pub const S2: StageCrate = StageCrate {
 
 /// S1→S2: Vue lowering from the lossless surface tree into the semantic IR.
 pub const S1_TO_S2: ConversionCrate = ConversionCrate {
-    id: "s1-to-s2",
+    id: "s1_to_s2",
     crate_alias: "vize_s1_to_s2",
     package: "vize_ricalco",
     from: S1.id,
@@ -68,15 +68,15 @@ pub const S1_TO_S2: ConversionCrate = ConversionCrate {
     role: "Vue surface-to-semantic lowering",
 };
 
-/// Artifact stage crates that exist in the workspace today.
-pub const ARTIFACT_STAGES: &[StageCrate] = &[S0, S1, S2];
+/// Davinci layer crates that exist in the workspace today.
+pub const LAYERS: &[LayerCrate] = &[S0, S1, S2];
 
 /// Conversion crates that exist in the workspace today.
 pub const CONVERSIONS: &[ConversionCrate] = &[S1_TO_S2];
 
 #[cfg(test)]
 mod tests {
-    use super::{ARTIFACT_STAGES, CONVERSIONS, S0, S1, S1_TO_S2, S2};
+    use super::{CONVERSIONS, LAYERS, S0, S1, S1_TO_S2, S2};
 
     #[test]
     fn stage_aliases_are_the_preferred_implementation_names() {
@@ -84,6 +84,7 @@ mod tests {
         assert_eq!(S1.crate_alias, "vize_s1");
         assert_eq!(S2.crate_alias, "vize_s2");
         assert_eq!(S1_TO_S2.crate_alias, "vize_s1_to_s2");
+        assert_eq!(S1_TO_S2.id, "s1_to_s2");
     }
 
     #[test]
@@ -97,7 +98,7 @@ mod tests {
     #[test]
     fn conversion_names_its_stage_edges() {
         assert_eq!((S1_TO_S2.from, S1_TO_S2.to), (S1.id, S2.id));
-        assert_eq!(ARTIFACT_STAGES.len(), 3);
+        assert_eq!(LAYERS.len(), 3);
         assert_eq!(CONVERSIONS.len(), 1);
     }
 }

@@ -35,3 +35,13 @@ Cargo manifests use dependency renames, so source imports stay on `vize_s0`,
 `vize_s1`, `vize_s2`, and `vize_s1_to_s2` while package publication remains
 compatible. `tests/tooling/davinci-stage-dependencies.test.ts` reads Cargo
 metadata to pin every rename and reject a reversed tier edge or cycle.
+
+## S0 host boundary
+
+`vize_s0` names the accepted Carton foundation; it does not claim that the
+entire Carton package is `no_std`. Carton still exposes host-side configuration,
+path, LSP, and profiling modules for existing consumers. Davinci stage libraries
+must import compact strings, small collections, source, span, and arena storage
+through `vize_s0` without importing `std` storage directly. Splitting Carton's
+core and host surfaces is a later compatibility change, not part of this alias
+transition.

@@ -1,4 +1,4 @@
-//! Ricalco — the S1→S2 Vue lowering (Davinci P2-8).
+//! S1→S2 — the Vue lowering (codename Ricalco, Davinci P2-8).
 //!
 //! A *ricalco* is the tracing that transfers a drawing onto a new
 //! surface. This crate traces the lossless Vue surface tree (S1,

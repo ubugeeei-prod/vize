@@ -5,7 +5,7 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Disegno - the Davinci S2 semantic IR: the neutral op family every input dialect lowers into"
+description = "S2 - the Davinci semantic IR (codename Disegno): the neutral op family every input dialect lowers into"
 publish = false
 metadata.vize.stability = "experimental"
 

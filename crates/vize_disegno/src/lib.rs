@@ -1,5 +1,5 @@
-//! Disegno - the Davinci S2 semantic IR: the pivot stage and the primary
-//! consumer surface.
+//! S2 - the Davinci semantic IR (codename Disegno): the pivot stage and the
+//! primary consumer surface.
 //!
 //! Named after Leonardo's *disegno*: the drawing that carries the idea,
 //! independent of the material it is later executed in.
