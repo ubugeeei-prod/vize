@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
@@ -170,7 +171,6 @@ fn standard_tsgo_builds_vue_project_references_incrementally() {
 }
 
 #[test]
-#[ignore = "blocked by microsoft/typescript-go#4860"]
 fn standard_tsgo_emits_authored_vue_declaration_maps() {
     let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
         eprintln!("skipping exact Content Mapper declaration-map oracle: {TSGO_ENV} is not set");
@@ -190,6 +190,26 @@ fn standard_tsgo_emits_authored_vue_declaration_maps() {
     let app = project.path().join("src/App.vue");
     let source = std::fs::read_to_string(&app).unwrap().replace('\n', "\r\n");
     std::fs::write(&app, cstr!("<!-- 💥 -->\r\n{source}")).unwrap();
+
+    let spaced = project.path().join("src/Spaced Child.vue");
+    std::fs::write(
+        spaced,
+        r#"<script setup lang="ts">
+import type { VNode } from "vue";
+
+defineProps<{
+  render: () => VNode;
+  unicodeLabel: "💥";
+}>();
+</script>
+
+<template>
+  <span>{{ unicodeLabel }}</span>
+</template>
+"#,
+    )
+    .unwrap();
+
     let emit = Command::new(&tsgo)
         .current_dir(project.path())
         .args([
@@ -218,12 +238,36 @@ fn standard_tsgo_emits_authored_vue_declaration_maps() {
         .collect::<Vec<_>>();
     assert!(!declarations.is_empty());
 
+    let expected_components = [
+        "App",
+        "CallSignatureChild",
+        "Child",
+        "ConditionalGenericChild",
+        "DefaultModelChild",
+        "DynamicGenericChild",
+        "GenericChild",
+        "ModelChild",
+        "NestedGenericChild",
+        "Options",
+        "Public",
+        "RuntimeChild",
+        "SlotGenericChild",
+        "SlotProvider",
+        "Spaced Child",
+        "TsxScript",
+    ]
+    .into_iter()
+    .map(str::to_string)
+    .collect::<BTreeSet<_>>();
+    let mut mapped_components = BTreeSet::new();
+
     for declaration in declarations {
         let name = declaration.file_name().unwrap().to_string_lossy();
         let component = name
             .strip_suffix(".d.vue.ts")
             .or_else(|| name.strip_suffix(".vue.d.ts"))
             .unwrap();
+        mapped_components.insert(component.to_string());
         let mut map_name = declaration.as_os_str().to_os_string();
         map_name.push(".map");
         let map_path = PathBuf::from(map_name);
@@ -233,9 +277,21 @@ fn standard_tsgo_emits_authored_vue_declaration_maps() {
             declaration.display()
         );
         let declaration_text = std::fs::read_to_string(&declaration).unwrap();
-        assert!(declaration_text.contains("sourceMappingURL="));
+        let expected_mapping_url = format!("//# sourceMappingURL={}.map", name.replace(' ', "%20"));
+        assert_eq!(
+            declaration_text.lines().last(),
+            Some(expected_mapping_url.as_str()),
+            "declaration must end with an adjacent sourceMappingURL for {name}:\n{declaration_text}"
+        );
         let map: serde_json::Value =
             serde_json::from_slice(&std::fs::read(&map_path).unwrap()).unwrap();
+        assert_eq!(map["version"], 3);
+        assert_eq!(map["file"], name.as_ref());
+        assert!(
+            !map["mappings"].as_str().unwrap_or("").is_empty(),
+            "{} has no declaration mappings: {map}",
+            map_path.display()
+        );
         let sources = map["sources"].as_array().expect("map sources");
         let expected = cstr!("{component}.vue");
         assert!(
@@ -246,5 +302,20 @@ fn standard_tsgo_emits_authored_vue_declaration_maps() {
             "{} did not map to {expected}: {map}",
             map_path.display()
         );
+        for source in sources.iter().filter_map(serde_json::Value::as_str) {
+            assert!(
+                !source.contains("__vize")
+                    && !source.contains(".vue.ts")
+                    && !source.contains(".vue.js")
+                    && !source.contains("node_modules/.vize"),
+                "{} leaked a generated or virtual source path: {map}",
+                map_path.display()
+            );
+        }
     }
+
+    assert_eq!(
+        mapped_components, expected_components,
+        "declaration-map oracle must cover every emitted Vue input"
+    );
 }
