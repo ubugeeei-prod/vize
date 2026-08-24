@@ -91,17 +91,18 @@ function charLiteralEnd(source: string, quote: number): number | undefined {
   return source[closing] === "'" ? closing + 1 : undefined;
 }
 
-function identifierAt(source: string, cursor: number, identifier: string): boolean {
-  return (
-    source.startsWith(identifier, cursor) &&
-    !/[_\p{ID_Continue}]/u.test(source[cursor - 1] ?? "") &&
-    !/[_\p{ID_Continue}]/u.test(source[cursor + identifier.length] ?? "")
-  );
+function identifierEndAt(source: string, cursor: number, identifier: string): number | undefined {
+  if (/[_\p{ID_Continue}]/u.test(source[cursor - 1] ?? "")) return undefined;
+  const identifierStart = source.startsWith("r#", cursor) ? cursor + 2 : cursor;
+  if (!source.startsWith(identifier, identifierStart)) return undefined;
+  const identifierEnd = identifierStart + identifier.length;
+  return /[_\p{ID_Continue}]/u.test(source[identifierEnd] ?? "") ? undefined : identifierEnd;
 }
 
 function cfgAttrContainsPath(source: string, start: number): boolean {
-  if (!identifierAt(source, start, "cfg_attr")) return false;
-  let cursor = skipTrivia(source, start + "cfg_attr".length);
+  const cfgAttrEnd = identifierEndAt(source, start, "cfg_attr");
+  if (cfgAttrEnd === undefined) return false;
+  let cursor = skipTrivia(source, cfgAttrEnd);
   if (source[cursor] !== "(") return false;
 
   let parenDepth = 1;
@@ -135,10 +136,8 @@ function cfgAttrContainsPath(source: string, start: number): boolean {
     }
     if (nestedMetaStart) {
       nestedMetaStart = false;
-      if (
-        identifierAt(source, cursor, "path") &&
-        source[skipTrivia(source, cursor + "path".length)] === "="
-      ) {
+      const pathEnd = identifierEndAt(source, cursor, "path");
+      if (pathEnd !== undefined && source[skipTrivia(source, pathEnd)] === "=") {
         return true;
       }
       if (cfgAttrContainsPath(source, cursor)) return true;
@@ -174,8 +173,9 @@ function pathAttributeAt(source: string, hash: number): boolean {
   if (source[cursor] !== "[") return false;
 
   cursor = skipTrivia(source, cursor + 1);
-  if (identifierAt(source, cursor, "path")) {
-    return source[skipTrivia(source, cursor + "path".length)] === "=";
+  const pathEnd = identifierEndAt(source, cursor, "path");
+  if (pathEnd !== undefined) {
+    return source[skipTrivia(source, pathEnd)] === "=";
   }
   return cfgAttrContainsPath(source, cursor);
 }
@@ -240,6 +240,7 @@ test("gated Rust modules use ordinary module discovery", () => {
 
 test("the module-layout gate recognizes only path attributes", () => {
   assert.equal(hasPathAttribute('  #[path = "nested/file.rs"]\nmod file;'), true);
+  assert.equal(hasPathAttribute('  #[r#path = "nested/raw-file.rs"]\nmod file;'), true);
   assert.equal(
     hasPathAttribute('  #[path /* ordinary discovery only */ = "nested/file.rs"]\nmod file;'),
     true,
@@ -256,8 +257,15 @@ test("the module-layout gate recognizes only path attributes", () => {
     ),
     true,
   );
+  assert.equal(
+    hasPathAttribute(
+      '  #[r#cfg_attr(feature = "generated", r#path = "nested/raw-file.rs")]\nmod file;',
+    ),
+    true,
+  );
   assert.equal(hasPathAttribute('#[cfg_attr(feature = "path = \\"not-code.rs\\"")]'), false);
   assert.equal(hasPathAttribute('#[some_macro(path = "metadata.json")]'), false);
+  assert.equal(hasPathAttribute('#[r#some_macro(r#path = "metadata.json")]'), false);
   assert.equal(
     hasPathAttribute('#[cfg_attr(feature = "generated", some_macro(path = "metadata.json"))]'),
     false,
