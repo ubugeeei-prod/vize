@@ -85,6 +85,29 @@ export function resolveInsideAny(
   return resolved;
 }
 
+/**
+ * Resolve a gallery source path for reading. A planted in-project symlink
+ * cannot widen the boundary; explicit include / scan roots still work.
+ */
+export function resolveTrustedSourcePath(
+  parentDirs: string[],
+  candidatePath: string,
+  label = "path",
+): string {
+  return resolveInsideAny(parentDirs, candidatePath, label);
+}
+
+export function isLoopbackAddress(address: string): boolean {
+  const host = address.trim().toLowerCase();
+  if (host === "localhost" || host === "::1" || host === "0:0:0:0:0:0:0:1") {
+    return true;
+  }
+  if (host.startsWith("::ffff:")) {
+    return isLoopbackIpv4(host.slice("::ffff:".length));
+  }
+  return isLoopbackIpv4(host);
+}
+
 export function resolveUrlPathInside(
   parentDir: string,
   requestUrl: string,
@@ -175,6 +198,10 @@ export function validateDevApiRequest(
     return new HttpError("Invalid Musea dev session token", 403);
   }
 
+  if (!isLoopbackRequest(req)) {
+    return new HttpError("Musea write APIs are limited to loopback clients", 403);
+  }
+
   if (!isJsonRequest(req)) {
     return new HttpError("Content-Type must be application/json", 415);
   }
@@ -203,6 +230,28 @@ export function serializeScriptValue(value: unknown): string {
 
 function isUnsafeMethod(method: string | undefined): boolean {
   return method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE";
+}
+
+function isLoopbackRequest(req: IncomingMessage): boolean {
+  const address = req.socket?.remoteAddress;
+  return typeof address === "string" && isLoopbackAddress(address);
+}
+
+function isLoopbackIpv4(address: string): boolean {
+  const parts = address.split(".");
+  if (parts.length !== 4) {
+    return false;
+  }
+  if (parts[0] !== "127") {
+    return false;
+  }
+  return parts.every((part) => {
+    if (!/^\d{1,3}$/.test(part)) {
+      return false;
+    }
+    const value = Number(part);
+    return value >= 0 && value <= 255;
+  });
 }
 
 function isJsonRequest(req: IncomingMessage): boolean {

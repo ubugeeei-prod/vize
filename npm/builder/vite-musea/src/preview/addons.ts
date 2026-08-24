@@ -86,7 +86,7 @@ function __museaInitAddons(container, variantName, extraCaptureEvents = []) {
       if (e.target && 'value' in e.target) {
         payload.value = e.target.value;
       }
-      window.parent.postMessage({ type: 'musea:event', payload }, '*');
+      window.parent.postMessage({ type: 'musea:event', payload }, window.location.origin);
     }, true);
   }
 
@@ -300,7 +300,7 @@ function __museaInitAddons(container, variantName, extraCaptureEvents = []) {
                 passes: results.passes.length,
                 incomplete: results.incomplete.length
               }
-            }, '*');
+            }, window.location.origin);
           } catch (err) {
             window.parent.postMessage({
               type: 'musea:a11y-result',
@@ -311,7 +311,7 @@ function __museaInitAddons(container, variantName, extraCaptureEvents = []) {
                 passes: 0,
                 incomplete: 0
               }
-            }, '*');
+            }, window.location.origin);
           }
         })();
         break;
@@ -320,6 +320,6 @@ function __museaInitAddons(container, variantName, extraCaptureEvents = []) {
   });
 
   // Notify parent that iframe is ready
-  window.parent.postMessage({ type: 'musea:ready', payload: {} }, '*');
+  window.parent.postMessage({ type: 'musea:ready', payload: {} }, window.location.origin);
 }
 `;

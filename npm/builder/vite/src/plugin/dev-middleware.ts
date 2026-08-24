@@ -86,6 +86,7 @@ export async function collectInspectorSourceFiles(
   const paths = await glob(resolveInspectorScanPatterns(state.scanPatterns), {
     cwd: state.root,
     absolute: true,
+    followSymbolicLinks: false,
     ignore: [...state.ignorePatterns, ...INSPECTOR_EXTRA_IGNORE_PATTERNS],
   });
 
@@ -95,11 +96,18 @@ export async function collectInspectorSourceFiles(
       continue;
     }
 
-    const stat = statFile(filePath);
-    if (!stat) {
+    const stat = lstatFile(filePath);
+    if (!stat || stat.isSymbolicLink() || !stat.isFile()) {
       continue;
     }
-    if (!stat.isFile()) {
+
+    let realPath: string;
+    try {
+      realPath = fs.realpathSync.native(filePath);
+    } catch {
+      continue;
+    }
+    if (!isResolvedPathInside(state.root, realPath)) {
       continue;
     }
 
@@ -133,12 +141,19 @@ function normalizeInspectorPath(root: string, filePath: string): string {
   return path.relative(root, filePath).split(path.sep).join("/");
 }
 
-function statFile(filePath: string): Stats | null {
+function lstatFile(filePath: string): Stats | null {
   try {
-    return fs.statSync(filePath);
+    return fs.lstatSync(filePath);
   } catch {
     return null;
   }
+}
+
+function isResolvedPathInside(parentDir: string, candidatePath: string): boolean {
+  const parent = path.resolve(parentDir);
+  const candidate = path.resolve(candidatePath);
+  const relative = path.relative(parent, candidate);
+  return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
 }
 
 async function handleInspectorGraphRequest(

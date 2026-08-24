@@ -10,14 +10,20 @@ import {
   collectRequestBody,
   decodeUrlComponent,
   HttpError,
+  isLoopbackAddress,
   resolveInside,
+  resolveTrustedSourcePath,
   resolveUrlPathInside,
   serializeScriptValue,
   validateDevApiRequest,
 } from "./security.ts";
 
-function request(method: string, headers: IncomingMessage["headers"]): IncomingMessage {
-  return { method, headers } as IncomingMessage;
+function request(
+  method: string,
+  headers: IncomingMessage["headers"],
+  remoteAddress = "127.0.0.1",
+): IncomingMessage {
+  return { method, headers, socket: { remoteAddress } } as IncomingMessage;
 }
 
 void test("resolveInside keeps filesystem reads under the allowed directory", () => {
@@ -122,6 +128,63 @@ void test("validateDevApiRequest requires same-origin JSON mutations with the se
     )?.status,
     403,
   );
+
+  assert.equal(
+    validateDevApiRequest(
+      request(
+        "PUT",
+        {
+          host: "192.168.1.10:5173",
+          origin: "http://192.168.1.10:5173",
+          "content-type": "application/json",
+          "x-musea-session": token,
+        },
+        "192.168.1.20",
+      ),
+      token,
+    )?.status,
+    403,
+  );
+});
+
+void test("isLoopbackAddress accepts only IPv4 and IPv6 loopback forms", () => {
+  assert.equal(isLoopbackAddress("127.0.0.1"), true);
+  assert.equal(isLoopbackAddress("127.1.2.3"), true);
+  assert.equal(isLoopbackAddress("::1"), true);
+  assert.equal(isLoopbackAddress("::ffff:127.0.0.1"), true);
+  assert.equal(isLoopbackAddress("::ffff:192.168.0.8"), false);
+  assert.equal(isLoopbackAddress("192.168.0.8"), false);
+  assert.equal(isLoopbackAddress("10.0.0.1"), false);
+});
+
+void test("resolveTrustedSourcePath rejects in-project symlinks that leave allowed roots", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-trusted-source-"));
+  const root = path.join(tempDir, "root");
+  const outside = path.join(tempDir, "outside");
+  const includeRoot = path.join(tempDir, "include");
+
+  try {
+    await fs.promises.mkdir(path.join(root, "src"), { recursive: true });
+    await fs.promises.mkdir(outside);
+    await fs.promises.mkdir(includeRoot);
+    await fs.promises.writeFile(path.join(outside, "secret.art.vue"), "secret", "utf-8");
+    await fs.promises.writeFile(path.join(includeRoot, "Shared.art.vue"), "shared", "utf-8");
+    await fs.promises.symlink(
+      path.join(outside, "secret.art.vue"),
+      path.join(root, "src", "Leak.art.vue"),
+    );
+
+    assert.throws(
+      () => resolveTrustedSourcePath([root], path.join(root, "src", "Leak.art.vue")),
+      HttpError,
+    );
+    assert.equal(
+      resolveTrustedSourcePath([root, includeRoot], path.join(includeRoot, "Shared.art.vue")),
+      path.join(includeRoot, "Shared.art.vue"),
+    );
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
 });
 
 void test("serializeScriptValue cannot close the surrounding script tag", () => {

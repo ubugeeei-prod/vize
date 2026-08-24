@@ -40,8 +40,30 @@ export function runJson(bin, args, options = {}) {
   return JSON.parse(output);
 }
 
+const TOOL_NAME = /^[A-Za-z0-9._-]+$/;
+
 export function ensureTool(bin) {
-  run("sh", ["-lc", `command -v ${bin}`]);
+  if (typeof bin !== "string" || !TOOL_NAME.test(bin)) {
+    throw new Error(`Unsupported tool name: ${bin}`);
+  }
+
+  const pathDirs = (process.env.PATH ?? "").split(pathDelimiter());
+  const extensions = process.platform === "win32" ? [".exe", ".cmd", ".bat", ""] : [""];
+
+  for (const dir of pathDirs) {
+    if (!dir) continue;
+    for (const extension of extensions) {
+      if (existsSync(join(dir, `${bin}${extension}`))) {
+        return;
+      }
+    }
+  }
+
+  throw new Error(`Required tool not found: ${bin}`);
+}
+
+function pathDelimiter() {
+  return process.platform === "win32" ? ";" : ":";
 }
 
 export function ensureCleanWorktree() {

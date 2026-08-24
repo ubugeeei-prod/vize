@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
+import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 import {
@@ -71,3 +73,34 @@ assert.deepEqual(
     ["src/App.vue", "src/lazy.ts", "dynamic-import", "./lazy"],
   ],
 );
+
+void test("collectInspectorSourceFiles does not follow planted symlinks out of the project", async () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-inspector-symlink-"));
+  const project = path.join(tempDir, "project");
+  const outside = path.join(tempDir, "outside");
+
+  try {
+    fs.mkdirSync(path.join(project, "src"), { recursive: true });
+    fs.mkdirSync(outside, { recursive: true });
+    fs.writeFileSync(path.join(project, "src", "App.vue"), "<template><p>ok</p></template>\n");
+    fs.writeFileSync(path.join(outside, "secret.vue"), "<template>secret</template>\n");
+    fs.symlinkSync(path.join(outside, "secret.vue"), path.join(project, "src", "Leak.vue"));
+
+    const collected = await collectInspectorSourceFiles({
+      root: project,
+      scanPatterns: ["src/**/*.vue"],
+      ignorePatterns: [],
+    });
+
+    assert.deepEqual(
+      collected.map((file) => file.path),
+      ["src/App.vue"],
+    );
+    assert.equal(
+      collected.some((file) => file.source.includes("secret")),
+      false,
+    );
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});

@@ -6,7 +6,7 @@ export interface MuseaMessage {
 }
 
 export function sendMessage(iframe: HTMLIFrameElement, type: string, payload: unknown = {}): void {
-  iframe.contentWindow?.postMessage({ type, payload }, "*");
+  iframe.contentWindow?.postMessage({ type, payload }, window.location.origin);
 }
 
 export function sendMessageToAll(

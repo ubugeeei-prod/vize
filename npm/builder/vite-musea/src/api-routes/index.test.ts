@@ -62,6 +62,7 @@ async function invokeApi(
     body?: string;
     headers?: IncomingMessage["headers"];
     method: string;
+    remoteAddress?: string;
     url: string;
   },
 ): Promise<CapturedResponse> {
@@ -77,6 +78,7 @@ async function invokeApi(
     req.method = init.method;
     req.url = init.url;
     req.headers = init.headers ?? {};
+    req.socket = { remoteAddress: init.remoteAddress ?? "127.0.0.1" } as IncomingMessage["socket"];
 
     const res = {
       get statusCode() {
@@ -199,6 +201,57 @@ void test("createApiMiddleware returns 400 for malformed art source JSON", async
     assert.equal(response.statusCode, 400);
     assert.deepEqual(JSON.parse(response.body), { error: "Malformed JSON body" });
     assert.equal(await fs.promises.readFile(artFilePath, "utf-8"), "original");
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+void test("createApiMiddleware rejects source writes from non-loopback clients", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-api-loopback-"));
+  const artPath = path.join(tempDir, "src", "Button.art.vue");
+
+  try {
+    await fs.promises.mkdir(path.dirname(artPath), { recursive: true });
+    await fs.promises.writeFile(artPath, "original", "utf-8");
+
+    const ctx = createContext(tempDir, new Map([[artPath, createArt(artPath)]]));
+    const response = await invokeApi(ctx, {
+      method: "PUT",
+      url: `/arts/${encodeURIComponent(artPath)}/source`,
+      headers: authorizedJsonHeaders(ctx),
+      remoteAddress: "192.168.1.20",
+      body: JSON.stringify({ source: "escaped" }),
+    });
+
+    assert.equal(response.statusCode, 403);
+    assert.match(response.body, /loopback/);
+    assert.equal(await fs.promises.readFile(artPath, "utf-8"), "original");
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+void test("createApiMiddleware rejects source reads that follow a planted symlink", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-api-symlink-"));
+  const root = path.join(tempDir, "root");
+  const outside = path.join(tempDir, "outside");
+  const artPath = path.join(root, "src", "Leak.art.vue");
+
+  try {
+    await fs.promises.mkdir(path.join(root, "src"), { recursive: true });
+    await fs.promises.mkdir(outside);
+    await fs.promises.writeFile(path.join(outside, "secret.txt"), "secret-from-outside", "utf-8");
+    await fs.promises.symlink(path.join(outside, "secret.txt"), artPath);
+
+    const ctx = createContext(root, new Map([[artPath, createArt(artPath)]]));
+    const response = await invokeApi(ctx, {
+      method: "GET",
+      url: `/arts/${encodeURIComponent(artPath)}/source`,
+    });
+
+    assert.equal(response.statusCode, 400);
+    assert.match(response.body, /escapes the allowed directory/);
+    assert.doesNotMatch(response.body, /secret-from-outside/);
   } finally {
     await fs.promises.rm(tempDir, { recursive: true, force: true });
   }

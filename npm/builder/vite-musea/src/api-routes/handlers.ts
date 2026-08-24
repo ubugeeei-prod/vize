@@ -10,7 +10,7 @@ import fs from "node:fs";
 import type { ApiRoutesContext, SendJson, SendError } from "./index.js";
 import { allowedSourceRoots, resolveComponentSourcePath } from "../component-source.js";
 import { loadNative, analyzeSfcFallback } from "../native-loader.js";
-import { decodeUrlComponent } from "../security.js";
+import { decodeUrlComponent, HttpError, resolveTrustedSourcePath } from "../security.js";
 
 export { handleArtPalette } from "./handler-palette.js";
 
@@ -29,9 +29,18 @@ export async function handleArtSource(
   }
 
   try {
-    const source = await fs.promises.readFile(artPath, "utf-8");
+    const sourcePath = resolveTrustedSourcePath(
+      allowedSourceRoots(ctx.config.root, ctx.scanRoots),
+      artPath,
+      "art path",
+    );
+    const source = await fs.promises.readFile(sourcePath, "utf-8");
     sendJson({ source, path: artPath });
   } catch (e) {
+    if (e instanceof HttpError) {
+      sendError(e.message, e.status);
+      return;
+    }
     sendError(e instanceof Error ? e.message : String(e));
   }
 }
@@ -75,6 +84,10 @@ export async function handleArtAnalysis(
       sendJson({ props: [], emits: [] });
     }
   } catch (e) {
+    if (e instanceof HttpError) {
+      sendError(e.message, e.status);
+      return;
+    }
     sendError(e instanceof Error ? e.message : String(e));
   }
 }
@@ -94,7 +107,12 @@ export async function handleArtDocs(
   }
 
   try {
-    const source = await fs.promises.readFile(artPath, "utf-8");
+    const sourcePath = resolveTrustedSourcePath(
+      allowedSourceRoots(ctx.config.root, ctx.scanRoots),
+      artPath,
+      "art path",
+    );
+    const source = await fs.promises.readFile(sourcePath, "utf-8");
     const binding = loadNative();
     if (binding.generateArtDoc) {
       const doc = binding.generateArtDoc(source, {
@@ -150,6 +168,10 @@ export async function handleArtDocs(
       });
     }
   } catch (e) {
+    if (e instanceof HttpError) {
+      sendError(e.message, e.status);
+      return;
+    }
     sendError(e instanceof Error ? e.message : String(e));
   }
 }

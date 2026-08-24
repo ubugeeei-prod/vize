@@ -19,6 +19,22 @@ import {
   runJson,
 } from "./core.mjs";
 
+function parseAgentCommand(command) {
+  if (typeof command !== "string" || command.trim() === "") {
+    throw new Error("agent command is empty");
+  }
+  if (/[;&|`$<>(){}\n]/.test(command)) {
+    throw new Error("agent command must not contain shell metacharacters");
+  }
+
+  const parts = command.trim().split(/\s+/);
+  const bin = parts[0];
+  if (!/^[A-Za-z0-9._/-]+$/.test(bin)) {
+    throw new Error(`Unsupported agent binary: ${bin}`);
+  }
+  return parts;
+}
+
 function buildPrompt(fixRequest, contextPath) {
   const template = readFileSync(PROMPT_TEMPLATE_PATH, "utf8");
   return `${template}
@@ -47,7 +63,8 @@ function runAgent({ agentCommand, contextPath, fixRequest, prompt, promptPath, r
 
   if (agentCommand != null) {
     console.log(`Running agent command: ${agentCommand}`);
-    const result = spawnSync("sh", ["-lc", agentCommand], {
+    const [bin, ...args] = parseAgentCommand(agentCommand);
+    const result = spawnSync(bin, args, {
       cwd: ROOT,
       encoding: "utf8",
       env: { ...process.env, ...env },

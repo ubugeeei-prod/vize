@@ -132,6 +132,7 @@ export async function scanArtFiles(
       }
 
       if (excluded) continue;
+      if (entry.isSymbolicLink()) continue;
 
       if (entry.isDirectory()) {
         await scan(fullPath);

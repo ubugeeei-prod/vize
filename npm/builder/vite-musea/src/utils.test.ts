@@ -36,6 +36,33 @@ void test("scanArtFiles discovers art files outside the Vite root when include p
   await fs.promises.rm(tempDir, { recursive: true, force: true });
 });
 
+void test("scanArtFiles skips symbolic links even when they match include", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-scan-symlink-"));
+  const root = path.join(tempDir, "root");
+  const outside = path.join(tempDir, "outside");
+
+  try {
+    await fs.promises.mkdir(path.join(root, "src"), { recursive: true });
+    await fs.promises.mkdir(outside);
+    await fs.promises.writeFile(
+      path.join(root, "src", "Ok.art.vue"),
+      "<art><template><div /></template></art>\n",
+      "utf-8",
+    );
+    await fs.promises.writeFile(path.join(outside, "Secret.art.vue"), "secret", "utf-8");
+    await fs.promises.symlink(
+      path.join(outside, "Secret.art.vue"),
+      path.join(root, "src", "Leak.art.vue"),
+    );
+
+    const files = await scanArtFiles(root, ["**/*.art.vue"], [], false);
+
+    assert.deepEqual(files, [path.join(root, "src", "Ok.art.vue")]);
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
 void test("rewriteStorybookComponentImport rebases component path from story output", () => {
   const root = "/workspace";
   const artPath = path.join(root, "src", "AfsButton.art.vue");
