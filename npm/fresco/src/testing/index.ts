@@ -42,6 +42,14 @@ export {
   type MountedFresco,
   type MountFrescoOptions,
 } from "./mount.js";
+export {
+  getByRole,
+  getByText,
+  queryAllByRole,
+  queryAllByText,
+  type FrescoRoleQueryOptions,
+  type FrescoTextMatcher,
+} from "./queries.js";
 
 export type RenderTuiOptions = MountFrescoOptions;
 export type RenderTuiRoot = Component | (() => VNodeChild);
