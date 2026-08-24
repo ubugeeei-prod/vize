@@ -14,10 +14,10 @@ Vue's (`v-once`, `v-memo`); there is no JSX twin. Same home as
 
 ## Ops
 
-| mnemonic   | payload                                      | 64-bit size |
-| ---------- | -------------------------------------------- | ----------- |
-| `vue.once` | `VueOnceOp { span }` — presence flag         | 8           |
-| `vue.memo` | `VueMemoOp { value: ExprRef, span }`         | 24          |
+| mnemonic   | payload                              | 64-bit size |
+| ---------- | ------------------------------------ | ----------- |
+| `vue.once` | `VueOnceOp { span }` — presence flag | 8           |
+| `vue.memo` | `VueMemoOp { value: ExprRef, span }` | 24          |
 
 `v-memo`'s expression is P2-5b: admitted JS or `opaque` (the fixture
 pins `opaque(parse-rejected "%")`). No new `OpaqueReason`. Drop-free
