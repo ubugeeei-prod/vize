@@ -89,7 +89,8 @@ fn imported_component_refs_match_the_vue_tsc_public_surface() {
             (
                 "src/NegativeControls.vue".into(),
                 Some(2345),
-                "Argument of type '{}' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.\nProperty 'label' is missing in type '{}' but required in type '{ readonly label: string; readonly count?: number | undefined; }'.".into(),
+                r#"Argument of type '{}' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { "aria-activedescendant"?: unknown; "aria-atomic"?: unknown; "aria-autocomplete"?: unknown; "aria-busy"?: unknown; "aria-checked"?: unknown; "aria-colcount"?: unknown; ... 184 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<.....'.
+Property 'label' is missing in type '{}' but required in type '{ readonly label: string; readonly count?: number | undefined; }'."#.into(),
                 7,
                 4,
             ),
