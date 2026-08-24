@@ -16,8 +16,9 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 test("TS-40 current-projection fixture matrix is explicit and non-vacuous", () => {
   const matrix = loadProjectionMatrix(root);
   validateProjectionMatrix(root, matrix);
-  assert.ok(matrix.fixtures.length >= 8);
+  assert.ok(matrix.fixtures.length >= 10);
   assert.ok(matrix.unproven.some((item) => item.includes("Davinci or S2")));
+  assert.ok(matrix.normalization.some((item) => item.includes("preserve generation order")));
 });
 
 test("TS-40 verifier fails closed on mapping drift", () => {
@@ -48,6 +49,21 @@ test("TS-40 baselines are wired into exact Content Mapper CI", () => {
     "node --test tests/tooling/davinci-ts40-projection.test.ts",
   ]) {
     assert.ok(workflow.includes(command), `Content Mapper CI is missing ${command}`);
+  }
+  for (const trigger of [
+    "crates/vize_canon/src/virtual_ts.rs",
+    "crates/vize_canon/src/virtual_ts/**",
+    "crates/vize_maestro/Cargo.toml",
+    "crates/vize_maestro/src/lib.rs",
+    "crates/vize_maestro/src/virtual_code.rs",
+    "crates/vize_maestro/src/virtual_code/**",
+  ]) {
+    const exactYamlLine = `      - "${trigger}"`;
+    assert.equal(
+      workflow.split(exactYamlLine).length - 1,
+      2,
+      `${trigger} must trigger both pull-request and push TS-40 CI`,
+    );
   }
 });
 

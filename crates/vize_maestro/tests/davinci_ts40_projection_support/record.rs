@@ -19,6 +19,12 @@ pub struct LaneRecord {
     pub status: String,
     pub text_bytes: usize,
     pub text_sha256: String,
+    pub pre_rewrite_text_bytes: usize,
+    pub pre_rewrite_text_sha256: String,
+    pub import_rewrite_count: usize,
+    pub import_source_map_sha256: String,
+    pub import_source_map_probe_count: usize,
+    pub import_source_map_probes_sha256: String,
     pub mapping_count: usize,
     pub mappings_sha256: String,
     pub semantic_link_count: usize,
@@ -38,18 +44,17 @@ pub enum Drift {
 
 pub fn capture_fixture(fixture: &Fixture) -> ProjectionRecord {
     let source = fixture.source();
+    let mapper = capture_content_mapper(fixture, &source);
     if fixture.legacy_vue2 && !cfg!(feature = "legacy") {
-        let disabled = LaneRecord::disabled("feature-disabled:vize_maestro/legacy");
         return ProjectionRecord {
             fixture: fixture.id.clone(),
             source_sha256: sha256(&source),
-            canon: disabled.clone(),
-            content_mapper: disabled.clone(),
-            maestro: disabled,
+            canon: LaneRecord::disabled("feature-disabled:vize_canon/legacy"),
+            content_mapper: mapper,
+            maestro: LaneRecord::disabled("feature-disabled:vize_maestro/legacy"),
         };
     }
 
-    let mapper = capture_content_mapper(fixture, &source);
     ProjectionRecord {
         fixture: fixture.id.clone(),
         source_sha256: sha256(&source),
@@ -65,6 +70,12 @@ impl LaneRecord {
             status: status.into(),
             text_bytes: 0,
             text_sha256: sha256(""),
+            pre_rewrite_text_bytes: 0,
+            pre_rewrite_text_sha256: sha256(""),
+            import_rewrite_count: 0,
+            import_source_map_sha256: sha256(""),
+            import_source_map_probe_count: 0,
+            import_source_map_probes_sha256: sha256(""),
             mapping_count: 0,
             mappings_sha256: sha256(""),
             semantic_link_count: 0,
@@ -89,11 +100,22 @@ impl ProjectionRecord {
     pub fn assert_non_empty(&self, fixture: &Fixture) {
         assert!(!self.fixture.is_empty());
         assert_eq!(self.source_sha256.len(), 64);
+        assert!(self.content_mapper.text_bytes > 0);
+        assert_eq!(
+            self.content_mapper.status,
+            if fixture.legacy_vue2 {
+                "ok:vue3-fixed-production"
+            } else {
+                "ok"
+            }
+        );
         if fixture.legacy_vue2 && !cfg!(feature = "legacy") {
             assert!(self.canon.status.starts_with("feature-disabled:"));
+            assert!(self.maestro.status.starts_with("feature-disabled:"));
+            assert!(self.content_mapper.mapping_count > 0);
+            assert!(self.content_mapper.authored_hit_count > 0);
             return;
         }
-        assert!(self.content_mapper.text_bytes > 0);
         if fixture
             .coverage
             .iter()
@@ -102,13 +124,35 @@ impl ProjectionRecord {
             assert!(self.content_mapper.diagnostic_count > 0);
             return;
         }
-        assert_eq!(self.canon.status, "ok");
-        assert_eq!(self.maestro.status, "ok");
+        assert_eq!(
+            self.canon.status,
+            if fixture.legacy_vue2 {
+                "ok:legacy-feature-projection"
+            } else {
+                "ok"
+            }
+        );
+        assert_eq!(
+            self.maestro.status,
+            if fixture.legacy_vue2 {
+                "ok:legacy-feature-projection"
+            } else {
+                "ok"
+            }
+        );
         assert!(self.canon.mapping_count > 0);
         assert!(self.content_mapper.mapping_count > 0);
         assert!(self.maestro.mapping_count > 0);
         assert!(self.content_mapper.authored_hit_count > 0);
         assert!(self.maestro.authored_hit_count > 0);
+        if fixture
+            .coverage
+            .iter()
+            .any(|coverage| coverage == "local-vue-import")
+        {
+            assert!(self.canon.import_rewrite_count > 0);
+            assert_ne!(self.canon.pre_rewrite_text_sha256, self.canon.text_sha256);
+        }
     }
 
     pub fn render(&self) -> String {
@@ -124,10 +168,16 @@ impl ProjectionRecord {
         ] {
             append!(
                 out,
-                "[{name}]\nstatus={}\ntext={}:{}\nmappings={}:{}\nsemantic-links={}:{}\ndiagnostics={}:{}\nauthored-hits={}:{}\n",
+                "[{name}]\nstatus={}\ntext={}:{}\npre-rewrite-text={}:{}\nimport-source-map={}:{}\nimport-source-map-probes={}:{}\nmappings={}:{}\nsemantic-links={}:{}\ndiagnostics={}:{}\nauthored-hits={}:{}\n",
                 lane.status,
                 lane.text_bytes,
                 lane.text_sha256,
+                lane.pre_rewrite_text_bytes,
+                lane.pre_rewrite_text_sha256,
+                lane.import_rewrite_count,
+                lane.import_source_map_sha256,
+                lane.import_source_map_probe_count,
+                lane.import_source_map_probes_sha256,
                 lane.mapping_count,
                 lane.mappings_sha256,
                 lane.semantic_link_count,
@@ -139,17 +189,6 @@ impl ProjectionRecord {
             );
         }
         out
-    }
-
-    pub fn canary() -> Self {
-        let lane = LaneRecord::disabled("ok");
-        Self {
-            fixture: "canary".into(),
-            source_sha256: sha256("source"),
-            canon: lane.clone(),
-            content_mapper: lane.clone(),
-            maestro: lane,
-        }
     }
 }
 

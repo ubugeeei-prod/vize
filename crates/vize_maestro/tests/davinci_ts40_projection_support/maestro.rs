@@ -3,7 +3,7 @@ use vize_carton::{SmallVec, String, cstr};
 use vize_maestro::VirtualCodeGenerator;
 
 use super::matrix::Fixture;
-use super::normalize::{sha256, stable_lines};
+use super::normalize::{ordered_lines, sha256};
 use super::record::LaneRecord;
 
 pub(super) fn capture_maestro(fixture: &Fixture, source: &str) -> LaneRecord {
@@ -66,13 +66,23 @@ pub(super) fn capture_maestro(fixture: &Fixture, source: &str) -> LaneRecord {
             }
         }
     }
-    let text = stable_lines(text);
-    let mappings = stable_lines(mappings);
-    let authored_hits = stable_lines(authored_hits);
+    let text = ordered_lines(text);
+    let mappings = ordered_lines(mappings);
+    let authored_hits = ordered_lines(authored_hits);
     LaneRecord {
-        status: "ok".into(),
+        status: if fixture.legacy_vue2 {
+            "ok:legacy-feature-projection".into()
+        } else {
+            "ok".into()
+        },
         text_bytes,
         text_sha256: sha256(&text),
+        pre_rewrite_text_bytes: 0,
+        pre_rewrite_text_sha256: sha256(""),
+        import_rewrite_count: 0,
+        import_source_map_sha256: sha256(""),
+        import_source_map_probe_count: 0,
+        import_source_map_probes_sha256: sha256(""),
         mapping_count: mappings.lines().count(),
         mappings_sha256: sha256(&mappings),
         semantic_link_count: 0,

@@ -16,8 +16,7 @@ pub(super) fn sha256(text: &str) -> String {
     output
 }
 
-pub(super) fn stable_lines(mut lines: Lines) -> String {
-    lines.sort_unstable();
+pub(super) fn ordered_lines(lines: Lines) -> String {
     let mut output = String::default();
     for (index, line) in lines.iter().enumerate() {
         if index > 0 {

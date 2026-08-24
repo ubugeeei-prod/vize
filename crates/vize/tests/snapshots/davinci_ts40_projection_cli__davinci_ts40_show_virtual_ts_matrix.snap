@@ -4,8 +4,13 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
 ---
 {
   "errorCount": 0,
-  "fileCount": 8,
+  "fileCount": 10,
   "files": [
+    {
+      "diagnostics": [],
+      "file": "src/child-local-import.vue",
+      "virtualTs": "// TS-40 child-local-import.vue 17fb7e4439333901135179799c5ef0f1a9c9ebc6a79d2e84b2dc389ddab413fe"
+    },
     {
       "diagnostics": [],
       "file": "src/dual-scripts-emits.vue",
@@ -25,6 +30,11 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
       "diagnostics": [],
       "file": "src/options-api-slots.vue",
       "virtualTs": "// TS-40 options-api-slots.vue 08df2a1aca7aa1ad55cd90ad599f9ee7a69d8c16693b3cb4c79f0946744b90b0"
+    },
+    {
+      "diagnostics": [],
+      "file": "src/parent-local-import.vue",
+      "virtualTs": "// TS-40 parent-local-import.vue 46e0ea11c363d348bc0f2455d8c20fab6a2a3aece1f0160ea2711ff7b94a47a9"
     },
     {
       "diagnostics": [

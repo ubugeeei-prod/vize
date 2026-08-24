@@ -3,8 +3,8 @@
   "claim": "current-canon-maestro-behavior-only",
   "normalization": [
     "fixture-relative paths",
-    "sorted mappings and semantic links",
-    "sorted virtual documents and authored mapping hits",
+    "consumer-visible virtual documents, mappings, sub-spans, semantic links, diagnostics, and authored hits preserve generation order",
+    "only the CLI JSON presentation applies its production file-order normalization",
     "no timestamps or process-local identifiers"
   ],
   "unproven": [
@@ -27,7 +27,8 @@
     "props",
     "emits",
     "slots",
-    "navigation-ranges"
+    "navigation-ranges",
+    "local-vue-import"
   ],
   "fixtures": [
     {
@@ -90,6 +91,24 @@
       "coverage": ["tsx", "props", "navigation-ranges"],
       "lineEnding": "lf",
       "anchors": ["count", "toFixed"],
+      "optionsApi": false,
+      "legacyVue2": false
+    },
+    {
+      "id": "parent-local-import",
+      "file": "tests/_fixtures/davinci-ts40-projection/parent-local-import.vue",
+      "coverage": ["local-vue-import", "props", "navigation-ranges"],
+      "lineEnding": "lf",
+      "anchors": ["ChildLocal", "parentLabel"],
+      "optionsApi": false,
+      "legacyVue2": false
+    },
+    {
+      "id": "child-local-import",
+      "file": "tests/_fixtures/davinci-ts40-projection/child-local-import.vue",
+      "coverage": ["props", "navigation-ranges"],
+      "lineEnding": "lf",
+      "anchors": ["message"],
       "optionsApi": false,
       "legacyVue2": false
     },

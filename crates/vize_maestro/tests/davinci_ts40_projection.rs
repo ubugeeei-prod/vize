@@ -5,10 +5,8 @@
 
 mod davinci_ts40_projection_support;
 
-use davinci_ts40_projection_support::{
-    Drift, ProjectionRecord, capture_fixture, load_matrix, verify_exact,
-};
-use vize_carton::cstr;
+use davinci_ts40_projection_support::{Drift, capture_fixture, load_matrix, verify_exact};
+use vize_carton::{String, cstr};
 
 #[test]
 #[allow(clippy::disallowed_macros)] // `insta` expands to `format!`.
@@ -24,9 +22,9 @@ fn current_projection_matrix_is_exact_and_non_empty() {
         record.assert_non_empty(fixture);
         let feature = if fixture.legacy_vue2 {
             if cfg!(feature = "legacy") {
-                "legacy"
+                "mixed-vue2__legacy-generators-enabled"
             } else {
-                "legacy-disabled"
+                "mixed-vue2__legacy-generators-disabled"
             }
         } else {
             "default"
@@ -38,16 +36,36 @@ fn current_projection_matrix_is_exact_and_non_empty() {
 
 #[test]
 fn mapping_drift_fails_closed() {
-    let baseline = ProjectionRecord::canary();
+    let matrix = load_matrix();
+    let fixture = matrix
+        .fixtures
+        .iter()
+        .find(|fixture| fixture.id == "parent-local-import")
+        .expect("real local-import mapping fixture");
+    let baseline = capture_fixture(fixture);
+    assert!(baseline.canon.mapping_count > 0);
+    assert!(baseline.canon.import_rewrite_count > 0);
     let mut drifted = baseline.clone();
-    drifted.canon.mappings_sha256.replace_range(..1, "f");
+    corrupt(&mut drifted.canon.mappings_sha256);
     assert_eq!(verify_exact(&baseline, &drifted), Err(Drift::Mapping));
 }
 
 #[test]
 fn diagnostic_drift_fails_closed() {
-    let baseline = ProjectionRecord::canary();
+    let matrix = load_matrix();
+    let fixture = matrix
+        .fixtures
+        .iter()
+        .find(|fixture| fixture.id == "parse-recovery")
+        .expect("real recovery diagnostic fixture");
+    let baseline = capture_fixture(fixture);
+    assert!(baseline.content_mapper.diagnostic_count > 0);
     let mut drifted = baseline.clone();
-    drifted.canon.diagnostics_sha256.replace_range(..1, "f");
+    corrupt(&mut drifted.content_mapper.diagnostics_sha256);
     assert_eq!(verify_exact(&baseline, &drifted), Err(Drift::Diagnostic));
+}
+
+fn corrupt(hash: &mut String) {
+    let replacement = if hash.starts_with('a') { "b" } else { "a" };
+    hash.replace_range(..1, replacement);
 }

@@ -1,13 +1,13 @@
 use vize_canon::batch::{
-    ContentMapperTransformOptions, ImportRewriter, VueDocumentVirtualTsOptions,
+    ContentMapperTransformOptions, ImportRewriter, ImportSourceMap, VueDocumentVirtualTsOptions,
     generate_vue_content_mapper_transform_with_options,
     generate_vue_document_virtual_ts_with_options,
 };
 use vize_canon::virtual_ts::VirtualTsOptions;
-use vize_carton::{SmallVec, String, cstr};
+use vize_carton::{SmallVec, String, append, cstr};
 
 use super::matrix::Fixture;
-use super::normalize::{fixture_path, sha256, stable_lines};
+use super::normalize::{fixture_path, ordered_lines, sha256};
 use super::record::LaneRecord;
 
 pub(super) fn capture_canon(fixture: &Fixture, source: &str, mapper: &LaneRecord) -> LaneRecord {
@@ -26,12 +26,12 @@ pub(super) fn capture_canon(fixture: &Fixture, source: &str, mapper: &LaneRecord
     );
     match result {
         Ok(document) => {
-            let mappings = stable_lines(
+            let mappings = ordered_lines(
                 document
                     .mappings
                     .iter()
                     .map(|mapping| {
-                        let sub_spans = stable_lines(
+                        let sub_spans = ordered_lines(
                             mapping
                                 .sub_spans
                                 .iter()
@@ -56,7 +56,7 @@ pub(super) fn capture_canon(fixture: &Fixture, source: &str, mapper: &LaneRecord
                     })
                     .collect(),
             );
-            let links = stable_lines(
+            let links = ordered_lines(
                 document
                     .semantic_links
                     .iter()
@@ -72,16 +72,36 @@ pub(super) fn capture_canon(fixture: &Fixture, source: &str, mapper: &LaneRecord
                     })
                     .collect(),
             );
+            let import_map = import_source_map_facts(
+                &document.import_source_map,
+                document.pre_rewrite_code.len(),
+                document.code.len(),
+            );
+            let (diagnostic_count, diagnostics_sha256) = if fixture.legacy_vue2 {
+                (0, sha256(""))
+            } else {
+                (mapper.diagnostic_count, mapper.diagnostics_sha256.clone())
+            };
             LaneRecord {
-                status: "ok".into(),
-                text_bytes: document.pre_rewrite_code.len(),
-                text_sha256: sha256(&document.pre_rewrite_code),
+                status: if fixture.legacy_vue2 {
+                    "ok:legacy-feature-projection".into()
+                } else {
+                    "ok".into()
+                },
+                text_bytes: document.code.len(),
+                text_sha256: sha256(&document.code),
+                pre_rewrite_text_bytes: document.pre_rewrite_code.len(),
+                pre_rewrite_text_sha256: sha256(&document.pre_rewrite_code),
+                import_rewrite_count: import_map.rewrite_count,
+                import_source_map_sha256: import_map.map_sha256,
+                import_source_map_probe_count: import_map.probe_count,
+                import_source_map_probes_sha256: import_map.probes_sha256,
                 mapping_count: document.mappings.len(),
                 mappings_sha256: sha256(&mappings),
                 semantic_link_count: document.semantic_links.len(),
                 semantic_links_sha256: sha256(&links),
-                diagnostic_count: mapper.diagnostic_count,
-                diagnostics_sha256: mapper.diagnostics_sha256.clone(),
+                diagnostic_count,
+                diagnostics_sha256,
                 authored_hit_count: 0,
                 authored_hits_sha256: sha256(""),
             }
@@ -95,14 +115,14 @@ pub(super) fn capture_content_mapper(fixture: &Fixture, source: &str) -> LaneRec
     match generate_vue_content_mapper_transform_with_options(fixture_path(fixture), source, options)
     {
         Ok(transform) => {
-            let mappings = stable_lines(
+            let mappings = ordered_lines(
                 transform
                     .mappings
                     .iter()
                     .map(|mapping| cstr!("{:?}", mapping.0))
                     .collect(),
             );
-            let links = stable_lines(
+            let links = ordered_lines(
                 transform
                     .semantic_links
                     .iter()
@@ -118,7 +138,7 @@ pub(super) fn capture_content_mapper(fixture: &Fixture, source: &str) -> LaneRec
                     })
                     .collect(),
             );
-            let diagnostics = stable_lines(
+            let diagnostics = ordered_lines(
                 transform
                     .diagnostics
                     .iter()
@@ -135,9 +155,19 @@ pub(super) fn capture_content_mapper(fixture: &Fixture, source: &str) -> LaneRec
             );
             let authored_hits = content_mapper_anchor_hits(fixture, source, &transform.mappings);
             LaneRecord {
-                status: "ok".into(),
+                status: if fixture.legacy_vue2 {
+                    "ok:vue3-fixed-production".into()
+                } else {
+                    "ok".into()
+                },
                 text_bytes: transform.text.len(),
                 text_sha256: sha256(&transform.text),
+                pre_rewrite_text_bytes: 0,
+                pre_rewrite_text_sha256: sha256(""),
+                import_rewrite_count: 0,
+                import_source_map_sha256: sha256(""),
+                import_source_map_probe_count: 0,
+                import_source_map_probes_sha256: sha256(""),
                 mapping_count: transform.mappings.len(),
                 mappings_sha256: sha256(&mappings),
                 semantic_link_count: transform.semantic_links.len(),
@@ -177,5 +207,38 @@ fn content_mapper_anchor_hits(
             }
         }
     }
-    stable_lines(hits)
+    ordered_lines(hits)
+}
+
+struct ImportSourceMapFacts {
+    rewrite_count: usize,
+    map_sha256: String,
+    probe_count: usize,
+    probes_sha256: String,
+}
+
+fn import_source_map_facts(
+    map: &ImportSourceMap,
+    pre_rewrite_bytes: usize,
+    rewritten_bytes: usize,
+) -> ImportSourceMapFacts {
+    let debug = cstr!("{map:?}");
+    let rewrite_count = debug.match_indices("OffsetAdjustment").count();
+    let mut probes = String::with_capacity((pre_rewrite_bytes + rewritten_bytes) * 12);
+    for original in 0..=pre_rewrite_bytes as u32 {
+        append!(probes, "o{original}>{};", map.get_virtual_offset(original));
+    }
+    for virtual_offset in 0..=rewritten_bytes as u32 {
+        append!(
+            probes,
+            "v{virtual_offset}>{};",
+            map.get_original_offset(virtual_offset)
+        );
+    }
+    ImportSourceMapFacts {
+        rewrite_count,
+        map_sha256: sha256(&debug),
+        probe_count: pre_rewrite_bytes + rewritten_bytes + 2,
+        probes_sha256: sha256(&probes),
+    }
 }
