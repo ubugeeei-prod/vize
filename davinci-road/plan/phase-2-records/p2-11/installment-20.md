@@ -20,6 +20,9 @@ The durable current witnesses are:
   `mergeProps`, `v-if`, `v-for` and slot outlets.
 - [`davinci_s2_dynamic_bind_keys.rs`](../../../../crates/vize_atelier_dom/tests/davinci_s2_dynamic_bind_keys.rs)
   — a 14-fixture S2-vs-shipped byte-for-byte battery over those families.
+- [`davinci_s2_transform.rs`](../../../../crates/vize_atelier_core/tests/davinci_s2_transform.rs)
+  — the transform-accounting witness remains pinned after the branch-key
+  quirk comparison learned the mirrored carrier case.
 
 This installment does not tick P2-11. Filters and local slot/outlet guard-only
 shapes remain; the old DOM lane is still the production path, and the
