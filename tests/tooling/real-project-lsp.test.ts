@@ -43,6 +43,7 @@ test("LSP report summarizes authored feature coverage from project evidence", ()
   );
 
   assert.equal(report.summary.projectCount, 3);
+  assert.equal(report.version, 3);
   assert.equal(report.summary.authoredFeatureProjectCount, 1);
   assert.deepEqual(report.summary.missingAuthoredFeatureProjectIds, [
     "missing-oracle",
@@ -239,7 +240,8 @@ function projectEvidence(
 }
 
 function authoredEvidence(): AuthoredLspEvidence {
-  const response = { count: 1, sha256: "0".repeat(64) };
+  const diagnostic = { count: 0, sha256: "0".repeat(64) };
+  const response = { count: 1, durationMs: 0, sha256: "0".repeat(64) };
   return {
     completion: response,
     componentDefinition: response,
@@ -256,9 +258,9 @@ function authoredEvidence(): AuthoredLspEvidence {
       createdWorkspaceSymbols: response,
       deletedDefinition: { ...response, count: 0 },
       deletedDocumentSymbols: { ...response, count: 0 },
-      deletedImporterDiagnostics: { ...response, count: 0 },
+      deletedImporterDiagnostics: diagnostic,
       deletedWorkspaceSymbols: { ...response, count: 0 },
-      repairedDiagnostics: { ...response, count: 0 },
+      repairedDiagnostics: diagnostic,
       renameEdit: response,
       renamedDefinition: response,
       renamedFile: "Renamed.vue",

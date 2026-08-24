@@ -128,14 +128,15 @@ fn differential_lane_agrees_and_reports() {
     // -- committed battery, pinned counts ---------------------------------
     // 8 comment-free retained slow-dispatch expressions (the comment-carrying
     // interpolation is planted as fallback-class coverage and must not be
-    // compared), 3 `<component :is>` references, 2 v-for shapes.
+    // compared), 3 `<component :is>` references checked in both drawer passes,
+    // 2 v-for shapes.
     analyze_source(BATTERY_SOURCE, SfcCroquisOptions::full());
     let after_battery = differential::stats();
     assert_eq!(
         after_battery,
         differential::DifferentialStats {
             identifier_comparisons: 8,
-            component_reference_comparisons: 3,
+            component_reference_comparisons: 6,
             v_for_shapes: 2,
         },
         "battery comparison counts moved: dispatch, retention, or drawer routing changed — re-derive the pin deliberately"
@@ -151,7 +152,7 @@ fn differential_lane_agrees_and_reports() {
         after_ladder,
         differential::DifferentialStats {
             identifier_comparisons: 24,
-            component_reference_comparisons: 5,
+            component_reference_comparisons: 10,
             v_for_shapes: 4,
         },
         "ladder comparison counts moved: dispatch, retention, or fixture content changed — re-derive the pin deliberately"

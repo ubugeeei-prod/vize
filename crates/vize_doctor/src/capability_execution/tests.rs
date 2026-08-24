@@ -7,8 +7,8 @@ use std::{
 };
 
 use super::{
-    CapabilityExecutionError, CapabilitySnapshotCache, MemoryCapabilitySnapshotCache,
-    MemoryCapabilitySnapshotCacheError, execute_cached_capability,
+    CapabilityExecutionCacheStatus, CapabilityExecutionError, CapabilitySnapshotCache,
+    MemoryCapabilitySnapshotCache, MemoryCapabilitySnapshotCacheError, execute_cached_capability,
 };
 use crate::{
     AnalysisProvenance, CapabilityCacheIdentity, CapabilityCacheKey, CapabilitySnapshot,
@@ -101,6 +101,38 @@ fn miss_runs_analysis_once_and_returns_after_store() {
     let cached = execute_cached_capability(&mut cache, identity, unreachable_analysis).unwrap();
     assert!(cached.is_cache_hit());
     assert_eq!(calls.get(), 1);
+}
+
+#[test]
+fn execution_outcome_reports_stable_cache_telemetry() {
+    let identity = identity("template-semantics", "source-a");
+    let mut cache = MemoryCapabilitySnapshotCache::new();
+
+    let miss = execute_cached_capability(&mut cache, identity.clone(), |_| {
+        Ok::<_, Infallible>([finding("template-semantics", "VIZE_A", "source-a")])
+    })
+    .unwrap();
+    let miss_telemetry = miss.telemetry();
+    assert_eq!(
+        miss_telemetry.cache_status(),
+        CapabilityExecutionCacheStatus::Miss
+    );
+    assert_eq!(miss_telemetry.cache_key(), identity.cache_key());
+    assert_eq!(miss_telemetry.finding_count(), 1);
+    assert_eq!(
+        miss_telemetry.output_fingerprint(),
+        miss.snapshot().output_fingerprint()
+    );
+
+    let hit = execute_cached_capability(&mut cache, identity, unreachable_analysis).unwrap();
+    assert_eq!(
+        hit.telemetry().cache_status(),
+        CapabilityExecutionCacheStatus::Hit
+    );
+    assert_eq!(
+        serde_json::to_value(hit.telemetry()).unwrap()["findingCount"],
+        1
+    );
 }
 
 #[test]

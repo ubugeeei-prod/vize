@@ -8,7 +8,7 @@ use core::fmt::{Result, Write};
 
 use super::super::owned::{
     FolioAttribute, FolioBind, FolioBinding, FolioOn, FolioSlotContent, FolioVueCssBind,
-    FolioVueDirective, FolioVueSlotScope, FolioVueSync,
+    FolioVueDirective, FolioVueMemo, FolioVueOnce, FolioVueSlotScope, FolioVueSync,
 };
 use super::{end_line, indent, print_expr, print_name, quoted};
 use vize_carton::String;
@@ -55,6 +55,8 @@ pub(super) fn print_binding<W: Write>(
         FolioBinding::VueCssBind(bind) => print_css_bind(w, bind, depth, mode),
         FolioBinding::VueSync(sync) => print_sync(w, sync, depth, mode),
         FolioBinding::VueSlotScope(scope) => print_slot_scope(w, scope, depth, mode),
+        FolioBinding::VueOnce(once) => print_once(w, once, depth, mode),
+        FolioBinding::VueMemo(memo) => print_memo(w, memo, depth, mode),
     }
 }
 
@@ -195,4 +197,17 @@ fn print_slot_scope<W: Write>(
         print_expr(w, params, mode)?;
     }
     end_line(w, scope.span, mode)
+}
+
+fn print_once<W: Write>(w: &mut W, once: &FolioVueOnce, depth: usize, mode: FolioMode) -> Result {
+    indent(w, depth)?;
+    w.write_str("vue.once")?;
+    end_line(w, once.span, mode)
+}
+
+fn print_memo<W: Write>(w: &mut W, memo: &FolioVueMemo, depth: usize, mode: FolioMode) -> Result {
+    indent(w, depth)?;
+    w.write_str("vue.memo value=")?;
+    print_expr(w, &memo.value, mode)?;
+    end_line(w, memo.span, mode)
 }

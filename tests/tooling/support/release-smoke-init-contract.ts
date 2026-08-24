@@ -7,6 +7,7 @@ export const SHAPE_KEYS = [
   "expectedScripts",
   "features",
   "initFlags",
+  "initialAbsentFiles",
   "plannedDependencies",
   "reconfiguredDetection",
   "reconfiguredFeatures",

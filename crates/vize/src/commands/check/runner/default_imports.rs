@@ -276,9 +276,10 @@ fn append_local_imports(
     validate_inputs: bool,
 ) -> Vec<PathBuf> {
     let mut appended = Vec::new();
+    let mut known: FxHashSet<PathBuf> = files.iter().cloned().collect();
     for path in discovered {
         if local_import_is_allowed(&path, explicit_input_root, validate_inputs)
-            && !files.contains(&path)
+            && known.insert(path.clone())
         {
             files.push(path.clone());
             appended.push(path);

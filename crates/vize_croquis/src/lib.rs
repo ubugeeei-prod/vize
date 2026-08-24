@@ -61,6 +61,7 @@ pub mod reactivity_tracking;
 pub mod render_tree;
 pub mod script_parser;
 pub mod setup_context;
+pub mod sfc;
 pub mod types;
 pub mod virtual_ts;
 

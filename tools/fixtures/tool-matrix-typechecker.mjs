@@ -4,7 +4,7 @@ import { isAbsolute } from "node:path";
 
 const outputKeys = ["errorCount", "fileCount", "files", "programs", "warningCount"];
 const fileKeys = ["diagnostics", "file"];
-const programKeys = ["files", "root", "tsconfig"];
+const programKeys = ["compilerOptions", "files", "root", "tsconfig"];
 const typecheckSourcePattern = /\.(?:vue|ts|tsx|mts|cts|js|jsx|mjs|cjs)$/;
 
 export function validateTypecheckerOutput(
@@ -70,13 +70,16 @@ export function validateTypecheckerOutput(
     const expectedKeys =
       typeof program.tsconfig === "string"
         ? programKeys
-        : programKeys.filter((key) => key !== "tsconfig");
+        : programKeys.filter((key) => key !== "compilerOptions" && key !== "tsconfig");
     requireExactKeys(program, expectedKeys, `programs[${index}]`);
     if (typeof program.root !== "string" || program.root.length === 0) {
       invalid(`programs[${index}].root must be a non-empty string`);
     }
     if ("tsconfig" in program && program.tsconfig.length === 0) {
       invalid(`programs[${index}].tsconfig must be a non-empty string`);
+    }
+    if ("compilerOptions" in program) {
+      requireRecord(program.compilerOptions, `programs[${index}].compilerOptions`);
     }
     if (!Array.isArray(program.files)) invalid(`programs[${index}].files must be an array`);
     for (const [fileIndex, file] of program.files.entries()) {

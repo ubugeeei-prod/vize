@@ -8,11 +8,10 @@
 //! still pins the Vue 3 battery; clippy-and-test invokes this target
 //! explicitly so a wiring regression fails in CI.
 //!
-//! Filters inside interpolations stay a named gap (installment 7): the
-//! legacy text collector still reports the authored `msg | cap` spelling,
-//! while S2 legalize rewrites the interpolation to `_filter_cap(msg)`
-//! before text facts are published. Mixed text-runs that absorbed a
-//! pipe into a compound opaque are the same family. Not in this battery.
+//! Interpolation filters are in this battery (installment 9): a lone
+//! `{{ msg | cap }}` wrap-equals `_filter_cap(msg)`; a mixed run that
+//! absorbed a pipe into a compound opaque compares the authored pipe
+//! exactly. Neither is silently skipped.
 
 #![cfg(feature = "legacy")]
 #![allow(clippy::disallowed_types, clippy::disallowed_macros)]
@@ -43,12 +42,15 @@ const BATTERY: &[(&str, &str)] = &[
         "native-keycode",
         r#"<Comp @click.native @keyup.13="onKey"/>"#,
     ),
+    ("filter", "{{ msg | cap }}"),
+    ("filter-mixed", "hello {{ msg | cap }}"),
+    ("filter-args", "{{ a | f(b) }}"),
 ];
 
 fn expected() -> Counters {
     Counters {
-        templates_seen: 6,
-        compared: 6,
+        templates_seen: 9,
+        compared: 9,
         skipped_legacy_flag: 0,
         skipped_old_parse_errors: 0,
         skipped_s2_errors: 0,
@@ -79,14 +81,15 @@ fn expected() -> Counters {
             outlets_dynamic: 0,
         },
         text: TextCounters {
-            units: 3,
-            parts_static: 2,
-            parts_dynamic: 1,
-            compound_units: 0,
+            units: 6,
+            parts_static: 3,
+            parts_dynamic: 4,
+            compound_units: 1,
             vpre_templates: 0,
             entity_templates: 0,
             rawtext_excluded: 0,
             parts_compound: 0,
+            parts_filter: 2,
         },
         surfaces: SurfaceCounters {
             owners: 8,

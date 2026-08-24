@@ -3780,6 +3780,7 @@ dependencies = [
  "dashmap 6.2.1",
  "davinci_harness",
  "insta",
+ "memchr",
  "once_cell",
  "oxc_allocator",
  "oxc_ast",

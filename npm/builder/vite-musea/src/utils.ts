@@ -7,6 +7,7 @@ import path from "node:path";
 
 import type { ArtFileInfo } from "./types/index.js";
 import { loadNative } from "./native-loader.js";
+import { isTrustedSourcePath } from "./security.js";
 
 function normalizeGlobPath(filepath: string): string {
   return filepath.split(path.sep).join("/");
@@ -133,10 +134,17 @@ export async function scanArtFiles(
 
       if (excluded) continue;
 
+      if (entry.isSymbolicLink()) {
+        continue;
+      }
+
       if (entry.isDirectory()) {
         await scan(fullPath);
       } else if (entry.isFile() && entry.name.endsWith(".art.vue")) {
-        if (shouldProcess(fullPath, include, exclude, root)) {
+        if (
+          shouldProcess(fullPath, include, exclude, root) &&
+          isTrustedSourcePath(root, scanRoots, fullPath)
+        ) {
           files.add(fullPath);
         }
       } else if (
@@ -146,6 +154,9 @@ export async function scanArtFiles(
         !entry.name.endsWith(".art.vue")
       ) {
         // Inline art: check if .vue file contains <art block
+        if (!isTrustedSourcePath(root, scanRoots, fullPath)) {
+          continue;
+        }
         const content = await fs.promises.readFile(fullPath, "utf-8");
         if (content.includes("<art")) {
           files.add(fullPath);

@@ -4,7 +4,15 @@ import { defineComponent, h, nextTick, ref } from "@vue/runtime-core";
 
 import { Static, TextInput } from "../components/index.js";
 import { useWindowSize } from "../composables/index.js";
-import { renderTui } from "./index.js";
+import {
+  getByRole,
+  getByTestId,
+  getByText,
+  queryAllByRole,
+  queryAllByTestId,
+  queryAllByText,
+  renderTui,
+} from "./index.js";
 
 void test("renderTui records initial and explicit frame snapshots", async () => {
   const label = ref("ready");
@@ -98,5 +106,47 @@ void test("resize input updates the provided app dimensions", async () => {
   assert.equal(rendered.lastFrame(), "20x8");
   await rendered.input.resize(120, 40);
   assert.equal(rendered.lastFrame(), "120x40");
+  rendered.unmount();
+});
+
+void test("semantic queries find role, name, state, text, and test-id nodes", () => {
+  const rendered = renderTui(() =>
+    h("box", { style: { flexDirection: "column" } }, [
+      h(
+        "box",
+        {
+          "aria-role": "button",
+          "aria-label": "Save changes",
+          "aria-state": { disabled: true },
+          "test-id": "save-action",
+        },
+        [h("text", { text: "Ignored label" })],
+      ),
+      h("box", { "aria-role": "button" }, [h("text", { text: "Cancel" })]),
+      h("input", { "aria-role": "textbox", value: "draft" }),
+      h("text", { "data-testid": "status-line", text: "Status: ready" }),
+    ]),
+  );
+
+  assert.equal(queryAllByRole(rendered.root, "button").length, 2);
+  assert.equal(
+    getByRole(rendered.root, "button", { name: "Save changes" }).props["aria-role"],
+    "button",
+  );
+  assert.equal(
+    getByRole(rendered.root, "button", { state: { disabled: true } }).props["aria-label"],
+    "Save changes",
+  );
+  assert.equal(
+    getByRole(rendered.root, "button", { name: "Cancel" }).children[0]?.props.text,
+    "Cancel",
+  );
+  assert.equal(getByText(rendered.root, "draft").type, "input");
+  assert.equal(queryAllByText(rendered.root, /ready/u).length, 1);
+  assert.equal(getByTestId(rendered.root, "save-action").props["aria-label"], "Save changes");
+  assert.equal(queryAllByTestId(rendered.root, "status-line")[0]?.props.text, "Status: ready");
+  assert.throws(() => getByTestId(rendered.root, "missing"), /Unable to find Fresco node/);
+  assert.throws(() => getByRole(rendered.root, "checkbox"), /Unable to find Fresco node/);
+  assert.throws(() => getByRole(rendered.root, "button"), /Found 2 Fresco nodes/);
   rendered.unmount();
 });

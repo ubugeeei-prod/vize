@@ -135,6 +135,39 @@ fn test_extract_identifiers_ignores_regex_literals() {
 }
 
 #[test]
+fn test_extract_identifiers_slow_walks_assignment_targets() {
+    fn to_pairs(ids: Vec<IdentifierRef>) -> Vec<(CompactString, u32)> {
+        ids.into_iter()
+            .map(|identifier| (identifier.name, identifier.offset))
+            .collect()
+    }
+
+    let simple = "(step += 1) as number";
+    assert_eq!(extract_identifiers_oxc(simple), vec!["step"]);
+    assert_eq!(
+        to_pairs(extract_identifier_refs_oxc(simple)),
+        vec![("step".into(), simple.find("step").unwrap() as u32)]
+    );
+
+    let member = "({ value: row[col] = next })";
+    assert_eq!(extract_identifiers_oxc(member), vec!["row", "col", "next"]);
+    assert_eq!(
+        to_pairs(extract_identifier_refs_oxc(member)),
+        vec![
+            ("row".into(), member.find("row").unwrap() as u32),
+            ("col".into(), member.find("col").unwrap() as u32),
+            ("next".into(), member.find("next").unwrap() as u32),
+        ]
+    );
+
+    let destructured = "({ item = fallback, label: alias, ...rest } = source)";
+    assert_eq!(
+        extract_identifiers_oxc(destructured),
+        vec!["item", "fallback", "alias", "rest", "source"]
+    );
+}
+
+#[test]
 fn test_extract_identifiers_ignores_numeric_literal_tails() {
     fn to_pairs(ids: Vec<IdentifierRef>) -> Vec<(CompactString, u32)> {
         ids.into_iter()
@@ -147,6 +180,59 @@ fn test_extract_identifiers_ignores_numeric_literal_tails() {
     assert_eq!(
         to_pairs(extract_identifier_refs_oxc(expr)),
         vec![("count".into(), expr.find("count").unwrap() as u32)]
+    );
+}
+
+#[test]
+fn test_extract_identifiers_slow_walks_statement_bodies() {
+    fn to_pairs(ids: Vec<IdentifierRef>) -> Vec<(CompactString, u32)> {
+        ids.into_iter()
+            .map(|identifier| (identifier.name, identifier.offset))
+            .collect()
+    }
+
+    let calls = "close();modifyInventory()";
+    assert_eq!(
+        extract_identifiers_oxc(calls),
+        vec!["close", "modifyInventory"]
+    );
+    assert_eq!(
+        to_pairs(extract_identifier_refs_oxc(calls)),
+        vec![
+            ("close".into(), calls.find("close").unwrap() as u32),
+            (
+                "modifyInventory".into(),
+                calls.find("modifyInventory").unwrap() as u32
+            ),
+        ]
+    );
+
+    let emit_then_close = "$emit('selected', $event); close()";
+    assert_eq!(
+        extract_identifiers_oxc(emit_then_close),
+        vec!["$emit", "$event", "close"]
+    );
+    assert_eq!(
+        to_pairs(extract_identifier_refs_oxc(emit_then_close)),
+        vec![
+            (
+                "$emit".into(),
+                emit_then_close.find("$emit").unwrap() as u32
+            ),
+            (
+                "$event".into(),
+                emit_then_close.find("$event").unwrap() as u32
+            ),
+            (
+                "close".into(),
+                emit_then_close.find("close").unwrap() as u32
+            ),
+        ]
+    );
+
+    assert_eq!(
+        extract_identifiers_oxc("if (active) toggle(); close()"),
+        vec!["active", "toggle", "close"]
     );
 }
 

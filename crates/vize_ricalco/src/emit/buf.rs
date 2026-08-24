@@ -1,127 +1,8 @@
-//! Indenting JS buffer and the tiny helper set this installment uses.
+//! Indenting JS buffer. Helper names live in [`super::helper`].
 
 use vize_carton::String;
 
-/// Vue helpers this installment can mention, ranked the way
-/// `vue_helper_import_rank` orders the shipped preamble (`resolveComponent`
-/// first, then `withKeys` / `withModifiers`, `toDisplayString`, vnode
-/// creates, class/style / props normalizers, `openBlock`, block creates,
-/// `Fragment`, `createTextVNode` / `createCommentVNode`, `renderList`).
-/// Same-rank helpers keep this array order (`createElementVNode` before
-/// `createVNode`, `createBlock` before `createElementBlock`).
-#[derive(Clone, Copy)]
-enum Helper {
-    ResolveComponent,
-    WithKeys,
-    WithModifiers,
-    ToDisplayString,
-    CreateElementVNode,
-    CreateVNode,
-    NormalizeClass,
-    NormalizeStyle,
-    NormalizeProps,
-    GuardReactiveProps,
-    MergeProps,
-    OpenBlock,
-    CreateBlock,
-    CreateElementBlock,
-    Fragment,
-    CreateComment,
-    CreateText,
-    RenderList,
-}
-
-impl Helper {
-    const ALL: [Self; 18] = [
-        Self::ResolveComponent,
-        Self::WithKeys,
-        Self::WithModifiers,
-        Self::ToDisplayString,
-        Self::CreateElementVNode,
-        Self::CreateVNode,
-        Self::NormalizeClass,
-        Self::NormalizeStyle,
-        Self::NormalizeProps,
-        Self::GuardReactiveProps,
-        Self::MergeProps,
-        Self::OpenBlock,
-        Self::CreateBlock,
-        Self::CreateElementBlock,
-        Self::Fragment,
-        Self::CreateComment,
-        Self::CreateText,
-        Self::RenderList,
-    ];
-
-    const fn bit(self) -> u32 {
-        match self {
-            Self::ToDisplayString => 1,
-            Self::CreateElementVNode => 2,
-            Self::OpenBlock => 4,
-            Self::CreateElementBlock => 8,
-            Self::CreateText => 16,
-            Self::NormalizeClass => 32,
-            Self::NormalizeStyle => 64,
-            Self::WithKeys => 128,
-            Self::WithModifiers => 256,
-            Self::CreateComment => 512,
-            Self::Fragment => 1024,
-            Self::RenderList => 2048,
-            Self::NormalizeProps => 4096,
-            Self::GuardReactiveProps => 8192,
-            Self::MergeProps => 16384,
-            Self::ResolveComponent => 32768,
-            Self::CreateVNode => 65536,
-            Self::CreateBlock => 131072,
-        }
-    }
-
-    const fn name(self) -> &'static str {
-        match self {
-            Self::ResolveComponent => "resolveComponent",
-            Self::WithKeys => "withKeys",
-            Self::WithModifiers => "withModifiers",
-            Self::ToDisplayString => "toDisplayString",
-            Self::CreateElementVNode => "createElementVNode",
-            Self::CreateVNode => "createVNode",
-            Self::NormalizeClass => "normalizeClass",
-            Self::NormalizeStyle => "normalizeStyle",
-            Self::NormalizeProps => "normalizeProps",
-            Self::GuardReactiveProps => "guardReactiveProps",
-            Self::MergeProps => "mergeProps",
-            Self::OpenBlock => "openBlock",
-            Self::CreateBlock => "createBlock",
-            Self::CreateElementBlock => "createElementBlock",
-            Self::Fragment => "Fragment",
-            Self::CreateText => "createTextVNode",
-            Self::CreateComment => "createCommentVNode",
-            Self::RenderList => "renderList",
-        }
-    }
-
-    const fn alias(self) -> &'static str {
-        match self {
-            Self::ResolveComponent => "_resolveComponent",
-            Self::WithKeys => "_withKeys",
-            Self::WithModifiers => "_withModifiers",
-            Self::ToDisplayString => "_toDisplayString",
-            Self::CreateElementVNode => "_createElementVNode",
-            Self::CreateVNode => "_createVNode",
-            Self::NormalizeClass => "_normalizeClass",
-            Self::NormalizeStyle => "_normalizeStyle",
-            Self::NormalizeProps => "_normalizeProps",
-            Self::GuardReactiveProps => "_guardReactiveProps",
-            Self::MergeProps => "_mergeProps",
-            Self::OpenBlock => "_openBlock",
-            Self::CreateBlock => "_createBlock",
-            Self::CreateElementBlock => "_createElementBlock",
-            Self::Fragment => "_Fragment",
-            Self::CreateText => "_createTextVNode",
-            Self::CreateComment => "_createCommentVNode",
-            Self::RenderList => "_renderList",
-        }
-    }
-}
+use super::helper::Helper;
 
 /// Growing JS text plus the helpers the body mentioned.
 pub(super) struct Buf {
@@ -203,6 +84,9 @@ impl Buf {
     pub(super) fn use_merge_props(&mut self) {
         self.mark(Helper::MergeProps);
     }
+    pub(super) fn use_to_handlers(&mut self) {
+        self.mark(Helper::ToHandlers);
+    }
     pub(super) fn use_create_comment(&mut self) {
         self.mark(Helper::CreateComment);
     }
@@ -270,6 +154,10 @@ impl Buf {
         Helper::MergeProps.alias()
     }
 
+    pub(super) fn to_handlers_alias() -> &'static str {
+        Helper::ToHandlers.alias()
+    }
+
     pub(super) fn create_comment_alias() -> &'static str {
         Helper::CreateComment.alias()
     }
@@ -306,7 +194,7 @@ impl Buf {
     /// root static-props hoist (the shipped codegen appends hoists to
     /// the helper preamble).
     pub(super) fn preamble(&self) -> String {
-        let listed: [Helper; 18] = Helper::ALL;
+        let listed: [Helper; 19] = Helper::ALL;
         let mut n = 0;
         for helper in listed {
             if self.used & helper.bit() != 0 {

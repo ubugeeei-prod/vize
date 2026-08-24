@@ -16,6 +16,7 @@ import {
   sortLocations,
   sortTextEdits,
   textDocumentPosition,
+  timedRequest,
   uniqueAnchorOffset,
   type CompletionResponse,
   type Hover,
@@ -76,11 +77,13 @@ export async function exerciseAuthoredLspOracle(
       1,
       timeoutMs(),
     );
-    const hover = (await session.request(
+    const hoverRequest = await timedRequest<Hover>(
+      session,
       "textDocument/hover",
       textDocumentPosition(bindingDocument.uri, usageRange.start),
       timeoutMs(),
-    )) as Hover;
+    );
+    const hover = hoverRequest.response;
     assert.ok(hover, `hover must resolve the authored ${binding.symbol} binding`);
     assert.deepEqual(
       hover.range,
@@ -92,26 +95,30 @@ export async function exerciseAuthoredLspOracle(
       assert.ok(hoverText.includes(expected), `hover for ${binding.symbol} is missing ${expected}`);
     }
 
+    const definitionRequest = await timedRequest<unknown>(
+      session,
+      "textDocument/definition",
+      textDocumentPosition(bindingDocument.uri, usageRange.start),
+      timeoutMs(),
+    );
     const definition = locations(
-      await session.request(
-        "textDocument/definition",
-        textDocumentPosition(bindingDocument.uri, usageRange.start),
-        timeoutMs(),
-      ),
+      definitionRequest.response,
       `definition must resolve the authored ${binding.symbol} binding`,
     );
-    assert.deepEqual(definition, [{ range: declarationRange, uri: bindingDocument.uri }]);
+    const referencesRequest = await timedRequest<unknown>(
+      session,
+      "textDocument/references",
+      {
+        ...textDocumentPosition(bindingDocument.uri, usageRange.start),
+        context: { includeDeclaration: true },
+      },
+      timeoutMs(),
+    );
     const references = locations(
-      await session.request(
-        "textDocument/references",
-        {
-          ...textDocumentPosition(bindingDocument.uri, usageRange.start),
-          context: { includeDeclaration: true },
-        },
-        timeoutMs(),
-      ),
+      referencesRequest.response,
       `references must resolve the authored ${binding.symbol} binding`,
     );
+    assert.deepEqual(definition, [{ range: declarationRange, uri: bindingDocument.uri }]);
     assert.deepEqual(
       sortLocations(references),
       sortLocations([
@@ -127,14 +134,16 @@ export async function exerciseAuthoredLspOracle(
       timeoutMs(),
     );
     assert.deepEqual(prepareRename, usageRange, "prepareRename must select the template token");
-    const rename = (await session.request(
+    const renameRequest = await timedRequest<WorkspaceEdit | null>(
+      session,
       "textDocument/rename",
       {
         ...textDocumentPosition(bindingDocument.uri, usageRange.start),
         newName: binding.renameTo,
       },
       timeoutMs(),
-    )) as WorkspaceEdit | null;
+    );
+    const rename = renameRequest.response;
     const renameEdits = rename?.changes?.[bindingDocument.uri];
     assert.ok(renameEdits, `rename must edit the authored ${binding.symbol} binding`);
     assert.deepEqual(
@@ -161,25 +170,27 @@ export async function exerciseAuthoredLspOracle(
       1,
       timeoutMs(),
     );
+    const componentDefinitionRequest = await timedRequest<unknown>(
+      session,
+      "textDocument/definition",
+      textDocumentPosition(importerDocument.uri, tagRange.start),
+      timeoutMs(),
+    );
     const componentDefinition = locations(
-      await session.request(
-        "textDocument/definition",
-        textDocumentPosition(importerDocument.uri, tagRange.start),
-        timeoutMs(),
-      ),
+      componentDefinitionRequest.response,
       `definition must cross the authored ${boundary.tagName} component boundary`,
     );
     assert.equal(componentDefinition.length, 1);
     assert.equal(componentDefinition[0]?.uri, childDocument.uri);
     assertRangeInDocument(componentDefinition[0]!.range, childDocument.source, boundary.tagName);
 
-    const baselineLabels = completionLabels(
-      (await session.request(
-        "textDocument/completion",
-        textDocumentPosition(importerDocument.uri, completionPosition),
-        timeoutMs(),
-      )) as CompletionResponse,
+    const completionRequest = await timedRequest<CompletionResponse>(
+      session,
+      "textDocument/completion",
+      textDocumentPosition(importerDocument.uri, completionPosition),
+      timeoutMs(),
     );
+    const baselineLabels = completionLabels(completionRequest.response);
     assert.equal(
       baselineLabels.length,
       boundary.completionItemCount,
@@ -231,22 +242,24 @@ export async function exerciseAuthoredLspOracle(
       importerDiagnostics,
       timeoutMs,
     );
+    const evidence = (request: { durationMs: number }, response: unknown, count: number) =>
+      responseEvidence(response, count, workspaceDir, request.durationMs);
 
     return {
-      completion: responseEvidence(baselineLabels, baselineLabels.length, workspaceDir),
-      componentDefinition: responseEvidence(componentDefinition, 1, workspaceDir),
+      completion: evidence(completionRequest, baselineLabels, baselineLabels.length),
+      componentDefinition: evidence(componentDefinitionRequest, componentDefinition, 1),
       componentFile: boundary.componentFile,
-      definition: responseEvidence(definition, definition.length, workspaceDir),
+      definition: evidence(definitionRequest, definition, definition.length),
       dependencyCompletion: {
         baselineContainsProbe,
         changedContainsProbe,
         repairedContainsProbe,
       },
       fileLifecycle,
-      hover: responseEvidence(hover, 1, workspaceDir),
+      hover: evidence(hoverRequest, hover, 1),
       importerFile: boundary.importerFile,
-      references: responseEvidence(sortLocations(references), references.length, workspaceDir),
-      rename: responseEvidence(sortTextEdits(renameEdits), renameEdits.length, workspaceDir),
+      references: evidence(referencesRequest, sortLocations(references), references.length),
+      rename: evidence(renameRequest, sortTextEdits(renameEdits), renameEdits.length),
       templateBindingDiagnostics: diagnosticEvidence(bindingDiagnostics.diagnostics),
       templateBindingFile: binding.file,
     };

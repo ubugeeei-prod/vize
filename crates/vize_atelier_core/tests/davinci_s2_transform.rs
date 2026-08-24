@@ -56,6 +56,7 @@ fn expected() -> Counters {
             entity_templates: 1,
             rawtext_excluded: 1,
             parts_compound: 0,
+            parts_filter: 0,
         },
         surfaces: SurfaceCounters {
             owners: 158,

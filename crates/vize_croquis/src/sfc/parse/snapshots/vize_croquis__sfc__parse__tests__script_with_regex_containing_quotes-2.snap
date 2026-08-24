@@ -1,0 +1,20 @@
+---
+source: crates/vize_croquis/src/sfc/parse/tests.rs
+expression: template
+---
+SfcTemplateBlock {
+    content: "\n  <div>Test</div>\n",
+    loc: BlockLocation {
+        start: 195,
+        end: 214,
+        tag_start: 185,
+        tag_end: 225,
+        start_line: 13,
+        start_column: 11,
+        end_line: 15,
+        end_column: 1,
+    },
+    lang: None,
+    src: None,
+    attrs: {},
+}

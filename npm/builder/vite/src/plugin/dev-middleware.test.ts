@@ -51,6 +51,9 @@ assert.equal(isInspectorGraphRequest("/__vize/inspector/graph"), true);
 assert.equal(isInspectorGraphRequest("/__vize/inspector/graph?fresh=1"), true);
 assert.equal(isInspectorGraphRequest("/__vize/other"), false);
 
+fs.writeFileSync(path.join(root, "outside.vue"), "<template><p>Outside</p></template>\n");
+fs.symlinkSync(path.join(root, "outside.vue"), path.join(root, "src", "Escaped.vue"));
+
 const files = await collectInspectorSourceFiles(state);
 assert.deepEqual(
   files.map((file) => file.path),

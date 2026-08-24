@@ -1,10 +1,14 @@
 import path from "node:path";
 
-import { resolveInsideAny } from "./security.js";
+import { resolveTrustedSourcePath } from "./security.js";
 import type { ArtFileInfo } from "./types/index.js";
 
 export function allowedSourceRoots(root: string, scanRoots: string[] = []): string[] {
   return [...new Set([root, ...scanRoots].map((sourceRoot) => path.resolve(sourceRoot)))];
+}
+
+export function resolveReadableArtPath(root: string, scanRoots: string[], artPath: string): string {
+  return resolveTrustedSourcePath(root, scanRoots, artPath, "art path");
 }
 
 export function resolveComponentSourcePath(
@@ -21,5 +25,8 @@ export function resolveComponentSourcePath(
           : path.resolve(path.dirname(artPath), art.metadata.component)
         : null;
 
-  return componentPath ? resolveInsideAny(sourceRoots, componentPath, "component path") : null;
+  const [projectRoot, ...extraRoots] = sourceRoots;
+  return componentPath
+    ? resolveTrustedSourcePath(projectRoot ?? ".", extraRoots, componentPath, "component path")
+    : null;
 }

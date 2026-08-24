@@ -14,8 +14,8 @@ use vize_davinci::folio::FolioError;
 use super::super::owned::{
     FolioAttribute, FolioBind, FolioBranch, FolioComponent, FolioElement, FolioFor,
     FolioForBinding, FolioIf, FolioInterpolation, FolioModel, FolioName, FolioOn, FolioOp,
-    FolioSlot, FolioSlotContent, FolioText, FolioVueCssBind, FolioVueDirective, FolioVueSlotScope,
-    FolioVueSync,
+    FolioSlot, FolioSlotContent, FolioText, FolioVueCssBind, FolioVueDirective, FolioVueMemo,
+    FolioVueOnce, FolioVueSlotScope, FolioVueSync,
 };
 use super::expr_token::take_expr;
 use crate::op::Namespace;
@@ -31,6 +31,8 @@ pub(in super::super) enum Item {
     CssBind(FolioVueCssBind),
     Sync(FolioVueSync),
     SlotScope(FolioVueSlotScope),
+    Once(FolioVueOnce),
+    Memo(FolioVueMemo),
     Branch(FolioBranch),
     Op(FolioOp),
 }
@@ -117,6 +119,8 @@ pub(in super::super) fn parse_item(content: &str, line_no: usize) -> Result<Item
         "vue.css-bind" => super::binding_line::css_bind(rest, line_no),
         "vue.sync" => super::binding_line::sync(rest, line_no),
         "vue.slot-scope" => super::binding_line::slot_scope(rest, line_no),
+        "vue.once" => super::binding_line::once(rest, line_no),
+        "vue.memo" => super::binding_line::memo(rest, line_no),
         other => Err(err(line_no, cstr!("unknown op `{other}`"))),
     }
 }

@@ -4,23 +4,45 @@ import { h } from "@vue/runtime-core";
 
 import { TextInput } from "../components/index.js";
 import {
+  getByRole,
+  getByTestId,
+  getByText,
+  queryAllByRole,
+  queryAllByTestId,
+  queryAllByText,
   renderTui,
   type FrescoFrameSnapshot,
   type FrescoInputDriver,
+  type FrescoRoleQueryOptions,
+  type FrescoTextMatcher,
   type RenderTuiResult,
 } from "./index.js";
 
 const rendered: RenderTuiResult = renderTui(() => h(TextInput, { modelValue: "value" }));
+const roleQuery: FrescoRoleQueryOptions = { name: /value/u, state: { disabled: false } };
+const textMatcher: FrescoTextMatcher = "value";
 const input: FrescoInputDriver = rendered.input;
 const frame: string = rendered.lastFrame();
 const frames: readonly string[] = rendered.frames;
 const snapshot: FrescoFrameSnapshot = rendered.frameSnapshot();
 const snapshots: readonly FrescoFrameSnapshot[] = rendered.frameSnapshots;
+const roleNode = getByRole(rendered.root, "textbox", roleQuery);
+const testNode = getByTestId(rendered.root, "field");
+const textNode = getByText(rendered.root, textMatcher);
+const roleNodes = queryAllByRole(rendered.root, "textbox", { name: "value" });
+const testNodes = queryAllByTestId(rendered.root, "field");
+const textNodes = queryAllByText(rendered.root, /value/u);
 
 void frame;
 void frames;
 void snapshot.tree.children;
 void snapshots;
+void roleNode.props;
+void testNode.id;
+void textNode.type;
+void roleNodes;
+void testNodes;
+void textNodes;
 
 export const keyFrame: Promise<FrescoFrameSnapshot> = input.key({
   key: "enter",
@@ -50,3 +72,12 @@ void input.mouse({ button: "left" });
 
 // @ts-expect-error - frame outputs are strings.
 const _invalidOutput: number = snapshot.output;
+
+// @ts-expect-error - role names are closed to the Fresco accessibility contract.
+void getByRole(rendered.root, "dialog");
+
+// @ts-expect-error - text matchers are exact strings or regular expressions.
+void getByText(rendered.root, 123);
+
+// @ts-expect-error - test identifiers are strings.
+void getByTestId(rendered.root, /field/u);

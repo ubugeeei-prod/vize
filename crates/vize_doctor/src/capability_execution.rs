@@ -1,5 +1,6 @@
 //! Cache-backed execution for independently reusable analysis capabilities.
 
+mod telemetry;
 #[cfg(test)]
 mod tests;
 
@@ -13,6 +14,8 @@ use crate::{
     CapabilityCacheIdentity, CapabilityCacheKey, CapabilitySnapshot, CapabilitySnapshotError,
     ContentFingerprint, DoctorFinding,
 };
+
+pub use telemetry::{CapabilityExecutionCacheStatus, CapabilityExecutionTelemetry};
 
 /// Cache storage for validated capability snapshots.
 ///

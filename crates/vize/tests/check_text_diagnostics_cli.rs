@@ -137,7 +137,7 @@ const count: string = 0;
     // `source:` context that the JSON report must not carry.
     assert_eq!(
         normalize_check_output(stdout, &project_root),
-        "\n<project>/src/App.vue\n  error:2:7 [TS2322] Type 'number' is not assignable to type 'string'. (source: const count: string = 0;)\n\n\u{2717} Type checked 1 files in <duration> (collect: <duration>, gen: <duration>, corsa: <duration>)\n  1 error(s)\n",
+        "\n<project>/src/App.vue\n  error:2:7 [TS2322] Type 'number' is not assignable to type 'string'. (source: const count: string = 0;)\n\n\u{2717} Type checked 1 files in <duration> (collect: <duration>, imports: <duration>, gen: <duration>, corsa: <duration>)\n  1 error(s)\n",
         "stderr:\n{stderr}"
     );
 
@@ -218,7 +218,7 @@ const text = ref("bad");
             "Types of parameters 'id' and 'id' are incompatible.\n",
             "Type 'number' is not assignable to type 'string'. (source: <Child :model-value=\"1\" kind=\"num\" :n=\"1\" @save=\"(id: string) => {}\" />; binding: @save)\n",
             "  error:14:73 [TS2339] Property 'toUpperCase' does not exist on type 'number'. (source: <Child :model-value=\"1\" kind=\"num\" :n=\"1\" v-slot=\"{ count }\">{{ count.toUpperCase() }}</Child>; binding: #default)\n",
-            "\n\u{2717} Type checked 2 files in <duration> (collect: <duration>, gen: <duration>, corsa: <duration>)\n",
+            "\n\u{2717} Type checked 2 files in <duration> (collect: <duration>, imports: <duration>, gen: <duration>, corsa: <duration>)\n",
             "  6 error(s)\n",
         ),
         "stderr:\n{stderr}"

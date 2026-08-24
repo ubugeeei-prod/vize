@@ -221,7 +221,8 @@ discards it — normalization by the first print), then `[disegno.ops]`
 holding the tree, omitted when empty. Nesting is two-space indentation;
 a shallower line closes every deeper op. Under an element or component the
 grouping is fixed: `attr` lines, then attached bindings (`ui.model`,
-`vue.directive`, `vue.css-bind`, `vue.sync`, `vue.slot-scope`), then children. Under `ui.if` only `branch` lines are
+`vue.directive`, `vue.css-bind`, `vue.sync`, `vue.slot-scope`,
+`vue.once`, `vue.memo`), then children. Under `ui.if` only `branch` lines are
 legal; under `ui.model` only `attr` lines. Blank lines are separators and
 vanish; every other spelling is strict with exact, tested rejections.
 
@@ -242,6 +243,8 @@ below):
 | `vue.css-bind value=<expr> @s:e`                                                        | SFC style `v-bind()`; span is CSS-block-relative |
 | `vue.sync name=<quoted>[ mods=<quoted>] value=<expr> @s:e`                              | Vue 2 `:foo.sync`; name is static                |
 | `vue.slot-scope[ name=<quoted>][ params=<expr>] @s:e`                                   | Vue 2 `slot-scope` / `scope` sugar               |
+| `vue.once @s:e`                                                                         | Vue `v-once`; presence flag, no payload          |
+| `vue.memo value=<expr> @s:e`                                                            | Vue `v-memo`; expression is P2-5b (`opaque` ok)  |
 | `attr <name>[=<quoted>] @s:e`                                                           | bare name for boolean attributes                 |
 
 **Expression payloads** (P2-5b): every expression position serializes as

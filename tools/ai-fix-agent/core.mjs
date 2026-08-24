@@ -40,8 +40,63 @@ export function runJson(bin, args, options = {}) {
   return JSON.parse(output);
 }
 
+const TOOL_NAME = /^[A-Za-z0-9._+-]+$/;
+const SHELL_META = /[$`;&|<>(){}\n\r]/;
+
 export function ensureTool(bin) {
-  run("sh", ["-lc", `command -v ${bin}`]);
+  if (typeof bin !== "string" || bin.includes("/") || bin.includes("\\") || !TOOL_NAME.test(bin)) {
+    throw new Error(`invalid tool name: ${bin}`);
+  }
+  run("sh", ["-lc", `command -v -- ${bin}`]);
+}
+
+export function parseCommandArguments(command) {
+  if (typeof command !== "string" || command.trim() === "") {
+    throw new Error("agent command is empty");
+  }
+  if (SHELL_META.test(command)) {
+    throw new Error(
+      "agent command must not contain shell metacharacters; pass a program and arguments only",
+    );
+  }
+
+  const args = [];
+  let current = "";
+  let quote = null;
+
+  for (const char of command) {
+    if (quote) {
+      if (char === quote) {
+        quote = null;
+      } else {
+        current += char;
+      }
+      continue;
+    }
+    if (char === '"' || char === "'") {
+      quote = char;
+      continue;
+    }
+    if (/\s/.test(char)) {
+      if (current) {
+        args.push(current);
+        current = "";
+      }
+      continue;
+    }
+    current += char;
+  }
+
+  if (quote) {
+    throw new Error("unterminated quote in agent command");
+  }
+  if (current) {
+    args.push(current);
+  }
+  if (args.length === 0) {
+    throw new Error("agent command is empty");
+  }
+  return args;
 }
 
 export function ensureCleanWorktree() {

@@ -96,6 +96,7 @@ fn the_s2_transform_lane_holds_over_the_corpus() {
                 entity_templates: 1,
                 rawtext_excluded: 1,
                 parts_compound: 0,
+                parts_filter: 0,
             },
             surfaces: SurfaceCounters {
                 owners: 158,

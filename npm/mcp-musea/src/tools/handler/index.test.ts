@@ -48,3 +48,23 @@ test("scanner matches root and nested art files while excluding directories", as
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("scanner ignores art files whose real path leaves the project root", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "musea-mcp-scan-symlink-"));
+
+  try {
+    const outside = path.join(path.dirname(root), `${path.basename(root)}-secret.art.vue`);
+    fs.writeFileSync(outside, "secret");
+    fs.symlinkSync(outside, path.join(root, "Escape.art.vue"));
+    fs.writeFileSync(path.join(root, "Safe.art.vue"), "");
+
+    const files = await findArtFiles(root, ["**/*.art.vue"], []);
+    const relativeFiles = files
+      .map((file) => path.relative(root, file).replaceAll(path.sep, "/"))
+      .sort((left, right) => left.localeCompare(right));
+
+    assert.deepEqual(relativeFiles, ["Safe.art.vue"]);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

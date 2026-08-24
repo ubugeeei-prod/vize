@@ -8,6 +8,11 @@ Support and deprecation guarantees are defined in the
 
 `vize_atelier_sfc` parses and compiles Vue Single File Components.
 
+Tools that only need descriptor parsing should depend on
+[`vize_croquis`](https://docs.rs/vize_croquis) and use its `sfc` module instead.
+The full compiler re-exports that parser API, so existing `vize_atelier_sfc`
+imports remain compatible.
+
 ## Highlights
 
 - `.vue` descriptor parsing (`<template>`, `<script>`, `<script setup>`, `<style>`, custom blocks)
@@ -29,6 +34,7 @@ Support and deprecation guarantees are defined in the
 
 ## Related Crates
 
+- `vize_croquis::sfc` provides the parser and descriptor types without compiler backends
 - `vize_atelier_dom` and `vize_atelier_vapor` compile template blocks
 - `vize_croquis` and `vize_canon` consume emitted binding metadata and virtual TS
 - `vize_vitrine` exposes this pipeline to Node.js and WASM consumers

@@ -1,4 +1,4 @@
-//! Static-name `ui.on` emit pins and the shapes this installment refuses.
+//! Static-name `ui.on` emit pins, including object `v-on` (`toHandlers`).
 
 #![allow(
     clippy::disallowed_macros,
@@ -164,10 +164,23 @@ fn a_click_native_is_unsupported_this_installment() {
 }
 
 #[test]
-fn a_von_object_spread_is_unsupported_this_installment() {
+fn an_object_on_with_modifiers_is_unsupported_this_installment() {
     assert_eq!(
-        refused(r#"<div v-on="handlers"></div>"#),
+        refused(r#"<div v-on.once="handlers"></div>"#),
         EmitError::Unsupported
+    );
+}
+
+#[test]
+fn a_lone_object_on_uses_to_handlers() {
+    assert_eq!(
+        assembled(r#"<div v-on="handlers"></div>"#),
+        "\
+const { toHandlers: _toHandlers, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", _toHandlers(handlers, true), null, 16 /* FULL_PROPS */))
+}"
     );
 }
 

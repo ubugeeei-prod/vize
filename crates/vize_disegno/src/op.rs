@@ -20,7 +20,8 @@
 //! custom directives as [`BindingOp::VueDirective`], SFC style
 //! `v-bind()` as [`BindingOp::VueCssBind`], Vue 2 `.sync` /
 //! `slot-scope` as [`BindingOp::VueSync`] / [`BindingOp::VueSlotScope`],
-//! and Vue 2 pipe filters as [`crate::expr::ExprRef::Filter`].
+//! Vue 2 pipe filters as [`crate::expr::ExprRef::Filter`], and
+//! `v-once` / `v-memo` as [`BindingOp::VueOnce`] / [`BindingOp::VueMemo`].
 //!
 //! # `Drop`-free by construction
 //!
@@ -48,7 +49,7 @@ pub use element::{Attribute, ComponentOp, ElementOp, Namespace};
 pub use model::{BindingContract, ModelOp};
 pub use slot::{DynamicName, SlotContentOp, SlotOp};
 pub use text::{InterpolationOp, TextOp};
-pub use vue::{VueCssBindOp, VueDirectiveOp, VueSlotScopeOp, VueSyncOp};
+pub use vue::{VueCssBindOp, VueDirectiveOp, VueMemoOp, VueOnceOp, VueSlotScopeOp, VueSyncOp};
 
 /// One S2 op standing in a region (a child position).
 ///
@@ -126,6 +127,10 @@ pub enum BindingOp<'a> {
     VueSync(Box<'a, VueSyncOp<'a>>),
     /// `vue.slot-scope` - Vue 2 `slot-scope` / `scope` scoped-slot sugar.
     VueSlotScope(Box<'a, VueSlotScopeOp<'a>>),
+    /// `vue.once` - Vue `v-once` one-shot render flag.
+    VueOnce(Box<'a, VueOnceOp>),
+    /// `vue.memo` - Vue `v-memo` dependency-memoized render.
+    VueMemo(Box<'a, VueMemoOp<'a>>),
 }
 
 impl BindingOp<'_> {
@@ -142,6 +147,8 @@ impl BindingOp<'_> {
             Self::VueCssBind(_) => "vue.css-bind",
             Self::VueSync(_) => "vue.sync",
             Self::VueSlotScope(_) => "vue.slot-scope",
+            Self::VueOnce(_) => "vue.once",
+            Self::VueMemo(_) => "vue.memo",
         }
     }
 }

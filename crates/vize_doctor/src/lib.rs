@@ -77,11 +77,12 @@ pub use ai_context::{
 pub use cache_identity::{
     CAPABILITY_CACHE_KEY_PREFIX, CapabilityCacheIdentity, CapabilityCacheIdentityError,
     CapabilityCacheInput, CapabilityCacheKey, CapabilityCacheKeyParseError, CapabilityInvalidation,
-    DOCTOR_CAPABILITY_CACHE_IDENTITY_VERSION,
+    CapabilityInvalidationTelemetry, DOCTOR_CAPABILITY_CACHE_IDENTITY_VERSION,
 };
 pub use capability_execution::{
-    CapabilityExecutionError, CapabilityExecutionOutcome, CapabilitySnapshotCache,
-    MemoryCapabilitySnapshotCache, MemoryCapabilitySnapshotCacheError, execute_cached_capability,
+    CapabilityExecutionCacheStatus, CapabilityExecutionError, CapabilityExecutionOutcome,
+    CapabilityExecutionTelemetry, CapabilitySnapshotCache, MemoryCapabilitySnapshotCache,
+    MemoryCapabilitySnapshotCacheError, execute_cached_capability,
 };
 pub use capability_snapshot::{
     CapabilitySnapshot, CapabilitySnapshotError, DOCTOR_CAPABILITY_SNAPSHOT_FORMAT_VERSION,

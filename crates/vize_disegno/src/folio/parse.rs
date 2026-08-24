@@ -173,6 +173,16 @@ impl Parser {
                 self.push_leaf_binding(FolioBinding::VueSlotScope(scope));
                 Ok(())
             }
+            Item::Once(once) => {
+                self.guard_binding(line_no)?;
+                self.push_leaf_binding(FolioBinding::VueOnce(once));
+                Ok(())
+            }
+            Item::Memo(memo) => {
+                self.guard_binding(line_no)?;
+                self.push_leaf_binding(FolioBinding::VueMemo(memo));
+                Ok(())
+            }
             Item::Branch(branch) => match self.stack.last() {
                 Some(Frame::If(_)) => {
                     self.stack.push(Frame::Branch(branch));

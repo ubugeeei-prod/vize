@@ -12,7 +12,7 @@ import {
 } from "../utils.js";
 import { registerMiddleware } from "../server-middleware.js";
 import { createApiMiddleware } from "../api-routes/index.js";
-import { createDevSessionToken } from "../security.js";
+import { createDevSessionToken, resolveTrustedSourcePath } from "../security.js";
 import {
   createResolveId,
   createLoad,
@@ -298,6 +298,12 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
   };
 
   async function processArtFile(filePath: string): Promise<void> {
+    try {
+      resolveTrustedSourcePath(config.root, scanRoots, filePath, "art path");
+    } catch {
+      return;
+    }
+
     const info = await processMuseaArtFile(filePath, {
       root: config.root,
       command: config.command,
