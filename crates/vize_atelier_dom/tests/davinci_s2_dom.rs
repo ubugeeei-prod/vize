@@ -19,7 +19,7 @@
 
 use vize_atelier_dom::compile_template;
 use vize_carton::Allocator;
-use vize_ricalco::{emit_dom_source, DOM_LANE_FLAG};
+use vize_ricalco::{DOM_LANE_FLAG, emit_dom_source};
 
 const BATTERY: &[(&str, &str)] = &[
     ("empty_div", "<div></div>"),

@@ -1,20 +1,21 @@
 //! Static-name component emission (`resolveComponent` / `createVNode` /
-//! `createBlock`) plus implicit default slots (text, native HTML,
-//! nested components). Named slots, builtins, and `<component :is>`
-//! stay unsupported this installment.
+//! `createBlock`) plus slot objects from [`SlotFacts`] (implicit
+//! default, named `<template>` groups, component-root `v-slot`).
+//! `createSlots`, builtins, and `<component :is>` stay unsupported.
 
 use alloc::vec::Vec as StdVec;
 
-use vize_disegno::op::{ComponentOp, Op, Region};
+use vize_davinci::id::NodeId;
+use vize_disegno::op::{BindingOp, ComponentOp, Op, Region};
 
+use super::EmitCx;
+use super::EmitError;
 use super::buf::Buf;
 use super::flag::emit_patch_flag;
 use super::js::asset_ident;
 use super::props::{admit_bindings, bind_patch, emit_bind_props};
 use super::slots;
 use super::vnode::compact_props_object;
-use super::EmitCx;
-use super::EmitError;
 
 pub(super) fn collect_names<'a>(root: &Region<'a>) -> StdVec<&'a str> {
     let mut names = StdVec::new();
@@ -36,13 +37,19 @@ pub(super) fn emit_resolves(cx: &mut EmitCx<'_>, names: &[&str]) {
     }
 }
 
-pub(super) fn emit_root(cx: &mut EmitCx<'_>, component: &ComponentOp<'_>) -> Result<(), EmitError> {
+pub(super) fn emit_root(
+    cx: &mut EmitCx<'_>,
+    component: &ComponentOp<'_>,
+    id: Option<NodeId>,
+) -> Result<(), EmitError> {
     cx.buf.use_open_block();
     cx.buf.use_create_block();
     cx.buf.push("(");
     cx.buf.push(Buf::open_block_alias());
     cx.buf.push("(), ");
-    emit_call(cx, component, /* block */ true, None)?;
+    emit_call(
+        cx, component, /* block */ true, None, /* for_item */ false, id,
+    )?;
     cx.buf.push(")");
     Ok(())
 }
@@ -50,22 +57,33 @@ pub(super) fn emit_root(cx: &mut EmitCx<'_>, component: &ComponentOp<'_>) -> Res
 pub(super) fn emit_nested(
     cx: &mut EmitCx<'_>,
     component: &ComponentOp<'_>,
+    id: Option<NodeId>,
 ) -> Result<(), EmitError> {
     cx.buf.use_create_vnode();
-    emit_call(cx, component, /* block */ false, None)
+    emit_call(
+        cx, component, /* block */ false, None, /* for_item */ false, id,
+    )
 }
 
 pub(super) fn emit_if_branch(
     cx: &mut EmitCx<'_>,
     component: &ComponentOp<'_>,
     key: &str,
+    id: Option<NodeId>,
 ) -> Result<(), EmitError> {
     cx.buf.use_open_block();
     cx.buf.use_create_block();
     cx.buf.push("(");
     cx.buf.push(Buf::open_block_alias());
     cx.buf.push("(), ");
-    emit_call(cx, component, /* block */ true, Some(key))?;
+    emit_call(
+        cx,
+        component,
+        /* block */ true,
+        Some(key),
+        /* for_item */ false,
+        id,
+    )?;
     cx.buf.push(")");
     Ok(())
 }
@@ -73,13 +91,16 @@ pub(super) fn emit_if_branch(
 pub(super) fn emit_for_item(
     cx: &mut EmitCx<'_>,
     component: &ComponentOp<'_>,
+    id: Option<NodeId>,
 ) -> Result<(), EmitError> {
     cx.buf.use_open_block();
     cx.buf.use_create_block();
     cx.buf.push("(");
     cx.buf.push(Buf::open_block_alias());
     cx.buf.push("(), ");
-    emit_call(cx, component, /* block */ true, None)?;
+    emit_call(
+        cx, component, /* block */ true, None, /* for_item */ true, id,
+    )?;
     cx.buf.push(")");
     Ok(())
 }
@@ -111,8 +132,13 @@ fn emit_call(
     component: &ComponentOp<'_>,
     block: bool,
     if_key: Option<&str>,
+    for_item: bool,
+    id: Option<NodeId>,
 ) -> Result<(), EmitError> {
     admit(component)?;
+    let facts = id.and_then(|id| cx.facts.slot_facts.get(id));
+    let has_slots = facts.is_some();
+    let dynamic_names = facts.is_some_and(slots::has_dynamic_names);
     let alias = if block {
         Buf::create_block_alias()
     } else {
@@ -122,8 +148,10 @@ fn emit_call(
     cx.buf.push("(");
     cx.buf
         .push(asset_ident("component", component.name).as_str());
-    let has_binds = !component.bindings.is_empty();
-    let has_slots = slots::has_implicit_default(&component.children);
+    let has_binds = component
+        .bindings
+        .iter()
+        .any(|binding| !matches!(binding, BindingOp::SlotContent(_)));
     let hoisted_static_props =
         if has_slots && !has_binds && if_key.is_none() && !component.attributes.is_empty() {
             Some(
@@ -136,6 +164,9 @@ fn emit_call(
     let patch = bind_patch(&component.bindings, true);
     let mut flag = patch.flag;
     if cx.in_v_for && has_slots {
+        flag |= 1024;
+    }
+    if dynamic_names {
         flag |= 1024;
     }
     let emit_flag = flag != 0;
@@ -151,9 +182,9 @@ fn emit_call(
         // even when the component has no props, slots, or patch flag.
         cx.buf.push(", null");
     }
-    if has_slots {
+    if let Some(facts) = facts {
         cx.buf.push(", ");
-        slots::emit_default_slots(cx, &component.children)?;
+        slots::emit_slots(cx, &component.children, facts)?;
     } else if emit_flag && has_props {
         cx.buf.push(", null");
     }

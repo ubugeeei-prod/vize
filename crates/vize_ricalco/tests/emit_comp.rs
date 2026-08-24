@@ -10,7 +10,7 @@
 mod support;
 
 use support::with_transformed;
-use vize_ricalco::{emit_dom, EmitError};
+use vize_ricalco::{EmitError, emit_dom};
 
 fn assembled(source: &str) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {
@@ -218,14 +218,6 @@ fn a_nested_text_slot_inside_v_for_is_dynamic() {
 #[test]
 fn whitespace_only_children_emit_no_slot() {
     assert_eq!(assembled("<Foo>  </Foo>"), assembled("<Foo />"));
-}
-
-#[test]
-fn named_slot_templates_are_unsupported_this_installment() {
-    assert_eq!(
-        refused("<Foo><template #header>x</template></Foo>"),
-        EmitError::Unsupported
-    );
 }
 
 #[test]

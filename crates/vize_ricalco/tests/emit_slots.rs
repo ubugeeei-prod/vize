@@ -10,7 +10,7 @@
 mod support;
 
 use support::with_transformed;
-use vize_ricalco::{emit_dom, EmitError};
+use vize_ricalco::{EmitError, emit_dom};
 
 fn assembled(source: &str) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {
@@ -138,7 +138,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn static_attrs_on_a_slotted_component_leave_an_unused_hoist() {
+fn static_attrs_on_a_slotted_component_use_their_hoist() {
     assert_eq!(
         assembled(r#"<Foo id="x">hello</Foo>"#),
         pin("\
@@ -149,7 +149,7 @@ const _hoisted_1 = { id: \"x\" }
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_Foo = _resolveComponent(\"Foo\")
 
-  return (_openBlock(), _createBlock(_component_Foo, { id: \"x\" }, {
+  return (_openBlock(), _createBlock(_component_Foo, _hoisted_1, {
     default: _withCtx(() => [
       _createTextVNode(\"hello\")
     ]),
@@ -228,7 +228,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn unused_props_and_a_static_span_use_two_hoists() {
+fn component_props_and_a_static_span_use_two_hoists() {
     assert_eq!(
         assembled(r#"<Foo class="x"><span></span></Foo>"#),
         pin("\
@@ -240,7 +240,7 @@ const _hoisted_2 = /*#__PURE__*/ _createElementVNode(\"span\")
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_Foo = _resolveComponent(\"Foo\")
 
-  return (_openBlock(), _createBlock(_component_Foo, { class: \"x\" }, {
+  return (_openBlock(), _createBlock(_component_Foo, _hoisted_1, {
     default: _withCtx(() => [
       _hoisted_2
     ]),
@@ -298,9 +298,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn named_slot_templates_are_unsupported_this_installment() {
+fn create_slots_templates_are_unsupported_this_installment() {
     assert_eq!(
-        refused("<Foo><template #header>x</template></Foo>"),
+        refused(r#"<Foo><template #header v-if="ok">x</template></Foo>"#),
         EmitError::Unsupported
     );
 }

@@ -11,13 +11,12 @@
 //! mixed text siblings, static-name `ui.bind`, static-name `ui.on`
 //! (including event/key/option modifiers), native `ui.if`, **native
 //! `ui.for`**, **object-spread `v-bind`** (`normalizeProps` /
-//! `createVNode` / `createBlock`), **object `v-on`** (`toHandlers`),
 //! `mergeProps`), **static-name components** (`resolveComponent` /
 //! `createVNode` / `createBlock`), **object `v-on`** (`toHandlers`),
 //! and **implicit default slots** (`withCtx` / `_: 1|2`, including text,
-//! native / component children, static-vnode hoists, and hoisted static
-//! `ui.for` items). `.native`, template fragments, filters, named /
-//! scoped slots, slot outlets, and builtins stay
+//! native / component children, static-vnode hoists, hoisted static
+//! `ui.for` items, and named / scoped `<template>` slots). `.native`, template
+//! fragments, filters, `createSlots`, slot outlets, and builtins stay
 //! [`EmitError::Unsupported`]. The old lane stays the shipped compile
 //! path; [`super::DOM_LANE_FLAG`] is named here and *read* in the
 //! atelier_dom witness.

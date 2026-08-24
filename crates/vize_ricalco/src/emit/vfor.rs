@@ -4,10 +4,10 @@ use vize_carton::ToCompactString;
 use vize_disegno::expr::ExprRef;
 use vize_disegno::op::{Attribute, BindingOp, DynamicName, ForOp, Op};
 
-use super::buf::Buf;
-use super::js::is_valid_js_identifier;
 use super::EmitCx;
 use super::EmitError;
+use super::buf::Buf;
+use super::js::is_valid_js_identifier;
 
 pub(super) fn emit_for(cx: &mut EmitCx<'_>, for_op: &ForOp<'_>) -> Result<(), EmitError> {
     let source = js_source(&for_op.binding.source)?;
@@ -83,7 +83,7 @@ pub(super) fn emit_for(cx: &mut EmitCx<'_>, for_op: &ForOp<'_>) -> Result<(), Em
             Ok(())
         }
         [Op::Element(element)] => super::emit_for_item_call(cx, element, stable),
-        [Op::Component(component)] => super::component::emit_for_item(cx, component),
+        [Op::Component(component)] => super::component::emit_for_item(cx, component, _id),
         _ => Err(EmitError::Unsupported),
     };
     cx.in_v_for = prev_in_v_for;

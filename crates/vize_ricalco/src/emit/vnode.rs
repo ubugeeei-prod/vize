@@ -2,9 +2,11 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{ensure_sufficient_stack, String};
+use vize_carton::{String, ensure_sufficient_stack};
 use vize_disegno::op::{Attribute, ElementOp, Namespace, Op, Region, TextOp};
 
+use super::EmitCx;
+use super::EmitError;
 use super::buf::Buf;
 use super::children::{
     children_need_text_flag, emit_create_text_vnode, emit_interpolation, emit_text_like,
@@ -12,8 +14,6 @@ use super::children::{
 use super::flag::emit_patch_flag;
 use super::js::{escape_js_string, is_valid_js_identifier};
 use super::props::{admit_bindings, bind_patch, emit_bind_props};
-use super::EmitCx;
-use super::EmitError;
 
 pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), EmitError> {
     admit_unique_root(root)?;
@@ -40,7 +40,7 @@ pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), Em
             Op::For(for_op) => super::emit_for_op(cx, for_op)?,
             Op::Component(component) => {
                 cx.walk.skip(component.bindings.len());
-                super::component::emit_root(cx, component)?;
+                super::component::emit_root(cx, component, id)?;
             }
             _ => return Err(EmitError::Unsupported),
         }
@@ -339,7 +339,7 @@ pub(super) fn emit_array_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), E
         }
         Op::Component(component) => {
             cx.walk.skip(component.bindings.len());
-            super::component::emit_nested(cx, component)
+            super::component::emit_nested(cx, component, id)
         }
         Op::If(if_op) => super::emit_if_op(cx, if_op, id),
         Op::For(for_op) => super::emit_for_op(cx, for_op),

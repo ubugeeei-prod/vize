@@ -9,7 +9,7 @@
 mod support;
 
 use support::with_transformed;
-use vize_ricalco::{emit_dom, EmitError};
+use vize_ricalco::{EmitError, emit_dom};
 
 fn assembled(source: &str) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {

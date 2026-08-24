@@ -9,10 +9,10 @@ use alloc::vec::Vec as StdVec;
 use vize_carton::String;
 use vize_disegno::op::{ElementOp, Namespace, Op, Region};
 
+use super::EmitCx;
 use super::buf::Buf;
 use super::js::escape_js_string;
 use super::vnode::compact_props_object;
-use super::EmitCx;
 
 pub(super) fn emit_hoisted_element(
     cx: &mut EmitCx<'_>,
