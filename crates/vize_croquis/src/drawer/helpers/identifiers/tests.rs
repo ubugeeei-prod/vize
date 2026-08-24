@@ -135,6 +135,39 @@ fn test_extract_identifiers_ignores_regex_literals() {
 }
 
 #[test]
+fn test_extract_identifiers_slow_walks_assignment_targets() {
+    fn to_pairs(ids: Vec<IdentifierRef>) -> Vec<(CompactString, u32)> {
+        ids.into_iter()
+            .map(|identifier| (identifier.name, identifier.offset))
+            .collect()
+    }
+
+    let simple = "(step += 1) as number";
+    assert_eq!(extract_identifiers_oxc(simple), vec!["step"]);
+    assert_eq!(
+        to_pairs(extract_identifier_refs_oxc(simple)),
+        vec![("step".into(), simple.find("step").unwrap() as u32)]
+    );
+
+    let member = "({ value: row[col] = next })";
+    assert_eq!(extract_identifiers_oxc(member), vec!["row", "col", "next"]);
+    assert_eq!(
+        to_pairs(extract_identifier_refs_oxc(member)),
+        vec![
+            ("row".into(), member.find("row").unwrap() as u32),
+            ("col".into(), member.find("col").unwrap() as u32),
+            ("next".into(), member.find("next").unwrap() as u32),
+        ]
+    );
+
+    let destructured = "({ item = fallback, label: alias, ...rest } = source)";
+    assert_eq!(
+        extract_identifiers_oxc(destructured),
+        vec!["item", "fallback", "alias", "rest", "source"]
+    );
+}
+
+#[test]
 fn test_extract_identifiers_ignores_numeric_literal_tails() {
     fn to_pairs(ids: Vec<IdentifierRef>) -> Vec<(CompactString, u32)> {
         ids.into_iter()

@@ -1,8 +1,11 @@
+mod assignment_target;
+
 use oxc_ast::ast::{
     ArrayExpressionElement, BindingPattern, Expression, ObjectPropertyKind, PropertyKey,
 };
 
 use super::super::IdentifierRef;
+use assignment_target::{walk_assignment_target, walk_simple_assignment_target};
 
 pub(super) fn walk_expr(expr: &Expression<'_>, identifiers: &mut Vec<IdentifierRef>) {
     match expr {
@@ -74,22 +77,9 @@ pub(super) fn walk_expr(expr: &Expression<'_>, identifiers: &mut Vec<IdentifierR
         Expression::UnaryExpression(unary) => {
             walk_expr(&unary.argument, identifiers);
         }
-        Expression::UpdateExpression(update) => match &update.argument {
-            oxc_ast::ast::SimpleAssignmentTarget::AssignmentTargetIdentifier(id) => {
-                identifiers.push(IdentifierRef::new(id.name.as_str(), id.span.start));
-            }
-            oxc_ast::ast::SimpleAssignmentTarget::StaticMemberExpression(member) => {
-                walk_expr(&member.object, identifiers);
-            }
-            oxc_ast::ast::SimpleAssignmentTarget::ComputedMemberExpression(member) => {
-                walk_expr(&member.object, identifiers);
-                walk_expr(&member.expression, identifiers);
-            }
-            oxc_ast::ast::SimpleAssignmentTarget::PrivateFieldExpression(field) => {
-                walk_expr(&field.object, identifiers);
-            }
-            _ => {}
-        },
+        Expression::UpdateExpression(update) => {
+            walk_simple_assignment_target(&update.argument, identifiers);
+        }
         Expression::CallExpression(call) => {
             walk_expr(&call.callee, identifiers);
             for arg in call.arguments.iter() {
@@ -131,6 +121,7 @@ pub(super) fn walk_expr(expr: &Expression<'_>, identifiers: &mut Vec<IdentifierR
             }
         }
         Expression::AssignmentExpression(assign) => {
+            walk_assignment_target(&assign.left, identifiers);
             walk_expr(&assign.right, identifiers);
         }
         Expression::TemplateLiteral(template) => {
