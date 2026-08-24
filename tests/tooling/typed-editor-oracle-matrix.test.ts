@@ -18,12 +18,14 @@ test("typed editor oracle matrix covers or explicitly tracks every P0 slice", ()
       "cli-jsx-intrinsic-globals",
       "lsp-jsx-intrinsic-globals",
       "vscode-host-reactive-hover-surface",
+      "vscode-host-component-contract-hover",
       "lsp-imported-component-contract-hover",
       "lsp-component-event-contract-navigation",
       "lsp-component-prop-reexport-hover",
       "lsp-component-v-model-navigation",
       "lsp-static-template-ref-navigation",
       "non-vscode-host-reactive-hover-surface",
+      "non-vscode-host-component-contract-hover",
     ],
   );
 

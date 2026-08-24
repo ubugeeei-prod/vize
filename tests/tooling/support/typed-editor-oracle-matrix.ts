@@ -12,6 +12,7 @@ export type Evidence =
 
 export const rowsRequiringExecutedEvidence = new Set([
   "vscode-host-reactive-hover-surface",
+  "vscode-host-component-contract-hover",
   "lsp-imported-component-contract-hover",
   "lsp-jsx-intrinsic-globals",
   "lsp-component-prop-reexport-hover",
@@ -19,6 +20,7 @@ export const rowsRequiringExecutedEvidence = new Set([
   "lsp-component-v-model-navigation",
   "lsp-static-template-ref-navigation",
   "non-vscode-host-reactive-hover-surface",
+  "non-vscode-host-component-contract-hover",
 ]);
 
 const toolingTestCiEvidence: Evidence = {
@@ -160,6 +162,31 @@ export const matrix: MatrixRow[] = [
     evidence: [
       {
         kind: "file",
+        path: "editors/vscode/test/suite/real-scenario.cjs",
+        requiredText: [
+          "componentContractHovers",
+          "__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor",
+        ],
+      },
+      {
+        kind: "file",
+        path: "editors/vscode/test/suite/real-scenario-expected.cjs",
+        requiredText: [
+          "const ContractChild: VueComponent",
+          "props: { label: string; count?: number };",
+          "Vue component: ContractChild.vue",
+        ],
+      },
+      vscodeHostCiEvidence,
+    ],
+    followUp: "#4591",
+    id: "vscode-host-component-contract-hover",
+    status: "covered",
+  },
+  {
+    evidence: [
+      {
+        kind: "file",
         path: "tests/tooling/lsp-imported-component-hover-type-backed.test.ts",
         requiredText: [
           "script hover describes imported SFC contracts instead of generated markers",
@@ -281,6 +308,37 @@ export const matrix: MatrixRow[] = [
     ],
     followUp: "#4589",
     id: "non-vscode-host-reactive-hover-surface",
+    status: "covered",
+  },
+  {
+    evidence: [
+      {
+        kind: "file",
+        path: "editors/nvim/test/component_contract_hover.lua",
+        requiredText: [
+          "leaked generated component carrier types",
+          "component contract import hover",
+          "component contract script usage hover",
+        ],
+      },
+      {
+        kind: "file",
+        path: "editors/nvim/test/vize_e2e_expected.lua",
+        requiredText: [
+          "component_contract_hovers",
+          "const ContractChild: VueComponent",
+          "Vue component: ContractChild.vue",
+        ],
+      },
+      {
+        kind: "ci",
+        label: "editor-host-smoke runs the packaged Neovim real-server scenario",
+        path: ".github/actions/vscode-host-smoke/action.yml",
+        requiredText: ["vp run --workspace-root test:nvim-extension:real-server"],
+      },
+    ],
+    followUp: "#4591",
+    id: "non-vscode-host-component-contract-hover",
     status: "covered",
   },
 ];
