@@ -1,8 +1,8 @@
 //! Vue helpers this installment can mention, ranked the way
 //! `vue_helper_import_rank` orders the shipped preamble. Same-rank
 //! helpers keep [`Helper::ALL`] order (`createElementVNode` before
-//! `createVNode`, `createBlock` before `createElementBlock`,
-//! `toHandlers` after `mergeProps`).
+//! `createVNode`, `toHandlers` after `mergeProps`, `createBlock`
+//! before `createElementBlock`, `withCtx` after `renderList`).
 
 #[derive(Clone, Copy)]
 pub(super) enum Helper {
@@ -25,10 +25,11 @@ pub(super) enum Helper {
     CreateComment,
     CreateText,
     RenderList,
+    WithCtx,
 }
 
 impl Helper {
-    pub(super) const ALL: [Self; 19] = [
+    pub(super) const ALL: [Self; 20] = [
         Self::ResolveComponent,
         Self::WithKeys,
         Self::WithModifiers,
@@ -48,6 +49,7 @@ impl Helper {
         Self::CreateComment,
         Self::CreateText,
         Self::RenderList,
+        Self::WithCtx,
     ];
 
     pub(super) const fn bit(self) -> u32 {
@@ -71,6 +73,7 @@ impl Helper {
             Self::CreateVNode => 65536,
             Self::CreateBlock => 131072,
             Self::ToHandlers => 262144,
+            Self::WithCtx => 524288,
         }
     }
 
@@ -95,6 +98,7 @@ impl Helper {
             Self::CreateText => "createTextVNode",
             Self::CreateComment => "createCommentVNode",
             Self::RenderList => "renderList",
+            Self::WithCtx => "withCtx",
         }
     }
 
@@ -119,6 +123,7 @@ impl Helper {
             Self::CreateText => "_createTextVNode",
             Self::CreateComment => "_createCommentVNode",
             Self::RenderList => "_renderList",
+            Self::WithCtx => "_withCtx",
         }
     }
 }

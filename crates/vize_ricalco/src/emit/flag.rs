@@ -4,13 +4,14 @@ use vize_carton::ToCompactString;
 
 use super::EmitCx;
 
-const PATCH_NAMES: [(i32, &str); 6] = [
+const PATCH_NAMES: [(i32, &str); 7] = [
     (1, "TEXT"),
     (2, "CLASS"),
     (4, "STYLE"),
     (8, "PROPS"),
     (16, "FULL_PROPS"),
     (32, "NEED_HYDRATION"),
+    (1024, "DYNAMIC_SLOTS"),
 ];
 
 pub(super) fn emit_patch_flag(cx: &mut EmitCx<'_>, flag: i32) {
