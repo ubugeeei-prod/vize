@@ -1,22 +1,22 @@
 //! Static native HTML element / children emission.
 
 use vize_carton::{String, ensure_sufficient_stack};
-use vize_disegno::op::{Attribute, ElementOp, Namespace, Op, Region};
+use vize_disegno::op::{Attribute, BindingOp, ElementOp, Namespace, Op, Region};
 
 use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
 use super::children::{children_need_text_flag, emit_create_text_vnode, emit_text_like};
+use super::directive;
 use super::flag::emit_patch_flag;
 use super::hoist::{compact_props_object, push_attr_pair, unique_attrs};
-use super::model;
 use super::props::{admit_bindings, bind_patch, emit_bind_props};
 
 pub(super) fn emit_unique_element(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
 ) -> Result<(), EmitError> {
-    model::wrap_native(cx, element, |cx| {
+    directive::wrap_element(cx, element, |cx| {
         cx.buf.use_open_block();
         cx.buf.use_create_element_block();
         cx.buf.push("(");
@@ -24,6 +24,7 @@ pub(super) fn emit_unique_element(
         cx.buf.push("(), ");
         emit_call(
             cx, element, /* block */ true, None, /* hoist */ true,
+            /* for_item */ false,
         )?;
         cx.buf.push(")");
         Ok(())
@@ -34,19 +35,21 @@ pub(super) fn emit_fragment_element(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
 ) -> Result<(), EmitError> {
-    model::wrap_native(cx, element, |cx| {
+    directive::wrap_element(cx, element, |cx| {
         cx.buf.use_create_element_vnode();
         emit_call(
             cx, element, /* block */ false, None, /* hoist */ true,
+            /* for_item */ false,
         )
     })
 }
 
 fn emit_nested(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) -> Result<(), EmitError> {
-    model::wrap_native(cx, element, |cx| {
+    directive::wrap_element(cx, element, |cx| {
         cx.buf.use_create_element_vnode();
         emit_call(
             cx, element, /* block */ false, None, /* hoist */ false,
+            /* for_item */ false,
         )
     })
 }
@@ -56,7 +59,7 @@ pub(super) fn emit_if_branch_element(
     element: &ElementOp<'_>,
     key: &str,
 ) -> Result<(), EmitError> {
-    model::wrap_native(cx, element, |cx| {
+    directive::wrap_element(cx, element, |cx| {
         cx.buf.use_open_block();
         cx.buf.use_create_element_block();
         cx.buf.push("(");
@@ -68,6 +71,7 @@ pub(super) fn emit_if_branch_element(
             /* block */ true,
             Some(key),
             /* hoist */ false,
+            /* for_item */ false,
         )?;
         cx.buf.push(")");
         Ok(())
@@ -80,11 +84,12 @@ pub(super) fn emit_for_item_element(
     stable: bool,
     key: Option<&str>,
 ) -> Result<(), EmitError> {
-    model::wrap_native(cx, element, |cx| {
+    directive::wrap_element(cx, element, |cx| {
         if stable {
             cx.buf.use_create_element_vnode();
             return emit_call(
                 cx, element, /* block */ false, key, /* hoist */ false,
+                /* for_item */ true,
             );
         }
         cx.buf.use_open_block();
@@ -94,6 +99,7 @@ pub(super) fn emit_for_item_element(
         cx.buf.push("(), ");
         emit_call(
             cx, element, /* block */ true, key, /* hoist */ false,
+            /* for_item */ true,
         )?;
         cx.buf.push(")");
         Ok(())
@@ -106,6 +112,7 @@ fn emit_call(
     block: bool,
     if_key: Option<&str>,
     allow_hoist: bool,
+    for_item: bool,
 ) -> Result<(), EmitError> {
     admit_native(element)?;
     let alias = if block {
@@ -118,7 +125,8 @@ fn emit_call(
     cx.buf.push(element.tag);
     cx.buf.push("\"");
     let has_children = !element.children.ops.is_empty();
-    let has_binds = !element.bindings.is_empty();
+    let has_custom = directive::has_custom(&element.bindings);
+    let has_binds = has_prop_bindings(&element.bindings);
     let hoist = allow_hoist && if_key.is_none() && root_props_should_hoist(element);
     let patch = bind_patch(&element.bindings, false);
     let text_flag = children_need_text_flag(&element.children);
@@ -126,9 +134,13 @@ fn emit_call(
     if text_flag {
         flag |= 1;
     }
+    if for_item {
+        flag &= !512;
+    }
     let omit_text_only = hoist && block && flag == 1;
     let emit_flag = flag != 0 && !omit_text_only;
-    let has_props = hoist || !element.attributes.is_empty() || has_binds || if_key.is_some();
+    let empty_custom_for =
+        for_item && has_custom && !has_binds && element.attributes.is_empty() && if_key.is_none();
     if hoist {
         let props_alias = cx
             .buf
@@ -137,17 +149,26 @@ fn emit_call(
         cx.buf.push(props_alias.as_str());
     } else if if_key.is_some() || has_binds {
         cx.buf.push(", ");
-        emit_bind_props(cx, &element.attributes, &element.bindings, if_key, false)?;
+        emit_bind_props(
+            cx,
+            &element.attributes,
+            &element.bindings,
+            if_key,
+            false,
+            for_item && has_custom,
+        )?;
     } else if !element.attributes.is_empty() {
         cx.buf.push(", ");
         emit_static_props_inline(cx, element.attributes.iter());
+    } else if empty_custom_for {
+        cx.buf.push(", { }");
     } else if has_children || emit_flag {
         cx.buf.push(", null");
     }
     if has_children {
         cx.buf.push(", ");
-        emit_children(cx, &element.children)?;
-    } else if emit_flag && has_props {
+        emit_children(cx, &element.children, has_custom && allow_hoist && block)?;
+    } else if emit_flag {
         cx.buf.push(", null");
     }
     if emit_flag {
@@ -219,11 +240,25 @@ fn admit_native(element: &ElementOp<'_>) -> Result<(), EmitError> {
     admit_bindings(&element.attributes, &element.bindings)
 }
 
-fn emit_children(cx: &mut EmitCx<'_>, children: &Region<'_>) -> Result<(), EmitError> {
+fn has_prop_bindings(bindings: &[BindingOp<'_>]) -> bool {
+    bindings.iter().any(|binding| {
+        matches!(
+            binding,
+            BindingOp::Bind(_) | BindingOp::On(_) | BindingOp::Model(_)
+        )
+    })
+}
+
+fn emit_children(
+    cx: &mut EmitCx<'_>,
+    children: &Region<'_>,
+    force_array: bool,
+) -> Result<(), EmitError> {
     let ops = &children.ops;
-    if ops
-        .iter()
-        .all(|op| matches!(op, Op::Text(_) | Op::Interpolation(_)))
+    if !force_array
+        && ops
+            .iter()
+            .all(|op| matches!(op, Op::Text(_) | Op::Interpolation(_)))
     {
         return emit_text_like(cx, ops);
     }

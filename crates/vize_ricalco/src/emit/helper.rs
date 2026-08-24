@@ -8,6 +8,7 @@
 pub(super) enum Helper {
     ResolveComponent,
     ResolveDynamicComponent,
+    ResolveDirective,
     VModelText,
     VModelCheckbox,
     VModelRadio,
@@ -43,9 +44,10 @@ pub(super) enum Helper {
 }
 
 impl Helper {
-    pub(super) const ALL: [Self; 34] = [
+    pub(super) const ALL: [Self; 35] = [
         Self::ResolveComponent,
         Self::ResolveDynamicComponent,
+        Self::ResolveDirective,
         Self::VModelText,
         Self::VModelCheckbox,
         Self::VModelRadio,
@@ -82,7 +84,7 @@ impl Helper {
 
     pub(super) const fn rank(self) -> u8 {
         match self {
-            Self::ResolveComponent | Self::ResolveDynamicComponent => 0,
+            Self::ResolveComponent | Self::ResolveDynamicComponent | Self::ResolveDirective => 0,
             Self::VModelText | Self::VModelCheckbox | Self::VModelRadio | Self::VModelSelect => 1,
             Self::WithDirectives | Self::WithKeys | Self::WithModifiers => 2,
             Self::ToDisplayString => 3,
@@ -145,6 +147,7 @@ impl Helper {
             Self::VModelRadio => 2147483648,
             Self::VModelSelect => 4294967296,
             Self::WithDirectives => 8589934592,
+            Self::ResolveDirective => 17179869184,
         }
     }
 
@@ -152,6 +155,7 @@ impl Helper {
         match self {
             Self::ResolveComponent => "resolveComponent",
             Self::ResolveDynamicComponent => "resolveDynamicComponent",
+            Self::ResolveDirective => "resolveDirective",
             Self::VModelText => "vModelText",
             Self::VModelCheckbox => "vModelCheckbox",
             Self::VModelRadio => "vModelRadio",
@@ -191,6 +195,7 @@ impl Helper {
         match self {
             Self::ResolveComponent => "_resolveComponent",
             Self::ResolveDynamicComponent => "_resolveDynamicComponent",
+            Self::ResolveDirective => "_resolveDirective",
             Self::VModelText => "_vModelText",
             Self::VModelCheckbox => "_vModelCheckbox",
             Self::VModelRadio => "_vModelRadio",

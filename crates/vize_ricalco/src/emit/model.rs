@@ -11,7 +11,6 @@ use vize_disegno::op::{BindingOp, ElementOp, ModelOp};
 
 use super::EmitCx;
 use super::EmitError;
-use super::buf::Buf;
 use super::helper::Helper;
 use super::js::push_ident_key;
 use super::props::Piece;
@@ -84,19 +83,35 @@ pub(super) fn patch_keys(
     }
 }
 
-pub(super) fn wrap_native(
+pub(super) fn first_runtime_model<'a>(element: &'a ElementOp<'a>) -> Option<&'a ModelOp<'a>> {
+    if !matches!(element.tag, "input" | "textarea" | "select") {
+        return None;
+    }
+    element.bindings.iter().find_map(|binding| match binding {
+        BindingOp::Model(model) => Some(&**model),
+        _ => None,
+    })
+}
+
+pub(super) fn emit_native_entry(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
-    emit: impl FnOnce(&mut EmitCx<'_>) -> Result<(), EmitError>,
+    model: &ModelOp<'_>,
 ) -> Result<(), EmitError> {
-    let Some(model) = first_runtime_model(element) else {
-        return emit(cx);
-    };
-    cx.buf.use_with_directives();
-    cx.buf.push(Buf::with_directives_alias());
-    cx.buf.push("(");
-    emit(cx)?;
-    emit_native_closing(cx, element, model)
+    let helper = native_helper(element);
+    let source = js_source(model)?;
+    let modifiers = native_modifiers(model);
+    cx.buf.use_helper(helper);
+    if modifiers.is_empty() {
+        cx.buf.push("  [");
+        cx.buf.push(helper.alias());
+        cx.buf.push(", ");
+        cx.buf.push(source);
+        cx.buf.push("]");
+    } else {
+        emit_modified_entry(cx, helper, source, &modifiers);
+    }
+    Ok(())
 }
 
 pub(super) fn emit_value(cx: &mut EmitCx<'_>, name: &str, source: &str) {
@@ -128,31 +143,6 @@ pub(super) fn emit_assignment(cx: &mut EmitCx<'_>, source: &str) {
     cx.buf.push("$event => ((");
     cx.buf.push(source);
     cx.buf.push(") = $event)");
-}
-
-fn emit_native_closing(
-    cx: &mut EmitCx<'_>,
-    element: &ElementOp<'_>,
-    model: &ModelOp<'_>,
-) -> Result<(), EmitError> {
-    let helper = native_helper(element);
-    let source = js_source(model)?;
-    let modifiers = native_modifiers(model);
-    cx.buf.use_helper(helper);
-    cx.buf.push(", [");
-    cx.buf.newline();
-    if modifiers.is_empty() {
-        cx.buf.push("  [");
-        cx.buf.push(helper.alias());
-        cx.buf.push(", ");
-        cx.buf.push(source);
-        cx.buf.push("]");
-    } else {
-        emit_modified_entry(cx, helper, source, &modifiers);
-    }
-    cx.buf.newline();
-    cx.buf.push("])");
-    Ok(())
 }
 
 fn emit_modified_entry(cx: &mut EmitCx<'_>, helper: Helper, source: &str, modifiers: &[&str]) {
@@ -188,16 +178,6 @@ fn emit_modified_entry(cx: &mut EmitCx<'_>, helper: Helper, source: &str, modifi
     }
     cx.buf.newline();
     cx.buf.push("  ]");
-}
-
-fn first_runtime_model<'a>(element: &'a ElementOp<'a>) -> Option<&'a ModelOp<'a>> {
-    if !matches!(element.tag, "input" | "textarea" | "select") {
-        return None;
-    }
-    element.bindings.iter().find_map(|binding| match binding {
-        BindingOp::Model(model) => Some(&**model),
-        _ => None,
-    })
 }
 
 fn native_helper(element: &ElementOp<'_>) -> Helper {

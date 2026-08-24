@@ -198,10 +198,22 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn a_custom_directive_beside_v_model_stays_unsupported() {
+fn a_custom_directive_beside_v_model_merges_into_one_wrap() {
     assert_eq!(
-        refused(r#"<input v-model="msg" v-example>"#),
-        EmitError::Unsupported
+        assembled(r#"<input v-model="msg" v-example>"#),
+        pin("\
+const { resolveDirective: _resolveDirective, vModelText: _vModelText, withDirectives: _withDirectives, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _directive_example = _resolveDirective(\"example\")
+
+  return _withDirectives((_openBlock(), _createElementBlock(\"input\", {
+    \"onUpdate:modelValue\": $event => ((msg) = $event)
+  }, null, 8 /* PROPS */, [\"onUpdate:modelValue\"])), [
+    [_vModelText, msg],
+    [_directive_example]
+  ])
+}")
     );
 }
 

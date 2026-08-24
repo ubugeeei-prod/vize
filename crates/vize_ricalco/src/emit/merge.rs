@@ -110,7 +110,7 @@ pub(super) fn emit_spread_props(
             Arg::BindSpread(bind) => cx.buf.push(js_value(bind)?.source),
             Arg::OnSpread(on) => emit_to_handlers(cx, on)?,
             Arg::Object { if_key, pieces } => {
-                emit_props_object(cx, pieces, *if_key, true)?;
+                emit_props_object(cx, pieces, *if_key, true, false)?;
             }
         }
     }
