@@ -45,6 +45,8 @@ mod children;
 mod component;
 #[path = "emit/create_slots.rs"]
 mod create_slots;
+#[path = "emit/create_slots_walk.rs"]
+mod create_slots_walk;
 #[path = "emit/directive.rs"]
 mod directive;
 #[path = "emit/flag.rs"]
@@ -67,6 +69,10 @@ mod on;
 mod outlet;
 #[path = "emit/props.rs"]
 mod props;
+#[path = "emit/props_bind.rs"]
+mod props_bind;
+#[path = "emit/props_object.rs"]
+mod props_object;
 #[path = "emit/slots.rs"]
 mod slots;
 #[path = "emit/tpl.rs"]

@@ -1,3 +1,11 @@
+//! Shared S2 vs shipped DOM-lane differential harness.
+
+#![allow(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    clippy::disallowed_methods
+)]
+
 use vize_atelier_dom::compile_template;
 use vize_carton::Allocator;
 use vize_ricalco::{DOM_LANE_FLAG, EmitError, emit_dom_source};

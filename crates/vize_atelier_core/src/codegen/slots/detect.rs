@@ -1,5 +1,6 @@
 //! Slot detection predicates (which children form slots, dynamic/forwarded checks).
 
+use crate::codegen::context::CodegenContext;
 use crate::steps::v_slot::{collect_slots, has_v_slot};
 use crate::{ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
 use vize_carton::ensure_sufficient_stack;
@@ -95,6 +96,17 @@ pub fn has_slot_children(el: &ElementNode<'_>) -> bool {
 
     // Check for any children (default slot) or template slots
     true
+}
+
+/// KeepAlive always needs `DYNAMIC_SLOTS`. Other components need it when the
+/// slot object itself can change (`v-for` parent, dynamic names, forwarded
+/// outlets).
+pub fn needs_dynamic_slots_patch(ctx: &CodegenContext, el: &ElementNode<'_>) -> bool {
+    el.tag == "KeepAlive"
+        || el.tag == "keep-alive"
+        || (ctx.in_v_for && has_slot_children(el))
+        || has_dynamic_slots_flag(el, &ctx.source)
+        || (ctx.has_slot_params() && has_forwarded_slot_outlet(el))
 }
 
 /// Check if component has dynamic slots (requires DYNAMIC_SLOTS patch flag)

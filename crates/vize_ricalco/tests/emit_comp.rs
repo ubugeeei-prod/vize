@@ -181,31 +181,50 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 
 #[test]
 fn static_props_hoists_keep_their_queued_aliases() {
-    let out = assembled(r#"<div id="root"><Foo id="x">hello</Foo></div>"#);
-    assert!(
-        out.contains("const _hoisted_1 = { id: \"root\" }\nconst _hoisted_2 = { id: \"x\" }"),
-        "hoists should be emitted in queue order:\n{out}"
-    );
-    assert!(
-        out.contains("_createElementBlock(\"div\", _hoisted_1, ["),
-        "root element should keep the alias returned by its queued hoist:\n{out}"
-    );
-    assert!(
-        out.contains("_createVNode(_component_Foo, _hoisted_2, {"),
-        "component should keep the alias returned by its queued hoist:\n{out}"
+    assert_eq!(
+        assembled(r#"<div id="root"><Foo id="x">hello</Foo></div>"#),
+        pin("\
+const { resolveComponent: _resolveComponent, createVNode: _createVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue
+
+const _hoisted_1 = { id: \"root\" }
+const _hoisted_2 = { id: \"x\" }
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, [
+    _createVNode(_component_Foo, _hoisted_2, {
+      default: _withCtx(() => [
+        _createTextVNode(\"hello\")
+      ]),
+      _: 1 /* STABLE */
+    })
+  ]))
+}")
     );
 }
 
 #[test]
 fn a_nested_text_slot_inside_v_for_is_dynamic() {
-    let out = assembled(r#"<div v-for="i in n"><Foo>hello</Foo></div>"#);
-    assert!(
-        out.contains("_: 2 /* DYNAMIC */"),
-        "slot object inside v-for should be dynamic:\n{out}"
-    );
-    assert!(
-        out.contains("}, 1024 /* DYNAMIC_SLOTS */)"),
-        "nested component with a slot inside v-for needs DYNAMIC_SLOTS:\n{out}"
+    assert_eq!(
+        assembled(r#"<div v-for="i in n"><Foo>hello</Foo></div>"#),
+        pin("\
+const { resolveComponent: _resolveComponent, createVNode: _createVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createTextVNode: _createTextVNode, renderList: _renderList, withCtx: _withCtx } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(n, (i) => {
+    return (_openBlock(), _createElementBlock(\"div\", null, [
+      _createVNode(_component_Foo, null, {
+        default: _withCtx(() => [
+          _createTextVNode(\"hello\")
+        ]),
+        _: 2 /* DYNAMIC */
+      }, 1024 /* DYNAMIC_SLOTS */)
+    ]))
+  }), 256 /* UNKEYED_FRAGMENT */))
+}")
     );
 }
 

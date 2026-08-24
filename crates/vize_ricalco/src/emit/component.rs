@@ -131,7 +131,7 @@ fn collect_from<'a>(region: &Region<'a>, names: &mut StdVec<&'a str>) {
                 collect_from(&component.children, names);
                 if !is_builtin(component.name)
                     && !builtin::is_dynamic_component(component)
-                    && !names.iter().any(|seen| *seen == component.name)
+                    && !names.contains(&component.name)
                 {
                     names.push(component.name);
                 }

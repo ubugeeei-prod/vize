@@ -27,7 +27,8 @@ use super::super::{
 use super::helpers::{get_element_key, has_other_props, should_skip_prop};
 use super::item_props::{
     EventPropAction, event_prop_action, event_prop_sets, generate_event_prop_action,
-    is_for_item_segment_skip_prop, strip_need_patch_for_v_for_item,
+    is_for_item_segment_skip_prop, push_null_props_if_missing, strip_need_patch_for_v_for_item,
+    unwrap_template_single_element,
 };
 use super::slot_outlet::generate_for_slot_outlet;
 use vize_carton::ToCompactString;
@@ -111,9 +112,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                 // Children
                 let children_el = unwrapped_child.unwrap_or(el);
                 if !children_el.children.is_empty() {
-                    if !emitted_props {
-                        ctx.push(", null");
-                    }
+                    push_null_props_if_missing(ctx, emitted_props);
                     ctx.push(", ");
                     if gen_is_template {
                         ctx.push("[");
@@ -147,9 +146,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     if children_el.children.is_empty()
                         && (patch_flag.is_some() || dynamic_props.is_some())
                     {
-                        if !emitted_props {
-                            ctx.push(", null");
-                        }
+                        push_null_props_if_missing(ctx, emitted_props);
                         ctx.push(", null");
                     }
                     if let Some(flag) = patch_flag {
@@ -267,9 +264,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                 // own account rather than off the child list (#3467).
                 let component_slots = is_component && has_slot_children(children_el);
                 if !children_el.children.is_empty() || component_slots {
-                    if !emitted_props {
-                        ctx.push(", null");
-                    }
+                    push_null_props_if_missing(ctx, emitted_props);
                     ctx.push(", ");
                     if component_slots {
                         // Component children must be compiled as slot functions,
@@ -349,9 +344,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                         && !component_slots
                         && (patch_flag.is_some() || dynamic_props.is_some())
                     {
-                        if !emitted_props {
-                            ctx.push(", null");
-                        }
+                        push_null_props_if_missing(ctx, emitted_props);
                         ctx.push(", null");
                     }
                     if let Some(flag) = patch_flag {
@@ -387,9 +380,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     if flag_el.children.is_empty()
                         && (patch_flag.is_some() || dynamic_props.is_some())
                     {
-                        if !emitted_props {
-                            ctx.push(", null");
-                        }
+                        push_null_props_if_missing(ctx, emitted_props);
                         ctx.push(", null");
                     }
                     if let Some(flag) = patch_flag {
@@ -440,22 +431,6 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
             ctx.skip_scope_id = prev_skip_scope_id;
         }
         _ => generate_node(ctx, node),
-    }
-}
-
-fn unwrap_template_single_element<'a>(el: &'a ElementNode<'a>) -> Option<&'a ElementNode<'a>> {
-    if el.tag_type != ElementType::Template || el.children.len() != 1 {
-        return None;
-    }
-
-    let TemplateChildNode::Element(child_el) = &el.children[0] else {
-        return None;
-    };
-
-    if child_el.tag_type == ElementType::Element {
-        Some(child_el)
-    } else {
-        None
     }
 }
 

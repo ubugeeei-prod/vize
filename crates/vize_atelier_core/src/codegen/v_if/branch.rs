@@ -29,7 +29,7 @@ use super::{
         },
         slots::{
             generate_slot_outlet_name, generate_slot_outlet_props_with_key, generate_slots,
-            has_dynamic_slots_flag, has_forwarded_slot_outlet, has_slot_children,
+            has_slot_children, needs_dynamic_slots_patch,
         },
     },
     generate_if_branch_key,
@@ -235,12 +235,7 @@ fn generate_if_branch_component(
         patch_flag = if new_flag > 0 { Some(new_flag) } else { None };
     }
 
-    if el.tag == "KeepAlive"
-        || el.tag == "keep-alive"
-        || (ctx.in_v_for && has_slot_children(el))
-        || has_dynamic_slots_flag(el, &ctx.source)
-        || (ctx.has_slot_params() && has_forwarded_slot_outlet(el))
-    {
+    if needs_dynamic_slots_patch(ctx, el) {
         patch_flag = Some(patch_flag.unwrap_or(0) | 1024);
     }
 

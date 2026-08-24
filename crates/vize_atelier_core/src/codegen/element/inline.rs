@@ -21,8 +21,7 @@ use super::{
         props::generate_props,
         slots::{
             generate_slot_outlet_name, generate_slot_outlet_props, generate_slots,
-            has_dynamic_slots_flag, has_forwarded_slot_outlet, has_slot_children,
-            has_slot_outlet_props,
+            has_slot_children, has_slot_outlet_props, needs_dynamic_slots_patch,
         },
     },
     directives::{
@@ -294,12 +293,7 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 
             // KeepAlive always needs DYNAMIC_SLOTS. Other components need it when
             // slot structure is dynamic.
-            if el.tag == "KeepAlive"
-                || el.tag == "keep-alive"
-                || (ctx.in_v_for && has_slot_children(el))
-                || has_dynamic_slots_flag(el, &ctx.source)
-                || (ctx.has_slot_params() && has_forwarded_slot_outlet(el))
-            {
+            if needs_dynamic_slots_patch(ctx, el) {
                 patch_flag = Some(patch_flag.unwrap_or(0) | 1024);
             }
 

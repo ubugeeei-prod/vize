@@ -17,5 +17,5 @@ pub(crate) use outlet::{
     has_slot_outlet_props,
 };
 
-pub use detect::{has_dynamic_slots_flag, has_forwarded_slot_outlet, has_slot_children};
+pub use detect::{has_dynamic_slots_flag, has_slot_children, needs_dynamic_slots_patch};
 pub use generate::generate_slots;

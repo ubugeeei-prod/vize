@@ -1,6 +1,6 @@
 //! Property helpers shared by the v-for item generation paths.
 
-use crate::PropNode;
+use crate::{ElementNode, ElementType, PropNode, TemplateChildNode};
 
 use super::{generate::generate_single_prop, helpers::should_skip_prop};
 use crate::codegen::{
@@ -82,4 +82,22 @@ pub(super) fn is_for_item_segment_skip_prop(prop: &PropNode<'_>, skip_is_prop: b
         PropNode::Directive(dir)
             if dir.arg.is_none() && (dir.name == "bind" || dir.name == "on")
     )
+}
+
+pub(super) fn unwrap_template_single_element<'a>(
+    el: &'a ElementNode<'a>,
+) -> Option<&'a ElementNode<'a>> {
+    if el.tag_type != ElementType::Template || el.children.len() != 1 {
+        return None;
+    }
+    let TemplateChildNode::Element(child_el) = &el.children[0] else {
+        return None;
+    };
+    (child_el.tag_type == ElementType::Element).then_some(child_el)
+}
+
+pub(super) fn push_null_props_if_missing(ctx: &mut CodegenContext, emitted_props: bool) {
+    if !emitted_props {
+        ctx.push(", null");
+    }
 }

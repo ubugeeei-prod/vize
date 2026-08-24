@@ -13,6 +13,7 @@ use super::detect::{
     has_conditional_or_loop_slots, has_forwarded_slot_outlet, slots_are_only_forwarded,
     slots_spread,
 };
+use super::name::{component_root_slot, emit_slot_property_name};
 use super::params::{extract_slot_params, get_slot_props, prefix_slot_defaults};
 
 /// Generate slots object for component
@@ -55,14 +56,7 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 
     // Check for v-slot on component root. Bare `v-slot` is the default slot;
     // named / dynamic root spellings preserve their authored key.
-    let root_slot = el.props.iter().find_map(|p| {
-        if let PropNode::Directive(dir) = p
-            && dir.name == "slot"
-        {
-            return Some(dir.as_ref());
-        }
-        None
-    });
+    let root_slot = component_root_slot(el);
 
     let collected_slots = collect_slots(el, &ctx.source);
     let has_forwarded_slots = has_forwarded_slot_outlet(el);
@@ -262,27 +256,6 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     ctx.deindent();
     ctx.newline();
     ctx.push("}");
-}
-
-fn emit_slot_property_name(
-    ctx: &mut CodegenContext,
-    slot_dir: &crate::DirectiveNode<'_>,
-    slot_name: &str,
-    is_dynamic: bool,
-) {
-    if is_dynamic {
-        ctx.push("[");
-        if let Some(arg) = &slot_dir.arg {
-            generate_expression(ctx, arg);
-        }
-        ctx.push("]");
-    } else if is_valid_js_identifier(slot_name) {
-        ctx.push(slot_name);
-    } else {
-        ctx.push("\"");
-        ctx.push(&escape_js_string(slot_name));
-        ctx.push("\"");
-    }
 }
 
 /// Generate children for a slot
