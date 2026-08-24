@@ -1,7 +1,5 @@
 //! Static native HTML element / children emission.
 
-use alloc::vec::Vec as StdVec;
-
 use vize_carton::{String, ensure_sufficient_stack};
 use vize_disegno::op::{Attribute, ElementOp, Namespace, Op, Region, TextOp};
 
@@ -12,7 +10,7 @@ use super::children::{
     children_need_text_flag, emit_create_text_vnode, emit_interpolation, emit_text_like,
 };
 use super::flag::emit_patch_flag;
-use super::js::{escape_js_string, is_valid_js_identifier};
+use super::hoist::{compact_props_object, push_attr_pair, unique_attrs};
 use super::props::{admit_bindings, bind_patch, emit_bind_props};
 
 pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), EmitError> {
@@ -22,8 +20,6 @@ pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), Em
         match op {
             Op::Text(text) if is_ignorable_root_text(text) => {}
             Op::Element(element) => {
-                // Descendants mint before later root siblings (page order:
-                // owner, bindings, children, then the next root op).
                 cx.walk.skip(element.bindings.len());
                 cx.buf.use_open_block();
                 cx.buf.use_create_element_block();
@@ -42,6 +38,10 @@ pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), Em
                 cx.walk.skip(component.bindings.len());
                 super::component::emit_root(cx, component, id)?;
             }
+            Op::Slot(slot) => {
+                cx.walk.skip(slot.bindings.len());
+                super::outlet::emit_outlet(cx, slot, None, false)?;
+            }
             _ => return Err(EmitError::Unsupported),
         }
     }
@@ -53,7 +53,12 @@ fn admit_unique_root(root: &Region<'_>) -> Result<(), EmitError> {
     for op in root.ops.iter() {
         match op {
             Op::Text(text) if is_ignorable_root_text(text) => {}
-            Op::Element(_) | Op::Component(_) | Op::Interpolation(_) | Op::If(_) | Op::For(_)
+            Op::Element(_)
+            | Op::Component(_)
+            | Op::Interpolation(_)
+            | Op::If(_)
+            | Op::For(_)
+            | Op::Slot(_)
                 if !found =>
             {
                 found = true
@@ -201,25 +206,6 @@ fn root_props_should_hoist(element: &ElementOp<'_>) -> bool {
             .all(|attribute| attribute.name != "ref")
 }
 
-/// First-occurrence static attrs as a single-line object, matching
-/// hoisted `JsChildNode::Object` emission.
-pub(super) fn compact_props_object<'a>(
-    attributes: impl Iterator<Item = &'a Attribute<'a>>,
-) -> String {
-    let unique = unique_attrs(attributes);
-    let mut out = String::from("{ ");
-    for (i, attr) in unique.iter().enumerate() {
-        if i > 0 {
-            out.push_str(", ");
-        }
-        push_attr_pair(&mut out, attr);
-    }
-    out.push_str(" }");
-    out
-}
-
-/// First-occurrence static attrs, matching
-/// `vize_atelier_core::codegen::props::generate::try_generate_static_attrs`.
 fn emit_static_props_inline<'a>(
     cx: &mut EmitCx<'_>,
     attributes: impl Iterator<Item = &'a Attribute<'a>>,
@@ -252,35 +238,6 @@ fn emit_static_props_inline<'a>(
     } else {
         cx.buf.push(" }");
     }
-}
-
-fn unique_attrs<'a>(
-    attributes: impl Iterator<Item = &'a Attribute<'a>>,
-) -> StdVec<&'a Attribute<'a>> {
-    let mut unique: StdVec<&Attribute<'_>> = StdVec::new();
-    for attr in attributes {
-        if unique.iter().any(|seen| seen.name == attr.name) {
-            continue;
-        }
-        unique.push(attr);
-    }
-    unique
-}
-
-fn push_attr_pair(out: &mut String, attr: &Attribute<'_>) {
-    let quoted = !is_valid_js_identifier(attr.name);
-    if quoted {
-        out.push('"');
-    }
-    out.push_str(attr.name);
-    if quoted {
-        out.push('"');
-    }
-    out.push_str(": \"");
-    if let Some(value) = attr.value {
-        out.push_str(escape_js_string(value).as_str());
-    }
-    out.push('"');
 }
 
 fn admit_native(element: &ElementOp<'_>) -> Result<(), EmitError> {
@@ -343,6 +300,10 @@ pub(super) fn emit_array_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), E
         }
         Op::If(if_op) => super::emit_if_op(cx, if_op, id),
         Op::For(for_op) => super::emit_for_op(cx, for_op),
-        Op::Text(_) | Op::Interpolation(_) | Op::Slot(_) => Err(EmitError::Unsupported),
+        Op::Slot(slot) => {
+            cx.walk.skip(slot.bindings.len());
+            super::outlet::emit_outlet(cx, slot, None, false)
+        }
+        Op::Text(_) | Op::Interpolation(_) => Err(EmitError::Unsupported),
     })
 }

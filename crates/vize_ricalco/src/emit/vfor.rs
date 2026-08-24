@@ -23,6 +23,10 @@ pub(super) fn emit_for(cx: &mut EmitCx<'_>, for_op: &ForOp<'_>) -> Result<(), Em
             component.bindings.len(),
             has_item_key(&component.attributes, &component.bindings),
         ),
+        [Op::Slot(slot)] => (
+            slot.bindings.len(),
+            has_item_key(&slot.attributes, &slot.bindings),
+        ),
         _ => return Err(EmitError::Unsupported),
     };
     let stable = is_numeric(source);
@@ -84,6 +88,7 @@ pub(super) fn emit_for(cx: &mut EmitCx<'_>, for_op: &ForOp<'_>) -> Result<(), Em
         }
         [Op::Element(element)] => super::emit_for_item_call(cx, element, stable),
         [Op::Component(component)] => super::component::emit_for_item(cx, component, _id),
+        [Op::Slot(slot)] => super::outlet::emit_outlet(cx, slot, None, false),
         _ => Err(EmitError::Unsupported),
     };
     cx.in_v_for = prev_in_v_for;
@@ -98,14 +103,14 @@ pub(super) fn emit_for(cx: &mut EmitCx<'_>, for_op: &ForOp<'_>) -> Result<(), Em
     Ok(())
 }
 
-fn js_source<'a>(expr: &'a ExprRef<'a>) -> Result<&'a str, EmitError> {
+pub(super) fn js_source<'a>(expr: &'a ExprRef<'a>) -> Result<&'a str, EmitError> {
     match expr {
         ExprRef::Js(js) => Ok(js.source),
         _ => Err(EmitError::Unsupported),
     }
 }
 
-fn value_alias<'a>(expr: &'a ExprRef<'a>) -> Result<&'a str, EmitError> {
+pub(super) fn value_alias<'a>(expr: &'a ExprRef<'a>) -> Result<&'a str, EmitError> {
     match expr {
         ExprRef::Js(js) if js.source.is_empty() => Ok("_item"),
         ExprRef::Js(js) if is_valid_js_identifier(js.source) => Ok(js.source),
@@ -113,7 +118,9 @@ fn value_alias<'a>(expr: &'a ExprRef<'a>) -> Result<&'a str, EmitError> {
     }
 }
 
-fn optional_ident<'a>(expr: &'a Option<ExprRef<'a>>) -> Result<Option<&'a str>, EmitError> {
+pub(super) fn optional_ident<'a>(
+    expr: &'a Option<ExprRef<'a>>,
+) -> Result<Option<&'a str>, EmitError> {
     match expr {
         None => Ok(None),
         Some(expr) => Ok(Some(value_alias(expr)?)),

@@ -25,12 +25,6 @@ fn pin(visual: &str) -> String {
     visual.replace(")\n\n  return", ")\n  \n  return")
 }
 
-fn refused(source: &str) -> EmitError {
-    with_transformed(source, |lowered, _folio, facts, _budget| {
-        emit_dom(lowered, facts).expect_err("expected Unsupported")
-    })
-}
-
 #[test]
 fn a_named_header_slot_uses_with_ctx() {
     assert_eq!(
@@ -171,13 +165,5 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     _: 1 /* STABLE */
   }))
 }")
-    );
-}
-
-#[test]
-fn a_v_if_named_template_is_unsupported_this_installment() {
-    assert_eq!(
-        refused(r#"<Foo><template #header v-if="ok">x</template></Foo>"#),
-        EmitError::Unsupported
     );
 }

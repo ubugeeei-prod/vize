@@ -124,7 +124,7 @@ pub(crate) fn lower_for<'a>(
     };
 
     let region = Region {
-        ops: if element.tag() == "template" {
+        ops: if element.tag() == "template" && !analyzed.has_slot_spelling() {
             cx.report_missing_close(element);
             record_template_drops(cx, element, analyzed, None);
             lower_children(cx, &element.children, ns)
