@@ -18,9 +18,11 @@
 //! `<template>` slots, `createSlots` for `v-if` / `v-for` slot
 //! templates, **slot outlets** (`renderSlot` / `_: 3 FORWARDED`), and
 //! Vue builtins (`Teleport` / `KeepAlive` / `Transition` / `Suspense`),
-//! and `<component :is>` (`resolveDynamicComponent`)).
-//! Object `v-on`, `.native`, template fragments, and filters
-//! stay [`EmitError::Unsupported`]. The old
+//! `<component :is>` (`resolveDynamicComponent`), and **template
+//! fragments** (empty → `null`, multi-root / compound-root
+//! `_Fragment` + `STABLE_FRAGMENT`).
+//! Object `v-on`, `.native`, and filters stay
+//! [`EmitError::Unsupported`]. The old
 //! lane stays the shipped compile path; [`super::DOM_LANE_FLAG`] is
 //! named here and *read* in the atelier_dom witness.
 
@@ -36,6 +38,8 @@ mod component;
 mod create_slots;
 #[path = "emit/flag.rs"]
 mod flag;
+#[path = "emit/fragment.rs"]
+mod fragment;
 #[path = "emit/helper.rs"]
 mod helper;
 #[path = "emit/hoist.rs"]
@@ -72,7 +76,7 @@ use crate::pass::{S2Facts, run_transform};
 
 use self::buf::Buf;
 use self::helper::Helper;
-use self::vnode::emit_root;
+use self::fragment::emit_root;
 
 /// Transform visit order for helpers the shipped lane parks on
 /// `root.helpers` (`CreateElementVNode` on native elements,
@@ -207,6 +211,7 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
         slot_param_depth: 0,
     };
     prefer_transform_helpers(&mut cx.buf, &lowered.root);
+    fragment::prefer_root_fragment(&mut cx.buf, &lowered.root);
     cx.buf
         .push("function render(_ctx, _cache, $props, $setup, $data, $options) {");
     cx.buf.indent();

@@ -229,14 +229,6 @@ impl Buf {
         alias
     }
 
-    pub(super) fn hoist_root_props(&mut self, object: String) {
-        self.push_hoist(object);
-    }
-
-    pub(super) fn hoisted_props_alias() -> &'static str {
-        "_hoisted_1"
-    }
-
     fn ordered_helpers(&self) -> StdVec<Helper> {
         let mut listed = StdVec::new();
         let mut bits = 0u32;
