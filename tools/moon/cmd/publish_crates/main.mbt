@@ -44,6 +44,29 @@ let blocked_by_manual_publish_crates : Array[String] = [
   "vize_patina",
 ]
 
+fn includes_string(items : Array[String], value : String) -> Bool {
+  for item in items {
+    if item == value {
+      return true
+    }
+  }
+  false
+}
+
+fn known_release_crates() -> Array[String] {
+  let crates : Array[String] = []
+  for crate_name in published_crates {
+    crates.push(crate_name)
+  }
+  for crate_name in manual_publish_crates {
+    crates.push(crate_name)
+  }
+  for crate_name in blocked_by_manual_publish_crates {
+    crates.push(crate_name)
+  }
+  crates
+}
+
 /// Parses a positive integer from a string and falls back on invalid input.
 fn positive_int_or(value : String, fallback : Int) -> Int {
   try {
@@ -99,12 +122,53 @@ fn workspace_version_from_content(content : String) -> String? {
 /// before crates.io index propagation catches up.
 async fn run_app() -> Int {
   let args = @tool.cli_args()
-  let dry_run = args.length() == 1 && args[0] == "--dry-run"
-  if !args.is_empty() && !dry_run {
-    @stdio.stderr.write(
-      "Usage: moon run --target native tools/moon/cmd/publish_crates -- [--dry-run]\n",
-    )
-    return 1
+  let mut dry_run = false
+  let selected_crates : Array[String] = []
+  let usage = "Usage: moon run --target native tools/moon/cmd/publish_crates -- [--dry-run] [--crate <crate>...]\n"
+  let mut index = 0
+  while index < args.length() {
+    match args[index] {
+      "--dry-run" => {
+        if dry_run {
+          @stdio.stderr.write(usage)
+          return 1
+        }
+        dry_run = true
+        index = index + 1
+      }
+      "--crate" => {
+        guard index + 1 < args.length() else {
+          @stdio.stderr.write(usage)
+          return 1
+        }
+        selected_crates.push(args[index + 1])
+        index = index + 2
+      }
+      _ => {
+        @stdio.stderr.write(usage)
+        return 1
+      }
+    }
+  }
+
+  let publish_targets : Array[String] = []
+  if selected_crates.is_empty() {
+    for crate_name in published_crates {
+      publish_targets.push(crate_name)
+    }
+  } else {
+    let known_crates = known_release_crates()
+    for crate_name in selected_crates {
+      if !includes_string(known_crates, crate_name) {
+        @stdio.stderr.write("Unknown release crate: \{crate_name}\n" + usage)
+        return 1
+      }
+      if includes_string(publish_targets, crate_name) {
+        @stdio.stderr.write("Duplicate release crate: \{crate_name}\n" + usage)
+        return 1
+      }
+      publish_targets.push(crate_name)
+    }
   }
 
   let cargo_toml = match @tool.read_file_to_string("Cargo.toml") {
@@ -140,21 +204,25 @@ async fn run_app() -> Int {
       "Deferred dependent crates: " + blocked_by_manual_publish_crates.join(", "),
     )
   }
+  if !selected_crates.is_empty() {
+    println("Selected crate publish plan: " + publish_targets.join(", "))
+  }
 
   if dry_run {
     let package_args = ["package", "--locked", "--no-verify"]
-    for crate_name in published_crates {
+    for crate_name in publish_targets {
       package_args.push("-p")
       package_args.push(crate_name)
     }
-    println("Packaging the complete supported crate plan for v\{version}...")
+    let plan_label = if selected_crates.is_empty() { "complete supported" } else { "selected" }
+    println("Packaging the \{plan_label} crate plan for v\{version}...")
     if @process.run("cargo", package_args) != 0 {
       @stdio.stderr.write("Crate package validation failed for v\{version}.\n")
       return 1
     }
 
     let mut frontier : String? = None
-    for crate_name in published_crates {
+    for crate_name in publish_targets {
       match query_crate_version(crate_name, version) {
         QueryFailed(message) => {
           @stdio.stderr.write("Release registry check failed: " + message + "\n")
@@ -200,7 +268,7 @@ async fn run_app() -> Int {
     return 0
   }
 
-  for crate_name in published_crates {
+  for crate_name in publish_targets {
     println("Publishing \{crate_name} v\{version}...")
     if crate_is_published(crate_name, version) {
       println("\{crate_name} v\{version} is already published, skipping publish.")
