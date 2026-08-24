@@ -17,6 +17,8 @@ on:
       - "crates/vize/tests/content_mapper_importer_scoped_packages.rs"
       - "crates/vize/tests/check_*package*.rs"
       - "crates/vize/tests/check_*package*/**"
+      - "crates/vize/tests/davinci_ts40_projection_cli.rs"
+      - "crates/vize/tests/snapshots/davinci_ts40_projection_cli__*.snap"
       - "crates/vize/tests/content_mapper_tsgo_lsp.rs"
       - "crates/vize/tests/content_mapper_tsgo_lsp_event_forms.rs"
       - "crates/vize/tests/content_mapper_tsgo_lsp_event_forms/**"
@@ -38,6 +40,9 @@ on:
       - "crates/vize_canon/src/virtual_ts/**"
       - "crates/vize_maestro/src/ide/**"
       - "crates/vize_maestro/src/server/**"
+      - "crates/vize_maestro/tests/davinci_ts40_projection.rs"
+      - "crates/vize_maestro/tests/davinci_ts40_projection_support/**"
+      - "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__*.snap"
       - "npm/cli/bin/vize"
       - "npm/cli/package.json"
       - "npm/cli/src/**"
@@ -47,6 +52,9 @@ on:
       - "tools/npm/prepare-publish-manifest.mjs"
       - "tools/npm/smoke-release-install.mjs"
       - "tools/npm/smoke-release-runtime.mjs"
+      - "tests/_fixtures/davinci-ts40-projection/**"
+      - "tests/tooling/davinci-ts40-projection.test.ts"
+      - "tests/tooling/support/davinci-ts40-projection.ts"
   push:
     branches: [main]
     paths:
@@ -63,6 +71,8 @@ on:
       - "crates/vize/tests/content_mapper_importer_scoped_packages.rs"
       - "crates/vize/tests/check_*package*.rs"
       - "crates/vize/tests/check_*package*/**"
+      - "crates/vize/tests/davinci_ts40_projection_cli.rs"
+      - "crates/vize/tests/snapshots/davinci_ts40_projection_cli__*.snap"
       - "crates/vize/tests/content_mapper_tsgo_lsp.rs"
       - "crates/vize/tests/content_mapper_tsgo_lsp_event_forms.rs"
       - "crates/vize/tests/content_mapper_tsgo_lsp_event_forms/**"
@@ -84,6 +94,9 @@ on:
       - "crates/vize_canon/src/virtual_ts/**"
       - "crates/vize_maestro/src/ide/**"
       - "crates/vize_maestro/src/server/**"
+      - "crates/vize_maestro/tests/davinci_ts40_projection.rs"
+      - "crates/vize_maestro/tests/davinci_ts40_projection_support/**"
+      - "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__*.snap"
       - "npm/cli/bin/vize"
       - "npm/cli/package.json"
       - "npm/cli/src/**"
@@ -93,6 +106,9 @@ on:
       - "tools/npm/prepare-publish-manifest.mjs"
       - "tools/npm/smoke-release-install.mjs"
       - "tools/npm/smoke-release-runtime.mjs"
+      - "tests/_fixtures/davinci-ts40-projection/**"
+      - "tests/tooling/davinci-ts40-projection.test.ts"
+      - "tests/tooling/support/davinci-ts40-projection.ts"
   workflow_dispatch:
 
 concurrency:
@@ -150,6 +166,12 @@ jobs:
           run-install: false
       - name: Install JavaScript dependencies
         run: vp install --frozen-lockfile --prefer-offline
+      - name: Run TS-40 current-projection baselines
+        run: |
+          cargo test -p vize --test davinci_ts40_projection_cli -- --nocapture
+          cargo test -p vize_maestro --test davinci_ts40_projection -- --nocapture
+          cargo test -p vize_maestro --features legacy --test davinci_ts40_projection -- --nocapture
+          node --test tests/tooling/davinci-ts40-projection.test.ts
       - name: Build exact upstream tsgo
         working-directory: typescript-content-mapper/tsc
         run: |

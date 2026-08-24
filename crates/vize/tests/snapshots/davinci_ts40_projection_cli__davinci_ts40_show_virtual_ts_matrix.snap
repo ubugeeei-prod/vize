@@ -1,0 +1,54 @@
+---
+source: crates/vize/tests/davinci_ts40_projection_cli.rs
+expression: "serde_json::to_string_pretty(&json).unwrap()"
+---
+{
+  "errorCount": 0,
+  "fileCount": 8,
+  "files": [
+    {
+      "diagnostics": [],
+      "file": "src/dual-scripts-emits.vue",
+      "virtualTs": "// TS-40 dual-scripts-emits.vue 24f370db1df2801011a2b32dd208c4ba41ce25cf67f7697607081d8f4a93afc3"
+    },
+    {
+      "diagnostics": [],
+      "file": "src/generic-sfc.vue",
+      "virtualTs": "// TS-40 generic-sfc.vue cdbc283fb677e3361a6356d8464f5b6ee8bb413acecca70324745c87b7e74fcd"
+    },
+    {
+      "diagnostics": [],
+      "file": "src/jsx-script.vue",
+      "virtualTs": "// TS-40 jsx-script.vue a7f66250c123b7c5654f12aca6d66f4f319dee5ddac4974e8e64b187f746d407"
+    },
+    {
+      "diagnostics": [],
+      "file": "src/options-api-slots.vue",
+      "virtualTs": "// TS-40 options-api-slots.vue 08df2a1aca7aa1ad55cd90ad599f9ee7a69d8c16693b3cb4c79f0946744b90b0"
+    },
+    {
+      "diagnostics": [
+        "warning:1:1 [TS40] TS-40 recovery sentinel"
+      ],
+      "file": "src/parse-recovery.vue",
+      "virtualTs": "// TS-40 parse-recovery.vue 091e1660e95fb4c42682b2f9dcedf9011540fc6842a0f2b83b889ca114768709"
+    },
+    {
+      "diagnostics": [],
+      "file": "src/tsx-script.vue",
+      "virtualTs": "// TS-40 tsx-script.vue fd0987db2fdf0a45a3ce930aef9032bbbfd16c4f636ada3a94bae0093ea44070"
+    },
+    {
+      "diagnostics": [],
+      "file": "src/utf8-crlf-props.vue",
+      "virtualTs": "// TS-40 utf8-crlf-props.vue 1a62fd3d3a38023a7517737dd2c167ccfb5c009f1abb37dbb3cf37a405acc967"
+    },
+    {
+      "diagnostics": [],
+      "file": "src/vue2-native-event.vue",
+      "virtualTs": "// TS-40 vue2-native-event.vue 2b2f3214a7683c004e02b705721aa82bfb50a333a21cbf74e35443d1c9d3a47f"
+    }
+  ],
+  "programs": [],
+  "warningCount": 1
+}

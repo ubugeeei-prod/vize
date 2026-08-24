@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "claim": "current-canon-maestro-behavior-only",
+  "normalization": [
+    "fixture-relative paths",
+    "sorted mappings and semantic links",
+    "sorted virtual documents and authored mapping hits",
+    "no timestamps or process-local identifiers"
+  ],
+  "unproven": [
+    "Davinci or S2 projection parity",
+    "full-corpus vize check diagnostic parity",
+    "all tsgo Content Mapper editor features",
+    "incremental or multi-project invalidation",
+    "safe deletion of either current generator"
+  ],
+  "requiredCoverage": [
+    "utf8",
+    "crlf",
+    "recovery",
+    "dual-script",
+    "options-api",
+    "vue2",
+    "generic-sfc",
+    "jsx",
+    "tsx",
+    "props",
+    "emits",
+    "slots",
+    "navigation-ranges"
+  ],
+  "fixtures": [
+    {
+      "id": "utf8-crlf-props",
+      "file": "tests/_fixtures/davinci-ts40-projection/utf8-crlf-props.vue",
+      "coverage": ["utf8", "crlf", "props", "navigation-ranges"],
+      "lineEnding": "crlf",
+      "anchors": ["café", "title"],
+      "optionsApi": false,
+      "legacyVue2": false
+    },
+    {
+      "id": "parse-recovery",
+      "file": "tests/_fixtures/davinci-ts40-projection/parse-recovery.vue",
+      "coverage": ["recovery"],
+      "lineEnding": "lf",
+      "anchors": ["broken"],
+      "optionsApi": false,
+      "legacyVue2": false
+    },
+    {
+      "id": "dual-scripts-emits",
+      "file": "tests/_fixtures/davinci-ts40-projection/dual-scripts-emits.vue",
+      "coverage": ["dual-script", "emits", "navigation-ranges"],
+      "lineEnding": "lf",
+      "anchors": ["label", "submit"],
+      "optionsApi": false,
+      "legacyVue2": false
+    },
+    {
+      "id": "options-api-slots",
+      "file": "tests/_fixtures/davinci-ts40-projection/options-api-slots.vue",
+      "coverage": ["options-api", "slots", "props", "navigation-ranges"],
+      "lineEnding": "lf",
+      "anchors": ["message", "header"],
+      "optionsApi": true,
+      "legacyVue2": false
+    },
+    {
+      "id": "generic-sfc",
+      "file": "tests/_fixtures/davinci-ts40-projection/generic-sfc.vue",
+      "coverage": ["generic-sfc", "props", "navigation-ranges"],
+      "lineEnding": "lf",
+      "anchors": ["item", "label"],
+      "optionsApi": false,
+      "legacyVue2": false
+    },
+    {
+      "id": "jsx-script",
+      "file": "tests/_fixtures/davinci-ts40-projection/jsx-script.vue",
+      "coverage": ["jsx", "navigation-ranges"],
+      "lineEnding": "lf",
+      "anchors": ["vnode", "ready"],
+      "optionsApi": false,
+      "legacyVue2": false
+    },
+    {
+      "id": "tsx-script",
+      "file": "tests/_fixtures/davinci-ts40-projection/tsx-script.vue",
+      "coverage": ["tsx", "props", "navigation-ranges"],
+      "lineEnding": "lf",
+      "anchors": ["count", "toFixed"],
+      "optionsApi": false,
+      "legacyVue2": false
+    },
+    {
+      "id": "vue2-native-event",
+      "file": "tests/_fixtures/davinci-ts40-projection/vue2-native-event.vue",
+      "coverage": ["vue2", "emits", "navigation-ranges"],
+      "lineEnding": "lf",
+      "anchors": ["message", "input"],
+      "optionsApi": true,
+      "legacyVue2": true
+    }
+  ]
+}

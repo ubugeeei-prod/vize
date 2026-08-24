@@ -58,7 +58,9 @@ content-mapper protocol (`vize content-mapper`), and Maestro; diagnostics
 assembled in **one post-pass** over finished `Vec<Diagnostic>` (kills the
 session-vs-CLI dual path — the known incident class). _Accept:_ TS-40; TS-25
 differential lane old-vs-new projections during migration; both old
-generators deleted at task end.
+generators deleted at task end. The
+[current-projection baseline](./ts40-projection-differential.md) freezes the old
+side without claiming that this task has started.
 
 **P4-6 Witness + precision SDK.** Rule SDK types enforce: error severity ⇒
 `proven` verdict + witness (fact chain with spans); tiers
