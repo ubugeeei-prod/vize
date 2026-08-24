@@ -38,28 +38,89 @@
 
 ## What Is Vize?
 
-Vize is a Rust-native toolchain for Vue — one fast, vertically integrated lane
-for single-file components. A single shared parser powers compilation, linting, type-checking,
-formatting, and editor tooling, so your whole Vue workflow runs on the same high-performance core
-instead of a patchwork of disconnected tools.
+Vize is a Rust-native toolchain for Vue. One shared parser powers compilation, linting,
+type-checking, formatting, and editor tooling, so the Vue workflow runs on the same core instead of
+a patchwork of disconnected tools.
 
-It plugs into where you already work: `@vizejs/vite-plugin` (Vite), the `vize` npm package
-(project scripts and shared config helpers), the native `vize` binary (LSP / profiling /
-specialized CLI workflows), `@vizejs/vite-plugin-musea` (Musea), and `oxlint-plugin-vize`
-(Oxlint).
+It plugs into the tools you already use: `@vizejs/vite-plugin` for Vite, `@vizejs/nuxt` for Nuxt,
+the `vize` package for project scripts, `oxlint-plugin-vize` for Oxlint, and
+`@vizejs/vite-plugin-musea` for the component gallery.
 
-To add Vize to an existing Vite or Nuxt project, run:
+## Usage
+
+Vize is a toolchain you add to a Vue app. It does not scaffold the app itself. Pick the shortest
+path that matches your project; the [docs](https://vizejs.dev/getting-started) have the rest.
+
+### Drop-in
+
+On a Vue 3 + Vite app, replace `@vitejs/plugin-vue` with `@vizejs/vite-plugin`. Your SFCs stay as
+they are.
 
 ```bash
-vpx vize init
+npm i -D @vizejs/vite-plugin
 ```
 
-`vize init` detects your bundler, package manager, and language, then installs and configures the
-features you pick. It is scriptable too — `vize init --yes --lint --vite --fmt --typecheck --editor`.
-See [Project Setup](https://vizejs.dev/guide/init).
+```ts
+// vite.config.ts
+import { defineConfig } from "vite";
+import vize from "@vizejs/vite-plugin";
 
-**Everything lives in the [documentation](https://vizejs.dev)** — start with
-[Getting Started](https://vizejs.dev/getting-started).
+export default defineConfig({
+  plugins: [vize()],
+});
+```
+
+Then use the same `dev` / `build` scripts as before. This swaps SFC compilation only. Lint, format,
+and type-check stay on your current tools until you add them. The claim is Vue 3 SFCs in Vite — see
+[Drop-in Scope](https://vizejs.dev/guide/vite-plugin#drop-in-scope).
+
+Nuxt apps should use `@vizejs/nuxt` instead of wiring the Vite plugin by hand.
+
+### New setup
+
+Create a Vue + Vite or Nuxt app first, then let `vize init` wire the toolchain.
+
+Vue + Vite:
+
+```bash
+npm create vue@latest my-app
+cd my-app
+npx vize init
+```
+
+Nuxt:
+
+```bash
+npm create nuxt@latest my-app
+cd my-app
+npx vize init
+```
+
+`init` can add the Vite plugin or Nuxt module, Oxlint, `vize fmt`, `vize check`, and a VS Code
+recommendation. If you already have [Vite+](https://viteplus.dev/guide/install), run
+`vpx vize init` instead.
+
+### Migration
+
+For an existing Vite, Vite+, or Nuxt project, preview the plan, then apply it:
+
+```bash
+npx vize init --dry-run
+npx vize init
+```
+
+`init` is idempotent and lets you choose surfaces. Existing `vize.config.*` is left as-is. A second
+run adds no duplicate plugin, script, or dependency. The first run may still add `vize:*` scripts
+and update a plain `vite.config.*` or `nuxt.config.*`.
+
+Non-interactive:
+
+```bash
+npx vize init --yes --lint --bundler --fmt --typecheck --editor
+```
+
+If you only want the compiler, use the drop-in swap above. Custom `vue({ ... })` options and unusual
+Vite configs are not rewritten automatically. See [Project Setup](https://vizejs.dev/guide/init).
 
 Vize is in its Real World Testing phase: fix requests and PRs are very welcome, and we are looking for
 reasonably large Vue projects to use as test beds.

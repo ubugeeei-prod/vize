@@ -87,7 +87,7 @@ function runFreshProjectCell(context, cell) {
   fs.mkdirSync(projectRootPath, { recursive: true });
   const projectRoot = fs.realpathSync.native(projectRootPath);
   writeFiles(projectRoot, authored);
-  assertFreshProject(projectRoot, context);
+  assertFreshProject(projectRoot, context, shape.initialAbsentFiles);
   runManager(manager, manager.bootstrapArgs, { cwd: projectRoot });
   assert.ok(fs.existsSync(path.join(projectRoot, manager.lockfile)), `no ${manager.lockfile}`);
 

@@ -190,3 +190,5 @@ constraints:
   matching row (and the audit commit above) in the same PR.
 - Rows may only move to Implemented together with the behavior/type tests required by the issue's
   non-functional acceptance criteria.
+- Performance-sensitive #3113 changes follow the
+  [Fresco performance and size policy](./performance-policy.md).

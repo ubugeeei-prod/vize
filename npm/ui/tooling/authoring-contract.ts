@@ -65,6 +65,14 @@ export const VIZE_UI_SFC_AUTHORING_RULES = [
     remediation: "Add a `*.test.ts` file that imports the SFC and exercises observable behavior.",
   },
   {
+    id: "prop-default-doc",
+    title: "Documented prop defaults",
+    requirement:
+      "Every public prop documents its default value in the prop JSDoc so hover and generated docs explain first-render behavior.",
+    evidence: ["defineProps<T> prop JSDoc with `@default`"],
+    remediation: "Add an `@default` tag to each public prop's documentation comment.",
+  },
+  {
     id: "source-regex-behavior",
     title: "No source-regex behavior proof",
     requirement:
@@ -103,6 +111,14 @@ export const VIZE_UI_SFC_QUALITY_GATES = [
       "Behavior gates are proven through mounted DOM/runtime assertions rather than string inspection.",
     evidence: ["*.test.ts", "`source-contract:` escape hatch for source-only invariants"],
     enforcedByRules: ["interaction-test", "source-regex-behavior"],
+  },
+  {
+    id: "api-default-documentation",
+    title: "API default documentation",
+    requirement:
+      "Public props expose their first-render defaults through documentation comments and editor hover.",
+    evidence: ["defineProps<T> JSDoc `@default` tags"],
+    enforcedByRules: ["prop-default-doc"],
   },
 ] as const satisfies readonly SfcQualityGateContract<SfcAuthoringRuleId>[];
 

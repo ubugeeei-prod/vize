@@ -1,3 +1,5 @@
+import { VITE_VUE_JS_CHECKJS_SHAPE } from "./smoke-release-init-js-shapes.mjs";
+
 /**
  * Matrix data for the fresh-project release smoke (#3956).
  *
@@ -13,6 +15,7 @@
 /** Cells this slice runs. Further cells are added here, not in the driver. */
 export const FRESH_INIT_MATRIX = [
   { packageManager: "npm", shape: "vite-vue-ts" },
+  { packageManager: "npm", shape: "vite-vue-js-checkjs" },
   { packageManager: "pnpm", shape: "vite-vue-ts" },
   { packageManager: "yarn", shape: "vite-vue-ts" },
   { packageManager: "bun", shape: "vite-vue-ts" },
@@ -206,6 +209,7 @@ const CHECK_TRIPLE = {
  * the narrower `release-npm-native` smoke stays green.
  */
 export const PROJECT_SHAPES = {
+  "vite-vue-js-checkjs": VITE_VUE_JS_CHECKJS_SHAPE,
   "vite-vue-ts": {
     id: "vite-vue-ts",
     // A `create vue` TypeScript app flattened to a single tsconfig: no project
@@ -215,6 +219,7 @@ export const PROJECT_SHAPES = {
     // `--no-lint` because the lint plan pulls `oxlint` and `oxlint-plugin-vize`,
     // and `oxlint-plugin-vize` is not packed by every caller of this smoke.
     initFlags: ["--yes", "--no-lint", "--vite", "--fmt", "--typecheck", "--editor"],
+    initialAbsentFiles: [".vscode"],
     detection: (manager) => viteDetection(manager),
     features: [
       "  lint      skipped    not selected",
@@ -270,6 +275,7 @@ export const PROJECT_SHAPES = {
     requires: ["vize", "@vizejs/vite-plugin"],
     files: vitePlusVueTsFiles,
     initFlags: ["--yes", "--no-lint", "--vite", "--fmt", "--typecheck", "--editor"],
+    initialAbsentFiles: [".vscode"],
     detection: (manager) => viteDetection(manager, "Vite+"),
     features: [
       "  lint      skipped    not selected",

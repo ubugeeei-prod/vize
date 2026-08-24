@@ -23,6 +23,9 @@ export interface AuthoringViolation {
 const SOURCE_REGEX_ASSERTION = /\.(?:match|doesNotMatch)\(\s*source\b/;
 const SFC_SOURCE_READ = /readFile\([^)]*\.vue/;
 const SOURCE_CONTRACT_PRAGMA = "source-contract:";
+const DEFINE_PROPS_TYPE = /defineProps\s*<\s*\{([\s\S]*?)\}\s*>\s*\(/g;
+const PROP_DECLARATION =
+  /(?:(\/\*\*[\s\S]*?\*\/)\s*)?readonly\s+(?:"([^"]+)"|'([^']+)'|([A-Za-z_$][\w$]*))\??\s*:/g;
 const AUTHORING_RULE_IDS = new Set<AuthoringRule>(
   VIZE_UI_SFC_AUTHORING_RULES.map((rule) => rule.id),
 );
@@ -37,6 +40,8 @@ const AUTHORING_RULE_IDS = new Set<AuthoringRule>(
  * reads inside tests are violations unless the same or one of the two
  * preceding lines carries a `source-contract:` pragma naming why mounted-DOM
  * behavior cannot observe the contract.
+ * Public props must also document their default value with an `@default` tag
+ * in the prop JSDoc, so hover and generated docs preserve first-render behavior.
  *
  * @param sourceDirectory Directory containing SFC sources, tests, and behavior tables.
  * @returns Violations in stable path order; an empty array means full compliance.
@@ -66,6 +71,9 @@ export async function auditComponentAuthoring(
     const source = await read(sfc);
 
     for (const message of explicitSfcProblems(source, sfc)) report(sfc, "explicit-sfc", message);
+    for (const message of propDefaultDocProblems(source, sfc)) {
+      report(sfc, "prop-default-doc", message);
+    }
 
     if (!behaviorSources.some((table) => table.includes(basename))) {
       report(
@@ -139,6 +147,25 @@ function explicitSfcProblems(source: string, filename: string): string[] {
   if (/\bh\s*\(/.test(scripts)) problems.push("Render-function escape hatch h() is not allowed");
   if (/defineOptions|withDefaults|interface (?:Props|Emits)/.test(scripts)) {
     problems.push("Use literal defineProps/defineEmits types without helper indirection");
+  }
+  return problems;
+}
+
+function propDefaultDocProblems(source: string, filename: string): string[] {
+  const { descriptor, errors } = parse(source, { filename });
+  if (errors.length > 0 || descriptor.scriptSetup === null) return [];
+
+  const problems: string[] = [];
+  for (const propsType of descriptor.scriptSetup.content.matchAll(DEFINE_PROPS_TYPE)) {
+    const body = propsType[1] ?? "";
+    for (const prop of body.matchAll(PROP_DECLARATION)) {
+      const jsdoc = prop[1] ?? "";
+      if (/@default\b/u.test(jsdoc)) continue;
+      const propName = prop[2] ?? prop[3] ?? prop[4] ?? "<unknown>";
+      problems.push(
+        `Prop ${propName} is missing @default documentation; document the public default value`,
+      );
+    }
   }
   return problems;
 }

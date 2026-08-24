@@ -105,7 +105,8 @@ void test("requires a behavior table and an interaction test per SFC", async () 
 void test("emits only rule ids published by the machine-readable contract", async () => {
   await withFixture(
     {
-      "TheWidget.vue": "<script setup>const value = 1;</script>\n",
+      "TheWidget.vue":
+        "<script setup>defineProps<{ readonly label?: string }>(); const value = 1;</script>\n",
       "widget.test.ts": [
         'import { readFile } from "node:fs/promises";',
         'const source = await readFile(new URL("./TheWidget.vue", import.meta.url), "utf8");',
@@ -170,10 +171,36 @@ void test("allows annotated source assertions that behavior cannot observe", asy
   );
 });
 
+void test("requires public prop defaults to be documented for editor hover", async () => {
+  const sfc = COMPLIANT_SFC.replace("   * @default false\n", "");
+  await withFixture(
+    {
+      "TheWidget.vue": sfc,
+      "widget.behavior.md": "TheWidget.vue",
+      "widget.test.ts": 'import TheWidget from "./TheWidget.vue";\nexport default TheWidget;\n',
+    },
+    async (directory) => {
+      const violations = await auditComponentAuthoring(directory);
+      assert.deepEqual(
+        violations.map((violation) => violation.rule),
+        ["prop-default-doc"],
+      );
+      assert.match(formatAuthoringViolations(violations), /Prop open is missing @default/);
+    },
+  );
+});
+
 void test("rejects SFCs that bypass the explicit authoring contract", async () => {
   const sfc = [
     '<script setup lang="ts">',
-    "const props = withDefaults(defineProps<{ open?: boolean }>(), { open: false });",
+    "const props = withDefaults(defineProps<{",
+    "  /**",
+    "   * Whether the widget starts open.",
+    "   *",
+    "   * @default false",
+    "   */",
+    "  readonly open?: boolean;",
+    "}>(), { open: false });",
     "</script>",
     "",
     "<template>",

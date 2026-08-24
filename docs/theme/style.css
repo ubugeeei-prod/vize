@@ -396,69 +396,6 @@ body.entry-page {
 }
 
 /* ================================================
-   FEATURES — Editorial 2-col grid
-   ================================================ */
-.entry-page .features {
-  padding: 0 6vw 6rem 6vw !important;
-  max-width: 960px;
-}
-
-.entry-page .features-grid {
-  display: grid !important;
-  grid-template-columns: repeat(2, 1fr) !important;
-  gap: 1px !important;
-  background: var(--octc-color-border) !important;
-  border: 1px solid var(--octc-color-border) !important;
-}
-
-.entry-page .feature-card {
-  background: var(--octc-color-bg) !important;
-  border: none !important;
-  border-radius: 0 !important;
-  padding: 1.75rem 1.5rem !important;
-  transition: background 0.15s ease !important;
-}
-
-.entry-page .feature-card:hover {
-  background: var(--octc-color-bg-alt) !important;
-}
-
-[data-theme="dark"] .entry-page .feature-card,
-:root:not([data-theme="light"]) .entry-page .feature-card {
-  background: var(--octc-color-bg) !important;
-}
-
-[data-theme="dark"] .entry-page .feature-card:hover,
-:root:not([data-theme="light"]) .entry-page .feature-card:hover {
-  background: var(--octc-color-bg-alt) !important;
-}
-
-.entry-page .feature-title {
-  font-weight: 600 !important;
-  font-size: 0.9375rem !important;
-  letter-spacing: -0.02em !important;
-  margin-bottom: 0.375rem !important;
-}
-
-.entry-page .feature-details {
-  font-size: 0.8125rem !important;
-  color: var(--octc-color-text-muted) !important;
-  line-height: 1.5 !important;
-}
-
-.entry-page .feature-link {
-  color: var(--octc-color-text-muted) !important;
-}
-
-.entry-page .feature-card:hover .feature-link {
-  color: var(--octc-color-text) !important;
-}
-
-.entry-page .feature-icon {
-  color: var(--octc-color-text) !important;
-}
-
-/* ================================================
    TYPOGRAPHY — Content pages
    ================================================ */
 .content h1 {
@@ -841,16 +778,6 @@ body.entry-page .entry-content .content > h2 + p > img {
   .header {
     padding-left: 0.75rem !important;
     padding-right: 0.75rem !important;
-  }
-
-  /* ---- Features ---- */
-  .entry-page .features-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .entry-page .features {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
   }
 
   /* ================================================

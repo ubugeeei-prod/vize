@@ -16,6 +16,8 @@ the SFC quality gate.
   source and describing state, input, and outcome.
 - `interaction-test`: every SFC has a mounted interaction test importing the
   component source.
+- `prop-default-doc`: every public prop has documentation comments that include
+  an `@default` tag for editor hover and generated docs.
 - `source-regex-behavior`: source-text assertions are not behavior evidence
   unless a nearby `source-contract:` pragma explains why mounted output cannot
   observe the invariant.
@@ -26,6 +28,7 @@ the SFC quality gate.
 - `behavior-contract` is enforced by `behavior-table`.
 - `mounted-interaction` is enforced by `interaction-test` and
   `source-regex-behavior`.
+- `api-default-documentation` is enforced by `prop-default-doc`.
 
 Future source installation manifests, gallery metadata, and CI policy should
 consume the exported contract rather than duplicating these identifiers.

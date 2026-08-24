@@ -28,6 +28,17 @@ test("real-project LSP exercises authored binding and component boundary feature
     assert.equal(result.hover.count, 1);
     assert.equal(result.references.count, 2);
     assert.equal(result.rename.count, 2);
+    for (const evidence of [
+      result.completion,
+      result.componentDefinition,
+      result.definition,
+      result.hover,
+      result.references,
+      result.rename,
+    ]) {
+      assert.ok(Number.isFinite(evidence.durationMs));
+      assert.ok(evidence.durationMs >= 0);
+    }
     assert.deepEqual(result.dependencyCompletion, {
       baselineContainsProbe: false,
       changedContainsProbe: true,

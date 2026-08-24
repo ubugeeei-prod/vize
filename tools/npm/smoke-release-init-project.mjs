@@ -120,7 +120,7 @@ function resolveShapeField(shape, name, ...args) {
  * `vize` from outside the project, which is exactly the workspace link the
  * issue's first acceptance criterion rules out.
  */
-export function assertFreshProject(projectRoot, context) {
+export function assertFreshProject(projectRoot, context, initialAbsentFiles = []) {
   assert.ok(
     isOutside(context.installDir, projectRoot),
     `${projectRoot} is inside the install tree`,
@@ -140,7 +140,9 @@ export function assertFreshProject(projectRoot, context) {
     }
     if (directory === context.tempDir) break;
   }
-  assert.equal(fs.existsSync(path.join(projectRoot, ".vscode")), false);
+  for (const name of initialAbsentFiles) {
+    assert.equal(fs.existsSync(path.join(projectRoot, name)), false, `${name} exists before init`);
+  }
   assert.equal(fs.existsSync(path.join(projectRoot, "node_modules")), false);
 }
 
