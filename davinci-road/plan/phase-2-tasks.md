@@ -211,6 +211,15 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 
 **Deliverable:** `vize_atelier_dom` lowering S2 → codegen structure directly — the first strangler target, on the surface that holds the hard byte-parity bar.
 
+**Current series evidence (2026-08-25):** 20 installments have landed through
+[#4811](https://github.com/ubugeeei-prod/vize/pull/4811). Dynamic-argument
+`v-bind` keys and `.camel` / `.prop` / `.attr` modifiers now match the shipped
+lane in direct and byte-differential tests. The task remains blocked on the
+published dependency decision, a hydrated full-corpus run with an exact
+comparison count, patch-flag equivalence coverage, and the DOM allocation
+budget; the old lane remains the production path. See the
+[series record](./phase-2-records/p2-11.md).
+
 **Steps:**
 
 - [ ] `vize_atelier_dom` lowers S2 directly; the relief codegen-node universe (`NodeType` 13–20 codegen + 21–26 SSR codegen, of 27 variants total — `crates/vize_relief/src/relief/core.rs:10-42`) stops being **written** by the new path. It is still _read_ by SSR and Vapor until phase 3, so nothing is deleted here

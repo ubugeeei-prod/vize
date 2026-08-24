@@ -14,7 +14,8 @@
 
 ## Standing gates (every phase)
 
-- **Corpus parity** — the 134-project corpus (`tools/fixtures/tool-matrix-report.mjs`)
+- **Corpus parity** — the 142-project ecosystem corpus (executable inventory:
+  [`fixture-compatibility-ledger.test.ts`](../tests/tooling/fixture-compatibility-ledger.test.ts))
   passes with no new failures for every surface the phase touches. Output changes
   are byte-identical unless a waiver documents why the new output is correct;
   waiver ledgers start and end each phase empty. The bar is per-surface
@@ -111,6 +112,13 @@ holds or improves — this phase should be a measurable win, not a wash.
   `wasm32-wasip2` joins CI. Pass-manager observers (Folio-after-change dumps,
   timing, remark emission) land with the pass manager itself, so the DevTool's
   data feed exists from the first S2 build.
+
+**Current execution ledger (2026-08-25):** [16 of 22 tasks are complete](./plan/phase-2.md#current-execution-ledger-2026-08-25).
+P2-9 and P2-11 are active blocked series; P2-12b, P2-16, P2-17 and P2-20
+are untouched because their dependency gates remain open. P2-11 has 20 landed
+installments through [#4811](https://github.com/ubugeeei-prod/vize/pull/4811).
+The executable fixture inventory is 146 gitlinks / 142 ecosystem projects;
+fixture checkout hydration is deliberately not a project-count source.
 
 **Exit gate:** DOM corpus parity; Folio dumps for S1/S2 in fixtures; bench
 budget; **fused compile-path traversal count measured at ≤ the pre-Davinci
