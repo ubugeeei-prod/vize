@@ -1,7 +1,10 @@
 # Vize UI SFC Authoring Contract
 
-Schema version 1 is exported from `@vizejs/ui-tooling/authoring-contract` as
-`VIZE_UI_SFC_AUTHORING_CONTRACT`.
+`@vizejs/ui-tooling` is a private, workspace-internal package. Schema version 1
+is exported from its `./authoring-contract` subpath as
+`VIZE_UI_SFC_AUTHORING_CONTRACT` for repository CI and package-local tooling;
+external consumers must not depend on this raw TypeScript subpath until the
+tooling package publishes build output and typed import conditions.
 
 This contract covers public `@vizejs/ui` component sources. It is intentionally
 disjoint from individual component-family implementation work: it defines the

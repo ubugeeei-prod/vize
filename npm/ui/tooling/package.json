@@ -2,7 +2,7 @@
   "name": "@vizejs/ui-tooling",
   "version": "0.298.0",
   "private": true,
-  "description": "Internal source-quality tooling for Vize UI packages",
+  "description": "Workspace-internal source-quality tooling for Vize UI packages",
   "license": "MIT",
   "type": "module",
   "exports": {

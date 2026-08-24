@@ -220,6 +220,60 @@ void test("requires public emits to be documented for editor hover", async () =>
   );
 });
 
+void test("ignores nested tuple payload fields when checking event docs", async () => {
+  const sfc = COMPLIANT_SFC.replace(
+    "</script>",
+    [
+      "",
+      "const emit = defineEmits<{",
+      "  /** Fired after the selected range changes and carries the selected tuple payload. */",
+      "  readonly change: [{ selection: [string, string] }];",
+      "}>();",
+      "void emit;",
+      "</script>",
+    ].join("\n"),
+  );
+  await withFixture(
+    {
+      "TheWidget.vue": sfc,
+      "widget.behavior.md": "TheWidget.vue",
+      "widget.test.ts": 'import TheWidget from "./TheWidget.vue";\nexport default TheWidget;\n',
+    },
+    async (directory) => {
+      assert.deepEqual(await auditComponentAuthoring(directory), []);
+    },
+  );
+});
+
+void test("requires readonly tuple emits to be documented", async () => {
+  const sfc = COMPLIANT_SFC.replace(
+    "</script>",
+    [
+      "",
+      "const emit = defineEmits<{",
+      "  readonly change: readonly [value: boolean];",
+      "}>();",
+      "void emit;",
+      "</script>",
+    ].join("\n"),
+  );
+  await withFixture(
+    {
+      "TheWidget.vue": sfc,
+      "widget.behavior.md": "TheWidget.vue",
+      "widget.test.ts": 'import TheWidget from "./TheWidget.vue";\nexport default TheWidget;\n',
+    },
+    async (directory) => {
+      const violations = await auditComponentAuthoring(directory);
+      assert.deepEqual(
+        violations.map((violation) => violation.rule),
+        ["event-doc"],
+      );
+      assert.match(formatAuthoringViolations(violations), /Event change is missing documentation/);
+    },
+  );
+});
+
 void test("rejects SFCs that bypass the explicit authoring contract", async () => {
   const sfc = [
     '<script setup lang="ts">',

@@ -48,11 +48,11 @@ const {
 }>();
 
 const emit = defineEmits<{
-  /** Fired when the checked state requests a new controlled value. */
+  /** Fired when the checked state requests a new controlled boolean value. */
   "update:modelValue": [value: boolean];
-  /** Fired when user interaction clears the mixed visual state. */
+  /** Fired when user interaction emits the next mixed-state boolean. */
   "update:indeterminate": [value: boolean];
-  /** Fired after the native checkbox change event is processed. */
+  /** Fired after the native checkbox change event is processed with the next checked boolean and native `Event`. */
   change: [value: boolean, nativeEvent: Event];
 }>();
 

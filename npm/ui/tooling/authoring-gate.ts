@@ -27,8 +27,8 @@ const DEFINE_PROPS_TYPE = /defineProps\s*<\s*\{([\s\S]*?)\}\s*>\s*\(/g;
 const DEFINE_EMITS_TYPE = /defineEmits\s*<\s*\{([\s\S]*?)\}\s*>\s*\(/g;
 const PROP_DECLARATION =
   /(?:(\/\*\*[\s\S]*?\*\/)\s*)?readonly\s+(?:"([^"]+)"|'([^']+)'|([A-Za-z_$][\w$]*))\??\s*:/g;
-const EVENT_DECLARATION =
-  /(?:(\/\*\*[\s\S]*?\*\/)\s*)?(?:"([^"]+)"|'([^']+)'|([A-Za-z_$][\w$]*))\s*:\s*\[/g;
+const EVENT_MEMBER_DECLARATION =
+  /^(?:(\/\*\*[\s\S]*?\*\/)\s*)?(?:readonly\s+)?(?:"([^"]+)"|'([^']+)'|([A-Za-z_$][\w$]*))\??\s*:\s*(?:readonly\s*)?\[/;
 const AUTHORING_RULE_IDS = new Set<AuthoringRule>(
   VIZE_UI_SFC_AUTHORING_RULES.map((rule) => rule.id),
 );
@@ -181,15 +181,94 @@ function eventDocProblems(source: string, filename: string): string[] {
   const problems: string[] = [];
   for (const emitsType of descriptor.scriptSetup.content.matchAll(DEFINE_EMITS_TYPE)) {
     const body = emitsType[1] ?? "";
-    for (const event of body.matchAll(EVENT_DECLARATION)) {
-      if ((event[1] ?? "").trim().length > 0) continue;
-      const eventName = event[2] ?? event[3] ?? event[4] ?? "<unknown>";
+    for (const event of topLevelEventMembers(body)) {
+      if (event.jsdoc.trim().length > 0) continue;
       problems.push(
-        `Event ${eventName} is missing documentation; document dispatch timing and payload intent`,
+        `Event ${event.name} is missing documentation; document dispatch timing and payload intent`,
       );
     }
   }
   return problems;
+}
+
+function topLevelEventMembers(body: string): { readonly name: string; readonly jsdoc: string }[] {
+  return splitTopLevelTypeMembers(body).flatMap((member) => {
+    const event = EVENT_MEMBER_DECLARATION.exec(member.trim());
+    if (event === null) return [];
+    return [
+      {
+        jsdoc: event[1] ?? "",
+        name: event[2] ?? event[3] ?? event[4] ?? "<unknown>",
+      },
+    ];
+  });
+}
+
+function splitTopLevelTypeMembers(body: string): string[] {
+  const members: string[] = [];
+  let start = 0;
+  let depth = 0;
+  let quote: '"' | "'" | "`" | undefined;
+  let inBlockComment = false;
+  let inLineComment = false;
+
+  for (let index = 0; index < body.length; index += 1) {
+    const char = body[index];
+    const next = body[index + 1];
+
+    if (inLineComment) {
+      if (char === "\n") inLineComment = false;
+      continue;
+    }
+
+    if (inBlockComment) {
+      if (char === "*" && next === "/") {
+        inBlockComment = false;
+        index += 1;
+      }
+      continue;
+    }
+
+    if (quote !== undefined) {
+      if (char === "\\") {
+        index += 1;
+      } else if (char === quote) {
+        quote = undefined;
+      }
+      continue;
+    }
+
+    if (char === "/" && next === "/") {
+      inLineComment = true;
+      index += 1;
+      continue;
+    }
+    if (char === "/" && next === "*") {
+      inBlockComment = true;
+      index += 1;
+      continue;
+    }
+    if (char === '"' || char === "'" || char === "`") {
+      quote = char;
+      continue;
+    }
+
+    if (char === "{" || char === "[" || char === "(" || char === "<") {
+      depth += 1;
+      continue;
+    }
+    if (char === "}" || char === "]" || char === ")" || char === ">") {
+      depth = Math.max(0, depth - 1);
+      continue;
+    }
+    if (depth === 0 && (char === ";" || char === ",")) {
+      members.push(body.slice(start, index));
+      start = index + 1;
+    }
+  }
+
+  members.push(body.slice(start));
+  return members.filter((member) => member.trim().length > 0);
 }
 
 function hasSourceContractPragma(lines: readonly string[], lineIndex: number): boolean {
