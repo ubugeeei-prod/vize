@@ -13,7 +13,6 @@ pub(super) fn initialize_request() -> Value {
         "id": 1,
         "method": "initialize",
         "params": {
-            "protocolVersion": 1,
             "positionEncodings": ["utf-8"]
         }
     })

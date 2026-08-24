@@ -21,7 +21,6 @@ use vize_carton::{String as CompactString, cstr};
 mod project;
 use project::{CloseProjectParams, OpenProjectParams, ProjectRegistry, resolve_open_project};
 
-const PROTOCOL_VERSION: u8 = 1;
 const MAX_MESSAGE_BYTES: usize = 64 * 1024 * 1024;
 
 #[derive(Args, Default)]
@@ -51,7 +50,6 @@ struct Request {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct InitializeParams {
-    protocol_version: Option<u8>,
     #[allow(dead_code)]
     locale: Option<CompactString>,
     position_encodings: Vec<CompactString>,
@@ -89,17 +87,6 @@ fn serve<R: BufRead, W: Write>(reader: &mut R, writer: &mut W) -> io::Result<()>
                         continue;
                     }
                 };
-                if params
-                    .protocol_version
-                    .is_some_and(|version| version != PROTOCOL_VERSION)
-                {
-                    let message = cstr!(
-                        "Unsupported protocol version {} (expected {PROTOCOL_VERSION})",
-                        params.protocol_version.unwrap_or_default()
-                    );
-                    write_error(writer, id, -32602, &message)?;
-                    continue;
-                }
                 if !params
                     .position_encodings
                     .iter()

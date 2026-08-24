@@ -5,14 +5,14 @@ use super::test_support::{
 };
 
 #[test]
-fn accepts_legacy_initialize_version_without_echoing_it() {
+fn ignores_legacy_initialize_version_without_echoing_it() {
     let input = frames(&[
         json!({
             "jsonrpc": "2.0",
             "id": 1,
             "method": "initialize",
             "params": {
-                "protocolVersion": 1,
+                "protocolVersion": 999,
                 "positionEncodings": ["utf-16", "utf-8"],
                 "locale": "en-US"
             }
