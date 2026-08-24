@@ -160,7 +160,7 @@ fn emit_call(
     let create = create_slots::needs_create_slots(&component.children);
     let spread = slots::slots_spread(&component.bindings)?;
     let array = builtin::array_children(component.name);
-    if (create && spread.is_some()) || (array && (create || spread.is_some())) {
+    if array && (create || spread.is_some()) {
         return Err(EmitError::Unsupported);
     }
     let has_array = array && slots::has_implicit_default(&component.children);
@@ -272,7 +272,7 @@ fn emit_call(
         }
     } else if create {
         cx.buf.push(", ");
-        create_slots::emit_create_slots(cx, &component.children)?;
+        create_slots::emit_create_slots(cx, &component.children, spread)?;
     } else if let Some(facts) = facts {
         cx.buf.push(", ");
         slots::emit_slots(cx, &component.children, facts, spread)?;

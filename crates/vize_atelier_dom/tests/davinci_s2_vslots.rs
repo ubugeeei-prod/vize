@@ -1,6 +1,6 @@
 //! P2-11 `v-slots` witness: the forwarded object as the children
-//! argument, and `...expr` after authored slots, compared
-//! **byte-for-byte** including helper usage and the missing `_` flag.
+//! argument, `...expr` after authored slots, and the spread on a
+//! `createSlots` base, compared **byte-for-byte**.
 
 #![allow(
     clippy::disallowed_macros,
@@ -25,6 +25,18 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<Comp v-slots="slots"><template #header>x</template></Comp>"#,
     ),
     ("with_static_prop", r#"<Comp id="x" v-slots="slots" />"#),
+    (
+        "create_if",
+        r#"<Foo v-slots="slots"><template #header v-if="ok">x</template></Foo>"#,
+    ),
+    (
+        "create_default_if",
+        r#"<Foo v-slots="slots">hello<template #header v-if="ok">x</template></Foo>"#,
+    ),
+    (
+        "create_for",
+        r#"<Foo v-slots="slots"><template v-for="i in n" #header>x</template></Foo>"#,
+    ),
 ];
 
 fn shipped(src: &str) -> String {
