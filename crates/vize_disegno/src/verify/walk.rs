@@ -169,6 +169,12 @@ fn body(
             FolioBinding::VueSlotScope(scope) => {
                 line_checks("vue.slot-scope", scope.span, owner, out);
             }
+            FolioBinding::VueOnce(once) => {
+                line_checks("vue.once", once.span, owner, out);
+            }
+            FolioBinding::VueMemo(memo) => {
+                line_checks("vue.memo", memo.span, owner, out);
+            }
         }
     }
     for child in children {

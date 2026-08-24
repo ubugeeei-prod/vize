@@ -31,6 +31,9 @@ pub(super) fn admit_bindings(
             BindingOp::Bind(bind) if bind.name.is_none() => {
                 super::merge::admit_object(bind)?;
             }
+            BindingOp::On(on) if on.name.is_none() => {
+                super::merge::admit_object_on(on)?;
+            }
             BindingOp::Bind(bind) => {
                 let name = static_bind_name(bind)?;
                 if name == "ref" || !bind.modifiers.is_empty() {
@@ -59,7 +62,7 @@ pub(super) fn admit_bindings(
 }
 
 pub(super) fn bind_patch(bindings: &[BindingOp<'_>], is_component: bool) -> Patch {
-    if super::merge::has_object_bind(bindings) {
+    if super::merge::has_object_spread(bindings) {
         return super::merge::object_patch(bindings, is_component);
     }
     let mut flag = 0i32;
@@ -110,7 +113,7 @@ pub(super) fn emit_bind_props(
     bindings: &[BindingOp<'_>],
     if_key: Option<&str>,
 ) -> Result<(), EmitError> {
-    if super::merge::has_object_bind(bindings) {
+    if super::merge::has_object_spread(bindings) {
         return super::merge::emit_spread_props(cx, attributes, bindings, if_key);
     }
     let pieces = pieces(attributes, bindings)?;

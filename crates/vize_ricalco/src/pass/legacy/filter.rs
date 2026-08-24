@@ -95,6 +95,8 @@ fn rewrite_bindings<'a>(allocator: &'a Allocator, bindings: &mut [BindingOp<'a>]
                     rewrite_expr(allocator, params);
                 }
             }
+            BindingOp::VueOnce(_) => {}
+            BindingOp::VueMemo(memo) => rewrite_expr(allocator, &mut memo.value),
         }
     }
 }

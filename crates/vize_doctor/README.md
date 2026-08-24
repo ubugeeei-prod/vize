@@ -195,8 +195,14 @@ let outcome = execute_cached_capability(&mut cache, identity.clone(), |_| {
 
 assert!(outcome.is_cache_miss());
 assert_eq!(cache.len(), 1);
+assert_eq!(outcome.telemetry().finding_count(), 1);
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
+
+`CapabilityExecutionOutcome::telemetry()` and
+`CapabilityInvalidation::telemetry()` expose deterministic cache status,
+snapshot identity, output identity, finding count, and invalidation-boundary
+counts for reporters, CI, and editor integrations.
 
 ## Reporter integrations
 

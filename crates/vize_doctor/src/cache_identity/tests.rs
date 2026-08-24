@@ -135,9 +135,25 @@ fn invalidation_classifies_every_boundary_in_stable_order() {
     assert_eq!(invalidation.added_inputs(), ["c"]);
     assert_eq!(invalidation.removed_inputs(), ["a"]);
     assert_eq!(invalidation.changed_inputs(), ["d"]);
+    assert_eq!(invalidation.telemetry().added_input_count(), 1);
+    assert_eq!(invalidation.telemetry().removed_input_count(), 1);
+    assert_eq!(invalidation.telemetry().changed_input_count(), 1);
+    assert_eq!(
+        serde_json::to_value(invalidation.telemetry()).unwrap(),
+        json!({
+            "reusable": false,
+            "capabilityChanged": true,
+            "implementationChanged": true,
+            "configurationChanged": true,
+            "addedInputCount": 1,
+            "removedInputCount": 1,
+            "changedInputCount": 1
+        })
+    );
 
     let reusable = current.invalidation_from(&current);
     assert!(reusable.is_reusable());
+    assert!(reusable.telemetry().is_reusable());
     assert_eq!(
         serde_json::to_value(reusable).unwrap(),
         json!({

@@ -54,9 +54,12 @@
 //!   (the S1 v1 scope's recorded face), so the fact is computed over a
 //!   comment-free tree and the differential lane counts the class
 //!   (`comments_elements`) instead of comparing it.
-//! - **Deferred builtins** (`v-once`, `v-memo`, `v-html`, …): still
-//!   `defer.*` at lowering, so an element carrying one looks cleaner
-//!   to S2 than to the legacy lane; counted (`builtins_subtrees`).
+//! - **Deferred builtins** (`v-html`, `v-show`, `v-cloak`, `v-pre`):
+//!   still `defer.*` at lowering, so an element carrying one looks
+//!   cleaner to S2 than to the legacy lane; counted
+//!   (`builtins_subtrees`). `v-once` / `v-memo` now lower as
+//!   `vue.once` / `vue.memo` and fail `hoistable_binding` like any
+//!   non-`ui.bind`.
 //! - **The const rule** is deliberately weaker than the shipped
 //!   classifier's ([`consts::constant_for_hoist`]'s module docs — the
 //!   pessimal law's first real consumer lives there).

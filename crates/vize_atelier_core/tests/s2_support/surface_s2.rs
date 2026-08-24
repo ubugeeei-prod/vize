@@ -125,6 +125,10 @@ pub fn surface_of(
                 value: directive.value.as_ref().map(|value| Some(expr_text(value))),
             }),
             FolioBinding::VueCssBind(_) => {}
+            // Codegen-only dialect flags: represented on S2, not part of
+            // the bind/on/model/directive surface this projection
+            // compares. Legacy still counts them under builtins_excluded.
+            FolioBinding::VueOnce(_) | FolioBinding::VueMemo(_) => {}
             // Pre-pass only: the legacy pass desugars these before the
             // comparator runs. Arms exist so a missed desugar is a
             // surface mismatch, never a compile-time silence.

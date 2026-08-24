@@ -203,6 +203,16 @@ const OPS_REJECTIONS: &[(&str, usize, &str)] = &[
         6,
         "expected quoted string",
     ),
+    (
+        "ui.element d @1:2\n  vue.once extra @1:2\n",
+        6,
+        "invalid span `extra @1:2`",
+    ),
+    (
+        "ui.element d @1:2\n  vue.memo @1:2\n",
+        6,
+        "expected `value=`",
+    ),
     // -- expression payload tokens -------------------------------------------
     ("ui.interpolation js(x) @1:2\n", 5, "expected quoted string"),
     ("ui.interpolation js(\"x\") @1:2\n", 5, "missing span"),

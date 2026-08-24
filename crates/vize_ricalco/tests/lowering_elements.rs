@@ -172,6 +172,90 @@ fn the_parser_shorthands_are_mirrored_at_lowering() {
 }
 
 #[test]
+fn v_once_lowers_to_the_dialect_flag() {
+    let art = artifact("<div v-once>x</div>");
+    assert_eq!(
+        art.folio,
+        "[disegno]\n\
+         ops=3\n\
+         \n\
+         [disegno.ops]\n\
+         ui.element div @0:19\n\
+         \x20 vue.once @5:11\n\
+         \x20 ui.text \"x\" @12:13\n\
+         \n"
+    );
+    assert_eq!(art.diagnostics, vec![]);
+}
+
+#[test]
+fn v_memo_lowers_to_the_dialect_op_with_the_expression() {
+    let art = artifact(r#"<p v-memo="[id]">x</p>"#);
+    assert_eq!(
+        art.folio,
+        "[disegno]\n\
+         ops=3\n\
+         \n\
+         [disegno.ops]\n\
+         ui.element p @0:22\n\
+         \x20 vue.memo value=js(\"[id]\" @11:15) @3:16\n\
+         \x20 ui.text \"x\" @17:18\n\
+         \n"
+    );
+    assert_eq!(art.diagnostics, vec![]);
+}
+
+#[test]
+fn v_memo_may_carry_an_opaque_expression() {
+    let art = artifact(r#"<p v-memo="%">x</p>"#);
+    assert_eq!(
+        art.folio,
+        "[disegno]\n\
+         ops=3\n\
+         \n\
+         [disegno.ops]\n\
+         ui.element p @0:19\n\
+         \x20 vue.memo value=opaque(parse-rejected \"%\" @11:12) @3:13\n\
+         \x20 ui.text \"x\" @14:15\n\
+         \n"
+    );
+    assert_eq!(art.diagnostics, vec![]);
+}
+
+#[test]
+fn ill_formed_v_once_spellings_still_defer() {
+    for (src, element_end, text_start, attr_end) in [
+        (r#"<div v-once="x">y</div>"#, 23, 16, 15),
+        (r#"<div v-once="">y</div>"#, 22, 15, 14),
+        (r#"<div v-once=" ">y</div>"#, 23, 16, 15),
+    ] {
+        let art = artifact(src);
+        assert_eq!(
+            art.folio,
+            format!(
+                "[disegno]\n\
+                 ops=2\n\
+                 \n\
+                 [disegno.ops]\n\
+                 ui.element div @0:{element_end}\n\
+                 \x20 ui.text \"y\" @{text_start}:{}\n\
+                 \n",
+                text_start + 1
+            )
+        );
+        assert_eq!(
+            art.diagnostics,
+            vec![Diagnostic::new(
+                Severity::Info,
+                Stage::Semantic,
+                Span::new(5, attr_end),
+                "`v-once` is representable as `vue.once` only as the bare directive",
+            )]
+        );
+    }
+}
+
+#[test]
 fn an_unmappable_binding_defers_with_info_and_keeps_the_fragment() {
     // `v-show` still has no S2 op — its behaviour is DOM realization
     // (display patching), owned by P2-11: the element is kept, the

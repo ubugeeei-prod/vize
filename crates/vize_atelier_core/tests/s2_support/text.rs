@@ -33,8 +33,19 @@
 //! - `parts_compound` — a legacy interpolation whose content is a
 //!   compound rebuild has no single source text; counted, not
 //!   compared (never seen under default options).
+//! - `parts_filter` — a lone interpolation whose legacy text is the
+//!   authored pipe (`msg | cap`) and whose S2 text is the legalize wrap
+//!   (`_filter_cap(msg)`). The comparator's legacy transform does not
+//!   run `process_expression` (`prefix_identifiers` off), so it reports
+//!   the pre-legalize spelling; S2 `legacy-sugar` always wraps. They
+//!   agree when wrap(authored) equals the S2 text — one side was
+//!   reading the earlier stage. Mixed runs that absorbed a pipe into a
+//!   compound opaque are not this class: both sides keep the authored
+//!   pipe and compare exactly (installment 7: those parts are not
+//!   `ExprRef::Filter`).
 
-use vize_carton::String;
+use vize_carton::{Allocator, Span, String};
+use vize_disegno::expr::VueFilterExpr;
 
 /// The comparator's text accounting, part of [`super::Counters`].
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -57,6 +68,9 @@ pub struct TextCounters {
     pub rawtext_excluded: u64,
     /// Legacy compound interpolation content: counted, not compared.
     pub parts_compound: u64,
+    /// Dynamic parts that agreed after legalize-normalization: the
+    /// legacy authored pipe wrap-equals the S2 `_filter_*` text.
+    pub parts_filter: u64,
 }
 
 /// One part of a unit. `text: None` is the legacy compound-rebuild
@@ -140,6 +154,13 @@ pub fn check(name: &str, source: &str, old: &[TUnit], s2: &[TUnit], counters: &m
                         counters.parts_static += 1;
                     }
                 }
+                (Some(old_text), Some(s2_text))
+                    if old_part.dynamic
+                        && legalized_filter(old_text).as_deref() == Some(s2_text.as_str()) =>
+                {
+                    counters.parts_dynamic += 1;
+                    counters.parts_filter += 1;
+                }
                 _ => diverged!("unit {index} part text {old_part:?} vs {s2_part:?}"),
             }
         }
@@ -148,4 +169,51 @@ pub fn check(name: &str, source: &str, old: &[TUnit], s2: &[TUnit], counters: &m
         }
         counters.units += 1;
     }
+}
+
+/// Replay of `vize_ricalco::pass::legacy::filter` wrap: `a | f` →
+/// `_filter_f(a)`, `a | f(b)` → `_filter_f(a,b)`. Admission is
+/// [`VueFilterExpr::parse_in`] — the same splitter S2 lowering uses.
+fn legalized_filter(authored: &str) -> Option<String> {
+    let allocator = Allocator::new();
+    let len = u32::try_from(authored.len()).ok()?;
+    let filter = VueFilterExpr::parse_in(&allocator, authored, Span::new(0, len))?;
+    let mut out = String::from(filter.base.source());
+    for app in &filter.filters {
+        out = wrap_one(out.as_str(), app.name, app.args);
+    }
+    Some(out)
+}
+
+fn wrap_one(exp: &str, name: &str, args: Option<&str>) -> String {
+    let id = filter_id(name);
+    match args {
+        None | Some("") => {
+            let mut out = String::with_capacity(id.len() + exp.len() + 2);
+            out.push_str(id.as_str());
+            out.push('(');
+            out.push_str(exp);
+            out.push(')');
+            out
+        }
+        Some(args) => {
+            let mut out = String::with_capacity(id.len() + exp.len() + args.len() + 3);
+            out.push_str(id.as_str());
+            out.push('(');
+            out.push_str(exp);
+            out.push(',');
+            out.push_str(args);
+            out.push(')');
+            out
+        }
+    }
+}
+
+fn filter_id(name: &str) -> String {
+    let mut id = String::with_capacity(8 + name.len());
+    id.push_str("_filter_");
+    for c in name.chars() {
+        id.push(if c == '-' { '_' } else { c });
+    }
+    id
 }

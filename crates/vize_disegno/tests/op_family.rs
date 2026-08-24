@@ -12,7 +12,7 @@ use vize_disegno::expr::{ExprRef, OpaqueExpr, OpaqueReason};
 use vize_disegno::op::{
     Attribute, BindOp, BindingContract, BindingOp, ComponentOp, DynamicName, ElementOp, ForBinding,
     ForOp, IfBranch, IfOp, InterpolationOp, ModelOp, Namespace, OnOp, Op, Region, SlotContentOp,
-    SlotOp, TextOp, VueCssBindOp, VueDirectiveOp, VueSlotScopeOp, VueSyncOp,
+    SlotOp, TextOp, VueCssBindOp, VueDirectiveOp, VueMemoOp, VueOnceOp, VueSlotScopeOp, VueSyncOp,
 };
 
 /// The escape payload standing in for "some expression" wherever the op
@@ -50,6 +50,8 @@ fn binding_keyword(op: &BindingOp<'_>) -> &'static str {
         BindingOp::VueCssBind(_) => "vue.css-bind",
         BindingOp::VueSync(_) => "vue.sync",
         BindingOp::VueSlotScope(_) => "vue.slot-scope",
+        BindingOp::VueOnce(_) => "vue.once",
+        BindingOp::VueMemo(_) => "vue.memo",
     }
 }
 
@@ -237,6 +239,8 @@ fn every_binding<'a>(allocator: &'a Allocator) -> Vec<'a, BindingOp<'a>> {
                 },
                 &allocator,
             )),
+            BindingOp::VueOnce(Box::new_in(VueOnceOp { span }, &allocator)),
+            BindingOp::VueMemo(Box::new_in(VueMemoOp { value: expr, span }, &allocator)),
         ],
         &allocator,
     )
@@ -280,6 +284,8 @@ fn every_attached_op_variant_is_matched_without_a_wildcard() {
             "vue.css-bind",
             "vue.sync",
             "vue.slot-scope",
+            "vue.once",
+            "vue.memo",
         ]
     );
     for binding in &bindings {

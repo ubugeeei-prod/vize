@@ -21,10 +21,12 @@
 //! # Counted classes, never silence
 //!
 //! - `builtins_excluded` — legacy props whose directive S2 still defers
-//!   (`v-html`, `v-text`, `v-show`, `v-cloak`, `v-once`, `v-memo`,
-//!   `v-pre`) or drops as a structural duplicate; excluded on both
-//!   sides (the S2 side never surfaces them), counted so the remaining
-//!   deferral set keeps a number.
+//!   (`v-html`, `v-text`, `v-show`, `v-cloak`, `v-pre`) or drops as a
+//!   structural duplicate, plus the codegen-only dialect flags
+//!   (`v-once`, `v-memo`) that now lower as `vue.once` / `vue.memo`
+//!   but are not part of this bind/on/model/directive projection;
+//!   excluded on both sides, counted so the remaining set keeps a
+//!   number.
 //! - `wrapper_attrs` — see above.
 //! - `values_compound` — a legacy compound rebuild has no single source
 //!   text (never seen under default options).

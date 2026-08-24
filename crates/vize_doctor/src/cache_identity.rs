@@ -15,7 +15,7 @@ use vize_carton::String;
 use crate::{ContentFingerprint, contract::is_stable_id};
 
 pub use error::CapabilityCacheIdentityError;
-pub use invalidation::CapabilityInvalidation;
+pub use invalidation::{CapabilityInvalidation, CapabilityInvalidationTelemetry};
 pub use key::{CapabilityCacheKey, CapabilityCacheKeyParseError};
 
 /// Current wire and hashing contract for [`CapabilityCacheIdentity`].

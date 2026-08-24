@@ -1,7 +1,7 @@
 //! P2-11 installment 5 witness: static native HTML, interpolations,
 //! mixed text siblings, static-name binds, static-name events including
 //! event/key/option modifiers, native v-if, native v-for,
-//! object-spread v-bind, and static-name components, compared
+//! object-spread v-bind, static-name components, and object v-on, compared
 //! **byte-for-byte** including helper usage.
 //!
 //! `vize_atelier_dom` is published; the Davinci crates are not. The
@@ -174,6 +174,32 @@ const BATTERY: &[(&str, &str)] = &[
     (
         "component_attr_then_object",
         r#"<Foo id="x" v-bind="obj" />"#,
+    ),
+    ("object_on", r#"<div v-on="handlers"></div>"#),
+    (
+        "attr_then_object_on",
+        r#"<div id="x" v-on="handlers"></div>"#,
+    ),
+    (
+        "object_on_then_attr",
+        r#"<div v-on="handlers" id="x"></div>"#,
+    ),
+    (
+        "click_then_object_on",
+        r#"<div @click="h" v-on="handlers"></div>"#,
+    ),
+    (
+        "object_bind_then_object_on",
+        r#"<div v-bind="obj" v-on="handlers"></div>"#,
+    ),
+    (
+        "v_if_object_on",
+        r#"<div v-if="ok" v-on="handlers">x</div>"#,
+    ),
+    ("component_object_on", r#"<Foo v-on="handlers" />"#),
+    (
+        "component_attr_then_object_on",
+        r#"<Foo id="x" v-on="handlers" />"#,
     ),
 ];
 

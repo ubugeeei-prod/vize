@@ -8,7 +8,9 @@
 //! `v-bind()` (P2-10) has no JSX twin: CSS `v-bind(color)` is SFC-only.
 //! The Vue 2 template-sugar surfaces (P2-9 installment 7) are the same
 //! kind of exception: `.sync`, `slot-scope`/`scope`, and pipe filters
-//! have no JSX twin.
+//! have no JSX twin. `v-once` / `v-memo` (P2-11) are the same kind:
+//! one-shot / dependency-memoized rendering is Vue's, not a fair `ui.*`
+//! core op.
 
 use vize_carton::{Span, Vec};
 
@@ -90,6 +92,32 @@ pub struct VueSlotScopeOp<'a> {
     pub span: Span,
 }
 
+/// `vue.once` - Vue's `v-once` one-shot render flag.
+///
+/// A presence op: the well-formed spelling is the bare directive
+/// (no argument, no modifier, no value). Realization (`has_v_once` in
+/// the shipped codegen) reads the flag; this increment only names it.
+#[derive(Debug)]
+pub struct VueOnceOp {
+    /// The whole directive's source range.
+    pub span: Span,
+}
+
+/// `vue.memo` - Vue's `v-memo` dependency-memoized render.
+///
+/// The well-formed spelling carries a value expression and no
+/// argument or modifier. The expression rides as [`ExprRef`] under
+/// P2-5b — opaque is allowed (the shipped extractor's comment-bearing
+/// contents have no retained AST). Realization (`get_memo_exp`) is
+/// later; this increment only names the op.
+#[derive(Debug)]
+pub struct VueMemoOp<'a> {
+    /// The memo dependency expression, as authored.
+    pub value: ExprRef<'a>,
+    /// The whole directive's source range.
+    pub span: Span,
+}
+
 /// See [`crate::op`] for the guard rationale.
 #[cfg(target_pointer_width = "64")]
 const _: () = {
@@ -97,4 +125,6 @@ const _: () = {
     assert!(core::mem::size_of::<VueCssBindOp<'_>>() == 24);
     assert!(core::mem::size_of::<VueSyncOp<'_>>() == 64);
     assert!(core::mem::size_of::<VueSlotScopeOp<'_>>() == 40);
+    assert!(core::mem::size_of::<VueOnceOp>() == 8);
+    assert!(core::mem::size_of::<VueMemoOp<'_>>() == 24);
 };

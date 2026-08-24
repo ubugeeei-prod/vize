@@ -51,6 +51,7 @@ impl IdentifierRef {
 /// - Type assertions: `as Type`
 /// - Arrow functions: `() =>`
 /// - Regex literals and division: `/`
+/// - Statement bodies: `;`
 #[inline]
 fn needs_ast_extraction(expr: &str) -> bool {
     !expr.is_ascii()
@@ -58,6 +59,7 @@ fn needs_ast_extraction(expr: &str) -> bool {
         || expr.contains(" as ")
         || expr.contains("=>")
         || expr.contains('/')
+        || expr.contains(';')
 }
 
 /// Hybrid identifier extraction - fast path for simple expressions, OXC for complex ones.
