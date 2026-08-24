@@ -114,7 +114,7 @@ fn emit_branch(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<
         [Op::Component(component)] => {
             let _id = cx.walk.mint();
             cx.walk.skip(component.bindings.len());
-            super::component::emit_if_branch(cx, component, key)
+            super::component::emit_if_branch(cx, component, key, _id)
         }
         _ => Err(EmitError::Unsupported),
     }

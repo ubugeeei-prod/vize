@@ -40,7 +40,7 @@ pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), Em
             Op::For(for_op) => super::emit_for_op(cx, for_op)?,
             Op::Component(component) => {
                 cx.walk.skip(component.bindings.len());
-                super::component::emit_root(cx, component)?;
+                super::component::emit_root(cx, component, id)?;
             }
             _ => return Err(EmitError::Unsupported),
         }
@@ -330,7 +330,7 @@ fn emit_children(cx: &mut EmitCx<'_>, children: &Region<'_>) -> Result<(), EmitE
     Ok(())
 }
 
-fn emit_array_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
+pub(super) fn emit_array_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
     let id = cx.walk.mint();
     ensure_sufficient_stack(|| match op {
         Op::Element(element) => {
@@ -339,7 +339,7 @@ fn emit_array_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
         }
         Op::Component(component) => {
             cx.walk.skip(component.bindings.len());
-            super::component::emit_nested(cx, component)
+            super::component::emit_nested(cx, component, id)
         }
         Op::If(if_op) => super::emit_if_op(cx, if_op, id),
         Op::For(for_op) => super::emit_for_op(cx, for_op),

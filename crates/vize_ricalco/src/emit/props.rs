@@ -51,6 +51,7 @@ pub(super) fn admit_bindings(
                 }
             }
             BindingOp::On(on) => admit_on(on, &mut events)?,
+            BindingOp::SlotContent(_) => {}
             _ => return Err(EmitError::Unsupported),
         }
     }
@@ -210,6 +211,7 @@ pub(super) fn pieces<'a>(
         match binding {
             BindingOp::Bind(bind) => out.push(Piece::Bind(bind)),
             BindingOp::On(on) => out.push(Piece::On(on)),
+            BindingOp::SlotContent(_) => {}
             _ => return Err(EmitError::Unsupported),
         }
     }
