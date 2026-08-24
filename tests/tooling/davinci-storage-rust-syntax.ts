@@ -159,20 +159,57 @@ function itemEnd(source: string, start: number): number {
     !functionItem && (externCrate || ["const", "static", "type", "use"].includes(itemKind ?? ""));
   let parens = 0;
   let brackets = 0;
+  let angles = 0;
   let braces = 0;
   let blockItem = false;
+  let initializer = false;
   for (const token of tokens) {
     if (token.value === "(") parens += 1;
     else if (token.value === ")") parens -= 1;
     else if (token.value === "[") brackets += 1;
     else if (token.value === "]") brackets -= 1;
-    else if (token.value === "{") {
-      if (parens === 0 && brackets === 0 && braces === 0 && !semicolonItem) blockItem = true;
+    else if (
+      token.value === "=" &&
+      semicolonItem &&
+      parens === 0 &&
+      brackets === 0 &&
+      angles === 0 &&
+      braces === 0
+    ) {
+      initializer = true;
+    } else if (
+      token.value === "<" &&
+      parens === 0 &&
+      brackets === 0 &&
+      braces === 0 &&
+      !initializer
+    ) {
+      angles += 1;
+    } else if (
+      token.value === ">" &&
+      parens === 0 &&
+      brackets === 0 &&
+      braces === 0 &&
+      angles > 0
+    ) {
+      angles -= 1;
+    } else if (token.value === "{") {
+      if (parens === 0 && brackets === 0 && angles === 0 && braces === 0 && !semicolonItem) {
+        blockItem = true;
+      }
       braces += 1;
     } else if (token.value === "}") {
       braces -= 1;
-      if (blockItem && parens === 0 && brackets === 0 && braces === 0) return start + token.end;
-    } else if (token.value === ";" && parens === 0 && brackets === 0 && braces === 0) {
+      if (blockItem && parens === 0 && brackets === 0 && angles === 0 && braces === 0) {
+        return start + token.end;
+      }
+    } else if (
+      token.value === ";" &&
+      parens === 0 &&
+      brackets === 0 &&
+      angles === 0 &&
+      braces === 0
+    ) {
       return start + token.end;
     }
   }
@@ -198,7 +235,7 @@ export function maskRustSource(source: string): string {
 
 export function tokensOf(source: string): RustToken[] {
   const tokens: RustToken[] = [];
-  const pattern = /r#[A-Za-z_]\w*|[A-Za-z_]\w*|::|[#()[\]{}:;=,*!]/gu;
+  const pattern = /r#[A-Za-z_]\w*|[A-Za-z_]\w*|::|[#()[\]{}<>:;=,*!]/gu;
   for (const match of source.matchAll(pattern)) {
     tokens.push({ value: match[0], start: match.index, end: match.index + match[0].length });
   }

@@ -273,6 +273,48 @@ test("scanner rejects escape hatches and masks only cfg(test) items", () => {
       boundUses: 1,
     });
   }
+  const constGenericFunctions = [
+    "fn helper() -> Marker<{ 1 }>",
+    "fn helper<T>() where Bound<{ 1 }>: Trait",
+    "fn helper() -> Outer<Inner<{ 1 < 2 }>>",
+    "fn helper<T>() where Outer<Bound<{ 8 >> 1 }>>: Trait",
+  ];
+  for (const signature of constGenericFunctions) {
+    const constGenericFunction = `
+      #[cfg(test)] ${signature} {
+        let _: alloc::vec::Vec<u8> = alloc::vec::Vec::new();
+        todo!()
+      }
+      use alloc::vec::Vec as Prod;
+      type Production = Prod<u8>;
+    `;
+    assert.deepEqual(scanStorage(constGenericFunction).storage.allocVec, {
+      directPaths: 1,
+      boundUses: 1,
+    });
+  }
+  const visibleConstGenericFunction = `
+    #[cfg(not(test))]
+    fn helper() -> Marker<{ 1 }> {
+      let _: alloc::vec::Vec<u8> = alloc::vec::Vec::new();
+    }
+    use alloc::vec::Vec as Prod;
+    type Production = Prod<u8>;
+  `;
+  assert.deepEqual(scanStorage(visibleConstGenericFunction).storage.allocVec, {
+    directPaths: 3,
+    boundUses: 1,
+  });
+  const comparisonInitializer = `
+    #[cfg(test)]
+    const TEST_COMPARISON: bool = 1 < 2;
+    use alloc::vec::Vec as Prod;
+    type Production = Prod<u8>;
+  `;
+  assert.deepEqual(scanStorage(comparisonInitializer).storage.allocVec, {
+    directPaths: 1,
+    boundUses: 1,
+  });
   assert.deepEqual(scanStorage('let text = "alloc::vec::Vec"; // use alloc::*').storage.allocVec, {
     directPaths: 0,
     boundUses: 0,
