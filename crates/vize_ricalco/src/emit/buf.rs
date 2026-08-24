@@ -10,7 +10,7 @@ use super::helper::Helper;
 pub(super) struct Buf {
     pub code: String,
     indent: u32,
-    used: u32,
+    used: u64,
     /// Transform-analogue registration order (`root.helpers`).
     preferred: StdVec<Helper>,
     /// First `use_*` order (`used_helpers`). Same-rank leftovers follow
@@ -113,6 +113,9 @@ impl Buf {
     pub(super) fn use_to_handlers(&mut self) {
         self.mark(Helper::ToHandlers);
     }
+    pub(super) fn use_with_directives(&mut self) {
+        self.mark(Helper::WithDirectives);
+    }
     pub(super) fn use_create_comment(&mut self) {
         self.mark(Helper::CreateComment);
     }
@@ -193,6 +196,10 @@ impl Buf {
         Helper::ToHandlers.alias()
     }
 
+    pub(super) fn with_directives_alias() -> &'static str {
+        Helper::WithDirectives.alias()
+    }
+
     pub(super) fn create_comment_alias() -> &'static str {
         Helper::CreateComment.alias()
     }
@@ -243,7 +250,7 @@ impl Buf {
 
     fn ordered_helpers(&self) -> StdVec<Helper> {
         let mut listed = StdVec::new();
-        let mut bits = 0u32;
+        let mut bits = 0u64;
         let mut push = |helper: Helper| {
             if self.used & helper.bit() == 0 || bits & helper.bit() != 0 {
                 return;

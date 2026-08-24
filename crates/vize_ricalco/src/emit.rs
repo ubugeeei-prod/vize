@@ -22,7 +22,9 @@
 //! fragments** (empty → `null`, multi-root / compound-root
 //! `_Fragment` + `STABLE_FRAGMENT`), **`<template v-if>` /
 //! `<template v-for>` fragments** (`STABLE_FRAGMENT` / unwrap after
-//! hoist), and **object `v-on`** (`toHandlers(..., true)`).
+//! hoist), **object `v-on`** (`toHandlers(..., true)`), and **`v-model`**
+//! (native `withDirectives` + `vModelText`-family helpers; component
+//! `modelValue` / `onUpdate:` product props). Custom directives,
 //! `.native` and filters stay [`EmitError::Unsupported`]. The old
 //! lane stays the shipped compile path; [`super::DOM_LANE_FLAG`] is
 //! named here and *read* in the atelier_dom witness.
@@ -49,6 +51,8 @@ mod hoist;
 mod js;
 #[path = "emit/merge.rs"]
 mod merge;
+#[path = "emit/model.rs"]
+mod model;
 #[path = "emit/on.rs"]
 mod on;
 #[path = "emit/outlet.rs"]

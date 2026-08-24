@@ -72,6 +72,9 @@ pub(super) fn object_patch(bindings: &[BindingOp<'_>], is_component: bool) -> Pa
                     flag |= 32;
                 }
             }
+            BindingOp::Model(model) => {
+                super::model::patch_keys(model, is_component, &mut dynamic_props);
+            }
             _ => {}
         }
     }

@@ -9,39 +9,46 @@ use super::buf::Buf;
 use super::children::{children_need_text_flag, emit_create_text_vnode, emit_text_like};
 use super::flag::emit_patch_flag;
 use super::hoist::{compact_props_object, push_attr_pair, unique_attrs};
+use super::model;
 use super::props::{admit_bindings, bind_patch, emit_bind_props};
 
 pub(super) fn emit_unique_element(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
 ) -> Result<(), EmitError> {
-    cx.buf.use_open_block();
-    cx.buf.use_create_element_block();
-    cx.buf.push("(");
-    cx.buf.push(Buf::open_block_alias());
-    cx.buf.push("(), ");
-    emit_call(
-        cx, element, /* block */ true, None, /* hoist */ true,
-    )?;
-    cx.buf.push(")");
-    Ok(())
+    model::wrap_native(cx, element, |cx| {
+        cx.buf.use_open_block();
+        cx.buf.use_create_element_block();
+        cx.buf.push("(");
+        cx.buf.push(Buf::open_block_alias());
+        cx.buf.push("(), ");
+        emit_call(
+            cx, element, /* block */ true, None, /* hoist */ true,
+        )?;
+        cx.buf.push(")");
+        Ok(())
+    })
 }
 
 pub(super) fn emit_fragment_element(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
 ) -> Result<(), EmitError> {
-    cx.buf.use_create_element_vnode();
-    emit_call(
-        cx, element, /* block */ false, None, /* hoist */ true,
-    )
+    model::wrap_native(cx, element, |cx| {
+        cx.buf.use_create_element_vnode();
+        emit_call(
+            cx, element, /* block */ false, None, /* hoist */ true,
+        )
+    })
 }
 
 fn emit_nested(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) -> Result<(), EmitError> {
-    cx.buf.use_create_element_vnode();
-    emit_call(
-        cx, element, /* block */ false, None, /* hoist */ false,
-    )
+    model::wrap_native(cx, element, |cx| {
+        cx.buf.use_create_element_vnode();
+        emit_call(
+            cx, element, /* block */ false, None, /* hoist */ false,
+        )
+    })
 }
 
 pub(super) fn emit_if_branch_element(
@@ -49,20 +56,22 @@ pub(super) fn emit_if_branch_element(
     element: &ElementOp<'_>,
     key: &str,
 ) -> Result<(), EmitError> {
-    cx.buf.use_open_block();
-    cx.buf.use_create_element_block();
-    cx.buf.push("(");
-    cx.buf.push(Buf::open_block_alias());
-    cx.buf.push("(), ");
-    emit_call(
-        cx,
-        element,
-        /* block */ true,
-        Some(key),
-        /* hoist */ false,
-    )?;
-    cx.buf.push(")");
-    Ok(())
+    model::wrap_native(cx, element, |cx| {
+        cx.buf.use_open_block();
+        cx.buf.use_create_element_block();
+        cx.buf.push("(");
+        cx.buf.push(Buf::open_block_alias());
+        cx.buf.push("(), ");
+        emit_call(
+            cx,
+            element,
+            /* block */ true,
+            Some(key),
+            /* hoist */ false,
+        )?;
+        cx.buf.push(")");
+        Ok(())
+    })
 }
 
 pub(super) fn emit_for_item_element(
@@ -71,22 +80,24 @@ pub(super) fn emit_for_item_element(
     stable: bool,
     key: Option<&str>,
 ) -> Result<(), EmitError> {
-    if stable {
-        cx.buf.use_create_element_vnode();
-        return emit_call(
-            cx, element, /* block */ false, key, /* hoist */ false,
-        );
-    }
-    cx.buf.use_open_block();
-    cx.buf.use_create_element_block();
-    cx.buf.push("(");
-    cx.buf.push(Buf::open_block_alias());
-    cx.buf.push("(), ");
-    emit_call(
-        cx, element, /* block */ true, key, /* hoist */ false,
-    )?;
-    cx.buf.push(")");
-    Ok(())
+    model::wrap_native(cx, element, |cx| {
+        if stable {
+            cx.buf.use_create_element_vnode();
+            return emit_call(
+                cx, element, /* block */ false, key, /* hoist */ false,
+            );
+        }
+        cx.buf.use_open_block();
+        cx.buf.use_create_element_block();
+        cx.buf.push("(");
+        cx.buf.push(Buf::open_block_alias());
+        cx.buf.push("(), ");
+        emit_call(
+            cx, element, /* block */ true, key, /* hoist */ false,
+        )?;
+        cx.buf.push(")");
+        Ok(())
+    })
 }
 
 fn emit_call(
