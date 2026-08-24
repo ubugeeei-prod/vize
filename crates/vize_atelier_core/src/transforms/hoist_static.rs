@@ -57,7 +57,7 @@ fn hoist_static_inner<'a>(
                 // Only hoist their props instead
                 if is_root
                     && let TemplateChildNode::Element(el) = &mut children[i]
-                    && has_static_props(el)
+                    && should_hoist_props(ctx, el)
                 {
                     hoist_element_props(ctx, el, allocator);
                 } else if hoist_static_vnodes
@@ -81,7 +81,7 @@ fn hoist_static_inner<'a>(
                 // static props while preserving block tracking.
                 if is_root
                     && let TemplateChildNode::Element(el) = &mut children[i]
-                    && has_static_props(el)
+                    && should_hoist_props(ctx, el)
                 {
                     hoist_element_props(ctx, el, allocator);
                 }
@@ -90,7 +90,7 @@ fn hoist_static_inner<'a>(
                 // Cannot hoist, but check children recursively (not as root)
                 match &mut children[i] {
                     TemplateChildNode::Element(el) => {
-                        if has_static_props(el)
+                        if should_hoist_props(ctx, el)
                             && ((is_root
                                 && ctx.options.inline
                                 && has_only_native_element_descendants(el))
@@ -150,7 +150,7 @@ fn hoist_for_children<'a>(
             // A single v-for child is the loop item's block root, so the VNode
             // itself must stay inline. Static props and nested static children
             // can still be hoisted/cached independently.
-            if has_static_props(el) {
+            if should_hoist_props(ctx, el) {
                 hoist_element_props(ctx, el, allocator);
             }
             ensure_sufficient_stack(|| {
@@ -295,6 +295,11 @@ fn has_directives(el: &ElementNode<'_>) -> bool {
     el.props
         .iter()
         .any(|prop| matches!(prop, PropNode::Directive(_)))
+}
+
+fn should_hoist_props(ctx: &TransformContext<'_>, el: &ElementNode<'_>) -> bool {
+    has_static_props(el)
+        && !(ctx.hoisted_scope_id.is_some() && el.tag_type == ElementType::Component)
 }
 
 /// Check if children should use a block

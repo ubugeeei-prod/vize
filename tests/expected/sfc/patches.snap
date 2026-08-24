@@ -1618,8 +1618,6 @@ div {
 --- OUTPUT ---
 import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from "vue"
 
-const _hoisted_1 = { x: 1 }
-
 const marker = true
 
 export default {
@@ -1634,7 +1632,7 @@ return (_ctx, _cache) => {
     _createElementVNode("div", {
       class: _normalizeClass([])
     }, "Hoge"),
-    _createVNode(_component_Test, _hoisted_1)
+    _createVNode(_component_Test, { x: 1 })
   ], 64 /* STABLE_FRAGMENT */))
 }
 }

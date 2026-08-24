@@ -338,6 +338,20 @@ div {
         "runtime-created VNodes should not receive baked scoped attrs:\n{}",
         result.code
     );
+    assert!(
+        result
+            .code
+            .contains("_createVNode(_component_Test, { x: 1 })"),
+        "scoped SFC component props should stay inline like Vue's compiler:\n{}",
+        result.code
+    );
+    assert!(
+        !result
+            .code
+            .contains("_createVNode(_component_Test, _hoisted_"),
+        "scoped SFC component props should not use a hoisted props alias:\n{}",
+        result.code
+    );
 }
 
 #[test]
