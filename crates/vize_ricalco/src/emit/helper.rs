@@ -115,7 +115,6 @@ impl Helper {
             Self::NormalizeProps => 4096,
             Self::GuardReactiveProps => 8192,
             Self::MergeProps => 16384,
-            Self::ToHandlers => 268_435_456,
             Self::ResolveComponent => 32768,
             Self::CreateVNode => 65536,
             Self::CreateBlock => 131072,

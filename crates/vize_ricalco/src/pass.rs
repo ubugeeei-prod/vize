@@ -205,6 +205,7 @@ pub fn run_transform<'a, O: PassObserver>(lowered: &mut Lowered<'a>, observer: &
             verify.check_table(event, &folio, &lowered.scopes);
             verify.check_table(event, &folio, &lowered.texts);
             verify.check_table(event, &folio, &lowered.wrappers);
+            verify.check_table(event, &folio, &lowered.for_wrappers);
             verify.check_table(event, &folio, &facts.if_facts);
             verify.check_table(event, &folio, &facts.for_facts);
             verify.check_table(event, &folio, &facts.slot_facts);

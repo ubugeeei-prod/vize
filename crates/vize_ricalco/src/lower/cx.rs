@@ -41,6 +41,7 @@ pub(crate) struct Cx<'a> {
     pub scopes: SideTable<ScopeFacts>,
     pub texts: SideTable<super::text::TextParts>,
     pub wrappers: SideTable<super::structural::WrapperKeys>,
+    pub for_wrappers: SideTable<super::structural::ForWrapper>,
     pub caps: super::caps::LegacyCaps,
 }
 
@@ -62,6 +63,7 @@ impl<'a> Cx<'a> {
             scopes: SideTable::new(),
             texts: SideTable::new(),
             wrappers: SideTable::new(),
+            for_wrappers: SideTable::new(),
             caps,
         }
     }
@@ -98,6 +100,17 @@ impl<'a> Cx<'a> {
     ) {
         if let Some(id) = node {
             self.wrappers.insert(id, keys);
+        }
+    }
+
+    /// Attach a `<template v-for>` unwrap fact to its `ui.for` op.
+    pub(crate) fn attach_for_wrapper(
+        &mut self,
+        node: Option<NodeId>,
+        wrapper: super::structural::ForWrapper,
+    ) {
+        if let Some(id) = node {
+            self.for_wrappers.insert(id, wrapper);
         }
     }
 

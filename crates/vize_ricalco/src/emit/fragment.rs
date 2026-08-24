@@ -86,7 +86,7 @@ fn emit_unique(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
         }
         Op::For(for_op) => {
             let _id = cx.walk.mint();
-            super::emit_for_op(cx, for_op)
+            super::emit_for_op(cx, for_op, _id, None)
         }
         Op::Slot(slot) => {
             let _id = cx.walk.mint();
@@ -157,7 +157,7 @@ fn emit_units(cx: &mut EmitCx<'_>, op: &Op<'_>, first: &mut bool) -> Result<(), 
         Op::For(for_op) => {
             start_item(cx, first);
             let _id = cx.walk.mint();
-            super::emit_for_op(cx, for_op)
+            super::emit_for_op(cx, for_op, _id, None)
         }
         Op::Slot(slot) => {
             start_item(cx, first);
