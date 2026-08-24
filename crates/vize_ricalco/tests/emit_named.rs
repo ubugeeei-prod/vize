@@ -9,7 +9,7 @@
 mod support;
 
 use support::with_transformed;
-use vize_ricalco::{emit_dom, EmitError};
+use vize_ricalco::emit_dom;
 
 fn assembled(source: &str) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {
@@ -23,12 +23,6 @@ fn assembled(source: &str) -> String {
 /// Vue's extra `newline()` after `genAssets` leaves indent on the blank line.
 fn pin(visual: &str) -> String {
     visual.replace(")\n\n  return", ")\n  \n  return")
-}
-
-fn refused(source: &str) -> EmitError {
-    with_transformed(source, |lowered, _folio, facts, _budget| {
-        emit_dom(lowered, facts).expect_err("expected Unsupported")
-    })
 }
 
 #[test]
@@ -171,13 +165,5 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     _: 1 /* STABLE */
   }))
 }")
-    );
-}
-
-#[test]
-fn a_v_if_named_template_is_unsupported_this_installment() {
-    assert_eq!(
-        refused(r#"<Foo><template #header v-if="ok">x</template></Foo>"#),
-        EmitError::Unsupported
     );
 }

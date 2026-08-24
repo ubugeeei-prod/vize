@@ -24,11 +24,12 @@ pub(super) enum Helper {
     CreateComment,
     CreateText,
     RenderList,
+    CreateSlots,
     WithCtx,
 }
 
 impl Helper {
-    pub(super) const ALL: [Self; 19] = [
+    pub(super) const ALL: [Self; 20] = [
         Self::ResolveComponent,
         Self::WithKeys,
         Self::WithModifiers,
@@ -47,6 +48,7 @@ impl Helper {
         Self::CreateComment,
         Self::CreateText,
         Self::RenderList,
+        Self::CreateSlots,
         Self::WithCtx,
     ];
 
@@ -70,6 +72,7 @@ impl Helper {
             Self::ResolveComponent => 32768,
             Self::CreateVNode => 65536,
             Self::CreateBlock => 131072,
+            Self::CreateSlots => 524288,
             Self::WithCtx => 262144,
         }
     }
@@ -94,6 +97,7 @@ impl Helper {
             Self::CreateText => "createTextVNode",
             Self::CreateComment => "createCommentVNode",
             Self::RenderList => "renderList",
+            Self::CreateSlots => "createSlots",
             Self::WithCtx => "withCtx",
         }
     }
@@ -118,6 +122,7 @@ impl Helper {
             Self::CreateText => "_createTextVNode",
             Self::CreateComment => "_createCommentVNode",
             Self::RenderList => "_renderList",
+            Self::CreateSlots => "_createSlots",
             Self::WithCtx => "_withCtx",
         }
     }

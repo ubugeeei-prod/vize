@@ -2,8 +2,8 @@
 //!
 //! Implicit default, static / dynamic named `<template>` groups, and
 //! component-root `v-slot` (shipped codegen always keys that `default`).
-//! `createSlots` (conditional / looped templates), slot outlets, and
-//! `v-slots` stay [`EmitError::Unsupported`].
+//! Conditional / looped slot templates go through [`super::create_slots`].
+//! Slot outlets and `v-slots` stay [`EmitError::Unsupported`].
 
 use alloc::vec::Vec as StdVec;
 
@@ -164,7 +164,7 @@ fn collect_pieces(
     Ok(())
 }
 
-fn emit_template_pieces(
+pub(super) fn emit_template_pieces(
     cx: &mut EmitCx<'_>,
     children: &Region<'_>,
     bucket: &mut StdVec<String>,
@@ -239,11 +239,11 @@ fn emit_slot_params(buf: &mut Buf, params: &SlotParams) {
     }
 }
 
-fn capture_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<String, EmitError> {
+pub(super) fn capture_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<String, EmitError> {
     capture(cx, |cx| emit_slot_child(cx, op))
 }
 
-fn capture(
+pub(super) fn capture(
     cx: &mut EmitCx<'_>,
     write: impl FnOnce(&mut EmitCx<'_>) -> Result<(), EmitError>,
 ) -> Result<String, EmitError> {
@@ -263,7 +263,7 @@ fn emit_slot_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
     }
 }
 
-fn is_slot_template(element: &ElementOp<'_>) -> bool {
+pub(super) fn is_slot_template(element: &ElementOp<'_>) -> bool {
     element.tag == "template"
         && element
             .bindings
@@ -271,7 +271,7 @@ fn is_slot_template(element: &ElementOp<'_>) -> bool {
             .any(|binding| matches!(binding, BindingOp::SlotContent(_)))
 }
 
-fn is_whitespace_text(op: &Op<'_>) -> bool {
+pub(super) fn is_whitespace_text(op: &Op<'_>) -> bool {
     matches!(op, Op::Text(text) if is_whitespace(text))
 }
 
