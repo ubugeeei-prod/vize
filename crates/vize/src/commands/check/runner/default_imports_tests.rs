@@ -158,3 +158,29 @@ fn default_tsconfig_run_registers_hidden_ambient_declarations_for_type_resolutio
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn append_local_imports_checks_membership_once_per_discovered_path() {
+    let root = PathBuf::from("/workspace");
+    let existing = root.join("src/existing.ts");
+    let added = root.join("src/added.ts");
+    let nested = root.join("src/nested.ts");
+    let outside = root.join("outside.ts");
+    let mut files = vec![existing.clone()];
+
+    let appended = super::append_local_imports(
+        &mut files,
+        vec![
+            existing.clone(),
+            added.clone(),
+            added.clone(),
+            outside,
+            nested.clone(),
+        ],
+        Some(&root.join("src")),
+        true,
+    );
+
+    assert_eq!(appended, [added.clone(), nested.clone()]);
+    assert_eq!(files, [added, existing, nested]);
+}
