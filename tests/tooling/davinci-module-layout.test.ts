@@ -92,13 +92,50 @@ function charLiteralEnd(source: string, quote: number): number | undefined {
 
 function pathAttributeAt(source: string, hash: number): boolean {
   let cursor = skipTrivia(source, hash + 1);
+  if (source[cursor] === "!") cursor = skipTrivia(source, cursor + 1);
   if (source[cursor] !== "[") return false;
-  cursor = skipTrivia(source, cursor + 1);
-  if (!source.startsWith("path", cursor)) return false;
-  cursor += "path".length;
-  if (/[_\p{ID_Continue}]/u.test(source[cursor] ?? "")) return false;
-  cursor = skipTrivia(source, cursor);
-  return source[cursor] === "=";
+
+  let bracketDepth = 1;
+  cursor += 1;
+  while (cursor < source.length && bracketDepth > 0) {
+    const triviaEnd = skipTrivia(source, cursor);
+    if (triviaEnd !== cursor) {
+      cursor = triviaEnd;
+      continue;
+    }
+    const rawEnd = rawStringEnd(source, cursor);
+    if (rawEnd !== undefined) {
+      cursor = rawEnd;
+      continue;
+    }
+    const prefixLength = source[cursor] === "b" || source[cursor] === "c" ? 1 : 0;
+    const quote = cursor + prefixLength;
+    if (source[quote] === '"') {
+      cursor = skipQuoted(source, quote);
+      continue;
+    }
+    if (source[quote] === "'") {
+      const end = charLiteralEnd(source, quote);
+      if (end !== undefined) {
+        cursor = end;
+        continue;
+      }
+    }
+    if (source[cursor] === "[") {
+      bracketDepth += 1;
+    } else if (source[cursor] === "]") {
+      bracketDepth -= 1;
+    } else if (
+      source.startsWith("path", cursor) &&
+      !/[_\p{ID_Continue}]/u.test(source[cursor - 1] ?? "") &&
+      !/[_\p{ID_Continue}]/u.test(source[cursor + "path".length] ?? "") &&
+      source[skipTrivia(source, cursor + "path".length)] === "="
+    ) {
+      return true;
+    }
+    cursor += 1;
+  }
+  return false;
 }
 
 function hasPathAttribute(source: string): boolean {
@@ -165,6 +202,13 @@ test("the Davinci module-layout gate recognizes a path attribute", () => {
     hasPathAttribute('  #[path /* ordinary discovery only */ = "nested/file.rs"]\nmod file;'),
     true,
   );
+  assert.equal(
+    hasPathAttribute(
+      '  #[cfg_attr(feature = "generated", path /* ordinary discovery only */ = "nested/file.rs")]\nmod file;',
+    ),
+    true,
+  );
+  assert.equal(hasPathAttribute('#[cfg_attr(feature = "path = \\"not-code.rs\\"")]'), false);
   assert.equal(hasPathAttribute('// #[path = "comment.rs"]\nmod file;'), false);
   assert.equal(hasPathAttribute('const EXAMPLE: &str = "#[path = \\"string.rs\\"]";'), false);
   assert.equal(hasPathAttribute('const RAW: &str = r#"#[path = \\"raw.rs\\"]"#;'), false);
