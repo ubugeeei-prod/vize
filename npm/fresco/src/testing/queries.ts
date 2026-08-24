@@ -53,6 +53,10 @@ function roleOf(node: FrescoNode): AriaRole | undefined {
   return stringValue(node.props["aria-role"]) as AriaRole | undefined;
 }
 
+function testIdOf(node: FrescoNode): string | undefined {
+  return stringValue(node.props["test-id"] ?? node.props["data-testid"]);
+}
+
 function stateOf(node: FrescoNode): AriaState {
   const state = node.props["aria-state"];
   return state && typeof state === "object" ? (state as AriaState) : {};
@@ -107,4 +111,12 @@ export function queryAllByText(root: FrescoNode, text: FrescoTextMatcher): Fresc
 
 export function getByText(root: FrescoNode, text: FrescoTextMatcher): FrescoNode {
   return uniqueNode(queryAllByText(root, text), `text ${String(text)}`);
+}
+
+export function queryAllByTestId(root: FrescoNode, testId: string): FrescoNode[] {
+  return findNodes(root, (node) => testIdOf(node) === testId);
+}
+
+export function getByTestId(root: FrescoNode, testId: string): FrescoNode {
+  return uniqueNode(queryAllByTestId(root, testId), `test id ${JSON.stringify(testId)}`);
 }

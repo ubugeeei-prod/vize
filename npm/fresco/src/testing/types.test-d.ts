@@ -5,8 +5,10 @@ import { h } from "@vue/runtime-core";
 import { TextInput } from "../components/index.js";
 import {
   getByRole,
+  getByTestId,
   getByText,
   queryAllByRole,
+  queryAllByTestId,
   queryAllByText,
   renderTui,
   type FrescoFrameSnapshot,
@@ -25,8 +27,10 @@ const frames: readonly string[] = rendered.frames;
 const snapshot: FrescoFrameSnapshot = rendered.frameSnapshot();
 const snapshots: readonly FrescoFrameSnapshot[] = rendered.frameSnapshots;
 const roleNode = getByRole(rendered.root, "textbox", roleQuery);
+const testNode = getByTestId(rendered.root, "field");
 const textNode = getByText(rendered.root, textMatcher);
 const roleNodes = queryAllByRole(rendered.root, "textbox", { name: "value" });
+const testNodes = queryAllByTestId(rendered.root, "field");
 const textNodes = queryAllByText(rendered.root, /value/u);
 
 void frame;
@@ -34,8 +38,10 @@ void frames;
 void snapshot.tree.children;
 void snapshots;
 void roleNode.props;
+void testNode.id;
 void textNode.type;
 void roleNodes;
+void testNodes;
 void textNodes;
 
 export const keyFrame: Promise<FrescoFrameSnapshot> = input.key({
@@ -72,3 +78,6 @@ void getByRole(rendered.root, "dialog");
 
 // @ts-expect-error - text matchers are exact strings or regular expressions.
 void getByText(rendered.root, 123);
+
+// @ts-expect-error - test identifiers are strings.
+void getByTestId(rendered.root, /field/u);

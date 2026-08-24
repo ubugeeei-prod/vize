@@ -44,8 +44,10 @@ export {
 } from "./mount.js";
 export {
   getByRole,
+  getByTestId,
   getByText,
   queryAllByRole,
+  queryAllByTestId,
   queryAllByText,
   type FrescoRoleQueryOptions,
   type FrescoTextMatcher,

@@ -4,7 +4,15 @@ import { defineComponent, h, nextTick, ref } from "@vue/runtime-core";
 
 import { Static, TextInput } from "../components/index.js";
 import { useWindowSize } from "../composables/index.js";
-import { getByRole, getByText, queryAllByRole, queryAllByText, renderTui } from "./index.js";
+import {
+  getByRole,
+  getByTestId,
+  getByText,
+  queryAllByRole,
+  queryAllByTestId,
+  queryAllByText,
+  renderTui,
+} from "./index.js";
 
 void test("renderTui records initial and explicit frame snapshots", async () => {
   const label = ref("ready");
@@ -101,7 +109,7 @@ void test("resize input updates the provided app dimensions", async () => {
   rendered.unmount();
 });
 
-void test("semantic queries find role, name, state, and text nodes", () => {
+void test("semantic queries find role, name, state, text, and test-id nodes", () => {
   const rendered = renderTui(() =>
     h("box", { style: { flexDirection: "column" } }, [
       h(
@@ -110,12 +118,13 @@ void test("semantic queries find role, name, state, and text nodes", () => {
           "aria-role": "button",
           "aria-label": "Save changes",
           "aria-state": { disabled: true },
+          "test-id": "save-action",
         },
         [h("text", { text: "Ignored label" })],
       ),
       h("box", { "aria-role": "button" }, [h("text", { text: "Cancel" })]),
       h("input", { "aria-role": "textbox", value: "draft" }),
-      h("text", { text: "Status: ready" }),
+      h("text", { "data-testid": "status-line", text: "Status: ready" }),
     ]),
   );
 
@@ -134,6 +143,9 @@ void test("semantic queries find role, name, state, and text nodes", () => {
   );
   assert.equal(getByText(rendered.root, "draft").type, "input");
   assert.equal(queryAllByText(rendered.root, /ready/u).length, 1);
+  assert.equal(getByTestId(rendered.root, "save-action").props["aria-label"], "Save changes");
+  assert.equal(queryAllByTestId(rendered.root, "status-line")[0]?.props.text, "Status: ready");
+  assert.throws(() => getByTestId(rendered.root, "missing"), /Unable to find Fresco node/);
   assert.throws(() => getByRole(rendered.root, "checkbox"), /Unable to find Fresco node/);
   assert.throws(() => getByRole(rendered.root, "button"), /Found 2 Fresco nodes/);
   rendered.unmount();
