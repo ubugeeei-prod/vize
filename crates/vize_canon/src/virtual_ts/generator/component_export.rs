@@ -112,8 +112,7 @@ fn slot_resolver_field(generic_decl: &str, generic_names: &str, slots_is_generic
 /// requiring every prop in the generic contract. What they must not need is an
 /// unconditional string index: generated parents already know whether this
 /// generated child can fall attributes through, so strict-template unknown
-/// props should only be accepted by a real fallthrough target. `class` and
-/// `style` stay universally public component attrs.
+/// props should only be accepted by a real fallthrough target. `class` and `style` stay public.
 fn generic_check_props_param(generic_names: &str, fallthrough_props_ref: Option<&str>) -> String {
     let authored_key_witness = cstr!(
         "{{ [K in Props<{generic_names}> extends infer __VizeP ? __VizeP extends unknown ? keyof __VizeP : never : never]?: unknown }}"
@@ -124,7 +123,7 @@ fn generic_check_props_param(generic_names: &str, fallthrough_props_ref: Option<
     if let Some(fallthrough_ref) = fallthrough_props_ref {
         append!(
             param,
-            " & {{ [K in keyof ({fallthrough_ref})]?: unknown }} & {{ [K in `data${{string}}`]?: unknown }} & Partial<{{ [K in keyof ({fallthrough_ref}) & string as K extends `aria-${{infer Tail}}` ? `aria${{Capitalize<Tail>}}` : K extends `data-${{infer Tail}}` ? `data${{Capitalize<Tail>}}` : never]: unknown }}>"
+            " & {{ [K in keyof ({fallthrough_ref})]?: unknown }} & {{ [K in `data${{string}}`]?: unknown }} & Partial<{{ [K in keyof ({fallthrough_ref}) & string as K extends `aria-${{infer Tail}}` ? `aria${{Capitalize<__VizeFallthroughAttrCamel<Tail>>}}` : K extends `data-${{infer Tail}}` ? `data${{Capitalize<__VizeFallthroughAttrCamel<Tail>>}}` : never]: unknown }}>"
         );
     }
     param
@@ -148,8 +147,7 @@ fn strip_synthetic_any_defaults(generic_decl: &str) -> String {
     stripped
 }
 
-/// One parameter declaration with only its generated `= any` suffix removed.
-/// `=>` inside a constraint never terminates the declaration.
+/// One parameter declaration with only its generated `= any` suffix removed; `=>` never terminates it.
 fn param_without_synthetic_any_default(param: &str) -> String {
     let Some(default_start) = default_start(param) else {
         return param.trim().into();
@@ -248,6 +246,9 @@ pub(super) fn emit_default_export_declaration(
         let emit_props_separator = if emit_resolvers.is_empty() { "" } else { " " };
         let slot_resolver = slot_resolver_field(generic_decl, generic_names, slots_is_generic);
         let check_props_param = generic_check_props_param(generic_names, fallthrough_props_ref);
+        if fallthrough_props_ref.is_some() {
+            ts.push_str("type __VizeFallthroughAttrCamel<S extends string> = S extends `${infer H}-${infer T}` ? `${H}${Capitalize<__VizeFallthroughAttrCamel<T>>}` : S;\n");
+        }
         append!(
             *ts,
             "declare const __vize_component__: {{ __vizeCheck: <{generic_decl}>(props: {check_props_param}) => void; __vizeResolveProps?: <{generic_decl}>(props: {check_props_param}) => Props<{generic_names}>; {slot_resolver}{emit_props_static}{event_map_separator}{event_map_static}{emit_props_separator}{emit_resolvers} {component_contract_fields} }} & {authored_component}__VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions;\n",
