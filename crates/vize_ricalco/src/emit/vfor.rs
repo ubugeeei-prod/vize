@@ -8,7 +8,7 @@ use vize_disegno::op::{Attribute, BindingOp, DynamicName, ForOp, Op};
 use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
-use super::js::{escape_js_string, is_valid_js_identifier};
+use super::js::escape_js_string;
 
 pub(super) fn emit_for(
     cx: &mut EmitCx<'_>,
@@ -154,7 +154,11 @@ pub(super) fn js_source<'a>(expr: &'a ExprRef<'a>) -> Result<&'a str, EmitError>
 pub(super) fn value_alias<'a>(expr: &'a ExprRef<'a>) -> Result<&'a str, EmitError> {
     match expr {
         ExprRef::Js(js) if js.source.is_empty() => Ok("_item"),
-        ExprRef::Js(js) if is_valid_js_identifier(js.source) => Ok(js.source),
+        ExprRef::Js(js) => Ok(js.source),
+        // `{ id = 1 }` is a pattern, not a JS expression; law 5 says
+        // emit the authored source verbatim into the callback param.
+        ExprRef::Opaque(opaque) if opaque.source.is_empty() => Ok("_item"),
+        ExprRef::Opaque(opaque) => Ok(opaque.source),
         _ => Err(EmitError::Unsupported),
     }
 }
