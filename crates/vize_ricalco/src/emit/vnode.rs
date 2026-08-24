@@ -151,7 +151,7 @@ fn emit_call(
     let has_custom = directive::has_custom(&element.bindings);
     let has_binds = has_prop_bindings(&element.bindings);
     let hoist = allow_hoist && if_key.is_none() && root_props_should_hoist(element);
-    let patch = bind_patch(&element.bindings, false);
+    let patch = bind_patch(&element.bindings, false, if_key, for_item);
     let text_flag = children_need_text_flag(&element.children);
     let mut flag = patch.flag;
     if text_flag {

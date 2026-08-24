@@ -113,6 +113,9 @@ impl Buf {
     pub(super) fn use_to_handlers(&mut self) {
         self.mark(Helper::ToHandlers);
     }
+    pub(super) fn use_camelize(&mut self) {
+        self.mark(Helper::Camelize);
+    }
     pub(super) fn use_with_directives(&mut self) {
         self.mark(Helper::WithDirectives);
     }
@@ -197,6 +200,10 @@ impl Buf {
 
     pub(super) fn to_handlers_alias() -> &'static str {
         Helper::ToHandlers.alias()
+    }
+
+    pub(super) fn camelize_alias() -> &'static str {
+        Helper::Camelize.alias()
     }
 
     pub(super) fn with_directives_alias() -> &'static str {

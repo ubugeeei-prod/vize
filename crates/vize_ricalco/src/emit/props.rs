@@ -7,10 +7,12 @@ use vize_disegno::op::{Attribute, BindingOp};
 
 use super::EmitCx;
 use super::EmitError;
+use super::buf::Buf;
 use super::on::{admit_on, event_key_for, needs_hydration};
 
 pub(super) use super::props_bind::{
-    StaticBindKeyCasing, has_prop_modifier, js_value, static_bind_key, static_bind_name,
+    BindName, StaticBindKeyCasing, bind_name, emit_dynamic_bind_pair, has_prop_modifier,
+    is_dynamic_bind_name, is_emitted_key_bind, js_value, static_bind_key,
 };
 pub(super) use super::props_object::{Piece, emit_props_object, pieces};
 
@@ -34,18 +36,15 @@ pub(super) fn admit_bindings(
                 super::merge::admit_object_on(on)?;
             }
             BindingOp::Bind(bind) => {
-                let name = static_bind_name(bind)?;
-                let vize_disegno::expr::ExprRef::Js(_) =
-                    bind.value.ok_or(EmitError::Unsupported)?
-                else {
-                    return Err(EmitError::Unsupported);
-                };
-                match name {
-                    "class" if class => return Err(EmitError::Unsupported),
-                    "class" => class = true,
-                    "style" if style => return Err(EmitError::Unsupported),
-                    "style" => style = true,
-                    _ => {}
+                js_value(bind)?;
+                if let BindName::Static(name) = bind_name(bind)? {
+                    match name {
+                        "class" if class => return Err(EmitError::Unsupported),
+                        "class" => class = true,
+                        "style" if style => return Err(EmitError::Unsupported),
+                        "style" => style = true,
+                        _ => {}
+                    }
                 }
             }
             BindingOp::On(on) => admit_on(on)?,
@@ -62,19 +61,26 @@ pub(super) fn admit_bindings(
     Ok(())
 }
 
-pub(super) fn bind_patch(bindings: &[BindingOp<'_>], is_component: bool) -> Patch {
+pub(super) fn bind_patch(
+    bindings: &[BindingOp<'_>],
+    is_component: bool,
+    if_key: Option<&str>,
+    for_item: bool,
+) -> Patch {
     if super::merge::has_object_spread(bindings) {
-        return super::merge::object_patch(bindings, is_component);
+        return super::merge::object_patch(bindings, is_component, if_key, for_item);
     }
     let mut flag = 0i32;
     let mut dynamic_props = StdVec::new();
     for binding in bindings.iter() {
         match binding {
-            BindingOp::Bind(bind) => {
-                let Ok(raw_name) = static_bind_name(bind) else {
-                    continue;
-                };
-                match raw_name {
+            BindingOp::Bind(bind) => match bind_name(bind) {
+                _ if is_emitted_key_bind(bind, if_key) => {
+                    if for_item && is_dynamic_bind_name(bind) {
+                        flag |= 16;
+                    }
+                }
+                Ok(BindName::Static(raw_name)) => match raw_name {
                     "ref" => flag |= 512,
                     "class" if !is_component => flag |= 2,
                     "style" if !is_component => flag |= 4,
@@ -92,8 +98,15 @@ pub(super) fn bind_patch(bindings: &[BindingOp<'_>], is_component: bool) -> Patc
                             flag |= 32;
                         }
                     }
+                },
+                Ok(BindName::Dynamic(_)) => {
+                    flag |= 16;
+                    if has_prop_modifier(bind) {
+                        flag |= 32;
+                    }
                 }
-            }
+                Ok(BindName::Spread) | Err(_) => {}
+            },
             BindingOp::On(on) => {
                 let Ok(key) = event_key_for(on, !is_component) else {
                     continue;
@@ -142,6 +155,12 @@ pub(super) fn emit_bind_props(
         );
     }
     let pieces = pieces(attributes, bindings, skip_is)?;
+    let normalize = has_dynamic_bind_name(bindings, if_key);
+    if normalize {
+        cx.buf.use_normalize_props();
+        cx.buf.push(Buf::normalize_props_alias());
+        cx.buf.push("(");
+    }
     emit_props_object(
         cx,
         &pieces,
@@ -149,7 +168,11 @@ pub(super) fn emit_bind_props(
         false,
         for_item && super::directive::has_custom(bindings),
         is_plain_element,
-    )
+    )?;
+    if normalize {
+        cx.buf.push(")");
+    }
+    Ok(())
 }
 
 pub(super) fn apply_static_ref_patch(attributes: &[Attribute<'_>], flag: &mut i32) {
@@ -168,4 +191,11 @@ fn static_attr_value<'a>(attributes: &'a [Attribute<'a>], name: &str) -> Option<
         .iter()
         .find(|attr| attr.name == name)
         .and_then(|attr| attr.value)
+}
+
+fn has_dynamic_bind_name(bindings: &[BindingOp<'_>], if_key: Option<&str>) -> bool {
+    bindings.iter().any(|binding| match binding {
+        BindingOp::Bind(bind) => is_dynamic_bind_name(bind) && !is_emitted_key_bind(bind, if_key),
+        _ => false,
+    })
 }

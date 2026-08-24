@@ -54,11 +54,19 @@ pub fn check(name: &str, source: &str, old: &[OldChain], s2: &[S2Chain], counter
             // closed the dynamic-key and outlet-key classes; the
             // wrapper key rides the lowering's capture channel). The
             // counted classes: a legacy dynamic-argument `:[key]`
-            // (the arg-content quirk S2 never imitates) and a legacy
-            // compound key rebuild.
+            // (the arg-content quirk S2 now mirrors on ordinary branch
+            // carriers, while wrapper residuals still only count) and a
+            // legacy compound key rebuild.
             let wrapper = old_branch.template_if;
             match (&old_branch.key, &s2_branch.key) {
                 (OldKey::None, None) => {}
+                (
+                    OldKey::Dynamic {
+                        text: Some(old_text),
+                        dynamic_arg: true,
+                    },
+                    Some(S2Key::Dynamic(s2_text)),
+                ) if old_text == s2_text => counters.keys_dynamic_arg += 1,
                 (
                     OldKey::Dynamic {
                         dynamic_arg: true, ..

@@ -16,8 +16,8 @@ use super::EmitError;
 use super::buf::Buf;
 use super::on::{event_key_for, needs_hydration};
 use super::props::{
-    Patch, Piece, StaticBindKeyCasing, emit_props_object, has_prop_modifier, js_value, pieces,
-    static_bind_key, static_bind_name,
+    BindName, Patch, Piece, StaticBindKeyCasing, bind_name, emit_props_object, has_prop_modifier,
+    is_emitted_key_bind, js_value, pieces, static_bind_key,
 };
 
 pub(super) fn has_object_spread(bindings: &[BindingOp<'_>]) -> bool {
@@ -45,35 +45,50 @@ pub(super) fn admit_object_on(on: &OnOp<'_>) -> Result<(), EmitError> {
     }
 }
 
-pub(super) fn object_patch(bindings: &[BindingOp<'_>], is_component: bool) -> Patch {
+pub(super) fn object_patch(
+    bindings: &[BindingOp<'_>],
+    is_component: bool,
+    if_key: Option<&str>,
+    for_item: bool,
+) -> Patch {
     let mut dynamic_props = StdVec::new();
     let mut flag = 16i32;
     for binding in bindings.iter() {
         match binding {
             BindingOp::Bind(bind) if bind.name.is_none() => {}
             BindingOp::On(on) if on.name.is_none() => {}
-            BindingOp::Bind(bind) => {
-                let Ok(raw_name) = static_bind_name(bind) else {
-                    continue;
-                };
-                if raw_name == "ref" {
-                    flag |= 512;
-                    continue;
+            BindingOp::Bind(bind) => match bind_name(bind) {
+                _ if is_emitted_key_bind(bind, if_key) => {
+                    if for_item && has_prop_modifier(bind) {
+                        flag |= 32;
+                    }
                 }
-                if matches!(raw_name, "class" | "style" | "key") {
-                    continue;
+                Ok(BindName::Static(raw_name)) => {
+                    if raw_name == "ref" {
+                        flag |= 512;
+                        continue;
+                    }
+                    if matches!(raw_name, "class" | "style" | "key") {
+                        continue;
+                    }
+                    let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve) else {
+                        continue;
+                    };
+                    let owned = String::from(key.as_str());
+                    if !dynamic_props.contains(&owned) {
+                        dynamic_props.push(owned);
+                    }
+                    if has_prop_modifier(bind) {
+                        flag |= 32;
+                    }
                 }
-                let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve) else {
-                    continue;
-                };
-                let owned = String::from(key.as_str());
-                if !dynamic_props.contains(&owned) {
-                    dynamic_props.push(owned);
+                Ok(BindName::Dynamic(_)) => {
+                    if has_prop_modifier(bind) {
+                        flag |= 32;
+                    }
                 }
-                if has_prop_modifier(bind) {
-                    flag |= 32;
-                }
-            }
+                Ok(BindName::Spread) | Err(_) => {}
+            },
             BindingOp::On(on) => {
                 let Ok(key) = event_key_for(on, !is_component) else {
                     continue;

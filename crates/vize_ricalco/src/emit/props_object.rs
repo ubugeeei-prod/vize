@@ -9,8 +9,10 @@ use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
 use super::js::{escape_js_string, push_ident_key};
-use super::on;
-use super::props_bind::{StaticBindKeyCasing, js_value, static_bind_key, static_bind_name};
+use super::props_bind::{
+    StaticBindKeyCasing, emit_dynamic_bind_pair, js_value, static_bind_key, static_bind_name,
+};
+use super::{on, style};
 
 pub(super) fn emit_props_object(
     cx: &mut EmitCx<'_>,
@@ -188,11 +190,7 @@ fn skip_emitted_key(
                 || (skip_style && attr.name == "style" && attr.value.is_some())
                 || (skip_key && attr.name == "key")
         }
-        Piece::Bind(bind)
-            if skip_key
-                && matches!(bind.name, Some(DynamicName::Static("key")))
-                && js_value(bind).is_ok_and(|js| if_key == Some(js.source)) =>
-        {
+        Piece::Bind(bind) if skip_key && super::props_bind::is_emitted_key_bind(bind, if_key) => {
             true
         }
         _ => false,
@@ -210,13 +208,8 @@ fn pieces_have_named(pieces: &[Piece<'_>], name: &str) -> bool {
 
 fn pieces_have_inline_on(pieces: &[Piece<'_>]) -> bool {
     pieces.iter().any(|piece| match piece {
-        Piece::On(event) => {
-            on::forces_inline_on(event)
-                || match event.handler {
-                    Some(ExprRef::Js(js)) => on::is_inline_handler_source(js.source),
-                    _ => false,
-                }
-        }
+        Piece::On(event) => on::forces_inline_on(event)
+            || matches!(event.handler, Some(ExprRef::Js(js)) if on::is_inline_handler_source(js.source)),
         Piece::ModelUpdate { .. } => true,
         _ => false,
     })
@@ -238,6 +231,9 @@ fn emit_bind_pair(
     bind: &BindOp<'_>,
     skip_normalize: bool,
 ) -> Result<(), EmitError> {
+    if emit_dynamic_bind_pair(cx, bind)? {
+        return Ok(());
+    }
     let raw_name = static_bind_name(bind)?;
     let key = static_bind_key(bind, StaticBindKeyCasing::Preserve)?;
     let js = js_value(bind)?;
@@ -247,7 +243,7 @@ fn emit_bind_pair(
     match raw_name {
         "class" => emit_class_value(cx, pieces, bind, js, skip_normalize),
         "style" => {
-            super::style::emit_style_value(cx, static_style_piece(pieces), bind, js, skip_normalize)
+            style::emit_style_value(cx, static_style_piece(pieces), bind, js, skip_normalize)
         }
         _ => cx.buf.push(js.source),
     }

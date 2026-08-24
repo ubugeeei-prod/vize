@@ -38,8 +38,9 @@
 //! `.native` event sugar** (accepted and stripped like the shipped lane),
 //! and **static+dynamic `style` merge** (`[{"color":"red"}, s]`).
 //! Static-name `v-bind` modifiers (`.camel`, `.prop`, `.attr`, plus the
-//! dot shorthand) are realized into the shipped DOM prop-key shape. Filters
-//! and dynamic-argument bind modifiers stay [`EmitError::Unsupported`].
+//! dot shorthand) and dynamic-argument `v-bind` keys / modifiers are
+//! realized into the shipped DOM prop-key shape. Filters stay
+//! [`EmitError::Unsupported`].
 //! The old lane stays the shipped compile path; [`super::DOM_LANE_FLAG`]
 //! is named here and *read* in the atelier_dom witness.
 
@@ -96,12 +97,15 @@ mod vif;
 #[path = "emit/vnode.rs"]
 mod vnode;
 
+use alloc::vec::Vec as StdVec;
+
 use vize_carton::{Allocator, String};
 use vize_davinci::diagnostic::Severity;
 use vize_davinci::id::NodeId;
 use vize_davinci::pass::BudgetObserver;
 use vize_davinci::side_table::SideTable;
 use vize_disegno::op::{ElementOp, ForOp, IfOp, Namespace, Op, Region};
+use vize_disegno::scope::ScopeFacts;
 use vize_sinopia::parse;
 
 use crate::lower::{ForWrapper, Lowered, WrapperKeys, lower};
@@ -190,9 +194,11 @@ fn emit_for_item_call(
 struct EmitCx<'facts> {
     buf: Buf,
     facts: &'facts S2Facts,
+    scopes: &'facts SideTable<ScopeFacts>,
     wrappers: &'facts SideTable<WrapperKeys>,
     for_wrappers: &'facts SideTable<ForWrapper>,
     walk: PageWalk,
+    scope_names: StdVec<String>,
     /// Sibling `v-if` chains share one counter; nested chains reset.
     if_branch_key: u32,
     /// Slot objects inside `v-for` carry `_: 2 /* DYNAMIC */`.
@@ -204,6 +210,30 @@ struct EmitCx<'facts> {
     /// depends on SVG/MathML boundaries staying block-local while same-namespace
     /// descendants remain inline VNodes.
     parent_ns: Namespace,
+}
+
+impl EmitCx<'_> {
+    fn scope_mark(&self) -> usize {
+        self.scope_names.len()
+    }
+
+    fn push_scope(&mut self, id: Option<NodeId>) -> usize {
+        let mark = self.scope_mark();
+        if let Some(facts) = id.and_then(|id| self.scopes.get(id)) {
+            for binding in facts.bindings.iter() {
+                self.scope_names.push(binding.name.clone());
+            }
+        }
+        mark
+    }
+
+    fn pop_scope(&mut self, mark: usize) {
+        self.scope_names.truncate(mark);
+    }
+
+    fn is_scope_name(&self, source: &str) -> bool {
+        self.scope_names.iter().any(|name| name.as_str() == source)
+    }
 }
 
 /// One DOM render module, split the way the shipped codegen splits it
@@ -253,9 +283,11 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
     let mut cx = EmitCx {
         buf: Buf::new(),
         facts,
+        scopes: &lowered.scopes,
         wrappers: &lowered.wrappers,
         for_wrappers: &lowered.for_wrappers,
         walk: PageWalk::new(),
+        scope_names: StdVec::new(),
         if_branch_key: 0,
         in_v_for: false,
         slot_param_depth: 0,

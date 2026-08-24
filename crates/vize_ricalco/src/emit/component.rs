@@ -225,7 +225,7 @@ fn emit_call(
         cx.buf
             .push_hoist(compact_props_object(hoist_attrs.iter().copied()));
     }
-    let mut patch = bind_patch(&component.bindings, true);
+    let mut patch = bind_patch(&component.bindings, true, if_key, for_item);
     if skip_is {
         patch.dynamic_props.retain(|name| name.as_str() != "is");
         if patch.dynamic_props.is_empty() {

@@ -26,6 +26,7 @@ pub(super) enum Helper {
     GuardReactiveProps,
     MergeProps,
     ToHandlers,
+    Camelize,
     OpenBlock,
     CreateBlock,
     CreateElementBlock,
@@ -44,7 +45,7 @@ pub(super) enum Helper {
 }
 
 impl Helper {
-    pub(super) const ALL: [Self; 35] = [
+    pub(super) const ALL: [Self; 36] = [
         Self::ResolveComponent,
         Self::ResolveDynamicComponent,
         Self::ResolveDirective,
@@ -65,6 +66,7 @@ impl Helper {
         Self::GuardReactiveProps,
         Self::MergeProps,
         Self::ToHandlers,
+        Self::Camelize,
         Self::OpenBlock,
         Self::CreateBlock,
         Self::CreateElementBlock,
@@ -94,7 +96,8 @@ impl Helper {
             | Self::NormalizeProps
             | Self::GuardReactiveProps
             | Self::MergeProps
-            | Self::ToHandlers => 5,
+            | Self::ToHandlers
+            | Self::Camelize => 5,
             Self::OpenBlock => 6,
             Self::CreateBlock | Self::CreateElementBlock => 7,
             Self::Fragment => 8,
@@ -132,22 +135,23 @@ impl Helper {
             Self::CreateVNode => 65536,
             Self::CreateBlock => 131072,
             Self::ToHandlers => 262144,
-            Self::CreateSlots => 524288,
-            Self::WithCtx => 1048576,
-            Self::RenderSlot => 2097152,
-            Self::Teleport => 4194304,
-            Self::Suspense => 8388608,
-            Self::KeepAlive => 16777216,
-            Self::BaseTransition => 33554432,
-            Self::Transition => 67108864,
-            Self::TransitionGroup => 134217728,
-            Self::ResolveDynamicComponent => 268435456,
-            Self::VModelText => 536870912,
-            Self::VModelCheckbox => 1073741824,
-            Self::VModelRadio => 2147483648,
-            Self::VModelSelect => 4294967296,
-            Self::WithDirectives => 8589934592,
-            Self::ResolveDirective => 17179869184,
+            Self::Camelize => 524288,
+            Self::CreateSlots => 1048576,
+            Self::WithCtx => 2097152,
+            Self::RenderSlot => 4194304,
+            Self::Teleport => 8388608,
+            Self::Suspense => 16777216,
+            Self::KeepAlive => 33554432,
+            Self::BaseTransition => 67108864,
+            Self::Transition => 134217728,
+            Self::TransitionGroup => 268435456,
+            Self::ResolveDynamicComponent => 536870912,
+            Self::VModelText => 1073741824,
+            Self::VModelCheckbox => 2147483648,
+            Self::VModelRadio => 4294967296,
+            Self::VModelSelect => 8589934592,
+            Self::WithDirectives => 17179869184,
+            Self::ResolveDirective => 34359738368,
         }
     }
 
@@ -173,6 +177,7 @@ impl Helper {
             Self::GuardReactiveProps => "guardReactiveProps",
             Self::MergeProps => "mergeProps",
             Self::ToHandlers => "toHandlers",
+            Self::Camelize => "camelize",
             Self::OpenBlock => "openBlock",
             Self::CreateBlock => "createBlock",
             Self::CreateElementBlock => "createElementBlock",
@@ -213,6 +218,7 @@ impl Helper {
             Self::GuardReactiveProps => "_guardReactiveProps",
             Self::MergeProps => "_mergeProps",
             Self::ToHandlers => "_toHandlers",
+            Self::Camelize => "_camelize",
             Self::OpenBlock => "_openBlock",
             Self::CreateBlock => "_createBlock",
             Self::CreateElementBlock => "_createElementBlock",

@@ -126,7 +126,8 @@ pub struct Counters {
     /// installment-1 drop through the lowering's capture channel).
     pub keys_wrapper: u64,
     /// The legacy arg-content quirk: a dynamic-argument `:[key]` the
-    /// legacy lane lifts as the branch key; S2 counts, never imitates.
+    /// legacy lane lifts as the branch key; S2 mirrors ordinary branch
+    /// carriers and counts wrapper residuals.
     pub keys_dynamic_arg: u64,
     /// A legacy compound key rebuild: no single source text.
     pub keys_compound: u64,

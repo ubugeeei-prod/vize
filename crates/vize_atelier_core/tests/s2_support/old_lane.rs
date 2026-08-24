@@ -16,7 +16,8 @@ pub enum OldKey {
     /// A `:key` binding: the trimmed expression text (`None` = a
     /// compound rebuild), plus whether the legacy arg-content match
     /// admitted a dynamic-argument spelling (`:[key]` — the recorded
-    /// quirk the S2 lane counts rather than imitates).
+    /// quirk S2 mirrors on ordinary carriers and still counts for
+    /// residual wrapper cases).
     Dynamic {
         /// The trimmed expression text.
         text: Option<String>,

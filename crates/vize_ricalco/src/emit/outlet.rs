@@ -18,7 +18,7 @@ use super::children::{
 use super::hoist::{emit_hoisted_element, is_hoistable};
 use super::js::{escape_js_string, is_valid_js_identifier};
 use super::merge;
-use super::props::{Piece, js_value, pieces};
+use super::props::{Piece, emit_dynamic_bind_pair, js_value, pieces};
 use super::slots::is_whitespace_text;
 use super::vnode::emit_array_child;
 
@@ -153,14 +153,16 @@ fn emit_props(cx: &mut EmitCx<'_>, slot: &SlotOp<'_>, key: Option<&str>) -> Resu
                 cx.buf.push("\"");
             }
             Piece::Bind(bind) => {
-                let key = super::props::static_bind_key(
-                    bind,
-                    super::props::StaticBindKeyCasing::Camelize,
-                )?;
-                let js = js_value(bind)?;
-                push_key(cx, key.as_str());
-                cx.buf.push(": ");
-                cx.buf.push(js.source);
+                if !emit_dynamic_bind_pair(cx, bind)? {
+                    let key = super::props::static_bind_key(
+                        bind,
+                        super::props::StaticBindKeyCasing::Camelize,
+                    )?;
+                    let js = js_value(bind)?;
+                    push_key(cx, key.as_str());
+                    cx.buf.push(": ");
+                    cx.buf.push(js.source);
+                }
             }
             Piece::On(_)
             | Piece::ModelValue { .. }

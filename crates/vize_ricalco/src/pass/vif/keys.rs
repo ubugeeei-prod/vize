@@ -14,11 +14,13 @@
 //! binding op **stays** — a pass removing a binding op would shift every
 //! page-order id after it — and the fact records which binding carries
 //! it ([`super::BranchKeyKind::Dynamic`]`::bind_index`) so realization
-//! and the differential projection can exclude it. A dynamic-argument
-//! `:[key]` is not a candidate (the legacy arg-content match admits it —
-//! a recorded quirk the differential lane counts rather than imitates).
+//! and the differential projection can exclude it. The legacy
+//! arg-content match also admits the dynamic-argument spelling
+//! `:[key]`; S2 mirrors that narrow spelling so DOM realization keeps
+//! byte-for-byte parity while ordinary computed names stay props.
 
 use vize_carton::{Span, String, Vec, cstr};
+use vize_disegno::expr::ExprRef;
 use vize_disegno::op::{Attribute, BindingOp, DynamicName, Op};
 
 use super::{BranchKey, BranchKeyKind};
@@ -68,10 +70,15 @@ fn carrier_surface<'w, 'a>(
     }
 }
 
-/// A `ui.bind` whose name position is the static `key`.
+/// A `ui.bind` whose argument spells `key` by static name or legacy
+/// dynamic-argument content.
 fn is_key_bind(binding: &BindingOp<'_>) -> bool {
     match binding {
-        BindingOp::Bind(bind) => matches!(bind.name, Some(DynamicName::Static("key"))),
+        BindingOp::Bind(bind) => match bind.name {
+            Some(DynamicName::Static("key")) => true,
+            Some(DynamicName::Dynamic(ExprRef::Js(js))) => js.source == "key",
+            _ => false,
+        },
         BindingOp::On(_)
         | BindingOp::Model(_)
         | BindingOp::SlotContent(_)

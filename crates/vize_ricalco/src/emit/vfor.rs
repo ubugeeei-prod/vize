@@ -3,7 +3,7 @@
 use vize_carton::{String, ToCompactString};
 use vize_davinci::id::NodeId;
 use vize_disegno::expr::ExprRef;
-use vize_disegno::op::{Attribute, BindingOp, DynamicName, ForOp, Op};
+use vize_disegno::op::{Attribute, BindingOp, ForOp, Op};
 
 use super::EmitCx;
 use super::EmitError;
@@ -99,6 +99,7 @@ pub(super) fn emit_for(
     cx.buf.newline();
     cx.buf.push("return ");
     let prev_in_v_for = cx.in_v_for;
+    let scope_mark = cx.push_scope(id);
     cx.in_v_for = true;
     let item = if from_template {
         super::tpl::emit_for_template_item(cx, &for_op.region.ops, stable, wrapper_key.as_deref())
@@ -106,6 +107,7 @@ pub(super) fn emit_for(
         emit_plain_item(cx, for_op, bind_len, stable)
     };
     cx.in_v_for = prev_in_v_for;
+    cx.pop_scope(scope_mark);
     item?;
     cx.buf.deindent();
     cx.buf.newline();
@@ -177,7 +179,7 @@ fn item_key_js(
 ) -> Result<Option<String>, EmitError> {
     for binding in bindings {
         if let BindingOp::Bind(bind) = binding
-            && matches!(bind.name, Some(DynamicName::Static("key")))
+            && super::props_bind::is_key_bind_name(bind)
         {
             return Ok(Some(String::from(super::props::js_value(bind)?.source)));
         }
@@ -198,7 +200,7 @@ fn has_item_key(attributes: &[Attribute<'_>], bindings: &[BindingOp<'_>]) -> boo
         || bindings.iter().any(|binding| {
             matches!(
                 binding,
-                BindingOp::Bind(bind) if matches!(bind.name, Some(DynamicName::Static("key")))
+                BindingOp::Bind(bind) if super::props_bind::is_key_bind_name(bind)
             )
         })
 }
