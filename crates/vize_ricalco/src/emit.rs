@@ -26,7 +26,9 @@
 //! (native `withDirectives` + `vModelText`-family helpers; component
 //! `modelValue` / `onUpdate:` product props), and **custom directives**
 //! (`resolveDirective` + `_withDirectives`, merged with native
-//! `v-model`). `.native` and filters stay [`EmitError::Unsupported`].
+//! `v-model`), and **colon / vnode-hook events** (`@update:…`,
+//! `@vue:mounted`) including merged duplicate handlers. `.native` and
+//! filters stay [`EmitError::Unsupported`].
 //! The old lane stays the shipped compile path; [`super::DOM_LANE_FLAG`]
 //! is named here and *read* in the atelier_dom witness.
 

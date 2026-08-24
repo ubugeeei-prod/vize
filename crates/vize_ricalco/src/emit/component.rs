@@ -253,7 +253,8 @@ fn emit_call(
             &component.bindings,
             if_key,
             skip_is,
-            for_item && directive::has_custom(&component.bindings),
+            for_item,
+            false,
         )?;
     } else if for_item && directive::has_custom(&component.bindings) {
         cx.buf.push(", { }");

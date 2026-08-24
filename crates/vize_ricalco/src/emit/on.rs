@@ -12,7 +12,6 @@ use vize_disegno::op::{DynamicName, OnOp};
 use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
-use super::js::is_valid_js_identifier;
 
 struct Classified<'a> {
     options: StdVec<&'a str>,
@@ -20,25 +19,16 @@ struct Classified<'a> {
     keys: StdVec<&'a str>,
 }
 
-pub(super) fn admit_on(on: &OnOp<'_>, seen: &mut StdVec<String>) -> Result<(), EmitError> {
+pub(super) fn admit_on(on: &OnOp<'_>) -> Result<(), EmitError> {
     if on.name.is_none() {
         return super::merge::admit_object_on(on);
     }
-    let name = static_on_name(on)?;
-    if name.contains(':') {
-        return Err(EmitError::Unsupported);
-    }
+    static_on_name(on)?;
     classify(on)?;
     match on.handler {
-        None | Some(ExprRef::Js(_)) => {}
-        Some(_) => return Err(EmitError::Unsupported),
+        None | Some(ExprRef::Js(_)) => Ok(()),
+        Some(_) => Err(EmitError::Unsupported),
     }
-    let key = event_key_for(on)?;
-    if seen.contains(&key) {
-        return Err(EmitError::Unsupported);
-    }
-    seen.push(key);
-    Ok(())
 }
 
 pub(super) fn static_on_name<'a>(on: &'a OnOp<'a>) -> Result<&'a str, EmitError> {
@@ -48,24 +38,41 @@ pub(super) fn static_on_name<'a>(on: &'a OnOp<'a>) -> Result<&'a str, EmitError>
     }
 }
 
-pub(super) fn event_key(raw: &str) -> String {
-    if raw.chars().any(|c| c.is_ascii_uppercase()) {
-        let mut key = String::with_capacity(raw.len() + 3);
-        key.push_str("on:");
-        key.push_str(raw);
-        key
+/// Mirror `von_event_key_for`: camelize unless a user-authored event on a
+/// plain element keeps uppercase (`on:customEvent`). `vue:` rewrites to
+/// `vnode-` first so `@vue:mounted` becomes `onVnodeMounted`.
+pub(super) fn event_key(raw: &str, is_plain_element: bool) -> String {
+    let mut vnode_owned = String::default();
+    let raw_name = if let Some(rest) = raw.strip_prefix("vue:") {
+        vnode_owned.push_str("vnode-");
+        vnode_owned.push_str(rest);
+        vnode_owned.as_str()
     } else {
-        let camelized = camelize(raw);
+        raw
+    };
+    if !is_plain_element
+        || raw_name.starts_with("vnode")
+        || !raw_name.chars().any(|c| c.is_ascii_uppercase())
+    {
+        let camelized = camelize(raw_name);
         let mut key = String::with_capacity(camelized.len() + 2);
         key.push_str("on");
         key.push_str(capitalize(camelized.as_str()).as_str());
         key
+    } else {
+        let mut key = String::with_capacity(raw_name.len() + 3);
+        key.push_str("on:");
+        key.push_str(raw_name);
+        key
     }
 }
 
-pub(super) fn event_key_for(on: &OnOp<'_>) -> Result<String, EmitError> {
+pub(super) fn event_key_for(on: &OnOp<'_>, is_plain_element: bool) -> Result<String, EmitError> {
     let classified = classify(on)?;
-    let mut key = event_key(remapped_name(static_on_name(on)?, &classified.event));
+    let mut key = event_key(
+        remapped_name(static_on_name(on)?, &classified.event),
+        is_plain_element,
+    );
     for option in &classified.options {
         key.push_str(capitalize(option).as_str());
     }
@@ -73,6 +80,9 @@ pub(super) fn event_key_for(on: &OnOp<'_>) -> Result<String, EmitError> {
 }
 
 pub(super) fn needs_hydration(key: &str, on: &OnOp<'_>) -> bool {
+    if key == "onUpdate:modelValue" || key.starts_with("onVnode") {
+        return false;
+    }
     key != "onClick" || classify(on).is_ok_and(|classified| !classified.keys.is_empty())
 }
 
@@ -88,17 +98,18 @@ pub(super) fn is_inline_handler_source(source: &str) -> bool {
         || source.contains(' ')
 }
 
-pub(super) fn emit_on_pair(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitError> {
-    let classified = classify(on)?;
-    let key = event_key_for(on)?;
-    if !is_valid_js_identifier(key.as_str()) {
-        cx.buf.push("\"");
-        cx.buf.push(key.as_str());
-        cx.buf.push("\"");
-    } else {
-        cx.buf.push(key.as_str());
-    }
+pub(super) fn emit_on_pair(
+    cx: &mut EmitCx<'_>,
+    on: &OnOp<'_>,
+    is_plain_element: bool,
+) -> Result<(), EmitError> {
+    super::js::push_ident_key(cx, event_key_for(on, is_plain_element)?.as_str());
     cx.buf.push(": ");
+    emit_on_value(cx, on)
+}
+
+pub(super) fn emit_on_value(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitError> {
+    let classified = classify(on)?;
     emit_wrapped_handler(cx, on, &classified)
 }
 

@@ -119,7 +119,15 @@ fn meaningful_fallback(region: &Region<'_>) -> bool {
 
 fn emit_props(cx: &mut EmitCx<'_>, slot: &SlotOp<'_>, key: Option<&str>) -> Result<(), EmitError> {
     if merge::has_object_spread(&slot.bindings) {
-        return merge::emit_spread_props(cx, &slot.attributes, &slot.bindings, key, false);
+        return merge::emit_spread_props(
+            cx,
+            &slot.attributes,
+            &slot.bindings,
+            key,
+            false,
+            false,
+            false,
+        );
     }
     let list = pieces(&slot.attributes, &slot.bindings, false)?;
     cx.buf.push("{");

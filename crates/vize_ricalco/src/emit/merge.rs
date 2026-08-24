@@ -62,7 +62,7 @@ pub(super) fn object_patch(bindings: &[BindingOp<'_>], is_component: bool) -> Pa
                 }
             }
             BindingOp::On(on) => {
-                let Ok(key) = event_key_for(on) else {
+                let Ok(key) = event_key_for(on, !is_component) else {
                     continue;
                 };
                 if !dynamic_props.contains(&key) {
@@ -90,6 +90,8 @@ pub(super) fn emit_spread_props(
     bindings: &[BindingOp<'_>],
     if_key: Option<&str>,
     skip_is: bool,
+    empty_key_multiline: bool,
+    is_plain_element: bool,
 ) -> Result<(), EmitError> {
     let args = merge_args(attributes, bindings, if_key, skip_is)?;
     if let Some(lone) = lone_kind_spread(&args) {
@@ -110,7 +112,14 @@ pub(super) fn emit_spread_props(
             Arg::BindSpread(bind) => cx.buf.push(js_value(bind)?.source),
             Arg::OnSpread(on) => emit_to_handlers(cx, on)?,
             Arg::Object { if_key, pieces } => {
-                emit_props_object(cx, pieces, *if_key, true, false)?;
+                emit_props_object(
+                    cx,
+                    pieces,
+                    *if_key,
+                    true,
+                    empty_key_multiline,
+                    is_plain_element,
+                )?;
             }
         }
     }
