@@ -31,6 +31,10 @@ may point only to an earlier tier:
 S0 must never depend on a later tier. The conversion crate is the only current
 crate that joins both artifact stages.
 
+The [storage boundary](./storage-boundary.md) defines how every stage consumes
+S0 strings and collections, inventories retained `alloc::vec::Vec` sites, and
+keeps `std` confined to the explicit `davinci-opt` host edge.
+
 Cargo manifests use dependency renames, so source imports stay on `vize_s0`,
 `vize_s1`, `vize_s2`, and `vize_s1_to_s2` while package publication remains
 compatible. `tests/tooling/davinci-stage-dependencies.test.ts` reads Cargo
