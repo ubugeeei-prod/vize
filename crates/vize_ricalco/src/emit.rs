@@ -7,19 +7,21 @@
 //! P2-9 carve-out. This module writes the JS string **directly from
 //! S2 ops** — it does not mint relief codegen-nodes (`NodeType` 13–20).
 //!
-//! Installment 5 emits **static native HTML**, interpolations,
+//! This installment emits **static native HTML**, interpolations,
 //! mixed text siblings, static-name `ui.bind`, static-name `ui.on`
 //! (including event/key/option modifiers), native `ui.if`, **native
 //! `ui.for`**, **object-spread `v-bind`** (`normalizeProps` /
-//! `mergeProps`), and **static-name components** (`resolveComponent` /
-//! `createVNode` / `createBlock`). Object `v-on`, `.native`, template
-//! fragments, filters, slots, and builtins stay
+//! `mergeProps`), **static-name components** (`resolveComponent` /
+//! `createVNode` / `createBlock`), and **object `v-on`** (`toHandlers`).
+//! `.native`, template fragments, filters, slots, and builtins stay
 //! [`EmitError::Unsupported`]. The old lane stays the shipped compile
 //! path; [`super::DOM_LANE_FLAG`] is named here and *read* in the
 //! atelier_dom witness.
 
 #[path = "emit/buf.rs"]
 mod buf;
+#[path = "emit/helper.rs"]
+mod helper;
 #[path = "emit/children.rs"]
 mod children;
 #[path = "emit/component.rs"]

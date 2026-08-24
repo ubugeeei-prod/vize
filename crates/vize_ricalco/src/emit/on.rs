@@ -1,5 +1,6 @@
 //! Static-name `ui.on` (`@click` / `v-on:click`), including event / key /
 //! option modifiers (`withModifiers` / `withKeys`, `onClickOnce`, …).
+//! Object `v-on` lives in [`super::merge`].
 
 use alloc::vec::Vec as StdVec;
 
