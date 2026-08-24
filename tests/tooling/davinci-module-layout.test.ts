@@ -12,7 +12,8 @@ const davinciRoots = [
   "crates/vize_sinopia",
   "benchmarks/davinci_harness",
 ];
-const pathAttribute = /^\s*#\s*\[\s*path\s*=/mu;
+const rustTrivia = String.raw`(?:\s|//[^\r\n]*(?:\r?\n|$)|/\*[\s\S]*?\*/)*`;
+const pathAttribute = new RegExp(String.raw`#${rustTrivia}\[${rustTrivia}path${rustTrivia}=`, "u");
 
 function rustFiles(root: string): string[] {
   const files: string[] = [];
@@ -42,4 +43,8 @@ test("Davinci-owned Rust modules use ordinary module discovery", () => {
 
 test("the Davinci module-layout gate recognizes a path attribute", () => {
   assert.equal(pathAttribute.test('  #[path = "nested/file.rs"]\nmod file;'), true);
+  assert.equal(
+    pathAttribute.test('  #[path /* ordinary discovery only */ = "nested/file.rs"]\nmod file;'),
+    true,
+  );
 });
