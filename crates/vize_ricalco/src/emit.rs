@@ -20,14 +20,14 @@
 
 #[path = "emit/buf.rs"]
 mod buf;
-#[path = "emit/helper.rs"]
-mod helper;
 #[path = "emit/children.rs"]
 mod children;
 #[path = "emit/component.rs"]
 mod component;
 #[path = "emit/flag.rs"]
 mod flag;
+#[path = "emit/helper.rs"]
+mod helper;
 #[path = "emit/js.rs"]
 mod js;
 #[path = "emit/merge.rs"]

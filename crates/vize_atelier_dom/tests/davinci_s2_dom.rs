@@ -192,7 +192,10 @@ const BATTERY: &[(&str, &str)] = &[
         "object_bind_then_object_on",
         r#"<div v-bind="obj" v-on="handlers"></div>"#,
     ),
-    ("v_if_object_on", r#"<div v-if="ok" v-on="handlers">x</div>"#),
+    (
+        "v_if_object_on",
+        r#"<div v-if="ok" v-on="handlers">x</div>"#,
+    ),
     ("component_object_on", r#"<Foo v-on="handlers" />"#),
     (
         "component_attr_then_object_on",
