@@ -14,15 +14,15 @@ Command: `cargo test -p vize_atelier_core --features legacy --test davinci_s2_tr
 any comparator change). The text projection prints both unit lists on
 TS-25 panic.
 
-| template | legacy dynamic text | S2 dynamic text | result |
-| --- | --- | --- | --- |
-| `{{ msg \| cap }}` | `msg \| cap` | `_filter_cap(msg)` | diverge |
-| `<div>{{ msg \| cap }}</div>` | `msg \| cap` | `_filter_cap(msg)` | diverge |
-| `hello {{ msg \| cap }}` | `msg \| cap` | `msg \| cap` | **agree** (compound) |
-| `{{ a \| f(b) }}` | `a \| f(b)` | `_filter_f(a,b)` | diverge |
-| `{{ a \| f \| g }}` | `a \| f \| g` | `_filter_g(_filter_f(a))` | diverge |
-| `{{ a \|\| b }}` | `a \|\| b` | `a \|\| b` | agree (not a filter) |
-| `{{  msg \| cap  }}` | `msg \| cap` | `_filter_cap(msg)` | diverge (trim) |
+| template                      | legacy dynamic text | S2 dynamic text           | result               |
+| ----------------------------- | ------------------- | ------------------------- | -------------------- |
+| `{{ msg \| cap }}`            | `msg \| cap`        | `_filter_cap(msg)`        | diverge              |
+| `<div>{{ msg \| cap }}</div>` | `msg \| cap`        | `_filter_cap(msg)`        | diverge              |
+| `hello {{ msg \| cap }}`      | `msg \| cap`        | `msg \| cap`              | **agree** (compound) |
+| `{{ a \| f(b) }}`             | `a \| f(b)`         | `_filter_f(a,b)`          | diverge              |
+| `{{ a \| f \| g }}`           | `a \| f \| g`       | `_filter_g(_filter_f(a))` | diverge              |
+| `{{ a \|\| b }}`              | `a \|\| b`          | `a \|\| b`                | agree (not a filter) |
+| `{{  msg \| cap  }}`          | `msg \| cap`        | `_filter_cap(msg)`        | diverge (trim)       |
 
 The mixed run is the installment-7 compound-opaque family: the pipe is
 not `ExprRef::Filter`, so `legacy-sugar` does not wrap it. Both
@@ -34,7 +34,7 @@ compares exactly and is now in the battery.
 House: agree if one side is reading the wrong stage; count if the two
 trees genuinely represent different things.
 
-The two *spellings* differ, but they name one rewrite. S2
+The two _spellings_ differ, but they name one rewrite. S2
 `legacy-sugar` always wraps `ExprRef::Filter`. The comparator's legacy
 transform uses default `prefix_identifiers: false`, so
 `transform_interpolation` never calls `process_expression` and never
@@ -67,11 +67,11 @@ the witness would fail. TS-13: exact-equality on the pinned
 
 Nine templates, zero divergence. New cases:
 
-| name | what it pins |
-| --- | --- |
-| `filter` | lone `{{ msg \| cap }}` wrap-equals `_filter_cap(msg)` |
+| name           | what it pins                                                  |
+| -------------- | ------------------------------------------------------------- |
+| `filter`       | lone `{{ msg \| cap }}` wrap-equals `_filter_cap(msg)`        |
 | `filter-mixed` | mixed run, authored pipe on both sides, `compound_units += 1` |
-| `filter-args` | `{{ a \| f(b) }}` wrap-equals `_filter_f(a,b)` |
+| `filter-args`  | `{{ a \| f(b) }}` wrap-equals `_filter_f(a,b)`                |
 
 Text counters after the three: `units=6`, `parts_static=3`,
 `parts_dynamic=4`, `compound_units=1`, `parts_filter=2`. Surface and
