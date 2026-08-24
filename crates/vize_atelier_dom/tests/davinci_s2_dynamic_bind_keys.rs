@@ -16,6 +16,22 @@ const BATTERY: &[(&str, &str)] = &[
         "native_dynamic_camel",
         r#"<div :[key].camel="value"></div>"#,
     ),
+    (
+        "native_dynamic_camel_prop",
+        r#"<div :[key].camel.prop="value"></div>"#,
+    ),
+    (
+        "native_dynamic_camel_attr",
+        r#"<div :[key].camel.attr="value"></div>"#,
+    ),
+    (
+        "native_dynamic_prop_attr",
+        r#"<div :[key].prop.attr="value"></div>"#,
+    ),
+    (
+        "native_dynamic_all_modifiers",
+        r#"<div :[key].camel.prop.attr="value"></div>"#,
+    ),
     ("native_dynamic_prop", r#"<div :[key].prop="value"></div>"#),
     ("native_dynamic_attr", r#"<div :[key].attr="value"></div>"#),
     ("component_dynamic", r#"<Foo :[key]="value" />"#),

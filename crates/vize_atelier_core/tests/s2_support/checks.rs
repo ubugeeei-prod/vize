@@ -72,7 +72,7 @@ pub fn check(name: &str, source: &str, old: &[OldChain], s2: &[S2Chain], counter
                         dynamic_arg: true, ..
                     },
                     None,
-                ) => counters.keys_dynamic_arg += 1,
+                ) if wrapper => counters.keys_dynamic_arg += 1,
                 (OldKey::Static(old_value), Some(S2Key::Static(s2_value)))
                     if old_value == s2_value =>
                 {

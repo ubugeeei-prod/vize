@@ -102,23 +102,27 @@ pub(super) fn emit_dynamic_bind_key(
     };
     let mods = StaticBindModifiers::of(bind);
     cx.buf.push("[");
+    if mods.attr {
+        cx.buf.push("`^${");
+    }
+    if mods.prop {
+        cx.buf.push("`.${");
+    }
     if mods.camel {
         cx.buf.use_camelize();
         cx.buf.push(Buf::camelize_alias());
         cx.buf.push("(");
-        emit_dynamic_key_source(cx, js.source);
-        cx.buf.push(" || \"\")");
-    } else if mods.prop {
-        cx.buf.push("`.${");
-        emit_dynamic_key_source(cx, js.source);
-        cx.buf.push(" || \"\"}`");
-    } else if mods.attr {
-        cx.buf.push("`^${");
-        emit_dynamic_key_source(cx, js.source);
-        cx.buf.push(" || \"\"}`");
-    } else {
-        emit_dynamic_key_source(cx, js.source);
-        cx.buf.push(" || \"\"");
+    }
+    emit_dynamic_key_source(cx, js.source);
+    cx.buf.push(" || \"\"");
+    if mods.camel {
+        cx.buf.push(")");
+    }
+    if mods.prop {
+        cx.buf.push("}`");
+    }
+    if mods.attr {
+        cx.buf.push("}`");
     }
     cx.buf.push("]");
     Ok(())

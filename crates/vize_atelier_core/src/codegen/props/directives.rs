@@ -145,11 +145,7 @@ fn generate_vbind_prop(
 
     if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
         if !exp.is_static {
-            // Dynamic attribute name. Modifiers transform the computed key:
-            //   (none)  -> [<expr> || ""]
-            //   .camel  -> [_camelize(<expr> || "")]
-            //   .prop   -> [`.${<expr> || ""}`]
-            //   .attr   -> [`^${<expr> || ""}`]
+            // Dynamic keys compose in Vue order: camelize, then `.prop`, then `.attr`.
             let emit_key_expr = |ctx: &mut CodegenContext| {
                 // If the expression doesn't already have a prefix, add _ctx.
                 let content = exp.content;
@@ -187,22 +183,26 @@ fn generate_vbind_prop(
             };
 
             ctx.push("[");
+            if has_attr {
+                ctx.push("`^${");
+            }
+            if has_prop {
+                ctx.push("`.${");
+            }
             if has_camel {
                 ctx.use_helper(RuntimeHelper::Camelize);
                 ctx.push("_camelize(");
-                emit_key_expr(ctx);
-                ctx.push(" || \"\")");
-            } else if has_prop {
-                ctx.push("`.${");
-                emit_key_expr(ctx);
-                ctx.push(" || \"\"}`");
-            } else if has_attr {
-                ctx.push("`^${");
-                emit_key_expr(ctx);
-                ctx.push(" || \"\"}`");
-            } else {
-                emit_key_expr(ctx);
-                ctx.push(" || \"\"");
+            }
+            emit_key_expr(ctx);
+            ctx.push(" || \"\"");
+            if has_camel {
+                ctx.push(")");
+            }
+            if has_prop {
+                ctx.push("}`");
+            }
+            if has_attr {
+                ctx.push("}`");
             }
             ctx.push("]: ");
         } else {

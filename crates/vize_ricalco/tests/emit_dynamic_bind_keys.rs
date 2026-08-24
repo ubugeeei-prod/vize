@@ -47,6 +47,28 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn dynamic_bind_key_modifiers_compose_in_vue_order() {
+    assert_eq!(
+        assembled(r#"<div :[key].camel.prop="value"></div>"#),
+        "\
+const { normalizeProps: _normalizeProps, camelize: _camelize, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", _normalizeProps({ [`.${_camelize(_ctx.key || \"\")}`]: value }), null, 48 /* FULL_PROPS, NEED_HYDRATION */))
+}"
+    );
+    assert_eq!(
+        assembled(r#"<div :[key].camel.attr="value"></div>"#),
+        "\
+const { normalizeProps: _normalizeProps, camelize: _camelize, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", _normalizeProps({ [`^${_camelize(_ctx.key || \"\")}`]: value }), null, 16 /* FULL_PROPS */))
+}"
+    );
+}
+
+#[test]
 fn dynamic_prop_and_attr_modifiers_prefix_the_computed_key() {
     assert_eq!(
         assembled(r#"<div :[key].prop="value"></div>"#),
