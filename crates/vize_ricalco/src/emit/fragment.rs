@@ -7,6 +7,8 @@
 use vize_disegno::expr::{ExprRef, OpaqueReason};
 use vize_disegno::op::{InterpolationOp, Op, Region};
 
+use super::EmitCx;
+use super::EmitError;
 use super::buf::Buf;
 use super::children::{
     emit_create_text_vnode, emit_interpolation, emit_plain_text_vnode, emit_to_display_string,
@@ -14,8 +16,6 @@ use super::children::{
 use super::helper::Helper;
 use super::slots::is_whitespace_text;
 use super::vnode;
-use super::EmitCx;
-use super::EmitError;
 
 pub(super) fn root_needs_fragment(root: &Region<'_>) -> bool {
     let mut count = 0u32;
@@ -86,7 +86,7 @@ fn emit_unique(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
         }
         Op::For(for_op) => {
             let _id = cx.walk.mint();
-            super::emit_for_op(cx, for_op)
+            super::emit_for_op(cx, for_op, _id, None)
         }
         Op::Slot(slot) => {
             let _id = cx.walk.mint();
@@ -157,7 +157,7 @@ fn emit_units(cx: &mut EmitCx<'_>, op: &Op<'_>, first: &mut bool) -> Result<(), 
         Op::For(for_op) => {
             start_item(cx, first);
             let _id = cx.walk.mint();
-            super::emit_for_op(cx, for_op)
+            super::emit_for_op(cx, for_op, _id, None)
         }
         Op::Slot(slot) => {
             start_item(cx, first);

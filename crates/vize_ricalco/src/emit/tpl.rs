@@ -1,0 +1,251 @@
+//! Unwrapped `<template v-if>` / `<template v-for>` fragments.
+//!
+//! The lowering unwraps the wrapper, so emit reads
+//! [`WrapperKeys::from_template`] / [`ForWrapper`] to recover the
+//! shipped hoist-then-codegen split: a still-dynamic single element
+//! unwraps to a block; a hoistable / text / multi child stays a
+//! `STABLE_FRAGMENT`.
+
+use vize_carton::String;
+use vize_disegno::expr::{ExprRef, OpaqueReason};
+use vize_disegno::op::{IfBranch, Op};
+
+use super::EmitCx;
+use super::EmitError;
+use super::buf::Buf;
+use super::children::{emit_create_text_vnode, emit_plain_text_vnode, emit_to_display_string};
+use super::hoist::{emit_hoisted_element, is_hoistable};
+use super::js::escape_js_string;
+use super::vnode;
+use crate::lower::WrapperKey;
+
+#[derive(Clone, Copy)]
+enum ChildMode {
+    /// `generate_children_force_array`: interpolations are
+    /// `_createTextVNode(_toDisplayString(…), 1)`.
+    ForceArray,
+    /// `generate_node` per child: interpolations stay bare
+    /// `_toDisplayString`.
+    GenerateNode,
+}
+
+pub(super) fn wrapper_key_js(key: &WrapperKey) -> Result<String, EmitError> {
+    match key {
+        WrapperKey::Static { value: None, .. } => Ok(String::from("\"\"")),
+        WrapperKey::Static {
+            value: Some(value), ..
+        } => {
+            let mut out = String::from("\"");
+            out.push_str(escape_js_string(value.as_str()).as_str());
+            out.push('"');
+            Ok(out)
+        }
+        WrapperKey::Dynamic { source, .. } if source.is_empty() => Err(EmitError::Unsupported),
+        WrapperKey::Dynamic { source, .. } => Ok(source.clone()),
+    }
+}
+
+pub(super) fn emit_if_template_branch(
+    cx: &mut EmitCx<'_>,
+    branch: &IfBranch<'_>,
+    key: &str,
+) -> Result<(), EmitError> {
+    if should_unwrap_if(&branch.region.ops) {
+        return unwrap_if(cx, branch, key);
+    }
+    emit_inner_fragment(cx, &branch.region.ops, Some(key), ChildMode::ForceArray)
+}
+
+fn should_unwrap_if(ops: &[Op<'_>]) -> bool {
+    match ops {
+        [Op::Element(element)] => !is_hoistable(element),
+        [Op::Component(_)] | [Op::Slot(_)] | [Op::For(_)] => true,
+        _ => false,
+    }
+}
+
+fn unwrap_if(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<(), EmitError> {
+    match branch.region.ops.as_slice() {
+        [Op::Element(element)] => {
+            let _id = cx.walk.mint();
+            cx.walk.skip(element.bindings.len());
+            super::emit_if_branch_call(cx, element, key)
+        }
+        [Op::Component(component)] => {
+            let id = cx.walk.mint();
+            cx.walk.skip(component.bindings.len());
+            super::component::emit_if_branch(cx, component, key, id)
+        }
+        [Op::Slot(slot)] => {
+            let _id = cx.walk.mint();
+            cx.walk.skip(slot.bindings.len());
+            super::outlet::emit_outlet(cx, slot, Some(key), true)
+        }
+        [Op::For(for_op)] => {
+            let id = cx.walk.mint();
+            super::emit_for_op(cx, for_op, id, Some(key))
+        }
+        _ => Err(EmitError::Unsupported),
+    }
+}
+
+pub(super) fn should_unwrap_for(ops: &[Op<'_>]) -> bool {
+    matches!(ops, [Op::Element(element)] if !is_hoistable(element))
+}
+
+pub(super) fn emit_for_template_item(
+    cx: &mut EmitCx<'_>,
+    ops: &[Op<'_>],
+    stable: bool,
+    key: Option<&str>,
+) -> Result<(), EmitError> {
+    if should_unwrap_for(ops) {
+        let Op::Element(element) = &ops[0] else {
+            return Err(EmitError::Unsupported);
+        };
+        let _id = cx.walk.mint();
+        cx.walk.skip(element.bindings.len());
+        return super::emit_for_item_call(cx, element, stable, key);
+    }
+    emit_inner_fragment(cx, ops, key, ChildMode::GenerateNode)
+}
+
+fn emit_inner_fragment(
+    cx: &mut EmitCx<'_>,
+    ops: &[Op<'_>],
+    key: Option<&str>,
+    mode: ChildMode,
+) -> Result<(), EmitError> {
+    cx.buf.use_open_block();
+    cx.buf.use_create_element_block();
+    cx.buf.use_fragment();
+    cx.buf.push("(");
+    cx.buf.push(Buf::open_block_alias());
+    cx.buf.push("(), ");
+    cx.buf.push(Buf::create_element_block_alias());
+    cx.buf.push("(");
+    cx.buf.push(Buf::fragment_alias());
+    if let Some(key) = key {
+        cx.buf.push(", { key: ");
+        cx.buf.push(key);
+        cx.buf.push(" }, ");
+    } else {
+        cx.buf.push(", null, ");
+    }
+    emit_fragment_children(cx, ops, mode)?;
+    cx.buf.push(", 64 /* STABLE_FRAGMENT */))");
+    Ok(())
+}
+
+fn emit_fragment_children(
+    cx: &mut EmitCx<'_>,
+    ops: &[Op<'_>],
+    mode: ChildMode,
+) -> Result<(), EmitError> {
+    if ops.is_empty() {
+        cx.buf.push("null");
+        return Ok(());
+    }
+    cx.buf.push("[");
+    cx.buf.indent();
+    match mode {
+        ChildMode::ForceArray => emit_force_array(cx, ops)?,
+        ChildMode::GenerateNode => emit_generate_node(cx, ops)?,
+    }
+    cx.buf.deindent();
+    cx.buf.newline();
+    cx.buf.push("]");
+    Ok(())
+}
+
+fn emit_force_array(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError> {
+    let mut i = 0;
+    let mut first = true;
+    while i < ops.len() {
+        if matches!(ops[i], Op::Text(_) | Op::Interpolation(_)) {
+            let start = i;
+            while i < ops.len() && matches!(ops[i], Op::Text(_) | Op::Interpolation(_)) {
+                i += 1;
+            }
+            start_item(cx, &mut first);
+            emit_create_text_vnode(cx, &ops[start..i])?;
+            continue;
+        }
+        start_item(cx, &mut first);
+        emit_node_child(cx, &ops[i])?;
+        i += 1;
+    }
+    Ok(())
+}
+
+fn emit_generate_node(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError> {
+    let mut first = true;
+    for op in ops {
+        match op {
+            Op::Text(_) => {
+                start_item(cx, &mut first);
+                emit_create_text_vnode(cx, core::slice::from_ref(op))?;
+            }
+            Op::Interpolation(interp) => {
+                emit_gen_interp(cx, interp, &mut first)?;
+            }
+            _ => {
+                start_item(cx, &mut first);
+                emit_node_child(cx, op)?;
+            }
+        }
+    }
+    Ok(())
+}
+
+fn emit_gen_interp(
+    cx: &mut EmitCx<'_>,
+    interp: &vize_disegno::op::InterpolationOp<'_>,
+    first: &mut bool,
+) -> Result<(), EmitError> {
+    let id = cx.walk.mint();
+    match interp.expression {
+        ExprRef::Js(js) => {
+            start_item(cx, first);
+            emit_to_display_string(cx, js.source);
+            Ok(())
+        }
+        ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound => {
+            let id = id.ok_or(EmitError::Unsupported)?;
+            let parts = cx
+                .facts
+                .text_facts
+                .get(id)
+                .ok_or(EmitError::Unsupported)?
+                .parts
+                .clone();
+            for part in parts.iter() {
+                start_item(cx, first);
+                if part.dynamic {
+                    emit_to_display_string(cx, part.text.as_str());
+                } else {
+                    emit_plain_text_vnode(cx, part.text.as_str());
+                }
+            }
+            Ok(())
+        }
+        ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => {
+            Err(EmitError::Unsupported)
+        }
+    }
+}
+
+fn emit_node_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
+    match op {
+        Op::Element(element) if is_hoistable(element) => emit_hoisted_element(cx, element),
+        _ => vnode::emit_array_child(cx, op),
+    }
+}
+
+fn start_item(cx: &mut EmitCx<'_>, first: &mut bool) {
+    if !*first {
+        cx.buf.push(",");
+    }
+    *first = false;
+    cx.buf.newline();
+}

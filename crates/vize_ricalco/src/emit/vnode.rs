@@ -1,15 +1,15 @@
 //! Static native HTML element / children emission.
 
-use vize_carton::{ensure_sufficient_stack, String};
+use vize_carton::{String, ensure_sufficient_stack};
 use vize_disegno::op::{Attribute, ElementOp, Namespace, Op, Region};
 
+use super::EmitCx;
+use super::EmitError;
 use super::buf::Buf;
 use super::children::{children_need_text_flag, emit_create_text_vnode, emit_text_like};
 use super::flag::emit_patch_flag;
 use super::hoist::{compact_props_object, push_attr_pair, unique_attrs};
 use super::props::{admit_bindings, bind_patch, emit_bind_props};
-use super::EmitCx;
-use super::EmitError;
 
 pub(super) fn emit_unique_element(
     cx: &mut EmitCx<'_>,
@@ -69,11 +69,12 @@ pub(super) fn emit_for_item_element(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
     stable: bool,
+    key: Option<&str>,
 ) -> Result<(), EmitError> {
     if stable {
         cx.buf.use_create_element_vnode();
         return emit_call(
-            cx, element, /* block */ false, None, /* hoist */ false,
+            cx, element, /* block */ false, key, /* hoist */ false,
         );
     }
     cx.buf.use_open_block();
@@ -82,7 +83,7 @@ pub(super) fn emit_for_item_element(
     cx.buf.push(Buf::open_block_alias());
     cx.buf.push("(), ");
     emit_call(
-        cx, element, /* block */ true, None, /* hoist */ false,
+        cx, element, /* block */ true, key, /* hoist */ false,
     )?;
     cx.buf.push(")");
     Ok(())
@@ -259,7 +260,7 @@ pub(super) fn emit_array_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), E
             super::component::emit_nested(cx, component, id)
         }
         Op::If(if_op) => super::emit_if_op(cx, if_op, id),
-        Op::For(for_op) => super::emit_for_op(cx, for_op),
+        Op::For(for_op) => super::emit_for_op(cx, for_op, id, None),
         Op::Slot(slot) => {
             cx.walk.skip(slot.bindings.len());
             super::outlet::emit_outlet(cx, slot, None, false)

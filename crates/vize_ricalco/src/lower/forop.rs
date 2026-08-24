@@ -4,17 +4,17 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{cstr, Box, String, Vec};
+use vize_carton::{Box, String, Vec, cstr};
 use vize_sinopia::Element;
 
 use vize_disegno::expr::{ExprRef, OpaqueReason};
 use vize_disegno::op::{ForBinding, ForOp, Namespace, Op, Region};
 use vize_disegno::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
 
-use super::cx::{attr_slice, attr_span, element_span, Cx};
-use super::element::{attr_value_text, element_core, Analyzed};
+use super::cx::{Cx, attr_slice, attr_span, element_span};
+use super::element::{Analyzed, attr_value_text, element_core};
 use super::expr::{desc, expr_at, opaque_at, simple_identifier, trimmed};
-use super::structural::{lower_children, record_template_drops};
+use super::structural::{ForWrapper, capture_wrapper_key, lower_children, record_template_drops};
 use super::vfor::{split_aliases, split_for};
 
 /// Build the `ui.for` for an element's `v-for` — or, when the directive
@@ -126,7 +126,13 @@ pub(crate) fn lower_for<'a>(
     let region = Region {
         ops: if element.tag() == "template" && !analyzed.has_slot_spelling() {
             cx.report_missing_close(element);
-            record_template_drops(cx, element, analyzed, None);
+            let captured = capture_wrapper_key(cx, element, analyzed);
+            let (skip, key) = match captured {
+                Some((index, key)) => (Some(index), Some(key)),
+                None => (None, None),
+            };
+            record_template_drops(cx, element, analyzed, skip);
+            cx.attach_for_wrapper(node, ForWrapper { key });
             lower_children(cx, &element.children, ns)
         } else {
             let op = element_core(cx, element, analyzed, ns);

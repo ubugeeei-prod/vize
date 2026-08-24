@@ -15,13 +15,13 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{cstr, Box, Span, String, Vec};
+use vize_carton::{Box, Span, String, Vec, cstr};
 use vize_sinopia::{Element, SurfaceChild};
 
 use vize_disegno::op::{IfBranch, IfOp, Namespace, Op, Region};
 
-use super::cx::{attr_slice, attr_span, element_span, Cx};
-use super::element::{analyze, attr_value_text, element_core, Analyzed, BranchKind};
+use super::cx::{Cx, attr_slice, attr_span, element_span};
+use super::element::{Analyzed, BranchKind, analyze, attr_value_text, element_core};
 use super::expr::expr_at;
 use super::forop::lower_for;
 use super::leaf::lower_leaf;
@@ -30,9 +30,8 @@ use super::text;
 #[path = "structural/wrapper.rs"]
 mod wrapper;
 
-use wrapper::capture_wrapper_key;
-pub(crate) use wrapper::record_template_drops;
-pub use wrapper::{WrapperKey, WrapperKeys};
+pub(crate) use wrapper::{capture_wrapper_key, record_template_drops};
+pub use wrapper::{ForWrapper, WrapperKey, WrapperKeys};
 
 /// One scanned branch of a chain: its element, analysis, branch-attr
 /// index, and the gap children it consumes.
@@ -158,6 +157,7 @@ fn lower_if_group<'a>(
 
     let mut lowered: Vec<'a, IfBranch<'a>> = Vec::new_in(&cx.allocator);
     let mut wrapper_keys: StdVec<Option<WrapperKey>> = StdVec::new();
+    let mut from_template: StdVec<bool> = StdVec::new();
     for (element, analyzed, attr_idx, gaps) in branches {
         for gap in gaps {
             if let SurfaceChild::Text(token) | SurfaceChild::Comment(token) = &children[gap] {
@@ -196,7 +196,7 @@ fn lower_if_group<'a>(
                 Some(expr_at(cx, slice))
             }
         };
-        let (ops, wrapper_key) = branch_body(cx, element, &analyzed, ns);
+        let (ops, wrapper_key, is_template) = branch_body(cx, element, &analyzed, ns);
         if let Some(key) = &wrapper_key {
             let (key_span, spelling) = match key {
                 WrapperKey::Static { span, .. } | WrapperKey::Dynamic { span, .. } => (
@@ -215,17 +215,19 @@ fn lower_if_group<'a>(
             );
         }
         wrapper_keys.push(wrapper_key);
+        from_template.push(is_template);
         lowered.push(IfBranch {
             condition,
             region: Region { ops },
             span: element_span(cx, element),
         });
     }
-    if wrapper_keys.iter().any(Option::is_some) {
+    if wrapper_keys.iter().any(Option::is_some) || from_template.iter().any(|flag| *flag) {
         cx.attach_wrappers(
             node,
             WrapperKeys {
                 branches: wrapper_keys,
+                from_template,
             },
         );
     }
@@ -240,21 +242,22 @@ fn lower_if_group<'a>(
 }
 
 /// The ops a branch's element contributes (plus its captured wrapper
-/// key): its `v-for` wrap when it has one, its children directly when it
-/// is an unwrapped `<template>`, the element op otherwise.
+/// key and whether the carrier was an unwrapped `<template>`): its
+/// `v-for` wrap when it has one, its children directly when it is an
+/// unwrapped `<template>`, the element op otherwise.
 fn branch_body<'a>(
     cx: &mut Cx<'a>,
     element: &Element<'a>,
     analyzed: &Analyzed<'a>,
     ns: Namespace,
-) -> (Vec<'a, Op<'a>>, Option<WrapperKey>) {
+) -> (Vec<'a, Op<'a>>, Option<WrapperKey>, bool) {
     if analyzed.vfor.is_some() {
         // Vue 3 precedence: the key belongs to `v-for`, so no wrapper
         // capture — exactly the legacy `has_v_for` guard.
         let op = lower_for(cx, element, analyzed, ns);
         let mut ops: Vec<'a, Op<'a>> = Vec::new_in(&cx.allocator);
         ops.push(op);
-        return (ops, None);
+        return (ops, None, false);
     }
     if element.tag() == "template" {
         if analyzed.has_slot_spelling() {
@@ -263,7 +266,7 @@ fn branch_body<'a>(
             let op = element_core(cx, element, analyzed, ns);
             let mut ops: Vec<'a, Op<'a>> = Vec::new_in(&cx.allocator);
             ops.push(op);
-            return (ops, None);
+            return (ops, None, false);
         }
         cx.report_missing_close(element);
         let captured = capture_wrapper_key(cx, element, analyzed);
@@ -272,12 +275,12 @@ fn branch_body<'a>(
             None => (None, None),
         };
         record_template_drops(cx, element, analyzed, skip);
-        return (lower_children(cx, &element.children, ns), key);
+        return (lower_children(cx, &element.children, ns), key, true);
     }
     let op = element_core(cx, element, analyzed, ns);
     let mut ops: Vec<'a, Op<'a>> = Vec::new_in(&cx.allocator);
     ops.push(op);
-    (ops, None)
+    (ops, None, false)
 }
 
 /// Lower an element, wrapping it in its `ui.for` when it carries one.
