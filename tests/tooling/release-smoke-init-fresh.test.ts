@@ -33,6 +33,22 @@ test("the fresh-project matrix is data, so new cells need no driver change", () 
     for (const key of SHAPE_KEYS) {
       assert.ok(key in shape, `${cell.shape} is missing ${key}`);
     }
+    const authored = Object.keys(
+      shape.files({ typescript: "0", vite: "0", "vite-plus": "0", vue: "0" }),
+    );
+    for (const name of shape.initialAbsentFiles) {
+      assert.equal(
+        authored.some((file) => file === name || file.startsWith(`${name}/`)),
+        false,
+        `${cell.shape} authors ${name} before init`,
+      );
+    }
+    if (shape.createdFiles.includes(".vscode/extensions.json")) {
+      assert.ok(
+        shape.initialAbsentFiles.includes(".vscode"),
+        `${cell.shape} creates VS Code recommendations without naming the absent .vscode start`,
+      );
+    }
     // The plan the smoke asserts must be the plan it installs, and the install
     // must leave the project declaring nothing beyond it.
     for (const name of shape.plannedDependencies) {

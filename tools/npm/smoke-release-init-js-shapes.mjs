@@ -146,6 +146,7 @@ export const VITE_VUE_JS_CHECKJS_SHAPE = {
   requires: ["vize", "@vizejs/vite-plugin"],
   files: viteVueJsCheckJsFiles,
   initFlags: ["--yes", "--no-lint", "--vite", "--fmt", "--typecheck", "--editor"],
+  initialAbsentFiles: [".vscode"],
   detection: viteJsDetection,
   features: [
     "  lint      skipped    not selected",
