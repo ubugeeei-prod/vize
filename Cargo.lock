@@ -4058,6 +4058,8 @@ dependencies = [
 name = "vize_ricalco"
 version = "0.387.0"
 dependencies = [
+ "criterion",
+ "davinci_harness",
  "davinci_test_support",
  "insta",
  "oxc_ast",

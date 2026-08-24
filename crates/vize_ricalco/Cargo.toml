@@ -36,8 +36,14 @@ vize_s1 = { workspace = true }
 vize_s2 = { workspace = true }
 
 [dev-dependencies]
+criterion = { workspace = true }
+davinci_harness = { workspace = true }
 davinci_test_support.workspace = true
 insta = { workspace = true }
+
+[[bench]]
+name = "davinci_storage"
+harness = false
 
 [[test]]
 name = "davinci_lowering_corpus"
