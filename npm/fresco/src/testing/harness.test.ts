@@ -35,6 +35,11 @@ void test("renderTui records initial and explicit frame snapshots", async () => 
         },
       ],
     },
+    protocolNodes: [
+      { id: -1, nodeType: "root", children: [0] },
+      { id: 0, nodeType: "box", style: { flexDirection: "column" }, children: [1] },
+      { id: 1, nodeType: "text", text: "ready" },
+    ],
   });
 
   label.value = "done";

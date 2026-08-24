@@ -15,6 +15,7 @@ import {
   renderTui,
   type FrescoFrameSnapshot,
   type FrescoInputDriver,
+  type FrescoRenderNode,
   type FrescoRoleQueryOptions,
   type FrescoTextMatcher,
   type RenderTuiResult,
@@ -32,6 +33,7 @@ const frame: string = rendered.lastFrame();
 const frames: readonly string[] = rendered.frames;
 const snapshot: FrescoFrameSnapshot = rendered.frameSnapshot();
 const snapshots: readonly FrescoFrameSnapshot[] = rendered.frameSnapshots;
+const protocolNodes: readonly FrescoRenderNode[] = snapshot.protocolNodes;
 const roleNode = getByRole(rendered.root, "textbox", roleQuery);
 const descriptionNode = getByDescription(rendered.root, /field help/u);
 const testNode = getByTestId(rendered.root, "field");
@@ -44,6 +46,7 @@ const textNodes = queryAllByText(rendered.root, /value/u);
 void frame;
 void frames;
 void snapshot.tree.children;
+void protocolNodes[0]?.nodeType;
 void snapshots;
 void roleNode.props;
 void descriptionNode.props;
@@ -82,6 +85,9 @@ void input.mouse({ button: "left" });
 
 // @ts-expect-error - frame outputs are strings.
 const _invalidOutput: number = snapshot.output;
+
+// @ts-expect-error - protocol snapshots use closed render node kinds.
+const _invalidProtocolNode: FrescoRenderNode = { id: 1, nodeType: "grid" };
 
 // @ts-expect-error - role names are closed to the Fresco accessibility contract.
 void getByRole(rendered.root, "dialog");

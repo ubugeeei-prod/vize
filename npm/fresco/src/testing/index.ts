@@ -29,6 +29,8 @@ import {
   type MountedFresco,
   type MountFrescoOptions,
 } from "./mount.js";
+import { treeToRenderNodes } from "../renderer.js";
+import type { FrescoRenderNode } from "../protocol.js";
 
 export {
   dispatchKey,
@@ -54,6 +56,7 @@ export {
   type FrescoRoleQueryOptions,
   type FrescoTextMatcher,
 } from "./queries.js";
+export type { FrescoRenderNode } from "../protocol.js";
 
 export type RenderTuiOptions = MountFrescoOptions;
 export type RenderTuiRoot = Component | (() => VNodeChild);
@@ -66,6 +69,8 @@ export interface FrescoFrameSnapshot {
   output: string;
   /** Serializable renderer tree for structural assertions. */
   tree: FrescoNodeSnapshot;
+  /** Stable native protocol payload for assertions before crossing into Rust. */
+  protocolNodes: readonly FrescoRenderNode[];
 }
 
 /** Input driver that injects events through Fresco's public event refs. */
@@ -187,6 +192,18 @@ function latestSnapshot(snapshots: readonly FrescoFrameSnapshot[]): FrescoFrameS
   return snapshot;
 }
 
+function protocolSnapshot(root: FrescoNode): FrescoRenderNode[] {
+  const nodes = treeToRenderNodes(root);
+  const ids = new Map(nodes.map((node, index) => [node.id, index - 1]));
+  return nodes.map((node) => {
+    const id = ids.get(node.id) ?? node.id;
+    const children = node.children?.map((child) => ids.get(child) ?? child);
+    return (
+      children === undefined ? { ...node, id } : { ...node, id, children }
+    ) as FrescoRenderNode;
+  });
+}
+
 async function dispatchPaste(text: string): Promise<void> {
   const event: PasteEvent = { type: "paste", text };
   lastPasteEvent.value = event;
@@ -241,6 +258,7 @@ export function renderTui(root: RenderTuiRoot, options: RenderTuiOptions = {}): 
     const snapshot: FrescoFrameSnapshot = {
       output: renderFrame(mounted.root, staticOutput),
       tree: toTreeSnapshot(mounted.root),
+      protocolNodes: protocolSnapshot(mounted.root),
     };
     frames.push(snapshot.output);
     frameSnapshots.push(snapshot);

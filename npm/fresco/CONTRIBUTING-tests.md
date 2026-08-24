@@ -9,10 +9,10 @@ Every suite in `npm/fresco/src` follows three rules (see #3228):
 
 1. **Render-snapshot tests assert frames and mounted output trees.** Mount
    through `renderTui` from `@vizejs/fresco/testing`, then compare
-   `lastFrame()`/`captureFrame()` output or serializable `FrescoNode` trees
-   against inline expected structures with `assert.deepEqual`. Never assert on
-   source text, and avoid giant snapshots: keep expected frames and trees small
-   enough to read inline.
+   `lastFrame()`/`captureFrame()` output, serializable `FrescoNode` trees, or
+   stable native protocol snapshots against inline expected structures with
+   `assert.deepEqual`. Never assert on source text, and avoid giant snapshots:
+   keep expected frames and trees small enough to read inline.
 2. **Type-level tests cover public props/emits.** Compile-only `*.test-d.ts`
    files (see `src/components/types.test-d.ts`) pair positive cases with
    `@ts-expect-error` negatives; `tsgo` fails when either direction regresses.
@@ -29,11 +29,12 @@ native package, and `app.ts` loads it lazily and only in interactive mode.
 Tests therefore run the shipped code end-to-end:
 
 - `renderTui` (exported as `@vizejs/fresco/testing`) records plain frame
-  snapshots, serializable tree snapshots, and input-injected frame history.
+  snapshots, serializable tree snapshots, stable native protocol payloads, and
+  input-injected frame history.
 - `mountFresco` (in `src/testing/mount.ts`) mounts components with the same
   provide set `createApp` installs (app context, focus manager, screen reader
   flag, streams, cursor) and exposes the live mounted tree.
-- `treeToRenderNodes(root)` returns the exact flat payload the native
+- `frameSnapshot().protocolNodes` returns the stable flat payload the native
   `renderTree` call would paint; assert on it for style/appearance mapping.
 - `renderToString(root)` covers the plain-text output path.
 
