@@ -66,6 +66,13 @@ test("the fresh-project matrix covers every documented package manager", () => {
   }
 });
 
+test("the fresh-project matrix covers every declared project shape", () => {
+  const matrixShapes = new Set(FRESH_INIT_MATRIX.map((cell) => cell.shape));
+  for (const shape of Object.keys(PROJECT_SHAPES)) {
+    assert.ok(matrixShapes.has(shape), `fresh-project matrix does not cover ${shape}`);
+  }
+});
+
 test("fresh-project package managers use exact Corepack runners where needed", () => {
   for (const [managerId, corepackSpec] of Object.entries(COREPACK_MANAGER_SPECS)) {
     const manager = PACKAGE_MANAGERS[managerId];
