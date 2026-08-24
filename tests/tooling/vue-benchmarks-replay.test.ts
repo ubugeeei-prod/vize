@@ -5,12 +5,21 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 // @ts-expect-error plain-JS bench module without type declarations
-import { diffExpectations, scoreCase, UPSTREAM } from "../../bench/vue-benchmarks-replay.mjs";
+import {
+  DEFAULT_REPLAY_TOOLS,
+  diffExpectations,
+  scoreCase,
+  UPSTREAM,
+} from "../../bench/vue-benchmarks-replay.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 test("replay scoring follows the upstream meta contract", () => {
-  const report = (errorCount: number) => ({ errorCount, warningCount: 0, files: [] });
+  const report = (errorCount: number) => ({
+    errorCount,
+    warningCount: 0,
+    files: [],
+  });
 
   assert.deepEqual(scoreCase({ expectErrors: false }, 0, report(0), ""), {
     outcome: "pass",
@@ -52,7 +61,12 @@ test("replay expectation drift fails closed in both directions", () => {
 
   assert.deepEqual(diffExpectations(results, { a: "pass", b: "fail", c: "pass", d: "skip" }), []);
 
-  const problems = diffExpectations(results, { a: "pass", b: "pass", c: "fail", e: "pass" });
+  const problems = diffExpectations(results, {
+    a: "pass",
+    b: "pass",
+    c: "fail",
+    e: "pass",
+  });
   assert.deepEqual(problems, [
     "b: expected pass, got fail (expected >=1 error(s), got 0)",
     'c: stale suppression — the case now passes; remove the "fail" expectation',
@@ -65,9 +79,15 @@ test("replay expectation tables stay pinned to the upstream corpus", () => {
   assert.deepEqual(UPSTREAM, {
     repository: "pikax/vue-benchmarks",
     url: "https://github.com/pikax/vue-benchmarks",
-    commit: "02c0dac76075924bfb8e9b6985e51a9795ff6909",
+    commit: "65c6102504b14cd49c0b03305be8dd0b9d208c59",
     license: "MIT",
   });
+  assert.deepEqual(DEFAULT_REPLAY_TOOLS, [
+    "vize",
+    "verter-tsc",
+    "golar-typecheck",
+    "golar-default",
+  ]);
 
   const tables = ["main", "release"].map((lane) => {
     const tablePath = path.join(root, `bench/vue-benchmarks-replay-expect-${lane}.json`);
@@ -79,10 +99,10 @@ test("replay expectation tables stay pinned to the upstream corpus", () => {
   const [main, release] = tables;
   assert.deepEqual(Object.keys(main.table), Object.keys(release.table));
   for (const { lane, table } of tables) {
-    assert.equal(Object.keys(table).length, 29, `${lane} table must cover the pinned corpus`);
+    assert.equal(Object.keys(table).length, 150, `${lane} table must cover the pinned corpus`);
     for (const [caseId, outcome] of Object.entries(table)) {
       assert.match(caseId, /^[a-z0-9][a-z0-9-]*$/);
-      assert.ok(["pass", "fail", "skip"].includes(outcome), `${lane}:${caseId}=${outcome}`);
+      assert.ok(["pass", "fail"].includes(outcome), `${lane}:${caseId}=${outcome}`);
     }
   }
 
