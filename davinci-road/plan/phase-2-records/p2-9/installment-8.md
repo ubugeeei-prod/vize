@@ -55,7 +55,7 @@ this battery; not silently skipped.
 
 P1-9 residual re-measure is still not this installment: wrapping
 happens on S2 `ExprRef`s after lowering and does not feed
-`transform_expression/reparse.rs`. Inventing a 12.73% figure without
+`steps/expression/reparse.rs`. Inventing a 12.73% figure without
 running the counters would violate the task. The series box in
 `phase-2.md` stays open.
 

@@ -7,7 +7,7 @@
 //! A [`Region`] is a child sequence owned by exactly one op. This is what
 //! makes fusion tractable: the shipped pipeline merges `v-else` /
 //! `v-else-if` siblings onto the **parent's** child list mid-traversal
-//! (`crates/vize_atelier_core/src/transform/structural.rs`), and that
+//! (`crates/vize_atelier_core/src/lane/structural.rs`), and that
 //! enter/exit sibling mutation is precisely the re-visit source a
 //! region-owning [`IfOp`] never needs - its branches are regions from
 //! birth, so no pass ever revisits a child list to stitch them together.

@@ -82,7 +82,7 @@ Vue 3 battery / corpus witness gain `parts_filter: 0` only.
 
 P1-9 residual re-measure is still not this installment. Filter wrapping
 happens on S2 `ExprRef`s after lowering and does not feed
-`transform_expression/reparse.rs`. Inventing a 12.73% figure without
+`steps/expression/reparse.rs`. Inventing a 12.73% figure without
 running the counters would violate the task. Mixed-run pipes stay
 unwrapped on S2 (installment 7); they now compare, they are not a
 new wrap. Bind-value filters (`:id="raw | formatId"`) are a surface

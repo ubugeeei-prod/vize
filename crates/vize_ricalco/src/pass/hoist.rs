@@ -1,5 +1,5 @@
 //! The hoist-static pass: the P2-9 installment-6 port of
-//! `crates/vize_atelier_core/src/transforms/hoist_static.rs` (+
+//! `crates/vize_atelier_core/src/steps/hoist_static.rs` (+
 //! `hoist_static/props.rs`, `static_type.rs`) — the contract's
 //! designated S2 **analysis** pass: a fact, not a mutation.
 //!

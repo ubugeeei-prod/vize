@@ -8,7 +8,7 @@
 
 Installment 1 found the v-if transform three-quarters absorbed; the
 v-for measurement is stronger — the old step file
-(`crates/vize_atelier_core/src/transforms/v_for.rs`) ports **whole**
+(`crates/vize_atelier_core/src/steps/v_for.rs`) ports **whole**
 into the P2-8 lowering, and so do most of its driver halves:
 
 - **the value split** (separator find, strict alias split) —
@@ -21,7 +21,7 @@ into the P2-8 lowering, and so do most of its driver halves:
   region-owning `ui.for` from birth, `<template v-for>` unwrap
   included;
 - **scope recording** (`enter_v_for_scope`'s registration data in
-  `transform/traverse.rs`) — P2-8's `ScopeFacts`, one fresh tag per
+  `lane/traverse.rs`) — P2-8's `ScopeFacts`, one fresh tag per
   site;
 - **moved elsewhere, not here**: runtime helpers, keyed/unkeyed
   fragment decisions, the iterated element's `key` prop and `v-memo`'s

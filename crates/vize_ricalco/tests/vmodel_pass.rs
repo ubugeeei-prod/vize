@@ -4,9 +4,9 @@
 //! validations with relief's exact wording, and the sparse fault table
 //! that mirrors the legacy lane's removal of invalid models — plus the
 //! scope-environment rules the port mirrors from the live transform
-//! (`crates/vize_atelier_core/src/transform/element.rs` +
-//! `transform/traverse.rs`). The TS-17 folio snapshots live in
-//! `vmodel_pass_snapshot.rs`.
+//! (`crates/vize_atelier_core/src/lane/element.rs` +
+//! `crates/vize_atelier_core/src/lane/traverse.rs`). The TS-17 folio
+//! snapshots live in `vmodel_pass_snapshot.rs`.
 
 mod support;
 

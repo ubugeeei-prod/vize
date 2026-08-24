@@ -100,7 +100,7 @@ pass — battery-pinned (`slot_facts.len() == 1`).
   3 compile output unchanged, and it is recorded rather than faked.
 - **P1-9 residual unmeasured this installment.** Filter wrapping
   happens on S2 `ExprRef`s after lowering; it does not feed
-  `transform_expression/reparse.rs`. Inventing a 12.73% number
+  `steps/expression/reparse.rs`. Inventing a 12.73% number
   without running the counters would violate the task's "a number
   from the existing counters, not a prediction" clause. The
   measurement stays an open series checkbox.
@@ -136,7 +136,7 @@ deferred recipe, unchanged.
 The transform-directory line is done. The series box stays unticked
 because these checkboxes are still honest:
 
-- `transform_expression/` stays on the old lane (non-goal, P2-5b).
+- `steps/expression/` stays on the old lane (non-goal, P2-5b).
 - The old lane stays live behind `VIZE_DAVINCI_TRANSFORM` (charter
   #26) until the exit gate.
 - Differential lane + P1-9 residual number: not this installment's

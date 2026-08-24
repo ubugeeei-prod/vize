@@ -1,6 +1,6 @@
 //! The `v-model` pass: the P2-9 port of the element family's one
 //! remaining transform-time behaviour — the live lane's model
-//! validation in `crates/vize_atelier_core/src/transform/element.rs`
+//! validation in `crates/vize_atelier_core/src/lane/element.rs`
 //! (`process_element_props`; the old step files of the family measured
 //! **dead** in the shipped lane, the installment-4 pattern again).
 //!

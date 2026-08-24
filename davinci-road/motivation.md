@@ -26,7 +26,7 @@ the **entire VDOM-oriented transform lane and then discards the result**,
 re-lowering from the AST with its own `TransformContext` that carries no scope
 chain, no binding metadata, and a `Vec<String>` for diagnostics. Its directive
 transforms (`v_if`, `v_for`, `v_on`, `v_bind`, `v_model`, slots, text) duplicate
-`vize_atelier_core/src/transforms/` nearly name for name.
+`vize_atelier_core/src/steps/` nearly name for name.
 
 ### 3. Template expressions are strings
 
@@ -38,7 +38,7 @@ twenty call sites across `vize_croquis` and `vize_atelier_core` (e.g.
 `crates/vize_atelier_core/src/codegen/patch_flag.rs`) — and copies results back
 out as `CompactString`s because nothing can outlive the local arena. Identifier
 prefixing (`_ctx.`, `$setup.`) is string rewriting
-(`crates/vize_atelier_core/src/transforms/transform_expression/`), and a
+(`crates/vize_atelier_core/src/steps/expression/`), and a
 hand-rolled fast/slow split makes correctness depend on a byte scanner agreeing
 with a real JS parser. Root cause: the template arena (bumpalo via `vize_carton`)
 and the JS arena (`oxc_allocator`) cannot share a lifetime.

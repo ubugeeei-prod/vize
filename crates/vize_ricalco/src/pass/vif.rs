@@ -1,6 +1,6 @@
 //! The `v-if` pass: the P2-9 port of
-//! `crates/vize_atelier_core/src/transforms/v_if.rs` and the
-//! sibling-mutation driver in `src/transform/structural.rs`, re-expressed
+//! `crates/vize_atelier_core/src/steps/v_if.rs` and the
+//! sibling-mutation driver in `src/lane/structural.rs`, re-expressed
 //! over `ui.if` owned regions.
 //!
 //! # What survived the port, and where the rest went

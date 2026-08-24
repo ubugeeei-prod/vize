@@ -9,7 +9,7 @@
 The v-slot measurement lands **between** its predecessors and splits
 **three ways**, because most of the legacy slot machinery never lived
 in the transform lane at all — the old step file
-(`crates/vize_atelier_core/src/transforms/v_slot.rs` + `params.rs` +
+(`crates/vize_atelier_core/src/steps/v_slot.rs` + `params.rs` +
 `validate.rs`, 460 lines) is mostly _readers_ for a 1,666-line
 `codegen/slots/` tree:
 

@@ -7,7 +7,7 @@
 ### The absorbed-vs-pass-body split (the headline measurement)
 
 The transform_text measurement is the series' strangest yet: the old
-step file (`crates/vize_atelier_core/src/transforms/transform_text.rs`,
+step file (`crates/vize_atelier_core/src/steps/text.rs`,
 200 lines) is **dead code in the shipped lane** — exported from
 `steps.rs`/`lib.rs`, called by nothing (measured: zero call sites
 outside the two re-exports). The behaviour it describes ships from two

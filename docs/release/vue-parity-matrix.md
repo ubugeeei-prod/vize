@@ -44,7 +44,7 @@ built with the `legacy` cargo feature **and** the project opts in via `vue.versi
 resolved once per file (`vize_relief::options` carries `dialect: VueVersion`) and mapped to a
 capability set (`vize_armature::legacy::LegacyDialectCapabilities`).
 
-Verified-present Vue 2 template desugaring (`crates/vize_atelier_core/src/transforms/legacy.rs`,
+Verified-present Vue 2 template desugaring (`crates/vize_atelier_core/src/steps/legacy.rs`,
 `desugar_legacy_template`), gated by the `legacy` feature and the Vue-2 dialect capability set:
 
 - **`.sync` modifier** — `:foo.sync="bar"` expands to a plain `:foo="bar"` bind plus an
@@ -57,7 +57,7 @@ Verified-present Vue 2 template desugaring (`crates/vize_atelier_core/src/transf
   names, mirroring the removed `@vue/compiler-dom` `keyCodes` table.
 
 Verified-present Vue 2 pipe filters
-(`crates/vize_atelier_core/src/transforms/legacy_filters.rs`): `{{ value \| capitalize }}` style
+(`crates/vize_atelier_core/src/steps/legacy_filters.rs`): `{{ value \| capitalize }}` style
 filter chains are parsed (string and bracket literals are not split on `\|`) and the referenced
 filter names are surfaced on `RootNode::filters`
 (`crates/vize_relief/src/ast/nodes.rs`) for `_resolveFilter` asset emission. The whole module is

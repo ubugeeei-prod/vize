@@ -1,7 +1,7 @@
 //! The `v-for` pass: the P2-9 port of
-//! `crates/vize_atelier_core/src/transforms/v_for.rs` and its driver
-//! halves (`src/transform/structural.rs::transform_v_for`, the
-//! `enter_v_for_scope` calls in `src/transform/traverse.rs`),
+//! `crates/vize_atelier_core/src/steps/v_for.rs` and its driver
+//! halves (`src/lane/structural.rs::transform_v_for`, the
+//! `enter_v_for_scope` calls in `src/lane/traverse.rs`),
 //! re-expressed over `ui.for` owned regions.
 //!
 //! # What survived the port, and where the rest went

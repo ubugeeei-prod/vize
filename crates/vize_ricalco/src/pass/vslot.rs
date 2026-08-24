@@ -1,5 +1,5 @@
 //! The `v-slot` pass: the P2-9 port of
-//! `crates/vize_atelier_core/src/transforms/v_slot.rs` (with its
+//! `crates/vize_atelier_core/src/steps/v_slot.rs` (with its
 //! `params.rs` and `validate.rs` halves), re-expressed over the
 //! `ui.slot-content` binding surface the lowering now keeps.
 //!

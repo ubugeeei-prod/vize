@@ -10,8 +10,8 @@
 //! shipped `is_pre_tag`) and text/interpolation merging at **codegen
 //! time** (`crates/vize_atelier_core/src/codegen/children.rs`, the
 //! consecutive-run grouping); the old step file
-//! (`transforms/transform_text.rs`) is exported but never called by the
-//! shipped pipeline. The S2 port pulls both into the S1→S2 conversion,
+//! (`crates/vize_atelier_core/src/steps/text.rs`) is exported but never
+//! called by the shipped pipeline. The S2 port pulls both into the S1→S2 conversion,
 //! for one decisive reason: **comments**. Both computations read comment
 //! positions — a comment is a non-text-like neighbour for the
 //! remove-vs-condense rule and a hard boundary for run merging — and

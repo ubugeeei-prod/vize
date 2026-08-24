@@ -9,11 +9,12 @@
 The largest installment measures the family per file, and the
 installment-4 pattern repeats at scale: **five of the six old step
 files are dead code in the shipped lane** (zero call sites outside the
-`steps.rs`/`lib.rs` re-exports — `transform_element.rs` whole,
+then-current `steps.rs`/`lib.rs` re-exports — the historical
+`transform_element.rs` name, now `steps/element.rs`, whole;
 `v_bind.rs` whole, `v_on.rs` whole except a shadowed local name,
 `v_once.rs` whole against codegen's own `has_v_once` twin, `v_memo.rs`
 all but the two codegen reads). The living code is
-`transform/element.rs` (the v-model expansion and its validations) and
+`lane/element.rs` (the v-model expansion and its validations) and
 `codegen/*` (everything else). The port followed the living code:
 
 - **Absorbed by lowering** (`lower/bindop.rs` + the `lower/binding.rs`

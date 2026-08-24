@@ -1,5 +1,5 @@
 //! The text pass: the P2-9 installment-4 port of
-//! `crates/vize_atelier_core/src/transforms/transform_text.rs`,
+//! `crates/vize_atelier_core/src/steps/text.rs`,
 //! re-expressed as the consumption of the lowering's condense-and-merge
 //! work (`crate::lower::text`).
 //!

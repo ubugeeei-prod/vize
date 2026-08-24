@@ -4,7 +4,7 @@
 > under the 350-line source budget.
 
 The P2-9 contract still asks whether region-structured lowering
-shrunk `transform_expression/reparse.rs`'s residual class. The number
+shrunk `steps/expression/reparse.rs`'s residual class. The number
 must come from the existing `retained::differential` counters, not a
 prediction. Installments 1–8 last published **12.73%** from a hydrated
 corpus; this installment re-ran the witness rather than copying that

@@ -11,7 +11,7 @@
 //! [`OpaqueReason::ForValue`] exists: the whole value is **not a JS
 //! expression**. The lowering therefore splits the authored text with
 //! the same grammar the shipped splitter uses
-//! (`crates/vize_atelier_core/src/transforms/v_for.rs`,
+//! (`crates/vize_atelier_core/src/steps/v_for.rs`,
 //! `find_for_separator` / `split_top_level_aliases`, strict mode — no
 //! `template_syntax_quirks`), then admits each **sub-slice** through the
 //! shared rule ([`super::expr`]); a value that cannot split at all rides

@@ -2,7 +2,7 @@
 //!
 //! The boolean shape decisions (`is a handler reference`, `is a function
 //! expression`) shared between the legacy string entries in
-//! `transform_expression.rs` and the node-aware retained entries here.
+//! `steps/expression.rs` and the node-aware retained entries here.
 
 use oxc_ast::ast::{ChainElement, Expression};
 #[cfg(any(test, feature = "davinci-differential"))]
