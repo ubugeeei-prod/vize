@@ -9,7 +9,7 @@ use vize_disegno::op::{Attribute, BindOp, BindingOp, DynamicName, OnOp};
 use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
-use super::js::{escape_js_string, is_valid_js_identifier};
+use super::js::{escape_js_string, push_ident_key};
 use super::on::{
     admit_on, emit_on_pair, event_key_for, is_inline_handler_source, needs_hydration, wraps_on,
 };
@@ -110,11 +110,12 @@ pub(super) fn emit_bind_props(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
     if_key: Option<&str>,
+    skip_is: bool,
 ) -> Result<(), EmitError> {
     if super::merge::has_object_bind(bindings) {
-        return super::merge::emit_spread_props(cx, attributes, bindings, if_key);
+        return super::merge::emit_spread_props(cx, attributes, bindings, if_key, skip_is);
     }
-    let pieces = pieces(attributes, bindings)?;
+    let pieces = pieces(attributes, bindings, skip_is)?;
     emit_props_object(cx, &pieces, if_key, false)
 }
 
@@ -199,13 +200,19 @@ pub(super) enum Piece<'a> {
 pub(super) fn pieces<'a>(
     attributes: &'a [Attribute<'a>],
     bindings: &'a [BindingOp<'a>],
+    skip_is: bool,
 ) -> Result<StdVec<Piece<'a>>, EmitError> {
     let mut out = StdVec::new();
     for attr in attributes.iter() {
+        if skip_is && attr.name == "is" {
+            continue;
+        }
         out.push(Piece::Attr(attr));
     }
     for binding in bindings.iter() {
         match binding {
+            BindingOp::Bind(bind)
+                if skip_is && matches!(bind.name, Some(DynamicName::Static("is"))) => {}
             BindingOp::Bind(bind) => out.push(Piece::Bind(bind)),
             BindingOp::On(on) => out.push(Piece::On(on)),
             BindingOp::SlotContent(_) => {}
@@ -252,7 +259,7 @@ fn pieces_have_inline_on(pieces: &[Piece<'_>]) -> bool {
 }
 
 fn emit_static_pair(cx: &mut EmitCx<'_>, attr: &Attribute<'_>) {
-    push_key(cx, attr.name);
+    push_ident_key(cx, attr.name);
     cx.buf.push(": \"");
     if let Some(value) = attr.value {
         cx.buf.push(escape_js_string(value).as_str());
@@ -268,7 +275,7 @@ fn emit_bind_pair(
 ) -> Result<(), EmitError> {
     let name = static_bind_name(bind)?;
     let js = js_value(bind)?;
-    push_key(cx, name);
+    push_ident_key(cx, name);
     cx.buf.push(": ");
     match name {
         "class" => emit_class_value(cx, pieces, bind, js, skip_normalize),
@@ -336,15 +343,5 @@ pub(super) fn js_value<'a>(bind: &'a BindOp<'a>) -> Result<&'a JsExpr<'a>, EmitE
     match bind.value {
         Some(ExprRef::Js(js)) => Ok(js),
         _ => Err(EmitError::Unsupported),
-    }
-}
-
-fn push_key(cx: &mut EmitCx<'_>, name: &str) {
-    if !is_valid_js_identifier(name) {
-        cx.buf.push("\"");
-        cx.buf.push(name);
-        cx.buf.push("\"");
-    } else {
-        cx.buf.push(name);
     }
 }

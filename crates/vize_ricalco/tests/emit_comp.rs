@@ -10,7 +10,7 @@
 mod support;
 
 use support::with_transformed;
-use vize_ricalco::{EmitError, emit_dom};
+use vize_ricalco::emit_dom;
 
 fn assembled(source: &str) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {
@@ -24,12 +24,6 @@ fn assembled(source: &str) -> String {
 /// Vue's extra `newline()` after `genAssets` leaves indent on the blank line.
 fn pin(visual: &str) -> String {
     visual.replace(")\n\n  return", ")\n  \n  return")
-}
-
-fn refused(source: &str) -> EmitError {
-    with_transformed(source, |lowered, _, facts, _| {
-        emit_dom(lowered, facts).expect_err("expected Unsupported")
-    })
 }
 
 #[test]
@@ -177,8 +171,16 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn a_dynamic_is_is_unsupported_this_installment() {
-    assert_eq!(refused(r#"<component :is="x" />"#), EmitError::Unsupported);
+fn a_dynamic_is_uses_resolve_dynamic_component() {
+    assert_eq!(
+        assembled(r#"<component :is="x" />"#),
+        pin("\
+const { resolveDynamicComponent: _resolveDynamicComponent, openBlock: _openBlock, createBlock: _createBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createBlock(_resolveDynamicComponent(x)))
+}")
+    );
 }
 
 #[test]

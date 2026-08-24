@@ -69,8 +69,9 @@ pub(super) fn emit_spread_props(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
     if_key: Option<&str>,
+    skip_is: bool,
 ) -> Result<(), EmitError> {
-    let args = merge_args(attributes, bindings, if_key)?;
+    let args = merge_args(attributes, bindings, if_key, skip_is)?;
     let only_spread = args.iter().all(|arg| matches!(arg, Arg::Spread(_)));
     if only_spread {
         let Arg::Spread(bind) = args[0] else {
@@ -108,10 +109,11 @@ fn merge_args<'a>(
     attributes: &'a [Attribute<'a>],
     bindings: &'a [BindingOp<'a>],
     if_key: Option<&'a str>,
+    skip_is: bool,
 ) -> Result<StdVec<Arg<'a>>, EmitError> {
     let mut args = StdVec::new();
     let mut current = StdVec::new();
-    for piece in pieces(attributes, bindings)? {
+    for piece in pieces(attributes, bindings, skip_is)? {
         if let Piece::Bind(bind) = piece
             && bind.name.is_none()
         {

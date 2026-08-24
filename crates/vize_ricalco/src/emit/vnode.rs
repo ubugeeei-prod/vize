@@ -164,7 +164,7 @@ fn emit_call(
         cx.buf.push(Buf::hoisted_props_alias());
     } else if if_key.is_some() || has_binds {
         cx.buf.push(", ");
-        emit_bind_props(cx, &element.attributes, &element.bindings, if_key)?;
+        emit_bind_props(cx, &element.attributes, &element.bindings, if_key, false)?;
     } else if !element.attributes.is_empty() {
         cx.buf.push(", ");
         emit_static_props_inline(cx, element.attributes.iter());
