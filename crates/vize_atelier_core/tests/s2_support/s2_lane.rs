@@ -12,7 +12,7 @@ use vize_davinci::side_table::SideTable;
 use vize_disegno::folio::{DisegnoFolio, FolioExpr, FolioOp};
 use vize_ricalco::pass::{BranchKeyKind, IfFacts, ModelFacts, SlotFacts, TextFacts};
 
-use super::slots::{POutlet, PUnit, s2_outlet, s2_slot_active, s2_unit};
+use super::slots::{POutlet, PUnit, has_slot_content, s2_outlet, s2_slot_active, s2_unit};
 use super::surface::PSurface;
 use super::surface_s2::{opens_pattern_scope, surface_of};
 use super::text::{TPart, TUnit};
@@ -113,6 +113,7 @@ pub fn collect(folio: &DisegnoFolio, tables: &Tables<'_>) -> S2Projection {
         rawtext_depth: 0,
         pattern_scoped: false,
         excluded_bind: None,
+        skip_slot_wrapper: false,
     };
     walk(&folio.ops, tables, state, &mut next, &mut out);
     out
@@ -123,9 +124,10 @@ pub fn collect(folio: &DisegnoFolio, tables: &Tables<'_>) -> S2Projection {
 struct WalkState {
     rawtext_depth: usize,
     pattern_scoped: bool,
-    /// The branch-key binding index to exclude on the next owner (set
-    /// for a branch's single root, consumed immediately).
+    /// Branch-key bind to exclude on the next owner; consumed immediately.
     excluded_bind: Option<usize>,
+    /// Skip a kept `<template v-slot>` under `ui.if` / `ui.for`.
+    skip_slot_wrapper: bool,
 }
 
 fn walk(
@@ -148,17 +150,22 @@ fn walk(
                 }
                 let owner_index = *next;
                 *next += 1 + u32::try_from(element.bindings.len()).expect("binding count fits");
-                let surface = surface_of(
-                    &element.attributes,
-                    &element.bindings,
-                    owner_index,
-                    tables,
-                    state.pattern_scoped,
-                    excluded_bind,
-                    false,
-                    out,
-                );
-                out.surfaces.push(surface);
+                let skip_wrapper = state.skip_slot_wrapper
+                    && element.tag.as_str() == "template"
+                    && has_slot_content(&element.bindings);
+                if !skip_wrapper {
+                    let surface = surface_of(
+                        &element.attributes,
+                        &element.bindings,
+                        owner_index,
+                        tables,
+                        state.pattern_scoped,
+                        excluded_bind,
+                        false,
+                        out,
+                    );
+                    out.surfaces.push(surface);
+                }
                 let child_state = WalkState {
                     rawtext_depth: state.rawtext_depth
                         + usize::from(is_rawtext_tag(element.tag.as_str())),
@@ -166,6 +173,7 @@ fn walk(
                         || (element.tag == "template"
                             && opens_pattern_scope(&element.bindings, &element.children)),
                     excluded_bind: None,
+                    skip_slot_wrapper: false,
                 };
                 walk(&element.children, tables, child_state, next, out);
             }
@@ -192,6 +200,7 @@ fn walk(
                     pattern_scoped: state.pattern_scoped
                         || opens_pattern_scope(&component.bindings, &component.children),
                     excluded_bind: None,
+                    skip_slot_wrapper: false,
                 };
                 walk(&component.children, tables, child_state, next, out);
             }
@@ -277,6 +286,7 @@ fn walk(
                         });
                     let branch_state = WalkState {
                         excluded_bind: excluded,
+                        skip_slot_wrapper: true,
                         ..state
                     };
                     walk(&branch.ops, tables, branch_state, next, out);
@@ -292,6 +302,7 @@ fn walk(
                 });
                 let region_state = WalkState {
                     excluded_bind: None,
+                    skip_slot_wrapper: true,
                     ..state
                 };
                 walk(&for_op.ops, tables, region_state, next, out);

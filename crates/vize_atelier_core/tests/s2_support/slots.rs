@@ -114,7 +114,7 @@ fn trimmed(text: &str) -> String {
 
 // ------------------------------------------------------------------- S2
 
-fn has_slot_content(bindings: &[FolioBinding]) -> bool {
+pub(super) fn has_slot_content(bindings: &[FolioBinding]) -> bool {
     bindings
         .iter()
         .any(|binding| matches!(binding, FolioBinding::SlotContent(_)))

@@ -47,7 +47,13 @@ fn old_group(dir: &vize_atelier_core::DirectiveNode<'_>, source: &str) -> PGroup
 }
 
 /// The shared implicit-content predicate on a legacy child.
+/// Conditional slot carriers (`<template v-if v-slot>`) are the recorded
+/// wrapper gap: they are counted on the unit, never treated as implicit
+/// default content (S2 drops them at lowering).
 fn old_shared_content(child: &TemplateChildNode<'_>) -> bool {
+    if old_conditional_carrier(child) {
+        return false;
+    }
     match child {
         TemplateChildNode::Element(el) => !is_slot_template(el),
         TemplateChildNode::Text(text) => !text.content.trim().is_empty(),
@@ -58,6 +64,9 @@ fn old_shared_content(child: &TemplateChildNode<'_>) -> bool {
 
 /// The raw legacy predicate (`collect_slots`' `has_non_slot_children`).
 fn old_raw_content(child: &TemplateChildNode<'_>) -> bool {
+    if old_conditional_carrier(child) {
+        return false;
+    }
     match child {
         TemplateChildNode::Element(el) => !is_slot_template(el),
         _ => true,
