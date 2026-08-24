@@ -14,7 +14,7 @@ está aqui para relatar descobertas em vez de abrir um PR, comece pelo guia
 ## Configuração
 
 Use a versão Node.js da `.node-version` e a versão da Ferrugem da `rust-toolchain.toml`. O
-workspace declara uma versão mínima suportada de Rust (MSRV) de `1.95.0` em `Cargo.toml`
+workspace declara uma versão mínima suportada de Rust (MSRV) de `1.98.0` em `Cargo.toml`
 (`[workspace.package].rust-version`); as contribuições devem ser compiladas sob essa versão.
 
 O shell padrão do Nix contém a cadeia de ferramentas local reproduzível. O suporte ao Blacksmith Testbox

@@ -14,7 +14,7 @@ ici pour rapporter des résultats plutôt que pour ouvrir une PR, commencez par 
 ## Mise en place
 
 Utilisez la version Node.js de `.node-version` et la version Rust de `rust-toolchain.toml`. L’espace de travail
-déclare une version minimale Rust prise en charge (MSRV) de `1.95.0` dans `Cargo.toml`
+déclare une version minimale Rust prise en charge (MSRV) de `1.98.0` dans `Cargo.toml`
 (`[workspace.package].rust-version`; les contributions doivent être compilées sous cette version.
 
 Le shell Nix par défaut contient la chaîne d’outils locale reproductible. Le support de Blacksmith Testbox est

@@ -104,7 +104,7 @@ jobs:
         run: node tools/github/semver-change-marker.mjs "$RUNNER_TEMP/semver-change-marker.txt"
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
-          toolchain: 1.95.0
+          toolchain: 1.98.0
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -119,7 +119,7 @@ jobs:
       - name: Check public API SemVer compatibility
         env:
           BASELINE_REV: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || (github.event_name == 'push' && github.event.before || '') }}
-          RUSTUP_TOOLCHAIN: 1.95.0
+          RUSTUP_TOOLCHAIN: 1.98.0
         run: |
           case "$BASELINE_REV" in 0000000000000000000000000000000000000000) BASELINE_REV="";; esac
           SEMVER_CHANGE_MARKER="$(cat "$RUNNER_TEMP/semver-change-marker.txt")"
