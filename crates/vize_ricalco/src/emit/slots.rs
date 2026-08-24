@@ -3,12 +3,14 @@
 //! Implicit default, static / dynamic named `<template>` groups, and
 //! component-root `v-slot` (shipped codegen always keys that `default`).
 //! Conditional / looped slot templates go through [`super::create_slots`].
-//! Outlets (`renderSlot`) live in [`super::outlet`]; `v-slots` stays
-//! [`EmitError::Unsupported`].
+//! Outlets (`renderSlot`) live in [`super::outlet`]. A `v-slots` spread
+//! is the children argument when it is the only slot source, or
+//! `...expr` closing an authored slot object (no `_` flag).
 
 use alloc::vec::Vec as StdVec;
 
 use vize_carton::String;
+use vize_disegno::expr::ExprRef;
 use vize_disegno::op::{BindingOp, ElementOp, Namespace, Op, Region, TextOp};
 
 use super::buf::Buf;
@@ -19,6 +21,34 @@ use super::vnode::emit_array_child;
 use super::EmitCx;
 use super::EmitError;
 use crate::pass::{SlotCarrier, SlotFacts, SlotName, SlotParams};
+
+/// First `v-slots="expr"` (no argument) on the component, matching
+/// `codegen/slots/detect.rs`. An argument spelling is a different
+/// construct and stays unsupported.
+pub(super) fn slots_spread<'a>(
+    bindings: &'a [BindingOp<'a>],
+) -> Result<Option<&'a str>, EmitError> {
+    for binding in bindings.iter() {
+        let BindingOp::VueDirective(directive) = binding else {
+            continue;
+        };
+        if directive.name != "slots" {
+            continue;
+        }
+        if directive.argument.is_some() || !directive.modifiers.is_empty() {
+            return Err(EmitError::Unsupported);
+        }
+        return match directive.value {
+            Some(ExprRef::Js(js)) => Ok(Some(js.source)),
+            _ => Err(EmitError::Unsupported),
+        };
+    }
+    Ok(None)
+}
+
+pub(super) fn is_slots_spread(binding: &BindingOp<'_>) -> bool {
+    matches!(binding, BindingOp::VueDirective(directive) if directive.name == "slots")
+}
 
 pub(super) fn has_implicit_default(children: &Region<'_>) -> bool {
     children.ops.iter().any(|op| !is_whitespace_text(op))
@@ -73,6 +103,7 @@ pub(super) fn emit_slots(
     cx: &mut EmitCx<'_>,
     children: &Region<'_>,
     facts: &SlotFacts,
+    spread: Option<&str>,
 ) -> Result<(), EmitError> {
     if facts.groups.iter().any(|group| group.name.text() == "_") {
         return Err(EmitError::Unsupported);
@@ -107,13 +138,19 @@ pub(super) fn emit_slots(
         cx.buf.push("]),");
     }
     cx.buf.newline();
-    let forwarded = super::outlet::has_forwarded_outlet(children);
-    if forwarded && cx.slot_param_depth == 0 && !cx.in_v_for && !has_dynamic_names(facts) {
-        cx.buf.push("_: 3 /* FORWARDED */");
-    } else if cx.in_v_for || has_dynamic_names(facts) || (forwarded && cx.slot_param_depth > 0) {
-        cx.buf.push("_: 2 /* DYNAMIC */");
+    if let Some(spread) = spread {
+        cx.buf.push("...");
+        cx.buf.push(spread);
     } else {
-        cx.buf.push("_: 1 /* STABLE */");
+        let forwarded = super::outlet::has_forwarded_outlet(children);
+        if forwarded && cx.slot_param_depth == 0 && !cx.in_v_for && !has_dynamic_names(facts) {
+            cx.buf.push("_: 3 /* FORWARDED */");
+        } else if cx.in_v_for || has_dynamic_names(facts) || (forwarded && cx.slot_param_depth > 0)
+        {
+            cx.buf.push("_: 2 /* DYNAMIC */");
+        } else {
+            cx.buf.push("_: 1 /* STABLE */");
+        }
     }
     cx.buf.deindent();
     cx.buf.newline();

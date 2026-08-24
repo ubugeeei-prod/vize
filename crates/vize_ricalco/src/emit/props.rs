@@ -49,11 +49,11 @@ pub(super) fn admit_bindings(
             }
             BindingOp::On(on) => admit_on(on, &mut events)?,
             BindingOp::SlotContent(_) => {}
+            BindingOp::VueDirective(_) if super::slots::is_slots_spread(binding) => {}
             _ => return Err(EmitError::Unsupported),
         }
     }
     if style && has_attr(attributes, "style") {
-        // Static+dynamic style merge parses CSS declarations; next installment.
         return Err(EmitError::Unsupported);
     }
     Ok(())
@@ -209,6 +209,7 @@ pub(super) fn pieces<'a>(
             BindingOp::Bind(bind) => out.push(Piece::Bind(bind)),
             BindingOp::On(on) => out.push(Piece::On(on)),
             BindingOp::SlotContent(_) => {}
+            BindingOp::VueDirective(_) if super::slots::is_slots_spread(binding) => {}
             _ => return Err(EmitError::Unsupported),
         }
     }

@@ -1,8 +1,8 @@
 //! Static-name component emission (`resolveComponent` / `createVNode` /
 //! `createBlock`) plus slot objects from [`SlotFacts`] (implicit
 //! default, named `<template>` groups, component-root `v-slot`) and
-//! `createSlots` for `v-if` / `v-for` slot templates. builtins and
-//! `<component :is>` stay unsupported.
+//! `createSlots` for `v-if` / `v-for` slot templates, and the `v-slots`
+//! spread. builtins and `<component :is>` stay unsupported.
 
 use alloc::vec::Vec as StdVec;
 
@@ -140,8 +140,12 @@ fn emit_call(
     admit(component)?;
     let facts = id.and_then(|id| cx.facts.slot_facts.get(id));
     let create = create_slots::needs_create_slots(&component.children);
-    let has_slots = facts.is_some() || create;
-    let dynamic_names = create || facts.is_some_and(slots::has_dynamic_names);
+    let spread = slots::slots_spread(&component.bindings)?;
+    if create && spread.is_some() {
+        return Err(EmitError::Unsupported);
+    }
+    let has_slots = facts.is_some() || create || spread.is_some();
+    let dynamic_names = create || facts.is_some_and(slots::has_dynamic_names) || spread.is_some();
     let alias = if block {
         Buf::create_block_alias()
     } else {
@@ -151,11 +155,14 @@ fn emit_call(
     cx.buf.push("(");
     cx.buf
         .push(asset_ident("component", component.name).as_str());
-    let has_binds = component
-        .bindings
-        .iter()
-        .any(|binding| !matches!(binding, BindingOp::SlotContent(_)));
-    if has_slots && !has_binds && if_key.is_none() && !component.attributes.is_empty() {
+    let has_binds = component.bindings.iter().any(|binding| {
+        !matches!(binding, BindingOp::SlotContent(_)) && !slots::is_slots_spread(binding)
+    });
+    if (facts.is_some() || create)
+        && !has_binds
+        && if_key.is_none()
+        && !component.attributes.is_empty()
+    {
         cx.buf
             .push_hoist(compact_props_object(component.attributes.iter()));
     }
@@ -182,7 +189,10 @@ fn emit_call(
         create_slots::emit_create_slots(cx, &component.children)?;
     } else if let Some(facts) = facts {
         cx.buf.push(", ");
-        slots::emit_slots(cx, &component.children, facts)?;
+        slots::emit_slots(cx, &component.children, facts, spread)?;
+    } else if let Some(spread) = spread {
+        cx.buf.push(", ");
+        cx.buf.push(spread);
     } else if emit_flag && has_props {
         cx.buf.push(", null");
     }
