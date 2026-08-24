@@ -1,4 +1,5 @@
 mod assignment_target;
+mod statement;
 
 use oxc_ast::ast::{
     ArrayExpressionElement, BindingPattern, Expression, ObjectPropertyKind, PropertyKey,
@@ -6,6 +7,8 @@ use oxc_ast::ast::{
 
 use super::super::IdentifierRef;
 use assignment_target::{walk_assignment_target, walk_simple_assignment_target};
+
+pub(super) use statement::walk_program;
 
 pub(super) fn walk_expr(expr: &Expression<'_>, identifiers: &mut Vec<IdentifierRef>) {
     match expr {

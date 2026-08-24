@@ -184,6 +184,59 @@ fn test_extract_identifiers_ignores_numeric_literal_tails() {
 }
 
 #[test]
+fn test_extract_identifiers_slow_walks_statement_bodies() {
+    fn to_pairs(ids: Vec<IdentifierRef>) -> Vec<(CompactString, u32)> {
+        ids.into_iter()
+            .map(|identifier| (identifier.name, identifier.offset))
+            .collect()
+    }
+
+    let calls = "close();modifyInventory()";
+    assert_eq!(
+        extract_identifiers_oxc(calls),
+        vec!["close", "modifyInventory"]
+    );
+    assert_eq!(
+        to_pairs(extract_identifier_refs_oxc(calls)),
+        vec![
+            ("close".into(), calls.find("close").unwrap() as u32),
+            (
+                "modifyInventory".into(),
+                calls.find("modifyInventory").unwrap() as u32
+            ),
+        ]
+    );
+
+    let emit_then_close = "$emit('selected', $event); close()";
+    assert_eq!(
+        extract_identifiers_oxc(emit_then_close),
+        vec!["$emit", "$event", "close"]
+    );
+    assert_eq!(
+        to_pairs(extract_identifier_refs_oxc(emit_then_close)),
+        vec![
+            (
+                "$emit".into(),
+                emit_then_close.find("$emit").unwrap() as u32
+            ),
+            (
+                "$event".into(),
+                emit_then_close.find("$event").unwrap() as u32
+            ),
+            (
+                "close".into(),
+                emit_then_close.find("close").unwrap() as u32
+            ),
+        ]
+    );
+
+    assert_eq!(
+        extract_identifiers_oxc("if (active) toggle(); close()"),
+        vec!["active", "toggle", "close"]
+    );
+}
+
+#[test]
 fn test_extract_identifier_refs_preserve_root_offsets() {
     fn to_pairs(ids: Vec<IdentifierRef>) -> Vec<(CompactString, u32)> {
         ids.into_iter()
