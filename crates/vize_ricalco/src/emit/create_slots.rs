@@ -6,14 +6,14 @@ use alloc::vec::Vec as StdVec;
 use vize_carton::{String, ToCompactString};
 use vize_disegno::op::{BindingOp, DynamicName, ElementOp, ForOp, IfOp, Op, Region, SlotContentOp};
 
+use super::EmitCx;
+use super::EmitError;
 use super::buf::Buf;
 use super::js::escape_js_string;
 use super::slots::{
     capture, capture_child, emit_template_pieces, is_slot_template, is_whitespace_text,
 };
 use super::vfor;
-use super::EmitCx;
-use super::EmitError;
 
 pub(super) fn needs_create_slots(children: &Region<'_>) -> bool {
     children.ops.iter().any(|op| match op {
@@ -222,7 +222,10 @@ fn emit_slot_object(
     cx.buf.push(" => [");
     let mut pieces = StdVec::new();
     cx.buf.indent();
-    emit_template_pieces(cx, &element.children, &mut pieces)?;
+    let scoped = matches!(&content.params, Some(expr) if !expr.source().is_empty());
+    super::outlet::with_slot_params(cx, scoped, |cx| {
+        emit_template_pieces(cx, &element.children, &mut pieces)
+    })?;
     for (i, piece) in pieces.iter().enumerate() {
         if i > 0 {
             cx.buf.push(",");

@@ -11,6 +11,8 @@ pub(super) struct Buf {
     pub code: String,
     indent: u32,
     used: u32,
+    /// Transform-analogue registration order (`root.helpers`).
+    preferred: StdVec<Helper>,
     /// Compact static-props / vnode RHS values, `_hoisted_1` first.
     hoists: StdVec<String>,
 }
@@ -21,6 +23,7 @@ impl Buf {
             code: String::default(),
             indent: 0,
             used: 0,
+            preferred: StdVec::new(),
             hoists: StdVec::new(),
         }
     }
@@ -48,6 +51,13 @@ impl Buf {
 
     fn mark(&mut self, helper: Helper) {
         self.used |= helper.bit();
+    }
+
+    pub(super) fn prefer(&mut self, helper: Helper) {
+        if self.preferred.iter().any(|seen| seen.bit() == helper.bit()) {
+            return;
+        }
+        self.preferred.push(helper);
     }
 
     pub(super) fn use_to_display_string(&mut self) {
@@ -103,6 +113,9 @@ impl Buf {
     }
     pub(super) fn use_create_vnode(&mut self) {
         self.mark(Helper::CreateVNode);
+    }
+    pub(super) fn use_render_slot(&mut self) {
+        self.mark(Helper::RenderSlot);
     }
     pub(super) fn use_create_block(&mut self) {
         self.mark(Helper::CreateBlock);
@@ -186,6 +199,10 @@ impl Buf {
         Helper::CreateVNode.alias()
     }
 
+    pub(super) fn render_slot_alias() -> &'static str {
+        Helper::RenderSlot.alias()
+    }
+
     pub(super) fn create_block_alias() -> &'static str {
         Helper::CreateBlock.alias()
     }
@@ -210,30 +227,39 @@ impl Buf {
         self.push_hoist(object)
     }
 
+    fn ordered_helpers(&self) -> StdVec<Helper> {
+        let mut listed = StdVec::new();
+        let mut bits = 0u32;
+        let mut push = |helper: Helper| {
+            if self.used & helper.bit() == 0 || bits & helper.bit() != 0 {
+                return;
+            }
+            bits |= helper.bit();
+            listed.push(helper);
+        };
+        for helper in self.preferred.iter().copied() {
+            push(helper);
+        }
+        for helper in Helper::ALL {
+            push(helper);
+        }
+        listed.sort_by_key(|helper| helper.rank());
+        listed
+    }
+
     /// Function-mode preamble, helpers in import-rank order, then any
     /// root static-props hoist (the shipped codegen appends hoists to
     /// the helper preamble).
     pub(super) fn preamble(&self) -> String {
-        let listed: [Helper; 21] = Helper::ALL;
-        let mut n = 0;
-        for helper in listed {
-            if self.used & helper.bit() != 0 {
-                n += 1;
-            }
-        }
-        if n == 0 {
+        let listed = self.ordered_helpers();
+        if listed.is_empty() {
             return String::default();
         }
         let mut preamble = String::from("const { ");
-        let mut first = true;
-        for helper in listed {
-            if self.used & helper.bit() == 0 {
-                continue;
-            }
-            if !first {
+        for (i, helper) in listed.iter().enumerate() {
+            if i > 0 {
                 preamble.push_str(", ");
             }
-            first = false;
             preamble.push_str(helper.name());
             preamble.push_str(": ");
             preamble.push_str(helper.alias());

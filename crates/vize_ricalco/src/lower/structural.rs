@@ -15,13 +15,13 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{cstr, Box, Span, String, Vec};
+use vize_carton::{Box, Span, String, Vec, cstr};
 use vize_sinopia::{Element, SurfaceChild};
 
 use vize_disegno::op::{IfBranch, IfOp, Namespace, Op, Region};
 
-use super::cx::{attr_slice, attr_span, element_span, Cx};
-use super::element::{analyze, attr_value_text, element_core, Analyzed, BranchKind};
+use super::cx::{Cx, attr_slice, attr_span, element_span};
+use super::element::{Analyzed, BranchKind, analyze, attr_value_text, element_core};
 use super::expr::expr_at;
 use super::forop::lower_for;
 use super::leaf::lower_leaf;

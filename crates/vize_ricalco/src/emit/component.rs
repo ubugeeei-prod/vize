@@ -14,10 +14,10 @@ use super::EmitError;
 use super::buf::Buf;
 use super::create_slots;
 use super::flag::emit_patch_flag;
+use super::hoist::compact_props_object;
 use super::js::asset_ident;
 use super::props::{admit_bindings, bind_patch, emit_bind_props};
 use super::slots;
-use super::vnode::compact_props_object;
 
 pub(super) fn collect_names<'a>(root: &Region<'a>) -> StdVec<&'a str> {
     let mut names = StdVec::new();
@@ -166,10 +166,10 @@ fn emit_call(
         };
     let patch = bind_patch(&component.bindings, true);
     let mut flag = patch.flag;
-    if cx.in_v_for && has_slots {
-        flag |= 1024;
-    }
-    if dynamic_names {
+    if (cx.in_v_for && has_slots)
+        || dynamic_names
+        || (cx.slot_param_depth > 0 && super::outlet::has_forwarded_outlet(&component.children))
+    {
         flag |= 1024;
     }
     let emit_flag = flag != 0;

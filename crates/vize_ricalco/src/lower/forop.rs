@@ -4,15 +4,15 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{cstr, Box, String, Vec};
+use vize_carton::{Box, String, Vec, cstr};
 use vize_sinopia::Element;
 
 use vize_disegno::expr::{ExprRef, OpaqueReason};
 use vize_disegno::op::{ForBinding, ForOp, Namespace, Op, Region};
 use vize_disegno::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
 
-use super::cx::{attr_slice, attr_span, element_span, Cx};
-use super::element::{attr_value_text, element_core, Analyzed};
+use super::cx::{Cx, attr_slice, attr_span, element_span};
+use super::element::{Analyzed, attr_value_text, element_core};
 use super::expr::{desc, expr_at, opaque_at, simple_identifier, trimmed};
 use super::structural::{lower_children, record_template_drops};
 use super::vfor::{split_aliases, split_for};

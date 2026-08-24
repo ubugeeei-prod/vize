@@ -1,8 +1,8 @@
 //! Vue helpers this installment can mention, ranked the way
 //! `vue_helper_import_rank` orders the shipped preamble. Same-rank
-//! helpers keep [`Helper::ALL`] order (`createElementVNode` before
-//! `createVNode`, `toHandlers` after `mergeProps`, `createBlock`
-//! before `createElementBlock`, `withCtx` after `renderList`).
+//! helpers follow transform-first registration, then emit order
+//! (`Buf::prefer` then first `use_*`), matching `root.helpers`
+//! then `used_helpers`.
 
 #[derive(Clone, Copy)]
 pub(super) enum Helper {
@@ -10,6 +10,7 @@ pub(super) enum Helper {
     WithKeys,
     WithModifiers,
     ToDisplayString,
+    RenderSlot,
     CreateElementVNode,
     CreateVNode,
     NormalizeClass,
@@ -30,11 +31,12 @@ pub(super) enum Helper {
 }
 
 impl Helper {
-    pub(super) const ALL: [Self; 21] = [
+    pub(super) const ALL: [Self; 22] = [
         Self::ResolveComponent,
         Self::WithKeys,
         Self::WithModifiers,
         Self::ToDisplayString,
+        Self::RenderSlot,
         Self::CreateElementVNode,
         Self::CreateVNode,
         Self::NormalizeClass,
@@ -53,6 +55,26 @@ impl Helper {
         Self::CreateSlots,
         Self::WithCtx,
     ];
+
+    pub(super) const fn rank(self) -> u8 {
+        match self {
+            Self::ResolveComponent => 0,
+            Self::WithKeys | Self::WithModifiers => 2,
+            Self::ToDisplayString => 3,
+            Self::RenderSlot | Self::CreateElementVNode | Self::CreateVNode => 4,
+            Self::NormalizeClass
+            | Self::NormalizeStyle
+            | Self::NormalizeProps
+            | Self::GuardReactiveProps
+            | Self::MergeProps
+            | Self::ToHandlers => 5,
+            Self::OpenBlock => 6,
+            Self::CreateBlock | Self::CreateElementBlock => 7,
+            Self::Fragment => 8,
+            Self::CreateComment | Self::CreateText => 9,
+            Self::RenderList | Self::CreateSlots | Self::WithCtx => 10,
+        }
+    }
 
     pub(super) const fn bit(self) -> u32 {
         match self {
@@ -77,6 +99,7 @@ impl Helper {
             Self::ToHandlers => 262144,
             Self::CreateSlots => 524288,
             Self::WithCtx => 1048576,
+            Self::RenderSlot => 2097152,
         }
     }
 
@@ -88,6 +111,7 @@ impl Helper {
             Self::ToDisplayString => "toDisplayString",
             Self::CreateElementVNode => "createElementVNode",
             Self::CreateVNode => "createVNode",
+            Self::RenderSlot => "renderSlot",
             Self::NormalizeClass => "normalizeClass",
             Self::NormalizeStyle => "normalizeStyle",
             Self::NormalizeProps => "normalizeProps",
@@ -114,6 +138,7 @@ impl Helper {
             Self::ToDisplayString => "_toDisplayString",
             Self::CreateElementVNode => "_createElementVNode",
             Self::CreateVNode => "_createVNode",
+            Self::RenderSlot => "_renderSlot",
             Self::NormalizeClass => "_normalizeClass",
             Self::NormalizeStyle => "_normalizeStyle",
             Self::NormalizeProps => "_normalizeProps",

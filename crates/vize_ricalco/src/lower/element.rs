@@ -80,9 +80,9 @@ impl Analyzed<'_> {
     /// `<template v-if #name>` / `<template v-for #name>` must keep the
     /// template op so the slot name survives unwrap (P2-11 createSlots).
     pub(crate) fn has_slot_spelling(&self) -> bool {
-        self.forms.iter().any(|form| {
-            matches!(form, AttrForm::Directive(directive) if directive.head == Head::Slot)
-        })
+        self.forms.iter().any(
+            |form| matches!(form, AttrForm::Directive(directive) if directive.head == Head::Slot),
+        )
     }
 }
 

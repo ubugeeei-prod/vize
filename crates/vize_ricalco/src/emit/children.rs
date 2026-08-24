@@ -90,12 +90,26 @@ fn emit_quoted_text(cx: &mut EmitCx<'_>, content: &str) {
     cx.buf.push("\"");
 }
 
-fn emit_to_display_string(cx: &mut EmitCx<'_>, source: &str) {
+pub(super) fn emit_to_display_string(cx: &mut EmitCx<'_>, source: &str) {
     cx.buf.use_to_display_string();
     cx.buf.push(Buf::to_display_string_alias());
     cx.buf.push("(");
     cx.buf.push(source);
     cx.buf.push(")");
+}
+
+/// Static `_createTextVNode("…")` with no walk mint (compound fallback
+/// parts already minted their interpolation op).
+pub(super) fn emit_plain_text_vnode(cx: &mut EmitCx<'_>, content: &str) {
+    cx.buf.use_create_text();
+    cx.buf.push(Buf::create_text_alias());
+    if content == " " {
+        cx.buf.push("()");
+        return;
+    }
+    cx.buf.push("(\"");
+    cx.buf.push(escape_js_string(content).as_str());
+    cx.buf.push("\")");
 }
 
 /// Array-form text run: `_createTextVNode(...)`, matching
