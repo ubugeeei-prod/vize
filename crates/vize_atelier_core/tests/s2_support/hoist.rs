@@ -53,7 +53,7 @@ use vize_disegno::folio::FolioOp;
 use vize_ricalco::pass::{StaticFacts, StaticLevel};
 
 use super::hoist_old::Decision;
-use super::hoist_walk::walk_level;
+use super::hoist_walk::{structural, walk_level};
 
 /// The hoist half's accounting, part of [`super::Counters`].
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -99,6 +99,8 @@ pub enum Mode {
         is_root: bool,
         /// The inherited `hoist_static_vnodes` flag.
         vnodes: bool,
+        /// Single v-for item: the VNode stays a block; static props may hoist.
+        for_item: bool,
     },
     /// A region the driver never entered.
     Dormant,
@@ -107,8 +109,92 @@ pub enum Mode {
 /// Replay with new flags, unless the walk is already dormant.
 pub fn replay_or_dormant(mode: Mode, is_root: bool, vnodes: bool) -> Mode {
     match mode {
-        Mode::Replay { .. } => Mode::Replay { is_root, vnodes },
+        Mode::Replay { .. } => Mode::Replay {
+            is_root,
+            vnodes,
+            for_item: false,
+        },
         Mode::Dormant => Mode::Dormant,
+    }
+}
+
+/// The `hoist_for_children` single-item arm: props only, never a whole vnode.
+pub fn replay_for_item(mode: Mode) -> Mode {
+    match mode {
+        Mode::Replay { .. } => Mode::Replay {
+            is_root: false,
+            vnodes: true,
+            for_item: true,
+        },
+        Mode::Dormant => Mode::Dormant,
+    }
+}
+
+/// Mirror `hoist_for_children`: a single element item hoists props only
+/// (the VNode is the loop block); anything else uses the vnodes walk.
+#[expect(clippy::too_many_arguments, reason = "one recursive comparator walk")]
+pub fn walk_for_body(
+    name: &str,
+    source: &str,
+    old1: &[TemplateChildNode<'_>],
+    old2: &[TemplateChildNode<'_>],
+    s2: &[FolioOp],
+    mode: Mode,
+    suppressed: bool,
+    next: &mut u32,
+    facts: &SideTable<StaticFacts>,
+    counters: &mut HoistCounters,
+) {
+    match structural(old1).as_slice() {
+        [TemplateChildNode::Element(el1)] if el1.tag == "template" => {
+            let o2 = structural(old2);
+            let [TemplateChildNode::Element(el2)] = o2.as_slice() else {
+                panic!("template v-for children misaligned in {name}\n{source}");
+            };
+            if el2.hoisted_props_index.is_some() {
+                counters.wrapper_hoists += 1;
+            }
+            walk_for_body(
+                name,
+                source,
+                &el1.children,
+                &el2.children,
+                s2,
+                mode,
+                suppressed,
+                next,
+                facts,
+                counters,
+            );
+        }
+        [TemplateChildNode::Element(_)] => {
+            walk_level(
+                name,
+                source,
+                old1,
+                old2,
+                s2,
+                replay_for_item(mode),
+                suppressed,
+                next,
+                facts,
+                counters,
+            );
+        }
+        _ => {
+            walk_level(
+                name,
+                source,
+                old1,
+                old2,
+                s2,
+                replay_or_dormant(mode, false, true),
+                suppressed,
+                next,
+                facts,
+                counters,
+            );
+        }
     }
 }
 
@@ -138,6 +224,7 @@ pub fn check(
         Mode::Replay {
             is_root: true,
             vnodes: false,
+            for_item: false,
         },
         false,
         &mut next,
@@ -186,6 +273,15 @@ pub fn shape_of_s2(ops: &[FolioOp], out: &mut vize_carton::String) {
             }
             FolioOp::Text(_) | FolioOp::Interpolation(_) => {}
         }
+    }
+}
+
+/// `hoist_for_children` on a single item: static props hoist, VNode stays inline.
+pub fn predict_for_item(fact: &StaticFacts) -> Decision {
+    if fact.props_hoistable {
+        Decision::Props
+    } else {
+        Decision::None
     }
 }
 

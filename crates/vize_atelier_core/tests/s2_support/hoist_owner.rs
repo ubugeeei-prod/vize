@@ -10,7 +10,7 @@ use vize_davinci::side_table::SideTable;
 use vize_disegno::folio::{FolioComponent, FolioElement, FolioOp, FolioSlot};
 use vize_ricalco::pass::StaticFacts;
 
-use super::hoist::{HoistCounters, Mode, fact_of, predict, replay_or_dormant};
+use super::hoist::{HoistCounters, Mode, fact_of, predict, predict_for_item, replay_or_dormant};
 use super::hoist_old::{
     Decision, carries_deferred_builtin, decision_of, has_comment_child, has_directives,
 };
@@ -48,6 +48,7 @@ pub fn walk_element(
 
     // Descend first, per the legacy arm — ground truth — so the
     // verdict can honour descendant taints.
+    let for_item = matches!(mode, Mode::Replay { for_item: true, .. });
     let sub_tainted = match (mode, legacy_level) {
         (Mode::Replay { vnodes, .. }, StaticType::NotStatic) => {
             let o2_children = match o2 {
@@ -63,6 +64,30 @@ pub fn walk_element(
                 Mode::Replay {
                     is_root: false,
                     vnodes: vnodes || legacy_dirs || legacy_nonel,
+                    for_item: false,
+                },
+                suppressed || local_builtin,
+                next,
+                facts,
+                counters,
+            )
+        }
+        (Mode::Replay { .. }, _) if for_item => {
+            // `hoist_for_children` always descends the item with vnodes on.
+            let o2_children = match o2 {
+                TemplateChildNode::Element(el2) => &el2.children[..],
+                _ => panic!("a v-for item was whole-hoisted in {name}\n{source}"),
+            };
+            walk_level(
+                name,
+                source,
+                &el1.children,
+                o2_children,
+                &element.children,
+                Mode::Replay {
+                    is_root: false,
+                    vnodes: true,
+                    for_item: false,
                 },
                 suppressed || local_builtin,
                 next,
@@ -99,7 +124,11 @@ pub fn walk_element(
 
     let verdict_suppressed = suppressed || local_comment || local_builtin || sub_tainted;
     match mode {
-        Mode::Replay { is_root, vnodes } if !verdict_suppressed => {
+        Mode::Replay {
+            is_root,
+            vnodes,
+            for_item,
+        } if !verdict_suppressed => {
             // The vnodes-contribution twin: what this element hands its
             // children must agree across lanes.
             assert_eq!(
@@ -108,7 +137,11 @@ pub fn walk_element(
                 "vnodes contribution diverged on <{}> in {name}\n{source}",
                 el1.tag,
             );
-            let predicted = predict(fact, is_root, vnodes);
+            let predicted = if for_item {
+                predict_for_item(fact)
+            } else {
+                predict(fact, is_root, vnodes)
+            };
             let actual = decision_of(o2);
             assert_eq!(
                 predicted, actual,
@@ -183,8 +216,16 @@ pub fn walk_component(
     );
     let verdict_suppressed = suppressed || local_comment || local_builtin || sub_tainted;
     match mode {
-        Mode::Replay { is_root, vnodes } if !verdict_suppressed => {
-            let predicted = predict(fact, is_root, vnodes);
+        Mode::Replay {
+            is_root,
+            vnodes,
+            for_item,
+        } if !verdict_suppressed => {
+            let predicted = if for_item {
+                predict_for_item(fact)
+            } else {
+                predict(fact, is_root, vnodes)
+            };
             let actual = decision_of(o2);
             assert_eq!(
                 predicted, actual,

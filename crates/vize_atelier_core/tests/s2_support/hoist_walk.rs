@@ -10,7 +10,7 @@ use vize_davinci::side_table::SideTable;
 use vize_disegno::folio::FolioOp;
 use vize_ricalco::pass::StaticFacts;
 
-use super::hoist::{HoistCounters, Mode, replay_or_dormant};
+use super::hoist::{HoistCounters, Mode, replay_or_dormant, walk_for_body};
 use super::hoist_old::{Decision, decision_of};
 use super::hoist_owner::{walk_component, walk_element, walk_slot};
 
@@ -170,17 +170,18 @@ pub fn walk_position(
                     // The `<template v-for>` wrapper stays in the
                     // legacy tree and is decided there; S2 keeps no
                     // wrapper position, so a legacy wrapper hoist is
-                    // counted, never compared.
+                    // counted, never compared. Inner children re-enter
+                    // `hoist_for_children`.
                     if el2.hoisted_props_index.is_some() {
                         counters.wrapper_hoists += 1;
                     }
-                    walk_level(
+                    walk_for_body(
                         name,
                         source,
                         &el1.children,
                         &el2.children,
                         &for_op.ops,
-                        replay_or_dormant(mode, false, true),
+                        mode,
                         suppressed,
                         next,
                         facts,
@@ -188,13 +189,13 @@ pub fn walk_position(
                     );
                 }
                 _ => {
-                    walk_level(
+                    walk_for_body(
                         name,
                         source,
                         &node1.children,
                         &node2.children,
                         &for_op.ops,
-                        replay_or_dormant(mode, false, true),
+                        mode,
                         suppressed,
                         next,
                         facts,
