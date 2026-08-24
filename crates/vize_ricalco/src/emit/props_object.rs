@@ -9,7 +9,7 @@ use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
 use super::js::{escape_js_string, push_ident_key};
-use super::on::{emit_on_pair, emit_on_value, event_key_for, is_inline_handler_source, wraps_on};
+use super::on;
 use super::props_bind::{js_value, static_bind_name};
 
 pub(super) fn emit_props_object(
@@ -99,7 +99,7 @@ pub(super) fn emit_props_object(
         match piece {
             Piece::Attr(attr) => emit_static_pair(cx, attr),
             Piece::Bind(bind) => emit_bind_pair(cx, pieces, bind, skip_normalize)?,
-            Piece::On(on) => emit_on_pair(cx, on, is_plain_element)?,
+            Piece::On(event) => on::emit_on_pair(cx, event, is_plain_element)?,
             Piece::ModelValue { name, source, .. } => super::model::emit_value(cx, name, source),
             Piece::ModelUpdate { key, source, .. } => super::model::emit_update(cx, key, source),
             Piece::ModelModifiers {
@@ -206,10 +206,10 @@ fn pieces_have_named(pieces: &[Piece<'_>], name: &str) -> bool {
 
 fn pieces_have_inline_on(pieces: &[Piece<'_>]) -> bool {
     pieces.iter().any(|piece| match piece {
-        Piece::On(on) => {
-            wraps_on(on)
-                || match on.handler {
-                    Some(ExprRef::Js(js)) => is_inline_handler_source(js.source),
+        Piece::On(event) => {
+            on::forces_inline_on(event)
+                || match event.handler {
+                    Some(ExprRef::Js(js)) => on::is_inline_handler_source(js.source),
                     _ => false,
                 }
         }
@@ -309,7 +309,7 @@ fn emit_style_value(cx: &mut EmitCx<'_>, js: &JsExpr<'_>, skip_normalize: bool) 
 
 fn piece_event_key(piece: &Piece<'_>, is_plain_element: bool) -> Option<String> {
     match piece {
-        Piece::On(on) => event_key_for(on, is_plain_element).ok(),
+        Piece::On(event) => on::event_key_for(event, is_plain_element).ok(),
         Piece::ModelUpdate { key, .. } => Some(key.clone()),
         _ => None,
     }
@@ -340,7 +340,7 @@ fn emit_merged_handlers(
         }
         first = false;
         match piece {
-            Piece::On(on) => emit_on_value(cx, on)?,
+            Piece::On(event) => on::emit_on_value(cx, event)?,
             Piece::ModelUpdate { source, .. } => super::model::emit_assignment(cx, source),
             _ => {}
         }

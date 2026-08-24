@@ -83,11 +83,16 @@ pub(super) fn needs_hydration(key: &str, on: &OnOp<'_>) -> bool {
     if key == "onUpdate:modelValue" || key.starts_with("onVnode") {
         return false;
     }
+    if has_native_modifier(on) {
+        return true;
+    }
     key != "onClick" || classify(on).is_ok_and(|classified| !classified.keys.is_empty())
 }
 
-pub(super) fn wraps_on(on: &OnOp<'_>) -> bool {
-    classify(on).is_ok_and(|classified| !classified.event.is_empty() || !classified.keys.is_empty())
+pub(super) fn forces_inline_on(on: &OnOp<'_>) -> bool {
+    classify(on).is_ok_and(|classified| {
+        has_native_modifier(on) || !classified.event.is_empty() || !classified.keys.is_empty()
+    })
 }
 
 pub(super) fn is_inline_handler_source(source: &str) -> bool {
@@ -183,7 +188,10 @@ fn classify<'a>(on: &'a OnOp<'a>) -> Result<Classified<'a>, EmitError> {
     let mut keys = StdVec::new();
     for modifier in on.modifiers.iter() {
         match *modifier {
-            "native" => return Err(EmitError::Unsupported),
+            // Vue 2's `.native` event sugar is stripped by the shipped
+            // lane before handler wrapping, and does not affect the event
+            // key. Keep the authored modifier accepted but inert here.
+            "native" => {}
             "capture" | "once" | "passive" => options.push(*modifier),
             "left" | "right" if keyboard => keys.push(*modifier),
             "stop" | "prevent" | "self" | "ctrl" | "shift" | "alt" | "meta" | "middle"
@@ -196,6 +204,10 @@ fn classify<'a>(on: &'a OnOp<'a>) -> Result<Classified<'a>, EmitError> {
         event,
         keys,
     })
+}
+
+fn has_native_modifier(on: &OnOp<'_>) -> bool {
+    on.modifiers.contains(&"native")
 }
 
 fn remapped_name<'a>(raw: &'a str, event: &[&str]) -> &'a str {

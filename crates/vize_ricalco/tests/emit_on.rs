@@ -161,10 +161,17 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn a_click_native_is_unsupported_this_installment() {
+fn a_click_native_strips_the_modifier_but_keeps_need_hydration() {
     assert_eq!(
-        refused(r#"<div @click.native="handler"></div>"#),
-        EmitError::Unsupported
+        assembled(r#"<div @click.native="handler"></div>"#),
+        "\
+const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    onClick: handler
+  }, null, 40 /* PROPS, NEED_HYDRATION */, [\"onClick\"]))
+}"
     );
 }
 
