@@ -117,6 +117,7 @@ fn execution_outcome_reports_stable_cache_telemetry() {
         miss_telemetry.cache_status(),
         CapabilityExecutionCacheStatus::Miss
     );
+    assert_eq!(miss_telemetry.capability(), "template-semantics");
     assert_eq!(miss_telemetry.cache_key(), identity.cache_key());
     assert_eq!(miss_telemetry.finding_count(), 1);
     assert_eq!(
@@ -132,6 +133,10 @@ fn execution_outcome_reports_stable_cache_telemetry() {
     assert_eq!(
         serde_json::to_value(hit.telemetry()).unwrap()["findingCount"],
         1
+    );
+    assert_eq!(
+        serde_json::to_value(hit.telemetry()).unwrap()["capability"],
+        "template-semantics"
     );
 }
 

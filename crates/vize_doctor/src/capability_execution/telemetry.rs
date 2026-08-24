@@ -1,4 +1,5 @@
 use serde::Serialize;
+use vize_carton::String;
 
 use super::CapabilityExecutionOutcome;
 use crate::{CapabilityCacheKey, ContentFingerprint};
@@ -17,6 +18,7 @@ pub enum CapabilityExecutionCacheStatus {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CapabilityExecutionTelemetry {
+    capability: String,
     cache_key: CapabilityCacheKey,
     cache_status: CapabilityExecutionCacheStatus,
     finding_count: usize,
@@ -27,6 +29,7 @@ impl CapabilityExecutionTelemetry {
     pub(super) fn from_outcome(outcome: &CapabilityExecutionOutcome) -> Self {
         let snapshot = outcome.snapshot();
         Self {
+            capability: snapshot.identity().capability().into(),
             cache_key: snapshot.cache_key(),
             cache_status: match outcome {
                 CapabilityExecutionOutcome::CacheHit { .. } => CapabilityExecutionCacheStatus::Hit,
@@ -37,6 +40,11 @@ impl CapabilityExecutionTelemetry {
             finding_count: snapshot.findings().len(),
             output_fingerprint: snapshot.output_fingerprint(),
         }
+    }
+
+    /// Returns the stable analysis capability identifier.
+    pub fn capability(&self) -> &str {
+        &self.capability
     }
 
     /// Returns the cache key used by this capability execution.
