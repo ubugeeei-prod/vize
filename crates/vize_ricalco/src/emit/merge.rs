@@ -87,8 +87,9 @@ pub(super) fn emit_spread_props(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
     if_key: Option<&str>,
+    skip_is: bool,
 ) -> Result<(), EmitError> {
-    let args = merge_args(attributes, bindings, if_key)?;
+    let args = merge_args(attributes, bindings, if_key, skip_is)?;
     if let Some(lone) = lone_kind_spread(&args) {
         return match lone {
             Arg::BindSpread(bind) => emit_normalize_guard(cx, bind),
@@ -143,10 +144,11 @@ fn merge_args<'a>(
     attributes: &'a [Attribute<'a>],
     bindings: &'a [BindingOp<'a>],
     if_key: Option<&'a str>,
+    skip_is: bool,
 ) -> Result<StdVec<Arg<'a>>, EmitError> {
     let mut args = StdVec::new();
     let mut current = StdVec::new();
-    for piece in pieces(attributes, bindings)? {
+    for piece in pieces(attributes, bindings, skip_is)? {
         match piece {
             Piece::Bind(bind) if bind.name.is_none() => {
                 flush_object(&mut args, &mut current);

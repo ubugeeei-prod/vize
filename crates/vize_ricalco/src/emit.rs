@@ -17,9 +17,10 @@
 //! static-vnode hoists, hoisted static `ui.for` items, named / scoped
 //! `<template>` slots, `createSlots` for `v-if` / `v-for` slot
 //! templates, **slot outlets** (`renderSlot` / `_: 3 FORWARDED`), and
-//! Vue builtins (`Teleport` / `KeepAlive` / `Transition` / `Suspense`)).
-//! Object `v-on`, `.native`, template fragments, filters, and
-//! `<component :is>` stay [`EmitError::Unsupported`]. The old
+//! Vue builtins (`Teleport` / `KeepAlive` / `Transition` / `Suspense`),
+//! and `<component :is>` (`resolveDynamicComponent`)).
+//! Object `v-on`, `.native`, template fragments, and filters
+//! stay [`EmitError::Unsupported`]. The old
 //! lane stays the shipped compile path; [`super::DOM_LANE_FLAG`] is
 //! named here and *read* in the atelier_dom witness.
 

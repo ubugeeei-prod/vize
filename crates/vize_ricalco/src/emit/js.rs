@@ -124,3 +124,13 @@ pub(super) fn asset_ident(kind: &str, name: &str) -> String {
     }
     ident
 }
+
+pub(super) fn push_ident_key(cx: &mut super::EmitCx<'_>, name: &str) {
+    if !is_valid_js_identifier(name) {
+        cx.buf.push("\"");
+        cx.buf.push(name);
+        cx.buf.push("\"");
+    } else {
+        cx.buf.push(name);
+    }
+}

@@ -39,7 +39,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn teleport_children_are_an_array_with_unused_props_hoist() {
+fn teleport_children_are_an_array_with_hoisted_props() {
     assert_eq!(
         assembled(r##"<Teleport to="#app"><span></span></Teleport>"##),
         pin("\
@@ -49,7 +49,7 @@ const _hoisted_1 = { to: \"#app\" }
 const _hoisted_2 = /*#__PURE__*/ _createElementVNode(\"span\")
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (_openBlock(), _createBlock(_Teleport, { to: \"#app\" }, [
+  return (_openBlock(), _createBlock(_Teleport, _hoisted_1, [
     _hoisted_2
   ]))
 }")
@@ -66,7 +66,7 @@ const { toDisplayString: _toDisplayString, openBlock: _openBlock, createBlock: _
 const _hoisted_1 = { to: \"#app\" }
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (_openBlock(), _createBlock(_Teleport, { to: \"#app\" }, [
+  return (_openBlock(), _createBlock(_Teleport, _hoisted_1, [
     _createTextVNode(\"hello \"),
     _toDisplayString(msg)
   ], 1 /* TEXT */))
@@ -86,7 +86,7 @@ const _hoisted_2 = /*#__PURE__*/ _createElementVNode(\"span\")
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock(\"div\", null, [
-    (_openBlock(), _createBlock(_Teleport, { to: \"#app\" }, [
+    (_openBlock(), _createBlock(_Teleport, _hoisted_1, [
       _hoisted_2
     ]))
   ]))

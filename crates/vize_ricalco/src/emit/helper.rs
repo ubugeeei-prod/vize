@@ -7,6 +7,7 @@
 #[derive(Clone, Copy)]
 pub(super) enum Helper {
     ResolveComponent,
+    ResolveDynamicComponent,
     WithKeys,
     WithModifiers,
     ToDisplayString,
@@ -37,8 +38,9 @@ pub(super) enum Helper {
 }
 
 impl Helper {
-    pub(super) const ALL: [Self; 28] = [
+    pub(super) const ALL: [Self; 29] = [
         Self::ResolveComponent,
+        Self::ResolveDynamicComponent,
         Self::WithKeys,
         Self::WithModifiers,
         Self::ToDisplayString,
@@ -70,7 +72,7 @@ impl Helper {
 
     pub(super) const fn rank(self) -> u8 {
         match self {
-            Self::ResolveComponent => 0,
+            Self::ResolveComponent | Self::ResolveDynamicComponent => 0,
             Self::WithKeys | Self::WithModifiers => 2,
             Self::ToDisplayString => 3,
             Self::RenderSlot | Self::CreateElementVNode | Self::CreateVNode => 4,
@@ -126,12 +128,14 @@ impl Helper {
             Self::BaseTransition => 33554432,
             Self::Transition => 67108864,
             Self::TransitionGroup => 134217728,
+            Self::ResolveDynamicComponent => 268435456,
         }
     }
 
     pub(super) const fn name(self) -> &'static str {
         match self {
             Self::ResolveComponent => "resolveComponent",
+            Self::ResolveDynamicComponent => "resolveDynamicComponent",
             Self::WithKeys => "withKeys",
             Self::WithModifiers => "withModifiers",
             Self::ToDisplayString => "toDisplayString",
@@ -165,6 +169,7 @@ impl Helper {
     pub(super) const fn alias(self) -> &'static str {
         match self {
             Self::ResolveComponent => "_resolveComponent",
+            Self::ResolveDynamicComponent => "_resolveDynamicComponent",
             Self::WithKeys => "_withKeys",
             Self::WithModifiers => "_withModifiers",
             Self::ToDisplayString => "_toDisplayString",
