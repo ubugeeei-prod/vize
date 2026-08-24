@@ -26,10 +26,13 @@ const SFC_SOURCE_READ = /readFile\([^)]*\.vue/;
 const SOURCE_CONTRACT_PRAGMA = "source-contract:";
 const DEFINE_PROPS_TYPE = /defineProps\s*<\s*\{([\s\S]*?)\}\s*>\s*\(/g;
 const DEFINE_EMITS = "defineEmits";
+const DEFINE_SLOTS = "defineSlots";
 const PROP_DECLARATION =
   /(?:(\/\*\*[\s\S]*?\*\/)\s*)?readonly\s+(?:"([^"]+)"|'([^']+)'|([A-Za-z_$][\w$]*))\??\s*:/g;
 const EVENT_MEMBER_DECLARATION =
   /^(?:(\/\*\*[\s\S]*?\*\/)\s*)?(?:readonly\s+)?(?:"([^"]+)"|'([^']+)'|([A-Za-z_$][\w$]*))\??\s*:\s*(?:readonly\s*)?\[/;
+const SLOT_MEMBER_DECLARATION =
+  /^(?:(\/\*\*[\s\S]*?\*\/)\s*)?(?:readonly\s+)?(?:"([^"]+)"|'([^']+)'|([A-Za-z_$][\w$]*))\??\s*(?::|\()/;
 const AUTHORING_RULE_IDS = new Set<AuthoringRule>(
   VIZE_UI_SFC_AUTHORING_RULES.map((rule) => rule.id),
 );
@@ -46,6 +49,8 @@ const AUTHORING_RULE_IDS = new Set<AuthoringRule>(
  * behavior cannot observe the contract.
  * Public props must also document their default value with an `@default` tag
  * in the prop JSDoc, so hover and generated docs preserve first-render behavior.
+ * Public events and slots must carry documentation comments in their literal
+ * `defineEmits` and `defineSlots` type members.
  *
  * @param sourceDirectory Directory containing SFC sources, tests, and behavior tables.
  * @returns Violations in stable path order; an empty array means full compliance.
@@ -79,6 +84,7 @@ export async function auditComponentAuthoring(
       report(sfc, "prop-default-doc", message);
     }
     for (const message of eventDocProblems(source, sfc)) report(sfc, "event-doc", message);
+    for (const message of slotDocProblems(source, sfc)) report(sfc, "slot-doc", message);
 
     if (!behaviorSources.some((table) => table.includes(basename))) {
       report(
@@ -150,8 +156,10 @@ function explicitSfcProblems(source: string, filename: string): string[] {
     .filter((script): script is string => script !== undefined)
     .join("\n");
   if (/\bh\s*\(/.test(scripts)) problems.push("Render-function escape hatch h() is not allowed");
-  if (/defineOptions|withDefaults|interface (?:Props|Emits)/.test(scripts)) {
-    problems.push("Use literal defineProps/defineEmits types without helper indirection");
+  if (/defineOptions|withDefaults|interface (?:Props|Emits|Slots)/.test(scripts)) {
+    problems.push(
+      "Use literal defineProps/defineEmits/defineSlots types without helper indirection",
+    );
   }
   return problems;
 }
@@ -191,6 +199,22 @@ function eventDocProblems(source: string, filename: string): string[] {
   return problems;
 }
 
+function slotDocProblems(source: string, filename: string): string[] {
+  const { descriptor, errors } = parse(source, { filename });
+  if (errors.length > 0 || descriptor.scriptSetup === null) return [];
+
+  const problems: string[] = [];
+  for (const body of typeLiteralCallBodies(descriptor.scriptSetup.content, DEFINE_SLOTS)) {
+    for (const slot of topLevelSlotMembers(body)) {
+      if (slot.jsdoc.trim().length > 0) continue;
+      problems.push(
+        `Slot ${slot.name} is missing documentation; document purpose and typed slot props`,
+      );
+    }
+  }
+  return problems;
+}
+
 function topLevelEventMembers(body: string): { readonly name: string; readonly jsdoc: string }[] {
   return splitTopLevelTypeMembers(body).flatMap((member) => {
     const event = EVENT_MEMBER_DECLARATION.exec(member.trim());
@@ -199,6 +223,19 @@ function topLevelEventMembers(body: string): { readonly name: string; readonly j
       {
         jsdoc: event[1] ?? "",
         name: event[2] ?? event[3] ?? event[4] ?? "<unknown>",
+      },
+    ];
+  });
+}
+
+function topLevelSlotMembers(body: string): { readonly name: string; readonly jsdoc: string }[] {
+  return splitTopLevelTypeMembers(body).flatMap((member) => {
+    const slot = SLOT_MEMBER_DECLARATION.exec(member.trim());
+    if (slot === null) return [];
+    return [
+      {
+        jsdoc: slot[1] ?? "",
+        name: slot[2] ?? slot[3] ?? slot[4] ?? "<unknown>",
       },
     ];
   });

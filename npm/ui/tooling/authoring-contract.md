@@ -23,6 +23,8 @@ the SFC quality gate.
   an `@default` tag for editor hover and generated docs.
 - `event-doc`: every public event has documentation comments explaining when it
   fires and what payload it carries.
+- `slot-doc`: every public slot has documentation comments explaining its
+  purpose and typed slot props.
 - `source-regex-behavior`: source-text assertions are not behavior evidence
   unless a nearby `source-contract:` pragma explains why mounted output cannot
   observe the invariant.
@@ -35,6 +37,7 @@ the SFC quality gate.
   `source-regex-behavior`.
 - `api-default-documentation` is enforced by `prop-default-doc`.
 - `api-event-documentation` is enforced by `event-doc`.
+- `api-slot-documentation` is enforced by `slot-doc`.
 
 Future source installation manifests, gallery metadata, and CI policy should
 consume the exported contract rather than duplicating these identifiers.

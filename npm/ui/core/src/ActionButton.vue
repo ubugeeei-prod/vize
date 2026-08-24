@@ -49,6 +49,7 @@ const {
 }>();
 
 defineSlots<{
+  /** Renders the button contents with current availability state. */
   default(props: {
     readonly disabled: boolean;
     readonly loading: boolean;

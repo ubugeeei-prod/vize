@@ -81,6 +81,14 @@ export const VIZE_UI_SFC_AUTHORING_RULES = [
     remediation: "Add documentation comments to each public event in the `defineEmits<T>` type.",
   },
   {
+    id: "slot-doc",
+    title: "Documented component slots",
+    requirement:
+      "Every public slot documents its purpose and typed slot props for editor hover and generated docs.",
+    evidence: ["defineSlots<T> slot JSDoc"],
+    remediation: "Add documentation comments to each public slot in the `defineSlots<T>` type.",
+  },
+  {
     id: "source-regex-behavior",
     title: "No source-regex behavior proof",
     requirement:
@@ -135,6 +143,14 @@ export const VIZE_UI_SFC_QUALITY_GATES = [
       "Public events expose their dispatch timing and payload intent through documentation comments and editor hover.",
     evidence: ["defineEmits<T> event JSDoc"],
     enforcedByRules: ["event-doc"],
+  },
+  {
+    id: "api-slot-documentation",
+    title: "API slot documentation",
+    requirement:
+      "Public slots expose their purpose and typed props through documentation comments and editor hover.",
+    evidence: ["defineSlots<T> slot JSDoc"],
+    enforcedByRules: ["slot-doc"],
   },
 ] as const satisfies readonly SfcQualityGateContract<SfcAuthoringRuleId>[];
 

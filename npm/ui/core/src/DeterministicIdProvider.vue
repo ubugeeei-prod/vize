@@ -24,6 +24,7 @@ const { prefix = undefined, seed = undefined } = defineProps<{
 }>();
 
 defineSlots<{
+  /** Renders descendants with the resolved deterministic identifier namespace. */
   default(props: { readonly namespace: string; readonly prefix: string }): unknown;
 }>();
 
