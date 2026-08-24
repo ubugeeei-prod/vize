@@ -57,6 +57,9 @@ export function loadReports(dir, label) {
     if (!integerOrNull(report.allocs)) {
       fail(`${label} report ${file} has a non-integer, non-null allocs`);
     }
+    if (!integerOrNull(report.alloc_bytes_peak)) {
+      fail(`${label} report ${file} has a non-integer, non-null alloc_bytes_peak`);
+    }
     if (!integerOrNull(report.rss_peak_bytes)) {
       fail(`${label} report ${file} has a non-integer, non-null rss_peak_bytes`);
     }

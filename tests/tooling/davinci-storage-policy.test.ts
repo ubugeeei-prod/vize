@@ -6,11 +6,21 @@ import { fileURLToPath } from "node:url";
 
 import {
   categoryReasons,
-  expectedInventorySummary,
-  retainedAllocVec,
-  summarizeInventory,
-  type VecMeasurement,
+  expectedProductionAllocVec,
+  parseStorageInventory,
+  summarizeAllocVecCategories,
+  summarizeKind,
+  summarizeScopes,
+  type InventoryRow,
+  type StorageScope,
 } from "./davinci-storage-inventory.ts";
+import {
+  hasStorage,
+  scanStorage,
+  storageKinds,
+  type FileStorage,
+  type StorageKind,
+} from "./davinci-storage-scan.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const libraryRoots = [
@@ -19,6 +29,7 @@ const libraryRoots = [
   "crates/vize_disegno/src",
   "crates/vize_ricalco/src",
 ];
+const inventoryPath = path.join(repoRoot, "davinci-road/plan/storage-inventory.tsv");
 const davinciOptRoot = "crates/vize_davinci/src/bin/davinci-opt/";
 
 function rustFiles(root: string): string[] {
@@ -31,312 +42,200 @@ function rustFiles(root: string): string[] {
   return files;
 }
 
-function maskRange(output: string[], start: number, end: number): void {
-  for (let index = start; index < end; index += 1) {
-    if (output[index] !== "\n" && output[index] !== "\r") output[index] = " ";
-  }
-}
-
-function charLiteralEnd(source: string, quote: number): number | undefined {
-  let cursor = quote + 1;
-  if (source[cursor] === "\\") {
-    cursor += 1;
-    if (source[cursor] === "u" && source[cursor + 1] === "{") {
-      const brace = source.indexOf("}", cursor + 2);
-      if (brace === -1) return undefined;
-      cursor = brace + 1;
-    } else if (source[cursor] === "x") {
-      cursor += 3;
-    } else {
-      cursor += 1;
-    }
-  } else {
-    const point = source.codePointAt(cursor);
-    if (point === undefined || point === 0x0a || point === 0x0d || source[cursor] === "'") {
-      return undefined;
-    }
-    cursor += point > 0xffff ? 2 : 1;
-  }
-  return source[cursor] === "'" ? cursor + 1 : undefined;
-}
-
-function quotedLiteralEnd(source: string, quote: number): number {
-  let escaped = false;
-  for (let cursor = quote + 1; cursor < source.length; cursor += 1) {
-    const char = source[cursor];
-    if (char === '"' && !escaped) return cursor + 1;
-    escaped = char === "\\" && !escaped;
-    if (char !== "\\") escaped = false;
-  }
-  return source.length;
-}
-
-function maskNonCode(source: string): string {
-  const output = source.split("");
-  let index = 0;
-  while (index < source.length) {
-    const pair = source.slice(index, index + 2);
-    if (pair === "//") {
-      const newline = source.indexOf("\n", index + 2);
-      const end = newline === -1 ? source.length : newline;
-      maskRange(output, index, end);
-      index = end;
-      continue;
-    }
-    if (pair === "/*") {
-      let depth = 1;
-      let cursor = index + 2;
-      while (cursor < source.length && depth > 0) {
-        const nested = source.slice(cursor, cursor + 2);
-        if (nested === "/*") {
-          depth += 1;
-          cursor += 2;
-        } else if (nested === "*/") {
-          depth -= 1;
-          cursor += 2;
-        } else {
-          cursor += 1;
-        }
-      }
-      maskRange(output, index, cursor);
-      index = cursor;
-      continue;
-    }
-
-    const raw = source.slice(index).match(/^(?:br|r)(#*)"/u);
-    if (raw) {
-      const close = `"${raw[1]}`;
-      const contentStart = index + raw[0].length;
-      const closeAt = source.indexOf(close, contentStart);
-      const end = closeAt === -1 ? source.length : closeAt + close.length;
-      maskRange(output, index, end);
-      index = end;
-      continue;
-    }
-
-    const byteCharEnd = pair === "b'" ? charLiteralEnd(source, index + 1) : undefined;
-    const charEnd = source[index] === "'" ? charLiteralEnd(source, index) : undefined;
-    const literalEnd = byteCharEnd ?? charEnd;
-    if (literalEnd !== undefined) {
-      maskRange(output, index, literalEnd);
-      index = literalEnd;
-      continue;
-    }
-
-    const stringStart = source[index] === '"' ? 1 : pair === 'b"' ? 2 : 0;
-    if (stringStart > 0) {
-      const end = quotedLiteralEnd(source, index + stringStart - 1);
-      maskRange(output, index, end);
-      index = end;
-      continue;
-    }
-
-    index += 1;
-  }
-  return output.join("");
-}
-
-function usesDirectStdStorage(source: string): boolean {
-  const code = maskNonCode(source);
-  return [
-    /\bextern\s+crate\s+std\b/u,
-    /\buse\s+(?:::)?\s*std\s+as\s+[A-Za-z_]\w*\s*;/u,
-    /\buse\s+(?:::)?\s*std\s*::\s*(?:vec|collections)\b/u,
-    /\buse\s+(?:::)?\s*std\s*::\s*\{[^;]*\b(?:vec|collections)\b/u,
-    /\bstd\s*::\s*string\s*::\s*String\b/u,
-    /\bstd\s*::\s*vec\s*::\s*Vec\b/u,
-    /\bstd\s*::\s*(?:prelude\s*::\s*(?:v1|rust_\d+)\s*::\s*)?(?:String|Vec)\b/u,
-    /\bstd\s*::\s*collections\s*::\s*(?:HashMap|HashSet|hash_map|hash_set)\b/u,
-    /\bstd\s*::\s*collections\s*::\s*\{[^;]*(?:HashMap|HashSet|hash_map|hash_set)\b/u,
-    /\bstd\s*::\s*\{[^;]*(?:String|Vec|string\s*::\s*String|vec\s*::\s*Vec|collections\s*::[^;]*(?:HashMap|HashSet|hash_map|hash_set))\b/u,
-  ].some((pattern) => pattern.test(code));
-}
-
-function usesOpaqueAllocVecBinding(source: string): boolean {
-  const code = maskNonCode(source);
-  return [
-    /\bextern\s+crate\s+alloc\s+as\b/u,
-    /\buse\s+(?:::)?\s*alloc\s+as\b/u,
-    /\buse\s+(?:::)?\s*alloc\s*::\s*vec\s*::\s*\{/u,
-    /\buse\s+(?:::)?\s*alloc\s*::\s*\{[^;]*\bvec\b/u,
-  ].some((pattern) => pattern.test(code));
-}
-
-function measureAllocVec(source: string): VecMeasurement {
-  const code = maskNonCode(source);
-  const bindings = new Set<string>();
-  const moduleBindings = new Set<string>();
-  const importPattern =
-    /\buse\s+(?:::)?\s*alloc\s*::\s*vec\s*::\s*Vec(?:\s+as\s+([A-Za-z_]\w*))?\s*;/gu;
-  let withoutImports = code.replace(importPattern, (statement, alias: string | undefined) => {
-    bindings.add(alias ?? "Vec");
-    return statement.replace(/[^\n\r]/gu, " ");
-  });
-  const moduleImportPattern = /\buse\s+(?:::)?\s*alloc\s*::\s*vec(?:\s+as\s+([A-Za-z_]\w*))?\s*;/gu;
-  withoutImports = withoutImports.replace(
-    moduleImportPattern,
-    (statement, alias: string | undefined) => {
-      moduleBindings.add(alias ?? "vec");
-      return statement.replace(/[^\n\r]/gu, " ");
-    },
-  );
-  let boundUses = 0;
-  for (const binding of bindings) {
-    const usePattern = new RegExp(`(?<![:A-Za-z0-9_])${binding}\\b`, "gu");
-    boundUses += withoutImports.match(usePattern)?.length ?? 0;
-  }
-  for (const binding of moduleBindings) {
-    const usePattern = new RegExp(`(?<![:A-Za-z0-9_])${binding}\\s*::\\s*Vec\\b`, "gu");
-    boundUses += withoutImports.match(usePattern)?.length ?? 0;
-  }
-  return {
-    directPaths: code.match(/\balloc\s*::\s*vec\s*::\s*Vec\b/gu)?.length ?? 0,
-    boundUses,
-  };
-}
-
 function isDavinciOptHostEdge(relative: string): boolean {
   return relative.startsWith(davinciOptRoot);
 }
 
-const sources = libraryRoots.flatMap((root) => rustFiles(path.join(repoRoot, root)));
+function scopeFor(file: string): StorageScope {
+  if (file.startsWith("crates/vize_davinci/")) return "infra";
+  if (file.startsWith("crates/vize_sinopia/")) return "s1";
+  if (file.startsWith("crates/vize_disegno/")) return "s2";
+  if (file.startsWith("crates/vize_ricalco/")) return "s1_to_s2";
+  throw new Error(`unknown storage scope: ${file}`);
+}
 
-function measureInventory(): Map<string, VecMeasurement> {
-  const measured = new Map<string, VecMeasurement>();
+const sources = libraryRoots.flatMap((root) => rustFiles(path.join(repoRoot, root)));
+const expectedRows = parseStorageInventory(fs.readFileSync(inventoryPath, "utf8"));
+
+function measureInventory(): { storage: Map<string, FileStorage>; issues: string[] } {
+  const storage = new Map<string, FileStorage>();
+  const issues: string[] = [];
   for (const file of sources) {
     const relative = path.relative(repoRoot, file);
     if (isDavinciOptHostEdge(relative)) continue;
-    const actual = measureAllocVec(fs.readFileSync(file, "utf8"));
-    if (actual.directPaths > 0 || actual.boundUses > 0) measured.set(relative, actual);
+    const scanned = scanStorage(fs.readFileSync(file, "utf8"));
+    issues.push(...scanned.issues.map((issue) => `${relative}: ${issue}`));
+    if (hasStorage(scanned.storage)) storage.set(relative, scanned.storage);
   }
-  return measured;
+  return { storage, issues };
 }
 
-function inventoryViolations(measured: ReadonlyMap<string, VecMeasurement>): string[] {
+function inventoryViolations(
+  measured: ReadonlyMap<string, FileStorage>,
+  rows: readonly InventoryRow[],
+): string[] {
+  const expected = new Map(rows.map((row) => [row.file, row]));
   const violations: string[] = [];
-  for (const [relative, actual] of measured) {
-    const entry = retainedAllocVec.get(relative);
-    if (!entry) {
-      violations.push(
-        `${relative}: unclassified direct=${actual.directPaths}, bound=${actual.boundUses}`,
-      );
-    } else if (actual.directPaths !== entry.directPaths || actual.boundUses !== entry.boundUses) {
-      violations.push(
-        `${relative}: actual direct=${actual.directPaths}, bound=${actual.boundUses}; ` +
-          `ledger direct=${entry.directPaths}, bound=${entry.boundUses}`,
-      );
+  for (const [file, actual] of measured) {
+    const row = expected.get(file);
+    if (!row) {
+      violations.push(`${file}: unreviewed storage`);
+      continue;
+    }
+    if (row.scope !== scopeFor(file)) violations.push(`${file}: scope ${row.scope} is incorrect`);
+    for (const kind of storageKinds) {
+      if (!deepMeasurementEqual(actual[kind], row.storage[kind])) {
+        violations.push(
+          `${file}: ${kind} actual=${format(actual[kind])} inventory=${format(row.storage[kind])}`,
+        );
+      }
     }
   }
-  for (const [relative, entry] of retainedAllocVec) {
-    if (!measured.has(relative))
-      violations.push(`${relative}: stale ${entry.category} ledger entry`);
-    assert.ok(categoryReasons[entry.category].length > 0);
+  for (const row of rows) {
+    if (!measured.has(row.file)) violations.push(`${row.file}: stale inventory row`);
+    if (row.category) assert.ok(categoryReasons[row.category].length > 0);
   }
   return violations;
 }
 
-test("Davinci stage libraries do not name std storage types", () => {
-  const violations = sources
-    .map((file) => [path.relative(repoRoot, file), fs.readFileSync(file, "utf8")] as const)
-    .filter(([relative, source]) => !isDavinciOptHostEdge(relative) && usesDirectStdStorage(source))
-    .map(([relative]) => relative);
-  assert.deepEqual(
-    violations,
-    [],
-    `use vize_s0 storage types outside the davinci-opt host edge:\n${violations.join("\n")}`,
-  );
+function deepMeasurementEqual(
+  left: { directPaths: number; boundUses: number },
+  right: { directPaths: number; boundUses: number },
+): boolean {
+  return left.directPaths === right.directPaths && left.boundUses === right.boundUses;
+}
+
+function format(value: { directPaths: number; boundUses: number }): string {
+  return `${value.directPaths}/${value.boundUses}`;
+}
+
+test("stage storage has no opaque imports or std paths", () => {
+  assert.deepEqual(measureInventory().issues, []);
 });
 
-test("alloc Vec bindings stay canonical and auditable", () => {
-  const violations = sources
-    .map((file) => [path.relative(repoRoot, file), fs.readFileSync(file, "utf8")] as const)
-    .filter(
-      ([relative, source]) => !isDavinciOptHostEdge(relative) && usesOpaqueAllocVecBinding(source),
-    )
-    .map(([relative]) => relative);
+test("all owned storage equals the reviewed per-file inventory", () => {
+  const measured = measureInventory();
   assert.deepEqual(
-    violations,
+    inventoryViolations(measured.storage, expectedRows),
     [],
-    `bind alloc::vec::Vec directly so its uses can be counted:\n${violations.join("\n")}`,
+    "update storage-inventory.tsv only after reviewing every changed count",
   );
+  assert.deepEqual(summarizeKind(expectedRows, "allocVec"), expectedProductionAllocVec);
+  assert.deepEqual(summarizeKind(expectedRows, "allocString"), {
+    files: 0,
+    directPaths: 0,
+    boundUses: 0,
+  });
 });
 
-test("retained alloc Vec paths and bound uses equal the reviewed ledger", () => {
-  const violations = inventoryViolations(measureInventory());
-  assert.deepEqual(
-    violations,
-    [],
-    `update the exact alloc Vec ledger after review:\n${violations.join("\n")}`,
-  );
+test("production inventory excludes cfg(test) size evidence", () => {
+  const byFile = new Map(expectedRows.map((row) => [row.file, row]));
+  assert.deepEqual(byFile.get("crates/vize_ricalco/src/emit/on.rs")?.storage.allocVec, {
+    directPaths: 0,
+    boundUses: 0,
+  });
+  assert.deepEqual(byFile.get("crates/vize_davinci/src/side_table.rs")?.storage.allocVec, {
+    directPaths: 1,
+    boundUses: 2,
+  });
 });
 
-test("the executable inventory totals equal the plan record", () => {
-  const summary = summarizeInventory(measureInventory());
-  assert.deepEqual(summary, expectedInventorySummary);
-
+test("the plan summaries are generated from the exact inventory", () => {
   const plan = fs.readFileSync(
     path.join(repoRoot, "davinci-road/plan/storage-boundary.md"),
     "utf8",
   );
   const headline = plan.match(
-    /contain\s+(\d+) reviewed files,\s+(\d+) direct[^,]+,\s+and\s+(\d+) bound/iu,
+    /contain (\d+) production files,\s+(\d+) direct[^,]+, and (\d+) bound/iu,
   );
-  assert.ok(headline, "storage plan must state the executable inventory totals");
-  assert.deepEqual(headline.slice(1).map(Number), [
-    summary.files,
-    summary.directPaths,
-    summary.boundUses,
+  assert.deepEqual(headline?.slice(1).map(Number), [
+    expectedProductionAllocVec.files,
+    expectedProductionAllocVec.directPaths,
+    expectedProductionAllocVec.boundUses,
   ]);
+  const categoryRows = tableRows(plan, /^(contract|analysis|lower|pass|emit)$/u);
+  assert.deepEqual(categoryRows, summarizeAllocVecCategories(expectedRows));
 
-  const rows = new Map(
+  const scopeSummary = summarizeScopes(expectedRows);
+  const scopeRows = new Map(
     [
       ...plan.matchAll(
-        /^\|\s*(contract|analysis|lower|pass|emit)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|/gmu,
+        /^\|\s*(infra|s1|s2|s1_to_s2)\s*\|\s*`([^`]+)`\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|/gmu,
       ),
-    ].map(([, category, files, directPaths, boundUses]) => [
-      category,
+    ].map(([, scope, type, files, directPaths, boundUses]) => [
+      `${scope}:${type}`,
       { files: Number(files), directPaths: Number(directPaths), boundUses: Number(boundUses) },
     ]),
   );
-  assert.deepEqual(Object.fromEntries(rows), summary.categories);
+  const names: Record<StorageKind, string> = {
+    allocVec: "alloc::vec::Vec",
+    allocString: "alloc::string::String",
+    s0String: "vize_s0::String",
+    arenaVec: "vize_s0::Vec",
+    smallVec: "vize_s0::SmallVec",
+  };
+  for (const [scope, kinds] of Object.entries(scopeSummary)) {
+    for (const kind of storageKinds) {
+      assert.deepEqual(scopeRows.get(`${scope}:${names[kind]}`), kinds[kind]);
+    }
+  }
+  assert.equal(scopeRows.size, 20);
 });
 
-test("the boundary recognizers cover nested imports and the host exception", () => {
-  assert.equal(usesDirectStdStorage("use std::{ vec::Vec, collections::{HashMap} };"), true);
-  assert.equal(usesDirectStdStorage("use std::prelude::v1::Vec;"), true);
-  assert.equal(usesDirectStdStorage("use std::{String, Vec};"), true);
-  assert.equal(usesDirectStdStorage("use std::vec as heap; type Items = heap::Vec<u8>;"), true);
-  assert.equal(
-    usesDirectStdStorage("use std::collections as maps; type Index = maps::HashMap<u8, u8>;"),
-    true,
+function tableRows(source: string, keyPattern: RegExp): Record<string, unknown> {
+  return Object.fromEntries(
+    [...source.matchAll(/^\|\s*([^|]+?)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|/gmu)]
+      .filter(([, key]) => keyPattern.test(key))
+      .map(([, key, files, directPaths, boundUses]) => [
+        key,
+        { files: Number(files), directPaths: Number(directPaths), boundUses: Number(boundUses) },
+      ]),
   );
-  assert.equal(
-    usesDirectStdStorage("extern crate std as host; type Items = host::vec::Vec<u8>;"),
-    true,
+}
+
+test("scanner resolves root, self, group, module, and raw aliases", () => {
+  const cases: Array<[string, number, number]> = [
+    ["use ::alloc::vec::Vec as Heap; type T = Heap<u8>;", 1, 1],
+    ["use crate::alloc::vec::Vec as r#Heap; type T = r#Heap<u8>;", 1, 1],
+    ["use self::alloc::vec as heap; type T = heap::Vec<u8>;", 0, 1],
+    ["use {alloc::vec as heap}; type T = heap::Vec<u8>;", 0, 1],
+    ["use alloc::{self as heap}; type T = heap::vec::Vec<u8>;", 0, 1],
+    ["extern crate alloc as heap; type T = heap::vec::Vec<u8>;", 0, 1],
+    [
+      "use alloc::vec::{self as heap, Vec as r#Items}; type A=heap::Vec<u8>; type B=r#Items<u8>;",
+      1,
+      2,
+    ],
+  ];
+  for (const [source, directPaths, boundUses] of cases) {
+    const result = scanStorage(source);
+    assert.deepEqual(result.issues, []);
+    assert.deepEqual(result.storage.allocVec, { directPaths, boundUses });
+  }
+});
+
+test("scanner rejects escape hatches and masks only cfg(test) items", () => {
+  assert.notEqual(scanStorage("use alloc::*;").issues.length, 0);
+  assert.notEqual(scanStorage("use {std::vec as heap}; type T=heap::Vec<u8>;").issues.length, 0);
+  assert.deepEqual(
+    scanStorage("use alloc::{string as text}; type T=text::String;").storage.allocString,
+    { directPaths: 0, boundUses: 1 },
   );
-  assert.equal(usesDirectStdStorage("use ::std::vec as heap; type Items = heap::Vec<u8>;"), true);
-  assert.equal(usesDirectStdStorage("// use std::vec::Vec;\nuse vize_s0::SmallVec;"), false);
-  assert.equal(usesDirectStdStorage('let path = "std::vec::Vec";'), false);
-  assert.equal(usesDirectStdStorage('let marker = "//"; use std::vec::Vec;'), true);
-  assert.equal(usesDirectStdStorage("let quote = '\"'; use std::vec::Vec;"), true);
-  assert.equal(usesDirectStdStorage("let quote = b'\"'; use std::collections as maps;"), true);
-  assert.equal(usesDirectStdStorage("fn borrow<'a>(value: &'a str) {} use std::vec::Vec;"), true);
-  assert.equal(usesOpaqueAllocVecBinding("use alloc::vec as heap;"), false);
-  assert.equal(usesOpaqueAllocVecBinding("use alloc::{vec as heap};"), true);
-  assert.deepEqual(measureAllocVec("use alloc::vec::Vec as Heap; type Items = Heap<u8>;"), {
-    directPaths: 1,
-    boundUses: 1,
-  });
-  assert.deepEqual(measureAllocVec("use alloc::vec as heap; type Items = heap::Vec<u8>;"), {
+  assert.deepEqual(
+    scanStorage("#[cfg(test)] mod tests { use alloc::vec::Vec; type T=Vec<u8>; }").storage.allocVec,
+    { directPaths: 0, boundUses: 0 },
+  );
+  assert.deepEqual(
+    scanStorage("#[cfg(not(test))] use alloc::vec::Vec; type T=Vec<u8>;").storage.allocVec,
+    { directPaths: 1, boundUses: 1 },
+  );
+  assert.deepEqual(scanStorage('let text = "alloc::vec::Vec"; // use alloc::*').storage.allocVec, {
     directPaths: 0,
-    boundUses: 1,
+    boundUses: 0,
   });
-  const reduced = measureInventory();
-  const [relative, measurement] = reduced.entries().next().value!;
-  reduced.set(relative, { ...measurement, directPaths: measurement.directPaths - 1 });
-  assert.match(inventoryViolations(reduced).join("\n"), /actual direct=.*ledger direct=/u);
-  reduced.delete(relative);
-  assert.match(inventoryViolations(reduced).join("\n"), /stale .* ledger entry/u);
+});
+
+test("davinci-opt is the exact host edge", () => {
   assert.equal(isDavinciOptHostEdge("crates/vize_davinci/src/bin/davinci-opt/main.rs"), true);
   assert.equal(isDavinciOptHostEdge("crates/vize_davinci/src/lib.rs"), false);
 });

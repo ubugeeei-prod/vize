@@ -85,12 +85,22 @@ export function compare(budgets, baselineReports, currentReports) {
           `(exact gate against budgets.toml: allocs are deterministic and machine-independent)`,
       );
     }
+    if (budget.allocBytesPeak !== undefined && current.alloc_bytes_peak !== budget.allocBytesPeak) {
+      benchRows.push(
+        `FAIL ${id} alloc_bytes_peak ${formatCount(budget.allocBytesPeak)} -> ` +
+          `${formatCount(current.alloc_bytes_peak)} (exact deterministic peak gate)`,
+      );
+    }
+    const peak =
+      budget.allocBytesPeak === undefined
+        ? ""
+        : ` alloc_bytes_peak ${formatCount(current.alloc_bytes_peak)}B`;
     if (benchRows.length > 0) {
       rows.push(...benchRows);
       breaches += benchRows.length;
     } else if (wallSkipped != null) {
       rows.push(
-        `alloc-gated ${id} allocs ${formatCount(current.allocs)} ok ` +
+        `alloc-gated ${id} allocs ${formatCount(current.allocs)}${peak} ok ` +
           `(wall_p50 ${current.wall_ns.p50}ns report-only: ${wallSkipped}) ` +
           `rss ${formatRss(current.rss_peak_bytes)}`,
       );
@@ -99,7 +109,7 @@ export function compare(budgets, baselineReports, currentReports) {
       rows.push(
         `ok ${id} wall_p50 ${current.wall_ns.p50}ns ` +
           `(baseline ${baseline.wall_ns.p50}ns limit ${limit}ns) ` +
-          `allocs ${formatCount(current.allocs)} rss ${formatRss(current.rss_peak_bytes)}`,
+          `allocs ${formatCount(current.allocs)}${peak} rss ${formatRss(current.rss_peak_bytes)}`,
       );
       gatedOk += 1;
     }

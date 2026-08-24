@@ -19,7 +19,7 @@ const portableStageCrates = [
 ] as const;
 
 const packageArgs = portableStageCrates.map((crate) => `-p ${crate}`).join(" ");
-const defaultLane = `cargo check ${packageArgs} --lib --target wasm32-wasip2`;
+const defaultLane = `cargo build ${packageArgs} --lib --target wasm32-wasip2`;
 const noDefaultLane = `${defaultLane} --no-default-features`;
 
 test("TS-24: the wasm32-wasip2 lanes ride the required clippy-and-test job", () => {
@@ -52,13 +52,17 @@ test("TS-24: the wasm32-wasip2 lanes ride the required clippy-and-test job", () 
   const toolchainFile = readRepoFile("rust-toolchain.toml");
   assert.match(toolchainFile, /^targets = \[.*"wasm32-wasip2".*\]$/m);
 
-  // Both checks target libraries only. The host `davinci-opt` binary must not
+  // Both builds target libraries only. The host `davinci-opt` binary must not
   // become evidence for a `no_std` claim merely because WASI provides std.
   assert.ok(
     job.includes(`        run: ${defaultLane} && ${noDefaultLane}`),
-    "TS-24 must check all four stage libraries with and without default features",
+    "TS-24 must build all four stage libraries with and without default features",
   );
-  assert.doesNotMatch(job, /cargo check[^\n]*-p (?:vize_s0|vize_carton)[^\n]*wasm32-wasip2/);
+  assert.doesNotMatch(job, /cargo build[^\n]*-p (?:vize_s0|vize_carton)[^\n]*wasm32-wasip2/);
+  assert.match(
+    job,
+    /cargo bench -p vize_ricalco --bench davinci_storage -- --quick && node tools\/davinci\/bench-compare\.mjs --bench ricalco_lower_vfor_three_aliases --bench ricalco_emit_von_two_per_bucket/u,
+  );
 });
 
 test("the no_std claim stays on all four stage libraries and excludes the std S0 foundation", () => {

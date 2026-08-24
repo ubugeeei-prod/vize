@@ -18,7 +18,7 @@ The claim covers exactly four **library targets**:
 
 Every library has both `#![no_std]` and `extern crate alloc`. Its source can
 use `core`, `alloc`, and dependency APIs without importing the `std` prelude.
-The required wasm32-wasip2 lane type-checks all four libraries together.
+The required wasm32-wasip2 lane builds all four libraries together.
 
 ### S0 is deliberately outside the claim
 
@@ -79,7 +79,7 @@ A speculative `std` feature is not required. The libraries are unconditionally
 
 The required lane proves all of the following on a 32-bit target:
 
-- all four library targets and their accepted dependency closure type-check
+- all four library targets and their accepted dependency closure build
   for `wasm32-wasip2`;
 - direct accidental reliance on the std prelude in a stage library fails;
 - pointer-width-specific layout assertions are correctly guarded;
@@ -95,9 +95,9 @@ TS-24 is an unconditional step of `.github/workflows/check.yml`'s
 `clippy-and-test` job:
 
 ```sh
-cargo check -p vize_davinci -p vize_sinopia -p vize_disegno \
+cargo build -p vize_davinci -p vize_sinopia -p vize_disegno \
   -p vize_ricalco --lib --target wasm32-wasip2
-cargo check -p vize_davinci -p vize_sinopia -p vize_disegno \
+cargo build -p vize_davinci -p vize_sinopia -p vize_disegno \
   -p vize_ricalco --lib --target wasm32-wasip2 --no-default-features
 ```
 

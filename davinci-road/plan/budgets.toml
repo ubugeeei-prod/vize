@@ -184,6 +184,11 @@ davinci_pipeline_no_observer = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0
 ricalco_lower_vfor_three_aliases = { wall_p50_ns = 0, allocs = 10, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 ricalco_emit_von_two_per_bucket = { wall_p50_ns = 0, allocs = 18, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 
+[allocation_peak]
+# Exact peak live bytes over each stage window; deterministic with the counting allocator.
+ricalco_lower_vfor_three_aliases = 1246
+ricalco_emit_von_two_per_bucket = 648
+
 [mutation]
 # cargo-mutants minimum scores per crate (P0-12). score = caught / viable,
 # truncated to four decimal places; run record, missed-mutant listings, and

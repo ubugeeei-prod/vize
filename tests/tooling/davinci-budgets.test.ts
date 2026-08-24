@@ -28,6 +28,7 @@ const budgetsPath = path.join(repoRoot, "davinci-road", "plan", "budgets.toml");
 const budgetsText = fs.readFileSync(budgetsPath, "utf8");
 const budgets = parseTomlLite(budgetsText) as {
   bench: Record<string, Record<string, unknown>>;
+  allocation_peak: Record<string, number>;
 };
 
 // --- bench-id enumeration from the bench sources -------------------------
@@ -195,6 +196,17 @@ test("every bench entry is one single-line inline table", () => {
       /^[A-Za-z0-9._-]+ = \{ wall_p50_ns = \d+, allocs = \d+, rss_peak_bytes = \d+, wall_tolerance = 0\.\d+ \}$/,
       `bench entries must keep the canonical field order and spacing:\n${line}`,
     );
+  }
+});
+
+test("compact-storage allocation peaks are exact deterministic budgets", () => {
+  assert.deepEqual(budgets.allocation_peak, {
+    ricalco_lower_vfor_three_aliases: 1246,
+    ricalco_emit_von_two_per_bucket: 648,
+  });
+  for (const [id, peak] of Object.entries(budgets.allocation_peak)) {
+    assert.ok(id in budgets.bench, `${id} must also have a [bench] budget`);
+    assert.ok(Number.isSafeInteger(peak) && peak >= 0);
   }
 });
 

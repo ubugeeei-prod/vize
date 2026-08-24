@@ -148,6 +148,59 @@ test("bench-compare reports the wall side but gates allocs when the wall baselin
   );
 });
 
+test("--bench selects the storage probe and gates its deterministic peak", () => {
+  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "davinci-storage-peak-"));
+  const budgetsPath = path.join(tmpRoot, "budgets.toml");
+  const results = path.join(tmpRoot, "results");
+  fs.mkdirSync(results);
+  fs.writeFileSync(
+    budgetsPath,
+    "[bench]\n" +
+      "fixture_parse_small = { wall_p50_ns = 100000, allocs = 42, " +
+      "rss_peak_bytes = 0, wall_tolerance = 0.05 }\n" +
+      "fixture_transform_medium = { wall_p50_ns = 200000, allocs = 1000, " +
+      "rss_peak_bytes = 0, wall_tolerance = 0.10 }\n" +
+      "[allocation_peak]\nfixture_parse_small = 4096\n",
+  );
+  const report = JSON.parse(
+    fs.readFileSync(
+      path.join(fixtureDir, "within-tolerance/current/fixture_parse_small.json"),
+      "utf8",
+    ),
+  );
+  const reportPath = path.join(results, "fixture_parse_small.json");
+  fs.writeFileSync(reportPath, `${JSON.stringify(report)}\n`);
+  const args = [
+    "--budgets",
+    budgetsPath,
+    "--baseline",
+    path.join(fixtureDir, "baseline"),
+    "--results",
+    results,
+    "--bench",
+    "fixture_parse_small",
+  ];
+  try {
+    const passing = runCompare(args);
+    assert.equal(passing.stderr, "");
+    assert.equal(passing.status, 0, passing.stdout);
+    assert.match(passing.stdout, /ok fixture_parse_small .*allocs 42 alloc_bytes_peak 4096B .*\n/u);
+    assert.match(passing.stdout, /registered=1\n$/u);
+    assert.doesNotMatch(passing.stdout, /fixture_transform_medium/u);
+
+    report.alloc_bytes_peak = 4097;
+    fs.writeFileSync(reportPath, `${JSON.stringify(report)}\n`);
+    const breach = runCompare(args);
+    assert.equal(breach.status, 1, breach.stdout);
+    assert.match(
+      breach.stdout,
+      /FAIL fixture_parse_small alloc_bytes_peak 4096 -> 4097 \(exact deterministic peak gate\)/u,
+    );
+  } finally {
+    fs.rmSync(tmpRoot, { recursive: true, force: true });
+  }
+});
+
 test("the alloc gate bites before the reference runner records any wall baseline", () => {
   // The state phase 1 exits in: wall numbers await Blacksmith, allocation
   // counts are already the ratchet. An alloc regression must fail here.

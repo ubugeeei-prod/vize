@@ -60,5 +60,17 @@ export function loadBudgets(budgetsPath) {
     }
     budgets.set(id, { ...entry, toleranceBp });
   }
+  const allocationPeak = root.allocation_peak ?? {};
+  if (typeof allocationPeak !== "object" || Array.isArray(allocationPeak)) {
+    fail(`${budgetsPath}: [allocation_peak] must be a table`);
+  }
+  for (const [id, value] of Object.entries(allocationPeak)) {
+    const budget = budgets.get(id);
+    if (budget == null) fail(`${budgetsPath}: [allocation_peak] has unknown bench ${id}`);
+    if (!Number.isSafeInteger(value) || value < 0) {
+      fail(`${budgetsPath}: [allocation_peak.${id}] must be a non-negative integer`);
+    }
+    budget.allocBytesPeak = value;
+  }
   return budgets;
 }

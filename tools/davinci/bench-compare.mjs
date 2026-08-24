@@ -10,6 +10,7 @@
 //   --budgets  <path>  budgets file      (default davinci-road/plan/budgets.toml)
 //   --baseline <dir>   baseline reports  (default bench/results/davinci/baseline)
 //   --results  <dir>   current reports   (default bench/results/davinci)
+//   --bench    <id>    select one bench  (repeatable; default is the full registry)
 //   Reports are the flat *.json files the harness exports (one per bench,
 //   named <bench_id>.json, shaped by davinci-bench.schema.json); the baseline
 //   subdirectory inside the default results dir is not itself a result.
@@ -50,12 +51,20 @@ function parseArgs(argv) {
     budgets: path.join(repoRoot, "davinci-road", "plan", "budgets.toml"),
     baseline: path.join(repoRoot, "bench", "results", "davinci", "baseline"),
     results: path.join(repoRoot, "bench", "results", "davinci"),
+    benches: [],
     updateBaseline: false,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === "--update-baseline") {
       options.updateBaseline = true;
+      continue;
+    }
+    if (arg === "--bench") {
+      const value = argv[i + 1];
+      if (value == null) fail("--bench requires a bench id");
+      options.benches.push(value);
+      i += 1;
       continue;
     }
     if (arg === "--budgets" || arg === "--baseline" || arg === "--results") {
@@ -66,10 +75,16 @@ function parseArgs(argv) {
       continue;
     }
     fail(
-      `unknown argument ${JSON.stringify(arg)} (expected --budgets/--baseline/--results/--update-baseline)`,
+      `unknown argument ${JSON.stringify(arg)} ` +
+        "(expected --budgets/--baseline/--results/--bench/--update-baseline)",
     );
   }
   return options;
+}
+
+function selectEntries(entries, ids) {
+  if (ids.length === 0) return entries;
+  return new Map(ids.filter((id) => entries.has(id)).map((id) => [id, entries.get(id)]));
 }
 
 function updateBaseline(options, budgets, currentReports) {
@@ -105,8 +120,13 @@ function main() {
     return 2;
   }
 
-  const budgets = loadBudgets(options.budgets);
-  const currentReports = loadReports(options.results, "current");
+  const allBudgets = loadBudgets(options.budgets);
+  const selected = [...new Set(options.benches)];
+  for (const id of selected) {
+    if (!allBudgets.has(id)) fail(`--bench ${id} has no budgets.toml entry`);
+  }
+  const budgets = selectEntries(allBudgets, selected);
+  const currentReports = selectEntries(loadReports(options.results, "current"), selected);
   if (currentReports.size === 0) {
     fail(
       `no current bench reports (*.json) under ${options.results} — ` +
@@ -122,7 +142,7 @@ function main() {
     return updateBaseline(options, budgets, currentReports);
   }
 
-  const baselineReports = loadReports(options.baseline, "baseline");
+  const baselineReports = selectEntries(loadReports(options.baseline, "baseline"), selected);
   const { rows, breaches, gatedOk, allocGated } = compare(budgets, baselineReports, currentReports);
   for (const row of rows) process.stdout.write(`${row}\n`);
   process.stdout.write(

@@ -362,7 +362,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           components: clippy
-      # rust-toolchain.toml owns targets; wasm32-wasip2 rides the pinned toolchain (TS-24)
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -377,9 +376,10 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Clippy
         run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports && cargo clippy -p vize_maestro --tests -- -D warnings && bash tools/github/check-maestro-feature-contract.sh
-      # TS-24 stage-library lanes; accepted std S0 edge: davinci-road/plan/no-std-boundary.md.
       - name: Davinci no_std stage-library portability lanes (TS-24)
-        run: cargo check -p vize_davinci -p vize_sinopia -p vize_disegno -p vize_ricalco --lib --target wasm32-wasip2 && cargo check -p vize_davinci -p vize_sinopia -p vize_disegno -p vize_ricalco --lib --target wasm32-wasip2 --no-default-features
+        run: cargo build -p vize_davinci -p vize_sinopia -p vize_disegno -p vize_ricalco --lib --target wasm32-wasip2 && cargo build -p vize_davinci -p vize_sinopia -p vize_disegno -p vize_ricalco --lib --target wasm32-wasip2 --no-default-features
+      - name: Davinci compact-storage allocation gate
+        run: cargo bench -p vize_ricalco --bench davinci_storage -- --quick && node tools/davinci/bench-compare.mjs --bench ricalco_lower_vfor_three_aliases --bench ricalco_emit_von_two_per_bucket
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
       - name: Test

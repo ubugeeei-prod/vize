@@ -1,11 +1,37 @@
+import {
+  emptyFileStorage,
+  storageKinds,
+  type FileStorage,
+  type StorageKind,
+  type StorageMeasurement,
+} from "./davinci-storage-scan.ts";
+
+export type StorageScope = "infra" | "s1" | "s2" | "s1_to_s2";
 export type VecCategory = "contract" | "analysis" | "lower" | "pass" | "emit";
-export type VecMeasurement = { directPaths: number; boundUses: number };
-export type VecPolicy = VecMeasurement & { category: VecCategory };
-export type CategorySummary = VecMeasurement & { files: number };
-export type InventorySummary = VecMeasurement & {
-  files: number;
-  categories: Record<VecCategory, CategorySummary>;
+export type InventoryRow = {
+  scope: StorageScope;
+  category?: VecCategory;
+  file: string;
+  storage: FileStorage;
 };
+export type StorageSummary = StorageMeasurement & { files: number };
+export type ScopeSummary = Record<StorageKind, StorageSummary>;
+
+const scopes: StorageScope[] = ["infra", "s1", "s2", "s1_to_s2"];
+const categories: VecCategory[] = ["contract", "analysis", "lower", "pass", "emit"];
+const header = [
+  "scope",
+  "category",
+  "file",
+  "alloc_vec_direct",
+  "alloc_vec_bound",
+  "s0_string_direct",
+  "s0_string_bound",
+  "arena_vec_direct",
+  "arena_vec_bound",
+  "small_vec_direct",
+  "small_vec_bound",
+].join("\t");
 
 export const categoryReasons: Record<VecCategory, string> = {
   contract: "variable-length owned Folio/S2 contract data",
@@ -15,106 +41,99 @@ export const categoryReasons: Record<VecCategory, string> = {
   emit: "ordered emitter buffers whose size follows the document",
 };
 
-function policy(category: VecCategory, directPaths = 1, boundUses = 0): VecPolicy {
-  return { category, directPaths, boundUses };
-}
-
-// Exact reviewed state. Reductions must update this ledger so they cannot regress later.
-export const retainedAllocVec = new Map<string, VecPolicy>([
-  ["crates/vize_davinci/src/diagnostic.rs", policy("analysis", 1, 2)],
-  ["crates/vize_davinci/src/folio/croquis.rs", policy("contract", 1, 16)],
-  ["crates/vize_davinci/src/folio/croquis/parse.rs", policy("contract", 1, 3)],
-  ["crates/vize_davinci/src/folio/croquis/parse/entry.rs", policy("contract", 1, 4)],
-  ["crates/vize_davinci/src/folio/croquis/print.rs", policy("contract", 1, 2)],
-  ["crates/vize_davinci/src/folio/dump.rs", policy("contract", 1, 2)],
-  ["crates/vize_davinci/src/folio/feed.rs", policy("contract", 1, 2)],
-  ["crates/vize_davinci/src/folio/page.rs", policy("contract", 1, 2)],
-  ["crates/vize_davinci/src/pass/pipeline.rs", policy("analysis", 1, 4)],
-  ["crates/vize_davinci/src/side_table.rs", policy("analysis", 2, 5)],
-  ["crates/vize_disegno/src/expr/filter.rs", policy("analysis", 2)],
-  ["crates/vize_disegno/src/folio.rs", policy("contract", 1, 1)],
-  ["crates/vize_disegno/src/folio/owned.rs", policy("contract", 1, 13)],
-  ["crates/vize_disegno/src/folio/owned/binding.rs", policy("contract", 1, 7)],
-  ["crates/vize_disegno/src/folio/parse.rs", policy("contract", 1, 4)],
-  ["crates/vize_disegno/src/folio/parse/binding_line.rs", policy("contract", 1, 8)],
-  ["crates/vize_disegno/src/folio/parse/line.rs", policy("contract", 12)],
-  ["crates/vize_disegno/src/scope.rs", policy("analysis", 1, 1)],
-  ["crates/vize_disegno/src/verify.rs", policy("analysis", 1, 4)],
-  ["crates/vize_disegno/src/verify/walk.rs", policy("analysis", 1, 5)],
-  ["crates/vize_ricalco/src/emit.rs", policy("emit", 1, 2)],
-  ["crates/vize_ricalco/src/emit/buf.rs", policy("emit", 1, 8)],
-  ["crates/vize_ricalco/src/emit/component.rs", policy("emit", 1, 4)],
-  ["crates/vize_ricalco/src/emit/create_slots.rs", policy("emit", 1, 5)],
-  ["crates/vize_ricalco/src/emit/directive.rs", policy("emit", 1, 5)],
-  ["crates/vize_ricalco/src/emit/hoist.rs", policy("emit", 1, 4)],
-  ["crates/vize_ricalco/src/emit/merge.rs", policy("emit", 1, 8)],
-  ["crates/vize_ricalco/src/emit/model.rs", policy("emit", 1, 6)],
-  ["crates/vize_ricalco/src/emit/on.rs", policy("emit")],
-  ["crates/vize_ricalco/src/emit/props.rs", policy("emit", 1, 2)],
-  ["crates/vize_ricalco/src/emit/props_object.rs", policy("emit", 1, 5)],
-  ["crates/vize_ricalco/src/emit/slots.rs", policy("emit", 1, 5)],
-  ["crates/vize_ricalco/src/lower.rs", policy("lower", 1, 2)],
-  ["crates/vize_ricalco/src/lower/binding.rs", policy("lower", 1, 1)],
-  ["crates/vize_ricalco/src/lower/cx.rs", policy("lower", 1, 4)],
-  ["crates/vize_ricalco/src/lower/directive.rs", policy("lower", 1, 6)],
-  ["crates/vize_ricalco/src/lower/element.rs", policy("lower", 1, 2)],
-  ["crates/vize_ricalco/src/lower/forop.rs", policy("lower", 1, 2)],
-  ["crates/vize_ricalco/src/lower/structural.rs", policy("lower", 1, 10)],
-  ["crates/vize_ricalco/src/lower/structural/wrapper.rs", policy("lower", 1, 2)],
-  ["crates/vize_ricalco/src/lower/sugar.rs", policy("lower", 1, 1)],
-  ["crates/vize_ricalco/src/lower/text.rs", policy("lower", 1, 4)],
-  ["crates/vize_ricalco/src/lower/text/condense.rs", policy("lower", 1, 5)],
-  ["crates/vize_ricalco/src/pass/hoist/lattice.rs", policy("pass", 1, 2)],
-  ["crates/vize_ricalco/src/pass/legacy/ids.rs", policy("pass", 1, 5)],
-  ["crates/vize_ricalco/src/pass/text.rs", policy("pass", 1, 3)],
-  ["crates/vize_ricalco/src/pass/vfor.rs", policy("pass", 1, 5)],
-  ["crates/vize_ricalco/src/pass/vif.rs", policy("pass", 1, 5)],
-  ["crates/vize_ricalco/src/pass/vmodel.rs", policy("pass", 1, 9)],
-  ["crates/vize_ricalco/src/pass/vmodel/check.rs", policy("pass", 1, 1)],
-  ["crates/vize_ricalco/src/pass/vslot.rs", policy("pass", 1, 2)],
-  ["crates/vize_ricalco/src/pass/vslot/consume.rs", policy("pass", 1, 8)],
-  ["crates/vize_ricalco/src/pass/vslot/group.rs", policy("pass", 1, 6)],
-  ["crates/vize_ricalco/src/pass/vslot/spell.rs", policy("pass", 1, 1)],
-]);
-
-export const expectedInventorySummary: InventorySummary = {
-  files: 54,
-  directPaths: 67,
-  boundUses: 225,
-  categories: {
-    contract: { files: 13, directPaths: 24, boundUses: 64 },
-    analysis: { files: 7, directPaths: 9, boundUses: 21 },
-    lower: { files: 11, directPaths: 11, boundUses: 39 },
-    pass: { files: 11, directPaths: 11, boundUses: 47 },
-    emit: { files: 12, directPaths: 12, boundUses: 54 },
-  },
+export const expectedProductionAllocVec: StorageSummary = {
+  files: 53,
+  directPaths: 65,
+  boundUses: 222,
 };
 
-export function summarizeInventory(
-  measured: ReadonlyMap<string, VecMeasurement>,
-): InventorySummary {
-  const categories: Record<VecCategory, CategorySummary> = {
-    contract: { files: 0, directPaths: 0, boundUses: 0 },
-    analysis: { files: 0, directPaths: 0, boundUses: 0 },
-    lower: { files: 0, directPaths: 0, boundUses: 0 },
-    pass: { files: 0, directPaths: 0, boundUses: 0 },
-    emit: { files: 0, directPaths: 0, boundUses: 0 },
-  };
-  const summary: InventorySummary = {
-    files: measured.size,
-    directPaths: 0,
-    boundUses: 0,
-    categories,
-  };
-  for (const [relative, actual] of measured) {
-    const entry = retainedAllocVec.get(relative);
-    if (!entry) throw new Error(`unclassified alloc Vec file: ${relative}`);
-    summary.directPaths += actual.directPaths;
-    summary.boundUses += actual.boundUses;
-    const category = categories[entry.category];
-    category.files += 1;
-    category.directPaths += actual.directPaths;
-    category.boundUses += actual.boundUses;
+function count(value: string, line: number): number {
+  if (!/^\d+$/u.test(value)) throw new Error(`line ${line}: invalid count ${value}`);
+  return Number(value);
+}
+
+export function parseStorageInventory(source: string): InventoryRow[] {
+  const lines = source.trimEnd().split("\n");
+  if (lines.shift() !== header) throw new Error("storage inventory header drifted");
+  const files = new Set<string>();
+  return lines.map((line, index) => {
+    const fields = line.split("\t");
+    if (fields.length !== 11) throw new Error(`line ${index + 2}: expected 11 fields`);
+    const [scope, category, file, ...values] = fields;
+    if (!scopes.includes(scope as StorageScope)) throw new Error(`line ${index + 2}: bad scope`);
+    if (category !== "-" && !categories.includes(category as VecCategory)) {
+      throw new Error(`line ${index + 2}: bad category`);
+    }
+    if (files.has(file)) throw new Error(`line ${index + 2}: duplicate ${file}`);
+    files.add(file);
+    const storage = emptyFileStorage();
+    const counts = values.map((value) => count(value, index + 2));
+    [storage.allocVec.directPaths, storage.allocVec.boundUses] = counts.slice(0, 2);
+    [storage.s0String.directPaths, storage.s0String.boundUses] = counts.slice(2, 4);
+    [storage.arenaVec.directPaths, storage.arenaVec.boundUses] = counts.slice(4, 6);
+    [storage.smallVec.directPaths, storage.smallVec.boundUses] = counts.slice(6, 8);
+    if (storage.allocVec.directPaths > 0 !== (category !== "-")) {
+      throw new Error(`line ${index + 2}: alloc Vec category mismatch`);
+    }
+    return {
+      scope: scope as StorageScope,
+      category: category === "-" ? undefined : (category as VecCategory),
+      file,
+      storage,
+    };
+  });
+}
+
+function emptySummary(): StorageSummary {
+  return { files: 0, directPaths: 0, boundUses: 0 };
+}
+
+function emptyScopeSummary(): ScopeSummary {
+  return Object.fromEntries(storageKinds.map((kind) => [kind, emptySummary()])) as ScopeSummary;
+}
+
+export function summarizeScopes(rows: readonly InventoryRow[]): Record<StorageScope, ScopeSummary> {
+  const result = Object.fromEntries(scopes.map((scope) => [scope, emptyScopeSummary()])) as Record<
+    StorageScope,
+    ScopeSummary
+  >;
+  for (const row of rows) {
+    for (const kind of storageKinds) {
+      const measurement = row.storage[kind];
+      if (measurement.directPaths === 0 && measurement.boundUses === 0) continue;
+      const summary = result[row.scope][kind];
+      summary.files += 1;
+      summary.directPaths += measurement.directPaths;
+      summary.boundUses += measurement.boundUses;
+    }
+  }
+  return result;
+}
+
+export function summarizeAllocVecCategories(
+  rows: readonly InventoryRow[],
+): Record<VecCategory, StorageSummary> {
+  const result = Object.fromEntries(
+    categories.map((category) => [category, emptySummary()]),
+  ) as Record<VecCategory, StorageSummary>;
+  for (const row of rows) {
+    if (!row.category) continue;
+    const summary = result[row.category];
+    summary.files += 1;
+    summary.directPaths += row.storage.allocVec.directPaths;
+    summary.boundUses += row.storage.allocVec.boundUses;
+  }
+  return result;
+}
+
+export function summarizeKind(rows: readonly InventoryRow[], kind: StorageKind): StorageSummary {
+  const summary = emptySummary();
+  for (const row of rows) {
+    const measurement = row.storage[kind];
+    if (measurement.directPaths === 0 && measurement.boundUses === 0) continue;
+    summary.files += 1;
+    summary.directPaths += measurement.directPaths;
+    summary.boundUses += measurement.boundUses;
   }
   return summary;
 }
