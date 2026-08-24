@@ -6,11 +6,13 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const davinciRoots = [
+  "crates/vize_carton",
   "crates/vize_davinci",
   "crates/vize_disegno",
   "crates/vize_ricalco",
   "crates/vize_sinopia",
   "benchmarks/davinci_harness",
+  "tests/davinci_test_support",
 ];
 const rustTrivia = String.raw`(?:\s|//[^\r\n]*(?:\r?\n|$)|/\*[\s\S]*?\*/)*`;
 const pathAttribute = new RegExp(String.raw`#${rustTrivia}\[${rustTrivia}path${rustTrivia}=`, "u");

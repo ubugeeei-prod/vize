@@ -1,3 +1,5 @@
+//! Linter-plan configuration regressions.
+
 use super::*;
 
 #[test]

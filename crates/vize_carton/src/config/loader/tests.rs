@@ -6,7 +6,6 @@ use super::{
 };
 use crate::config::{LintRuleSeverity, VueVersion};
 
-#[path = "linter_plan_tests.rs"]
 mod linter_plan_tests;
 
 #[test]
