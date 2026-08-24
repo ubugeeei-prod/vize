@@ -1,5 +1,6 @@
 //! `createSlots` for `v-if` / `v-for` slot templates (`{ _: 2 }` base
 //! plus `{ name, fn }` entries — ternaries, `_renderList`, static named).
+//! A `v-slots` spread lands in the base object (`...expr`) before `_: 2`.
 
 use alloc::vec::Vec as StdVec;
 
@@ -26,6 +27,7 @@ pub(super) fn needs_create_slots(children: &Region<'_>) -> bool {
 pub(super) fn emit_create_slots(
     cx: &mut EmitCx<'_>,
     children: &Region<'_>,
+    spread: Option<&str>,
 ) -> Result<(), EmitError> {
     cx.buf.use_create_slots();
     cx.buf.use_with_ctx();
@@ -34,7 +36,7 @@ pub(super) fn emit_create_slots(
     cx.buf.deindent();
     cx.buf.push(Buf::create_slots_alias());
     cx.buf.push("(");
-    emit_base(cx, &defaults);
+    emit_base(cx, &defaults, spread);
     cx.buf.push(", [");
     cx.buf.indent();
     for (i, entry) in entries.iter().enumerate() {
@@ -85,28 +87,36 @@ fn collect(
     Ok((defaults, entries))
 }
 
-fn emit_base(cx: &mut EmitCx<'_>, defaults: &[String]) {
-    if defaults.is_empty() {
+fn emit_base(cx: &mut EmitCx<'_>, defaults: &[String], spread: Option<&str>) {
+    if defaults.is_empty() && spread.is_none() {
         cx.buf.push("{ _: 2 /* DYNAMIC */ }");
         return;
     }
     cx.buf.push("{");
     cx.buf.indent();
-    cx.buf.newline();
-    cx.buf.push("default: ");
-    cx.buf.push(Buf::with_ctx_alias());
-    cx.buf.push("(() => [");
-    cx.buf.indent();
-    for (i, piece) in defaults.iter().enumerate() {
-        if i > 0 {
-            cx.buf.push(",");
-        }
+    if !defaults.is_empty() {
         cx.buf.newline();
-        cx.buf.push(piece.as_str());
+        cx.buf.push("default: ");
+        cx.buf.push(Buf::with_ctx_alias());
+        cx.buf.push("(() => [");
+        cx.buf.indent();
+        for (i, piece) in defaults.iter().enumerate() {
+            if i > 0 {
+                cx.buf.push(",");
+            }
+            cx.buf.newline();
+            cx.buf.push(piece.as_str());
+        }
+        cx.buf.deindent();
+        cx.buf.newline();
+        cx.buf.push("]),");
     }
-    cx.buf.deindent();
-    cx.buf.newline();
-    cx.buf.push("]),");
+    if let Some(spread) = spread {
+        cx.buf.newline();
+        cx.buf.push("...");
+        cx.buf.push(spread);
+        cx.buf.push(",");
+    }
     cx.buf.newline();
     cx.buf.push("_: 2 /* DYNAMIC */");
     cx.buf.deindent();
