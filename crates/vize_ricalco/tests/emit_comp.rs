@@ -147,8 +147,148 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn slot_children_are_unsupported_this_installment() {
-    assert_eq!(refused("<Foo>hello</Foo>"), EmitError::Unsupported);
+fn a_text_default_slot_uses_with_ctx() {
+    assert_eq!(
+        assembled("<Foo>hello</Foo>"),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, null, {
+    default: _withCtx(() => [
+      _createTextVNode(\"hello\")
+    ]),
+    _: 1 /* STABLE */
+  }))
+}")
+    );
+}
+
+#[test]
+fn an_interpolation_default_slot_flags_text() {
+    assert_eq!(
+        assembled("<Foo>{{ msg }}</Foo>"),
+        pin("\
+const { resolveComponent: _resolveComponent, toDisplayString: _toDisplayString, openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, null, {
+    default: _withCtx(() => [
+      _createTextVNode(_toDisplayString(msg), 1 /* TEXT */)
+    ]),
+    _: 1 /* STABLE */
+  }))
+}")
+    );
+}
+
+#[test]
+fn mixed_text_and_interpolation_are_separate_vnodes() {
+    assert_eq!(
+        assembled("<Foo>hello {{ msg }}</Foo>"),
+        pin("\
+const { resolveComponent: _resolveComponent, toDisplayString: _toDisplayString, openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, null, {
+    default: _withCtx(() => [
+      _createTextVNode(\"hello \"),
+      _createTextVNode(_toDisplayString(msg), 1 /* TEXT */)
+    ]),
+    _: 1 /* STABLE */
+  }))
+}")
+    );
+}
+
+#[test]
+fn a_nested_text_slot_uses_create_vnode() {
+    assert_eq!(
+        assembled("<div><Foo>hello</Foo></div>"),
+        pin("\
+const { resolveComponent: _resolveComponent, createVNode: _createVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createElementBlock(\"div\", null, [
+    _createVNode(_component_Foo, null, {
+      default: _withCtx(() => [
+        _createTextVNode(\"hello\")
+      ]),
+      _: 1 /* STABLE */
+    })
+  ]))
+}")
+    );
+}
+
+#[test]
+fn a_v_for_item_text_slot_is_dynamic() {
+    assert_eq!(
+        assembled(r#"<Foo v-for="item in list">hello</Foo>"#),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createTextVNode: _createTextVNode, renderList: _renderList, withCtx: _withCtx } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (item) => {
+    return (_openBlock(), _createBlock(_component_Foo, null, {
+      default: _withCtx(() => [
+        _createTextVNode(\"hello\")
+      ]),
+      _: 2 /* DYNAMIC */
+    }, 1024 /* DYNAMIC_SLOTS */))
+  }), 256 /* UNKEYED_FRAGMENT */))
+}")
+    );
+}
+
+#[test]
+fn static_attrs_on_a_slotted_component_leave_an_unused_hoist() {
+    assert_eq!(
+        assembled(r#"<Foo id="x">hello</Foo>"#),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue
+
+const _hoisted_1 = { id: \"x\" }
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, { id: \"x\" }, {
+    default: _withCtx(() => [
+      _createTextVNode(\"hello\")
+    ]),
+    _: 1 /* STABLE */
+  }))
+}")
+    );
+}
+
+#[test]
+fn whitespace_only_children_emit_no_slot() {
+    assert_eq!(assembled("<Foo>  </Foo>"), assembled("<Foo />"));
+}
+
+#[test]
+fn element_slot_children_are_unsupported_this_installment() {
+    assert_eq!(refused("<Foo><span></span></Foo>"), EmitError::Unsupported);
+}
+
+#[test]
+fn named_slot_templates_are_unsupported_this_installment() {
+    assert_eq!(
+        refused("<Foo><template #header>x</template></Foo>"),
+        EmitError::Unsupported
+    );
 }
 
 #[test]

@@ -202,7 +202,9 @@ fn root_props_should_hoist(element: &ElementOp<'_>) -> bool {
 
 /// First-occurrence static attrs as a single-line object, matching
 /// hoisted `JsChildNode::Object` emission.
-fn compact_props_object<'a>(attributes: impl Iterator<Item = &'a Attribute<'a>>) -> String {
+pub(super) fn compact_props_object<'a>(
+    attributes: impl Iterator<Item = &'a Attribute<'a>>,
+) -> String {
     let unique = unique_attrs(attributes);
     let mut out = String::from("{ ");
     for (i, attr) in unique.iter().enumerate() {

@@ -1,7 +1,8 @@
 //! P2-11 installment 5 witness: static native HTML, interpolations,
 //! mixed text siblings, static-name binds, static-name events including
 //! event/key/option modifiers, native v-if, native v-for,
-//! object-spread v-bind, and static-name components, compared
+//! object-spread v-bind, static-name components, and implicit default
+//! text slots, compared
 //! **byte-for-byte** including helper usage.
 //!
 //! `vize_atelier_dom` is published; the Davinci crates are not. The
@@ -175,6 +176,46 @@ const BATTERY: &[(&str, &str)] = &[
         "component_attr_then_object",
         r#"<Foo id="x" v-bind="obj" />"#,
     ),
+    ("component_text_slot", "<Foo>hello</Foo>"),
+    ("component_interp_slot", "<Foo>{{ msg }}</Foo>"),
+    ("component_mixed_text_slot", "<Foo>hello {{ msg }}</Foo>"),
+    (
+        "component_three_text_parts",
+        "<Foo>hello{{ msg }}world</Foo>",
+    ),
+    ("nested_component_text_slot", "<div><Foo>hello</Foo></div>"),
+    ("component_text_slot_v_if", r#"<Foo v-if="ok">hello</Foo>"#),
+    (
+        "component_text_slot_v_for",
+        r#"<Foo v-for="item in list">hello</Foo>"#,
+    ),
+    (
+        "component_text_slot_keyed_v_for",
+        r#"<Foo v-for="item in list" :key="item">hello</Foo>"#,
+    ),
+    (
+        "nested_v_for_component_text_slot",
+        r#"<div v-for="i in n"><Foo>hello</Foo></div>"#,
+    ),
+    ("component_bind_text_slot", r#"<Foo :id="x">hello</Foo>"#),
+    (
+        "component_static_id_text_slot",
+        r#"<Foo id="x">hello</Foo>"#,
+    ),
+    (
+        "component_static_class_text_slot",
+        r#"<Foo class="x">hello</Foo>"#,
+    ),
+    (
+        "component_static_two_attrs_text_slot",
+        r#"<Foo class="x" id="y">hello</Foo>"#,
+    ),
+    (
+        "component_mixed_static_bind_text_slot",
+        r#"<Foo class="x" :id="z">hello</Foo>"#,
+    ),
+    ("component_ws_only_children", "<Foo>  </Foo>"),
+    ("component_padded_text_slot", "<Foo> hello </Foo>"),
 ];
 
 fn shipped(src: &str) -> String {

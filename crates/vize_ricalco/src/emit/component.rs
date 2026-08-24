@@ -1,10 +1,10 @@
 //! Static-name component emission (`resolveComponent` / `createVNode` /
-//! `createBlock`). Slot children, builtins, and `<component :is>` stay
-//! unsupported this installment.
+//! `createBlock`) plus implicit default **text** slots. Named slots,
+//! builtins, and `<component :is>` stay unsupported this installment.
 
 use alloc::vec::Vec as StdVec;
 
-use vize_disegno::op::{ComponentOp, Op, Region, TextOp};
+use vize_disegno::op::{ComponentOp, Op, Region};
 
 use super::EmitCx;
 use super::EmitError;
@@ -12,6 +12,8 @@ use super::buf::Buf;
 use super::flag::emit_patch_flag;
 use super::js::asset_ident;
 use super::props::{admit_bindings, bind_patch, emit_bind_props};
+use super::slots;
+use super::vnode::compact_props_object;
 
 pub(super) fn collect_names<'a>(root: &Region<'a>) -> StdVec<&'a str> {
     let mut names = StdVec::new();
@@ -39,7 +41,9 @@ pub(super) fn emit_root(cx: &mut EmitCx<'_>, component: &ComponentOp<'_>) -> Res
     cx.buf.push("(");
     cx.buf.push(Buf::open_block_alias());
     cx.buf.push("(), ");
-    emit_call(cx, component, /* block */ true, None)?;
+    emit_call(
+        cx, component, /* block */ true, None, /* for_item */ false,
+    )?;
     cx.buf.push(")");
     Ok(())
 }
@@ -49,7 +53,9 @@ pub(super) fn emit_nested(
     component: &ComponentOp<'_>,
 ) -> Result<(), EmitError> {
     cx.buf.use_create_vnode();
-    emit_call(cx, component, /* block */ false, None)
+    emit_call(
+        cx, component, /* block */ false, None, /* for_item */ false,
+    )
 }
 
 pub(super) fn emit_if_branch(
@@ -62,7 +68,13 @@ pub(super) fn emit_if_branch(
     cx.buf.push("(");
     cx.buf.push(Buf::open_block_alias());
     cx.buf.push("(), ");
-    emit_call(cx, component, /* block */ true, Some(key))?;
+    emit_call(
+        cx,
+        component,
+        /* block */ true,
+        Some(key),
+        /* for_item */ false,
+    )?;
     cx.buf.push(")");
     Ok(())
 }
@@ -76,7 +88,9 @@ pub(super) fn emit_for_item(
     cx.buf.push("(");
     cx.buf.push(Buf::open_block_alias());
     cx.buf.push("(), ");
-    emit_call(cx, component, /* block */ true, None)?;
+    emit_call(
+        cx, component, /* block */ true, None, /* for_item */ true,
+    )?;
     cx.buf.push(")");
     Ok(())
 }
@@ -108,6 +122,7 @@ fn emit_call(
     component: &ComponentOp<'_>,
     block: bool,
     if_key: Option<&str>,
+    for_item: bool,
 ) -> Result<(), EmitError> {
     admit(component)?;
     let alias = if block {
@@ -120,20 +135,32 @@ fn emit_call(
     cx.buf
         .push(asset_ident("component", component.name).as_str());
     let has_binds = !component.bindings.is_empty();
+    let has_slots = slots::has_implicit_default(&component.children);
+    if has_slots && !has_binds && if_key.is_none() && !component.attributes.is_empty() {
+        cx.buf
+            .push_hoist(compact_props_object(component.attributes.iter()));
+    }
     let patch = bind_patch(&component.bindings, true);
-    let emit_flag = patch.flag != 0;
+    let mut flag = patch.flag;
+    if for_item && has_slots {
+        flag |= 1024;
+    }
+    let emit_flag = flag != 0;
     let has_props = !component.attributes.is_empty() || has_binds || if_key.is_some();
     if if_key.is_some() || has_binds || !component.attributes.is_empty() {
         cx.buf.push(", ");
         emit_bind_props(cx, &component.attributes, &component.bindings, if_key)?;
-    } else if emit_flag {
+    } else if emit_flag || has_slots {
         cx.buf.push(", null");
     }
-    if emit_flag && has_props {
+    if has_slots {
+        cx.buf.push(", ");
+        slots::emit_default_slots(cx, &component.children)?;
+    } else if emit_flag && has_props {
         cx.buf.push(", null");
     }
     if emit_flag {
-        emit_patch_flag(cx, patch.flag);
+        emit_patch_flag(cx, flag);
     }
     if !patch.dynamic_props.is_empty() {
         cx.buf.push(", [");
@@ -155,24 +182,10 @@ fn admit(component: &ComponentOp<'_>) -> Result<(), EmitError> {
     if is_builtin(component.name) {
         return Err(EmitError::Unsupported);
     }
-    admit_empty(&component.children)?;
-    admit_bindings(&component.attributes, &component.bindings)
-}
-
-fn admit_empty(children: &Region<'_>) -> Result<(), EmitError> {
-    if children.ops.iter().all(is_ignorable_child) {
-        Ok(())
-    } else {
-        Err(EmitError::Unsupported)
+    if slots::has_implicit_default(&component.children) {
+        slots::admit_text_default(&component.children)?;
     }
-}
-
-fn is_ignorable_child(op: &Op<'_>) -> bool {
-    matches!(op, Op::Text(text) if is_whitespace_text(text))
-}
-
-fn is_whitespace_text(text: &TextOp<'_>) -> bool {
-    text.content.chars().all(char::is_whitespace)
+    admit_bindings(&component.attributes, &component.bindings)
 }
 
 fn is_builtin(name: &str) -> bool {

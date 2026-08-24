@@ -74,11 +74,15 @@ pub(super) fn emit_for(cx: &mut EmitCx<'_>, for_op: &ForOp<'_>) -> Result<(), Em
     cx.buf.push("return ");
     let _id = cx.walk.mint();
     cx.walk.skip(bind_len);
-    match for_op.region.ops.as_slice() {
-        [Op::Element(element)] => super::emit_for_item_call(cx, element, stable)?,
-        [Op::Component(component)] => super::component::emit_for_item(cx, component)?,
-        _ => return Err(EmitError::Unsupported),
-    }
+    let prev_in_v_for = cx.in_v_for;
+    cx.in_v_for = true;
+    let item = match for_op.region.ops.as_slice() {
+        [Op::Element(element)] => super::emit_for_item_call(cx, element, stable),
+        [Op::Component(component)] => super::component::emit_for_item(cx, component),
+        _ => Err(EmitError::Unsupported),
+    };
+    cx.in_v_for = prev_in_v_for;
+    item?;
     cx.buf.deindent();
     cx.buf.newline();
     cx.buf.push("}), ");
