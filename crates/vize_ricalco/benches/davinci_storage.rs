@@ -15,8 +15,10 @@ use vize_s0::{Allocator, cstr};
 use vize_s1::parse;
 
 const VFOR_THREE_ALIASES: &str = r#"<li v-for="(item, key, index) in items">{{ item }}</li>"#;
+// v-on-storage-synthetic:start
 const VON_TWO_PER_BUCKET: &str =
     r#"<button @keyup.capture.once.stop.prevent.enter.escape="handler"></button>"#;
+// v-on-storage-synthetic:end
 
 fn davinci_storage(criterion: &mut Criterion) {
     let vfor_id = cstr!("ricalco_lower_vfor_three_aliases");

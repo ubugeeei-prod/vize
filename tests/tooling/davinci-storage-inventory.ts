@@ -49,7 +49,7 @@ export const retainedAllocVec = new Map<string, VecPolicy>([
   ["crates/vize_ricalco/src/emit/hoist.rs", policy("emit", 1, 4)],
   ["crates/vize_ricalco/src/emit/merge.rs", policy("emit", 1, 8)],
   ["crates/vize_ricalco/src/emit/model.rs", policy("emit", 1, 6)],
-  ["crates/vize_ricalco/src/emit/on.rs", policy("emit", 1, 6)],
+  ["crates/vize_ricalco/src/emit/on.rs", policy("emit")],
   ["crates/vize_ricalco/src/emit/props.rs", policy("emit", 1, 2)],
   ["crates/vize_ricalco/src/emit/props_object.rs", policy("emit", 1, 5)],
   ["crates/vize_ricalco/src/emit/slots.rs", policy("emit", 1, 5)],
@@ -64,7 +64,6 @@ export const retainedAllocVec = new Map<string, VecPolicy>([
   ["crates/vize_ricalco/src/lower/sugar.rs", policy("lower", 1, 1)],
   ["crates/vize_ricalco/src/lower/text.rs", policy("lower", 1, 4)],
   ["crates/vize_ricalco/src/lower/text/condense.rs", policy("lower", 1, 5)],
-  ["crates/vize_ricalco/src/lower/vfor.rs", policy("lower", 5)],
   ["crates/vize_ricalco/src/pass/hoist/lattice.rs", policy("pass", 1, 2)],
   ["crates/vize_ricalco/src/pass/legacy/ids.rs", policy("pass", 1, 5)],
   ["crates/vize_ricalco/src/pass/text.rs", policy("pass", 1, 3)],
@@ -79,15 +78,15 @@ export const retainedAllocVec = new Map<string, VecPolicy>([
 ]);
 
 export const expectedInventorySummary: InventorySummary = {
-  files: 55,
-  directPaths: 72,
-  boundUses: 231,
+  files: 54,
+  directPaths: 67,
+  boundUses: 225,
   categories: {
     contract: { files: 13, directPaths: 24, boundUses: 64 },
     analysis: { files: 7, directPaths: 9, boundUses: 21 },
-    lower: { files: 12, directPaths: 16, boundUses: 39 },
+    lower: { files: 11, directPaths: 11, boundUses: 39 },
     pass: { files: 11, directPaths: 11, boundUses: 47 },
-    emit: { files: 12, directPaths: 12, boundUses: 60 },
+    emit: { files: 12, directPaths: 12, boundUses: 54 },
   },
 };
 
