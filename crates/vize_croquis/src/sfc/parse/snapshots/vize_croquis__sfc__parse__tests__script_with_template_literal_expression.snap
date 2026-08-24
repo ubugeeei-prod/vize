@@ -1,17 +1,17 @@
 ---
-source: crates/vize_atelier_sfc/src/parse/tests.rs
+source: crates/vize_croquis/src/sfc/parse/tests.rs
 expression: script
 ---
 SfcScriptBlock {
-    content: "\nconst tag = html`<span style=\"color: red\">Hello</span>`\nconst result = css`\n  .container {\n    color: blue;\n  }\n`\nconst x = 1\n",
+    content: "\nconst name = 'world'\nconst code = `Hello ${name}! </script> ${1 + 2}`\nconst c = 3\n",
     loc: BlockLocation {
         start: 14,
-        end: 141,
+        end: 97,
         tag_start: 0,
-        tag_end: 150,
+        tag_end: 106,
         start_line: 1,
         start_column: 15,
-        end_line: 9,
+        end_line: 5,
         end_column: 1,
     },
     lang: None,

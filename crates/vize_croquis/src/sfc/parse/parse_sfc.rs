@@ -1,4 +1,4 @@
-use crate::types::{
+use crate::sfc::types::{
     BlockLocation, SfcCustomBlock, SfcDescriptor, SfcError, SfcParseOptions, SfcScriptBlock,
     SfcStyleBlock, SfcTemplateBlock,
 };
@@ -188,13 +188,13 @@ pub fn parse_sfc<'a>(
                                 .get("module")
                                 .filter(|v| !v.is_empty())
                                 .cloned()
-                                .unwrap_or_else(|| Cow::Borrowed("$style")),
+                                .unwrap_or(Cow::Borrowed("$style")),
                         )
                     } else {
                         None
                     };
 
-                    for css_var in crate::style::extract_css_vars(&content) {
+                    for css_var in crate::sfc::extract_css_vars(&content) {
                         if !descriptor
                             .css_vars
                             .iter()

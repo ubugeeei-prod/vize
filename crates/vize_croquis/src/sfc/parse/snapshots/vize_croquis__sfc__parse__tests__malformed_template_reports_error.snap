@@ -1,5 +1,5 @@
 ---
-source: crates/vize_atelier_sfc/src/parse/tests.rs
+source: crates/vize_croquis/src/sfc/parse/tests.rs
 expression: err
 ---
 SfcError {

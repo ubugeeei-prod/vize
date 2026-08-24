@@ -1,4 +1,4 @@
-use crate::parse_sfc;
+use crate::sfc::parse_sfc;
 
 #[test]
 fn ignores_template_tokens_in_non_markup_contexts() {

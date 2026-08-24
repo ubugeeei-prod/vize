@@ -1,17 +1,17 @@
 ---
-source: crates/vize_atelier_sfc/src/parse/tests.rs
+source: crates/vize_croquis/src/sfc/parse/tests.rs
 expression: script
 ---
 SfcScriptBlock {
-    content: "\nfunction render() {\n  const x = 'test'\n  return `<span>${x}</span>`\n}\n\nfunction throwError() {\n  throw `Error: </script>`\n}\nconst y = 2\n",
+    content: "\nconst str1 = \"He said \\\"</script>\\\"\"\nconst str2 = 'It\\'s </script> here'\nconst str3 = `Template \\` </script> \\``\nconst d = 4\n",
     loc: BlockLocation {
         start: 14,
-        end: 151,
+        end: 140,
         tag_start: 0,
-        tag_end: 160,
+        tag_end: 149,
         start_line: 1,
         start_column: 15,
-        end_line: 11,
+        end_line: 6,
         end_column: 1,
     },
     lang: None,

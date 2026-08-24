@@ -20,8 +20,8 @@ pub struct SfcError {
     pub loc: Option<BlockLocation>,
 }
 
-impl From<vize_atelier_core::CompilerError> for SfcError {
-    fn from(err: vize_atelier_core::CompilerError) -> Self {
+impl From<vize_relief::CompilerError> for SfcError {
+    fn from(err: vize_relief::CompilerError) -> Self {
         let mut code = vize_carton::String::default();
         use std::fmt::Write as _;
         let _ = write!(&mut code, "{:?}", err.code);

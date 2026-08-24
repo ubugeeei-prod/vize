@@ -1,17 +1,17 @@
 ---
-source: crates/vize_atelier_sfc/src/parse/tests.rs
+source: crates/vize_croquis/src/sfc/parse/tests.rs
 expression: script
 ---
 SfcScriptBlock {
-    content: "\nconst x = 10 / 2\nconst y = \"test\"\nconst z = x / y\n",
+    content: "\nconst tag = html`<span style=\"color: red\">Hello</span>`\nconst result = css`\n  .container {\n    color: blue;\n  }\n`\nconst x = 1\n",
     loc: BlockLocation {
         start: 14,
-        end: 65,
+        end: 141,
         tag_start: 0,
-        tag_end: 74,
+        tag_end: 150,
         start_line: 1,
         start_column: 15,
-        end_line: 5,
+        end_line: 9,
         end_column: 1,
     },
     lang: None,

@@ -8,7 +8,7 @@
 //! the two halves only disagree once an opening tag spans more than one line.
 
 use super::parse_sfc;
-use crate::types::BlockLocation;
+use crate::sfc::types::BlockLocation;
 
 /// Every field of a [`BlockLocation`], so a comparison cannot silently skip one.
 #[derive(Debug, PartialEq, Eq)]

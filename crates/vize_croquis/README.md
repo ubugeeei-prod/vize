@@ -14,6 +14,13 @@ Support and deprecation guarantees are defined in the
 - Binding metadata used by compilers and type checking
 - Reactivity and macro analysis
 - Cross-file and virtual TypeScript support modules
+- Parse-only `.vue` descriptors without compiler backends
+
+## Parse-only SFC Facade
+
+Consumers that only need to inspect `.vue` descriptors can depend on
+`vize_croquis` and use `vize_croquis::sfc::{parse_sfc, SfcDescriptor}` without
+pulling in DOM, SSR, Vapor, code generation, or CSS transformation backends.
 
 ## Key Entry Points
 
@@ -21,6 +28,8 @@ Support and deprecation guarantees are defined in the
 - `DrawerOptions`
 - `Croquis`
 - `BindingMetadata`
+- `sfc::parse_sfc`
+- `sfc::SfcDescriptor`
 - `ScopeChain`
 - `SymbolTable`
 
