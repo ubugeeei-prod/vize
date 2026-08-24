@@ -53,16 +53,66 @@ pub fn load_matrix() -> Matrix {
     assert_eq!(matrix.claim, "current-canon-maestro-behavior-only");
     assert!(!matrix.normalization.is_empty());
     assert!(!matrix.unproven.is_empty());
-    for required in &matrix.required_coverage {
-        assert!(
-            matrix
-                .fixtures
-                .iter()
-                .any(|fixture| fixture.coverage.contains(required)),
-            "missing required TS-40 coverage: {required}"
-        );
+    let expected_required_coverage = [
+        "utf8",
+        "crlf",
+        "recovery",
+        "dual-script",
+        "options-api",
+        "vue2",
+        "generic-sfc",
+        "jsx",
+        "tsx",
+        "props",
+        "emits",
+        "slots",
+        "navigation-ranges",
+        "local-vue-import",
+    ];
+    assert_exact_strings(&matrix.required_coverage, &expected_required_coverage);
+
+    let expected_fixture_coverage: &[(&str, &[&str])] = &[
+        (
+            "utf8-crlf-props",
+            &["utf8", "crlf", "props", "navigation-ranges"],
+        ),
+        ("parse-recovery", &["recovery"]),
+        (
+            "dual-scripts-emits",
+            &["dual-script", "emits", "navigation-ranges"],
+        ),
+        (
+            "options-api-slots",
+            &["options-api", "slots", "props", "navigation-ranges"],
+        ),
+        (
+            "generic-sfc",
+            &["generic-sfc", "props", "navigation-ranges"],
+        ),
+        ("jsx-script", &["jsx", "navigation-ranges"]),
+        ("tsx-script", &["tsx", "props", "navigation-ranges"]),
+        (
+            "parent-local-import",
+            &["local-vue-import", "props", "navigation-ranges"],
+        ),
+        ("child-local-import", &["props", "navigation-ranges"]),
+        ("vue2-native-event", &["vue2", "emits", "navigation-ranges"]),
+    ];
+    assert_eq!(matrix.fixtures.len(), expected_fixture_coverage.len());
+    for (fixture, (expected_id, expected_coverage)) in
+        matrix.fixtures.iter().zip(expected_fixture_coverage)
+    {
+        assert_eq!(fixture.id, *expected_id);
+        assert_exact_strings(&fixture.coverage, expected_coverage);
     }
     matrix
+}
+
+fn assert_exact_strings(actual: &[String], expected: &[&str]) {
+    assert_eq!(actual.len(), expected.len());
+    for (actual, expected) in actual.iter().zip(expected) {
+        assert_eq!(actual, expected);
+    }
 }
 
 pub(super) fn workspace_root() -> PathBuf {

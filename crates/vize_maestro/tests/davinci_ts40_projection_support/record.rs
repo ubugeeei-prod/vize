@@ -110,8 +110,8 @@ impl ProjectionRecord {
             }
         );
         if fixture.legacy_vue2 && !cfg!(feature = "legacy") {
-            assert!(self.canon.status.starts_with("feature-disabled:"));
-            assert!(self.maestro.status.starts_with("feature-disabled:"));
+            assert_eq!(self.canon.status, "feature-disabled:vize_canon/legacy");
+            assert_eq!(self.maestro.status, "feature-disabled:vize_maestro/legacy");
             assert!(self.content_mapper.mapping_count > 0);
             assert!(self.content_mapper.authored_hit_count > 0);
             return;

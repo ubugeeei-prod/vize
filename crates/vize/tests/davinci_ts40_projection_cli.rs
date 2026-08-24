@@ -13,7 +13,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use sha2::{Digest, Sha256};
-use vize_carton::{String, cstr};
+use vize_carton::{String, append, cstr};
 
 #[test]
 #[allow(clippy::disallowed_macros)] // `insta` expands to `format!`.
@@ -32,6 +32,7 @@ fn show_virtual_ts_presents_the_exact_fixture_matrix() {
         .join(cstr!("davinci-ts40-cli-{}", std::process::id()).as_str());
     let _ = std::fs::remove_dir_all(&project);
     std::fs::create_dir_all(project.join("src")).unwrap();
+    let project = project.canonicalize().unwrap();
 
     let mut expected = BTreeMap::new();
     for fixture in fixtures {
@@ -120,7 +121,23 @@ fn show_virtual_ts_presents_the_exact_fixture_matrix() {
     );
 
     let stderr = std::str::from_utf8(&output.stderr).unwrap();
-    assert!(stderr.contains(vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME));
+    let mut expected_stderr = cstr!(
+        "Connected to check-server at {}\nType checking {} Vue files...\n\n=== {} ===\n{}\n",
+        socket.display(),
+        fixtures.len(),
+        vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME,
+        vize_canon::virtual_ts::SHARED_PREAMBLE_DTS
+    );
+    for file in json["files"].as_array().unwrap() {
+        let path = project.join(file["file"].as_str().unwrap());
+        let virtual_ts = file["virtualTs"].as_str().unwrap();
+        append!(
+            expected_stderr,
+            "\n=== {} ===\n{virtual_ts}\n",
+            path.display()
+        );
+    }
+    assert_eq!(stderr, expected_stderr);
     let _ = std::fs::remove_dir_all(&project);
 }
 
