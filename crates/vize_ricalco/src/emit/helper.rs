@@ -7,6 +7,7 @@
 #[derive(Clone, Copy)]
 pub(super) enum Helper {
     ResolveComponent,
+    ResolveDynamicComponent,
     WithKeys,
     WithModifiers,
     ToDisplayString,
@@ -28,11 +29,18 @@ pub(super) enum Helper {
     RenderList,
     CreateSlots,
     WithCtx,
+    Teleport,
+    Suspense,
+    KeepAlive,
+    BaseTransition,
+    Transition,
+    TransitionGroup,
 }
 
 impl Helper {
-    pub(super) const ALL: [Self; 22] = [
+    pub(super) const ALL: [Self; 29] = [
         Self::ResolveComponent,
+        Self::ResolveDynamicComponent,
         Self::WithKeys,
         Self::WithModifiers,
         Self::ToDisplayString,
@@ -54,11 +62,17 @@ impl Helper {
         Self::RenderList,
         Self::CreateSlots,
         Self::WithCtx,
+        Self::Teleport,
+        Self::Suspense,
+        Self::KeepAlive,
+        Self::BaseTransition,
+        Self::Transition,
+        Self::TransitionGroup,
     ];
 
     pub(super) const fn rank(self) -> u8 {
         match self {
-            Self::ResolveComponent => 0,
+            Self::ResolveComponent | Self::ResolveDynamicComponent => 0,
             Self::WithKeys | Self::WithModifiers => 2,
             Self::ToDisplayString => 3,
             Self::RenderSlot | Self::CreateElementVNode | Self::CreateVNode => 4,
@@ -72,7 +86,15 @@ impl Helper {
             Self::CreateBlock | Self::CreateElementBlock => 7,
             Self::Fragment => 8,
             Self::CreateComment | Self::CreateText => 9,
-            Self::RenderList | Self::CreateSlots | Self::WithCtx => 10,
+            Self::RenderList
+            | Self::CreateSlots
+            | Self::WithCtx
+            | Self::Teleport
+            | Self::Suspense
+            | Self::KeepAlive
+            | Self::BaseTransition
+            | Self::Transition
+            | Self::TransitionGroup => 10,
         }
     }
 
@@ -100,12 +122,20 @@ impl Helper {
             Self::CreateSlots => 524288,
             Self::WithCtx => 1048576,
             Self::RenderSlot => 2097152,
+            Self::Teleport => 4194304,
+            Self::Suspense => 8388608,
+            Self::KeepAlive => 16777216,
+            Self::BaseTransition => 33554432,
+            Self::Transition => 67108864,
+            Self::TransitionGroup => 134217728,
+            Self::ResolveDynamicComponent => 268435456,
         }
     }
 
     pub(super) const fn name(self) -> &'static str {
         match self {
             Self::ResolveComponent => "resolveComponent",
+            Self::ResolveDynamicComponent => "resolveDynamicComponent",
             Self::WithKeys => "withKeys",
             Self::WithModifiers => "withModifiers",
             Self::ToDisplayString => "toDisplayString",
@@ -127,12 +157,19 @@ impl Helper {
             Self::RenderList => "renderList",
             Self::CreateSlots => "createSlots",
             Self::WithCtx => "withCtx",
+            Self::Teleport => "Teleport",
+            Self::Suspense => "Suspense",
+            Self::KeepAlive => "KeepAlive",
+            Self::BaseTransition => "BaseTransition",
+            Self::Transition => "Transition",
+            Self::TransitionGroup => "TransitionGroup",
         }
     }
 
     pub(super) const fn alias(self) -> &'static str {
         match self {
             Self::ResolveComponent => "_resolveComponent",
+            Self::ResolveDynamicComponent => "_resolveDynamicComponent",
             Self::WithKeys => "_withKeys",
             Self::WithModifiers => "_withModifiers",
             Self::ToDisplayString => "_toDisplayString",
@@ -154,6 +191,12 @@ impl Helper {
             Self::RenderList => "_renderList",
             Self::CreateSlots => "_createSlots",
             Self::WithCtx => "_withCtx",
+            Self::Teleport => "_Teleport",
+            Self::Suspense => "_Suspense",
+            Self::KeepAlive => "_KeepAlive",
+            Self::BaseTransition => "_BaseTransition",
+            Self::Transition => "_Transition",
+            Self::TransitionGroup => "_TransitionGroup",
         }
     }
 }

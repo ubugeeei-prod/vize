@@ -16,14 +16,18 @@
 //! and **implicit default slots** (`withCtx` / `_: 1|2`, including text,
 //! static-vnode hoists, hoisted static `ui.for` items, named / scoped
 //! `<template>` slots, `createSlots` for `v-if` / `v-for` slot
-//! templates, and **slot outlets** (`renderSlot` / `_: 3 FORWARDED`)).
-//! Object `v-on`, `.native`, template fragments, filters, and builtins
+//! templates, **slot outlets** (`renderSlot` / `_: 3 FORWARDED`), and
+//! Vue builtins (`Teleport` / `KeepAlive` / `Transition` / `Suspense`),
+//! and `<component :is>` (`resolveDynamicComponent`)).
+//! Object `v-on`, `.native`, template fragments, and filters
 //! stay [`EmitError::Unsupported`]. The old
 //! lane stays the shipped compile path; [`super::DOM_LANE_FLAG`] is
 //! named here and *read* in the atelier_dom witness.
 
 #[path = "emit/buf.rs"]
 mod buf;
+#[path = "emit/builtin.rs"]
+mod builtin;
 #[path = "emit/children.rs"]
 mod children;
 #[path = "emit/component.rs"]
@@ -72,7 +76,8 @@ use self::vnode::emit_root;
 
 /// Transform visit order for helpers the shipped lane parks on
 /// `root.helpers` (`CreateElementVNode` on native elements,
-/// `ResolveComponent` on components, `RenderSlot` on outlets).
+/// `ResolveComponent` on components, `RenderSlot` on outlets,
+/// `v-if` / `v-for` block helpers).
 fn prefer_transform_helpers(buf: &mut Buf, region: &Region<'_>) {
     for op in region.ops.iter() {
         match op {
@@ -89,12 +94,20 @@ fn prefer_transform_helpers(buf: &mut Buf, region: &Region<'_>) {
                 prefer_transform_helpers(buf, &slot.fallback);
             }
             Op::If(if_op) => {
+                buf.prefer(Helper::OpenBlock);
+                buf.prefer(Helper::CreateBlock);
+                buf.prefer(Helper::CreateElementBlock);
+                buf.prefer(Helper::Fragment);
+                buf.prefer(Helper::CreateComment);
                 for branch in if_op.branches.iter() {
                     prefer_transform_helpers(buf, &branch.region);
                 }
             }
             Op::For(for_op) => {
                 buf.prefer(Helper::RenderList);
+                buf.prefer(Helper::OpenBlock);
+                buf.prefer(Helper::CreateBlock);
+                buf.prefer(Helper::Fragment);
                 prefer_transform_helpers(buf, &for_op.region);
             }
             Op::Text(_) | Op::Interpolation(_) => {}
