@@ -47,6 +47,10 @@ test("crates.io handoff workflow recovers the JSX and Patina release set", () =>
   ]) {
     assert.equal(workflow.jobs?.[jobName]?.if, "github.event_name == 'push'", jobName);
   }
+  assert.match(
+    workflow.jobs?.["rollback-unpublished-tag"]?.if ?? "",
+    /github\.event_name == 'push'/,
+  );
 
   const job = workflow.jobs?.["release-crates-handoff"];
   assert.ok(job);

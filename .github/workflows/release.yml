@@ -556,7 +556,7 @@ jobs:
     permissions: { actions: write, contents: read, issues: read }
     uses: ./.github/workflows/release-preflight.yml
   rollback-unpublished-tag:
-    if: ${{ always() && needs.release-preflight.result != 'success' }}
+    if: ${{ github.event_name == 'push' && always() && needs.release-preflight.result != 'success' }}
     needs: release-preflight
     permissions: { contents: write }
     uses: ./.github/workflows/release-tag-rollback.yml

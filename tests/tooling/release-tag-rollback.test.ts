@@ -198,7 +198,10 @@ test("release calls a credential-minimal hosted rollback workflow after prefligh
   };
   const caller = release.jobs["rollback-unpublished-tag"];
   assert.equal(caller.needs, "release-preflight");
-  assert.equal(caller.if, "${{ always() && needs.release-preflight.result != 'success' }}");
+  assert.equal(
+    caller.if,
+    "${{ github.event_name == 'push' && always() && needs.release-preflight.result != 'success' }}",
+  );
   assert.deepEqual(caller.permissions, { contents: "write" });
   assert.equal(caller.uses, "./.github/workflows/release-tag-rollback.yml");
   assert.deepEqual(caller.with, {
