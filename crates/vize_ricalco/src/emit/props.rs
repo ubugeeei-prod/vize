@@ -9,7 +9,9 @@ use super::EmitCx;
 use super::EmitError;
 use super::on::{admit_on, event_key_for, needs_hydration};
 
-pub(super) use super::props_bind::{js_value, static_bind_name};
+pub(super) use super::props_bind::{
+    StaticBindKeyCasing, has_prop_modifier, js_value, static_bind_key, static_bind_name,
+};
 pub(super) use super::props_object::{Piece, emit_props_object, pieces};
 
 pub(super) struct Patch {
@@ -33,9 +35,6 @@ pub(super) fn admit_bindings(
             }
             BindingOp::Bind(bind) => {
                 let name = static_bind_name(bind)?;
-                if !bind.modifiers.is_empty() {
-                    return Err(EmitError::Unsupported);
-                }
                 let vize_disegno::expr::ExprRef::Js(_) =
                     bind.value.ok_or(EmitError::Unsupported)?
                 else {
@@ -72,19 +71,25 @@ pub(super) fn bind_patch(bindings: &[BindingOp<'_>], is_component: bool) -> Patc
     for binding in bindings.iter() {
         match binding {
             BindingOp::Bind(bind) => {
-                let Ok(name) = static_bind_name(bind) else {
+                let Ok(raw_name) = static_bind_name(bind) else {
                     continue;
                 };
-                match name {
+                match raw_name {
                     "ref" => flag |= 512,
                     "class" if !is_component => flag |= 2,
                     "style" if !is_component => flag |= 4,
                     "key" => {}
                     _ => {
                         flag |= 8;
-                        let owned = String::from(name);
+                        let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve) else {
+                            continue;
+                        };
+                        let owned = String::from(key.as_str());
                         if !dynamic_props.contains(&owned) {
                             dynamic_props.push(owned);
+                        }
+                        if has_prop_modifier(bind) {
+                            flag |= 32;
                         }
                     }
                 }

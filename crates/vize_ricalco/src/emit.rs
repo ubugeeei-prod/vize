@@ -37,7 +37,9 @@
 //! (static refs, dynamic `:ref`, and `ref_for` in `v-for`), and **Vue 2
 //! `.native` event sugar** (accepted and stripped like the shipped lane),
 //! and **static+dynamic `style` merge** (`[{"color":"red"}, s]`).
-//! Filters stay [`EmitError::Unsupported`].
+//! Static-name `v-bind` modifiers (`.camel`, `.prop`, `.attr`, plus the
+//! dot shorthand) are realized into the shipped DOM prop-key shape. Filters
+//! and dynamic-argument bind modifiers stay [`EmitError::Unsupported`].
 //! The old lane stays the shipped compile path; [`super::DOM_LANE_FLAG`]
 //! is named here and *read* in the atelier_dom witness.
 

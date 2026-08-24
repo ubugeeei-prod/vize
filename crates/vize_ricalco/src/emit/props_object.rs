@@ -10,7 +10,7 @@ use super::EmitError;
 use super::buf::Buf;
 use super::js::{escape_js_string, push_ident_key};
 use super::on;
-use super::props_bind::{js_value, static_bind_name};
+use super::props_bind::{StaticBindKeyCasing, js_value, static_bind_key, static_bind_name};
 
 pub(super) fn emit_props_object(
     cx: &mut EmitCx<'_>,
@@ -238,12 +238,13 @@ fn emit_bind_pair(
     bind: &BindOp<'_>,
     skip_normalize: bool,
 ) -> Result<(), EmitError> {
-    let name = static_bind_name(bind)?;
+    let raw_name = static_bind_name(bind)?;
+    let key = static_bind_key(bind, StaticBindKeyCasing::Preserve)?;
     let js = js_value(bind)?;
-    emit_ref_for(cx, name);
-    push_ident_key(cx, name);
+    emit_ref_for(cx, key.as_str());
+    push_ident_key(cx, key.as_str());
     cx.buf.push(": ");
-    match name {
+    match raw_name {
         "class" => emit_class_value(cx, pieces, bind, js, skip_normalize),
         "style" => {
             super::style::emit_style_value(cx, static_style_piece(pieces), bind, js, skip_normalize)

@@ -15,7 +15,10 @@ use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
 use super::on::{event_key_for, needs_hydration};
-use super::props::{Patch, Piece, emit_props_object, js_value, pieces, static_bind_name};
+use super::props::{
+    Patch, Piece, StaticBindKeyCasing, emit_props_object, has_prop_modifier, js_value, pieces,
+    static_bind_key, static_bind_name,
+};
 
 pub(super) fn has_object_spread(bindings: &[BindingOp<'_>]) -> bool {
     bindings.iter().any(|binding| match binding {
@@ -50,19 +53,25 @@ pub(super) fn object_patch(bindings: &[BindingOp<'_>], is_component: bool) -> Pa
             BindingOp::Bind(bind) if bind.name.is_none() => {}
             BindingOp::On(on) if on.name.is_none() => {}
             BindingOp::Bind(bind) => {
-                let Ok(name) = static_bind_name(bind) else {
+                let Ok(raw_name) = static_bind_name(bind) else {
                     continue;
                 };
-                if name == "ref" {
+                if raw_name == "ref" {
                     flag |= 512;
                     continue;
                 }
-                if matches!(name, "class" | "style" | "key") {
+                if matches!(raw_name, "class" | "style" | "key") {
                     continue;
                 }
-                let owned = String::from(name);
+                let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve) else {
+                    continue;
+                };
+                let owned = String::from(key.as_str());
                 if !dynamic_props.contains(&owned) {
                     dynamic_props.push(owned);
+                }
+                if has_prop_modifier(bind) {
+                    flag |= 32;
                 }
             }
             BindingOp::On(on) => {

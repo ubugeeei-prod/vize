@@ -153,9 +153,12 @@ fn emit_props(cx: &mut EmitCx<'_>, slot: &SlotOp<'_>, key: Option<&str>) -> Resu
                 cx.buf.push("\"");
             }
             Piece::Bind(bind) => {
-                let name = super::props::static_bind_name(bind)?;
+                let key = super::props::static_bind_key(
+                    bind,
+                    super::props::StaticBindKeyCasing::Camelize,
+                )?;
                 let js = js_value(bind)?;
-                push_camel_key(cx, name);
+                push_key(cx, key.as_str());
                 cx.buf.push(": ");
                 cx.buf.push(js.source);
             }
@@ -174,11 +177,15 @@ fn emit_props(cx: &mut EmitCx<'_>, slot: &SlotOp<'_>, key: Option<&str>) -> Resu
 
 fn push_camel_key(cx: &mut EmitCx<'_>, name: &str) {
     let key = camelize(name);
-    if is_valid_js_identifier(key.as_str()) {
-        cx.buf.push(key.as_str());
+    push_key(cx, key.as_str());
+}
+
+fn push_key(cx: &mut EmitCx<'_>, key: &str) {
+    if is_valid_js_identifier(key) {
+        cx.buf.push(key);
     } else {
         cx.buf.push("\"");
-        cx.buf.push(escape_js_string(key.as_str()).as_str());
+        cx.buf.push(escape_js_string(key).as_str());
         cx.buf.push("\"");
     }
 }
