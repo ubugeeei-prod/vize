@@ -6,11 +6,11 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{String, cstr};
 use vize_davinci::id::NodeId;
-use vize_disegno::op::{DynamicName, SlotContentOp};
-use vize_disegno::provenance::ProvenanceRecord;
-use vize_disegno::scope::{ScopeBinding, ScopeOrigin};
+use vize_s0::{String, cstr};
+use vize_s2::op::{DynamicName, SlotContentOp};
+use vize_s2::provenance::ProvenanceRecord;
+use vize_s2::scope::{ScopeBinding, ScopeOrigin};
 
 use super::consume::{Channels, SlotSpelling};
 use super::{RULE_DEFAULT_NAME, SlotBound, SlotName, SlotParams};

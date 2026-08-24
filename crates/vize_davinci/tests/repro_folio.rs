@@ -7,9 +7,9 @@
 //! normalization-by-first-print for scrambled input, and every rejection
 //! asserted on the exact `FolioError`.
 
-use vize_carton::{FxHashMap, String};
 use vize_davinci::folio::repro::{ReproFolio, failure_text};
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
+use vize_s0::{FxHashMap, String};
 
 const CANONICAL: &str = "[repro]\n\
 pipeline=template(transform,codegen)\n\

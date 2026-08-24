@@ -9,9 +9,9 @@
 //!
 //! # Why this test does not re-validate the export schema
 //!
-//! `TimingObserver` records through `vize_carton::profiler::record_attributed`,
+//! `TimingObserver` records through `vize_s0::profiler::record_attributed`,
 //! which is the same serializer path P0-11's
-//! `crates/vize_carton/tests/davinci_profile_export.rs` already validates
+//! `crates/vize_s0/tests/davinci_profile_export.rs` already validates
 //! against `davinci-road/plan/profile-export.schema.json` — with a strict
 //! validator that errors on any schema keyword it does not implement. Copying
 //! that validator here would be a second implementation of the thing whose
@@ -22,9 +22,9 @@
 //! The profiler is process-global, so this file holds a single `#[test]` in
 //! its own binary — the `davinci_expr_reparse_floor.rs` shape.
 
-use vize_carton::profiler::{ProfileExportBudget, ProfileExportOptions, global_profiler};
 use vize_davinci::pass::observer::TimingObserver;
 use vize_davinci::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved, run_pipeline};
+use vize_s0::profiler::{ProfileExportBudget, ProfileExportOptions, global_profiler};
 
 const NORMALIZE: PassDesc = PassDesc::new(
     "normalize",

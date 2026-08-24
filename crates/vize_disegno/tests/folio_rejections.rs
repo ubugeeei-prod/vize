@@ -4,9 +4,9 @@
 //! Every message here is part of the format contract. The common prefix
 //! `P` puts the body's first line at line 5.
 
-use vize_carton::String;
 use vize_davinci::folio::{Folio, FolioError};
 use vize_disegno::folio::DisegnoFolio;
+use vize_s0::String;
 
 /// Valid page prefix: `[disegno]` header, `ops=0`, blank, `[disegno.ops]`.
 const P: &str = "[disegno]\nops=0\n\n[disegno.ops]\n";

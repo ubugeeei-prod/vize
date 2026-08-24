@@ -7,9 +7,9 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::String;
-use vize_disegno::expr::ExprRef;
-use vize_disegno::op::{Attribute, BindOp, BindingOp, OnOp};
+use vize_s0::String;
+use vize_s2::expr::ExprRef;
+use vize_s2::op::{Attribute, BindOp, BindingOp, OnOp};
 
 use super::EmitCx;
 use super::EmitError;

@@ -7,8 +7,8 @@
 mod support;
 
 use support::artifact;
-use vize_carton::Span;
 use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
+use vize_s0::Span;
 
 #[test]
 fn a_v_if_chain_groups_into_one_region_owning_if() {

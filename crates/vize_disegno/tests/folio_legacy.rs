@@ -3,7 +3,6 @@
 //! Split from `folio_laws.rs` so the original reference page stays the
 //! Vue 3 family pin and this file stays inside the source budget.
 
-use vize_carton::{Allocator, Box, Span, String, Vec as ArenaVec};
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_disegno::expr::{ExprRef, JsExpr, VueFilterExpr};
 use vize_disegno::folio::{
@@ -13,6 +12,7 @@ use vize_disegno::folio::{
 use vize_disegno::op::{
     BindingOp, ComponentOp, InterpolationOp, Op, Region, VueSlotScopeOp, VueSyncOp,
 };
+use vize_s0::{Allocator, Box, Span, String, Vec as ArenaVec};
 
 const CANONICAL: &str = "\
 [disegno]

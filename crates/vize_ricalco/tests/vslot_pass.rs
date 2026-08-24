@@ -9,11 +9,11 @@
 mod support;
 
 use vize_davinci::id::NodeId;
-use vize_disegno::scope::{ScopeOrigin, ScopeTag};
 use vize_ricalco::pass::vslot::{
     DUPLICATE_MESSAGE, EXTRANEOUS_MESSAGE, MISPLACED_MESSAGE, MIXED_MESSAGE, RULE_DEFAULT_NAME,
     RULE_IMPLICIT_DEFAULT, SlotBound, SlotCarrier, SlotFacts, SlotGroup, SlotName, SlotParams,
 };
+use vize_s2::scope::{ScopeOrigin, ScopeTag};
 
 use support::{assert_transformed_sound, with_lowered, with_transformed};
 

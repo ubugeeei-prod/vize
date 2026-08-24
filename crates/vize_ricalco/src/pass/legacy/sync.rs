@@ -1,8 +1,8 @@
 //! `:foo.sync="bar"` → `ui.bind` + `@update:foo="$event => ((bar) = $event)"`.
 
-use vize_carton::{Allocator, Box, String, Vec};
-use vize_disegno::expr::ExprRef;
-use vize_disegno::op::{BindOp, BindingOp, DynamicName, OnOp, VueSyncOp};
+use vize_s0::{Allocator, Box, String, Vec};
+use vize_s2::expr::ExprRef;
+use vize_s2::op::{BindOp, BindingOp, DynamicName, OnOp, VueSyncOp};
 
 /// Expand every `vue.sync` in `bindings` into a bind plus a listener,
 /// inserted immediately after, matching the shipped pre-transform's

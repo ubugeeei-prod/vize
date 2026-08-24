@@ -1,6 +1,6 @@
 //! Walk helpers for `createSlots` entry collection.
 
-use vize_disegno::op::{BindingOp, ElementOp, ForOp, IfOp, Op, Region, SlotContentOp};
+use vize_s2::op::{BindingOp, ElementOp, ForOp, IfOp, Op, Region, SlotContentOp};
 
 use super::EmitCx;
 use super::slots::is_slot_template;

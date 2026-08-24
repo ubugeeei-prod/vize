@@ -22,7 +22,7 @@
 //!   the lowering for the same comment-boundary reason, and because
 //!   P2-5b assigns the [`OpaqueReason::Compound`] class "only [to] the
 //!   S1→S2 lowering". The pessimal laws
-//!   (`vize_disegno::expr::opaque`) bind every compound from its first
+//!   (`vize_s2::expr::opaque`) bind every compound from its first
 //!   byte: never constant, equal to nothing, byte-verbatim-or-refusal —
 //!   so nothing downstream may compile from the rebuilt source text;
 //!   [`TextFacts`] is the structured view realization compiles from.
@@ -82,17 +82,17 @@
 //! id — dense over the compound family. Every consumption leaves a
 //! provenance record (`pass.text.compound`).
 //!
-//! [`OpaqueReason::Compound`]: vize_disegno::expr::OpaqueReason::Compound
+//! [`OpaqueReason::Compound`]: vize_s2::expr::OpaqueReason::Compound
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{String, cstr};
 use vize_davinci::id::NodeId;
 use vize_davinci::pass::{Fusability, PassDesc, PassKind, Preserved};
 use vize_davinci::side_table::SideTable;
-use vize_disegno::expr::{ExprRef, OpaqueReason};
-use vize_disegno::op::Op;
-use vize_disegno::provenance::ProvenanceRecord;
+use vize_s0::{String, cstr};
+use vize_s2::expr::{ExprRef, OpaqueReason};
+use vize_s2::op::Op;
+use vize_s2::provenance::ProvenanceRecord;
 
 use super::walk::{PageWalk, assert_accounting};
 use crate::lower::{Lowered, TextPart, TextParts, rebuild_source};
@@ -255,7 +255,7 @@ fn consume_compound(
     facts: &mut SideTable<TextFacts>,
     id: Option<NodeId>,
     expression: &ExprRef<'_>,
-    span: vize_carton::Span,
+    span: vize_s0::Span,
 ) {
     let ExprRef::Opaque(opaque) = expression else {
         return;

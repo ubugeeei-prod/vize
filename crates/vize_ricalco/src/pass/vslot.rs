@@ -86,11 +86,11 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::String;
 use vize_davinci::id::NodeId;
 use vize_davinci::pass::{Fusability, PassDesc, PassKind, Preserved};
 use vize_davinci::side_table::SideTable;
-use vize_disegno::scope::{ScopeOrigin, ScopeTag};
+use vize_s0::String;
+use vize_s2::scope::{ScopeOrigin, ScopeTag};
 
 mod consume;
 mod group;

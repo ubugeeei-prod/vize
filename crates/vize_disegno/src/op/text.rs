@@ -1,6 +1,6 @@
 //! `ui.text` / `ui.interpolation` payloads.
 
-use vize_carton::Span;
+use vize_s0::Span;
 
 use crate::expr::ExprRef;
 

@@ -9,7 +9,7 @@
 
 use core::fmt::{Result, Write};
 
-use vize_carton::Span;
+use vize_s0::Span;
 
 use super::DisegnoFolio;
 use super::owned::{FolioAttribute, FolioBinding, FolioExpr, FolioName, FolioOp};

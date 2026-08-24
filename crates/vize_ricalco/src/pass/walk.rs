@@ -17,7 +17,7 @@
 //! here, and both shapes end at the same accounting assertion.
 
 use vize_davinci::id::NodeId;
-use vize_disegno::op::Op;
+use vize_s2::op::Op;
 
 /// The page-order id state of one pass run: a mirror of `Cx::mint_op`'s
 /// numbering, saturation included.

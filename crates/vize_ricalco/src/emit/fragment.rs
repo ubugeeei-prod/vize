@@ -4,8 +4,8 @@
 //! walks as separate S1 children) wrap in
 //! `_createElementBlock(_Fragment, …, 64 /* STABLE_FRAGMENT */)`.
 
-use vize_disegno::expr::{ExprRef, OpaqueReason};
-use vize_disegno::op::{InterpolationOp, Op, Region};
+use vize_s2::expr::{ExprRef, OpaqueReason};
+use vize_s2::op::{InterpolationOp, Op, Region};
 
 use super::EmitCx;
 use super::EmitError;

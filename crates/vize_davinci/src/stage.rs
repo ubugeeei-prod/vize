@@ -1,6 +1,6 @@
 //! Canonical Davinci stage names and their current crate spellings.
 //!
-//! Human-facing implementation names are the short stage aliases (`s1`,
+//! Human-facing implementation names are the short stage aliases (`s0`, `s1`,
 //! `s2`, `s1-to-s2`). The art-name packages are historical package ids kept
 //! for compatibility until each crate can be mechanically renamed.
 
@@ -34,6 +34,14 @@ pub struct ConversionCrate {
     pub role: &'static str,
 }
 
+/// S0: the source, arena, compact-storage, and span foundation.
+pub const S0: StageCrate = StageCrate {
+    id: "s0",
+    crate_alias: "vize_s0",
+    package: "vize_carton",
+    role: "source model and compiler storage foundation",
+};
+
 /// S1: the lossless Vue-template surface tree.
 pub const S1: StageCrate = StageCrate {
     id: "s1",
@@ -61,17 +69,18 @@ pub const S1_TO_S2: ConversionCrate = ConversionCrate {
 };
 
 /// Artifact stage crates that exist in the workspace today.
-pub const ARTIFACT_STAGES: &[StageCrate] = &[S1, S2];
+pub const ARTIFACT_STAGES: &[StageCrate] = &[S0, S1, S2];
 
 /// Conversion crates that exist in the workspace today.
 pub const CONVERSIONS: &[ConversionCrate] = &[S1_TO_S2];
 
 #[cfg(test)]
 mod tests {
-    use super::{ARTIFACT_STAGES, CONVERSIONS, S1, S1_TO_S2, S2};
+    use super::{ARTIFACT_STAGES, CONVERSIONS, S0, S1, S1_TO_S2, S2};
 
     #[test]
     fn stage_aliases_are_the_preferred_implementation_names() {
+        assert_eq!(S0.crate_alias, "vize_s0");
         assert_eq!(S1.crate_alias, "vize_s1");
         assert_eq!(S2.crate_alias, "vize_s2");
         assert_eq!(S1_TO_S2.crate_alias, "vize_s1_to_s2");
@@ -79,6 +88,7 @@ mod tests {
 
     #[test]
     fn historical_package_ids_stay_visible_until_rename_prs() {
+        assert_eq!(S0.package, "vize_carton");
         assert_eq!(S1.package, "vize_sinopia");
         assert_eq!(S2.package, "vize_disegno");
         assert_eq!(S1_TO_S2.package, "vize_ricalco");
@@ -87,7 +97,7 @@ mod tests {
     #[test]
     fn conversion_names_its_stage_edges() {
         assert_eq!((S1_TO_S2.from, S1_TO_S2.to), (S1.id, S2.id));
-        assert_eq!(ARTIFACT_STAGES.len(), 2);
+        assert_eq!(ARTIFACT_STAGES.len(), 3);
         assert_eq!(CONVERSIONS.len(), 1);
     }
 }

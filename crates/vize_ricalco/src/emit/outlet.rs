@@ -5,9 +5,9 @@
 //! forwards an outlet uses `_: 3 /* FORWARDED */` unless it sits inside
 //! a scoped `withCtx` (then `_: 2` + `DYNAMIC_SLOTS`).
 
-use vize_carton::camelize;
-use vize_disegno::expr::{ExprRef, OpaqueReason};
-use vize_disegno::op::{BindingOp, DynamicName, InterpolationOp, Op, Region, SlotOp};
+use vize_s0::camelize;
+use vize_s2::expr::{ExprRef, OpaqueReason};
+use vize_s2::op::{BindingOp, DynamicName, InterpolationOp, Op, Region, SlotOp};
 
 use super::EmitCx;
 use super::EmitError;

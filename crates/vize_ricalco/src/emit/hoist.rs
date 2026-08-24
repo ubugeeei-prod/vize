@@ -6,8 +6,8 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::String;
-use vize_disegno::op::{Attribute, ElementOp, Namespace, Op, Region};
+use vize_s0::String;
+use vize_s2::op::{Attribute, ElementOp, Namespace, Op, Region};
 
 use super::EmitCx;
 use super::buf::Buf;

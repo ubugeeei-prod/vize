@@ -10,9 +10,9 @@
 //! type covering every supported field kind (bool / integer / `String`
 //! scalars, a `Vec` list section, an `FxHashMap` sorted map section).
 
-use vize_carton::{FxHashMap, String, cstr};
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
 use vize_davinci::pass::BudgetObserver;
+use vize_s0::{FxHashMap, String, cstr};
 
 /// Every supported field kind on one page.
 #[derive(Debug, Default, PartialEq, Folio)]

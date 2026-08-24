@@ -1,8 +1,8 @@
 //! `ui.bind` accessors shared by props admission and object emit.
 
-use vize_carton::{String, camelize};
-use vize_disegno::expr::{ExprRef, JsExpr};
-use vize_disegno::op::{BindOp, DynamicName};
+use vize_s0::{String, camelize};
+use vize_s2::expr::{ExprRef, JsExpr};
+use vize_s2::op::{BindOp, DynamicName};
 
 use super::EmitCx;
 use super::EmitError;

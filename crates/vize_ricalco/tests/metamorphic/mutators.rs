@@ -101,8 +101,8 @@
 //! the cited armature algorithm): both sides now lower pre-condensed,
 //! so the quotient the justification licenses is already the artifact.
 
-use vize_carton::{Allocator, Box, String, StringBuilder, Vec as ArenaVec};
-use vize_sinopia::{
+use vize_s0::{Allocator, Box, String, StringBuilder, Vec as ArenaVec};
+use vize_s1::{
     Attribute, CloseTag, Element, ElementClose, OpenTag, SurfaceChild, SurfaceTree, Token,
     TokenStatus, render,
 };

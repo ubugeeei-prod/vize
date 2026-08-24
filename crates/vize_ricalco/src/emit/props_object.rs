@@ -1,9 +1,9 @@
 //! Object-literal emission for static attrs plus bind / on / model pieces.
 
 use alloc::vec::Vec as StdVec;
-use vize_carton::{Span, String};
-use vize_disegno::expr::{ExprRef, JsExpr};
-use vize_disegno::op::{Attribute, BindOp, BindingOp, DynamicName, OnOp};
+use vize_s0::{Span, String};
+use vize_s2::expr::{ExprRef, JsExpr};
+use vize_s2::op::{Attribute, BindOp, BindingOp, DynamicName, OnOp};
 
 use super::EmitCx;
 use super::EmitError;

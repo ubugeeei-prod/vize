@@ -1,7 +1,7 @@
 //! Static native HTML element / children emission.
 
-use vize_carton::{String, ensure_sufficient_stack};
-use vize_disegno::op::{Attribute, BindingOp, ElementOp, Op, Region};
+use vize_s0::{String, ensure_sufficient_stack};
+use vize_s2::op::{Attribute, BindingOp, ElementOp, Op, Region};
 
 use super::EmitCx;
 use super::EmitError;

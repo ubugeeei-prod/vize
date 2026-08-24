@@ -8,8 +8,8 @@
 //! containing `=`, ` ` or `"` are outside the contract (the
 //! derived-page "documented edges" rule).
 
-use vize_carton::{Span, String, cstr};
 use vize_davinci::folio::FolioError;
+use vize_s0::{Span, String, cstr};
 
 use super::super::owned::{
     FolioAttribute, FolioBind, FolioBranch, FolioComponent, FolioElement, FolioFor,

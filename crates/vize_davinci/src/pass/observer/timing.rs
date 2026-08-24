@@ -1,8 +1,8 @@
 //! The timing observer: one profile span per **walk**, not per pass.
 //!
-//! Costs are recorded through `vize_carton::profiler`, whose export is P0-11's
+//! Costs are recorded through `vize_s0::profiler`, whose export is P0-11's
 //! [`profile-export.schema.json`](../../../../davinci-road/plan/profile-export.schema.json).
-//! Attribution reuses `vize_carton::profiler::SpanAttribution` — the
+//! Attribution reuses `vize_s0::profiler::SpanAttribution` — the
 //! `{stage, pass, file_id, block, span}` builders that already exist for
 //! exactly this — rather than introducing a second attribution model, which is
 //! the failure the P0-11 scaffolding was landed early to prevent.
@@ -22,12 +22,12 @@
 //!
 //! # Cost when profiling is off
 //!
-//! `vize_carton::profiler` is globally gated by one relaxed atomic load, and
+//! `vize_s0::profiler` is globally gated by one relaxed atomic load, and
 //! this observer takes no timestamp until it has passed that check. Attaching
 //! the observer with profiling disabled therefore costs one atomic load per
 //! walk — not per node, and not per pass.
 
-use vize_carton::profiler::{SpanAttribution, global_profiler};
+use vize_s0::profiler::{SpanAttribution, global_profiler};
 
 use super::{FailEvent, PassEvent, PassObserver, Pipeline};
 
@@ -45,7 +45,7 @@ pub struct TimingObserver {
 /// A walk's open timer plus the attribution it will record under.
 #[derive(Debug)]
 struct WalkSpan {
-    timer: vize_carton::profiler::Timer,
+    timer: vize_s0::profiler::Timer,
     attribution: SpanAttribution,
 }
 

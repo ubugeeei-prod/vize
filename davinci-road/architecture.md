@@ -3,8 +3,10 @@
 > [!NOTE]
 > This is the design-phase architecture. Stage contracts are stable; new
 > implementation code uses the short stage aliases recorded in
-> [charter #11](./README.md#decided-positions). Historical art-name package ids
-> stay visible during the mechanical rename window.
+> [charter #11](./README.md#decided-positions). The exact alias-to-package map
+> and one-way dependency graph live in the
+> [stage dependency policy](./plan/stage-dependencies.md). Historical art-name
+> package ids stay visible during the mechanical rename window.
 
 ## What we take from MLIR, and what we refuse
 
@@ -39,6 +41,10 @@ S4  Emission          structured emitters per target (what we produce)
 ```
 
 ### S0 — Source model
+
+New Davinci implementation code imports this layer as `vize_s0`; its retained
+Cargo package id is `vize_carton`. The alias makes the layer position primary
+without breaking published package identity.
 
 The container layer: SFC descriptor, block boundaries, one **span coordinate
 system** (`Span { start: u32, end: u32 }`, byte offsets into the authored file),
@@ -330,7 +336,8 @@ unattended without lowering the bar.
 ## Fit with workspace culture
 
 New crates start at the `experimental` stability tier and obey the existing
-discipline: `vize_carton` string/collection types (clippy bans), the 350-line
+discipline: `vize_s0` string/collection types (from the `vize_carton` package;
+clippy bans), the 350-line
 source guard (**explicitly reaffirmed for Davinci crates** — charter #22's
 complexity license and file splitting are orthogonal; small files serve
 reviewability, which serves correctness), fixtures-first change classes from

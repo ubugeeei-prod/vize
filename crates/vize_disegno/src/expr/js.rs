@@ -12,7 +12,7 @@
 //! slice + span re-enter an arena (arenas cannot persist - P1-11 - so a
 //! folio can only carry text), and the **S1→S2 lowering** (P2-8). The
 //! P2-5b text expected lowerings to receive armature's retained ASTs;
-//! the S1 that actually landed (P2-7, `vize_sinopia`) is token-level and
+//! the S1 that actually landed (P2-7, `vize_s1`, package `vize_sinopia`) is token-level and
 //! retains no ASTs, so the lowering is where a template expression first
 //! parses on the Davinci lane - through this one admission rule, never a
 //! private variant of it. The deviation is recorded in the P2-8 record.
@@ -27,8 +27,8 @@
 //! build path (P2-12b), where the lane *becomes* the compile path.
 
 use oxc_span::{GetSpan, SourceType};
-use vize_carton::expression_guard::expression_is_safe_to_parse;
-use vize_carton::{Allocator, Span};
+use vize_s0::expression_guard::expression_is_safe_to_parse;
+use vize_s0::{Allocator, Span};
 
 use super::opaque::OpaqueReason;
 
@@ -65,7 +65,7 @@ impl<'a> JsExpr<'a> {
     /// (see [`OpaqueReason`] for the position-classified ones):
     ///
     /// - [`OpaqueReason::NestingRefused`] - the shared nesting guard
-    ///   (`vize_carton::expression_guard`) refused the text before oxc
+    ///   (`vize_s0::expression_guard`) refused the text before oxc
     ///   ever saw it, exactly as every other oxc entry point does.
     /// - [`OpaqueReason::ParseRejected`] - oxc rejected the text, or the
     ///   first complete expression does not cover it (`a++; b++` parses

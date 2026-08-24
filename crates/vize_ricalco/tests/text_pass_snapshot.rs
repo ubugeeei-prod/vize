@@ -15,14 +15,14 @@ use vize_davinci::folio::{Folio, FolioMode};
 
 use support::{assert_transformed_sound, with_transformed};
 
-fn fixture(name: &str) -> vize_carton::String {
+fn fixture(name: &str) -> vize_s0::String {
     let path: PathBuf = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("fixtures")
         .join("text")
         .join(name);
     let text = std::fs::read_to_string(path).expect("committed fixture reads");
-    vize_carton::String::from(text.as_str())
+    vize_s0::String::from(text.as_str())
 }
 
 #[test]

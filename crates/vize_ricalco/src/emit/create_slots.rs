@@ -4,8 +4,8 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{String, ToCompactString};
-use vize_disegno::op::{DynamicName, ElementOp, ForOp, IfOp, Op, Region, SlotContentOp};
+use vize_s0::{String, ToCompactString};
+use vize_s2::op::{DynamicName, ElementOp, ForOp, IfOp, Op, Region, SlotContentOp};
 
 use super::EmitCx;
 use super::EmitError;

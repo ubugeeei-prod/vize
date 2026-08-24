@@ -2,7 +2,7 @@
 //! and the static-or-computed name position they share with
 //! `vue.directive` arguments.
 
-use vize_carton::{Span, Vec};
+use vize_s0::{Span, Vec};
 
 use super::Region;
 use crate::expr::ExprRef;

@@ -15,12 +15,12 @@
 //!
 //! # Coordinates
 //!
-//! A diagnostic keys on [`vize_carton::Span`] — two byte offsets — and nothing
+//! A diagnostic keys on [`vize_s0::Span`] — two byte offsets — and nothing
 //! else. `Position` does not exist: P1-4 retired line/column tracking after
 //! measuring the parser's to be degenerate by construction, and P1-3 shrank
 //! `SourceLocation` from 48 bytes to 8 by making it span-only. Line and column
 //! are **derived at rendering time** from the authored text, via
-//! `vize_carton::line_index::LineIndex`.
+//! `vize_s0::line_index::LineIndex`.
 //!
 //! # Ownership: why the text is owned
 //!
@@ -38,7 +38,7 @@
 
 use alloc::vec::Vec;
 
-use vize_carton::{Span, String};
+use vize_s0::{Span, String};
 
 /// How much a diagnostic claims.
 ///
@@ -248,7 +248,7 @@ impl Diagnostic {
 #[cfg(test)]
 mod tests {
     use super::{Diagnostic, DiagnosticPart, PartKind, Severity, Stage, Witness};
-    use vize_carton::Span;
+    use vize_s0::Span;
 
     #[test]
     fn a_new_diagnostic_carries_no_parts_and_no_witness() {

@@ -5,12 +5,12 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::cstr;
 use vize_davinci::side_table::SideTable;
-use vize_disegno::op::{
+use vize_s0::cstr;
+use vize_s2::op::{
     Attribute, BindingOp, ComponentOp, DynamicName, ElementOp, Namespace, Op, SlotOp,
 };
-use vize_disegno::provenance::ProvenanceRecord;
+use vize_s2::provenance::ProvenanceRecord;
 
 use super::consts::{constant_for_hoist, hoistable_binding};
 use super::{StaticFacts, StaticLevel};
@@ -268,7 +268,7 @@ fn publish(
     facts: &mut SideTable<StaticFacts>,
     id: Option<vize_davinci::id::NodeId>,
     owner: &str,
-    span: vize_carton::Span,
+    span: vize_s0::Span,
     fact: StaticFacts,
 ) {
     // Past id exhaustion there is no key to publish under; the analysis
@@ -282,9 +282,9 @@ fn publish(
         StaticLevel::FullyStatic => "fully-static",
     };
     provenance.push(ProvenanceRecord {
-        rule: vize_carton::String::from("pass.hoist-static.fact"),
+        rule: vize_s0::String::from("pass.hoist-static.fact"),
         node: Some(id),
-        before: vize_carton::String::from(owner),
+        before: vize_s0::String::from(owner),
         after: cstr!(
             "level={level} props={} nested={} native={}",
             fact.props_hoistable,

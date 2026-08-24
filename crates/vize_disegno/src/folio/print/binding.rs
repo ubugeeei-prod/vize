@@ -11,8 +11,8 @@ use super::super::owned::{
     FolioVueDirective, FolioVueMemo, FolioVueOnce, FolioVueSlotScope, FolioVueSync,
 };
 use super::{end_line, indent, print_expr, print_name, quoted};
-use vize_carton::String;
 use vize_davinci::folio::FolioMode;
+use vize_s0::String;
 
 pub(super) fn print_attribute<W: Write>(
     w: &mut W,

@@ -11,13 +11,13 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{Span, String};
 use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
-use vize_disegno::op::{BindingOp, Op};
-use vize_disegno::provenance::ProvenanceRecord;
-use vize_disegno::scope::{ScopeFacts, ScopeTag};
+use vize_s0::{Span, String};
+use vize_s2::op::{BindingOp, Op};
+use vize_s2::provenance::ProvenanceRecord;
+use vize_s2::scope::{ScopeFacts, ScopeTag};
 
 use super::super::walk::PageWalk;
 use super::spell::spelling;

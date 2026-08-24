@@ -50,7 +50,7 @@ pub use foreign::{ForeignExpr, ForeignFact};
 pub use js::JsExpr;
 pub use opaque::{OpaqueExpr, OpaqueReason};
 
-use vize_carton::{Allocator, Span};
+use vize_s0::{Allocator, Span};
 
 /// One expression position's reference: retained JS AST, foreign dialect,
 /// or the classified escape.

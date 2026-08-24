@@ -5,9 +5,9 @@
 //! are the calls. The carrier is not a DOM vnode — P2-11 must skip it.
 //! Spans are **block-relative** via [`Span::to_block_relative`].
 
-use vize_carton::{Allocator, Box, Span, Vec};
-use vize_disegno::expr::ExprRef;
-use vize_disegno::op::{BindingOp, ElementOp, Namespace, Op, Region, VueCssBindOp};
+use vize_s0::{Allocator, Box, Span, Vec};
+use vize_s2::expr::ExprRef;
+use vize_s2::op::{BindingOp, ElementOp, Namespace, Op, Region, VueCssBindOp};
 
 mod scan;
 

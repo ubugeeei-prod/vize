@@ -13,7 +13,7 @@
 //! **dev-dependencies** (stripped on publish), which is where the P2-9
 //! differential comparator sits (`crates/vize_atelier_core/tests/
 //! davinci_s2_transform*.rs`); the pass bodies themselves need a crate
-//! that may depend on `vize_davinci` + `vize_disegno` outright.
+//! that may depend on `vize_davinci` + `vize_s2` outright.
 //!
 //! That crate is this one. `vize_ricalco` is `publish = false`, already
 //! depends downward on both stages, and the passes are the continuation
@@ -21,7 +21,7 @@
 //! one step: `lower` converts, the passes legalize. What lowering leaves
 //! syntactic (a branch `key` attribute, a deferred binding) a pass here
 //! turns semantic, dialect knowledge included, without the neutral pivot
-//! (`vize_disegno`) learning any Vue and without the published legacy
+//! (`vize_s2`) learning any Vue and without the published legacy
 //! lane gaining an edge on the strangler's new lane.
 //!
 //! # The in-phase lane flag (charter #26)
@@ -159,11 +159,11 @@ pub struct S2Facts {
 /// Panics only on a compiler bug: a pipeline pass with no registered
 /// body, or (debug builds) a verifier violation.
 ///
-/// [`VerifyObserver`]: vize_disegno::verify::VerifyObserver
+/// [`VerifyObserver`]: vize_s2::verify::VerifyObserver
 pub fn run_transform<'a, O: PassObserver>(lowered: &mut Lowered<'a>, observer: &mut O) -> S2Facts {
     let mut facts = S2Facts::default();
     #[cfg(debug_assertions)]
-    let mut verify = vize_disegno::verify::VerifyObserver::new();
+    let mut verify = vize_s2::verify::VerifyObserver::new();
 
     let pipeline = legacy::pipeline_for(lowered.caps);
     let outcome = run_pipeline(&pipeline, observer, |event| {
@@ -192,7 +192,7 @@ pub fn run_transform<'a, O: PassObserver>(lowered: &mut Lowered<'a>, observer: &
         #[cfg(debug_assertions)]
         {
             verify.note(event);
-            let folio = vize_disegno::folio::DisegnoFolio::of(&lowered.root.ops);
+            let folio = vize_s2::folio::DisegnoFolio::of(&lowered.root.ops);
             verify.check(event, &folio);
             verify.check_table(event, &folio, &lowered.scopes);
             verify.check_table(event, &folio, &lowered.texts);

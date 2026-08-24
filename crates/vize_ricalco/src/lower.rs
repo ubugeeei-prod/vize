@@ -18,19 +18,19 @@
 //! the law the side tables and the S2 verifier's `verify_table` key on.
 //!
 //! [`Diagnostic`]: vize_davinci::diagnostic::Diagnostic
-//! [`SurfaceError`]: vize_sinopia::SurfaceError
+//! [`SurfaceError`]: vize_s1::SurfaceError
 
 use alloc::vec::Vec as StdVec;
 use core::fmt;
 
-use vize_carton::{Allocator, Span, String};
 use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
 use vize_davinci::side_table::SideTable;
-use vize_sinopia::{SurfaceError, SurfaceTree};
+use vize_s0::{Allocator, Span, String};
+use vize_s1::{SurfaceError, SurfaceTree};
 
-use vize_disegno::op::{Namespace, Region};
-use vize_disegno::provenance::ProvenanceRecord;
-use vize_disegno::scope::ScopeFacts;
+use vize_s2::op::{Namespace, Region};
+use vize_s2::provenance::ProvenanceRecord;
+use vize_s2::scope::ScopeFacts;
 
 mod binding;
 mod bindop;
@@ -80,10 +80,10 @@ pub struct Lowered<'a> {
     /// outlive the arena.
     pub diagnostics: StdVec<Diagnostic>,
     /// One record per lowering decision, in decision order, dropped
-    /// content included (`vize_disegno::provenance`).
+    /// content included (`vize_s2::provenance`).
     pub provenance: StdVec<ProvenanceRecord>,
     /// Hygiene scope facts per binding-introducing op
-    /// (`vize_disegno::scope`).
+    /// (`vize_s2::scope`).
     pub scopes: SideTable<ScopeFacts>,
     /// The recorded parts of every merged text/interpolation run, keyed
     /// by its compound `ui.interpolation` op (P2-9 installment 4,
@@ -108,7 +108,7 @@ pub struct Lowered<'a> {
 /// Total over arbitrary input: malformed source arrives as typed S1
 /// holes and lowers structurally; whatever the op family cannot carry
 /// becomes a diagnostic plus a kept fragment. The only inherited
-/// precondition is [`vize_sinopia::parse`]'s own u32-addressability
+/// precondition is [`vize_s1::parse`]'s own u32-addressability
 /// assertion, which every tree passed here has already satisfied.
 #[must_use]
 pub fn lower<'a>(

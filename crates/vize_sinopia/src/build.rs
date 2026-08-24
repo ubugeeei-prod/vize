@@ -15,7 +15,7 @@
 mod attr;
 mod tag;
 
-use vize_carton::{Allocator, Box, Vec};
+use vize_s0::{Allocator, Box, Vec};
 
 use crate::event::{Event, EventKind};
 use crate::surface::{

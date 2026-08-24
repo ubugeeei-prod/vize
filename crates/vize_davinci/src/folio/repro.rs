@@ -42,7 +42,7 @@
 
 use core::fmt;
 
-use vize_carton::{FxHashMap, String, cstr};
+use vize_s0::{FxHashMap, String, cstr};
 
 use super::page::{PagePrinter, ParseState};
 use super::{Folio, FolioError, FolioMode, page};

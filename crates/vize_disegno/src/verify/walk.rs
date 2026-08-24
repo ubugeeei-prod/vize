@@ -15,7 +15,7 @@
 
 use alloc::vec::Vec;
 
-use vize_carton::{Span, cstr};
+use vize_s0::{Span, cstr};
 
 use super::{Rigor, Violation, ViolationCode};
 use crate::folio::{DisegnoFolio, FolioAttribute, FolioBinding, FolioIf, FolioOp};

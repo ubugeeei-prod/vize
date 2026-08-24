@@ -8,11 +8,11 @@
 
 mod support;
 
-use vize_carton::{Span, String};
 use vize_davinci::id::NodeId;
-use vize_disegno::folio::{FolioExpr, FolioOp};
 use vize_ricalco::lower::{TextPart, rebuild_source};
 use vize_ricalco::pass::TextFacts;
+use vize_s0::{Span, String};
+use vize_s2::folio::{FolioExpr, FolioOp};
 
 use support::{assert_transformed_sound, with_transformed};
 
@@ -46,7 +46,7 @@ fn a_mixed_run_merges_into_one_compound_with_recorded_parts() {
         assert_eq!(
             compound.expression,
             FolioExpr::Opaque {
-                reason: vize_disegno::expr::OpaqueReason::Compound,
+                reason: vize_s2::expr::OpaqueReason::Compound,
                 source: "Hi {{ name }}! You have {{ n }} new mails.".into(),
                 span: Span::new(3, 46),
             }
@@ -199,9 +199,9 @@ fn whitespace_condenses_by_the_armature_rules() {
             .ops
             .iter()
             .map(|op| match op {
-                FolioOp::Element(element) => vize_carton::cstr!("el:{}", element.tag),
-                FolioOp::Text(text) => vize_carton::cstr!("text:{:?}", text.content.as_str()),
-                other => vize_carton::cstr!("{other:?}"),
+                FolioOp::Element(element) => vize_s0::cstr!("el:{}", element.tag),
+                FolioOp::Text(text) => vize_s0::cstr!("text:{:?}", text.content.as_str()),
+                other => vize_s0::cstr!("{other:?}"),
             })
             .collect();
         assert_eq!(

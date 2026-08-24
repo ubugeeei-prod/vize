@@ -10,11 +10,11 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::{Allocator, String, append, cstr};
 use vize_davinci::folio::{Folio, FolioMode};
-use vize_disegno::folio::DisegnoFolio;
 use vize_ricalco::lower;
-use vize_sinopia::parse;
+use vize_s0::{Allocator, String, append, cstr};
+use vize_s1::parse;
+use vize_s2::folio::DisegnoFolio;
 
 use super::mutators::{Mutant, apply, merge_text};
 use super::normalize::{Normalization, normalized_display};

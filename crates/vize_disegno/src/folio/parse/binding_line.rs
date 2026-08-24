@@ -6,8 +6,8 @@
 
 use alloc::vec::Vec;
 
-use vize_carton::{String, cstr};
 use vize_davinci::folio::FolioError;
+use vize_s0::{String, cstr};
 
 use super::super::owned::{
     FolioBind, FolioContract, FolioExpr, FolioModel, FolioName, FolioOn, FolioSlotContent,
@@ -57,7 +57,7 @@ struct OptionalFields {
     name: Option<FolioName>,
     modifiers: Vec<String>,
     expr: Option<FolioExpr>,
-    span: vize_carton::Span,
+    span: vize_s0::Span,
 }
 
 fn optional_fields(

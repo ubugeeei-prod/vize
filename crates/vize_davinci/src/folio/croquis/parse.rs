@@ -15,7 +15,7 @@
 
 use alloc::vec::Vec;
 
-use vize_carton::{FxHashSet, String, cstr};
+use vize_s0::{FxHashSet, String, cstr};
 
 use super::{CroquisFolio, SurfaceEntry};
 use crate::folio::FolioError;

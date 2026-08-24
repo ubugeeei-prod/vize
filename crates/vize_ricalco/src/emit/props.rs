@@ -2,8 +2,8 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::String;
-use vize_disegno::op::{Attribute, BindingOp};
+use vize_s0::String;
+use vize_s2::op::{Attribute, BindingOp};
 
 use super::EmitCx;
 use super::EmitError;

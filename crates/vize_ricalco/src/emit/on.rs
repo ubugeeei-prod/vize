@@ -5,9 +5,9 @@
 use alloc::vec::Vec as StdVec;
 
 use oxc_ast::ast::{ChainElement, Expression};
-use vize_carton::{String, camelize, capitalize};
-use vize_disegno::expr::{ExprRef, JsExpr};
-use vize_disegno::op::{DynamicName, OnOp};
+use vize_s0::{String, camelize, capitalize};
+use vize_s2::expr::{ExprRef, JsExpr};
+use vize_s2::op::{DynamicName, OnOp};
 
 use super::EmitCx;
 use super::EmitError;

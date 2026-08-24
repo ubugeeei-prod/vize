@@ -6,11 +6,11 @@
     clippy::disallowed_methods
 )]
 
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 use vize_s2::{folio::DisegnoFolio, verify::Rigor};
 
 #[test]
-fn s1_s2_and_s1_to_s2_aliases_compile_as_crate_names() {
+fn s0_s1_s2_and_s1_to_s2_aliases_compile_as_crate_names() {
     let allocator = Allocator::new();
     let (tree, errors) = vize_s1::parse(&allocator, "<div>{{ msg }}</div>");
     let lowered = vize_s1_to_s2::lower(&allocator, &tree, &errors);

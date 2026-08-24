@@ -7,8 +7,8 @@
 //! function over data instead of a callback state machine.
 
 use vize_armature::tokenizer::{Callbacks, QuoteType};
-use vize_carton::Vec;
 use vize_relief::ErrorCode;
+use vize_s0::Vec;
 
 use crate::parse::SurfaceError;
 

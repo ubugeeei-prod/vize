@@ -35,7 +35,7 @@
 //! scanner. It names the duty's home for future dialect implementations and
 //! keeps opaque text on the pessimal path.
 
-use vize_carton::Span;
+use vize_s0::Span;
 
 use super::ExprRef;
 

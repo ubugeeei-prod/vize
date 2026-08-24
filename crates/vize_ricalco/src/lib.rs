@@ -2,8 +2,8 @@
 //!
 //! A *ricalco* is the tracing that transfers a drawing onto a new
 //! surface. This crate traces the lossless Vue surface tree (S1,
-//! [`vize_sinopia`]) into the neutral semantic op family (S2,
-//! [`vize_disegno`]): [`lower`] is a **total function** — every input
+//! [`vize_s1`]) into the neutral semantic op family (S2,
+//! [`vize_s2`]): [`lower`] is a **total function** — every input
 //! yields S2 ops and/or [`Diagnostic`]s, never a panic and never a
 //! partial-then-abandoned state (the MLIR one-shot import,
 //! `davinci-road/prior-art.md`).
@@ -12,9 +12,9 @@
 //!
 //! The lowering is its own crate — the MLIR conversion-library shape —
 //! because both alternative homes point a stage at the other stage's
-//! internals: inside `vize_disegno` the neutral pivot would depend on the
+//! internals: inside `vize_s2` the neutral pivot would depend on the
 //! Vue S1 surface (and drag `vize_armature`/`vize_relief` into the
-//! required TS-24 wasm lane); inside `vize_sinopia` the lossless record
+//! required TS-24 wasm lane); inside `vize_s1` the lossless record
 //! crate would grow semantic decisions and an oxc parser edge. Here the
 //! conversion depends downward on both and neither learns of the other;
 //! `cargo tree -i` on either stage names only this experimental,
@@ -40,17 +40,17 @@
 //!   [`Diagnostic`] plus a kept fragment. Adding op variants is P2-9's
 //!   decision, not this crate's.
 //! - **Facts beside the tree**: hygiene scope tags on every
-//!   binding-introducing op ([`vize_disegno::scope`]) and fully
-//!   materialized before/after provenance ([`vize_disegno::provenance`])
+//!   binding-introducing op ([`vize_s2::scope`]) and fully
+//!   materialized before/after provenance ([`vize_s2::provenance`])
 //!   that both survive failure, Lean-InfoTree style.
 //!
 //! [`Diagnostic`]: vize_davinci::diagnostic::Diagnostic
-//! [`SurfaceError`]: vize_sinopia::SurfaceError
-//! [`IfOp`]: vize_disegno::op::IfOp
-//! [`ForOp`]: vize_disegno::op::ForOp
-//! [`SlotOp`]: vize_disegno::op::SlotOp
-//! [`ModelOp`]: vize_disegno::op::ModelOp
-//! [`VueDirectiveOp`]: vize_disegno::op::VueDirectiveOp
+//! [`SurfaceError`]: vize_s1::SurfaceError
+//! [`IfOp`]: vize_s2::op::IfOp
+//! [`ForOp`]: vize_s2::op::ForOp
+//! [`SlotOp`]: vize_s2::op::SlotOp
+//! [`ModelOp`]: vize_s2::op::ModelOp
+//! [`VueDirectiveOp`]: vize_s2::op::VueDirectiveOp
 
 #![no_std]
 

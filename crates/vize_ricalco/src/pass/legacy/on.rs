@@ -1,7 +1,7 @@
 //! Vue 2 v-on modifier sugar: strip `.native`, rewrite numeric keyCodes.
 
-use vize_carton::{Allocator, Vec};
-use vize_disegno::op::BindingOp;
+use vize_s0::{Allocator, Vec};
+use vize_s2::op::BindingOp;
 
 /// Rewrite `ui.on` modifiers in place. `.native` is removed; the Vue 2
 /// built-in keyCode table maps onto Vue 3 key names (`13` → `enter`).

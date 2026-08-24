@@ -2,10 +2,10 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::String;
 use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
 use vize_davinci::id::NodeId;
-use vize_disegno::op::ModelOp;
+use vize_s0::String;
+use vize_s2::op::ModelOp;
 
 use super::{ARG_ON_ELEMENT_MESSAGE, Channels, ModelFacts, ModelFault, ON_SCOPE_MESSAGE};
 
@@ -48,7 +48,7 @@ pub(super) fn check_model(
     ));
     channels
         .provenance
-        .push(vize_disegno::provenance::ProvenanceRecord {
+        .push(vize_s2::provenance::ProvenanceRecord {
             rule: String::from(rule),
             node: id,
             before: String::from(read),

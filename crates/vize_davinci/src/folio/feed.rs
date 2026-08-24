@@ -29,7 +29,7 @@
 use alloc::vec::Vec;
 use core::fmt::Write as _;
 
-use vize_carton::String;
+use vize_s0::String;
 
 use crate::folio::dump::FolioDump;
 

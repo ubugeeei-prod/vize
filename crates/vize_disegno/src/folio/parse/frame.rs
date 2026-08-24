@@ -4,8 +4,8 @@
 //! outlet gained its props surface (a third phased frame) pushed the
 //! parser past the source budget.
 
-use vize_carton::cstr;
 use vize_davinci::folio::FolioError;
+use vize_s0::cstr;
 
 use super::super::owned::{
     FolioAttribute, FolioBinding, FolioBranch, FolioComponent, FolioElement, FolioFor, FolioIf,

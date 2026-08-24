@@ -3,7 +3,7 @@
 //! every prefix and suffix truncation — adversarial committed inputs,
 //! no fuzzer required, same soundness oracle everywhere.
 //!
-//! The battery is `vize_sinopia`'s own committed fixture set, imported
+//! The battery is `vize_s1`'s own committed fixture set, imported
 //! from the shared Davinci test-support crate. The aggregate counts below are
 //! the cfg-regression witness the corpus lane re-pins: a change to the
 //! lowering's decision surface moves a pinned number loudly in both lanes.

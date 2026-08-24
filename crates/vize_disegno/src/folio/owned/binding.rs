@@ -6,7 +6,7 @@
 
 use alloc::vec::Vec;
 
-use vize_carton::{Span, String};
+use vize_s0::{Span, String};
 
 use super::expr::{FolioContract, FolioExpr, own_expr};
 use super::{FolioAttribute, FolioName, own_attribute, own_name};

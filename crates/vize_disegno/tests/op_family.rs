@@ -7,13 +7,13 @@
 //! records (`davinci-road/plan/phase-2-records/p2-5a.md`, `p2-5b.md`)
 //! document the injected variants and the resulting build failures.
 
-use vize_carton::{Allocator, Box, Span, Vec};
 use vize_disegno::expr::{ExprRef, OpaqueExpr, OpaqueReason};
 use vize_disegno::op::{
     Attribute, BindOp, BindingContract, BindingOp, ComponentOp, DynamicName, ElementOp, ForBinding,
     ForOp, IfBranch, IfOp, InterpolationOp, ModelOp, Namespace, OnOp, Op, Region, SlotContentOp,
     SlotOp, TextOp, VueCssBindOp, VueDirectiveOp, VueMemoOp, VueOnceOp, VueSlotScopeOp, VueSyncOp,
 };
+use vize_s0::{Allocator, Box, Span, Vec};
 
 /// The escape payload standing in for "some expression" wherever the op
 /// under test does not care which - honest by construction, since the

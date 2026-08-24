@@ -48,13 +48,13 @@ use std::process::ExitCode;
 
 use args::{Args, Mode, parse_args};
 
-use vize_carton::String;
 use vize_davinci::folio::dump::FolioDump;
 use vize_davinci::folio::{Folio, FolioMode, croquis::CroquisFolio};
 use vize_davinci::pass::{
     BudgetObserver, Fusability, Pair, PassDesc, PassKind, Pipeline, Preserved, TimingObserver,
     parse_pipelines, pipeline::PipelineSpec, print_pipelines, run_pipeline,
 };
+use vize_s0::String;
 
 const USAGE: &str = "usage: davinci-opt --roundtrip <file> [--stage croquis]\n       davinci-opt --pipeline \"<syntax>\" [--stage <stage>] [--folio-dir <dir> [--folio-after-change]] [--timing-json <path>] < folio";
 
@@ -197,7 +197,7 @@ fn run_pipeline_mode(syntax: &str, args: &Args) -> ExitCode {
     // (P2-3); the profiler is enabled only when the export was asked for, so
     // without --timing-json the observer costs one atomic load per walk.
     if args.timing_json.is_some() {
-        let profiler = vize_carton::profiler::global_profiler();
+        let profiler = vize_s0::profiler::global_profiler();
         profiler.clear();
         profiler.enable();
     }
@@ -237,7 +237,7 @@ fn run_pipeline_mode(syntax: &str, args: &Args) -> ExitCode {
     }
     if let Some(path) = args.timing_json.as_deref() {
         let result = export::write_timing(path);
-        vize_carton::profiler::global_profiler().disable();
+        vize_s0::profiler::global_profiler().disable();
         if let Err(message) = result {
             eprintln!("davinci-opt: {message}");
             return ExitCode::from(1);

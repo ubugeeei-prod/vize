@@ -2,7 +2,7 @@
 //! cannot depend on `vize_atelier_core` (published, `std`; ricalco stays
 //! `no_std + alloc`). Byte-identical output is the P2-11 bar.
 
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 fn decode_html_entities(s: &str) -> String {
     if !s.contains('&') {

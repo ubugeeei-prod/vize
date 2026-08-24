@@ -44,13 +44,13 @@
 //! the differential lane counts as one class (`consts_templates`)
 //! instead of comparing — measured, never averaged.
 //!
-//! [`OpaqueExpr::is_constant`]: vize_disegno::expr::OpaqueExpr::is_constant
+//! [`OpaqueExpr::is_constant`]: vize_s2::expr::OpaqueExpr::is_constant
 
 use oxc_ast::ast as js;
 use oxc_ast_visit::Visit;
-use vize_carton::camelize;
-use vize_disegno::expr::ExprRef;
-use vize_disegno::op::{BindingOp, DynamicName};
+use vize_s0::camelize;
+use vize_s2::expr::ExprRef;
+use vize_s2::op::{BindingOp, DynamicName};
 
 /// Classify one expression position for hoisting (module docs: the
 /// pessimal law on opaque payloads, the recorded weaker JS rule).
@@ -114,7 +114,7 @@ pub(super) fn hoistable_binding(binding: &BindingOp<'_>) -> bool {
     } else if has_attr {
         prefixed('^', name)
     } else {
-        vize_carton::ToCompactString::to_compact_string(name)
+        vize_s0::ToCompactString::to_compact_string(name)
     };
     if matches!(key.as_str(), "ref" | "class") {
         return false;
@@ -125,8 +125,8 @@ pub(super) fn hoistable_binding(binding: &BindingOp<'_>) -> bool {
     constant_for_hoist(value)
 }
 
-fn prefixed(prefix: char, name: &str) -> vize_carton::String {
-    let mut out = vize_carton::String::with_capacity(1 + name.len());
+fn prefixed(prefix: char, name: &str) -> vize_s0::String {
+    let mut out = vize_s0::String::with_capacity(1 + name.len());
     out.push(prefix);
     out.push_str(name);
     out

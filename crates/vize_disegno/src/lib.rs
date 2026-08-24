@@ -15,7 +15,7 @@
 //!
 //! - [`op`] — the op enums ([`op::Op`], [`op::BindingOp`]) and their payload
 //!   types, arena-resident and **`Drop`-free by construction** through
-//!   `vize_carton::{Box, Vec}` (whose const assertion rejects `Drop`
+//!   `vize_s0::{Box, Vec}` (whose const assertion rejects `Drop`
 //!   payloads; P1-10 measured it catching two real violations).
 //! - [`expr`] — [`expr::ExprRef`], the expression reference: retained JS
 //!   AST, foreign dialect (type-only until phase 6), or the classified

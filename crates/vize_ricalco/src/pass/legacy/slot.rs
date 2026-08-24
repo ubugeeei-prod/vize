@@ -1,7 +1,7 @@
 //! `vue.slot-scope` → `ui.slot-content` 1:1 (same introduction site).
 
-use vize_carton::{Allocator, Box, Vec};
-use vize_disegno::op::{BindingOp, DynamicName, SlotContentOp, VueSlotScopeOp};
+use vize_s0::{Allocator, Box, Vec};
+use vize_s2::op::{BindingOp, DynamicName, SlotContentOp, VueSlotScopeOp};
 
 /// Replace every `vue.slot-scope` with `ui.slot-content`. Scope facts
 /// already key this binding; the rewrite does not mint a new id of its

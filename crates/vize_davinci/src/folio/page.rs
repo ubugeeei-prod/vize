@@ -19,7 +19,7 @@ use core::hash::Hash;
 
 use alloc::vec::Vec;
 
-use vize_carton::{FxHashMap, String, cstr};
+use vize_s0::{FxHashMap, String, cstr};
 
 use super::FolioError;
 use super::value::FolioValue;

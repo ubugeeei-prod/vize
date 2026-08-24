@@ -7,7 +7,7 @@
 //! implementor. Phase 6 owns the first dialect and with it the first
 //! real values of this type.
 
-use vize_carton::{Span, Vec};
+use vize_s0::{Span, Vec};
 
 /// One dialect-attached fact row (see [`ForeignExpr::facts`]).
 #[derive(Debug, Clone, Copy)]

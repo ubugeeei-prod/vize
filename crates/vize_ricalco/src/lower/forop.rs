@@ -4,12 +4,12 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{Box, String, Vec, cstr};
-use vize_sinopia::Element;
+use vize_s0::{Box, String, Vec, cstr};
+use vize_s1::Element;
 
-use vize_disegno::expr::{ExprRef, OpaqueReason};
-use vize_disegno::op::{ForBinding, ForOp, Namespace, Op, Region};
-use vize_disegno::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
+use vize_s2::expr::{ExprRef, OpaqueReason};
+use vize_s2::op::{ForBinding, ForOp, Namespace, Op, Region};
+use vize_s2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
 
 use super::cx::{Cx, attr_slice, attr_span, element_span};
 use super::element::{Analyzed, attr_value_text, element_core};

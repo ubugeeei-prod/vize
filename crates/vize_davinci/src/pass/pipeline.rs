@@ -52,7 +52,7 @@
 use alloc::vec::Vec;
 use core::fmt;
 
-use vize_carton::String;
+use vize_s0::String;
 
 /// A parsed pipeline segment: one stage and the pass names it runs.
 ///

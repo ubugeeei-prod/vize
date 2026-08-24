@@ -5,7 +5,7 @@
 //!
 //! S2 node ids are dense and page-ordered — every op line top to bottom,
 //! attached bindings between their owner's line and its children
-//! (`folio-format.md`, "Node numbering"; `vize_disegno::verify` checks
+//! (`folio-format.md`, "Node numbering"; `vize_s2::verify` checks
 //! references against exactly that numbering). [`Cx::mint_op`] therefore
 //! runs in **print order** during the walk: an op's id is minted when its
 //! line is decided, bindings as they attach, children after. The pinned
@@ -19,13 +19,13 @@
 
 use alloc::vec::Vec;
 
-use vize_carton::{Allocator, Span, String};
 use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
-use vize_disegno::provenance::ProvenanceRecord;
-use vize_disegno::scope::{ScopeFacts, ScopeTag};
-use vize_sinopia::{CloseTag, Element, ElementClose, SurfaceChild, Token};
+use vize_s0::{Allocator, Span, String};
+use vize_s1::{CloseTag, Element, ElementClose, SurfaceChild, Token};
+use vize_s2::provenance::ProvenanceRecord;
+use vize_s2::scope::{ScopeFacts, ScopeTag};
 
 pub(crate) struct Cx<'a> {
     pub allocator: &'a Allocator,
@@ -159,7 +159,7 @@ impl<'a> Cx<'a> {
     }
 
     /// Byte offset of `slice` inside the authored source. Every S1 string
-    /// is a slice of the one source (`vize_sinopia`'s P1-10 contract), so
+    /// is a slice of the one source (`vize_s1`'s P1-10 contract), so
     /// this is pointer arithmetic, never a search.
     pub(crate) fn offset(&self, slice: &str) -> u32 {
         let base = self.source.as_ptr() as usize;
@@ -290,7 +290,7 @@ pub(crate) fn element_span(cx: &Cx<'_>, element: &Element<'_>) -> Span {
 
 /// The span of one authored attribute: name through the end of its value
 /// (closing quote included when present).
-pub(crate) fn attr_span(cx: &Cx<'_>, attr: &vize_sinopia::Attribute<'_>) -> Span {
+pub(crate) fn attr_span(cx: &Cx<'_>, attr: &vize_s1::Attribute<'_>) -> Span {
     let start = cx.offset(attr.name.text);
     let end = match &attr.value {
         Some(value) => match &value.close_quote {
@@ -306,7 +306,7 @@ pub(crate) fn attr_span(cx: &Cx<'_>, attr: &vize_sinopia::Attribute<'_>) -> Span
 }
 
 /// The authored slice an attribute covers (for provenance `before`).
-pub(crate) fn attr_slice<'a>(cx: &Cx<'a>, attr: &vize_sinopia::Attribute<'a>) -> &'a str {
+pub(crate) fn attr_slice<'a>(cx: &Cx<'a>, attr: &vize_s1::Attribute<'a>) -> &'a str {
     let span = attr_span(cx, attr);
     cx.source
         .get(span.start as usize..span.end as usize)

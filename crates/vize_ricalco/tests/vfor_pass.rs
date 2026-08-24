@@ -8,9 +8,9 @@
 mod support;
 
 use vize_davinci::id::NodeId;
-use vize_disegno::folio::{FolioAttribute, FolioOp};
-use vize_disegno::scope::ScopeOrigin;
 use vize_ricalco::pass::vfor::{ForFacts, ForName};
+use vize_s2::folio::{FolioAttribute, FolioOp};
+use vize_s2::scope::ScopeOrigin;
 
 use support::{assert_transformed_sound, with_lowered, with_transformed};
 

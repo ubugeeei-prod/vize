@@ -9,7 +9,7 @@ use core::fmt::{Result, Write};
 
 use alloc::vec::Vec;
 
-use vize_carton::FxHashMap;
+use vize_s0::FxHashMap;
 
 use super::{CroquisFolio, ScopeEntry, ScopeRef, SurfaceEntry};
 use crate::folio::FolioMode;
@@ -39,7 +39,7 @@ pub(super) fn remap_ref(remap: &FxHashMap<(char, u64), u64>, r: ScopeRef) -> Sco
     }
 }
 
-fn sorted(names: &[vize_carton::String]) -> Vec<&str> {
+fn sorted(names: &[vize_s0::String]) -> Vec<&str> {
     let mut out: Vec<&str> = names.iter().map(|n| n.as_str()).collect();
     out.sort_unstable();
     out

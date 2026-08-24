@@ -1,9 +1,9 @@
 //! Native HTML `ui.if` (`v-if` / `v-else-if` / `v-else`) emission.
 
-use vize_carton::{String, ToCompactString};
 use vize_davinci::id::NodeId;
-use vize_disegno::expr::ExprRef;
-use vize_disegno::op::{IfBranch, IfOp, Op};
+use vize_s0::{String, ToCompactString};
+use vize_s2::expr::ExprRef;
+use vize_s2::op::{IfBranch, IfOp, Op};
 
 use super::EmitCx;
 use super::EmitError;

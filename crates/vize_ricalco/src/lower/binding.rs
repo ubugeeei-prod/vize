@@ -17,13 +17,13 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{Box, Span, String, Vec, cstr};
-use vize_sinopia::Element;
+use vize_s0::{Box, Span, String, Vec, cstr};
+use vize_s1::Element;
 
-use vize_disegno::op::{
+use vize_s2::op::{
     Attribute, BindingContract, BindingOp, DynamicName, ModelOp, SlotContentOp, VueDirectiveOp,
 };
-use vize_disegno::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
+use vize_s2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
 
 use super::cx::{Cx, attr_slice, attr_span};
 use super::directive::{Arg, Directive, Head};

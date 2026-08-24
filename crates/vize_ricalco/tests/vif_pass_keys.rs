@@ -5,10 +5,10 @@
 
 mod support;
 
-use vize_carton::Span;
 use vize_davinci::id::NodeId;
-use vize_disegno::folio::{DisegnoFolio, FolioAttribute, FolioElement, FolioOp};
 use vize_ricalco::pass::{BranchKey, BranchKeyKind, vif};
+use vize_s0::Span;
+use vize_s2::folio::{DisegnoFolio, FolioAttribute, FolioElement, FolioOp};
 
 use support::{assert_transformed_sound, with_transformed};
 

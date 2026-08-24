@@ -45,7 +45,7 @@ fn the_matrix_plane_is_metamorphically_stable() {
         "the committed element-kind x directive plane moved; re-pin the census deliberately"
     );
     let report = run_files(&files);
-    assert_eq!(report.failures, Vec::<vize_carton::String>::new());
+    assert_eq!(report.failures, Vec::<vize_s0::String>::new());
     report
         .verdict("matrix plane")
         .unwrap_or_else(|message| panic!("{message}"));
@@ -103,7 +103,7 @@ fn the_corpus_shard_is_metamorphically_stable() {
     }
     assert!(!files.is_empty(), "corpus shard found no .vue files");
     let report = run_files(&files);
-    assert_eq!(report.failures, Vec::<vize_carton::String>::new());
+    assert_eq!(report.failures, Vec::<vize_s0::String>::new());
     report
         .verdict("corpus shard")
         .unwrap_or_else(|message| panic!("{message}"));
@@ -121,7 +121,7 @@ fn a_zero_mutation_run_fails() {
     assert_eq!(report.split.skipped, 1);
     assert_eq!(
         report.verdict("degenerate"),
-        Err(vize_carton::String::from(
+        Err(vize_s0::String::from(
             "metamorphic degenerate: zero mutations were applied — the run proves nothing \
              (1 files, 1 sites, 1 skips); a degenerated suite must fail, not pass"
         ))
@@ -130,7 +130,7 @@ fn a_zero_mutation_run_fails() {
     let empty = run_files(&[]);
     assert_eq!(
         empty.verdict("empty"),
-        Err(vize_carton::String::from(
+        Err(vize_s0::String::from(
             "metamorphic empty: zero mutations were applied — the run proves nothing \
              (0 files, 0 sites, 0 skips); a degenerated suite must fail, not pass"
         ))
@@ -145,10 +145,10 @@ fn the_normalization_does_not_collapse_real_differences() {
     // canonical operations (`lower::text`) keep real differences apart.
     use normalize::{Normalization, normalized_display};
     let folio = |source: &str| {
-        let allocator = vize_carton::Allocator::new();
-        let (tree, errors) = vize_sinopia::parse(&allocator, source);
+        let allocator = vize_s0::Allocator::new();
+        let (tree, errors) = vize_s1::parse(&allocator, source);
         let lowered = vize_ricalco::lower(&allocator, &tree, &errors);
-        vize_disegno::folio::DisegnoFolio::of(&lowered.root.ops)
+        vize_s2::folio::DisegnoFolio::of(&lowered.root.ops)
     };
     // Attribute sorting must not erase a value difference…
     assert_ne!(
@@ -207,7 +207,7 @@ fn each_mutator_holds_on_a_handwritten_pin() {
     for (label, source) in &cases {
         run_source(source, label, &mut report);
     }
-    assert_eq!(report.failures, Vec::<vize_carton::String>::new());
+    assert_eq!(report.failures, Vec::<vize_s0::String>::new());
     let census: Vec<(u64, u64, u64, u64)> = [
         report.reorder,
         report.wrap,
@@ -240,11 +240,11 @@ fn the_merge_mutator_holds_through_its_own_site_path() {
     // pass, `apply` merges, the oracle compares — is exercised here on
     // a split tree, exactly the shape a recovered input would present.
     let source = "<template>hello world</template>";
-    let allocator = vize_carton::Allocator::new();
-    let (mut tree, errors) = vize_sinopia::parse(&allocator, source);
+    let allocator = vize_s0::Allocator::new();
+    let (mut tree, errors) = vize_s1::parse(&allocator, source);
     let original = {
         let lowered = vize_ricalco::lower(&allocator, &tree, &errors);
-        vize_disegno::folio::DisegnoFolio::of(&lowered.root.ops)
+        vize_s2::folio::DisegnoFolio::of(&lowered.root.ops)
     };
     mutators::split_text(&mut tree, &[0, 0], 5);
     let merge_sites: Vec<sites::Site> = sites::enumerate(&tree)
@@ -256,7 +256,7 @@ fn the_merge_mutator_holds_through_its_own_site_path() {
     let mutant = mutators::apply(&allocator, &mut tree, &merge_sites[0]);
     assert!(matches!(mutant, mutators::Mutant::InPlace));
     let lowered = vize_ricalco::lower(&allocator, &tree, &errors);
-    let merged = vize_disegno::folio::DisegnoFolio::of(&lowered.root.ops);
+    let merged = vize_s2::folio::DisegnoFolio::of(&lowered.root.ops);
     // The re-merged slice is the original maximal run: byte-identical
     // `Full`-mode folios, no normalization needed at all.
     use vize_davinci::folio::{Folio, FolioMode};
@@ -269,8 +269,8 @@ fn the_merge_mutator_holds_through_its_own_site_path() {
 #[test]
 fn the_exclusion_predicates_refuse_the_documented_unsafe_sites() {
     let skips = |source: &str| {
-        let allocator = vize_carton::Allocator::new();
-        let (tree, _errors) = vize_sinopia::parse(&allocator, source);
+        let allocator = vize_s0::Allocator::new();
+        let (tree, _errors) = vize_s1::parse(&allocator, source);
         sites::enumerate(&tree)
             .into_iter()
             .filter_map(|site| site.skip.map(|reason| (site.kind, reason)))

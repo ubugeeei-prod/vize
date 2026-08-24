@@ -18,8 +18,8 @@ use vize_atelier_core::Allocator;
 use vize_atelier_sfc::{
     SfcParseOptions, croquis::SfcCroquisOptions, croquis::analyze_sfc_descriptor, parse_sfc,
 };
-use vize_carton::String;
 use vize_davinci::folio::{Folio, FolioMode, croquis::CroquisFolio};
+use vize_s0::String;
 
 /// Render the croquis VIR dump for an SFC source, mirroring the curator
 /// inspector recipe (`crates/vize_curator/src/inspector/payload.rs`).

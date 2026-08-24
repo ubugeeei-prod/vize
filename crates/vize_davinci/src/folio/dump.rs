@@ -18,8 +18,8 @@
 
 use alloc::vec::Vec;
 
-use vize_carton::hash::hash_str;
-use vize_carton::{String, cstr};
+use vize_s0::hash::hash_str;
+use vize_s0::{String, cstr};
 
 use crate::pass::PassEvent;
 

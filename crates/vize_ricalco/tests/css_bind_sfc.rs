@@ -1,12 +1,12 @@
 //! P2-10 acceptance: a committed `v-bind()`-bearing SFC whose S2 folio
 //! pins the style ops beside the template tree.
 
-use vize_carton::Allocator;
 use vize_davinci::folio::{Folio, FolioMode};
-use vize_disegno::folio::DisegnoFolio;
-use vize_disegno::verify::{Rigor, Violation, verify};
 use vize_ricalco::lower;
-use vize_sinopia::parse;
+use vize_s0::Allocator;
+use vize_s1::parse;
+use vize_s2::folio::DisegnoFolio;
+use vize_s2::verify::{Rigor, Violation, verify};
 
 const SOURCE: &str = include_str!("fixtures/css_bind.vue");
 

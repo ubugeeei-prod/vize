@@ -5,7 +5,7 @@
 //! child). KeepAlive always carries `DYNAMIC_SLOTS`. Teleport / KeepAlive
 //! / Suspense stay `createBlock` even when nested.
 
-use vize_disegno::op::{BindingOp, ComponentOp, DynamicName, Namespace, Op, Region};
+use vize_s2::op::{BindingOp, ComponentOp, DynamicName, Namespace, Op, Region};
 
 use super::EmitCx;
 use super::EmitError;

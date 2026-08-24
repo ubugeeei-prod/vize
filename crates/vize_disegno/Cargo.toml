@@ -13,5 +13,5 @@ metadata.vize.stability = "experimental"
 oxc_ast = { workspace = true }
 oxc_parser = { workspace = true }
 oxc_span = { workspace = true }
-vize_carton = { workspace = true }
+vize_s0 = { workspace = true }
 vize_davinci = { workspace = true }

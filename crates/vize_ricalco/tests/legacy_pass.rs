@@ -8,9 +8,9 @@ use support::{
     assert_transformed_sound, assert_transformed_sound_caps, with_transformed,
     with_transformed_caps,
 };
-use vize_carton::config::VueVersion;
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_ricalco::LegacyCaps;
+use vize_s0::config::VueVersion;
 
 fn vue2() -> LegacyCaps {
     LegacyCaps::for_version(VueVersion::V2)

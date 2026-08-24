@@ -12,10 +12,10 @@
 
 use std::path::PathBuf;
 
-use vize_carton::cstr;
 use vize_davinci::folio::Folio;
 use vize_disegno::folio::DisegnoFolio;
 use vize_disegno::verify::{Rigor, verify};
+use vize_s0::cstr;
 
 /// Every committed invalid page. Grows only deliberately.
 const INVALID_FIXTURES: usize = 15;
@@ -53,8 +53,8 @@ fn invalid_pages() -> Vec<PathBuf> {
 
 /// Render `violations` the way the `.expected` files are committed: one
 /// line per violation, LF-terminated.
-fn render(violations: &[vize_disegno::verify::Violation]) -> vize_carton::String {
-    let mut rendered = vize_carton::String::default();
+fn render(violations: &[vize_disegno::verify::Violation]) -> vize_s0::String {
+    let mut rendered = vize_s0::String::default();
     for violation in violations {
         rendered.push_str(cstr!("{violation}\n").as_str());
     }
@@ -94,7 +94,7 @@ fn every_invalid_page_is_committed_in_canonical_spelling() {
             .expect("fixture names are UTF-8");
         let text = std::fs::read_to_string(&page).expect("committed fixture reads");
         let folio = DisegnoFolio::parse(&text).expect("grammar-valid fixture parses");
-        let mut printed = vize_carton::String::default();
+        let mut printed = vize_s0::String::default();
         folio
             .print(&mut printed, vize_davinci::folio::FolioMode::Full)
             .expect("printing into a string cannot fail");

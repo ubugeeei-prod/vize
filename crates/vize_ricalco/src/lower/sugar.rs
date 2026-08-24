@@ -10,11 +10,11 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{Box, String, cstr};
-use vize_sinopia::Element;
+use vize_s0::{Box, String, cstr};
+use vize_s1::Element;
 
-use vize_disegno::op::{BindingOp, VueSlotScopeOp};
-use vize_disegno::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
+use vize_s2::op::{BindingOp, VueSlotScopeOp};
+use vize_s2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
 
 use super::cx::{Cx, attr_slice, attr_span};
 use super::directive::{AttrForm, Head};

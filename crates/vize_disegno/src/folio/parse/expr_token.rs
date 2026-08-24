@@ -9,8 +9,8 @@
 //! contract, the same documented-edges rule the quoted-string grammar
 //! uses).
 
-use vize_carton::{Span, String, cstr};
 use vize_davinci::folio::FolioError;
+use vize_s0::{Span, String, cstr};
 
 use super::super::owned::FolioExpr;
 use super::line::{err, final_span, take_quoted};

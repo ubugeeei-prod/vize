@@ -1,11 +1,11 @@
 //! P2-10: style-block `v-bind()` lowers to `vue.css-bind` on a carrier
 //! `ui.element style`. Spans are block-relative.
 
-use vize_carton::Allocator;
 use vize_davinci::folio::{Folio, FolioMode};
-use vize_disegno::folio::{DisegnoFolio, FolioBinding, FolioElement, FolioExpr, FolioOp};
-use vize_disegno::op::Op;
 use vize_ricalco::lower_style_block;
+use vize_s0::Allocator;
+use vize_s2::folio::{DisegnoFolio, FolioBinding, FolioElement, FolioExpr, FolioOp};
+use vize_s2::op::Op;
 
 fn folio(css: &str, block_start: u32) -> DisegnoFolio {
     let arena = Allocator::default();
@@ -79,7 +79,7 @@ fn strings_comments_and_prefixed_names_are_not_calls() {
         panic!("comment-bearing argument is not one JS expression");
     };
     assert_eq!(source.as_str(), "color /* keep ) inside comments */");
-    assert_eq!(*reason, vize_disegno::expr::OpaqueReason::ParseRejected);
+    assert_eq!(*reason, vize_s2::expr::OpaqueReason::ParseRejected);
 }
 
 #[test]

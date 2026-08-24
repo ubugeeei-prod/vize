@@ -85,8 +85,8 @@ mod tests {
     use super::{DESC, LEGACY, LEGACY_PASSES, pipeline_for};
     use crate::lower::LegacyCaps;
     use crate::pass::{TRANSFORM, TRANSFORM_PASSES};
-    use vize_carton::config::VueVersion;
     use vize_davinci::pass::{Fusability, PassKind, Preserved};
+    use vize_s0::config::VueVersion;
 
     #[test]
     fn vue3_keeps_the_six_pass_table() {

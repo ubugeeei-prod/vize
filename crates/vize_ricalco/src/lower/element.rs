@@ -12,10 +12,10 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{Box, Vec, cstr, is_native_tag};
-use vize_sinopia::Element;
+use vize_s0::{Box, Vec, cstr, is_native_tag};
+use vize_s1::Element;
 
-use vize_disegno::op::{Attribute, BindingOp, ComponentOp, ElementOp, Namespace, Op, Region};
+use vize_s2::op::{Attribute, BindingOp, ComponentOp, ElementOp, Namespace, Op, Region};
 
 use super::binding::{Owner, lower_attr};
 use super::cx::{Cx, attr_span, element_span};

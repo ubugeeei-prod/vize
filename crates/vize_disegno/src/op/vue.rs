@@ -12,7 +12,7 @@
 //! one-shot / dependency-memoized rendering is Vue's, not a fair `ui.*`
 //! core op.
 
-use vize_carton::{Span, Vec};
+use vize_s0::{Span, Vec};
 
 use super::DynamicName;
 use crate::expr::ExprRef;

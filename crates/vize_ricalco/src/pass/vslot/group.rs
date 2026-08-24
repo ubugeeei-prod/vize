@@ -14,10 +14,10 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{Span, String, cstr};
 use vize_davinci::id::NodeId;
-use vize_disegno::provenance::ProvenanceRecord;
-use vize_disegno::scope::ScopeOrigin;
+use vize_s0::{Span, String, cstr};
+use vize_s2::provenance::ProvenanceRecord;
+use vize_s2::scope::ScopeOrigin;
 
 use super::consume::{Channels, ChildKind, ChildView, SlotSpelling};
 use super::{

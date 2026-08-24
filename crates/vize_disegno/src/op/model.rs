@@ -12,7 +12,7 @@
 //! declaration** (charter #23 tiering); the compiler's obligation ends at
 //! selecting the realization and preserving this contract.
 
-use vize_carton::{Span, Vec};
+use vize_s0::{Span, Vec};
 
 use super::Attribute;
 use crate::expr::ExprRef;

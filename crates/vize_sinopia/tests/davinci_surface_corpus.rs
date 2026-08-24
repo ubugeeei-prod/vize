@@ -23,7 +23,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use davinci_test_support::surface_fixture as common;
-use vize_carton::{Allocator, String};
+use vize_s0::{Allocator, String};
 use vize_sinopia::{HoleCounts, hole_counts, parse, render};
 
 fn collect_vue_files(root: &Path, out: &mut Vec<PathBuf>) {

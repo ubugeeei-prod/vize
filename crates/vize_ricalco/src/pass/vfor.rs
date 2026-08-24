@@ -86,14 +86,14 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{String, cstr};
 use vize_davinci::id::NodeId;
 use vize_davinci::pass::{Fusability, PassDesc, PassKind, Preserved};
 use vize_davinci::side_table::SideTable;
-use vize_disegno::expr::{ExprRef, OpaqueReason};
-use vize_disegno::op::{ForOp, Op};
-use vize_disegno::provenance::ProvenanceRecord;
-use vize_disegno::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
+use vize_s0::{String, cstr};
+use vize_s2::expr::{ExprRef, OpaqueReason};
+use vize_s2::op::{ForOp, Op};
+use vize_s2::provenance::ProvenanceRecord;
+use vize_s2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
 
 use super::walk::{PageWalk, assert_accounting, visit_ops};
 use crate::lower::{Lowered, simple_identifier};

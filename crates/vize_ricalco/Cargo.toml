@@ -2,8 +2,9 @@
 #
 # A ricalco is the tracing that transfers a drawing onto a new surface.
 # This crate is that act for Davinci: it traces the lossless Vue surface
-# tree (S1, vize_sinopia) into the neutral semantic op family (S2,
-# vize_disegno) — a total function that yields ops or diagnostics, never
+# tree (S1, vize_s1) into the neutral semantic op family (S2,
+# vize_s2); the art names remain package ids. This is a total function
+# that yields ops or diagnostics, never
 # a panic and never a partial-then-abandoned state.
 #
 # The home decision (recorded in the P2-8 record): a conversion crate
@@ -29,10 +30,10 @@ davinci-differential = []
 [dependencies]
 oxc_ast = { workspace = true }
 oxc_ast_visit = { workspace = true }
-vize_carton = { workspace = true }
+vize_s0 = { workspace = true }
 vize_davinci = { workspace = true }
-vize_disegno = { workspace = true }
-vize_sinopia = { workspace = true }
+vize_s1 = { workspace = true }
+vize_s2 = { workspace = true }
 
 [dev-dependencies]
 davinci_test_support.workspace = true

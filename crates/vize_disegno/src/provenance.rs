@@ -33,8 +33,8 @@
 //! record already scopes it there). This type is the record's shape, not
 //! its retention policy.
 
-use vize_carton::{Span, String};
 use vize_davinci::id::NodeId;
+use vize_s0::{Span, String};
 
 /// One lowering decision: what rule fired, on what, producing what.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -71,8 +71,8 @@ const _: () = assert!(core::mem::size_of::<ProvenanceRecord>() == 88);
 #[cfg(test)]
 mod tests {
     use super::ProvenanceRecord;
-    use vize_carton::{Span, String};
     use vize_davinci::id::NodeId;
+    use vize_s0::{Span, String};
 
     #[test]
     fn a_producing_decision_links_its_op() {

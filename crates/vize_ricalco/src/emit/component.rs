@@ -8,7 +8,7 @@
 use alloc::vec::Vec as StdVec;
 
 use vize_davinci::id::NodeId;
-use vize_disegno::op::{BindingOp, ComponentOp, Op, Region};
+use vize_s2::op::{BindingOp, ComponentOp, Op, Region};
 
 use super::EmitCx;
 use super::EmitError;

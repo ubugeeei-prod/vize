@@ -1,7 +1,7 @@
 //! `ui.element` / `ui.component` payloads and the attribute type they (and
 //! [`super::ModelOp`]) share.
 
-use vize_carton::{Span, Vec};
+use vize_s0::{Span, Vec};
 
 use super::{BindingOp, Region};
 

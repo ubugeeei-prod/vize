@@ -6,9 +6,9 @@
 //! static nodes, because a `v-for` item must keep block tracking); text /
 //! multi child stays a `STABLE_FRAGMENT`.
 
-use vize_carton::String;
-use vize_disegno::expr::{ExprRef, OpaqueReason};
-use vize_disegno::op::{IfBranch, Op};
+use vize_s0::String;
+use vize_s2::expr::{ExprRef, OpaqueReason};
+use vize_s2::op::{IfBranch, Op};
 
 use super::EmitCx;
 use super::EmitError;
@@ -200,7 +200,7 @@ fn emit_generate_node(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitErr
 
 fn emit_gen_interp(
     cx: &mut EmitCx<'_>,
-    interp: &vize_disegno::op::InterpolationOp<'_>,
+    interp: &vize_s2::op::InterpolationOp<'_>,
     first: &mut bool,
 ) -> Result<(), EmitError> {
     let id = cx.walk.mint();

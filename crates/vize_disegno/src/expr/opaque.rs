@@ -46,7 +46,7 @@
 //! contract (`crates/vize_armature/src/parser/expression.rs`), which the
 //! laws make a monotone, always-safe change.
 
-use vize_carton::Span;
+use vize_s0::Span;
 
 /// Why an expression position carries no AST.
 ///
@@ -71,7 +71,7 @@ pub enum OpaqueReason {
     /// statement (`a++; b++`). A lone `Expression` cannot represent it.
     MultiStatement,
     /// Text-classifiable: the shared nesting guard
-    /// (`vize_carton::expression_guard::expression_is_safe_to_parse`)
+    /// (`vize_s0::expression_guard::expression_is_safe_to_parse`)
     /// refused the text before parsing - oxc's recursive parser cannot
     /// be depth-limited, so the text was never handed to it at all.
     NestingRefused,

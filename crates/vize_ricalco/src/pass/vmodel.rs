@@ -76,12 +76,12 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::String;
 use vize_davinci::diagnostic::Diagnostic;
 use vize_davinci::pass::{Fusability, PassDesc, PassKind, Preserved};
 use vize_davinci::side_table::SideTable;
-use vize_disegno::op::{BindingOp, Op};
-use vize_disegno::provenance::ProvenanceRecord;
+use vize_s0::String;
+use vize_s2::op::{BindingOp, Op};
+use vize_s2::provenance::ProvenanceRecord;
 
 use super::walk::{PageWalk, assert_accounting};
 use crate::lower::Lowered;

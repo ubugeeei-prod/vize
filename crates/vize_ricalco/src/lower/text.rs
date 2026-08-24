@@ -47,7 +47,7 @@
 //! and a mixed run to one `ui.interpolation` whose expression is
 //! [`OpaqueReason::Compound`] — the escape class P2-5b reserved, gaining
 //! its first producer here. The **pessimal laws apply from the first
-//! byte** (`vize_disegno::expr::opaque`): a compound is never constant,
+//! byte** (`vize_s2::expr::opaque`): a compound is never constant,
 //! equal to nothing, and emittable only byte-verbatim-or-refusal — so
 //! the rebuilt [`OpaqueExpr::source`] is a *display* form, and DOM
 //! realization (P2-11) compiles from the recorded parts instead
@@ -59,14 +59,14 @@
 //! source gap: runs extend only over span-contiguous children, so the
 //! merged span is the authored bytes exactly.
 //!
-//! [`OpaqueExpr::source`]: vize_disegno::expr::OpaqueExpr::source
+//! [`OpaqueExpr::source`]: vize_s2::expr::OpaqueExpr::source
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{Box, Span, String, StringBuilder, cstr};
-use vize_disegno::expr::OpaqueReason;
-use vize_disegno::op::{InterpolationOp, Op, TextOp};
-use vize_sinopia::SurfaceChild;
+use vize_s0::{Box, Span, String, StringBuilder, cstr};
+use vize_s1::SurfaceChild;
+use vize_s2::expr::OpaqueReason;
+use vize_s2::op::{InterpolationOp, Op, TextOp};
 
 use super::cx::Cx;
 use super::expr::{desc, opaque_at, trimmed};
@@ -121,7 +121,7 @@ const _: () = {
 /// to re-derive it (`pass::text`), so the two can only disagree when one
 /// of them changed.
 ///
-/// [`OpaqueExpr::source`]: vize_disegno::expr::OpaqueExpr::source
+/// [`OpaqueExpr::source`]: vize_s2::expr::OpaqueExpr::source
 pub fn rebuild_source(parts: &[TextPart]) -> String {
     let mut out = String::default();
     for part in parts {
@@ -162,7 +162,7 @@ pub(crate) fn lower_text_run<'a>(
     children: &[SurfaceChild<'a>],
     plan: &[TextAction<'a>],
     start: usize,
-    out: &mut vize_carton::Vec<'a, Op<'a>>,
+    out: &mut vize_s0::Vec<'a, Op<'a>>,
 ) -> usize {
     if let SurfaceChild::Text(token) = &children[start]
         && plan[start] == TextAction::Drop

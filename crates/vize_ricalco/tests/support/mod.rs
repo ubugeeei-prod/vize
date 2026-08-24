@@ -5,16 +5,16 @@
 // Each test binary uses the subset of these helpers it needs.
 #![allow(dead_code)]
 
-use vize_carton::{Allocator, String};
 use vize_davinci::diagnostic::Diagnostic;
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_davinci::side_table::SideTable;
-use vize_disegno::folio::DisegnoFolio;
-use vize_disegno::provenance::ProvenanceRecord;
-use vize_disegno::scope::ScopeFacts;
-use vize_disegno::verify::{Rigor, Violation, verify, verify_table};
 use vize_ricalco::{LegacyCaps, Lowered, lower_with_caps};
-use vize_sinopia::parse;
+use vize_s0::{Allocator, String};
+use vize_s1::parse;
+use vize_s2::folio::DisegnoFolio;
+use vize_s2::provenance::ProvenanceRecord;
+use vize_s2::scope::ScopeFacts;
+use vize_s2::verify::{Rigor, Violation, verify, verify_table};
 
 /// The owned snapshot of one lowering, for exact-equality pins.
 #[derive(Debug)]

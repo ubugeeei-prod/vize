@@ -7,8 +7,8 @@
 mod support;
 
 use support::{artifact, artifact_caps, assert_sound, assert_sound_caps};
-use vize_carton::config::VueVersion;
 use vize_ricalco::LegacyCaps;
+use vize_s0::config::VueVersion;
 
 fn vue2() -> LegacyCaps {
     LegacyCaps::for_version(VueVersion::V2)

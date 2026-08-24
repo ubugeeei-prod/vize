@@ -8,10 +8,10 @@
 //! tags, bogus declarations), and S1→S2 must not report the same bytes
 //! twice.
 
-use vize_carton::{Box, Span, String, Vec, cstr};
-use vize_sinopia::{Interpolation, SurfaceChild, Token};
+use vize_s0::{Box, Span, String, Vec, cstr};
+use vize_s1::{Interpolation, SurfaceChild, Token};
 
-use vize_disegno::op::{InterpolationOp, Op, TextOp};
+use vize_s2::op::{InterpolationOp, Op, TextOp};
 
 use super::cx::Cx;
 use super::expr::{desc, filter_expr_at};

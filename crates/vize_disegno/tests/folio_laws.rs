@@ -12,7 +12,6 @@
 //! remaining opaque-reason spellings are pinned by
 //! `every_opaque_reason_spelling_round_trips` below.
 
-use vize_carton::{Span, String};
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_disegno::expr::OpaqueReason;
 use vize_disegno::folio::{
@@ -21,6 +20,7 @@ use vize_disegno::folio::{
     FolioModel, FolioName, FolioOn, FolioOp, FolioSlot, FolioText, FolioVueDirective,
 };
 use vize_disegno::op::Namespace;
+use vize_s0::{Span, String};
 
 /// Canonical text of the reference tree.
 const CANONICAL: &str = include_str!("fixtures/reference.folio");

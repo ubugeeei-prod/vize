@@ -13,8 +13,8 @@
 //! `Compound` have no P2-8 producer, see the record) are assigned by
 //! [`opaque_at`], the only constructor that names a reason directly.
 
-use vize_carton::{Span, String, cstr};
-use vize_disegno::expr::{ExprRef, OpaqueExpr, OpaqueReason, VueFilterExpr};
+use vize_s0::{Span, String, cstr};
+use vize_s2::expr::{ExprRef, OpaqueExpr, OpaqueReason, VueFilterExpr};
 
 use super::cx::Cx;
 

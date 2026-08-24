@@ -6,7 +6,7 @@
 //! so benches run on the same allocator as the shipped `vize` binary
 //! (`crates/vize/src/main.rs`).
 //!
-//! Relation to `vize_carton::profiler::ProfilingAllocator`: carton counts
+//! Relation to `vize_s0::profiler::ProfilingAllocator`: carton counts
 //! per-window allocation traffic for the profiler behind an opt-in flag and
 //! tracks no live/peak bytes. The Davinci budgets gate on peak footprint, so
 //! this harness keeps its own always-on counter set; P0-11 aligns the two

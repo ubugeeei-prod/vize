@@ -54,8 +54,8 @@
 use alloc::vec::Vec;
 use core::fmt;
 
-use vize_carton::{Span, String, cstr};
 use vize_davinci::side_table::SideTable;
+use vize_s0::{Span, String, cstr};
 
 use crate::folio::DisegnoFolio;
 
@@ -190,9 +190,9 @@ mod tests {
     use super::{Rigor, Violation, ViolationCode, verify, verify_table};
     use crate::folio::DisegnoFolio;
     use alloc::vec;
-    use vize_carton::{Span, cstr};
     use vize_davinci::id::NodeId;
     use vize_davinci::side_table::SideTable;
+    use vize_s0::{Span, cstr};
 
     #[test]
     fn codes_render_as_their_stable_strings() {

@@ -19,9 +19,9 @@
 //! `:[key]`; S2 mirrors that narrow spelling so DOM realization keeps
 //! byte-for-byte parity while ordinary computed names stay props.
 
-use vize_carton::{Span, String, Vec, cstr};
-use vize_disegno::expr::ExprRef;
-use vize_disegno::op::{Attribute, BindingOp, DynamicName, Op};
+use vize_s0::{Span, String, Vec, cstr};
+use vize_s2::expr::ExprRef;
+use vize_s2::op::{Attribute, BindingOp, DynamicName, Op};
 
 use super::{BranchKey, BranchKeyKind};
 

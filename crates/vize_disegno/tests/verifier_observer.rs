@@ -13,7 +13,6 @@
 #[cfg(debug_assertions)]
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
-use vize_carton::Allocator;
 use vize_davinci::folio::Folio;
 use vize_davinci::id::NodeId;
 use vize_davinci::pass::{
@@ -24,6 +23,7 @@ use vize_disegno::folio::DisegnoFolio;
 #[cfg(debug_assertions)]
 use vize_disegno::verify::Rigor;
 use vize_disegno::verify::VerifyObserver;
+use vize_s0::Allocator;
 
 const NORMALIZE: PassDesc = PassDesc::new(
     "normalize",
@@ -205,7 +205,7 @@ fn check_table_panics_with_the_exact_report_on_a_dangling_id() {
 
 /// Liveness reuses the P1-11 arena-generation stamp, so the failure is
 /// that mechanism's own panic — the one committed message it carries,
-/// asserted here the way `vize_carton`'s own stamp tests assert it.
+/// asserted here the way `vize_s0`'s own stamp tests assert it.
 #[cfg(debug_assertions)]
 #[test]
 #[should_panic(expected = "arena-backed value outlived its compile")]

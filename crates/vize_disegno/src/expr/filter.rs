@@ -10,7 +10,7 @@
 //! authored chain, never a guessed JS parse of the whole text — `|` as
 //! bitwise-OR would be the Vue 3 reading of the same bytes.
 
-use vize_carton::{Allocator, Span, Vec};
+use vize_s0::{Allocator, Span, Vec};
 
 use super::{ExprRef, JsExpr, OpaqueExpr};
 
@@ -249,7 +249,7 @@ const _: () = {
 #[cfg(test)]
 mod tests {
     use super::{VueFilterExpr, split_filters};
-    use vize_carton::{Allocator, Span};
+    use vize_s0::{Allocator, Span};
 
     #[test]
     fn no_pipe_is_none() {

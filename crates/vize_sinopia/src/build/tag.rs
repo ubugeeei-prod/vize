@@ -1,6 +1,6 @@
 //! Open and close tags: the element half of the builder.
 
-use vize_carton::{Vec, is_void_tag};
+use vize_s0::{Vec, is_void_tag};
 
 use super::{Builder, Frame};
 use crate::event::{Event, EventKind};

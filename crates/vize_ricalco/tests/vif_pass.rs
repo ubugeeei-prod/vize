@@ -7,15 +7,15 @@
 
 mod support;
 
-use vize_carton::Span;
 use vize_davinci::diagnostic::{Severity, Stage};
 use vize_davinci::id::NodeId;
 use vize_davinci::pass::PassEvent;
-use vize_disegno::verify::{Rigor, VerifyObserver};
 use vize_ricalco::pass::{BranchKey, BranchKeyKind, TRANSFORM, vif};
+use vize_s0::Span;
+use vize_s2::verify::{Rigor, VerifyObserver};
 
 use support::{assert_transformed_sound, with_transformed};
-use vize_disegno::folio::{DisegnoFolio, FolioAttribute, FolioElement, FolioOp};
+use vize_s2::folio::{DisegnoFolio, FolioAttribute, FolioElement, FolioOp};
 
 /// The single root element of branch `index` of the `chain`-th root op,
 /// reached through a `ui.for` wrap when the branch carries one.

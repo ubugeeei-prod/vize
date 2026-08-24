@@ -12,12 +12,12 @@
 //! asserted as an equality between what the observer counted and what the
 //! plan says, over pipelines whose grouping differs.
 
-use vize_carton::{String, cstr};
 use vize_davinci::pass::observer::{AnalysisEvent, FailEvent, Pair, PassEvent, PassObserver};
 use vize_davinci::pass::{
     BudgetObserver, Fusability, NoObserver, PassDesc, PassFailure, PassKind, Pipeline, Preserved,
     run_pipeline,
 };
+use vize_s0::{String, cstr};
 
 const A: PassDesc = PassDesc::new(
     "alpha",

@@ -15,7 +15,7 @@
 //! guards, event-name casing - is DOM realization (P2-11), never carried
 //! here.
 
-use vize_carton::{Span, Vec};
+use vize_s0::{Span, Vec};
 
 use super::DynamicName;
 use crate::expr::ExprRef;

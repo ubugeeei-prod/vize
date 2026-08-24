@@ -3,11 +3,11 @@
 //! A copy of the three template-sugar bits
 //! [`vize_armature::legacy::LegacyDialectCapabilities`] names, kept
 //! here so this crate never grows an armature edge. Resolved once per
-//! file from [`vize_carton::config::VueVersion`]. Vue 3 is every flag
+//! file from [`vize_s0::config::VueVersion`]. Vue 3 is every flag
 //! off — a single field-read short-circuit, the same zero-cost shape
 //! the shipped `desugar_legacy_template` uses.
 
-use vize_carton::config::VueVersion;
+use vize_s0::config::VueVersion;
 
 /// The three Vue 2 template-sugar surfaces P2-9 installment 7 ports.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -58,7 +58,7 @@ impl LegacyCaps {
 #[cfg(test)]
 mod tests {
     use super::LegacyCaps;
-    use vize_carton::config::VueVersion;
+    use vize_s0::config::VueVersion;
 
     #[test]
     fn vue3_is_every_flag_off() {

@@ -77,7 +77,7 @@
 
 use vize_davinci::pass::{Fusability, PassDesc, PassKind, Preserved};
 use vize_davinci::side_table::SideTable;
-use vize_disegno::op::Namespace;
+use vize_s2::op::Namespace;
 
 use super::walk::{PageWalk, assert_accounting};
 use crate::lower::Lowered;

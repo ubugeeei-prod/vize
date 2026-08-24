@@ -5,10 +5,10 @@
 mod support;
 
 use support::{artifact, with_lowered};
-use vize_carton::{Span, String};
 use vize_davinci::id::NodeId;
-use vize_disegno::provenance::ProvenanceRecord;
-use vize_disegno::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
+use vize_s0::{Span, String};
+use vize_s2::provenance::ProvenanceRecord;
+use vize_s2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
 
 fn authored(name: &str, start: u32, end: u32) -> ScopeBinding {
     ScopeBinding {

@@ -11,8 +11,8 @@
 mod support;
 
 use support::with_transformed;
-use vize_carton::Allocator;
 use vize_ricalco::{EmitError, emit_dom, emit_dom_source};
+use vize_s0::Allocator;
 
 fn assembled(source: &str) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {

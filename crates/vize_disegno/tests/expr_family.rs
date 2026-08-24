@@ -2,8 +2,8 @@
 //! Vue 2 filters P2-9). Split from `op_family.rs` under the source
 //! budget when `vue.filter` joined the closed set.
 
-use vize_carton::{Allocator, Span, Vec};
 use vize_disegno::expr::{ExprRef, ForeignExpr, JsExpr, OpaqueExpr, OpaqueReason, VueFilterExpr};
+use vize_s0::{Allocator, Span, Vec};
 
 /// No `_` arm: a new `ExprRef` variant must break this match.
 fn expr_keyword(expr: &ExprRef<'_>) -> &'static str {

@@ -118,7 +118,7 @@ impl fmt::Display for NodeId {
 #[cfg(test)]
 mod tests {
     use super::NodeId;
-    use vize_carton::cstr;
+    use vize_s0::cstr;
 
     #[test]
     fn index_round_trips_through_the_niche() {

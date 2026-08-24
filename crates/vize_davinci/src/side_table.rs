@@ -7,16 +7,16 @@
 //!
 //! # Residency: why this form is not arena-resident
 //!
-//! P1-10 proved the choice is not free. `vize_carton::{Box, Vec}` are
+//! P1-10 proved the choice is not free. `vize_s0::{Box, Vec}` are
 //! `oxc_allocator`'s, whose const assertion **rejects `Drop` payloads** — and
 //! that assertion caught two real violations during P1-10 rather than
 //! theoretical ones. So the two forms are not interchangeable:
 //!
-//! - The **sparse** form here is a `vize_carton::FxHashMap<NodeId, T>`: an
+//! - The **sparse** form here is a `vize_s0::FxHashMap<NodeId, T>`: an
 //!   ordinary non-arena scratch structure, free to hold a `T` that owns heap
 //!   memory (a `String` message, a nested `Vec`), and freed when the table is.
 //!   Analyses that touch a small fraction of the nodes want this.
-//! - The **dense** form would be a `vize_carton::Vec<'a, Option<T>>` living in
+//! - The **dense** form would be a `vize_s0::Vec<'a, Option<T>>` living in
 //!   the compile arena, which constrains `T` to `Drop`-free and pays
 //!   `size_of::<Option<T>>()` per node whether or not the analysis has a fact
 //!   there.
@@ -52,7 +52,7 @@
 
 use alloc::vec::Vec;
 
-use vize_carton::FxHashMap;
+use vize_s0::FxHashMap;
 
 use crate::id::NodeId;
 

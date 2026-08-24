@@ -73,14 +73,14 @@ mod vnode;
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{Allocator, String};
 use vize_davinci::diagnostic::Severity;
 use vize_davinci::id::NodeId;
 use vize_davinci::pass::BudgetObserver;
 use vize_davinci::side_table::SideTable;
-use vize_disegno::op::{ElementOp, ForOp, IfOp, Namespace, Op, Region};
-use vize_disegno::scope::ScopeFacts;
-use vize_sinopia::parse;
+use vize_s0::{Allocator, String};
+use vize_s1::parse;
+use vize_s2::op::{ElementOp, ForOp, IfOp, Namespace, Op, Region};
+use vize_s2::scope::ScopeFacts;
 
 use crate::lower::{ForWrapper, Lowered, WrapperKeys, lower};
 use crate::pass::walk::PageWalk;

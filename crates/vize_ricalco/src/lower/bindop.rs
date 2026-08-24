@@ -18,11 +18,11 @@
 //! lowering emits none either: a bare `@click` is a bare listener, a
 //! bare `v-bind` an empty spread, both kept as authored.
 
-use vize_carton::{Box, String, Vec, cstr};
-use vize_sinopia::Element;
+use vize_s0::{Box, String, Vec, cstr};
+use vize_s1::Element;
 
-use vize_disegno::expr::ExprRef;
-use vize_disegno::op::{BindOp, BindingOp, DynamicName, OnOp, VueSyncOp};
+use vize_s2::expr::ExprRef;
+use vize_s2::op::{BindOp, BindingOp, DynamicName, OnOp, VueSyncOp};
 
 use super::cx::{Cx, attr_slice, attr_span};
 use super::directive::{Arg, Directive};
@@ -85,7 +85,7 @@ pub(crate) fn lower_bind<'a>(
             // The synthesized text is not a source slice, so the
             // expression is admitted at the argument's own span.
             Some(Arg::Static(arg_text)) => {
-                let camel = vize_carton::camelize(arg_text);
+                let camel = vize_s0::camelize(arg_text);
                 let text: &'a str = if camel.as_str() == arg_text {
                     arg_text
                 } else {

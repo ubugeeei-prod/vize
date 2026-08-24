@@ -47,7 +47,7 @@
 
 use alloc::vec::Vec;
 
-use vize_carton::{Span, String};
+use vize_s0::{Span, String};
 
 /// One binding-introduction site, minted densely per artifact.
 ///
@@ -142,7 +142,7 @@ const _: () = {
 mod tests {
     use super::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
     use alloc::vec;
-    use vize_carton::{Span, String, cstr};
+    use vize_s0::{Span, String, cstr};
 
     #[test]
     fn tags_mint_densely_and_order_by_index() {

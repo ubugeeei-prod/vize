@@ -16,19 +16,19 @@ use std::path::{Path, PathBuf};
 
 use vize_davinci::assert_folio_snapshot;
 use vize_davinci::folio::{Folio, FolioMode};
-use vize_disegno::scope::ScopeOrigin;
 use vize_ricalco::pass::vslot::{SlotCarrier, SlotName, SlotParams};
+use vize_s2::scope::ScopeOrigin;
 
 use support::{assert_transformed_sound, with_transformed};
 
-fn fixture(name: &str) -> vize_carton::String {
+fn fixture(name: &str) -> vize_s0::String {
     let path: PathBuf = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("fixtures")
         .join("vslot")
         .join(name);
     let text = std::fs::read_to_string(path).expect("committed fixture reads");
-    vize_carton::String::from(text.as_str())
+    vize_s0::String::from(text.as_str())
 }
 
 #[test]

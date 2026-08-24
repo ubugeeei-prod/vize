@@ -13,10 +13,10 @@
 //! (`v-html` and kin) keep their counted `defer.slot-directive` records
 //! with realization (P2-11) as the named owner.
 
-use vize_carton::{Box, String, Vec, cstr};
-use vize_sinopia::Element;
+use vize_s0::{Box, String, Vec, cstr};
+use vize_s1::Element;
 
-use vize_disegno::op::{Attribute, BindingOp, DynamicName, Namespace, Op, Region, SlotOp};
+use vize_s2::op::{Attribute, BindingOp, DynamicName, Namespace, Op, Region, SlotOp};
 
 use super::binding::{defer, lower_slot_content};
 use super::bindop::{lower_bind, lower_on};

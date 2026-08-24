@@ -1,8 +1,8 @@
 //! `vue.filter` → `_filter_*(...)` call text, re-admitted as JS.
 
-use vize_carton::{Allocator, String};
-use vize_disegno::expr::{ExprRef, VueFilterApp, VueFilterExpr};
-use vize_disegno::op::{BindingOp, DynamicName, Op};
+use vize_s0::{Allocator, String};
+use vize_s2::expr::{ExprRef, VueFilterApp, VueFilterExpr};
+use vize_s2::op::{BindingOp, DynamicName, Op};
 
 /// Rewrite every [`ExprRef::Filter`] in the tree into the Vue 2 wrap
 /// (`a | f` → `_filter_f(a)`, `a | f(b)` → `_filter_f(a,b)`). Mixed

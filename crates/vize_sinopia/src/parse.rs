@@ -2,8 +2,8 @@
 //! with the byte-fidelity verifier asserted on every construction.
 
 use vize_armature::tokenizer::Tokenizer;
-use vize_carton::{Allocator, Vec};
 use vize_relief::ErrorCode;
+use vize_s0::{Allocator, Vec};
 
 use crate::build::build;
 use crate::event::{Event, Recorder};

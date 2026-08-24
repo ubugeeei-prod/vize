@@ -50,7 +50,7 @@
 //! # Strings and residency
 //!
 //! Every string in the tree is a `&'a str` slice of the input (P1-10: no
-//! owned strings in nodes, ever). Containers are `vize_carton::{Box, Vec}`,
+//! owned strings in nodes, ever). Containers are `vize_s0::{Box, Vec}`,
 //! whose const assertion rejects `Drop` payloads, so the tree is Drop-free
 //! and arena-resident by construction. Node footprints are pinned by
 //! `#[cfg(target_pointer_width = "64")]`-guarded const asserts in

@@ -25,7 +25,7 @@
 //!
 //! # `Drop`-free by construction
 //!
-//! Every type here is arena-resident through `vize_carton::{Box, Vec}`,
+//! Every type here is arena-resident through `vize_s0::{Box, Vec}`,
 //! whose const assertion rejects `Drop` payloads (it caught two real
 //! violations during P1-10). The `const` assertions below restate the
 //! property directly, and the node-size assertions pin each op's 64-bit
@@ -33,7 +33,7 @@
 //! `crates/vize_relief/src/relief/elements.rs:31-36` - the wasm32 lane
 //! P2-14 makes required is 32-bit).
 
-use vize_carton::{Box, Vec};
+use vize_s0::{Box, Vec};
 
 pub mod bind;
 pub mod control;
@@ -164,7 +164,7 @@ pub struct Region<'a> {
     pub ops: Vec<'a, Op<'a>>,
 }
 
-/// The op family is `Drop`-free by construction: `vize_carton::{Box, Vec}`
+/// The op family is `Drop`-free by construction: `vize_s0::{Box, Vec}`
 /// already reject `Drop` payloads at their construction sites, and these
 /// assertions restate the property on the enums themselves so a violation
 /// names this file.

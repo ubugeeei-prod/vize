@@ -6,7 +6,7 @@
 //! tokens, [`ElementClose::Missing`], [`SurfaceChild::Unexpected`] — are
 //! the crate-level hole policy's clauses 1 and 2 (see the crate docs).
 
-use vize_carton::{Box, Vec};
+use vize_s0::{Box, Vec};
 
 /// Whether a token's syntax is present in the source or a typed hole.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

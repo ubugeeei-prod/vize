@@ -5,7 +5,7 @@
 //! ops, and each op owns the content it controls (see [`crate::op`] for
 //! why ownership is the fusion-tractability point).
 
-use vize_carton::{Span, Vec};
+use vize_s0::{Span, Vec};
 
 use super::Region;
 use crate::expr::ExprRef;

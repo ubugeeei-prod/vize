@@ -3,13 +3,13 @@
 //! `folio_laws.rs` so the Vue 3 family pin stays inside the source
 //! budget.
 
-use vize_carton::{Allocator, Box, Span, String, Vec as ArenaVec};
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_disegno::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
 use vize_disegno::folio::{
     DisegnoFolio, FolioBinding, FolioElement, FolioExpr, FolioOp, FolioVueMemo, FolioVueOnce,
 };
 use vize_disegno::op::{BindingOp, ElementOp, Namespace, Op, Region, VueMemoOp, VueOnceOp};
+use vize_s0::{Allocator, Box, Span, String, Vec as ArenaVec};
 
 const CANONICAL: &str = "\
 [disegno]

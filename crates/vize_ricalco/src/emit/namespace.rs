@@ -4,8 +4,8 @@
 //! a boundary element must open its own block, while descendants that remain
 //! in the same namespace stay plain VNodes.
 
-use vize_carton::ensure_sufficient_stack;
-use vize_disegno::op::{ElementOp, Namespace, Op, Region};
+use vize_s0::ensure_sufficient_stack;
+use vize_s2::op::{ElementOp, Namespace, Op, Region};
 
 use super::{EmitCx, EmitError};
 

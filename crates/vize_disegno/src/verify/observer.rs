@@ -24,7 +24,7 @@
 //!
 //! Every check body and the rigor field exist only under
 //! `debug_assertions`, the same cfg the arena-generation stamp uses
-//! (`crates/vize_carton/src/allocator/generation.rs`). In release the
+//! (`crates/vize_s0/src/allocator/generation.rs`). In release the
 //! struct is a ZST with empty bodies — const-asserted below — so a release
 //! pipeline makes **zero** verifier calls, and by the P2-3 zero-cost
 //! measurement (static dispatch; empty bodies inline away; the
@@ -41,18 +41,18 @@
 //! `Allocator::assert_stamp_current`, whose own P1-11 message names the
 //! outlived-compile contract; it stays that mechanism's panic on purpose.
 
-use vize_carton::{Allocator, ArenaStamp};
 use vize_davinci::pass::{PassEvent, PassObserver};
 use vize_davinci::side_table::SideTable;
+use vize_s0::{Allocator, ArenaStamp};
 
 use crate::folio::DisegnoFolio;
 
 #[cfg(debug_assertions)]
 use super::{Rigor, Violation, verify, verify_table};
 #[cfg(debug_assertions)]
-use vize_carton::{String, cstr};
-#[cfg(debug_assertions)]
 use vize_davinci::pass::PassKind;
+#[cfg(debug_assertions)]
+use vize_s0::{String, cstr};
 
 /// Runs the S2 invariant checks between passes, debug/CI builds only.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

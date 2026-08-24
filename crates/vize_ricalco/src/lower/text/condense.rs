@@ -7,8 +7,8 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{String, StringBuilder};
-use vize_sinopia::SurfaceChild;
+use vize_s0::{String, StringBuilder};
+use vize_s1::SurfaceChild;
 
 use super::super::cx::Cx;
 

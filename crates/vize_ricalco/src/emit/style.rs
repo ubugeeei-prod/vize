@@ -1,8 +1,8 @@
 //! Static style-attribute serialization used by dynamic `:style` merges.
 
 use oxc_ast::ast::Expression;
-use vize_disegno::expr::JsExpr;
-use vize_disegno::op::{Attribute, BindOp};
+use vize_s2::expr::JsExpr;
+use vize_s2::op::{Attribute, BindOp};
 
 use super::EmitCx;
 use super::buf::Buf;

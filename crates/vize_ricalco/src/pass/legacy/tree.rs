@@ -1,8 +1,8 @@
 //! Shared walks over region ops and attached binding lists.
 
-use vize_disegno::op::{BindingOp, Op};
+use vize_s2::op::{BindingOp, Op};
 
-use vize_carton::Vec;
+use vize_s0::Vec;
 
 /// Visit every attached binding list in document order (element,
 /// component, slot outlet), then the owned regions.

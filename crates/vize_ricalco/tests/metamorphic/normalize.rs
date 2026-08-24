@@ -28,9 +28,9 @@
 //! never invent one; the sensitivity pins in `main.rs` prove the
 //! remaining quotient does not collapse real differences.
 
-use vize_carton::String;
 use vize_davinci::folio::{Folio, FolioMode};
-use vize_disegno::folio::{DisegnoFolio, FolioAttribute, FolioBinding, FolioOp};
+use vize_s0::String;
+use vize_s2::folio::{DisegnoFolio, FolioAttribute, FolioBinding, FolioOp};
 
 /// Which structural rules a comparison applies (spans always elide).
 #[derive(Debug, Clone, Copy, Default)]

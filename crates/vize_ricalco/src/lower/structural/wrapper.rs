@@ -8,8 +8,8 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{Span, String, cstr};
-use vize_sinopia::Element;
+use vize_s0::{Span, String, cstr};
+use vize_s1::Element;
 
 use super::super::cx::{Cx, attr_slice, attr_span};
 use super::super::directive::{Arg, AttrForm, Head};

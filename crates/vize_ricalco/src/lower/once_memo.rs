@@ -4,10 +4,10 @@
 //! lane (`has_v_once`, `get_memo_exp`). This increment admits
 //! well-formed spellings; DOM realization stays later (P2-11 emit).
 
-use vize_carton::{Box, String, cstr};
-use vize_sinopia::Element;
+use vize_s0::{Box, String, cstr};
+use vize_s1::Element;
 
-use vize_disegno::op::{BindingOp, VueMemoOp, VueOnceOp};
+use vize_s2::op::{BindingOp, VueMemoOp, VueOnceOp};
 
 use super::binding::defer;
 use super::cx::{Cx, attr_slice, attr_span};

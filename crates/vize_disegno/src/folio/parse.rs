@@ -16,8 +16,8 @@
 
 use alloc::vec::Vec;
 
-use vize_carton::cstr;
 use vize_davinci::folio::FolioError;
+use vize_s0::cstr;
 
 use super::DisegnoFolio;
 use super::owned::{FolioBinding, FolioOp};

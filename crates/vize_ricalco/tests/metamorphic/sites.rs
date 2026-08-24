@@ -33,7 +33,7 @@
 //!   normally, so a mutation could compare two artifacts that are both
 //!   wrong the same way. Every mutator skips.
 
-use vize_sinopia::{Element, SurfaceChild, SurfaceTree};
+use vize_s1::{Element, SurfaceChild, SurfaceTree};
 
 use super::predicates::{
     has_attr_named, has_slot_attr, is_branch_name, merge_skip, reorder_skip, wrap_skip,
@@ -158,7 +158,7 @@ fn walk_children(
                     v_pre: flags.v_pre || has_attr_named(element, "v-pre"),
                 };
                 let child_parent = Parent {
-                    component: !vize_carton::is_native_tag(tag),
+                    component: !vize_s0::is_native_tag(tag),
                     slot_template: tag == "template" && has_slot_attr(element),
                 };
                 walk_children(

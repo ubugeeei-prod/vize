@@ -3,16 +3,16 @@
 //!
 //! IO lives here and only here - the library half ([`FolioDump`], the timing
 //! observer) is `no_std + alloc` and produces data, and this module turns it
-//! into files. The timing export reuses `vize_carton::profiler`'s P0-11
+//! into files. The timing export reuses `vize_s0::profiler`'s P0-11
 //! export wholesale (`export_report` + `to_json`), so there is exactly one
 //! producer of `profile-export.schema.json` documents in the tree.
 
 use std::path::Path;
 
-use vize_carton::profiler::{ProfileExportBudget, ProfileExportOptions, global_profiler};
-use vize_carton::{String, cstr};
 use vize_davinci::folio::dump::FolioDump;
 use vize_davinci::folio::feed::SpolveroFeed;
+use vize_s0::profiler::{ProfileExportBudget, ProfileExportOptions, global_profiler};
+use vize_s0::{String, cstr};
 
 /// The Spolvero feed's file name inside a `--folio-dir` directory (P2-18).
 /// Pages end in `.folio`, so the name cannot collide with a page.

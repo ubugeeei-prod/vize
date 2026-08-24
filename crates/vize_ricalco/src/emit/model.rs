@@ -5,9 +5,9 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::String;
-use vize_disegno::expr::ExprRef;
-use vize_disegno::op::{BindingOp, ElementOp, ModelOp};
+use vize_s0::String;
+use vize_s2::expr::ExprRef;
+use vize_s2::op::{BindingOp, ElementOp, ModelOp};
 
 use super::EmitCx;
 use super::EmitError;

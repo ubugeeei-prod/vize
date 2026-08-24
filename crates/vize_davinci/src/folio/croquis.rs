@@ -14,7 +14,7 @@
 
 use alloc::vec::Vec;
 
-use vize_carton::String;
+use vize_s0::String;
 
 use super::{Folio, FolioError, FolioMode};
 

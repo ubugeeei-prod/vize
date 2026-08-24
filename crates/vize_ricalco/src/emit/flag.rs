@@ -1,6 +1,6 @@
 //! Patch-flag comment emission (`8 /* PROPS */`, `16 /* FULL_PROPS */`, …).
 
-use vize_carton::ToCompactString;
+use vize_s0::ToCompactString;
 
 use super::EmitCx;
 

@@ -5,8 +5,8 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_disegno::expr::ExprRef;
-use vize_disegno::op::{
+use vize_s2::expr::ExprRef;
+use vize_s2::op::{
     BindingOp, ComponentOp, DynamicName, ElementOp, ModelOp, Op, Region, VueDirectiveOp,
 };
 
