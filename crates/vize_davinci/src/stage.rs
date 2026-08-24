@@ -17,6 +17,12 @@ pub struct LayerCrate {
     pub role: &'static str,
 }
 
+/// Historical artifact-stage type name retained for compatibility.
+///
+/// New code should use [`LayerCrate`] because S0 is a layer without being an
+/// artifact-producing stage.
+pub type StageCrate = LayerCrate;
+
 /// A Davinci conversion crate between two stage artifacts.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ConversionCrate {
@@ -71,12 +77,17 @@ pub const S1_TO_S2: ConversionCrate = ConversionCrate {
 /// Davinci layer crates that exist in the workspace today.
 pub const LAYERS: &[LayerCrate] = &[S0, S1, S2];
 
+/// Historical artifact-only view retained for compatibility.
+///
+/// New code should use [`LAYERS`] when it needs the complete S0/S1/S2 stack.
+pub const ARTIFACT_STAGES: &[StageCrate] = &[S1, S2];
+
 /// Conversion crates that exist in the workspace today.
 pub const CONVERSIONS: &[ConversionCrate] = &[S1_TO_S2];
 
 #[cfg(test)]
 mod tests {
-    use super::{CONVERSIONS, LAYERS, S0, S1, S1_TO_S2, S2};
+    use super::{ARTIFACT_STAGES, CONVERSIONS, LAYERS, S0, S1, S1_TO_S2, S2, StageCrate};
 
     #[test]
     fn stage_aliases_are_the_preferred_implementation_names() {
@@ -100,5 +111,11 @@ mod tests {
         assert_eq!((S1_TO_S2.from, S1_TO_S2.to), (S1.id, S2.id));
         assert_eq!(LAYERS.len(), 3);
         assert_eq!(CONVERSIONS.len(), 1);
+    }
+
+    #[test]
+    fn historical_artifact_view_excludes_the_s0_foundation() {
+        let _: StageCrate = S1;
+        assert_eq!(ARTIFACT_STAGES, [S1, S2]);
     }
 }
