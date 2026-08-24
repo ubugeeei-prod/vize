@@ -20,10 +20,19 @@ const portableStageCrates = [
 
 const packageArgs = portableStageCrates.map((crate) => `-p ${crate}`).join(" ");
 const defaultLane = `cargo check ${packageArgs} --lib --target wasm32-wasip2`;
+const noDefaultLane = `${defaultLane} --no-default-features`;
 
 test("TS-24: the wasm32-wasip2 lanes ride the required clippy-and-test job", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const job = workflowJobBody(workflow, "clippy-and-test");
+  const suite = readRepoFile("davinci-road", "plan", "test-suites.md");
+  const ts24Rows = suite.split("\n").filter((line) => line.startsWith("| TS-24 "));
+
+  assert.equal(ts24Rows.length, 1, "test-suites.md must define exactly one normative TS-24 row");
+  assert.ok(
+    ts24Rows[0].includes(`\`${defaultLane}\` + \`${noDefaultLane}\``),
+    "the normative TS-24 row must pin the same four-library commands as CI",
+  );
 
   // Required on every pull request: clippy-and-test carries no event guard,
   // and it sits in the `needs:` list of test-report, the required status
@@ -46,7 +55,7 @@ test("TS-24: the wasm32-wasip2 lanes ride the required clippy-and-test job", () 
   // Both checks target libraries only. The host `davinci-opt` binary must not
   // become evidence for a `no_std` claim merely because WASI provides std.
   assert.ok(
-    job.includes(`        run: ${defaultLane} && ${defaultLane} --no-default-features`),
+    job.includes(`        run: ${defaultLane} && ${noDefaultLane}`),
     "TS-24 must check all four stage libraries with and without default features",
   );
   assert.doesNotMatch(job, /cargo check[^\n]*-p (?:vize_s0|vize_carton)[^\n]*wasm32-wasip2/);
