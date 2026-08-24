@@ -83,7 +83,7 @@ Create a Vue + Vite or Nuxt app first, then let `vize init` wire the toolchain.
 Vue + Vite:
 
 ```bash
-npm create vue@latest
+npm create vue@latest my-app
 cd my-app
 npx vize init
 ```
@@ -91,7 +91,7 @@ npx vize init
 Nuxt:
 
 ```bash
-npm create nuxt@latest
+npm create nuxt@latest my-app
 cd my-app
 npx vize init
 ```
