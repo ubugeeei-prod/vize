@@ -110,6 +110,9 @@ impl Buf {
     pub(super) fn use_with_ctx(&mut self) {
         self.mark(Helper::WithCtx);
     }
+    pub(super) fn use_create_slots(&mut self) {
+        self.mark(Helper::CreateSlots);
+    }
 
     pub(super) fn to_display_string_alias() -> &'static str {
         Helper::ToDisplayString.alias()
@@ -191,6 +194,10 @@ impl Buf {
         Helper::WithCtx.alias()
     }
 
+    pub(super) fn create_slots_alias() -> &'static str {
+        Helper::CreateSlots.alias()
+    }
+
     pub(super) fn push_hoist(&mut self, rhs: String) -> String {
         let alias_index = self.hoists.len() + 1;
         self.hoists.push(rhs);
@@ -207,7 +214,7 @@ impl Buf {
     /// root static-props hoist (the shipped codegen appends hoists to
     /// the helper preamble).
     pub(super) fn preamble(&self) -> String {
-        let listed: [Helper; 20] = Helper::ALL;
+        let listed: [Helper; 21] = Helper::ALL;
         let mut n = 0;
         for helper in listed {
             if self.used & helper.bit() != 0 {

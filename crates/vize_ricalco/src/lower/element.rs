@@ -75,6 +75,17 @@ pub(crate) fn analyze<'a>(element: &Element<'a>) -> Analyzed<'a> {
     }
 }
 
+impl Analyzed<'_> {
+    /// Whether the element carries a `v-slot` / `#` spelling. A
+    /// `<template v-if #name>` / `<template v-for #name>` must keep the
+    /// template op so the slot name survives unwrap (P2-11 createSlots).
+    pub(crate) fn has_slot_spelling(&self) -> bool {
+        self.forms.iter().any(|form| {
+            matches!(form, AttrForm::Directive(directive) if directive.head == Head::Slot)
+        })
+    }
+}
+
 /// The authored value text of an attribute, when it has a value node
 /// (a `Missing` value hole is a zero-width slice, present but empty).
 pub(crate) fn attr_value_text<'a>(element: &Element<'a>, index: usize) -> Option<&'a str> {

@@ -15,13 +15,13 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_carton::{Box, Span, String, Vec, cstr};
+use vize_carton::{cstr, Box, Span, String, Vec};
 use vize_sinopia::{Element, SurfaceChild};
 
 use vize_disegno::op::{IfBranch, IfOp, Namespace, Op, Region};
 
-use super::cx::{Cx, attr_slice, attr_span, element_span};
-use super::element::{Analyzed, BranchKind, analyze, attr_value_text, element_core};
+use super::cx::{attr_slice, attr_span, element_span, Cx};
+use super::element::{analyze, attr_value_text, element_core, Analyzed, BranchKind};
 use super::expr::expr_at;
 use super::forop::lower_for;
 use super::leaf::lower_leaf;
@@ -257,6 +257,14 @@ fn branch_body<'a>(
         return (ops, None);
     }
     if element.tag() == "template" {
+        if analyzed.has_slot_spelling() {
+            // Keep the carrier so `ui.slot-content` has an op. Unwrap
+            // would drop `#name` (the recorded conditional-carrier gap).
+            let op = element_core(cx, element, analyzed, ns);
+            let mut ops: Vec<'a, Op<'a>> = Vec::new_in(&cx.allocator);
+            ops.push(op);
+            return (ops, None);
+        }
         cx.report_missing_close(element);
         let captured = capture_wrapper_key(cx, element, analyzed);
         let (skip, key) = match captured {

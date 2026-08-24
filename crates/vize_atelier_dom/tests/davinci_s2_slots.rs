@@ -1,7 +1,7 @@
 //! P2-11 named / scoped slot witness: `<template #name>` groups,
 //! component-root `v-slot` (shipped keys that `default`), dynamic
-//! names, and simple scoped params, compared **byte-for-byte**
-//! including helper usage.
+//! names, simple scoped params, and `createSlots` (`v-if` / `v-for`
+//! slot templates), compared **byte-for-byte** including helper usage.
 
 #![allow(
     clippy::disallowed_macros,
@@ -58,6 +58,58 @@ const BATTERY: &[(&str, &str)] = &[
     (
         "scoped_destructure",
         r#"<Foo><template #header="{ foo }">x</template></Foo>"#,
+    ),
+    (
+        "create_slots_if",
+        r#"<Foo><template #header v-if="ok">x</template></Foo>"#,
+    ),
+    (
+        "create_slots_for",
+        r#"<Foo><template v-for="i in n" #header>x</template></Foo>"#,
+    ),
+    (
+        "create_slots_if_and_static",
+        r#"<Foo><template #header v-if="ok">x</template><template #footer>end</template></Foo>"#,
+    ),
+    (
+        "create_slots_default_and_if",
+        r#"<Foo>hello<template #header v-if="ok">x</template></Foo>"#,
+    ),
+    (
+        "create_slots_if_else",
+        r#"<Foo><template #header v-if="a">x</template><template #header v-else>y</template></Foo>"#,
+    ),
+    (
+        "create_slots_if_else_if",
+        r#"<Foo><template #header v-if="a">x</template><template #header v-else-if="b">y</template></Foo>"#,
+    ),
+    (
+        "create_slots_if_span",
+        r#"<Foo><template #header v-if="ok"><span></span></template></Foo>"#,
+    ),
+    (
+        "create_slots_scoped",
+        r#"<Foo><template #header="p" v-if="ok">x</template></Foo>"#,
+    ),
+    (
+        "create_slots_dynamic_name",
+        r#"<Foo><template #[name] v-if="ok">x</template></Foo>"#,
+    ),
+    (
+        "create_slots_hyphenated",
+        r#"<Foo><template #foo-bar v-if="ok">x</template></Foo>"#,
+    ),
+    (
+        "create_slots_empty",
+        r#"<Foo><template #header v-if="ok"></template></Foo>"#,
+    ),
+    (
+        "create_slots_for_aliases",
+        r#"<Foo><template v-for="(v, k, i) in n" #header>x</template></Foo>"#,
+    ),
+    (
+        "create_slots_default_interp",
+        r#"<Foo>hello {{ msg }}<template #header v-if="ok">x</template></Foo>"#,
     ),
 ];
 
