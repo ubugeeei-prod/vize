@@ -15,7 +15,8 @@ import {
   comparePugTemplateEquivalence,
   isPugSfc,
 } from "./support/pug-template-equivalence.ts";
-import { sha256 } from "./support/pug/oracle-runtime.ts";
+import { diagnosticSignatures, sha256 } from "./support/pug/oracle-runtime.ts";
+import type { CapturedDiagnostic } from "./support/pug/oracle-runtime.ts";
 
 const pugMutationBaseline = `<template lang="pug">
 main
@@ -31,6 +32,18 @@ main
 </template>
 `;
 
+function nestingWarning(element: "pre" | "ul"): CapturedDiagnostic {
+  return {
+    severity: "warning",
+    value: {
+      name: "SyntaxError",
+      message:
+        `<${element}> cannot be child of <p>, according to HTML specifications. ` +
+        "This can cause hydration errors or potentially disrupt future functionality.",
+    },
+  };
+}
+
 const waveUiStableWarningRegressions = [
   {
     path: "src/documentation/views/customization.vue",
@@ -43,7 +56,7 @@ main
     | , the selector changes.
 </template>
 `,
-    warning: "<pre> cannot be child of <p>",
+    warning: nestingWarning("pre"),
   },
   {
     path: "src/documentation/views/ui-components/button/examples.vue",
@@ -55,7 +68,7 @@ div
       li Status colors have white text.
 </template>
 `,
-    warning: "<ul> cannot be child of <p>",
+    warning: nestingWarning("ul"),
   },
 ] as const;
 
@@ -187,25 +200,43 @@ test("Pug oracle accepts the two Wave UI files with stable compiler warnings", (
       });
       assert.equal(result.baselineUsable, true, regression.path);
       assert.deepEqual(result.differences, [], regression.path);
-      assert.match(
-        result.evidence.pristine.diagnosticsSha256 ?? "",
-        /^[0-9a-f]{64}$/u,
-        regression.path,
+      const expectedWarningHash = sha256(
+        JSON.stringify(diagnosticSignatures([regression.warning])),
       );
       assert.equal(
         result.evidence.pristine.diagnosticsSha256,
-        result.evidence.formatted.diagnosticsSha256,
-        regression.path,
+        expectedWarningHash,
+        `${regression.path} must emit exactly its pinned warning`,
       );
-      assert.notEqual(
-        result.evidence.pristine.diagnosticsSha256,
-        sha256(JSON.stringify([])),
-        regression.warning,
+      assert.equal(
+        result.evidence.formatted.diagnosticsSha256,
+        expectedWarningHash,
+        `${regression.path} must preserve exactly its pinned warning`,
       );
     }
   } finally {
     fs.rmSync(basedir, { recursive: true, force: true });
   }
+});
+
+test("Pug warning signatures ignore order but preserve duplicate multiplicity", () => {
+  const [preWarning, ulWarning] = waveUiStableWarningRegressions.map(
+    (regression) => regression.warning,
+  );
+  const ordered = diagnosticSignatures([preWarning, ulWarning]);
+  const reordered = diagnosticSignatures([ulWarning, preWarning]);
+  assert.deepEqual(reordered, ordered);
+
+  const withDuplicate = diagnosticSignatures([preWarning, ulWarning, preWarning]);
+  assert.notDeepEqual(withDuplicate, ordered, "adding a duplicate warning must change output");
+  assert.notEqual(JSON.stringify(withDuplicate), JSON.stringify(ordered));
+  const afterDuplicateRemoval = diagnosticSignatures([ulWarning, preWarning]);
+  assert.notDeepEqual(
+    withDuplicate,
+    afterDuplicateRemoval,
+    "removing a duplicate warning must change output",
+  );
+  assert.equal(withDuplicate.length, ordered.length + 1);
 });
 
 test("Pug oracle rejects warning additions, removals, and content changes", () => {
