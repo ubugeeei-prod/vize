@@ -4,6 +4,7 @@ import path from "node:path";
 import { parse } from "@vue/compiler-sfc";
 
 import { VIZE_UI_SFC_AUTHORING_RULES, type SfcAuthoringRuleId } from "./authoring-contract.ts";
+import { splitTopLevelTypeMembers, typeLiteralCallBodies } from "./type-member-parser.ts";
 
 /** Rule identifiers enforced by the component authoring gate. */
 export type AuthoringRule = SfcAuthoringRuleId;
@@ -24,7 +25,7 @@ const SOURCE_REGEX_ASSERTION = /\.(?:match|doesNotMatch)\(\s*source\b/;
 const SFC_SOURCE_READ = /readFile\([^)]*\.vue/;
 const SOURCE_CONTRACT_PRAGMA = "source-contract:";
 const DEFINE_PROPS_TYPE = /defineProps\s*<\s*\{([\s\S]*?)\}\s*>\s*\(/g;
-const DEFINE_EMITS_TYPE = /defineEmits\s*<\s*\{([\s\S]*?)\}\s*>\s*\(/g;
+const DEFINE_EMITS = "defineEmits";
 const PROP_DECLARATION =
   /(?:(\/\*\*[\s\S]*?\*\/)\s*)?readonly\s+(?:"([^"]+)"|'([^']+)'|([A-Za-z_$][\w$]*))\??\s*:/g;
 const EVENT_MEMBER_DECLARATION =
@@ -179,8 +180,7 @@ function eventDocProblems(source: string, filename: string): string[] {
   if (errors.length > 0 || descriptor.scriptSetup === null) return [];
 
   const problems: string[] = [];
-  for (const emitsType of descriptor.scriptSetup.content.matchAll(DEFINE_EMITS_TYPE)) {
-    const body = emitsType[1] ?? "";
+  for (const body of typeLiteralCallBodies(descriptor.scriptSetup.content, DEFINE_EMITS)) {
     for (const event of topLevelEventMembers(body)) {
       if (event.jsdoc.trim().length > 0) continue;
       problems.push(
@@ -202,73 +202,6 @@ function topLevelEventMembers(body: string): { readonly name: string; readonly j
       },
     ];
   });
-}
-
-function splitTopLevelTypeMembers(body: string): string[] {
-  const members: string[] = [];
-  let start = 0;
-  let depth = 0;
-  let quote: '"' | "'" | "`" | undefined;
-  let inBlockComment = false;
-  let inLineComment = false;
-
-  for (let index = 0; index < body.length; index += 1) {
-    const char = body[index];
-    const next = body[index + 1];
-
-    if (inLineComment) {
-      if (char === "\n") inLineComment = false;
-      continue;
-    }
-
-    if (inBlockComment) {
-      if (char === "*" && next === "/") {
-        inBlockComment = false;
-        index += 1;
-      }
-      continue;
-    }
-
-    if (quote !== undefined) {
-      if (char === "\\") {
-        index += 1;
-      } else if (char === quote) {
-        quote = undefined;
-      }
-      continue;
-    }
-
-    if (char === "/" && next === "/") {
-      inLineComment = true;
-      index += 1;
-      continue;
-    }
-    if (char === "/" && next === "*") {
-      inBlockComment = true;
-      index += 1;
-      continue;
-    }
-    if (char === '"' || char === "'" || char === "`") {
-      quote = char;
-      continue;
-    }
-
-    if (char === "{" || char === "[" || char === "(" || char === "<") {
-      depth += 1;
-      continue;
-    }
-    if (char === "}" || char === "]" || char === ")" || char === ">") {
-      depth = Math.max(0, depth - 1);
-      continue;
-    }
-    if (depth === 0 && (char === ";" || char === ",")) {
-      members.push(body.slice(start, index));
-      start = index + 1;
-    }
-  }
-
-  members.push(body.slice(start));
-  return members.filter((member) => member.trim().length > 0);
 }
 
 function hasSourceContractPragma(lines: readonly string[], lineIndex: number): boolean {

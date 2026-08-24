@@ -11,8 +11,8 @@
     "./lint-sfc": "./lint-sfc.ts"
   },
   "scripts": {
-    "check": "vp check authoring-contract.ts authoring-gate.ts authoring-gate.test.ts lint-sfc.ts lint-sfc.test.ts",
-    "fmt": "vp fmt --write authoring-contract.ts authoring-contract.md authoring-gate.ts authoring-gate.test.ts lint-sfc.ts lint-sfc.test.ts",
+    "check": "vp check authoring-contract.ts authoring-gate.ts authoring-gate.test.ts lint-sfc.ts lint-sfc.test.ts type-member-parser.ts",
+    "fmt": "vp fmt --write authoring-contract.ts authoring-contract.md authoring-gate.ts authoring-gate.test.ts lint-sfc.ts lint-sfc.test.ts type-member-parser.ts",
     "test": "vp exec node --test authoring-gate.test.ts lint-sfc.test.ts"
   },
   "dependencies": {

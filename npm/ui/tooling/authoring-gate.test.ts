@@ -245,6 +245,41 @@ void test("ignores nested tuple payload fields when checking event docs", async 
   );
 });
 
+void test("keeps scanning events after nested object payload members", async () => {
+  const sfc = COMPLIANT_SFC.replace(
+    "</script>",
+    [
+      "",
+      "const emit = defineEmits<{",
+      "  /** Carries the nested selected-range payload after selection changes. */",
+      "  change: [{ selection: { start: string; end: string } }];",
+      "  submit: readonly [payload: { valid: boolean }];",
+      "}>();",
+      "void emit;",
+      "</script>",
+    ].join("\n"),
+  );
+  await withFixture(
+    {
+      "TheWidget.vue": sfc,
+      "widget.behavior.md": "TheWidget.vue",
+      "widget.test.ts": 'import TheWidget from "./TheWidget.vue";\nexport default TheWidget;\n',
+    },
+    async (directory) => {
+      const violations = await auditComponentAuthoring(directory);
+      assert.deepEqual(
+        violations.map((violation) => violation.rule),
+        ["event-doc"],
+      );
+      assert.match(formatAuthoringViolations(violations), /Event submit is missing documentation/);
+      assert.doesNotMatch(
+        formatAuthoringViolations(violations),
+        /Event (selection|start|end|valid)/,
+      );
+    },
+  );
+});
+
 void test("requires readonly tuple emits to be documented", async () => {
   const sfc = COMPLIANT_SFC.replace(
     "</script>",
