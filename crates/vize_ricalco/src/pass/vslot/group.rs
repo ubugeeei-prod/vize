@@ -3,15 +3,14 @@
 //! recursion hands each `ui.component`.
 //!
 //! The two halves keep the legacy lane's two distinct predicates
-//! deliberately: **grouping** counts any non-slot-template child as
-//! implicit-default content (whitespace-only text excluded — the pass's
-//! one canonical deviation from the raw legacy `any`, measured as a
-//! counted class in the differential lane), while the **extraneous**
-//! diagnostic uses the trimmed, `ui.if`/`ui.for`-descending answer the
-//! legacy `has_implicit_child` computed. The structural-directive guard
-//! of the legacy duplicate check is vacuous here: a `<template v-if
-//! v-slot>` was unwrapped at lowering and never reaches a child view as
-//! a slot template (the recorded conditional-carrier gap).
+//! deliberately: **grouping** synthesizes the implicit default from
+//! `Content { implicit: true }` only (so a kept `<template v-if
+//! v-slot>` under `ui.if` does not become a default group — P2-11
+//! `createSlots` owns that child), while the **extraneous** diagnostic
+//! uses the same descending answer the legacy `has_implicit_child`
+//! computed. The structural-directive duplicate guard is vacuous here:
+//! the carrier sits under `ui.if` / `ui.for` and never reaches this
+//! grouping as a `SlotTemplate` child.
 
 use alloc::vec::Vec as StdVec;
 
@@ -109,7 +108,7 @@ fn collect(
 
     let has_content = children
         .iter()
-        .any(|child| matches!(child.kind, ChildKind::Content { .. }));
+        .any(|child| matches!(child.kind, ChildKind::Content { implicit: true }));
     if own.is_empty() && has_content && !groups.iter().any(|group| group.name.text() == "default") {
         channels.provenance.push(ProvenanceRecord {
             rule: String::from(RULE_IMPLICIT_DEFAULT),

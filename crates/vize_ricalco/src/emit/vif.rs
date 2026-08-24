@@ -19,6 +19,7 @@ pub(super) fn emit_if(
     if if_op.branches.is_empty() {
         return Err(EmitError::Unsupported);
     }
+    cx.buf.use_open_block();
     cx.buf.use_create_comment();
     let facts = id.and_then(|id| cx.facts.if_facts.get(id));
     for (i, branch) in if_op.branches.iter().enumerate() {
@@ -115,6 +116,11 @@ fn emit_branch(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<
             let _id = cx.walk.mint();
             cx.walk.skip(component.bindings.len());
             super::component::emit_if_branch(cx, component, key, _id)
+        }
+        [Op::Slot(slot)] => {
+            let _id = cx.walk.mint();
+            cx.walk.skip(slot.bindings.len());
+            super::outlet::emit_outlet(cx, slot, Some(key), true)
         }
         _ => Err(EmitError::Unsupported),
     }

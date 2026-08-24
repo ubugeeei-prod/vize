@@ -123,6 +123,28 @@ fn a_template_wrapper_unwraps_into_its_branch_region() {
 }
 
 #[test]
+fn a_slot_template_v_if_keeps_the_template_carrier() {
+    // `#header` has no home if the wrapper unwraps; createSlots reads
+    // the kept `ui.element template` + `ui.slot-content`.
+    let art = artifact(r#"<Foo><template #header v-if="ok">x</template></Foo>"#);
+    assert_eq!(
+        art.folio,
+        "[disegno]\n\
+         ops=5\n\
+         \n\
+         [disegno.ops]\n\
+         ui.component Foo @0:51\n\
+         \x20 ui.if @5:45\n\
+         \x20   branch js(\"ok\" @29:31) @5:45\n\
+         \x20     ui.element template @5:45\n\
+         \x20       ui.slot-content name=\"header\" @15:22\n\
+         \x20       ui.text \"x\" @33:34\n\
+         \n"
+    );
+    assert_eq!(art.diagnostics, Vec::new());
+}
+
+#[test]
 fn v_if_evaluates_outside_v_for_on_one_element() {
     // Vue 3 precedence: the condition cannot see the iteration scope, so
     // the branch region owns the `ui.for`, which owns the element.

@@ -7,12 +7,11 @@
 use alloc::vec::Vec as StdVec;
 
 use vize_carton::String;
-use vize_disegno::op::{ElementOp, Namespace, Op, Region};
+use vize_disegno::op::{Attribute, ElementOp, Namespace, Op, Region};
 
 use super::EmitCx;
 use super::buf::Buf;
-use super::js::escape_js_string;
-use super::vnode::compact_props_object;
+use super::js::{escape_js_string, is_valid_js_identifier};
 
 pub(super) fn emit_hoisted_element(
     cx: &mut EmitCx<'_>,
@@ -148,4 +147,50 @@ fn meaningful<'a>(children: &'a Region<'a>) -> StdVec<&'a Op<'a>> {
 
 fn is_whitespace_text(op: &Op<'_>) -> bool {
     matches!(op, Op::Text(text) if text.content.chars().all(char::is_whitespace))
+}
+
+/// First-occurrence static attrs as a single-line object, matching
+/// hoisted `JsChildNode::Object` emission.
+pub(super) fn compact_props_object<'a>(
+    attributes: impl Iterator<Item = &'a Attribute<'a>>,
+) -> String {
+    let unique = unique_attrs(attributes);
+    let mut out = String::from("{ ");
+    for (i, attr) in unique.iter().enumerate() {
+        if i > 0 {
+            out.push_str(", ");
+        }
+        push_attr_pair(&mut out, attr);
+    }
+    out.push_str(" }");
+    out
+}
+
+pub(super) fn unique_attrs<'a>(
+    attributes: impl Iterator<Item = &'a Attribute<'a>>,
+) -> StdVec<&'a Attribute<'a>> {
+    let mut unique: StdVec<&Attribute<'_>> = StdVec::new();
+    for attr in attributes {
+        if unique.iter().any(|seen| seen.name == attr.name) {
+            continue;
+        }
+        unique.push(attr);
+    }
+    unique
+}
+
+pub(super) fn push_attr_pair(out: &mut String, attr: &Attribute<'_>) {
+    let quoted = !is_valid_js_identifier(attr.name);
+    if quoted {
+        out.push('"');
+    }
+    out.push_str(attr.name);
+    if quoted {
+        out.push('"');
+    }
+    out.push_str(": \"");
+    if let Some(value) = attr.value {
+        out.push_str(escape_js_string(value).as_str());
+    }
+    out.push('"');
 }

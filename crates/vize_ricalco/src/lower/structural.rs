@@ -257,6 +257,14 @@ fn branch_body<'a>(
         return (ops, None);
     }
     if element.tag() == "template" {
+        if analyzed.has_slot_spelling() {
+            // Keep the carrier so `ui.slot-content` has an op. Unwrap
+            // would drop `#name` (the recorded conditional-carrier gap).
+            let op = element_core(cx, element, analyzed, ns);
+            let mut ops: Vec<'a, Op<'a>> = Vec::new_in(&cx.allocator);
+            ops.push(op);
+            return (ops, None);
+        }
         cx.report_missing_close(element);
         let captured = capture_wrapper_key(cx, element, analyzed);
         let (skip, key) = match captured {
