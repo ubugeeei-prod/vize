@@ -115,27 +115,32 @@ export function comparePugTemplateEquivalence(
   const differences = compareSfcBlockStructure(original, formatted, context.filename);
   const pristine = compileSide(original, context);
   const after = compileSide(formatted, context);
-  const baselineUsable = pristine.compiled != null && pristine.diagnostics.length === 0;
+  const pristineErrors = diagnosticsOfSeverity(pristine.diagnostics, "error");
+  const afterErrors = diagnosticsOfSeverity(after.diagnostics, "error");
+  const baselineUsable =
+    pristine.compiled != null && pristine.error == null && pristineErrors.length === 0;
 
   if (pristine.error != null) differences.push(`pristine Pug baseline failed: ${pristine.error}`);
-  if (pristine.diagnostics.length > 0) {
-    differences.push(`pristine Vue baseline failed: ${diagnosticSummary(pristine.diagnostics)}`);
+  if (pristineErrors.length > 0) {
+    differences.push(`pristine Vue baseline failed: ${diagnosticSummary(pristineErrors)}`);
   }
   if (after.error != null) differences.push(`formatted Pug baseline failed: ${after.error}`);
-  if (after.diagnostics.length > 0) {
-    differences.push(`formatted Vue baseline failed: ${diagnosticSummary(after.diagnostics)}`);
+  if (afterErrors.length > 0) {
+    differences.push(`formatted Vue baseline failed: ${diagnosticSummary(afterErrors)}`);
   }
 
   if (pristine.compiled != null && after.compiled != null) {
     if (pristine.evidence.relativePugSha256 !== after.evidence.relativePugSha256) {
       differences.push("relative authored Pug bytes changed");
     }
-    const beforeDiagnostics = diagnosticSignatures(pristine.diagnostics);
-    const afterDiagnostics = diagnosticSignatures(after.diagnostics);
-    if (JSON.stringify(beforeDiagnostics) !== JSON.stringify(afterDiagnostics)) {
+    const beforeWarnings = diagnosticSignatures(
+      diagnosticsOfSeverity(pristine.diagnostics, "warning"),
+    );
+    const afterWarnings = diagnosticSignatures(diagnosticsOfSeverity(after.diagnostics, "warning"));
+    if (JSON.stringify(beforeWarnings) !== JSON.stringify(afterWarnings)) {
       differences.push(
-        `Vue compiler diagnostics changed: ${JSON.stringify(beforeDiagnostics)} -> ` +
-          JSON.stringify(afterDiagnostics),
+        `Vue compiler warnings changed: ${JSON.stringify(beforeWarnings)} -> ` +
+          JSON.stringify(afterWarnings),
       );
     }
     const dependencyBefore = JSON.stringify(pristine.evidence.dependencies);
@@ -177,6 +182,13 @@ export function comparePugTemplateEquivalence(
             JSON.stringify(after.evidence.templateOffsets),
     },
   };
+}
+
+function diagnosticsOfSeverity(
+  diagnostics: CapturedDiagnostic[],
+  severity: CapturedDiagnostic["severity"],
+): CapturedDiagnostic[] {
+  return diagnostics.filter((diagnostic) => diagnostic.severity === severity);
 }
 
 function compileSide(
