@@ -172,7 +172,11 @@ fn push_camel_key(cx: &mut EmitCx<'_>, name: &str) {
     }
 }
 
-fn emit_fallback(cx: &mut EmitCx<'_>, region: &Region<'_>, compact: bool) -> Result<(), EmitError> {
+pub(super) fn emit_fallback(
+    cx: &mut EmitCx<'_>,
+    region: &Region<'_>,
+    compact: bool,
+) -> Result<(), EmitError> {
     if !compact {
         cx.buf.indent();
     }

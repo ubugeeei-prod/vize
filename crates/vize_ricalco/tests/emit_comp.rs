@@ -221,8 +221,16 @@ fn whitespace_only_children_emit_no_slot() {
 }
 
 #[test]
-fn a_builtin_transition_is_unsupported_this_installment() {
-    assert_eq!(refused("<Transition />"), EmitError::Unsupported);
+fn a_root_transition_uses_the_builtin_helper() {
+    assert_eq!(
+        assembled("<Transition />"),
+        pin("\
+const { openBlock: _openBlock, createBlock: _createBlock, Transition: _Transition } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createBlock(_Transition))
+}")
+    );
 }
 
 #[test]
