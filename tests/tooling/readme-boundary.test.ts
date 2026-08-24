@@ -9,8 +9,12 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 test("README stays a compact project entry point", () => {
   const readme = readRepoFile("README.md");
 
-  for (const section of ["## What Is Vize?", "## Credits", "## License"]) {
+  for (const section of ["## What Is Vize?", "## Usage", "## Credits", "## License"]) {
     assert.match(readme, new RegExp(`^${escapeRegExp(section)}$`, "m"), section);
+  }
+
+  for (const usagePath of ["### Drop-in", "### New setup", "### Migration"]) {
+    assert.match(readme, new RegExp(`^${escapeRegExp(usagePath)}$`, "m"), usagePath);
   }
 
   for (const detailedSection of [
