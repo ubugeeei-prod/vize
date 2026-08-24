@@ -1634,7 +1634,7 @@ return (_ctx, _cache) => {
     _createElementVNode("div", {
       class: _normalizeClass([])
     }, "Hoge"),
-    _createVNode(_component_Test, { x: 1 })
+    _createVNode(_component_Test, _hoisted_1)
   ], 64 /* STABLE_FRAGMENT */))
 }
 }
