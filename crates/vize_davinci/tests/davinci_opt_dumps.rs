@@ -1,11 +1,7 @@
 //! `davinci-opt`'s P2-13 pipeline-mode extras, pinned end to end: the
 //! `--folio-dir` per-pass dump, its `--folio-after-change` hash gate, and the
 //! `--timing-json` export validated against the committed P0-11 schema
-//! through the strict `vize_carton` validator (TS-15) - included by path, so
-//! there is exactly one validator in the tree.
-
-#[path = "../../vize_carton/tests/davinci_profile_export/schema_check.rs"]
-mod schema_check;
+//! through the strict shared validator (TS-15).
 
 use std::io::Write as _;
 use std::path::{Path, PathBuf};
@@ -223,3 +219,4 @@ fn load_schema() -> serde_json::Value {
     let text = std::fs::read_to_string(&path).expect("committed schema reads");
     serde_json::from_str(&text).expect("committed schema is valid JSON")
 }
+use davinci_test_support::schema as schema_check;

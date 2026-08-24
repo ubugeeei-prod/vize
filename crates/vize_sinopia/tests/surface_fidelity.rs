@@ -6,8 +6,7 @@
 //! deterministic EOF-recovery hammer), with the typed-hole census pinned
 //! exactly per fixture. Exact-equality oracles only (assurance §4).
 
-mod common;
-
+use davinci_test_support::surface_fixture as common;
 use vize_carton::{Allocator, String};
 use vize_relief::ErrorCode;
 use vize_sinopia::{

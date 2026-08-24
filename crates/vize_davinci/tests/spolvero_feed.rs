@@ -1,18 +1,15 @@
 //! The Spolvero feed v1 (P2-18), pinned end to end on the `davinci-opt`
 //! surface: `--folio-dir` writes `spolvero.json` beside the pages, the
 //! document validates against the committed schema
-//! (`davinci-road/plan/spolvero-feed.schema.json`) through the strict
-//! `vize_carton` validator (TS-15) - included by path, so there is exactly
-//! one validator in the tree - and its content equals the dump's pages
+//! (`davinci-road/plan/spolvero-feed.schema.json`) through the shared strict
+//! validator (TS-15), and its content equals the dump's pages
 //! exactly, escaping law included.
-
-#[path = "../../vize_carton/tests/davinci_profile_export/schema_check.rs"]
-mod schema_check;
 
 use std::io::Write as _;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
+use davinci_test_support::schema as schema_check;
 use vize_davinci::folio::dump::FolioDump;
 use vize_davinci::folio::feed::SpolveroFeed;
 use vize_davinci::pass::{Fusability, PassDesc, PassEvent, PassKind, Pipeline, Preserved};
@@ -162,9 +159,11 @@ fn the_schema_refuses_version_and_shape_mismatches_loudly() {
 
     let mut wrong_version = valid.clone();
     wrong_version["schema_version"] = serde_json::Value::from(2);
+    let error =
+        schema_check::validate(&schema, &wrong_version, "$").expect_err("wrong version must fail");
     assert_eq!(
-        schema_check::validate(&schema, &wrong_version, "$"),
-        Err("schema violation at `$.schema_version`: value does not equal const `1`".to_string())
+        error.message().as_str(),
+        "schema violation at `$.schema_version`: value does not equal const `1`"
     );
 
     let mut extra_key = valid.clone();
@@ -172,9 +171,10 @@ fn the_schema_refuses_version_and_shape_mismatches_loudly() {
         .as_object_mut()
         .expect("feed is an object")
         .insert("transport".into(), serde_json::Value::from("tbd"));
+    let error = schema_check::validate(&schema, &extra_key, "$").expect_err("extra key must fail");
     assert_eq!(
-        schema_check::validate(&schema, &extra_key, "$"),
-        Err("schema violation at `$`: unexpected property `transport`".to_string())
+        error.message().as_str(),
+        "schema violation at `$`: unexpected property `transport`"
     );
 
     let mut page_missing_text = valid.clone();
@@ -182,19 +182,19 @@ fn the_schema_refuses_version_and_shape_mismatches_loudly() {
         .as_object_mut()
         .expect("page is an object")
         .remove("text");
+    let error = schema_check::validate(&schema, &page_missing_text, "$")
+        .expect_err("missing page text must fail");
     assert_eq!(
-        schema_check::validate(&schema, &page_missing_text, "$"),
-        Err("schema violation at `$.pages[0]`: missing required property `text`".to_string())
+        error.message().as_str(),
+        "schema violation at `$.pages[0]`: missing required property `text`"
     );
 
     let mut bad_stage = valid;
     bad_stage["pages"][0]["stage"] = serde_json::Value::from("S2 disegno");
+    let error = schema_check::validate(&schema, &bad_stage, "$").expect_err("bad stage must fail");
     assert_eq!(
-        schema_check::validate(&schema, &bad_stage, "$"),
-        Err(
-            "schema violation at `$.pages[0].stage`: string does not match pattern \
-             `^[a-z][a-z0-9-]*$`"
-                .to_string()
-        )
+        error.message().as_str(),
+        "schema violation at `$.pages[0].stage`: string does not match pattern \
+         `^[a-z][a-z0-9-]*$`"
     );
 }

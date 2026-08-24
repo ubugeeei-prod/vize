@@ -20,17 +20,12 @@
 //!     --test davinci_lowering_corpus -- --nocapture
 //! ```
 
-#[expect(
-    dead_code,
-    reason = "the battery's hole-census fields belong to the TS-19 suites; this lane reuses the sources"
-)]
-#[path = "../../vize_sinopia/tests/common/mod.rs"]
-mod battery;
 mod support;
 
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use davinci_test_support::surface_fixture as battery;
 use support::{assert_sound, with_lowered};
 
 fn collect_vue_files(root: &Path, out: &mut Vec<PathBuf>) {

@@ -1,14 +1,11 @@
 //! The inspector payload's Spolvero feed (P2-18): the `spolvero` member of
 //! every `build_payload` result validates against the committed schema
-//! (`davinci-road/plan/spolvero-feed.schema.json`) through the strict
-//! `vize_carton` validator (TS-15) - included by path, so there is exactly
-//! one validator in the tree - and its content is pinned exactly.
-
-#[path = "../../vize_carton/tests/davinci_profile_export/schema_check.rs"]
-mod schema_check;
+//! (`davinci-road/plan/spolvero-feed.schema.json`) through the shared strict
+//! validator (TS-15), and its content is pinned exactly.
 
 use std::path::Path;
 
+use davinci_test_support::schema as schema_check;
 use vize_carton::cstr;
 use vize_curator::inspector::{
     InspectorOptions, InspectorSourceFile, InspectorTarget, InspectorTemplateSyntax, build_payload,

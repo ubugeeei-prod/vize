@@ -12,8 +12,8 @@ metadata.vize.stability = "experimental"
 
 [dependencies]
 criterion = { workspace = true }
+davinci_test_support = { workspace = true }
 mimalloc = { workspace = true }
-regex-lite = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }

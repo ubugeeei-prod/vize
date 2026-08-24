@@ -92,11 +92,8 @@ use vize_davinci::pass::{Fusability, PassDesc, PassKind, Preserved};
 use vize_davinci::side_table::SideTable;
 use vize_disegno::scope::{ScopeOrigin, ScopeTag};
 
-#[path = "vslot/consume.rs"]
 mod consume;
-#[path = "vslot/group.rs"]
 mod group;
-#[path = "vslot/spell.rs"]
 mod spell;
 
 use super::walk::{PageWalk, assert_accounting};

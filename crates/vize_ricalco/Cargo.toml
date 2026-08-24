@@ -35,6 +35,7 @@ vize_disegno = { workspace = true }
 vize_sinopia = { workspace = true }
 
 [dev-dependencies]
+davinci_test_support.workspace = true
 insta = { workspace = true }
 
 [[test]]

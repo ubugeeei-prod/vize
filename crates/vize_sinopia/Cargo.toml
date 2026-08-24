@@ -27,6 +27,9 @@ vize_armature = { workspace = true }
 vize_carton = { workspace = true }
 vize_relief = { workspace = true }
 
+[dev-dependencies]
+davinci_test_support.workspace = true
+
 [[test]]
 name = "davinci_surface_corpus"
 required-features = ["davinci-differential"]

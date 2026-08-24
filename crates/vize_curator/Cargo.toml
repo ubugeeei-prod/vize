@@ -28,7 +28,5 @@ vize_davinci = { workspace = true }
 vize_sinopia = { workspace = true }
 
 [dev-dependencies]
+davinci_test_support.workspace = true
 insta.workspace = true
-# The TS-15 schema validator reused by path from vize_carton's tests
-# (davinci_profile_export/schema_check.rs) needs this.
-regex-lite = { workspace = true }

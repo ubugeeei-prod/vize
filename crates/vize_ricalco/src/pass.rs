@@ -49,21 +49,13 @@ use vize_davinci::side_table::SideTable;
 
 use crate::lower::Lowered;
 
-#[path = "pass/hoist.rs"]
 pub mod hoist;
-#[path = "pass/legacy.rs"]
 pub mod legacy;
-#[path = "pass/text.rs"]
 pub mod text;
-#[path = "pass/vfor.rs"]
 pub mod vfor;
-#[path = "pass/vif.rs"]
 pub mod vif;
-#[path = "pass/vmodel.rs"]
 pub mod vmodel;
-#[path = "pass/vslot.rs"]
 pub mod vslot;
-#[path = "pass/walk.rs"]
 pub(crate) mod walk;
 
 pub use hoist::{StaticFacts, StaticLevel};

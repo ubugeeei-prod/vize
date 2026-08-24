@@ -27,7 +27,6 @@ use super::forop::lower_for;
 use super::leaf::lower_leaf;
 use super::text;
 
-#[path = "structural/wrapper.rs"]
 mod wrapper;
 
 pub use wrapper::{ForWrapper, WrapperKey, WrapperKeys};

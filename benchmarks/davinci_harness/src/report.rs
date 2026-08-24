@@ -11,6 +11,7 @@ use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
+use davinci_test_support::schema::{SchemaError, validate};
 use serde::Serialize;
 
 /// Version stamped into every report as `harness_version`.
@@ -63,6 +64,8 @@ pub enum ReportError {
         expected: Box<str>,
         found: Box<str>,
     },
+    #[error("schema violation at `{path}`: value does not equal const `{expected}`")]
+    SchemaConst { path: Box<str>, expected: Box<str> },
     #[error("schema violation at `{path}`: missing required property `{property}`")]
     SchemaRequired { path: Box<str>, property: Box<str> },
     #[error("schema violation at `{path}`: unexpected property `{property}`")]
@@ -85,6 +88,59 @@ pub enum ReportError {
     Io(#[from] io::Error),
     #[error(transparent)]
     Json(#[from] serde_json::Error),
+}
+
+impl From<SchemaError> for ReportError {
+    fn from(error: SchemaError) -> Self {
+        match error {
+            SchemaError::NotObject { path } => Self::SchemaNotAnObject {
+                path: path.as_str().into(),
+            },
+            SchemaError::UnimplementedKeyword { path, keyword } => {
+                Self::SchemaUnimplementedKeyword {
+                    path: path.as_str().into(),
+                    keyword: keyword.as_str().into(),
+                }
+            }
+            SchemaError::Type {
+                path,
+                expected,
+                found,
+            } => Self::SchemaType {
+                path: path.as_str().into(),
+                expected: expected.as_str().into(),
+                found: found.into(),
+            },
+            SchemaError::Const { path, expected } => Self::SchemaConst {
+                path: path.as_str().into(),
+                expected: expected.as_str().into(),
+            },
+            SchemaError::Required { path, property } => Self::SchemaRequired {
+                path: path.as_str().into(),
+                property: property.as_str().into(),
+            },
+            SchemaError::UnexpectedProperty { path, property } => Self::SchemaUnexpectedProperty {
+                path: path.as_str().into(),
+                property: property.as_str().into(),
+            },
+            SchemaError::Minimum { path, minimum } => Self::SchemaMinimum {
+                path: path.as_str().into(),
+                minimum,
+            },
+            SchemaError::MinLength { path, min_length } => Self::SchemaMinLength {
+                path: path.as_str().into(),
+                min_length,
+            },
+            SchemaError::Pattern { path, pattern } => Self::SchemaPattern {
+                path: path.as_str().into(),
+                pattern: pattern.as_str().into(),
+            },
+            SchemaError::BadPattern { path, pattern } => Self::SchemaBadPattern {
+                path: path.as_str().into(),
+                pattern: pattern.as_str().into(),
+            },
+        }
+    }
 }
 
 /// Reject bench ids that cannot serve as report file names.
@@ -154,18 +210,8 @@ pub fn load_schema() -> Result<serde_json::Value, ReportError> {
 /// Validate a serialized report against the committed schema.
 pub fn validate_against_schema(report_json: &serde_json::Value) -> Result<(), ReportError> {
     let schema = load_schema()?;
-    schema_check::validate(&schema, report_json, "$")
+    validate(&schema, report_json, "$").map_err(ReportError::from)
 }
 
-/// Minimal, strict JSON Schema subset validator.
-///
-/// Implements exactly the keywords the committed schema uses (`type`,
-/// `required`, `properties`, `additionalProperties: false`, `minimum`,
-/// `minLength`, `pattern`) and rejects any other validation keyword instead
-/// of skipping it, so a schema edit cannot silently outrun the validator.
-#[path = "report/schema_check.rs"]
-mod schema_check;
-
 #[cfg(test)]
-#[path = "report/tests.rs"]
 mod tests;

@@ -86,7 +86,6 @@ use vize_disegno::provenance::ProvenanceRecord;
 use super::walk::{PageWalk, assert_accounting};
 use crate::lower::Lowered;
 
-#[path = "vmodel/check.rs"]
 mod check;
 use check::check_model;
 

@@ -12,17 +12,11 @@ use vize_davinci::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved};
 
 use crate::lower::{LegacyCaps, Lowered};
 
-#[path = "legacy/filter.rs"]
 mod filter;
-#[path = "legacy/ids.rs"]
 mod ids;
-#[path = "legacy/on.rs"]
 mod on;
-#[path = "legacy/slot.rs"]
 mod slot;
-#[path = "legacy/sync.rs"]
 mod sync;
-#[path = "legacy/tree.rs"]
 mod tree;
 
 /// The pass name in pipeline strings and folio pages.

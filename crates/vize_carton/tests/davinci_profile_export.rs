@@ -9,7 +9,7 @@
 //!    disjoint buckets.
 //! 2. The serialized export satisfies the committed schema
 //!    `davinci-road/plan/profile-export.schema.json`, checked by the strict
-//!    JSON Schema subset validator in [`schema_check`]: a schema keyword the
+//!    shared strict JSON Schema subset validator: a schema keyword the
 //!    validator does not implement is an error, never a silently skipped
 //!    check.
 //!
@@ -19,13 +19,11 @@
 
 #![allow(clippy::disallowed_macros, clippy::disallowed_types)]
 
-#[path = "davinci_profile_export/schema_check.rs"]
-mod schema_check;
-
 use std::alloc::System;
 use std::fs;
 use std::path::PathBuf;
 
+use davinci_test_support::schema as schema_check;
 use vize_carton::profile;
 use vize_carton::profiler::{
     ProfileExportBudget, ProfileExportOptions, ProfilingAllocator, SpanAttribution,
@@ -119,7 +117,7 @@ fn schema_rejects_missing_required_property() {
         .remove("allocation");
     let error = schema_check::validate(&schema, &value, "$").expect_err("missing key must fail");
     assert_eq!(
-        error,
+        error.message().as_str(),
         "schema violation at `$`: missing required property `allocation`"
     );
 }
@@ -132,7 +130,7 @@ fn schema_rejects_wrong_type_and_unexpected_property() {
     value["spans"] = serde_json::Value::from("not-an-array");
     let error = schema_check::validate(&schema, &value, "$").expect_err("wrong type must fail");
     assert_eq!(
-        error,
+        error.message().as_str(),
         "schema violation at `$.spans`: expected array, found string"
     );
 
@@ -143,7 +141,7 @@ fn schema_rejects_wrong_type_and_unexpected_property() {
         .insert("extra".into(), serde_json::Value::from(1));
     let error = schema_check::validate(&schema, &value, "$").expect_err("extra key must fail");
     assert_eq!(
-        error,
+        error.message().as_str(),
         "schema violation at `$`: unexpected property `extra`"
     );
 }
@@ -156,7 +154,7 @@ fn schema_rejects_const_mismatch_and_bad_span_key() {
     value["schema_version"] = serde_json::Value::from(2);
     let error = schema_check::validate(&schema, &value, "$").expect_err("const must fail");
     assert_eq!(
-        error,
+        error.message().as_str(),
         "schema violation at `$.schema_version`: value does not equal const `1`"
     );
 
@@ -164,7 +162,7 @@ fn schema_rejects_const_mismatch_and_bad_span_key() {
     value["spans"][0]["key"] = serde_json::Value::from("bad key");
     let error = schema_check::validate(&schema, &value, "$").expect_err("pattern must fail");
     assert_eq!(
-        error,
+        error.message().as_str(),
         "schema violation at `$.spans[0].key`: string does not match pattern `^[A-Za-z0-9._-]+$`"
     );
 }
@@ -178,7 +176,7 @@ fn validator_rejects_unimplemented_keywords() {
     let error =
         schema_check::validate(&schema, &instance, "$").expect_err("unknown keyword must fail");
     assert_eq!(
-        error,
+        error.message().as_str(),
         "schema keyword `maxProperties` at `$` is not implemented by this validator"
     );
 }

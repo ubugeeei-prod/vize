@@ -49,17 +49,11 @@
 //! else, and [`run_pipeline`] takes the body as a callback. Optimization tiers
 //! that scale budgets rather than pass sets are P3-10's.
 
-#[path = "pass/canonical.rs"]
 pub mod canonical;
-#[path = "pass/fusion.rs"]
 pub mod fusion;
-#[path = "pass/kind.rs"]
 pub mod kind;
-#[path = "pass/observer.rs"]
 pub mod observer;
-#[path = "pass/pipeline.rs"]
 pub mod pipeline;
-#[path = "pass/preserved.rs"]
 pub mod preserved;
 
 pub use canonical::{Canonical, Raw};

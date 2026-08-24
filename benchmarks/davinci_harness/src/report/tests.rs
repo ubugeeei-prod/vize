@@ -132,11 +132,11 @@ fn validator_rejects_unimplemented_keywords() {
         serde_json::from_str("{\"type\": \"object\", \"maxProperties\": 3}")
             .expect("literal schema parses");
     let instance = serde_json::json!({});
-    let error = super::schema_check::validate(&schema, &instance, "$")
+    let error = davinci_test_support::schema::validate(&schema, &instance, "$")
         .expect_err("unknown keyword must fail");
     assert_eq!(
         error.to_string(),
-        "schema keyword `maxProperties` at `$` is not implemented by the davinci_harness validator"
+        "schema keyword `maxProperties` at `$` is not implemented by this validator"
     );
 }
 

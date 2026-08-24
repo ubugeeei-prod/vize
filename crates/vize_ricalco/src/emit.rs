@@ -44,57 +44,31 @@
 //! The old lane stays the shipped compile path; [`super::DOM_LANE_FLAG`]
 //! is named here and *read* in the atelier_dom witness.
 
-#[path = "emit/buf.rs"]
 mod buf;
-#[path = "emit/builtin.rs"]
 mod builtin;
-#[path = "emit/children.rs"]
 mod children;
-#[path = "emit/component.rs"]
 mod component;
-#[path = "emit/create_slots.rs"]
 mod create_slots;
-#[path = "emit/create_slots_walk.rs"]
 mod create_slots_walk;
-#[path = "emit/directive.rs"]
 mod directive;
-#[path = "emit/flag.rs"]
 mod flag;
-#[path = "emit/fragment.rs"]
 mod fragment;
-#[path = "emit/helper.rs"]
 mod helper;
-#[path = "emit/hoist.rs"]
 mod hoist;
-#[path = "emit/js.rs"]
 mod js;
-#[path = "emit/merge.rs"]
 mod merge;
-#[path = "emit/model.rs"]
 mod model;
-#[path = "emit/namespace.rs"]
 mod namespace;
-#[path = "emit/on.rs"]
 mod on;
-#[path = "emit/outlet.rs"]
 mod outlet;
-#[path = "emit/props.rs"]
 mod props;
-#[path = "emit/props_bind.rs"]
 mod props_bind;
-#[path = "emit/props_object.rs"]
 mod props_object;
-#[path = "emit/slots.rs"]
 mod slots;
-#[path = "emit/style.rs"]
 mod style;
-#[path = "emit/tpl.rs"]
 mod tpl;
-#[path = "emit/vfor.rs"]
 mod vfor;
-#[path = "emit/vif.rs"]
 mod vif;
-#[path = "emit/vnode.rs"]
 mod vnode;
 
 use alloc::vec::Vec as StdVec;

@@ -82,9 +82,7 @@ use vize_disegno::op::Namespace;
 use super::walk::{PageWalk, assert_accounting};
 use crate::lower::Lowered;
 
-#[path = "hoist/consts.rs"]
 mod consts;
-#[path = "hoist/lattice.rs"]
 mod lattice;
 
 pub use consts::constant_for_hoist;

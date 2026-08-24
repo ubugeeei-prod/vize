@@ -3,21 +3,14 @@
 //! every prefix and suffix truncation — adversarial committed inputs,
 //! no fuzzer required, same soundness oracle everywhere.
 //!
-//! The battery is `vize_sinopia`'s own committed fixture set, included
-//! by `#[path]` (the TS-15-validator convention: reuse the artifact,
-//! never re-implement it). The aggregate counts at the bottom are the
-//! cfg-regression witness the corpus lane re-pins: a change to the
-//! lowering's decision surface moves a pinned number loudly in both
-//! lanes.
+//! The battery is `vize_sinopia`'s own committed fixture set, imported
+//! from the shared Davinci test-support crate. The aggregate counts below are
+//! the cfg-regression witness the corpus lane re-pins: a change to the
+//! lowering's decision surface moves a pinned number loudly in both lanes.
 
-#[expect(
-    dead_code,
-    reason = "the battery's hole-census fields belong to the TS-19 suites; this lane reuses the sources"
-)]
-#[path = "../../vize_sinopia/tests/common/mod.rs"]
-mod battery;
 mod support;
 
+use davinci_test_support::surface_fixture as battery;
 use support::{assert_sound, with_lowered};
 
 #[test]

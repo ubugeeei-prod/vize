@@ -19,11 +19,10 @@
 //!     --test davinci_surface_corpus -- --nocapture
 //! ```
 
-mod common;
-
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use davinci_test_support::surface_fixture as common;
 use vize_carton::{Allocator, String};
 use vize_sinopia::{HoleCounts, hole_counts, parse, render};
 

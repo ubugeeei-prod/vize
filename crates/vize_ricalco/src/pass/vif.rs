@@ -79,7 +79,6 @@ use vize_disegno::provenance::ProvenanceRecord;
 use super::walk::{PageWalk, assert_accounting, visit_ops};
 use crate::lower::{Lowered, WrapperKey, WrapperKeys};
 
-#[path = "vif/keys.rs"]
 mod keys;
 
 /// The pass name in pipeline strings and folio pages.

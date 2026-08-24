@@ -30,13 +30,9 @@
 //! a caller that genuinely needs runtime choice composes with an enum
 //! observer of its own.
 
-#[path = "observer/budget.rs"]
 pub mod budget;
-#[path = "observer/folio.rs"]
 pub mod folio;
-#[path = "observer/remark.rs"]
 pub mod remark;
-#[path = "observer/timing.rs"]
 pub mod timing;
 
 pub use budget::BudgetObserver;

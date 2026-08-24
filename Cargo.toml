@@ -30,6 +30,7 @@ members = [
   "crates/vize_doctor",
   "benchmarks/davinci_harness",
   "benchmarks/vize",
+  "tests/davinci_test_support",
   "tests/vize_test_runner",
 ]
 
@@ -62,6 +63,7 @@ vize_doctor = { path = "crates/vize_doctor", version = "=0.387.0" }
 
 # Workspace-only internal crates (always use the local path)
 davinci_harness = { path = "benchmarks/davinci_harness" }
+davinci_test_support = { path = "tests/davinci_test_support" }
 vize_vitrine = { path = "crates/vize_vitrine", default-features = false }
 vize_glyph = { path = "crates/vize_glyph" }
 vize_maestro = { path = "crates/vize_maestro" }

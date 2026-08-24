@@ -41,9 +41,7 @@
 //! first `#[derive(Folio)]` page, P2-4). The binary is host-side and may use
 //! `std`; the `vize_davinci` library stays `no_std + alloc`.
 
-#[path = "davinci-opt/args.rs"]
 mod args;
-#[path = "davinci-opt/export.rs"]
 mod export;
 
 use std::process::ExitCode;

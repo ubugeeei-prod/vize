@@ -790,9 +790,9 @@ name = "davinci_harness"
 version = "0.387.0"
 dependencies = [
  "criterion",
+ "davinci_test_support",
  "libc",
  "mimalloc",
- "regex-lite",
  "serde",
  "serde_json",
  "tempfile",
@@ -801,6 +801,16 @@ dependencies = [
  "vize_disegno",
  "vize_ricalco",
  "vize_sinopia",
+]
+
+[[package]]
+name = "davinci_test_support"
+version = "0.387.0"
+dependencies = [
+ "compact_str 0.9.0",
+ "regex-lite",
+ "serde_json",
+ "thiserror 2.0.20",
 ]
 
 [[package]]
@@ -3759,13 +3769,13 @@ version = "0.387.0"
 dependencies = [
  "bitflags 2.13.1",
  "compact_str 0.9.0",
+ "davinci_test_support",
  "insta",
  "once_cell",
  "oxc_allocator",
  "oxc_syntax",
  "phf 0.13.1",
  "pklrust",
- "regex-lite",
  "rustc-hash",
  "serde",
  "serde_json",
@@ -3826,13 +3836,13 @@ dependencies = [
 name = "vize_curator"
 version = "0.387.0"
 dependencies = [
+ "davinci_test_support",
  "insta",
  "oxc_allocator",
  "oxc_ast",
  "oxc_ast_visit",
  "oxc_parser",
  "oxc_span",
- "regex-lite",
  "serde",
  "serde_json",
  "vize_atelier_core",
@@ -3850,8 +3860,8 @@ version = "0.387.0"
 dependencies = [
  "criterion",
  "davinci_harness",
+ "davinci_test_support",
  "insta",
- "regex-lite",
  "serde_json",
  "vize_atelier_core",
  "vize_atelier_sfc",
@@ -4048,6 +4058,7 @@ dependencies = [
 name = "vize_ricalco"
 version = "0.387.0"
 dependencies = [
+ "davinci_test_support",
  "insta",
  "oxc_ast",
  "oxc_ast_visit",
@@ -4061,6 +4072,7 @@ dependencies = [
 name = "vize_sinopia"
 version = "0.387.0"
 dependencies = [
+ "davinci_test_support",
  "vize_armature",
  "vize_carton",
  "vize_relief",
