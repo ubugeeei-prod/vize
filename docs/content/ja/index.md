@@ -1,14 +1,14 @@
 ---
 layout: entry
-title: ヴィゼ
+title: Vize
 description: Rust の高性能 Vue.js ツールチェーン。 Vue コンポーネントをコンパイル、lint、フォーマット、型チェック、探索します。
 hero:
   name: Vize
   text: Rust の高性能 Vue.js ツールチェーン
-  tagline: /viːz/ — コードを透視する賢明なツール。 Vue コンポーネントのコンパイル、lint、フォーマット、型チェック、探索はすべて Rust によって行われます。 ⚠️ まだ製品化の準備ができていません。
+  tagline: /viːz/（ヴィーズ）— コードを透視する賢明なツール。 Vue コンポーネントのコンパイル、lint、フォーマット、型チェック、探索はすべて Rust によって行われます。 ⚠️ まだ製品化の準備ができていません。
   image:
     src: logo.svg
-    alt: ヴィゼのロゴ
+    alt: Vize のロゴ
   actions:
     - theme: brand
       text: 始めましょう
