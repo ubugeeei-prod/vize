@@ -12,9 +12,12 @@
 //! (including event/key/option modifiers), native `ui.if`, **native
 //! `ui.for`**, **object-spread `v-bind`** (`normalizeProps` /
 //! `createVNode` / `createBlock`), **object `v-on`** (`toHandlers`),
-//! and **implicit default text slots** (`withCtx` / `_: 1|2`).
-//! `.native`, template fragments, filters, named / scoped slots, slot
-//! outlets, element children, and builtins stay
+//! `mergeProps`), **static-name components** (`resolveComponent` /
+//! `createVNode` / `createBlock`), **object `v-on`** (`toHandlers`),
+//! and **implicit default slots** (`withCtx` / `_: 1|2`, including text,
+//! native / component children, static-vnode hoists, and hoisted static
+//! `ui.for` items). `.native`, template fragments, filters, named /
+//! scoped slots, slot outlets, and builtins stay
 //! [`EmitError::Unsupported`]. The old lane stays the shipped compile
 //! path; [`super::DOM_LANE_FLAG`] is named here and *read* in the
 //! atelier_dom witness.
@@ -29,6 +32,8 @@ mod component;
 mod flag;
 #[path = "emit/helper.rs"]
 mod helper;
+#[path = "emit/hoist.rs"]
+mod hoist;
 #[path = "emit/js.rs"]
 mod js;
 #[path = "emit/merge.rs"]

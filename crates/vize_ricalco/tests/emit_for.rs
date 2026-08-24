@@ -9,7 +9,7 @@
 mod support;
 
 use support::with_transformed;
-use vize_ricalco::{EmitError, emit_dom};
+use vize_ricalco::{emit_dom, EmitError};
 
 fn assembled(source: &str) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {
@@ -67,6 +67,25 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock(_Fragment, null, _renderList(3, (n) => {
     return _createElementVNode(\"div\", null, _toDisplayString(n), 1 /* TEXT */)
   }), 64 /* STABLE_FRAGMENT */))
+}"
+    );
+}
+
+#[test]
+fn a_static_v_for_item_hoists() {
+    assert_eq!(
+        assembled(r#"<div><span v-for="i in n">x</span></div>"#),
+        "\
+const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, renderList: _renderList } = Vue
+
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"span\", null, \"x\")
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", null, [
+    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(n, (i) => {
+      return _hoisted_1
+    }), 256 /* UNKEYED_FRAGMENT */))
+  ]))
 }"
     );
 }

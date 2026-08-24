@@ -2,7 +2,7 @@
 //! mixed text siblings, static-name binds, static-name events including
 //! event/key/option modifiers, native v-if, native v-for,
 //! object-spread v-bind, static-name components, object v-on, and
-//! implicit default text slots, compared
+//! implicit text / native / component default slots, compared
 //! **byte-for-byte** including helper usage.
 //!
 //! `vize_atelier_dom` is published; the Davinci crates are not. The
@@ -19,7 +19,7 @@
 
 use vize_atelier_dom::compile_template;
 use vize_carton::Allocator;
-use vize_ricalco::{DOM_LANE_FLAG, emit_dom_source};
+use vize_ricalco::{emit_dom_source, DOM_LANE_FLAG};
 
 const BATTERY: &[(&str, &str)] = &[
     ("empty_div", "<div></div>"),
@@ -115,6 +115,10 @@ const BATTERY: &[(&str, &str)] = &[
     ),
     ("numeric_v_for", r#"<div v-for="n in 3">{{ n }}</div>"#),
     (
+        "static_v_for_item_hoists",
+        r#"<div><span v-for="i in n">x</span></div>"#,
+    ),
+    (
         "v_for_index",
         r#"<div v-for="(item, i) in list" :key="i">{{ item }}</div>"#,
     ),
@@ -165,6 +169,7 @@ const BATTERY: &[(&str, &str)] = &[
         "component_v_for",
         r#"<Foo v-for="item in list" :key="item" />"#,
     ),
+    ("component_v_for_unkeyed", r#"<Foo v-for="i in n" />"#),
     ("component_siblings", "<div><Foo /><Bar /></div>"),
     ("component_duplicate", "<div><Foo /><Foo /></div>"),
     ("component_then_span", "<div><Foo /><span></span></div>"),
@@ -242,6 +247,79 @@ const BATTERY: &[(&str, &str)] = &[
     ),
     ("component_ws_only_children", "<Foo>  </Foo>"),
     ("component_padded_text_slot", "<Foo> hello </Foo>"),
+    ("component_empty_span_slot", "<Foo><span></span></Foo>"),
+    ("component_span_text_slot", "<Foo><span>hi</span></Foo>"),
+    (
+        "component_span_class_slot",
+        r#"<Foo><span class="x"></span></Foo>"#,
+    ),
+    (
+        "component_span_class_text_slot",
+        r#"<Foo><span class="x">hi</span></Foo>"#,
+    ),
+    (
+        "component_nested_static_slot",
+        "<Foo><div><span></span></div></Foo>",
+    ),
+    (
+        "component_two_static_spans",
+        "<Foo><span></span><span></span></Foo>",
+    ),
+    (
+        "component_text_then_span_slot",
+        "<Foo>hello<span></span></Foo>",
+    ),
+    (
+        "component_interp_in_span_slot",
+        "<Foo><span>{{ msg }}</span></Foo>",
+    ),
+    (
+        "component_dynamic_span_slot",
+        r#"<Foo><span :id="x"></span></Foo>"#,
+    ),
+    (
+        "component_class_then_span_slot",
+        r#"<Foo class="x"><span></span></Foo>"#,
+    ),
+    ("component_nested_bar_slot", "<Foo><Bar /></Foo>"),
+    ("component_nested_bar_text_slot", "<Foo><Bar>x</Bar></Foo>"),
+    (
+        "component_span_then_bar_slot",
+        "<Foo><span></span><Bar /></Foo>",
+    ),
+    (
+        "component_vif_span_slot",
+        r#"<Foo><span v-if="ok">x</span></Foo>"#,
+    ),
+    (
+        "component_compound_p_slot",
+        r#"<Foo><p>Hi {{ name }}!</p></Foo>"#,
+    ),
+    (
+        "nested_div_component_span_slot",
+        "<div><Foo><span></span></Foo></div>",
+    ),
+    (
+        "component_static_tree_with_text",
+        r#"<Foo><div class="x"><span>hi</span></div></Foo>"#,
+    ),
+    (
+        "component_mixed_text_element_hoist",
+        "<Foo><div>hello<span></span></div></Foo>",
+    ),
+    (
+        "component_vfor_span_slot",
+        r#"<Foo><span v-for="i in n">x</span></Foo>"#,
+    ),
+    (
+        "component_vfor_item_span_slot",
+        r#"<Foo v-for="i in n"><span></span></Foo>"#,
+    ),
+    ("component_ws_then_span_slot", "<Foo> <span></span></Foo>"),
+    (
+        "component_nested_bar_vfor_slot",
+        r#"<Foo><Bar v-for="i in n" /></Foo>"#,
+    ),
 ];
 
 fn shipped(src: &str) -> String {
