@@ -31,6 +31,11 @@ const budgets = parseTomlLite(budgetsText) as {
   allocation_peak: Record<string, Record<string, number>>;
 };
 
+const COMPACT_STORAGE_STAGE_WINDOWS = new Set([
+  "ricalco_lower_vfor_three_aliases",
+  "ricalco_emit_von_two_per_bucket",
+]);
+
 // --- bench-id enumeration from the bench sources -------------------------
 //
 // Bench ids are constructed either as a direct string literal passed to
@@ -159,7 +164,8 @@ test("every budget entry carries exactly the documented fields within the tolera
     const stageWindow =
       id.includes("_transform_") ||
       id.startsWith("atelier_vapor_lower_") ||
-      id.startsWith("atelier_ssr_codegen_");
+      id.startsWith("atelier_ssr_codegen_") ||
+      COMPACT_STORAGE_STAGE_WINDOWS.has(id);
     const ceiling = stageWindow ? 0.1 : 0.05;
     assert.ok(
       tolerance <= ceiling,
@@ -221,13 +227,15 @@ test("compact-storage wall budgets match the committed linux baseline reports", 
   const expected = {
     ricalco_lower_vfor_three_aliases: {
       fixture: "synthetic:v-for-three-aliases",
-      wallP50Ns: 784,
+      wallP50Ns: 764,
+      wallTolerance: 0.1,
       allocs: 10,
       allocBytesPeak: 1254,
     },
     ricalco_emit_von_two_per_bucket: {
       fixture: "synthetic:v-on-two-option-event-key-modifiers",
-      wallP50Ns: 1478,
+      wallP50Ns: 1566,
+      wallTolerance: 0.1,
       allocs: 18,
       allocBytesPeak: 648,
     },
@@ -247,6 +255,7 @@ test("compact-storage wall budgets match the committed linux baseline reports", 
     assert.equal(report.platform, "linux");
     assert.equal(report.wall_ns.p50, row.wallP50Ns);
     assert.equal(budgets.bench[id]?.wall_p50_ns, row.wallP50Ns);
+    assert.equal(budgets.bench[id]?.wall_tolerance, row.wallTolerance);
     assert.equal(report.allocs, row.allocs);
     assert.equal(budgets.bench[id]?.allocs, row.allocs);
     assert.equal(report.alloc_bytes_peak, row.allocBytesPeak);

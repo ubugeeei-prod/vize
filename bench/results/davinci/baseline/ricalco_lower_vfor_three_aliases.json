@@ -3,11 +3,11 @@
   "fixture": "synthetic:v-for-three-aliases",
   "platform": "linux",
   "wall_ns": {
-    "p50": 784,
-    "p95": 43582
+    "p50": 764,
+    "p95": 48030
   },
   "allocs": 10,
   "alloc_bytes_peak": 1254,
-  "rss_peak_bytes": 111464448,
+  "rss_peak_bytes": 99250176,
   "harness_version": "0.387.0"
 }

@@ -180,9 +180,10 @@ davinci_pipeline_unobserved = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0,
 davinci_pipeline_no_observer = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 
 # Compact-storage probes. Setup is excluded with stage windows so these exact
-# allocation counts localize the v-for split and v-on emit paths.
-ricalco_lower_vfor_three_aliases = { wall_p50_ns = 784, allocs = 10, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-ricalco_emit_von_two_per_bucket = { wall_p50_ns = 1478, allocs = 18, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+# allocation counts localize the v-for split and v-on emit paths; the wall
+# side uses the stage-window tolerance because the timed window is sub-2us.
+ricalco_lower_vfor_three_aliases = { wall_p50_ns = 764, allocs = 10, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+ricalco_emit_von_two_per_bucket = { wall_p50_ns = 1566, allocs = 18, rss_peak_bytes = 0, wall_tolerance = 0.10 }
 
 [allocation_peak]
 # Exact peak live bytes over each stage window. The counting allocator makes
