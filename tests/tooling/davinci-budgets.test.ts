@@ -223,43 +223,27 @@ test("compact-storage peaks are exact per-platform allocation budgets", () => {
   }
 });
 
-test("compact-storage wall budgets match the committed linux baseline reports", () => {
+test("compact-storage probes stay wall-report-only with exact alloc gates", () => {
+  // The sub-2us stage windows vary more than the 10% wall ceiling across CI
+  // runners (#4857, #4877), so the wall side stays unrecorded until a
+  // reference-runner methodology lands: no committed baseline report, and the
+  // wall_p50_ns = 0 seed. The deterministic alloc and per-platform peak gates
+  // still fail closed.
   const expected = {
-    ricalco_lower_vfor_three_aliases: {
-      fixture: "synthetic:v-for-three-aliases",
-      wallP50Ns: 855,
-      wallTolerance: 0.1,
-      allocs: 10,
-      allocBytesPeak: 1254,
-    },
-    ricalco_emit_von_two_per_bucket: {
-      fixture: "synthetic:v-on-two-option-event-key-modifiers",
-      wallP50Ns: 1691,
-      wallTolerance: 0.1,
-      allocs: 18,
-      allocBytesPeak: 648,
-    },
+    ricalco_lower_vfor_three_aliases: { allocs: 10, allocBytesPeakLinux: 1254 },
+    ricalco_emit_von_two_per_bucket: { allocs: 18, allocBytesPeakLinux: 648 },
   };
   for (const [id, row] of Object.entries(expected)) {
     const reportPath = path.join(repoRoot, "bench", "results", "davinci", "baseline", `${id}.json`);
-    const report = JSON.parse(fs.readFileSync(reportPath, "utf8")) as {
-      bench_id: string;
-      fixture: string;
-      platform: string;
-      wall_ns: { p50: number };
-      allocs: number;
-      alloc_bytes_peak: number;
-    };
-    assert.equal(report.bench_id, id);
-    assert.equal(report.fixture, row.fixture);
-    assert.equal(report.platform, "linux");
-    assert.equal(report.wall_ns.p50, row.wallP50Ns);
-    assert.equal(budgets.bench[id]?.wall_p50_ns, row.wallP50Ns);
-    assert.equal(budgets.bench[id]?.wall_tolerance, row.wallTolerance);
-    assert.equal(report.allocs, row.allocs);
+    assert.equal(
+      fs.existsSync(reportPath),
+      false,
+      `${id} must stay wall-unbaselined until a reference-runner recording lands`,
+    );
+    assert.equal(budgets.bench[id]?.wall_p50_ns, 0);
+    assert.equal(budgets.bench[id]?.wall_tolerance, 0.1);
     assert.equal(budgets.bench[id]?.allocs, row.allocs);
-    assert.equal(report.alloc_bytes_peak, row.allocBytesPeak);
-    assert.equal(budgets.allocation_peak[id]?.linux, row.allocBytesPeak);
+    assert.equal(budgets.allocation_peak[id]?.linux, row.allocBytesPeakLinux);
   }
 });
 
