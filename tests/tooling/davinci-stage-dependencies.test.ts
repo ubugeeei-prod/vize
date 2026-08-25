@@ -64,6 +64,20 @@ function* walkRustFiles(directory: string): Generator<string> {
   }
 }
 
+function s2DomWitnessFiles(): string[] {
+  const testDir = path.join(repoRoot, "crates", "vize_atelier_dom", "tests");
+  const witnesses = fs
+    .readdirSync(testDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && /^davinci_s2_.*\.rs$/u.test(entry.name))
+    .map((entry) => entry.name)
+    .sort();
+  assert.ok(
+    witnesses.length >= 20,
+    `expected broad S2 DOM witness coverage, found only ${witnesses.length} files`,
+  );
+  return [...witnesses, path.join("support", "mod.rs")];
+}
+
 const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>([
   ["vize_davinci", [["vize_carton", "vize_s0"]]],
   ["vize_s1", [["vize_carton", "vize_s0"]]],
@@ -166,14 +180,9 @@ test("Davinci DOM lane tests import lowering through the stage alias", () => {
     "vize_atelier_dom must not depend on vize_ricalco through its physical name",
   );
 
-  for (const file of [
-    "davinci_s2_dom.rs",
-    "davinci_s2_patch_flags.rs",
-    "davinci_s2_slots.rs",
-    path.join("support", "mod.rs"),
-  ]) {
+  for (const file of s2DomWitnessFiles()) {
     const source = readRepoFile("crates", "vize_atelier_dom", "tests", file);
-    assert.doesNotMatch(source, /\bvize_ricalco::/u);
+    assert.doesNotMatch(source, /\bvize_ricalco::/u, `${file} must use vize_s1_to_s2`);
   }
 });
 
