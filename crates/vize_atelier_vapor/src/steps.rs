@@ -2,23 +2,14 @@
 //!
 //! Individual transform steps for Vapor IR generation.
 
-#[path = "transforms/element.rs"]
 pub mod element;
-#[path = "transforms/transform_slot.rs"]
 pub mod slot;
-#[path = "transforms/transform_text.rs"]
 pub mod text;
-#[path = "transforms/v_bind.rs"]
 pub mod v_bind;
-#[path = "transforms/v_for.rs"]
 pub mod v_for;
-#[path = "transforms/v_if.rs"]
 pub mod v_if;
-#[path = "transforms/v_model.rs"]
 pub mod v_model;
-#[path = "transforms/v_on.rs"]
 pub mod v_on;
-#[path = "transforms/v_show.rs"]
 pub mod v_show;
 
 pub use element::{

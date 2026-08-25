@@ -6,7 +6,6 @@ use super::{
     String, TemplateChildNode, TransformContext, Vec, transform_children,
 };
 
-#[path = "component/slots.rs"]
 mod slots;
 
 /// Transform a component element into a `CreateComponent` operation.

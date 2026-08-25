@@ -1,10 +1,7 @@
 //! Element transformation dispatch for Vapor IR lowering.
 
-#[path = "element/component.rs"]
 mod component;
-#[path = "element/deferred.rs"]
 mod deferred;
-#[path = "element/template.rs"]
 mod template;
 
 use vize_carton::{Box, String, Vec, append, cstr, ensure_sufficient_stack};

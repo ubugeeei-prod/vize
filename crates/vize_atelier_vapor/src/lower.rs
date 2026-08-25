@@ -2,15 +2,10 @@
 //!
 //! Lowers the template AST into Vapor IR for code generation.
 
-#[path = "transform/context.rs"]
 mod context;
-#[path = "transform/control.rs"]
 mod control;
-#[path = "transform/directive.rs"]
 mod directive;
-#[path = "transform/element.rs"]
 mod element;
-#[path = "transform/text.rs"]
 mod text;
 
 use vize_carton::{Allocator, String, Vec};

@@ -8,6 +8,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 const ordinaryModuleRoots = [
   "crates/vize_atelier_core",
   "crates/vize_atelier_sfc",
+  "crates/vize_atelier_vapor",
   "crates/vize_carton",
   "crates/vize_croquis",
   "crates/vize_davinci",
