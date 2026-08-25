@@ -555,5 +555,4 @@ impl ScopeChain {
 }
 
 #[cfg(test)]
-#[path = "chain/chain_tests.rs"]
 mod tests;

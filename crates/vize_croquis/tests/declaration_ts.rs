@@ -1,5 +1,7 @@
 //! Declaration output regressions exercised through Croquis' public API.
 
+#![allow(clippy::disallowed_macros)]
+
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;

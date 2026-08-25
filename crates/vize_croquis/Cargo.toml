@@ -38,6 +38,8 @@ davinci-differential = []
 tempfile.workspace = true
 vize_armature.workspace = true
 insta.workspace = true
+
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 criterion.workspace = true
 davinci_harness.workspace = true
 # Dev-only cycle (vize_atelier_sfc depends on this crate normally); cargo
