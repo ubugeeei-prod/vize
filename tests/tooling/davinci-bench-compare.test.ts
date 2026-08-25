@@ -132,6 +132,18 @@ test("bench-compare still gates allocs when no baseline report exists", () => {
   );
 });
 
+test("bench-compare fails closed when the baseline reports path is not a directory", () => {
+  const overrides = { baseline: `${fixtureRel}/budgets.toml` };
+  const result = runCompare(compareArgs("within-tolerance", overrides));
+  assert.equal(result.status, 2, result.stderr);
+  assert.equal(result.stdout, header("within-tolerance", overrides));
+  assert.match(
+    result.stderr,
+    /^bench-compare: baseline reports directory tests\/_fixtures\/davinci-bench-compare\/budgets\.toml cannot be read: /u,
+  );
+  assert.match(result.stderr, /ENOTDIR|not a directory/u);
+});
+
 test("bench-compare reports the wall side but gates allocs when the wall baseline is unrecorded", () => {
   const overrides = { budgets: `${fixtureRel}/budgets-unrecorded.toml` };
   const result = runCompare(compareArgs("within-tolerance", overrides));

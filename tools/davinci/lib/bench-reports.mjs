@@ -5,7 +5,8 @@
 // The loader re-validates the fields the gate reads instead of trusting the
 // exporter: a truncated or hand-edited report must fail the gate loudly
 // rather than compare as a suspiciously fast run. A missing directory is an
-// empty set, which is how "no baseline recorded yet" reaches the gate.
+// empty set, which is how "no baseline recorded yet" reaches the gate; other
+// directory read failures are configuration errors.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -18,13 +19,19 @@ function integerOrNull(value) {
   return value === null || (Number.isSafeInteger(value) && value >= 0);
 }
 
+function errorCode(error) {
+  return error != null && typeof error === "object" && "code" in error ? error.code : undefined;
+}
+
 export function loadReports(dir, label) {
   const reports = new Map();
   let entries;
   try {
     entries = fs.readdirSync(dir, { withFileTypes: true });
-  } catch {
-    return reports; // a missing directory is an empty report set
+  } catch (error) {
+    if (errorCode(error) === "ENOENT") return reports;
+    const reason = error instanceof Error ? error.message : String(error);
+    fail(`${label} reports directory ${dir} cannot be read: ${reason}`);
   }
   for (const entry of entries) {
     if (!entry.isFile() || !entry.name.endsWith(".json")) continue;
