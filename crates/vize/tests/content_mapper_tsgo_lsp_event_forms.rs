@@ -163,7 +163,9 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
                             }
                         }
                     }],
-                    "openDocuments": cases.iter().map(|case| json!({ "uri": case.0 })).collect::<Vec<_>>()
+                    "openDocuments": std::iter::once(json!({ "uri": &app_uri }))
+                        .chain(cases.iter().map(|case| json!({ "uri": case.0 })))
+                        .collect::<Vec<_>>()
                 }))
                 .await
                 .unwrap();
@@ -181,9 +183,23 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
                 .unwrap();
             let mut opened = FxHashSet::default();
             let zero = json!({ "line": 0, "character": 0 });
+            for (uri, source, ..) in &cases {
+                if opened.insert(uri.as_str()) {
+                    overlay
+                        .open(VirtualDocument::new(
+                            Uri::from_str(uri).unwrap(),
+                            "vue",
+                            source.as_str(),
+                        ))
+                        .unwrap();
+                }
+            }
+            let app_clean = pull_diagnostics(&client, &app_uri).await;
+            assert_eq!(app_clean["items"], json!([]), "{app_clean:#}");
+
             for (
                 uri,
-                source,
+                _source,
                 usage,
                 usage_end,
                 declaration,
@@ -195,15 +211,8 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
                 rename_supported,
             ) in &cases
             {
-                if opened.insert(uri.as_str()) {
-                    overlay
-                        .open(VirtualDocument::new(
-                            Uri::from_str(uri).unwrap(),
-                            "vue",
-                            source.as_str(),
-                        ))
-                        .unwrap();
-                }
+                let clean = pull_diagnostics(&client, uri).await;
+                assert_eq!(clean["items"], json!([]), "{clean:#}");
                 assert_prop_navigation(&client, &app_uri, usage, name, ty, uri, declaration).await;
                 let references = references(&client, &app_uri, usage).await;
                 assert_no_generated_uri_or_zero_range(&references);
@@ -237,8 +246,6 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
                 } else {
                     assert!(rename.is_null(), "{rename:#}");
                 }
-                let clean = pull_diagnostics(&client, uri).await;
-                assert_eq!(clean["items"], json!([]), "{clean:#}");
             }
 
             let broken_handler =
