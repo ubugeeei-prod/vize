@@ -16,9 +16,10 @@
 //!   equals the authored template bytes, malformed input included - which
 //!   is exactly what the ladder's S1 rung shows, proven through the tree
 //!   rather than copied from the source.
-//! - **S2**: nothing yet. `vize_disegno` has no producer until the S1→S2
-//!   lowering (P2-8) lands; the feed shape is stage-agnostic, so S2 pages
-//!   join by pushing more [`SpolveroPage`]s here, with no schema change.
+//! - **S2**: not emitted by the inspector yet. `vize_s2` (codename Disegno)
+//!   has a Vue producer in the S1→S2 lowering, and the feed shape is
+//!   stage-agnostic, so S2 pages join by pushing more [`SpolveroPage`]s here,
+//!   with no schema change.
 //!
 //! Files that are not `.vue`, fail SFC parsing, or have no template block
 //! contribute no page: the feed is a stage-dump channel, not a diagnostics

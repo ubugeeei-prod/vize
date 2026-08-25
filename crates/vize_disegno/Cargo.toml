@@ -1,5 +1,5 @@
 [package]
-name = "vize_disegno"
+name = "vize_s2"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

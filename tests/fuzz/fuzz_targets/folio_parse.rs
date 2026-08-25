@@ -6,7 +6,7 @@
 // under the invariant that *no input must panic*: parsers return
 // `Result<_, FolioError>` for malformed pages, so a panic here is always
 // a bug. Three parsers share the input — the S2 Disegno page
-// (`vize_s2`, package `vize_disegno`), the croquis page, and the repro page
+// (`vize_s2`, path `crates/vize_disegno`), the croquis page, and the repro page
 // (`vize_davinci`).
 //
 // When an input does parse, the mode-explicit round-trip law is asserted

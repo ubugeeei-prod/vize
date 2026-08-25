@@ -19,11 +19,11 @@ use vize_davinci::pass::{
     Fusability, Pair, PassDesc, PassEvent, PassKind, Pipeline, Preserved, run_pipeline,
 };
 use vize_davinci::side_table::SideTable;
-use vize_disegno::folio::DisegnoFolio;
-#[cfg(debug_assertions)]
-use vize_disegno::verify::Rigor;
-use vize_disegno::verify::VerifyObserver;
 use vize_s0::Allocator;
+use vize_s2::folio::DisegnoFolio;
+#[cfg(debug_assertions)]
+use vize_s2::verify::Rigor;
+use vize_s2::verify::VerifyObserver;
 
 const NORMALIZE: PassDesc = PassDesc::new(
     "normalize",

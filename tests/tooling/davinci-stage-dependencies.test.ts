@@ -67,13 +67,13 @@ function* walkRustFiles(directory: string): Generator<string> {
 const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>([
   ["vize_davinci", [["vize_carton", "vize_s0"]]],
   ["vize_s1", [["vize_carton", "vize_s0"]]],
-  ["vize_disegno", [["vize_carton", "vize_s0"]]],
+  ["vize_s2", [["vize_carton", "vize_s0"]]],
   [
     "vize_ricalco",
     [
       ["vize_carton", "vize_s0"],
       ["vize_s1", null],
-      ["vize_disegno", "vize_s2"],
+      ["vize_s2", null],
     ],
   ],
 ]);
@@ -102,15 +102,15 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
     ["vize_carton", 0],
     ["vize_davinci", 1],
     ["vize_s1", 1],
-    ["vize_disegno", 2],
+    ["vize_s2", 2],
     ["vize_ricalco", 3],
   ]);
   const expectedEdges = new Map<string, string[]>([
     ["vize_carton", []],
     ["vize_davinci", ["vize_carton"]],
     ["vize_s1", ["vize_carton"]],
-    ["vize_disegno", ["vize_carton", "vize_davinci"]],
-    ["vize_ricalco", ["vize_carton", "vize_davinci", "vize_disegno", "vize_s1"]],
+    ["vize_s2", ["vize_carton", "vize_davinci"]],
+    ["vize_ricalco", ["vize_carton", "vize_davinci", "vize_s1", "vize_s2"]],
   ]);
 
   for (const [packageName, packageTier] of tiers) {
@@ -144,10 +144,7 @@ test("Davinci fuzz harness imports stage packages through aliases", () => {
     manifest,
     /^vize_s1_to_s2 = \{ package = "vize_ricalco", path = "\.\.\/\.\.\/crates\/vize_ricalco" \}$/m,
   );
-  assert.match(
-    manifest,
-    /^vize_s2 = \{ package = "vize_disegno", path = "\.\.\/\.\.\/crates\/vize_disegno" \}$/m,
-  );
+  assert.match(manifest, /^vize_s2 = \{ path = "\.\.\/\.\.\/crates\/vize_disegno" \}$/m);
   assert.doesNotMatch(manifest, /^vize_(?:carton|disegno|ricalco) = /m);
 
   for (const target of ["folio_parse.rs", "s1_lowering.rs", "template_compile.rs"]) {

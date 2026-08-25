@@ -6,7 +6,7 @@
 //! fuzz input could panic when indentation closed a slot-owned model frame.
 
 use vize_davinci::folio::{Folio, FolioMode};
-use vize_disegno::folio::DisegnoFolio;
+use vize_s2::folio::DisegnoFolio;
 
 const SLOT_MODEL: &str = "\
 [disegno]

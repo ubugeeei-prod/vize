@@ -7,14 +7,14 @@
 //! `tests/folio_laws.rs`.
 
 use vize_davinci::folio::{Folio, FolioMode};
-use vize_disegno::expr::{ExprRef, ForeignExpr, JsExpr, OpaqueExpr, OpaqueReason};
-use vize_disegno::folio::DisegnoFolio;
-use vize_disegno::op::{
+use vize_s0::{Allocator, Box, Span, Vec as ArenaVec};
+use vize_s2::expr::{ExprRef, ForeignExpr, JsExpr, OpaqueExpr, OpaqueReason};
+use vize_s2::folio::DisegnoFolio;
+use vize_s2::op::{
     Attribute, BindOp, BindingContract, BindingOp, ComponentOp, DynamicName, ElementOp, ForBinding,
     ForOp, IfBranch, IfOp, InterpolationOp, ModelOp, Namespace, OnOp, Op, Region, SlotOp, TextOp,
     VueDirectiveOp,
 };
-use vize_s0::{Allocator, Box, Span, Vec as ArenaVec};
 
 /// Canonical text of the reference tree.
 const CANONICAL: &str = include_str!("fixtures/reference.folio");

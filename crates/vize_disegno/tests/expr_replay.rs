@@ -13,10 +13,10 @@
 //! then re-parse the retained payload into a second pooled arena.
 
 use vize_davinci::folio::{Folio, FolioMode};
-use vize_disegno::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
-use vize_disegno::folio::{DisegnoFolio, FolioExpr, FolioInterpolation, FolioOp};
-use vize_disegno::op::{InterpolationOp, Op};
 use vize_s0::{Allocator, Box, Span, Vec as ArenaVec, pool};
+use vize_s2::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
+use vize_s2::folio::{DisegnoFolio, FolioExpr, FolioInterpolation, FolioOp};
+use vize_s2::op::{InterpolationOp, Op};
 
 /// Build the replay tree in `allocator`: one admitted `js` payload and
 /// one escape payload, each under an interpolation.

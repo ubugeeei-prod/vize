@@ -783,9 +783,9 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.20",
  "vize_carton",
- "vize_disegno",
  "vize_ricalco",
  "vize_s1",
+ "vize_s2",
 ]
 
 [[package]]
@@ -3573,10 +3573,10 @@ dependencies = [
  "vize_carton",
  "vize_croquis",
  "vize_davinci",
- "vize_disegno",
  "vize_relief",
  "vize_ricalco",
  "vize_s1",
+ "vize_s2",
 ]
 
 [[package]]
@@ -3859,17 +3859,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "vize_disegno"
-version = "0.387.0"
-dependencies = [
- "oxc_ast",
- "oxc_parser",
- "oxc_span",
- "vize_carton",
- "vize_davinci",
-]
-
-[[package]]
 name = "vize_doctor"
 version = "0.387.0"
 dependencies = [
@@ -4045,8 +4034,8 @@ dependencies = [
  "oxc_ast_visit",
  "vize_carton",
  "vize_davinci",
- "vize_disegno",
  "vize_s1",
+ "vize_s2",
 ]
 
 [[package]]
@@ -4057,6 +4046,17 @@ dependencies = [
  "vize_armature",
  "vize_carton",
  "vize_relief",
+]
+
+[[package]]
+name = "vize_s2"
+version = "0.387.0"
+dependencies = [
+ "oxc_ast",
+ "oxc_parser",
+ "oxc_span",
+ "vize_carton",
+ "vize_davinci",
 ]
 
 [[package]]

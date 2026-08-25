@@ -374,7 +374,7 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports && cargo clippy -p vize_maestro --tests -- -D warnings && bash tools/github/check-maestro-feature-contract.sh
       - name: Davinci no_std stage-library portability lanes (TS-24)
-        run: cargo build -p vize_davinci -p vize_s1 -p vize_disegno -p vize_ricalco --lib --target wasm32-wasip2 && cargo build -p vize_davinci -p vize_s1 -p vize_disegno -p vize_ricalco --lib --target wasm32-wasip2 --no-default-features
+        run: cargo build -p vize_davinci -p vize_s1 -p vize_s2 -p vize_ricalco --lib --target wasm32-wasip2 && cargo build -p vize_davinci -p vize_s1 -p vize_s2 -p vize_ricalco --lib --target wasm32-wasip2 --no-default-features
       - name: Davinci compact-storage allocation gate
         run: cargo bench -p vize_ricalco --bench davinci_storage -- --quick && node tools/davinci/bench-compare.mjs --bench ricalco_lower_vfor_three_aliases --bench ricalco_emit_von_two_per_bucket
       - name: Upload Davinci compact-storage bench reports

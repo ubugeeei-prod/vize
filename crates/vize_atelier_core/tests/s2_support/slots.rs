@@ -35,9 +35,9 @@
 use vize_carton::String;
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
-use vize_disegno::folio::{FolioBinding, FolioName, FolioOp};
 use vize_ricalco::pass::SlotFacts;
 use vize_ricalco::pass::vslot::{SlotName, SlotParams};
+use vize_s2::folio::{FolioBinding, FolioName, FolioOp};
 
 /// The slot half of the comparator's accounting.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -144,7 +144,7 @@ pub fn s2_unit(id: Option<NodeId>, facts: &SideTable<SlotFacts>) -> PUnit {
             invented: matches!(
                 &group.name,
                 SlotName::Static {
-                    origin: vize_disegno::scope::ScopeOrigin::Synthesized { .. },
+                    origin: vize_s2::scope::ScopeOrigin::Synthesized { .. },
                     ..
                 }
             ),
@@ -167,10 +167,10 @@ pub fn s2_outlet(name: &FolioName) -> POutlet {
             FolioName::Static(text) => PName::Static(String::from(text.as_str())),
             FolioName::Dynamic(expr) => {
                 let source = match expr {
-                    vize_disegno::folio::FolioExpr::Js { source, .. }
-                    | vize_disegno::folio::FolioExpr::Foreign { source, .. }
-                    | vize_disegno::folio::FolioExpr::Opaque { source, .. }
-                    | vize_disegno::folio::FolioExpr::Filter { source, .. } => source,
+                    vize_s2::folio::FolioExpr::Js { source, .. }
+                    | vize_s2::folio::FolioExpr::Foreign { source, .. }
+                    | vize_s2::folio::FolioExpr::Opaque { source, .. }
+                    | vize_s2::folio::FolioExpr::Filter { source, .. } => source,
                 };
                 PName::Dynamic(trimmed(source.as_str()))
             }

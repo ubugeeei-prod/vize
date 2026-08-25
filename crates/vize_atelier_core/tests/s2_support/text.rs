@@ -45,7 +45,7 @@
 //!   `ExprRef::Filter`).
 
 use vize_carton::{Allocator, Span, String};
-use vize_disegno::expr::VueFilterExpr;
+use vize_s2::expr::VueFilterExpr;
 
 /// The comparator's text accounting, part of [`super::Counters`].
 #[derive(Debug, Clone, Default, PartialEq, Eq)]

@@ -6,7 +6,7 @@
 
 use vize_carton::String;
 use vize_davinci::id::NodeId;
-use vize_disegno::folio::{FolioAttribute, FolioBinding, FolioExpr, FolioName, FolioOp};
+use vize_s2::folio::{FolioAttribute, FolioBinding, FolioExpr, FolioName, FolioOp};
 
 use super::s2_lane::{S2Projection, Tables};
 use super::surface::{PBind, PDirective, PModel, PName, PSurface, is_simple_ident};

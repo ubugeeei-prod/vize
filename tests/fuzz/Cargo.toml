@@ -31,7 +31,7 @@ vize_davinci = { path = "../../crates/vize_davinci" }
 vize_s0 = { package = "vize_carton", path = "../../crates/vize_carton" }
 vize_s1 = { path = "../../crates/vize_s1" }
 vize_s1_to_s2 = { package = "vize_ricalco", path = "../../crates/vize_ricalco" }
-vize_s2 = { package = "vize_disegno", path = "../../crates/vize_disegno" }
+vize_s2 = { path = "../../crates/vize_disegno" }
 
 [[bin]]
 name = "sfc_parse"

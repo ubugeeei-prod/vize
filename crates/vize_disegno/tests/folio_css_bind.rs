@@ -3,12 +3,12 @@
 //! inside the source budget.
 
 use vize_davinci::folio::{Folio, FolioMode};
-use vize_disegno::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
-use vize_disegno::folio::{
+use vize_s0::{Allocator, Box, Span, String, Vec as ArenaVec};
+use vize_s2::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
+use vize_s2::folio::{
     DisegnoFolio, FolioBinding, FolioElement, FolioExpr, FolioOp, FolioVueCssBind,
 };
-use vize_disegno::op::{BindingOp, ElementOp, Namespace, Op, Region, VueCssBindOp};
-use vize_s0::{Allocator, Box, Span, String, Vec as ArenaVec};
+use vize_s2::op::{BindingOp, ElementOp, Namespace, Op, Region, VueCssBindOp};
 
 const CANONICAL: &str = "\
 [disegno]

@@ -1,8 +1,9 @@
 //! Canonical Davinci stage names and their current crate spellings.
 //!
 //! Human-facing implementation names are the short stage aliases (`s0`, `s1`,
-//! `s2`, `s1_to_s2`). S1 has been mechanically renamed to its stage name;
-//! remaining art-name packages stay visible until their own rename PRs land.
+//! `s2`, `s1_to_s2`). S1 and S2 have been mechanically renamed to their stage
+//! names; remaining art-name packages stay visible until their own rename PRs
+//! land.
 
 /// A Davinci layer crate.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -60,7 +61,7 @@ pub const S1: LayerCrate = LayerCrate {
 pub const S2: LayerCrate = LayerCrate {
     id: "s2",
     crate_alias: "vize_s2",
-    package: "vize_disegno",
+    package: "vize_s2",
     role: "semantic UI IR",
 };
 
@@ -102,7 +103,7 @@ mod tests {
     fn package_ids_match_the_current_workspace_spelling() {
         assert_eq!(S0.package, "vize_carton");
         assert_eq!(S1.package, "vize_s1");
-        assert_eq!(S2.package, "vize_disegno");
+        assert_eq!(S2.package, "vize_s2");
         assert_eq!(S1_TO_S2.package, "vize_ricalco");
     }
 

@@ -13,9 +13,9 @@
 use std::path::PathBuf;
 
 use vize_davinci::folio::Folio;
-use vize_disegno::folio::DisegnoFolio;
-use vize_disegno::verify::{Rigor, verify};
 use vize_s0::cstr;
+use vize_s2::folio::DisegnoFolio;
+use vize_s2::verify::{Rigor, verify};
 
 /// Every committed invalid page. Grows only deliberately.
 const INVALID_FIXTURES: usize = 15;
@@ -53,7 +53,7 @@ fn invalid_pages() -> Vec<PathBuf> {
 
 /// Render `violations` the way the `.expected` files are committed: one
 /// line per violation, LF-terminated.
-fn render(violations: &[vize_disegno::verify::Violation]) -> vize_s0::String {
+fn render(violations: &[vize_s2::verify::Violation]) -> vize_s0::String {
     let mut rendered = vize_s0::String::default();
     for violation in violations {
         rendered.push_str(cstr!("{violation}\n").as_str());

@@ -49,8 +49,8 @@
 use vize_atelier_core::TemplateChildNode;
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
-use vize_disegno::folio::FolioOp;
 use vize_ricalco::pass::{StaticFacts, StaticLevel};
+use vize_s2::folio::FolioOp;
 
 use super::hoist_old::Decision;
 use super::hoist_walk::{structural, walk_level};

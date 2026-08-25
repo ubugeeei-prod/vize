@@ -7,8 +7,8 @@
 
 use vize_atelier_core::{IfBranchNode, TemplateChildNode};
 use vize_davinci::side_table::SideTable;
-use vize_disegno::folio::FolioOp;
 use vize_ricalco::pass::StaticFacts;
+use vize_s2::folio::FolioOp;
 
 use super::hoist::{HoistCounters, Mode, replay_or_dormant, walk_for_body};
 use super::hoist_old::{Decision, decision_of};

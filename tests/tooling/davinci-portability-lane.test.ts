@@ -11,9 +11,14 @@ import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 // placement from silently dissolving. S0 (`vize_s0`, package `vize_carton`)
 // remains the approved `std` foundation recorded in no-std-boundary.md.
 
-const portableStageCrates = ["vize_davinci", "vize_s1", "vize_disegno", "vize_ricalco"] as const;
+const portableStageCrates = [
+  ["vize_davinci", "vize_davinci"],
+  ["vize_s1", "vize_s1"],
+  ["vize_s2", "vize_disegno"],
+  ["vize_ricalco", "vize_ricalco"],
+] as const;
 
-const packageArgs = portableStageCrates.map((crate) => `-p ${crate}`).join(" ");
+const packageArgs = portableStageCrates.map(([packageName]) => `-p ${packageName}`).join(" ");
 const defaultLane = `cargo build ${packageArgs} --lib --target wasm32-wasip2`;
 const noDefaultLane = `${defaultLane} --no-default-features`;
 
@@ -66,10 +71,10 @@ test("the no_std claim stays on all four stage libraries and excludes the std S0
   // proves they are honest (a `std::` path in either crate stops compiling).
   // A library joining the claim must appear here, in both lane commands above,
   // and in no-std-boundary.md's ledger.
-  for (const crate of portableStageCrates) {
-    const lib = readRepoFile("crates", crate, "src", "lib.rs");
-    assert.match(lib, /^#!\[no_std\]$/m, `${crate} must keep #![no_std]`);
-    assert.match(lib, /^extern crate alloc;$/m, `${crate} must keep extern crate alloc`);
+  for (const [packageName, crateDir] of portableStageCrates) {
+    const lib = readRepoFile("crates", crateDir, "src", "lib.rs");
+    assert.match(lib, /^#!\[no_std\]$/m, `${packageName} must keep #![no_std]`);
+    assert.match(lib, /^extern crate alloc;$/m, `${packageName} must keep extern crate alloc`);
   }
 
   const workspace = readRepoFile("Cargo.toml");

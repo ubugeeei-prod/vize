@@ -11,9 +11,9 @@ use vize_carton::Allocator;
 use vize_carton::config::VueVersion;
 use vize_davinci::diagnostic::Severity;
 use vize_davinci::pass::NoObserver;
-use vize_disegno::folio::DisegnoFolio;
 use vize_ricalco::LegacyCaps;
 use vize_ricalco::pass::{TRANSFORM_LANE_FLAG, run_transform};
+use vize_s2::folio::DisegnoFolio;
 
 use super::{
     Counters, checks, hoist, hoist_old, old_lane, s2_lane, slots, slots_old, surface_check,

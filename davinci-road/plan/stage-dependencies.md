@@ -8,7 +8,7 @@ compatibility change can rename them safely.
 | -------------------------------- | -------------------- | ------------------ |
 | S0 source and storage foundation | `vize_s0`            | `vize_carton`      |
 | S1 lossless surface tree         | `vize_s1`            | `vize_s1`          |
-| S2 semantic IR                   | `vize_s2`            | `vize_disegno`     |
+| S2 semantic IR                   | `vize_s2`            | `vize_s2`          |
 | S1 to S2 lowering                | `vize_s1_to_s2`      | `vize_ricalco`     |
 
 `vize_davinci` is shared infrastructure rather than another artifact stage. It

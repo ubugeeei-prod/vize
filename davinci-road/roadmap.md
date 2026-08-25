@@ -108,7 +108,7 @@ holds or improves — this phase should be a measurable win, not a wash.
   raw `*mut` traversal is replaced by id-based traversal.
 - The **DOM backend** is the first strangler target: it lowers from S2 while SSR
   and Vapor still run the old lane.
-- New crates (`vize_davinci`, `vize_disegno`) are `no_std + alloc` from birth;
+- New crates (`vize_davinci`, `vize_s2`) are `no_std + alloc` from birth;
   `wasm32-wasip2` joins CI. Pass-manager observers (Folio-after-change dumps,
   timing, remark emission) land with the pass manager itself, so the DevTool's
   data feed exists from the first S2 build.

@@ -88,7 +88,7 @@ and autofixes rely on. Vue 2 is an S1/S2 dialect using
 the existing `legacy` capability model (resolve once per file, feature-gated,
 zero cost when off).
 
-### S2 — semantic IR (the pivot; alias `vize_s2`, package `vize_disegno`)
+### S2 — semantic IR (the pivot; crate `vize_s2`, codename Disegno)
 
 The normalized, input-neutral representation of UI semantics, and the **primary
 consumer surface**: element/component/text/interpolation nodes, structured
@@ -292,8 +292,7 @@ Non-negotiable, inherited from "Be Fast Above All":
 
 ## Portability: `no_std` core, WASI as a first-class target
 
-Davinci-owned crates (`vize_davinci`, `vize_s2`/`vize_disegno`,
-`vize_s3`/`vize_impeto`) are
+Davinci-owned crates (`vize_davinci`, `vize_s2`, `vize_s3`/`vize_impeto`) are
 written `no_std + alloc` from birth: stage data, passes, and emitters depend on
 the arena and core types only, with `std` gated to the edges (filesystem,
 threads/rayon, process spawning, clocks). CI builds the core for

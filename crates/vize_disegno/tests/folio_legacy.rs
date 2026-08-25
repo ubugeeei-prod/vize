@@ -4,15 +4,13 @@
 //! Vue 3 family pin and this file stays inside the source budget.
 
 use vize_davinci::folio::{Folio, FolioMode};
-use vize_disegno::expr::{ExprRef, JsExpr, VueFilterExpr};
-use vize_disegno::folio::{
+use vize_s0::{Allocator, Box, Span, String, Vec as ArenaVec};
+use vize_s2::expr::{ExprRef, JsExpr, VueFilterExpr};
+use vize_s2::folio::{
     DisegnoFolio, FolioBinding, FolioComponent, FolioExpr, FolioInterpolation, FolioOp,
     FolioVueSlotScope, FolioVueSync,
 };
-use vize_disegno::op::{
-    BindingOp, ComponentOp, InterpolationOp, Op, Region, VueSlotScopeOp, VueSyncOp,
-};
-use vize_s0::{Allocator, Box, Span, String, Vec as ArenaVec};
+use vize_s2::op::{BindingOp, ComponentOp, InterpolationOp, Op, Region, VueSlotScopeOp, VueSyncOp};
 
 const CANONICAL: &str = "\
 [disegno]
