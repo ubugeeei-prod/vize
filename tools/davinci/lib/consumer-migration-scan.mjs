@@ -10,17 +10,23 @@ import path from "node:path";
 import { repoRoot } from "./paths.mjs";
 import { stripRust } from "./rust-source.mjs";
 
-export const SURFACES = [
-  { id: "davinci", label: "Davinci", group: "stage", names: ["vize_davinci"] },
-  { id: "s0", label: "S0/carton", group: "stage", names: ["vize_s0", "vize_carton"] },
-  { id: "s1", label: "S1/sinopia", group: "stage", names: ["vize_s1", "vize_sinopia"] },
-  { id: "s2", label: "S2/disegno", group: "stage", names: ["vize_s2", "vize_disegno"] },
-  {
-    id: "s1_to_s2",
-    label: "S1->S2/ricalco",
+function stageSurface(id, label, preferredName, compatNames = []) {
+  return {
+    id,
+    label,
     group: "stage",
-    names: ["vize_s1_to_s2", "vize_ricalco"],
-  },
+    names: [preferredName, ...compatNames],
+    preferredNames: [preferredName],
+    compatNames,
+  };
+}
+
+export const SURFACES = [
+  stageSurface("davinci", "Davinci", "vize_davinci"),
+  stageSurface("s0", "S0/carton", "vize_s0", ["vize_carton"]),
+  stageSurface("s1", "S1/sinopia", "vize_s1", ["vize_sinopia"]),
+  stageSurface("s2", "S2/disegno", "vize_s2", ["vize_disegno"]),
+  stageSurface("s1_to_s2", "S1->S2/ricalco", "vize_s1_to_s2", ["vize_ricalco"]),
   {
     id: "old_ast",
     label: "old AST/parser",
@@ -140,6 +146,13 @@ function surfaceRegex(surface) {
 
 const SURFACE_REGEXES = SURFACES.map((surface) => [surface, surfaceRegex(surface)]);
 
+export function surfaceNameKind(surface, name) {
+  if (surface.preferredNames?.includes(name)) return "preferred";
+  if (surface.compatNames?.includes(name)) return "compat";
+  if (surface.group === "raw") return "raw";
+  return "legacy";
+}
+
 function stripTomlComments(text) {
   return text
     .split("\n")
@@ -233,12 +246,15 @@ function scanFile(relPath) {
     regex.lastIndex = 0;
     let match;
     while ((match = regex.exec(stripped)) !== null) {
+      const matchedName = match[0];
       sites.push({
         relPath,
         line: lineOfIndex(stripped, match.index),
         mode: siteMode(relPath, stripped, match.index),
         surfaceId: surface.id,
         group: surface.group,
+        matchedName,
+        nameKind: surfaceNameKind(surface, matchedName),
       });
     }
   }
@@ -249,18 +265,28 @@ function emptySurfaceCounts() {
   return Object.fromEntries(SURFACES.map((surface) => [surface.id, 0]));
 }
 
+function emptyNameKindCounts() {
+  return { preferred: 0, compat: 0, legacy: 0, raw: 0 };
+}
+
+function emptySurfaceNameCounts() {
+  return Object.fromEntries(SURFACES.map((surface) => [surface.id, {}]));
+}
+
 function summarizeConsumer(consumer) {
   const files = collectFiles(consumer);
   const sites = files.flatMap(scanFile);
   const groupCounts = { stage: 0, old: 0, raw: 0 };
   const modeCounts = { source: 0, manifest: 0, test: 0 };
   const surfaceCounts = emptySurfaceCounts();
+  const nameKindCounts = emptyNameKindCounts();
   const fileRows = new Map();
 
   for (const site of sites) {
     groupCounts[site.group] += 1;
     modeCounts[site.mode] += 1;
     surfaceCounts[site.surfaceId] += 1;
+    nameKindCounts[site.nameKind] += 1;
     const key = `${site.relPath}\0${site.mode}`;
     const row = fileRows.get(key) ?? {
       relPath: site.relPath,
@@ -268,10 +294,15 @@ function summarizeConsumer(consumer) {
       firstLine: site.line,
       total: 0,
       surfaceCounts: emptySurfaceCounts(),
+      nameKindCounts: emptyNameKindCounts(),
+      surfaceNameCounts: emptySurfaceNameCounts(),
     };
     row.firstLine = Math.min(row.firstLine, site.line);
     row.total += 1;
     row.surfaceCounts[site.surfaceId] += 1;
+    row.nameKindCounts[site.nameKind] += 1;
+    row.surfaceNameCounts[site.surfaceId][site.matchedName] =
+      (row.surfaceNameCounts[site.surfaceId][site.matchedName] ?? 0) + 1;
     fileRows.set(key, row);
   }
 
@@ -283,6 +314,7 @@ function summarizeConsumer(consumer) {
     groupCounts,
     modeCounts,
     surfaceCounts,
+    nameKindCounts,
     fileRows: [...fileRows.values()].sort((a, b) =>
       a.relPath === b.relPath ? a.mode.localeCompare(b.mode) : a.relPath.localeCompare(b.relPath),
     ),

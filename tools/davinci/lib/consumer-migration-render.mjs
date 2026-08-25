@@ -1,7 +1,7 @@
 // Markdown renderer for the generated consumer migration surface inventory.
 
 import { formatTable } from "./markdown.mjs";
-import { SURFACES } from "./consumer-migration-scan.mjs";
+import { SURFACES, surfaceNameKind } from "./consumer-migration-scan.mjs";
 
 function n(value) {
   return String(value);
@@ -18,6 +18,23 @@ function modeLabel(mode) {
   if (mode === "manifest") return "manifest";
   if (mode === "test") return "test/dev";
   return "source";
+}
+
+function matchedNamesLabel(surface) {
+  const classified = new Set([...(surface.preferredNames ?? []), ...(surface.compatNames ?? [])]);
+  const rows = [];
+  if (surface.preferredNames?.length) {
+    rows.push(`preferred: ${surface.preferredNames.map((name) => `\`${name}\``).join(", ")}`);
+  }
+  if (surface.compatNames?.length) {
+    rows.push(`compat/code-name: ${surface.compatNames.map((name) => `\`${name}\``).join(", ")}`);
+  }
+  const otherNames = surface.names.filter((name) => !classified.has(name));
+  if (otherNames.length > 0) {
+    const label = surface.group === "raw" ? "raw" : "legacy";
+    rows.push(`${label}: ${otherNames.map((name) => `\`${name}\``).join(", ")}`);
+  }
+  return rows.join("<br>");
 }
 
 function renderSurfaceCounts(consumer) {
@@ -67,6 +84,8 @@ function renderSummary(consumers) {
     [
       "consumer",
       "stage/Davinci",
+      "preferred stage names",
+      "compat code names",
       "old AST/Croquis",
       "raw OXC",
       "source/manifest",
@@ -74,10 +93,12 @@ function renderSummary(consumers) {
       "surface files",
       "scanned files",
     ],
-    ["left", "right", "right", "right", "right", "right", "right", "right"],
+    ["left", "right", "right", "right", "right", "right", "right", "right", "right", "right"],
     consumers.map((consumer) => [
       consumer.label,
       n(consumer.groupCounts.stage),
+      n(consumer.nameKindCounts.preferred),
+      n(consumer.nameKindCounts.compat),
       n(consumer.groupCounts.old),
       n(consumer.groupCounts.raw),
       n(consumer.modeCounts.source + consumer.modeCounts.manifest),
@@ -155,13 +176,9 @@ protocol behavior.`;
 
 export function renderConsumerMigrationSurfaces(scan, options) {
   const surfaceLegend = formatTable(
-    ["surface", "group", "matched names"],
+    ["surface", "group", "matched name classes"],
     ["left", "left", "left"],
-    scan.surfaces.map((surface) => [
-      surface.label,
-      surface.group,
-      surface.names.map((name) => `\`${name}\``).join(", "),
-    ]),
+    scan.surfaces.map((surface) => [surface.label, surface.group, matchedNamesLabel(surface)]),
   );
 
   return `<!-- GENERATED FILE - do not edit by hand.
@@ -183,12 +200,15 @@ observational guard for planning only. It does not change rollout state.
 - Matches are lexical crate/surface names, not type-resolved imports. A row
   means "this file directly names this surface", not necessarily that every
   mention is a runtime dependency edge.
+- Stage names are split into preferred physical names and compatibility
+  code-name aliases so S0/S1/S2 migration work is measurable without changing
+  rollout state.
 - \`source/manifest\` includes production Rust files plus crate manifests.
   \`test/dev\` includes crate \`tests\`, \`benches\`, \`tests.rs\`,
   \`*_tests.rs\`, and Rust sites after the first \`#[cfg(test)]\` in a file.
 - Content-mapper files under Canon are reported separately from the broader
   typechecker row so that protocol work can move in smaller PRs.
-- Full file x surface rows are generated in \`${options.rowsRel}\`; this
+- Full file x surface x matched-name rows are generated in \`${options.rowsRel}\`; this
   markdown keeps only top impact files to stay under the source-length gate.
 
 ## Surface legend
@@ -222,27 +242,33 @@ export function renderConsumerMigrationSurfaceRows(scan) {
       "surface_id",
       "surface",
       "surface_group",
+      "matched_name",
+      "name_kind",
       "sites",
     ].join("\t"),
   ];
   for (const consumer of scan.consumers) {
     for (const row of consumer.fileRows) {
       for (const surface of SURFACES) {
-        const sites = row.surfaceCounts[surface.id];
-        if (sites === 0) continue;
-        lines.push(
-          [
-            consumer.id,
-            consumer.label,
-            modeLabel(row.mode),
-            row.relPath,
-            String(row.firstLine),
-            surface.id,
-            surface.label,
-            surface.group,
-            String(sites),
-          ].join("\t"),
-        );
+        for (const name of surface.names) {
+          const sites = row.surfaceNameCounts[surface.id][name] ?? 0;
+          if (sites === 0) continue;
+          lines.push(
+            [
+              consumer.id,
+              consumer.label,
+              modeLabel(row.mode),
+              row.relPath,
+              String(row.firstLine),
+              surface.id,
+              surface.label,
+              surface.group,
+              name,
+              surfaceNameKind(surface, name),
+              String(sites),
+            ].join("\t"),
+          );
+        }
       }
     }
   }

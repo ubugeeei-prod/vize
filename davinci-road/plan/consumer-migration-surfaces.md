@@ -17,37 +17,40 @@ observational guard for planning only. It does not change rollout state.
 - Matches are lexical crate/surface names, not type-resolved imports. A row
   means "this file directly names this surface", not necessarily that every
   mention is a runtime dependency edge.
+- Stage names are split into preferred physical names and compatibility
+  code-name aliases so S0/S1/S2 migration work is measurable without changing
+  rollout state.
 - `source/manifest` includes production Rust files plus crate manifests.
   `test/dev` includes crate `tests`, `benches`, `tests.rs`,
   `*_tests.rs`, and Rust sites after the first `#[cfg(test)]` in a file.
 - Content-mapper files under Canon are reported separately from the broader
   typechecker row so that protocol work can move in smaller PRs.
-- Full file x surface rows are generated in `davinci-road/plan/consumer-migration-surfaces.tsv`; this
+- Full file x surface x matched-name rows are generated in `davinci-road/plan/consumer-migration-surfaces.tsv`; this
   markdown keeps only top impact files to stay under the source-length gate.
 
 ## Surface legend
 
-| surface          | group | matched names                                                                                                                                 |
-| ---------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Davinci          | stage | `vize_davinci`                                                                                                                                |
-| S0/carton        | stage | `vize_s0`, `vize_carton`                                                                                                                      |
-| S1/sinopia       | stage | `vize_s1`, `vize_sinopia`                                                                                                                     |
-| S2/disegno       | stage | `vize_s2`, `vize_disegno`                                                                                                                     |
-| S1->S2/ricalco   | stage | `vize_s1_to_s2`, `vize_ricalco`                                                                                                               |
-| old AST/parser   | old   | `vize_relief`, `vize_armature`                                                                                                                |
-| Croquis analysis | old   | `vize_croquis`, `vize_croquis_cf`                                                                                                             |
-| raw OXC          | raw   | `oxc_allocator`, `oxc_ast`, `oxc_ast_visit`, `oxc_codegen`, `oxc_formatter`, `oxc_formatter_core`, `oxc_parser`, `oxc_semantic`, `oxc_syntax` |
+| surface          | group | matched name classes                                                                                                                               |
+| ---------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Davinci          | stage | preferred: `vize_davinci`                                                                                                                          |
+| S0/carton        | stage | preferred: `vize_s0`<br>compat/code-name: `vize_carton`                                                                                            |
+| S1/sinopia       | stage | preferred: `vize_s1`<br>compat/code-name: `vize_sinopia`                                                                                           |
+| S2/disegno       | stage | preferred: `vize_s2`<br>compat/code-name: `vize_disegno`                                                                                           |
+| S1->S2/ricalco   | stage | preferred: `vize_s1_to_s2`<br>compat/code-name: `vize_ricalco`                                                                                     |
+| old AST/parser   | old   | legacy: `vize_relief`, `vize_armature`                                                                                                             |
+| Croquis analysis | old   | legacy: `vize_croquis`, `vize_croquis_cf`                                                                                                          |
+| raw OXC          | raw   | raw: `oxc_allocator`, `oxc_ast`, `oxc_ast_visit`, `oxc_codegen`, `oxc_formatter`, `oxc_formatter_core`, `oxc_parser`, `oxc_semantic`, `oxc_syntax` |
 
 ## Consumer summary
 
-| consumer                   | stage/Davinci | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
-| -------------------------- | ------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
-| Compiler                   |           908 |             139 |     371 |             951 |      467 |           475 |           582 |
-| Linter                     |           300 |             268 |     219 |             670 |      117 |           337 |           476 |
-| Typechecker                |           879 |             393 |     187 |             804 |      655 |           460 |           650 |
-| Typechecker content-mapper |             8 |               1 |       0 |               9 |        0 |             7 |            18 |
-| Formatter                  |            38 |               0 |      21 |              40 |       19 |            30 |            65 |
-| LSP                        |           271 |             113 |      44 |             323 |      105 |           166 |           387 |
+| consumer                   | stage/Davinci | preferred stage names | compat code names | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
+| -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
+| Compiler                   |           908 |                    31 |               877 |             139 |     371 |             951 |      467 |           475 |           582 |
+| Linter                     |           300 |                     0 |               300 |             268 |     219 |             670 |      117 |           337 |           476 |
+| Typechecker                |           879 |                     0 |               879 |             393 |     187 |             804 |      655 |           460 |           650 |
+| Typechecker content-mapper |             8 |                     0 |                 8 |               1 |       0 |               9 |        0 |             7 |            18 |
+| Formatter                  |            38 |                    28 |                10 |               0 |      21 |              40 |       19 |            30 |            65 |
+| LSP                        |           271 |                     0 |               271 |             113 |      44 |             323 |      105 |           166 |           387 |
 
 ## Consumer details
 
