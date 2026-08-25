@@ -5,6 +5,9 @@ use std::process::{Command, Output};
 use serde_json::json;
 use vize_s0::{String as CompactString, cstr};
 
+mod content_mapper_declaration_map_support;
+use content_mapper_declaration_map_support::assert_authored_vue_source;
+
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
 const VUE_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_VUE";
 
@@ -189,12 +192,11 @@ fn standard_tsgo_emits_authored_vue_declaration_maps() {
 
     let app = project.path().join("src/App.vue");
     let source = std::fs::read_to_string(&app).unwrap().replace('\n', "\r\n");
-    std::fs::write(&app, cstr!("<!-- 💥 -->\r\n{source}")).unwrap();
+    let app_source = cstr!("<!-- 💥 -->\r\n{source}");
+    std::fs::write(&app, app_source.as_str()).unwrap();
 
     let spaced = project.path().join("src/Spaced Child.vue");
-    std::fs::write(
-        spaced,
-        r#"<script setup lang="ts">
+    let spaced_source = r#"<script setup lang="ts">
 import type { VNode } from "vue";
 
 defineProps<{
@@ -206,9 +208,8 @@ defineProps<{
 <template>
   <span>{{ unicodeLabel }}</span>
 </template>
-"#,
-    )
-    .unwrap();
+"#;
+    std::fs::write(spaced, spaced_source).unwrap();
 
     let emit = Command::new(&tsgo)
         .current_dir(project.path())
@@ -311,6 +312,21 @@ defineProps<{
                 "{} leaked a generated or virtual source path: {map}",
                 map_path.display()
             );
+        }
+        let authored_source = assert_authored_vue_source(&map_path, &map, component);
+        if component == "App" {
+            assert_eq!(authored_source.content, app_source.as_str());
+            assert!(authored_source.content.starts_with("<!-- 💥 -->\r\n"));
+            assert!(
+                authored_source.content.contains("\r\n"),
+                "{:?}",
+                authored_source.content
+            );
+            assert!(authored_source.content.contains("💥"));
+        } else if component == "Spaced Child" {
+            assert_eq!(authored_source.content, spaced_source);
+            assert!(authored_source.map_source.contains("Spaced Child.vue"));
+            assert!(authored_source.content.contains(r#"unicodeLabel: "💥""#));
         }
     }
 
