@@ -10,6 +10,9 @@
 //! hydrated ecosystem corpus): the **whole file's bytes** go through the
 //! S1 parser — SFC block markup as markup, `<script>`/`<style>` content
 //! as raw text — and `render(parse(src)) == src` is asserted per file.
+//! The canonical fixture root fails closed unless its submodule inventory
+//! reconciles; other roots sweep in smoke scope with
+//! `closure_evidence=false` (see `davinci_test_support::corpus`).
 //!
 //! Run:
 //!
@@ -20,33 +23,10 @@
 //! ```
 
 use std::fs;
-use std::path::{Path, PathBuf};
 
 use davinci_test_support::surface_fixture as common;
 use vize_s0::{Allocator, String};
 use vize_s1::{HoleCounts, hole_counts, parse, render};
-
-fn collect_vue_files(root: &Path, out: &mut Vec<PathBuf>) {
-    let Ok(entries) = fs::read_dir(root) else {
-        return;
-    };
-    let mut children: Vec<PathBuf> = entries
-        .filter_map(|entry| entry.ok().map(|entry| entry.path()))
-        .collect();
-    children.sort();
-    for child in children {
-        if child.is_dir() {
-            // node_modules trees repeat the same shipped sources; the
-            // sweep targets project code.
-            if child.file_name().is_some_and(|name| name == "node_modules") {
-                continue;
-            }
-            collect_vue_files(&child, out);
-        } else if child.extension().is_some_and(|ext| ext == "vue") {
-            out.push(child);
-        }
-    }
-}
 
 fn assert_round_trip(source: &str, context: &str) {
     let allocator = Allocator::new();
@@ -81,34 +61,18 @@ fn surface_corpus_round_trips() {
     }
 
     // -- optional corpus sweep -------------------------------------------
-    let Some(corpus_root) = std::env::var_os("VIZE_DAVINCI_DIFFERENTIAL_CORPUS") else {
+    let Some(sweep) = davinci_test_support::corpus::resolve_env_sweep() else {
         eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed battery only");
         return;
     };
-    let corpus_root = PathBuf::from(corpus_root);
-    // Cargo runs test binaries from the package directory; let
-    // workspace-root-relative paths (`tests/_fixtures/_git`) work too.
-    let corpus_root = if corpus_root.is_relative() && !corpus_root.is_dir() {
-        Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../..")
-            .join(&corpus_root)
-    } else {
-        corpus_root
-    };
-    assert!(
-        corpus_root.is_dir(),
-        "VIZE_DAVINCI_DIFFERENTIAL_CORPUS must name a directory: {}",
-        corpus_root.display()
-    );
-    let mut files = Vec::new();
-    collect_vue_files(&corpus_root, &mut files);
+    let files = &sweep.files;
     assert!(
         !files.is_empty(),
         "corpus sweep found no .vue files under {}",
-        corpus_root.display()
+        sweep.root.display()
     );
     let mut checked = 0u64;
-    for file in &files {
+    for file in files {
         let Ok(source) = fs::read_to_string(file) else {
             continue;
         };

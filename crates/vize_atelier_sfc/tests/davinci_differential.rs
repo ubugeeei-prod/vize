@@ -27,10 +27,11 @@
 //! `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` additionally sweeps every
 //! `.vue` file under `<dir>` (e.g. `tests/_fixtures/_git` for the hydrated
 //! ecosystem corpus) through the same three-lane dual-run compile and
-//! reports the totals.
+//! reports the totals. The canonical fixture root fails closed unless its
+//! submodule inventory reconciles; other roots sweep in smoke scope with
+//! `closure_evidence=false` (see `davinci_test_support::corpus`).
 
 use std::fs;
-use std::path::{Path, PathBuf};
 
 use vize_atelier_core::retained::differential;
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
@@ -91,28 +92,6 @@ fn compile_source_all_lanes(source: &str) {
             ..SfcCompileOptions::default()
         };
         let _ = compile_sfc(&descriptor, vapor);
-    }
-}
-
-fn collect_vue_files(root: &Path, out: &mut Vec<PathBuf>) {
-    let Ok(entries) = fs::read_dir(root) else {
-        return;
-    };
-    let mut children: Vec<PathBuf> = entries
-        .filter_map(|entry| entry.ok().map(|entry| entry.path()))
-        .collect();
-    children.sort();
-    for child in children {
-        if child.is_dir() {
-            // node_modules trees repeat the same shipped sources; the sweep
-            // targets project code.
-            if child.file_name().is_some_and(|name| name == "node_modules") {
-                continue;
-            }
-            collect_vue_files(&child, out);
-        } else if child.extension().is_some_and(|ext| ext == "vue") {
-            out.push(child);
-        }
     }
 }
 
@@ -220,31 +199,15 @@ fn differential_lane_body() {
     );
 
     // -- optional corpus sweep --------------------------------------------
-    if let Some(corpus_root) = std::env::var_os("VIZE_DAVINCI_DIFFERENTIAL_CORPUS") {
-        let corpus_root = PathBuf::from(corpus_root);
-        // Cargo runs test binaries from the package directory; let
-        // workspace-root-relative paths (`tests/_fixtures/_git`) work too.
-        let corpus_root = if corpus_root.is_relative() && !corpus_root.is_dir() {
-            Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("../..")
-                .join(&corpus_root)
-        } else {
-            corpus_root
-        };
-        assert!(
-            corpus_root.is_dir(),
-            "VIZE_DAVINCI_DIFFERENTIAL_CORPUS must name a directory: {}",
-            corpus_root.display()
-        );
-        let mut files = Vec::new();
-        collect_vue_files(&corpus_root, &mut files);
+    if let Some(sweep) = davinci_test_support::corpus::resolve_env_sweep() {
+        let files = &sweep.files;
         assert!(
             !files.is_empty(),
             "corpus sweep found no .vue files under {}",
-            corpus_root.display()
+            sweep.root.display()
         );
         let mut compiled = 0u64;
-        for file in &files {
+        for file in files {
             let Ok(source) = fs::read_to_string(file) else {
                 continue;
             };

@@ -10,7 +10,10 @@
 //! raw text — the TS-19 lane's framing) and then through [`lower`],
 //! asserting the full soundness oracle per file: id accounting,
 //! Canonical-rigor verification, side-table resolution, and the folio
-//! round-trip. Every file lowers or diagnoses; none may panic.
+//! round-trip. Every file lowers or diagnoses; none may panic. The
+//! canonical fixture root fails closed unless its submodule inventory
+//! reconciles; other roots sweep in smoke scope with
+//! `closure_evidence=false` (see `davinci_test_support::corpus`).
 //!
 //! Run:
 //!
@@ -23,32 +26,9 @@
 mod support;
 
 use std::fs;
-use std::path::{Path, PathBuf};
 
 use davinci_test_support::surface_fixture as battery;
 use support::{assert_sound, with_lowered};
-
-fn collect_vue_files(root: &Path, out: &mut Vec<PathBuf>) {
-    let Ok(entries) = fs::read_dir(root) else {
-        return;
-    };
-    let mut children: Vec<PathBuf> = entries
-        .filter_map(|entry| entry.ok().map(|entry| entry.path()))
-        .collect();
-    children.sort();
-    for child in children {
-        if child.is_dir() {
-            // node_modules trees repeat the same shipped sources; the
-            // sweep targets project code.
-            if child.file_name().is_some_and(|name| name == "node_modules") {
-                continue;
-            }
-            collect_vue_files(&child, out);
-        } else if child.extension().is_some_and(|ext| ext == "vue") {
-            out.push(child);
-        }
-    }
-}
 
 #[test]
 fn lowering_corpus_is_total() {
@@ -77,35 +57,19 @@ fn lowering_corpus_is_total() {
     );
 
     // -- optional corpus sweep -----------------------------------------
-    let Some(corpus_root) = std::env::var_os("VIZE_DAVINCI_DIFFERENTIAL_CORPUS") else {
+    let Some(sweep) = davinci_test_support::corpus::resolve_env_sweep() else {
         eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed battery only");
         return;
     };
-    let corpus_root = PathBuf::from(corpus_root);
-    // Cargo runs test binaries from the package directory; let
-    // workspace-root-relative paths (`tests/_fixtures/_git`) work too.
-    let corpus_root = if corpus_root.is_relative() && !corpus_root.is_dir() {
-        Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../..")
-            .join(&corpus_root)
-    } else {
-        corpus_root
-    };
-    assert!(
-        corpus_root.is_dir(),
-        "VIZE_DAVINCI_DIFFERENTIAL_CORPUS must name a directory: {}",
-        corpus_root.display()
-    );
-    let mut files = Vec::new();
-    collect_vue_files(&corpus_root, &mut files);
+    let files = &sweep.files;
     assert!(
         !files.is_empty(),
         "corpus sweep found no .vue files under {}",
-        corpus_root.display()
+        sweep.root.display()
     );
     let mut checked = 0u64;
     let mut with_diagnostics = 0u64;
-    for file in &files {
+    for file in files {
         let Ok(source) = fs::read_to_string(file) else {
             continue;
         };

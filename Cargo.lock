@@ -794,6 +794,7 @@ version = "0.387.0"
 dependencies = [
  "regex-lite",
  "serde_json",
+ "tempfile",
  "thiserror 2.0.20",
  "vize_carton",
 ]
@@ -3554,6 +3555,7 @@ dependencies = [
  "compact_str",
  "criterion",
  "davinci_harness",
+ "davinci_test_support",
  "insta",
  "memoffset",
  "oxc_allocator",
@@ -3627,6 +3629,7 @@ version = "0.387.0"
 dependencies = [
  "criterion",
  "davinci_harness",
+ "davinci_test_support",
  "insta",
  "lightningcss",
  "memchr",
@@ -3772,6 +3775,7 @@ dependencies = [
  "criterion",
  "dashmap 6.2.1",
  "davinci_harness",
+ "davinci_test_support",
  "insta",
  "memchr",
  "once_cell",
