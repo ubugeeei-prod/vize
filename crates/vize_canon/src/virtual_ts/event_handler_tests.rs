@@ -23,6 +23,7 @@ fn generate_unchecked_emit_handler(script: &str, template: &str) -> vize_carton:
                 check_props: false,
                 check_template_bindings: true,
                 check_emits: false,
+                ..Default::default()
             },
             ..Default::default()
         },

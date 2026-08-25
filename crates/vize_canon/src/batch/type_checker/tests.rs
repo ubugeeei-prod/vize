@@ -2001,7 +2001,7 @@ fn write_project_tsconfig(project_root: &Path) {
     "moduleResolution": "bundler",
     "noEmit": true
   },
-  "include": ["src/**/*"]
+  "vueCompilerOptions": { "strictTemplates": true }, "include": ["src/**/*"]
 }"#,
     )
     .unwrap();

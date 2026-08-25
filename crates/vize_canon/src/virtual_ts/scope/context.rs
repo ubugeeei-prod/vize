@@ -126,6 +126,7 @@ pub(super) struct ComponentPropsContext<'a> {
     pub(super) preserve_event_navigation: bool,
     pub(super) check_unresolved_global_components: GlobalComponentCheck,
     pub(super) legacy_vue2: bool,
+    pub(super) check_unknown_props: bool,
 }
 
 impl<'a> ComponentPropsContext<'a> {

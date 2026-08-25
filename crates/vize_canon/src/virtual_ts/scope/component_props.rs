@@ -56,7 +56,7 @@ pub(super) fn generate_component_props(
 
     // Generic children expose `__vizeCheck<T>(props)`; fallback contextual
     // typing is limited to inline function props to avoid duplicate errors.
-    append_prop_check_helpers(ts, checkable_usages);
+    append_prop_check_helpers(ts, checkable_usages, ctx.check_unknown_props);
     append_component_slot_check_helpers(ts);
 
     for &(idx, usage) in checkable_usages {
