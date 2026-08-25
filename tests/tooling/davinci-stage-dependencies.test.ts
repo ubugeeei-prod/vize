@@ -158,7 +158,12 @@ test("Davinci DOM lane tests import lowering through the stage alias", () => {
     "vize_atelier_dom must not depend on vize_ricalco through its physical name",
   );
 
-  for (const file of ["davinci_s2_dom.rs", "davinci_s2_slots.rs", path.join("support", "mod.rs")]) {
+  for (const file of [
+    "davinci_s2_dom.rs",
+    "davinci_s2_patch_flags.rs",
+    "davinci_s2_slots.rs",
+    path.join("support", "mod.rs"),
+  ]) {
     const source = readRepoFile("crates", "vize_atelier_dom", "tests", file);
     assert.doesNotMatch(source, /\bvize_ricalco::/u);
   }

@@ -11,7 +11,7 @@
 mod support;
 
 use vize_carton::Allocator;
-use vize_ricalco::emit_dom_source;
+use vize_s1_to_s2::emit_dom_source;
 
 struct Case {
     name: &'static str,
