@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-use std::process::Command;
 use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
@@ -13,9 +12,10 @@ use content_mapper_lsp_support::raw_requests::{
     RawInitialize, RawInitialized, RawSetContentMapperContributions,
 };
 use content_mapper_lsp_support::{
-    EditorResponder, StopOnDrop, assert_no_generated_uri, contains_location, copy_fixture,
-    definition, editor_capabilities, file_uri, hover, install_packages, output_text, position,
-    workspace_root,
+    EditorResponder, StopOnDrop, anchored_position, anchored_range, assert_hover,
+    assert_location_range, assert_no_generated_uri, contains_location, definition,
+    editor_capabilities, emit_vue_declaration_library, file_uri, hover,
+    install_packed_vue_consumer, position_range, references, type_definition, workspace_root,
 };
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
@@ -32,132 +32,109 @@ fn standard_tsgo_lsp_uses_vue_declaration_maps_from_packed_consumer() {
         .prefix("content-mapper-declaration-library-")
         .tempdir_in(&cases_root)
         .unwrap();
-    install_packages(library.path());
-    std::fs::create_dir_all(library.path().join("src")).unwrap();
     let app_source = r#"<script setup lang="ts">
 export interface PublicProps {
   label: string;
+  emojiLabel?: "💥";
 }
-
 defineProps<PublicProps>();
 </script>
-
 <template>
-  <p>{{ label }}</p>
+  <p>{{ label }} {{ emojiLabel }}</p>
 </template>
 "#;
     let index_source = r#"export { default as App } from "./App.vue";
 export type { PublicProps } from "./App.vue";
 "#;
-    std::fs::write(library.path().join("src/App.vue"), app_source).unwrap();
-    std::fs::write(library.path().join("src/index.ts"), index_source).unwrap();
-    std::fs::write(
-        library.path().join("tsconfig.json"),
-        r#"{
-  "compilerOptions": {
-    "strict": true,
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "declaration": true,
-    "declarationMap": true,
-    "emitDeclarationOnly": true,
-    "rootDir": "src",
-    "outDir": "dist"
-  },
-  "contentMappers": [{ "package": "vize", "extensions": [".vue"] }],
-  "include": ["src/**/*"]
-}"#,
-    )
-    .unwrap();
-    let emit = Command::new(&tsgo)
-        .current_dir(library.path())
-        .args([
-            "--runExternalCode",
-            "-p",
-            "tsconfig.json",
-            "--pretty",
-            "false",
-        ])
-        .output()
-        .unwrap();
-    assert!(emit.status.success(), "{}", output_text(&emit));
+    emit_vue_declaration_library(&tsgo, library.path(), app_source, index_source);
 
     let consumer = tempfile::Builder::new()
         .prefix("content-mapper-declaration-consumer-")
         .tempdir_in(cases_root)
         .unwrap();
-    install_packages(consumer.path());
-    std::fs::create_dir_all(consumer.path().join("src")).unwrap();
     let consumer_source = r#"import { App } from "@scope/emitted-vue";
 import type { PublicProps } from "@scope/emitted-vue";
-
-const props: PublicProps = { label: "ok" };
+const props: PublicProps = { label: "ok", emojiLabel: "💥" };
 type ComponentProps = InstanceType<typeof App>["$props"];
 const componentProps: ComponentProps = props;
+const labelFromPublicInstance: ComponentProps["label"] = componentProps.label;
+const emojiFromPublicInstance: ComponentProps["emojiLabel"] = componentProps.emojiLabel;
 void componentProps;
+void labelFromPublicInstance;
+void emojiFromPublicInstance;
 "#;
-    std::fs::write(consumer.path().join("src/index.ts"), consumer_source).unwrap();
-    std::fs::write(
-        consumer.path().join("tsconfig.json"),
-        r#"{
-  "compilerOptions": {
-    "strict": true,
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "noEmit": true
-  },
-  "include": ["src/**/*"]
-}"#,
-    )
-    .unwrap();
-
-    let package_root = consumer.path().join("node_modules/@scope/emitted-vue");
-    std::fs::create_dir_all(&package_root).unwrap();
-    std::fs::write(
-        package_root.join("package.json"),
-        r#"{
-  "name": "@scope/emitted-vue",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./index.js"
-    }
-  }
-}"#,
-    )
-    .unwrap();
-    copy_fixture(&library.path().join("dist"), &package_root.join("dist"));
-    copy_fixture(&library.path().join("src"), &package_root.join("src"));
+    let package_root =
+        install_packed_vue_consumer(consumer.path(), library.path(), consumer_source);
 
     let consumer_path = consumer.path().join("src/index.ts");
     let consumer_uri = file_uri(&consumer_path);
     let package_app_path = package_root.join("src/App.vue");
     let package_app_uri = file_uri(&package_app_path);
     let root_uri = file_uri(consumer.path());
-    let public_props_import = position(
+    let public_props_import = anchored_position(
         consumer_source,
-        consumer_source
-            .find("PublicProps")
-            .expect("consumer imports PublicProps"),
+        "PublicProps",
+        "consumer imports PublicProps",
     );
     let public_props_usage_offset = consumer_source
         .match_indices("PublicProps")
         .nth(1)
         .expect("consumer uses PublicProps")
         .0;
-    let public_props_usage = position(consumer_source, public_props_usage_offset);
-    let public_props_usage_end = position(
+    let (public_props_usage, public_props_usage_end) = position_range(
         consumer_source,
-        public_props_usage_offset + "PublicProps".len(),
+        public_props_usage_offset,
+        "PublicProps".len(),
     );
-    let public_props_target = position(
+    let (public_props_target, public_props_target_end) = anchored_range(
         app_source,
-        app_source
-            .find("PublicProps")
-            .expect("authored Vue source exports PublicProps"),
+        "PublicProps",
+        0,
+        "PublicProps".len(),
+        "authored Vue source exports PublicProps",
+    );
+    let (label_property_usage, label_property_usage_end) = anchored_range(
+        consumer_source,
+        "componentProps.label",
+        "componentProps.".len(),
+        "label".len(),
+        "consumer reads public instance label",
+    );
+    let props_value_usage = anchored_range(
+        consumer_source,
+        "= props;",
+        2,
+        "props".len(),
+        "consumer assigns typed props",
+    )
+    .0;
+    let (label_property_target, label_property_target_end) = anchored_range(
+        app_source,
+        "label: string",
+        0,
+        "label".len(),
+        "authored Vue source declares label prop",
+    );
+    let (emoji_property_usage, emoji_property_usage_end) = anchored_range(
+        consumer_source,
+        "componentProps.emojiLabel",
+        "componentProps.".len(),
+        "emojiLabel".len(),
+        "consumer reads public instance emojiLabel",
+    );
+    let (emoji_property_target, emoji_property_target_end) = anchored_range(
+        app_source,
+        "emojiLabel?:",
+        0,
+        "emojiLabel".len(),
+        "authored Vue source declares emojiLabel prop",
+    );
+    let (emoji_template_usage, emoji_template_usage_end) = anchored_range(
+        app_source,
+        "{{ label }} {{ emojiLabel }}",
+        "{{ label }} {{ ".len(),
+        "emojiLabel".len(),
+        "authored Vue template reads emojiLabel",
     );
 
     let stop = AtomicBool::new(false);
@@ -248,6 +225,65 @@ void componentProps;
                     "end": public_props_usage_end
                 }),
                 "hover range should cover the consumer PublicProps usage:\n{mapped_hover:#}"
+            );
+            let props_value_type_definition =
+                type_definition(&client, &consumer_uri, &props_value_usage).await;
+            assert_location_range(
+                &props_value_type_definition,
+                &package_app_uri,
+                &public_props_target,
+                &public_props_target_end,
+                "typed props value typeDefinition",
+            );
+
+            let label_property_definition =
+                definition(&client, &consumer_uri, &label_property_usage).await;
+            assert_location_range(
+                &label_property_definition,
+                &package_app_uri,
+                &label_property_target,
+                &label_property_target_end,
+                "public instance label property definition",
+            );
+            let label_property_hover = hover(&client, &consumer_uri, &label_property_usage).await;
+            assert_hover(
+                &label_property_hover,
+                &label_property_usage,
+                &label_property_usage_end,
+                json!({
+                    "kind": "plaintext",
+                    "value": "(property) PublicProps.label: string"
+                }),
+                "public instance label hover",
+            );
+            let emoji_property_definition =
+                definition(&client, &consumer_uri, &emoji_property_usage).await;
+            assert_location_range(
+                &emoji_property_definition,
+                &package_app_uri,
+                &emoji_property_target,
+                &emoji_property_target_end,
+                "public instance emojiLabel property definition",
+            );
+            let emoji_property_hover = hover(&client, &consumer_uri, &emoji_property_usage).await;
+            assert_hover(
+                &emoji_property_hover,
+                &emoji_property_usage,
+                &emoji_property_usage_end,
+                json!({
+                    "kind": "plaintext",
+                    "value": "(property) PublicProps.emojiLabel?: \"💥\" | undefined"
+                }),
+                "public instance emojiLabel hover",
+            );
+            let emoji_template_references =
+                references(&client, &package_app_uri, &emoji_template_usage).await;
+            assert_location_range(
+                &emoji_template_references,
+                &package_app_uri,
+                &emoji_template_usage,
+                &emoji_template_usage_end,
+                "authored template emojiLabel references",
             );
 
             stop.store(true, Ordering::Relaxed);

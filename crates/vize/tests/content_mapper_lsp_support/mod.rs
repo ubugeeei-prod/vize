@@ -8,6 +8,7 @@ use serde_json::{Value, json};
 use vize_s0::String as CompactString;
 
 mod component_oracles;
+mod declaration_workspace;
 mod leak_assertions;
 mod navigation;
 mod package_install;
@@ -20,11 +21,13 @@ pub use component_oracles::{
     assert_component_completions, assert_component_members, assert_component_navigation,
     assert_prop_navigation,
 };
+#[allow(unused_imports)]
+pub use declaration_workspace::{emit_vue_declaration_library, install_packed_vue_consumer};
 pub use leak_assertions::{assert_no_generated_uri, assert_no_generated_uri_or_zero_range};
 #[allow(unused_imports)]
 pub use navigation::{
-    contains_location_range, contains_range, contains_text_edit, document_highlights, references,
-    rename,
+    assert_hover, assert_location_range, contains_location_range, contains_range,
+    contains_text_edit, document_highlights, references, rename,
 };
 pub use package_install::install_packages;
 #[allow(unused_imports)]
@@ -208,6 +211,25 @@ pub fn position(source: &str, offset: usize) -> Value {
     let line = before.matches('\n').count();
     let character = before.rsplit_once('\n').map_or(before, |(_, tail)| tail);
     json!({ "line": line, "character": character.encode_utf16().count() })
+}
+
+pub fn anchored_position(source: &str, anchor: &str, label: &str) -> Value {
+    position(source, source.find(anchor).expect(label))
+}
+
+pub fn anchored_range(
+    source: &str,
+    anchor: &str,
+    offset_from_anchor: usize,
+    len: usize,
+    label: &str,
+) -> (Value, Value) {
+    let offset = source.find(anchor).expect(label) + offset_from_anchor;
+    position_range(source, offset, len)
+}
+
+pub fn position_range(source: &str, offset: usize, len: usize) -> (Value, Value) {
+    (position(source, offset), position(source, offset + len))
 }
 
 pub fn contains_location(value: &Value, uri: &str, start: &Value) -> bool {

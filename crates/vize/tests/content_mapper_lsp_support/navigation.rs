@@ -1,6 +1,8 @@
 use corsa_lsp::LspClient;
 use serde_json::{Value, json};
 
+use super::leak_assertions::assert_no_generated_uri;
+
 pub struct RawReferences;
 pub struct RawDocumentHighlight;
 pub struct RawRename;
@@ -103,4 +105,40 @@ pub fn contains_text_edit(
                         .is_some_and(|edits| edits.iter().any(matches))
             })
         })
+}
+
+pub fn assert_location_range(
+    response: &Value,
+    uri: &str,
+    target_start: &Value,
+    target_end: &Value,
+    label: &str,
+) {
+    assert!(
+        contains_location_range(response, uri, target_start, target_end),
+        "{label} should map to the authored source range:\n{response:#}"
+    );
+    assert_no_generated_uri(response);
+}
+
+pub fn assert_hover(
+    response: &Value,
+    expected_start: &Value,
+    expected_end: &Value,
+    expected_contents: Value,
+    label: &str,
+) {
+    assert_no_generated_uri(response);
+    assert_eq!(
+        response["contents"], expected_contents,
+        "{label} should expose the expected hover contents:\n{response:#}"
+    );
+    assert_eq!(
+        response["range"],
+        json!({
+            "start": expected_start,
+            "end": expected_end,
+        }),
+        "{label} range should cover the consumer symbol:\n{response:#}"
+    );
 }

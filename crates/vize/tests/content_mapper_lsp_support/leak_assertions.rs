@@ -20,7 +20,7 @@ fn assert_no_generated_uri_at(root: &Value, value: &Value) {
             for key in ["uri", "targetUri"] {
                 if let Some(uri) = object.get(key).and_then(Value::as_str) {
                     assert!(
-                        !uri.ends_with(".vue.ts") && !uri.contains(".vue.ts?"),
+                        !uri_leaks_generated_projection(uri),
                         "response leaked generated URI {uri}: {root:#}"
                     );
                 }
@@ -64,4 +64,27 @@ fn range_starts_at_zero(range: &Value) -> bool {
 fn position_is_zero(position: &Value) -> bool {
     position.get("line").and_then(Value::as_u64) == Some(0)
         && position.get("character").and_then(Value::as_u64) == Some(0)
+}
+
+fn uri_leaks_generated_projection(uri: &str) -> bool {
+    uri.contains(".vue.ts")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::uri_leaks_generated_projection;
+
+    #[test]
+    fn detects_ts_and_tsx_projection_uris() {
+        assert!(uri_leaks_generated_projection(
+            "file:///repo/src/App.vue.ts"
+        ));
+        assert!(uri_leaks_generated_projection(
+            "file:///repo/src/App.vue.tsx"
+        ));
+        assert!(uri_leaks_generated_projection(
+            "file:///repo/src/App.vue.ts?x=1"
+        ));
+        assert!(!uri_leaks_generated_projection("file:///repo/src/App.vue"));
+    }
 }

@@ -90,7 +90,6 @@ paths = [
   "crates/vize/tests/check_workspace_package_boundary_cli.rs",
   "crates/vize/tests/check_workspace_vue_cli.rs",
   "crates/vize/tests/content_mapper_importer_scoped_packages.rs",
-  "crates/vize/tests/content_mapper_lsp_support/leak_assertions.rs",
   "crates/vize/tests/content_mapper_lsp_support/mod.rs",
   "crates/vize/tests/content_mapper_tsgo_build.rs",
   "crates/vize/tests/content_mapper_tsgo_cli.rs",
