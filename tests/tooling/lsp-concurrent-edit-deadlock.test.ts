@@ -144,14 +144,16 @@ test("vize lsp keeps publishing when edits race an in-flight diagnostics pass", 
     };
 
     /**
-     * Awaits the publish for the newest version sent. Deterministic: the LSP
-     * spec makes `didChange` versions monotonic, so only one publish can carry
-     * it, and the assertion is on that publish's content — never on timing.
+     * Awaits the publish for the newest source marker. The marker is unique per
+     * revision, so it still identifies the final diagnostics even when a server
+     * or client lane omits the optional publishDiagnostics version field.
      */
     const awaitFinalPublish = async (marker: string, label: string): Promise<void> => {
       const publish = (await session.waitForNotification(
         "textDocument/publishDiagnostics",
-        (params) => isDiagnosticsForUri(params, uri) && params.version === version,
+        (params) =>
+          isDiagnosticsForUri(params, uri) &&
+          markersOf(params as PublishDiagnosticsParams).includes(marker),
         45_000,
       )) as PublishDiagnosticsParams;
       assert.deepEqual(
@@ -159,6 +161,13 @@ test("vize lsp keeps publishing when edits race an in-flight diagnostics pass", 
         [marker],
         `${label}: version ${version} must publish exactly its own revision's diagnostic`,
       );
+      if (publish.version != null) {
+        assert.equal(
+          publish.version,
+          version,
+          `${label}: versioned publish must carry the latest document version`,
+        );
+      }
       t.diagnostic(`${label}: published v${version} (${publishes.length} publishes so far)`);
     };
 
