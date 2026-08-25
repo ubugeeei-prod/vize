@@ -311,22 +311,17 @@ export function renderInventoryMarkdown(inventory) {
     lines.push(`| ${escapeTable(area.area)} | ${area.files} | ${area.cases} |`);
   }
 
+  // File rows only: a per-test table exceeds GitHub's 1024k step-summary cap.
   lines.push("");
   lines.push("<details>");
-  lines.push(`<summary>All tracked tests (${inventory.totalCases})</summary>`);
+  lines.push("<summary>Files</summary>");
   lines.push("");
-
+  lines.push("| Area | File | Cases |");
+  lines.push("| --- | --- | ---: |");
   for (const group of inventory.groups) {
-    lines.push(`#### ${group.area}: ${group.file}`);
-    lines.push("");
-    lines.push("| Line | Test |");
-    lines.push("| ---: | --- |");
-    for (const test of group.tests) {
-      lines.push(`| ${test.line} | ${escapeTable(test.name)} |`);
-    }
-    lines.push("");
+    lines.push(`| ${escapeTable(group.area)} | \`${escapeTable(group.file)}\` | ${group.count} |`);
   }
-
+  lines.push("");
   lines.push("</details>");
   return lines.join("\n");
 }

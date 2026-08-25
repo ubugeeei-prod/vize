@@ -20,11 +20,7 @@ interface CapturedResponse {
 function createArt(pathname: string): ArtFileInfo {
   return {
     path: pathname,
-    metadata: {
-      title: "Escape",
-      tags: [],
-      status: "ready",
-    },
+    metadata: { title: "Escape", tags: [], status: "ready" },
     variants: [],
     hasScriptSetup: false,
     hasScript: false,
@@ -73,10 +69,13 @@ async function invokeApi(
       statusCode: 200,
     };
 
-    const req = Readable.from(init.body === undefined ? [] : [init.body]) as IncomingMessage;
+    const req = Readable.from(init.body === undefined ? [] : [init.body]) as IncomingMessage & {
+      socket: { remoteAddress: string };
+    };
     req.method = init.method;
     req.url = init.url;
     req.headers = init.headers ?? {};
+    req.socket = { remoteAddress: "127.0.0.1" };
 
     const res = {
       get statusCode() {
