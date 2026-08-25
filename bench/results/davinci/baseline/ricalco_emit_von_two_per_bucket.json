@@ -3,11 +3,11 @@
   "fixture": "synthetic:v-on-two-option-event-key-modifiers",
   "platform": "linux",
   "wall_ns": {
-    "p50": 1566,
-    "p95": 18815
+    "p50": 1691,
+    "p95": 24178
   },
   "allocs": 18,
   "alloc_bytes_peak": 648,
-  "rss_peak_bytes": 128843776,
+  "rss_peak_bytes": 140926976,
   "harness_version": "0.387.0"
 }

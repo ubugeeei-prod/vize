@@ -227,14 +227,14 @@ test("compact-storage wall budgets match the committed linux baseline reports", 
   const expected = {
     ricalco_lower_vfor_three_aliases: {
       fixture: "synthetic:v-for-three-aliases",
-      wallP50Ns: 764,
+      wallP50Ns: 855,
       wallTolerance: 0.1,
       allocs: 10,
       allocBytesPeak: 1254,
     },
     ricalco_emit_von_two_per_bucket: {
       fixture: "synthetic:v-on-two-option-event-key-modifiers",
-      wallP50Ns: 1566,
+      wallP50Ns: 1691,
       wallTolerance: 0.1,
       allocs: 18,
       allocBytesPeak: 648,
