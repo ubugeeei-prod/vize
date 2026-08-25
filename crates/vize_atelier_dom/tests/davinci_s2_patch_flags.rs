@@ -51,6 +51,11 @@ const CASES: &[Case] = &[
         sites: &["48 /* FULL_PROPS, NEED_HYDRATION */"],
     },
     Case {
+        name: "prop_modifier_need_hydration",
+        src: r#"<div :value.prop="value"></div>"#,
+        sites: &["40 /* PROPS, NEED_HYDRATION */, [\".value\"]"],
+    },
+    Case {
         name: "click_event_props",
         src: r#"<div @click="handler"></div>"#,
         sites: &["8 /* PROPS */, [\"onClick\"]"],
@@ -61,13 +66,38 @@ const CASES: &[Case] = &[
         sites: &["40 /* PROPS, NEED_HYDRATION */, [\"onKeyup\"]"],
     },
     Case {
+        name: "hydrating_key_event_plain",
+        src: r#"<div @keyup="handler"></div>"#,
+        sites: &["40 /* PROPS, NEED_HYDRATION */, [\"onKeyup\"]"],
+    },
+    Case {
         name: "need_patch",
         src: r#"<div ref="el"></div>"#,
         sites: &["512 /* NEED_PATCH */"],
     },
     Case {
+        name: "directive_need_patch",
+        src: r#"<div v-example></div>"#,
+        sites: &["512 /* NEED_PATCH */"],
+    },
+    Case {
+        name: "directive_text_need_patch",
+        src: r#"<div v-example>{{ msg }}</div>"#,
+        sites: &["1 /* TEXT */", "513 /* TEXT, NEED_PATCH */"],
+    },
+    Case {
         name: "dynamic_slots",
         src: r#"<Foo><template #header v-if="ok">x</template></Foo>"#,
+        sites: &["2 /* DYNAMIC */", "1024 /* DYNAMIC_SLOTS */"],
+    },
+    Case {
+        name: "dynamic_slots_builtin",
+        src: "<KeepAlive><Foo /></KeepAlive>",
+        sites: &["1024 /* DYNAMIC_SLOTS */"],
+    },
+    Case {
+        name: "dynamic_slot_name",
+        src: r#"<Foo><template #[name]>x</template></Foo>"#,
         sites: &["2 /* DYNAMIC */", "1024 /* DYNAMIC_SLOTS */"],
     },
     Case {
