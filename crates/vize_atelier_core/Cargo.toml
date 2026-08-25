@@ -60,7 +60,7 @@ insta = { workspace = true }
 vize_davinci = { workspace = true }
 vize_disegno = { workspace = true }
 vize_ricalco = { workspace = true }
-vize_sinopia = { workspace = true }
+vize_s1 = { workspace = true }
 
 # The P2-9 corpus-runnable differential entry (the P1-6/P1-7 lane shape):
 # compiled only when the lane is armed, and its battery pins are mirrored

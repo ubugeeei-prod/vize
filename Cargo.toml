@@ -24,7 +24,7 @@ members = [
   "crates/vize_davinci_derive",
   "crates/vize_disegno",
   "crates/vize_ricalco",
-  "crates/vize_sinopia",
+  "crates/vize_s1",
   "crates/vize_fresco",
   "crates/vize_marquette",
   "crates/vize_doctor",
@@ -72,13 +72,12 @@ vize_davinci = { path = "crates/vize_davinci" }
 vize_davinci_derive = { path = "crates/vize_davinci_derive" }
 vize_disegno = { path = "crates/vize_disegno" }
 vize_ricalco = { path = "crates/vize_ricalco" }
-vize_sinopia = { path = "crates/vize_sinopia" }
 
 # Davinci stage aliases. These are the preferred implementation names for
-# new code; the historical package names stay as compatibility package ids
-# until each crate can be mechanically renamed in a dedicated PR.
+# new code; remaining art-name packages stay behind aliases until they can
+# be mechanically renamed in dedicated PRs.
 vize_s0 = { package = "vize_carton", path = "crates/vize_carton", version = "=0.387.0" }
-vize_s1 = { package = "vize_sinopia", path = "crates/vize_sinopia" }
+vize_s1 = { path = "crates/vize_s1" }
 vize_s2 = { package = "vize_disegno", path = "crates/vize_disegno" }
 vize_s1_to_s2 = { package = "vize_ricalco", path = "crates/vize_ricalco" }
 

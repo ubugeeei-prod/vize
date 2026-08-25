@@ -173,7 +173,7 @@ fn both_lanes_flag_the_duplicate_slot_name() {
     );
 
     let s2_allocator = vize_carton::Allocator::new();
-    let (tree, surface_errors) = vize_sinopia::parse(&s2_allocator, source);
+    let (tree, surface_errors) = vize_s1::parse(&s2_allocator, source);
     let mut lowered = vize_ricalco::lower(&s2_allocator, &tree, &surface_errors);
     let _facts =
         vize_ricalco::pass::run_transform(&mut lowered, &mut vize_davinci::pass::NoObserver);
@@ -229,7 +229,7 @@ fn both_lanes_flag_the_scoped_model() {
     );
 
     let s2_allocator = vize_carton::Allocator::new();
-    let (tree, surface_errors) = vize_sinopia::parse(&s2_allocator, source);
+    let (tree, surface_errors) = vize_s1::parse(&s2_allocator, source);
     let mut lowered = vize_ricalco::lower(&s2_allocator, &tree, &surface_errors);
     let _facts =
         vize_ricalco::pass::run_transform(&mut lowered, &mut vize_davinci::pass::NoObserver);
@@ -271,7 +271,7 @@ fn both_lanes_flag_the_duplicate_key() {
     );
 
     let s2_allocator = vize_carton::Allocator::new();
-    let (tree, surface_errors) = vize_sinopia::parse(&s2_allocator, source);
+    let (tree, surface_errors) = vize_s1::parse(&s2_allocator, source);
     let mut lowered = vize_ricalco::lower(&s2_allocator, &tree, &surface_errors);
     let _facts =
         vize_ricalco::pass::run_transform(&mut lowered, &mut vize_davinci::pass::NoObserver);

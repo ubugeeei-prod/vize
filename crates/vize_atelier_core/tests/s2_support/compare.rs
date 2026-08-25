@@ -81,10 +81,10 @@ pub fn compare_with(name: &str, source: &str, counters: &mut Counters, dialect: 
         &mut counters.surfaces,
     );
 
-    // S2 lane: sinopia parse -> ricalco lower -> the S2 passes through
+    // S2 lane: S1 parse -> S1-to-S2 lower -> the S2 passes through
     // the P2-2 pass manager (verifier between passes in debug).
     let s2_allocator = Allocator::new();
-    let (tree, surface_errors) = vize_sinopia::parse(&s2_allocator, source);
+    let (tree, surface_errors) = vize_s1::parse(&s2_allocator, source);
     let mut lowered = vize_ricalco::lower_with_caps(
         &s2_allocator,
         &tree,

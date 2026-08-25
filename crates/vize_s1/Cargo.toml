@@ -6,7 +6,7 @@
 # templates — a lossless surface tree that renders back to the exact
 # source bytes, malformed input included.
 [package]
-name = "vize_sinopia"
+name = "vize_s1"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

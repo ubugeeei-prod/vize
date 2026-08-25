@@ -10,7 +10,7 @@
 //! # What the feed carries today
 //!
 //! - **S1**: one page per `.vue` file with a template block, produced by
-//!   parsing the template into `vize_sinopia`'s lossless surface tree and
+//!   parsing the template into `vize_s1`'s lossless surface tree and
 //!   rendering it back (`stage: "s1"`, `pass: "parse"` - a parse product,
 //!   not a pass product). By the S1 byte-fidelity law (TS-19) the text
 //!   equals the authored template bytes, malformed input included - which
@@ -31,13 +31,13 @@ use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 
 use super::payload::InspectorSourceFile;
 
-/// The S1 page for one template: sinopia parse + byte-faithful render.
+/// The S1 page for one template: S1 parse + byte-faithful render.
 #[must_use]
 pub fn s1_page(path: &str, template: &str) -> SpolveroPage {
     let allocator = Allocator::default();
-    let (tree, _errors) = vize_sinopia::parse(&allocator, template);
+    let (tree, _errors) = vize_s1::parse(&allocator, template);
     let mut text = String::default();
-    vize_sinopia::render::render(&tree, &mut |slice| text.push_str(slice));
+    vize_s1::render::render(&tree, &mut |slice| text.push_str(slice));
     SpolveroPage {
         path: Some(String::from(path)),
         stage: cstr!("s1"),

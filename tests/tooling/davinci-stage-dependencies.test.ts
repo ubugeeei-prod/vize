@@ -35,15 +35,15 @@ function workspacePackage(metadata: Metadata, name: string): Package {
   return found;
 }
 
-const aliases = new Map<string, ReadonlyArray<readonly [string, string]>>([
+const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>([
   ["vize_davinci", [["vize_carton", "vize_s0"]]],
-  ["vize_sinopia", [["vize_carton", "vize_s0"]]],
+  ["vize_s1", [["vize_carton", "vize_s0"]]],
   ["vize_disegno", [["vize_carton", "vize_s0"]]],
   [
     "vize_ricalco",
     [
       ["vize_carton", "vize_s0"],
-      ["vize_sinopia", "vize_s1"],
+      ["vize_s1", null],
       ["vize_disegno", "vize_s2"],
     ],
   ],
@@ -72,16 +72,16 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
   const tiers = new Map<string, number>([
     ["vize_carton", 0],
     ["vize_davinci", 1],
-    ["vize_sinopia", 1],
+    ["vize_s1", 1],
     ["vize_disegno", 2],
     ["vize_ricalco", 3],
   ]);
   const expectedEdges = new Map<string, string[]>([
     ["vize_carton", []],
     ["vize_davinci", ["vize_carton"]],
-    ["vize_sinopia", ["vize_carton"]],
+    ["vize_s1", ["vize_carton"]],
     ["vize_disegno", ["vize_carton", "vize_davinci"]],
-    ["vize_ricalco", ["vize_carton", "vize_davinci", "vize_disegno", "vize_sinopia"]],
+    ["vize_ricalco", ["vize_carton", "vize_davinci", "vize_disegno", "vize_s1"]],
   ]);
 
   for (const [packageName, packageTier] of tiers) {

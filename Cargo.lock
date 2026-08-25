@@ -785,7 +785,7 @@ dependencies = [
  "vize_carton",
  "vize_disegno",
  "vize_ricalco",
- "vize_sinopia",
+ "vize_s1",
 ]
 
 [[package]]
@@ -3576,7 +3576,7 @@ dependencies = [
  "vize_disegno",
  "vize_relief",
  "vize_ricalco",
- "vize_sinopia",
+ "vize_s1",
 ]
 
 [[package]]
@@ -3830,7 +3830,7 @@ dependencies = [
  "vize_croquis",
  "vize_croquis_cf",
  "vize_davinci",
- "vize_sinopia",
+ "vize_s1",
 ]
 
 [[package]]
@@ -4046,11 +4046,11 @@ dependencies = [
  "vize_carton",
  "vize_davinci",
  "vize_disegno",
- "vize_sinopia",
+ "vize_s1",
 ]
 
 [[package]]
-name = "vize_sinopia"
+name = "vize_s1"
 version = "0.387.0"
 dependencies = [
  "davinci_test_support",

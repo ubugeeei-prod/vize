@@ -12,7 +12,7 @@
 //! slice + span re-enter an arena (arenas cannot persist - P1-11 - so a
 //! folio can only carry text), and the **S1→S2 lowering** (P2-8). The
 //! P2-5b text expected lowerings to receive armature's retained ASTs;
-//! the S1 that actually landed (P2-7, `vize_s1`, package `vize_sinopia`) is token-level and
+//! the S1 that actually landed (P2-7, crate `vize_s1`, codename Sinopia) is token-level and
 //! retains no ASTs, so the lowering is where a template expression first
 //! parses on the Davinci lane - through this one admission rule, never a
 //! private variant of it. The deviation is recorded in the P2-8 record.

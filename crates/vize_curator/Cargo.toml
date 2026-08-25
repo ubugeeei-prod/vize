@@ -25,7 +25,7 @@ vize_croquis_cf = { workspace = true }
 # pages are proven through; both `no_std + alloc`, so the wasm consumer
 # (`vize_vitrine --features wasm`) is untouched.
 vize_davinci = { workspace = true }
-vize_sinopia = { workspace = true }
+vize_s1 = { workspace = true }
 
 [dev-dependencies]
 davinci_test_support.workspace = true

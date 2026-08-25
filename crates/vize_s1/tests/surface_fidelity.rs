@@ -9,7 +9,7 @@
 use davinci_test_support::surface_fixture as common;
 use vize_relief::ErrorCode;
 use vize_s0::{Allocator, String};
-use vize_sinopia::{
+use vize_s1::{
     ElementClose, HoleCounts, SurfaceChild, SurfaceTree, check_fidelity, hole_counts, parse, render,
 };
 

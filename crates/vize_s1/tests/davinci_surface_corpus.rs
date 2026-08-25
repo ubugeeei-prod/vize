@@ -15,7 +15,7 @@
 //!
 //! ```text
 //! VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
-//!     cargo test -p vize_sinopia --features davinci-differential \
+//!     cargo test -p vize_s1 --features davinci-differential \
 //!     --test davinci_surface_corpus -- --nocapture
 //! ```
 
@@ -24,7 +24,7 @@ use std::path::{Path, PathBuf};
 
 use davinci_test_support::surface_fixture as common;
 use vize_s0::{Allocator, String};
-use vize_sinopia::{HoleCounts, hole_counts, parse, render};
+use vize_s1::{HoleCounts, hole_counts, parse, render};
 
 fn collect_vue_files(root: &Path, out: &mut Vec<PathBuf>) {
     let Ok(entries) = fs::read_dir(root) else {

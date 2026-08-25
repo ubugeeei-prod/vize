@@ -12,7 +12,7 @@ The claim covers exactly four **library targets**:
 | layer                 | Cargo alias in Davinci code | package id     | role                                         |
 | --------------------- | --------------------------- | -------------- | -------------------------------------------- |
 | shared infrastructure | `vize_davinci`              | `vize_davinci` | Folio, passes, diagnostics, stage vocabulary |
-| S1                    | `vize_s1`                   | `vize_sinopia` | lossless surface tree                        |
+| S1                    | `vize_s1`                   | `vize_s1`      | lossless surface tree                        |
 | S2                    | `vize_s2`                   | `vize_disegno` | neutral semantic IR                          |
 | S1 → S2               | `vize_s1_to_s2`             | `vize_ricalco` | Vue surface lowering and S2 passes           |
 
@@ -48,14 +48,14 @@ visible. `cargo tree --edges normal --depth 1` gives this first-degree ledger:
 | library                  | direct normal dependencies                                     | disposition                                                                                         |
 | ------------------------ | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | `vize_davinci`           | `vize_s0`; `vize_davinci_derive`                               | S0 is the accepted std foundation; the proc macro runs on the host and emits `core`-compatible code |
-| S1 / `vize_sinopia`      | `vize_s0`; `vize_armature`; `vize_relief`                      | accepted std parser/tokenizer and AST construction edges                                            |
+| S1 / `vize_s1`           | `vize_s0`; `vize_armature`; `vize_relief`                      | accepted std parser/tokenizer and AST construction edges                                            |
 | S2 / `vize_disegno`      | `vize_s0`; `vize_davinci`; `oxc_ast`; `oxc_parser`; `oxc_span` | accepted std OXC expression parsing plus lower-layer edges                                          |
 | S1 → S2 / `vize_ricalco` | `vize_s0`; `vize_davinci`; S1; S2; `oxc_ast`; `oxc_ast_visit`  | accepted conversion-layer closure; dependency direction remains downward                            |
 
 The aliases `vize_s0`, `vize_s1`, `vize_s2`, and `vize_s1_to_s2` are the
-primary architectural names. Cargo metadata and registry identities retain
-the historical package ids `vize_carton`, `vize_sinopia`, `vize_disegno`, and
-`vize_ricalco`.
+primary architectural names. S1's package id now matches that vocabulary;
+S0, S2, and S1→S2 still retain `vize_carton`, `vize_disegno`, and
+`vize_ricalco` until their own compatibility changes.
 
 Carton's own direct dependencies include both `no_std`-capable storage crates
 (`compact_str`, `smallvec`, `rustc-hash`) and std-bound host services
@@ -95,9 +95,9 @@ TS-24 is an unconditional step of `.github/workflows/check.yml`'s
 `clippy-and-test` job:
 
 ```sh
-cargo build -p vize_davinci -p vize_sinopia -p vize_disegno \
+cargo build -p vize_davinci -p vize_s1 -p vize_disegno \
   -p vize_ricalco --lib --target wasm32-wasip2
-cargo build -p vize_davinci -p vize_sinopia -p vize_disegno \
+cargo build -p vize_davinci -p vize_s1 -p vize_disegno \
   -p vize_ricalco --lib --target wasm32-wasip2 --no-default-features
 ```
 

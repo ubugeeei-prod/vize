@@ -31,7 +31,7 @@ vize_carton = { path = "../../crates/vize_carton" }
 vize_davinci = { path = "../../crates/vize_davinci" }
 vize_disegno = { path = "../../crates/vize_disegno" }
 vize_ricalco = { path = "../../crates/vize_ricalco" }
-vize_sinopia = { path = "../../crates/vize_sinopia" }
+vize_s1 = { path = "../../crates/vize_s1" }
 
 [[bin]]
 name = "sfc_parse"

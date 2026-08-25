@@ -11,12 +11,7 @@ import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 // placement from silently dissolving. S0 (`vize_s0`, package `vize_carton`)
 // remains the approved `std` foundation recorded in no-std-boundary.md.
 
-const portableStageCrates = [
-  "vize_davinci",
-  "vize_sinopia",
-  "vize_disegno",
-  "vize_ricalco",
-] as const;
+const portableStageCrates = ["vize_davinci", "vize_s1", "vize_disegno", "vize_ricalco"] as const;
 
 const packageArgs = portableStageCrates.map((crate) => `-p ${crate}`).join(" ");
 const defaultLane = `cargo build ${packageArgs} --lib --target wasm32-wasip2`;
