@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use vize_carton::path::canonicalize_non_verbatim;
+use vize_s0::path::canonicalize_non_verbatim;
 
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);

@@ -8,7 +8,7 @@ use oxc_ast::ast::{
 };
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 use super::stubs::tracked_read_to_string;
 

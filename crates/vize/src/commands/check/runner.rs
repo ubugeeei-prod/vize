@@ -142,7 +142,7 @@ fn prepare_and_execute(
     cache: &mut TsconfigInputCache,
     canonical_paths: &mut CanonicalPathCache,
     package_route_resolver: &mut vize_canon::PackageRouteResolver,
-) -> Result<Option<ProgramExecution>, vize_carton::String> {
+) -> Result<Option<ProgramExecution>, vize_s0::String> {
     let initial_root = candidate
         .tsconfig_path
         .as_deref()

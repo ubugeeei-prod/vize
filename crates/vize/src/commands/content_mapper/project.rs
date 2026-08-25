@@ -10,7 +10,7 @@
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
-use vize_carton::{FxHashMap, String as CompactString, cstr};
+use vize_s0::{FxHashMap, String as CompactString, cstr};
 
 /// Mapper diagnostic code for an options value that is not an object.
 const OPTION_CODE_NOT_AN_OBJECT: i32 = 1;

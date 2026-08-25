@@ -6,7 +6,7 @@ use oxc_ast::ast::{
 };
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{FxHashMap, String, ToCompactString};
+use vize_s0::{FxHashMap, String, ToCompactString};
 
 #[derive(Default)]
 struct InterfaceInfo {

@@ -5,7 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use vize_carton::FxHashSet;
+use vize_s0::FxHashSet;
 
 use super::NODE_MODULES_DIR;
 use super::collect_default_check_files_inner;

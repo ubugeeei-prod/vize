@@ -1,6 +1,6 @@
 use glob::glob;
 use std::path::{Path, PathBuf};
-use vize_carton::String;
+use vize_s0::String;
 
 use super::patterns::{has_explicit_patterns, is_format_extension};
 use super::{FmtArgs, files::FmtPattern};

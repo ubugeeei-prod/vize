@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use serde_json::json;
-use vize_carton::{corsa_resolver::discover_corsa_in_ancestors, cstr};
+use vize_s0::{corsa_resolver::discover_corsa_in_ancestors, cstr};
 
 #[path = "support/lsp_process.rs"]
 mod lsp_process;

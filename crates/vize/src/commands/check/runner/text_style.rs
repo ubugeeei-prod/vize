@@ -1,9 +1,9 @@
 use std::{fmt, io::IsTerminal};
 
-use vize_carton::{String, cstr};
 use vize_fresco::{
     ColorSupport, TerminalCapabilities, TerminalCapabilityProbe, TerminalProfileOptions,
 };
+use vize_s0::{String, cstr};
 
 #[derive(Clone, Copy)]
 pub(super) struct TextStyle {

@@ -6,7 +6,7 @@ use std::{
     process::Command,
 };
 
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 #[test]
 fn check_vue_function_prop_callbacks_and_create_app_chaining() {

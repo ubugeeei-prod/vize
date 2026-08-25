@@ -5,7 +5,7 @@ use std::{
     path::{Path, PathBuf},
     process::Command,
 };
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 #[test]
 fn check_nuxt2_use_context_sees_classic_plugin_binding_injections() {

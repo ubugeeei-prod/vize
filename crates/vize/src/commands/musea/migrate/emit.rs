@@ -2,7 +2,7 @@
 
 use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind, PropertyKey};
 use oxc_span::GetSpan;
-use vize_carton::{String, append};
+use vize_s0::{String, append};
 
 use self::static_args::{
     ModuleBindings, args_contain_unmigrated_bindings, args_has_static_property,

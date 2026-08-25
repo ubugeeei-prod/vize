@@ -40,7 +40,7 @@ fn resolve_entry_ignore_pattern(ignore: &config::ConfigEntryIgnore, config_dir: 
     let pattern = Path::new(ignore.pattern.as_str());
     if pattern.is_absolute() {
         return if pattern.exists() {
-            vize_carton::path::canonicalize_non_verbatim(pattern)
+            vize_s0::path::canonicalize_non_verbatim(pattern)
         } else {
             pattern.to_path_buf()
         };
@@ -88,6 +88,6 @@ fn nested_node_modules_ignore(pattern: &Path) -> Option<PathBuf> {
     }
     let prefix = pattern_text.trim_end_matches(suffix).trim_end_matches('/');
     Some(PathBuf::from(
-        vize_carton::cstr!("{prefix}/**/{suffix}").as_str(),
+        vize_s0::cstr!("{prefix}/**/{suffix}").as_str(),
     ))
 }

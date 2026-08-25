@@ -3,7 +3,7 @@ use super::{
     render_module_augmentation_stub, render_nuxt_composition_api_augmentation_stub,
     render_nuxt_injected_properties_stub, render_nuxt_types_augmentation_stub,
 };
-use vize_carton::FxHashSet;
+use vize_s0::FxHashSet;
 
 #[test]
 fn scans_src_app_plugins_for_nuxt2_injections() {

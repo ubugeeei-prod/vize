@@ -2,7 +2,6 @@
 
 mod labels;
 
-use vize_carton::{String, cstr};
 use vize_doctor::{DoctorFinding, FixSafety};
 use vize_fresco::{
     DiagnosticPresentation, DiagnosticPresentationKind, DiagnosticTone, HeadlessSemanticNode,
@@ -10,6 +9,7 @@ use vize_fresco::{
     terminal::{Color, Style},
     text::WrapMode,
 };
+use vize_s0::{String, cstr};
 
 use super::{StyledLine, profile, severity_tone};
 use crate::commands::doctor::{

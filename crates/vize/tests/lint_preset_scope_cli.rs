@@ -25,8 +25,8 @@ fn write_project_file(root: &Path, path: &str, content: &str) {
     fs::write(file_path, content).unwrap();
 }
 
-fn output_details(output: &std::process::Output) -> vize_carton::String {
-    vize_carton::cstr!(
+fn output_details(output: &std::process::Output) -> vize_s0::String {
+    vize_s0::cstr!(
         "stdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)

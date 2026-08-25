@@ -6,7 +6,7 @@ use std::{
 };
 
 use serde_json::Value;
-use vize_carton::FxHashSet;
+use vize_s0::FxHashSet;
 
 use super::jsonc::parse_jsonc_value;
 

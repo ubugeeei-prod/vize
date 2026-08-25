@@ -2,8 +2,8 @@
 
 use std::{collections::BTreeSet, path::Path, time::Duration, time::Instant};
 
-use vize_carton::profiler::global_profiler;
-use vize_carton::{String, cstr};
+use vize_s0::profiler::global_profiler;
+use vize_s0::{String, cstr};
 
 use super::{
     CheckArgs, JsonOutput, ProgramExecution,
@@ -76,7 +76,7 @@ pub(super) fn finish_executions(
 
 pub(super) fn exit_after_execution_error(
     executions: Vec<ProgramExecution>,
-    error: vize_carton::String,
+    error: vize_s0::String,
 ) -> ! {
     let style = super::text_style::TextStyle::stderr();
     eprintln!("{} {error}", style.red("Error:"));

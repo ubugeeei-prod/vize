@@ -1,5 +1,5 @@
 use super::*;
-use vize_carton::path::canonicalize_non_verbatim;
+use vize_s0::path::canonicalize_non_verbatim;
 
 fn write(root: &Path, relative: &str, contents: &str) -> PathBuf {
     let path = root.join(relative);

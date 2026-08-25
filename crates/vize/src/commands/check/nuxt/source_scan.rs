@@ -6,7 +6,7 @@ use ignore::WalkBuilder;
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{BindingPattern, Declaration, ExportDefaultDeclarationKind, Statement};
 use oxc_parser::Parser;
-use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, cstr};
+use vize_s0::{FxHashMap, FxHashSet, String, ToCompactString, cstr};
 
 use super::parsing::{is_ts_identifier, module_export_name, source_type_for_path};
 use super::stubs::{

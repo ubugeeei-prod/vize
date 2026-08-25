@@ -4,7 +4,7 @@ use std::path::Path;
 
 use ignore::WalkBuilder;
 use vize_canon::virtual_ts::{TemplateGlobal, VirtualTsOptions};
-use vize_carton::{FxHashSet, String, ToCompactString, cstr};
+use vize_s0::{FxHashSet, String, ToCompactString, cstr};
 
 use super::super::dts::{
     parse_declared_global_values, parse_interface_members_with_rewritten_imports,

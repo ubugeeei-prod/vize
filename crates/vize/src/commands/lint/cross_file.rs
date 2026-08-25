@@ -7,7 +7,6 @@ use vize_atelier_sfc::{
     croquis::{SfcCroquisOptions, analyze_sfc_descriptor},
     parse_sfc,
 };
-use vize_carton::{Allocator, CompactString, FxHashMap, String, ToCompactString, cstr};
 use vize_croquis::Croquis;
 use vize_croquis_cf::{
     CrossFileAnalyzer, CrossFileDiagnostic, CrossFileDiagnosticKind, CrossFileOptions,
@@ -15,6 +14,7 @@ use vize_croquis_cf::{
 };
 use vize_curator::complexity::render_complexity_markdown;
 use vize_patina::{HelpLevel, LintDiagnostic, LintResult};
+use vize_s0::{Allocator, CompactString, FxHashMap, String, ToCompactString, cstr};
 
 pub(super) struct CrossFileLintOutput {
     pub(super) results: Vec<LintResult>,

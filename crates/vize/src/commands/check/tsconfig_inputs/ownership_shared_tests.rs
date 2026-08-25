@@ -4,7 +4,7 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::path::canonicalize_non_verbatim;
+use vize_s0::path::canonicalize_non_verbatim;
 
 use super::{TsconfigInputCache, resolve_tsconfig_for_files};
 

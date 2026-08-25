@@ -1,7 +1,7 @@
 //! Allocation-conscious filter labels and precomputed search documents.
 
-use vize_carton::String;
 use vize_doctor::{DoctorCategory, DoctorFinding, FindingSeverity};
+use vize_s0::String;
 
 pub(super) fn cycle(current: usize, length: usize, forward: bool) -> usize {
     if forward {

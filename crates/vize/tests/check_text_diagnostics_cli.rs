@@ -12,7 +12,7 @@ use std::{
     process::Command,
 };
 
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 fn workspace_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))

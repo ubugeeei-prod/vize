@@ -4,13 +4,13 @@ mod filter;
 
 use std::path::Path;
 
-use vize_carton::{String, ToCompactString};
 use vize_doctor::{DoctorCategory, DoctorFinding, DoctorReport, FindingSeverity};
 use vize_fresco::{
     Cursor, DiagnosticWorkspaceAction, DiagnosticWorkspaceCommandOutcome,
     DiagnosticWorkspaceKeymap, DiagnosticWorkspaceState, Key, KeyEvent, KeyEventKind,
     terminal::CursorShape,
 };
+use vize_s0::{String, ToCompactString};
 
 use super::super::DoctorSource;
 use filter::{cycle, search_document};

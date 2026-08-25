@@ -12,9 +12,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-use vize_carton::String as CartonString;
 use vize_davinci::folio::repro::ReproFolio;
 use vize_davinci::folio::{Folio, FolioMode};
+use vize_s0::String as CartonString;
 
 const INJECTED_FAILURE: &str = "template.transform: injected davinci panic in pass `transform`";
 

@@ -2,7 +2,7 @@ use std::path::Path;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use vize_canon::virtual_ts::VirtualTsOptions;
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 use super::{detect_legacy_nuxt_auto_imports, detect_nuxt_auto_imports};
 

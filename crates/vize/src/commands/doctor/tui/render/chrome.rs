@@ -1,11 +1,11 @@
 //! Semantic title, status, shortcut, and help chrome.
 
-use vize_carton::cstr;
 use vize_fresco::{
     DiagnosticPresentation, DiagnosticTone, HeadlessSemanticNode, Rect, SemanticRole,
     SemanticState, TerminalCapabilities,
     terminal::{Color, Style},
 };
+use vize_s0::cstr;
 
 use super::{profile, tree::DoctorFrameBuilder};
 use crate::commands::doctor::tui::{

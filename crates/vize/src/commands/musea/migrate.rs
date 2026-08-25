@@ -13,8 +13,8 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use std::fs;
 use std::path::{Path, PathBuf};
-use vize_carton::String as CartonString;
-use vize_carton::append;
+use vize_s0::String as CartonString;
+use vize_s0::append;
 
 use crate::commands::fmt::collect_files;
 use csf::extract_csf;

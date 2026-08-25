@@ -5,7 +5,7 @@ use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_canon::virtual_ts::VirtualTsOptions;
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 use super::super::dts::rewrite_relative_specifier;
 use super::detect_nuxt_auto_imports;

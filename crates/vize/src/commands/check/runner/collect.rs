@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 
 use glob::{MatchOptions, Pattern};
 use ignore::WalkBuilder;
-use vize_carton::{FxHashSet, String};
+use vize_s0::{FxHashSet, String};
 
 use super::super::patterns::{CheckFileOptions, is_supported_check_file};
 use super::ignores::CheckIgnoreSet;
@@ -270,7 +270,7 @@ fn strip_leading_current_dir(value: &str) -> String {
 }
 
 fn normalize_input_path(path: &Path) -> PathBuf {
-    vize_carton::path::canonicalize_non_verbatim(path)
+    vize_s0::path::canonicalize_non_verbatim(path)
 }
 
 pub(super) fn path_is_inside_root(root: &Path, path: &Path) -> bool {

@@ -2,7 +2,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::{Expression, Statement};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::String;
+use vize_s0::String;
 
 use super::convert_render;
 

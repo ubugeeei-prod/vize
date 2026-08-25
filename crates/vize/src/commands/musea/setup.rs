@@ -1,6 +1,6 @@
 use std::fs;
 use std::path::{Path, PathBuf};
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 const MUSEA_VITE_PLUGIN: &str = "@vizejs/vite-plugin-musea";
 const VITE_CONFIG_FILES: &[&str] = &[

@@ -7,7 +7,7 @@ use std::{
 
 use ignore::WalkBuilder;
 use serde_json::Value;
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 use super::parsing::nuxt_config_static_string;
 use crate::commands::check::tsconfig_inputs::parse_jsonc_value;

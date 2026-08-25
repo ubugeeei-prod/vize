@@ -863,19 +863,19 @@ compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_expr_reparse_
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_teardown_without_stack_guard.rs	68	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_walk_baseline.rs	25	davinci	Davinci	stage	vize_davinci	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_walk_baseline.rs	25	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize/src/commands/build/config.rs	16	s0	S0/carton	stage	vize_carton	compat	2
-compiler	Compiler	source	crates/vize/src/commands/build/runner.rs	22	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize/src/commands/build/runner/cache.rs	11	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize/src/commands/build/runner/cache/tests.rs	11	s0	S0/carton	stage	vize_carton	compat	2
-compiler	Compiler	test/dev	crates/vize/src/commands/build/runner/collect/tests.rs	12	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize/src/commands/build/runner/compile_stats.rs	16	s0	S0/carton	stage	vize_carton	compat	6
-compiler	Compiler	source	crates/vize/src/commands/build/runner/compile.rs	41	s0	S0/carton	stage	vize_carton	compat	5
-compiler	Compiler	source	crates/vize/src/commands/build/runner/declarations.rs	65	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize/src/commands/build/runner/output.rs	11	s0	S0/carton	stage	vize_carton	compat	2
-compiler	Compiler	source	crates/vize/src/commands/build/runner/output/plan.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize/src/commands/build/runner/output/tests.rs	5	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize/src/commands/build/runner/profile_facts.rs	6	s0	S0/carton	stage	vize_carton	compat	3
-compiler	Compiler	source	crates/vize/src/commands/build/runner/settings.rs	5	s0	S0/carton	stage	vize_carton	compat	3
+compiler	Compiler	source	crates/vize/src/commands/build/config.rs	16	s0	S0/carton	stage	vize_s0	preferred	2
+compiler	Compiler	source	crates/vize/src/commands/build/runner.rs	22	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize/src/commands/build/runner/cache.rs	11	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize/src/commands/build/runner/cache/tests.rs	11	s0	S0/carton	stage	vize_s0	preferred	2
+compiler	Compiler	test/dev	crates/vize/src/commands/build/runner/collect/tests.rs	12	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize/src/commands/build/runner/compile_stats.rs	16	s0	S0/carton	stage	vize_s0	preferred	6
+compiler	Compiler	source	crates/vize/src/commands/build/runner/compile.rs	41	s0	S0/carton	stage	vize_s0	preferred	5
+compiler	Compiler	source	crates/vize/src/commands/build/runner/declarations.rs	65	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize/src/commands/build/runner/output.rs	11	s0	S0/carton	stage	vize_s0	preferred	2
+compiler	Compiler	source	crates/vize/src/commands/build/runner/output/plan.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize/src/commands/build/runner/output/tests.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize/src/commands/build/runner/profile_facts.rs	6	s0	S0/carton	stage	vize_s0	preferred	3
+compiler	Compiler	source	crates/vize/src/commands/build/runner/settings.rs	5	s0	S0/carton	stage	vize_s0	preferred	3
 linter	Linter	test/dev	crates/vize_patina/benches/lint_bench.rs	6	s0	S0/carton	stage	vize_carton	compat	1
 linter	Linter	test/dev	crates/vize_patina/benches/markup_ir_bench.rs	15	s0	S0/carton	stage	vize_carton	compat	3
 linter	Linter	test/dev	crates/vize_patina/benches/markup_ir_bench.rs	15	old_ast	old AST/parser	old	vize_armature	legacy	1
@@ -1474,18 +1474,18 @@ linter	Linter	test/dev	crates/vize_patina/src/visitor_scope.rs	46	s0	S0/carton	s
 linter	Linter	test/dev	crates/vize_patina/src/visitor_scope.rs	46	old_ast	old AST/parser	old	vize_relief	legacy	2
 linter	Linter	source	crates/vize_patina/src/visitor.rs	7	s0	S0/carton	stage	vize_carton	compat	2
 linter	Linter	source	crates/vize_patina/src/visitor.rs	7	old_ast	old AST/parser	old	vize_relief	legacy	3
-linter	Linter	test/dev	crates/vize/src/commands/lint.rs	30	s0	S0/carton	stage	vize_carton	compat	2
-linter	Linter	source	crates/vize/src/commands/lint/args.rs	5	s0	S0/carton	stage	vize_carton	compat	1
-linter	Linter	source	crates/vize/src/commands/lint/collect.rs	6	s0	S0/carton	stage	vize_carton	compat	3
-linter	Linter	source	crates/vize/src/commands/lint/cross_file.rs	4	s0	S0/carton	stage	vize_carton	compat	1
+linter	Linter	test/dev	crates/vize/src/commands/lint.rs	34	s0	S0/carton	stage	vize_s0	preferred	2
+linter	Linter	source	crates/vize/src/commands/lint/args.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize/src/commands/lint/collect.rs	6	s0	S0/carton	stage	vize_s0	preferred	3
+linter	Linter	source	crates/vize/src/commands/lint/cross_file.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize/src/commands/lint/cross_file.rs	4	old_ast	old AST/parser	old	vize_armature	legacy	1
 linter	Linter	source	crates/vize/src/commands/lint/cross_file.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	1
 linter	Linter	source	crates/vize/src/commands/lint/cross_file.rs	4	croquis	Croquis analysis	old	vize_croquis_cf	legacy	1
-linter	Linter	test/dev	crates/vize/src/commands/lint/entry_rules_tests.rs	6	s0	S0/carton	stage	vize_carton	compat	2
-linter	Linter	source	crates/vize/src/commands/lint/entry_rules.rs	4	s0	S0/carton	stage	vize_carton	compat	1
-linter	Linter	source	crates/vize/src/commands/lint/fix.rs	7	s0	S0/carton	stage	vize_carton	compat	1
-linter	Linter	source	crates/vize/src/commands/lint/patterns.rs	22	s0	S0/carton	stage	vize_carton	compat	4
-linter	Linter	source	crates/vize/src/commands/lint/stdout.rs	3	s0	S0/carton	stage	vize_carton	compat	1
+linter	Linter	test/dev	crates/vize/src/commands/lint/entry_rules_tests.rs	7	s0	S0/carton	stage	vize_s0	preferred	2
+linter	Linter	source	crates/vize/src/commands/lint/entry_rules.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize/src/commands/lint/fix.rs	8	s0	S0/carton	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize/src/commands/lint/patterns.rs	22	s0	S0/carton	stage	vize_s0	preferred	4
+linter	Linter	source	crates/vize/src/commands/lint/stdout.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/benches/package_route.rs	40	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	16	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	16	old_ast	old AST/parser	old	vize_relief	legacy	1
@@ -2209,119 +2209,119 @@ typechecker	Typechecker	test/dev	crates/vize_canon/tests/support/auto_import_pro
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/support/tier_l_incremental_artifact.rs	6	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/tier_l_incremental.rs	10	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/tsconfig_option_diagnostics.rs	14	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/dts_ast.rs	1	s0	S0/carton	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/dts_ast.rs	1	s0	S0/carton	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/dts_ast.rs	1	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/dts_ast.rs	1	raw_oxc	raw OXC	raw	oxc_ast	raw	2
 typechecker	Typechecker	source	crates/vize/src/commands/check/dts_ast.rs	1	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/dts_import_aliases.rs	3	s0	S0/carton	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/dts_import_aliases.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/dts_import_aliases.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/dts_import_aliases.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/dts_import_aliases.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/dts_rewrite.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/dts.rs	7	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/imports_aliases.rs	4	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/imports_cache.rs	9	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_generated_tests.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_js_tests.rs	2	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_package_routes.rs	80	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/imports_registration.rs	3	s0	S0/carton	stage	vize_carton	compat	2
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_registration.rs	168	s0	S0/carton	stage	vize_carton	compat	2
-typechecker	Typechecker	source	crates/vize/src/commands/check/imports_resolution.rs	5	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/imports_specifiers.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_tests.rs	2	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports.rs	12	s0	S0/carton	stage	vize_carton	compat	2
-typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt.rs	8	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/fallback.rs	12	s0	S0/carton	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/dts_rewrite.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/dts.rs	7	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/imports_aliases.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/imports_cache.rs	9	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_generated_tests.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_js_tests.rs	2	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_package_routes.rs	80	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/imports_registration.rs	3	s0	S0/carton	stage	vize_s0	preferred	2
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_registration.rs	168	s0	S0/carton	stage	vize_s0	preferred	2
+typechecker	Typechecker	source	crates/vize/src/commands/check/imports_resolution.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/imports_specifiers.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_tests.rs	2	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports.rs	12	s0	S0/carton	stage	vize_s0	preferred	2
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt.rs	8	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/fallback.rs	12	s0	S0/carton	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/fallback.rs	12	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/fallback.rs	12	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/fallback.rs	12	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/fallback/fallback_values.rs	1	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/nuxt/generated_ast_tests.rs	5	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated_ast.rs	3	s0	S0/carton	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/fallback/fallback_values.rs	1	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/nuxt/generated_ast_tests.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated_ast.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated_ast.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated_ast.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated_ast.rs	3	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated_ast.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated_dir.rs	10	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated_values.rs	5	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated.rs	7	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/nuxt/legacy_template_globals_tests.rs	5	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/legacy_template_globals.rs	2	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/parsing.rs	5	s0	S0/carton	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated_dir.rs	10	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated_values.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/generated.rs	7	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/nuxt/legacy_template_globals_tests.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/legacy_template_globals.rs	2	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/parsing.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/parsing.rs	5	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/parsing.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	9
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/parsing.rs	5	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/plugins.rs	6	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/plugins/extract.rs	5	s0	S0/carton	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/plugins.rs	6	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/plugins/extract.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/plugins/extract.rs	5	raw_oxc	raw OXC	raw	oxc_allocator	raw	3
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/plugins/extract.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	3
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/plugins/extract.rs	5	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/plugins/extract/bindings.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	2
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/nuxt/plugins/tests.rs	6	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/source_scan.rs	6	s0	S0/carton	stage	vize_carton	compat	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/nuxt/plugins/tests.rs	6	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/source_scan.rs	6	s0	S0/carton	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/source_scan.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/source_scan.rs	6	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/source_scan.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/stubs.rs	5	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/nuxt/tests.rs	4	s0	S0/carton	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/stubs.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/nuxt/tests.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/nuxt/tests.rs	4	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/nuxt/tests.rs	4	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/tsconfig_aliases.rs	9	s0	S0/carton	stage	vize_carton	compat	2
-typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/virtual_modules.rs	6	s0	S0/carton	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/tsconfig_aliases.rs	9	s0	S0/carton	stage	vize_s0	preferred	2
+typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/virtual_modules.rs	6	s0	S0/carton	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/virtual_modules.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/virtual_modules.rs	6	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/nuxt/virtual_modules.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/path_cache.rs	5	s0	S0/carton	stage	vize_carton	compat	2
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/path_cache.rs	49	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner.rs	145	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/collect_tests.rs	11	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/collect.rs	10	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/collect.rs	273	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/default_imports_tests.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/default_imports.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/diagnostics.rs	9	s0	S0/carton	stage	vize_carton	compat	3
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/diagnostics/source_context.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/diagnostics/source_filter.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/execution.rs	9	s0	S0/carton	stage	vize_carton	compat	3
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/global_components.rs	15	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/ignores.rs	43	s0	S0/carton	stage	vize_carton	compat	2
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/input_scope.rs	16	s0	S0/carton	stage	vize_carton	compat	3
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/input_scope/tests.rs	18	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/invocation.rs	31	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/nuxt_tsconfig.rs	15	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/nuxt_tsconfig.rs	256	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/nuxt_tsconfig/cache.rs	10	s0	S0/carton	stage	vize_carton	compat	5
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/nuxt_tsconfig/path_options_tests.rs	228	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output_declarations.rs	2	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output_json.rs	3	s0	S0/carton	stage	vize_carton	compat	4
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output_profile.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output.rs	5	s0	S0/carton	stage	vize_carton	compat	3
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/program_inputs.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/programs.rs	5	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/resolve.rs	7	s0	S0/carton	stage	vize_carton	compat	8
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/socket.rs	10	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/runner/text_style.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs.rs	11	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/ambient.rs	8	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/collect.rs	6	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/default_exclude_tests.rs	17	s0	S0/carton	stage	vize_carton	compat	2
-typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/glob.rs	94	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/hidden_include_tests.rs	10	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/loader.rs	10	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/nuxt_manifest_tests.rs	10	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/ownership_shared_tests.rs	7	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/package_folder_tests.rs	17	s0	S0/carton	stage	vize_carton	compat	2
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/tests.rs	8	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/type_references.rs	9	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/type_references/tsconfig_types.rs	4	s0	S0/carton	stage	vize_carton	compat	2
+typechecker	Typechecker	source	crates/vize/src/commands/check/path_cache.rs	5	s0	S0/carton	stage	vize_s0	preferred	2
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/path_cache.rs	47	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner.rs	145	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/collect_tests.rs	11	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/collect.rs	10	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/collect.rs	273	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/default_imports_tests.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/default_imports.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/diagnostics.rs	9	s0	S0/carton	stage	vize_s0	preferred	3
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/diagnostics/source_context.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/diagnostics/source_filter.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/execution.rs	9	s0	S0/carton	stage	vize_s0	preferred	3
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/global_components.rs	15	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/ignores.rs	43	s0	S0/carton	stage	vize_s0	preferred	2
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/input_scope.rs	16	s0	S0/carton	stage	vize_s0	preferred	3
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/input_scope/tests.rs	18	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/invocation.rs	31	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/nuxt_tsconfig.rs	15	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/nuxt_tsconfig.rs	256	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/nuxt_tsconfig/cache.rs	10	s0	S0/carton	stage	vize_s0	preferred	5
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/nuxt_tsconfig/path_options_tests.rs	228	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output_declarations.rs	2	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output_json.rs	3	s0	S0/carton	stage	vize_s0	preferred	4
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output_profile.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output.rs	5	s0	S0/carton	stage	vize_s0	preferred	3
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/program_inputs.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/programs.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/resolve.rs	7	s0	S0/carton	stage	vize_s0	preferred	8
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/socket.rs	10	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/runner/text_style.rs	6	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs.rs	11	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/ambient.rs	8	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/collect.rs	6	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/default_exclude_tests.rs	17	s0	S0/carton	stage	vize_s0	preferred	2
+typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/glob.rs	94	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/hidden_include_tests.rs	10	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/loader.rs	10	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/nuxt_manifest_tests.rs	10	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/ownership_shared_tests.rs	7	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/package_folder_tests.rs	17	s0	S0/carton	stage	vize_s0	preferred	2
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/tests.rs	8	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/type_references.rs	9	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/type_references/tsconfig_types.rs	4	s0	S0/carton	stage	vize_s0	preferred	2
 typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_alias.rs	1	s0	S0/carton	stage	vize_carton	compat	1
 typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_directives.rs	12	s0	S0/carton	stage	vize_carton	compat	1
 typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_protocol.rs	4	s0	S0/carton	stage	vize_carton	compat	1
 typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper.rs	8	s0	S0/carton	stage	vize_carton	compat	2
 typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper.rs	8	croquis	Croquis analysis	old	vize_croquis	legacy	1
-typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper.rs	18	s0	S0/carton	stage	vize_carton	compat	1
-typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper/project.rs	13	s0	S0/carton	stage	vize_carton	compat	1
-typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper/test_support.rs	6	s0	S0/carton	stage	vize_carton	compat	1
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper.rs	18	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper/project.rs	13	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper/test_support.rs	6	s0	S0/carton	stage	vize_s0	preferred	1
 formatter	Formatter	manifest	crates/vize_glyph/Cargo.toml	13	s0	S0/carton	stage	vize_s0	preferred	1
 formatter	Formatter	manifest	crates/vize_glyph/Cargo.toml	13	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 formatter	Formatter	manifest	crates/vize_glyph/Cargo.toml	13	raw_oxc	raw OXC	raw	oxc_ast	raw	1
@@ -2360,13 +2360,13 @@ formatter	Formatter	source	crates/vize_glyph/src/template/formatter/interpolatio
 formatter	Formatter	source	crates/vize_glyph/src/template/formatter/text.rs	10	s0	S0/carton	stage	vize_s0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/template/helpers.rs	6	s0	S0/carton	stage	vize_s0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/sfc_block_attributes.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
-formatter	Formatter	source	crates/vize/src/commands/fmt.rs	13	s0	S0/carton	stage	vize_carton	compat	1
-formatter	Formatter	source	crates/vize/src/commands/fmt/data.rs	4	s0	S0/carton	stage	vize_carton	compat	1
-formatter	Formatter	source	crates/vize/src/commands/fmt/data/plain.rs	16	s0	S0/carton	stage	vize_carton	compat	1
-formatter	Formatter	source	crates/vize/src/commands/fmt/entries.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-formatter	Formatter	test/dev	crates/vize/src/commands/fmt/files_tests.rs	7	s0	S0/carton	stage	vize_carton	compat	1
-formatter	Formatter	test/dev	crates/vize/src/commands/fmt/files.rs	125	s0	S0/carton	stage	vize_carton	compat	4
-formatter	Formatter	source	crates/vize/src/commands/fmt/ignores.rs	80	s0	S0/carton	stage	vize_carton	compat	1
+formatter	Formatter	source	crates/vize/src/commands/fmt.rs	17	s0	S0/carton	stage	vize_s0	preferred	1
+formatter	Formatter	source	crates/vize/src/commands/fmt/data.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
+formatter	Formatter	source	crates/vize/src/commands/fmt/data/plain.rs	17	s0	S0/carton	stage	vize_s0	preferred	1
+formatter	Formatter	source	crates/vize/src/commands/fmt/entries.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+formatter	Formatter	test/dev	crates/vize/src/commands/fmt/files_tests.rs	7	s0	S0/carton	stage	vize_s0	preferred	1
+formatter	Formatter	test/dev	crates/vize/src/commands/fmt/files.rs	125	s0	S0/carton	stage	vize_s0	preferred	4
+formatter	Formatter	source	crates/vize/src/commands/fmt/ignores.rs	80	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	s0	S0/carton	stage	vize_carton	compat	1
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	old_ast	old AST/parser	old	vize_armature	legacy	1

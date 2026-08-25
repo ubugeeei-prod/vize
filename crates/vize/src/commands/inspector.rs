@@ -20,8 +20,8 @@ use vize_atelier_sfc::{
     TemplateCompileOptions, compile_sfc_with_template_syntax as compile_vize_sfc,
     parse_sfc as parse_vize_sfc,
 };
-use vize_carton::{String, ToCompactString};
 use vize_curator::inspector as curator_inspector;
+use vize_s0::{String, ToCompactString};
 
 mod compare_error;
 mod no_inputs;

@@ -19,7 +19,7 @@ use std::{
 };
 
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use vize_carton::{String, cstr, profiler::global_profiler};
+use vize_s0::{String, cstr, profiler::global_profiler};
 
 use crate::profile_support;
 use vize_curator::profile::{

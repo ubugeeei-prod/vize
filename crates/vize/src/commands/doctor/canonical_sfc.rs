@@ -1,12 +1,12 @@
 //! Doctor rule for the opt-in public component authoring contract.
 
 use vize_atelier_sfc::{BlockLocation, SfcDescriptor};
-use vize_carton::cstr;
 use vize_doctor::{
     AnalysisProvenance, DoctorCategory, DoctorFinding, EvidenceKind, FindingAssessment,
     FindingConfidence, FindingEvidence, FindingFix, FindingImpact, FindingSeverity, HealthPenalty,
     RuleCost, SourceLocation, SuppressionPolicy,
 };
+use vize_s0::cstr;
 
 pub(super) const RULE_CODE: &str = "VIZE_DOCTOR_SFC_EXPLICIT_SECTIONS";
 
@@ -132,7 +132,7 @@ fn bounded_offset(offset: usize) -> u32 {
 mod tests {
     use super::*;
     use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-    use vize_carton::String;
+    use vize_s0::String;
 
     #[test]
     fn accepts_semantic_attribute_order_and_companion_script() {

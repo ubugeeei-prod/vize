@@ -1,7 +1,7 @@
 use super::{ServeArgs, setup};
 use setup::validate_direct_vite_musea_setup;
 use std::path::{Path, PathBuf};
-use vize_carton::{String, ToCompactString, cstr};
+use vize_s0::{String, ToCompactString, cstr};
 
 #[derive(Debug, PartialEq, Eq)]
 pub(super) struct ServePlan {

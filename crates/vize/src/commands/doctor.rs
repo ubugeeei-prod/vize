@@ -16,11 +16,11 @@ mod tests;
 
 use clap::{Args, ValueEnum};
 use std::{fmt, io, path::PathBuf};
-use vize_carton::String;
 use vize_doctor::{
     DoctorCategory, DoctorFilterError, DoctorReport, FindingConfidence, FindingSeverity,
     ReporterFailure, SarifSourceError, application_analysis::ApplicationAnalysisError,
 };
+use vize_s0::String;
 
 use self::{
     analysis::analyze_application,

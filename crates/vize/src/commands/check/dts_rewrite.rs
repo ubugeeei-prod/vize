@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 pub(super) fn rewrite_relative_import_types(type_annotation: &str, source_dir: &Path) -> String {
     let bytes = type_annotation.as_bytes();

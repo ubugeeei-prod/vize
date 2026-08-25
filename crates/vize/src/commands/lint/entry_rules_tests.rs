@@ -3,8 +3,8 @@ use crate::config::{
     LintRuleSeverity as Severity, LinterConfig, LinterConfigEntry, LinterConfigPlan,
 };
 use std::{collections::BTreeMap, fs, path::PathBuf};
-use vize_carton::FxHashMap;
 use vize_patina::{LintPreset, Linter};
+use vize_s0::FxHashMap;
 
 const IMPORTED_STORE_SFC: &str = r#"<script setup lang="ts">
 import { useCounterStore } from "./store"
@@ -12,7 +12,7 @@ const { count, actions } = useCounterStore()
 </script>
 "#;
 
-fn rules(entries: &[(&str, Severity)]) -> FxHashMap<vize_carton::String, Severity> {
+fn rules(entries: &[(&str, Severity)]) -> FxHashMap<vize_s0::String, Severity> {
     entries
         .iter()
         .map(|(name, severity)| ((*name).into(), *severity))

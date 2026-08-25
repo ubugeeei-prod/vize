@@ -1,8 +1,8 @@
 //! Formatting for non-SFC files: JSON, JSONC, YAML, and Markdown.
 
 use std::path::Path;
-use vize_carton::profile;
 use vize_glyph::{FormatOptions, FormatResult};
+use vize_s0::profile;
 
 mod plain;
 

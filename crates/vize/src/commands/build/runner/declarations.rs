@@ -62,5 +62,5 @@ fn declaration_output_dir(args: &BuildArgs) -> PathBuf {
         return dir.to_path_buf();
     }
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    vize_carton::path::canonicalize_non_verbatim(&cwd.join(dir))
+    vize_s0::path::canonicalize_non_verbatim(&cwd.join(dir))
 }

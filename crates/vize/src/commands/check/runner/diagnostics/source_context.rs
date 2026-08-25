@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, fs, path::PathBuf};
 
-use vize_carton::{String as CompactString, cstr};
+use vize_s0::{String as CompactString, cstr};
 
 #[derive(Default)]
 pub(super) struct SourceContextCache {

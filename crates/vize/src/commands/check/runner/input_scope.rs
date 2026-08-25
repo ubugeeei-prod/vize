@@ -13,7 +13,7 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 use super::super::{CheckArgs, patterns::CHECK_INPUTS_DISPLAY, reporting::JsonOutput};
 use super::{collect::path_is_inside_root, diagnostics::emit_json_output};
@@ -181,8 +181,8 @@ pub(super) fn report_no_inputs(args: &CheckArgs) {
 }
 
 fn is_strict_ancestor(ancestor: &Path, path: &Path) -> bool {
-    let ancestor = vize_carton::path::canonicalize_non_verbatim(ancestor);
-    let path = vize_carton::path::canonicalize_non_verbatim(path);
+    let ancestor = vize_s0::path::canonicalize_non_verbatim(ancestor);
+    let path = vize_s0::path::canonicalize_non_verbatim(path);
     path != ancestor && path.starts_with(&ancestor)
 }
 

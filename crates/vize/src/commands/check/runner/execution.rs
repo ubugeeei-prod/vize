@@ -6,7 +6,7 @@ use vize_canon::{
     BatchTypeCheckResult, BatchTypeChecker, BatchTypeCheckerOptions,
     batch::TypeChecker as BatchTypeCheckerTrait,
 };
-use vize_carton::{FxHashSet, String, config::VueVersion, cstr};
+use vize_s0::{FxHashSet, String, config::VueVersion, cstr};
 
 use super::nuxt_tsconfig::{
     PreparedCheckerTsconfig, wait_for_active_config_test_barrier,
@@ -155,9 +155,9 @@ pub(super) fn execute_program(
     if let (Some(authored), Some(prepared)) =
         (input.tsconfig_path.as_ref(), checker_tsconfig.path())
     {
-        let prepared = vize_carton::path::canonicalize_non_verbatim(prepared);
+        let prepared = vize_s0::path::canonicalize_non_verbatim(prepared);
         for diagnostic in &mut result.diagnostics {
-            if vize_carton::path::canonicalize_non_verbatim(&diagnostic.file) == prepared {
+            if vize_s0::path::canonicalize_non_verbatim(&diagnostic.file) == prepared {
                 diagnostic.file = authored.clone();
             }
         }

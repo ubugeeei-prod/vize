@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 pub struct CheckOutput {
     pub success: bool,

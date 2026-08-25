@@ -122,8 +122,8 @@ impl FmtPattern {
     }
 }
 
-fn normalize_fmt_pattern(pattern: &str) -> vize_carton::String {
-    let mut normalized: vize_carton::String = pattern.replace('\\', "/").into();
+fn normalize_fmt_pattern(pattern: &str) -> vize_s0::String {
+    let mut normalized: vize_s0::String = pattern.replace('\\', "/").into();
     while let Some(stripped) = normalized.strip_prefix("./") {
         normalized = stripped.into();
     }
@@ -150,7 +150,7 @@ fn is_format_target(path: &Path) -> bool {
 }
 
 #[inline]
-fn normalize_path(path: &Path) -> vize_carton::String {
+fn normalize_path(path: &Path) -> vize_s0::String {
     path.to_string_lossy().replace('\\', "/").into()
 }
 
@@ -192,7 +192,7 @@ mod tests {
         path::{Path, PathBuf},
         time::{SystemTime, UNIX_EPOCH},
     };
-    use vize_carton::{String, ToCompactString};
+    use vize_s0::{String, ToCompactString};
 
     #[test]
     fn absolute_glob_only_matches_requested_directory() {

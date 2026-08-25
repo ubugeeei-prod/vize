@@ -7,7 +7,7 @@ use std::{
 };
 
 use sha2::{Digest, Sha256};
-use vize_carton::String;
+use vize_s0::String;
 
 mod lease;
 mod ownership;
@@ -28,10 +28,10 @@ pub(super) fn validate_config_cache_root(
     cache_root: &Path,
     project_root: &Path,
 ) -> Result<PathBuf, std::io::Error> {
-    let cache_root = vize_carton::path::canonicalize_non_verbatim(cache_root);
-    let project_root = vize_carton::path::canonicalize_non_verbatim(project_root);
+    let cache_root = vize_s0::path::canonicalize_non_verbatim(cache_root);
+    let project_root = vize_s0::path::canonicalize_non_verbatim(project_root);
     let dependency_root =
-        vize_carton::path::canonicalize_non_verbatim(&project_root.join("node_modules"));
+        vize_s0::path::canonicalize_non_verbatim(&project_root.join("node_modules"));
     let names_dependency_tree = cache_root.components().any(|component| {
         matches!(component, std::path::Component::Normal(name) if name
             .to_string_lossy()
@@ -60,7 +60,7 @@ fn canonicalize_with_missing_tail(path: &Path) -> PathBuf {
             break;
         }
     }
-    let mut resolved = vize_carton::path::canonicalize_non_verbatim(&ancestor);
+    let mut resolved = vize_s0::path::canonicalize_non_verbatim(&ancestor);
     for name in tail.into_iter().rev() {
         resolved.push(name);
     }

@@ -8,8 +8,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use vize_carton::profiler::global_profiler;
-use vize_carton::{String, profile};
+use vize_s0::profiler::global_profiler;
+use vize_s0::{String, profile};
 
 use super::super::{
     OutputFormat, ScriptExtension,

@@ -7,7 +7,7 @@ use std::{
 
 use serde_json::Value;
 use vize_canon::batch::{TsconfigOwnershipCache, TsconfigSourceKind};
-use vize_carton::{FxHashMap, FxHashSet, profile, profiler::global_profiler};
+use vize_s0::{FxHashMap, FxHashSet, profile, profiler::global_profiler};
 
 use super::glob::{compiler_option_dir_exclude, normalize_input_path};
 use super::jsonc::parse_jsonc_value;

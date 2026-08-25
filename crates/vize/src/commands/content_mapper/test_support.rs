@@ -3,7 +3,7 @@
 use std::io::{BufReader, Cursor};
 
 use serde_json::{Value, json};
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 pub(super) const PROJECT_HANDLE: &str = "p1";
 

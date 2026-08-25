@@ -5,7 +5,7 @@
 use std::path::Path;
 
 use vize_canon::virtual_ts::VirtualTsOptions;
-use vize_carton::{FxHashSet, String, ToCompactString, config::VueVersion};
+use vize_s0::{FxHashSet, String, ToCompactString, config::VueVersion};
 
 mod fallback;
 mod generated;

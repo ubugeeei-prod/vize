@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
 use serde_json::json;
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
 const VUE_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_VUE";
@@ -138,7 +138,7 @@ fn check_project(tsgo: &Path, project_root: &Path, config: &str) -> Output {
         .unwrap_or_else(|error| panic!("failed to run {}: {error}", tsgo.display()))
 }
 
-fn output_text(output: &Output) -> vize_carton::String {
+fn output_text(output: &Output) -> vize_s0::String {
     let stdout = std::str::from_utf8(&output.stdout).unwrap_or("<non-UTF-8 stdout>");
     let stderr = std::str::from_utf8(&output.stderr).unwrap_or("<non-UTF-8 stderr>");
     cstr!(

@@ -5,7 +5,7 @@ use oxc_ast::ast::{Statement, TSImportType};
 use oxc_ast_visit::{Visit, walk::walk_ts_import_type};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{String, ToCompactString, cstr};
+use vize_s0::{String, ToCompactString, cstr};
 
 use super::super::dts::rewrite_relative_specifier;
 use super::parsing::module_export_name;

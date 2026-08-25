@@ -2,7 +2,7 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::FxHashMap;
+use vize_s0::FxHashMap;
 
 /// Run-scoped cache of `Path::canonicalize` results.
 ///
@@ -26,7 +26,7 @@ impl CanonicalPathCache {
         if let Some(cached) = self.cache.get(path) {
             return cached.clone();
         }
-        let canonical = vize_carton::path::canonicalize_non_verbatim(path);
+        let canonical = vize_s0::path::canonicalize_non_verbatim(path);
         self.cache.insert(path.to_path_buf(), canonical.clone());
         canonical
     }
@@ -44,10 +44,7 @@ mod tests {
 
         let mut cache = CanonicalPathCache::default();
         let canonical = cache.canonicalize(&file);
-        assert_eq!(
-            canonical,
-            vize_carton::path::canonicalize_non_verbatim(&file)
-        );
+        assert_eq!(canonical, vize_s0::path::canonicalize_non_verbatim(&file));
         // Cached lookups return the same result.
         assert_eq!(cache.canonicalize(&file), canonical);
 

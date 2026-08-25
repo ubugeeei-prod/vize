@@ -9,7 +9,7 @@ use oxc_ast::ast::{
 };
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::String;
+use vize_s0::String;
 
 use self::bindings::{StaticPlugin, resolve_static_plugin_from_export};
 use super::super::parsing::{

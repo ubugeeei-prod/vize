@@ -87,7 +87,7 @@ impl DoctorFrameBuilder {
         &mut self,
         parent: u64,
         area: vize_fresco::Rect,
-        text: impl Into<vize_carton::String>,
+        text: impl Into<vize_s0::String>,
         style: Style,
         semantic: Option<HeadlessSemanticNode>,
         focused: bool,

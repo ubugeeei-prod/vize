@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
 use serde_json::json;
-use vize_carton::{String as CompactString, cstr};
+use vize_s0::{String as CompactString, cstr};
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
 const VUE_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_VUE";

@@ -3,7 +3,7 @@
 use std::path::{Path, PathBuf};
 
 use ignore::WalkBuilder;
-use vize_carton::FxHashSet;
+use vize_s0::FxHashSet;
 
 use super::glob::{normalize_input_path, normalize_walked_path};
 use super::matching::{

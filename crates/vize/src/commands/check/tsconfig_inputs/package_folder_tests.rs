@@ -14,7 +14,7 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 use super::TsconfigInputCache;
 
@@ -71,7 +71,7 @@ fn workspace(name: &str, tsconfig: &str) -> PathBuf {
 
     // `temp_dir` is a symlink on macOS, and the collector returns canonicalized
     // paths, so the case root has to be canonical for `relative_paths`.
-    vize_carton::path::canonicalize_non_verbatim(&root)
+    vize_s0::path::canonicalize_non_verbatim(&root)
 }
 
 fn collected(root: &Path) -> Vec<String> {

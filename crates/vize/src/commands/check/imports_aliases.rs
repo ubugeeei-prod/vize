@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use serde_json::Value;
-use vize_carton::{FxHashSet, String};
+use vize_s0::{FxHashSet, String};
 
 use super::imports::ImportFileOptions;
 use super::path_cache::CanonicalPathCache;

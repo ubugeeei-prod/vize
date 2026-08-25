@@ -4,7 +4,6 @@ mod chrome;
 mod detail;
 mod tree;
 
-use vize_carton::{String, cstr};
 use vize_doctor::FindingSeverity;
 use vize_fresco::{
     DiagnosticPresentation, DiagnosticPresentationProfile, DiagnosticTone,
@@ -12,6 +11,7 @@ use vize_fresco::{
     HeadlessSemanticNode, Rect, SemanticRole, SemanticState, TerminalCapabilities,
     terminal::{Cursor, Style},
 };
+use vize_s0::{String, cstr};
 
 use super::{DoctorSource, DoctorTuiError};
 use crate::commands::doctor::tui::model::{DoctorTuiModel, InteractionMode, severity_label};

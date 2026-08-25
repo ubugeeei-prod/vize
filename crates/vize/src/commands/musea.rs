@@ -9,7 +9,7 @@ use new::NewArgs;
 use serve_plan::create_serve_plan;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
-use vize_carton::{String, append, cstr};
+use vize_s0::{String, append, cstr};
 
 #[derive(Args)]
 pub struct MuseaArgs {

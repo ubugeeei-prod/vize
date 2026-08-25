@@ -14,9 +14,8 @@ use super::{
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
     let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-    std::env::temp_dir().join(
-        vize_carton::cstr!("vize-input-scope-{name}-{}-{case_id}", std::process::id()).as_str(),
-    )
+    std::env::temp_dir()
+        .join(vize_s0::cstr!("vize-input-scope-{name}-{}-{case_id}", std::process::id()).as_str())
 }
 
 fn symlink_dir(source: &Path, target: &Path) -> std::io::Result<()> {

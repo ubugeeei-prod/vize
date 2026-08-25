@@ -5,7 +5,7 @@
 use super::{TsconfigInputCache, load_tsconfig_declaration_options, resolve_extended_tsconfig};
 use std::fs;
 use std::path::{Path, PathBuf};
-use vize_carton::{cstr, path::canonicalize_non_verbatim};
+use vize_s0::{cstr, path::canonicalize_non_verbatim};
 mod allow_js;
 mod codegen;
 mod tsx_owner;

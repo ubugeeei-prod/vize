@@ -1,5 +1,5 @@
 use std::{collections::BTreeSet, time::Instant};
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 use super::{
     super::resolve_declaration_emit_options, CheckArgs, DeclarationSummary, ProgramExecution,

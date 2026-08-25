@@ -77,7 +77,7 @@ mod tests {
     ) -> PackageRouteBinding {
         PackageRouteBinding {
             importer_path: PathBuf::from("/workspace/src/app.ts"),
-            specifier: vize_carton::String::from("pkg"),
+            specifier: vize_s0::String::from("pkg"),
             occurrence_mode: mode,
             context: PackageResolutionContext::new(Some("bundler"), mode, ["import"]),
             route: None,

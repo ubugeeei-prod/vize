@@ -4,7 +4,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::{ImportDeclaration, ImportDeclarationSpecifier, ModuleExportName, Statement};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{FxHashMap, String, ToCompactString, cstr};
+use vize_s0::{FxHashMap, String, ToCompactString, cstr};
 
 use super::dts_rewrite::rewrite_relative_specifier;
 

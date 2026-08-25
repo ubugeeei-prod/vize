@@ -12,7 +12,7 @@ use std::{
 };
 
 use serde_json::Value;
-use vize_carton::{String as CompactString, cstr, path::canonicalize_non_verbatim};
+use vize_s0::{String as CompactString, cstr, path::canonicalize_non_verbatim};
 
 const MESSAGE_TIMEOUT: Duration = Duration::from_secs(20);
 const PROCESS_EXIT_TIMEOUT: Duration = Duration::from_secs(5);
@@ -276,7 +276,7 @@ mod tests {
 
         let error = read_message(&mut reader).unwrap_err();
         assert_eq!(error.kind(), ErrorKind::InvalidData);
-        assert!(vize_carton::cstr!("{error}").contains("missing Content-Length"));
+        assert!(vize_s0::cstr!("{error}").contains("missing Content-Length"));
     }
 
     #[test]

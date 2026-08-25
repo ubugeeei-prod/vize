@@ -10,13 +10,13 @@ use vize_atelier_sfc::{
     croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
     parse_sfc,
 };
-use vize_carton::{Allocator, FxHashMap, String, ToCompactString};
 use vize_croquis::{EffectGraphScript, build_effect_graph_from_sfc_scripts};
 use vize_croquis_cf::{CrossFileAnalyzer, CrossFileDiagnosticKind, CrossFileOptions, FileId};
 use vize_doctor::{
     ContentFingerprint, DoctorFinding, DoctorReport,
     application_analysis::report_from_application_graph,
 };
+use vize_s0::{Allocator, FxHashMap, String, ToCompactString};
 
 use super::{DoctorError, DoctorSource, canonical_sfc};
 

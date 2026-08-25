@@ -25,7 +25,7 @@ mod corsa_requirement;
 
 use std::{path::Path, process::Command};
 
-use vize_carton::{String, ToCompactString, cstr};
+use vize_s0::{String, ToCompactString, cstr};
 
 fn workspace_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))

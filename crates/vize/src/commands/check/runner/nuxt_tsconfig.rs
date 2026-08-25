@@ -12,7 +12,7 @@ use std::{
 
 use serde_json::{Map, Value};
 use sha2::{Digest, Sha256};
-use vize_carton::String;
+use vize_s0::String;
 
 mod cache;
 use cache::{
@@ -253,7 +253,7 @@ fn absolute_tsconfig_path(source_base_dir: &Path, target: &str) -> PathBuf {
     let target_path = if target_path.is_absolute() {
         target_path.to_path_buf()
     } else {
-        vize_carton::path::canonicalize_non_verbatim(source_base_dir).join(target_path)
+        vize_s0::path::canonicalize_non_verbatim(source_base_dir).join(target_path)
     };
     normalize_path_lexically(&target_path)
 }

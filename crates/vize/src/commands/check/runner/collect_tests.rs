@@ -8,7 +8,7 @@ use crate::commands::check::{
 };
 use std::fs;
 use std::path::{Path, PathBuf};
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 #[path = "collect_tests/allow_js.rs"]
 mod allow_js;

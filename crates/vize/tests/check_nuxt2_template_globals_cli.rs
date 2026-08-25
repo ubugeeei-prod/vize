@@ -8,7 +8,7 @@ use std::{
     process::Command,
 };
 
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 #[test]
 fn check_legacy_nuxt2_template_fetch_state_and_route_globals() {

@@ -1,7 +1,7 @@
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::String;
+use vize_s0::String;
 
 use super::super::csf::extract_csf;
 use super::emit_art;

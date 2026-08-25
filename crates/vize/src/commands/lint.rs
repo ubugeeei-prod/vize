@@ -27,11 +27,11 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
-use vize_carton::{String, ToCompactString, cstr, profile, profiler::global_profiler};
 use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
 };
 use vize_patina::{HelpLevel, LintPreset, OutputFormat, format_results};
+use vize_s0::{String, ToCompactString, cstr, profile, profiler::global_profiler};
 
 pub fn run(args: LintArgs) {
     let start = Instant::now();
@@ -224,7 +224,7 @@ pub fn run(args: LintArgs) {
             "cli.lint.output.clone_sources",
             results
                 .iter()
-                .map(|(_, f, s, _)| (f.clone(), vize_carton::String::from(s.as_str())))
+                .map(|(_, f, s, _)| (f.clone(), vize_s0::String::from(s.as_str())))
                 .collect()
         );
 

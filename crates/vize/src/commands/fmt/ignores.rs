@@ -77,6 +77,6 @@ fn nested_node_modules_ignore(pattern: &Path) -> Option<PathBuf> {
     }
     let prefix = pattern_text.trim_end_matches(suffix).trim_end_matches('/');
     Some(PathBuf::from(
-        vize_carton::cstr!("{prefix}/**/{suffix}").as_str(),
+        vize_s0::cstr!("{prefix}/**/{suffix}").as_str(),
     ))
 }

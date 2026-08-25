@@ -28,7 +28,7 @@ pub(super) fn resolve_nuxt_project_root(
     } else {
         cwd.join(tsconfig)
     };
-    let tsconfig_dir = vize_carton::path::canonicalize_non_verbatim(&tsconfig_path)
+    let tsconfig_dir = vize_s0::path::canonicalize_non_verbatim(&tsconfig_path)
         .parent()
         .map(Path::to_path_buf)
         .unwrap_or_else(|| fallback.to_path_buf());

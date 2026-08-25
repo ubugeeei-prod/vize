@@ -1,7 +1,7 @@
 use clap::Args;
 use std::fs;
 use std::path::PathBuf;
-use vize_carton::{String, ToCompactString, cstr};
+use vize_s0::{String, ToCompactString, cstr};
 
 #[derive(Args)]
 #[allow(clippy::disallowed_types)]

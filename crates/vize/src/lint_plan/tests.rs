@@ -1,6 +1,6 @@
 use super::{InspectorLintPlan, InspectorLintPlanItem, inspect_lint_plan};
 use std::{collections::BTreeMap, path::Path};
-use vize_carton::config::LintRuleSeverity as Severity;
+use vize_s0::config::LintRuleSeverity as Severity;
 
 fn item(
     name: &str,

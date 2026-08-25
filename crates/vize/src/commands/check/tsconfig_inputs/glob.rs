@@ -91,7 +91,7 @@ pub(super) fn normalize_path_separators(path: &Path) -> std::string::String {
 }
 
 pub(super) fn normalize_input_path(path: &Path) -> PathBuf {
-    vize_carton::path::canonicalize_non_verbatim(path)
+    vize_s0::path::canonicalize_non_verbatim(path)
 }
 
 pub(super) fn normalize_walked_path(root: &Path, normalized_root: &Path, path: &Path) -> PathBuf {

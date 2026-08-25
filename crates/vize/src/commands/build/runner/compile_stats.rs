@@ -13,11 +13,11 @@ use vize_atelier_sfc::{
     TemplateCompileOptions, compile_sfc_with_custom_elements_template_syntax_and_codegen_options,
     parse_sfc,
 };
-use vize_carton::cstr;
-use vize_carton::hash::hash_str;
-use vize_carton::profile;
-use vize_carton::profiler::global_profiler;
-use vize_carton::{String, ToCompactString};
+use vize_s0::cstr;
+use vize_s0::hash::hash_str;
+use vize_s0::profile;
+use vize_s0::profiler::global_profiler;
+use vize_s0::{String, ToCompactString};
 
 use crate::commands::build::ScriptExtension;
 use crate::commands::build::config::{CompileError, CompileStats, ErrorPhase, FileProfile};
@@ -228,7 +228,7 @@ pub(super) fn compile_file_stats_with_cache(
     // P1-11 file boundary: the compile is done and the cache entry stored
     // below is owned, so this worker must be holding no arena.
     debug_assert_eq!(
-        vize_carton::pool::checked_out(),
+        vize_s0::pool::checked_out(),
         0,
         "a pooled arena is still checked out after compiling {}",
         path.display()

@@ -2,7 +2,7 @@
 
 use std::{path::Path, process::Command};
 
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;

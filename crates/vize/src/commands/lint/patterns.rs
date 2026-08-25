@@ -19,11 +19,11 @@ pub(super) const LINT_DEFAULT_PATTERNS: &[&str] = &[
 pub(super) const LINT_EXTENSIONS_DISPLAY: &str =
     ".vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx";
 
-pub(super) fn no_lint_files_message(patterns: &[vize_carton::String]) -> vize_carton::String {
-    vize_carton::cstr!("No {LINT_EXTENSIONS_DISPLAY} files found matching patterns: {patterns:?}")
+pub(super) fn no_lint_files_message(patterns: &[vize_s0::String]) -> vize_s0::String {
+    vize_s0::cstr!("No {LINT_EXTENSIONS_DISPLAY} files found matching patterns: {patterns:?}")
 }
 
-pub(super) fn write_no_files(format: vize_patina::OutputFormat, patterns: &[vize_carton::String]) {
+pub(super) fn write_no_files(format: vize_patina::OutputFormat, patterns: &[vize_s0::String]) {
     eprintln!("{}", no_lint_files_message(patterns));
     if format == vize_patina::OutputFormat::Json {
         super::stdout::write(vize_patina::format_results(&[], &[], format).as_bytes());

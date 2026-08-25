@@ -9,8 +9,8 @@ use std::path::{Path, PathBuf};
 use vize_canon::batch::is_vue_runtime_support_specifier;
 use vize_canon::{PackageRouteBinding, PackageRouteResolver, PackageSourceOptions};
 #[cfg(test)]
-use vize_carton::cstr;
-use vize_carton::{FxHashSet, String};
+use vize_s0::cstr;
+use vize_s0::{FxHashSet, String};
 
 use super::imports_aliases::PathAliasResolver;
 use super::imports_package_routes::sort_package_route_bindings;

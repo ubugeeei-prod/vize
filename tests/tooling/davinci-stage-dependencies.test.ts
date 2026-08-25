@@ -53,6 +53,17 @@ function readRepoFile(...segments: string[]): string {
   return fs.readFileSync(path.join(repoRoot, ...segments), "utf8");
 }
 
+function* walkRustFiles(directory: string): Generator<string> {
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const fullPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      yield* walkRustFiles(fullPath);
+    } else if (entry.isFile() && entry.name.endsWith(".rs")) {
+      yield fullPath;
+    }
+  }
+}
+
 const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>([
   ["vize_davinci", [["vize_carton", "vize_s0"]]],
   ["vize_s1", [["vize_carton", "vize_s0"]]],
@@ -167,4 +178,39 @@ test("Davinci DOM lane tests import lowering through the stage alias", () => {
     const source = readRepoFile("crates", "vize_atelier_dom", "tests", file);
     assert.doesNotMatch(source, /\bvize_ricalco::/u);
   }
+});
+
+test("Vize CLI package imports S0 storage through the stage alias", () => {
+  const dependencies = workspacePackage(metadata, "vize").dependencies;
+  assert.ok(
+    dependencies.some(
+      (dependency) =>
+        dependency.kind === null &&
+        dependency.name === "vize_carton" &&
+        dependency.rename === "vize_s0",
+    ),
+    "vize must import vize_carton as vize_s0 for S0 storage",
+  );
+  assert.ok(
+    dependencies.every(
+      (dependency) => dependency.name !== "vize_carton" || dependency.rename === "vize_s0",
+    ),
+    "vize must not depend on vize_carton through its physical name",
+  );
+
+  const vizeDir = path.join(repoRoot, "crates", "vize");
+  const offenders = [];
+  let aliasImports = 0;
+  for (const fullPath of walkRustFiles(vizeDir)) {
+    const source = fs.readFileSync(fullPath, "utf8");
+    if (/\bvize_carton::/u.test(source)) {
+      offenders.push(path.relative(repoRoot, fullPath));
+    }
+    if (/\bvize_s0::|use vize_s0\b/u.test(source)) {
+      aliasImports += 1;
+    }
+  }
+
+  assert.ok(aliasImports > 0, "vize package should use the vize_s0 alias");
+  assert.deepEqual(offenders, []);
 });

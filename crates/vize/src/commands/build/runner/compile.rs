@@ -4,7 +4,7 @@
 //!
 //! The batch is file-parallel over rayon and every compile allocates from an
 //! arena, which is no longer built per file: the compiler takes it from
-//! `vize_carton::pool`, a per-worker free list, and returns it — reset, not
+//! `vize_s0::pool`, a per-worker free list, and returns it — reset, not
 //! freed — when the compile ends. Rayon worker threads outlive the batch, so
 //! one arena serves every file a worker takes, and the next file bumps into
 //! memory that is already mapped.
@@ -19,7 +19,7 @@
 //!   [`CompileError`], [`FileProfile`], the stats cache entries — so nothing
 //!   here borrows an arena, and the resident cache in `super::cache` keeps
 //!   data that outlives the arena that produced it;
-//! - `vize_carton::pool::checked_out()` is asserted to be zero once a file's
+//! - `vize_s0::pool::checked_out()` is asserted to be zero once a file's
 //!   artifacts are in hand, here and in `super::compile_stats`. That is the
 //!   runtime half of the contract: a pool guard parked anywhere it must not be
 //!   would keep an arena pinned across files.
@@ -38,10 +38,10 @@ use vize_atelier_sfc::{
     TemplateCompileOptions, compile_sfc_with_custom_elements_template_syntax_and_codegen_options,
     parse_sfc,
 };
-use vize_carton::cstr;
-use vize_carton::profile;
-use vize_carton::profiler::global_profiler;
-use vize_carton::{String, ToCompactString};
+use vize_s0::cstr;
+use vize_s0::profile;
+use vize_s0::profiler::global_profiler;
+use vize_s0::{String, ToCompactString};
 
 use crate::commands::build::ScriptExtension;
 use crate::commands::build::config::{
@@ -272,7 +272,7 @@ fn compile_file_inner(
     // so this worker must be holding no arena. A non-zero count means a pool
     // guard was parked somewhere it outlives one file.
     debug_assert_eq!(
-        vize_carton::pool::checked_out(),
+        vize_s0::pool::checked_out(),
         0,
         "a pooled arena is still checked out after compiling {}",
         path.display()

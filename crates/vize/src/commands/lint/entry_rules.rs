@@ -1,11 +1,11 @@
 //! Batch resolution of declaration-ordered `entries[].linter.rules`.
 
 use std::path::{Path, PathBuf};
-use vize_carton::{
+use vize_patina::{HelpLevel, LintPreset, Linter, Severity};
+use vize_s0::{
     FxHashMap, String,
     config::{LintRuleOptions, LintRuleSeverity, LinterConfigPlan, LinterFeatureFlags},
 };
-use vize_patina::{HelpLevel, LintPreset, Linter, Severity};
 
 use super::LintArgs;
 #[cfg(test)]

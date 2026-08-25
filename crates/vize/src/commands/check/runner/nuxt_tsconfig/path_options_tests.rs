@@ -225,7 +225,7 @@ fn target(root: &Path, relative: &str) -> String {
 }
 
 fn physical_target(root: &Path, relative: &str) -> String {
-    vize_carton::path::canonicalize_non_verbatim(root)
+    vize_s0::path::canonicalize_non_verbatim(root)
         .join(relative)
         .to_string_lossy()
         .replace('\\', "/")

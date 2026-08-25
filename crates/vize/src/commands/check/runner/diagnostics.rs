@@ -6,7 +6,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use vize_carton::{String as CompactString, cstr, profile, profiler::global_profiler};
+use vize_s0::{String as CompactString, cstr, profile, profiler::global_profiler};
 
 use crate::commands::check::reporting::JsonOutput;
 
@@ -204,11 +204,11 @@ fn normalize_requested_virtual_ts_path(cwd: &Path, path: &Path) -> PathBuf {
     } else {
         cwd.join(path)
     };
-    vize_carton::path::canonicalize_non_verbatim(&absolute)
+    vize_s0::path::canonicalize_non_verbatim(&absolute)
 }
 
 fn paths_refer_to_same_file(candidate_path: &Path, requested_path: &Path) -> bool {
-    let candidate_path = vize_carton::path::canonicalize_non_verbatim(candidate_path);
+    let candidate_path = vize_s0::path::canonicalize_non_verbatim(candidate_path);
     candidate_path == requested_path
 }
 

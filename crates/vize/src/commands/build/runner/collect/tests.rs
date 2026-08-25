@@ -9,7 +9,7 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
-use vize_carton::ToCompactString;
+use vize_s0::ToCompactString;
 
 #[test]
 fn collect_files_ignores_vue_extension_directories() {

@@ -13,8 +13,8 @@ use std::{
 
 use super::ScriptExtension;
 use vize_atelier_sfc::SfcMacroArtifact;
-use vize_carton::String;
-use vize_carton::cstr;
+use vize_s0::String;
+use vize_s0::cstr;
 
 /// Aggregate compile statistics shared across worker threads.
 #[derive(Debug)]

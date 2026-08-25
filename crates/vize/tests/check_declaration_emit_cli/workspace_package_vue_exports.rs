@@ -120,10 +120,10 @@ defineProps<WorkspaceWidgetProps>()
     assert_eq!(map["sourceRoot"], "");
     let source = map["sources"][0].as_str().unwrap();
     let mapped_source =
-        vize_carton::path::canonicalize_non_verbatim(&map_path.parent().unwrap().join(source));
+        vize_s0::path::canonicalize_non_verbatim(&map_path.parent().unwrap().join(source));
     assert_eq!(
         mapped_source,
-        vize_carton::path::canonicalize_non_verbatim(&app_root.join("src/index.ts")),
+        vize_s0::path::canonicalize_non_verbatim(&app_root.join("src/index.ts")),
         "declaration map must survive rootDir layout restoration: {map:#?}"
     );
     assert!(

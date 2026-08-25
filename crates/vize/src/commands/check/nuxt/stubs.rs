@@ -2,7 +2,7 @@
 
 use std::{fs, path::Path};
 
-use vize_carton::{FxHashSet, String, ToCompactString, cstr, profile, profiler::global_profiler};
+use vize_s0::{FxHashSet, String, ToCompactString, cstr, profile, profiler::global_profiler};
 
 pub(super) fn push_declared_const(
     stubs: &mut Vec<String>,

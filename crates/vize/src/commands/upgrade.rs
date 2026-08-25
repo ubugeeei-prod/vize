@@ -2,7 +2,7 @@
 
 use clap::{Args, ValueEnum};
 use std::process::Command;
-use vize_carton::String as CompactString;
+use vize_s0::String as CompactString;
 
 #[derive(Debug, Clone, Copy, ValueEnum, Default)]
 pub enum UpgradeSource {

@@ -10,7 +10,7 @@ use std::{
     process::Command,
 };
 
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 /// Ancestor config whose program covers only the ancestor's own sources, so the
 /// nested app belongs to no project.
@@ -145,8 +145,8 @@ pub fn build_case(name: &str, layout: Layout) -> Case {
     // directory is itself reached through a link on macOS, so expectations are
     // written against the resolved spelling.
     Case {
-        workspace: vize_carton::path::canonicalize_non_verbatim(&workspace),
-        app: vize_carton::path::canonicalize_non_verbatim(&app),
+        workspace: vize_s0::path::canonicalize_non_verbatim(&workspace),
+        app: vize_s0::path::canonicalize_non_verbatim(&app),
         store,
     }
 }
@@ -207,7 +207,7 @@ pub fn unowned_error_for(workspace: &Path, app: &Path, inputs: usize) -> std::st
     )
 }
 
-pub fn stderr_lines(stderr: &str) -> Vec<vize_carton::String> {
+pub fn stderr_lines(stderr: &str) -> Vec<vize_s0::String> {
     stderr.lines().map(|line| cstr!("{line}")).collect()
 }
 

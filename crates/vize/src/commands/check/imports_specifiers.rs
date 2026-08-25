@@ -1,6 +1,6 @@
 //! Module-specifier scanning for the `vize check` transitive import walk.
 
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(super) struct ModuleSpecifierOccurrence {

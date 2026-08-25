@@ -9,7 +9,7 @@ use std::{
     process::Command,
 };
 
-use vize_carton::{cstr, path::canonicalize_non_verbatim};
+use vize_s0::{cstr, path::canonicalize_non_verbatim};
 
 #[test]
 fn check_json_reports_type_errors_via_project_typechecker() {

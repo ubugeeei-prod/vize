@@ -36,7 +36,6 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::path::{Path, PathBuf};
 use std::sync::Once;
 
-use vize_carton::{FxHashMap, String, cstr};
 use vize_davinci::folio::repro::{ReproFolio, failure_text};
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_davinci::legacy_plan;
@@ -44,6 +43,7 @@ use vize_davinci::pass::{
     BudgetObserver, Fusability, Pair, PassDesc, PassKind, Pipeline, Preserved, TimingObserver,
     parse_pipelines, pipeline::PipelineSpec, run_pipeline,
 };
+use vize_s0::{FxHashMap, String, cstr};
 
 /// `artifact-stage` value for an embedded authored source.
 pub(crate) const ARTIFACT_STAGE_SOURCE: &str = "source";

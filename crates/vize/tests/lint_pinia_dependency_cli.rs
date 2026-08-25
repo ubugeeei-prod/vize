@@ -19,10 +19,10 @@ fn run_lint(root: &Path, files: &[&str]) -> std::process::Output {
         .unwrap()
 }
 
-fn output_details(output: &std::process::Output) -> vize_carton::String {
+fn output_details(output: &std::process::Output) -> vize_s0::String {
     let stdout = std::str::from_utf8(&output.stdout).unwrap_or("<non-UTF-8 stdout>");
     let stderr = std::str::from_utf8(&output.stderr).unwrap_or("<non-UTF-8 stderr>");
-    vize_carton::cstr!("stdout:\n{stdout}\nstderr:\n{stderr}")
+    vize_s0::cstr!("stdout:\n{stdout}\nstderr:\n{stderr}")
 }
 
 fn pinia_diagnostic_count(output: &std::process::Output) -> usize {

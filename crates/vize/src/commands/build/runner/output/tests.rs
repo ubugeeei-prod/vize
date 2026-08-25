@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 
 use super::{OutputError, plan_inputs, preflight_outputs};
 use crate::commands::build::{OutputFormat, ScriptExtension};
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 #[test]
 fn preserves_directories_for_duplicate_basenames() {

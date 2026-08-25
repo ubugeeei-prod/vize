@@ -4,7 +4,7 @@
 
 use std::{fs, path::Path};
 
-use vize_carton::{String, ToCompactString, profile, profiler::global_profiler};
+use vize_s0::{String, ToCompactString, profile, profiler::global_profiler};
 
 use super::dts_ast;
 use super::dts_import_aliases::{

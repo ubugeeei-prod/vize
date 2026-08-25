@@ -14,7 +14,7 @@ use std::process::Command;
 use std::time::{Duration, Instant};
 
 use sha2::{Digest, Sha256};
-use vize_carton::{String, ToCompactString, append, cstr};
+use vize_s0::{String, ToCompactString, append, cstr};
 
 const SOCKET_ORACLE_TIMEOUT: Duration = Duration::from_secs(5);
 const SOCKET_ACCEPT_POLL_INTERVAL: Duration = Duration::from_millis(10);

@@ -2,7 +2,7 @@
 
 use globset::{GlobBuilder, GlobMatcher};
 use std::path::{Component, Path, PathBuf};
-use vize_carton::String;
+use vize_s0::String;
 
 pub(crate) struct LintPlanScope {
     base_dir: PathBuf,

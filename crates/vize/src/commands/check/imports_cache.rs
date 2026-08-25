@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use vize_canon::{
     PackageResolutionContext, PackageResolutionMode, PackageRouteLookup, PackageSourceOptions,
 };
-use vize_carton::{FxHashMap, String};
+use vize_s0::{FxHashMap, String};
 
 type ResolutionContextKey = (PathBuf, Option<OsString>, PackageResolutionMode);
 pub(super) type ResolutionContextCache =

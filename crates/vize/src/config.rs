@@ -2,7 +2,7 @@
 
 use std::{fs, path::Path};
 
-pub use vize_carton::config::*;
+pub use vize_s0::config::*;
 
 pub const VIZE_CONFIG_SCHEMA: &str =
     include_str!("../../../npm/cli/schemas/vize.config.schema.json");

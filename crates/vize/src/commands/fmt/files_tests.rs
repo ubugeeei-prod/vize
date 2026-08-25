@@ -4,7 +4,7 @@ use std::{
     path::PathBuf,
     time::{SystemTime, UNIX_EPOCH},
 };
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 #[test]
 fn collect_files_ignores_supported_extension_directories() {

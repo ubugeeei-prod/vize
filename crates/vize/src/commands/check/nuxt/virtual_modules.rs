@@ -9,7 +9,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use serde_json::Value;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, append, cstr};
+use vize_s0::{FxHashMap, FxHashSet, String, ToCompactString, append, cstr};
 
 use super::NuxtPathAlias;
 use super::generated_dir::{NuxtGeneratedDir, normalize_path_lexically};

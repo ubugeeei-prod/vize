@@ -14,7 +14,7 @@ use oxc_ast::ast::{
     ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement, VariableDeclarationKind,
     VariableDeclarator,
 };
-use vize_carton::String;
+use vize_s0::String;
 
 use self::render::render_body;
 use self::storyfn::collect_stories;

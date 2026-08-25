@@ -1,6 +1,6 @@
 //! Escaping helpers for emitting valid `.art.vue` output.
 
-use vize_carton::String;
+use vize_s0::String;
 
 /// HTML-escape a value for placement inside a double-quoted attribute, so an
 /// expression or string containing `"` (e.g. `onClick={() => alert("hi")}`)

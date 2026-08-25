@@ -7,7 +7,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use vize_carton::{String, cstr, profile, profiler::global_profiler};
+use vize_s0::{String, cstr, profile, profiler::global_profiler};
 
 use super::{
     collect::collect_vue_files, display_path, output::save_virtual_ts_targets_or_exit,

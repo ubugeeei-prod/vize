@@ -2,7 +2,7 @@
 
 use std::path::Path;
 
-use vize_carton::{FxHashSet, String, ToCompactString};
+use vize_s0::{FxHashSet, String, ToCompactString};
 
 use super::generated_ast::collect_import_type_specifiers;
 use super::stubs::push_declared_const;

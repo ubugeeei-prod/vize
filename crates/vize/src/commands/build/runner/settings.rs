@@ -2,9 +2,9 @@
 
 use std::path::{Path, PathBuf};
 use vize_atelier_core::TemplateSyntaxMode;
-use vize_carton::String;
-use vize_carton::config::{ConfigFeatureFlags, VueVersion};
-use vize_carton::hash::hash_bytes;
+use vize_s0::String;
+use vize_s0::config::{ConfigFeatureFlags, VueVersion};
+use vize_s0::hash::hash_bytes;
 
 use crate::commands::build::{BuildArgs, ScriptExtension};
 use crate::commands::davinci_ice;

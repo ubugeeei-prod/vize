@@ -13,7 +13,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::{ArrayExpressionElement, Expression};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{FxHashSet, String, ToCompactString};
+use vize_s0::{FxHashSet, String, ToCompactString};
 
 use super::parsing::{
     default_export_config_object, extract_expression, find_object_property, nuxt_config_source,

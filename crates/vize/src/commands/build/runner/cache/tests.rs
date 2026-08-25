@@ -8,7 +8,7 @@
 //! compiler and comparing the read-back exactly.
 
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
-use vize_carton::hash::hash_str;
+use vize_s0::hash::hash_str;
 
 use super::{StatsCompileCache, StatsCompileCacheEntry, StatsCompileCacheKey};
 
@@ -114,7 +114,7 @@ fn cached_stats_survive_the_arena_that_produced_them() {
     assert_eq!(success_facts(&read), stats_facts(CACHED_FILE));
     // The compile that filled it returned its arena before the entry was
     // stored, which is what the per-file assertion in `compile_stats` reads.
-    assert_eq!(vize_carton::pool::checked_out(), 0);
+    assert_eq!(vize_s0::pool::checked_out(), 0);
 }
 
 /// Type-level half of the arena/cache contract: a cache entry that borrowed

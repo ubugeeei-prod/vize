@@ -15,7 +15,7 @@ use serde_json::{Value, json};
 use vize_canon::{
     ContentMapperTransformOptions, generate_vue_content_mapper_transform_with_options,
 };
-use vize_carton::{String as CompactString, cstr};
+use vize_s0::{String as CompactString, cstr};
 
 #[path = "content_mapper/project.rs"]
 mod project;

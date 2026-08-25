@@ -1,7 +1,7 @@
 use std::time::Duration;
 
-use vize_carton::{String, cstr, profiler::global_profiler};
 use vize_curator::profile::{ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report};
+use vize_s0::{String, cstr, profiler::global_profiler};
 
 use super::{DeclarationSummary, ProgramExecution};
 use crate::profile_support;

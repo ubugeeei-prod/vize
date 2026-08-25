@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 pub(crate) fn resolve(workspace_root: &Path) -> Option<String> {
     if let Some(path) = std::env::var_os("CORSA_PATH").filter(|path| Path::new(path).is_file()) {

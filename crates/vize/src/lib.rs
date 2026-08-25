@@ -40,7 +40,7 @@ pub mod source_write {
 pub use crate::commands::doctor::DoctorTuiBenchmark;
 
 /// Shared allocator, string, hash, and utility types.
-pub use vize_carton as carton;
+pub use vize_s0 as carton;
 
 /// Vue template AST, errors, and compiler options.
 pub use vize_relief as relief;

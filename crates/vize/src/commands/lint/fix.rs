@@ -4,8 +4,8 @@ use std::path::Path;
 
 use super::collect::{is_plain_script_path, is_standalone_html_path};
 use crate::commands::atomic_write::atomic_write;
-use vize_carton::{String, ToCompactString, profiler::global_profiler};
 use vize_patina::{JsxLang, LintResult, Linter, TextEdit};
+use vize_s0::{String, ToCompactString, profiler::global_profiler};
 
 pub(super) fn lint_source_with_optional_fix(
     linter: &Linter,

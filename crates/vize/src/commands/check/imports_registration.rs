@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use vize_carton::{FxHashMap, FxHashSet};
+use vize_s0::{FxHashMap, FxHashSet};
 
 use super::super::imports_aliases::PathAliasResolver;
 use super::super::path_cache::CanonicalPathCache;
@@ -28,7 +28,7 @@ pub(super) struct CachedVirtualRegistration {
 /// the scan to once per distinct route instead of once per occurrence.
 type PackageReachabilityKey = (
     PathBuf,
-    vize_carton::String,
+    vize_s0::String,
     vize_canon::PackageResolutionContext,
     u8,
 );
@@ -165,7 +165,7 @@ fn source_needs_virtual_registration(
                             occurrence.mode,
                             None,
                             None,
-                            std::iter::empty::<vize_carton::String>(),
+                            std::iter::empty::<vize_s0::String>(),
                         ),
                     };
                     let lookup = packages.lookup_with_context(
@@ -302,7 +302,7 @@ fn scan_route_reachability(
                     nested_mode,
                     None,
                     None,
-                    std::iter::empty::<vize_carton::String>(),
+                    std::iter::empty::<vize_s0::String>(),
                 ),
             };
             let (nested, consulted) = packages

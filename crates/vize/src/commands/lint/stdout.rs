@@ -1,7 +1,7 @@
 use std::io::{self, Write};
 use std::time::Duration;
-use vize_carton::cstr;
 use vize_patina::format_summary;
+use vize_s0::cstr;
 
 pub(super) fn write(bytes: &[u8]) {
     let mut stdout = io::stdout().lock();
