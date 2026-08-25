@@ -13,8 +13,11 @@ import { useDeterministicId } from "./deterministic-id.ts";
 import LiveRegion from "./live-region.vue";
 import LocaleProvider from "./locale-provider.vue";
 import Portal from "./portal.vue";
+import PositionerArrow from "./positioner-arrow.vue";
+import Positioner from "./positioner.vue";
 import Presence from "./presence.vue";
 import PrimitiveElement from "./PrimitiveElement.vue";
+import Transition from "./transition.vue";
 import VisuallyHidden from "./VisuallyHidden.vue";
 
 interface RuntimeFixture {
@@ -229,6 +232,64 @@ const runtimeFixtures: readonly RuntimeFixture[] = [
       assert.ok(presence instanceof HTMLElement);
       assert.equal(presence.getAttribute("data-vize-presence"), "present");
       assert.equal(presence.textContent, "Overlay");
+    },
+  },
+  {
+    name: "positioner",
+    sourceFile: "positioner.vue",
+    render: () =>
+      h(Positioner, null, {
+        default: () => "Menu",
+      }),
+    assertServerMarkup(html) {
+      assert.match(html, /data-vize-ui="positioner"/);
+      assert.match(html, /data-vize-positioner-ready="false"/);
+      assert.match(html, /Menu/);
+    },
+    assertHydratedDom(host) {
+      const positioner = host.querySelector('[data-vize-ui="positioner"]');
+      assert.ok(positioner instanceof HTMLElement);
+      assert.equal(positioner.getAttribute("data-vize-placement"), "bottom");
+      assert.equal(positioner.textContent, "Menu");
+    },
+  },
+  {
+    name: "positioner-arrow",
+    sourceFile: "positioner-arrow.vue",
+    render: () =>
+      h(Positioner, null, {
+        default: () => [h(PositionerArrow), "Menu"],
+      }),
+    assertServerMarkup(html) {
+      assert.match(html, /data-vize-ui="positioner-arrow"/);
+      assert.match(html, /Menu/);
+    },
+    assertHydratedDom(host) {
+      const arrow = host.querySelector('[data-vize-ui="positioner-arrow"]');
+      assert.ok(arrow instanceof HTMLElement);
+    },
+  },
+  {
+    name: "transition",
+    sourceFile: "transition.vue",
+    render: () =>
+      h(
+        Transition,
+        { present: true },
+        {
+          default: () => "Overlay",
+        },
+      ),
+    assertServerMarkup(html) {
+      assert.match(html, /data-vize-ui="transition"/);
+      assert.match(html, /data-vize-transition="present"/);
+      assert.match(html, /Overlay/);
+    },
+    assertHydratedDom(host) {
+      const transition = host.querySelector('[data-vize-ui="transition"]');
+      assert.ok(transition instanceof HTMLElement);
+      assert.equal(transition.getAttribute("data-vize-transition"), "present");
+      assert.equal(transition.textContent, "Overlay");
     },
   },
 ];

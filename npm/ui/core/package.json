@@ -129,10 +129,20 @@
       "import": "./dist/move.mjs",
       "default": "./dist/move.mjs"
     },
+    "./pointer-grace": {
+      "types": "./dist/pointer-grace.d.mts",
+      "import": "./dist/pointer-grace.mjs",
+      "default": "./dist/pointer-grace.mjs"
+    },
     "./portal": {
       "types": "./dist/portal.d.mts",
       "import": "./dist/portal.mjs",
       "default": "./dist/portal.mjs"
+    },
+    "./positioner": {
+      "types": "./dist/positioner.d.mts",
+      "import": "./dist/positioner.mjs",
+      "default": "./dist/positioner.mjs"
     },
     "./presence": {
       "types": "./dist/presence.d.mts",
@@ -153,6 +163,11 @@
       "types": "./dist/spatial-navigation.d.mts",
       "import": "./dist/spatial-navigation.mjs",
       "default": "./dist/spatial-navigation.mjs"
+    },
+    "./transition": {
+      "types": "./dist/transition.d.mts",
+      "import": "./dist/transition.mjs",
+      "default": "./dist/transition.mjs"
     },
     "./typeahead": {
       "types": "./dist/typeahead.d.mts",
