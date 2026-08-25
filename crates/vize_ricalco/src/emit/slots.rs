@@ -87,7 +87,6 @@ fn walk_admit(region: &Region<'_>) -> Result<(), EmitError> {
                     .bindings
                     .iter()
                     .any(|binding| !matches!(binding, BindingOp::SlotContent(_)))
-                    || !element.attributes.is_empty()
                 {
                     return Err(EmitError::unsupported_at(
                         Reason::SlotDefaultShape,

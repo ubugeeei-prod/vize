@@ -121,8 +121,8 @@ const SOURCE_CASES: &[Case] = &[
         Reason::DynamicOnHasModifiers,
     ),
     case(
-        "slot_template_attr",
-        r#"<Foo><template #header id="x">x</template></Foo>"#,
+        "bare_template_default_slot",
+        r#"<Foo><template>x</template></Foo>"#,
         VUE3,
         Reason::SlotDefaultShape,
     ),

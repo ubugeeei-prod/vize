@@ -11,8 +11,6 @@
 
 mod support;
 
-use vize_s1_to_s2::UnsupportedReason as Reason;
-
 const BATTERY: &[(&str, &str)] = &[
     (
         "named_header_text",
@@ -33,6 +31,10 @@ const BATTERY: &[(&str, &str)] = &[
     (
         "named_header_span",
         "<Foo><template #header><span></span></template></Foo>",
+    ),
+    (
+        "named_header_extra_attr",
+        r#"<Foo><template #header id="x">x</template></Foo>"#,
     ),
     (
         "hyphenated_slot",
@@ -64,8 +66,16 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<Foo><template #header v-if="ok">x</template></Foo>"#,
     ),
     (
+        "create_slots_if_extra_attr",
+        r#"<Foo><template #header id="x" v-if="ok">x</template></Foo>"#,
+    ),
+    (
         "create_slots_for",
         r#"<Foo><template v-for="i in n" #header>x</template></Foo>"#,
+    ),
+    (
+        "create_slots_for_extra_attr",
+        r#"<Foo><template v-for="i in n" #header id="x">x</template></Foo>"#,
     ),
     (
         "create_slots_if_and_static",
@@ -113,18 +123,11 @@ const BATTERY: &[(&str, &str)] = &[
     ),
 ];
 
-const UNSUPPORTED_BATTERY: &[(&str, &str, support::ExpectedRefusal)] = &[
-    (
-        "mixed_component_root_and_named_template",
-        r#"<Foo v-slot><template #header>x</template></Foo>"#,
-        support::ExpectedRefusal::Diagnostics,
-    ),
-    (
-        "slot_template_extra_attr",
-        r#"<Foo><template #header id="x">x</template></Foo>"#,
-        support::ExpectedRefusal::Unsupported(Reason::SlotDefaultShape),
-    ),
-];
+const UNSUPPORTED_BATTERY: &[(&str, &str, support::ExpectedRefusal)] = &[(
+    "mixed_component_root_and_named_template",
+    r#"<Foo v-slot><template #header>x</template></Foo>"#,
+    support::ExpectedRefusal::Diagnostics,
+)];
 
 #[test]
 fn s2_named_slots_match_the_shipped_dom_lane_byte_for_byte() {

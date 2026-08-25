@@ -51,6 +51,14 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn static_attrs_on_conditional_slot_templates_are_elided() {
+    assert_eq!(
+        assembled(r#"<Foo><template #header id="x" v-if="ok">x</template></Foo>"#),
+        assembled(r#"<Foo><template #header v-if="ok">x</template></Foo>"#)
+    );
+}
+
+#[test]
 fn a_v_for_named_template_uses_render_list() {
     assert_eq!(
         assembled(r#"<Foo><template v-for="i in n" #header>x</template></Foo>"#),
@@ -71,6 +79,14 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     })
   ]), 1024 /* DYNAMIC_SLOTS */))
 }")
+    );
+}
+
+#[test]
+fn static_attrs_on_looped_slot_templates_are_elided() {
+    assert_eq!(
+        assembled(r#"<Foo><template v-for="i in n" #header id="x">x</template></Foo>"#),
+        assembled(r#"<Foo><template v-for="i in n" #header>x</template></Foo>"#)
     );
 }
 

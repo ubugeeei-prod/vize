@@ -154,6 +154,14 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn static_attrs_on_named_slot_templates_are_elided() {
+    assert_eq!(
+        assembled(r#"<Foo><template #header id="x">x</template></Foo>"#),
+        assembled(r#"<Foo><template #header>x</template></Foo>"#)
+    );
+}
+
+#[test]
 fn whitespace_only_children_emit_no_slot() {
     assert_eq!(assembled("<Foo>  </Foo>"), assembled("<Foo />"));
 }
