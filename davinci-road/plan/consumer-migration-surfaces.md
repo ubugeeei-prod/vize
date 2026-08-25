@@ -50,7 +50,7 @@ observational guard for planning only. It does not change rollout state.
 | Typechecker                |           879 |                   108 |               771 |             393 |     187 |             804 |      655 |           460 |           650 |
 | Typechecker content-mapper |             8 |                     3 |                 5 |               1 |       0 |               9 |        0 |             7 |            18 |
 | Formatter                  |            38 |                    38 |                 0 |               0 |      21 |              40 |       19 |            30 |            65 |
-| LSP                        |           271 |                     0 |               271 |             113 |      44 |             323 |      105 |           166 |           388 |
+| LSP                        |           271 |                     0 |               271 |             115 |      44 |             325 |      105 |           166 |           388 |
 
 ## Consumer details
 
@@ -228,8 +228,8 @@ Scope: lsp/ide commands plus Maestro editor/server crate. This is a lexical inve
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
 | S0/carton        |         271 |             187 |       84 |
-| old AST/parser   |          60 |              47 |       13 |
-| Croquis analysis |          53 |              45 |        8 |
+| old AST/parser   |          61 |              48 |       13 |
+| Croquis analysis |          54 |              46 |        8 |
 | raw OXC          |          44 |              44 |        0 |
 
 #### Top source and manifest files
