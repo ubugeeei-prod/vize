@@ -40,6 +40,7 @@ describe("generic build snapshots (compiler)", () => {
         .sort();
 
       assert.deepEqual(jsFiles, [
+        "BindingPatchFlags.js",
         "DirectiveBuiltins.js",
         "FixturePanel.js",
         "NormalScriptBindings.js",
@@ -47,6 +48,7 @@ describe("generic build snapshots (compiler)", () => {
       ]);
 
       const snapshotOutputs = [
+        ["BindingPatchFlags.js", "generic-binding-patch-flags"],
         ["DirectiveBuiltins.js", "generic-directive-builtins"],
         ["FixturePanel.js", "generic-fixture-panel"],
         ["NormalScriptBindings.js", "generic-normal-script-bindings"],

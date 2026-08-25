@@ -1,0 +1,77 @@
+import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, withKeys as _withKeys, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, mergeProps as _mergeProps, camelize as _camelize, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue";
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode("span", null, "Empty");
+import { ref } from "vue";
+const panelLabel = "Rows";
+export default {
+  __name: "BindingPatchFlags",
+  setup(__props) {
+    const rows = [{
+      id: "alpha",
+      label: "Alpha",
+      value: "one",
+      field: "data-rank",
+      style: { color: "red" },
+      attrs: { draggable: "true" }
+    }, {
+      id: "beta",
+      label: "Beta",
+      value: "two",
+      field: "data-rank",
+      style: { color: "blue" },
+      attrs: { draggable: "false" }
+    }];
+    const isReady = ref(true);
+    const panelClass = ref("ready-panel");
+    const panelStyle = ref({ borderColor: "tomato" });
+    const sectionRef = ref(null);
+    function activate(row) {
+      return row.id;
+    }
+    return (_ctx, _cache) => {
+      const _directive_track = _resolveDirective("track");
+      return _withDirectives((_openBlock(), _createElementBlock("section", {
+        ref_key: "sectionRef",
+        ref: sectionRef,
+        class: _normalizeClass(["surface", [panelClass.value, { ready: isReady.value }]]),
+        style: _normalizeStyle([{
+          "background": "url(a;b)",
+          "color": "black"
+        }, panelStyle.value]),
+        "aria-label": panelLabel,
+        ".value": rows.length
+      }, [(_openBlock(true), _createElementBlock(
+        _Fragment,
+        null,
+        _renderList(rows, (row) => {
+          return _openBlock(), _createElementBlock("article", _mergeProps({ key: row.id }, row.attrs, {
+            [`.${_camelize(row.field || "")}`]: row.value,
+            style: row.style,
+            onKeyup: _withKeys(($event) => activate(row), ["enter"])
+          }), [_createElementVNode("button", {
+            ".value": row.value,
+            "^aria-label": row.label,
+            onClick: ($event) => activate(row)
+          }, _toDisplayString(row.label), 41, [
+            ".value",
+            "^aria-label",
+            "onClick"
+          ])], 48, ["onKeyup"]);
+        }),
+        128
+        /* KEYED_FRAGMENT */
+      )), rows.length > 1 ? (_openBlock(), _createElementBlock(
+        "span",
+        { key: 0 },
+        _toDisplayString(rows.length),
+        1
+        /* TEXT */
+      )) : (_openBlock(), _createElementBlock(
+        _Fragment,
+        { key: 1 },
+        [_hoisted_1],
+        64
+        /* STABLE_FRAGMENT */
+      ))], 46, ["aria-label", ".value"])), [[_directive_track, isReady.value]]);
+    };
+  }
+};
