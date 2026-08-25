@@ -510,7 +510,7 @@ mod tests {
         let name_end = source
             .find('<')
             .or_else(|| source.find(" extends"))
-            .map_or(source.find('{').unwrap(), |i| i);
+            .unwrap_or(source.find('{').unwrap());
         let body_start = source.find('{').unwrap();
         build_interface_type_source(source, name_end, body_start, source.len())
     }

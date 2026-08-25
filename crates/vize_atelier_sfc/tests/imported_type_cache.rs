@@ -12,10 +12,11 @@ fn temp_project_dir() -> PathBuf {
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
         .as_nanos();
-    std::env::temp_dir().join(format!(
+    let name = vize_carton::cstr!(
         "vize-sfc-imported-type-cache-{}-{nonce}",
         std::process::id()
-    ))
+    );
+    std::env::temp_dir().join(name.as_str())
 }
 
 fn compile_imported_props(source: &str, component: &Path) -> SfcCompileResult {

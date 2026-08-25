@@ -8,6 +8,7 @@
 #![cfg(feature = "native")]
 
 use vize_atelier_sfc::{CssCompileOptions, compile_css, parse_css_ast};
+use vize_carton::String;
 
 /// One repetition of the dominant pattern in the fuzz reproducer; each
 /// repetition opens six brackets that are never closed.

@@ -101,8 +101,7 @@ fn facts(source: &str) -> CachedFacts {
 /// over by compiling other files on the same worker, then read the cache.
 #[test]
 fn cached_facts_survive_the_arena_that_produced_them() {
-    let mut cache: std::vec::Vec<(&str, CachedFacts)> = std::vec::Vec::new();
-    cache.push(("SCRIPT_SETUP", facts(SCRIPT_SETUP)));
+    let cache = [("SCRIPT_SETUP", facts(SCRIPT_SETUP))];
     let expected = cache[0].1.clone();
 
     // Every one of these acquires the same pooled arena this worker used for

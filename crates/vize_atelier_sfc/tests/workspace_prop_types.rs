@@ -1,3 +1,5 @@
+#![allow(clippy::disallowed_macros)] // `insta::assert_snapshot!` expands to `format!`.
+
 use std::path::PathBuf;
 
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
@@ -8,10 +10,8 @@ fn temp_project_dir() -> PathBuf {
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
         .as_nanos();
-    std::env::temp_dir().join(format!(
-        "vize-sfc-workspace-props-{}-{nonce}",
-        std::process::id()
-    ))
+    let name = vize_carton::cstr!("vize-sfc-workspace-props-{}-{nonce}", std::process::id());
+    std::env::temp_dir().join(name.as_str())
 }
 
 #[test]

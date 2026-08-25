@@ -35,6 +35,11 @@
 #![allow(clippy::unnecessary_lazy_evaluations)]
 #![allow(clippy::field_reassign_with_default)]
 #![allow(clippy::only_used_in_recursion)]
+#![cfg_attr(
+    test,
+    allow(unused_imports, clippy::disallowed_macros, clippy::disallowed_types)
+)]
+#![cfg_attr(test, allow(clippy::disallowed_methods, clippy::needless_borrow))]
 
 // Core modules - following Vue.js compiler-sfc structure
 pub mod bundler;

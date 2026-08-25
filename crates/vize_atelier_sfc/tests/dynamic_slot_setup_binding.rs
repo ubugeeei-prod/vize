@@ -1,3 +1,5 @@
+#![allow(clippy::disallowed_macros)] // `insta::assert_snapshot!` expands to `format!`.
+
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 
 #[test]

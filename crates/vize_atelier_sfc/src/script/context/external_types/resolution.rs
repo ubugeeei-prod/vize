@@ -6,7 +6,6 @@ use vize_carton::{FxHashMap, String, ToCompactString};
 
 use super::super::batch_epoch::{NO_EPOCH, current_batch_epoch};
 
-#[path = "exports_patterns.rs"]
 mod exports_patterns;
 
 use self::exports_patterns::{ExportsTypes, exports_types_entry};
@@ -345,5 +344,4 @@ pub(super) fn path_key(path: &Path) -> String {
 }
 
 #[cfg(test)]
-#[path = "resolution_tests.rs"]
 mod tests;
