@@ -154,9 +154,13 @@ fn route_requires_invalidation_binding(has_route: bool, watchable_negative: bool
 ///
 /// Canon supplies these types to virtual documents. They are terminal support
 /// edges rather than importer-scoped component packages, whether the edge came
-/// from generated helpers or from a package declaration in their runtime graph.
+/// from generated helpers, a package declaration, or a `vue/...` subpath
+/// (Nuxt SSR's `vue/dist/vue.cjs.js`). `vue-router` is not a subpath.
 pub fn is_vue_runtime_support_specifier(specifier: &str) -> bool {
-    specifier == "vue" || specifier.starts_with("@vue/") || specifier == "vite/client"
+    specifier == "vue"
+        || specifier.starts_with("vue/")
+        || specifier.starts_with("@vue/")
+        || specifier == "vite/client"
 }
 
 #[cfg(test)]
@@ -169,6 +173,9 @@ mod runtime_support_tests {
     fn generated_runtime_support_filter_is_exact() {
         for specifier in [
             "vue",
+            "vue/dist/vue.cjs.js",
+            "vue/server-renderer",
+            "vue/jsx-runtime",
             "@vue/runtime-core",
             "@vue/runtime-dom",
             "vite/client",

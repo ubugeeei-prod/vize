@@ -256,3 +256,51 @@ fn vue_runtime_support_stays_native_without_reachability_work() {
         "runtime support is terminal"
     );
 }
+
+#[test]
+fn vue_dist_javascript_subpath_stays_native_when_allow_js() {
+    let root = tempfile::tempdir().unwrap();
+    let entry = write(
+        root.path(),
+        "src/entry.ts",
+        "import Vue from 'vue/dist/vue.cjs.js';\nexport const app = Vue;\n",
+    );
+    write(
+        root.path(),
+        "node_modules/vue/package.json",
+        r#"{"name":"vue","main":"./index.js"}"#,
+    );
+    write(
+        root.path(),
+        "node_modules/vue/index.js",
+        "module.exports = {}\n",
+    );
+    write(
+        root.path(),
+        "node_modules/vue/dist/vue.cjs.js",
+        "module.exports = {}\n",
+    );
+    write(
+        root.path(),
+        "node_modules/vue/dist/vue.cjs.prod.js",
+        "module.exports = {}\n",
+    );
+
+    let mut resolver = PackageRouteResolver::default();
+    let discovered = collect_transitive_local_imports_with_resolver(
+        &[entry],
+        root.path(),
+        &mut CanonicalPathCache::default(),
+        ImportFileOptions {
+            include_js: true,
+            include_jsx: false,
+        },
+        None,
+        &mut resolver,
+    );
+
+    assert!(discovered.registrations.is_empty());
+    assert!(discovered.authored.is_empty());
+    assert!(discovered.package_routes.is_empty());
+    assert_eq!(resolver.metrics().cache_misses, 0);
+}
