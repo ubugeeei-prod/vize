@@ -40,14 +40,14 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn a_dynamic_event_name_call_prefixes_the_callee() {
+fn a_dynamic_event_name_call_keeps_the_shipped_callee_shape() {
     assert_eq!(
         assembled(r#"<button @[eventOf()]="handler"></button>"#),
         "\
 const { toHandlerKey: _toHandlerKey, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (_openBlock(), _createElementBlock(\"button\", { [_toHandlerKey(_ctx.eventOf())]: handler }, null, 16 /* FULL_PROPS */))
+  return (_openBlock(), _createElementBlock(\"button\", { [_toHandlerKey(eventOf())]: handler }, null, 16 /* FULL_PROPS */))
 }"
     );
 }
@@ -60,7 +60,7 @@ fn a_dynamic_event_template_literal_keeps_the_shipped_prefix_shape() {
 const { toHandlerKey: _toHandlerKey, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (_openBlock(), _createElementBlock(\"button\", { [_toHandlerKey(_ctx.`save:${id}`)]: handler }, null, 16 /* FULL_PROPS */))
+  return (_openBlock(), _createElementBlock(\"button\", { [_toHandlerKey((`save:${_ctx.id}`))]: handler }, null, 16 /* FULL_PROPS */))
 }"
     );
 }

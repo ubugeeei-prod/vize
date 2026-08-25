@@ -1,6 +1,7 @@
 //! Props generation functions.
 
 mod directives;
+mod dynamic_arg;
 mod events;
 mod generate;
 mod object_spread;

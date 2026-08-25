@@ -48,6 +48,7 @@ s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/model.rs	1	6	1	4	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/emit/memo.rs	0	0	1	0	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/emit/model_key.rs	0	0	1	7	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/emit/on.rs	0	0	1	5	0	0	1	3
+s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/on_dynamic.rs	1	5	0	0	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/props.rs	1	2	1	4	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/props_bind.rs	1	5	1	2	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/props_object.rs	1	5	0	0	0	0	0	0

@@ -4,10 +4,11 @@ use crate::{DirectiveNode, ExpressionNode, RuntimeHelper};
 
 use super::super::{
     context::CodegenContext,
-    expression::{generate_expression, generate_simple_expression},
+    expression::generate_expression,
     helpers::{camelize, escape_js_string, is_constant_simple_expression, is_valid_js_identifier},
 };
 use super::StaticMerge;
+use super::dynamic_arg::emit_dynamic_directive_arg;
 use super::v_model::generate_vmodel_prop;
 use vize_s0::{String, ToCompactString};
 
@@ -146,42 +147,6 @@ fn generate_vbind_prop(
     if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
         if !exp.is_static {
             // Dynamic keys compose in Vue order: camelize, then `.prop`, then `.attr`.
-            let emit_key_expr = |ctx: &mut CodegenContext| {
-                // If the expression doesn't already have a prefix, add _ctx.
-                let content = exp.content;
-                if let Some(local) = content
-                    .strip_prefix("_ctx.")
-                    .filter(|local| ctx.is_slot_param(local))
-                {
-                    ctx.push(local);
-                } else if content.contains('.')
-                    || content.starts_with('_')
-                    || content.starts_with('$')
-                    || content.contains('`')
-                    || content.contains('(')
-                {
-                    // Template literal or already prefixed expression
-                    // For template literals, wrap with parens and prefix inner
-                    // identifiers (retained-AST aware, P1-7).
-                    if content.starts_with('`') {
-                        ctx.push("(");
-                        let prefixed = super::super::expression::prefix_context::
-                            prefix_identifiers_with_context_node(exp, ctx);
-                        ctx.push(&prefixed);
-                        ctx.push(")");
-                    } else {
-                        generate_simple_expression(ctx, exp);
-                    }
-                } else {
-                    if ctx.is_slot_param(content) {
-                        ctx.push(content);
-                    } else {
-                        ctx.push("_ctx.");
-                        ctx.push(content);
-                    }
-                }
-            };
-
             ctx.push("[");
             if has_attr {
                 ctx.push("`^${");
@@ -193,7 +158,7 @@ fn generate_vbind_prop(
                 ctx.use_helper(RuntimeHelper::Camelize);
                 ctx.push("_camelize(");
             }
-            emit_key_expr(ctx);
+            emit_dynamic_directive_arg(ctx, exp);
             ctx.push(" || \"\"");
             if has_camel {
                 ctx.push(")");
@@ -399,21 +364,7 @@ fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
             ctx.push("[");
             ctx.push(ctx.helper(RuntimeHelper::ToHandlerKey));
             ctx.push("(");
-            let content = exp.content;
-            if let Some(local) = content
-                .strip_prefix("_ctx.")
-                .filter(|local| ctx.is_slot_param(local))
-            {
-                ctx.push(local);
-            } else if content.contains('.') || content.starts_with('_') || content.starts_with('$')
-            {
-                generate_simple_expression(ctx, exp);
-            } else if ctx.is_slot_param(content) {
-                ctx.push(content);
-            } else {
-                ctx.push("_ctx.");
-                ctx.push(content);
-            }
+            emit_dynamic_directive_arg(ctx, exp);
             ctx.push(")]: ");
         } else {
             // Mirror Vue's event-name casing rule (transforms/vOn.ts), including
