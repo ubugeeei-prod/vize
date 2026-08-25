@@ -100,7 +100,7 @@ function generate() {
     /span\.slice\(source\)/,
   );
   const g1Vapor = citeAnchor(
-    "crates/vize_atelier_vapor/src/transforms/v_on.rs",
+    "crates/vize_atelier_vapor/src/steps/v_on.rs",
     /span\.slice\(source\)/,
   );
 
