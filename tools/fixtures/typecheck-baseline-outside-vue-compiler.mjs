@@ -9,12 +9,15 @@ import { resolvePackageExtends } from "./typecheck-baseline-outside-paths.mjs";
 /**
  * Close the vue-tsc option escape unique isolation cannot see (#4461).
  *
- * `vueCompilerOptions.globalTypesPath` and `typesRoot` are filesystem or
- * package walks. Overlay `compilerOptions` cannot retarget them. An outside
- * path still loads Vize's `@vue/language-core` beside the fixture Vue.
+ * `vueCompilerOptions.globalTypesPath`, `typesRoot`, and path-form `plugins`
+ * are filesystem or package walks. Overlay `compilerOptions` cannot retarget
+ * them. An outside path still loads Vize's `@vue/language-core` or
+ * `require("../../node_modules/<pkg>")` beside the fixture Vue. Unique-link
+ * answers package-name plugins; relative plugin specifiers still walk out.
  * When the fixture already has that package, this copies every winning
- * `vueCompilerOptions` key and retargets only those two paths. Overlay
- * replaces the object, so other keys must be preserved.
+ * `vueCompilerOptions` key and retargets those paths. Overlay replaces the
+ * object, so other keys must be preserved. Plugin lists are concatenated
+ * across relative extends, matching vue-tsc.
  */
 
 const pathOptionKeys = ["globalTypesPath", "typesRoot"];
@@ -33,7 +36,39 @@ export function rewriteOutsideVueCompilerOptions(fixtureRoot, sourceConfigPath, 
     rewritten[key] = retargeted;
     changed = true;
   }
+  const plugins = [];
+  for (const { plugin, dir } of declared.plugins) {
+    const next = retargetPluginEntry(root, dir, configDir, plugin);
+    if (next.changed) changed = true;
+    plugins.push(next.value);
+  }
+  if (plugins.length > 0) rewritten.plugins = plugins;
   return changed ? rewritten : null;
+}
+
+function retargetPluginEntry(fixtureRoot, sourceDir, configDir, plugin) {
+  if (typeof plugin === "string") {
+    return retargetPluginName(fixtureRoot, sourceDir, configDir, plugin, plugin);
+  }
+  if (Array.isArray(plugin) && typeof plugin[0] === "string") {
+    const next = retargetPluginName(fixtureRoot, sourceDir, configDir, plugin[0], plugin);
+    if (!next.changed) return next;
+    return { value: [next.value, ...plugin.slice(1)], changed: true };
+  }
+  if (plugin != null && typeof plugin.name === "string") {
+    const next = retargetPluginName(fixtureRoot, sourceDir, configDir, plugin.name, plugin);
+    if (!next.changed) return next;
+    return { value: { ...plugin, name: next.value }, changed: true };
+  }
+  return { value: plugin, changed: false };
+}
+
+function retargetPluginName(fixtureRoot, sourceDir, configDir, name, fallback) {
+  if (!isPathSpecifier(name)) return { value: fallback, changed: false };
+  const retargeted = retargetVueCompilerPath(fixtureRoot, sourceDir, configDir, name);
+  return retargeted == null
+    ? { value: fallback, changed: false }
+    : { value: retargeted, changed: true };
 }
 
 function retargetVueCompilerPath(fixtureRoot, sourceDir, configDir, entry) {
@@ -73,6 +108,7 @@ function isPathSpecifier(entry) {
 function winningVueCompilerOptions(sourceConfigPath, fixtureRoot) {
   const options = {};
   const dirs = {};
+  const plugins = [];
   for (const { config, dir } of [
     ...loadTsconfigExtendsChain(
       sourceConfigPath,
@@ -84,11 +120,17 @@ function winningVueCompilerOptions(sourceConfigPath, fixtureRoot) {
     const current = config?.vueCompilerOptions;
     if (current == null || typeof current !== "object" || Array.isArray(current)) continue;
     for (const [key, value] of Object.entries(current)) {
+      if (key === "plugins") continue;
       options[key] = value;
       dirs[key] = dir;
     }
+    if (Array.isArray(current.plugins)) {
+      for (const plugin of current.plugins) plugins.push({ plugin, dir });
+    }
   }
-  return Object.keys(options).length === 0 ? null : { options, dirs };
+  return Object.keys(options).length === 0 && plugins.length === 0
+    ? null
+    : { options, dirs, plugins };
 }
 
 function resolveRelativeExtends(fromConfig, specifier, fixtureRoot) {
