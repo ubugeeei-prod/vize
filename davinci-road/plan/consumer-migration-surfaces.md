@@ -42,7 +42,7 @@ observational guard for planning only. It does not change rollout state.
 
 | consumer                   | stage/Davinci | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
 | -------------------------- | ------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
-| Compiler                   |           906 |             139 |     371 |             951 |      465 |           474 |           581 |
+| Compiler                   |           908 |             139 |     371 |             951 |      467 |           475 |           582 |
 | Linter                     |           300 |             268 |     219 |             670 |      117 |           337 |           476 |
 | Typechecker                |           879 |             393 |     187 |             804 |      655 |           460 |           650 |
 | Typechecker content-mapper |             8 |               1 |       0 |               9 |        0 |             7 |            18 |
@@ -58,10 +58,10 @@ Scope: build command plus atelier compiler crates. This is a lexical inventory, 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
 | Davinci          |          21 |               4 |       17 |
-| S0/carton        |         837 |             490 |      347 |
+| S0/carton        |         838 |             490 |      348 |
 | S1/sinopia       |           5 |               1 |        4 |
 | S2/disegno       |          15 |               1 |       14 |
-| S1->S2/ricalco   |          28 |               2 |       26 |
+| S1->S2/ricalco   |          29 |               2 |       27 |
 | old AST/parser   |          74 |              54 |       20 |
 | Croquis analysis |          65 |              56 |        9 |
 | raw OXC          |         371 |             343 |       28 |
@@ -88,7 +88,7 @@ Additional source/manifest rows are in the TSV: 309 omitted.
 | `crates/vize_atelier_sfc/src/compile_script/props/tests.rs:4` | test/dev | S0/carton 15                                                                 |    15 |
 | `crates/vize_atelier_core/tests/s2_support/compare.rs:10`     | test/dev | Davinci 2<br>S0/carton 4<br>S1/sinopia 1<br>S2/disegno 1<br>S1->S2/ricalco 3 |    11 |
 
-Additional test/dev rows are in the TSV: 191 omitted.
+Additional test/dev rows are in the TSV: 192 omitted.
 
 ### Linter
 
