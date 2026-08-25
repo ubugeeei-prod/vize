@@ -49,10 +49,31 @@ const aliases = new Map<string, ReadonlyArray<readonly [string, string]>>([
   ],
 ]);
 
+const consumerAliases = new Map<string, ReadonlyArray<readonly [string, string]>>([
+  ["vize_curator", [["vize_sinopia", "vize_s1"]]],
+]);
+
 const metadata = readMetadata();
 
 test("Davinci crates import retained packages through stage aliases", () => {
   for (const [packageName, expectedAliases] of aliases) {
+    const dependencies = workspacePackage(metadata, packageName).dependencies;
+    for (const [dependencyName, rename] of expectedAliases) {
+      assert.ok(
+        dependencies.some(
+          (dependency) =>
+            dependency.kind === null &&
+            dependency.name === dependencyName &&
+            dependency.rename === rename,
+        ),
+        `${packageName} must import ${dependencyName} as ${rename}`,
+      );
+    }
+  }
+});
+
+test("Davinci consumers import stage packages through stage aliases", () => {
+  for (const [packageName, expectedAliases] of consumerAliases) {
     const dependencies = workspacePackage(metadata, packageName).dependencies;
     for (const [dependencyName, rename] of expectedAliases) {
       assert.ok(
