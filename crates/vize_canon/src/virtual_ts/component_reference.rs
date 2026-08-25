@@ -38,6 +38,8 @@ pub(crate) fn resolved_component_binding_reference(
     let pascal_name = capitalize(camel_name.as_str());
     // Value bindings win over a type-only PascalCase collision
     // (`chartComponent` vs `import type { ChartComponent }`).
+    // Ambient `external_template_bindings` must not beat a type-only import of
+    // the same name: `import type { ElBadge }` still uses `__VizeComponent_*`.
     for candidate in [template_name, camel_name.as_str(), pascal_name.as_str()] {
         if let Some(binding_type) = summary.bindings.get(candidate)
             && !contains_compact_name(syntactic_type_only_imported_names, candidate)
@@ -48,6 +50,11 @@ pub(crate) fn resolved_component_binding_reference(
                 binding_type,
             ));
         }
+    }
+    if has_type_only_component_candidate(syntactic_type_only_imported_names, template_name) {
+        return Some(component_reference_alias(template_name));
+    }
+    for candidate in [template_name, camel_name.as_str(), pascal_name.as_str()] {
         if options
             .external_template_bindings
             .iter()
@@ -55,9 +62,6 @@ pub(crate) fn resolved_component_binding_reference(
         {
             return Some(String::from(candidate));
         }
-    }
-    if has_type_only_component_candidate(syntactic_type_only_imported_names, template_name) {
-        return Some(component_reference_alias(template_name));
     }
     None
 }
