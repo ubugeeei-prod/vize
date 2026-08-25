@@ -15,7 +15,12 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { expectedCompilerOutputs } from "./tool-matrix-compiler-paths.mjs";
-import { displayCommand, toolArgs, typecheckCorpusGlobs } from "./tool-matrix-command.mjs";
+import {
+  displayCommand,
+  toolArgs,
+  typecheckCorpusGlobs,
+  typecheckSourceTsconfig,
+} from "./tool-matrix-command.mjs";
 import { snapshotFormatterInputs, validateFormatterOutput } from "./tool-matrix-formatter.mjs";
 import { collectTypecheckerAuthoredPaths, collectVueInputPaths } from "./tool-matrix-inputs.mjs";
 import { validateLinterOutput } from "./tool-matrix-linter.mjs";
@@ -72,9 +77,18 @@ function prepareToolRun(project, tool, args, launch, outputDir) {
     tool === "compiler" && !args.dryRun && fixtureExists
       ? mkdtempSync(join(tmpdir(), "vize-fixture-compiler-"))
       : null;
+  const typecheckerFixtureTsconfig = prepareTypecheckerFixtureTsconfig(
+    project,
+    tool,
+    args,
+    cwd,
+    fixtureExists,
+  );
   const commandArgs = [
     ...launch.prefix,
-    ...toolArgs(project, tool, compilerOutputDir ?? "<compiler-output>"),
+    ...toolArgs(project, tool, compilerOutputDir ?? "<compiler-output>", {
+      typecheckTsconfigPath: typecheckerFixtureTsconfig?.relativePath,
+    }),
   ];
   const base = {
     tool,
@@ -106,6 +120,7 @@ function prepareToolRun(project, tool, args, launch, outputDir) {
     formatterStateBefore,
     outputDir,
     project,
+    typecheckerFixtureTsconfig,
     tool,
   };
 }
@@ -114,6 +129,22 @@ function cleanupToolRun(prepared) {
   if (prepared.compilerOutputDir != null) {
     rmSync(prepared.compilerOutputDir, { recursive: true, force: true });
   }
+  if (prepared.typecheckerFixtureTsconfig?.absolutePath != null) {
+    rmSync(prepared.typecheckerFixtureTsconfig.absolutePath, { force: true });
+  }
+}
+
+function prepareTypecheckerFixtureTsconfig(project, tool, args, cwd, fixtureExists) {
+  if (tool !== "typechecker" || typecheckSourceTsconfig(project) != null) return null;
+  const relativePath = `.vize-fixture-typecheck-${fixtureProjectId(project)}.tsconfig.json`;
+  const absolutePath = join(cwd, relativePath);
+  if (!fixtureExists || args.dryRun) return { relativePath };
+  writeFileSync(absolutePath, `${JSON.stringify({ compilerOptions: {} }, null, 2)}\n`);
+  return { absolutePath, relativePath };
+}
+
+function fixtureProjectId(project) {
+  return String(project.id ?? "project").replaceAll(/[^A-Za-z0-9_.-]/g, "_");
 }
 
 function completeToolRun({

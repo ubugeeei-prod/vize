@@ -30,7 +30,7 @@ export function typecheckTsconfigPath(project) {
   return existsSync(overlayAbs) ? overlayRel : source;
 }
 
-export function toolArgs(project, tool, compilerOutputDir) {
+export function toolArgs(project, tool, compilerOutputDir, options = {}) {
   if (tool === "compiler") {
     return [
       "build",
@@ -62,7 +62,7 @@ export function toolArgs(project, tool, compilerOutputDir) {
     // files that config owns, or vue-tsc's baseline inherits the same
     // unresolvable aliases and the comparison reports fake FNs (#4454).
     const args = ["check", ...typecheckCorpusGlobs(project), "--format", "json", "--no-config"];
-    const tsconfig = typecheckTsconfigPath(project);
+    const tsconfig = options.typecheckTsconfigPath ?? typecheckTsconfigPath(project);
     if (tsconfig != null) args.push("--tsconfig", tsconfig);
     return args;
   }

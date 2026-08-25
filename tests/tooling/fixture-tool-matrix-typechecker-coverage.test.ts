@@ -210,3 +210,83 @@ test("fixture matrix writes exact raw and compact transitive coverage evidence",
     fs.rmSync(reportDir, { recursive: true, force: true });
   }
 });
+
+test("fixture matrix isolates no-tsconfig typechecker projects from ancestor discovery", () => {
+  const fixtureDir = fs.mkdtempSync(path.join(root, "tests", "_fixtures", "matrix-no-tsconfig-"));
+  const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-matrix-no-tsconfig-"));
+  const reportDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-matrix-no-tsconfig-report-"));
+  const executable = path.join(fakeDir, "fake-vize.mjs");
+  const invocationPath = path.join(fakeDir, "invocation.json");
+  fs.mkdirSync(path.join(fixtureDir, "src"), { recursive: true });
+  fs.writeFileSync(path.join(fixtureDir, "src", "App.vue"), "<template />\n");
+  fs.writeFileSync(
+    executable,
+    `#!/usr/bin/env node
+import fs from "node:fs";
+import path from "node:path";
+const args = process.argv.slice(2);
+const tsconfigIndex = args.indexOf("--tsconfig");
+const tsconfig = tsconfigIndex === -1 ? null : args[tsconfigIndex + 1];
+const source = tsconfig == null ? null : fs.readFileSync(path.resolve(process.cwd(), tsconfig), "utf8");
+fs.writeFileSync(${JSON.stringify(invocationPath)}, JSON.stringify({ args, tsconfig, source }));
+const output =
+  tsconfig == null
+    ? {
+        files: [{ file: "src/App.vue", diagnostics: [] }],
+        programs: [
+          {
+            root: ".",
+            files: [
+              "src/App.vue",
+              path.resolve(process.cwd(), "../../node_modules/@types/node/assert.d.ts"),
+            ],
+          },
+        ],
+        errorCount: 0,
+        warningCount: 0,
+        fileCount: 1,
+      }
+    : {
+        files: [{ file: "src/App.vue", diagnostics: [] }],
+        programs: [
+          { root: ".", tsconfig, compilerOptions: {}, files: ["src/App.vue"] },
+        ],
+        errorCount: 0,
+        warningCount: 0,
+        fileCount: 1,
+      };
+process.stdout.write(JSON.stringify(output));\n`,
+  );
+  fs.chmodSync(executable, 0o755);
+
+  try {
+    const run = runTool(
+      {
+        id: "matrix-no-tsconfig",
+        fixturePath: path.relative(root, fixtureDir),
+        vueGlobs: ["src/**/*.vue"],
+      },
+      "typechecker",
+      { dryRun: false, timeoutMs: 5_000 },
+      { command: executable, prefix: [], label: executable },
+      reportDir,
+    );
+    assert.equal(run.status, "ok", run.failure);
+    assert.deepEqual(run.coverage, {
+      requestedFileCount: 1,
+      requestedSha256: digest(["src/App.vue"]),
+      transitiveAuthoredFileCount: 0,
+      transitiveAuthoredSha256: digest([]),
+      checkedFileCount: 1,
+      checkedSha256: digest(["src/App.vue"]),
+    });
+    const invocation = JSON.parse(fs.readFileSync(invocationPath, "utf8"));
+    assert.equal(invocation.tsconfig, ".vize-fixture-typecheck-matrix-no-tsconfig.tsconfig.json");
+    assert.deepEqual(JSON.parse(invocation.source), { compilerOptions: {} });
+    assert.equal(fs.existsSync(path.join(fixtureDir, invocation.tsconfig)), false);
+  } finally {
+    fs.rmSync(fixtureDir, { recursive: true, force: true });
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+    fs.rmSync(reportDir, { recursive: true, force: true });
+  }
+});
