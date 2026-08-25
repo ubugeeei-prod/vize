@@ -35,6 +35,11 @@ const CASES: &[Case] = &[
         sites: &["2 /* CLASS */"],
     },
     Case {
+        name: "component_class",
+        src: r#"<Foo :class="cls" />"#,
+        sites: &["8 /* PROPS */, [\"class\"]"],
+    },
+    Case {
         name: "style",
         src: r#"<div :style="style"></div>"#,
         sites: &["4 /* STYLE */"],
@@ -75,6 +80,11 @@ const CASES: &[Case] = &[
         sites: &["8 /* PROPS */, [\"onClick\"]"],
     },
     Case {
+        name: "component_keyup_props",
+        src: r#"<Foo @keyup="handler" />"#,
+        sites: &["8 /* PROPS */, [\"onKeyup\"]"],
+    },
+    Case {
         name: "hydrating_key_event",
         src: r#"<div @keyup.enter="handler"></div>"#,
         sites: &["40 /* PROPS, NEED_HYDRATION */, [\"onKeyup\"]"],
@@ -88,6 +98,16 @@ const CASES: &[Case] = &[
         name: "need_patch",
         src: r#"<div ref="el"></div>"#,
         sites: &["512 /* NEED_PATCH */"],
+    },
+    Case {
+        name: "native_v_model_props",
+        src: r#"<input v-model="msg">"#,
+        sites: &["8 /* PROPS */, [\"onUpdate:modelValue\"]"],
+    },
+    Case {
+        name: "component_v_model_props",
+        src: r#"<Foo v-model="msg" />"#,
+        sites: &["8 /* PROPS */, [\"modelValue\", \"onUpdate:modelValue\"]"],
     },
     Case {
         name: "directive_need_patch",
@@ -120,6 +140,21 @@ const CASES: &[Case] = &[
         sites: &["3 /* TEXT, CLASS */"],
     },
     Case {
+        name: "object_bind_named_prop",
+        src: r#"<div :id="foo" v-bind="obj"></div>"#,
+        sites: &["16 /* FULL_PROPS */, [\"id\"]"],
+    },
+    Case {
+        name: "object_bind_keyup_hydration",
+        src: r#"<div @keyup="handler" v-bind="obj"></div>"#,
+        sites: &["48 /* FULL_PROPS, NEED_HYDRATION */, [\"onKeyup\"]"],
+    },
+    Case {
+        name: "component_object_bind",
+        src: r#"<Foo v-bind="obj" />"#,
+        sites: &["16 /* FULL_PROPS */"],
+    },
+    Case {
         name: "stable_fragment",
         src: "<div></div><span></span>",
         sites: &["64 /* STABLE_FRAGMENT */"],
@@ -133,6 +168,15 @@ const CASES: &[Case] = &[
         name: "unkeyed_fragment",
         src: r#"<div v-for="item in list">{{ item.label }}</div>"#,
         sites: &["1 /* TEXT */", "256 /* UNKEYED_FRAGMENT */"],
+    },
+    Case {
+        name: "nested_dynamic_slot_fragment",
+        src: r#"<div v-for="i in n"><Foo>hello</Foo></div>"#,
+        sites: &[
+            "2 /* DYNAMIC */",
+            "1024 /* DYNAMIC_SLOTS */",
+            "256 /* UNKEYED_FRAGMENT */",
+        ],
     },
 ];
 
