@@ -32,23 +32,17 @@ test("check workflow uploads Davinci compact-storage bench reports", () => {
   );
 
   assert.notEqual(gateIndex, -1);
-  const patinaGate = steps[gateIndex - 1];
-  assert.equal(patinaGate?.name, "Patina JSX markup allocation gate");
-  assert.match(
-    patinaGate?.run ?? "",
-    /cargo bench -p vize_patina --bench davinci_markup -- --quick/,
-  );
-  assert.match(
-    patinaGate?.run ?? "",
-    /node tools\/davinci\/bench-compare\.mjs --bench patina_jsx_markup_one_root/,
-  );
   assert.match(
     steps[gateIndex].run ?? "",
     /cargo bench -p vize_ricalco --bench davinci_storage -- --quick/,
   );
   assert.match(
     steps[gateIndex].run ?? "",
-    /node tools\/davinci\/bench-compare\.mjs --bench ricalco_lower_vfor_three_aliases --bench ricalco_emit_von_two_per_bucket/,
+    /cargo bench -p vize_patina --bench davinci_markup -- --quick/,
+  );
+  assert.match(
+    steps[gateIndex].run ?? "",
+    /node tools\/davinci\/bench-compare\.mjs --bench ricalco_lower_vfor_three_aliases --bench ricalco_emit_von_two_per_bucket --bench patina_jsx_markup_one_root/,
   );
   assert.deepEqual(steps[gateIndex + 1], {
     name: "Upload Davinci compact-storage bench reports",

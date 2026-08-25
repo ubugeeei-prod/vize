@@ -879,6 +879,8 @@ compiler	Compiler	source	crates/vize/src/commands/build/runner/output/plan.rs	3	
 compiler	Compiler	test/dev	crates/vize/src/commands/build/runner/output/tests.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize/src/commands/build/runner/profile_facts.rs	6	s0	S0/carton	stage	vize_s0	preferred	3
 compiler	Compiler	source	crates/vize/src/commands/build/runner/settings.rs	5	s0	S0/carton	stage	vize_s0	preferred	3
+linter	Linter	test/dev	crates/vize_patina/benches/davinci_markup.rs	13	s0	S0/carton	stage	vize_carton	compat	1
+linter	Linter	test/dev	crates/vize_patina/benches/davinci_markup.rs	13	raw_oxc	raw OXC	raw	oxc_allocator	raw	3
 linter	Linter	test/dev	crates/vize_patina/benches/lint_bench.rs	6	s0	S0/carton	stage	vize_carton	compat	1
 linter	Linter	test/dev	crates/vize_patina/benches/markup_ir_bench.rs	15	s0	S0/carton	stage	vize_carton	compat	3
 linter	Linter	test/dev	crates/vize_patina/benches/markup_ir_bench.rs	15	old_ast	old AST/parser	old	vize_armature	legacy	1
@@ -969,6 +971,7 @@ linter	Linter	source	crates/vize_patina/src/linter/script_rules/template_ast.rs	
 linter	Linter	source	crates/vize_patina/src/linter/script_rules/template_ast.rs	14	old_ast	old AST/parser	old	vize_armature	legacy	1
 linter	Linter	source	crates/vize_patina/src/linter/severity.rs	3	s0	S0/carton	stage	vize_carton	compat	1
 linter	Linter	test/dev	crates/vize_patina/src/linter/tests.rs	3	s0	S0/carton	stage	vize_carton	compat	1
+linter	Linter	test/dev	crates/vize_patina/src/linter/tests/jsx_streaming.rs	13	s0	S0/carton	stage	vize_carton	compat	1
 linter	Linter	test/dev	crates/vize_patina/src/linter/tests/nuxt.rs	2	s0	S0/carton	stage	vize_carton	compat	1
 linter	Linter	test/dev	crates/vize_patina/src/linter/tests/recovered_parse_analysis.rs	11	s0	S0/carton	stage	vize_carton	compat	1
 linter	Linter	source	crates/vize_patina/src/markup.rs	49	s0	S0/carton	stage	vize_carton	compat	2
