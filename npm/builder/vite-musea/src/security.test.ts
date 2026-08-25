@@ -121,12 +121,20 @@ void test("isLoopbackAddress accepts IPv4-mapped and IPv6 loopback forms", () =>
   assert.equal(isLoopbackAddress("192.168.1.10"), false);
 });
 
+function loopbackRequest(method: string, headers: IncomingMessage["headers"]): IncomingMessage {
+  const req = request(method, headers);
+  (req as IncomingMessage & { socket: { remoteAddress: string } }).socket = {
+    remoteAddress: "127.0.0.1",
+  };
+  return req;
+}
+
 void test("validateDevApiRequest requires same-origin JSON mutations with the session token", () => {
   const token = "session-token";
 
   assert.equal(
     validateDevApiRequest(
-      request("PUT", {
+      loopbackRequest("PUT", {
         host: "localhost:5173",
         origin: "http://localhost:5173",
         "content-type": "application/json",
@@ -139,7 +147,7 @@ void test("validateDevApiRequest requires same-origin JSON mutations with the se
 
   assert.equal(
     validateDevApiRequest(
-      request("PUT", {
+      loopbackRequest("PUT", {
         host: "localhost:5173",
         origin: "http://evil.test",
         "content-type": "application/json",
@@ -152,7 +160,7 @@ void test("validateDevApiRequest requires same-origin JSON mutations with the se
 
   assert.equal(
     validateDevApiRequest(
-      request("POST", {
+      loopbackRequest("POST", {
         host: "localhost:5173",
         origin: "http://localhost:5173",
         "content-type": "text/plain",
@@ -165,10 +173,23 @@ void test("validateDevApiRequest requires same-origin JSON mutations with the se
 
   assert.equal(
     validateDevApiRequest(
-      request("DELETE", {
+      loopbackRequest("DELETE", {
         host: "localhost:5173",
         origin: "http://localhost:5173",
         "content-type": "application/json",
+      }),
+      token,
+    )?.status,
+    403,
+  );
+
+  assert.equal(
+    validateDevApiRequest(
+      request("PUT", {
+        host: "localhost:5173",
+        origin: "http://localhost:5173",
+        "content-type": "application/json",
+        "x-musea-session": token,
       }),
       token,
     )?.status,

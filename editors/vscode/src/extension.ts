@@ -33,6 +33,7 @@ import {
   getInitializationOptions,
   hasAnyEnabledCapability,
   hasExplicitConfigurationValue,
+  isTrustedReleaseDownloadUrl,
   parseVizeVersion,
   shouldStartFromConfiguration,
   type LspInitializationOptions,
@@ -1080,6 +1081,9 @@ async function downloadFile(url: string, destination: string, redirectCount = 0)
   if (redirectCount > RELEASE_DOWNLOAD_MAX_REDIRECTS) {
     throw new Error(`too many redirects while downloading ${url}`);
   }
+  if (!isTrustedReleaseDownloadUrl(url)) {
+    throw new Error(`refusing to download Vize language server from untrusted URL: ${url}`);
+  }
 
   await new Promise<void>((resolve, reject) => {
     const request = https.get(
@@ -1094,6 +1098,10 @@ async function downloadFile(url: string, destination: string, redirectCount = 0)
         if (statusCode >= 300 && statusCode < 400 && response.headers.location) {
           response.resume();
           const redirectUrl = new URL(response.headers.location, url).toString();
+          if (!isTrustedReleaseDownloadUrl(redirectUrl)) {
+            reject(new Error(`refusing redirect to untrusted URL: ${redirectUrl}`));
+            return;
+          }
           downloadFile(redirectUrl, destination, redirectCount + 1).then(resolve, reject);
           return;
         }

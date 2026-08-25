@@ -110,12 +110,13 @@ export function isLoopbackAddress(address: string): boolean {
 
 export function isLoopbackRequest(req: IncomingMessage): boolean {
   const remote = req.socket?.remoteAddress;
-  if (remote) {
-    return isLoopbackAddress(remote);
+  // Fail closed when the peer address is missing. Falling back to Host would
+  // let a client on `vite --host` spoof `Host: localhost` and pass the write
+  // API loopback gate.
+  if (!remote) {
+    return false;
   }
-
-  const host = getHeader(req, "host");
-  return host != null && isLoopbackAddress(hostnameFromHostHeader(host));
+  return isLoopbackAddress(remote);
 }
 
 export function validateDevApiRequest(

@@ -189,6 +189,39 @@ function assertTestCompletionRequest(request: TestCompletionRequest): void {
   }
 }
 
+const TRUSTED_RELEASE_DOWNLOAD_HOSTS = new Set([
+  "github.com",
+  "objects.githubusercontent.com",
+  "release-assets.githubusercontent.com",
+]);
+
+/**
+ * Release archives and SHA-256 sidecars must stay on GitHub HTTPS hosts.
+ * Following an open redirect off github.com would let a MITM or poisoned
+ * Location header supply both the binary and a matching checksum.
+ */
+export function isTrustedReleaseDownloadUrl(url: string): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+
+  if (parsed.protocol !== "https:") {
+    return false;
+  }
+  if (parsed.username || parsed.password) {
+    return false;
+  }
+  if (parsed.port !== "") {
+    return false;
+  }
+
+  const host = parsed.hostname.toLowerCase();
+  return TRUSTED_RELEASE_DOWNLOAD_HOSTS.has(host) || host.endsWith(".githubusercontent.com");
+}
+
 export function parseVizeVersion(output: string): string | undefined {
   const match = output.match(/\bvize\s+([0-9]+\.[0-9]+\.[0-9]+(?:[-+][^\s]+)?)/);
   return match?.[1];

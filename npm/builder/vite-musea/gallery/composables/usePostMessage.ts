@@ -6,7 +6,27 @@ export interface MuseaMessage {
 }
 
 export function sendMessage(iframe: HTMLIFrameElement, type: string, payload: unknown = {}): void {
-  iframe.contentWindow?.postMessage({ type, payload }, "*");
+  const targetOrigin = resolvePreviewPostMessageOrigin(iframe.src, window.location.origin);
+  if (!targetOrigin) return;
+  iframe.contentWindow?.postMessage({ type, payload }, targetOrigin);
+}
+
+/**
+ * Gallery → iframe commands stay on the gallery origin. A wildcard target
+ * would deliver `musea:set-props` / `musea:run-a11y` to a preview frame that
+ * had been navigated cross-origin.
+ */
+export function resolvePreviewPostMessageOrigin(
+  iframeSrc: string | undefined,
+  pageOrigin: string,
+): string | null {
+  if (!iframeSrc) return pageOrigin;
+  try {
+    const srcOrigin = new URL(iframeSrc, pageOrigin).origin;
+    return srcOrigin === pageOrigin ? pageOrigin : null;
+  } catch {
+    return null;
+  }
 }
 
 export function sendMessageToAll(
