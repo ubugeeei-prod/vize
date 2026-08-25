@@ -52,6 +52,28 @@ fn the_sfc_fixture_folio_pins_template_and_css_bind() {
     assert_eq!(u64::from(lowered.op_count), folio.op_count());
     assert_eq!(folio.print_to_string(FolioMode::Full).as_str(), CANONICAL);
     assert_eq!(verify(&folio, Rigor::Raw), Vec::<Violation>::new());
+    let provenance: Vec<(&str, u32, u32, &str)> = lowered
+        .provenance
+        .iter()
+        .map(|record| {
+            (
+                record.rule.as_str(),
+                record.span.start,
+                record.span.end,
+                record.before.as_str(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        provenance,
+        [
+            ("condense.drop-whitespace", 10, 11, "\n"),
+            ("lower.element", 11, 41, "<p class=\"foo\">"),
+            ("lower.interpolation", 26, 37, " color "),
+            ("condense.drop-whitespace", 41, 42, "\n"),
+        ],
+        "provenance rules, authored spans, and consumed text must pin exactly"
+    );
     assert_authored_artifact(SOURCE, &lowered);
 }
 
@@ -138,9 +160,6 @@ fn assert_authored_artifact(source: &str, lowered: &Lowered<'_>) {
     }
     for record in &lowered.provenance {
         assert_span(source, root, record.span, "provenance");
-        if !record.before.is_empty() {
-            assert!(exact_slice(source, record.span).contains(record.before.as_str()));
-        }
     }
     for (_, facts) in lowered.scopes.iter() {
         assert_scope_facts(source, root, facts);
