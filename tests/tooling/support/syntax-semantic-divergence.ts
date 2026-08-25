@@ -16,7 +16,7 @@ export const semanticCategories = Object.freeze([
 ] as const);
 
 export const semanticNormalization = Object.freeze({
-  version: 2,
+  version: 3,
   categories: semanticCategories,
   coordinates: "1-based UTF-16 columns with an exclusive end",
   omittedCategories: Object.freeze([
@@ -152,7 +152,7 @@ function normalizeScopes(scopes: string[], label: string): string[] {
 
 function semanticCategory(scope: string): string | null {
   if (scope.startsWith("comment")) return "comment";
-  if (scope === "attribute_value") return "string";
+  if (/^attribute_value\d*$/u.test(scope)) return "string";
   if (scope.startsWith("string")) return "string";
   if (scope.startsWith("constant.numeric")) return "number";
   if (scope.startsWith("constant") || scope.startsWith("support.constant")) return "literal";

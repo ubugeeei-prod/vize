@@ -78,7 +78,7 @@ test("semantic comparison records exact shared, false-positive, and false-negati
 
 test("published normalization evidence is immutable canonical JSON", () => {
   assert.ok(Object.isFrozen(semanticNormalization));
-  assert.equal(semanticNormalization.version, 2);
+  assert.equal(semanticNormalization.version, 3);
   assert.ok(Object.isFrozen(semanticNormalization.categories));
   assert.ok(Object.isFrozen(semanticNormalization.omittedCategories));
   assert.ok(Object.isFrozen(semanticNormalization.ignoredScopeFamilies));
@@ -136,6 +136,7 @@ test("normalization ignores structural nesting but detects changed semantic scop
       "entity.other.keyframe-offset.percentage.css",
       "entity.other.counter-name.less",
       "attribute_value",
+      "attribute_value2",
       "entity.other.attribute-selector.sass",
       "html",
       "inline.pug",

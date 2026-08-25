@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { runRealProjectSyntaxAudit } from "./support/real-project-syntax-audit.ts";
+import { tokenizeSemanticSource } from "./support/syntax-semantic-divergence.ts";
 import { auditTextMateSource, loadVueTextMateGrammar } from "./support/vue-textmate.ts";
 
 test("shipped and pinned oracle grammars tokenize every selected real-project Vue file", async () => {
@@ -38,6 +39,21 @@ test("real-project TextMate audit exercises the shipped grammar and fail-closed 
     const result = auditTextMateSource(grammar, source, "source.vue", "synthetic/App.vue");
     assert.equal(result.lineCount, 5);
     assert.ok(result.tokenCount > 5);
+    const pugAttributeValue = [
+      '<template lang="pug">',
+      'ssh-pre(language="js").',
+      "  app.use(WaveUI, { /* Some Wave UI options */ })",
+      "</template>",
+      "",
+    ].join("\n");
+    const semantic = tokenizeSemanticSource(
+      grammar,
+      pugAttributeValue,
+      "source.vue",
+      "synthetic/wave-ui-install-cdn.vue",
+    );
+    assert.equal(semantic.lineCount, 5);
+    assert.ok(semantic.tokenCount > 5);
   } finally {
     registry.dispose();
   }
