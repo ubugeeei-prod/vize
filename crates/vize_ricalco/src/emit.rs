@@ -36,7 +36,9 @@
 //! stay VNodes, integration points re-enter HTML), and **template refs**
 //! (static refs, dynamic `:ref`, and `ref_for` in `v-for`), and **Vue 2
 //! `.native` event sugar** (accepted and stripped like the shipped lane),
-//! and **static+dynamic `style` merge** (`[{"color":"red"}, s]`).
+//! **static+dynamic `style` merge** (`[{"color":"red"}, s]`), and
+//! **modifier-free dynamic `v-on` keys** (`@[event]` through
+//! `toHandlerKey`).
 //! Static-name `v-bind` modifiers (`.camel`, `.prop`, `.attr`, plus the
 //! dot shorthand) and dynamic-argument `v-bind` keys / modifiers are
 //! realized into the shipped DOM prop-key shape. Vue 2 pipe filters are
@@ -62,6 +64,7 @@ mod merge;
 mod model;
 mod namespace;
 mod on;
+mod on_dynamic;
 mod outlet;
 mod props;
 mod props_bind;

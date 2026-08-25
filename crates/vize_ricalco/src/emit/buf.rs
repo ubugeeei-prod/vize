@@ -113,6 +113,9 @@ impl Buf {
     pub(super) fn use_to_handlers(&mut self) {
         self.mark(Helper::ToHandlers);
     }
+    pub(super) fn use_to_handler_key(&mut self) {
+        self.mark(Helper::ToHandlerKey);
+    }
     pub(super) fn use_camelize(&mut self) {
         self.mark(Helper::Camelize);
     }
@@ -203,6 +206,10 @@ impl Buf {
 
     pub(super) fn to_handlers_alias() -> &'static str {
         Helper::ToHandlers.alias()
+    }
+
+    pub(super) fn to_handler_key_alias() -> &'static str {
+        Helper::ToHandlerKey.alias()
     }
 
     pub(super) fn camelize_alias() -> &'static str {

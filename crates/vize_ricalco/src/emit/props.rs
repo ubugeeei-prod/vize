@@ -131,6 +131,10 @@ pub(super) fn bind_patch(
                 Ok(BindName::Spread) | Err(_) => {}
             },
             BindingOp::On(on) => {
+                if super::on_dynamic::is_dynamic_on_name(on) {
+                    flag |= 16;
+                    continue;
+                }
                 let Ok(key) = event_key_for(on, !is_component) else {
                     continue;
                 };
@@ -150,6 +154,9 @@ pub(super) fn bind_patch(
     }
     if super::directive::has_custom(bindings) && flag & (2 | 4 | 8 | 16) == 0 {
         flag |= 512;
+    }
+    if flag & 16 != 0 {
+        flag &= !8;
     }
     Patch {
         flag,

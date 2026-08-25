@@ -1,5 +1,6 @@
-//! Static-name `ui.on` (`@click` / `v-on:click`), including event / key /
-//! option modifiers (`withModifiers` / `withKeys`, `onClickOnce`, …).
+//! Static-name `ui.on` (`@click` / `v-on:click`), dynamic-name `ui.on`
+//! (`@[event]`), including static-name event / key / option modifiers
+//! (`withModifiers` / `withKeys`, `onClickOnce`, …).
 //! Object `v-on` lives in [`super::merge`].
 
 use oxc_ast::ast::{ChainElement, Expression};
@@ -38,6 +39,9 @@ struct Classified<'a> {
 pub(super) fn admit_on(on: &OnOp<'_>) -> Result<(), EmitError> {
     if on.name.is_none() {
         return super::merge::admit_object_on(on);
+    }
+    if super::on_dynamic::is_dynamic_on_name(on) {
+        return super::on_dynamic::admit(on);
     }
     static_on_name(on)?;
     classify(on)?;
@@ -101,6 +105,9 @@ pub(super) fn event_key_for(on: &OnOp<'_>, is_plain_element: bool) -> Result<Str
 }
 
 pub(super) fn needs_hydration(key: &str, on: &OnOp<'_>) -> bool {
+    if super::on_dynamic::is_dynamic_on_name(on) {
+        return false;
+    }
     if key == "onUpdate:modelValue" || key.starts_with("onVnode") {
         return false;
     }
@@ -111,6 +118,9 @@ pub(super) fn needs_hydration(key: &str, on: &OnOp<'_>) -> bool {
 }
 
 pub(super) fn forces_inline_on(on: &OnOp<'_>) -> bool {
+    if super::on_dynamic::is_dynamic_on_name(on) {
+        return false;
+    }
     classify(on).is_ok_and(|classified| {
         has_native_modifier(on) || !classified.event.is_empty() || !classified.keys.is_empty()
     })
@@ -129,12 +139,18 @@ pub(super) fn emit_on_pair(
     on: &OnOp<'_>,
     is_plain_element: bool,
 ) -> Result<(), EmitError> {
+    if super::on_dynamic::is_dynamic_on_name(on) {
+        return super::on_dynamic::emit_pair(cx, on);
+    }
     super::js::push_ident_key(cx, event_key_for(on, is_plain_element)?.as_str());
     cx.buf.push(": ");
     emit_on_value(cx, on)
 }
 
 pub(super) fn emit_on_value(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitError> {
+    if super::on_dynamic::is_dynamic_on_name(on) {
+        return super::on_dynamic::emit_value(cx, on);
+    }
     let classified = classify(on)?;
     emit_wrapped_handler(cx, on, &classified)
 }
@@ -190,7 +206,7 @@ fn emit_mod_array(cx: &mut EmitCx<'_>, mods: &[&str]) {
     cx.buf.push("]");
 }
 
-fn emit_handler(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {
+pub(super) fn emit_handler(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {
     if is_handler_reference(js.ast) || is_function(js.ast) {
         cx.buf.push(js.source);
         return;

@@ -27,6 +27,7 @@ pub(super) enum Helper {
     GuardReactiveProps,
     MergeProps,
     ToHandlers,
+    ToHandlerKey,
     Camelize,
     OpenBlock,
     CreateBlock,
@@ -46,7 +47,7 @@ pub(super) enum Helper {
 }
 
 impl Helper {
-    pub(super) const ALL: [Self; 37] = [
+    pub(super) const ALL: [Self; 38] = [
         Self::ResolveComponent,
         Self::ResolveDynamicComponent,
         Self::ResolveDirective,
@@ -68,6 +69,7 @@ impl Helper {
         Self::GuardReactiveProps,
         Self::MergeProps,
         Self::ToHandlers,
+        Self::ToHandlerKey,
         Self::Camelize,
         Self::OpenBlock,
         Self::CreateBlock,
@@ -102,6 +104,7 @@ impl Helper {
             | Self::GuardReactiveProps
             | Self::MergeProps
             | Self::ToHandlers
+            | Self::ToHandlerKey
             | Self::Camelize => 5,
             Self::OpenBlock => 6,
             Self::CreateBlock | Self::CreateElementBlock => 7,
@@ -158,6 +161,7 @@ impl Helper {
             Self::WithDirectives => 17179869184,
             Self::ResolveDirective => 34359738368,
             Self::ResolveFilter => 68719476736,
+            Self::ToHandlerKey => 137438953472,
         }
     }
 
@@ -184,6 +188,7 @@ impl Helper {
             Self::GuardReactiveProps => "guardReactiveProps",
             Self::MergeProps => "mergeProps",
             Self::ToHandlers => "toHandlers",
+            Self::ToHandlerKey => "toHandlerKey",
             Self::Camelize => "camelize",
             Self::OpenBlock => "openBlock",
             Self::CreateBlock => "createBlock",
@@ -226,6 +231,7 @@ impl Helper {
             Self::GuardReactiveProps => "_guardReactiveProps",
             Self::MergeProps => "_mergeProps",
             Self::ToHandlers => "_toHandlers",
+            Self::ToHandlerKey => "_toHandlerKey",
             Self::Camelize => "_camelize",
             Self::OpenBlock => "_openBlock",
             Self::CreateBlock => "_createBlock",

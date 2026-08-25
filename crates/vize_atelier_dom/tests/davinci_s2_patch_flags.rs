@@ -46,6 +46,16 @@ const CASES: &[Case] = &[
         sites: &["16 /* FULL_PROPS */"],
     },
     Case {
+        name: "dynamic_event_full_props",
+        src: r#"<div @[event]="handler"></div>"#,
+        sites: &["16 /* FULL_PROPS */"],
+    },
+    Case {
+        name: "dynamic_event_text_full_props",
+        src: r#"<div @[event]="handler">{{ msg }}</div>"#,
+        sites: &["17 /* TEXT, FULL_PROPS */"],
+    },
+    Case {
         name: "full_props_need_hydration",
         src: r#"<div :[key].prop="value"></div>"#,
         sites: &["48 /* FULL_PROPS, NEED_HYDRATION */"],

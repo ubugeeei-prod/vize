@@ -40,9 +40,11 @@ fn shipped_with_dialect_and_prefix(
     prefix_identifiers: bool,
 ) -> String {
     let allocator = Allocator::new();
-    let mut options = DomCompilerOptions::default();
-    options.dialect = dialect;
-    options.prefix_identifiers = prefix_identifiers;
+    let options = DomCompilerOptions {
+        dialect,
+        prefix_identifiers,
+        ..Default::default()
+    };
     let (_, errors, result) = if dialect == VueVersion::V3 && !prefix_identifiers {
         compile_template(&allocator, src)
     } else {
