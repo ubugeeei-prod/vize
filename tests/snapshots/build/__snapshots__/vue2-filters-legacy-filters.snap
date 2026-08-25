@@ -1,0 +1,32 @@
+
+const _sfc_main = {
+  name: "LegacyFilters",
+  data() {
+    return {
+      amount: 12,
+      order: {
+        id: "a-1",
+        status: "paid",
+      },
+    };
+  },
+}
+
+import { resolveFilter as _resolveFilter, resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, renderSlot as _renderSlot, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_StatusBadge = _resolveComponent("StatusBadge")
+  const _filter_normalizeId = _resolveFilter("normalizeId")
+  const _filter_currency = _resolveFilter("currency")
+  const _filter_suffix = _resolveFilter("suffix")
+  const _filter_statusFilter = _resolveFilter("statusFilter")
+  
+  return (_openBlock(), _createElementBlock("section", { class: "legacy-filters" }, [
+    _createElementVNode("p", null, _toDisplayString(_filter_normalizeId($data.order.id)), 1 /* TEXT */),
+    _createElementVNode("p", null, _toDisplayString(_filter_suffix(_filter_currency($data.amount,"$")," USD")), 1 /* TEXT */),
+    _createVNode(_component_StatusBadge, { type: _filter_statusFilter($data.order.status) }, null, 8 /* PROPS */, ["type"]),
+    _renderSlot(_ctx.$slots, "default", { value: _filter_currency($data.amount) })
+  ]))
+}
+_sfc_main.render = _sfc_render
+export default _sfc_main

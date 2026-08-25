@@ -190,6 +190,13 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
     "cargo test --locked --profile ci -p vize_canon --test tier_l_incremental -- --ignored --nocapture",
   );
 
+  const vue2Build = steps.find((step) => step.name === "Check Vue 2 build snapshots");
+  assert.deepEqual(vue2Build?.env, { VIZE_TEST_BIN: "target/ci/vize" });
+  assert.equal(
+    vue2Build?.run,
+    "node --test --test-concurrency=1 tests/snapshots/build/vue2-filters.ts",
+  );
+
   const glyphProperties = steps.find(
     (step) => step.name === "Check glyph formatter corpus properties",
   );

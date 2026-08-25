@@ -175,6 +175,12 @@ runs:
         VIZE_RUNTIME_NODE_MODULES: node_modules
       run: cargo test --locked --profile ci -p vize_canon --test tier_l_incremental -- --ignored --nocapture
 
+    - name: Check Vue 2 build snapshots
+      shell: bash
+      env:
+        VIZE_TEST_BIN: target/ci/vize
+      run: node --test --test-concurrency=1 tests/snapshots/build/vue2-filters.ts
+
     - name: Check glyph formatter corpus properties
       shell: bash
       env:
