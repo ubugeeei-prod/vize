@@ -35,9 +35,9 @@ export function applyIsolatedJsxOverlay(fixtureRoot, sourceConfigPath, overlay) 
   const document = existsSync(overlayPath)
     ? JSON.parse(readFileSync(overlayPath, "utf8"))
     : { extends: `./${basename(sourcePath)}` };
-  document.compilerOptions = { ...(document.compilerOptions ?? {}), jsxImportSource: rewritten };
+  document.compilerOptions = { ...document.compilerOptions, jsxImportSource: rewritten };
   writeFileSync(overlayPath, `${JSON.stringify(document, null, 2)}\n`);
-  return { ...(overlay ?? {}), path: overlayPath, jsxImportSource: rewritten };
+  return { ...overlay, path: overlayPath, jsxImportSource: rewritten };
 }
 
 export function applyIsolatedJsxBaseline(fixtureRoot, sourceConfigPath, baselinePath) {
@@ -48,7 +48,7 @@ export function applyIsolatedJsxBaseline(fixtureRoot, sourceConfigPath, baseline
   );
   if (rewritten == null) return null;
   const document = JSON.parse(readFileSync(baselinePath, "utf8"));
-  document.compilerOptions = { ...(document.compilerOptions ?? {}), jsxImportSource: rewritten };
+  document.compilerOptions = { ...document.compilerOptions, jsxImportSource: rewritten };
   writeFileSync(baselinePath, `${JSON.stringify(document, null, 2)}\n`);
   return rewritten;
 }
