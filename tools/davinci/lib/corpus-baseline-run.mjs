@@ -9,12 +9,13 @@
 // Node builtins only. Reduction output is deterministic: stable sorts, no
 // timestamps, no machine identity, no absolute paths.
 
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
 
 import { HASHED_FIELDS } from "./corpus-baseline-contract.mjs";
+import { assertHydratedGitlinkFixtures } from "./corpus-hydration.mjs";
 import { byKey } from "./ordering.mjs";
 import { repoRoot } from "./paths.mjs";
 
@@ -29,6 +30,7 @@ const PAYLOAD_FAILURE_FIELDS = ["spawnError", "parseError", "validationError"];
  */
 export async function runMatrix({ shards, vizeBin, tools, scratchDir, timeoutMs, log }) {
   mkdirSync(scratchDir, { recursive: true });
+  assertHydratedGitlinkFixtures(listMatrixFixturePaths(shards));
   const runs = [];
   for (let index = 0; index < shards; index += 1) {
     const outputDir = path.join(scratchDir, `shard-${index}`);
@@ -60,6 +62,30 @@ export async function runMatrix({ shards, vizeBin, tools, scratchDir, timeoutMs,
     throw new Error(`matrix run failed:\n  ${failures.join("\n  ")}`);
   }
   return runs.map((run) => run.outputDir);
+}
+
+function listMatrixFixturePaths(shards) {
+  const fixturePaths = [];
+  for (let index = 0; index < shards; index += 1) {
+    const result = spawnSync(
+      process.execPath,
+      [
+        MATRIX_SCRIPT,
+        "--list-fixture-paths",
+        "--shard-index",
+        String(index),
+        "--shard-count",
+        String(shards),
+      ],
+      { cwd: repoRoot, encoding: "utf8" },
+    );
+    if (result.status !== 0) {
+      const detail = result.stderr.trim() || result.stdout.trim() || `exit ${result.status}`;
+      throw new Error(`fixture path selection failed for shard ${index}: ${detail}`);
+    }
+    fixturePaths.push(...result.stdout.split("\n").filter(Boolean));
+  }
+  return fixturePaths;
 }
 
 function spawnShard(args, index, log) {
