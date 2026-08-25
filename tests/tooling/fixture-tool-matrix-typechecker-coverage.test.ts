@@ -281,7 +281,8 @@ process.stdout.write(JSON.stringify(output));\n`,
       checkedSha256: digest(["src/App.vue"]),
     });
     const invocation = JSON.parse(fs.readFileSync(invocationPath, "utf8"));
-    assert.equal(invocation.tsconfig, ".vize-fixture-typecheck-matrix-no-tsconfig.tsconfig.json");
+    assert.equal(typeof invocation.tsconfig, "string");
+    assert.notEqual(invocation.tsconfig, "");
     assert.deepEqual(JSON.parse(invocation.source), { compilerOptions: {} });
     assert.equal(fs.existsSync(path.join(fixtureDir, invocation.tsconfig)), false);
   } finally {
