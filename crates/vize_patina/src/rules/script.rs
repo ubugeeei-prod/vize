@@ -345,5 +345,4 @@ impl Default for ScriptLinter {
 }
 
 #[cfg(test)]
-#[path = "script_tests.rs"]
 mod tests;

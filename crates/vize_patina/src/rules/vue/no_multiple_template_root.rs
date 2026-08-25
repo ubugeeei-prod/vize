@@ -15,7 +15,6 @@
 //! comments remain accepted here.
 
 #[cfg(test)]
-#[path = "no_multiple_template_root_tests.rs"]
 mod tests;
 
 use crate::context::LintContext;

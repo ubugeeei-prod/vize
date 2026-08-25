@@ -182,5 +182,4 @@ impl Rule for RequireToggleInsideTransition {
 }
 
 #[cfg(test)]
-#[path = "require_toggle_inside_transition_tests.rs"]
 mod tests;

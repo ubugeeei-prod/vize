@@ -7,7 +7,6 @@
 //! wrapper element and keep `v-for` on the repeated element instead.
 
 #[cfg(test)]
-#[path = "no_use_v_else_with_v_for_tests.rs"]
 mod tests;
 
 use crate::context::LintContext;

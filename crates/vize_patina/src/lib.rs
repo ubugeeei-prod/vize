@@ -83,6 +83,18 @@
 //! - `script/prefer-import-from-vue` - Prefer importing from 'vue' instead of internal packages
 //! - `script/no-internal-imports` - Disallow importing from Vue internal modules
 
+#![cfg_attr(
+    test,
+    allow(
+        clippy::default_constructed_unit_structs,
+        clippy::disallowed_macros,
+        clippy::disallowed_methods,
+        clippy::disallowed_types,
+        clippy::items_after_test_module,
+        clippy::useless_asref
+    )
+)]
+
 mod context;
 mod diagnostic;
 pub mod ir;

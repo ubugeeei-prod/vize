@@ -158,5 +158,4 @@ fn replacement_edit(
 }
 
 #[cfg(test)]
-#[path = "no_deprecated_destroyed_lifecycle_tests.rs"]
 mod tests;

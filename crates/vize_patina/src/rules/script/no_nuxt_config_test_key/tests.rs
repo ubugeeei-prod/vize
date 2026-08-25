@@ -4,10 +4,10 @@ use crate::rules::script::{ScriptLintResult, ScriptLinter, ScriptRule};
 use serde_json::Value;
 
 const CORPUS: &str = include_str!(
-    "../../../../../npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/fixtures/corpus.json"
+    "../../../../../../npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/fixtures/corpus.json"
 );
 const RECORDING: &str = include_str!(
-    "../../../../../npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/fixtures/nuxt-eslint-output.json"
+    "../../../../../../npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/fixtures/nuxt-eslint-output.json"
 );
 
 fn lint(source: &str) -> ScriptLintResult {

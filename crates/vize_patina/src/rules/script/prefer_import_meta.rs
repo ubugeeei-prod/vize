@@ -109,5 +109,4 @@ impl PreferImportMetaVisitor<'_> {
 }
 
 #[cfg(test)]
-#[path = "prefer_import_meta_tests.rs"]
 mod tests;

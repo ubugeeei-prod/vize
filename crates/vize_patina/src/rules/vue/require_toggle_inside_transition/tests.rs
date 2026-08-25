@@ -17,7 +17,9 @@ fn test_invalid_plain_element() {
         result.diagnostics[0].rule_name,
         "vue/require-toggle-inside-transition"
     );
-    insta::assert_debug_snapshot!(result.diagnostics);
+    insta::with_settings!({ snapshot_path => "../snapshots" }, {
+        insta::assert_debug_snapshot!(result.diagnostics);
+    });
 }
 
 #[test]

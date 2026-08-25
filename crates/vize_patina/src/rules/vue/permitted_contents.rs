@@ -224,5 +224,4 @@ impl Rule for PermittedContents {
 }
 
 #[cfg(test)]
-#[path = "permitted_contents_tests.rs"]
 mod tests;

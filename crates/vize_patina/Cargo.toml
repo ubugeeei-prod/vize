@@ -48,8 +48,10 @@ libc.workspace = true
 
 [dev-dependencies]
 insta.workspace = true
-criterion.workspace = true
 vize_glyph.workspace = true
+
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+criterion.workspace = true
 
 [[bench]]
 name = "lint_bench"

@@ -17,7 +17,9 @@ export const helper = () => props.count
 "#;
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 1);
-    insta::assert_debug_snapshot!(result.diagnostics);
+    insta::with_settings!({ snapshot_path => "../snapshots" }, {
+        insta::assert_debug_snapshot!(result.diagnostics);
+    });
 }
 
 #[test]

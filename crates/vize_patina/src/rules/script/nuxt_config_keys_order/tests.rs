@@ -5,10 +5,10 @@ use serde_json::Value;
 use vize_carton::{String, ToCompactString, cstr};
 
 const CORPUS: &str = include_str!(
-    "../../../../../npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/fixtures/corpus.json"
+    "../../../../../../npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/fixtures/corpus.json"
 );
 const RECORDING: &str = include_str!(
-    "../../../../../npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/fixtures/nuxt-eslint-output.json"
+    "../../../../../../npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/fixtures/nuxt-eslint-output.json"
 );
 
 fn lint_at(source: &str, offset: usize) -> ScriptLintResult {

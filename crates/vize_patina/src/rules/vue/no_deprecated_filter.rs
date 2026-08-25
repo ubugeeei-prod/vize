@@ -256,5 +256,4 @@ fn skip_regex(bytes: &[u8], i: usize) -> usize {
 }
 
 #[cfg(test)]
-#[path = "no_deprecated_filter_tests.rs"]
 mod tests;

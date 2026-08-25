@@ -139,5 +139,4 @@ fn is_boolean(expression: &Expression<'_>) -> bool {
 }
 
 #[cfg(test)]
-#[path = "no_nuxt_config_test_key_tests.rs"]
 mod tests;

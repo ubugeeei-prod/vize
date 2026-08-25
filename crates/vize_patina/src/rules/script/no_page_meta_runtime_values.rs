@@ -195,5 +195,4 @@ fn is_runtime_context_api(name: &str) -> bool {
 }
 
 #[cfg(test)]
-#[path = "no_page_meta_runtime_values_tests.rs"]
 mod tests;

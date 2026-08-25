@@ -14,7 +14,6 @@ use oxc_ast::ast::{
 use oxc_span::GetSpan;
 use vize_carton::{String, cstr};
 
-#[path = "nuxt_config_keys_order_support.rs"]
 mod support;
 use support::{
     first_order_inversion, property_display_name, property_name, property_text_ranges,
@@ -274,5 +273,4 @@ fn identifier_expression_name<'a>(expression: &'a Expression<'a>) -> Option<&'a 
 }
 
 #[cfg(test)]
-#[path = "nuxt_config_keys_order_tests.rs"]
 mod tests;

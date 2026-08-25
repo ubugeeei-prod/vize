@@ -226,5 +226,4 @@ fn statement_has_top_level_await(statement: &Statement<'_>) -> bool {
 }
 
 #[cfg(test)]
-#[path = "no_export_in_script_setup_tests.rs"]
 mod tests;

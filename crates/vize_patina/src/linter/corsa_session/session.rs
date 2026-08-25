@@ -244,5 +244,4 @@ fn is_typescript_native_preview_executable(path: &std::path::Path) -> bool {
 }
 
 #[cfg(test)]
-#[path = "session_tests.rs"]
 mod tests;

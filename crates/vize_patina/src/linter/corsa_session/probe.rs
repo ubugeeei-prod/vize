@@ -253,5 +253,4 @@ pub(super) fn byte_offset_to_utf16_offset(source: &str, byte_offset: u32) -> u32
 }
 
 #[cfg(test)]
-#[path = "probe_tests.rs"]
 mod tests;

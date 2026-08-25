@@ -29,7 +29,9 @@ fn reports_filter_in_interpolation() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<div>{{ message | capitalize }}</div>"#, "App.vue");
     assert_eq!(result.error_count, 1);
-    insta::assert_debug_snapshot!(result.diagnostics);
+    insta::with_settings!({ snapshot_path => "../snapshots" }, {
+        insta::assert_debug_snapshot!(result.diagnostics);
+    });
 }
 
 #[test]
