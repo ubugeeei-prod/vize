@@ -2380,7 +2380,7 @@ lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	raw_oxc	raw OXC	raw	oxc_ast_v
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 lsp	LSP	source	crates/vize_maestro/src/document/store.rs	79	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide.rs	174	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide.rs	192	s0	S0/carton	stage	vize_carton	compat	1
 lsp	LSP	source	crates/vize_maestro/src/ide/auto_insert.rs	77	s0	S0/carton	stage	vize_carton	compat	2
 lsp	LSP	source	crates/vize_maestro/src/ide/code_action.rs	14	s0	S0/carton	stage	vize_carton	compat	1
 lsp	LSP	source	crates/vize_maestro/src/ide/code_action.rs	14	croquis	Croquis analysis	old	vize_croquis	legacy	5
@@ -2521,6 +2521,8 @@ lsp	LSP	source	crates/vize_maestro/src/ide/jsx/virtual_ts/generate.rs	5	s0	S0/ca
 lsp	LSP	source	crates/vize_maestro/src/ide/jsx/virtual_ts/slot.rs	16	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/musea.rs	35	croquis	Croquis analysis	old	vize_croquis	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	3	s0	S0/carton	stage	vize_carton	compat	2
+lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	3	old_ast	old AST/parser	old	vize_relief	legacy	1
+lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/references/corsa_tests.rs	237	s0	S0/carton	stage	vize_carton	compat	2
 lsp	LSP	source	crates/vize_maestro/src/ide/references/corsa_tests/project_surface.rs	6	s0	S0/carton	stage	vize_carton	compat	1
 lsp	LSP	source	crates/vize_maestro/src/ide/references/script.rs	9	s0	S0/carton	stage	vize_carton	compat	1
