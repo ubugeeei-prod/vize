@@ -33,6 +33,10 @@ const docs = {
     "../../davinci-road/plan/phase-2-records/p2-11/installment-23.md",
     import.meta.url,
   ),
+  installment24: new URL(
+    "../../davinci-road/plan/phase-2-records/p2-11/installment-24.md",
+    import.meta.url,
+  ),
   suites: new URL("../../davinci-road/plan/test-suites.md", import.meta.url),
   devtool: new URL("../../davinci-road/devtool.md", import.meta.url),
   questions: new URL("../../davinci-road/open-questions.md", import.meta.url),
@@ -223,13 +227,14 @@ test("every completion joins a merged PR to honest current evidence", () => {
   assert.doesNotMatch(p2_19, /davinci-phase2-ledger/);
 });
 
-test("P2-11 records installment 23 without presenting stale remainders", () => {
+test("P2-11 records installment 24 without presenting stale remainders", () => {
   for (const source of [text.roadmap, text.readme, text.tasks, text.records, text.p2_11]) {
-    assert.match(source, /#4921/);
-    assert.match(source, /23 (?:landed\s+)?installments|installment 23|\| 23\s+\|/i);
+    assert.match(source, /#4924/);
+    assert.match(source, /24 (?:landed\s+)?installments|installment 24|\| 24\s+\|/i);
   }
   assert.match(text.p2_11, /#4919/);
-  assert.match(text.p2_11, /Current named remainder \(after #4921\)/);
+  assert.match(text.p2_11, /#4921/);
+  assert.match(text.p2_11, /Current named remainder \(after #4924\)/);
   assert.doesNotMatch(text.p2_11, /dynamic-argument bind names \/ modifiers/);
   assert.match(text.installment20, /14-fixture S2-vs-shipped byte-for-byte battery/);
   assert.match(text.installment20, /does not tick P2-11/);
@@ -239,6 +244,8 @@ test("P2-11 records installment 23 without presenting stale remainders", () => {
   assert.match(text.installment22, /does not tick P2-11/);
   assert.match(text.installment23, /Slot outlet same-name names/);
   assert.match(text.installment23, /does not tick P2-11/);
+  assert.match(text.installment24, /Patch-flag matrix expansion/);
+  assert.match(text.installment24, /does not tick P2-11/);
 });
 
 test("suite registry debt and the TS-52 transport decision stay resolved", () => {
