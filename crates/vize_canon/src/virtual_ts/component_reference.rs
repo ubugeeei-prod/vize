@@ -34,19 +34,19 @@ pub(crate) fn resolved_component_binding_reference(
     syntactic_type_only_imported_names: &FxHashSet<CompactString>,
     template_name: &str,
 ) -> Option<String> {
-    if has_type_only_component_candidate(syntactic_type_only_imported_names, template_name) {
-        return Some(component_reference_alias(template_name));
-    }
-
     let camel_name = camelize(template_name);
     let pascal_name = capitalize(camel_name.as_str());
+    // Value bindings win over a type-only PascalCase collision
+    // (`chartComponent` vs `import type { ChartComponent }`).
     for candidate in [template_name, camel_name.as_str(), pascal_name.as_str()] {
         if let Some(binding_type) = summary.bindings.get(candidate) {
-            return Some(component_binding_reference_for_summary_binding(
-                summary,
-                candidate,
-                binding_type,
-            ));
+            if !contains_compact_name(syntactic_type_only_imported_names, candidate) {
+                return Some(component_binding_reference_for_summary_binding(
+                    summary,
+                    candidate,
+                    binding_type,
+                ));
+            }
         }
         if options
             .external_template_bindings
@@ -55,6 +55,9 @@ pub(crate) fn resolved_component_binding_reference(
         {
             return Some(String::from(candidate));
         }
+    }
+    if has_type_only_component_candidate(syntactic_type_only_imported_names, template_name) {
+        return Some(component_reference_alias(template_name));
     }
     None
 }
