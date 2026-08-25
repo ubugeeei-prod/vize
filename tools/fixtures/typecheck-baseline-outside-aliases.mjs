@@ -11,6 +11,10 @@ import {
 } from "./typecheck-baseline-outside-paths.mjs";
 import { rewriteOutsideVueCompilerOptions } from "./typecheck-baseline-outside-vue-compiler.mjs";
 import { rewriteOutsideCompilerPlugins } from "./typecheck-baseline-outside-compiler-plugins.mjs";
+import {
+  mergeLocalVueRuntimePaths,
+  rewriteLocalVueRuntimePaths,
+} from "./typecheck-baseline-outside-vue-runtime-paths.mjs";
 
 /**
  * Close the remaining `compilerOptions.paths` escape for keys that are not
@@ -68,8 +72,14 @@ export function applyIsolatedAliasOverlay(fixtureRoot, sourceConfigPath, overlay
   const aliases = rewriteOutsideAliasPaths(fixtureRoot, sourcePath, configDir);
   const vueCompilerOptions = rewriteOutsideVueCompilerOptions(fixtureRoot, sourcePath, configDir);
   const plugins = rewriteOutsideCompilerPlugins(fixtureRoot, sourcePath, configDir);
-  if (aliases == null && vueCompilerOptions == null && plugins == null) return overlay ?? null;
-  const paths = mergePathRewrites(overlay?.paths ?? null, aliases);
+  const runtimePaths = rewriteLocalVueRuntimePaths(fixtureRoot, configDir);
+  if (aliases == null && vueCompilerOptions == null && plugins == null && runtimePaths == null) {
+    return overlay ?? null;
+  }
+  const paths = mergeLocalVueRuntimePaths(
+    mergePathRewrites(overlay?.paths ?? null, aliases),
+    runtimePaths,
+  );
   const typeRoots = overlay?.typeRoots ?? null;
   const rootDirs = overlay?.rootDirs ?? null;
   const overlayPath = overlay?.path ?? isolatedTsconfigOverlayPath(sourcePath);

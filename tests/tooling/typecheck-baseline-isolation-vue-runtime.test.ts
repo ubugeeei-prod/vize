@@ -161,3 +161,32 @@ test("an ancestor @vue/runtime-core with exactly one in-fixture copy is linked",
     fs.rmSync(outer, { recursive: true, force: true });
   }
 });
+
+test("a nested runtime-dom store copy is hoisted when no ancestor is hoisted", () => {
+  const { fixtureRoot, outer } = scaffold([]);
+  try {
+    writeStoreCopy(fixtureRoot, "@vue+runtime-dom@3.5.30", "@vue/runtime-dom");
+    assert.deepEqual(isolateUniqueVueRuntimePackages(fixtureRoot), [
+      {
+        name: "@vue/runtime-dom",
+        target: "node_modules/.pnpm/@vue+runtime-dom@3.5.30/node_modules/@vue/runtime-dom",
+      },
+    ]);
+    assert.equal(
+      fs.realpathSync(path.join(fixtureRoot, "node_modules", "@vue", "runtime-dom")),
+      fs.realpathSync(
+        path.join(
+          fixtureRoot,
+          "node_modules",
+          ".pnpm",
+          "@vue+runtime-dom@3.5.30",
+          "node_modules",
+          "@vue",
+          "runtime-dom",
+        ),
+      ),
+    );
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
