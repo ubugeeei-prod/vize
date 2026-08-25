@@ -13,9 +13,9 @@ use content_mapper_lsp_support::raw_requests::{
     RawInitialize, RawInitialized, RawSetContentMapperContributions,
 };
 use content_mapper_lsp_support::{
-    EditorResponder, StopOnDrop, assert_no_generated_uri, contains_location, copy_fixture,
-    definition, editor_capabilities, file_uri, hover, install_packages, output_text, position,
-    type_definition, workspace_root,
+    EditorResponder, StopOnDrop, assert_no_generated_uri, contains_location, contains_range,
+    copy_fixture, definition, editor_capabilities, file_uri, hover, install_packages, output_text,
+    position, type_definition, workspace_root,
 };
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
@@ -143,13 +143,15 @@ void componentProps;
             .find("PublicProps")
             .expect("consumer imports PublicProps"),
     );
-    let public_props_usage = position(
+    let public_props_usage_offset = consumer_source
+        .match_indices("PublicProps")
+        .nth(1)
+        .expect("consumer uses PublicProps")
+        .0;
+    let public_props_usage = position(consumer_source, public_props_usage_offset);
+    let public_props_usage_end = position(
         consumer_source,
-        consumer_source
-            .match_indices("PublicProps")
-            .nth(1)
-            .expect("consumer uses PublicProps")
-            .0,
+        public_props_usage_offset + "PublicProps".len(),
     );
     let public_props_target = position(
         app_source,
@@ -234,10 +236,13 @@ void componentProps;
             );
             let mapped_hover = hover(&client, &consumer_uri, &public_props_usage).await;
             assert_no_generated_uri(&mapped_hover);
-            let hover_text = serde_json::to_string(&mapped_hover).unwrap();
             assert!(
-                hover_text.contains("PublicProps") && hover_text.contains("label"),
-                "hover should describe the authored Vue public props type:\n{mapped_hover:#}"
+                contains_range(
+                    &mapped_hover,
+                    &public_props_usage,
+                    &public_props_usage_end
+                ),
+                "hover should cover the authored PublicProps usage:\n{mapped_hover:#}"
             );
 
             stop.store(true, Ordering::Relaxed);
