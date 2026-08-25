@@ -13,6 +13,10 @@ import {
 } from "./typecheck-baseline-outside-paths.mjs";
 import { rewriteOutsideVueCompilerOptions } from "./typecheck-baseline-outside-vue-compiler.mjs";
 import { rewriteOutsideCompilerPlugins } from "./typecheck-baseline-outside-compiler-plugins.mjs";
+import {
+  mergeLocalVueRuntimePaths,
+  rewriteLocalVueRuntimePaths,
+} from "./typecheck-baseline-outside-vue-runtime-paths.mjs";
 import { typecheckCorpusGlobs } from "./tool-matrix-command.mjs";
 
 /**
@@ -130,9 +134,12 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
 
 function outsideCompilerOptions(fixtureRoot, sourcePath, configDir) {
   const options = {};
-  const paths = mergePathRewrites(
-    rewriteOutsidePackagePaths(fixtureRoot, sourcePath, configDir),
-    rewriteOutsideAliasPaths(fixtureRoot, sourcePath, configDir),
+  const paths = mergeLocalVueRuntimePaths(
+    mergePathRewrites(
+      rewriteOutsidePackagePaths(fixtureRoot, sourcePath, configDir),
+      rewriteOutsideAliasPaths(fixtureRoot, sourcePath, configDir),
+    ),
+    rewriteLocalVueRuntimePaths(fixtureRoot, configDir),
   );
   if (paths != null) options.paths = paths;
   if (paths != null && isolatedOverlayBaseUrl(sourcePath, fixtureRoot) != null) {

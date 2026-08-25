@@ -34,6 +34,9 @@ import { ancestorPackagePath } from "./typecheck-baseline-isolation-package-exte
  * Undeclared Vue compiler packages (`@vue/compiler-sfc` and friends) and
  * class-component helpers live in Vize's `tests/package.json`, so TypeScript
  * can still climb into them and load Vize's Vue beside the fixture.
+ * `@vue/runtime-dom` and `@vue/runtime-core` are nested under pnpm's `vue`
+ * rather than hoisted, so ancestor walks miss them; a fixture store copy is
+ * still linked so overlay paths can pin the vue-tsc program onto one Vue.
  */
 
 const vueRuntimePackages = [
@@ -48,6 +51,8 @@ const vueRuntimePackages = [
   "vue-router",
 ];
 
+const vueRuntimeNestedPackages = ["@vue/runtime-core", "@vue/runtime-dom"];
+
 export function isolateUniqueLocalTypePackages(fixtureRoot, sourceConfigPath) {
   const root = resolve(fixtureRoot);
   return isolateUniqueDeclaredLocalTypePackages(
@@ -59,6 +64,7 @@ export function isolateUniqueLocalTypePackages(fixtureRoot, sourceConfigPath) {
 export function isolateUniqueVueRuntimePackages(fixtureRoot) {
   return [
     ...isolateUniqueNamedLocalTypePackages(fixtureRoot, vueRuntimePackages),
+    ...isolateUniqueStoreLocalTypePackages(fixtureRoot, vueRuntimeNestedPackages),
     ...isolateUniqueVueVisualizationPackages(fixtureRoot),
   ];
 }
@@ -76,6 +82,22 @@ function isolateUniqueNamedLocalTypePackages(fixtureRoot, names) {
     declared.set(name, ancestor);
   }
   return isolateUniqueDeclaredLocalTypePackages(root, declared);
+}
+
+function isolateUniqueStoreLocalTypePackages(fixtureRoot, names) {
+  const root = resolve(fixtureRoot);
+  const shadowed = [];
+  for (const name of names) {
+    const link = join(root, "node_modules", ...name.split("/"));
+    if (existsSync(link) || isDanglingLink(link)) continue;
+    const copies = findLocalCopies(root, name);
+    const local = selectLocalCopy(root, name, copies);
+    if (local == null) continue;
+    mkdirSync(dirname(link), { recursive: true });
+    symlinkSync(relative(dirname(link), local), link);
+    shadowed.push({ name, target: relative(root, local).replaceAll("\\", "/") });
+  }
+  return shadowed.sort((left, right) => compare(left.name, right.name));
 }
 
 function isolateUniqueDeclaredLocalTypePackages(root, declared) {
