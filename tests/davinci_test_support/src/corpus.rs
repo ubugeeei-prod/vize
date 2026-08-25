@@ -7,6 +7,7 @@
 
 use std::env;
 use std::fmt;
+use std::fs;
 use std::path::{Component, Path, PathBuf};
 
 use vize_s0::String;
@@ -157,8 +158,8 @@ pub fn prepare_corpus_root(
 ) -> Result<CorpusRoot, CorpusPreflightError> {
     let workspace = workspace_root(package_manifest_dir.as_ref());
     let root = resolve_root(raw_root.into(), &workspace);
-    let canonical = normalize_path(&workspace.join(CANONICAL_CORPUS_ROOT));
-    let scope = if normalize_path(&root) == canonical {
+    let canonical = real_path(&workspace.join(CANONICAL_CORPUS_ROOT));
+    let scope = if real_path(&root) == canonical {
         assert_canonical_hydrated(&workspace)?;
         CorpusScope::ClosureEvidence
     } else {
@@ -170,7 +171,8 @@ pub fn prepare_corpus_root(
 fn workspace_root(package_manifest_dir: &Path) -> PathBuf {
     package_manifest_dir
         .ancestors()
-        .nth(2)
+        .find(|candidate| candidate.join("pnpm-workspace.yaml").is_file())
+        .or_else(|| package_manifest_dir.ancestors().nth(2))
         .unwrap_or(package_manifest_dir)
         .to_path_buf()
 }
@@ -198,6 +200,11 @@ fn normalize_path(path: &Path) -> PathBuf {
         }
     }
     out
+}
+
+fn real_path(path: &Path) -> PathBuf {
+    let normalized = normalize_path(path);
+    fs::canonicalize(&normalized).unwrap_or(normalized)
 }
 
 #[cfg(test)]

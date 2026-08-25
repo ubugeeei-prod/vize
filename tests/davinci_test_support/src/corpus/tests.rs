@@ -81,6 +81,10 @@ fn pin_gitlink(root: &Path, rel_path: &str, revision: &str) {
     );
 }
 
+fn unpin_gitlink(root: &Path, rel_path: &str) {
+    git(root, &["update-index", "--force-remove", rel_path]);
+}
+
 fn output_text(bytes: &[u8]) -> String {
     match core::str::from_utf8(bytes) {
         Ok(text) => text.trim().into(),
@@ -134,16 +138,9 @@ fn canonical_partial_hydration_fails_before_the_sweep() {
 #[test]
 fn canonical_preflight_reports_drift_empty_spaces_and_inventory_mismatches() {
     let repo = TempRepo::new("mixed");
-    let expected = commit_fixture(
-        &repo.root,
-        "tests/_fixtures/_git/path with spaces",
-        "spaces",
-    );
-    pin_gitlink(
-        &repo.root,
-        "tests/_fixtures/_git/path with spaces",
-        &expected,
-    );
+    let spaced = "tests/_fixtures/_git/path with spaces caf\u{e9}";
+    let expected = commit_fixture(&repo.root, spaced, "spaces");
+    pin_gitlink(&repo.root, spaced, &expected);
 
     let actual = commit_fixture(&repo.root, "tests/_fixtures/_git/drifted", "actual");
     let other = commit_fixture(&repo.root, "other", "expected");
@@ -152,6 +149,11 @@ fn canonical_preflight_reports_drift_empty_spaces_and_inventory_mismatches() {
 
     fs::create_dir_all(repo.root.join("tests/_fixtures/_git/empty")).expect("empty fixture");
     pin_gitlink(&repo.root, "tests/_fixtures/_git/empty", &expected);
+
+    let surplus = "tests/_fixtures/_git/surplus";
+    let surplus_revision = commit_fixture(&repo.root, surplus, "surplus");
+    pin_gitlink(&repo.root, surplus, &surplus_revision);
+    unpin_gitlink(&repo.root, surplus);
 
     let mut error = match prepare_corpus_root("tests/_fixtures/_git", repo.package_dir())
         .expect_err("mixed canonical root must fail")
@@ -165,4 +167,10 @@ fn canonical_preflight_reports_drift_empty_spaces_and_inventory_mismatches() {
     assert_eq!(error.clean, 1);
     assert!(error.drifted.iter().any(|row| row.contains("drifted")));
     assert!(error.missing.iter().any(|row| row.contains("empty")));
+    assert!(
+        error
+            .inventory_mismatch
+            .iter()
+            .any(|row| row.contains("surplus"))
+    );
 }

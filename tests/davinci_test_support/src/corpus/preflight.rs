@@ -23,7 +23,14 @@ fn read_indexed_gitlinks(
 ) -> Result<BTreeMap<String, String>, CorpusPreflightError> {
     let output = git(
         workspace,
-        &["ls-files", "--stage", "--", CANONICAL_CORPUS_ROOT],
+        &[
+            "-c",
+            "core.quotePath=false",
+            "ls-files",
+            "--stage",
+            "--",
+            CANONICAL_CORPUS_ROOT,
+        ],
     )?;
     let mut gitlinks = BTreeMap::new();
     for line in output.lines() {
@@ -52,18 +59,53 @@ fn read_submodule_statuses<'a>(
     workspace: &Path,
     indexed_paths: impl Iterator<Item = &'a String>,
 ) -> Result<BTreeMap<String, SubmoduleStatus>, CorpusPreflightError> {
-    let paths: Vec<&str> = indexed_paths.map(String::as_str).collect();
+    let indexed: Vec<String> = indexed_paths.cloned().collect();
+    let gitmodules = read_gitmodules_paths(workspace)?;
+    let mut paths = indexed.clone();
+    paths.extend(gitmodules.iter().cloned());
+    paths.sort();
+    paths.dedup();
+    let path_refs: Vec<&str> = paths.iter().map(String::as_str).collect();
     let output = git(
         workspace,
         &["submodule", "status", "--", CANONICAL_CORPUS_ROOT],
     )?;
     let mut statuses = BTreeMap::new();
     for line in output.lines() {
-        if let Some(status) = parse_status_line(line, &paths) {
+        if let Some(status) = parse_status_line(line, &path_refs) {
             statuses.insert(status.path.clone(), status);
         }
     }
+    for path in gitmodules {
+        if !indexed.contains(&path) && !statuses.contains_key(&path) {
+            statuses.insert(path.clone(), SubmoduleStatus { marker: ' ', path });
+        }
+    }
     Ok(statuses)
+}
+
+fn read_gitmodules_paths(workspace: &Path) -> Result<Vec<String>, CorpusPreflightError> {
+    if !workspace.join(".gitmodules").is_file() {
+        return Ok(Vec::new());
+    }
+    let output = git(
+        workspace,
+        &["config", "--file", ".gitmodules", "--get-regexp", "path"],
+    )?;
+    let mut paths = Vec::new();
+    for line in output.lines() {
+        let Some((_key, path)) = line.split_once(' ') else {
+            continue;
+        };
+        if path == CANONICAL_CORPUS_ROOT
+            || path
+                .strip_prefix(CANONICAL_CORPUS_ROOT)
+                .is_some_and(|tail| tail.starts_with('/'))
+        {
+            paths.push(path.into());
+        }
+    }
+    Ok(paths)
 }
 
 fn parse_status_line(line: &str, indexed_paths: &[&str]) -> Option<SubmoduleStatus> {
@@ -77,11 +119,17 @@ fn parse_status_line(line: &str, indexed_paths: &[&str]) -> Option<SubmoduleStat
             || tail
                 .strip_prefix(*path)
                 .is_some_and(|tail| tail.starts_with(' '))
-    })?;
+    });
+    let path = path.or_else(|| status_path_fallback(tail))?;
     Some(SubmoduleStatus {
         marker,
         path: path.into(),
     })
+}
+
+fn status_path_fallback(tail: &str) -> Option<&str> {
+    let path = tail.split_once(" (").map_or(tail, |(path, _)| path);
+    (!path.is_empty()).then_some(path)
 }
 
 fn build_report(
@@ -245,14 +293,30 @@ fn git_command(args: &[&str]) -> String {
     command
 }
 
-#[test]
-fn status_parser_handles_paths_with_spaces() {
-    let paths = ["tests/_fixtures/_git/path with spaces"];
-    let status = parse_status_line(
-        " 0123456789012345678901234567890123456789 tests/_fixtures/_git/path with spaces",
-        &paths,
-    )
-    .expect("status line");
-    assert_eq!(status.marker, ' ');
-    assert_eq!(status.path, "tests/_fixtures/_git/path with spaces");
+#[cfg(test)]
+mod tests {
+    use super::parse_status_line;
+
+    #[test]
+    fn status_parser_handles_paths_with_spaces() {
+        let paths = ["tests/_fixtures/_git/path with spaces"];
+        let status = parse_status_line(
+            " 0123456789012345678901234567890123456789 tests/_fixtures/_git/path with spaces",
+            &paths,
+        )
+        .expect("status line");
+        assert_eq!(status.marker, ' ');
+        assert_eq!(status.path, "tests/_fixtures/_git/path with spaces");
+    }
+
+    #[test]
+    fn status_parser_keeps_unmatched_surplus_paths() {
+        let status = parse_status_line(
+            " 0123456789012345678901234567890123456789 tests/_fixtures/_git/surplus (heads/main)",
+            &[],
+        )
+        .expect("status line");
+        assert_eq!(status.marker, ' ');
+        assert_eq!(status.path, "tests/_fixtures/_git/surplus");
+    }
 }
