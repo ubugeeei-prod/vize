@@ -63,6 +63,7 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
     '"crates/vize/tests/content_mapper_tsgo_directives.rs"',
     '"crates/vize/tests/content_mapper_tsgo_build.rs"',
     '"crates/vize/tests/content_mapper_tsgo_lsp.rs"',
+    '"crates/vize/tests/content_mapper_tsgo_declaration_lsp.rs"',
     '"crates/vize/tests/content_mapper_tsgo_lsp_event_forms.rs"',
     '"crates/vize/tests/content_mapper_tsgo_lsp_event_forms/**"',
     '"crates/vize/tests/content_mapper_lsp_support/**"',
@@ -144,6 +145,7 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   );
   const editorCommands = [
     "cargo test -p vize --test content_mapper_tsgo_lsp -- --nocapture",
+    "cargo test -p vize --test content_mapper_tsgo_declaration_lsp -- --nocapture",
     "cargo test -p vize --test content_mapper_tsgo_lsp_event_forms -- --nocapture",
     "cargo test -p vize_canon --test lsp_import_resolution -- --nocapture",
   ];

@@ -13,9 +13,9 @@ use content_mapper_lsp_support::raw_requests::{
     RawInitialize, RawInitialized, RawSetContentMapperContributions,
 };
 use content_mapper_lsp_support::{
-    EditorResponder, StopOnDrop, assert_no_generated_uri, contains_location, contains_range,
-    copy_fixture, definition, editor_capabilities, file_uri, hover, install_packages, output_text,
-    position, type_definition, workspace_root,
+    EditorResponder, StopOnDrop, assert_no_generated_uri, contains_location, copy_fixture,
+    definition, editor_capabilities, file_uri, hover, install_packages, output_text, position,
+    type_definition, workspace_root,
 };
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
@@ -236,13 +236,21 @@ void componentProps;
             );
             let mapped_hover = hover(&client, &consumer_uri, &public_props_usage).await;
             assert_no_generated_uri(&mapped_hover);
-            assert!(
-                contains_range(
-                    &mapped_hover,
-                    &public_props_usage,
-                    &public_props_usage_end
-                ),
-                "hover should cover the authored PublicProps usage:\n{mapped_hover:#}"
+            assert_eq!(
+                mapped_hover["contents"],
+                json!({
+                    "kind": "plaintext",
+                    "value": "(alias) interface PublicProps"
+                }),
+                "hover should describe the authored Vue public props type:\n{mapped_hover:#}"
+            );
+            assert_eq!(
+                mapped_hover["range"],
+                json!({
+                    "start": public_props_usage,
+                    "end": public_props_usage_end
+                }),
+                "hover range should cover the consumer PublicProps usage:\n{mapped_hover:#}"
             );
 
             stop.store(true, Ordering::Relaxed);
