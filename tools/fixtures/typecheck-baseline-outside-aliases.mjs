@@ -10,6 +10,7 @@ import {
   resolvePackageExtends,
 } from "./typecheck-baseline-outside-paths.mjs";
 import { rewriteOutsideVueCompilerOptions } from "./typecheck-baseline-outside-vue-compiler.mjs";
+import { rewriteOutsideCompilerPlugins } from "./typecheck-baseline-outside-compiler-plugins.mjs";
 
 /**
  * Close the remaining `compilerOptions.paths` escape for keys that are not
@@ -66,7 +67,8 @@ export function applyIsolatedAliasOverlay(fixtureRoot, sourceConfigPath, overlay
   const configDir = dirname(sourcePath);
   const aliases = rewriteOutsideAliasPaths(fixtureRoot, sourcePath, configDir);
   const vueCompilerOptions = rewriteOutsideVueCompilerOptions(fixtureRoot, sourcePath, configDir);
-  if (aliases == null && vueCompilerOptions == null) return overlay ?? null;
+  const plugins = rewriteOutsideCompilerPlugins(fixtureRoot, sourcePath, configDir);
+  if (aliases == null && vueCompilerOptions == null && plugins == null) return overlay ?? null;
   const paths = mergePathRewrites(overlay?.paths ?? null, aliases);
   const typeRoots = overlay?.typeRoots ?? null;
   const rootDirs = overlay?.rootDirs ?? null;
@@ -75,6 +77,7 @@ export function applyIsolatedAliasOverlay(fixtureRoot, sourceConfigPath, overlay
   if (paths != null) compilerOptions.paths = paths;
   if (typeRoots != null) compilerOptions.typeRoots = typeRoots;
   if (rootDirs != null) compilerOptions.rootDirs = rootDirs;
+  if (plugins != null) compilerOptions.plugins = plugins;
   if (paths != null && isolatedOverlayBaseUrl(sourcePath, fixtureRoot) != null) {
     compilerOptions.baseUrl = ".";
   }
@@ -82,7 +85,7 @@ export function applyIsolatedAliasOverlay(fixtureRoot, sourceConfigPath, overlay
   if (Object.keys(compilerOptions).length > 0) document.compilerOptions = compilerOptions;
   if (vueCompilerOptions != null) document.vueCompilerOptions = vueCompilerOptions;
   writeFileSync(overlayPath, `${JSON.stringify(document, null, 2)}\n`);
-  return { path: overlayPath, paths, typeRoots, rootDirs, vueCompilerOptions };
+  return { path: overlayPath, paths, typeRoots, rootDirs, vueCompilerOptions, plugins };
 }
 
 function retargetAliasMapping(

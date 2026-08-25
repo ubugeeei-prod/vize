@@ -12,6 +12,7 @@ import {
   rewriteOutsideTypeRoots,
 } from "./typecheck-baseline-outside-paths.mjs";
 import { rewriteOutsideVueCompilerOptions } from "./typecheck-baseline-outside-vue-compiler.mjs";
+import { rewriteOutsideCompilerPlugins } from "./typecheck-baseline-outside-compiler-plugins.mjs";
 import { typecheckCorpusGlobs } from "./tool-matrix-command.mjs";
 
 /**
@@ -141,6 +142,8 @@ function outsideCompilerOptions(fixtureRoot, sourcePath, configDir) {
   if (typeRoots != null) options.typeRoots = typeRoots;
   const rootDirs = rewriteOutsideRootDirs(fixtureRoot, sourcePath, configDir);
   if (rootDirs != null) options.rootDirs = rootDirs;
+  const plugins = rewriteOutsideCompilerPlugins(fixtureRoot, sourcePath, configDir);
+  if (plugins != null) options.plugins = plugins;
   return options;
 }
 
