@@ -148,6 +148,15 @@ test("Davinci fuzz harness imports stage packages through aliases", () => {
 test("Davinci DOM lane tests import lowering through the stage alias", () => {
   const lowering = dependency(metadata, "vize_atelier_dom", "vize_ricalco", "dev");
   assert.equal(lowering.rename, "vize_s1_to_s2");
+  const dependencies = workspacePackage(metadata, "vize_atelier_dom").dependencies;
+  assert.ok(
+    dependencies.every(
+      (dependency) =>
+        dependency.name !== "vize_ricalco" ||
+        (dependency.kind === "dev" && dependency.rename === "vize_s1_to_s2"),
+    ),
+    "vize_atelier_dom must not depend on vize_ricalco through its physical name",
+  );
 
   for (const file of ["davinci_s2_dom.rs", "davinci_s2_slots.rs", path.join("support", "mod.rs")]) {
     const source = readRepoFile("crates", "vize_atelier_dom", "tests", file);
