@@ -1,0 +1,13 @@
+{
+  "bench_id": "ricalco_lower_vfor_three_aliases",
+  "fixture": "synthetic:v-for-three-aliases",
+  "platform": "linux",
+  "wall_ns": {
+    "p50": 784,
+    "p95": 43582
+  },
+  "allocs": 10,
+  "alloc_bytes_peak": 1254,
+  "rss_peak_bytes": 111464448,
+  "harness_version": "0.387.0"
+}

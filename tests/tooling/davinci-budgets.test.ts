@@ -217,6 +217,43 @@ test("compact-storage peaks are exact per-platform allocation budgets", () => {
   }
 });
 
+test("compact-storage wall budgets match the committed linux baseline reports", () => {
+  const expected = {
+    ricalco_lower_vfor_three_aliases: {
+      fixture: "synthetic:v-for-three-aliases",
+      wallP50Ns: 784,
+      allocs: 10,
+      allocBytesPeak: 1254,
+    },
+    ricalco_emit_von_two_per_bucket: {
+      fixture: "synthetic:v-on-two-option-event-key-modifiers",
+      wallP50Ns: 1478,
+      allocs: 18,
+      allocBytesPeak: 648,
+    },
+  };
+  for (const [id, row] of Object.entries(expected)) {
+    const reportPath = path.join(repoRoot, "bench", "results", "davinci", "baseline", `${id}.json`);
+    const report = JSON.parse(fs.readFileSync(reportPath, "utf8")) as {
+      bench_id: string;
+      fixture: string;
+      platform: string;
+      wall_ns: { p50: number };
+      allocs: number;
+      alloc_bytes_peak: number;
+    };
+    assert.equal(report.bench_id, id);
+    assert.equal(report.fixture, row.fixture);
+    assert.equal(report.platform, "linux");
+    assert.equal(report.wall_ns.p50, row.wallP50Ns);
+    assert.equal(budgets.bench[id]?.wall_p50_ns, row.wallP50Ns);
+    assert.equal(report.allocs, row.allocs);
+    assert.equal(budgets.bench[id]?.allocs, row.allocs);
+    assert.equal(report.alloc_bytes_peak, row.allocBytesPeak);
+    assert.equal(budgets.allocation_peak[id]?.linux, row.allocBytesPeak);
+  }
+});
+
 test("toml-lite parses inline tables and rejects malformed ones", () => {
   assert.deepEqual(parseTomlLite("[bench]\na = { x = 1, y = 0.5 }\n"), {
     bench: { a: { x: 1, y: 0.5 } },
