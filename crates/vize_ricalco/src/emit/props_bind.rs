@@ -6,6 +6,7 @@ use vize_s2::op::{BindOp, DynamicName};
 
 use super::EmitCx;
 use super::EmitError;
+use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::js::is_valid_js_identifier;
 
@@ -42,7 +43,10 @@ pub(super) fn bind_name<'a>(bind: &'a BindOp<'a>) -> Result<BindName<'a>, EmitEr
     match bind.name {
         Some(DynamicName::Static(name)) => Ok(BindName::Static(name)),
         Some(DynamicName::Dynamic(ExprRef::Js(js))) => Ok(BindName::Dynamic(js)),
-        Some(DynamicName::Dynamic(_)) => Err(EmitError::Unsupported),
+        Some(DynamicName::Dynamic(expr)) => Err(EmitError::unsupported_at(
+            Reason::BindNameNotJs,
+            expr.span(),
+        )),
         None => Ok(BindName::Spread),
     }
 }
@@ -50,7 +54,10 @@ pub(super) fn bind_name<'a>(bind: &'a BindOp<'a>) -> Result<BindName<'a>, EmitEr
 pub(super) fn static_bind_name<'a>(bind: &'a BindOp<'a>) -> Result<&'a str, EmitError> {
     match bind_name(bind)? {
         BindName::Static(name) => Ok(name),
-        BindName::Dynamic(_) | BindName::Spread => Err(EmitError::Unsupported),
+        BindName::Dynamic(_) | BindName::Spread => Err(EmitError::unsupported_at(
+            Reason::BindRequiresStaticName,
+            bind.span,
+        )),
     }
 }
 
@@ -98,7 +105,7 @@ pub(super) fn emit_dynamic_bind_key(
     bind: &BindOp<'_>,
 ) -> Result<(), EmitError> {
     let BindName::Dynamic(js) = bind_name(bind)? else {
-        return Err(EmitError::Unsupported);
+        return Err(EmitError::unsupported_at(Reason::BindNameNotJs, bind.span));
     };
     let mods = StaticBindModifiers::of(bind);
     cx.buf.push("[");
@@ -152,7 +159,11 @@ fn emit_dynamic_key_source(cx: &mut EmitCx<'_>, source: &str) {
 pub(super) fn js_value<'a>(bind: &'a BindOp<'a>) -> Result<&'a JsExpr<'a>, EmitError> {
     match bind.value {
         Some(ExprRef::Js(js)) => Ok(js),
-        _ => Err(EmitError::Unsupported),
+        Some(expr) => Err(EmitError::unsupported_at(
+            Reason::BindValueNotJs,
+            expr.span(),
+        )),
+        None => Err(EmitError::unsupported_at(Reason::BindValueNotJs, bind.span)),
     }
 }
 

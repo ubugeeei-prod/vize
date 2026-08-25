@@ -9,6 +9,7 @@ use vize_s2::op::{DynamicName, OnOp};
 
 use super::EmitCx;
 use super::EmitError;
+use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 
 // A reviewed inventory of 179 natural modified `v-on` attributes currently
@@ -42,14 +43,19 @@ pub(super) fn admit_on(on: &OnOp<'_>) -> Result<(), EmitError> {
     classify(on)?;
     match on.handler {
         None | Some(ExprRef::Js(_)) => Ok(()),
-        Some(_) => Err(EmitError::Unsupported),
+        Some(expr) => Err(EmitError::unsupported_at(
+            Reason::OnHandlerNotJs,
+            expr.span(),
+        )),
     }
 }
 
 pub(super) fn static_on_name<'a>(on: &'a OnOp<'a>) -> Result<&'a str, EmitError> {
     match on.name {
         Some(DynamicName::Static(name)) => Ok(name),
-        Some(DynamicName::Dynamic(_)) | None => Err(EmitError::Unsupported),
+        Some(DynamicName::Dynamic(_)) | None => {
+            Err(EmitError::unsupported_at(Reason::OnNameNotStatic, on.span))
+        }
     }
 }
 
@@ -151,7 +157,12 @@ fn emit_wrapped_handler(
     match on.handler {
         Some(ExprRef::Js(js)) => emit_handler(cx, js),
         None => cx.buf.push("() => {}"),
-        Some(_) => return Err(EmitError::Unsupported),
+        Some(expr) => {
+            return Err(EmitError::unsupported_at(
+                Reason::OnHandlerNotJs,
+                expr.span(),
+            ));
+        }
     }
     if !classified.event.is_empty() {
         cx.buf.push(", ");

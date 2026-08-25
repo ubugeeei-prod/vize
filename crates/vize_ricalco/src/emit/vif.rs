@@ -7,6 +7,7 @@ use vize_s2::op::{IfBranch, IfOp, Op};
 
 use super::EmitCx;
 use super::EmitError;
+use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::js::escape_js_string;
 use crate::pass::{BranchKeyKind, IfFacts};
@@ -17,7 +18,10 @@ pub(super) fn emit_if(
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
     if if_op.branches.is_empty() {
-        return Err(EmitError::Unsupported);
+        return Err(EmitError::unsupported_at(
+            Reason::IfWithoutBranches,
+            if_op.span,
+        ));
     }
     cx.buf.use_open_block();
     cx.buf.use_create_comment();
@@ -88,7 +92,10 @@ fn emit_condition(cx: &mut EmitCx<'_>, condition: &ExprRef<'_>) -> Result<(), Em
             cx.buf.push(js.source);
             Ok(())
         }
-        _ => Err(EmitError::Unsupported),
+        _ => Err(EmitError::unsupported_at(
+            Reason::IfConditionNotJs,
+            condition.span(),
+        )),
     }
 }
 
@@ -133,6 +140,9 @@ fn emit_branch(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<
             cx.walk.skip(slot.bindings.len());
             super::outlet::emit_outlet(cx, slot, Some(key), true)
         }
-        _ => Err(EmitError::Unsupported),
+        _ => Err(EmitError::unsupported_at(
+            Reason::IfBranchShape,
+            branch.span,
+        )),
     }
 }

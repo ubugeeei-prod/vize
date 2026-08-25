@@ -9,6 +9,7 @@ use vize_s2::op::{InterpolationOp, Op, Region};
 
 use super::EmitCx;
 use super::EmitError;
+use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::children::{
     emit_create_text_vnode, emit_interpolation, emit_plain_text_vnode, emit_to_display_string,
@@ -50,7 +51,10 @@ pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), Em
             continue;
         }
         if found {
-            return Err(EmitError::Unsupported);
+            return Err(EmitError::unsupported_op(
+                Reason::TextRunContainsNonText,
+                op,
+            ));
         }
         found = true;
         emit_unique(cx, op)?;
@@ -180,12 +184,19 @@ fn emit_interp(
             emit_interpolation(cx, interp, id)
         }
         ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound => {
-            let id = id.ok_or(EmitError::Unsupported)?;
+            let id = id.ok_or(EmitError::unsupported_at(
+                Reason::WalkIdOverflow,
+                interp.span,
+            ))?;
             let parts = cx
                 .facts
                 .text_facts
                 .get(id)
-                .ok_or(EmitError::Unsupported)?
+                .ok_or(EmitError::unsupported_at_node(
+                    Reason::MissingTextFacts,
+                    interp.span,
+                    id,
+                ))?
                 .parts
                 .clone();
             for part in parts.iter() {
@@ -198,9 +209,9 @@ fn emit_interp(
             }
             Ok(())
         }
-        ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => {
-            Err(EmitError::Unsupported)
-        }
+        ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => Err(
+            EmitError::unsupported_at(Reason::TextExpressionNotEmittable, interp.expression.span()),
+        ),
     }
 }
 

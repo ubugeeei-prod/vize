@@ -13,6 +13,7 @@ use vize_s2::op::{Attribute, BindOp, BindingOp, OnOp};
 
 use super::EmitCx;
 use super::EmitError;
+use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::on::{event_key_for, needs_hydration};
 use super::props::{
@@ -30,18 +31,31 @@ pub(super) fn has_object_spread(bindings: &[BindingOp<'_>]) -> bool {
 
 pub(super) fn admit_object(bind: &BindOp<'_>) -> Result<(), EmitError> {
     if !bind.modifiers.is_empty() {
-        return Err(EmitError::Unsupported);
+        return Err(EmitError::unsupported_at(
+            Reason::ObjectBindHasModifiers,
+            bind.span,
+        ));
     }
     js_value(bind).map(|_| ())
 }
 
 pub(super) fn admit_object_on(on: &OnOp<'_>) -> Result<(), EmitError> {
     if !on.modifiers.is_empty() {
-        return Err(EmitError::Unsupported);
+        return Err(EmitError::unsupported_at(
+            Reason::ObjectOnHasModifiers,
+            on.span,
+        ));
     }
     match on.handler {
         Some(ExprRef::Js(_)) => Ok(()),
-        _ => Err(EmitError::Unsupported),
+        Some(expr) => Err(EmitError::unsupported_at(
+            Reason::ObjectOnHandlerNotJs,
+            expr.span(),
+        )),
+        None => Err(EmitError::unsupported_at(
+            Reason::ObjectOnHandlerNotJs,
+            on.span,
+        )),
     }
 }
 
@@ -126,7 +140,7 @@ pub(super) fn emit_spread_props(
         return match lone {
             Arg::BindSpread(bind) => emit_normalize_guard(cx, bind),
             Arg::OnSpread(on) => emit_to_handlers(cx, on),
-            Arg::Object { .. } => Err(EmitError::Unsupported),
+            Arg::Object { .. } => Err(EmitError::unsupported(Reason::LoneObjectArgument)),
         };
     }
     cx.buf.use_merge_props();
@@ -242,7 +256,18 @@ fn emit_normalize_guard(cx: &mut EmitCx<'_>, bind: &BindOp<'_>) -> Result<(), Em
 fn emit_to_handlers(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitError> {
     let js = match on.handler {
         Some(ExprRef::Js(js)) => js,
-        _ => return Err(EmitError::Unsupported),
+        Some(expr) => {
+            return Err(EmitError::unsupported_at(
+                Reason::ObjectOnHandlerNotJs,
+                expr.span(),
+            ));
+        }
+        None => {
+            return Err(EmitError::unsupported_at(
+                Reason::ObjectOnHandlerNotJs,
+                on.span,
+            ));
+        }
     };
     cx.buf.use_to_handlers();
     cx.buf.push(Buf::to_handlers_alias());

@@ -12,6 +12,7 @@ use vize_s2::op::{
 
 use super::EmitCx;
 use super::EmitError;
+use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::helper::Helper;
 use super::js::asset_ident;
@@ -232,6 +233,9 @@ fn custom_name<'a>(binding: &'a BindingOp<'a>) -> Option<&'a str> {
 fn js_expr(expr: ExprRef<'_>) -> Result<&str, EmitError> {
     match expr {
         ExprRef::Js(js) => Ok(js.source),
-        _ => Err(EmitError::Unsupported),
+        _ => Err(EmitError::unsupported_at(
+            Reason::CustomDirectiveExprNotJs,
+            expr.span(),
+        )),
     }
 }

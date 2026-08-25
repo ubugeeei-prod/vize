@@ -8,7 +8,14 @@
 
 use vize_atelier_dom::compile_template;
 use vize_carton::Allocator;
-use vize_ricalco::{DOM_LANE_FLAG, EmitError, emit_dom_source};
+use vize_ricalco::{DOM_LANE_FLAG, EmitError, UnsupportedReason, emit_dom_source};
+
+#[derive(Clone, Copy)]
+#[allow(dead_code)]
+pub enum ExpectedRefusal {
+    Diagnostics,
+    Unsupported(UnsupportedReason),
+}
 
 pub fn shipped(src: &str) -> String {
     let allocator = Allocator::new();
@@ -45,15 +52,23 @@ pub fn assert_s2_matches_shipped(battery: &[(&str, &str)]) {
 }
 
 #[allow(dead_code)]
-pub fn assert_s2_refuses(battery: &[(&str, &str, EmitError)]) {
+pub fn assert_s2_refuses(battery: &[(&str, &str, ExpectedRefusal)]) {
     let allocator = Allocator::new();
     for (name, src, expected) in battery {
         let error = emit_dom_source(&allocator, src)
             .map(|emit| emit.assembled())
             .expect_err(name);
-        assert_eq!(
-            error, *expected,
-            "{name}: S2 DOM refused with the wrong reason"
-        );
+        match expected {
+            ExpectedRefusal::Diagnostics => assert_eq!(
+                error,
+                EmitError::Diagnostics,
+                "{name}: S2 DOM refused with the wrong reason"
+            ),
+            ExpectedRefusal::Unsupported(reason) => assert_eq!(
+                error.reason(),
+                Some(*reason),
+                "{name}: S2 DOM refused with the wrong reason: {error:?}"
+            ),
+        }
     }
 }

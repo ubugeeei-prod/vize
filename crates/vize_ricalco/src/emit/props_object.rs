@@ -7,11 +7,9 @@ use vize_s2::op::{Attribute, BindOp, BindingOp, DynamicName, OnOp};
 
 use super::EmitCx;
 use super::EmitError;
-use super::buf::Buf;
+use super::UnsupportedReason as Reason;
 use super::js::{escape_js_string, push_ident_key};
-use super::props_bind::{
-    StaticBindKeyCasing, emit_dynamic_bind_pair, js_value, static_bind_key, static_bind_name,
-};
+use super::props_bind::{self, StaticBindKeyCasing};
 use super::{on, style};
 
 pub(super) fn emit_props_object(
@@ -163,7 +161,12 @@ pub(super) fn pieces<'a>(
             BindingOp::Model(model) => super::model::expand(model, &mut out)?,
             BindingOp::SlotContent(_) => {}
             BindingOp::VueDirective(_) => {}
-            _ => return Err(EmitError::Unsupported),
+            _ => {
+                return Err(EmitError::unsupported_binding(
+                    Reason::UnsupportedBindingKind,
+                    binding,
+                ));
+            }
         }
     }
     out.sort_by_key(|piece| match piece {
@@ -231,12 +234,12 @@ fn emit_bind_pair(
     bind: &BindOp<'_>,
     skip_normalize: bool,
 ) -> Result<(), EmitError> {
-    if emit_dynamic_bind_pair(cx, bind)? {
+    if props_bind::emit_dynamic_bind_pair(cx, bind)? {
         return Ok(());
     }
-    let raw_name = static_bind_name(bind)?;
-    let key = static_bind_key(bind, StaticBindKeyCasing::Preserve)?;
-    let js = js_value(bind)?;
+    let raw_name = props_bind::static_bind_name(bind)?;
+    let key = props_bind::static_bind_key(bind, StaticBindKeyCasing::Preserve)?;
+    let js = props_bind::js_value(bind)?;
     emit_ref_for(cx, key.as_str());
     push_ident_key(cx, key.as_str());
     cx.buf.push(": ");
@@ -265,7 +268,7 @@ fn emit_class_value(
 ) {
     if !skip_normalize {
         cx.buf.use_normalize_class();
-        cx.buf.push(Buf::normalize_class_alias());
+        cx.buf.push(super::buf::Buf::normalize_class_alias());
         cx.buf.push("(");
     }
     if let Some(static_class) = pieces.iter().find_map(|piece| match piece {

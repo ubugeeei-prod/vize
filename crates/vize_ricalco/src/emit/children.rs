@@ -4,11 +4,13 @@
 //! [`TextFacts`]: crate::pass::TextFacts
 
 use vize_davinci::id::NodeId;
+use vize_s0::Span;
 use vize_s2::expr::{ExprRef, OpaqueReason};
 use vize_s2::op::{InterpolationOp, Op, Region};
 
 use super::EmitCx;
 use super::EmitError;
+use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::js::escape_js_string;
 use crate::lower::TextPart;
@@ -23,7 +25,10 @@ pub(super) fn emit_text_like(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), 
             Op::Text(text) => emit_quoted_text(cx, text.content),
             Op::Interpolation(interp) => emit_interpolation(cx, interp, id)?,
             Op::Element(_) | Op::Component(_) | Op::If(_) | Op::For(_) | Op::Slot(_) => {
-                return Err(EmitError::Unsupported);
+                return Err(EmitError::unsupported_op(
+                    Reason::TextRunContainsNonText,
+                    op,
+                ));
             }
         }
     }
@@ -57,19 +62,34 @@ pub(super) fn emit_interpolation(
             Ok(())
         }
         ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound => {
-            let id = id.ok_or(EmitError::Unsupported)?;
-            let facts = cx.facts.text_facts.get(id).ok_or(EmitError::Unsupported)?;
-            emit_compound_parts(cx, &facts.parts)
+            let id = id.ok_or(EmitError::unsupported_at(
+                Reason::WalkIdOverflow,
+                interp.span,
+            ))?;
+            let facts = cx
+                .facts
+                .text_facts
+                .get(id)
+                .ok_or(EmitError::unsupported_at_node(
+                    Reason::MissingTextFacts,
+                    interp.span,
+                    id,
+                ))?;
+            emit_compound_parts(cx, &facts.parts, interp.span)
         }
-        ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => {
-            Err(EmitError::Unsupported)
-        }
+        ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => Err(
+            EmitError::unsupported_at(Reason::TextExpressionNotEmittable, interp.expression.span()),
+        ),
     }
 }
 
-fn emit_compound_parts(cx: &mut EmitCx<'_>, parts: &[TextPart]) -> Result<(), EmitError> {
+fn emit_compound_parts(
+    cx: &mut EmitCx<'_>,
+    parts: &[TextPart],
+    span: Span,
+) -> Result<(), EmitError> {
     if parts.is_empty() {
-        return Err(EmitError::Unsupported);
+        return Err(EmitError::unsupported_at(Reason::EmptyCompoundText, span));
     }
     for (i, part) in parts.iter().enumerate() {
         if i > 0 {
@@ -116,7 +136,7 @@ pub(super) fn emit_plain_text_vnode(cx: &mut EmitCx<'_>, content: &str) {
 /// `codegen/children.rs`'s consecutive-run grouping.
 pub(super) fn emit_create_text_vnode(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError> {
     if ops.is_empty() {
-        return Err(EmitError::Unsupported);
+        return Err(EmitError::unsupported(Reason::EmptyTextRun));
     }
     let has_interp = ops.iter().any(|op| matches!(op, Op::Interpolation(_)));
     let is_single_space =
@@ -148,25 +168,36 @@ pub(super) fn emit_slot_text_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(
     match interp.expression {
         ExprRef::Js(_) => emit_create_text_vnode(cx, core::slice::from_ref(op)),
         ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound => {
-            let id = cx.walk.mint().ok_or(EmitError::Unsupported)?;
+            let id = cx.walk.mint().ok_or(EmitError::unsupported_at(
+                Reason::WalkIdOverflow,
+                interp.span,
+            ))?;
             let parts = cx
                 .facts
                 .text_facts
                 .get(id)
-                .ok_or(EmitError::Unsupported)?
+                .ok_or(EmitError::unsupported_at_node(
+                    Reason::MissingTextFacts,
+                    interp.span,
+                    id,
+                ))?
                 .parts
                 .clone();
-            emit_slot_compound_parts(cx, &parts)
+            emit_slot_compound_parts(cx, &parts, interp.span)
         }
-        ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => {
-            Err(EmitError::Unsupported)
-        }
+        ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => Err(
+            EmitError::unsupported_at(Reason::TextExpressionNotEmittable, interp.expression.span()),
+        ),
     }
 }
 
-fn emit_slot_compound_parts(cx: &mut EmitCx<'_>, parts: &[TextPart]) -> Result<(), EmitError> {
+fn emit_slot_compound_parts(
+    cx: &mut EmitCx<'_>,
+    parts: &[TextPart],
+    span: Span,
+) -> Result<(), EmitError> {
     if parts.is_empty() {
-        return Err(EmitError::Unsupported);
+        return Err(EmitError::unsupported_at(Reason::EmptyCompoundText, span));
     }
     for (i, part) in parts.iter().enumerate() {
         if i > 0 {

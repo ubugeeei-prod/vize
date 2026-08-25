@@ -7,6 +7,7 @@ use vize_s2::op::{Attribute, BindingOp, ForOp, Op};
 
 use super::EmitCx;
 use super::EmitError;
+use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::js::escape_js_string;
 
@@ -42,7 +43,7 @@ pub(super) fn emit_for(
                 slot.bindings.len(),
                 has_item_key(&slot.attributes, &slot.bindings),
             ),
-            _ => return Err(EmitError::Unsupported),
+            _ => return Err(EmitError::unsupported_at(Reason::ForItemShape, for_op.span)),
         }
     };
     let stable = is_numeric(source);
@@ -137,14 +138,17 @@ fn emit_plain_item(
             super::component::emit_for_item(cx, component, id, key.as_deref())
         }
         [Op::Slot(slot)] => super::outlet::emit_outlet(cx, slot, None, false),
-        _ => Err(EmitError::Unsupported),
+        _ => Err(EmitError::unsupported_at(Reason::ForItemShape, for_op.span)),
     }
 }
 
 pub(super) fn js_source<'a>(expr: &'a ExprRef<'a>) -> Result<&'a str, EmitError> {
     match expr {
         ExprRef::Js(js) => Ok(js.source),
-        _ => Err(EmitError::Unsupported),
+        _ => Err(EmitError::unsupported_at(
+            Reason::ForSourceNotJs,
+            expr.span(),
+        )),
     }
 }
 
@@ -156,7 +160,10 @@ pub(super) fn value_alias<'a>(expr: &'a ExprRef<'a>) -> Result<&'a str, EmitErro
         // emit the authored source verbatim into the callback param.
         ExprRef::Opaque(opaque) if opaque.source.is_empty() => Ok("_item"),
         ExprRef::Opaque(opaque) => Ok(opaque.source),
-        _ => Err(EmitError::Unsupported),
+        _ => Err(EmitError::unsupported_at(
+            Reason::ForAliasNotEmittable,
+            expr.span(),
+        )),
     }
 }
 

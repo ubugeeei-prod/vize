@@ -12,6 +12,7 @@ use vize_s2::op::{IfBranch, Op};
 
 use super::EmitCx;
 use super::EmitError;
+use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::children::{emit_create_text_vnode, emit_plain_text_vnode, emit_to_display_string};
 use super::hoist::{emit_hoisted_element, is_hoistable};
@@ -40,7 +41,9 @@ pub(super) fn wrapper_key_js(key: &WrapperKey) -> Result<String, EmitError> {
             out.push('"');
             Ok(out)
         }
-        WrapperKey::Dynamic { source, .. } if source.is_empty() => Err(EmitError::Unsupported),
+        WrapperKey::Dynamic { source, span } if source.is_empty() => Err(
+            EmitError::unsupported_at(Reason::TemplateDynamicKeyEmpty, *span),
+        ),
         WrapperKey::Dynamic { source, .. } => Ok(source.clone()),
     }
 }
@@ -85,7 +88,10 @@ fn unwrap_if(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<()
             let id = cx.walk.mint();
             super::emit_for_op(cx, for_op, id, Some(key))
         }
-        _ => Err(EmitError::Unsupported),
+        _ => Err(EmitError::unsupported_at(
+            Reason::TemplateUnwrapShape,
+            branch.span,
+        )),
     }
 }
 
@@ -101,7 +107,10 @@ pub(super) fn emit_for_template_item(
 ) -> Result<(), EmitError> {
     if should_unwrap_for(ops) {
         let Op::Element(element) = &ops[0] else {
-            return Err(EmitError::Unsupported);
+            return Err(EmitError::unsupported_op(
+                Reason::TemplateUnwrapShape,
+                &ops[0],
+            ));
         };
         let _id = cx.walk.mint();
         cx.walk.skip(element.bindings.len());
@@ -211,12 +220,19 @@ fn emit_gen_interp(
             Ok(())
         }
         ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound => {
-            let id = id.ok_or(EmitError::Unsupported)?;
+            let id = id.ok_or(EmitError::unsupported_at(
+                Reason::WalkIdOverflow,
+                interp.span,
+            ))?;
             let parts = cx
                 .facts
                 .text_facts
                 .get(id)
-                .ok_or(EmitError::Unsupported)?
+                .ok_or(EmitError::unsupported_at_node(
+                    Reason::MissingTextFacts,
+                    interp.span,
+                    id,
+                ))?
                 .parts
                 .clone();
             for part in parts.iter() {
@@ -229,9 +245,9 @@ fn emit_gen_interp(
             }
             Ok(())
         }
-        ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => {
-            Err(EmitError::Unsupported)
-        }
+        ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => Err(
+            EmitError::unsupported_at(Reason::TextExpressionNotEmittable, interp.expression.span()),
+        ),
     }
 }
 

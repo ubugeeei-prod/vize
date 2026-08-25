@@ -11,6 +11,7 @@ use vize_s2::op::{BindingOp, DynamicName, InterpolationOp, Op, Region, SlotOp};
 
 use super::EmitCx;
 use super::EmitError;
+use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::children::{
     emit_create_text_vnode, emit_interpolation, emit_plain_text_vnode, emit_to_display_string,
@@ -101,7 +102,10 @@ fn emit_name(cx: &mut EmitCx<'_>, slot: &SlotOp<'_>) -> Result<(), EmitError> {
             cx.buf.push(js.source);
             Ok(())
         }
-        DynamicName::Dynamic(_) => Err(EmitError::Unsupported),
+        DynamicName::Dynamic(expr) => Err(EmitError::unsupported_at(
+            Reason::SlotOutletNameNotJs,
+            expr.span(),
+        )),
     }
 }
 
@@ -167,7 +171,12 @@ fn emit_props(cx: &mut EmitCx<'_>, slot: &SlotOp<'_>, key: Option<&str>) -> Resu
             Piece::On(_)
             | Piece::ModelValue { .. }
             | Piece::ModelUpdate { .. }
-            | Piece::ModelModifiers { .. } => return Err(EmitError::Unsupported),
+            | Piece::ModelModifiers { .. } => {
+                return Err(EmitError::unsupported_at(
+                    Reason::SlotOutletPropKind,
+                    piece_span(piece),
+                ));
+            }
         }
     }
     if !first {
@@ -264,12 +273,19 @@ fn emit_fallback_interp(
             emit_interpolation(cx, interp, id)
         }
         ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound => {
-            let id = id.ok_or(EmitError::Unsupported)?;
+            let id = id.ok_or(EmitError::unsupported_at(
+                Reason::WalkIdOverflow,
+                interp.span,
+            ))?;
             let parts = cx
                 .facts
                 .text_facts
                 .get(id)
-                .ok_or(EmitError::Unsupported)?
+                .ok_or(EmitError::unsupported_at_node(
+                    Reason::MissingTextFacts,
+                    interp.span,
+                    id,
+                ))?
                 .parts
                 .clone();
             for part in parts.iter() {
@@ -282,9 +298,20 @@ fn emit_fallback_interp(
             }
             Ok(())
         }
-        ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => {
-            Err(EmitError::Unsupported)
-        }
+        ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => Err(
+            EmitError::unsupported_at(Reason::TextExpressionNotEmittable, interp.expression.span()),
+        ),
+    }
+}
+
+fn piece_span(piece: &Piece<'_>) -> vize_s0::Span {
+    match piece {
+        Piece::Attr(attr) => attr.span,
+        Piece::Bind(bind) => bind.span,
+        Piece::On(on) => on.span,
+        Piece::ModelValue { span, .. }
+        | Piece::ModelUpdate { span, .. }
+        | Piece::ModelModifiers { span, .. } => *span,
     }
 }
 

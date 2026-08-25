@@ -11,7 +11,7 @@
 
 mod support;
 
-use vize_ricalco::EmitError;
+use vize_ricalco::UnsupportedReason as Reason;
 
 const BATTERY: &[(&str, &str)] = &[
     (
@@ -113,16 +113,16 @@ const BATTERY: &[(&str, &str)] = &[
     ),
 ];
 
-const UNSUPPORTED_BATTERY: &[(&str, &str, EmitError)] = &[
+const UNSUPPORTED_BATTERY: &[(&str, &str, support::ExpectedRefusal)] = &[
     (
         "mixed_component_root_and_named_template",
         r#"<Foo v-slot><template #header>x</template></Foo>"#,
-        EmitError::Diagnostics,
+        support::ExpectedRefusal::Diagnostics,
     ),
     (
         "slot_template_extra_attr",
         r#"<Foo><template #header id="x">x</template></Foo>"#,
-        EmitError::Unsupported,
+        support::ExpectedRefusal::Unsupported(Reason::SlotDefaultShape),
     ),
 ];
 

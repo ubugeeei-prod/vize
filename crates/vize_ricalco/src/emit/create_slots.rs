@@ -9,6 +9,7 @@ use vize_s2::op::{DynamicName, ElementOp, ForOp, IfOp, Op, Region, SlotContentOp
 
 use super::EmitCx;
 use super::EmitError;
+use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::create_slots_walk::{
     first_slot_template, is_slot_for, is_slot_if, skip_ops, slot_content,
@@ -203,7 +204,10 @@ fn emit_for_entry(cx: &mut EmitCx<'_>, for_op: &ForOp<'_>) -> Result<(), EmitErr
         }
         None => {
             skip_ops(cx, &for_op.region.ops);
-            Err(EmitError::Unsupported)
+            Err(EmitError::unsupported_at(
+                Reason::CreateSlotsMissingSlotTemplate,
+                for_op.span,
+            ))
         }
     };
     cx.in_v_for = prev;
@@ -221,7 +225,10 @@ fn emit_slot_object(
 ) -> Result<(), EmitError> {
     let _id = cx.walk.mint();
     cx.walk.skip(element.bindings.len());
-    let content = slot_content(element).ok_or(EmitError::Unsupported)?;
+    let content = slot_content(element).ok_or(EmitError::unsupported_at(
+        Reason::CreateSlotsMissingSlotTemplate,
+        element.span,
+    ))?;
     cx.buf.push("{");
     cx.buf.indent();
     cx.buf.newline();

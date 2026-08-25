@@ -12,6 +12,7 @@ use vize_s2::op::{BindingOp, ComponentOp, Op, Region};
 
 use super::EmitCx;
 use super::EmitError;
+use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::builtin;
 use super::children::children_need_text_flag;
@@ -161,7 +162,10 @@ fn emit_call(
     let spread = slots::slots_spread(&component.bindings)?;
     let array = builtin::array_children(component.name);
     if array && (create || spread.is_some()) {
-        return Err(EmitError::Unsupported);
+        return Err(EmitError::unsupported_at(
+            Reason::ArrayBuiltinCannotUseSlotObject,
+            component.span,
+        ));
     }
     let has_array = array && slots::has_implicit_default(&component.children);
     let has_slots = !array && (facts.is_some() || create || spread.is_some());

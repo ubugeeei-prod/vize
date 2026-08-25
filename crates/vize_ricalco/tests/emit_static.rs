@@ -11,7 +11,7 @@
 mod support;
 
 use support::with_transformed;
-use vize_ricalco::{EmitError, emit_dom, emit_dom_source};
+use vize_ricalco::{EmitError, UnsupportedReason as Reason, emit_dom, emit_dom_source};
 use vize_s0::Allocator;
 
 fn assembled(source: &str) -> String {
@@ -313,13 +313,16 @@ fn refused(source: &str) -> EmitError {
 
 #[test]
 fn v_once_is_unsupported_until_realization() {
-    assert_eq!(refused("<div v-once>x</div>"), EmitError::Unsupported);
+    assert_eq!(
+        refused("<div v-once>x</div>").reason(),
+        Some(Reason::UnsupportedBindingKind)
+    );
 }
 
 #[test]
 fn v_memo_is_unsupported_until_realization() {
     assert_eq!(
-        refused(r#"<div v-memo="[id]">x</div>"#),
-        EmitError::Unsupported
+        refused(r#"<div v-memo="[id]">x</div>"#).reason(),
+        Some(Reason::UnsupportedBindingKind)
     );
 }

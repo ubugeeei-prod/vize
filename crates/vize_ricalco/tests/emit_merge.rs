@@ -10,7 +10,7 @@
 mod support;
 
 use support::with_transformed;
-use vize_ricalco::{EmitError, emit_dom};
+use vize_ricalco::{EmitError, UnsupportedReason as Reason, emit_dom};
 
 fn assembled(source: &str) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {
@@ -246,8 +246,8 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 #[test]
 fn an_object_bind_with_modifiers_is_unsupported_this_installment() {
     assert_eq!(
-        refused(r#"<div v-bind.prop="obj"></div>"#),
-        EmitError::Unsupported
+        refused(r#"<div v-bind.prop="obj"></div>"#).reason(),
+        Some(Reason::ObjectBindHasModifiers)
     );
 }
 

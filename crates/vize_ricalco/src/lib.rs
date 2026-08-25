@@ -62,5 +62,7 @@ pub mod lower;
 pub mod pass;
 
 pub use dom::DOM_LANE_FLAG;
-pub use emit::{DomEmit, EmitError, emit_dom, emit_dom_source};
+pub use emit::{
+    DomEmit, EmitError, UnsupportedReason, UnsupportedRefusal, emit_dom, emit_dom_source,
+};
 pub use lower::{LegacyCaps, Lowered, lower, lower_style_block, lower_with_caps};

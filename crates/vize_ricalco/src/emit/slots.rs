@@ -13,9 +13,11 @@ use alloc::vec::Vec as StdVec;
 use vize_s0::String;
 use vize_s2::expr::ExprRef;
 use vize_s2::op::{BindingOp, ElementOp, Namespace, Op, Region, TextOp};
+use vize_s2::scope::ScopeOrigin;
 
 use super::EmitCx;
 use super::EmitError;
+use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::children::{emit_create_text_vnode, emit_slot_text_child};
 use super::hoist::{emit_hoisted_element, is_hoistable};
@@ -37,11 +39,21 @@ pub(super) fn slots_spread<'a>(
             continue;
         }
         if directive.argument.is_some() || !directive.modifiers.is_empty() {
-            return Err(EmitError::Unsupported);
+            return Err(EmitError::unsupported_at(
+                Reason::SlotsSpreadShape,
+                directive.span,
+            ));
         }
         return match directive.value {
             Some(ExprRef::Js(js)) => Ok(Some(js.source)),
-            _ => Err(EmitError::Unsupported),
+            Some(expr) => Err(EmitError::unsupported_at(
+                Reason::SlotsSpreadValueNotJs,
+                expr.span(),
+            )),
+            None => Err(EmitError::unsupported_at(
+                Reason::SlotsSpreadValueNotJs,
+                directive.span,
+            )),
         };
     }
     Ok(None)
@@ -77,13 +89,19 @@ fn walk_admit(region: &Region<'_>) -> Result<(), EmitError> {
                     .any(|binding| !matches!(binding, BindingOp::SlotContent(_)))
                     || !element.attributes.is_empty()
                 {
-                    return Err(EmitError::Unsupported);
+                    return Err(EmitError::unsupported_at(
+                        Reason::SlotDefaultShape,
+                        element.span,
+                    ));
                 }
                 walk_admit(&element.children)?;
             }
             Op::Element(element) => {
                 if element.tag == "template" || element.namespace != Namespace::Html {
-                    return Err(EmitError::Unsupported);
+                    return Err(EmitError::unsupported_at(
+                        Reason::SlotDefaultShape,
+                        element.span,
+                    ));
                 }
                 walk_admit(&element.children)?;
             }
@@ -106,8 +124,15 @@ pub(super) fn emit_slots(
     facts: &SlotFacts,
     spread: Option<&str>,
 ) -> Result<(), EmitError> {
-    if facts.groups.iter().any(|group| group.name.text() == "_") {
-        return Err(EmitError::Unsupported);
+    if let Some(group) = facts.groups.iter().find(|group| group.name.text() == "_") {
+        if let SlotName::Static {
+            origin: ScopeOrigin::Authored { span },
+            ..
+        } = &group.name
+        {
+            return Err(EmitError::unsupported_at(Reason::SlotNameUnderscore, *span));
+        }
+        return Err(EmitError::unsupported(Reason::SlotNameUnderscore));
     }
     cx.buf.use_with_ctx();
     cx.buf.indent();
@@ -181,7 +206,10 @@ fn collect_pieces(
                 let Some(idx) = facts.groups.iter().position(
                     |group| matches!(group.carrier, SlotCarrier::Template(tid) if tid == id),
                 ) else {
-                    return Err(EmitError::Unsupported);
+                    return Err(EmitError::unsupported_at(
+                        Reason::SlotFactsMissingGroup,
+                        element.span,
+                    ));
                 };
                 let scoped = matches!(facts.groups[idx].params, SlotParams::Scoped { .. });
                 super::outlet::with_slot_params(cx, scoped, |cx| {
@@ -196,7 +224,7 @@ fn collect_pieces(
                     )
                 });
                 let Some(idx) = idx else {
-                    return Err(EmitError::Unsupported);
+                    return Err(EmitError::unsupported_op(Reason::SlotFactsMissingGroup, op));
                 };
                 let scoped = matches!(facts.groups[idx].params, SlotParams::Scoped { .. });
                 buckets[idx].push(super::outlet::with_slot_params(cx, scoped, |cx| {

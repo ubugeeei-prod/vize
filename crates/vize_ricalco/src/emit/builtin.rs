@@ -9,6 +9,7 @@ use vize_s2::op::{BindingOp, ComponentOp, DynamicName, Namespace, Op, Region};
 
 use super::EmitCx;
 use super::EmitError;
+use super::UnsupportedReason as Reason;
 use super::helper::Helper;
 use super::outlet;
 use super::props::js_value;
@@ -68,7 +69,10 @@ pub(super) fn emit_dynamic_tag(
         }
         cx.buf.push("\"");
     } else {
-        return Err(EmitError::Unsupported);
+        return Err(EmitError::unsupported_at(
+            Reason::UnsupportedBindingKind,
+            component.span,
+        ));
     }
     cx.buf.push(")");
     Ok(true)

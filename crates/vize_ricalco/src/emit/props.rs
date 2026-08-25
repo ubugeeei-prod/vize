@@ -7,6 +7,7 @@ use vize_s2::op::{Attribute, BindingOp};
 
 use super::EmitCx;
 use super::EmitError;
+use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::on::{admit_on, event_key_for, needs_hydration};
 
@@ -39,9 +40,19 @@ pub(super) fn admit_bindings(
                 js_value(bind)?;
                 if let BindName::Static(name) = bind_name(bind)? {
                     match name {
-                        "class" if class => return Err(EmitError::Unsupported),
+                        "class" if class => {
+                            return Err(EmitError::unsupported_at(
+                                Reason::DuplicateClassBinding,
+                                bind.span,
+                            ));
+                        }
                         "class" => class = true,
-                        "style" if style => return Err(EmitError::Unsupported),
+                        "style" if style => {
+                            return Err(EmitError::unsupported_at(
+                                Reason::DuplicateStyleBinding,
+                                bind.span,
+                            ));
+                        }
                         "style" => style = true,
                         _ => {}
                     }
@@ -52,11 +63,23 @@ pub(super) fn admit_bindings(
             BindingOp::SlotContent(_) => {}
             BindingOp::VueDirective(_) if super::slots::is_slots_spread(binding) => {}
             BindingOp::VueDirective(directive) => super::directive::admit(directive)?,
-            _ => return Err(EmitError::Unsupported),
+            _ => {
+                return Err(EmitError::unsupported_binding(
+                    Reason::UnsupportedBindingKind,
+                    binding,
+                ));
+            }
         }
     }
-    if style && has_attr(attributes, "style") && static_attr_value(attributes, "style").is_none() {
-        return Err(EmitError::Unsupported);
+    if style
+        && let Some(attr) = attributes
+            .iter()
+            .find(|attr| attr.name == "style" && attr.value.is_none())
+    {
+        return Err(EmitError::unsupported_at(
+            Reason::BareStyleAttributeWithDynamicStyle,
+            attr.span,
+        ));
     }
     Ok(())
 }
@@ -180,17 +203,6 @@ pub(super) fn apply_static_ref_patch(attributes: &[Attribute<'_>], flag: &mut i3
     if has_static_ref && *flag & (2 | 4 | 8 | 16 | 32 | 1024) == 0 {
         *flag |= 512;
     }
-}
-
-fn has_attr(attributes: &[Attribute<'_>], name: &str) -> bool {
-    attributes.iter().any(|attr| attr.name == name)
-}
-
-fn static_attr_value<'a>(attributes: &'a [Attribute<'a>], name: &str) -> Option<&'a str> {
-    attributes
-        .iter()
-        .find(|attr| attr.name == name)
-        .and_then(|attr| attr.value)
 }
 
 fn has_dynamic_bind_name(bindings: &[BindingOp<'_>], if_key: Option<&str>) -> bool {

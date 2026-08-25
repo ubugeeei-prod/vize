@@ -5,6 +5,7 @@ use vize_s2::op::{Attribute, BindingOp, ElementOp, Op, Region};
 
 use super::EmitCx;
 use super::EmitError;
+use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::children::{children_need_text_flag, emit_create_text_vnode, emit_text_like};
 use super::directive;
@@ -338,6 +339,8 @@ pub(super) fn emit_array_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), E
             cx.walk.skip(slot.bindings.len());
             super::outlet::emit_outlet(cx, slot, None, false)
         }
-        Op::Text(_) | Op::Interpolation(_) => Err(EmitError::Unsupported),
+        Op::Text(_) | Op::Interpolation(_) => {
+            Err(EmitError::unsupported_op(Reason::ArrayChildTextRun, op))
+        }
     })
 }

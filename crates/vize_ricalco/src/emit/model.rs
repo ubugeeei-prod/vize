@@ -11,6 +11,7 @@ use vize_s2::op::{BindingOp, ElementOp, ModelOp};
 
 use super::EmitCx;
 use super::EmitError;
+use super::UnsupportedReason as Reason;
 use super::helper::Helper;
 use super::js::push_ident_key;
 use super::props::Piece;
@@ -204,7 +205,10 @@ fn static_type<'a>(element: &'a ElementOp<'a>) -> Option<&'a str> {
 fn js_source<'a>(model: &'a ModelOp<'a>) -> Result<&'a str, EmitError> {
     match model.contract.read {
         ExprRef::Js(js) => Ok(js.source),
-        _ => Err(EmitError::Unsupported),
+        expr => Err(EmitError::unsupported_at(
+            Reason::ModelExpressionNotJs,
+            expr.span(),
+        )),
     }
 }
 

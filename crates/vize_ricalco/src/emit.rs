@@ -51,6 +51,7 @@ mod component;
 mod create_slots;
 mod create_slots_walk;
 mod directive;
+mod error;
 mod flag;
 mod fragment;
 mod helper;
@@ -87,6 +88,7 @@ use crate::pass::walk::PageWalk;
 use crate::pass::{S2Facts, run_transform};
 
 use self::buf::Buf;
+pub use self::error::{EmitError, UnsupportedReason, UnsupportedRefusal};
 use self::fragment::emit_root;
 use self::helper::Helper;
 
@@ -231,16 +233,6 @@ impl DomEmit {
         out.push_str(self.code.as_str());
         out
     }
-}
-
-/// Why emission refused. Never a panic: the lowering is total, emission
-/// of an unhandled shape is a counted skip.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum EmitError {
-    /// S2 carries an error diagnostic; refuse to guess a render function.
-    Diagnostics,
-    /// This installment does not emit this shape.
-    Unsupported,
 }
 
 /// Emit a DOM render function from an already-lowered (and typically
