@@ -41,7 +41,6 @@ jobs:
           restore-prefixes-first-match: nix-${{ runner.os }}-${{ runner.arch }}-
       - name: Check flake
         run: nix flake check
-
   fmt-rust:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
@@ -52,7 +51,6 @@ jobs:
           components: rustfmt
       - name: Format Rust
         run: cargo fmt --all -- --check
-
   check-js:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
@@ -132,7 +130,6 @@ jobs:
           else
             cargo semver-checks check-release --package ${{ matrix.crate }} "${SEMVER_ARGS[@]}"
           fi
-
   security-audit:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
@@ -380,6 +377,9 @@ jobs:
         run: cargo build -p vize_davinci -p vize_s1 -p vize_disegno -p vize_ricalco --lib --target wasm32-wasip2 && cargo build -p vize_davinci -p vize_s1 -p vize_disegno -p vize_ricalco --lib --target wasm32-wasip2 --no-default-features
       - name: Davinci compact-storage allocation gate
         run: cargo bench -p vize_ricalco --bench davinci_storage -- --quick && node tools/davinci/bench-compare.mjs --bench ricalco_lower_vfor_three_aliases --bench ricalco_emit_von_two_per_bucket
+      - name: Upload Davinci compact-storage bench reports
+        if: ${{ always() }}
+        uses: ./.github/actions/upload-davinci-compact-storage-bench-reports
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
       - name: Test
