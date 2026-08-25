@@ -23,7 +23,8 @@
 //! fragments** (empty → `null`, multi-root / compound-root
 //! `_Fragment` + `STABLE_FRAGMENT`), **`<template v-if>` /
 //! `<template v-for>` fragments** (`STABLE_FRAGMENT` / unwrap after
-//! hoist), **object `v-on`** (`toHandlers(..., true)`), **`v-model`**
+//! hoist), **slot outlet same-name `:name` / `v-bind:name`**,
+//! **object `v-on`** (`toHandlers(..., true)`), **`v-model`**
 //! (native `withDirectives` + `vModelText`-family helpers; component
 //! `modelValue` / `onUpdate:` product props), and **custom directives**
 //! (`resolveDirective` + `_withDirectives`, merged with native

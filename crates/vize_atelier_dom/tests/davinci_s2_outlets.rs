@@ -13,8 +13,17 @@ mod support;
 const BATTERY: &[(&str, &str)] = &[
     ("bare", "<slot></slot>"),
     ("self_close", "<slot/>"),
+    ("bare_name_attr", r#"<slot name></slot>"#),
     ("named", r#"<slot name="header"></slot>"#),
+    ("bracket_literal_name", r#"<slot name="[header]"></slot>"#),
     ("dynamic_name", r#"<slot :name="n"></slot>"#),
+    (
+        "dynamic_member_name",
+        r#"<slot :name="tabs[index]"></slot>"#,
+    ),
+    ("same_name_shorthand", r#"<slot :name></slot>"#),
+    ("same_name_longhand", r#"<slot v-bind:name></slot>"#),
+    ("blank_dynamic_name", r#"<slot :name=""></slot>"#),
     ("fallback_text", "<slot>fallback</slot>"),
     ("fallback_interp", "<slot>hello {{ msg }}</slot>"),
     ("fallback_span", "<slot><span></span></slot>"),

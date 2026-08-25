@@ -65,7 +65,7 @@ s1_to_s2	-	crates/vize_ricalco/src/lower/expr.rs	0	0	1	3	0	0	0	0
 s1_to_s2	lower	crates/vize_ricalco/src/lower/forop.rs	1	2	1	5	1	2	0	0
 s1_to_s2	-	crates/vize_ricalco/src/lower/leaf.rs	0	0	1	5	1	4	0	0
 s1_to_s2	-	crates/vize_ricalco/src/lower/once_memo.rs	0	0	1	3	0	0	0	0
-s1_to_s2	-	crates/vize_ricalco/src/lower/slot.rs	0	0	1	6	1	4	0	0
+s1_to_s2	-	crates/vize_ricalco/src/lower/slot.rs	0	0	1	4	1	4	0	0
 s1_to_s2	lower	crates/vize_ricalco/src/lower/structural.rs	1	10	1	4	1	13	0	0
 s1_to_s2	lower	crates/vize_ricalco/src/lower/structural/wrapper.rs	1	2	1	6	0	0	0	0
 s1_to_s2	lower	crates/vize_ricalco/src/lower/sugar.rs	1	1	1	2	0	0	0	0

@@ -16,10 +16,11 @@
 use vize_s0::{Box, String, Vec, cstr};
 use vize_s1::Element;
 
+use vize_s2::expr::ExprRef;
 use vize_s2::op::{Attribute, BindingOp, DynamicName, Namespace, Op, Region, SlotOp};
 
 use super::binding::{defer, lower_slot_content};
-use super::bindop::{lower_bind, lower_on};
+use super::bindop::{RULE_SAME_NAME, lower_bind, lower_on};
 use super::cx::{Cx, attr_slice, attr_span, element_span};
 use super::directive::{Arg, AttrForm, Head};
 use super::element::{Analyzed, attr_value_text};
@@ -58,29 +59,32 @@ pub(crate) fn lower_slot<'a>(
                 span: attr_span(cx, attr),
             }),
             AttrForm::Directive(directive) => match directive.head {
-                Head::Bind if directive.arg == Some(Arg::Static("name")) && name.is_none() => {
-                    // A `:name` with no expression is not a name candidate
-                    // in the shipped resolution (a later `name` attribute
-                    // may still win, else the implicit name); dropped
-                    // under a record, never silently.
+                Head::Bind
+                    if matches!(directive.arg, Some(Arg::Static("name"))) && name.is_none() =>
+                {
+                    // The shipped parser applies Vue 3.4 same-name
+                    // shorthand before slot-outlet name resolution, so
+                    // a missing or blank `:name` / `v-bind:name`
+                    // selects the runtime `name` variable.
                     match attr_value_text(element, index).map(str::trim) {
                         Some(text) if !text.is_empty() => {
                             name = Some(DynamicName::Dynamic(expr_at(cx, text)));
                         }
                         _ => {
-                            cx.info(
-                                attr_span(cx, attr),
-                                String::from(
-                                    "`:name` with no expression names no slot; the outlet keeps the implicit name",
-                                ),
-                            );
+                            let arg_text = match directive.arg {
+                                Some(Arg::Static(text)) => text,
+                                _ => "name",
+                            };
+                            let expr =
+                                ExprRef::parse_js_in(cx.allocator, arg_text, cx.span_of(arg_text));
                             cx.record(
-                                "drop.slot-name-hole",
-                                None,
+                                RULE_SAME_NAME,
+                                node,
                                 attr_slice(cx, attr),
-                                String::default(),
+                                cstr!("{arg_text}"),
                                 attr_span(cx, attr),
                             );
+                            name = Some(DynamicName::Dynamic(expr));
                         }
                     }
                 }
