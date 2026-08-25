@@ -11,6 +11,8 @@ import { selectTypecheckPerformanceProjects } from "./typecheck-performance-shar
 import { evaluateBaselineAmbientEnvironment } from "./typecheck-baseline-ambient.mjs";
 import { evaluateBaselineConfiguration } from "./typecheck-baseline-configuration.mjs";
 import { materializeBaselineProject } from "./typecheck-baseline-project.mjs";
+import { applyIsolatedJsxBaseline } from "./typecheck-baseline-outside-jsx.mjs";
+import { typecheckSourceTsconfig } from "./tool-matrix-command.mjs";
 import { runVueTscBaseline } from "./typecheck-baseline-run.mjs";
 import { evaluateVueProgramCoverage } from "./typecheck-baseline-coverage.mjs";
 import { assertBudgetsPassed, evaluateBudget } from "./typecheck-divergence-budget.mjs";
@@ -68,6 +70,14 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
       project,
       vizeRun.payload.parsed,
     );
+    const sourceTsconfig = typecheckSourceTsconfig(project);
+    if (sourceTsconfig != null) {
+      applyIsolatedJsxBaseline(
+        fixtureRoot,
+        resolve(fixtureRoot, sourceTsconfig),
+        baselineProject.path,
+      );
+    }
     const baselineArgs = ["--noEmit", "--pretty", "false", "-p", baselineProject.path];
     const coverageArgs = [
       "--noEmit",

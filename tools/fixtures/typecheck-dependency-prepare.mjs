@@ -17,8 +17,7 @@ import {
   isolateUniqueVueRuntimePackages,
   isolateUniqueVueUsePackages,
 } from "./typecheck-baseline-isolation-unique.mjs";
-import { applyIsolatedAliasOverlay } from "./typecheck-baseline-outside-aliases.mjs";
-import { writeIsolatedTsconfigOverlay } from "./typecheck-baseline-outside-paths.mjs";
+import { applyIsolatedTypecheckOverlays } from "./typecheck-baseline-outside-overlays.mjs";
 import { selectTypecheckPerformanceProjects } from "./typecheck-performance-shard.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -180,11 +179,7 @@ function isolateFixture(project, fixtureRoot) {
   }
   for (const relativeConfig of isolationTsconfigPaths(project)) {
     const sourceConfig = resolve(fixtureRoot, relativeConfig);
-    const overlay = applyIsolatedAliasOverlay(
-      fixtureRoot,
-      sourceConfig,
-      writeIsolatedTsconfigOverlay(fixtureRoot, sourceConfig),
-    );
+    const overlay = applyIsolatedTypecheckOverlays(fixtureRoot, sourceConfig);
     if (overlay != null) {
       process.stdout.write(
         `Rewrote ${project.id} tsconfig overlay -> ${relative(fixtureRoot, overlay.path)}\n`,
