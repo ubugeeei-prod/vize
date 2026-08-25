@@ -85,7 +85,7 @@ fn vue2_keeps_camel_on_the_bind() {
 #[test]
 fn vue2_rewrites_a_pipe_filter_to_the_asset_call() {
     let source = "{{msg | cap}}";
-    with_transformed_caps(source, vue2(), |_, folio, _, _| {
+    with_transformed_caps(source, vue2(), |_, folio, facts, _| {
         assert_eq!(
             folio.print_to_string(FolioMode::Full).as_str(),
             "[disegno]\n\
@@ -95,6 +95,15 @@ fn vue2_rewrites_a_pipe_filter_to_the_asset_call() {
              ui.interpolation js(\"_filter_cap(msg)\" @2:11) @0:13\n\
              \n"
         );
+        assert_eq!(
+            facts
+                .legacy
+                .filters
+                .iter()
+                .map(|name| name.as_str())
+                .collect::<std::vec::Vec<_>>(),
+            ["cap"]
+        );
     });
     assert_transformed_sound_caps(source, vue2(), "vue2-filter-wrap");
 }
@@ -102,7 +111,7 @@ fn vue2_rewrites_a_pipe_filter_to_the_asset_call() {
 #[test]
 fn vue2_rewrites_a_filter_with_args() {
     let source = "{{a | f(b)}}";
-    with_transformed_caps(source, vue2(), |_, folio, _, _| {
+    with_transformed_caps(source, vue2(), |_, folio, facts, _| {
         assert_eq!(
             folio.print_to_string(FolioMode::Full).as_str(),
             "[disegno]\n\
@@ -111,6 +120,15 @@ fn vue2_rewrites_a_filter_with_args() {
              [disegno.ops]\n\
              ui.interpolation js(\"_filter_f(a,b)\" @2:10) @0:12\n\
              \n"
+        );
+        assert_eq!(
+            facts
+                .legacy
+                .filters
+                .iter()
+                .map(|name| name.as_str())
+                .collect::<std::vec::Vec<_>>(),
+            ["f"]
         );
     });
     assert_transformed_sound_caps(source, vue2(), "vue2-filter-args");

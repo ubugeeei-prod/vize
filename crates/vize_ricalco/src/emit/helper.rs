@@ -9,6 +9,7 @@ pub(super) enum Helper {
     ResolveComponent,
     ResolveDynamicComponent,
     ResolveDirective,
+    ResolveFilter,
     VModelText,
     VModelCheckbox,
     VModelRadio,
@@ -45,10 +46,11 @@ pub(super) enum Helper {
 }
 
 impl Helper {
-    pub(super) const ALL: [Self; 36] = [
+    pub(super) const ALL: [Self; 37] = [
         Self::ResolveComponent,
         Self::ResolveDynamicComponent,
         Self::ResolveDirective,
+        Self::ResolveFilter,
         Self::VModelText,
         Self::VModelCheckbox,
         Self::VModelRadio,
@@ -86,7 +88,10 @@ impl Helper {
 
     pub(super) const fn rank(self) -> u8 {
         match self {
-            Self::ResolveComponent | Self::ResolveDynamicComponent | Self::ResolveDirective => 0,
+            Self::ResolveComponent
+            | Self::ResolveDynamicComponent
+            | Self::ResolveDirective
+            | Self::ResolveFilter => 0,
             Self::VModelText | Self::VModelCheckbox | Self::VModelRadio | Self::VModelSelect => 1,
             Self::WithDirectives | Self::WithKeys | Self::WithModifiers => 2,
             Self::ToDisplayString => 3,
@@ -152,6 +157,7 @@ impl Helper {
             Self::VModelSelect => 8589934592,
             Self::WithDirectives => 17179869184,
             Self::ResolveDirective => 34359738368,
+            Self::ResolveFilter => 68719476736,
         }
     }
 
@@ -160,6 +166,7 @@ impl Helper {
             Self::ResolveComponent => "resolveComponent",
             Self::ResolveDynamicComponent => "resolveDynamicComponent",
             Self::ResolveDirective => "resolveDirective",
+            Self::ResolveFilter => "resolveFilter",
             Self::VModelText => "vModelText",
             Self::VModelCheckbox => "vModelCheckbox",
             Self::VModelRadio => "vModelRadio",
@@ -201,6 +208,7 @@ impl Helper {
             Self::ResolveComponent => "_resolveComponent",
             Self::ResolveDynamicComponent => "_resolveDynamicComponent",
             Self::ResolveDirective => "_resolveDirective",
+            Self::ResolveFilter => "_resolveFilter",
             Self::VModelText => "_vModelText",
             Self::VModelCheckbox => "_vModelCheckbox",
             Self::VModelRadio => "_vModelRadio",

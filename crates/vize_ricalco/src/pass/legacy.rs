@@ -9,6 +9,7 @@
 //! table is unchanged, a single `needs_sugar()` read.
 
 use vize_davinci::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved};
+use vize_s0::String;
 
 use crate::lower::{LegacyCaps, Lowered};
 
@@ -52,6 +53,13 @@ pub const LEGACY: Pipeline = Pipeline::new(super::S2_STAGE, LEGACY_PASSES);
 const _: () = assert!(LEGACY.group_count() == 7);
 const _: () = assert!(LEGACY.is_fully_serialized());
 
+/// Facts produced by the legacy-sugar pass.
+#[derive(Debug, Default)]
+pub struct LegacyFacts {
+    /// Vue 2 filter names, first-seen order, for `_resolveFilter` assets.
+    pub filters: alloc::vec::Vec<String>,
+}
+
 /// Vue 3 is the 6-pass table; every legacy dialect prepends this pass.
 #[must_use]
 pub const fn pipeline_for(caps: LegacyCaps) -> Pipeline {
@@ -63,7 +71,8 @@ pub const fn pipeline_for(caps: LegacyCaps) -> Pipeline {
 }
 
 /// Legalize Vue 2 sugar in place, then recount and rekey.
-pub fn run(lowered: &mut Lowered<'_>) {
+pub fn run(lowered: &mut Lowered<'_>) -> LegacyFacts {
+    let mut facts = LegacyFacts::default();
     let allocator = lowered.allocator;
     let sync_ids = ids::collect_sync_ids(&lowered.root.ops);
     tree::map_binding_lists(&mut lowered.root.ops, &mut |bindings| {
@@ -74,10 +83,11 @@ pub fn run(lowered: &mut Lowered<'_>) {
         }
     });
     if lowered.caps.supports_filters {
-        filter::rewrite(allocator, &mut lowered.root.ops);
+        filter::rewrite(allocator, &mut lowered.root.ops, &mut facts.filters);
     }
     ids::rekey(lowered, &sync_ids);
     ids::recount(lowered);
+    facts
 }
 
 #[cfg(test)]

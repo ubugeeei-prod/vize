@@ -40,6 +40,7 @@ s1_to_s2	emit	crates/vize_ricalco/src/emit/buf.rs	1	8	1	11	0	0	0	0
 s1_to_s2	emit	crates/vize_ricalco/src/emit/component.rs	1	4	0	0	0	0	0	0
 s1_to_s2	emit	crates/vize_ricalco/src/emit/create_slots.rs	1	5	1	5	0	0	0	0
 s1_to_s2	emit	crates/vize_ricalco/src/emit/directive.rs	1	5	0	0	0	0	0	0
+s1_to_s2	-	crates/vize_ricalco/src/emit/filter.rs	0	0	1	1	0	0	0	0
 s1_to_s2	emit	crates/vize_ricalco/src/emit/hoist.rs	1	4	1	7	0	0	0	0
 s1_to_s2	-	crates/vize_ricalco/src/emit/js.rs	0	0	1	10	0	0	0	0
 s1_to_s2	emit	crates/vize_ricalco/src/emit/merge.rs	1	8	1	1	0	0	0	0
@@ -73,7 +74,8 @@ s1_to_s2	lower	crates/vize_ricalco/src/lower/text/condense.rs	1	5	1	2	0	0	0	0
 s1_to_s2	-	crates/vize_ricalco/src/lower/vfor.rs	0	0	0	0	0	0	1	1
 s1_to_s2	-	crates/vize_ricalco/src/pass/hoist/consts.rs	0	0	2	0	0	0	0	0
 s1_to_s2	pass	crates/vize_ricalco/src/pass/hoist/lattice.rs	1	2	2	0	0	0	0	0
-s1_to_s2	-	crates/vize_ricalco/src/pass/legacy/filter.rs	0	0	1	7	0	0	0	0
+s1_to_s2	pass	crates/vize_ricalco/src/pass/legacy.rs	1	0	1	1	0	0	0	0
+s1_to_s2	pass	crates/vize_ricalco/src/pass/legacy/filter.rs	1	5	1	11	0	0	0	0
 s1_to_s2	pass	crates/vize_ricalco/src/pass/legacy/ids.rs	1	5	0	0	0	0	0	0
 s1_to_s2	-	crates/vize_ricalco/src/pass/legacy/on.rs	0	0	0	0	1	2	0	0
 s1_to_s2	-	crates/vize_ricalco/src/pass/legacy/slot.rs	0	0	0	0	1	2	0	0

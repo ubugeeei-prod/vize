@@ -256,10 +256,10 @@ compiler	Compiler	test/dev	crates/vize_atelier_core/tests/v_once_prop_keys.rs	1	
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/v_once_prop_keys.rs	1	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/v_once_prop_keys.rs	1	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/benches/davinci.rs	27	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	manifest	crates/vize_atelier_dom/Cargo.toml	12	davinci	Davinci	stage	vize_davinci	preferred	1
-compiler	Compiler	manifest	crates/vize_atelier_dom/Cargo.toml	12	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	manifest	crates/vize_atelier_dom/Cargo.toml	12	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
-compiler	Compiler	manifest	crates/vize_atelier_dom/Cargo.toml	12	croquis	Croquis analysis	old	vize_croquis	legacy	1
+compiler	Compiler	manifest	crates/vize_atelier_dom/Cargo.toml	15	davinci	Davinci	stage	vize_davinci	preferred	1
+compiler	Compiler	manifest	crates/vize_atelier_dom/Cargo.toml	15	s0	S0/carton	stage	vize_carton	compat	1
+compiler	Compiler	manifest	crates/vize_atelier_dom/Cargo.toml	15	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
+compiler	Compiler	manifest	crates/vize_atelier_dom/Cargo.toml	15	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile.rs	13	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile.rs	13	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile/custom_elements.rs	8	s0	S0/carton	stage	vize_carton	compat	1
@@ -283,6 +283,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/branch_keys.rs	3	s0	S0/
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/conditional_v_model_quirks.rs	5	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_expr_reparse_floor.rs	20	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_dom.rs	22	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_filters.rs	12	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_patch_flags.rs	13	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_patch_flags.rs	13	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_slots.rs	14	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
@@ -296,8 +297,8 @@ compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/expression_nesting_guar
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/invalid_expression_diagnostics.rs	18	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/setup_component_unref.rs	3	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/slot_outlet_hoist.rs	2	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/support/mod.rs	10	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/support/mod.rs	10	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/support/mod.rs	11	s0	S0/carton	stage	vize_carton	compat	2
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/support/mod.rs	11	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/table_control_flow.rs	3	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/template_syntax_quirks_recovery.rs	3	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_jsx/benches/jsx_compile.rs	29	s0	S0/carton	stage	vize_carton	compat	1

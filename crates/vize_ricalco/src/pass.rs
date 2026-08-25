@@ -123,6 +123,8 @@ const _: () = {
 /// fields rather than a second bag type.
 #[derive(Debug, Default)]
 pub struct S2Facts {
+    /// Facts from the Vue 2 sugar-legalizing pass, empty on Vue 3.
+    pub legacy: legacy::LegacyFacts,
     /// Per-`ui.if` branch-key facts, keyed by the op's page-order id
     /// ([`vif`]).
     pub if_facts: SideTable<IfFacts>,
@@ -169,7 +171,7 @@ pub fn run_transform<'a, O: PassObserver>(lowered: &mut Lowered<'a>, observer: &
     let outcome = run_pipeline(&pipeline, observer, |event| {
         let name = event.desc().name;
         if name == legacy::DESC.name {
-            legacy::run(lowered);
+            facts.legacy = legacy::run(lowered);
         } else if name == vif::DESC.name {
             facts.if_facts = vif::run(lowered);
         } else if name == vfor::DESC.name {

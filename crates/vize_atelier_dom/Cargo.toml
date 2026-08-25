@@ -8,6 +8,9 @@ repository.workspace = true
 description = "Atelier DOM - The DOM compiler workshop for Vize"
 metadata.vize.stability = "alpha-supported"
 
+[features]
+legacy = ["vize_atelier_core/legacy"]
+
 [dependencies]
 vize_carton = { workspace = true }
 vize_atelier_core = { workspace = true }
@@ -32,3 +35,7 @@ vize_s1_to_s2 = { workspace = true }
 [[bench]]
 name = "davinci"
 harness = false
+
+[[test]]
+name = "davinci_s2_filters"
+required-features = ["legacy"]

@@ -39,8 +39,8 @@
 //! and **static+dynamic `style` merge** (`[{"color":"red"}, s]`).
 //! Static-name `v-bind` modifiers (`.camel`, `.prop`, `.attr`, plus the
 //! dot shorthand) and dynamic-argument `v-bind` keys / modifiers are
-//! realized into the shipped DOM prop-key shape. Filters stay
-//! [`EmitError::Unsupported`].
+//! realized into the shipped DOM prop-key shape. Vue 2 pipe filters are
+//! legalised by `legacy-sugar` and emitted with `_resolveFilter` assets.
 //! The old lane stays the shipped compile path; [`super::DOM_LANE_FLAG`]
 //! is named here and *read* in the atelier_dom witness.
 
@@ -52,11 +52,12 @@ mod create_slots;
 mod create_slots_walk;
 mod directive;
 mod error;
+mod filter;
 mod flag;
 mod fragment;
 mod helper;
 mod hoist;
-mod js;
+pub(crate) mod js;
 mod merge;
 mod model;
 mod namespace;
@@ -83,7 +84,7 @@ use vize_s1::parse;
 use vize_s2::op::{ElementOp, ForOp, IfOp, Namespace, Op, Region};
 use vize_s2::scope::ScopeFacts;
 
-use crate::lower::{ForWrapper, Lowered, WrapperKeys, lower};
+use crate::lower::{ForWrapper, LegacyCaps, Lowered, WrapperKeys, lower_with_caps};
 use crate::pass::walk::PageWalk;
 use crate::pass::{S2Facts, run_transform};
 
@@ -267,13 +268,17 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
     cx.buf.newline();
     let names = component::collect_names(&lowered.root);
     let dirs = directive::collect_names(&lowered.root);
+    let filters = &facts.legacy.filters;
     if !names.is_empty() {
         component::emit_resolves(&mut cx, &names);
     }
     if !dirs.is_empty() {
         directive::emit_resolves(&mut cx, &dirs);
     }
-    if !names.is_empty() || !dirs.is_empty() {
+    if !filters.is_empty() {
+        filter::emit_resolves(&mut cx, filters);
+    }
+    if !names.is_empty() || !dirs.is_empty() || !filters.is_empty() {
         cx.buf.newline();
     }
     cx.buf.push("return ");
@@ -293,8 +298,17 @@ pub fn emit_dom_source<'a>(
     allocator: &'a Allocator,
     source: &'a str,
 ) -> Result<DomEmit, EmitError> {
+    emit_dom_source_with_caps(allocator, source, LegacyCaps::VUE3)
+}
+
+/// [`emit_dom_source`] under an explicit Vue dialect capability set.
+pub fn emit_dom_source_with_caps<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    caps: LegacyCaps,
+) -> Result<DomEmit, EmitError> {
     let (tree, errors) = parse(allocator, source);
-    let mut lowered = lower(allocator, &tree, &errors);
+    let mut lowered = lower_with_caps(allocator, &tree, &errors, caps);
     let mut budget = BudgetObserver::new();
     let facts = run_transform(&mut lowered, &mut budget);
     emit_dom(&lowered, &facts)
