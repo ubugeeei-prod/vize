@@ -6,7 +6,7 @@
 // under the invariant that *no input must panic*: parsers return
 // `Result<_, FolioError>` for malformed pages, so a panic here is always
 // a bug. Three parsers share the input — the S2 Disegno page
-// (`vize_disegno`), the croquis page, and the repro page
+// (`vize_s2`, package `vize_disegno`), the croquis page, and the repro page
 // (`vize_davinci`).
 //
 // When an input does parse, the mode-explicit round-trip law is asserted
@@ -19,7 +19,7 @@ use libfuzzer_sys::fuzz_target;
 use vize_davinci::folio::croquis::CroquisFolio;
 use vize_davinci::folio::repro::ReproFolio;
 use vize_davinci::folio::{Folio, FolioMode};
-use vize_disegno::folio::DisegnoFolio;
+use vize_s2::folio::DisegnoFolio;
 
 fn round_trip<F: Folio + PartialEq + core::fmt::Debug>(source: &str) {
     let Ok(parsed) = F::parse(source) else {

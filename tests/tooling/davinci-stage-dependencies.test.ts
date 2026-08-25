@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -33,6 +34,10 @@ function workspacePackage(metadata: Metadata, name: string): Package {
   const found = metadata.packages.find((pkg) => pkg.name === name);
   assert.ok(found, `workspace package ${name} must exist`);
   return found;
+}
+
+function readRepoFile(...segments: string[]): string {
+  return fs.readFileSync(path.join(repoRoot, ...segments), "utf8");
 }
 
 const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>([
@@ -102,5 +107,27 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
           `(tier ${dependencyTier})`,
       );
     }
+  }
+});
+
+test("Davinci fuzz harness imports stage packages through aliases", () => {
+  const manifest = readRepoFile("tests", "fuzz", "Cargo.toml");
+  assert.match(
+    manifest,
+    /^vize_s0 = \{ package = "vize_carton", path = "\.\.\/\.\.\/crates\/vize_carton" \}$/m,
+  );
+  assert.match(
+    manifest,
+    /^vize_s1_to_s2 = \{ package = "vize_ricalco", path = "\.\.\/\.\.\/crates\/vize_ricalco" \}$/m,
+  );
+  assert.match(
+    manifest,
+    /^vize_s2 = \{ package = "vize_disegno", path = "\.\.\/\.\.\/crates\/vize_disegno" \}$/m,
+  );
+  assert.doesNotMatch(manifest, /^vize_(?:carton|disegno|ricalco) = /m);
+
+  for (const target of ["folio_parse.rs", "s1_lowering.rs", "template_compile.rs"]) {
+    const source = readRepoFile("tests", "fuzz", "fuzz_targets", target);
+    assert.doesNotMatch(source, /\bvize_(?:carton|disegno|ricalco)::/u);
   }
 });

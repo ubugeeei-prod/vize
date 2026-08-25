@@ -5,7 +5,7 @@
 // Drives the full Davinci template front half with arbitrary UTF-8:
 // `vize_s1::parse` (the lossless S1 surface tree, total over
 // malformed input by the typed-hole policy) followed by
-// `vize_ricalco::lower` (the total S1→S2 lowering — S2 ops or
+// `vize_s1_to_s2::lower` (the total S1→S2 lowering — S2 ops or
 // diagnostics, never a panic and never a partial-then-abandoned state).
 //
 // The target asserts more than no-crash, so a logic break surfaces as a
@@ -17,11 +17,11 @@
 // The corpus is seeded from the `<template>` blocks of repository .vue
 // fixtures by `tools/fuzz/seed_corpus.mjs`.
 use libfuzzer_sys::fuzz_target;
-use vize_carton::Allocator;
 use vize_davinci::folio::{Folio, FolioMode};
-use vize_disegno::folio::DisegnoFolio;
-use vize_ricalco::lower;
+use vize_s0::Allocator;
 use vize_s1::parse;
+use vize_s1_to_s2::lower;
+use vize_s2::folio::DisegnoFolio;
 
 fuzz_target!(|data: &[u8]| {
     let Ok(source) = std::str::from_utf8(data) else {
