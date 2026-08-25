@@ -52,6 +52,7 @@ vize_glyph.workspace = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 criterion.workspace = true
+davinci_harness.workspace = true
 
 [[bench]]
 name = "lint_bench"
@@ -59,4 +60,8 @@ harness = false
 
 [[bench]]
 name = "markup_ir_bench"
+harness = false
+
+[[bench]]
+name = "davinci_markup"
 harness = false

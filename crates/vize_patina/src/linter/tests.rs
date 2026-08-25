@@ -7,6 +7,7 @@ mod css;
 mod directives;
 mod jsx;
 mod jsx_fallback;
+mod jsx_streaming;
 mod no_mutating_props;
 mod no_top_level_ref;
 mod no_unused_components;

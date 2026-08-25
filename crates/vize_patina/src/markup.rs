@@ -277,13 +277,13 @@ impl<'a> MarkupElement<'a> {
                 }
             }
             MarkupElementInner::JsxElement { node, offset } => {
-                for child in jsx_children(jsx_element_ref(node), offset) {
-                    visitor(child);
+                for child in jsx_element_ref(node).jsx_children() {
+                    visitor(MarkupNode::from_jsx_child(child, offset));
                 }
             }
             MarkupElementInner::JsxFragment { node, offset } => {
-                for child in jsx_children(jsx_fragment_ref(node), offset) {
-                    visitor(child);
+                for child in jsx_fragment_ref(node).jsx_children() {
+                    visitor(MarkupNode::from_jsx_child(child, offset));
                 }
             }
         }
@@ -1091,14 +1091,6 @@ fn jsx_text_ref<'a>(node: *const JSXText<'a>) -> &'a JSXText<'a> {
     unsafe { &*node }
 }
 
-fn jsx_children<'a>(element: &'a impl JsxChildContainer<'a>, offset: u32) -> Vec<MarkupNode<'a>> {
-    element
-        .jsx_children()
-        .iter()
-        .map(|child| MarkupNode::from_jsx_child(child, offset))
-        .collect()
-}
-
 trait JsxChildContainer<'a> {
     fn jsx_children(&self) -> &oxc_allocator::Vec<'a, JSXChild<'a>>;
 }
@@ -1603,14 +1595,37 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
     }
 
     fn visit_jsx_program(&mut self, program: &'a Program<'a>, offset: u32) {
-        // OXC's `Visit` borrows `&mut self`, which would conflict with the
-        // `&mut MarkupContext` we already hold. Collect the top-level JSX roots
-        // first (cheap: pointers only, no AST copy), then drive our own
-        // depth-first walk so element enter/exit nest correctly.
-        let roots = collect_jsx_roots(program, offset);
-        for root in roots {
-            self.visit_element(root);
+        // OXC's `Visit` borrows its walker mutably, so a thin driver adapts
+        // the program walk to this visitor: each outermost JSX element or
+        // fragment streams straight into `visit_element` in source order,
+        // with no root container allocated. The driver never descends —
+        // nested JSX is visited by our own recursion, so an `expr && <x/>`
+        // guard or a `.map(item => <li/>)` callback still yields its `<x/>` /
+        // `<li/>` here as a root we then recurse into.
+        struct RootDriver<'visitor, 'rule, 'ctx, 'mc, 'a, R: ?Sized> {
+            visitor: &'visitor mut MarkupDocumentVisitor<'rule, 'ctx, 'mc, 'a, R>,
+            offset: u32,
         }
+
+        impl<'a, R: MarkupRule + ?Sized> Visit<'a> for RootDriver<'_, '_, '_, '_, 'a, R> {
+            fn visit_jsx_element(&mut self, it: &JSXElement<'a>) {
+                self.visitor
+                    .visit_element(MarkupElement::from_jsx_element(it as *const _, self.offset));
+            }
+
+            fn visit_jsx_fragment(&mut self, it: &JSXFragment<'a>) {
+                self.visitor.visit_element(MarkupElement::from_jsx_fragment(
+                    it as *const _,
+                    self.offset,
+                ));
+            }
+        }
+
+        let mut driver = RootDriver {
+            visitor: self,
+            offset,
+        };
+        walk_program(&mut driver, program);
     }
 
     fn visit_jsx_children(&mut self, children: &'a [JSXChild<'a>], offset: u32) {
@@ -1629,39 +1644,6 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
             }
         }
     }
-}
-
-/// Collect the outermost JSX elements/fragments in a program in source order,
-/// as markup elements. Nested JSX is visited by our own recursion, so this only
-/// needs the roots (an `expr && <x/>` guard or a `.map(item => <li/>)` callback
-/// still yields its `<x/>` / `<li/>` here as a root we then recurse into).
-fn collect_jsx_roots<'a>(program: &'a Program<'a>, offset: u32) -> Vec<MarkupElement<'a>> {
-    struct RootCollector<'a> {
-        offset: u32,
-        roots: Vec<MarkupElement<'a>>,
-    }
-
-    impl<'a> Visit<'a> for RootCollector<'a> {
-        fn visit_jsx_element(&mut self, it: &JSXElement<'a>) {
-            self.roots
-                .push(MarkupElement::from_jsx_element(it as *const _, self.offset));
-            // Do not descend: nested elements are visited by the markup walker.
-        }
-
-        fn visit_jsx_fragment(&mut self, it: &JSXFragment<'a>) {
-            self.roots.push(MarkupElement::from_jsx_fragment(
-                it as *const _,
-                self.offset,
-            ));
-        }
-    }
-
-    let mut collector = RootCollector {
-        offset,
-        roots: Vec::new(),
-    };
-    walk_program(&mut collector, program);
-    collector.roots
 }
 
 #[cfg(test)]

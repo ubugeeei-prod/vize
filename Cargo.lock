@@ -3987,6 +3987,7 @@ version = "0.387.0"
 dependencies = [
  "corsa",
  "criterion",
+ "davinci_harness",
  "insta",
  "libc",
  "lightningcss",
