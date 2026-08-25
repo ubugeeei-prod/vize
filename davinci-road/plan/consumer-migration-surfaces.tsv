@@ -1579,6 +1579,7 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/directive_values.rs	9	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/exact_optional_props.rs	17	s0	S0/carton	stage	vize_carton	compat	2
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/external_slot_payloads.rs	11	s0	S0/carton	stage	vize_carton	compat	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/fallthrough_unknown_attrs.rs	14	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/generic_emit_guard.rs	6	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/global_component_callbacks.rs	49	s0	S0/carton	stage	vize_carton	compat	8
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/literal_union_props.rs	7	s0	S0/carton	stage	vize_carton	compat	1

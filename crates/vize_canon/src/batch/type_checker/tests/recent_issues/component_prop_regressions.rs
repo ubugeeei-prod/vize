@@ -2,6 +2,8 @@
 mod attribute_only_required_props;
 #[path = "attribute_only_required_props_edges.rs"]
 mod attribute_only_required_props_edges;
+#[path = "fallthrough_unknown_attrs.rs"]
+mod fallthrough_unknown_attrs;
 #[path = "generic_emit_guard.rs"]
 mod generic_emit_guard;
 #[path = "literal_union_props.rs"]

@@ -71,10 +71,11 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
 /// inference variable.
 ///
 /// Consequences, covered by component-props and project tests: generated
-/// children accept only public attrs plus recorded fallthrough, opaque children
-/// keep the permissive tail, Vue public/listener props do not satisfy required
-/// own props, inline callback contextual typing stays intact, and the
-/// `exactOptionalPropertyTypes` absent-vs-`undefined` distinction survives.
+/// children accept only public attrs unless a recorded fallthrough target opens
+/// the attr tail, opaque children keep the permissive tail, Vue public/listener
+/// props do not satisfy required own props, inline callback contextual typing
+/// stays intact, and the `exactOptionalPropertyTypes` absent-vs-`undefined`
+/// distinction survives.
 ///
 /// Vize's public `$props` accepts camel- and kebab-case aliases, which requires
 /// camel-case keys to be optional there. The generated props literal already
@@ -170,16 +171,10 @@ pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &Comp
         "  interface __VizePublicComponentAttrs extends __VizeVueVNodeProps, __VizeVueAllowedComponentProps, __VizeVueComponentCustomProps {}\n",
     );
     ts.push_str(
-        "  type __VizeFallthroughAttrCamel<S extends string> = S extends `${infer H}-${infer T}` ? `${H}${Capitalize<__VizeFallthroughAttrCamel<T>>}` : S;\n",
+        "  type __VizeAllowedFallthroughAttrs<C> = __VizeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};\n",
     );
     ts.push_str(
-        "  type __VizeCustomDataFallthroughAttrs = { [K in `data${string}`]?: unknown };\n",
-    );
-    ts.push_str(
-        "  type __VizeAllowedFallthroughAttrs<F> = [keyof F] extends [never] ? {} : { [K in keyof F]?: unknown } & __VizeCustomDataFallthroughAttrs & Partial<{ [K in keyof F & string as K extends `aria-${infer Tail}` ? `aria${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : K extends `data-${infer Tail}` ? `data${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : never]: unknown }>;\n",
-    );
-    ts.push_str(
-        "  type __VizeComponentCheckTail<C, F = __VizeFallthroughProps<C>> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeAllowedFallthroughAttrs<F> : Record<string, unknown>;\n",
+        "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeAllowedFallthroughAttrs<C> : Record<string, unknown>;\n",
     );
     ts.push_str(
         "  type __VizeComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;\n",

@@ -96,10 +96,10 @@ test("class-component @Prop usage typo breaks and repairs over didChange", async
 // parent gets the same diagnostics a `defineProps` child produces:
 //
 //   - dropping the required prop (`<HelloDecorator nme="World" />`) is a
-//     `component-required-props` error on the tag name, joined by the type
-//     layer's TS2353 on the unknown attr key: `nme` is not a declared prop, so
-//     strict component-attr checking points at the unsupported spelling while
-//     the component diagnostic keeps the missing required prop at the tag, and
+//     `component-required-props` error on the tag name; the misspelled attr
+//     falls through to the native `button` root, matching Vue runtime behavior,
+//     while the type layer keeps the missing required prop diagnostic at the tag,
+//     and
 //   - binding a mismatched type (`<HelloDecorator :name="123" />`) is a TS2322
 //     on the attribute name.
 //
@@ -125,20 +125,19 @@ const missingRequiredPropDiagnostic = {
     "template usage, or make it optional/provide a default in the child component.",
 };
 
-const unknownPropTypeDiagnostic = {
+const missingRequiredTypeDiagnostic = {
   range: {
-    start: { line: 19, character: 20 },
-    end: { line: 19, character: 23 },
+    start: { line: 19, character: 5 },
+    end: { line: 19, character: 19 },
   },
   severity: 1,
-  code: 2353,
+  code: 2345,
   source: "vize/types",
   message:
-    "Object literal may only specify known properties, and '\"nme\"' does not exist in type " +
-    '\'__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { "aria-activedescendant"?: ' +
-    'unknown; "aria-atomic"?: unknown; "aria-autocomplete"?: unknown; "aria-busy"?: ' +
-    'unknown; "aria-checked"?: unknown; "aria-colcount"?: unknown; ... 195 more ...; ' +
-    "ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<.....'.",
+    "Argument of type '{ nme: string; }' is not assignable to parameter of type " +
+    "'__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & Record<string, unknown>>'.\n" +
+    "  Property 'name' is missing in type '{ nme: string; }' but required in type " +
+    "'{ readonly name: string; }'.",
 };
 
 const propTypeMismatchDiagnostic = {
@@ -180,7 +179,7 @@ test("class-component usage sites enforce @Prop contracts", async () => {
     assert.deepEqual(await waitForDiagnostics(session, appUri, 2), {
       diagnostics: [
         missingRequiredPropDiagnostic,
-        unknownPropTypeDiagnostic,
+        missingRequiredTypeDiagnostic,
         propTypeMismatchDiagnostic,
       ],
       uri: appUri,

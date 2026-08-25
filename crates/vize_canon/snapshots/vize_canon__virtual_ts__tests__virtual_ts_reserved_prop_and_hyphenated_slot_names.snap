@@ -150,10 +150,8 @@ function __setup() {
   type __VizeVueAllowedComponentProps = import('vue').AllowedComponentProps;
   type __VizeVueComponentCustomProps = import('vue').ComponentCustomProps;
   interface __VizePublicComponentAttrs extends __VizeVueVNodeProps, __VizeVueAllowedComponentProps, __VizeVueComponentCustomProps {}
-  type __VizeFallthroughAttrCamel<S extends string> = S extends `${infer H}-${infer T}` ? `${H}${Capitalize<__VizeFallthroughAttrCamel<T>>}` : S;
-  type __VizeCustomDataFallthroughAttrs = { [K in `data${string}`]?: unknown };
-  type __VizeAllowedFallthroughAttrs<F> = [keyof F] extends [never] ? {} : { [K in keyof F]?: unknown } & __VizeCustomDataFallthroughAttrs & Partial<{ [K in keyof F & string as K extends `aria-${infer Tail}` ? `aria${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : K extends `data-${infer Tail}` ? `data${Capitalize<__VizeFallthroughAttrCamel<Tail>>}` : never]: unknown }>;
-  type __VizeComponentCheckTail<C, F = __VizeFallthroughProps<C>> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeAllowedFallthroughAttrs<F> : Record<string, unknown>;
+  type __VizeAllowedFallthroughAttrs<C> = __VizeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};
+  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeAllowedFallthroughAttrs<C> : Record<string, unknown>;
   type __VizeComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;
   type __VizePublicProps<C> = C extends { new (): { $props: infer __P } } ? __P : C extends (props: infer __P) => any ? __P : {};
   type __VizeInstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } } ? __VizeIsAny<__P> extends true ? __VizePublicProps<C> : __P : __VizePublicProps<C>;

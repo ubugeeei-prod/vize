@@ -627,9 +627,7 @@
     },
     {
       "file": "src/components/MkNote.vue",
-      "diagnostics": [
-        "error:52:38 [TS2353] Object literal may only specify known properties, and '\"mini\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<.....'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkNoteDetailed.vue",
@@ -653,15 +651,11 @@
     },
     {
       "file": "src/components/MkNoteSimple.vue",
-      "diagnostics": [
-        "error:10:54 [TS2353] Object literal may only specify known properties, and '\"mini\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<.....'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkNoteSub.vue",
-      "diagnostics": [
-        "error:15:55 [TS2353] Object literal may only specify known properties, and '\"mini\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<.....'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkNotesTimeline.vue",
@@ -688,15 +682,11 @@
     },
     {
       "file": "src/components/MkObjectView.value.vue",
-      "diagnostics": [
-        "error:15:43 [TS2353] Object literal may only specify known properties, and '\"collapsed\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<.....'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkObjectView.vue",
-      "diagnostics": [
-        "error:8:26 [TS2353] Object literal may only specify known properties, and '\"collapsed\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<.....'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkOmit.vue",
@@ -882,9 +872,7 @@
     },
     {
       "file": "src/components/MkSignin.password.vue",
-      "diagnostics": [
-        "error:21:122 [TS2353] Object literal may only specify known properties, and '\"withPasswordToggle\"' does not exist in type 'Partial<Props<\"password\">> & { autocapitalize?: unknown; autocomplete?: unknown; autofocus?: unknown; datalist?: unknown; debounce?: unknown; disabled?: unknown; inline?: unknown; inputmode?: unknown; large?: unknown; manualSave?: unknown; max?: unknown; mfmAutocomplete?: unknown; ... 9 more ...; type?: unknown; } &...'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkSignin.totp.vue",
@@ -1076,9 +1064,7 @@
     },
     {
       "file": "src/components/MkUserInfo.vue",
-      "diagnostics": [
-        "error:34:79 [TS2353] Object literal may only specify known properties, and '\"mini\"' does not exist in type '__VizeComponentCheckProps<__MkFollowButton_CheckProps_9, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 198 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkUserList.vue",
@@ -1353,15 +1339,11 @@
     },
     {
       "file": "src/components/grid/MkDataRow.vue",
-      "diagnostics": [
-        "error:27:4 [TS2353] Object literal may only specify known properties, and '\"vIf\"' does not exist in type '__VizeComponentCheckProps<__MkDataCell_CheckProps_1, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/grid/MkGrid.vue",
-      "diagnostics": [
-        "error:40:5 [TS2353] Object literal may only specify known properties, and '\"using\"' does not exist in type '__VizeComponentCheckProps<__MkDataRow_CheckProps_1, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/grid/MkHeaderCell.vue",
@@ -1369,9 +1351,7 @@
     },
     {
       "file": "src/components/grid/MkHeaderRow.vue",
-      "diagnostics": [
-        "error:15:4 [TS2353] Object literal may only specify known properties, and '\"top\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<.....'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/grid/MkNumberCell.vue",
@@ -1677,9 +1657,7 @@
     },
     {
       "file": "src/pages/admin-file.root.vue",
-      "diagnostics": [
-        "error:76:30 [TS2353] Object literal may only specify known properties, and '\"tall\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<.....'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/admin-file.vue",
@@ -1691,9 +1669,7 @@
       "file": "src/pages/admin-user.vue",
       "diagnostics": [
         "error:190:30 [TS2322] Type 'string' is not assignable to type 'ChartSrc'.",
-        "error:192:30 [TS2322] Type 'string' is not assignable to type 'ChartSrc'.",
-        "error:198:44 [TS2353] Object literal may only specify known properties, and '\"tall\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<.....'.",
-        "error:201:18 [TS2353] Object literal may only specify known properties, and '\"tall\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<.....'."
+        "error:192:30 [TS2322] Type 'string' is not assignable to type 'ChartSrc'."
       ]
     },
     {
@@ -1802,9 +1778,7 @@
     },
     {
       "file": "src/pages/admin/invites.vue",
-      "diagnostics": [
-        "error:10:15 [TS2353] Object literal may only specify known properties, and '\"expanded\"' does not exist in type '__VizeComponentCheckProps<__MkFolder_CheckProps_4, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/admin/job-queue.chart.vue",
@@ -1902,69 +1876,7 @@
     },
     {
       "file": "src/pages/admin/roles.editor.vue",
-      "diagnostics": [
-        "error:50:60 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_10, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:55:54 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_11, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:60:37 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_12, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:65:36 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_13, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:70:41 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_14, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:90:68 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_16, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:111:65 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_20, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:114:110 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_21, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:131:65 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_24, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:134:110 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_25, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:151:66 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_28, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:154:112 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_29, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:171:69 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_32, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:200:65 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_36, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:219:62 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_40, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:222:104 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_41, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:239:64 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_44, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:258:69 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_48, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:278:73 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_52, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:298:74 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_56, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:301:128 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_57, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:318:79 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_60, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:321:138 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_61, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:338:67 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_64, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:341:114 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_65, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:358:67 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_68, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:361:114 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_69, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:378:69 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_72, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:381:118 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_73, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:398:68 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_76, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:418:66 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_80, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:441:72 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_84, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:464:67 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_88, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:467:114 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_89, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:484:70 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_92, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:487:120 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_93, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:504:61 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_96, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:523:65 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_100, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:542:66 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_104, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:562:65 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_108, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:581:62 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_112, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:600:71 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_116, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:619:66 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_120, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:638:75 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_124, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:657:63 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_128, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:660:106 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_129, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:677:74 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_132, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:697:70 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_136, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:700:120 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_137, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:717:70 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_140, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:720:120 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_141, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:737:71 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_144, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:740:122 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_145, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:757:68 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_148, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:760:116 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_149, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:777:71 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_152, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:780:122 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_153, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:797:67 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_156, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:816:71 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_160, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:835:71 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_164, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:838:122 [TS2353] Object literal may only specify known properties, and '\"readonly\"' does not exist in type '__VizeComponentCheckProps<__MkSwitch_CheckProps_165, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/admin/roles.role.vue",
@@ -1984,9 +1896,7 @@
     },
     {
       "file": "src/pages/admin/settings.vue",
-      "diagnostics": [
-        "error:362:67 [TS2353] Object literal may only specify known properties, and '\"max\"' does not exist in type '__VizeComponentCheckProps<__MkTextarea_CheckProps_142, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/admin/system-webhook.item.vue",
@@ -2094,9 +2004,7 @@
     },
     {
       "file": "src/pages/chat/room.search.vue",
-      "diagnostics": [
-        "error:24:35 [TS2353] Object literal may only specify known properties, and '\"user\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<.....'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/chat/room.vue",
@@ -2208,9 +2116,7 @@
     },
     {
       "file": "src/pages/explore.users.vue",
-      "diagnostics": [
-        "error:39:23 [TS2353] Object literal may only specify known properties, and '\"foldable\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<.....'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/explore.vue",
@@ -2240,9 +2146,7 @@
     },
     {
       "file": "src/pages/gallery/edit.root.vue",
-      "diagnostics": [
-        "error:13:38 [TS2353] Object literal may only specify known properties, and '\"max\"' does not exist in type '__VizeComponentCheckProps<__MkTextarea_CheckProps_1, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/gallery/edit.vue",
@@ -2266,9 +2170,7 @@
     },
     {
       "file": "src/pages/instance-info.vue",
-      "diagnostics": [
-        "error:116:18 [TS2353] Object literal may only specify known properties, and '\"tall\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<.....'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/invite.vue",
@@ -2552,9 +2454,7 @@
     },
     {
       "file": "src/pages/settings/emoji-palette.palette.vue",
-      "diagnostics": [
-        "error:32:74 [TS2353] Object literal may only specify known properties, and '\"normal\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 196 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<.....'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/settings/emoji-palette.vue",
@@ -2618,10 +2518,7 @@
     },
     {
       "file": "src/pages/settings/profile.vue",
-      "diagnostics": [
-        "error:35:47 [TS2353] Object literal may only specify known properties, and '\"max\"' does not exist in type '__VizeComponentCheckProps<__MkTextarea_CheckProps_12, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 187 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'.",
-        "error:106:70 [TS2353] Object literal may only specify known properties, and '\"mfmPreview\"' does not exist in type 'Partial<Props<\"text\">> & { autocapitalize?: unknown; autocomplete?: unknown; autofocus?: unknown; datalist?: unknown; debounce?: unknown; disabled?: unknown; inline?: unknown; inputmode?: unknown; large?: unknown; manualSave?: unknown; max?: unknown; mfmAutocomplete?: unknown; ... 9 more ...; type?: unknown; } & ......'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/settings/profiles.vue",
@@ -2745,9 +2642,7 @@
     },
     {
       "file": "src/pages/user/home.vue",
-      "diagnostics": [
-        "error:38:71 [TS2353] Object literal may only specify known properties, and '\"inline\"' does not exist in type '__VizeComponentCheckProps<__MkFollowButton_CheckProps_5, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; ... 198 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<...>>'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/user/index.activity.vue",
@@ -2779,9 +2674,7 @@
     },
     {
       "file": "src/pages/user/raw.vue",
-      "diagnostics": [
-        "error:35:18 [TS2353] Object literal may only specify known properties, and '\"tall\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<.....'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/user/reactions.vue",
@@ -3960,7 +3853,7 @@
       ]
     }
   ],
-  "errorCount": 650,
+  "errorCount": 565,
   "warningCount": 0,
   "fileCount": 794
 }

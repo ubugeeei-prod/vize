@@ -34,16 +34,14 @@ import Child from "./Child.vue";
             expected_diagnostics: &[],
         },
         Case {
-            id: "fallthrough-aria-prefix-bad",
+            id: "fallthrough-unknown-attrs-ok",
             child: MONO_DIV_CHILD,
             app: r#"<script setup lang="ts">
 import Child from "./Child.vue";
 </script>
 <template><Child title="ok" aria-zzz="1" /></template>
 "#,
-            expected_diagnostics: &[
-                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"ariaZzz\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { 'aria-activedescendant'?: unknown; 'aria-atomic'?: unknown; 'aria-autocomplete'?: unknown; 'aria-busy'?: unknown; 'aria-checked'?: unknown; 'aria-colcount'?: unknown; ... 184 more ...; ref_key?: unknown; } & __VizeCustomDataFallthroughAttrs & Partial<.....'.",
-            ],
+            expected_diagnostics: &[],
         },
         Case {
             id: "fallthrough-generic-data-custom-ok",
