@@ -42,20 +42,38 @@ const maxFilesEnv = "VIZE_GLYPH_CORPUS_MAX_FILES_PER_PROJECT";
 /**
  * Registry projects the glyph property suites sweep: every project that
  * declares formatter coverage and pins at least one Vue SFC. Hydration is
- * per-project — CI lanes hydrate different subsets, so callers must filter on
- * `hydrated` and treat absent fixtures as skipped, never as failures.
+ * per-project. Matrix lanes pass `FIXTURE_SHARD_INDEX`/`FIXTURE_SHARD_COUNT`,
+ * so shared fixture paths never make sibling registry ids look selected.
  */
 export function loadGlyphCorpusProjects() {
   const registry = JSON.parse(readFileSync(registryPath, "utf8"));
-  return registry.projects
-    .filter(
-      (project) => project.coverage.includes("formatter") && project.expectedVueFileCount !== 0,
-    )
-    .map((project) => {
-      const fixtureDir = resolve(repoRoot, project.fixturePath);
-      const hydrated = existsSync(fixtureDir) && readdirSync(fixtureDir).length > 0;
-      return { ...project, fixtureDir, hydrated };
-    });
+  return selectGlyphCorpusProjects(registry.projects).map((project) => {
+    const fixtureDir = resolve(repoRoot, project.fixturePath);
+    const hydrated = existsSync(fixtureDir) && readdirSync(fixtureDir).length > 0;
+    return { ...project, fixtureDir, hydrated };
+  });
+}
+
+export function selectGlyphCorpusProjects(projects, environment = process.env) {
+  const shardIndex = environment.FIXTURE_SHARD_INDEX;
+  const shardCount = environment.FIXTURE_SHARD_COUNT;
+  if ((shardIndex == null) !== (shardCount == null)) {
+    throw new Error("FIXTURE_SHARD_INDEX and FIXTURE_SHARD_COUNT must be set together");
+  }
+  const selected =
+    shardIndex == null || shardCount == null
+      ? projects
+      : selectGlyphShard(projects, shardIndex, shardCount);
+  return selected.filter(
+    (project) => project.coverage.includes("formatter") && project.expectedVueFileCount !== 0,
+  );
+}
+
+function selectGlyphShard(projects, shardIndex, shardCount) {
+  const index = nonNegativeInteger(shardIndex, "FIXTURE_SHARD_INDEX");
+  const count = positiveInteger(shardCount, "FIXTURE_SHARD_COUNT");
+  if (index >= count) throw new Error("FIXTURE_SHARD_INDEX must be less than FIXTURE_SHARD_COUNT");
+  return projects.filter((_, projectIndex) => projectIndex % count === index);
 }
 
 /** Collect the project's registered Vue inputs, honoring the optional cap. */
@@ -268,6 +286,22 @@ export function diffExcerpt(beforeText, afterText, beforeLabel = "before", after
 
 function truncateLine(line) {
   return line.length <= 160 ? line : `${line.slice(0, 160)}...`;
+}
+
+function positiveInteger(value, name) {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new Error(`${name} must be a positive integer`);
+  }
+  return parsed;
+}
+
+function nonNegativeInteger(value, name) {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 0) {
+    throw new Error(`${name} must be a non-negative integer`);
+  }
+  return parsed;
 }
 
 export function loadKnownViolationLedger() {

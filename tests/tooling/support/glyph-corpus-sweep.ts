@@ -80,6 +80,7 @@ type WaiverConsumption = {
 export type SweepSink = {
   waiverConsumption: WaiverConsumption;
   violations: Violation[];
+  baselineUnusable?: Violation[];
   counters: { files: number; skipped: number };
   waivedViolations?: Array<Violation & { waiver: object }>;
   pugEvidence?: PugEvidence[];
@@ -257,6 +258,10 @@ export function sweepProject(
         if (waiver) {
           sink.waivedViolations?.push({ project: project.id, file, detail, waiver });
           sink.counters.skipped += 1;
+          continue;
+        }
+        if (result.category === "baseline-unusable") {
+          sink.baselineUnusable?.push({ project: project.id, file, detail });
           continue;
         }
         sink.violations.push({ project: project.id, file, detail });

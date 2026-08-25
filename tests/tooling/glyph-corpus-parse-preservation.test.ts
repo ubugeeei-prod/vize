@@ -3,6 +3,7 @@
 // partition; Pug remains owned by its independent pinned semantic oracle.
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
@@ -51,6 +52,7 @@ test("glyph corpus parse-preservation holds for every hydrated fixture", () => {
   const hydrated = projects.filter((project) => project.hydrated);
   const launch = resolveGlyphLaunch();
   const violations: Violation[] = [];
+  const baselineUnusable: Violation[] = [];
   const waivedViolations: Array<Violation & { waiver: object }> = [];
   const pugEvidence: PugEvidence[] = [];
   const sfcDialectEvidence: SfcDialectEvidence[] = [];
@@ -59,6 +61,7 @@ test("glyph corpus parse-preservation holds for every hydrated fixture", () => {
     sweepProject(project, launch, {
       waiverConsumption,
       violations,
+      baselineUnusable,
       counters,
       waivedViolations,
       pugEvidence,
@@ -112,6 +115,7 @@ test("glyph corpus parse-preservation holds for every hydrated fixture", () => {
     projectIds: hydrated.map((project) => project.id),
     counters,
     violations,
+    baselineUnusable,
     waivedViolations,
     waiverValidationError,
   });
@@ -125,9 +129,63 @@ test("glyph corpus parse-preservation holds for every hydrated fixture", () => {
   process.stderr.write(
     `glyph ${property}: ${counters.files} file(s) across ${hydrated.length} project(s), ` +
       `${projects.length - hydrated.length} project(s) not hydrated, ` +
-      `${counters.skipped} known violation(s) skipped, ${violations.length} violation(s)\n`,
+      `${counters.skipped} known violation(s) skipped, ` +
+      `${baselineUnusable.length} baseline-unusable file(s), ` +
+      `${violations.length} violation(s)\n`,
   );
   assert.equal(violations.length, 0, renderViolations(property, violations));
+});
+
+test("glyph corpus records unusable reference baselines without failing the property", () => {
+  const project = makeSyntheticProject([
+    [
+      "src/BrokenPug.vue",
+      [
+        '<template lang="pug">',
+        'template(v-for="item in items")',
+        '  div(:key="item") {{ item }}',
+        "</template>",
+        "",
+      ].join("\n"),
+    ],
+  ]);
+  const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-glyph-noop-"));
+  const fakeFormatter = path.join(fakeDir, "fake-vize.mjs");
+  fs.writeFileSync(
+    fakeFormatter,
+    [
+      "#!/usr/bin/env node",
+      'process.stderr.write("Found 1 file(s)\\n\\nFormatted 1 file(s)\\n  1 file(s) already formatted\\n");',
+      "",
+    ].join("\n"),
+  );
+  fs.chmodSync(fakeFormatter, 0o755);
+  try {
+    const violations: Violation[] = [];
+    const baselineUnusable: Violation[] = [];
+    const counters = { files: 0, skipped: 0 };
+    const localWaivers = createKnownViolationConsumption([]);
+    sweepProject(
+      project,
+      { command: fakeFormatter, prefix: [] },
+      {
+        waiverConsumption: localWaivers,
+        violations,
+        baselineUnusable,
+        counters,
+      },
+    );
+
+    assert.deepEqual(violations, []);
+    assert.equal(baselineUnusable.length, 1);
+    assert.equal(baselineUnusable[0].project, project.id);
+    assert.equal(baselineUnusable[0].file, "src/BrokenPug.vue");
+    assert.match(baselineUnusable[0].detail, /pristine Vue baseline failed/);
+    assert.deepEqual(counters, { files: 0, skipped: 0 });
+  } finally {
+    fs.rmSync(project.fixtureDir, { recursive: true, force: true });
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+  }
 });
 
 test("glyph corpus parse-preservation machinery accepts the real formatter", () => {

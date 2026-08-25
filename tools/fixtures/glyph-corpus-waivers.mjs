@@ -166,7 +166,14 @@ export async function auditKnownViolationIssues(entries, resolveIssue) {
 
 export function writeGlyphCorpusPropertyEvidence(
   property,
-  { projectIds, counters, violations, waivedViolations, waiverValidationError },
+  {
+    projectIds,
+    counters,
+    violations,
+    baselineUnusable = [],
+    waivedViolations = [],
+    waiverValidationError,
+  },
   reportDir = process.env.FIXTURE_REPORT_DIR,
 ) {
   if (reportDir == null || reportDir === "") return null;
@@ -183,10 +190,12 @@ export function writeGlyphCorpusPropertyEvidence(
     summary: {
       cleanFileCount: counters.files,
       waivedDifferenceCount: waivedViolations.length,
+      baselineUnusableCount: baselineUnusable.length,
       violationCount: violations.length,
       waiverValidationError,
     },
     waivedDifferences: waivedViolations,
+    baselineUnusable,
     violations,
   };
   mkdirSync(dirname(output), { recursive: true });

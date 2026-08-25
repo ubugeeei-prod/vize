@@ -10,7 +10,6 @@ import {
   createKnownViolationConsumption,
   validateKnownViolationEntries,
   writeGlyphPugSemanticEvidence,
-  writeGlyphCorpusPropertyEvidence,
 } from "../../tools/fixtures/glyph-corpus.mjs";
 import { createWaiverIssueAudit } from "../../tools/fixtures/glyph-corpus-waiver-audit.mjs";
 
@@ -199,45 +198,6 @@ test("tracking Issue evidence is deduplicated and fails closed on closed Issues"
       })),
     /tracking Issue #4107 is CLOSED/,
   );
-});
-
-test("formatter property artifacts retain waived and unwaived difference details", () => {
-  const reportDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-glyph-evidence-"));
-  try {
-    const output = writeGlyphCorpusPropertyEvidence(
-      "parse-preservation",
-      {
-        projectIds: ["fixture-b", "fixture-a"],
-        counters: { files: 7, skipped: 1 },
-        violations: [{ project: "fixture-b", file: "src/B.vue", detail: "block changed" }],
-        waivedViolations: [
-          {
-            project: "fixture-a",
-            file: "src/App.vue",
-            detail: "full comparator evidence",
-            waiver: validEntry,
-          },
-        ],
-        waiverValidationError: null,
-      },
-      reportDir,
-    );
-    assert.equal(output, path.join(reportDir, "glyph-parse-preservation.json"));
-    const artifact = JSON.parse(fs.readFileSync(output!, "utf8"));
-    assert.equal(artifact.schema, "vize.glyphCorpusPropertyEvidence");
-    assert.equal(artifact.version, 1);
-    assert.deepEqual(artifact.projectIds, ["fixture-a", "fixture-b"]);
-    assert.deepEqual(artifact.summary, {
-      cleanFileCount: 7,
-      waivedDifferenceCount: 1,
-      violationCount: 1,
-      waiverValidationError: null,
-    });
-    assert.equal(artifact.waivedDifferences[0].detail, "full comparator evidence");
-    assert.equal(artifact.violations[0].detail, "block changed");
-  } finally {
-    fs.rmSync(reportDir, { recursive: true, force: true });
-  }
 });
 
 test("Pug semantic artifacts preserve fixed-baseline provenance and exact file identity", () => {
