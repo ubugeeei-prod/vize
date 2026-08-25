@@ -1,9 +1,48 @@
 use tower_lsp::lsp_types::Location;
 use vize_canon::CorsaBridge;
 use vize_carton::FxHashSet;
+use vize_croquis::{Drawer, DrawerOptions};
+use vize_relief::BindingType;
 
 use super::ReferencesService;
 use crate::ide::{IdeContext, corsa_support};
+
+/// Whether the queried word is a top-level `<script setup>` binding declared
+/// in this SFC. Script-setup declarations cannot be imported by other
+/// modules, so their canonical reference surface is the current document plus
+/// its open importers — never the rest of the workspace. Imported names keep
+/// the workspace surface: croquis classifies them with the same `Setup*`
+/// binding types, so an import lookup separates the two.
+fn is_script_setup_local_binding(ctx: &IdeContext<'_>) -> bool {
+    let Some(word) = ReferencesService::get_word_at_offset(&ctx.content, ctx.offset) else {
+        return false;
+    };
+    if crate::ide::definition::helpers::find_import_path(ctx, &word).is_some() {
+        return false;
+    }
+    let options = vize_atelier_sfc::SfcParseOptions {
+        filename: ctx.uri.path().to_string().into(),
+        ..Default::default()
+    };
+    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
+        return false;
+    };
+    let Some(script_setup) = descriptor.script_setup else {
+        return false;
+    };
+    let mut analyzer = Drawer::with_options(DrawerOptions::full());
+    analyzer.analyze_script_setup(&script_setup.content);
+    matches!(
+        analyzer.finish().get_binding_type(&word),
+        Some(
+            BindingType::SetupLet
+                | BindingType::SetupMaybeRef
+                | BindingType::SetupRef
+                | BindingType::SetupReactiveConst
+                | BindingType::SetupConst
+        )
+    )
+}
 
 /// Query the project-aware canonical Vue document before the block-local
 /// virtual documents so references can cross SFC boundaries.
@@ -16,7 +55,18 @@ pub(super) async fn references(
     if !bridge.is_initialized() {
         return None;
     }
-    let document = corsa_support::open_canonical_virtual_workspace_document(ctx, bridge).await?;
+    // A top-level `<script setup>` binding is invisible to other modules, so
+    // its references live in this SFC and the already-open project surface;
+    // materializing every workspace SFC for it takes minutes on a
+    // component-library-sized workspace and cannot add hits.
+    let document = if is_script_setup_local_binding(ctx) {
+        corsa_support::open_canonical_virtual_project_document_strict(ctx, bridge)
+            .await
+            .ok()
+            .flatten()?
+    } else {
+        corsa_support::open_canonical_virtual_workspace_document(ctx, bridge).await?
+    };
     let (line, character) =
         corsa_support::canonical_source_offset_to_position(&document, ctx.offset)?;
     let mut locations = bridge
