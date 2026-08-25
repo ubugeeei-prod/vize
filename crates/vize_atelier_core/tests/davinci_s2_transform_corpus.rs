@@ -20,6 +20,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use davinci_harness::fixtures::template_block;
+use davinci_test_support::corpus::{CorpusScope, corpus_root_from_env};
 use s2_support::{
     BATTERY, Counters, HoistCounters, SlotCounters, SurfaceCounters, TextCounters, compare,
 };
@@ -138,31 +139,28 @@ fn the_s2_transform_lane_holds_over_the_corpus() {
     );
 
     // -- optional corpus sweep --------------------------------------
-    let Some(corpus_root) = std::env::var_os("VIZE_DAVINCI_DIFFERENTIAL_CORPUS") else {
+    let Some(corpus_root) =
+        corpus_root_from_env(env!("CARGO_MANIFEST_DIR")).unwrap_or_else(|error| panic!("{error}"))
+    else {
         eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed battery only");
         return;
     };
-    let corpus_root = PathBuf::from(corpus_root);
-    // Cargo runs test binaries from the package directory; let
-    // workspace-root-relative paths (`tests/_fixtures/_git`) work too.
-    let corpus_root = if corpus_root.is_relative() && !corpus_root.is_dir() {
-        Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../..")
-            .join(&corpus_root)
-    } else {
-        corpus_root
-    };
     assert!(
-        corpus_root.is_dir(),
+        corpus_root.path().is_dir(),
         "VIZE_DAVINCI_DIFFERENTIAL_CORPUS must name a directory: {}",
-        corpus_root.display()
+        corpus_root.path().display()
+    );
+    eprintln!(
+        "davinci s2 transform corpus scope: {} closure_evidence={}",
+        corpus_root.scope().label(),
+        matches!(corpus_root.scope(), CorpusScope::ClosureEvidence)
     );
     let mut files = Vec::new();
-    collect_vue_files(&corpus_root, &mut files);
+    collect_vue_files(corpus_root.path(), &mut files);
     assert!(
         !files.is_empty(),
         "corpus sweep found no .vue files under {}",
-        corpus_root.display()
+        corpus_root.path().display()
     );
     let mut corpus = Counters::default();
     let mut unreadable = 0u64;

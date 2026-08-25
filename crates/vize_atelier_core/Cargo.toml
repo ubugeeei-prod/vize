@@ -51,6 +51,7 @@ thiserror = { workspace = true }
 [dev-dependencies]
 criterion = { workspace = true }
 davinci_harness = { workspace = true }
+davinci_test_support.workspace = true
 insta = { workspace = true }
 
 # The Davinci S2 lane, test-space only (P2-9): dev-dependencies with no
