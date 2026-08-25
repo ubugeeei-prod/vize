@@ -92,6 +92,59 @@ pub fn assert_s2_matches_prefixed_shipped_literals_with_dialect(
     assert_s2_matches_shipped_with_dialect_inner(battery, dialect, true)
 }
 
+pub fn patch_sites(source: &str) -> Vec<String> {
+    let bytes = source.as_bytes();
+    let mut sites = Vec::new();
+    let mut cursor = 0usize;
+    while let Some(comment_rel) = source[cursor..].find(" /* ") {
+        let comment_start = cursor + comment_rel;
+        let Some(comment_end_rel) = source[comment_start..].find(" */") else {
+            break;
+        };
+        let comment_end = comment_start + comment_end_rel + " */".len();
+        let Some(number_start) = flag_number_start(bytes, comment_start) else {
+            cursor = comment_end;
+            continue;
+        };
+        let mut site_end = comment_end;
+        if let Some(array_end) = dynamic_props_array_end(source, comment_end) {
+            site_end = array_end;
+        }
+        sites.push(source[number_start..site_end].trim().to_string());
+        cursor = site_end;
+    }
+    sites
+}
+
+fn flag_number_start(bytes: &[u8], comment_start: usize) -> Option<usize> {
+    let mut index = comment_start;
+    while index > 0 && bytes[index - 1].is_ascii_whitespace() {
+        index -= 1;
+    }
+    if index == 0 || !bytes[index - 1].is_ascii_digit() {
+        return None;
+    }
+    while index > 0 && bytes[index - 1].is_ascii_digit() {
+        index -= 1;
+    }
+    if index > 0 && bytes[index - 1] == b'-' {
+        index -= 1;
+    }
+    Some(index)
+}
+
+fn dynamic_props_array_end(source: &str, comment_end: usize) -> Option<usize> {
+    let tail = &source[comment_end..];
+    let trimmed = tail.trim_start();
+    if !trimmed.starts_with(", [") {
+        return None;
+    }
+    let offset = tail.len() - trimmed.len();
+    let array_start = comment_end + offset + ", ".len();
+    let array_tail = &source[array_start..];
+    Some(array_start + array_tail.find(']')? + 1)
+}
+
 fn assert_s2_matches_shipped_with_dialect_inner(
     battery: &[(&str, &str)],
     dialect: VueVersion,

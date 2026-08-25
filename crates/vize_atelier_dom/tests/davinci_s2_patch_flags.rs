@@ -130,6 +130,16 @@ const CASES: &[Case] = &[
         sites: &["8 /* PROPS */, [\"modelValue\", \"onUpdate:modelValue\"]"],
     },
     Case {
+        name: "component_v_model_update_listener_order",
+        src: r#"<Foo v-model="msg" @update:modelValue="track" />"#,
+        sites: &["8 /* PROPS */, [\"modelValue\", \"onUpdate:modelValue\"]"],
+    },
+    Case {
+        name: "component_listener_before_v_model_order",
+        src: r#"<Foo @update:modelValue="track" v-model="msg" />"#,
+        sites: &["8 /* PROPS */, [\"onUpdate:modelValue\", \"modelValue\"]"],
+    },
+    Case {
         name: "directive_need_patch",
         src: r#"<div v-example></div>"#,
         sites: &["512 /* NEED_PATCH */"],
@@ -213,8 +223,8 @@ fn s2_patch_flags_match_the_shipped_dom_lane_per_node() {
         let new = emit_dom_source(&allocator, case.src)
             .unwrap_or_else(|error| panic!("{}: S2 emit refused: {error:?}", case.name))
             .assembled();
-        let old_sites = patch_sites(&old);
-        let new_sites = patch_sites(&new);
+        let old_sites = support::patch_sites(&old);
+        let new_sites = support::patch_sites(&new);
 
         if old_sites != expected || new_sites != expected {
             mismatches.push(format!(
@@ -275,8 +285,8 @@ fn s2_vue2_filter_patch_flags_match_the_shipped_dom_lane_per_node() {
         )
         .unwrap_or_else(|error| panic!("{}: S2 emit refused: {error:?}", case.name))
         .assembled();
-        let old_sites = patch_sites(&old);
-        let new_sites = patch_sites(&new);
+        let old_sites = support::patch_sites(&old);
+        let new_sites = support::patch_sites(&new);
 
         if old_sites != expected || new_sites != expected {
             mismatches.push(format!(
@@ -290,57 +300,4 @@ fn s2_vue2_filter_patch_flags_match_the_shipped_dom_lane_per_node() {
         "Vue 2 filter patch flag mismatches:\n{}",
         mismatches.join("\n")
     );
-}
-
-fn patch_sites(source: &str) -> Vec<String> {
-    let bytes = source.as_bytes();
-    let mut sites = Vec::new();
-    let mut cursor = 0usize;
-    while let Some(comment_rel) = source[cursor..].find(" /* ") {
-        let comment_start = cursor + comment_rel;
-        let Some(comment_end_rel) = source[comment_start..].find(" */") else {
-            break;
-        };
-        let comment_end = comment_start + comment_end_rel + " */".len();
-        let Some(number_start) = flag_number_start(bytes, comment_start) else {
-            cursor = comment_end;
-            continue;
-        };
-        let mut site_end = comment_end;
-        if let Some(array_end) = dynamic_props_array_end(source, comment_end) {
-            site_end = array_end;
-        }
-        sites.push(source[number_start..site_end].trim().to_string());
-        cursor = site_end;
-    }
-    sites
-}
-
-fn flag_number_start(bytes: &[u8], comment_start: usize) -> Option<usize> {
-    let mut index = comment_start;
-    while index > 0 && bytes[index - 1].is_ascii_whitespace() {
-        index -= 1;
-    }
-    if index == 0 || !bytes[index - 1].is_ascii_digit() {
-        return None;
-    }
-    while index > 0 && bytes[index - 1].is_ascii_digit() {
-        index -= 1;
-    }
-    if index > 0 && bytes[index - 1] == b'-' {
-        index -= 1;
-    }
-    Some(index)
-}
-
-fn dynamic_props_array_end(source: &str, comment_end: usize) -> Option<usize> {
-    let tail = &source[comment_end..];
-    let trimmed = tail.trim_start();
-    if !trimmed.starts_with(", [") {
-        return None;
-    }
-    let offset = tail.len() - trimmed.len();
-    let array_start = comment_end + offset + ", ".len();
-    let array_tail = &source[array_start..];
-    Some(array_start + array_tail.find(']')? + 1)
 }
