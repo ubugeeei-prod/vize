@@ -8,53 +8,101 @@ use vize_s2::op::{BindingOp, DynamicName, Op};
 
 use crate::emit::js::asset_ident;
 
+use super::LegacyFacts;
+
 /// Rewrite every [`ExprRef::Filter`] in the tree into the Vue 2 wrap
 /// (`a | f` → `_filter_f(a)`, `a | f(b)` → `_filter_f(a,b)`). Mixed
 /// text-runs that absorbed a pipe into a compound opaque stay as
 /// authored — those parts are not `ExprRef::Filter` (recorded gap).
-pub(super) fn rewrite<'a>(
-    allocator: &'a Allocator,
-    ops: &mut [Op<'a>],
-    filters: &mut StdVec<String>,
-) {
+pub(super) fn rewrite<'a>(allocator: &'a Allocator, ops: &mut [Op<'a>], facts: &mut LegacyFacts) {
     for op in ops.iter_mut() {
         match op {
             Op::Element(element) => {
-                rewrite_bindings(allocator, &mut element.bindings, filters);
-                rewrite(allocator, &mut element.children.ops, filters);
+                rewrite_bindings(allocator, &mut element.bindings, &mut facts.filters);
+                rewrite(allocator, &mut element.children.ops, facts);
             }
             Op::Component(component) => {
-                rewrite_bindings(allocator, &mut component.bindings, filters);
-                rewrite(allocator, &mut component.children.ops, filters);
+                if bindings_contain_filter(&component.bindings) {
+                    facts.filter_helper_precedes_components = true;
+                }
+                rewrite_bindings(allocator, &mut component.bindings, &mut facts.filters);
+                rewrite(allocator, &mut component.children.ops, facts);
             }
             Op::Slot(slot) => {
-                rewrite_name(allocator, &mut slot.name, filters);
-                rewrite_bindings(allocator, &mut slot.bindings, filters);
-                rewrite(allocator, &mut slot.fallback.ops, filters);
+                rewrite_name(allocator, &mut slot.name, &mut facts.filters);
+                rewrite_bindings(allocator, &mut slot.bindings, &mut facts.filters);
+                rewrite(allocator, &mut slot.fallback.ops, facts);
             }
-            Op::Interpolation(interp) => rewrite_expr(allocator, &mut interp.expression, filters),
+            Op::Interpolation(interp) => {
+                rewrite_expr(allocator, &mut interp.expression, &mut facts.filters);
+            }
             Op::If(if_op) => {
                 for branch in if_op.branches.iter_mut() {
                     if let Some(condition) = &mut branch.condition {
-                        rewrite_expr(allocator, condition, filters);
+                        rewrite_expr(allocator, condition, &mut facts.filters);
                     }
-                    rewrite(allocator, &mut branch.region.ops, filters);
+                    rewrite(allocator, &mut branch.region.ops, facts);
                 }
             }
             Op::For(for_op) => {
-                rewrite_expr(allocator, &mut for_op.binding.source, filters);
-                rewrite_expr(allocator, &mut for_op.binding.value, filters);
+                rewrite_expr(allocator, &mut for_op.binding.source, &mut facts.filters);
+                rewrite_expr(allocator, &mut for_op.binding.value, &mut facts.filters);
                 if let Some(key) = &mut for_op.binding.key {
-                    rewrite_expr(allocator, key, filters);
+                    rewrite_expr(allocator, key, &mut facts.filters);
                 }
                 if let Some(index) = &mut for_op.binding.index {
-                    rewrite_expr(allocator, index, filters);
+                    rewrite_expr(allocator, index, &mut facts.filters);
                 }
-                rewrite(allocator, &mut for_op.region.ops, filters);
+                rewrite(allocator, &mut for_op.region.ops, facts);
             }
             Op::Text(_) => {}
         }
     }
+}
+
+fn bindings_contain_filter(bindings: &[BindingOp<'_>]) -> bool {
+    bindings.iter().any(binding_contains_filter)
+}
+
+fn binding_contains_filter(binding: &BindingOp<'_>) -> bool {
+    match binding {
+        BindingOp::Bind(bind) => {
+            bind.name.as_ref().is_some_and(name_contains_filter)
+                || bind.value.as_ref().is_some_and(expr_contains_filter)
+        }
+        BindingOp::On(on) => {
+            on.name.as_ref().is_some_and(name_contains_filter)
+                || on.handler.as_ref().is_some_and(expr_contains_filter)
+        }
+        BindingOp::Model(model) => {
+            expr_contains_filter(&model.contract.read)
+                || expr_contains_filter(&model.contract.write)
+        }
+        BindingOp::SlotContent(content) => {
+            content.name.as_ref().is_some_and(name_contains_filter)
+                || content.params.as_ref().is_some_and(expr_contains_filter)
+        }
+        BindingOp::VueDirective(directive) => {
+            directive
+                .argument
+                .as_ref()
+                .is_some_and(name_contains_filter)
+                || directive.value.as_ref().is_some_and(expr_contains_filter)
+        }
+        BindingOp::VueCssBind(bind) => expr_contains_filter(&bind.value),
+        BindingOp::VueSync(sync) => expr_contains_filter(&sync.value),
+        BindingOp::VueSlotScope(scope) => scope.params.as_ref().is_some_and(expr_contains_filter),
+        BindingOp::VueOnce(_) => false,
+        BindingOp::VueMemo(memo) => expr_contains_filter(&memo.value),
+    }
+}
+
+fn name_contains_filter(name: &DynamicName<'_>) -> bool {
+    matches!(name, DynamicName::Dynamic(expr) if expr_contains_filter(expr))
+}
+
+fn expr_contains_filter(expr: &ExprRef<'_>) -> bool {
+    matches!(expr, ExprRef::Filter(_))
 }
 
 fn rewrite_bindings<'a>(

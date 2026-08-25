@@ -85,9 +85,9 @@ counts or fixture availability changes.
   [evidence index](./phase-2-records.md#current-completion-evidence-2026-08-25);
   review-only evidence is labeled there rather than presented as executable.
 - **Active and blocked: 2 of 22 — P2-9 and P2-11.** P2-9 still needs a
-  hydrated full-corpus residual remeasurement; P2-11 has 20 landed
+  hydrated full-corpus residual remeasurement; P2-11 has 21 landed
   installments through
-  [#4811](https://github.com/ubugeeei-prod/vize/pull/4811), but the published
+  [#4860](https://github.com/ubugeeei-prod/vize/pull/4860), but the published
   dependency decision, full-corpus exact comparison count, patch-flag
   equivalence and DOM allocation budget remain open. The old DOM lane is still
   the shipped compiler path.

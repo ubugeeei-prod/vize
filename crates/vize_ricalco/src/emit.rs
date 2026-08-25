@@ -263,6 +263,10 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
         slot_param_depth: 0,
         parent_ns: Namespace::Html,
     };
+    let filters = &facts.legacy.filters;
+    if facts.legacy.filter_helper_precedes_components {
+        cx.buf.prefer(Helper::ResolveFilter);
+    }
     prefer_transform_helpers(&mut cx.buf, &lowered.root);
     fragment::prefer_root_fragment(&mut cx.buf, &lowered.root);
     cx.buf
@@ -271,7 +275,6 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
     cx.buf.newline();
     let names = component::collect_names(&lowered.root);
     let dirs = directive::collect_names(&lowered.root);
-    let filters = &facts.legacy.filters;
     if !names.is_empty() {
         component::emit_resolves(&mut cx, &names);
     }

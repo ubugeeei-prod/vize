@@ -21,6 +21,10 @@ const docs = {
     "../../davinci-road/plan/phase-2-records/p2-11/installment-20.md",
     import.meta.url,
   ),
+  installment21: new URL(
+    "../../davinci-road/plan/phase-2-records/p2-11/installment-21.md",
+    import.meta.url,
+  ),
   suites: new URL("../../davinci-road/plan/test-suites.md", import.meta.url),
   devtool: new URL("../../davinci-road/devtool.md", import.meta.url),
   questions: new URL("../../davinci-road/open-questions.md", import.meta.url),
@@ -211,15 +215,17 @@ test("every completion joins a merged PR to honest current evidence", () => {
   assert.doesNotMatch(p2_19, /davinci-phase2-ledger/);
 });
 
-test("P2-11 records installment 20 without presenting installment 19 as current", () => {
+test("P2-11 records installment 21 without presenting installment 20 as current", () => {
   for (const source of [text.roadmap, text.readme, text.tasks, text.records, text.p2_11]) {
-    assert.match(source, /#4811/);
-    assert.match(source, /20 (?:landed\s+)?installments|installment 20|\| 20\s+\|/i);
+    assert.match(source, /#4860/);
+    assert.match(source, /21 (?:landed\s+)?installments|installment 21|\| 21\s+\|/i);
   }
-  assert.match(text.p2_11, /Current named remainder \(after #4811\)/);
+  assert.match(text.p2_11, /Current named remainder \(after #4860\)/);
   assert.doesNotMatch(text.p2_11, /dynamic-argument bind names \/ modifiers/);
   assert.match(text.installment20, /14-fixture S2-vs-shipped byte-for-byte battery/);
   assert.match(text.installment20, /does not tick P2-11/);
+  assert.match(text.installment21, /Vue 2 pipe filters/);
+  assert.match(text.installment21, /does not tick P2-11/);
 });
 
 test("suite registry debt and the TS-52 transport decision stay resolved", () => {

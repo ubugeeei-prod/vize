@@ -58,6 +58,10 @@ const _: () = assert!(LEGACY.is_fully_serialized());
 pub struct LegacyFacts {
     /// Vue 2 filter names, first-seen order, for `_resolveFilter` assets.
     pub filters: alloc::vec::Vec<String>,
+    /// A component's own binding surface referenced a Vue 2 filter, which
+    /// makes the shipped helper preamble rank `_resolveFilter` before
+    /// `_resolveComponent` while keeping component constants first.
+    pub filter_helper_precedes_components: bool,
 }
 
 /// Vue 3 is the 6-pass table; every legacy dialect prepends this pass.
@@ -83,7 +87,7 @@ pub fn run(lowered: &mut Lowered<'_>) -> LegacyFacts {
         }
     });
     if lowered.caps.supports_filters {
-        filter::rewrite(allocator, &mut lowered.root.ops, &mut facts.filters);
+        filter::rewrite(allocator, &mut lowered.root.ops, &mut facts);
     }
     ids::rekey(lowered, &sync_ids);
     ids::recount(lowered);

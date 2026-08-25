@@ -285,8 +285,8 @@ compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_expr_reparse_fl
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_dom.rs	22	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_dynamic_von_keys.rs	13	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_filters.rs	12	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_patch_flags.rs	13	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_patch_flags.rs	13	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_patch_flags.rs	13	s0	S0/carton	stage	vize_carton	compat	2
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_patch_flags.rs	13	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_slots.rs	14	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_teardown_without_stack_guard.rs	25	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_walk_baseline.rs	25	davinci	Davinci	stage	vize_davinci	preferred	1

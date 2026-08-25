@@ -21,8 +21,8 @@ or `collections` modules does not bypass the boundary.
 
 ## Retained `alloc::vec::Vec` inventory
 
-The four library trees in the reviewed #4814 state contain 55 production files,
-67 direct `alloc::vec::Vec` paths, and 227 bound `Vec`/`StdVec` uses. "Direct"
+The four library trees in the reviewed inventory contain 55 production files,
+67 direct `alloc::vec::Vec` paths, and 226 bound `Vec`/`StdVec` uses. "Direct"
 counts imports and fully-qualified paths; "bound" counts every type,
 constructor, and method path reached through a direct `Vec` import or alias.
 The executable ledger requires strict equality, so both growth and reduction
@@ -33,7 +33,7 @@ must update the file row and aggregate evidence in the same change.
 | contract |    13 |           24 |         64 | Owned Folio and S2 serialization data has input-defined cardinality and forms a stable contract.                   |
 | analysis |     7 |            8 |         18 | Diagnostics, side tables, filters, and verifier results grow with the input; no inline bound is established.       |
 | lower    |    11 |           11 |         39 | Lowering worklists and owned results grow with source-tree shape. Bounded substructures may migrate independently. |
-| pass     |    13 |           13 |         52 | Facts, provenance, and traversal worklists grow with the number of operations.                                     |
+| pass     |    13 |           13 |         51 | Facts, provenance, and traversal worklists grow with the number of operations.                                     |
 | emit     |    11 |           11 |         54 | Ordered output buffers and collected emission inputs grow with the document.                                       |
 
 This is not an endorsement of every retained allocation. A focused change may
@@ -71,9 +71,9 @@ or count and fails the gate instead of becoming a `no_std` escape from S0.
 | s2       | `vize_s0::String`       |    11 |           11 |         53 |
 | s2       | `vize_s0::Vec`          |     9 |            9 |         17 |
 | s2       | `vize_s0::SmallVec`     |     0 |            0 |          0 |
-| s1_to_s2 | `alloc::vec::Vec`       |    35 |           35 |        145 |
+| s1_to_s2 | `alloc::vec::Vec`       |    35 |           35 |        144 |
 | s1_to_s2 | `alloc::string::String` |     0 |            0 |          0 |
-| s1_to_s2 | `vize_s0::String`       |    46 |           48 |        215 |
+| s1_to_s2 | `vize_s0::String`       |    46 |           48 |        214 |
 | s1_to_s2 | `vize_s0::Vec`          |    14 |           14 |         56 |
 | s1_to_s2 | `vize_s0::SmallVec`     |     2 |            2 |          4 |
 

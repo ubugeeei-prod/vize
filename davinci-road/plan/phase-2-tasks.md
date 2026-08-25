@@ -211,11 +211,11 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 
 **Deliverable:** `vize_atelier_dom` lowering S2 → codegen structure directly — the first strangler target, on the surface that holds the hard byte-parity bar.
 
-**Current series evidence (2026-08-25):** 20 installments have landed through
-[#4811](https://github.com/ubugeeei-prod/vize/pull/4811). Dynamic-argument
-`v-bind` keys and `.camel` / `.prop` / `.attr` modifiers now match the shipped
-lane in direct and byte-differential tests. The task remains blocked on the
-published dependency decision, a hydrated full-corpus run with an exact
+**Current series evidence (2026-08-25):** 21 installments have landed through
+[#4860](https://github.com/ubugeeei-prod/vize/pull/4860). Dynamic-argument
+`v-bind` keys, `.camel` / `.prop` / `.attr` modifiers, and Vue 2 pipe filters
+now match the shipped lane in direct and byte-differential tests. The task
+remains blocked on the published dependency decision, a hydrated full-corpus run with an exact
 comparison count, patch-flag equivalence coverage, and the DOM allocation
 budget; the old lane remains the production path. See the
 [series record](./phase-2-records/p2-11.md).
