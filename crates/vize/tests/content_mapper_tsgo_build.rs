@@ -6,7 +6,9 @@ use serde_json::json;
 use vize_s0::{String as CompactString, cstr};
 
 mod content_mapper_declaration_map_support;
-use content_mapper_declaration_map_support::assert_authored_vue_source;
+use content_mapper_declaration_map_support::{
+    assert_authored_vue_declaration_map, assert_authored_vue_source,
+};
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
 const VUE_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_VUE";
@@ -143,6 +145,12 @@ fn standard_tsgo_builds_vue_project_references_incrementally() {
             "missing build output {declaration}"
         );
     }
+    assert_authored_vue_declaration_map(
+        project.path(),
+        "references/ui/dist/Counter.d.vue.ts",
+        "Counter",
+    );
+    assert_authored_vue_declaration_map(project.path(), "references/app/dist/App.d.vue.ts", "App");
 
     let unchanged = run_build(&tsgo, project.path());
     assert!(unchanged.status.success(), "{}", output_text(&unchanged));

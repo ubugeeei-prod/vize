@@ -7,6 +7,33 @@ pub struct AuthoredVueSource {
     pub content: String,
 }
 
+pub fn assert_authored_vue_declaration_map(
+    project_root: &Path,
+    declaration: &str,
+    component: &str,
+) -> AuthoredVueSource {
+    let declaration_path = project_root.join(declaration);
+    let declaration_text = std::fs::read_to_string(&declaration_path).unwrap();
+    let name = declaration_path.file_name().unwrap().to_string_lossy();
+    let expected_mapping_url = format!("//# sourceMappingURL={name}.map");
+    assert_eq!(
+        declaration_text.lines().last(),
+        Some(expected_mapping_url.as_str()),
+        "declaration must end with an adjacent sourceMappingURL:\n{declaration_text}"
+    );
+
+    let map_path = declaration_path.with_file_name(format!("{name}.map"));
+    let map_text = std::fs::read_to_string(&map_path).unwrap();
+    let map: Value = serde_json::from_str(&map_text).unwrap();
+    assert_eq!(map["file"], name.as_ref());
+    let expected_source = format!("../src/{component}.vue");
+    assert_eq!(map["sources"], serde_json::json!([expected_source]));
+
+    let authored_source = assert_authored_vue_source(&map_path, &map, component);
+    assert_eq!(authored_source.map_source, expected_source);
+    authored_source
+}
+
 pub fn assert_authored_vue_source(
     map_path: &Path,
     map: &Value,
