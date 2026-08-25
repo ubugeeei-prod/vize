@@ -8,7 +8,7 @@
 
 use vize_atelier_dom::compile_template;
 use vize_carton::Allocator;
-use vize_ricalco::{DOM_LANE_FLAG, EmitError, UnsupportedReason, emit_dom_source};
+use vize_s1_to_s2::{DOM_LANE_FLAG, EmitError, UnsupportedReason, emit_dom_source};
 
 #[derive(Clone, Copy)]
 #[allow(dead_code)]

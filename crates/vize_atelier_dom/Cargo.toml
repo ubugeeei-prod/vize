@@ -27,7 +27,7 @@ insta = { workspace = true }
 # the release gate (tests/tooling/moonbit-publish-crates.test.ts) encodes
 # for published crates exercising unpublished ones.
 vize_davinci = { workspace = true }
-vize_ricalco = { workspace = true }
+vize_s1_to_s2 = { workspace = true }
 
 [[bench]]
 name = "davinci"

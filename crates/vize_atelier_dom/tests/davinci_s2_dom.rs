@@ -19,7 +19,7 @@
 
 mod support;
 
-use vize_ricalco::DOM_LANE_FLAG;
+use vize_s1_to_s2::DOM_LANE_FLAG;
 
 const BATTERY: &[(&str, &str)] = &[
     ("empty_div", "<div></div>"),

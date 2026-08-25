@@ -11,7 +11,7 @@
 
 mod support;
 
-use vize_ricalco::UnsupportedReason as Reason;
+use vize_s1_to_s2::UnsupportedReason as Reason;
 
 const BATTERY: &[(&str, &str)] = &[
     (

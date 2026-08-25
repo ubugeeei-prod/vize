@@ -36,6 +36,19 @@ function workspacePackage(metadata: Metadata, name: string): Package {
   return found;
 }
 
+function dependency(
+  metadata: Metadata,
+  packageName: string,
+  dependencyName: string,
+  kind: Dependency["kind"],
+): Dependency {
+  const found = workspacePackage(metadata, packageName).dependencies.find(
+    (dependency) => dependency.kind === kind && dependency.name === dependencyName,
+  );
+  assert.ok(found, `${packageName} must declare ${kind ?? "normal"} dependency ${dependencyName}`);
+  return found;
+}
+
 function readRepoFile(...segments: string[]): string {
   return fs.readFileSync(path.join(repoRoot, ...segments), "utf8");
 }
@@ -129,5 +142,15 @@ test("Davinci fuzz harness imports stage packages through aliases", () => {
   for (const target of ["folio_parse.rs", "s1_lowering.rs", "template_compile.rs"]) {
     const source = readRepoFile("tests", "fuzz", "fuzz_targets", target);
     assert.doesNotMatch(source, /\bvize_(?:carton|disegno|ricalco)::/u);
+  }
+});
+
+test("Davinci DOM lane tests import lowering through the stage alias", () => {
+  const lowering = dependency(metadata, "vize_atelier_dom", "vize_ricalco", "dev");
+  assert.equal(lowering.rename, "vize_s1_to_s2");
+
+  for (const file of ["davinci_s2_dom.rs", "davinci_s2_slots.rs", path.join("support", "mod.rs")]) {
+    const source = readRepoFile("crates", "vize_atelier_dom", "tests", file);
+    assert.doesNotMatch(source, /\bvize_ricalco::/u);
   }
 });
