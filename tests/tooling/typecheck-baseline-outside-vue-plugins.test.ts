@@ -71,6 +71,27 @@ test("an outside relative plugin path is retargeted to the fixture copy", () => 
   }
 });
 
+test("an outside Windows relative plugin path is retargeted to the fixture copy", () => {
+  const { fixtureRoot, outer, outsidePug } = scaffold();
+  try {
+    writeLocalPug(fixtureRoot);
+    const sourcePath = path.join(fixtureRoot, "tsconfig.json");
+    fs.writeFileSync(
+      sourcePath,
+      `${JSON.stringify({
+        vueCompilerOptions: {
+          plugins: [path.relative(fixtureRoot, outsidePug).replaceAll("/", "\\")],
+        },
+      })}\n`,
+    );
+    assert.deepEqual(rewriteOutsideVueCompilerOptions(fixtureRoot, sourcePath, fixtureRoot), {
+      plugins: ["./node_modules/@vue/language-plugin-pug"],
+    });
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
 test("an outside object plugin name is retargeted", () => {
   const { fixtureRoot, outer, outsidePug } = scaffold();
   try {

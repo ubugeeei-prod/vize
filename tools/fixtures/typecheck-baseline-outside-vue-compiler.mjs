@@ -64,8 +64,9 @@ function retargetPluginEntry(fixtureRoot, sourceDir, configDir, plugin) {
 }
 
 function retargetPluginName(fixtureRoot, sourceDir, configDir, name, fallback) {
-  if (!isPathSpecifier(name)) return { value: fallback, changed: false };
-  const retargeted = retargetVueCompilerPath(fixtureRoot, sourceDir, configDir, name);
+  const normalized = name.replaceAll("\\", "/");
+  if (!isPathSpecifier(normalized)) return { value: fallback, changed: false };
+  const retargeted = retargetVueCompilerPath(fixtureRoot, sourceDir, configDir, normalized);
   return retargeted == null
     ? { value: fallback, changed: false }
     : { value: retargeted, changed: true };
