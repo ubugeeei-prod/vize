@@ -1,0 +1,300 @@
+<!-- GENERATED FILE - do not edit by hand.
+     Regenerate: node tools/davinci/consumer-migration-surfaces.mjs --write
+     Verify:     node tools/davinci/consumer-migration-surfaces.mjs --check
+     Generator:  tools/davinci/consumer-migration-surfaces.mjs -->
+
+# Consumer migration surfaces
+
+This inventory records where the user-facing consumers that must eventually
+sit on Davinci/S0/S1/S2 still name stage crates, legacy AST/parser/Croquis
+crates, or raw OXC crates directly on current `origin/main`. It is an
+observational guard for planning only. It does not change rollout state.
+
+## Resolution method
+
+- Rust comments and string literals are stripped before matching; Cargo
+  comments are stripped while dependency keys remain visible.
+- Matches are lexical crate/surface names, not type-resolved imports. A row
+  means "this file directly names this surface", not necessarily that every
+  mention is a runtime dependency edge.
+- `source/manifest` includes production Rust files plus crate manifests.
+  `test/dev` includes crate `tests`, `benches`, `tests.rs`,
+  `*_tests.rs`, and Rust sites after the first `#[cfg(test)]` in a file.
+- Content-mapper files under Canon are reported separately from the broader
+  typechecker row so that protocol work can move in smaller PRs.
+- Full file x surface rows are generated in `davinci-road/plan/consumer-migration-surfaces.tsv`; this
+  markdown keeps only top impact files to stay under the source-length gate.
+
+## Surface legend
+
+| surface          | group | matched names                                                                                                                                 |
+| ---------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Davinci          | stage | `vize_davinci`                                                                                                                                |
+| S0/carton        | stage | `vize_s0`, `vize_carton`                                                                                                                      |
+| S1/sinopia       | stage | `vize_s1`, `vize_sinopia`                                                                                                                     |
+| S2/disegno       | stage | `vize_s2`, `vize_disegno`                                                                                                                     |
+| S1->S2/ricalco   | stage | `vize_s1_to_s2`, `vize_ricalco`                                                                                                               |
+| old AST/parser   | old   | `vize_relief`, `vize_armature`                                                                                                                |
+| Croquis analysis | old   | `vize_croquis`, `vize_croquis_cf`                                                                                                             |
+| raw OXC          | raw   | `oxc_allocator`, `oxc_ast`, `oxc_ast_visit`, `oxc_codegen`, `oxc_formatter`, `oxc_formatter_core`, `oxc_parser`, `oxc_semantic`, `oxc_syntax` |
+
+## Consumer summary
+
+| consumer                   | stage/Davinci | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
+| -------------------------- | ------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
+| Compiler                   |           906 |             139 |     371 |             951 |      465 |           474 |           581 |
+| Linter                     |           300 |             268 |     219 |             670 |      117 |           337 |           476 |
+| Typechecker                |           879 |             393 |     187 |             804 |      655 |           460 |           650 |
+| Typechecker content-mapper |             8 |               1 |       0 |               9 |        0 |             7 |            18 |
+| Formatter                  |            38 |               0 |      21 |              40 |       19 |            30 |            65 |
+| LSP                        |           271 |             113 |      44 |             323 |      105 |           166 |           387 |
+
+## Consumer details
+
+### Compiler
+
+Scope: build command plus atelier compiler crates. This is a lexical inventory, not a rollout gate.
+
+| surface          | total sites | source/manifest | test/dev |
+| ---------------- | ----------: | --------------: | -------: |
+| Davinci          |          21 |               4 |       17 |
+| S0/carton        |         837 |             490 |      347 |
+| S1/sinopia       |           5 |               1 |        4 |
+| S2/disegno       |          15 |               1 |       14 |
+| S1->S2/ricalco   |          28 |               2 |       26 |
+| old AST/parser   |          74 |              54 |       20 |
+| Croquis analysis |          65 |              56 |        9 |
+| raw OXC          |         371 |             343 |       28 |
+
+#### Top source and manifest files
+
+| file                                                                         | class    | surfaces                                                                                                                            | sites |
+| ---------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------- | ----: |
+| `crates/vize_atelier_sfc/src/rewrite_default.rs:6`                           | source   | S0/carton 1<br>raw OXC 27                                                                                                           |    28 |
+| `crates/vize_atelier_core/src/codegen/expression/prefix_visitor.rs:7`        | source   | S0/carton 3<br>Croquis analysis 1<br>raw OXC 17                                                                                     |    21 |
+| `crates/vize_atelier_core/Cargo.toml:17`                                     | manifest | Davinci 1<br>S0/carton 1<br>S1/sinopia 1<br>S2/disegno 1<br>S1->S2/ricalco 1<br>old AST/parser 4<br>Croquis analysis 1<br>raw OXC 7 |    17 |
+| `crates/vize_atelier_sfc/src/script/define_props_destructure/collector.rs:6` | source   | S0/carton 2<br>raw OXC 15                                                                                                           |    17 |
+| `crates/vize_atelier_core/src/steps/expression/prefix.rs:6`                  | source   | S0/carton 1<br>Croquis analysis 1<br>raw OXC 14                                                                                     |    16 |
+
+Additional source/manifest rows are in the TSV: 309 omitted.
+
+#### Top test/dev files
+
+| file                                                          | class    | surfaces                                                                     | sites |
+| ------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------- | ----: |
+| `crates/vize_atelier_vapor/src/tests.rs:4`                    | test/dev | S0/carton 42<br>raw OXC 2                                                    |    44 |
+| `crates/vize_atelier_core/tests/davinci_s2_transform.rs:119`  | test/dev | Davinci 3<br>S0/carton 6<br>S1/sinopia 3<br>S1->S2/ricalco 13                |    25 |
+| `crates/vize_atelier_core/src/codegen/tests.rs:5`             | test/dev | S0/carton 20<br>old AST/parser 1                                             |    21 |
+| `crates/vize_atelier_sfc/src/compile_script/props/tests.rs:4` | test/dev | S0/carton 15                                                                 |    15 |
+| `crates/vize_atelier_core/tests/s2_support/compare.rs:10`     | test/dev | Davinci 2<br>S0/carton 4<br>S1/sinopia 1<br>S2/disegno 1<br>S1->S2/ricalco 3 |    11 |
+
+Additional test/dev rows are in the TSV: 191 omitted.
+
+### Linter
+
+Scope: lint command plus Patina rule engine. This is a lexical inventory, not a rollout gate.
+
+| surface          | total sites | source/manifest | test/dev |
+| ---------------- | ----------: | --------------: | -------: |
+| S0/carton        |         300 |             225 |       75 |
+| old AST/parser   |         227 |             212 |       15 |
+| Croquis analysis |          41 |              37 |        4 |
+| raw OXC          |         219 |             196 |       23 |
+
+#### Top source and manifest files
+
+| file                                                                                | class    | surfaces                                                           | sites |
+| ----------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------ | ----: |
+| `crates/vize_patina/src/linter/engine.rs:25`                                        | source   | S0/carton 5<br>old AST/parser 2<br>Croquis analysis 1<br>raw OXC 5 |    13 |
+| `crates/vize_patina/Cargo.toml:13`                                                  | manifest | S0/carton 1<br>old AST/parser 2<br>Croquis analysis 1<br>raw OXC 6 |    10 |
+| `crates/vize_patina/src/markup.rs:49`                                               | source   | S0/carton 2<br>old AST/parser 2<br>Croquis analysis 1<br>raw OXC 5 |    10 |
+| `crates/vize_patina/src/rules/script/no_ref_as_operand.rs:29`                       | source   | S0/carton 1<br>raw OXC 9                                           |    10 |
+| `crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs:45` | source   | S0/carton 2<br>old AST/parser 4<br>Croquis analysis 3              |     9 |
+
+Additional source/manifest rows are in the TSV: 305 omitted.
+
+#### Top test/dev files
+
+| file                                                                             | class    | surfaces                                                           | sites |
+| -------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------ | ----: |
+| `crates/vize_patina/src/output/tests.rs:4`                                       | test/dev | S0/carton 23                                                       |    23 |
+| `crates/vize_patina/src/rules/vue/no_unused_components.rs:39`                    | test/dev | S0/carton 1<br>old AST/parser 2<br>Croquis analysis 3<br>raw OXC 7 |    13 |
+| `crates/vize_patina/src/markup/tests.rs:18`                                      | test/dev | S0/carton 1<br>old AST/parser 3<br>raw OXC 6                       |    10 |
+| `crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs:36` | test/dev | S0/carton 1<br>raw OXC 5                                           |     6 |
+| `crates/vize_patina/src/rules/vue/no_mutating_props.rs:62`                       | test/dev | S0/carton 3<br>old AST/parser 2<br>Croquis analysis 1              |     6 |
+
+Additional test/dev rows are in the TSV: 35 omitted.
+
+### Typechecker
+
+Scope: check command plus Canon, excluding dedicated content-mapper files. This is a lexical inventory, not a rollout gate.
+
+| surface          | total sites | source/manifest | test/dev |
+| ---------------- | ----------: | --------------: | -------: |
+| S0/carton        |         879 |             500 |      379 |
+| old AST/parser   |         158 |              35 |      123 |
+| Croquis analysis |         235 |             118 |      117 |
+| raw OXC          |         187 |             151 |       36 |
+
+#### Top source and manifest files
+
+| file                                                                           | class    | surfaces                                                           | sites |
+| ------------------------------------------------------------------------------ | -------- | ------------------------------------------------------------------ | ----: |
+| `crates/vize_canon/src/sfc_typecheck/checks.rs:4`                              | source   | S0/carton 1<br>Croquis analysis 11                                 |    12 |
+| `crates/vize/src/commands/check/nuxt/parsing.rs:5`                             | source   | S0/carton 1<br>raw OXC 11                                          |    12 |
+| `crates/vize_canon/Cargo.toml:16`                                              | manifest | S0/carton 1<br>old AST/parser 3<br>Croquis analysis 1<br>raw OXC 6 |    11 |
+| `crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache.rs:7` | source   | S0/carton 10                                                       |    10 |
+| `crates/vize_canon/src/virtual_ts/expressions/statements.rs:15`                | source   | S0/carton 6<br>Croquis analysis 3                                  |     9 |
+
+Additional source/manifest rows are in the TSV: 307 omitted.
+
+#### Top test/dev files
+
+| file                                                                                         | class    | surfaces                                                 | sites |
+| -------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------- | ----: |
+| `crates/vize_canon/src/virtual_ts/tests.rs:8`                                                | test/dev | S0/carton 37<br>old AST/parser 36<br>Croquis analysis 50 |   123 |
+| `crates/vize_canon/src/virtual_ts/tests/options_api_instance.rs:30`                          | test/dev | S0/carton 7<br>old AST/parser 7<br>Croquis analysis 18   |    32 |
+| `crates/vize_canon/src/virtual_ts/expressions/component_props_tests.rs:1`                    | test/dev | S0/carton 8<br>old AST/parser 8<br>Croquis analysis 1    |    17 |
+| `crates/vize_canon/src/batch/type_checker/tests/recent_issues/template_handler_ts7006.rs:41` | test/dev | S0/carton 16                                             |    16 |
+| `crates/vize_canon/src/virtual_ts/strict_template_globals_tests.rs:3`                        | test/dev | S0/carton 8<br>old AST/parser 7<br>Croquis analysis 1    |    16 |
+
+Additional test/dev rows are in the TSV: 179 omitted.
+
+### Typechecker content-mapper
+
+Scope: content-mapper command plus Canon content-mapper protocol files. This is a lexical inventory, not a rollout gate.
+
+| surface          | total sites | source/manifest | test/dev |
+| ---------------- | ----------: | --------------: | -------: |
+| S0/carton        |           8 |               8 |        0 |
+| Croquis analysis |           1 |               1 |        0 |
+
+#### Top source and manifest files
+
+| file                                                                          | class  | surfaces                          | sites |
+| ----------------------------------------------------------------------------- | ------ | --------------------------------- | ----: |
+| `crates/vize_canon/src/batch/virtual_project/content_mapper.rs:8`             | source | S0/carton 2<br>Croquis analysis 1 |     3 |
+| `crates/vize_canon/src/batch/virtual_project/content_mapper_alias.rs:1`       | source | S0/carton 1                       |     1 |
+| `crates/vize_canon/src/batch/virtual_project/content_mapper_directives.rs:12` | source | S0/carton 1                       |     1 |
+| `crates/vize_canon/src/batch/virtual_project/content_mapper_protocol.rs:4`    | source | S0/carton 1                       |     1 |
+| `crates/vize/src/commands/content_mapper.rs:18`                               | source | S0/carton 1                       |     1 |
+
+Additional source/manifest rows are in the TSV: 2 omitted.
+
+#### Top test/dev files
+
+_No files in this class._
+
+### Formatter
+
+Scope: fmt command, Glyph formatter crate, and LSP format handler. This is a lexical inventory, not a rollout gate.
+
+| surface   | total sites | source/manifest | test/dev |
+| --------- | ----------: | --------------: | -------: |
+| S0/carton |          38 |              26 |       12 |
+| raw OXC   |          21 |              14 |        7 |
+
+#### Top source and manifest files
+
+| file                                               | class    | surfaces                 | sites |
+| -------------------------------------------------- | -------- | ------------------------ | ----: |
+| `crates/vize_glyph/Cargo.toml:13`                  | manifest | S0/carton 1<br>raw OXC 5 |     6 |
+| `crates/vize_glyph/src/options.rs:6`               | source   | S0/carton 1<br>raw OXC 4 |     5 |
+| `crates/vize_glyph/src/script/block_identity.rs:4` | source   | S0/carton 1<br>raw OXC 3 |     4 |
+| `crates/vize_glyph/src/script.rs:10`               | source   | S0/carton 1<br>raw OXC 2 |     3 |
+| `crates/vize_glyph/src/lib.rs:53`                  | source   | S0/carton 2              |     2 |
+
+Additional source/manifest rows are in the TSV: 20 omitted.
+
+#### Top test/dev files
+
+| file                                                 | class    | surfaces                 | sites |
+| ---------------------------------------------------- | -------- | ------------------------ | ----: |
+| `crates/vize_glyph/src/script.rs:56`                 | test/dev | S0/carton 1<br>raw OXC 7 |     8 |
+| `crates/vize/src/commands/fmt/files.rs:125`          | test/dev | S0/carton 4              |     4 |
+| `crates/vize_glyph/src/formatter/block_indent.rs:47` | test/dev | S0/carton 2              |     2 |
+| `crates/vize_glyph/src/template.rs:28`               | test/dev | S0/carton 2              |     2 |
+| `crates/vize_glyph/src/style/stabilization.rs:226`   | test/dev | S0/carton 1              |     1 |
+
+Additional test/dev rows are in the TSV: 2 omitted.
+
+### LSP
+
+Scope: lsp/ide commands plus Maestro editor/server crate. This is a lexical inventory, not a rollout gate.
+
+| surface          | total sites | source/manifest | test/dev |
+| ---------------- | ----------: | --------------: | -------: |
+| S0/carton        |         271 |             187 |       84 |
+| old AST/parser   |          60 |              47 |       13 |
+| Croquis analysis |          53 |              45 |        8 |
+| raw OXC          |          44 |              44 |        0 |
+
+#### Top source and manifest files
+
+| file                                                            | class    | surfaces                                                           | sites |
+| --------------------------------------------------------------- | -------- | ------------------------------------------------------------------ | ----: |
+| `crates/vize_maestro/src/server/state/config.rs:6`              | source   | S0/carton 30                                                       |    30 |
+| `crates/vize_maestro/src/ide/type_service/type_context.rs:229`  | source   | S0/carton 14                                                       |    14 |
+| `crates/vize_maestro/src/ide/corsa_support/html_attribute.rs:2` | source   | S0/carton 10                                                       |    10 |
+| `crates/vize_maestro/Cargo.toml:44`                             | manifest | S0/carton 1<br>old AST/parser 2<br>Croquis analysis 1<br>raw OXC 5 |     9 |
+| `crates/vize_maestro/src/ide/hover/declaration_keyword.rs:19`   | source   | S0/carton 1<br>old AST/parser 1<br>Croquis analysis 3<br>raw OXC 3 |     8 |
+
+Additional source/manifest rows are in the TSV: 115 omitted.
+
+#### Top test/dev files
+
+| file                                                             | class    | surfaces                          | sites |
+| ---------------------------------------------------------------- | -------- | --------------------------------- | ----: |
+| `crates/vize_maestro/src/server/state/virtual_docs.rs:69`        | test/dev | S0/carton 7<br>old AST/parser 2   |     9 |
+| `crates/vize_maestro/src/virtual_code/template_code_tests.rs:12` | test/dev | S0/carton 4<br>old AST/parser 4   |     8 |
+| `crates/vize_maestro/src/ide/inlay_hint.rs:21`                   | test/dev | S0/carton 4<br>Croquis analysis 3 |     7 |
+| `crates/vize_maestro/src/server/state.rs:37`                     | test/dev | S0/carton 7                       |     7 |
+| `crates/vize_maestro/src/server/state/config_tests.rs:1`         | test/dev | S0/carton 5                       |     5 |
+
+Additional test/dev rows are in the TSV: 50 omitted.
+
+## Independently mergeable no-rollout slices
+
+1. `test(davinci): pin consumer migration surfaces` - this artifact and its
+   drift test. It makes the current dependency shape reviewable without
+   changing command routing or defaults.
+2. `refactor(compiler): introduce stage-named compiler boundary adapters` -
+   add S0/S1/S2 adapter entrypoints inside the atelier crates while continuing
+   to feed the existing Relief/Croquis pipeline. Guard with compiler fixture
+   parity and keep the `vize build` path unchanged.
+3. `refactor(linter): add template analysis facade` - move rule code toward
+   a stable analysis contract while the facade is still backed by
+   Relief/Croquis. Guard with lint divergence and rule fixture snapshots; no
+   default linter backend switch.
+4. `refactor(typechecker): add virtual document boundary` - introduce a
+   narrow S0/S1 input contract for virtual TS generation and adapt current
+   callers into it. Guard with the existing typecheck fixture matrix and
+   real-project rows.
+5. `test(content-mapper): pin stage-neutral mapping protocol fixtures` -
+   expand content-mapper protocol fixtures around spans, virtual extensions,
+   package routes, and declaration-map lookups. Keep the external tsgo protocol
+   byte-compatible.
+6. `refactor(formatter): isolate region formatting plan` - keep Glyph/OXC
+   output unchanged, but put region extraction and script formatting behind a
+   stage-neutral formatting plan. Guard with idempotence and range-formatting
+   fixtures.
+7. `refactor(lsp): add current-backend adapter boundary` - route Maestro
+   document/virtual-code feature inputs through a backend trait whose first
+   implementation delegates to the current Armature/Croquis/Canon stack. Guard
+   hover, definition, diagnostics, semantic tokens, and formatting with
+   existing LSP e2e tests.
+8. `refactor(davinci): align physical layer names with s0/s1/s2` - migrate
+   public internal module/crate references toward S0/S1/S2 naming in small
+   aliasing steps. Keep code names only as compatibility aliases until all
+   consumers have moved.
+
+Rollout remains explicitly out of scope for these slices: none should switch
+user-visible defaults, command dispatch, package exports, editor activation, or
+protocol behavior.
+
+## Regeneration
+
+```sh
+node tools/davinci/consumer-migration-surfaces.mjs --write
+node tools/davinci/consumer-migration-surfaces.mjs --check
+```

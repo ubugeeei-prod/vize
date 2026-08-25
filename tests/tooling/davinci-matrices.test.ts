@@ -30,6 +30,11 @@ const matrices = [
     artifact: "davinci-road/plan/sourcelocation-inventory.md",
   },
   {
+    name: "consumer migration surface inventory",
+    generator: "tools/davinci/consumer-migration-surfaces.mjs",
+    artifact: "davinci-road/plan/consumer-migration-surfaces.md + .tsv",
+  },
+  {
     name: "construct-matrix fixture plane (element kind × directive)",
     generator: "tools/davinci/matrix-gen.mjs",
     artifact: "tests/fixtures/davinci-matrix/",
