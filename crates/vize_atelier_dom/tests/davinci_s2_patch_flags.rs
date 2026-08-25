@@ -40,6 +40,16 @@ const CASES: &[Case] = &[
         sites: &["8 /* PROPS */, [\"class\"]"],
     },
     Case {
+        name: "dynamic_component_skips_is_prop",
+        src: r#"<component :is="current" :active-class="klass" />"#,
+        sites: &["8 /* PROPS */, [\"active-class\"]"],
+    },
+    Case {
+        name: "dynamic_component_object_bind",
+        src: r#"<component :is="current" v-bind="obj" />"#,
+        sites: &["16 /* FULL_PROPS */"],
+    },
+    Case {
         name: "style",
         src: r#"<div :style="style"></div>"#,
         sites: &["4 /* STYLE */"],
@@ -107,6 +117,16 @@ const CASES: &[Case] = &[
     Case {
         name: "component_v_model_props",
         src: r#"<Foo v-model="msg" />"#,
+        sites: &["8 /* PROPS */, [\"modelValue\", \"onUpdate:modelValue\"]"],
+    },
+    Case {
+        name: "named_component_v_model_props",
+        src: r#"<Foo v-model:title="pageTitle" />"#,
+        sites: &["8 /* PROPS */, [\"title\", \"onUpdate:title\"]"],
+    },
+    Case {
+        name: "component_v_model_modifier_props",
+        src: r#"<Foo v-model.lazy.trim="msg" />"#,
         sites: &["8 /* PROPS */, [\"modelValue\", \"onUpdate:modelValue\"]"],
     },
     Case {
