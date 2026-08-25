@@ -155,6 +155,74 @@ test("materialized baseline include roots follow corpusGlobs instead of sibling 
   }
 });
 
+test(
+  "materialized baseline keeps sibling app declarations out of package-local typecheck",
+  vueTscOptions,
+  () => {
+    const temp = fs.mkdtempSync(path.join(os.tmpdir(), "vize-package-dts-baseline-"));
+    const fixtureRoot = path.join(temp, "fixture");
+    const reportDir = path.join(temp, "report");
+    fs.mkdirSync(path.join(fixtureRoot, "packages/common/src"), { recursive: true });
+    fs.mkdirSync(path.join(fixtureRoot, "packages/admin/src/components"), { recursive: true });
+    fs.mkdirSync(path.join(fixtureRoot, "types"), { recursive: true });
+    fs.mkdirSync(reportDir);
+    fs.writeFileSync(
+      path.join(fixtureRoot, "packages/common/tsconfig.shared.json"),
+      '{\n  // Keep shared root declarations explicit without importing sibling apps.\n  "compilerOptions": { "strict": true, "noEmit": true },\n  "include": ["src/**/*.vue", "../../types/**/*.d.ts"]\n}\n',
+    );
+    fs.writeFileSync(
+      path.join(fixtureRoot, "packages/common/tsconfig.json"),
+      `${JSON.stringify({ extends: "./tsconfig.shared.json" })}\n`,
+    );
+    fs.writeFileSync(
+      path.join(fixtureRoot, "packages/common/src/App.vue"),
+      '<script setup lang="ts">const value: ROOT_GLOBAL = "ok"</script>\n',
+    );
+    fs.writeFileSync(path.join(fixtureRoot, "types/globals.d.ts"), "type ROOT_GLOBAL = string;\n");
+    fs.writeFileSync(
+      path.join(fixtureRoot, "packages/admin/src/components/global-components.d.ts"),
+      'import Header from "./Header.vue";\nexport {}\n',
+    );
+    fs.writeFileSync(
+      path.join(fixtureRoot, "packages/admin/src/components/Header.vue"),
+      "<template />\n",
+    );
+    try {
+      const project = materializeBaselineProject(
+        fixtureRoot,
+        reportDir,
+        {
+          id: "fixture",
+          tsconfig: "packages/common/tsconfig.json",
+          vueGlobs: ["packages/common/src/**/*.vue", "packages/admin/src/**/*.vue"],
+          typecheckPerformance: { corpusGlobs: ["packages/common/src/**/*.vue"] },
+        },
+        { fileCount: 1, files: [{ file: "packages/common/src/App.vue" }] },
+      );
+      const config = JSON.parse(project.source);
+      assert.deepEqual(config.files, ["../src/App.vue"]);
+      assert.equal(config.include.includes("../../../**/*.d.ts"), false);
+      assert.equal(config.include.includes("../**/*.d.ts"), true);
+      assert.equal(config.include.includes("../src/**/*.d.ts"), true);
+      assert.equal(config.include.includes("../../../types/**/*.d.ts"), true);
+      assert.equal(config.include.includes("../../admin/src/**/*.d.ts"), false);
+      const result = runVueTsc(project.path, fixtureRoot);
+      const diagnostics = result.stdout.split("\n").filter((line) => /: error TS\d+: /u.test(line));
+      assert.deepEqual(diagnostics, []);
+      assert.equal(result.status, 0, result.stderr);
+      const program = result.stdout.split("\n").map((line) => line.trimEnd());
+      assert.equal(program.includes(path.join(fixtureRoot, "packages/common/src/App.vue")), true);
+      assert.equal(program.includes(path.join(fixtureRoot, "types/globals.d.ts")), true);
+      assert.equal(
+        program.includes(path.join(fixtureRoot, "packages/admin/src/components/Header.vue")),
+        false,
+      );
+    } finally {
+      fs.rmSync(temp, { recursive: true, force: true });
+    }
+  },
+);
+
 function runVueTsc(project: string, cwd: string) {
   return spawnSync(vueTsc, ["--noEmit", "--pretty", "false", "--listFiles", "-p", project], {
     cwd,

@@ -1,12 +1,15 @@
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 
+import { expandConfigDir } from "./typecheck-baseline-config-dir.mjs";
+import { loadTsconfigExtendsChain } from "./typecheck-baseline-extends-chain.mjs";
 import {
   mergePathRewrites,
   rewriteOutsideAliasPaths,
 } from "./typecheck-baseline-outside-aliases.mjs";
 import {
   isolatedOverlayBaseUrl,
+  resolvePackageExtends,
   rewriteOutsidePackagePaths,
   rewriteOutsideRootDirs,
   rewriteOutsideTypeRoots,
@@ -36,10 +39,14 @@ import { typecheckCorpusGlobs } from "./tool-matrix-command.mjs";
  * Declaration files are the right thing to add back and the only thing:
  * they are the fixture's type *environment*, never the comparison's subject, so
  * they cannot change which SFCs are checked, and every diagnostic reported
- * inside one is already excluded from scoring for being non-Vue. `exclude` is
- * ours rather than the fixture's for the same reason — the glob is ours, and it
- * must not reach into installed or built output. It cannot narrow the compared
- * corpus, because `exclude` never applies to `files`.
+ * inside one is already excluded from scoring for being non-Vue. Their roots
+ * follow the owning tsconfig directory and the measured corpus roots. A root
+ * tsconfig still gets the whole fixture, but a package-local tsconfig does not
+ * pull sibling app declarations that can import their own `.vue` files into the
+ * baseline program (#4461). `exclude` is ours rather than the fixture's for the
+ * same reason — the glob is ours, and it must not reach into installed or built
+ * output. It cannot narrow the compared corpus, because `exclude` never applies
+ * to `files`.
  *
  * The generated baseline lives beside the source config rather than at fixture
  * root. Several workspace fixtures, including vue-vben-admin, resolve
@@ -73,24 +80,29 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
   );
   const configDir = dirname(outputPath);
   const globRoots = vueGlobSourceRoots(fixtureRoot, project);
+  const sourceBaseRoots =
+    globRoots.length > 0 ? globRoots : vizeReportSourceRoots(fixtureRoot, vizeReport);
+  const declarationIncludes = tsconfigDeclarationIncludes(fixtureRoot, sourcePath, configDir);
   // `readdirSync` order is filesystem-dependent and `Set` keeps insertion order,
   // so the discovered roots are sorted to keep the generated config byte-stable
   // for the same fixture.
   const dotRoots = [
     ...new Set([
       ...dotDirectoryIncludeRoots(fixtureRoot, vizeReport),
-      ...discoverDotDirectoryIncludeRoots(globRoots),
+      ...discoverDotDirectoryIncludeRoots(sourceBaseRoots),
     ]),
   ].sort((a, b) => a.localeCompare(b));
   const ambientRoots = [
     ...new Set(
-      [fixtureRoot, dirname(sourcePath), ...dotRoots].map((root) =>
+      [dirname(sourcePath), ...sourceBaseRoots, ...dotRoots].map((root) =>
         configRelativePath(configDir, root),
       ),
     ),
   ];
   const sourceRoots = [
-    ...new Set([...globRoots, ...dotRoots].map((root) => configRelativePath(configDir, root))),
+    ...new Set(
+      [...sourceBaseRoots, ...dotRoots].map((root) => configRelativePath(configDir, root)),
+    ),
   ];
   const config = {
     extends: configRelativePath(configDir, sourcePath),
@@ -112,6 +124,7 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
       .map((entry) => configRelativePath(configDir, resolve(fixtureRoot, entry.file))),
     include: [
       ...ambientRoots.map((root) => `${root}/**/*.d.ts`),
+      ...declarationIncludes,
       ...sourceRoots.flatMap((root) => sourceIncludeGlobs(root)),
       ...dotRoots.map((root) => `${configRelativePath(configDir, root)}/**/*.vue`),
     ],
@@ -154,6 +167,72 @@ function vueGlobSourceRoots(fixtureRoot, project) {
   const globs = typecheckCorpusGlobs(project);
   if (!Array.isArray(globs)) return [];
   return globs.map((glob) => resolve(fixtureRoot, literalGlobRoot(glob)));
+}
+
+function vizeReportSourceRoots(fixtureRoot, vizeReport) {
+  const roots = [];
+  const files = Array.isArray(vizeReport.files)
+    ? vizeReport.files.slice(0, vizeReport.fileCount)
+    : [];
+  for (const entry of files) {
+    if (typeof entry?.file !== "string") continue;
+    const root = literalGlobRoot(entry.file);
+    roots.push(resolve(fixtureRoot, root));
+  }
+  return [...new Set(roots)].sort((a, b) => a.localeCompare(b));
+}
+
+function tsconfigDeclarationIncludes(fixtureRoot, sourcePath, configDir) {
+  const declarationIncludes = winningTsconfigInclude(sourcePath, fixtureRoot);
+  if (declarationIncludes == null) return [];
+  const roots = [];
+  for (const glob of declarationIncludes.value) {
+    if (!declarationGlobCanMatch(glob)) continue;
+    const normalized = glob.replaceAll("\\", "/");
+    const root = literalGlobRoot(normalized);
+    const suffix = normalized.slice(root.length).replace(/^\//u, "");
+    const resolved = resolve(
+      declarationIncludes.dir,
+      expandConfigDir(root, declarationIncludes.dir),
+    );
+    if (!isInsideOrEqual(fixtureRoot, resolved)) continue;
+    const relativeRoot = configRelativePath(configDir, resolved);
+    roots.push(suffix.length === 0 ? relativeRoot : `${relativeRoot}/${suffix}`);
+  }
+  return [...new Set(roots)].sort((a, b) => a.localeCompare(b));
+}
+
+function winningTsconfigInclude(sourcePath, fixtureRoot) {
+  let value;
+  let dir;
+  for (const entry of [
+    ...loadTsconfigExtendsChain(sourcePath, (fromConfig, specifier) =>
+      resolveTsconfigExtends(fromConfig, specifier, fixtureRoot),
+    ),
+  ].reverse()) {
+    if (!Array.isArray(entry.config?.include)) continue;
+    value = entry.config.include.filter((include) => typeof include === "string");
+    dir = entry.dir;
+  }
+  return value == null ? null : { value, dir };
+}
+
+function resolveTsconfigExtends(fromConfig, specifier, fixtureRoot) {
+  if (typeof specifier !== "string") return null;
+  if (specifier.startsWith("./") || specifier.startsWith("../")) {
+    const resolved = resolve(dirname(fromConfig), specifier);
+    if (existsSync(resolved)) return resolved;
+    if (!resolved.endsWith(".json") && existsSync(`${resolved}.json`)) return `${resolved}.json`;
+    return null;
+  }
+  return resolvePackageExtends(fromConfig, specifier, fixtureRoot);
+}
+
+function declarationGlobCanMatch(glob) {
+  return (
+    typeof glob === "string" &&
+    (glob.includes(".d.ts") || glob.includes(".d.mts") || glob.includes(".d.cts"))
+  );
 }
 
 function literalGlobRoot(glob) {
@@ -205,6 +284,11 @@ function ignoredDirectory(name) {
 
 function isDotDirectory(name) {
   return name.startsWith(".") && name !== "." && name !== "..";
+}
+
+function isInsideOrEqual(root, target) {
+  const path = relative(root, target);
+  return path === "" || (!path.startsWith("..") && !isAbsolute(path));
 }
 
 function sourceIncludeGlobs(root) {
