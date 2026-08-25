@@ -279,7 +279,7 @@ fn git(workspace: &Path, args: &[&str]) -> Result<String, CorpusPreflightError> 
 
 fn output_text(bytes: &[u8]) -> String {
     match core::str::from_utf8(bytes) {
-        Ok(text) => text.trim().to_compact_string(),
+        Ok(text) => text.trim_end().to_compact_string(),
         Err(_) => "<non-utf8 output>".into(),
     }
 }
@@ -295,7 +295,16 @@ fn git_command(args: &[&str]) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::parse_status_line;
+    use super::{output_text, parse_status_line};
+
+    #[test]
+    fn output_text_preserves_clean_status_marker() {
+        let output =
+            output_text(b" 0123456789012345678901234567890123456789 tests/_fixtures/_git/clean\n");
+
+        assert!(output.starts_with(' '));
+        assert!(!output.ends_with('\n'));
+    }
 
     #[test]
     fn status_parser_handles_paths_with_spaces() {
