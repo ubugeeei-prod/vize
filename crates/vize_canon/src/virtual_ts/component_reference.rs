@@ -39,14 +39,14 @@ pub(crate) fn resolved_component_binding_reference(
     // Value bindings win over a type-only PascalCase collision
     // (`chartComponent` vs `import type { ChartComponent }`).
     for candidate in [template_name, camel_name.as_str(), pascal_name.as_str()] {
-        if let Some(binding_type) = summary.bindings.get(candidate) {
-            if !contains_compact_name(syntactic_type_only_imported_names, candidate) {
-                return Some(component_binding_reference_for_summary_binding(
-                    summary,
-                    candidate,
-                    binding_type,
-                ));
-            }
+        if let Some(binding_type) = summary.bindings.get(candidate)
+            && !contains_compact_name(syntactic_type_only_imported_names, candidate)
+        {
+            return Some(component_binding_reference_for_summary_binding(
+                summary,
+                candidate,
+                binding_type,
+            ));
         }
         if options
             .external_template_bindings

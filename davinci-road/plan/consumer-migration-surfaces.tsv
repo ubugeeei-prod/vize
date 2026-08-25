@@ -2128,8 +2128,8 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/strict_templat
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/tests.rs	8	s0	S0/carton	stage	vize_carton	compat	37
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/tests.rs	8	old_ast	old AST/parser	old	vize_armature	legacy	36
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/tests.rs	8	croquis	Croquis analysis	old	vize_croquis	legacy	50
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/tests/auto_import_shadowing.rs	2	s0	S0/carton	stage	vize_carton	compat	2
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/tests/auto_import_shadowing.rs	2	old_ast	old AST/parser	old	vize_armature	legacy	2
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/tests/auto_import_shadowing.rs	2	s0	S0/carton	stage	vize_carton	compat	3
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/tests/auto_import_shadowing.rs	2	old_ast	old AST/parser	old	vize_armature	legacy	3
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/tests/auto_import_shadowing.rs	2	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/tests/component_navigation.rs	4	s0	S0/carton	stage	vize_carton	compat	2
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/tests/component_navigation.rs	4	old_ast	old AST/parser	old	vize_armature	legacy	2

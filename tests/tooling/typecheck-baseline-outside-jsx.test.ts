@@ -177,7 +177,10 @@ test("shared overlay helper writes jsxImportSource when path overlay is empty", 
     assert.equal(overlay.path, path.join(fixtureRoot, ".vize-isolated-tsconfig.json"));
     assert.deepEqual(JSON.parse(fs.readFileSync(overlay.path, "utf8")), {
       extends: "./tsconfig.json",
-      compilerOptions: { jsxImportSource: "./node_modules/vue" },
+      compilerOptions: {
+        paths: { vue: ["./node_modules/vue"] },
+        jsxImportSource: "./node_modules/vue",
+      },
     });
   } finally {
     fs.rmSync(outer, { recursive: true, force: true });

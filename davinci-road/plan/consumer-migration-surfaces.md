@@ -47,7 +47,7 @@ observational guard for planning only. It does not change rollout state.
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
 | Compiler                   |           915 |                    76 |               839 |             139 |     371 |             951 |      474 |           478 |           584 |
 | Linter                     |           302 |                    16 |               286 |             268 |     222 |             670 |      122 |           339 |           478 |
-| Typechecker                |           879 |                   108 |               771 |             393 |     187 |             804 |      655 |           460 |           650 |
+| Typechecker                |           880 |                   108 |               772 |             394 |     187 |             804 |      657 |           460 |           650 |
 | Typechecker content-mapper |             8 |                     3 |                 5 |               1 |       0 |               9 |        0 |             7 |            18 |
 | Formatter                  |            38 |                    38 |                 0 |               0 |      21 |              40 |       19 |            30 |            65 |
 | LSP                        |           271 |                     0 |               271 |             115 |      44 |             325 |      105 |           166 |           388 |
@@ -134,8 +134,8 @@ Scope: check command plus Canon, excluding dedicated content-mapper files. This 
 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
-| S0/carton        |         879 |             500 |      379 |
-| old AST/parser   |         158 |              35 |      123 |
+| S0/carton        |         880 |             500 |      380 |
+| old AST/parser   |         159 |              35 |      124 |
 | Croquis analysis |         235 |             118 |      117 |
 | raw OXC          |         187 |             151 |       36 |
 
