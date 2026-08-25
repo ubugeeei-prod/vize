@@ -2,7 +2,7 @@
   "schemaVersion": 7,
   "requiredToolCoverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
   "lspAuthoredOracleGate": {
-    "minimumProjectCount": 12,
+    "minimumProjectCount": 13,
     "trackingIssue": 3952
   },
   "projects": [
@@ -159,7 +159,70 @@
         "syntax-highlighter",
         "lsp"
       ],
-      "diff": "curator-compare"
+      "diff": "curator-compare",
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "components/comment/demo/editor.vue",
+          "symbol": "handleSubmit",
+          "usageAnchor": "@click=\"handleSubmit\"",
+          "declarationAnchor": "const handleSubmit = () => {",
+          "hoverContains": ["const handleSubmit: () => void"],
+          "renameTo": "__vizeRenamedHandleSubmit"
+        },
+        "componentBoundary": {
+          "importerFile": "components/drawer/demo/user-profile.vue",
+          "componentFile": "components/drawer/demo/descriptionItem/index.vue",
+          "tagName": "description-item",
+          "tagAnchor": "<description-item title=\"Full Name\" ",
+          "completionItemCount": 30,
+          "completionItems": [
+            { "label": "v-if", "rank": 0 },
+            { "label": "v-else-if", "rank": 1 },
+            { "label": "v-else", "rank": 2 },
+            { "label": "v-for", "rank": 3 },
+            { "label": "v-on", "rank": 4 },
+            { "label": "v-bind", "rank": 5 },
+            { "label": "v-model", "rank": 6 },
+            { "label": "v-slot", "rank": 7 },
+            { "label": "v-show", "rank": 8 },
+            { "label": "v-pre", "rank": 9 },
+            { "label": "v-once", "rank": 10 },
+            { "label": "v-memo", "rank": 11 },
+            { "label": "v-cloak", "rank": 12 },
+            { "label": "v-text", "rank": 13 },
+            { "label": "v-html", "rank": 14 },
+            { "label": "@", "rank": 15 },
+            { "label": ":", "rank": 16 },
+            { "label": "#", "rank": 17 },
+            { "label": "@click", "rank": 18 },
+            { "label": "@input", "rank": 19 },
+            { "label": "@change", "rank": 20 },
+            { "label": "@submit", "rank": 21 },
+            { "label": "@keydown", "rank": 22 },
+            { "label": "@keyup", "rank": 23 },
+            { "label": "@focus", "rank": 24 },
+            { "label": "@blur", "rank": 25 },
+            { "label": "@mouseenter", "rank": 26 },
+            { "label": "@mouseleave", "rank": 27 },
+            { "label": "title", "rank": 28 },
+            { "label": "content", "rank": 29 }
+          ],
+          "dependencyEdit": {
+            "anchor": "  title: string;\n",
+            "replacement": "  title: string;\n  vizeOracleProbe?: boolean;\n",
+            "completionLabel": "vize-oracle-probe"
+          }
+        },
+        "fileLifecycle": {
+          "copiedFile": "components/drawer/demo/descriptionItem/__VizeOracleIndex.vue",
+          "renamedFile": "components/drawer/demo/descriptionItem/__VizeOracleRenamedIndex.vue",
+          "originalImportSpecifier": "./descriptionItem/index.vue",
+          "copiedImportSpecifier": "./descriptionItem/__VizeOracleIndex.vue",
+          "renamedImportSpecifier": "./descriptionItem/__VizeOracleRenamedIndex.vue",
+          "markerInsertionAnchor": "<script lang=\"ts\" setup>\n",
+          "markerSymbol": "__vizeAntdvFileLifecycleMarker__"
+        }
+      }
     },
     {
       "id": "reka-ui",

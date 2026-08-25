@@ -149,6 +149,24 @@ pub fn kebab_to_pascal(name: &str) -> String {
     result
 }
 
+/// Component lookup names for an authored template tag, in Vue's
+/// `resolveComponent` order: the authored name, its camelized form, and the
+/// capitalized (PascalCase) form, deduplicated. A kebab-case tag written for
+/// a `descriptionItem`-style script-setup import only matches through the
+/// camelized candidate.
+pub(crate) fn component_name_candidates(tag_name: &str) -> Vec<String> {
+    let mut names = vec![tag_name.to_string()];
+    for candidate in [
+        definition::helpers::kebab_to_camel(tag_name),
+        kebab_to_pascal(tag_name),
+    ] {
+        if !names.contains(&candidate) {
+            names.push(candidate);
+        }
+    }
+    names
+}
+
 /// Convert PascalCase to kebab-case.
 /// Example: "MyComponent" -> "my-component"
 pub fn pascal_to_kebab(name: &str) -> String {

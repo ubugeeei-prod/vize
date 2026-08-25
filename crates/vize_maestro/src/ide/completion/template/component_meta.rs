@@ -92,11 +92,7 @@ pub(crate) fn component_metadata(
         return Some(metadata);
     }
 
-    let mut names = vec![component_name.to_string()];
-    let pascal = kebab_to_pascal(component_name);
-    if !names.iter().any(|name| name == &pascal) {
-        names.push(pascal);
-    }
+    let names = crate::ide::component_name_candidates(component_name);
 
     for name in &names {
         if let Some(resolved) =

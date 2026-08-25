@@ -46,6 +46,47 @@ import MyButton from './MyButton.vue'
 }
 
 #[test]
+fn test_definition_resolves_kebab_tag_for_camel_case_import() {
+    // Vue resolves `<description-item>` against a `descriptionItem` script-setup
+    // import through camelize; the jump must work without a PascalCase local.
+    let dir = tempfile::tempdir().unwrap();
+    let component_path = dir.path().join("DescriptionItem.vue");
+    let source_path = dir.path().join("Parent.vue");
+
+    fs::write(
+        &component_path,
+        "<script setup lang=\"ts\"></script>\n<template><div></div></template>\n",
+    )
+    .unwrap();
+
+    let source = r#"<script setup lang="ts">
+import descriptionItem from './DescriptionItem.vue'
+</script>
+
+<template>
+  <description-item />
+</template>
+"#;
+    fs::write(&source_path, source).unwrap();
+
+    let uri = Url::from_file_path(&source_path).unwrap();
+    let state = ServerState::new();
+    state
+        .documents
+        .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+    state.update_virtual_docs(&uri, source);
+
+    let offset = source.find("<description-item />").unwrap() + "<desc".len();
+    let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+    let location = scalar_location(DefinitionService::definition(&ctx).unwrap());
+
+    assert_eq!(
+        location.uri.to_file_path().unwrap().canonicalize().unwrap(),
+        component_path.canonicalize().unwrap()
+    );
+}
+
+#[test]
 fn test_definition_resolves_define_art_source() {
     let dir = tempfile::tempdir().unwrap();
     let component_path = dir.path().join("Button.vue");

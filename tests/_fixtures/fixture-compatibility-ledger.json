@@ -775,7 +775,8 @@
           "tests/_fixtures/_git/vaul-vue",
           "tests/_fixtures/_git/vee-validate",
           "tests/_fixtures/_git/vue-draggable-plus",
-          "tests/_fixtures/_git/vue-termui"
+          "tests/_fixtures/_git/vue-termui",
+          "tests/_fixtures/_git/ant-design-vue"
         ]
       },
       "evidence": {
