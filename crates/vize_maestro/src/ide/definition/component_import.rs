@@ -27,6 +27,18 @@ struct ComponentImport {
 }
 
 fn find_component_import(ctx: &IdeContext<'_>, component_name: &str) -> Option<ComponentImport> {
+    for name in crate::ide::component_name_candidates(component_name) {
+        if let Some(component_import) = find_component_import_by_name(ctx, &name) {
+            return Some(component_import);
+        }
+    }
+    None
+}
+
+fn find_component_import_by_name(
+    ctx: &IdeContext<'_>,
+    component_name: &str,
+) -> Option<ComponentImport> {
     for (pos, _) in ctx.content.match_indices("import ") {
         let rest = &ctx.content[pos..];
         let Some(from_pos) = rest.find(" from") else {
@@ -231,4 +243,43 @@ fn ident_at_start(value: &str) -> Option<&str> {
 
 fn is_vue_path(path: &Path) -> bool {
     path.extension().is_some_and(|extension| extension == "vue")
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+
+    use tower_lsp::lsp_types::Url;
+
+    use super::*;
+    use crate::server::ServerState;
+
+    #[test]
+    fn resolve_component_file_prefers_exact_binding_over_lower_camel_fallback() {
+        let workspace = tempfile::tempdir().expect("temporary workspace");
+        let lower_camel_path = workspace.path().join("lower.vue");
+        let exact_path = workspace.path().join("exact.vue");
+        fs::write(&lower_camel_path, "<template><span /></template>\n").expect("lower component");
+        fs::write(&exact_path, "<template><strong /></template>\n").expect("exact component");
+
+        let importer_path = workspace.path().join("App.vue");
+        let source = r#"<script setup lang="ts">
+import descriptionItem from "./lower.vue";
+import DescriptionItem from "./exact.vue";
+</script>
+<template><DescriptionItem /></template>
+"#;
+        fs::write(&importer_path, source).expect("importer");
+
+        let state = ServerState::new();
+        let uri = Url::from_file_path(importer_path).expect("importer URI");
+        let offset = source.rfind("DescriptionItem").expect("component tag");
+        let ctx = IdeContext::with_content(&state, &uri, offset, source.to_owned());
+        let resolved = resolve_component_file(&ctx, "DescriptionItem").expect("component file");
+
+        assert_eq!(
+            resolved.canonicalize().expect("canonical resolved path"),
+            exact_path.canonicalize().expect("canonical exact path")
+        );
+    }
 }

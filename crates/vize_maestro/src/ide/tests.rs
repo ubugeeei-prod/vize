@@ -1,6 +1,7 @@
 use super::{
-    is_component_tag, kebab_to_pascal, offset_to_position, pascal_to_kebab, position_to_offset,
-    standalone_html_block_at_offset, token_at_offset, token_span_at_offset,
+    component_name_candidates, is_component_tag, kebab_to_pascal, offset_to_position,
+    pascal_to_kebab, position_to_offset, standalone_html_block_at_offset, token_at_offset,
+    token_span_at_offset,
 };
 use crate::virtual_code::BlockType;
 
@@ -77,6 +78,22 @@ fn test_pascal_to_kebab() {
     assert_eq!(pascal_to_kebab("Button"), "button");
     assert_eq!(pascal_to_kebab("VForItem"), "v-for-item");
     assert_eq!(pascal_to_kebab("ABC"), "a-b-c");
+}
+
+#[test]
+fn test_component_name_candidates_preserve_existing_order() {
+    assert_eq!(
+        component_name_candidates("description-item"),
+        vec!["description-item", "DescriptionItem", "descriptionItem"]
+    );
+    assert_eq!(
+        component_name_candidates("DescriptionItem"),
+        vec!["DescriptionItem", "descriptionItem"]
+    );
+    assert_eq!(
+        component_name_candidates("descriptionItem"),
+        vec!["descriptionItem"]
+    );
 }
 
 #[test]

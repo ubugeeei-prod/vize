@@ -9,7 +9,9 @@ use tower_lsp::lsp_types::{
 use vize_relief::BindingType;
 
 use crate::ide::definition::helpers as definition_helpers;
-use crate::ide::{IdeContext, is_component_tag, kebab_to_pascal, pascal_to_kebab};
+use crate::ide::{
+    IdeContext, component_name_candidates, is_component_tag, kebab_to_pascal, pascal_to_kebab,
+};
 
 use super::component_cache::cached_component_metadata;
 use super::component_docs;
@@ -92,11 +94,7 @@ pub(crate) fn component_metadata(
         return Some(metadata);
     }
 
-    let mut names = vec![component_name.to_string()];
-    let pascal = kebab_to_pascal(component_name);
-    if !names.iter().any(|name| name == &pascal) {
-        names.push(pascal);
-    }
+    let names = component_name_candidates(component_name);
 
     for name in &names {
         if let Some(resolved) =

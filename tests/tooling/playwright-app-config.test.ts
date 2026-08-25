@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -77,9 +78,17 @@ test("fixture install child cannot discover or mutate the parent Git repository"
 });
 
 function snapshotParentGitState() {
-  const hooksDir = path.join(root, ".git", "hooks");
+  const gitCommonDir = execFileSync(
+    "git",
+    ["rev-parse", "--path-format=absolute", "--git-common-dir"],
+    {
+      cwd: root,
+      encoding: "utf8",
+    },
+  ).trim();
+  const hooksDir = path.join(gitCommonDir, "hooks");
   return {
-    config: fs.readFileSync(path.join(root, ".git", "config")),
+    config: fs.readFileSync(path.join(gitCommonDir, "config")),
     hooks: fs.existsSync(hooksDir)
       ? fs
           .readdirSync(hooksDir)

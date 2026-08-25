@@ -168,6 +168,42 @@ pub fn pascal_to_kebab(name: &str) -> String {
     result
 }
 
+/// Candidate local binding names for a component tag.
+pub(crate) fn component_name_candidates(name: &str) -> Vec<String> {
+    let Some(first) = name.chars().next() else {
+        return Vec::new();
+    };
+    if !name.contains('-') && !first.is_ascii_uppercase() {
+        return vec![name.to_string()];
+    }
+
+    let pascal = kebab_to_pascal(name);
+    let camel = lower_first_ascii(&pascal);
+    let mut names = Vec::with_capacity(3);
+    push_unique_name(&mut names, name.to_string());
+    push_unique_name(&mut names, pascal);
+    push_unique_name(&mut names, camel);
+    names
+}
+
+fn lower_first_ascii(name: &str) -> String {
+    let mut chars = name.chars();
+    let Some(first) = chars.next() else {
+        return String::new();
+    };
+
+    let mut result = String::with_capacity(name.len());
+    result.push(first.to_ascii_lowercase());
+    result.extend(chars);
+    result
+}
+
+fn push_unique_name(names: &mut Vec<String>, candidate: String) {
+    if !names.iter().any(|name| name == &candidate) {
+        names.push(candidate);
+    }
+}
+
 /// Check if a tag name is a component (starts with uppercase or contains hyphen).
 #[inline]
 pub fn is_component_tag(name: &str) -> bool {

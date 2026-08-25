@@ -131,8 +131,13 @@ import AccountSearchResult from '~/components/AccountSearchResult.vue'
     };
 
     assert_eq!(
-        location.uri,
-        Url::from_file_path(target_path).expect("target URI")
+        location
+            .uri
+            .to_file_path()
+            .expect("definition path")
+            .canonicalize()
+            .expect("canonical definition path"),
+        target_path.canonicalize().expect("canonical target path")
     );
 }
 
@@ -173,6 +178,46 @@ import { Widget } from "@/components";
     let offset = source.rfind("Widget").expect("component tag");
     let ctx = IdeContext::new(&state, &importer_uri, offset).expect("IDE context");
     let definition = DefinitionService::definition(&ctx).expect("component definition");
+    let GotoDefinitionResponse::Scalar(location) = definition else {
+        panic!("component definition must be scalar");
+    };
+
+    assert_eq!(
+        location
+            .uri
+            .to_file_path()
+            .expect("definition path")
+            .canonicalize()
+            .expect("canonical definition path"),
+        target_path.canonicalize().expect("canonical target path")
+    );
+}
+
+#[test]
+fn component_definition_resolves_lower_camel_import_as_kebab_tag() {
+    let workspace = tempfile::tempdir().expect("temporary workspace");
+    let component_dir = workspace.path().join("descriptionItem");
+    fs::create_dir_all(&component_dir).expect("component directory");
+    let target_path = component_dir.join("index.vue");
+    fs::write(&target_path, "<template><dl /></template>\n").expect("component");
+
+    let importer_path = workspace.path().join("App.vue");
+    let source = r#"<script setup lang="ts">
+import descriptionItem from "./descriptionItem/index.vue";
+</script>
+<template><description-item title="Full Name" /></template>
+"#;
+    fs::write(&importer_path, source).expect("importer");
+
+    let importer_uri = Url::from_file_path(&importer_path).expect("importer URI");
+    let state = ServerState::new();
+    state
+        .documents
+        .open(importer_uri.clone(), source.to_owned(), 1, "vue".to_owned());
+    state.update_virtual_docs(&importer_uri, source);
+    let offset = source.rfind("description-item").expect("component tag");
+    let ctx = IdeContext::new(&state, &importer_uri, offset).expect("IDE context");
+    let definition = super::component_tag_definition(&ctx).expect("component definition");
     let GotoDefinitionResponse::Scalar(location) = definition else {
         panic!("component definition must be scalar");
     };

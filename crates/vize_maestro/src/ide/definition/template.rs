@@ -6,7 +6,7 @@ use vize_croquis::{Drawer, DrawerOptions};
 use vize_relief::BindingType;
 
 use super::{IdeContext, helpers};
-use crate::ide::{is_component_tag, kebab_to_pascal, template_scope};
+use crate::ide::{component_name_candidates, is_component_tag, template_scope};
 
 /// Find definition for a symbol in template context.
 pub(crate) fn definition_in_template(ctx: &IdeContext) -> Option<GotoDefinitionResponse> {
@@ -551,19 +551,16 @@ pub(crate) fn find_component_definition(
 
     let summary = analyzer.finish();
 
-    let pascal_name = kebab_to_pascal(tag_name);
-    let names_to_try = [tag_name.to_string(), pascal_name];
-
-    for name in &names_to_try {
-        if let Some(resolved) = super::component_import::resolve_component_file(ctx, name)
+    for name in component_name_candidates(tag_name) {
+        if let Some(resolved) = super::component_import::resolve_component_file(ctx, &name)
             && let Some(location) = component_file_location(ctx, &resolved)
         {
             return Some(GotoDefinitionResponse::Scalar(location));
         }
 
-        if let Some(binding_type) = summary.get_binding_type(name)
+        if let Some(binding_type) = summary.get_binding_type(&name)
             && binding_type == BindingType::ExternalModule
-            && let Some(resolved) = super::component_import::resolve_component_file(ctx, name)
+            && let Some(resolved) = super::component_import::resolve_component_file(ctx, &name)
             && let Some(location) = component_file_location(ctx, &resolved)
         {
             return Some(GotoDefinitionResponse::Scalar(location));

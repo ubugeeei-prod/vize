@@ -337,27 +337,26 @@ impl LanguageServer for MaestroServer {
             return Ok(None);
         }
 
+        #[cfg(feature = "native")]
         {
-            #[cfg(feature = "native")]
-            {
-                let corsa_bridge = self.state.get_corsa_bridge().await;
-                if let Some(locations) = ReferencesService::references_with_corsa(
+            let locations = if self.state.lsp_features().cross_file {
+                ReferencesService::references_with_corsa(
                     &ctx,
                     include_declaration,
-                    corsa_bridge,
+                    self.state.get_corsa_bridge().await,
                 )
                 .await
-                {
-                    return Ok(Some(locations));
-                }
+            } else {
+                ReferencesService::references(&ctx, include_declaration)
+            };
+            if let Some(locations) = locations {
+                return Ok(Some(locations));
             }
+        }
 
-            #[cfg(not(feature = "native"))]
-            {
-                if let Some(locations) = ReferencesService::references(&ctx, include_declaration) {
-                    return Ok(Some(locations));
-                }
-            }
+        #[cfg(not(feature = "native"))]
+        if let Some(locations) = ReferencesService::references(&ctx, include_declaration) {
+            return Ok(Some(locations));
         }
 
         Ok(None)

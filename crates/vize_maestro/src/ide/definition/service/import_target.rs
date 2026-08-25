@@ -45,13 +45,12 @@ pub(super) fn component_tag_definition(ctx: &IdeContext<'_>) -> Option<GotoDefin
     if !crate::ide::is_component_tag(&tag_name) {
         return None;
     }
-    let pascal = crate::ide::kebab_to_pascal(&tag_name);
-    for name in [tag_name.as_str(), pascal.as_str()] {
+    for name in crate::ide::component_name_candidates(&tag_name) {
         // `import { Widget as LocalWidget }` declares `Widget` in the target,
         // so the lookup key is the exported name, not the local alias.
-        let exported = bound_import(&ctx.content, name)
-            .map_or_else(|| name.to_owned(), |(_, exported)| exported);
-        if let Some(specifier) = helpers::find_import_path(ctx, name)
+        let exported = bound_import(&ctx.content, &name)
+            .map_or_else(|| name.clone(), |(_, exported)| exported);
+        if let Some(specifier) = helpers::find_import_path(ctx, &name)
             && let Some(target) = resolve_import_specifier(ctx.uri, &specifier)
             && let Some(location) = locate_export(ctx, &target, &exported, MAX_REEXPORT_HOPS)
         {

@@ -2380,7 +2380,7 @@ lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	raw_oxc	raw OXC	raw	oxc_ast_v
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 lsp	LSP	source	crates/vize_maestro/src/document/store.rs	79	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide.rs	174	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide.rs	210	s0	S0/carton	stage	vize_carton	compat	1
 lsp	LSP	source	crates/vize_maestro/src/ide/auto_insert.rs	77	s0	S0/carton	stage	vize_carton	compat	2
 lsp	LSP	source	crates/vize_maestro/src/ide/code_action.rs	14	s0	S0/carton	stage	vize_carton	compat	1
 lsp	LSP	source	crates/vize_maestro/src/ide/code_action.rs	14	croquis	Croquis analysis	old	vize_croquis	legacy	5
