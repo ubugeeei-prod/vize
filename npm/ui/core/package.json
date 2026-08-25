@@ -109,6 +109,16 @@
       "import": "./dist/hover.mjs",
       "default": "./dist/hover.mjs"
     },
+    "./live-region": {
+      "types": "./dist/live-region.d.mts",
+      "import": "./dist/live-region.mjs",
+      "default": "./dist/live-region.mjs"
+    },
+    "./locale": {
+      "types": "./dist/locale.d.mts",
+      "import": "./dist/locale.mjs",
+      "default": "./dist/locale.mjs"
+    },
     "./long-press": {
       "types": "./dist/long-press.d.mts",
       "import": "./dist/long-press.mjs",
@@ -118,6 +128,16 @@
       "types": "./dist/move.d.mts",
       "import": "./dist/move.mjs",
       "default": "./dist/move.mjs"
+    },
+    "./portal": {
+      "types": "./dist/portal.d.mts",
+      "import": "./dist/portal.mjs",
+      "default": "./dist/portal.mjs"
+    },
+    "./presence": {
+      "types": "./dist/presence.d.mts",
+      "import": "./dist/presence.mjs",
+      "default": "./dist/presence.mjs"
     },
     "./press": {
       "types": "./dist/press.d.mts",
