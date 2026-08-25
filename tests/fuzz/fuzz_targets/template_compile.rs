@@ -11,7 +11,7 @@
 // fixtures by `tools/fuzz/seed_corpus.mjs`.
 use libfuzzer_sys::fuzz_target;
 use vize_atelier_dom::compile_template;
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 fuzz_target!(|data: &[u8]| {
     let Ok(source) = std::str::from_utf8(data) else {
