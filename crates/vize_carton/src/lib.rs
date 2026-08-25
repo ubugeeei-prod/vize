@@ -61,6 +61,7 @@ pub mod path;
 pub mod pool;
 pub mod profiler;
 pub mod recursion;
+pub mod source_frame;
 pub mod source_range;
 pub mod span;
 pub mod string_builder;
@@ -96,7 +97,8 @@ pub use rustc_hash::{FxHashMap, FxHashSet};
 // Re-export phf for compile-time perfect hash functions
 pub use phf::{Map as PhfMap, Set as PhfSet, phf_map, phf_set};
 
-// Re-export the Davinci span type (S0 source-model coordinate)
+// Re-export the Davinci source model types (S0 coordinates)
+pub use source_frame::{SourceBlock, SourceFrameError, SourceRoot};
 pub use span::Span;
 
 // Re-export shared utilities

@@ -1,9 +1,9 @@
 //! P2-10: style-block `v-bind()` lowers to `vue.css-bind` on a carrier
-//! `ui.element style`. Spans are block-relative.
+//! `ui.element style`. Spans are file-absolute.
 
 use vize_davinci::folio::{Folio, FolioMode};
-use vize_ricalco::lower_style_block;
-use vize_s0::Allocator;
+use vize_ricalco::{lower_style_block, lower_style_block_in};
+use vize_s0::{Allocator, SourceFrameError, SourceRoot};
 use vize_s2::folio::{DisegnoFolio, FolioBinding, FolioElement, FolioExpr, FolioOp};
 use vize_s2::op::Op;
 
@@ -34,25 +34,78 @@ ui.element style @0:61
 }
 
 #[test]
-fn block_start_rebases_spans_without_changing_relative_offsets() {
+fn block_start_produces_file_absolute_spans() {
     let css = ".foo { color: v-bind(color); }";
-    let at_zero = folio(css, 0).print_to_string(FolioMode::Full);
-    let shifted = folio(css, 90).print_to_string(FolioMode::Full);
-    assert_eq!(at_zero.as_str(), shifted.as_str());
+    let shifted = folio(css, 90);
+    assert_eq!(
+        shifted.print_to_string(FolioMode::Full).as_str(),
+        "\
+[disegno]
+ops=2
+
+[disegno.ops]
+ui.element style @90:120
+  vue.css-bind value=js(\"color\" @111:116) @104:117
+
+"
+    );
     let FolioOp::Element(FolioElement { bindings, span, .. }) = &folio(css, 90).ops[0] else {
         panic!("carrier is ui.element");
     };
-    assert_eq!(span.start, 0);
+    assert_eq!(span.start, 90);
     let FolioBinding::VueCssBind(bind) = &bindings[0] else {
         panic!("first binding is vue.css-bind");
     };
-    assert_eq!(bind.span.start, 14);
-    assert_eq!(bind.span.end, 27);
+    assert_eq!(bind.span.start, 104);
+    assert_eq!(bind.span.end, 117);
     let FolioExpr::Js { span, source } = &bind.value else {
         panic!("color is admitted js");
     };
     assert_eq!(source.as_str(), "color");
-    assert_eq!((span.start, span.end), (21, 26));
+    assert_eq!((span.start, span.end), (111, 116));
+}
+
+#[test]
+fn validated_blocks_keep_equal_style_blocks_distinct() {
+    let source = "<style>.foo{color:v-bind(color)}</style><style>.foo{color:v-bind(color)}</style>";
+    let first_start = source.find(".foo").expect("first style content");
+    let second_start = source.rfind(".foo").expect("second style content");
+    let first_end = first_start + source[first_start..].find("</style>").expect("first close");
+    let second_end = second_start
+        + source[second_start..]
+            .find("</style>")
+            .expect("second close");
+    let first_css = &source[first_start..first_end];
+    let second_css = &source[second_start..second_end];
+    let root = SourceRoot::new(source).expect("small source");
+    let second_block = root
+        .block(second_css, second_start as u32)
+        .expect("second style block");
+    assert_eq!(
+        root.block(first_css, second_start as u32),
+        Err(SourceFrameError::BlockNotRootSlice)
+    );
+
+    let arena = Allocator::default();
+    let op = lower_style_block_in(&arena, second_block);
+    let FolioOp::Element(FolioElement { bindings, span, .. }) =
+        &DisegnoFolio::of(core::slice::from_ref(&op)).ops[0]
+    else {
+        panic!("carrier is ui.element");
+    };
+    assert_eq!(span.start, second_start as u32);
+    let FolioBinding::VueCssBind(bind) = &bindings[0] else {
+        panic!("first binding is vue.css-bind");
+    };
+    assert_eq!(bind.span.start, second_start as u32 + 11);
+    let FolioExpr::Js { span, source } = &bind.value else {
+        panic!("color is admitted js");
+    };
+    assert_eq!(source.as_str(), "color");
+    assert_eq!(
+        (span.start, span.end),
+        (second_start as u32 + 18, second_start as u32 + 23)
+    );
 }
 
 #[test]

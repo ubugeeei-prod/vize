@@ -66,4 +66,7 @@ pub use emit::{
     DomEmit, EmitError, UnsupportedReason, UnsupportedRefusal, emit_dom, emit_dom_source,
     emit_dom_source_with_caps,
 };
-pub use lower::{LegacyCaps, Lowered, lower, lower_style_block, lower_with_caps};
+pub use lower::{
+    LegacyCaps, Lowered, lower, lower_source_block, lower_source_block_with_caps,
+    lower_style_block, lower_style_block_in, lower_with_caps,
+};

@@ -42,16 +42,15 @@ pub struct VueDirectiveOp<'a> {
 /// `vue.css-bind` - one CSS `v-bind()` in an SFC style block (P2-10).
 ///
 /// Not `ui.bind`: that is the template one-way binding. The CSS form
-/// points into a style block, so [`VueCssBindOp::span`] is
-/// **block-relative** (`Span::to_block_relative` against the style
-/// block's content start). The bound text rides as [`ExprRef`] under
-/// P2-5b's contract — CSS `v-bind()` contents are exactly the kind of
-/// text that may have no retained AST.
+/// points into a style block, and its spans are still the S0
+/// file-absolute authored offsets of the complete SFC. The bound text
+/// rides as [`ExprRef`] under P2-5b's contract — CSS `v-bind()` contents
+/// are exactly the kind of text that may have no retained AST.
 #[derive(Debug)]
 pub struct VueCssBindOp<'a> {
     /// The `v-bind()` argument, as authored inside the parentheses.
     pub value: ExprRef<'a>,
-    /// The `v-bind(...)` call's range, relative to the style block.
+    /// The `v-bind(...)` call's authored range in the complete source.
     pub span: Span,
 }
 

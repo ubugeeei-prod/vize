@@ -25,7 +25,7 @@ use core::fmt;
 
 use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
 use vize_davinci::side_table::SideTable;
-use vize_s0::{Allocator, Span, String};
+use vize_s0::{Allocator, SourceBlock, SourceRoot, Span, String};
 use vize_s1::{SurfaceError, SurfaceTree};
 
 use vize_s2::op::{Namespace, Region};
@@ -56,7 +56,7 @@ pub use caps::LegacyCaps;
 pub(crate) use expr::simple_identifier;
 // The wrapper-key channel (P2-9 series 5): captured `<template v-if>`
 // keys, folded into branch-key facts by the v-if pass.
-pub use css::lower_style_block;
+pub use css::{lower_style_block, lower_style_block_in};
 pub use structural::{ForWrapper, WrapperKey, WrapperKeys};
 // The one-rebuild rule (the same discipline): the text pass re-derives a
 // compound's source with exactly the spelling the lowering minted.
@@ -129,12 +129,44 @@ pub fn lower_with_caps<'a>(
     errors: &[SurfaceError],
     caps: LegacyCaps,
 ) -> Lowered<'a> {
-    let mut cx = cx::Cx::with_caps(allocator, tree.source, caps);
+    let root = SourceRoot::new(tree.source).expect("vize_s1 accepted a u32-addressable source");
+    lower_source_block_with_caps(allocator, tree, errors, root.whole_block(), caps)
+}
+
+/// Lower a parsed S1 source block while preserving file-absolute S0 spans.
+#[must_use]
+pub fn lower_source_block<'a>(
+    allocator: &'a Allocator,
+    tree: &SurfaceTree<'a>,
+    errors: &[SurfaceError],
+    block: SourceBlock<'a>,
+) -> Lowered<'a> {
+    lower_source_block_with_caps(allocator, tree, errors, block, LegacyCaps::VUE3)
+}
+
+/// [`lower_source_block`] under an explicit Vue dialect capability set.
+#[must_use]
+pub fn lower_source_block_with_caps<'a>(
+    allocator: &'a Allocator,
+    tree: &SurfaceTree<'a>,
+    errors: &[SurfaceError],
+    block: SourceBlock<'a>,
+    caps: LegacyCaps,
+) -> Lowered<'a> {
+    debug_assert!(
+        tree.source.as_ptr() == block.source().as_ptr()
+            && tree.source.len() == block.source().len(),
+        "the source block must be the exact string parsed into the S1 tree"
+    );
+    let mut cx = cx::Cx::with_source_block(allocator, block, caps);
     for error in errors {
         cx.diagnostics.push(Diagnostic::new(
             Severity::Error,
             Stage::Surface,
-            Span::new(error.offset, error.offset),
+            Span::new(
+                block.start().saturating_add(error.offset),
+                block.start().saturating_add(error.offset),
+            ),
             String::from(error.code.message()),
         ));
     }

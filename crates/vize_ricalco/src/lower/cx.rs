@@ -22,13 +22,15 @@ use alloc::vec::Vec;
 use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
-use vize_s0::{Allocator, Span, String};
+use vize_s0::{Allocator, SourceBlock, Span, String};
 use vize_s1::{CloseTag, Element, ElementClose, SurfaceChild, Token};
 use vize_s2::provenance::ProvenanceRecord;
 use vize_s2::scope::{ScopeFacts, ScopeTag};
 
 pub(crate) struct Cx<'a> {
     pub allocator: &'a Allocator,
+    block: SourceBlock<'a>,
+    /// The complete authored source that S0 spans are measured against.
     pub source: &'a str,
     next_op: u32,
     exhausted: bool,
@@ -46,14 +48,15 @@ pub(crate) struct Cx<'a> {
 }
 
 impl<'a> Cx<'a> {
-    pub(crate) fn with_caps(
+    pub(crate) fn with_source_block(
         allocator: &'a Allocator,
-        source: &'a str,
+        block: SourceBlock<'a>,
         caps: super::caps::LegacyCaps,
     ) -> Self {
         Self {
             allocator,
-            source,
+            block,
+            source: block.root_source(),
             next_op: 0,
             exhausted: false,
             next_scope: 0,
@@ -162,19 +165,24 @@ impl<'a> Cx<'a> {
     /// is a slice of the one source (`vize_s1`'s P1-10 contract), so
     /// this is pointer arithmetic, never a search.
     pub(crate) fn offset(&self, slice: &str) -> u32 {
-        let base = self.source.as_ptr() as usize;
-        let ptr = slice.as_ptr() as usize;
-        debug_assert!(
-            ptr >= base && ptr + slice.len() <= base + self.source.len(),
-            "S1 handed the lowering a string that is not a source slice"
-        );
-        u32::try_from(ptr - base).unwrap_or(u32::MAX)
+        match self.block.offset_of(slice) {
+            Some(offset) => offset,
+            None => {
+                debug_assert!(
+                    false,
+                    "S1 handed the lowering a string that is not a block slice"
+                );
+                self.block.start()
+            }
+        }
     }
 
     /// The span of a source slice.
     pub(crate) fn span_of(&self, slice: &str) -> Span {
-        let start = self.offset(slice);
-        Span::new(start, start + slice.len() as u32)
+        self.block.span_of(slice).unwrap_or_else(|| {
+            let start = self.offset(slice);
+            Span::new(start, start.saturating_add(slice.len() as u32))
+        })
     }
 
     /// The span of a token's own text (`leading` excluded; a `Missing`
@@ -188,11 +196,7 @@ impl<'a> Cx<'a> {
     /// authored — an expression hole still needs a slice the span
     /// machinery can locate.
     pub(crate) fn hole_at(&self, offset: u32) -> &'a str {
-        let mut at = (offset as usize).min(self.source.len());
-        while at > 0 && !self.source.is_char_boundary(at) {
-            at -= 1;
-        }
-        &self.source[at..at]
+        self.block.zero_width_at(offset)
     }
 
     pub(crate) fn error(&mut self, span: Span, message: String) {
