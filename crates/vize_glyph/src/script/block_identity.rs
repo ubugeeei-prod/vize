@@ -5,7 +5,7 @@ use oxc_allocator::Allocator as OxcAllocator;
 use oxc_ast::ast::Statement;
 use oxc_formatter::parse_for_format;
 use oxc_span::SourceType;
-use vize_carton::{Allocator, String, ToCompactString};
+use vize_s0::{Allocator, String, ToCompactString};
 
 /// Formats an SFC script without letting cleanup erase its block identity.
 ///

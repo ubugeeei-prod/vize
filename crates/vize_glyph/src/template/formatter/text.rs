@@ -7,7 +7,7 @@ use super::{
     TemplateFormatter, format_interpolation_expression, format_interpolations,
     suppression::{LineJoiner, TextRun},
 };
-use vize_carton::String;
+use vize_s0::String;
 
 impl TemplateFormatter<'_> {
     /// Flush accumulated text content with interpolation formatting.

@@ -3,7 +3,7 @@
 //! These options are designed to be compatible with Prettier and oxfmt.
 
 use serde::{Deserialize, Serialize};
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 /// Formatting options for Vue SFC
 #[derive(Debug, Clone, Serialize, Deserialize)]

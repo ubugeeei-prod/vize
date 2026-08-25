@@ -3,7 +3,7 @@
 use super::ast::{Comment, Element, Member, Node, split_trailing};
 use super::{json_error, number, trim_end};
 use crate::error::FormatError;
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 pub(super) struct Parser<'a> {
     iter: std::iter::Peekable<std::str::Chars<'a>>,

@@ -2,7 +2,7 @@ use crate::{
     attribute::write_attr_value,
     options::{AttributeSortOrder, FormatOptions},
 };
-use vize_carton::String;
+use vize_s0::String;
 
 use super::helpers::template_literal_state_after_line_from;
 

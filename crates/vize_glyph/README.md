@@ -24,7 +24,7 @@
 
 - `vize` exposes Glyph through `vize fmt`
 - `vize_maestro` can use Glyph for LSP formatting
-- `vize_atelier_sfc` and `vize_carton` provide parsing and allocation support behind the formatter
+- `vize_atelier_sfc` and `vize_s0` provide parsing and allocation support behind the formatter
 
 ## License
 

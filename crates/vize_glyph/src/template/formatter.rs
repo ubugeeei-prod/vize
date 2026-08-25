@@ -6,7 +6,7 @@
 
 use crate::{error::FormatError, options::FormatOptions, script};
 use memchr::memchr3;
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 use super::{
     attributes::{

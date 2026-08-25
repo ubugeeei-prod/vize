@@ -13,7 +13,7 @@
 //! ## Performance
 //!
 //! This crate is designed for maximum performance:
-//! - Arena allocation via `vize_carton::Allocator` for minimal heap allocations
+//! - Arena allocation via `vize_s0::Allocator` for minimal heap allocations
 //! - Zero-copy parsing where possible
 //! - SIMD-accelerated string operations via `memchr`
 //! - Efficient buffer management with pre-allocated capacity
@@ -50,8 +50,8 @@ pub use error::*;
 pub use formatter::*;
 pub use json::{format_json_source as format_json, format_jsonc_source as format_jsonc};
 pub use options::*;
-pub use vize_carton::Allocator;
-use vize_carton::String;
+pub use vize_s0::Allocator;
+use vize_s0::String;
 
 /// Format a Vue SFC source string
 ///

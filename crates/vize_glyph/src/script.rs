@@ -10,7 +10,7 @@ use crate::options::FormatOptions;
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_formatter::{format_program, parse_for_format};
 use oxc_span::SourceType;
-use vize_carton::{Allocator, String, ToCompactString};
+use vize_s0::{Allocator, String, ToCompactString};
 
 pub(crate) use block_identity::format_sfc_script_content_stable;
 
@@ -208,7 +208,7 @@ mod tests {
         format_script_content_with_source_type,
     };
     use oxc_span::SourceType;
-    use vize_carton::String;
+    use vize_s0::String;
 
     #[test]
     fn test_format_simple_script() {

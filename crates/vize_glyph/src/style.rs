@@ -8,7 +8,7 @@ mod stabilization;
 use crate::error::FormatError;
 use crate::options::FormatOptions;
 use lightningcss::stylesheet::{ParserOptions, PrinterOptions, StyleSheet};
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 /// Format CSS content using lightningcss.
 ///

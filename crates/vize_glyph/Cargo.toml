@@ -10,7 +10,7 @@ publish = false
 
 [dependencies]
 # Internal crates
-vize_carton.workspace = true
+vize_s0.workspace = true
 vize_atelier_sfc.workspace = true
 
 # OXC dependencies

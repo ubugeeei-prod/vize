@@ -6,7 +6,7 @@
 //! idempotent. (#3247)
 
 use super::TemplateFormatter;
-use vize_carton::String;
+use vize_s0::String;
 
 impl TemplateFormatter<'_> {
     /// Render the lines of a formatted interpolation expression at `depth + 1`,

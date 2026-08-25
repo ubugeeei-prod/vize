@@ -19,7 +19,7 @@
 
 use crate::error::FormatError;
 use crate::options::FormatOptions;
-use vize_carton::String;
+use vize_s0::String;
 
 mod ast;
 mod number;

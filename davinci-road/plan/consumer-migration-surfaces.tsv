@@ -1991,7 +1991,7 @@ formatter	Formatter	source	crates/vize_glyph/src/template/formatter.rs	9	s0	S0/c
 formatter	Formatter	source	crates/vize_glyph/src/template/formatter/interpolation.rs	9	s0	S0/carton	stage	1
 formatter	Formatter	source	crates/vize_glyph/src/template/formatter/text.rs	10	s0	S0/carton	stage	1
 formatter	Formatter	source	crates/vize_glyph/src/template/helpers.rs	6	s0	S0/carton	stage	1
-formatter	Formatter	test/dev	crates/vize_glyph/tests/sfc_block_attributes.rs	4	s0	S0/carton	stage	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/sfc_block_attributes.rs	5	s0	S0/carton	stage	1
 formatter	Formatter	source	crates/vize/src/commands/fmt.rs	13	s0	S0/carton	stage	1
 formatter	Formatter	source	crates/vize/src/commands/fmt/data.rs	4	s0	S0/carton	stage	1
 formatter	Formatter	source	crates/vize/src/commands/fmt/data/plain.rs	16	s0	S0/carton	stage	1

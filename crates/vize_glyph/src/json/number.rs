@@ -2,7 +2,7 @@ use super::json_error;
 use crate::error::FormatError;
 use std::iter::Peekable;
 use std::str::Chars;
-use vize_carton::String;
+use vize_s0::String;
 
 /// Scan a JSON number and copy it verbatim.
 ///

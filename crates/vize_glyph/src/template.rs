@@ -25,7 +25,7 @@ pub(crate) const WHITESPACE_SIGNIFICANT_NATIVE_ELEMENTS: [&str; 3] = ["pre", "te
 mod attribute_priority_tests;
 
 use crate::{error::FormatError, options::FormatOptions};
-use vize_carton::String;
+use vize_s0::String;
 
 use formatter::TemplateFormatter;
 use helpers::is_whitespace;
@@ -54,7 +54,7 @@ mod tests {
     use directives::{custom_attribute_priority, format_v_for_expression, matches_attr_pattern};
     use formatter::format_interpolations;
     use helpers::{is_tag_name_char, is_void_element_str};
-    use vize_carton::ToCompactString;
+    use vize_s0::ToCompactString;
 
     #[test]
     fn test_format_simple_template() {

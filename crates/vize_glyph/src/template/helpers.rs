@@ -3,7 +3,7 @@
 //! Provides byte-level helpers for tag parsing, whitespace detection,
 //! and HTML void element recognition.
 
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 /// Find a byte subsequence in a slice.
 pub(crate) fn find_bytes(haystack: &[u8], needle: &[u8]) -> Option<usize> {

@@ -1,7 +1,7 @@
 //! The JSON / JSONC value tree and the comment-placement helper shared by the
 //! parser and printer.
 
-use vize_carton::String;
+use vize_s0::String;
 
 pub(super) enum Node {
     /// `{}` (compact when empty) or a multi-line mapping.

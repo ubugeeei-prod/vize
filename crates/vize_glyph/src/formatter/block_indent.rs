@@ -44,11 +44,11 @@ pub(super) fn write_indented_block(
 mod tests {
     use super::write_indented_block;
 
-    fn indent(content: &str) -> vize_carton::String {
+    fn indent(content: &str) -> vize_s0::String {
         indent_with(content, b"\n")
     }
 
-    fn indent_with(content: &str, newline: &[u8]) -> vize_carton::String {
+    fn indent_with(content: &str, newline: &[u8]) -> vize_s0::String {
         let mut output = Vec::new();
         write_indented_block(&mut output, content, b"  ", newline);
         core::str::from_utf8(&output).unwrap().into()

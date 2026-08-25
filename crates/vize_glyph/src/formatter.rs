@@ -14,7 +14,7 @@ use crate::script;
 use crate::style;
 use std::borrow::Cow;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_carton::{Allocator, FxHashMap, String, ToCompactString};
+use vize_s0::{Allocator, FxHashMap, String, ToCompactString};
 
 /// Result of formatting a Vue SFC
 #[derive(Debug, Clone)]
