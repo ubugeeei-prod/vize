@@ -17,6 +17,8 @@ fn test_attribute_priority_order() {
     assert_eq!(attribute_priority("v-pre"), attribute_priority("v-once"));
     assert!(attribute_priority("v-once") < attribute_priority("id"));
     assert!(attribute_priority("id") < attribute_priority("ref"));
+    assert_eq!(attribute_priority("ref"), attribute_priority("slot"));
+    assert_eq!(attribute_priority("slot"), attribute_priority("slot-scope"));
     assert_eq!(attribute_priority("ref"), attribute_priority(":key"));
     assert!(attribute_priority(":key") < attribute_priority("v-model"));
     // Slots and custom directives precede plain attributes and bindings.
