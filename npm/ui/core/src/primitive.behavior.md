@@ -1,6 +1,6 @@
 # Primitive behavior contract
 
-Normative state × input → outcome table for `PrimitiveElement.vue` (`@vizejs/ui/primitive`).
+Normative state × input → outcome table for `primitive-element.vue` (`@vizejs/ui/primitive`).
 Every row is proven by the named mounted-DOM test in `src/primitive.test.ts`.
 
 | #   | State            | Input  | Outcome                                                     | Proven by                                            |

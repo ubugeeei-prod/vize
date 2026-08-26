@@ -38,6 +38,46 @@ export interface Rect {
   readonly y: number;
 }
 
+/** Per-edge insets applied to the active viewport. */
+export interface SafeAreaInsets {
+  readonly bottom: number;
+  readonly left: number;
+  readonly right: number;
+  readonly top: number;
+}
+
+/** Space a floating element may occupy at a resolved placement. */
+export interface AvailableSize {
+  readonly height: number;
+  readonly width: number;
+}
+
+/** Inputs for the pure available-space measurement. */
+export interface AvailableSizeInput {
+  /**
+   * Viewport padding the floating element should not cross.
+   *
+   * @default 0
+   */
+  readonly collisionPadding?: number;
+
+  /**
+   * Gap on the main axis between reference and floating.
+   *
+   * @default 0
+   */
+  readonly offset?: number;
+
+  /** Placement after collision handling. */
+  readonly placement: Placement;
+
+  /** Reference box. */
+  readonly reference: Rect;
+
+  /** Visible viewport the floating element must stay inside. */
+  readonly viewport: Rect;
+}
+
 /** Measurement source accepted in place of a live element. */
 export interface VirtualElement {
   readonly getBoundingClientRect: () => Rect | DOMRect;
@@ -189,11 +229,29 @@ export interface PositionerOptions {
   readonly placement?: MaybeRefOrGetter<Placement | undefined>;
 
   /**
+   * Inset the active viewport by `env(safe-area-inset-*)` before collision
+   * handling, keeping floating content clear of notches and rounded corners.
+   *
+   * @default false
+   */
+  readonly safeArea?: MaybeRefOrGetter<boolean | undefined>;
+
+  /**
    * Shift the floating box back into the viewport after flip.
    *
    * @default true
    */
   readonly shift?: MaybeRefOrGetter<boolean | undefined>;
+
+  /**
+   * Constrain the floating host to the available space with
+   * `max-width`/`max-height` and publish
+   * `--vize-ui-positioner-available-width` and
+   * `--vize-ui-positioner-available-height` custom properties.
+   *
+   * @default false
+   */
+  readonly size?: MaybeRefOrGetter<boolean | undefined>;
 
   /**
    * CSS positioning mode published on the floating host.
@@ -234,6 +292,12 @@ export type PositionerArrowStyle = string;
 export interface PositionerController {
   /** Arrow coordinates relative to the floating origin, when measured. */
   readonly arrowX: Readonly<ShallowRef<number | null>>;
+
+  /** Available height at the resolved placement, once measured. */
+  readonly availableHeight: Readonly<ShallowRef<number | null>>;
+
+  /** Available width at the resolved placement, once measured. */
+  readonly availableWidth: Readonly<ShallowRef<number | null>>;
 
   /** Arrow coordinates relative to the floating origin, when measured. */
   readonly arrowY: Readonly<ShallowRef<number | null>>;

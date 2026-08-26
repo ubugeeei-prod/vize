@@ -192,3 +192,58 @@ fn an_inherited_base_url_anchors_paths_declared_by_the_extending_config() {
 
     let _ = fs::remove_dir_all(&case_dir);
 }
+
+#[test]
+fn a_child_base_url_reanchors_paths_declared_by_the_extended_config() {
+    let case_dir = unique_case_dir("base-url-child-override-anchor");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("config")).unwrap();
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    fs::write(
+        case_dir.join("config/tsconfig.base.json"),
+        r##"{
+  "compilerOptions": {
+    "paths": {
+      "#shared/*": ["shared/*"]
+    }
+  }
+}"##,
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{
+  "extends": "./config/tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "./src"
+  }
+}"#,
+    )
+    .unwrap();
+    let vue_path = case_dir.join("src/App.vue");
+    fs::write(
+        &vue_path,
+        "<script setup lang=\"ts\">const count = 1</script>",
+    )
+    .unwrap();
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.register_path(&vue_path).unwrap();
+    project.materialize().unwrap();
+
+    let paths = generated_paths(&case_dir);
+    assert_eq!(
+        paths["#shared/*"],
+        serde_json::json!([
+            "./src/shared/*",
+            "../../../../src/shared/*",
+            "./src/shared/*.vue.ts"
+        ])
+    );
+    assert_eq!(
+        paths["*"],
+        serde_json::json!(["./src/*", "../../../../src/*", "./src/*.vue.ts"])
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}

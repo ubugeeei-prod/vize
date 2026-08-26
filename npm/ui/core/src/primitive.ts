@@ -7,4 +7,4 @@ export type PrimitiveAs = string | Component;
 export type PrimitiveElement = Element | ComponentPublicInstance;
 
 /** Unstyled polymorphic foundation with attribute and slot forwarding. */
-export { default as Primitive } from "./PrimitiveElement.vue";
+export { default as Primitive } from "./primitive-element.vue";

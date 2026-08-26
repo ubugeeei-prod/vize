@@ -30,11 +30,11 @@ async function withEventFixture(sfc: string, run: (directory: string) => Promise
   const directory = await mkdtemp(path.join(os.tmpdir(), "authoring-gate-events-"));
   try {
     await mkdir(path.join(directory, "src"), { recursive: true });
-    await writeFile(path.join(directory, "src", "TheWidget.vue"), sfc);
-    await writeFile(path.join(directory, "src", "widget.behavior.md"), "TheWidget.vue");
+    await writeFile(path.join(directory, "src", "the-widget.vue"), sfc);
+    await writeFile(path.join(directory, "src", "widget.behavior.md"), "the-widget.vue");
     await writeFile(
       path.join(directory, "src", "widget.test.ts"),
-      'import TheWidget from "./TheWidget.vue";\nexport default TheWidget;\n',
+      'import TheWidget from "./the-widget.vue";\nexport default TheWidget;\n',
     );
     await run(path.join(directory, "src"));
   } finally {

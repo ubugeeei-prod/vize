@@ -25,6 +25,7 @@ export interface AuthoringViolation {
   readonly message: string;
 }
 
+const KEBAB_CASE_FILENAME = /^[a-z0-9]+(?:[.-][a-z0-9]+)*\.[a-z]+$/;
 const SOURCE_REGEX_ASSERTION = /\.(?:match|doesNotMatch)\(\s*source\b/;
 const SFC_SOURCE_READ = /readFile\([^)]*\.vue/;
 const SOURCE_CONTRACT_PRAGMA = "source-contract:";
@@ -55,6 +56,8 @@ const AUTHORING_RULE_IDS = new Set<AuthoringRule>(
  * in the prop JSDoc, so hover and generated docs preserve first-render behavior.
  * Public events and slots must carry documentation comments in their literal
  * `defineEmits` and `defineSlots` type members.
+ * Every audited file must keep a kebab-case basename; PascalCase and camelCase
+ * public filenames are rejected.
  *
  * @param sourceDirectory Directory containing SFC sources, tests, and behavior tables.
  * @returns Violations in stable path order; an empty array means full compliance.
@@ -78,6 +81,17 @@ export async function auditComponentAuthoring(
     assertPublishedAuthoringRule(rule);
     violations.push({ file: path.relative(root, file), rule, message });
   };
+
+  for (const file of files) {
+    const basename = path.basename(file);
+    if (KEBAB_CASE_FILENAME.test(basename)) continue;
+    report(
+      file,
+      "kebab-case-filename",
+      `Filename ${basename} is not kebab-case; ` +
+        "rename public sources, tests, stories, and fixtures to lowercase-hyphen form",
+    );
+  }
 
   for (const sfc of sfcFiles) {
     const basename = path.basename(sfc);

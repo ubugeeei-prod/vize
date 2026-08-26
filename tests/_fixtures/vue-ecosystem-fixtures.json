@@ -2,7 +2,7 @@
   "schemaVersion": 7,
   "requiredToolCoverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
   "lspAuthoredOracleGate": {
-    "minimumProjectCount": 13,
+    "minimumProjectCount": 15,
     "trackingIssue": 3952
   },
   "projects": [
@@ -875,7 +875,73 @@
       ],
       "tsconfig": "tsconfig.json",
       "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
-      "diff": "curator-compare"
+      "diff": "curator-compare",
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "apps/v4/error.vue",
+          "symbol": "useIdFunction",
+          "usageAnchor": ":use-id=\"useIdFunction\"",
+          "declarationAnchor": "const useIdFunction = () => useId()",
+          "hoverContains": ["const useIdFunction: () => any"],
+          "renameTo": "__vizeRenamedUseIdFunction"
+        },
+        "componentBoundary": {
+          "importerFile": "apps/v4/styles/reka-luma/ui/scroll-area/ScrollArea.vue",
+          "componentFile": "apps/v4/styles/reka-luma/ui/scroll-area/ScrollBar.vue",
+          "tagName": "ScrollBar",
+          "tagAnchor": "<ScrollBar ",
+          "completionItemCount": 33,
+          "completionItems": [
+            { "label": "v-if", "rank": 0 },
+            { "label": "v-else-if", "rank": 1 },
+            { "label": "v-else", "rank": 2 },
+            { "label": "v-for", "rank": 3 },
+            { "label": "v-on", "rank": 4 },
+            { "label": "v-bind", "rank": 5 },
+            { "label": "v-model", "rank": 6 },
+            { "label": "v-slot", "rank": 7 },
+            { "label": "v-show", "rank": 8 },
+            { "label": "v-pre", "rank": 9 },
+            { "label": "v-once", "rank": 10 },
+            { "label": "v-memo", "rank": 11 },
+            { "label": "v-cloak", "rank": 12 },
+            { "label": "v-text", "rank": 13 },
+            { "label": "v-html", "rank": 14 },
+            { "label": "@", "rank": 15 },
+            { "label": ":", "rank": 16 },
+            { "label": "#", "rank": 17 },
+            { "label": "@click", "rank": 18 },
+            { "label": "@input", "rank": 19 },
+            { "label": "@change", "rank": 20 },
+            { "label": "@submit", "rank": 21 },
+            { "label": "@keydown", "rank": 22 },
+            { "label": "@keyup", "rank": 23 },
+            { "label": "@focus", "rank": 24 },
+            { "label": "@blur", "rank": 25 },
+            { "label": "@mouseenter", "rank": 26 },
+            { "label": "@mouseleave", "rank": 27 },
+            { "label": "as-child", "rank": 28 },
+            { "label": "as", "rank": 29 },
+            { "label": "orientation", "rank": 30 },
+            { "label": "force-mount", "rank": 31 },
+            { "label": "class", "rank": 32 }
+          ],
+          "dependencyEdit": {
+            "anchor": "ScrollAreaScrollbarProps & { class?: HTMLAttributes['class'] }",
+            "replacement": "ScrollAreaScrollbarProps & { class?: HTMLAttributes['class'], vizeOracleProbe?: boolean }",
+            "completionLabel": "vize-oracle-probe"
+          }
+        },
+        "fileLifecycle": {
+          "copiedFile": "apps/v4/styles/reka-luma/ui/scroll-area/__VizeOracleScrollBar.vue",
+          "renamedFile": "apps/v4/styles/reka-luma/ui/scroll-area/__VizeOracleRenamedScrollBar.vue",
+          "originalImportSpecifier": "./ScrollBar.vue",
+          "copiedImportSpecifier": "./__VizeOracleScrollBar.vue",
+          "renamedImportSpecifier": "./__VizeOracleRenamedScrollBar.vue",
+          "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
+          "markerSymbol": "__vizeShadcnVueFileLifecycleMarker__"
+        }
+      }
     },
     {
       "id": "inspira-ui",
@@ -2781,7 +2847,73 @@
         "syntax-highlighter",
         "lsp"
       ],
-      "diff": "curator-compare"
+      "diff": "curator-compare",
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "src/components/landing/Features/Features.vue",
+          "symbol": "setCardRef",
+          "usageAnchor": ":ref=\"el => setCardRef(el, i)\"",
+          "declarationAnchor": "function setCardRef(el",
+          "hoverContains": [
+            "function setCardRef(el: Element | ComponentPublicInstance | null, index: number): void"
+          ],
+          "renameTo": "__vizeRenamedSetCardRef"
+        },
+        "componentBoundary": {
+          "importerFile": "src/components/landing/Features/CategorySelector.vue",
+          "componentFile": "src/components/landing/Features/FeatureIcon.vue",
+          "tagName": "FeatureIcon",
+          "tagAnchor": "--1\">\n      <div class=\"ln-feat-orbit-node--top ln-feat-orbit-node\"><FeatureIcon ",
+          "completionItemCount": 31,
+          "completionItems": [
+            { "label": "v-if", "rank": 0 },
+            { "label": "v-else-if", "rank": 1 },
+            { "label": "v-else", "rank": 2 },
+            { "label": "v-for", "rank": 3 },
+            { "label": "v-on", "rank": 4 },
+            { "label": "v-bind", "rank": 5 },
+            { "label": "v-model", "rank": 6 },
+            { "label": "v-slot", "rank": 7 },
+            { "label": "v-show", "rank": 8 },
+            { "label": "v-pre", "rank": 9 },
+            { "label": "v-once", "rank": 10 },
+            { "label": "v-memo", "rank": 11 },
+            { "label": "v-cloak", "rank": 12 },
+            { "label": "v-text", "rank": 13 },
+            { "label": "v-html", "rank": 14 },
+            { "label": "@", "rank": 15 },
+            { "label": ":", "rank": 16 },
+            { "label": "#", "rank": 17 },
+            { "label": "@click", "rank": 18 },
+            { "label": "@input", "rank": 19 },
+            { "label": "@change", "rank": 20 },
+            { "label": "@submit", "rank": 21 },
+            { "label": "@keydown", "rank": 22 },
+            { "label": "@keyup", "rank": 23 },
+            { "label": "@focus", "rank": 24 },
+            { "label": "@blur", "rank": 25 },
+            { "label": "@mouseenter", "rank": 26 },
+            { "label": "@mouseleave", "rank": 27 },
+            { "label": "name", "rank": 28 },
+            { "label": "size", "rank": 29 },
+            { "label": "stroke-width", "rank": 30 }
+          ],
+          "dependencyEdit": {
+            "anchor": "  strokeWidth?: number;\n",
+            "replacement": "  strokeWidth?: number;\n  vizeOracleProbe?: boolean;\n",
+            "completionLabel": "vize-oracle-probe"
+          }
+        },
+        "fileLifecycle": {
+          "copiedFile": "src/components/landing/Features/__VizeOracleFeatureIcon.vue",
+          "renamedFile": "src/components/landing/Features/__VizeOracleRenamedFeatureIcon.vue",
+          "originalImportSpecifier": "./FeatureIcon.vue",
+          "copiedImportSpecifier": "./__VizeOracleFeatureIcon.vue",
+          "renamedImportSpecifier": "./__VizeOracleRenamedFeatureIcon.vue",
+          "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
+          "markerSymbol": "__vizeVueBitsFileLifecycleMarker__"
+        }
+      }
     },
     {
       "id": "vue-netcore",

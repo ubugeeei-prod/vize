@@ -1326,9 +1326,8 @@ linter	Linter	source	crates/vize_patina/src/rules/type_aware/require_typed_props
 linter	Linter	source	crates/vize_patina/src/rules/url.rs	1	s0	S0/carton	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/vapor/no_vue_lifecycle_events.rs	32	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/a11y_img_alt.rs	31	old_ast	old AST/parser	old	vize_relief	legacy	4
-linter	Linter	source	crates/vize_patina/src/rules/vue/attribute_hyphenation.rs	22	s0	S0/carton	stage	vize_s0	preferred	2
-linter	Linter	source	crates/vize_patina/src/rules/vue/attribute_hyphenation.rs	22	old_ast	old AST/parser	old	vize_relief	legacy	2
-linter	Linter	source	crates/vize_patina/src/rules/vue/attribute_hyphenation.rs	22	croquis	Croquis analysis	old	vize_croquis	legacy	1
+linter	Linter	source	crates/vize_patina/src/rules/vue/attribute_hyphenation.rs	22	s0	S0/carton	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/rules/vue/attribute_hyphenation.rs	22	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/attribute_order.rs	34	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/component_definition_name_casing.rs	33	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/html_quotes.rs	46	s0	S0/carton	stage	vize_s0	preferred	1
@@ -1387,13 +1386,13 @@ linter	Linter	source	crates/vize_patina/src/rules/vue/no_mutating_props/script_m
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_mutating_props/script_mutations.rs	9	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_mutating_props/script_mutations.rs	9	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 linter	Linter	test/dev	crates/vize_patina/src/rules/vue/no_mutating_props/tests/script_mutations.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
-linter	Linter	source	crates/vize_patina/src/rules/vue/no_reserved_component_names.rs	36	s0	S0/carton	stage	vize_s0	preferred	2
-linter	Linter	source	crates/vize_patina/src/rules/vue/no_reserved_component_names.rs	36	croquis	Croquis analysis	old	vize_croquis	legacy	1
-linter	Linter	source	crates/vize_patina/src/rules/vue/no_reserved_component_names.rs	36	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
-linter	Linter	source	crates/vize_patina/src/rules/vue/no_reserved_component_names.rs	36	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-linter	Linter	source	crates/vize_patina/src/rules/vue/no_reserved_component_names.rs	36	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-linter	Linter	source	crates/vize_patina/src/rules/vue/no_reserved_component_names/extract.rs	7	s0	S0/carton	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/rules/vue/no_reserved_component_names.rs	39	s0	S0/carton	stage	vize_s0	preferred	2
+linter	Linter	source	crates/vize_patina/src/rules/vue/no_reserved_component_names.rs	39	croquis	Croquis analysis	old	vize_croquis	legacy	1
+linter	Linter	source	crates/vize_patina/src/rules/vue/no_reserved_component_names.rs	39	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/vue/no_reserved_component_names.rs	39	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/vue/no_reserved_component_names/extract.rs	7	s0	S0/carton	stage	vize_s0	preferred	2
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_reserved_component_names/extract.rs	7	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/vue/no_reserved_component_names/extract.rs	7	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_template_key.rs	27	s0	S0/carton	stage	vize_s0	preferred	2
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_template_key.rs	27	old_ast	old AST/parser	old	vize_relief	legacy	4
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_template_target_blank.rs	32	old_ast	old AST/parser	old	vize_relief	legacy	3
@@ -2303,7 +2302,7 @@ typechecker	Typechecker	source	crates/vize/src/commands/check/runner/invocation.
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/nuxt_tsconfig.rs	15	s0	S0/carton	stage	vize_s0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/nuxt_tsconfig.rs	256	s0	S0/carton	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/nuxt_tsconfig/cache.rs	10	s0	S0/carton	stage	vize_s0	preferred	5
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/nuxt_tsconfig/path_options_tests.rs	228	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/nuxt_tsconfig/path_options_tests.rs	252	s0	S0/carton	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output_declarations.rs	2	s0	S0/carton	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output_json.rs	3	s0	S0/carton	stage	vize_s0	preferred	4
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output_profile.rs	4	s0	S0/carton	stage	vize_s0	preferred	1

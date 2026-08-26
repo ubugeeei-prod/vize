@@ -28,6 +28,30 @@ fn effective_base_url_anchors_paths_declared_by_a_child_config() {
 }
 
 #[test]
+fn child_base_url_reanchors_paths_declared_by_a_parent_config() {
+    let case = tempfile::tempdir().unwrap();
+    write(
+        case.path(),
+        "base.json",
+        r##"{ "compilerOptions": { "paths": { "~/*": ["shared/*"] } } }"##,
+    );
+    write(
+        case.path(),
+        "tsconfig.json",
+        r#"{
+  "extends": "./base.json",
+  "compilerOptions": { "baseUrl": "./src" }
+}"#,
+    );
+
+    let paths = prepared_paths(case.path(), "tsconfig.json");
+    assert_eq!(
+        paths["~/*"],
+        serde_json::json!([target(case.path(), "src/shared/*")])
+    );
+}
+
+#[test]
 fn later_extends_paths_keep_the_effective_base_url_from_an_earlier_entry() {
     let case = tempfile::tempdir().unwrap();
     write(

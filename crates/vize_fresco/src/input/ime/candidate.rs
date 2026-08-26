@@ -220,7 +220,7 @@ impl CandidateList {
 #[cfg(test)]
 mod tests {
     use super::{Candidate, CandidateList};
-    use vize_carton::cstr;
+    use vize_s0::cstr;
 
     #[test]
     fn test_candidate_new() {

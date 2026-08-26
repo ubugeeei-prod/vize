@@ -30,7 +30,15 @@ export function snapshotFormatterInputs(cwd, patterns) {
   }
   const status = spawnSync(
     "git",
-    ["status", "--porcelain=v1", "-z", "--untracked-files=all", "--ignore-submodules=none"],
+    [
+      "status",
+      "--porcelain=v1",
+      "-z",
+      "--untracked-files=all",
+      "--ignore-submodules=none",
+      "--",
+      ".",
+    ],
     { cwd, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 },
   );
   if (status.error != null || status.status !== 0) {

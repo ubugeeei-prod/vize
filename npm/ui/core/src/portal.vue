@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, useTemplateRef } from "vue";
+import { computed, inject, onMounted, onUnmounted, provide, ref, useTemplateRef } from "vue";
+
+import { portalDepthKey, registerPortalLayer } from "./portal-stack.ts";
 
 const {
   to = "body",
@@ -33,21 +35,32 @@ defineSlots<{
   default(): unknown;
 }>();
 
+// Depth flows through the component tree, so it survives Teleport relocation
+// and renders deterministically on the server.
+const depth = inject(portalDepthKey, 0);
+provide(portalDepthKey, depth + 1);
+
 const hydrated = ref(false);
+const element = useTemplateRef<HTMLDivElement>("element");
+let releaseLayer: (() => void) | null = null;
 onMounted(() => {
   hydrated.value = true;
+  if (element.value) releaseLayer = registerPortalLayer({ depth, element: element.value });
+});
+onUnmounted(() => {
+  releaseLayer?.();
+  releaseLayer = null;
 });
 
 const teleportDisabled = computed(() => disabled || !hydrated.value);
-const element = useTemplateRef<HTMLDivElement>("element");
 
-defineExpose({ element });
+defineExpose({ depth, element });
 </script>
 
 <template>
   <div data-vize-ui="portal-host">
     <Teleport :to :disabled="teleportDisabled" :defer>
-      <div ref="element" data-vize-ui="portal">
+      <div ref="element" data-vize-ui="portal" :data-vize-portal-depth="depth">
         <slot />
       </div>
     </Teleport>

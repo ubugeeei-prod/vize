@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import { test } from "vite-plus/test";
 
-import ActionButton from "./ActionButton.vue";
+import ActionButton from "./action-button.vue";
 import { getButtonKeyboardAction } from "./button-keyboard.ts";
 import { mountInteraction } from "./testing/mount.ts";
 

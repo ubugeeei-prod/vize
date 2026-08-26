@@ -25,8 +25,8 @@
 //! contribute no page: the feed is a stage-dump channel, not a diagnostics
 //! channel (diagnostics stay on their own surfaces).
 
-use vize_carton::{Allocator, String, cstr};
 pub use vize_davinci::folio::feed::{SpolveroFeed, SpolveroPage};
+use vize_s0::{Allocator, String, cstr};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 

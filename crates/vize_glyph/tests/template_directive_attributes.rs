@@ -37,6 +37,12 @@ fn default_order_matches_patina_vue_attribute_order_groups() {
     );
     assert_eq!(first, second);
 
+    let legacy_slot = r#"<div class="box" slot="header"></div>"#;
+    let first = format_template(legacy_slot, &options).unwrap();
+    let second = format_template(&first, &options).unwrap();
+    assert_eq!(first.as_str(), r#"<div slot="header" class="box"></div>"#);
+    assert_eq!(first, second);
+
     let slotted = r#"<Comp :data="d" #default="{ x }"></Comp>"#;
     let first = format_template(slotted, &options).unwrap();
     let second = format_template(&first, &options).unwrap();

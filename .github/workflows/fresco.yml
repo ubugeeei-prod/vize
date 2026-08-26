@@ -1,0 +1,128 @@
+name: Fresco
+
+# Cross-platform lanes for the Fresco terminal UI stack (#3113 M0).
+#
+# The Linux workspace gates in check.yml already run the Fresco JS
+# check/build/test tasks and `cargo test --workspace`. Terminal behavior is
+# platform-sensitive (console backends, IME platform modules, path and shell
+# differences), so this workflow re-runs the focused Fresco suites on
+# Linux, macOS, and Windows whenever Fresco sources change.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/fresco.yml"
+      - ".node-version"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "crates/vize_fresco/**"
+      - "npm/fresco/**"
+      - "npm/fresco-native/**"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/fresco.yml"
+      - ".node-version"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "crates/vize_fresco/**"
+      - "npm/fresco/**"
+      - "npm/fresco-native/**"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+  workflow_dispatch:
+
+concurrency:
+  group: fresco-${{ github.workflow }}-${{ github.event.pull_request.number || format('{0}-{1}', github.event_name, github.sha) }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  fresco-js:
+    name: Fresco JS (${{ matrix.platform.target }})
+    runs-on: ${{ matrix.platform.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - runner: blacksmith-32vcpu-ubuntu-2404
+            target: linux-x64-gnu
+          - runner: blacksmith-12vcpu-macos-15
+            target: darwin-arm64
+          - runner: blacksmith-32vcpu-windows-2025
+            target: win32-x64-msvc
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      # Windows runner images enable autocrlf globally; a CRLF checkout makes
+      # the formatter flag every file, so normalize before checking out.
+      - name: Force LF line endings on checkout (Windows)
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+      - name: Install Fresco JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline --filter './npm/fresco...'
+      - name: Check Fresco JS
+        run: vp run --filter './npm/fresco' check
+      - name: Build Fresco JS
+        run: vp run --filter './npm/fresco' build
+      - name: Test Fresco JS
+        run: vp run --filter './npm/fresco' test
+
+  fresco-rust:
+    name: Fresco Rust (${{ matrix.platform.target }})
+    runs-on: ${{ matrix.platform.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - runner: blacksmith-32vcpu-ubuntu-2404
+            target: linux-x64-gnu
+          - runner: blacksmith-12vcpu-macos-15
+            target: darwin-arm64
+          - runner: blacksmith-32vcpu-windows-2025
+            target: win32-x64-msvc
+    steps:
+      # Keep both lanes on byte-identical LF sources (see the JS lane note).
+      - name: Force LF line endings on checkout (Windows)
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Setup MSVC toolchain (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
+        with:
+          arch: amd64
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: runner.os == 'Linux'
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        if: runner.os == 'Linux'
+        with:
+          key: fresco-rust
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        if: runner.os != 'Linux'
+        with:
+          shared-key: fresco-rust-${{ matrix.platform.target }}
+          cache-workspace-crates: "true"
+      - name: Test vize_fresco
+        run: cargo test -p vize_fresco

@@ -1,6 +1,6 @@
 # Checkbox behavior contract
 
-Normative state × input → outcome table for `CheckboxControl.vue` (`@vizejs/ui/checkbox`).
+Normative state × input → outcome table for `checkbox-control.vue` (`@vizejs/ui/checkbox`).
 Every row is proven by the named mounted-DOM test in `src/checkbox.test.ts`; a row
 without a passing test is a contract violation.
 

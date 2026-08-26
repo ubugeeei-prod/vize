@@ -38,6 +38,7 @@
 
 use alloc::vec::Vec;
 
+pub use crate::stage::Stage;
 use vize_s0::{Span, String};
 
 /// How much a diagnostic claims.
@@ -57,42 +58,6 @@ pub enum Severity {
     Info,
     /// A suggestion the author may ignore.
     Hint,
-}
-
-/// The stage a diagnostic came from.
-///
-/// Recorded so the unified channel can attribute a message without the
-/// renderer inferring it from the text — the failure mode the single channel
-/// exists to remove. Values track the logical stage model in
-/// `architecture.md`; a stage is added here when its crate lands, not in
-/// advance.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Stage {
-    /// S0: reading the authored file into source coordinates.
-    Source,
-    /// S1: the lossless surface tree (P2-7).
-    Surface,
-    /// S2: the semantic IR, Disegno (P2-5a).
-    Semantic,
-    /// S3: the lowered backend IR, Impeto (phase 3).
-    Lowered,
-    /// S4: emission.
-    Emit,
-}
-
-impl Stage {
-    /// Stable identifier used in folio pages and machine-readable output.
-    #[inline]
-    #[must_use]
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            Stage::Source => "source",
-            Stage::Surface => "surface",
-            Stage::Semantic => "semantic",
-            Stage::Lowered => "lowered",
-            Stage::Emit => "emit",
-        }
-    }
 }
 
 /// What a structured part of a diagnostic is doing.
@@ -312,15 +277,6 @@ mod tests {
             exempt.witness,
             Some(Witness::LegacyExempt("vize_canon".into()))
         );
-    }
-
-    #[test]
-    fn stage_identifiers_are_stable_strings() {
-        assert_eq!(Stage::Source.as_str(), "source");
-        assert_eq!(Stage::Surface.as_str(), "surface");
-        assert_eq!(Stage::Semantic.as_str(), "semantic");
-        assert_eq!(Stage::Lowered.as_str(), "lowered");
-        assert_eq!(Stage::Emit.as_str(), "emit");
     }
 
     #[test]

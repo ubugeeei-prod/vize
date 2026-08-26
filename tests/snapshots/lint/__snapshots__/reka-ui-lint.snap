@@ -7218,32 +7218,9 @@
   },
   {
     "file": "packages/core/src/shared/component/Arrow.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 44,
-        "column": 5,
-        "endLine": 44,
-        "endColumn": 48,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 45,
-        "column": 5,
-        "endLine": 45,
-        "endColumn": 56,
-        "help": "Use kebab-case for attribute names"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/shared/component/BaseSeparator.vue",

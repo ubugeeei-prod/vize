@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "vite-plus/test";
 import { defineComponent, h } from "vue";
 
-import PrimitiveElement from "./PrimitiveElement.vue";
+import PrimitiveElement from "./primitive-element.vue";
 import { mountInteraction } from "./testing/mount.ts";
 
 test("renders the requested element with slotted content", () => {

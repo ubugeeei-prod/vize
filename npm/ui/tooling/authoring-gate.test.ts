@@ -79,9 +79,9 @@ async function withFixture(
 void test("accepts a component with a behavior table and an interaction test", async () => {
   await withFixture(
     {
-      "TheWidget.vue": COMPLIANT_SFC,
-      "widget.behavior.md": "# Widget\n\nContract for `TheWidget.vue`.\n",
-      "widget.test.ts": 'import TheWidget from "./TheWidget.vue";\nexport default TheWidget;\n',
+      "the-widget.vue": COMPLIANT_SFC,
+      "widget.behavior.md": "# Widget\n\nContract for `the-widget.vue`.\n",
+      "widget.test.ts": 'import TheWidget from "./the-widget.vue";\nexport default TheWidget;\n',
     },
     async (directory) => {
       const violations = await auditComponentAuthoring(directory);
@@ -92,19 +92,20 @@ void test("accepts a component with a behavior table and an interaction test", a
 });
 
 void test("requires a behavior table and an interaction test per SFC", async () => {
-  await withFixture({ "TheWidget.vue": COMPLIANT_SFC }, async (directory) => {
+  await withFixture({ "the-widget.vue": COMPLIANT_SFC }, async (directory) => {
     const violations = await auditComponentAuthoring(directory);
     assert.deepEqual(
       violations.map((violation) => violation.rule),
       ["behavior-table", "interaction-test"],
     );
-    assert.match(formatAuthoringViolations(violations), /TheWidget\.vue \[behavior-table\]/);
+    assert.match(formatAuthoringViolations(violations), /the-widget\.vue \[behavior-table\]/);
   });
 });
 
 void test("emits only rule ids published by the machine-readable contract", async () => {
   await withFixture(
     {
+      // The PascalCase basename is deliberate: it must trip kebab-case-filename.
       "TheWidget.vue":
         "<script setup>defineProps<{ readonly label?: string }>(); " +
         "defineEmits<{ change: [value: boolean] }>(); defineSlots<{ default: () => unknown }>(); const value = 1;</script>\n",
@@ -129,12 +130,12 @@ void test("emits only rule ids published by the machine-readable contract", asyn
 void test("rejects regex-on-source behavior assertions without a pragma", async () => {
   await withFixture(
     {
-      "TheWidget.vue": COMPLIANT_SFC,
-      "widget.behavior.md": "TheWidget.vue",
+      "the-widget.vue": COMPLIANT_SFC,
+      "widget.behavior.md": "the-widget.vue",
       "widget.test.ts": [
         'import { readFile } from "node:fs/promises";',
-        'import TheWidget from "./TheWidget.vue";',
-        'const source = await readFile(new URL("./TheWidget.vue", import.meta.url), "utf8");',
+        'import TheWidget from "./the-widget.vue";',
+        'const source = await readFile(new URL("./the-widget.vue", import.meta.url), "utf8");',
         "assert.match(source, /data-vize-ui/);",
         "export default TheWidget;",
       ].join("\n"),
@@ -154,13 +155,13 @@ void test("rejects regex-on-source behavior assertions without a pragma", async 
 void test("allows annotated source assertions that behavior cannot observe", async () => {
   await withFixture(
     {
-      "TheWidget.vue": COMPLIANT_SFC,
-      "widget.behavior.md": "TheWidget.vue",
+      "the-widget.vue": COMPLIANT_SFC,
+      "widget.behavior.md": "the-widget.vue",
       "widget.test.ts": [
         'import { readFile } from "node:fs/promises";',
-        'import TheWidget from "./TheWidget.vue";',
+        'import TheWidget from "./the-widget.vue";',
         "// source-contract: computed styles need a real CSS pipeline.",
-        'const source = await readFile(new URL("./TheWidget.vue", import.meta.url), "utf8");',
+        'const source = await readFile(new URL("./the-widget.vue", import.meta.url), "utf8");',
         "// source-contract: computed styles need a real CSS pipeline.",
         "assert.match(source, /clip-path/);",
         "export default TheWidget;",
@@ -176,9 +177,9 @@ void test("requires public prop defaults to be documented for editor hover", asy
   const sfc = COMPLIANT_SFC.replace("   * @default false\n", "");
   await withFixture(
     {
-      "TheWidget.vue": sfc,
-      "widget.behavior.md": "TheWidget.vue",
-      "widget.test.ts": 'import TheWidget from "./TheWidget.vue";\nexport default TheWidget;\n',
+      "the-widget.vue": sfc,
+      "widget.behavior.md": "the-widget.vue",
+      "widget.test.ts": 'import TheWidget from "./the-widget.vue";\nexport default TheWidget;\n',
     },
     async (directory) => {
       const violations = await auditComponentAuthoring(directory);
@@ -210,9 +211,9 @@ void test("rejects SFCs that bypass the explicit authoring contract", async () =
   ].join("\n");
   await withFixture(
     {
-      "TheWidget.vue": sfc,
-      "widget.behavior.md": "TheWidget.vue",
-      "widget.test.ts": 'import TheWidget from "./TheWidget.vue";\nexport default TheWidget;\n',
+      "the-widget.vue": sfc,
+      "widget.behavior.md": "the-widget.vue",
+      "widget.test.ts": 'import TheWidget from "./the-widget.vue";\nexport default TheWidget;\n',
     },
     async (directory) => {
       const violations = await auditComponentAuthoring(directory);
@@ -234,9 +235,9 @@ void test("accepts semantic block attributes and a companion script", async () =
   ).replace("<style scoped>", '<style lang="css" scoped>');
   await withFixture(
     {
-      "TheWidget.vue": sfc,
-      "widget.behavior.md": "TheWidget.vue",
-      "widget.test.ts": 'import TheWidget from "./TheWidget.vue";\nexport default TheWidget;\n',
+      "the-widget.vue": sfc,
+      "widget.behavior.md": "the-widget.vue",
+      "widget.test.ts": 'import TheWidget from "./the-widget.vue";\nexport default TheWidget;\n',
     },
     async (directory) => {
       assert.deepEqual(await auditComponentAuthoring(directory), []);
@@ -251,9 +252,9 @@ const fakeSections = "<template></template><style scoped></style>";
 `;
   await withFixture(
     {
-      "TheWidget.vue": sfc,
-      "widget.behavior.md": "TheWidget.vue",
-      "widget.test.ts": 'import TheWidget from "./TheWidget.vue";\nexport default TheWidget;\n',
+      "the-widget.vue": sfc,
+      "widget.behavior.md": "the-widget.vue",
+      "widget.test.ts": 'import TheWidget from "./the-widget.vue";\nexport default TheWidget;\n',
     },
     async (directory) => {
       const violations = await auditComponentAuthoring(directory);
@@ -275,9 +276,9 @@ void test("rejects malformed SFC section structure", async () => {
   );
   await withFixture(
     {
-      "TheWidget.vue": sfc,
-      "widget.behavior.md": "TheWidget.vue",
-      "widget.test.ts": 'import TheWidget from "./TheWidget.vue";\nexport default TheWidget;\n',
+      "the-widget.vue": sfc,
+      "widget.behavior.md": "the-widget.vue",
+      "widget.test.ts": 'import TheWidget from "./the-widget.vue";\nexport default TheWidget;\n',
     },
     async (directory) => {
       const violations = await auditComponentAuthoring(directory);

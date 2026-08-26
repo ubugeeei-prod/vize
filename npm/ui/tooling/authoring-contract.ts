@@ -49,6 +49,15 @@ export const VIZE_UI_SFC_AUTHORING_RULES = [
       "Keep public component sources as canonical Vue SFCs with explicit template, typed script setup, and scoped style sections.",
   },
   {
+    id: "kebab-case-filename",
+    title: "Kebab-case public filenames",
+    requirement:
+      "Every public source, test, story, and fixture filename is kebab-case; PascalCase and camelCase filenames are rejected.",
+    evidence: ["lowercase-hyphen basenames such as `action-button.vue`"],
+    remediation:
+      "Rename the file to lowercase-hyphen form (for example `ActionButton.vue` to `action-button.vue`) and update its import sites.",
+  },
+  {
     id: "behavior-table",
     title: "Normative behavior table",
     requirement:
@@ -111,6 +120,14 @@ export const VIZE_UI_SFC_QUALITY_GATES = [
       "The authored `.vue` file is the public component source; generated compiler output is not the API source.",
     evidence: ["*.vue", "`auditComponentAuthoring` explicit SFC parse"],
     enforcedByRules: ["explicit-sfc"],
+  },
+  {
+    id: "kebab-case-source",
+    title: "Kebab-case source tree",
+    requirement:
+      "Public sources keep a uniform kebab-case file naming scheme so subpaths, docs, and tooling never disagree on casing.",
+    evidence: ["kebab-case basenames across sources, tests, stories, and fixtures"],
+    enforcedByRules: ["kebab-case-filename"],
   },
   {
     id: "behavior-contract",

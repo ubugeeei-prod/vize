@@ -26,8 +26,15 @@ type _XIsReadonly = Expect<Equal<typeof controller.x, Readonly<ShallowRef<number
 type _StyleIsReadonly = Expect<
   Equal<typeof controller.style, Readonly<ShallowRef<PositionerStyle>>>
 >;
+type _AvailableWidthIsReadonly = Expect<
+  Equal<typeof controller.availableWidth, Readonly<ShallowRef<number | null>>>
+>;
 
 // @ts-expect-error consumers cannot mutate readonly reactive state.
 controller.x.value = 10;
 // @ts-expect-error placement must resolve to the closed union.
 createPositioner({ placement: "diagonal" });
+// @ts-expect-error the size strategy is a boolean toggle.
+createPositioner({ size: "always" });
+// @ts-expect-error safe-area awareness is a boolean toggle.
+createPositioner({ safeArea: "notch" });

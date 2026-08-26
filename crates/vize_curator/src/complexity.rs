@@ -3,11 +3,11 @@
 #[cfg(test)]
 mod tests;
 
-use vize_carton::{String, appendln, appends};
 use vize_croquis_cf::{
     ComplexityBand, ComplexityDimension, ComplexityDimensionBreakdown, ComplexityHotspot,
     ComplexityInput, ComplexityReport,
 };
+use vize_s0::{String, appendln, appends};
 
 pub fn render_complexity_markdown(
     report: &ComplexityReport,

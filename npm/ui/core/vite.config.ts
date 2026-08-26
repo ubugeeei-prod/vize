@@ -1,6 +1,20 @@
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite-plus";
 
+/**
+ * Declared browser floor for the packaged stylesheet.
+ *
+ * Styles are authored in native CSS (nesting, cascade layers, logical
+ * properties, native color functions) and down-compiled to this floor by the
+ * package build, so `dist/style.css` never depends on the consumer's own CSS
+ * toolchain. The floor is the earliest evergreen release line where cascade
+ * layers, `:where()`, logical properties, and `oklch()` are all native; only
+ * CSS Nesting is newer than the floor and is therefore always flattened.
+ * `src/style-pipeline.behavior.md` documents the policy and how consumers
+ * override it; `src/style-pipeline.test.ts` pins the observable output.
+ */
+export const cssBrowserFloor = ["chrome111", "edge111", "firefox113", "safari16.4"];
+
 export default defineConfig({
   plugins: [vue()],
   test: {
@@ -23,6 +37,7 @@ export default defineConfig({
       context: "src/context.ts",
       "controllable-state": "src/controllable-state.ts",
       "dismissable-layer": "src/dismissable-layer.ts",
+      "drag-and-drop": "src/drag-and-drop.ts",
       "error-summary": "src/error-summary.ts",
       "field-wiring": "src/field-wiring.ts",
       catalog: "src/family-catalog.ts",
@@ -47,6 +62,7 @@ export default defineConfig({
       press: "src/press.ts",
       "scroll-lock": "src/scroll-lock.ts",
       shortcut: "src/shortcut.ts",
+      sortable: "src/sortable.ts",
       "spatial-navigation": "src/spatial-navigation.ts",
       transition: "src/transition.ts",
       typeahead: "src/typeahead.ts",
@@ -63,6 +79,7 @@ export default defineConfig({
     css: {
       inject: true,
       minify: true,
+      target: cssBrowserFloor,
     },
     clean: true,
     deps: {

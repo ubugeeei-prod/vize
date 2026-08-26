@@ -18,7 +18,7 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_atelier_sfc = { workspace = true }
-vize_carton = { workspace = true }
+vize_s0 = { workspace = true }
 vize_croquis = { workspace = true }
 vize_croquis_cf = { workspace = true }
 # The Spolvero feed shape (P2-18) and the S1 surface tree its inspector

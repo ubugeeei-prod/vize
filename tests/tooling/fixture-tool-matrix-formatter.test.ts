@@ -241,12 +241,16 @@ test("formatter oracle rejects malformed, inconsistent, or mutating checks", () 
   }
 });
 
-test("formatter input snapshot detects source and metadata changes", () => {
+test("formatter input snapshot is fixture-scoped and detects changed inputs", () => {
   const fixtureDir = fs.mkdtempSync(path.join(root, "tests", "_fixtures", "formatter-snapshot-"));
+  const siblingDir = fs.mkdtempSync(path.join(root, "tests", "_fixtures", "formatter-snapshot-"));
   const sourcePath = path.join(fixtureDir, "App.vue");
   fs.writeFileSync(sourcePath, "<template />\n");
   try {
     const before = snapshotFormatterInputs(fixtureDir, ["**/*.vue"]);
+    fs.writeFileSync(path.join(siblingDir, "Other.vue"), "<template><aside /></template>\n");
+    assert.equal(snapshotFormatterInputs(fixtureDir, ["**/*.vue"]), before);
+
     fs.writeFileSync(sourcePath, "<template><main /></template>\n");
     const afterContent = snapshotFormatterInputs(fixtureDir, ["**/*.vue"]);
     assert.notEqual(afterContent, before);
@@ -256,6 +260,7 @@ test("formatter input snapshot detects source and metadata changes", () => {
     assert.notEqual(afterMetadata, before);
   } finally {
     fs.rmSync(fixtureDir, { recursive: true, force: true });
+    fs.rmSync(siblingDir, { recursive: true, force: true });
   }
 });
 

@@ -10,8 +10,8 @@ mod tests;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use vize_carton::profiler::{AllocationSnapshot, CounterSummary, ProfileSummary};
-use vize_carton::{String, appendln, appends};
+use vize_s0::profiler::{AllocationSnapshot, CounterSummary, ProfileSummary};
+use vize_s0::{String, appendln, appends};
 
 use self::audit::{render_allocation_table, render_strict_audit};
 use self::format::{write_duration, write_throughput};

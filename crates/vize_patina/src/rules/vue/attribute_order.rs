@@ -62,7 +62,7 @@ impl AttrCategory {
             PropNode::Attribute(attr) => match attr.name {
                 "is" => AttrCategory::Definition,
                 "id" => AttrCategory::GlobalAwareness,
-                "ref" | "key" => AttrCategory::UniqueAttrs,
+                "ref" | "key" | "slot" | "slot-scope" => AttrCategory::UniqueAttrs,
                 _ => AttrCategory::OtherAttrs,
             },
             PropNode::Directive(dir) => {
@@ -78,12 +78,15 @@ impl AttrCategory {
                     "model" => AttrCategory::TwoWayBinding,
                     "on" => AttrCategory::Events,
                     "html" | "text" => AttrCategory::Content,
+                    "slot" => AttrCategory::UniqueAttrs,
+                    "is" => AttrCategory::Definition,
                     "bind" => match arg {
                         Some("key") => AttrCategory::UniqueAttrs,
                         Some("is") => AttrCategory::Definition,
+                        Some("id") => AttrCategory::GlobalAwareness,
+                        Some("ref" | "slot" | "slot-scope") => AttrCategory::UniqueAttrs,
                         _ => AttrCategory::OtherAttrs,
                     },
-                    "slot" => AttrCategory::OtherDirectives,
                     _ => AttrCategory::OtherDirectives,
                 }
             }
@@ -194,20 +197,29 @@ mod tests {
     }
 
     #[test]
-    fn glyph_output_lints_clean_across_dynamic_barriers() {
-        let source =
-            r#"<div class="_button" v-tooltip:dialog="tip" v-once v-show="open" id="help"></div>"#;
-        let formatted = vize_glyph::format_template(source, &vize_glyph::FormatOptions::default())
-            .expect("formatting must succeed");
-        let result = create_linter().lint_template(&formatted, "test.vue");
-        assert_eq!(result.warning_count, 0, "{formatted}");
+    fn static_vue_two_slot_attributes_use_unique_group() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div slot="header" class="panel"></div><div class="panel" slot-scope="scope"></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1);
+    }
 
-        let slotted = vize_glyph::format_template(
+    #[test]
+    fn glyph_output_lints_clean_across_dynamic_barriers_and_static_slots() {
+        let cases = [
+            r#"<div class="_button" v-tooltip:dialog="tip" v-once v-show="open" id="help"></div>"#,
             r#"<Comp :data="d" #default="{ x }"></Comp>"#,
-            &vize_glyph::FormatOptions::default(),
-        )
-        .expect("formatting must succeed");
-        let result = create_linter().lint_template(&slotted, "test.vue");
-        assert_eq!(result.warning_count, 0, "{slotted}");
+            r#"<div class="panel" slot="header"></div>"#,
+        ];
+
+        for source in cases {
+            let formatted =
+                vize_glyph::format_template(source, &vize_glyph::FormatOptions::default())
+                    .expect("formatting must succeed");
+            let result = create_linter().lint_template(&formatted, "test.vue");
+            assert_eq!(result.warning_count, 0, "{formatted}");
+        }
     }
 }
