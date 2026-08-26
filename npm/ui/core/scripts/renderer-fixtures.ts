@@ -190,4 +190,70 @@ const scope = useFocusScope({
 </template>
 `,
   },
+  {
+    filename: "MeasureConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import { useSizeObserver, useVisibilityObserver } from "./measure.ts";
+
+const host = ref<HTMLElement | null>(null);
+const sizes = useSizeObserver({
+  onResize(entries) {
+    void entries.length;
+  },
+});
+const visibility = useVisibilityObserver({
+  onVisibilityChange(entries) {
+    void entries.length;
+  },
+});
+onMounted(() => {
+  if (host.value) {
+    sizes.observe(host.value);
+    visibility.observe(host.value);
+  }
+});
+</script>
+
+<template>
+  <div ref="host" :data-observed="sizes.observedCount.value || undefined">
+    Measured content
+  </div>
+</template>
+`,
+  },
+  {
+    filename: "VirtualizerConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import { useVirtualizer } from "./virtualizer.ts";
+
+const viewport = ref<HTMLElement | null>(null);
+const virtualizer = useVirtualizer({
+  count: 10000,
+  estimateItemSize: 32,
+  initialRect: { width: 320, height: 480 },
+});
+onMounted(() => {
+  virtualizer.setViewport(viewport.value);
+});
+</script>
+
+<template>
+  <div ref="viewport" style="overflow-y: auto">
+    <div :style="{ height: virtualizer.totalSize.value + 'px', position: 'relative' }">
+      <div
+        v-for="item in virtualizer.virtualItems.value"
+        :key="item.key"
+        :data-index="item.index"
+        :data-sticky="item.isSticky || undefined"
+        :style="{ position: 'absolute', top: item.start + 'px' }"
+      >
+        Row {{ item.index }}
+      </div>
+    </div>
+  </div>
+</template>
+`,
+  },
 ] as const;
