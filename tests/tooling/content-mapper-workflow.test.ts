@@ -14,6 +14,73 @@ const TSGO_BUILD_COMMAND = 'go build -tags=noembed -trimpath -o "$RUNNER_TEMP/ts
 const MAESTRO_COMMAND = "cargo test -p vize_maestro -- --quiet";
 const MAESTRO_LOOP = "for iteration in $(seq 1 20); do";
 const MAESTRO_SUCCESS_LOG = 'echo "Content Mapper Maestro lifecycle cycle $iteration/20 passed"';
+const PACKAGE_ROUTE_COMMANDS = [
+  "cargo test -p vize --test check_importer_scoped_package_cli -- --nocapture",
+  "cargo test -p vize --test check_package_declaration_barrel_cli -- --nocapture",
+  "cargo test -p vize --test check_package_paths_authority_cli -- --nocapture",
+  "cargo test -p vize --test check_package_resolution_modes_cli -- --nocapture",
+  "cargo test -p vize --test check_package_scope_mode_cli -- --nocapture",
+  "cargo test -p vize --test check_package_tsx_shadow_cli -- --nocapture",
+];
+const REQUIRED_TRIGGER_PATHS = [
+  ".github/workflows/content-mapper-conformance.yml",
+  "Cargo.lock",
+  "Cargo.toml",
+  "crates/vize/Cargo.toml",
+  "crates/vize/src/commands/content_mapper.rs",
+  "crates/vize/src/commands/content_mapper/**",
+  "crates/vize/src/commands/check/**",
+  "crates/vize/tests/content_mapper_tsgo_cli.rs",
+  "crates/vize/tests/content_mapper_tsgo_directives.rs",
+  "crates/vize/tests/content_mapper_tsgo_build.rs",
+  "crates/vize/tests/content_mapper_importer_scoped_packages.rs",
+  "crates/vize/tests/check_*package*.rs",
+  "crates/vize/tests/check_*package*/**",
+  "crates/vize/tests/davinci_ts40_projection_cli.rs",
+  "crates/vize/tests/snapshots/davinci_ts40_projection_cli__*.snap",
+  "crates/vize/tests/content_mapper_tsgo_lsp.rs",
+  "crates/vize/tests/content_mapper_tsgo_declaration_lsp.rs",
+  "crates/vize/tests/content_mapper_tsgo_lsp_event_forms.rs",
+  "crates/vize/tests/content_mapper_tsgo_lsp_event_forms/**",
+  "crates/vize/tests/content_mapper_lsp_support/**",
+  "crates/vize/tests/fixtures/content_mapper_project/**",
+  "crates/vize_canon/Cargo.toml",
+  "crates/vize_canon/src/batch.rs",
+  "crates/vize_canon/src/batch/**",
+  "crates/vize_canon/src/corsa_bridge.rs",
+  "crates/vize_canon/src/corsa_bridge/**",
+  "crates/vize_canon/src/corsa_server.rs",
+  "crates/vize_canon/src/corsa_server/**",
+  "crates/vize_canon/src/lib.rs",
+  "crates/vize_canon/src/lsp_client.rs",
+  "crates/vize_canon/src/lsp_client/**",
+  "crates/vize_canon/src/package_route.rs",
+  "crates/vize_canon/src/package_route/**",
+  "crates/vize_canon/tests/lsp_import_resolution.rs",
+  "crates/vize_canon/src/virtual_ts.rs",
+  "crates/vize_canon/src/virtual_ts/**",
+  "crates/vize_maestro/Cargo.toml",
+  "crates/vize_maestro/src/lib.rs",
+  "crates/vize_maestro/src/ide/**",
+  "crates/vize_maestro/src/server/**",
+  "crates/vize_maestro/src/virtual_code.rs",
+  "crates/vize_maestro/src/virtual_code/**",
+  "crates/vize_maestro/tests/davinci_ts40_projection.rs",
+  "crates/vize_maestro/tests/davinci_ts40_projection_support/**",
+  "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__*.snap",
+  "npm/cli/bin/vize",
+  "npm/cli/package.json",
+  "npm/cli/src/**",
+  "npm/native/**",
+  "pnpm-lock.yaml",
+  "pnpm-workspace.yaml",
+  "tools/npm/prepare-publish-manifest.mjs",
+  "tools/npm/smoke-release-install.mjs",
+  "tools/npm/smoke-release-runtime.mjs",
+  "tests/_fixtures/davinci-ts40-projection/**",
+  "tests/tooling/davinci-ts40-projection.test.ts",
+  "tests/tooling/support/davinci-ts40-projection.ts",
+];
 
 interface WorkflowStep {
   env?: Record<string, string>;
@@ -22,6 +89,19 @@ interface WorkflowStep {
   uses?: string;
   with?: Record<string, unknown>;
   "working-directory"?: string;
+}
+
+interface WorkflowTrigger {
+  branches?: string[];
+  paths?: string[];
+}
+
+interface WorkflowConfig {
+  on: {
+    pull_request: WorkflowTrigger;
+    push: WorkflowTrigger;
+    workflow_dispatch?: unknown;
+  };
 }
 
 function jobSteps(workflow: string, jobName: string): WorkflowStep[] {
@@ -35,49 +115,25 @@ function stepsRunning(steps: WorkflowStep[], command: string): number[] {
   return steps.flatMap((step, index) => (step.run?.includes(command) ? [index] : []));
 }
 
+function assertTriggerFilters(workflowConfig: WorkflowConfig): void {
+  assert.ok(Object.hasOwn(workflowConfig.on, "workflow_dispatch"), "missing workflow_dispatch");
+  for (const event of ["pull_request", "push"] as const) {
+    const trigger = workflowConfig.on[event];
+    assert.deepEqual(trigger.branches, ["main"], `${event} trigger must target main`);
+    assert.ok(Array.isArray(trigger.paths), `${event} trigger must declare paths`);
+    for (const pathFilter of REQUIRED_TRIGGER_PATHS) {
+      assert.ok(trigger.paths.includes(pathFilter), `${event} paths missing ${pathFilter}`);
+    }
+  }
+}
+
 test("Content Mapper conformance pins and runs the exact upstream project path", () => {
   const workflow = readRepoFile(".github", "workflows", "content-mapper-conformance.yml");
+  const workflowConfig = parse(workflow) as WorkflowConfig;
   const job = workflowJobBody(workflow, "exact-tsgo-project");
   const steps = jobSteps(workflow, "exact-tsgo-project");
 
-  assert.match(workflow, /pull_request:\n\s+branches: \[main\]\n\s+paths:/);
-  for (const relevantPath of [
-    '".github/workflows/content-mapper-conformance.yml"',
-    '"crates/vize/src/commands/content_mapper.rs"',
-    '"crates/vize/src/commands/check/**"',
-    '"crates/vize/tests/content_mapper_importer_scoped_packages.rs"',
-    '"crates/vize/tests/check_*package*.rs"',
-    '"crates/vize/tests/check_*package*/**"',
-    '"crates/vize_canon/src/batch.rs"',
-    '"crates/vize_canon/src/batch/**"',
-    '"crates/vize_canon/src/corsa_bridge/**"',
-    '"crates/vize_canon/src/corsa_server/**"',
-    '"crates/vize_canon/src/lib.rs"',
-    '"crates/vize_canon/src/lsp_client.rs"',
-    '"crates/vize_canon/src/lsp_client/**"',
-    '"crates/vize_canon/tests/lsp_import_resolution.rs"',
-    '"crates/vize_canon/src/virtual_ts/**"',
-    '"crates/vize_maestro/src/ide/**"',
-    '"crates/vize_maestro/src/server/**"',
-    '"crates/vize/tests/content_mapper_tsgo_cli.rs"',
-    '"crates/vize/tests/content_mapper_tsgo_directives.rs"',
-    '"crates/vize/tests/content_mapper_tsgo_build.rs"',
-    '"crates/vize/tests/content_mapper_tsgo_lsp.rs"',
-    '"crates/vize/tests/content_mapper_tsgo_declaration_lsp.rs"',
-    '"crates/vize/tests/content_mapper_tsgo_lsp_event_forms.rs"',
-    '"crates/vize/tests/content_mapper_tsgo_lsp_event_forms/**"',
-    '"crates/vize/tests/content_mapper_lsp_support/**"',
-    '"crates/vize/tests/fixtures/content_mapper_project/**"',
-    '"npm/cli/bin/vize"',
-    '"npm/cli/package.json"',
-    '"npm/cli/src/**"',
-    '"npm/native/**"',
-    '"tools/npm/prepare-publish-manifest.mjs"',
-    '"tools/npm/smoke-release-install.mjs"',
-    '"tools/npm/smoke-release-runtime.mjs"',
-  ]) {
-    assert.match(workflow, new RegExp(relevantPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
-  }
+  assertTriggerFilters(workflowConfig);
 
   assert.match(workflow, new RegExp(`CONTENT_MAPPER_TYPESCRIPT_SHA: "${UPSTREAM_SHA}"`));
   assert.match(job, /repository: microsoft\/TypeScript/);
@@ -143,6 +199,15 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
     job,
     /VIZE_TEST_CONTENT_MAPPER_TSGO: \$\{\{ runner\.temp \}\}\/tsgo[\s\S]*smoke-release-install\.mjs --prepare-manifests --content-mapper-checks[\s\S]*npm\/native npm\/native\/npm\/\*[\s\S]*npm\/cli/,
   );
+  const packageRouteSteps = steps.flatMap((step, index) =>
+    PACKAGE_ROUTE_COMMANDS.every((command) => step.run?.includes(command)) ? [index] : [],
+  );
+  assert.equal(packageRouteSteps.length, 1, "expected one package resolution matrix step");
+  assert.ok(buildSteps[0] < packageRouteSteps[0], "package resolution must use exact tsgo");
+  const packageRouteStep = steps[packageRouteSteps[0]];
+  assert.equal(packageRouteStep.name, "Run importer-scoped package resolution matrix");
+  assert.equal(packageRouteStep.env?.CORSA_PATH, "${{ runner.temp }}/tsgo");
+  assert.equal(packageRouteStep.env?.VIZE_TEST_REQUIRE_TSGO, "1");
   const editorCommands = [
     "cargo test -p vize --test content_mapper_tsgo_lsp -- --nocapture",
     "cargo test -p vize --test content_mapper_tsgo_declaration_lsp -- --nocapture",
