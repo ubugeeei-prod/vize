@@ -113,6 +113,18 @@
     }
   }
 
+  /*
+   * Scroll-driven reveal: progress follows the element's own viewport entry.
+   * `animation-timeline` is newer than the declared floor and ships verbatim;
+   * engines without it run the duration-less animation to its final state, so
+   * content is simply visible.
+   */
+  :where([data-vize-motion~="reveal"]) {
+    animation: vize-ui-motion-fade-in var(--vize-ui-motion-ease-standard) both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 100%;
+  }
+
   /* Move recipe: layout and position shifts glide instead of teleporting. */
   :where([data-vize-motion~="move"]) {
     transition-property:
@@ -224,6 +236,11 @@
     :where([data-vize-motion]) {
       animation-duration: 0ms;
       transition-duration: 0ms;
+    }
+
+    /* Timeline-driven animations ignore durations, so reveal stands down. */
+    :where([data-vize-motion~="reveal"]) {
+      animation: none;
     }
   }
 

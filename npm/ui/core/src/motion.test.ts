@@ -129,7 +129,7 @@ test("ships move and emphasis recipes with token-driven timing", () => {
   );
 });
 
-test("ships the starting-style entry recipe verbatim", () => {
+test("ships the starting-style and scroll-driven recipes verbatim", () => {
   assert.match(
     stylesheet,
     /:where\(\[data-vize-motion~=enter\]\)\{transition-property:opacity,translate,scale;transition-duration:var\(--vize-ui-motion-enter-duration\)/,
@@ -137,6 +137,12 @@ test("ships the starting-style entry recipe verbatim", () => {
   assert.match(
     stylesheet,
     /@starting-style\{:where\(\[data-vize-motion~=enter\]\)\{opacity:0;translate:0 var\(--vize-ui-motion-slide-distance\)\}\}/,
+  );
+  // Both at-features are newer than the floor and must pass through unlowered.
+  // The authored `entry 0% entry 100%` range minifies to its `entry` shorthand.
+  assert.match(
+    stylesheet,
+    /:where\(\[data-vize-motion~=reveal\]\)\{animation:vize-ui-motion-fade-in var\(--vize-ui-motion-ease-standard\) both;animation-timeline:view\(\);animation-range:entry\}/,
   );
 });
 
@@ -155,6 +161,8 @@ test("zeroes packaged motion under reduced motion", () => {
     block,
     /:where\(\[data-vize-motion\]\)\{transition-duration:0s;animation-duration:0s\}/,
   );
+  // Timeline-driven animations ignore zeroed durations, so reveal stands down.
+  assert.match(block, /:where\(\[data-vize-motion~=reveal\]\)\{animation:none\}/);
 });
 
 test("stands down under forced colors", () => {

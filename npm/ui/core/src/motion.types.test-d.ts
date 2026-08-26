@@ -37,7 +37,7 @@ export const easings: readonly MotionEasingToken[] = [
   "linear",
 ];
 export const enterExit: readonly MotionEnterExitRecipe[] = ["fade", "scale", "slide"];
-export const emphasis: readonly MotionRecipe[] = ["enter", "move", "pulse", "shake"];
+export const emphasis: readonly MotionRecipe[] = ["enter", "move", "pulse", "shake", "reveal"];
 
 export const reference: string = motionTokenVar("duration-fast");
 export const easeReference: string = motionTokenVar("ease-emphasized");

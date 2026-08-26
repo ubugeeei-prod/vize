@@ -11,7 +11,7 @@ export type MotionEasingToken = "standard" | "decelerate" | "accelerate" | "emph
 export type MotionEnterExitRecipe = "fade" | "scale" | "slide";
 
 /** Every recipe name accepted in the space-separated `data-vize-motion` attribute. */
-export type MotionRecipe = MotionEnterExitRecipe | "enter" | "move" | "pulse" | "shake";
+export type MotionRecipe = MotionEnterExitRecipe | "enter" | "move" | "pulse" | "shake" | "reveal";
 
 /** Recipe hook properties that retune one motion phase without forking components. */
 export type MotionRecipeHook =
