@@ -186,6 +186,30 @@ test("Davinci DOM lane tests import lowering through the stage alias", () => {
   }
 });
 
+test("Davinci atelier core S2 witnesses import lowering through the stage alias", () => {
+  const lowering = dependency(metadata, "vize_atelier_core", "vize_ricalco", "dev");
+  assert.equal(lowering.rename, "vize_s1_to_s2");
+  const dependencies = workspacePackage(metadata, "vize_atelier_core").dependencies;
+  assert.ok(
+    dependencies.every(
+      (dependency) =>
+        dependency.name !== "vize_ricalco" ||
+        (dependency.kind === "dev" && dependency.rename === "vize_s1_to_s2"),
+    ),
+    "vize_atelier_core must not depend on vize_ricalco through its physical name",
+  );
+
+  const testDir = path.join(repoRoot, "crates", "vize_atelier_core", "tests");
+  for (const fullPath of walkRustFiles(testDir)) {
+    const source = fs.readFileSync(fullPath, "utf8");
+    assert.doesNotMatch(
+      source,
+      /\bvize_ricalco::/u,
+      `${path.relative(testDir, fullPath)} must use vize_s1_to_s2`,
+    );
+  }
+});
+
 test("Vize CLI package imports S0 storage through the stage alias", () => {
   const dependencies = workspacePackage(metadata, "vize").dependencies;
   assert.ok(

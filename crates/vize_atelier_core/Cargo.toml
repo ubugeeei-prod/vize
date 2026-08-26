@@ -60,7 +60,7 @@ insta = { workspace = true }
 # published crates exercising unpublished ones.
 vize_davinci = { workspace = true }
 vize_s2 = { workspace = true }
-vize_ricalco = { workspace = true }
+vize_s1_to_s2 = { workspace = true }
 vize_s1 = { workspace = true }
 
 # The P2-9 corpus-runnable differential entry (the P1-6/P1-7 lane shape):
