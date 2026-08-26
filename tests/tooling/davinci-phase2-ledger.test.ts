@@ -9,6 +9,13 @@ import {
   validateCompatibilityLedger,
 } from "../../tools/fixtures/fixture-compatibility-ledger.mjs";
 
+function p2_11Installment(number: number): URL {
+  return new URL(
+    `../../davinci-road/plan/phase-2-records/p2-11/installment-${number}.md`,
+    import.meta.url,
+  );
+}
+
 const docs = {
   roadmap: new URL("../../davinci-road/roadmap.md", import.meta.url),
   readme: new URL("../../davinci-road/plan/README.md", import.meta.url),
@@ -17,46 +24,16 @@ const docs = {
   tasksLater: new URL("../../davinci-road/plan/phase-2-tasks-later.md", import.meta.url),
   records: new URL("../../davinci-road/plan/phase-2-records.md", import.meta.url),
   p2_11: new URL("../../davinci-road/plan/phase-2-records/p2-11.md", import.meta.url),
-  installment20: new URL(
-    "../../davinci-road/plan/phase-2-records/p2-11/installment-20.md",
-    import.meta.url,
-  ),
-  installment21: new URL(
-    "../../davinci-road/plan/phase-2-records/p2-11/installment-21.md",
-    import.meta.url,
-  ),
-  installment22: new URL(
-    "../../davinci-road/plan/phase-2-records/p2-11/installment-22.md",
-    import.meta.url,
-  ),
-  installment23: new URL(
-    "../../davinci-road/plan/phase-2-records/p2-11/installment-23.md",
-    import.meta.url,
-  ),
-  installment24: new URL(
-    "../../davinci-road/plan/phase-2-records/p2-11/installment-24.md",
-    import.meta.url,
-  ),
-  installment25: new URL(
-    "../../davinci-road/plan/phase-2-records/p2-11/installment-25.md",
-    import.meta.url,
-  ),
-  installment26: new URL(
-    "../../davinci-road/plan/phase-2-records/p2-11/installment-26.md",
-    import.meta.url,
-  ),
-  installment27: new URL(
-    "../../davinci-road/plan/phase-2-records/p2-11/installment-27.md",
-    import.meta.url,
-  ),
-  installment28: new URL(
-    "../../davinci-road/plan/phase-2-records/p2-11/installment-28.md",
-    import.meta.url,
-  ),
-  installment29: new URL(
-    "../../davinci-road/plan/phase-2-records/p2-11/installment-29.md",
-    import.meta.url,
-  ),
+  installment20: p2_11Installment(20),
+  installment21: p2_11Installment(21),
+  installment22: p2_11Installment(22),
+  installment23: p2_11Installment(23),
+  installment24: p2_11Installment(24),
+  installment25: p2_11Installment(25),
+  installment26: p2_11Installment(26),
+  installment27: p2_11Installment(27),
+  installment28: p2_11Installment(28),
+  installment29: p2_11Installment(29),
   suites: new URL("../../davinci-road/plan/test-suites.md", import.meta.url),
   devtool: new URL("../../davinci-road/devtool.md", import.meta.url),
   questions: new URL("../../davinci-road/open-questions.md", import.meta.url),

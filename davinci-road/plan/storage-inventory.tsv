@@ -38,7 +38,7 @@ s2	analysis	crates/vize_disegno/src/verify/walk.rs	1	5	0	0	0	0	0	0
 s1_to_s2	emit	crates/vize_ricalco/src/emit.rs	1	2	1	4	0	0	0	0
 s1_to_s2	emit	crates/vize_ricalco/src/emit/buf.rs	1	8	1	11	0	0	0	0
 s1_to_s2	emit	crates/vize_ricalco/src/emit/component.rs	1	4	0	0	0	0	0	0
-s1_to_s2	emit	crates/vize_ricalco/src/emit/create_slots.rs	1	5	1	5	0	0	0	0
+s1_to_s2	emit	crates/vize_ricalco/src/emit/create_slots.rs	1	6	1	6	0	0	0	0
 s1_to_s2	emit	crates/vize_ricalco/src/emit/directive.rs	1	5	0	0	0	0	0	0
 s1_to_s2	-	crates/vize_ricalco/src/emit/filter.rs	0	0	1	1	0	0	0	0
 s1_to_s2	emit	crates/vize_ricalco/src/emit/hoist.rs	1	4	1	7	0	0	0	0
