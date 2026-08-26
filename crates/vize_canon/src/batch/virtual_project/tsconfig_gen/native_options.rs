@@ -4,6 +4,15 @@ use serde_json::{Map, Value};
 pub(super) fn normalize_native_removed_options(options: &mut Map<std::string::String, Value>) {
     options.remove("downlevelIteration");
 
+    // TypeScript 6 flipped `noUncheckedSideEffectImports` on by default and
+    // the native checker inherits that, so a side-effect import of a plain
+    // asset (`import "./x.css"`) reported `TS2882` where the project's own
+    // stable `tsc` reports nothing (#4964). Pin the stable default; a project
+    // that declares the option keeps its setting either way.
+    options
+        .entry("noUncheckedSideEffectImports")
+        .or_insert(Value::Bool(false));
+
     if matches!(
         compiler_option_string(options, "target").map(ascii_lowercase),
         Some(target) if target == "es3" || target == "es5"

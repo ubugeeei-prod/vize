@@ -54,6 +54,64 @@ fn materialized_tsconfig_normalizes_native_removed_options() {
     let _ = fs::remove_dir_all(&case_dir);
 }
 
+/// #4964: the native checker follows TypeScript 6 in defaulting
+/// `noUncheckedSideEffectImports` on, while the stable `tsc` a project runs
+/// leaves it off — so `import "./x.css"` reported `TS2882` only under vize.
+/// The mirror pins the stable default; a project that declares the option
+/// keeps its setting.
+#[test]
+fn materialized_tsconfig_pins_stable_side_effect_import_checking() {
+    for (name, declared, expected) in [
+        ("tsconfig-side-effect-default", None, false),
+        ("tsconfig-side-effect-opt-in", Some(true), true),
+        ("tsconfig-side-effect-explicit-off", Some(false), false),
+    ] {
+        let case_dir = unique_case_dir(name);
+        let _ = fs::remove_dir_all(&case_dir);
+        let src_dir = case_dir.join("src");
+        fs::create_dir_all(&src_dir).unwrap();
+        let declared_line = declared
+            .map(|value| format!("\n    \"noUncheckedSideEffectImports\": {value},"))
+            .unwrap_or_default();
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            format!(
+                r#"{{
+  "compilerOptions": {{
+    "strict": true,{declared_line}
+    "module": "ESNext",
+    "moduleResolution": "bundler"
+  }}
+}}"#
+            ),
+        )
+        .unwrap();
+        let vue_path = src_dir.join("App.vue");
+        fs::write(
+            &vue_path,
+            "<script setup lang=\"ts\">const count = 1</script>",
+        )
+        .unwrap();
+
+        let mut project = VirtualProject::new(&case_dir).unwrap();
+        project.register_path(&vue_path).unwrap();
+        project.materialize().unwrap();
+
+        let tsconfig_path = project.virtual_root().join("tsconfig.json");
+        let value: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(tsconfig_path).unwrap()).unwrap();
+        let compiler_options = value["compilerOptions"].as_object().unwrap();
+
+        assert_eq!(
+            compiler_options["noUncheckedSideEffectImports"],
+            serde_json::json!(expected),
+            "{name}: {value:#}"
+        );
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+}
+
 #[test]
 fn materialized_tsconfig_adds_vue_jsx_defaults_for_lowered_tsx() {
     let case_dir = unique_case_dir("tsconfig-lowered-tsx-jsx");

@@ -90,6 +90,31 @@ const CASES: &[Case] = &[
         sites: &["8 /* PROPS */, [\"onClick\"]"],
     },
     Case {
+        name: "click_stop_event_props",
+        src: r#"<div @click.stop="handler"></div>"#,
+        sites: &["8 /* PROPS */, [\"onClick\"]"],
+    },
+    Case {
+        name: "click_prevent_stop_event_props",
+        src: r#"<div @click.prevent.stop="handler"></div>"#,
+        sites: &["8 /* PROPS */, [\"onClick\"]"],
+    },
+    Case {
+        name: "click_once_capture_event_props",
+        src: r#"<div @click.once.capture="handler"></div>"#,
+        sites: &["40 /* PROPS, NEED_HYDRATION */, [\"onClickOnceCapture\"]"],
+    },
+    Case {
+        name: "click_right_event_props",
+        src: r#"<div @click.right="handler"></div>"#,
+        sites: &["40 /* PROPS, NEED_HYDRATION */, [\"onContextmenu\"]"],
+    },
+    Case {
+        name: "click_middle_event_props",
+        src: r#"<div @click.middle="handler"></div>"#,
+        sites: &["40 /* PROPS, NEED_HYDRATION */, [\"onMouseup\"]"],
+    },
+    Case {
         name: "component_keyup_props",
         src: r#"<Foo @keyup="handler" />"#,
         sites: &["8 /* PROPS */, [\"onKeyup\"]"],
@@ -97,6 +122,11 @@ const CASES: &[Case] = &[
     Case {
         name: "hydrating_key_event",
         src: r#"<div @keyup.enter="handler"></div>"#,
+        sites: &["40 /* PROPS, NEED_HYDRATION */, [\"onKeyup\"]"],
+    },
+    Case {
+        name: "hydrating_key_stop_event",
+        src: r#"<div @keyup.enter.stop="handler"></div>"#,
         sites: &["40 /* PROPS, NEED_HYDRATION */, [\"onKeyup\"]"],
     },
     Case {
@@ -148,6 +178,11 @@ const CASES: &[Case] = &[
         name: "component_listener_before_v_model_order",
         src: r#"<Foo @update:modelValue="track" v-model="msg" />"#,
         sites: &["8 /* PROPS */, [\"onUpdate:modelValue\", \"modelValue\"]"],
+    },
+    Case {
+        name: "component_click_stop_props",
+        src: r#"<Foo @click.stop="h" />"#,
+        sites: &["8 /* PROPS */, [\"onClick\"]"],
     },
     Case {
         name: "directive_need_patch",

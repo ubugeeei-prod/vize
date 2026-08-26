@@ -88,16 +88,13 @@ const uiLocked = true
         return;
     };
 
+    // One diagnostic per binding: the fresh literal's per-prop rendering
+    // (`Type '"bad"'`) collapses into the widened elaboration `vue-tsc`
+    // reports (#4966). The check-tail text carries the pinned native attr
+    // surface plus the custom `data-*` map that same fix admits.
     assert_eq!(
         snapshot,
         vec![
-            (
-                String::from("src/Parent.vue"),
-                Some(2322),
-                cstr!(
-                    "10:30:error Type '\"bad\"' is not assignable to type 'boolean | undefined'."
-                ),
-            ),
             (
                 String::from("src/Parent.vue"),
                 Some(2322),
@@ -107,14 +104,14 @@ const uiLocked = true
                 String::from("src/Parent.vue"),
                 Some(2345),
                 String::from(
-                    "11:4:error Argument of type '{ disable: boolean; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & Record<string, unknown>>'.\nProperty 'label' is missing in type '{ disable: boolean; }' but required in type '{ readonly label: string; readonly disabled?: boolean | undefined; }'."
+                    "11:4:error Argument of type '{ disable: boolean; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { disabled?: unknown; type?: unknown; } & { [x: `data${string}`]: unknown; } & Record<string, unknown>>'.\nProperty 'label' is missing in type '{ disable: boolean; }' but required in type '{ readonly label: string; readonly disabled?: boolean | undefined; }'."
                 ),
             ),
             (
                 String::from("src/Parent.vue"),
                 Some(2353),
                 cstr!(
-                    "12:33:error Object literal may only specify known properties, and '\"disable\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'."
+                    "12:33:error Object literal may only specify known properties, and '\"disable\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & {{ disabled?: unknown; type?: unknown; }} & {{ [x: `data${{string}}`]: unknown; }}>'."
                 ),
             ),
         ],

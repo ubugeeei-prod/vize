@@ -154,13 +154,10 @@ const label: string = Bare.label + real + directory;
                     "2:22:error Cannot find module '../components/Local.vue.ts' or its corresponding type declarations."
                 ),
             ),
-            (
-                String::from("src/pages/LiteralConsumer.vue"),
-                Some(2882),
-                String::from(
-                    "4:8:error Cannot find module or type declarations for side-effect import of '../components/Missing.vue.ts/__vize_authored_vue_ts__'."
-                ),
-            ),
+            // The `Missing.vue.ts/...` side-effect import reports nothing:
+            // stable `tsc` does not check side-effect imports unless the
+            // project opts into `noUncheckedSideEffectImports`, and the
+            // mirror pins that stable default (#4964).
             (
                 String::from("src/pages/LocalConsumer.vue"),
                 Some(2614),

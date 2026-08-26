@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 use vize_s0::{cstr, path::canonicalize_non_verbatim};
 mod allow_js;
 mod codegen;
+mod reference_programs;
 mod tsx_owner;
 // Each call uses a fresh run-scoped cache, mirroring how an actual `vize
 // check` run constructs one `TsconfigInputCache` per invocation.
@@ -957,32 +958,6 @@ fn missing_extends_target_is_skipped() {
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
     assert_eq!(relative_paths(&case_dir, &files), vec!["src/a.ts"]);
-
-    let _ = fs::remove_dir_all(&case_dir);
-}
-
-#[test]
-fn circular_references_chain_terminates_and_each_project_contributes() {
-    let case_dir = unique_case_dir("tsconfig-circular-references");
-    let _ = fs::remove_dir_all(&case_dir);
-    fs::create_dir_all(case_dir.join("a")).unwrap();
-    fs::create_dir_all(case_dir.join("b")).unwrap();
-    fs::write(case_dir.join("a/x.ts"), "export const x = true").unwrap();
-    fs::write(case_dir.join("b/y.ts"), "export const y = true").unwrap();
-    fs::write(
-        case_dir.join("tsconfig.json"),
-        r#"{ "files": [], "include": ["a/**/*.ts"], "references": [{ "path": "./b.json" }] }"#,
-    )
-    .unwrap();
-    fs::write(
-        case_dir.join("b.json"),
-        r#"{ "include": ["b/**/*.ts"], "references": [{ "path": "./tsconfig.json" }] }"#,
-    )
-    .unwrap();
-
-    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
-
-    assert_eq!(relative_paths(&case_dir, &files), vec!["a/x.ts", "b/y.ts"]);
 
     let _ = fs::remove_dir_all(&case_dir);
 }

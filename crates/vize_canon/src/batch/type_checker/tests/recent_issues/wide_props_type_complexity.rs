@@ -79,7 +79,9 @@ const pick = (_value: string, _index: number) => {}
     // middle members instead of overflowing.
     let authored = "{ variant0: \"solid\"; onSelect3: (_value: string, _index: number) => void; class: string; }";
     let flattened = "{ readonly title: string; readonly variant0?: \"ghost\" | \"link\" | \"outline\" | \"solid\" | undefined; readonly onSelect0?: ((value: string, index: number) => void) | undefined; readonly itemList0?: readonly { ...; }[] | undefined; ... 118 more ...; readonly onClose?: (() => any) | undefined; }";
-    let native_tail = "__VizePublicComponentAttrs & Record<string, unknown>";
+    // The isolated stub's `NativeElements` is `Record<string, …>`, so the
+    // #4966 global-attr surface renders as its open index-map form here.
+    let native_tail = "__VizePublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${string}`]: unknown; } & Record<string, unknown>";
     assert_eq!(
         snapshot,
         vec![(

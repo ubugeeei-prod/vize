@@ -6,6 +6,8 @@ mod attribute_only_required_props_edges;
 mod fallthrough_unknown_attrs;
 #[path = "generic_emit_guard.rs"]
 mod generic_emit_guard;
+#[path = "global_html_fallthrough_attrs.rs"]
+mod global_html_fallthrough_attrs;
 #[path = "literal_union_props.rs"]
 mod literal_union_props;
 #[path = "runtime_mixin_props.rs"]

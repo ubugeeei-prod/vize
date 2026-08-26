@@ -211,12 +211,14 @@ defineProps<{
 </template>
 `,
     },
+    // Since #4966 the strict surface accepts every real HTML attribute —
+    // `data-test` no longer reports (vue-tsc still flags it; deliberate
+    // divergence), while names no element declares stay strict findings.
     diagnostics: {
       "App.vue": [
-        `error:9:26 [TS2353] Object literal may only specify known properties, and '"notDeclared"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.`,
-        `error:10:26 [TS2353] Object literal may only specify known properties, and '"dataTest"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.`,
-        `error:11:24 [TS2353] Object literal may only specify known properties, and '"ghost"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.`,
-        `error:12:19 [TS2353] Object literal may only specify known properties, and '"ghost"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.`,
+        `error:9:26 [TS2353] Object literal may only specify known properties, and '"notDeclared"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; "accent-height"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 673 more ...; zoomAndPan?: unknown; } & { ...; }>'.`,
+        `error:11:24 [TS2353] Object literal may only specify known properties, and '"ghost"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; "accent-height"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 673 more ...; zoomAndPan?: unknown; } & { ...; }>'.`,
+        `error:12:19 [TS2353] Object literal may only specify known properties, and '"ghost"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; "accent-height"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 673 more ...; zoomAndPan?: unknown; } & { ...; }>'.`,
         `error:13:37 [TS2353] Object literal may only specify known properties, and '"ghost"' does not exist in type 'Partial<Props<"ok">> & { value?: unknown; } & VNodeProps & AllowedComponentProps & ComponentCustomProps'.`,
       ],
       "DefaultInheritChild.vue": [],

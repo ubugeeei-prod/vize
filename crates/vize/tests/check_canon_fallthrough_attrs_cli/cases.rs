@@ -1,4 +1,8 @@
 //! The fallthrough case table, split under the 350-line source budget.
+//!
+//! Closed-surface cases probe with `depressed`: real HTML attribute names
+//! (`id`, `disabled`, …) are accepted as fallthrough everywhere since #4966,
+//! so only a name no native element declares still distinguishes the shapes.
 
 pub(crate) struct Case<'a> {
     pub(crate) id: &'a str,
@@ -66,10 +70,10 @@ defineProps<{ title: string }>();
             app: r#"<script setup lang="ts">
 import Child from "./Child.vue";
 </script>
-<template><Child title="ok" id="outer" class="card" style="color: red" /></template>
+<template><Child title="ok" depressed="x" class="card" style="color: red" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.",
+                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"depressed\"' does not exist in type '__VizeComponentCheckProps<Props, __VizeCheckTail>'.",
             ],
         },
         Case {
@@ -83,10 +87,10 @@ defineProps<{ title: string }>();
             app: r#"<script setup lang="ts">
 import Child from "./Child.vue";
 </script>
-<template><Child title="ok" :disabled="'nope'" /></template>
+<template><Child title="ok" :depressed="'nope'" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:30 [TS2353] Object literal may only specify known properties, and '\"disabled\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.",
+                "error:4:30 [TS2353] Object literal may only specify known properties, and '\"depressed\"' does not exist in type '__VizeComponentCheckProps<Props, __VizeCheckTail>'.",
             ],
         },
         Case {
@@ -106,10 +110,10 @@ export default defineComponent({
             app: r#"<script setup lang="ts">
 import Child from "./Child.vue";
 </script>
-<template><Child title="ok" id="outer" /></template>
+<template><Child title="ok" depressed="x" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '__VizeComponentCheckProps<__Child_CheckProps_0, __VizePublicComponentAttrs>'.",
+                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"depressed\"' does not exist in type '__VizeComponentCheckProps<__Child_CheckProps_0, __VizeCheckTail>'.",
             ],
         },
         Case {
@@ -125,10 +129,10 @@ defineProps<{ title: string }>();
             app: r#"<script setup lang="ts">
 import Child from "./Child.vue";
 </script>
-<template><Child title="ok" id="outer" /></template>
+<template><Child title="ok" depressed="x" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.",
+                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"depressed\"' does not exist in type '__VizeComponentCheckProps<Props, __VizeCheckTail>'.",
             ],
         },
         Case {
@@ -145,10 +149,10 @@ defineProps<{ title: string }>();
             app: r#"<script setup lang="ts">
 import Child from "./Child.vue";
 </script>
-<template><Child title="ok" id="outer" /></template>
+<template><Child title="ok" depressed="x" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.",
+                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"depressed\"' does not exist in type '__VizeComponentCheckProps<Props, __VizeCheckTail>'.",
             ],
         },
         Case {
@@ -202,10 +206,10 @@ import { ref } from "vue";
 import Child from "./Child.vue";
 const on = ref(true);
 </script>
-<template><Child title="ok" :on="on" id="outer" /></template>
+<template><Child title="ok" :on="on" depressed="x" /></template>
 "#,
             expected_diagnostics: &[
-                "error:6:38 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.",
+                "error:6:38 [TS2353] Object literal may only specify known properties, and '\"depressed\"' does not exist in type '__VizeComponentCheckProps<Props, __VizeCheckTail>'.",
             ],
         },
         Case {
@@ -226,10 +230,10 @@ import { ref } from "vue";
 import Child from "./Child.vue";
 const on = ref(true);
 </script>
-<template><Child title="ok" :on="on" id="outer" /></template>
+<template><Child title="ok" :on="on" depressed="x" /></template>
 "#,
             expected_diagnostics: &[
-                "error:6:38 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.",
+                "error:6:38 [TS2353] Object literal may only specify known properties, and '\"depressed\"' does not exist in type '__VizeComponentCheckProps<Props, __VizeCheckTail>'.",
             ],
         },
         Case {
@@ -244,10 +248,10 @@ defineProps<{ title: string; items: number[] }>();
             app: r#"<script setup lang="ts">
 import Child from "./Child.vue";
 </script>
-<template><Child title="ok" :items="[1, 2]" id="outer" /></template>
+<template><Child title="ok" :items="[1, 2]" depressed="x" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:45 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.",
+                "error:4:45 [TS2353] Object literal may only specify known properties, and '\"depressed\"' does not exist in type '__VizeComponentCheckProps<Props, __VizeCheckTail>'.",
             ],
         },
         Case {
@@ -264,10 +268,10 @@ defineProps<{ title: string; items: number[] }>();
             app: r#"<script setup lang="ts">
 import Child from "./Child.vue";
 </script>
-<template><Child title="ok" :items="[1, 2]" id="outer" /></template>
+<template><Child title="ok" :items="[1, 2]" depressed="x" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:45 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.",
+                "error:4:45 [TS2353] Object literal may only specify known properties, and '\"depressed\"' does not exist in type '__VizeComponentCheckProps<Props, __VizeCheckTail>'.",
             ],
         },
         Case {
@@ -319,10 +323,10 @@ defineProps<{ title: string }>();
             app: r#"<script setup lang="ts">
 import Child from "./Child.vue";
 </script>
-<template><Child title="ok" id="outer" /></template>
+<template><Child title="ok" depressed="x" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"id\"' does not exist in type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs>'.",
+                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"depressed\"' does not exist in type '__VizeComponentCheckProps<Props, __VizeCheckTail>'.",
             ],
         },
         Case {
