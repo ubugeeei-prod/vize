@@ -21,6 +21,7 @@
 //! <div>x</div>
 //! <div>{{ x }}</div>
 //! <div>{{ `pre-${x}` }}</div>
+//! {{ " " }}
 //! ```
 
 use crate::context::LintContext;
@@ -55,7 +56,10 @@ impl Rule for NoUselessMustaches {
         let ExpressionNode::Simple(s) = &interpolation.content else {
             return;
         };
-        if !is_static_string_literal(s.content) {
+        let Some(body) = static_string_literal_body(s.content) else {
+            return;
+        };
+        if !body.is_empty() && body.chars().all(char::is_whitespace) {
             return;
         }
         ctx.warn_with_help(
@@ -66,20 +70,23 @@ impl Rule for NoUselessMustaches {
     }
 }
 
-/// Whether `raw` is a constant string literal (`'x'`, `"x"`, or a template
-/// literal with no `${}` interpolation).
-fn is_static_string_literal(raw: &str) -> bool {
+/// The literal body when `raw` is a constant string literal (`'x'`, `"x"`, or
+/// a template literal with no `${}` interpolation).
+fn static_string_literal_body(raw: &str) -> Option<&str> {
     let s = raw.trim();
     let bytes = s.as_bytes();
     if bytes.len() < 2 {
-        return false;
+        return None;
     }
     let first = bytes[0];
     let last = bytes[bytes.len() - 1];
     match first {
-        b'\'' | b'"' => first == last && !s[1..s.len() - 1].contains(first as char),
-        b'`' => last == b'`' && !s.contains("${"),
-        _ => false,
+        b'\'' | b'"' if first == last => {
+            let body = &s[1..s.len() - 1];
+            (!body.contains(first as char)).then_some(body)
+        }
+        b'`' if last == b'`' && !s.contains("${") => Some(&s[1..s.len() - 1]),
+        _ => None,
     }
 }
 
@@ -127,6 +134,18 @@ mod tests {
     fn allows_template_with_interpolation() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div>{{ `pre-${x}` }}</div>"#, "App.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn allows_whitespace_only_literal_text_node() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<span>A</span>
+{{ " " }}
+<span>B</span>"#,
+            "App.vue",
+        );
         assert_eq!(result.warning_count, 0);
     }
 
