@@ -92,6 +92,39 @@ ui.element div @18:36
 }
 
 #[test]
+fn source_block_tokenizer_errors_are_file_absolute() {
+    let source = "prelude\n<template><div / a>x</div></template>";
+    let template_start = source.find("<template>").expect("template") + "<template>".len();
+    let template_end = source.find("</template>").expect("template close");
+    let template = &source[template_start..template_end];
+    let root = SourceRoot::new(source).expect("source root");
+    let block = root
+        .block(template, template_start as u32)
+        .expect("template block is a root slice");
+
+    let allocator = Allocator::new();
+    let (tree, errors) = parse(&allocator, template);
+    assert_eq!(errors.len(), 1);
+    assert_eq!(errors[0].offset, 4);
+    assert_eq!(errors[0].code.message(), "Unexpected solidus in tag.");
+
+    let lowered = vize_ricalco::lower_source_block(&allocator, &tree, &errors, block);
+    let folio = DisegnoFolio::of(&lowered.root.ops);
+
+    assert_eq!(u64::from(lowered.op_count), folio.op_count());
+    assert_eq!(verify(&folio, Rigor::Canonical), Vec::<Violation>::new());
+    assert_eq!(
+        lowered.diagnostics,
+        vec![Diagnostic::new(
+            Severity::Error,
+            Stage::Surface,
+            Span::new(22, 22),
+            "Unexpected solidus in tag.",
+        )]
+    );
+}
+
+#[test]
 fn the_battery_aggregates_are_pinned() {
     // The decision-surface census over the whole battery: ops minted,
     // diagnostics raised, provenance records written, scopes tagged.
