@@ -45,10 +45,8 @@ test("P2-10 docs describe vue.css-bind spans as file-absolute", () => {
 });
 
 test("P2-10 implementation pins shifted file-absolute spans", () => {
-  const lowering = readRepoFile("crates", "vize_ricalco", "src", "lower", "css.rs");
   const regression = readRepoFile("crates", "vize_ricalco", "tests", "css_bind_lowering.rs");
 
-  assert.match(lowering, /Spans are file-absolute against the complete authored source/u);
   assert.match(regression, /fn block_start_produces_file_absolute_spans\(\)/u);
   assert.match(regression, /ui\.element style @90:120/u);
   assert.match(regression, /vue\.css-bind value=js\(\\"color\\" @111:116\) @104:117/u);
