@@ -66,6 +66,51 @@ ui.element style @90:120
 }
 
 #[test]
+fn shifted_block_start_offsets_every_css_bind_span() {
+    let css = ".foo { color: v-bind(color); margin: v-bind(size + 'px'); }";
+    let block_start = 32;
+    let value = folio(css, block_start);
+    let FolioOp::Element(FolioElement { bindings, span, .. }) = &value.ops[0] else {
+        panic!("carrier is ui.element");
+    };
+    assert_eq!(
+        (span.start, span.end),
+        (block_start, block_start + css.len() as u32)
+    );
+    assert_eq!(bindings.len(), 2);
+
+    let expected = [
+        ("v-bind(color)", "color"),
+        ("v-bind(size + 'px')", "size + 'px'"),
+    ];
+    for (index, (call, expr)) in expected.iter().enumerate() {
+        let call_start = css.find(call).expect("call appears in CSS") as u32;
+        let expr_start = call_start + call.find(expr).expect("expr appears in call") as u32;
+        let FolioBinding::VueCssBind(bind) = &bindings[index] else {
+            panic!("binding is vue.css-bind");
+        };
+        assert_eq!(
+            (bind.span.start, bind.span.end),
+            (
+                block_start + call_start,
+                block_start + call_start + call.len() as u32
+            ),
+        );
+        let FolioExpr::Js { span, source } = &bind.value else {
+            panic!("expression is admitted js");
+        };
+        assert_eq!(source.as_str(), *expr);
+        assert_eq!(
+            (span.start, span.end),
+            (
+                block_start + expr_start,
+                block_start + expr_start + expr.len() as u32
+            ),
+        );
+    }
+}
+
+#[test]
 fn validated_blocks_keep_equal_style_blocks_distinct() {
     let source = "<style>.foo{color:v-bind(color)}</style><style>.foo{color:v-bind(color)}</style>";
     let first_start = source.find(".foo").expect("first style content");
