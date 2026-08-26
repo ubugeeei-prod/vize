@@ -271,7 +271,7 @@ fn assert_command_bytes(command_bytes: &[u8], command: impl crossterm::Command) 
     // the byte stream, so it cannot derive expectations on a headless runner.
     // `write_ansi` yields the escape sequence on every platform, which is
     // exactly what the emergency constants must reproduce.
-    let mut expected = vize_carton::String::default();
+    let mut expected = vize_s0::String::default();
     command.write_ansi(&mut expected).unwrap();
     assert_eq!(command_bytes, expected.as_bytes());
 }
