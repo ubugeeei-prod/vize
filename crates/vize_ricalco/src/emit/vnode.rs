@@ -1,7 +1,7 @@
 //! Static native HTML element / children emission.
 
-use vize_s0::{String, ensure_sufficient_stack};
-use vize_s2::op::{Attribute, BindingOp, ElementOp, Op, Region};
+use vize_s0::ensure_sufficient_stack;
+use vize_s2::op::{BindingOp, ElementOp, Op, Region};
 
 use super::EmitCx;
 use super::EmitError;
@@ -10,14 +10,17 @@ use super::buf::Buf;
 use super::children::{children_need_text_flag, emit_create_text_vnode, emit_text_like};
 use super::directive;
 use super::flag::emit_patch_flag;
-use super::hoist::{compact_props_object, push_attr_pair, unique_attrs};
+use super::hoist::compact_props_object;
 use super::namespace;
-use super::props::{admit_bindings, apply_static_ref_patch, bind_patch, emit_bind_props};
+use super::props::{admit_element_bindings, apply_static_ref_patch, bind_patch, emit_bind_props};
 
 pub(super) fn emit_unique_element(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
 ) -> Result<(), EmitError> {
+    if super::once::has(&element.bindings) {
+        return super::once::emit_element(cx, element, None, false);
+    }
     directive::wrap_element(cx, element, |cx| {
         cx.buf.use_open_block();
         cx.buf.use_create_element_block();
@@ -26,7 +29,7 @@ pub(super) fn emit_unique_element(
         cx.buf.push("(), ");
         emit_call(
             cx, element, /* block */ true, None, /* hoist */ true,
-            /* for_item */ false,
+            /* for_item */ false, /* once */ false,
         )?;
         cx.buf.push(")");
         Ok(())
@@ -37,6 +40,9 @@ pub(super) fn emit_fragment_element(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
 ) -> Result<(), EmitError> {
+    if super::once::has(&element.bindings) {
+        return super::once::emit_element(cx, element, None, false);
+    }
     if namespace::crosses_boundary(cx, element) {
         return emit_nested_block(cx, element);
     }
@@ -44,12 +50,15 @@ pub(super) fn emit_fragment_element(
         cx.buf.use_create_element_vnode();
         emit_call(
             cx, element, /* block */ false, None, /* hoist */ true,
-            /* for_item */ false,
+            /* for_item */ false, /* once */ false,
         )
     })
 }
 
 fn emit_nested(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) -> Result<(), EmitError> {
+    if super::once::has(&element.bindings) {
+        return super::once::emit_element(cx, element, None, false);
+    }
     if namespace::crosses_boundary(cx, element) {
         return emit_nested_block(cx, element);
     }
@@ -57,7 +66,7 @@ fn emit_nested(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) -> Result<(), EmitE
         cx.buf.use_create_element_vnode();
         emit_call(
             cx, element, /* block */ false, None, /* hoist */ false,
-            /* for_item */ false,
+            /* for_item */ false, /* once */ false,
         )
     })
 }
@@ -71,7 +80,7 @@ fn emit_nested_block(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) -> Result<(),
         cx.buf.push("(), ");
         emit_call(
             cx, element, /* block */ true, None, /* hoist */ false,
-            /* for_item */ false,
+            /* for_item */ false, /* once */ false,
         )?;
         cx.buf.push(")");
         Ok(())
@@ -96,6 +105,7 @@ pub(super) fn emit_if_branch_element(
             Some(key),
             /* hoist */ false,
             /* for_item */ false,
+            /* once */ false,
         )?;
         cx.buf.push(")");
         Ok(())
@@ -108,12 +118,15 @@ pub(super) fn emit_for_item_element(
     stable: bool,
     key: Option<&str>,
 ) -> Result<(), EmitError> {
+    if super::once::has(&element.bindings) {
+        return super::once::emit_element(cx, element, key, true);
+    }
     directive::wrap_element(cx, element, |cx| {
         if stable {
             cx.buf.use_create_element_vnode();
             return emit_call(
                 cx, element, /* block */ false, key, /* hoist */ false,
-                /* for_item */ true,
+                /* for_item */ true, /* once */ false,
             );
         }
         cx.buf.use_open_block();
@@ -123,20 +136,21 @@ pub(super) fn emit_for_item_element(
         cx.buf.push("(), ");
         emit_call(
             cx, element, /* block */ true, key, /* hoist */ false,
-            /* for_item */ true,
+            /* for_item */ true, /* once */ false,
         )?;
         cx.buf.push(")");
         Ok(())
     })
 }
 
-fn emit_call(
+pub(super) fn emit_call(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
     block: bool,
     if_key: Option<&str>,
     allow_hoist: bool,
     for_item: bool,
+    once: bool,
 ) -> Result<(), EmitError> {
     admit_native(element)?;
     let alias = if block {
@@ -151,9 +165,9 @@ fn emit_call(
     let has_children = !element.children.ops.is_empty();
     let has_custom = directive::has_custom(&element.bindings);
     let has_binds = has_prop_bindings(&element.bindings);
-    let hoist = allow_hoist && if_key.is_none() && root_props_should_hoist(element);
+    let hoist = allow_hoist && if_key.is_none() && super::props_static::root_should_hoist(element);
     let patch = bind_patch(&element.bindings, false, if_key, for_item);
-    let text_flag = children_need_text_flag(&element.children);
+    let text_flag = !once && children_need_text_flag(&element.children);
     let mut flag = patch.flag;
     if text_flag {
         flag |= 1;
@@ -161,6 +175,9 @@ fn emit_call(
     apply_static_ref_patch(&element.attributes, &mut flag);
     if for_item {
         flag &= !512;
+    }
+    if once {
+        flag &= 2 | 4;
     }
     let omit_text_only = hoist && block && flag == 1;
     let emit_flag = flag != 0 && !omit_text_only;
@@ -185,7 +202,7 @@ fn emit_call(
         )?;
     } else if !element.attributes.is_empty() {
         cx.buf.push(", ");
-        emit_static_props_inline(cx, element.attributes.iter());
+        super::props_static::emit_inline(cx, element.attributes.iter());
     } else if empty_custom_for {
         cx.buf.push(", { }");
     } else if has_children || emit_flag {
@@ -194,7 +211,11 @@ fn emit_call(
     if has_children {
         cx.buf.push(", ");
         namespace::with_child(cx, element, |cx| {
-            emit_children(cx, &element.children, has_custom && allow_hoist && block)
+            emit_children(
+                cx,
+                &element.children,
+                once || (has_custom && allow_hoist && block),
+            )
         })?;
     } else if emit_flag {
         cx.buf.push(", null");
@@ -202,7 +223,7 @@ fn emit_call(
     if emit_flag {
         emit_patch_flag(cx, flag);
     }
-    if !patch.dynamic_props.is_empty() {
+    if !once && !patch.dynamic_props.is_empty() {
         cx.buf.push(", [");
         for (i, name) in patch.dynamic_props.iter().enumerate() {
             if i > 0 {
@@ -218,54 +239,8 @@ fn emit_call(
     Ok(())
 }
 
-fn root_props_should_hoist(element: &ElementOp<'_>) -> bool {
-    element.bindings.is_empty()
-        && !element.attributes.is_empty()
-        && element
-            .attributes
-            .iter()
-            .all(|attribute| attribute.name != "ref")
-}
-
-fn emit_static_props_inline<'a>(
-    cx: &mut EmitCx<'_>,
-    attributes: impl Iterator<Item = &'a Attribute<'a>>,
-) {
-    let unique = unique_attrs(attributes);
-    let multiline = unique.len() > 1 && !cx.in_v_for;
-    if multiline {
-        cx.buf.push("{");
-        cx.buf.indent();
-    } else {
-        cx.buf.push("{ ");
-    }
-    for (i, attr) in unique.iter().enumerate() {
-        if i > 0 {
-            cx.buf.push(",");
-        }
-        if multiline {
-            cx.buf.newline();
-        } else if i > 0 {
-            cx.buf.push(" ");
-        }
-        if cx.in_v_for && attr.name == "ref" {
-            cx.buf.push("ref_for: true, ");
-        }
-        let mut pair = String::default();
-        push_attr_pair(&mut pair, attr);
-        cx.buf.push(pair.as_str());
-    }
-    if multiline {
-        cx.buf.deindent();
-        cx.buf.newline();
-        cx.buf.push("}");
-    } else {
-        cx.buf.push(" }");
-    }
-}
-
 fn admit_native(element: &ElementOp<'_>) -> Result<(), EmitError> {
-    admit_bindings(&element.attributes, &element.bindings)
+    admit_element_bindings(&element.attributes, &element.bindings)
 }
 
 fn has_prop_bindings(bindings: &[BindingOp<'_>]) -> bool {
@@ -327,6 +302,9 @@ pub(super) fn emit_array_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), E
     ensure_sufficient_stack(|| match op {
         Op::Element(element) => {
             cx.walk.skip(element.bindings.len());
+            if super::once::emit_hoisted_child(cx, element)? {
+                return Ok(());
+            }
             emit_nested(cx, element)
         }
         Op::Component(component) => {

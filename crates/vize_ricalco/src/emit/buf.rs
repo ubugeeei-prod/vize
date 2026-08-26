@@ -155,6 +155,9 @@ impl Buf {
     pub(super) fn use_create_slots(&mut self) {
         self.mark(Helper::CreateSlots);
     }
+    pub(super) fn use_set_block_tracking(&mut self) {
+        self.mark(Helper::SetBlockTracking);
+    }
 
     pub(super) fn to_display_string_alias() -> &'static str {
         Helper::ToDisplayString.alias()
@@ -262,6 +265,10 @@ impl Buf {
 
     pub(super) fn create_slots_alias() -> &'static str {
         Helper::CreateSlots.alias()
+    }
+
+    pub(super) fn set_block_tracking_alias() -> &'static str {
+        Helper::SetBlockTracking.alias()
     }
 
     pub(super) fn push_hoist(&mut self, rhs: String) -> String {

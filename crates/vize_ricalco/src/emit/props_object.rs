@@ -168,6 +168,7 @@ pub(super) fn pieces<'a>(
             BindingOp::Model(model) => super::model::expand(model, &mut out)?,
             BindingOp::SlotContent(_) => {}
             BindingOp::VueDirective(_) => {}
+            BindingOp::VueOnce(_) => {}
             _ => {
                 return Err(EmitError::unsupported_binding(
                     Reason::UnsupportedBindingKind,

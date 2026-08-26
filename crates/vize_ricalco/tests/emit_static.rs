@@ -312,10 +312,22 @@ fn refused(source: &str) -> EmitError {
 }
 
 #[test]
-fn v_once_is_unsupported_until_realization() {
+fn v_once_wraps_the_native_vnode_in_the_render_cache() {
     assert_eq!(
-        refused("<div v-once>x</div>").reason(),
-        Some(Reason::UnsupportedBindingKind)
+        assembled("<div v-once>x</div>"),
+        "\
+const { createElementVNode: _createElementVNode, createTextVNode: _createTextVNode, setBlockTracking: _setBlockTracking } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return _cache[0] || (
+    _setBlockTracking(-1, true),
+    (_cache[0] = _createElementVNode(\"div\", null, [
+      _createTextVNode(\"x\")
+    ])).cacheIndex = 0,
+    _setBlockTracking(1),
+    _cache[0]
+  )
+}"
     );
 }
 

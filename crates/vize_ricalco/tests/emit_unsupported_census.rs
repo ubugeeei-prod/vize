@@ -168,12 +168,6 @@ const SOURCE_CASES: &[Case] = &[
         VUE3,
         Reason::TextExpressionNotEmittable,
     ),
-    case(
-        "vue_once",
-        "<div v-once>x</div>",
-        VUE3,
-        Reason::UnsupportedBindingKind,
-    ),
 ];
 
 const fn case(name: &'static str, source: &'static str, caps: LegacyCaps, reason: Reason) -> Case {
@@ -225,7 +219,6 @@ fn committed_fixture_refusal_census_is_pinned() {
             ("slots_spread_shape", 1),
             ("slots_spread_value_not_js", 1),
             ("text_expression_not_emittable", 1),
-            ("unsupported_binding_kind", 1),
         ]
     );
 }

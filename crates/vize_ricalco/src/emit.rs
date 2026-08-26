@@ -40,7 +40,7 @@
 //! `.native` event sugar** (accepted and stripped like the shipped lane),
 //! **static+dynamic `style` merge** (`[{"color":"red"}, s]`), and
 //! **modifier-free dynamic `v-on` keys** (`@[event]` through
-//! `toHandlerKey`).
+//! `toHandlerKey`), plus native-element **`v-once`** cache wrappers.
 //! Static-name `v-bind` modifiers (`.camel`, `.prop`, `.attr`, plus the
 //! dot shorthand) and dynamic-argument `v-bind` keys / modifiers are
 //! realized into the shipped DOM prop-key shape. Vue 2 pipe filters are
@@ -68,11 +68,13 @@ mod model_key;
 mod namespace;
 mod on;
 mod on_dynamic;
+mod once;
 mod outlet;
 mod props;
 mod props_bind;
 mod props_object;
 mod props_object_merge;
+mod props_static;
 mod slots;
 mod style;
 mod tpl;
@@ -185,6 +187,12 @@ struct EmitCx<'facts> {
     scope_names: StdVec<String>,
     /// Sibling `v-if` chains share one counter; nested chains reset.
     if_branch_key: u32,
+    /// `v-once` cache slots are numbered in render-order, sharing the
+    /// function-level `_cache` array like the shipped lane.
+    once_cache_index: u32,
+    /// Static children nested inside `v-once` follow the shipped lane's
+    /// one-shot hoist behavior without changing ordinary nested elements.
+    once_depth: u32,
     /// Slot objects inside `v-for` carry `_: 2 /* DYNAMIC */`.
     in_v_for: bool,
     /// Nested components inside a scoped `withCtx` treat forwarded
@@ -263,6 +271,8 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
         walk: PageWalk::new(),
         scope_names: StdVec::new(),
         if_branch_key: 0,
+        once_cache_index: 0,
+        once_depth: 0,
         in_v_for: false,
         slot_param_depth: 0,
         parent_ns: Namespace::Html,

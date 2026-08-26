@@ -26,6 +26,21 @@ pub(super) fn admit_bindings(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
 ) -> Result<(), EmitError> {
+    admit_bindings_inner(attributes, bindings, false)
+}
+
+pub(super) fn admit_element_bindings(
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+) -> Result<(), EmitError> {
+    admit_bindings_inner(attributes, bindings, true)
+}
+
+fn admit_bindings_inner(
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+    allow_once: bool,
+) -> Result<(), EmitError> {
     let mut class = false;
     let mut style = false;
     for binding in bindings.iter() {
@@ -63,6 +78,7 @@ pub(super) fn admit_bindings(
             BindingOp::SlotContent(_) => {}
             BindingOp::VueDirective(_) if super::slots::is_slots_spread(binding) => {}
             BindingOp::VueDirective(directive) => super::directive::admit(directive)?,
+            BindingOp::VueOnce(_) if allow_once => {}
             _ => {
                 return Err(EmitError::unsupported_binding(
                     Reason::UnsupportedBindingKind,

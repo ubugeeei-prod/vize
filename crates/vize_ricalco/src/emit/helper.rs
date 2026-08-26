@@ -37,6 +37,7 @@ pub(super) enum Helper {
     CreateText,
     RenderList,
     CreateSlots,
+    SetBlockTracking,
     WithCtx,
     Teleport,
     Suspense,
@@ -47,7 +48,7 @@ pub(super) enum Helper {
 }
 
 impl Helper {
-    pub(super) const ALL: [Self; 38] = [
+    pub(super) const ALL: [Self; 39] = [
         Self::ResolveComponent,
         Self::ResolveDynamicComponent,
         Self::ResolveDirective,
@@ -79,6 +80,7 @@ impl Helper {
         Self::CreateText,
         Self::RenderList,
         Self::CreateSlots,
+        Self::SetBlockTracking,
         Self::WithCtx,
         Self::Teleport,
         Self::Suspense,
@@ -112,6 +114,7 @@ impl Helper {
             Self::CreateComment | Self::CreateText => 9,
             Self::RenderList
             | Self::CreateSlots
+            | Self::SetBlockTracking
             | Self::WithCtx
             | Self::Teleport
             | Self::Suspense
@@ -162,6 +165,7 @@ impl Helper {
             Self::ResolveDirective => 34359738368,
             Self::ResolveFilter => 68719476736,
             Self::ToHandlerKey => 137438953472,
+            Self::SetBlockTracking => 274877906944,
         }
     }
 
@@ -198,6 +202,7 @@ impl Helper {
             Self::CreateComment => "createCommentVNode",
             Self::RenderList => "renderList",
             Self::CreateSlots => "createSlots",
+            Self::SetBlockTracking => "setBlockTracking",
             Self::WithCtx => "withCtx",
             Self::Teleport => "Teleport",
             Self::Suspense => "Suspense",
@@ -241,6 +246,7 @@ impl Helper {
             Self::CreateComment => "_createCommentVNode",
             Self::RenderList => "_renderList",
             Self::CreateSlots => "_createSlots",
+            Self::SetBlockTracking => "_setBlockTracking",
             Self::WithCtx => "_withCtx",
             Self::Teleport => "_Teleport",
             Self::Suspense => "_Suspense",

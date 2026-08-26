@@ -51,11 +51,11 @@ s1_to_s2	emit	crates/vize_ricalco/src/emit/props.rs	1	2	1	2	0	0	0	0
 s1_to_s2	-	crates/vize_ricalco/src/emit/props_bind.rs	0	0	1	2	0	0	0	0
 s1_to_s2	emit	crates/vize_ricalco/src/emit/props_object.rs	1	5	0	0	0	0	0	0
 s1_to_s2	-	crates/vize_ricalco/src/emit/props_object_merge.rs	0	0	1	1	0	0	0	0
+s1_to_s2	-	crates/vize_ricalco/src/emit/props_static.rs	0	0	1	1	0	0	0	0
 s1_to_s2	emit	crates/vize_ricalco/src/emit/slots.rs	1	5	1	6	0	0	0	0
 s1_to_s2	-	crates/vize_ricalco/src/emit/tpl.rs	0	0	1	3	0	0	0	0
 s1_to_s2	-	crates/vize_ricalco/src/emit/vfor.rs	0	0	1	3	0	0	0	0
 s1_to_s2	-	crates/vize_ricalco/src/emit/vif.rs	0	0	1	2	0	0	0	0
-s1_to_s2	-	crates/vize_ricalco/src/emit/vnode.rs	0	0	1	1	0	0	0	0
 s1_to_s2	lower	crates/vize_ricalco/src/lower.rs	1	2	1	1	0	0	0	0
 s1_to_s2	lower	crates/vize_ricalco/src/lower/binding.rs	1	1	1	9	1	7	0	0
 s1_to_s2	-	crates/vize_ricalco/src/lower/bindop.rs	0	0	1	2	1	6	0	0
