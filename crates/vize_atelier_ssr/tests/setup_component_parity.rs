@@ -1,6 +1,6 @@
 use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};
-use vize_carton::{Allocator, FxHashMap};
+use vize_s0::{Allocator, FxHashMap};
 
 fn binding_matrix() -> BindingMetadata {
     let mut bindings = FxHashMap::default();

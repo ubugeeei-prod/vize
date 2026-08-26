@@ -19,7 +19,7 @@ use vize_atelier_core::lane::transform;
 use vize_atelier_core::options::TransformOptions;
 use vize_atelier_core::parser::Parser;
 use vize_atelier_ssr::{SsrCodegenContext, SsrCompilerOptions, compile_ssr};
-use vize_carton::{Allocator, cstr};
+use vize_s0::{Allocator, cstr};
 
 fn ssr_transform_options() -> TransformOptions {
     TransformOptions {

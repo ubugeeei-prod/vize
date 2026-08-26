@@ -48,7 +48,7 @@ mod tests {
         SsrCompilerOptions, compile_ssr, compile_ssr_with_options, compile_ssr_with_template_syntax,
     };
     use vize_atelier_core::TemplateSyntaxMode;
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     #[test]
     fn test_compile_simple_element() {

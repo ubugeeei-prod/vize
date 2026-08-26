@@ -78,6 +78,47 @@ function s2DomWitnessFiles(): string[] {
   return [...witnesses, path.join("support", "mod.rs")];
 }
 
+function assertS0AliasConsumer(options: {
+  packageName: string;
+  label: string;
+  directory: string;
+  filter?: (fullPath: string) => boolean;
+}) {
+  const { packageName, label, directory, filter = () => true } = options;
+  const dependencies = workspacePackage(metadata, packageName).dependencies;
+  assert.ok(
+    dependencies.some(
+      (dependency) =>
+        dependency.kind === null &&
+        dependency.name === "vize_carton" &&
+        dependency.rename === "vize_s0",
+    ),
+    `${packageName} must import vize_carton as vize_s0 for S0 storage`,
+  );
+  assert.ok(
+    dependencies.every(
+      (dependency) => dependency.name !== "vize_carton" || dependency.rename === "vize_s0",
+    ),
+    `${packageName} must not depend on vize_carton through its physical name`,
+  );
+
+  const offenders = [];
+  let aliasImports = 0;
+  for (const fullPath of walkRustFiles(directory)) {
+    if (!filter(fullPath)) continue;
+    const source = fs.readFileSync(fullPath, "utf8");
+    if (/\bvize_carton::|use vize_carton\b/u.test(source)) {
+      offenders.push(path.relative(repoRoot, fullPath));
+    }
+    if (/\bvize_s0::|use vize_s0\b/u.test(source)) {
+      aliasImports += 1;
+    }
+  }
+
+  assert.ok(aliasImports > 0, `${label} should use the vize_s0 alias`);
+  assert.deepEqual(offenders, []);
+}
+
 const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>([
   ["vize_davinci", [["vize_carton", "vize_s0"]]],
   ["vize_s1", [["vize_carton", "vize_s0"]]],
@@ -211,118 +252,37 @@ test("Davinci atelier core S2 witnesses import lowering through the stage alias"
 });
 
 test("Vize CLI package imports S0 storage through the stage alias", () => {
-  const dependencies = workspacePackage(metadata, "vize").dependencies;
-  assert.ok(
-    dependencies.some(
-      (dependency) =>
-        dependency.kind === null &&
-        dependency.name === "vize_carton" &&
-        dependency.rename === "vize_s0",
-    ),
-    "vize must import vize_carton as vize_s0 for S0 storage",
-  );
-  assert.ok(
-    dependencies.every(
-      (dependency) => dependency.name !== "vize_carton" || dependency.rename === "vize_s0",
-    ),
-    "vize must not depend on vize_carton through its physical name",
-  );
-
-  const vizeDir = path.join(repoRoot, "crates", "vize");
-  const offenders = [];
-  let aliasImports = 0;
-  for (const fullPath of walkRustFiles(vizeDir)) {
-    const source = fs.readFileSync(fullPath, "utf8");
-    if (/\bvize_carton::/u.test(source)) {
-      offenders.push(path.relative(repoRoot, fullPath));
-    }
-    if (/\bvize_s0::|use vize_s0\b/u.test(source)) {
-      aliasImports += 1;
-    }
-  }
-
-  assert.ok(aliasImports > 0, "vize package should use the vize_s0 alias");
-  assert.deepEqual(offenders, []);
+  assertS0AliasConsumer({
+    packageName: "vize",
+    label: "vize package",
+    directory: path.join(repoRoot, "crates", "vize"),
+  });
 });
 
 test("Canon content-mapper imports S0 storage through the stage alias", () => {
-  const dependencies = workspacePackage(metadata, "vize_canon").dependencies;
-  assert.ok(
-    dependencies.some(
-      (dependency) =>
-        dependency.kind === null &&
-        dependency.name === "vize_carton" &&
-        dependency.rename === "vize_s0",
-    ),
-    "vize_canon must import vize_carton as vize_s0 for S0 storage",
-  );
-  assert.ok(
-    dependencies.every(
-      (dependency) => dependency.name !== "vize_carton" || dependency.rename === "vize_s0",
-    ),
-    "vize_canon must not depend on vize_carton through its physical name",
-  );
-
   const manifest = readRepoFile("crates", "vize_canon", "Cargo.toml");
   assert.match(manifest, /^vize_s0\.workspace = true$/m);
   assert.doesNotMatch(manifest, /^vize_carton\.workspace = true$/m);
-
-  const contentMapperDir = path.join(
-    repoRoot,
-    "crates",
-    "vize_canon",
-    "src",
-    "batch",
-    "virtual_project",
-  );
-  const offenders = [];
-  let aliasImports = 0;
-  for (const fullPath of walkRustFiles(contentMapperDir)) {
-    if (!path.basename(fullPath).startsWith("content_mapper")) continue;
-    const source = fs.readFileSync(fullPath, "utf8");
-    if (/\bvize_carton::|use vize_carton\b/u.test(source)) {
-      offenders.push(path.relative(repoRoot, fullPath));
-    }
-    if (/\bvize_s0::|use vize_s0\b/u.test(source)) {
-      aliasImports += 1;
-    }
-  }
-
-  assert.ok(aliasImports > 0, "Canon content-mapper should use the vize_s0 alias");
-  assert.deepEqual(offenders, []);
+  assertS0AliasConsumer({
+    packageName: "vize_canon",
+    label: "Canon content-mapper",
+    directory: path.join(repoRoot, "crates", "vize_canon", "src", "batch", "virtual_project"),
+    filter: (fullPath) => path.basename(fullPath).startsWith("content_mapper"),
+  });
 });
 
 test("Maestro LSP imports S0 storage through the stage alias", () => {
-  const dependencies = workspacePackage(metadata, "vize_maestro").dependencies;
-  assert.ok(
-    dependencies.some(
-      (dependency) =>
-        dependency.kind === null &&
-        dependency.name === "vize_carton" &&
-        dependency.rename === "vize_s0",
-    ),
-    "vize_maestro must import vize_carton as vize_s0 for S0 storage",
-  );
-  assert.ok(
-    dependencies.every(
-      (dependency) => dependency.name !== "vize_carton" || dependency.rename === "vize_s0",
-    ),
-    "vize_maestro must not depend on vize_carton through its physical name",
-  );
+  assertS0AliasConsumer({
+    packageName: "vize_maestro",
+    label: "Maestro LSP",
+    directory: path.join(repoRoot, "crates", "vize_maestro"),
+  });
+});
 
-  const maestroDir = path.join(repoRoot, "crates", "vize_maestro");
-  const offenders = [];
-  let aliasImports = 0;
-  for (const fullPath of walkRustFiles(maestroDir)) {
-    const source = fs.readFileSync(fullPath, "utf8");
-    if (/\bvize_carton::|use vize_carton\b/u.test(source)) {
-      offenders.push(path.relative(repoRoot, fullPath));
-    }
-    if (/\bvize_s0::|use vize_s0\b/u.test(source)) {
-      aliasImports += 1;
-    }
-  }
-
-  assert.ok(aliasImports > 0, "Maestro LSP should use the vize_s0 alias");
-  assert.deepEqual(offenders, []);
+test("Atelier SSR compiler imports S0 storage through the stage alias", () => {
+  assertS0AliasConsumer({
+    packageName: "vize_atelier_ssr",
+    label: "Atelier SSR compiler",
+    directory: path.join(repoRoot, "crates", "vize_atelier_ssr"),
+  });
 });

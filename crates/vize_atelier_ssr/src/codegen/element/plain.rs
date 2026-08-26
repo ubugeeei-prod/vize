@@ -58,7 +58,7 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         // Check if void element
-        if vize_carton::is_void_tag(tag) {
+        if vize_s0::is_void_tag(tag) {
             self.push_string_part_static(">");
             return;
         }
@@ -430,7 +430,7 @@ impl<'a> SsrCodegenContext<'a> {
                 self.push_string_part_dynamic(&style_exp);
                 self.push_string_part_static("\"");
             }
-            Some(name) if vize_carton::is_boolean_attr(name) => {
+            Some(name) if vize_s0::is_boolean_attr(name) => {
                 self.use_ssr_helper(RuntimeHelper::SsrIncludeBooleanAttr);
                 self.push_string_part_dynamic(&cstr!(
                     "(_ssrIncludeBooleanAttr({exp})) ? \" {name}\" : \"\""

@@ -90,7 +90,7 @@ mod tests {
     use vize_atelier_core::{
         DirectiveNode, ElementNode, ExpressionNode, PropNode, SimpleExpressionNode, SourceLocation,
     };
-    use vize_carton::{Allocator, Box};
+    use vize_s0::{Allocator, Box};
 
     fn make_element_with_directive<'a>(
         allocator: &'a Allocator,

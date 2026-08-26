@@ -5,7 +5,7 @@ use vize_atelier_core::{
     options::{CustomElementMatcher, TemplateSyntaxMode},
     parser::parse_with_options_custom_elements_and_template_syntax,
 };
-use vize_carton::{Allocator, String, profile};
+use vize_s0::{Allocator, String, profile};
 
 /// Compile a Vue template for SSR with default options
 pub fn compile_ssr<'a>(
@@ -129,19 +129,17 @@ fn compile_ssr_inner<'a>(
 }
 
 pub(crate) fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
-    if vize_carton::is_svg_tag(tag) {
+    if vize_s0::is_svg_tag(tag) {
         return Namespace::Svg;
     }
-    if vize_carton::is_math_ml_tag(tag) {
+    if vize_s0::is_math_ml_tag(tag) {
         return Namespace::MathMl;
     }
     if let Some(parent_tag) = parent {
-        if vize_carton::is_svg_tag(parent_tag) && tag != "foreignObject" {
+        if vize_s0::is_svg_tag(parent_tag) && tag != "foreignObject" {
             return Namespace::Svg;
         }
-        if vize_carton::is_math_ml_tag(parent_tag)
-            && tag != "annotation-xml"
-            && tag != "foreignObject"
+        if vize_s0::is_math_ml_tag(parent_tag) && tag != "annotation-xml" && tag != "foreignObject"
         {
             return Namespace::MathMl;
         }

@@ -1,7 +1,7 @@
 //! Destructuring-pattern parameter extraction for SSR codegen scopes.
 
 use vize_atelier_core::{CompoundExpressionChild, ExpressionNode, ForNode};
-use vize_carton::{FxHashSet, SmallVec, String, ToCompactString};
+use vize_s0::{FxHashSet, SmallVec, String, ToCompactString};
 
 pub(crate) fn collect_for_scoped_params(for_node: &ForNode, source: &str) -> FxHashSet<String> {
     let mut params = FxHashSet::default();
@@ -129,7 +129,7 @@ fn is_valid_identifier(value: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::extract_destructure_params;
-    use vize_carton::{FxHashSet, String};
+    use vize_s0::{FxHashSet, String};
 
     #[test]
     fn extracts_nested_params_and_rejects_unsplit_malformed_aliases() {

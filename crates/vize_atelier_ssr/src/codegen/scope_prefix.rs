@@ -1,6 +1,6 @@
 //! Generated scope-prefix cleanup for SSR template locals.
 
-use vize_carton::{FxHashSet, String, ToCompactString};
+use vize_s0::{FxHashSet, String, ToCompactString};
 
 const SCOPED_PARAM_PREFIXES: [&str; 6] = [
     "_ctx.",

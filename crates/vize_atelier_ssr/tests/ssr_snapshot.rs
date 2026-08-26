@@ -6,7 +6,7 @@
 #![allow(clippy::disallowed_macros)]
 
 use vize_atelier_ssr::compile_ssr;
-use vize_carton::{Allocator, String};
+use vize_s0::{Allocator, String};
 
 /// Helper to get the compiled string content (the template literal part)
 fn get_compiled_string(src: &str) -> String {
@@ -313,7 +313,7 @@ mod v_show {
 mod component {
     use super::compile_full;
     use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     #[test]
     fn basic_component() {
@@ -553,7 +553,7 @@ mod v_text {
 
 mod scope_id {
     use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};
-    use vize_carton::{Allocator, String};
+    use vize_s0::{Allocator, String};
 
     fn compile_with_scope_id(src: &str) -> String {
         let allocator = Allocator::new();
@@ -587,7 +587,7 @@ mod scope_id {
 
 mod css_vars {
     use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};
-    use vize_carton::{Allocator, String};
+    use vize_s0::{Allocator, String};
 
     fn compile_with_css_vars(src: &str) -> String {
         let allocator = Allocator::new();
