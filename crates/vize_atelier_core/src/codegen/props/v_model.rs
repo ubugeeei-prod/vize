@@ -26,10 +26,10 @@ pub(super) fn generate_vmodel_prop(ctx: &mut CodegenContext, dir: &DirectiveNode
         .exp
         .as_ref()
         .map(|e| match e {
-            ExpressionNode::Simple(s) => vize_carton::String::new(s.content),
-            ExpressionNode::Compound(c) => vize_carton::String::new(c.loc.span.slice(&ctx.source)),
+            ExpressionNode::Simple(s) => vize_s0::String::new(s.content),
+            ExpressionNode::Compound(c) => vize_s0::String::new(c.loc.span.slice(&ctx.source)),
         })
-        .unwrap_or_else(|| vize_carton::String::new("undefined"));
+        .unwrap_or_else(|| vize_s0::String::new("undefined"));
 
     // [prop]: value
     ctx.push("[");

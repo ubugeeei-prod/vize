@@ -16,7 +16,16 @@ const slotsModule = path.join(
   "codegen",
   "slots.rs",
 );
+const propsModule = path.join(
+  repoRoot,
+  "crates",
+  "vize_atelier_core",
+  "src",
+  "codegen",
+  "props.rs",
+);
 const slotsRoot = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "slots");
+const propsRoot = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "props");
 const testRoot = path.join(repoRoot, "crates", "vize_atelier_core", "tests");
 const benchPath = path.join(repoRoot, "crates", "vize_atelier_core", "benches", "davinci.rs");
 const require = createRequire(import.meta.url);
@@ -73,7 +82,7 @@ function* rustFiles(directory: string): Generator<string> {
   }
 }
 
-test("Atelier core slot codegen imports S0 storage through the stage alias", () => {
+test("Atelier core migrated codegen slices import S0 storage through the stage alias", () => {
   const rootManifest = readToml("Cargo.toml");
   const coreManifest = readToml("crates", "vize_atelier_core", "Cargo.toml");
   const workspaceDependencies = asRecord(asRecord(rootManifest.workspace).dependencies);
@@ -106,7 +115,9 @@ test("Atelier core slot codegen imports S0 storage through the stage alias", () 
   for (const file of [
     libPath,
     slotsModule,
+    propsModule,
     ...rustFiles(slotsRoot),
+    ...rustFiles(propsRoot),
     ...rustFiles(testRoot),
     benchPath,
   ]) {
@@ -120,5 +131,5 @@ test("Atelier core slot codegen imports S0 storage through the stage alias", () 
   }
 
   assert.deepEqual(offenders, []);
-  assert.ok(aliasImportCount > 0, "codegen/slots should use vize_s0");
+  assert.ok(aliasImportCount > 0, "migrated codegen slices should use vize_s0");
 });

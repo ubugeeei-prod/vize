@@ -8,7 +8,7 @@ use super::super::{
     expression::generate_event_handler,
     helpers::{camelize, capitalize_first},
 };
-use vize_carton::{FxHashSet, String, ToCompactString};
+use vize_s0::{FxHashSet, String, ToCompactString};
 
 /// Compute the prop key for a static v-on event, mirroring Vue's
 /// `transforms/vOn.ts` casing rules.

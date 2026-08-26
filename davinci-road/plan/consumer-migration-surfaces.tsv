@@ -59,12 +59,12 @@ compiler	Compiler	source	crates/vize_atelier_core/src/codegen/patch_flag/static_
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/patch_flag/static_literal.rs	11	raw_oxc	raw OXC	raw	oxc_allocator	raw	2
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/patch_flag/static_literal.rs	11	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/patch_flag/static_literal.rs	11	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/directives.rs	12	s0	S0	stage	vize_carton	compat	3
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/events.rs	11	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/generate.rs	4	s0	S0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/directives.rs	12	s0	S0	stage	vize_s0	preferred	3
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/events.rs	11	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/generate.rs	4	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/generate.rs	4	old_ast	old AST/parser	old	vize_relief	legacy	1
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/scan.rs	9	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/v_model.rs	29	s0	S0	stage	vize_carton	compat	3
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/scan.rs	9	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/v_model.rs	29	s0	S0	stage	vize_s0	preferred	3
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/root.rs	11	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/slots/create_slots.rs	11	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/slots/detect.rs	6	s0	S0	stage	vize_s0	preferred	1

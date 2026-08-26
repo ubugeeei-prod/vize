@@ -15,7 +15,7 @@ use super::{
     object_spread::try_generate_without_merge_props,
     scan::PropsScan,
 };
-use vize_carton::{FxHashSet, String};
+use vize_s0::{FxHashSet, String};
 
 /// Generate props object
 pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
