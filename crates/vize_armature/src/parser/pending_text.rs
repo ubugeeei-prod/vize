@@ -6,8 +6,8 @@
 //! quadratic, so the decoded bytes accumulate here and are frozen once, at the
 //! first tokenizer callback that is not itself text.
 
-use vize_carton::String;
 use vize_relief::TemplateChildNode;
+use vize_s0::String;
 
 use super::Parser;
 

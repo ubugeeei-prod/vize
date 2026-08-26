@@ -5,19 +5,23 @@ use super::{
     parse, parse_document, parse_document_with_options, parse_with_options,
     parse_with_options_and_template_syntax,
 };
-use vize_carton::Allocator;
 use vize_relief::{
     ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode,
     errors::{CompilerError, ErrorCode},
     options::{ParserOptions, TemplateSyntaxMode},
 };
+use vize_s0::{Allocator, String, ToCompactString};
 
 fn recovery_snapshot(src: &str, errors: &[CompilerError]) -> Vec<(ErrorCode, String, String)> {
     errors
         .iter()
         .map(|e| {
             let covered = e.loc.as_ref().map_or("", |loc| loc.span.slice(src));
-            (e.code, e.message.to_string(), covered.to_string())
+            (
+                e.code,
+                e.message.to_compact_string(),
+                covered.to_compact_string(),
+            )
         })
         .collect()
 }
@@ -89,10 +93,7 @@ fn test_parse_less_than_before_non_tag_start_inside_element_has_no_error() {
 
 #[test]
 fn test_parse_condense_whitespace_collapses_runs_inside_text_nodes() {
-    // Regression for #960: `whitespace: 'condense'` (the default) must
-    // collapse runs of `[ \t\n\f\r]` to a single U+0020 inside text
-    // nodes, matching `@vue/compiler-sfc`. The previous behavior left
-    // mixed text nodes verbatim, so `x   y\n   z` stayed raw.
+    // Regression for #960: condense whitespace like `@vue/compiler-sfc`.
     let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<div>x   y\n   z</div>");
     assert!(errors.is_empty(), "{errors:?}");
@@ -710,12 +711,10 @@ fn test_parse_deep_nesting() {
 
 #[test]
 fn test_parse_extreme_nesting_is_bounded() {
-    // Pathologically deep input should parse without unbounded growth and
-    // surface a recoverable error rather than producing an AST that later
-    // passes would have to recurse into without limit.
+    // Parse pathologically deep input without unbounded growth.
     let allocator = Allocator::new();
     let depth = 5000;
-    let mut source = String::new();
+    let mut source = String::default();
     for _ in 0..depth {
         source.push_str("<div>");
     }
@@ -725,7 +724,6 @@ fn test_parse_extreme_nesting_is_bounded() {
 
     let (root, errors) = parse(&allocator, &source);
 
-    // The nesting limit was reported, once, and nothing else was.
     assert_eq!(
         errors
             .iter()
@@ -1890,8 +1888,10 @@ fn test_document_mode_reports_real_errors() {
 #[test]
 fn test_document_mode_with_options() {
     let allocator = Allocator::new();
-    let mut options = ParserOptions::default();
-    options.delimiters = ("[[".into(), "]]".into());
+    let options = ParserOptions {
+        delimiters: ("[[".into(), "]]".into()),
+        ..Default::default()
+    };
     let src = "<!DOCTYPE html><html><body><span>[[ msg ]]</span></body></html>";
     let (root, errors) = parse_document_with_options(&allocator, src, options);
     assert!(
@@ -1909,20 +1909,17 @@ fn test_document_mode_with_options() {
     );
 }
 
-// ===== Legacy Vue 1.x triple-mustache (`{{{ raw }}}`) raw-HTML interpolation =====
-
-/// Vue 2/3 (and the default build) treat `{{{ x }}}` as a `{{ … }}` mustache
-/// containing a stray brace, followed by a trailing `}` text node. This is the
-/// zero-cost path: it must stay byte-identical whether or not the `legacy`
-/// feature is compiled, and for any non-Vue-1.x dialect.
+/// Vue 2/3 treat `{{{ x }}}` as a `{{ }}` mustache plus trailing `}` text.
 #[test]
 fn triple_mustache_is_a_braced_mustache_outside_legacy_v1() {
-    use vize_carton::config::VueVersion;
+    use vize_s0::config::VueVersion;
 
     for dialect in [VueVersion::V3, VueVersion::V2] {
         let allocator = Allocator::new();
-        let mut options = ParserOptions::default();
-        options.dialect = dialect;
+        let options = ParserOptions {
+            dialect,
+            ..Default::default()
+        };
         let (root, errors) = parse_with_options(&allocator, "{{{ rawHtml }}}", options);
 
         assert!(errors.is_empty(), "{dialect:?}: {errors:?}");
@@ -1958,7 +1955,7 @@ fn triple_mustache_is_a_braced_mustache_outside_legacy_v1() {
 #[cfg(feature = "legacy")]
 #[test]
 fn triple_mustache_under_v1_lowers_to_raw_html_interpolation() {
-    use vize_carton::config::VueVersion;
+    use vize_s0::config::VueVersion;
 
     let allocator = Allocator::new();
     let mut options = ParserOptions::default();
@@ -1987,7 +1984,7 @@ fn triple_mustache_under_v1_lowers_to_raw_html_interpolation() {
 #[cfg(feature = "legacy")]
 #[test]
 fn v1_double_mustache_stays_escaped_alongside_triple() {
-    use vize_carton::config::VueVersion;
+    use vize_s0::config::VueVersion;
 
     let allocator = Allocator::new();
     let mut options = ParserOptions::default();

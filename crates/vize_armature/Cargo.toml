@@ -16,7 +16,7 @@ metadata.vize.stability = "alpha-supported"
 legacy = ["vize_relief/_legacy"]
 
 [dependencies]
-vize_carton = { workspace = true }
+vize_s0 = { workspace = true }
 vize_relief = { workspace = true }
 
 compact_str = { workspace = true }

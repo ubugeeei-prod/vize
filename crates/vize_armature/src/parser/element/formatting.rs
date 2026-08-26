@@ -1,7 +1,7 @@
 //! Adoption-agency recovery for misnested formatting end tags.
 
-use vize_carton::Vec;
 use vize_relief::ElementNode;
+use vize_s0::Vec;
 
 use super::super::{Parser, ParserStackEntry, StackInsertion};
 
@@ -67,7 +67,7 @@ impl<'a> Parser<'a> {
     }
 
     fn formatting_shell(
-        allocator: &'a vize_carton::Allocator,
+        allocator: &'a vize_s0::Allocator,
         element: &ElementNode<'a>,
         in_pre: bool,
         in_v_pre: bool,

@@ -2,11 +2,11 @@
 
 use super::{Parser, callbacks::ParserCallbacks};
 use crate::tokenizer::Tokenizer;
-use vize_carton::Vec;
 use vize_relief::{
     RootNode,
     errors::{CompilerError, ErrorCode},
 };
+use vize_s0::Vec;
 
 impl<'a> Parser<'a> {
     pub(super) fn tokenize_template(&mut self) -> bool {
@@ -60,8 +60,8 @@ impl<'a> Parser<'a> {
 #[cfg(test)]
 mod tests {
     use super::super::parse_with_options;
-    use vize_carton::Allocator;
     use vize_relief::{ErrorCode, options::ParserOptions};
+    use vize_s0::Allocator;
 
     #[test]
     fn empty_interpolation_delimiters_are_rejected_without_partial_output() {

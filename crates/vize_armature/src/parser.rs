@@ -24,12 +24,12 @@ pub use entry::*;
 #[cfg(test)]
 mod tests;
 
-use vize_carton::{Allocator, String, Vec, interner::Interner};
 use vize_relief::{
     ElementNode, Namespace, PropNode, RootNode, SourceLocation, TemplateChildNode,
     errors::{CompilerError, ErrorCode},
     options::{CustomElementMatcher, ParserOptions, TemplateSyntaxMode, WhitespaceStrategy},
 };
+use vize_s0::{Allocator, String, Vec, interner::Interner};
 
 use element::{note_html_tree_element_close, note_html_tree_element_open};
 pub(in crate::parser) use pending_text::{PendingText, TextSlot};

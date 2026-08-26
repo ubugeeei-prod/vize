@@ -4,12 +4,12 @@
 //! live in their own module so `parser.rs` stays within the repository's
 //! per-file source budget.
 
-use vize_carton::Allocator;
 use vize_relief::{
     RootNode,
     errors::CompilerError,
     options::{CustomElementMatcher, ParserOptions, TemplateSyntaxMode},
 };
+use vize_s0::Allocator;
 
 use super::Parser;
 

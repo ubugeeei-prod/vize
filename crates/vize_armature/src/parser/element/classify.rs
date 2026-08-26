@@ -8,7 +8,7 @@ impl<'a> Parser<'a> {
     pub(super) fn is_invalid_html_self_closing(&self, element: &ElementNode<'a>) -> bool {
         element.ns == Namespace::Html
             && element.tag_type == ElementType::Element
-            && (!self.options.custom_renderer || vize_carton::is_html_tag(element.tag))
+            && (!self.options.custom_renderer || vize_s0::is_html_tag(element.tag))
             && !(self.options.is_void_tag)(element.tag)
     }
 
@@ -97,10 +97,10 @@ impl<'a> Parser<'a> {
     /// handling in the DOM compiler's `get_namespace` so namespace-unaware
     /// callbacks still classify foreign elements correctly.
     pub(super) fn foreign_namespace_for(&self, tag: &str) -> Option<Namespace> {
-        if vize_carton::is_svg_tag(tag) {
+        if vize_s0::is_svg_tag(tag) {
             return Some(Namespace::Svg);
         }
-        if vize_carton::is_math_ml_tag(tag) {
+        if vize_s0::is_math_ml_tag(tag) {
             return Some(Namespace::MathMl);
         }
 
@@ -141,6 +141,6 @@ impl<'a> Parser<'a> {
 
         tag.chars().next().is_some_and(|c| c.is_lowercase())
             && !tag.contains('-')
-            && !vize_carton::is_html_tag(tag)
+            && !vize_s0::is_html_tag(tag)
     }
 }

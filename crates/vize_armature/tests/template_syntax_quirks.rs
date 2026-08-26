@@ -1,9 +1,9 @@
 use vize_armature::{parse_with_options, parse_with_options_and_template_syntax};
-use vize_carton::Allocator;
 use vize_relief::{
     errors::ErrorCode,
     options::{ParserOptions, TemplateSyntaxMode},
 };
+use vize_s0::Allocator;
 
 #[test]
 fn quirks_accepts_adjacent_attributes_recovered_by_vue_compiler() {

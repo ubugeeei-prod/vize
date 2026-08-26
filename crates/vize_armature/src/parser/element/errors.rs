@@ -1,7 +1,7 @@
 //! Error reporting and recoverable-error message construction.
 
-use vize_carton::{String, appends};
 use vize_relief::errors::{CompilerError, ErrorCode};
+use vize_s0::{String, appends};
 
 use super::super::Parser;
 
@@ -113,8 +113,8 @@ impl<'a> Parser<'a> {
 
 #[cfg(test)]
 mod tests {
-    use vize_carton::Allocator;
     use vize_relief::errors::{CompilerError, ErrorCode, recovery::RECOVERED_PARSE_CODES};
+    use vize_s0::Allocator;
 
     use crate::parser::Parser;
 

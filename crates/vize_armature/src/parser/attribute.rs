@@ -3,12 +3,12 @@
 //! Handles attribute names, directive names/arguments/modifiers,
 //! attribute data (values), and finalization of attribute and directive nodes.
 
-use vize_carton::{Box, String, Vec, appends};
 use vize_relief::{
     AttributeNode, ConstantType, DirectiveNode, ExpressionNode, PropNode, SimpleExpressionNode,
     TextNode,
     errors::{CompilerError, ErrorCode},
 };
+use vize_s0::{Box, String, Vec, appends};
 
 use crate::tokenizer::QuoteType;
 
@@ -282,7 +282,7 @@ impl<'a> Parser<'a> {
                 // Camelization computes a new name that recurs across a file
                 // (`:foo-bar` on many elements), so it interns rather than
                 // copying per occurrence.
-                let camelized = vize_carton::camelize(arg_content);
+                let camelized = vize_s0::camelize(arg_content);
                 Some((self.interner.intern(&camelized), arg_start, arg_end))
             } else {
                 None

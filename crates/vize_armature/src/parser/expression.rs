@@ -27,9 +27,9 @@
 //!   entities, camelized same-name shorthand arguments).
 
 use oxc_span::{GetSpan, SourceType};
-use vize_carton::expression_guard::expression_is_safe_to_parse;
-use vize_carton::profiler::global_profiler;
 use vize_relief::{JsExpression, SimpleExpressionNode};
+use vize_s0::expression_guard::expression_is_safe_to_parse;
+use vize_s0::profiler::global_profiler;
 
 use super::Parser;
 
@@ -71,7 +71,7 @@ fn parse_retained<'a>(
     raw: &'a str,
 ) -> Option<JsExpression<'a>> {
     // The guard shared by every oxc entry point (see
-    // `vize_carton::expression_guard`): oxc's recursive parser cannot be
+    // `vize_s0::expression_guard`): oxc's recursive parser cannot be
     // depth-limited, so pathologically nested or unbalanced text (#956,
     // #2944, #3712) must be refused before parsing, here exactly as at the
     // transform/codegen sites.

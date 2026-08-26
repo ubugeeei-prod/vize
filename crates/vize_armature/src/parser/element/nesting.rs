@@ -28,7 +28,7 @@ use super::super::Parser;
 /// thread stack, and one level past whatever the constant said, the failure mode
 /// was `fatal runtime error: stack overflow` — `SIGABRT`, not a diagnostic
 /// (#3480). Those passes now grow onto the heap when the stack runs low
-/// (`vize_carton::recursion`), so nesting depth no longer costs stack and the
+/// (`vize_s0::recursion`), so nesting depth no longer costs stack and the
 /// limit is free to be chosen for what it actually bounds: output size.
 ///
 /// 4096 is that choice. It is ~3.7x the representative element-only nesting

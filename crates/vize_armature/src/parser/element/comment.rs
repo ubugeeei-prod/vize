@@ -1,7 +1,7 @@
 //! Comment and CDATA processing.
 
-use vize_carton::{Box, directive::parse_vize_directive};
 use vize_relief::{CommentNode, ErrorCode, Namespace, TemplateChildNode};
+use vize_s0::{Box, directive::parse_vize_directive};
 
 use super::super::Parser;
 

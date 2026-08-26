@@ -12,7 +12,7 @@
 //! # Dialect resolution model
 //!
 //! A document's dialect is selected by config (`vue.version`, normalized to
-//! [`VueVersion`] in `vize_carton`) and resolved **once per file** into a
+//! [`VueVersion`] in `vize_s0`) and resolved **once per file** into a
 //! [`LegacyDialectCapabilities`] set via [`LegacyDialectCapabilities::for_dialect`].
 //! Hot paths (tokenizer states, attribute classification, directive
 //! finalization, transforms) must only read capability fields; they must never
@@ -22,7 +22,7 @@
 //! short-circuits exactly like today's unconditional Vue 3 code paths — and
 //! without the `legacy` feature this module is not compiled at all.
 
-use vize_carton::config::VueVersion;
+use vize_s0::config::VueVersion;
 
 /// A legacy (pre-Vue-3) version line that Vize can opt into supporting.
 ///
@@ -99,7 +99,7 @@ impl LegacyVueVersion {
     ///
     /// Kept stable so it can be used in diagnostics and feature reporting
     /// without churning across releases. Config-side parsing lives on
-    /// [`VueVersion`] in `vize_carton`, which accepts these identifiers as
+    /// [`VueVersion`] in `vize_s0`, which accepts these identifiers as
     /// well as the bare `vue.version` numbers.
     pub fn as_str(self) -> &'static str {
         match self {

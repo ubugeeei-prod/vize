@@ -1,7 +1,7 @@
 //! Table foster parenting and implicit table section/row insertion.
 
-use vize_carton::Vec;
 use vize_relief::ElementNode;
+use vize_s0::Vec;
 
 use super::super::{Parser, ParserStackEntry, StackInsertion};
 use super::is_html_tree_element;

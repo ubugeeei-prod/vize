@@ -259,6 +259,14 @@ test("Vize CLI package imports S0 storage through the stage alias", () => {
   });
 });
 
+test("Armature parser imports S0 storage through the stage alias", () => {
+  assertS0AliasConsumer({
+    packageName: "vize_armature",
+    label: "Armature parser",
+    directory: path.join(repoRoot, "crates", "vize_armature"),
+  });
+});
+
 test("Patina linter imports S0 storage through the stage alias", () => {
   assertS0AliasConsumer({
     packageName: "vize_patina",
