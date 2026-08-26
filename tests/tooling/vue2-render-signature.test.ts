@@ -7,8 +7,8 @@ import { fileURLToPath } from "node:url";
 
 import {
   collectProjectVueFiles,
-  loadGlyphCorpusProjects,
   resolveGlyphLaunch,
+  selectGlyphCorpusProjects,
   withFormattedWorkspace,
 } from "../../tools/fixtures/glyph-corpus.mjs";
 import type { SfcDialectRoute } from "./support/sfc-baseline-routes.ts";
@@ -21,13 +21,16 @@ import {
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const gogocodeRoot = path.join(root, "tests/_fixtures/_git/gogocode");
 const require = createRequire(import.meta.url);
-
-const gogocodeProject = (
-  loadGlyphCorpusProjects() as Array<{ id: string; sfcDialectRoutes?: SfcDialectRoute[] }>
-).find((project) => project.id === "gogocode");
-const vue2Route = gogocodeProject?.sfcDialectRoutes?.find((route) => route.id === "vue2");
-assert.ok(vue2Route, "the GoGoCode fixture must declare its Vue 2 route");
-const vue2Globs = vue2Route.globs;
+const registry = JSON.parse(
+  fs.readFileSync(path.join(root, "tests/_fixtures/vue-ecosystem-fixtures.json"), "utf8"),
+) as {
+  projects: Array<{
+    coverage: string[];
+    expectedVueFileCount: number | null;
+    id: string;
+    sfcDialectRoutes?: SfcDialectRoute[];
+  }>;
+};
 
 test("Vue 2 render signatures normalize only pure attribute layout", () => {
   const before = `with(this){return _c('p',{attrs:{"name":"slide","appear":""},on:{"focus":function(){return focus()},"click":function(){return click()}}},[_v("Vue版本："+_s(version))])}`;
@@ -166,7 +169,31 @@ test("Vue 2 render signatures retain semantic handler and static-render changes"
   );
 });
 
+test("GoGoCode render signature corpus is optional outside its matrix shard", () => {
+  const gogocodeIndex = registry.projects.findIndex((project) => project.id === "gogocode");
+  assert.notEqual(gogocodeIndex, -1, "the registry must keep the GoGoCode fixture");
+  const shardCount = registry.projects.length;
+  const excludedShardIndex = (gogocodeIndex + 1) % shardCount;
+
+  const selected = resolveSelectedGogocodeVue2Route({
+    FIXTURE_SHARD_COUNT: String(shardCount),
+    FIXTURE_SHARD_INDEX: String(excludedShardIndex),
+  });
+
+  assert.equal(selected.sharded, true);
+  assert.equal(selected.project, undefined);
+  assert.equal(selected.vue2Route, undefined);
+});
+
 test("the hydrated GoGoCode Vue 2 partition has stable render signatures for all 97 SFCs", (t) => {
+  const selected = resolveSelectedGogocodeVue2Route();
+  if (selected.project == null && selected.sharded) {
+    t.skip("the GoGoCode fixture is not selected by this real-project matrix shard");
+    return;
+  }
+  assert.ok(selected.project, "the GoGoCode fixture must be selected outside matrix sharding");
+  assert.ok(selected.vue2Route, "the GoGoCode fixture must declare its Vue 2 route");
+
   if (!fs.existsSync(gogocodeRoot) || fs.readdirSync(gogocodeRoot).length === 0) {
     t.skip("the GoGoCode fixture submodule is not hydrated");
     return;
@@ -192,7 +219,7 @@ test("the hydrated GoGoCode Vue 2 partition has stable render signatures for all
     id: "gogocode-vue2-render-signature",
     fixtureDir: gogocodeRoot,
     hydrated: true,
-    vueGlobs: vue2Globs,
+    vueGlobs: selected.vue2Route.globs,
   };
   const files = collectProjectVueFiles(project) as string[];
   assert.equal(files.length, 97, "the exact Vue 2 route partition must remain complete");
@@ -237,4 +264,29 @@ function compileTemplate(
   });
   assert.deepEqual(result.errors, [], `${file}: official Vue 2.6 baseline rejected the template`);
   return vue2RenderSignature(result.render, result.staticRenderFns);
+}
+
+function resolveSelectedGogocodeVue2Route(environment = process.env): {
+  project:
+    | {
+        id: string;
+        sfcDialectRoutes?: SfcDialectRoute[];
+      }
+    | undefined;
+  sharded: boolean;
+  vue2Route: SfcDialectRoute | undefined;
+} {
+  const sharded =
+    environment.FIXTURE_SHARD_INDEX != null || environment.FIXTURE_SHARD_COUNT != null;
+  const project = (
+    selectGlyphCorpusProjects(registry.projects, environment) as Array<{
+      id: string;
+      sfcDialectRoutes?: SfcDialectRoute[];
+    }>
+  ).find((candidate) => candidate.id === "gogocode");
+  return {
+    project,
+    sharded,
+    vue2Route: project?.sfcDialectRoutes?.find((route) => route.id === "vue2"),
+  };
 }
