@@ -93,7 +93,7 @@ mod tests {
     #![allow(clippy::disallowed_methods)]
 
     use tower_lsp::lsp_types::Url;
-    use vize_carton::cstr;
+    use vize_s0::cstr;
 
     use super::{ServerState, versioned_open_typecheck_dependents};
 

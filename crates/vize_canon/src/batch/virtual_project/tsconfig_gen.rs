@@ -9,6 +9,7 @@ pub(super) mod references;
 pub use references::{TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind};
 mod remap;
 mod vue_alias;
+mod vue_compiler_options;
 
 use std::path::{Path, PathBuf};
 

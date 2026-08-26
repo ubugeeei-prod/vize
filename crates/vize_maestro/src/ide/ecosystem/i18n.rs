@@ -9,7 +9,7 @@ use tower_lsp::lsp_types::{
     InlayHintLabel, Position, Range, Url,
 };
 use vize_atelier_sfc::SfcDescriptor;
-use vize_carton::{FxHashMap, String, cstr};
+use vize_s0::{FxHashMap, String, cstr};
 
 use super::context::string_literal_at_cursor;
 use crate::ide::{IdeContext, offset_to_position};

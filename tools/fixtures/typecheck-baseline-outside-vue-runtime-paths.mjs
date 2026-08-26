@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, realpathSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 
 /**
@@ -51,14 +51,35 @@ function localPackageRoot(root, name) {
 function uniquePnpmStorePackageRoot(root, name) {
   const store = join(root, "node_modules", ".pnpm");
   if (!existsSync(store)) return null;
-  const matches = [];
-  for (const entry of readdirSync(store, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue;
-    const candidate = join(store, entry.name, "node_modules", ...name.split("/"));
-    if (existsSync(join(candidate, "package.json"))) matches.push(candidate);
+  let rootReal;
+  try {
+    rootReal = realpathSync(root);
+  } catch {
+    return null;
   }
-  matches.sort(codeUnitOrder);
-  return matches.length === 1 ? matches[0] : null;
+  const matches = new Map();
+  for (const entry of readdirSync(store, { withFileTypes: true })) {
+    if (entry.name.startsWith(".")) continue;
+    const candidate = join(store, entry.name, "node_modules", ...name.split("/"));
+    if (!existsSync(join(candidate, "package.json"))) continue;
+    let real;
+    try {
+      real = realpathSync(candidate);
+    } catch {
+      continue;
+    }
+    if (!isInsideOrEqual(rootReal, real)) continue;
+    matches.set(real, candidate);
+  }
+  const unique = [...matches.values()].sort(codeUnitOrder);
+  return unique.length === 1 ? unique[0] : null;
+}
+
+function isInsideOrEqual(parent, child) {
+  const path = relative(parent, child);
+  return (
+    path === "" || (!path.startsWith("..") && !path.startsWith("/") && !/^[A-Za-z]:\//u.test(path))
+  );
 }
 
 function codeUnitOrder(left, right) {

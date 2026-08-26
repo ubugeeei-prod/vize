@@ -1,7 +1,7 @@
 #![allow(clippy::disallowed_macros)] // `insta::assert_snapshot!` expands to `format!`.
 
 use vize_atelier_dom::compile_template;
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 #[test]
 fn dynamic_ref_in_v_for_emits_ref_for() {

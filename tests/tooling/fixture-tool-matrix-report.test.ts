@@ -56,7 +56,8 @@ test("fixture tool matrix plans every registered project across all four require
     assert.match(markdown, /Runtime: node \d+\.\d+\.\d+/);
     assert.match(markdown, /Machine: [^/]+\/[^,]+, \d+ logical CPUs, \d+ bytes memory/);
     assert.match(markdown, /\bRequested\b/);
-    assert.match(markdown, /\bTransitive\b/);
+    assert.match(markdown, /\bTransitive Authored\b/);
+    assert.match(markdown, /\bTransitive Dependencies\b/);
     assert.equal(report.summary.projectCount, 144);
     assert.equal(report.summary.toolCount, 4);
     assert.equal(report.summary.runCount, 576);

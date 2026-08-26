@@ -9,7 +9,7 @@
 
 mod support;
 
-use vize_carton::config::VueVersion;
+use vize_s0::config::VueVersion;
 
 const V2_LITERAL_BATTERY: &[(&str, &str)] = &[
     (

@@ -10,9 +10,9 @@
 
 mod support;
 
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 #[cfg(feature = "legacy")]
-use vize_carton::config::VueVersion;
+use vize_s0::config::VueVersion;
 use vize_s1_to_s2::emit_dom_source;
 #[cfg(feature = "legacy")]
 use vize_s1_to_s2::{LegacyCaps, emit_dom_source_with_caps};

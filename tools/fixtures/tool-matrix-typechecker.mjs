@@ -97,6 +97,7 @@ export function validateTypecheckerOutput(
   }
   let requestedFiles = checkedFiles;
   let transitiveAuthoredFiles = [];
+  let transitiveDependencyFiles = [];
   if (expectedFiles != null) {
     validateManifestInput(expectedFiles, "requested fixture inputs", isVueSfc);
     validateManifestInput(authoredFiles, "authored fixture sources", isTypecheckSource);
@@ -113,7 +114,9 @@ export function validateTypecheckerOutput(
         `requested fixture inputs are not authored sources: [${missingAuthoredInputs.join(", ")}]`,
       );
     }
-    transitiveAuthoredFiles = checkedFiles.filter((file) => !expectedSet.has(file));
+    const transitiveFiles = checkedFiles.filter((file) => !expectedSet.has(file));
+    transitiveAuthoredFiles = transitiveFiles.filter((file) => !isDependencySource(file));
+    transitiveDependencyFiles = transitiveFiles.filter(isDependencySource);
     const unclassified = transitiveAuthoredFiles.filter((file) => !authoredSet.has(file));
     if (unclassified.length > 0) {
       invalid(
@@ -135,9 +138,10 @@ export function validateTypecheckerOutput(
 
   return {
     schema: "vize.fixtureTypecheckerCoverage",
-    version: 1,
+    version: 2,
     requested: createManifest(requestedFiles),
     transitiveAuthored: createManifest(transitiveAuthoredFiles),
+    transitiveDependencies: createManifest(transitiveDependencyFiles),
     checked: createManifest(checkedFiles),
   };
 }
@@ -146,22 +150,29 @@ export function summarizeTypecheckerCoverage(coverage) {
   requireRecord(coverage, "typechecker coverage");
   requireExactKeys(
     coverage,
-    ["checked", "requested", "schema", "transitiveAuthored", "version"],
+    ["checked", "requested", "schema", "transitiveAuthored", "transitiveDependencies", "version"],
     "typechecker coverage",
   );
-  if (coverage.schema !== "vize.fixtureTypecheckerCoverage" || coverage.version !== 1) {
+  if (coverage.schema !== "vize.fixtureTypecheckerCoverage" || coverage.version !== 2) {
     invalid("typechecker coverage schema is unsupported");
   }
-  for (const key of ["requested", "transitiveAuthored", "checked"]) {
-    validateManifest(
-      coverage[key],
-      `typechecker coverage.${key}`,
-      key === "requested" ? isVueSfc : isTypecheckSource,
-    );
-  }
-  const combined = [...coverage.requested.files, ...coverage.transitiveAuthored.files].sort(
-    byteSort,
+  validateManifest(coverage.requested, "typechecker coverage.requested", isVueSfc);
+  validateManifest(
+    coverage.transitiveAuthored,
+    "typechecker coverage.transitiveAuthored",
+    (file) => isTypecheckSource(file) && !isDependencySource(file),
   );
+  validateManifest(
+    coverage.transitiveDependencies,
+    "typechecker coverage.transitiveDependencies",
+    (file) => isTypecheckSource(file) && isDependencySource(file),
+  );
+  validateManifest(coverage.checked, "typechecker coverage.checked", isTypecheckSource);
+  const combined = [
+    ...coverage.requested.files,
+    ...coverage.transitiveAuthored.files,
+    ...coverage.transitiveDependencies.files,
+  ].sort(byteSort);
   if (JSON.stringify(combined) !== JSON.stringify(coverage.checked.files)) {
     invalid("typechecker coverage classes do not partition checked files");
   }
@@ -170,6 +181,8 @@ export function summarizeTypecheckerCoverage(coverage) {
     requestedSha256: coverage.requested.sha256,
     transitiveAuthoredFileCount: coverage.transitiveAuthored.fileCount,
     transitiveAuthoredSha256: coverage.transitiveAuthored.sha256,
+    transitiveDependencyFileCount: coverage.transitiveDependencies.fileCount,
+    transitiveDependencySha256: coverage.transitiveDependencies.sha256,
     checkedFileCount: coverage.checked.fileCount,
     checkedSha256: coverage.checked.sha256,
   };
@@ -215,6 +228,10 @@ function isVueSfc(file) {
 
 function isTypecheckSource(file) {
   return typecheckSourcePattern.test(file);
+}
+
+function isDependencySource(file) {
+  return file.split("/").includes("node_modules");
 }
 
 function requireRecord(value, label) {

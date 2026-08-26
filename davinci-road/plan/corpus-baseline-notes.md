@@ -75,7 +75,7 @@ recursively) of the following fields of the harness run payload
   taken before the temporary output directory is deleted.
 - `file_count` mirrors `tools/fixtures/tool-matrix-metrics.mjs`:
   compiler `inputFileCount`, typechecker `fileCount` (requested +
-  transitive authored), linter file-entry count, formatter
+  transitive authored + dependency files), linter file-entry count, formatter
   `checkedFileCount`.
 
 ## Filed nondeterminism: compiler and formatter `stderr` are excluded

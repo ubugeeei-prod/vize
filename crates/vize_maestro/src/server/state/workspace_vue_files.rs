@@ -5,7 +5,7 @@ use std::path::Path;
 use futures::channel::oneshot;
 use ignore::{DirEntry, WalkBuilder};
 use tower_lsp::lsp_types::Url;
-use vize_carton::FxHashMap;
+use vize_s0::FxHashMap;
 
 use super::ServerState;
 use super::global_components::is_excluded_directory;

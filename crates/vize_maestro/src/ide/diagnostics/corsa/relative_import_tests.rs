@@ -207,5 +207,5 @@ fn resolve_test_tsgo_binary() -> Option<std::path::PathBuf> {
         return Some(sibling_cache);
     }
 
-    vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
+    vize_s0::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
 }

@@ -114,7 +114,7 @@ impl ServerState {
                 }
             }
             Err(CorsaBridgeError::Timeout) => {
-                let reason = vize_carton::cstr!(
+                let reason = vize_s0::cstr!(
                     "spawn timed out after {CORSA_REQUEST_TIMEOUT_MS}ms (working_dir={working_dir:?}, corsa_path={corsa_path:?})"
                 );
                 tracing::warn!("corsa bridge {}", reason);
@@ -122,7 +122,7 @@ impl ServerState {
                 None
             }
             Err(e) => {
-                let reason = vize_carton::cstr!(
+                let reason = vize_s0::cstr!(
                     "spawn failed: {e} (working_dir={working_dir:?}, corsa_path={corsa_path:?})"
                 );
                 tracing::warn!("corsa bridge {}", reason);

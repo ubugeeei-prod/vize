@@ -70,13 +70,13 @@ impl Document {
     }
 
     /// Whether the document structurally uses petite-vue (see
-    /// [`vize_carton::dialect::detect_petite_vue_document`]).
+    /// [`vize_s0::dialect::detect_petite_vue_document`]).
     ///
     /// Computed at most once per document version; edits invalidate the cache.
     pub fn petite_vue_detected(&self) -> bool {
         *self
             .petite_vue_detected
-            .get_or_init(|| vize_carton::dialect::detect_petite_vue_document(&self.text()))
+            .get_or_init(|| vize_s0::dialect::detect_petite_vue_document(&self.text()))
     }
 
     /// Get the document content as a string.

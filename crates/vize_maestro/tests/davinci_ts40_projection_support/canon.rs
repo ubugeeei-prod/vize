@@ -4,7 +4,7 @@ use vize_canon::batch::{
     generate_vue_document_virtual_ts_with_options,
 };
 use vize_canon::virtual_ts::VirtualTsOptions;
-use vize_carton::{SmallVec, String, append, cstr};
+use vize_s0::{SmallVec, String, append, cstr};
 
 use super::matrix::Fixture;
 use super::normalize::{fixture_path, ordered_lines, sha256};

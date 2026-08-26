@@ -1,5 +1,5 @@
 use super::{DomCompilerOptions, compile_template_with_options};
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 #[test]
 fn test_compile_experimental_patterned_template_cases() {

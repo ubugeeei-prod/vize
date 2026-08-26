@@ -287,8 +287,8 @@ impl TypeService {
 
 /// Convert byte offset to (line, column), both 0-indexed for LSP.
 ///
-/// Shared, UTF-16-correct implementation in `vize_carton::line_index` (#1389).
-pub(super) use vize_carton::line_index::offset_to_line_col;
+/// Shared, UTF-16-correct implementation in `vize_s0::line_index` (#1389).
+pub(super) use vize_s0::line_index::offset_to_line_col;
 
 #[cfg(test)]
 mod diagnostics_tests;

@@ -14,10 +14,10 @@ use vize_atelier_core::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, ForNode, IfNode, PropNode,
     RuntimeHelper, TemplateChildNode,
 };
-use vize_carton::{FxHashSet, String, ToCompactString};
+use vize_s0::{FxHashSet, String, ToCompactString};
 
 use super::{SsrCodegenContext, helpers::escape_html_attr, helpers::extract_destructure_params};
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 /// One JavaScript property emitted into a generated SSR prop object.
 #[derive(Clone, Debug)]

@@ -3,7 +3,7 @@
 //! Handles v-model on form elements: input, textarea, select.
 
 use vize_atelier_core::{DirectiveNode, ElementNode, RuntimeHelper};
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 /// v-model modifier flags
 #[derive(Debug, Default, Clone)]
@@ -188,7 +188,7 @@ mod tests {
         use vize_atelier_core::{
             ElementNode, ExpressionNode, SimpleExpressionNode, SourceLocation,
         };
-        use vize_carton::{Allocator, Box};
+        use vize_s0::{Allocator, Box};
 
         let allocator = Allocator::new();
         let element = ElementNode::new(&allocator, "input", SourceLocation::STUB);
@@ -211,7 +211,7 @@ mod tests {
         use vize_atelier_core::{
             ElementNode, ExpressionNode, SimpleExpressionNode, SourceLocation,
         };
-        use vize_carton::{Allocator, Box};
+        use vize_s0::{Allocator, Box};
 
         let allocator = Allocator::new();
         let element = ElementNode::new(&allocator, "input", SourceLocation::STUB);

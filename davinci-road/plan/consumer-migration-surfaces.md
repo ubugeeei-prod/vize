@@ -45,12 +45,12 @@ observational guard for planning only. It does not change rollout state.
 
 | consumer                   | stage/Davinci | preferred stage names | compat code names | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
-| Compiler                   |           916 |                    76 |               840 |             139 |     371 |             951 |      475 |           477 |           584 |
+| Compiler                   |           916 |                   192 |               724 |             139 |     371 |             951 |      475 |           477 |           584 |
 | Linter                     |           302 |                    16 |               286 |             268 |     222 |             670 |      122 |           339 |           478 |
-| Typechecker                |           883 |                   139 |               744 |             394 |     187 |             806 |      658 |           461 |           651 |
+| Typechecker                |           887 |                   139 |               748 |             396 |     187 |             807 |      663 |           463 |           653 |
 | Typechecker content-mapper |             8 |                     8 |                 0 |               1 |       0 |               9 |        0 |             7 |            18 |
 | Formatter                  |            38 |                    38 |                 0 |               0 |      21 |              40 |       19 |            30 |            65 |
-| LSP                        |           271 |                     0 |               271 |             115 |      44 |             325 |      105 |           166 |           388 |
+| LSP                        |           271 |                   271 |                 0 |             115 |      44 |             325 |      105 |           166 |           388 |
 
 ## Consumer details
 
@@ -134,9 +134,9 @@ Scope: check command plus Canon, excluding dedicated content-mapper files. This 
 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
-| S0/carton        |         883 |             502 |      381 |
-| old AST/parser   |         159 |              35 |      124 |
-| Croquis analysis |         235 |             118 |      117 |
+| S0/carton        |         887 |             503 |      384 |
+| old AST/parser   |         160 |              35 |      125 |
+| Croquis analysis |         236 |             118 |      118 |
 | raw OXC          |         187 |             151 |       36 |
 
 #### Top source and manifest files
@@ -149,7 +149,7 @@ Scope: check command plus Canon, excluding dedicated content-mapper files. This 
 | `crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache.rs:7` | source   | S0/carton 10                                                       |    10 |
 | `crates/vize_canon/src/virtual_ts/expressions/statements.rs:15`                | source   | S0/carton 6<br>Croquis analysis 3                                  |     9 |
 
-Additional source/manifest rows are in the TSV: 307 omitted.
+Additional source/manifest rows are in the TSV: 308 omitted.
 
 #### Top test/dev files
 
@@ -161,7 +161,7 @@ Additional source/manifest rows are in the TSV: 307 omitted.
 | `crates/vize_canon/src/batch/type_checker/tests/recent_issues/template_handler_ts7006.rs:41` | test/dev | S0/carton 16                                             |    16 |
 | `crates/vize_canon/src/virtual_ts/strict_template_globals_tests.rs:3`                        | test/dev | S0/carton 8<br>old AST/parser 7<br>Croquis analysis 1    |    16 |
 
-Additional test/dev rows are in the TSV: 180 omitted.
+Additional test/dev rows are in the TSV: 182 omitted.
 
 ### Typechecker content-mapper
 

@@ -90,7 +90,7 @@ impl HoverService {
 
 fn component_usage_at_cursor(ctx: &IdeContext<'_>, tag_name: &str) -> Option<ComponentUsage> {
     let template = template_view(ctx)?;
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (root, _) = if template.is_document {
         vize_armature::parse_document(&allocator, template.content)
     } else {

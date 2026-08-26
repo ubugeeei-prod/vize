@@ -17,7 +17,7 @@
 use davinci_harness::fixtures::{LADDER, template_block};
 use vize_atelier_core::expr_parse_probe;
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 /// fixture name → surviving legacy re-parses per fused DOM compile.
 const FLOOR: [(&str, u64); 6] = [

@@ -2,7 +2,7 @@
 use tower_lsp::lsp_types::{CodeDescription, DiagnosticSeverity, NumberOrString, Position, Range};
 use tower_lsp::lsp_types::{Diagnostic, Url};
 #[cfg(feature = "native")]
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 #[cfg(feature = "native")]
 use super::sources;

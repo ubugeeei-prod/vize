@@ -7,7 +7,7 @@ pub(super) fn component_path(ctx: &IdeContext<'_>, component_name: &str) -> Opti
         return None;
     }
 
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let art_desc = vize_musea::parse_art(
         &allocator,
         &ctx.content,

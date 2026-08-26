@@ -9,8 +9,8 @@ use std::path::PathBuf;
 
 use tower_lsp::lsp_types::Url;
 use vize_canon::virtual_ts::{VirtualTsOptions, generate_virtual_ts_with_offsets};
-use vize_carton::cstr;
 use vize_croquis::{Drawer, DrawerOptions};
+use vize_s0::cstr;
 
 use super::super::{DiagnosticService, VirtualTsResult};
 use super::virtual_ts::rewrite_vue_imports;
@@ -59,7 +59,7 @@ impl DiagnosticService {
         content: &str,
         base_options: &VirtualTsOptions,
     ) -> Option<ArtVirtualTsResult> {
-        let art_allocator = vize_carton::Allocator::new();
+        let art_allocator = vize_s0::Allocator::new();
         let art_desc = vize_musea::parse_art(
             &art_allocator,
             content,
@@ -138,7 +138,7 @@ impl DiagnosticService {
         base_options: &VirtualTsOptions,
     ) -> ArtVariantGeneration {
         let script_content = script.script.as_str();
-        let template_allocator = vize_carton::Allocator::new();
+        let template_allocator = vize_s0::Allocator::new();
         let (template_ast, _) = vize_armature::parse(&template_allocator, template_content);
 
         let mut analyzer = Drawer::with_options(DrawerOptions::full());

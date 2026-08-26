@@ -9,7 +9,7 @@
 use vize_carton::String;
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
-use vize_ricalco::pass::{BranchKeyKind, IfFacts, ModelFacts, SlotFacts, TextFacts};
+use vize_s1_to_s2::pass::{BranchKeyKind, IfFacts, ModelFacts, SlotFacts, TextFacts};
 use vize_s2::folio::{DisegnoFolio, FolioExpr, FolioOp};
 
 use super::slots::{POutlet, PUnit, has_slot_content, s2_outlet, s2_slot_active, s2_unit};

@@ -37,6 +37,8 @@ mod strict_template_scope_tests;
 #[cfg(test)]
 mod tests;
 mod types;
+#[cfg(test)]
+mod unknown_props_tests;
 
 #[cfg(any(test, feature = "native"))]
 pub(crate) use generator::generate_virtual_ts_with_offsets_and_checks;

@@ -17,7 +17,7 @@ use vize_atelier_core::{
     ElementNode, ElementType, ExpressionNode, PropNode, SimpleExpressionNode, TemplateChildNode,
 };
 use vize_carton::{Allocator, Span, camelize, is_native_tag};
-use vize_ricalco::pass::hoist::constant_for_hoist;
+use vize_s1_to_s2::pass::hoist::constant_for_hoist;
 use vize_s2::expr::ExprRef;
 
 use super::surface_old_help::is_excluded_builtin;

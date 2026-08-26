@@ -1,6 +1,6 @@
 use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode};
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
-use vize_carton::{Allocator, FxHashMap, String};
+use vize_s0::{Allocator, FxHashMap, String};
 
 fn full_output(preamble: &str, code: &str) -> String {
     let mut full = String::with_capacity(preamble.len() + code.len() + 1);

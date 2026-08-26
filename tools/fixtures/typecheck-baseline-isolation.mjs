@@ -114,16 +114,8 @@ export function readDeclaredPackagePaths(fixtureRoot, sourceConfigPath) {
 
 function mergePackageExtends(declared, conflicts, configPaths, fixtureRoot) {
   for (const configPath of configPaths) {
-    const config = parseTsconfig(configPath);
-    if (config == null) continue;
-    for (const specifier of extendsSpecifiers(config.extends)) {
-      const name = packageNameFromExtendsSpecifier(specifier);
-      if (name == null || conflicts.has(name) || declared.has(name)) continue;
-      const ancestor = ancestorPackagePath(fixtureRoot, name);
-      if (ancestor == null) continue;
-      declared.set(name, ancestor);
-    }
     const chain = loadExtendsChain(configPath);
+    recordPackageExtends(declared, conflicts, fixtureRoot, chain);
     let types;
     for (const { config: chained } of [...chain].reverse()) {
       const candidate = chained?.compilerOptions?.types;
@@ -137,6 +129,18 @@ function mergePackageExtends(declared, conflicts, configPaths, fixtureRoot) {
       chain.map(({ config }) => config),
     );
     recordCompilerOptionJsxImportSource(declared, conflicts, fixtureRoot, chain);
+  }
+}
+
+function recordPackageExtends(declared, conflicts, fixtureRoot, chain) {
+  for (const { config } of chain) {
+    for (const specifier of extendsSpecifiers(config.extends)) {
+      const name = packageNameFromExtendsSpecifier(specifier);
+      if (name == null || conflicts.has(name) || declared.has(name)) continue;
+      const ancestor = ancestorPackagePath(fixtureRoot, name);
+      if (ancestor == null) continue;
+      declared.set(name, ancestor);
+    }
   }
 }
 

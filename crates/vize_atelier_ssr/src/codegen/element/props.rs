@@ -1,7 +1,7 @@
 //! Shared JavaScript expression and prop-object builders for SSR element codegen.
 
 use super::{DirectiveNode, ExpressionNode, PropNode, String, ToCompactString, VNodePropEntry};
-use vize_carton::{FxHashMap, is_on};
+use vize_s0::{FxHashMap, is_on};
 
 /// Build an object literal from normalized prop entries.
 pub(super) fn component_props_object(entries: &[VNodePropEntry]) -> String {
@@ -126,7 +126,7 @@ pub(super) fn merge_prop_values(values: std::vec::Vec<String>) -> String {
 /// Apply `v-bind` key modifiers before emitting the JavaScript object key.
 pub(super) fn transform_bound_prop_key(key: &str, dir: &DirectiveNode) -> String {
     if dir.modifiers.iter().any(|m| m.content == "camel") {
-        return vize_carton::camelize(key);
+        return vize_s0::camelize(key);
     }
     if dir.modifiers.iter().any(|m| m.content == "prop") {
         let mut out = String::from(".");
@@ -142,11 +142,11 @@ pub(super) fn transform_bound_prop_key(key: &str, dir: &DirectiveNode) -> String
 }
 
 pub(super) fn static_slot_outlet_prop_key(key: &str) -> String {
-    vize_carton::camelize(key)
+    vize_s0::camelize(key)
 }
 
 pub(super) fn transform_slot_outlet_bound_prop_key(key: &str, dir: &DirectiveNode) -> String {
-    let base = vize_carton::camelize(key);
+    let base = vize_s0::camelize(key);
     if dir.modifiers.iter().any(|m| m.content == "prop") {
         let mut out = String::from(".");
         out.push_str(&base);

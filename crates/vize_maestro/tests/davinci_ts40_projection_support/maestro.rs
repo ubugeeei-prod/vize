@@ -1,6 +1,6 @@
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_carton::{SmallVec, String, cstr};
 use vize_maestro::VirtualCodeGenerator;
+use vize_s0::{SmallVec, String, cstr};
 
 use super::matrix::Fixture;
 use super::normalize::{ordered_lines, sha256};

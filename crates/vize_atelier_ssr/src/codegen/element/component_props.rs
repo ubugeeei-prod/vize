@@ -223,7 +223,7 @@ impl SsrCodegenContext<'_> {
             .unwrap_or_else(|| "undefined".to_compact_string());
         let (key, update_key, dynamic) = match &dir.arg {
             Some(ExpressionNode::Simple(arg)) if arg.is_static => {
-                let key = vize_carton::camelize(arg.content);
+                let key = vize_s0::camelize(arg.content);
                 let update_key = cstr!("onUpdate:{key}");
                 (key, update_key, false)
             }

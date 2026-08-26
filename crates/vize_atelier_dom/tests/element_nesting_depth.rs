@@ -9,7 +9,7 @@
 //! build survived on Rust's default 2 MiB thread stack, which put Vize below
 //! `@vue/compiler-dom`, whose own recursion reaches ~1092 levels of `<div>` on a
 //! default Node stack and then raises a *catchable* `RangeError`. Those descents
-//! now grow onto the heap when the stack runs low (`vize_carton::recursion`), so
+//! now grow onto the heap when the stack runs low (`vize_s0::recursion`), so
 //! the limit is chosen for output size instead.
 //!
 //! Every case here runs on a thread with a deliberately small fixed stack. That
@@ -23,7 +23,7 @@
 
 use vize_atelier_core::{ErrorCode, errors::CompilerError};
 use vize_atelier_dom::{DomCompilerOptions, compile_template, compile_template_with_options};
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 /// Mirrors `MAX_ELEMENT_NESTING_DEPTH` in `vize_armature::parser::element::nesting`.
 const NESTING_LIMIT: usize = 4096;

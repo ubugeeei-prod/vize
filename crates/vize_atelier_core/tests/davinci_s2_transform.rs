@@ -116,7 +116,7 @@ fn the_same_key_wording_never_drifts_from_relief() {
     // dependency (ricalco must not depend on the legacy AST crate);
     // this pin is what keeps the two channels from drifting.
     assert_eq!(
-        vize_ricalco::pass::vif::SAME_KEY_MESSAGE,
+        vize_s1_to_s2::pass::vif::SAME_KEY_MESSAGE,
         vize_atelier_core::ErrorCode::VIfSameKey.message()
     );
 }
@@ -127,7 +127,7 @@ fn the_v_slot_wording_never_drifts_from_relief() {
     // relief's text rather than the dependency; these pins own the
     // relief edge.
     use vize_atelier_core::ErrorCode;
-    use vize_ricalco::pass::vslot;
+    use vize_s1_to_s2::pass::vslot;
     assert_eq!(
         vslot::MISPLACED_MESSAGE,
         ErrorCode::VSlotMisplaced.message()
@@ -174,15 +174,15 @@ fn both_lanes_flag_the_duplicate_slot_name() {
 
     let s2_allocator = vize_carton::Allocator::new();
     let (tree, surface_errors) = vize_s1::parse(&s2_allocator, source);
-    let mut lowered = vize_ricalco::lower(&s2_allocator, &tree, &surface_errors);
+    let mut lowered = vize_s1_to_s2::lower(&s2_allocator, &tree, &surface_errors);
     let _facts =
-        vize_ricalco::pass::run_transform(&mut lowered, &mut vize_davinci::pass::NoObserver);
+        vize_s1_to_s2::pass::run_transform(&mut lowered, &mut vize_davinci::pass::NoObserver);
     assert!(
         lowered
             .diagnostics
             .iter()
             .any(|diagnostic| diagnostic.message.as_str()
-                == vize_ricalco::pass::vslot::DUPLICATE_MESSAGE),
+                == vize_s1_to_s2::pass::vslot::DUPLICATE_MESSAGE),
         "the S2 pass must flag the duplicate: {:?}",
         lowered.diagnostics
     );
@@ -194,7 +194,7 @@ fn the_v_model_wording_never_drifts_from_relief() {
     // relief's text rather than the dependency; these pins own the
     // relief edge.
     use vize_atelier_core::ErrorCode;
-    use vize_ricalco::pass::vmodel;
+    use vize_s1_to_s2::pass::vmodel;
     assert_eq!(vmodel::ON_SCOPE_MESSAGE, ErrorCode::VModelOnScope.message());
     assert_eq!(
         vmodel::ARG_ON_ELEMENT_MESSAGE,
@@ -230,15 +230,15 @@ fn both_lanes_flag_the_scoped_model() {
 
     let s2_allocator = vize_carton::Allocator::new();
     let (tree, surface_errors) = vize_s1::parse(&s2_allocator, source);
-    let mut lowered = vize_ricalco::lower(&s2_allocator, &tree, &surface_errors);
+    let mut lowered = vize_s1_to_s2::lower(&s2_allocator, &tree, &surface_errors);
     let _facts =
-        vize_ricalco::pass::run_transform(&mut lowered, &mut vize_davinci::pass::NoObserver);
+        vize_s1_to_s2::pass::run_transform(&mut lowered, &mut vize_davinci::pass::NoObserver);
     assert!(
         lowered
             .diagnostics
             .iter()
             .any(|diagnostic| diagnostic.message.as_str()
-                == vize_ricalco::pass::vmodel::ON_SCOPE_MESSAGE),
+                == vize_s1_to_s2::pass::vmodel::ON_SCOPE_MESSAGE),
         "the S2 pass must flag the scoped model: {:?}",
         lowered.diagnostics
     );
@@ -272,15 +272,15 @@ fn both_lanes_flag_the_duplicate_key() {
 
     let s2_allocator = vize_carton::Allocator::new();
     let (tree, surface_errors) = vize_s1::parse(&s2_allocator, source);
-    let mut lowered = vize_ricalco::lower(&s2_allocator, &tree, &surface_errors);
+    let mut lowered = vize_s1_to_s2::lower(&s2_allocator, &tree, &surface_errors);
     let _facts =
-        vize_ricalco::pass::run_transform(&mut lowered, &mut vize_davinci::pass::NoObserver);
+        vize_s1_to_s2::pass::run_transform(&mut lowered, &mut vize_davinci::pass::NoObserver);
     assert!(
         lowered
             .diagnostics
             .iter()
             .any(|diagnostic| diagnostic.message.as_str()
-                == vize_ricalco::pass::vif::SAME_KEY_MESSAGE),
+                == vize_s1_to_s2::pass::vif::SAME_KEY_MESSAGE),
         "the S2 pass must flag the collision: {:?}",
         lowered.diagnostics
     );
@@ -292,7 +292,7 @@ fn the_legacy_flag_disarms_the_lane_visibly() {
     // the flag's read is pinned by name here, and its disarm arm is the
     // `skipped_legacy_flag` counter the battery pin holds at zero.
     assert_eq!(
-        vize_ricalco::pass::TRANSFORM_LANE_FLAG,
+        vize_s1_to_s2::pass::TRANSFORM_LANE_FLAG,
         "VIZE_DAVINCI_TRANSFORM"
     );
 }

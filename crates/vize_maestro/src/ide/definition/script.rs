@@ -11,7 +11,7 @@ use super::{
     helpers,
 };
 use crate::virtual_code::BlockType;
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 /// Find definition for a symbol in script context.
 pub(crate) fn definition_in_script(ctx: &IdeContext) -> Option<GotoDefinitionResponse> {

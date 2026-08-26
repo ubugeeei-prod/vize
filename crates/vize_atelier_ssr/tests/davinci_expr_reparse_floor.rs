@@ -17,7 +17,7 @@
 use davinci_harness::fixtures::{LADDER, template_block};
 use vize_atelier_core::expr_parse_probe;
 use vize_atelier_ssr::compile_ssr;
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 /// fixture name → surviving legacy re-parses per fused SSR compile.
 const FLOOR: [(&str, u64); 6] = [

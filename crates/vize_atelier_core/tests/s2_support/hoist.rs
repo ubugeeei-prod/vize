@@ -49,7 +49,7 @@
 use vize_atelier_core::TemplateChildNode;
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
-use vize_ricalco::pass::{StaticFacts, StaticLevel};
+use vize_s1_to_s2::pass::{StaticFacts, StaticLevel};
 use vize_s2::folio::FolioOp;
 
 use super::hoist_old::Decision;

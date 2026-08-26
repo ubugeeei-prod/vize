@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 use super::*;
 use crate::ide::jsx::position::source_offset_to_virtual_position;

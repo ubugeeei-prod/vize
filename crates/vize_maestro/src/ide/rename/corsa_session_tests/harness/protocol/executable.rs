@@ -4,7 +4,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 fn immutable_wrapper() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/corsa-session-wrapper.sh")

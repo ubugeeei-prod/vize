@@ -10,7 +10,7 @@ use vize_carton::String;
 
 use super::text::{TPart, TUnit};
 
-/// The rawtext-content exemption list — `vize_ricalco::lower`'s
+/// The rawtext-content exemption list — `vize_s1_to_s2::lower`'s
 /// (`RAWTEXT_TAGS`), applied to the authored tag on both sides.
 pub fn is_rawtext_tag(tag: &str) -> bool {
     matches!(

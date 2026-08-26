@@ -1,6 +1,6 @@
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_template_syntax};
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 #[test]
 fn quirks_compiles_html_tree_recovery_cases_without_cascading_errors() {

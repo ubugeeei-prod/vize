@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use tower_lsp::lsp_types::Url;
 use vize_canon::{CorsaBridge, CorsaBridgeError};
-use vize_carton::{FxHashSet, String};
+use vize_s0::{FxHashSet, String};
 
 use super::{CanonicalDependencyDocument, CanonicalVirtualDocument, location_matches_uri};
 use crate::ide::IdeContext;
@@ -93,8 +93,8 @@ fn authored_uris_match(left: &Url, right: &Url) -> bool {
     }
     match (left.to_file_path(), right.to_file_path()) {
         (Ok(left), Ok(right)) => {
-            vize_carton::path::canonicalize_non_verbatim(&left)
-                == vize_carton::path::canonicalize_non_verbatim(&right)
+            vize_s0::path::canonicalize_non_verbatim(&left)
+                == vize_s0::path::canonicalize_non_verbatim(&right)
         }
         _ => false,
     }

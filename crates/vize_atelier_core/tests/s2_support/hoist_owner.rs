@@ -7,7 +7,7 @@
 
 use vize_atelier_core::{ElementNode, ElementType, StaticType, TemplateChildNode, get_static_type};
 use vize_davinci::side_table::SideTable;
-use vize_ricalco::pass::StaticFacts;
+use vize_s1_to_s2::pass::StaticFacts;
 use vize_s2::folio::{FolioComponent, FolioElement, FolioOp, FolioSlot};
 
 use super::hoist::{HoistCounters, Mode, fact_of, predict, predict_for_item, replay_or_dormant};

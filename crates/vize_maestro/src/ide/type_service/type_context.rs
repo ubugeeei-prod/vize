@@ -226,7 +226,7 @@ impl TypeService {
                 .and_then(|rest| rest.split_once('>').map(|(type_arg, _)| type_arg.trim()))
             {
                 return vize_canon::TypeInfo::new(
-                    vize_carton::cstr!("Ref<{type_arg}>"),
+                    vize_s0::cstr!("Ref<{type_arg}>"),
                     vize_canon::TypeKind::Ref,
                 );
             }
@@ -268,64 +268,64 @@ impl TypeService {
     fn add_vue_globals(ctx: &mut vize_canon::TypeContext) {
         // Template globals
         ctx.globals.insert(
-            vize_carton::cstr!("$slots"),
+            vize_s0::cstr!("$slots"),
             vize_canon::TypeInfo::new("Slots", vize_canon::TypeKind::Object),
         );
         ctx.globals.insert(
-            vize_carton::cstr!("$emit"),
+            vize_s0::cstr!("$emit"),
             vize_canon::TypeInfo::new(
                 "(event: string, ...args: any[]) => void",
                 vize_canon::TypeKind::Function,
             ),
         );
         ctx.globals.insert(
-            vize_carton::cstr!("$attrs"),
+            vize_s0::cstr!("$attrs"),
             vize_canon::TypeInfo::new("Record<string, unknown>", vize_canon::TypeKind::Object),
         );
         ctx.globals.insert(
-            vize_carton::cstr!("$refs"),
+            vize_s0::cstr!("$refs"),
             vize_canon::TypeInfo::new(
                 "Record<string, Element | ComponentPublicInstance | null>",
                 vize_canon::TypeKind::Object,
             ),
         );
         ctx.globals.insert(
-            vize_carton::cstr!("$el"),
+            vize_s0::cstr!("$el"),
             vize_canon::TypeInfo::new("Element | null", vize_canon::TypeKind::Object),
         );
         ctx.globals.insert(
-            vize_carton::cstr!("$parent"),
+            vize_s0::cstr!("$parent"),
             vize_canon::TypeInfo::new(
                 "ComponentPublicInstance | null",
                 vize_canon::TypeKind::Object,
             ),
         );
         ctx.globals.insert(
-            vize_carton::cstr!("$root"),
+            vize_s0::cstr!("$root"),
             vize_canon::TypeInfo::new("ComponentPublicInstance", vize_canon::TypeKind::Object),
         );
         ctx.globals.insert(
-            vize_carton::cstr!("$data"),
+            vize_s0::cstr!("$data"),
             vize_canon::TypeInfo::new("object", vize_canon::TypeKind::Object),
         );
         ctx.globals.insert(
-            vize_carton::cstr!("$options"),
+            vize_s0::cstr!("$options"),
             vize_canon::TypeInfo::new("ComponentOptions", vize_canon::TypeKind::Object),
         );
         ctx.globals.insert(
-            vize_carton::cstr!("$props"),
+            vize_s0::cstr!("$props"),
             vize_canon::TypeInfo::new("object", vize_canon::TypeKind::Object),
         );
         ctx.globals.insert(
-            vize_carton::cstr!("$watch"),
+            vize_s0::cstr!("$watch"),
             vize_canon::TypeInfo::new("WatchStopHandle", vize_canon::TypeKind::Function),
         );
         ctx.globals.insert(
-            vize_carton::cstr!("$forceUpdate"),
+            vize_s0::cstr!("$forceUpdate"),
             vize_canon::TypeInfo::new("() => void", vize_canon::TypeKind::Function),
         );
         ctx.globals.insert(
-            vize_carton::cstr!("$nextTick"),
+            vize_s0::cstr!("$nextTick"),
             vize_canon::TypeInfo::new(
                 "(callback?: () => void) => Promise<void>",
                 vize_canon::TypeKind::Function,

@@ -150,6 +150,7 @@ impl BatchTypeChecker {
                 check_props,
                 check_template_bindings,
                 check_emits,
+                ..Default::default()
             });
     }
 

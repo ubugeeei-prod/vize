@@ -1,7 +1,7 @@
 //! Regression tests for duplicate component event properties.
 
 use vize_atelier_ssr::compile_ssr;
-use vize_carton::{Allocator, String};
+use vize_s0::{Allocator, String};
 
 fn compile(src: &str) -> String {
     let allocator = Allocator::new();

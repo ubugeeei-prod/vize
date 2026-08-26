@@ -66,14 +66,14 @@ impl ServerState {
     fn update_standalone_html_virtual_docs(&self, uri: &Url, content: &str) {
         use crate::virtual_code::{TemplateCodeGenerator, VirtualDocuments};
 
-        let allocator = vize_carton::Allocator::new();
+        let allocator = vize_s0::Allocator::new();
         let (ast, _errors) = vize_armature::parse(&allocator, content);
         let base_uri = uri.path();
 
         let mut template_gen = TemplateCodeGenerator::new();
         template_gen.set_block_offset(0);
         let mut template_doc = template_gen.generate(&ast, content);
-        template_doc.uri = vize_carton::cstr!("{base_uri}.__template.ts").to_string();
+        template_doc.uri = vize_s0::cstr!("{base_uri}.__template.ts").to_string();
 
         let mut docs = VirtualDocuments::new();
         docs.template = Some(template_doc);
@@ -106,7 +106,7 @@ impl ServerState {
     fn update_art_virtual_docs(&self, uri: &Url, content: &str) {
         use crate::virtual_code::{ScriptCodeGenerator, TemplateCodeGenerator, VirtualDocuments};
 
-        let allocator = vize_carton::Allocator::new();
+        let allocator = vize_s0::Allocator::new();
         let Ok(art_desc) =
             vize_musea::parse_art(&allocator, content, vize_musea::ArtParseOptions::default())
         else {
@@ -127,7 +127,7 @@ impl ServerState {
                 continue;
             }
 
-            let template_allocator = vize_carton::Allocator::new();
+            let template_allocator = vize_s0::Allocator::new();
             let (ast, _errors) = vize_armature::parse(&template_allocator, template_content);
 
             let template_ptr = template_content.as_ptr() as usize;
@@ -138,7 +138,7 @@ impl ServerState {
             template_gen.set_block_offset(block_offset);
             let mut template_doc = template_gen.generate(&ast, template_content);
             template_doc.uri =
-                vize_carton::cstr!("{base_uri}.art_variant_{index}.template.ts").to_string();
+                vize_s0::cstr!("{base_uri}.art_variant_{index}.template.ts").to_string();
 
             if variant.is_default || docs.template.is_none() {
                 docs.template = Some(template_doc.clone());
@@ -163,13 +163,13 @@ impl ServerState {
                     art_desc.variants.len(),
                     isolate,
                 );
-                script_doc.uri = vize_carton::cstr!("{base_uri}.__script_setup.ts").to_string();
+                script_doc.uri = vize_s0::cstr!("{base_uri}.__script_setup.ts").to_string();
                 docs.script_setup = Some(script_doc);
             }
             if let Some(ref script) = descriptor.script {
                 let mut script_gen = ScriptCodeGenerator::new();
                 let mut script_doc = script_gen.generate(script, false);
-                script_doc.uri = vize_carton::cstr!("{base_uri}.__script.ts").to_string();
+                script_doc.uri = vize_s0::cstr!("{base_uri}.__script.ts").to_string();
                 docs.script = Some(script_doc);
             }
             super::art_template_context::attach(

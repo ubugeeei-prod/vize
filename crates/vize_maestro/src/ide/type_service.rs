@@ -138,10 +138,7 @@ impl TypeService {
             .and_then(Self::infer_literal_value_type)
             .unwrap_or("unknown");
 
-        vize_canon::TypeInfo::new(
-            vize_carton::cstr!("Ref<{inner}>"),
-            vize_canon::TypeKind::Ref,
-        )
+        vize_canon::TypeInfo::new(vize_s0::cstr!("Ref<{inner}>"), vize_canon::TypeKind::Ref)
     }
 
     fn infer_literal_value_type(value: &str) -> Option<&'static str> {

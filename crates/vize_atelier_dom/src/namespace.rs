@@ -9,10 +9,10 @@ use vize_atelier_core::Namespace;
 /// the element inherits its parent's namespace — except across the HTML integration points
 /// where SVG/MathML hand their descendants back to the HTML namespace.
 pub(crate) fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
-    if vize_carton::is_svg_tag(tag) {
+    if vize_s0::is_svg_tag(tag) {
         return Namespace::Svg;
     }
-    if vize_carton::is_math_ml_tag(tag) {
+    if vize_s0::is_math_ml_tag(tag) {
         return Namespace::MathMl;
     }
 
@@ -21,7 +21,7 @@ pub(crate) fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
         // Inside SVG, <foreignObject>/<desc>/<title> switch their descendants back to HTML
         // (e.g. a <div> inside <foreignObject> must NOT be in the SVG namespace).
         let svg_to_html = matches!(parent_tag, "foreignObject" | "desc" | "title");
-        if vize_carton::is_svg_tag(parent_tag) && !svg_to_html {
+        if vize_s0::is_svg_tag(parent_tag) && !svg_to_html {
             return Namespace::Svg;
         }
         // Inside MathML, <annotation-xml> and the text containers (<mi>/<mo>/<mn>/<ms>/
@@ -30,7 +30,7 @@ pub(crate) fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
             parent_tag,
             "annotation-xml" | "mi" | "mo" | "mn" | "ms" | "mtext"
         );
-        if vize_carton::is_math_ml_tag(parent_tag) && !mathml_to_html {
+        if vize_s0::is_math_ml_tag(parent_tag) && !mathml_to_html {
             return Namespace::MathMl;
         }
     }

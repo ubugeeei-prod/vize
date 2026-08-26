@@ -2,9 +2,9 @@
 
 use serde::{Deserialize, Serialize};
 use vize_atelier_core::BindingMetadata;
-use vize_carton::String;
-use vize_carton::config::VueVersion;
 use vize_croquis::Croquis;
+use vize_s0::String;
+use vize_s0::config::VueVersion;
 
 /// SSR compiler options
 #[derive(Debug, Default, Serialize, Deserialize)]

@@ -10,7 +10,7 @@ mod scope_prefix;
 
 use crate::options::SsrCompilerOptions;
 use vize_atelier_core::{RootNode, RuntimeHelper, TemplateChildNode};
-use vize_carton::{Allocator, FxHashSet, SmallVec, String, ToCompactString, camelize, capitalize};
+use vize_s0::{Allocator, FxHashSet, SmallVec, String, ToCompactString, camelize, capitalize};
 
 /// SSR codegen result
 #[derive(Debug, Default)]

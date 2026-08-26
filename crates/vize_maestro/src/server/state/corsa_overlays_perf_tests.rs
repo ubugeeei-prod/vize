@@ -3,7 +3,7 @@
 //! Split from [`super::corsa_overlays_tests`] to stay inside the
 //! per-file line budget; the fixtures are shared from there.
 
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 use super::ServerState;
 use super::corsa_overlays_tests::{open, rewrite, uri};

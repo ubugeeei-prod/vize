@@ -3,7 +3,7 @@
 //! v-text sets the element's textContent.
 
 use vize_atelier_core::{DirectiveNode, RuntimeHelper};
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 /// Runtime helper for v-text
 pub const V_TEXT: RuntimeHelper = RuntimeHelper::SetBlockTracking;
@@ -37,7 +37,7 @@ pub fn generate_text_children(dir: &DirectiveNode<'_>) -> Option<String> {
 mod tests {
     use super::{generate_text_children, generate_text_content, is_v_text};
     use vize_atelier_core::{DirectiveNode, ExpressionNode, SimpleExpressionNode, SourceLocation};
-    use vize_carton::{Allocator, Box};
+    use vize_s0::{Allocator, Box};
 
     fn create_test_directive<'a>(
         allocator: &'a Allocator,

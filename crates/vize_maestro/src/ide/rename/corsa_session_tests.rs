@@ -1,7 +1,7 @@
 use std::sync::{Arc, Barrier};
 
 use harness::RealCorsaRenameSession;
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 mod direct_first;
 pub(in crate::ide) mod harness;

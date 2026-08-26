@@ -1,7 +1,7 @@
 //! LSP feature flags and config-section parsing.
 
 use serde::Deserialize;
-use vize_carton::config::LanguageServerConfig;
+use vize_s0::config::LanguageServerConfig;
 
 #[derive(Debug, Default, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
@@ -39,7 +39,7 @@ pub(super) struct LspConfigSection {
 
 impl LspConfigSection {
     /// Override the `signatureHelp` switch, which config files carry on
-    /// [`vize_carton::config::LanguageServerUnstableFlags`] instead of the
+    /// [`vize_s0::config::LanguageServerUnstableFlags`] instead of the
     /// semver-stable [`LanguageServerConfig`].
     pub(super) fn with_signature_help(mut self, signature_help: Option<bool>) -> Self {
         self.signature_help = signature_help;

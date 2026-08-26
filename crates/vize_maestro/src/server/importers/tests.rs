@@ -4,7 +4,7 @@ use super::{indexed_dependency_paths, open_importers, resolve_import};
 use crate::server::ServerState;
 use tower_lsp::lsp_types::Url;
 use vize_canon::PackageRouteResolver;
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 #[test]
 fn index_tracks_and_removes_open_vue_imports() {

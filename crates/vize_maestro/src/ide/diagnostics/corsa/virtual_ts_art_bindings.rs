@@ -13,21 +13,20 @@ pub(super) fn add_art_target_component_bindings(
     let mut component_ref = target.name.clone();
 
     if !has_component_binding {
-        let import_alias = vize_carton::cstr!(
+        let import_alias = vize_s0::cstr!(
             "__VizeArtTarget_{}",
             to_safe_identifier_fragment(target.name.as_str())
         );
-        options.auto_import_stubs.push(vize_carton::cstr!(
+        options.auto_import_stubs.push(vize_s0::cstr!(
             "import {import_alias} from {};",
             quote_ts_string(target.source.as_str())
         ));
         component_ref = import_alias.to_string();
 
         if is_valid_identifier(target.name.as_str()) {
-            options.auto_import_stubs.push(vize_carton::cstr!(
-                "const {} = {import_alias};",
-                target.name
-            ));
+            options
+                .auto_import_stubs
+                .push(vize_s0::cstr!("const {} = {import_alias};", target.name));
             options
                 .external_template_bindings
                 .push(target.name.clone().into());
@@ -45,7 +44,7 @@ pub(super) fn add_art_target_component_bindings(
         let kebab_ref = to_safe_identifier(kebab_name.as_str());
         options
             .auto_import_stubs
-            .push(vize_carton::cstr!("const {kebab_ref} = {component_ref};"));
+            .push(vize_s0::cstr!("const {kebab_ref} = {component_ref};"));
         options.external_template_bindings.push(kebab_name.into());
     }
 }

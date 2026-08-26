@@ -1,5 +1,5 @@
 use vize_atelier_dom::compile_template;
-use vize_carton::{Allocator, String};
+use vize_s0::{Allocator, String};
 
 #[test]
 fn compile_survives_deep_bound_expression_without_recursive_static_analysis() {

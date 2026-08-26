@@ -216,8 +216,7 @@ fn script_and_style_internal_work_stays_linear() {
     let mut previous_style_work = None;
 
     for count in [128, 256, 512, 1024] {
-        let mut source =
-            vize_carton::String::from("<script setup lang=\"ts\">\nconst records = [\n");
+        let mut source = vize_s0::String::from("<script setup lang=\"ts\">\nconst records = [\n");
         for _ in 0..count {
             source.push_str("  {\n    enabled: true,\n  },\n");
         }

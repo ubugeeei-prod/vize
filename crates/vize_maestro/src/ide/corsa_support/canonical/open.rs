@@ -143,15 +143,15 @@ pub(super) async fn open_canonical_virtual_document_with_overlays_strict(
 }
 
 fn authored_uri(ctx: &IdeContext<'_>, source_path: &std::path::Path) -> Option<Url> {
-    let source_path = vize_carton::path::canonicalize_non_verbatim(source_path);
+    let source_path = vize_s0::path::canonicalize_non_verbatim(source_path);
     ctx.state
         .documents
         .uris()
         .into_iter()
         .find(|uri| {
-            uri.to_file_path().ok().is_some_and(|path| {
-                vize_carton::path::canonicalize_non_verbatim(&path) == source_path
-            })
+            uri.to_file_path()
+                .ok()
+                .is_some_and(|path| vize_s0::path::canonicalize_non_verbatim(&path) == source_path)
         })
         .or_else(|| Url::from_file_path(source_path).ok())
 }

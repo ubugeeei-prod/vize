@@ -40,7 +40,7 @@ pub fn exp_text_of(exp: &ExpressionNode<'_>) -> Option<String> {
 
 /// The names the S1→S2 classifier treats as built-in directives — the
 /// exclusion set of the custom-directive kind (mirrors
-/// `vize_ricalco::lower::directive::classify`).
+/// `vize_s1_to_s2::lower::directive::classify`).
 pub fn is_builtin_name(name: &str) -> bool {
     matches!(
         name,

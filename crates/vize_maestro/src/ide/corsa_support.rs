@@ -49,7 +49,7 @@ use virtual_document::{
 pub(crate) use workspace_edit::map_corsa_workspace_edit;
 
 use vize_canon::LspLocation;
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 use super::IdeContext;
 use crate::virtual_code::{SourceRange, VirtualDocument};

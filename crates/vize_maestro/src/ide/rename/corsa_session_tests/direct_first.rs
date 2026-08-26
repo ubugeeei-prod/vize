@@ -1,6 +1,6 @@
 use std::sync::{Arc, Barrier};
 
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 use super::{harness::RealCorsaRenameSession, resolve_tsgo_binary_required};
 

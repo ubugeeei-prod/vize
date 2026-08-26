@@ -141,7 +141,7 @@ fn resolve_tsgo_binary() -> Option<std::path::PathBuf> {
     ]
     .into_iter()
     .find(|candidate| candidate.exists())
-    .or_else(|| vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root))
+    .or_else(|| vize_s0::corsa_resolver::discover_corsa_in_ancestors(workspace_root))
 }
 disabled_open_doc_request_returns_none!(
     definition_disabled_returns_none,

@@ -22,8 +22,8 @@
 use davinci_harness::fixtures::{LADDER, template_block};
 use vize_atelier_core::walk_probe::{WALK_STAGES, WalkCounts};
 use vize_atelier_ssr::compile_ssr;
-use vize_carton::Allocator;
 use vize_davinci::legacy_plan;
+use vize_s0::Allocator;
 
 /// fixture name -> (stage tree-walks, template-node visits) per fused compile.
 const BASELINE: [(&str, u64, u64); 6] = [

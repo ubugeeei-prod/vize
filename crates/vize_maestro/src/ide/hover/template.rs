@@ -240,7 +240,7 @@ impl HoverService {
 
         // Analyze template if present
         if let Some(ref template) = descriptor.template {
-            let allocator = vize_carton::Allocator::new();
+            let allocator = vize_s0::Allocator::new();
             let (root, _) = vize_armature::parse(&allocator, &template.content);
             drawer.analyze_template(&root);
         }

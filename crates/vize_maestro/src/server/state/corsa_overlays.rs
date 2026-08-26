@@ -21,7 +21,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use parking_lot::RwLock;
 use tower_lsp::lsp_types::Url;
-use vize_carton::FxHashMap;
+use vize_s0::FxHashMap;
 
 use super::ServerState;
 use crate::document::DocumentStore;

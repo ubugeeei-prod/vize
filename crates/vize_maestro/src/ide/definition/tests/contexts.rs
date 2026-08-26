@@ -1,7 +1,7 @@
 use std::fs;
 
 use tower_lsp::lsp_types::Url;
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 use super::super::{DefinitionService, script};
 use super::scalar_location;

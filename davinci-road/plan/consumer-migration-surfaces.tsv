@@ -4,7 +4,7 @@ compiler	Compiler	manifest	crates/vize_atelier_core/Cargo.toml	17	davinci	Davinc
 compiler	Compiler	manifest	crates/vize_atelier_core/Cargo.toml	17	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	manifest	crates/vize_atelier_core/Cargo.toml	17	s1	S1/sinopia	stage	vize_s1	preferred	1
 compiler	Compiler	manifest	crates/vize_atelier_core/Cargo.toml	17	s2	S2/disegno	stage	vize_s2	preferred	1
-compiler	Compiler	manifest	crates/vize_atelier_core/Cargo.toml	17	s1_to_s2	S1->S2/ricalco	stage	vize_ricalco	compat	1
+compiler	Compiler	manifest	crates/vize_atelier_core/Cargo.toml	17	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	manifest	crates/vize_atelier_core/Cargo.toml	17	old_ast	old AST/parser	old	vize_relief	legacy	2
 compiler	Compiler	manifest	crates/vize_atelier_core/Cargo.toml	17	old_ast	old AST/parser	old	vize_armature	legacy	2
 compiler	Compiler	manifest	crates/vize_atelier_core/Cargo.toml	17	croquis	Croquis analysis	old	vize_croquis	legacy	1
@@ -197,7 +197,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_s2_transform_v
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_s2_transform.rs	119	davinci	Davinci	stage	vize_davinci	preferred	3
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_s2_transform.rs	119	s0	S0/carton	stage	vize_carton	compat	6
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_s2_transform.rs	119	s1	S1/sinopia	stage	vize_s1	preferred	3
-compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_s2_transform.rs	119	s1_to_s2	S1->S2/ricalco	stage	vize_ricalco	compat	13
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_s2_transform.rs	119	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	13
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_sourcemap_prefixed_identifiers.rs	133	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/dynamic_slot_forwarding.rs	14	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/dynamic_v_model_argument.rs	14	s0	S0/carton	stage	vize_carton	compat	2
@@ -211,30 +211,30 @@ compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/compare.rs	
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/compare.rs	10	s0	S0/carton	stage	vize_carton	compat	4
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/compare.rs	10	s1	S1/sinopia	stage	vize_s1	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/compare.rs	10	s2	S2/disegno	stage	vize_s2	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/compare.rs	10	s1_to_s2	S1->S2/ricalco	stage	vize_ricalco	compat	3
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/compare.rs	10	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	3
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/hoist_old.rs	19	s0	S0/carton	stage	vize_carton	compat	5
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/hoist_old.rs	19	s2	S2/disegno	stage	vize_s2	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/hoist_old.rs	19	s1_to_s2	S1->S2/ricalco	stage	vize_ricalco	compat	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/hoist_old.rs	19	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/hoist_owner.rs	9	davinci	Davinci	stage	vize_davinci	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/hoist_owner.rs	9	s2	S2/disegno	stage	vize_s2	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/hoist_owner.rs	9	s1_to_s2	S1->S2/ricalco	stage	vize_ricalco	compat	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/hoist_owner.rs	9	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/hoist_walk.rs	9	davinci	Davinci	stage	vize_davinci	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/hoist_walk.rs	9	s2	S2/disegno	stage	vize_s2	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/hoist_walk.rs	9	s1_to_s2	S1->S2/ricalco	stage	vize_ricalco	compat	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/hoist_walk.rs	9	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/hoist.rs	50	davinci	Davinci	stage	vize_davinci	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/hoist.rs	50	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/hoist.rs	50	s2	S2/disegno	stage	vize_s2	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/hoist.rs	50	s1_to_s2	S1->S2/ricalco	stage	vize_ricalco	compat	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/hoist.rs	50	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/old_lane.rs	6	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/s2_lane.rs	9	davinci	Davinci	stage	vize_davinci	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/s2_lane.rs	9	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/s2_lane.rs	9	s2	S2/disegno	stage	vize_s2	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/s2_lane.rs	9	s1_to_s2	S1->S2/ricalco	stage	vize_ricalco	compat	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/s2_lane.rs	9	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/slots_old.rs	11	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/slots.rs	35	davinci	Davinci	stage	vize_davinci	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/slots.rs	35	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/slots.rs	35	s2	S2/disegno	stage	vize_s2	preferred	6
-compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/slots.rs	35	s1_to_s2	S1->S2/ricalco	stage	vize_ricalco	compat	2
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/slots.rs	35	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/surface_check.rs	6	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/surface_old_help.rs	7	s0	S0/carton	stage	vize_carton	compat	2
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/s2_support/surface_old.rs	18	s0	S0/carton	stage	vize_carton	compat	1
@@ -255,52 +255,52 @@ compiler	Compiler	test/dev	crates/vize_atelier_core/tests/v_if_spread_order.rs	4
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/v_once_prop_keys.rs	1	s0	S0/carton	stage	vize_carton	compat	2
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/v_once_prop_keys.rs	1	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/v_once_prop_keys.rs	1	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/benches/davinci.rs	27	s0	S0/carton	stage	vize_carton	compat	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/benches/davinci.rs	27	s0	S0/carton	stage	vize_s0	preferred	1
 compiler	Compiler	manifest	crates/vize_atelier_dom/Cargo.toml	15	davinci	Davinci	stage	vize_davinci	preferred	1
-compiler	Compiler	manifest	crates/vize_atelier_dom/Cargo.toml	15	s0	S0/carton	stage	vize_carton	compat	1
+compiler	Compiler	manifest	crates/vize_atelier_dom/Cargo.toml	15	s0	S0/carton	stage	vize_s0	preferred	1
 compiler	Compiler	manifest	crates/vize_atelier_dom/Cargo.toml	15	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	manifest	crates/vize_atelier_dom/Cargo.toml	15	croquis	Croquis analysis	old	vize_croquis	legacy	1
-compiler	Compiler	source	crates/vize_atelier_dom/src/compile.rs	13	s0	S0/carton	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_dom/src/compile.rs	13	s0	S0/carton	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile.rs	13	croquis	Croquis analysis	old	vize_croquis	legacy	1
-compiler	Compiler	source	crates/vize_atelier_dom/src/compile/custom_elements.rs	8	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_dom/src/compile/stage_options.rs	14	s0	S0/carton	stage	vize_carton	compat	2
-compiler	Compiler	test/dev	crates/vize_atelier_dom/src/experimental_tests.rs	2	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_dom/src/namespace.rs	12	s0	S0/carton	stage	vize_carton	compat	4
-compiler	Compiler	source	crates/vize_atelier_dom/src/options.rs	5	s0	S0/carton	stage	vize_carton	compat	2
+compiler	Compiler	source	crates/vize_atelier_dom/src/compile/custom_elements.rs	8	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_dom/src/compile/stage_options.rs	14	s0	S0/carton	stage	vize_s0	preferred	2
+compiler	Compiler	test/dev	crates/vize_atelier_dom/src/experimental_tests.rs	2	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_dom/src/namespace.rs	12	s0	S0/carton	stage	vize_s0	preferred	4
+compiler	Compiler	source	crates/vize_atelier_dom/src/options.rs	5	s0	S0/carton	stage	vize_s0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_dom/src/options.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	1
-compiler	Compiler	source	crates/vize_atelier_dom/src/steps/v_html.rs	6	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/src/steps/v_html.rs	33	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_dom/src/steps/v_model.rs	6	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/src/steps/v_model.rs	191	s0	S0/carton	stage	vize_carton	compat	2
-compiler	Compiler	source	crates/vize_atelier_dom/src/steps/v_on.rs	6	s0	S0/carton	stage	vize_carton	compat	3
-compiler	Compiler	test/dev	crates/vize_atelier_dom/src/steps/v_on.rs	223	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_dom/src/steps/v_show.rs	6	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/src/steps/v_show.rs	36	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_dom/src/steps/v_text.rs	6	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/src/steps/v_text.rs	40	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/src/tests.rs	8	s0	S0/carton	stage	vize_carton	compat	10
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/branch_keys.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/conditional_v_model_quirks.rs	5	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_expr_reparse_floor.rs	20	s0	S0/carton	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_dom/src/steps/v_html.rs	6	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/src/steps/v_html.rs	33	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_dom/src/steps/v_model.rs	6	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/src/steps/v_model.rs	191	s0	S0/carton	stage	vize_s0	preferred	2
+compiler	Compiler	source	crates/vize_atelier_dom/src/steps/v_on.rs	6	s0	S0/carton	stage	vize_s0	preferred	3
+compiler	Compiler	test/dev	crates/vize_atelier_dom/src/steps/v_on.rs	223	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_dom/src/steps/v_show.rs	6	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/src/steps/v_show.rs	36	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_dom/src/steps/v_text.rs	6	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/src/steps/v_text.rs	40	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/src/tests.rs	8	s0	S0/carton	stage	vize_s0	preferred	10
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/branch_keys.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/conditional_v_model_quirks.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_expr_reparse_floor.rs	20	s0	S0/carton	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_dom.rs	22	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_dynamic_von_keys.rs	13	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_filters.rs	12	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_patch_flags.rs	13	s0	S0/carton	stage	vize_carton	compat	2
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_filters.rs	12	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_patch_flags.rs	13	s0	S0/carton	stage	vize_s0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_patch_flags.rs	13	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	2
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_teardown_without_stack_guard.rs	25	s0	S0/carton	stage	vize_carton	compat	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_teardown_without_stack_guard.rs	25	s0	S0/carton	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_walk_baseline.rs	25	davinci	Davinci	stage	vize_davinci	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_walk_baseline.rs	25	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/dom_snapshot.rs	11	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/dynamic_template_ref.rs	4	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/element_nesting_depth.rs	26	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/expression_nesting_guard.rs	2	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/invalid_expression_diagnostics.rs	18	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/setup_component_unref.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/slot_outlet_hoist.rs	2	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/support/mod.rs	11	s0	S0/carton	stage	vize_carton	compat	2
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_walk_baseline.rs	25	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/dom_snapshot.rs	11	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/dynamic_template_ref.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/element_nesting_depth.rs	26	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/expression_nesting_guard.rs	2	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/invalid_expression_diagnostics.rs	18	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/setup_component_unref.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/slot_outlet_hoist.rs	2	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/support/mod.rs	11	s0	S0/carton	stage	vize_s0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/support/mod.rs	11	s1_to_s2	S1->S2/ricalco	stage	vize_s1_to_s2	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/table_control_flow.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/template_syntax_quirks_recovery.rs	3	s0	S0/carton	stage	vize_carton	compat	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/table_control_flow.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/template_syntax_quirks_recovery.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_jsx/benches/jsx_compile.rs	29	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_jsx/benches/jsx_compile.rs	29	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	manifest	crates/vize_atelier_jsx/Cargo.toml	13	s0	S0/carton	stage	vize_carton	compat	1
@@ -736,35 +736,35 @@ compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/module_mode_setup_bindi
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/module_mode_setup_bindings.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/parse_facade.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/workspace_prop_types.rs	6	s0	S0/carton	stage	vize_carton	compat	2
-compiler	Compiler	test/dev	crates/vize_atelier_ssr/benches/davinci.rs	22	s0	S0/carton	stage	vize_carton	compat	1
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/benches/davinci.rs	22	s0	S0/carton	stage	vize_s0	preferred	1
 compiler	Compiler	manifest	crates/vize_atelier_ssr/Cargo.toml	13	davinci	Davinci	stage	vize_davinci	preferred	1
-compiler	Compiler	manifest	crates/vize_atelier_ssr/Cargo.toml	13	s0	S0/carton	stage	vize_carton	compat	1
+compiler	Compiler	manifest	crates/vize_atelier_ssr/Cargo.toml	13	s0	S0/carton	stage	vize_s0	preferred	1
 compiler	Compiler	manifest	crates/vize_atelier_ssr/Cargo.toml	13	old_ast	old AST/parser	old	vize_relief	legacy	1
 compiler	Compiler	manifest	crates/vize_atelier_ssr/Cargo.toml	13	old_ast	old AST/parser	old	vize_armature	legacy	2
 compiler	Compiler	manifest	crates/vize_atelier_ssr/Cargo.toml	13	croquis	Croquis analysis	old	vize_croquis	legacy	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen.rs	13	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/component_binding.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element.rs	17	s0	S0/carton	stage	vize_carton	compat	2
-compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/component_props.rs	226	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/plain.rs	61	s0	S0/carton	stage	vize_carton	compat	2
-compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/props.rs	4	s0	S0/carton	stage	vize_carton	compat	4
-compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/helpers.rs	12	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/helpers/destructure.rs	4	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_ssr/src/codegen/helpers/destructure.rs	132	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/scope_prefix.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/compile.rs	8	s0	S0/carton	stage	vize_carton	compat	5
-compiler	Compiler	test/dev	crates/vize_atelier_ssr/src/lib.rs	51	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/options.rs	5	s0	S0/carton	stage	vize_carton	compat	2
+compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen.rs	13	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/component_binding.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element.rs	17	s0	S0/carton	stage	vize_s0	preferred	2
+compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/component_props.rs	226	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/plain.rs	61	s0	S0/carton	stage	vize_s0	preferred	2
+compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/props.rs	4	s0	S0/carton	stage	vize_s0	preferred	4
+compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/helpers.rs	12	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/helpers/destructure.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/src/codegen/helpers/destructure.rs	132	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/scope_prefix.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/compile.rs	8	s0	S0/carton	stage	vize_s0	preferred	5
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/src/lib.rs	51	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/options.rs	5	s0	S0/carton	stage	vize_s0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_ssr/src/options.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/stage_options.rs	14	s0	S0/carton	stage	vize_carton	compat	2
-compiler	Compiler	test/dev	crates/vize_atelier_ssr/src/steps.rs	93	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/component_spread_props.rs	10	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_expr_reparse_floor.rs	20	s0	S0/carton	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/stage_options.rs	14	s0	S0/carton	stage	vize_s0	preferred	2
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/src/steps.rs	93	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/component_spread_props.rs	10	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_expr_reparse_floor.rs	20	s0	S0/carton	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_walk_baseline.rs	25	davinci	Davinci	stage	vize_davinci	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_walk_baseline.rs	25	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/event_props.rs	4	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/setup_component_parity.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/ssr_snapshot.rs	9	s0	S0/carton	stage	vize_carton	compat	4
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_walk_baseline.rs	25	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/event_props.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/setup_component_parity.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/ssr_snapshot.rs	9	s0	S0/carton	stage	vize_s0	preferred	4
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/benches/davinci.rs	30	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	manifest	crates/vize_atelier_vapor/Cargo.toml	12	davinci	Davinci	stage	vize_davinci	preferred	1
 compiler	Compiler	manifest	crates/vize_atelier_vapor/Cargo.toml	12	s0	S0/carton	stage	vize_carton	compat	1
@@ -1555,7 +1555,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/batch/materialize_fs.rs	5	s
 typechecker	Typechecker	source	crates/vize_canon/src/batch/materialize_lock.rs	9	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/runtime_deps.rs	5	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/runtime_deps.rs	58	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker.rs	184	s0	S0/carton	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker.rs	185	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/declarations.rs	5	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/incremental.rs	5	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/paths.rs	6	s0	S0/carton	stage	vize_carton	compat	4
@@ -1672,7 +1672,7 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tes
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tests/workspace_package_routes.rs	11	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/topology.rs	68	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/topology.rs	107	s0	S0/carton	stage	vize_carton	compat	3
-typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen.rs	16	s0	S0/carton	stage	vize_carton	compat	4
+typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen.rs	17	s0	S0/carton	stage	vize_carton	compat	4
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/base_url.rs	16	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/compiler_options_snapshot.rs	101	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/compiler_options.rs	6	s0	S0/carton	stage	vize_carton	compat	2
@@ -1684,6 +1684,8 @@ typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tscon
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/references/tests.rs	4	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/remap.rs	6	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/vue_alias.rs	15	s0	S0/carton	stage	vize_carton	compat	3
+typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/vue_compiler_options.rs	11	s0	S0/carton	stage	vize_carton	compat	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/vue_compiler_options.rs	138	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_paths.rs	8	s0	S0/carton	stage	vize_carton	compat	2
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/vue_codegen.rs	7	s0	S0/carton	stage	vize_carton	compat	2
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_specifier_message.rs	3	s0	S0/carton	stage	vize_carton	compat	1
@@ -1792,8 +1794,8 @@ typechecker	Typechecker	source	crates/vize_canon/src/sfc_typecheck/virtual_ts.rs
 typechecker	Typechecker	test/dev	crates/vize_canon/src/tests.rs	11	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/typecheck_service.rs	11	s0	S0/carton	stage	vize_carton	compat	3
 typechecker	Typechecker	source	crates/vize_canon/src/types.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts.rs	98	old_ast	old AST/parser	old	vize_relief	legacy	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts.rs	98	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts.rs	100	old_ast	old AST/parser	old	vize_relief	legacy	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts.rs	100	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/class_component_props_tests.rs	12	s0	S0/carton	stage	vize_carton	compat	3
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/class_component_props_tests.rs	12	old_ast	old AST/parser	old	vize_armature	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/class_component_props_tests.rs	12	croquis	Croquis analysis	old	vize_croquis	legacy	2
@@ -2168,7 +2170,10 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/tests/vif_chai
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/tests/vif_chain.rs	2	old_ast	old AST/parser	old	vize_armature	legacy	4
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/tests/vif_chain.rs	2	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/types.rs	4	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/types.rs	325	s0	S0/carton	stage	vize_carton	compat	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/types.rs	327	s0	S0/carton	stage	vize_carton	compat	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/unknown_props_tests.rs	5	s0	S0/carton	stage	vize_carton	compat	2
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/unknown_props_tests.rs	5	old_ast	old AST/parser	old	vize_armature	legacy	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/unknown_props_tests.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/ambient_declarations.rs	67	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/ambient_declarations.rs	67	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/auto_import_ref_unwrap.rs	13	s0	S0/carton	stage	vize_s0	preferred	3
@@ -2374,7 +2379,7 @@ formatter	Formatter	source	crates/vize/src/commands/fmt/entries.rs	3	s0	S0/carto
 formatter	Formatter	test/dev	crates/vize/src/commands/fmt/files_tests.rs	7	s0	S0/carton	stage	vize_s0	preferred	1
 formatter	Formatter	test/dev	crates/vize/src/commands/fmt/files.rs	125	s0	S0/carton	stage	vize_s0	preferred	4
 formatter	Formatter	source	crates/vize/src/commands/fmt/ignores.rs	80	s0	S0/carton	stage	vize_s0	preferred	1
-lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	croquis	Croquis analysis	old	vize_croquis	legacy	1
@@ -2383,19 +2388,19 @@ lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	raw_oxc	raw OXC	raw	oxc_ast	r
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	44	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
-lsp	LSP	source	crates/vize_maestro/src/document/store.rs	79	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide.rs	210	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/auto_insert.rs	77	s0	S0/carton	stage	vize_carton	compat	2
-lsp	LSP	source	crates/vize_maestro/src/ide/code_action.rs	14	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/document/store.rs	79	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide.rs	210	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/auto_insert.rs	77	s0	S0/carton	stage	vize_s0	preferred	2
+lsp	LSP	source	crates/vize_maestro/src/ide/code_action.rs	14	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/code_action.rs	14	croquis	Croquis analysis	old	vize_croquis	legacy	5
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/component_props_tests.rs	318	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/component_props_tests.rs	318	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/items.rs	14	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/script.rs	24	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/script.rs	24	croquis	Croquis analysis	old	vize_croquis	legacy	2
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/context.rs	10	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/member_access.rs	12	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/member_access.rs	12	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/member_access.rs	12	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/object_literal.rs	6	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/object_literal.rs	6	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/object_literal.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/object_literal.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/object_literal.rs	6	raw_oxc	raw OXC	raw	oxc_ast	raw	1
@@ -2407,237 +2412,237 @@ lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/object_literal/rece
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/object_literal/receiver_value.rs	3	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/script/reactive_infer.rs	10	croquis	Croquis analysis	old	vize_croquis	legacy	2
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/script/tests.rs	2	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/bindings.rs	14	s0	S0/carton	stage	vize_carton	compat	2
+lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/bindings.rs	14	s0	S0/carton	stage	vize_s0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/bindings.rs	14	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/bindings.rs	14	old_ast	old AST/parser	old	vize_armature	legacy	2
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/bindings.rs	14	croquis	Croquis analysis	old	vize_croquis	legacy	2
-lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_cache.rs	90	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_meta.rs	5	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_cache.rs	90	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_meta.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_meta.rs	5	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_meta.rs	5	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_meta.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_meta.rs	5	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/slot_outlets.rs	5	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/slot_outlets.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/slot_outlets.rs	5	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/slot_outlets.rs	5	old_ast	old AST/parser	old	vize_armature	legacy	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/tests.rs	8	s0	S0/carton	stage	vize_carton	compat	2
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/tests.rs	8	s0	S0/carton	stage	vize_s0	preferred	2
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/tests.rs	8	old_ast	old AST/parser	old	vize_relief	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/context.rs	88	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support.rs	52	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical.rs	3	s0	S0/carton	stage	vize_carton	compat	5
-lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/open.rs	146	s0	S0/carton	stage	vize_carton	compat	2
-lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/project.rs	5	s0	S0/carton	stage	vize_carton	compat	3
-lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links.rs	3	s0	S0/carton	stage	vize_carton	compat	3
-lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links/component_props.rs	5	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/external_mirror.rs	4	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support/external_mirror.rs	109	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/html_attribute.rs	2	s0	S0/carton	stage	vize_carton	compat	10
-lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/html_tag.rs	2	s0	S0/carton	stage	vize_carton	compat	6
-lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/virtual_document.rs	4	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support/workspace_edit.rs	159	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/definition/art.rs	10	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/definition/corsa_tests.rs	32	s0	S0/carton	stage	vize_carton	compat	2
-lsp	LSP	source	crates/vize_maestro/src/ide/definition/import_resolver.rs	6	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/definition/script.rs	14	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/context.rs	88	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support.rs	52	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical.rs	3	s0	S0/carton	stage	vize_s0	preferred	5
+lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/open.rs	146	s0	S0/carton	stage	vize_s0	preferred	2
+lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/project.rs	5	s0	S0/carton	stage	vize_s0	preferred	3
+lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links.rs	3	s0	S0/carton	stage	vize_s0	preferred	3
+lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links/component_props.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/external_mirror.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support/external_mirror.rs	109	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/html_attribute.rs	2	s0	S0/carton	stage	vize_s0	preferred	10
+lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/html_tag.rs	2	s0	S0/carton	stage	vize_s0	preferred	6
+lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/virtual_document.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support/workspace_edit.rs	159	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/definition/art.rs	10	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/definition/corsa_tests.rs	32	s0	S0/carton	stage	vize_s0	preferred	2
+lsp	LSP	source	crates/vize_maestro/src/ide/definition/import_resolver.rs	6	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/definition/script.rs	14	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/definition/script.rs	14	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/definition/slot.rs	2	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/definition/slot.rs	2	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/definition/slot.rs	2	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/definition/slot.rs	2	croquis	Croquis analysis	old	vize_croquis	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/definition/template.rs	5	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/definition/template.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/definition/tests/contexts.rs	4	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/collectors.rs	12	s0	S0/carton	stage	vize_carton	compat	3
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/definition/tests/contexts.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/collectors.rs	12	s0	S0/carton	stage	vize_s0	preferred	3
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/collectors.rs	12	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/collectors.rs	12	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/collectors.rs	12	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/component_props.rs	8	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/component_props.rs	8	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/component_props.rs	8	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/component_props.rs	8	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/collect_virtual.rs	4	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/collect.rs	16	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/message.rs	4	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/message.rs	47	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/relative_import_tests.rs	210	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/tests.rs	1	s0	S0/carton	stage	vize_carton	compat	2
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art_bindings.rs	5	s0	S0/carton	stage	vize_carton	compat	4
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/collect_virtual.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/collect.rs	16	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/message.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/message.rs	47	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/relative_import_tests.rs	210	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/tests.rs	1	s0	S0/carton	stage	vize_s0	preferred	2
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art_bindings.rs	5	s0	S0/carton	stage	vize_s0	preferred	4
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art_bindings.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art.rs	12	s0	S0/carton	stage	vize_carton	compat	3
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art.rs	12	s0	S0/carton	stage	vize_s0	preferred	3
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art.rs	12	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art.rs	12	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_inline_art.rs	14	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_inline_art.rs	14	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_inline_art.rs	14	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_inline_art.rs	14	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/editor_typecheck_fixture.rs	212	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/editor_typecheck_tests.rs	10	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/line_index.rs	7	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/line_index.rs	9	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/vize_sfc_type.rs	5	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/ecosystem/i18n.rs	12	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/ecosystem/router_extension_tests.rs	2	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/ecosystem/router.rs	8	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/ecosystem/router.rs	612	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/ecosystem/void.rs	7	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/editor_typecheck_fixture.rs	212	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/editor_typecheck_tests.rs	10	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/line_index.rs	7	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/line_index.rs	9	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/vize_sfc_type.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/ecosystem/i18n.rs	12	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/ecosystem/router_extension_tests.rs	2	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/ecosystem/router.rs	8	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/ecosystem/router.rs	612	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/ecosystem/void.rs	7	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/file_rename/manual/script.rs	5	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/file_rename/manual/script.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	3
 lsp	LSP	source	crates/vize_maestro/src/ide/file_rename/manual/script.rs	5	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/file_rename/manual/script.rs	5	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/hover.rs	159	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/component_import.rs	118	croquis	Croquis analysis	old	vize_croquis	legacy	4
-lsp	LSP	source	crates/vize_maestro/src/ide/hover/component_tag.rs	2	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/hover/component_tag.rs	2	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/component_tag.rs	2	old_ast	old AST/parser	old	vize_armature	legacy	2
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/component_tag.rs	2	croquis	Croquis analysis	old	vize_croquis	legacy	2
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/component_tag/items.rs	1	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/hover/component_tag/items.rs	75	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/hover/component_tag/items.rs	75	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/hover/component_tag/items.rs	75	croquis	Croquis analysis	old	vize_croquis	legacy	2
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/hover/corsa_tests.rs	56	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/hover/declaration_keyword.rs	19	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/hover/corsa_tests.rs	56	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/hover/declaration_keyword.rs	19	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/declaration_keyword.rs	19	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/declaration_keyword.rs	19	croquis	Croquis analysis	old	vize_croquis	legacy	3
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/declaration_keyword.rs	19	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/declaration_keyword.rs	19	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/declaration_keyword.rs	19	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-lsp	LSP	source	crates/vize_maestro/src/ide/hover/petite_vue.rs	2	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/hover/petite_vue.rs	2	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/petite_vue.rs	2	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/petite_vue.rs	2	croquis	Croquis analysis	old	vize_croquis	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/script_type_infer.rs	4	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/hover/script_type_infer.rs	300	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/script.rs	11	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/script.rs	11	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/hover/template.rs	12	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/hover/template.rs	12	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/template.rs	12	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/template.rs	12	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/template.rs	12	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/inlay_hint.rs	21	s0	S0/carton	stage	vize_carton	compat	4
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/inlay_hint.rs	21	s0	S0/carton	stage	vize_s0	preferred	4
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/inlay_hint.rs	21	croquis	Croquis analysis	old	vize_croquis	legacy	3
-lsp	LSP	source	crates/vize_maestro/src/ide/jsx/code_action.rs	27	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/jsx/document_symbols.rs	25	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/jsx/scoped_style.rs	20	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/jsx/code_action.rs	27	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/jsx/document_symbols.rs	25	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/jsx/scoped_style.rs	20	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/jsx/scoped_style.rs	20	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/jsx/scoped_style.rs	20	raw_oxc	raw OXC	raw	oxc_ast	raw	2
 lsp	LSP	source	crates/vize_maestro/src/ide/jsx/scoped_style.rs	20	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
-lsp	LSP	source	crates/vize_maestro/src/ide/jsx/service_project.rs	14	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/jsx/service.rs	32	s0	S0/carton	stage	vize_carton	compat	3
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/jsx/virtual_ts_tests.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/jsx/virtual_ts.rs	24	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/jsx/service_project.rs	14	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/jsx/service.rs	32	s0	S0/carton	stage	vize_s0	preferred	3
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/jsx/virtual_ts_tests.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/jsx/virtual_ts.rs	24	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/jsx/virtual_ts/collect.rs	7	old_ast	old AST/parser	old	vize_relief	legacy	4
 lsp	LSP	source	crates/vize_maestro/src/ide/jsx/virtual_ts/component.rs	8	old_ast	old AST/parser	old	vize_relief	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/jsx/virtual_ts/generate.rs	5	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/jsx/virtual_ts/generate.rs	5	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/jsx/virtual_ts/slot.rs	16	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/musea.rs	35	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	3	s0	S0/carton	stage	vize_carton	compat	2
+lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	3	s0	S0/carton	stage	vize_s0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	3	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/references/corsa_tests.rs	237	s0	S0/carton	stage	vize_carton	compat	2
-lsp	LSP	source	crates/vize_maestro/src/ide/references/corsa_tests/project_surface.rs	6	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/references/script.rs	9	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/references/corsa_tests.rs	237	s0	S0/carton	stage	vize_s0	preferred	2
+lsp	LSP	source	crates/vize_maestro/src/ide/references/corsa_tests/project_surface.rs	6	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/references/script.rs	9	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/references/script.rs	9	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/references/script.rs	9	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/references/script.rs	9	raw_oxc	raw OXC	raw	oxc_parser	raw	2
-lsp	LSP	source	crates/vize_maestro/src/ide/references/template.rs	32	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/references/template.rs	32	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/references/template.rs	32	old_ast	old AST/parser	old	vize_relief	legacy	4
 lsp	LSP	source	crates/vize_maestro/src/ide/references/template.rs	32	old_ast	old AST/parser	old	vize_armature	legacy	2
-lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical.rs	8	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/event_rename.rs	4	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical.rs	8	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/event_rename.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/event_rename.rs	4	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/event_rename.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	2
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/canonical/event_rename.rs	219	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/event_rename/model.rs	4	s0	S0/carton	stage	vize_carton	compat	3
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/canonical/event_rename.rs	219	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/event_rename/model.rs	4	s0	S0/carton	stage	vize_s0	preferred	3
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/event_rename/model.rs	4	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/event_rename/model.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/event_rename/rewrite.rs	6	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/execute.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/execute/component_props.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/canonical/execute/component_props.rs	171	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/failure.rs	2	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_event_variants_tests.rs	212	s0	S0/carton	stage	vize_carton	compat	2
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_model_tests.rs	285	s0	S0/carton	stage	vize_carton	compat	2
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_session_tests.rs	4	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/direct_first.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness.rs	9	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/assertions.rs	9	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/evidence.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol.rs	10	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/executable.rs	7	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/readiness.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_tests.rs	343	s0	S0/carton	stage	vize_carton	compat	2
-lsp	LSP	source	crates/vize_maestro/src/ide/selection_range/markup.rs	112	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/semantic_tokens/art.rs	294	s0	S0/carton	stage	vize_carton	compat	2
-lsp	LSP	source	crates/vize_maestro/src/ide/semantic_tokens/encoding.rs	13	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/signature_help.rs	180	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/signature_help/tests/fixture.rs	155	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/tag_pair.rs	119	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/event_rename/rewrite.rs	6	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/execute.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/execute/component_props.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/canonical/execute/component_props.rs	171	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/failure.rs	2	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_event_variants_tests.rs	212	s0	S0/carton	stage	vize_s0	preferred	2
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_model_tests.rs	285	s0	S0/carton	stage	vize_s0	preferred	2
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_session_tests.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/direct_first.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness.rs	9	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/assertions.rs	9	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/evidence.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol.rs	10	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/executable.rs	7	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/readiness.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_tests.rs	343	s0	S0/carton	stage	vize_s0	preferred	2
+lsp	LSP	source	crates/vize_maestro/src/ide/selection_range/markup.rs	112	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/semantic_tokens/art.rs	294	s0	S0/carton	stage	vize_s0	preferred	2
+lsp	LSP	source	crates/vize_maestro/src/ide/semantic_tokens/encoding.rs	13	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/signature_help.rs	180	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/signature_help/tests/fixture.rs	155	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/tag_pair.rs	119	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/template_expression.rs	146	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
-lsp	LSP	source	crates/vize_maestro/src/ide/template_scope/v_for.rs	4	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/template_scope/v_for.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/template_scope/v_for.rs	4	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/template_scope/v_for.rs	4	old_ast	old AST/parser	old	vize_armature	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/template_scope/v_slot.rs	4	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/template_scope/v_slot.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/template_scope/v_slot.rs	4	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/template_scope/v_slot.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/type_definition.rs	119	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/type_definition/tests.rs	114	s0	S0/carton	stage	vize_carton	compat	2
-lsp	LSP	source	crates/vize_maestro/src/ide/type_service.rs	142	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/type_service/diagnostics.rs	291	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/ide/type_service/type_context.rs	229	s0	S0/carton	stage	vize_carton	compat	14
-lsp	LSP	source	crates/vize_maestro/src/ide/workspace_symbols.rs	14	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/ide/type_definition.rs	119	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/type_definition/tests.rs	114	s0	S0/carton	stage	vize_s0	preferred	2
+lsp	LSP	source	crates/vize_maestro/src/ide/type_service.rs	141	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/type_service/diagnostics.rs	291	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/type_service/type_context.rs	229	s0	S0/carton	stage	vize_s0	preferred	14
+lsp	LSP	source	crates/vize_maestro/src/ide/workspace_symbols.rs	14	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/workspace_symbols.rs	14	croquis	Croquis analysis	old	vize_croquis	legacy	2
-lsp	LSP	source	crates/vize_maestro/src/lib.rs	154	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/runtime.rs	25	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/server/document_structure/folding.rs	223	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/lib.rs	154	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/runtime.rs	25	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/server/document_structure/folding.rs	223	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/server/document_structure/folding/script.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 lsp	LSP	source	crates/vize_maestro/src/server/document_structure/folding/script.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 lsp	LSP	source	crates/vize_maestro/src/server/document_structure/folding/script.rs	3	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 lsp	LSP	source	crates/vize_maestro/src/server/document_structure/folding/script.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-lsp	LSP	test/dev	crates/vize_maestro/src/server/document_structure/folding/tests.rs	220	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/server/document_structure/symbols.rs	14	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/server/handlers/tests/lifecycle.rs	10	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/server/handlers/tests/requests.rs	144	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/server/handlers/tests/requests/params.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/server/helpers.rs	15	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/server/helpers/supersession_tests.rs	15	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/server/importers.rs	15	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/server/importers/specifiers.rs	3	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	test/dev	crates/vize_maestro/src/server/document_structure/folding/tests.rs	219	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/server/document_structure/symbols.rs	14	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/server/handlers/tests/lifecycle.rs	10	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/server/handlers/tests/requests.rs	144	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/server/handlers/tests/requests/params.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/server/helpers.rs	15	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/server/helpers/supersession_tests.rs	15	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/server/importers.rs	15	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/server/importers/specifiers.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/server/importers/specifiers.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 lsp	LSP	source	crates/vize_maestro/src/server/importers/specifiers.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 lsp	LSP	source	crates/vize_maestro/src/server/importers/specifiers.rs	3	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 lsp	LSP	source	crates/vize_maestro/src/server/importers/specifiers.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-lsp	LSP	test/dev	crates/vize_maestro/src/server/importers/tests.rs	7	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/server/initial_diagnostics.rs	15	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/server/state.rs	37	s0	S0/carton	stage	vize_carton	compat	7
-lsp	LSP	source	crates/vize_maestro/src/server/state/art_template_context.rs	79	s0	S0/carton	stage	vize_carton	compat	3
-lsp	LSP	test/dev	crates/vize_maestro/src/server/state/config_tests.rs	1	s0	S0/carton	stage	vize_carton	compat	5
-lsp	LSP	source	crates/vize_maestro/src/server/state/config.rs	6	s0	S0/carton	stage	vize_carton	compat	30
-lsp	LSP	test/dev	crates/vize_maestro/src/server/state/corsa_overlays_perf_tests.rs	6	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/server/state/corsa_overlays_tests.rs	10	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/server/state/corsa_overlays.rs	24	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/server/state/corsa.rs	117	s0	S0/carton	stage	vize_carton	compat	2
-lsp	LSP	source	crates/vize_maestro/src/server/state/features.rs	4	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/server/state/virtual_docs.rs	69	s0	S0/carton	stage	vize_carton	compat	7
+lsp	LSP	test/dev	crates/vize_maestro/src/server/importers/tests.rs	7	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/server/initial_diagnostics.rs	15	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/server/state.rs	37	s0	S0/carton	stage	vize_s0	preferred	7
+lsp	LSP	source	crates/vize_maestro/src/server/state/art_template_context.rs	79	s0	S0/carton	stage	vize_s0	preferred	3
+lsp	LSP	test/dev	crates/vize_maestro/src/server/state/config_tests.rs	1	s0	S0/carton	stage	vize_s0	preferred	5
+lsp	LSP	source	crates/vize_maestro/src/server/state/config.rs	6	s0	S0/carton	stage	vize_s0	preferred	30
+lsp	LSP	test/dev	crates/vize_maestro/src/server/state/corsa_overlays_perf_tests.rs	6	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/server/state/corsa_overlays_tests.rs	10	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/server/state/corsa_overlays.rs	24	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/server/state/corsa.rs	117	s0	S0/carton	stage	vize_s0	preferred	2
+lsp	LSP	source	crates/vize_maestro/src/server/state/features.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/server/state/virtual_docs.rs	69	s0	S0/carton	stage	vize_s0	preferred	7
 lsp	LSP	test/dev	crates/vize_maestro/src/server/state/virtual_docs.rs	69	old_ast	old AST/parser	old	vize_armature	legacy	2
-lsp	LSP	source	crates/vize_maestro/src/server/state/virtual_docs/art.rs	41	s0	S0/carton	stage	vize_carton	compat	4
+lsp	LSP	source	crates/vize_maestro/src/server/state/virtual_docs/art.rs	41	s0	S0/carton	stage	vize_s0	preferred	4
 lsp	LSP	source	crates/vize_maestro/src/server/state/virtual_docs/art.rs	41	old_ast	old AST/parser	old	vize_armature	legacy	1
-lsp	LSP	test/dev	crates/vize_maestro/src/server/state/virtual_docs/tests.rs	16	s0	S0/carton	stage	vize_carton	compat	2
-lsp	LSP	source	crates/vize_maestro/src/server/state/workspace_folders.rs	17	s0	S0/carton	stage	vize_carton	compat	3
-lsp	LSP	test/dev	crates/vize_maestro/src/server/state/workspace_folders.rs	150	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/server/state/workspace_vue_files.rs	8	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/server/workspace_files/dependents.rs	96	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	test/dev	crates/vize_maestro/src/server/state/virtual_docs/tests.rs	16	s0	S0/carton	stage	vize_s0	preferred	2
+lsp	LSP	source	crates/vize_maestro/src/server/state/workspace_folders.rs	17	s0	S0/carton	stage	vize_s0	preferred	3
+lsp	LSP	test/dev	crates/vize_maestro/src/server/state/workspace_folders.rs	150	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/server/state/workspace_vue_files.rs	8	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/server/workspace_files/dependents.rs	96	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/virtual_code.rs	227	old_ast	old AST/parser	old	vize_relief	legacy	4
-lsp	LSP	test/dev	crates/vize_maestro/src/virtual_code/generator.rs	23	s0	S0/carton	stage	vize_carton	compat	2
+lsp	LSP	test/dev	crates/vize_maestro/src/virtual_code/generator.rs	23	s0	S0/carton	stage	vize_s0	preferred	2
 lsp	LSP	test/dev	crates/vize_maestro/src/virtual_code/generator.rs	23	old_ast	old AST/parser	old	vize_armature	legacy	3
 lsp	LSP	source	crates/vize_maestro/src/virtual_code/generator/art_script.rs	60	croquis	Croquis analysis	old	vize_croquis	legacy	3
 lsp	LSP	source	crates/vize_maestro/src/virtual_code/generator/binding.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/virtual_code/generator/block.rs	195	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	source	crates/vize_maestro/src/virtual_code/generator/tests_semantic_bindings.rs	2	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/virtual_code/generator/block.rs	195	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/virtual_code/generator/tests_semantic_bindings.rs	2	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/virtual_code/script_code.rs	7	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/virtual_code/style_code.rs	11	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/src/virtual_code/template_code_tests.rs	12	s0	S0/carton	stage	vize_carton	compat	4
+lsp	LSP	source	crates/vize_maestro/src/virtual_code/style_code.rs	11	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/virtual_code/template_code_tests.rs	12	s0	S0/carton	stage	vize_s0	preferred	4
 lsp	LSP	test/dev	crates/vize_maestro/src/virtual_code/template_code_tests.rs	12	old_ast	old AST/parser	old	vize_armature	legacy	4
-lsp	LSP	source	crates/vize_maestro/src/virtual_code/template_code.rs	7	s0	S0/carton	stage	vize_carton	compat	1
+lsp	LSP	source	crates/vize_maestro/src/virtual_code/template_code.rs	7	s0	S0/carton	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/virtual_code/template_code.rs	7	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/virtual_code/template_code.rs	7	old_ast	old AST/parser	old	vize_armature	legacy	1
-lsp	LSP	test/dev	crates/vize_maestro/tests/davinci_ts40_projection_support/canon.rs	7	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/tests/davinci_ts40_projection_support/maestro.rs	2	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/tests/davinci_ts40_projection_support/matrix.rs	4	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/tests/davinci_ts40_projection_support/normalize.rs	3	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/tests/davinci_ts40_projection_support/record.rs	1	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/tests/davinci_ts40_projection.rs	9	s0	S0/carton	stage	vize_carton	compat	1
-lsp	LSP	test/dev	crates/vize_maestro/tests/file_rename_declarations.rs	6	s0	S0/carton	stage	vize_carton	compat	2
+lsp	LSP	test/dev	crates/vize_maestro/tests/davinci_ts40_projection_support/canon.rs	7	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/tests/davinci_ts40_projection_support/maestro.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/tests/davinci_ts40_projection_support/matrix.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/tests/davinci_ts40_projection_support/normalize.rs	3	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/tests/davinci_ts40_projection_support/record.rs	1	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/tests/davinci_ts40_projection.rs	9	s0	S0/carton	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/tests/file_rename_declarations.rs	9	s0	S0/carton	stage	vize_s0	preferred	2

@@ -32,12 +32,10 @@ pub(crate) fn generate_scope_closures(
     options: ScopeGenerationOptions<'_, '_>,
 ) {
     let check_options = options.check_options;
-    let check_props = check_options.check_props;
     let virtual_ts_options = options.virtual_ts_options;
     let check_tables = TemplateValueCheckTables::collect(summary, &options);
     let checks = check_tables.as_checks();
 
-    // Group expressions by scope_id
     let expressions_by_scope: FxHashMap<u32, Vec<_>> =
         profile!("canon.virtual_ts.group_template_expressions", {
             let mut expressions_by_scope: FxHashMap<u32, Vec<_>> = FxHashMap::default();
@@ -49,7 +47,7 @@ pub(crate) fn generate_scope_closures(
             }
             expressions_by_scope
         });
-    let slot_outlets = if check_props {
+    let slot_outlets = if check_options.check_props {
         profile!("canon.virtual_ts.collect_slot_outlets", {
             SlotOutletChecks::collect(summary, options.template_ast)
         })
@@ -62,7 +60,6 @@ pub(crate) fn generate_scope_closures(
             collect_component_prop_expression_ranges(summary, &options, &slot_outlets)
         });
 
-    // Build scope tree: parent_scope_id -> Vec<child ScopeId>
     let children_map: FxHashMap<u32, Vec<ScopeId>> =
         profile!("canon.virtual_ts.build_scope_tree", {
             let mut children_map: FxHashMap<u32, Vec<ScopeId>> = FxHashMap::default();
@@ -135,8 +132,11 @@ pub(crate) fn generate_scope_closures(
         preserve_event_navigation: options.preserve_event_navigation,
         check_unresolved_global_components: options.check_unresolved_global_components,
         legacy_vue2: options.legacy_vue2,
+        check_unknown_props: check_options.check_unknown_props,
     };
-    let usages = check_props.then(|| collect_checkable_usages(&props_ctx));
+    let usages = check_options
+        .check_props
+        .then(|| collect_checkable_usages(&props_ctx));
     if let Some(usages) = &usages {
         emit_event_references(ts, mappings, &props_ctx, usages);
     }

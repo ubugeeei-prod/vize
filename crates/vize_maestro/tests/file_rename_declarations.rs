@@ -3,12 +3,12 @@ use std::fs;
 use std::path::Path;
 
 use tower_lsp::lsp_types::{FileRename, RenameFilesParams, Url};
-use vize_carton::cstr;
 use vize_maestro::ide::FileRenameService;
 use vize_maestro::runtime;
 use vize_maestro::server::ServerState;
+use vize_s0::cstr;
 
-fn file_uri(path: &Path) -> vize_carton::String {
+fn file_uri(path: &Path) -> vize_s0::String {
     cstr!("{}", Url::from_file_path(path).unwrap())
 }
 

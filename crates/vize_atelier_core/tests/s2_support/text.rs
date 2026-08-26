@@ -171,7 +171,7 @@ pub fn check(name: &str, source: &str, old: &[TUnit], s2: &[TUnit], counters: &m
     }
 }
 
-/// Replay of `vize_ricalco::pass::legacy::filter` wrap: `a | f` →
+/// Replay of `vize_s1_to_s2::pass::legacy::filter` wrap: `a | f` →
 /// `_filter_f(a)`, `a | f(b)` → `_filter_f(a,b)`. Admission is
 /// [`VueFilterExpr::parse_in`] — the same splitter S2 lowering uses.
 fn legalized_filter(authored: &str) -> Option<String> {

@@ -6,7 +6,7 @@ use std::{
 
 use tower_lsp::lsp_types::Url;
 use vize_canon::{CorsaBridge, CorsaBridgeConfig};
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 use self::assertions::{assert_exact_event_edit, authored_text, prepare_range, strict_rename};
 use super::super::canonical;

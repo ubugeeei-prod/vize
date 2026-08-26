@@ -171,6 +171,7 @@ function semanticCategory(scope: string): string | null {
   if (scope.startsWith("entity.name.function") || scope.startsWith("support.function")) {
     return "function";
   }
+  if (scope === "name.generic.filter.pug") return "function";
   if (
     /^(?:entity\.name\.(?:class|enum|interface|struct|type)|support\.(?:class|type))/.test(scope)
   ) {

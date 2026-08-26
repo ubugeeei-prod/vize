@@ -11,8 +11,8 @@ use vize_carton::Allocator;
 use vize_carton::config::VueVersion;
 use vize_davinci::diagnostic::Severity;
 use vize_davinci::pass::NoObserver;
-use vize_ricalco::LegacyCaps;
-use vize_ricalco::pass::{TRANSFORM_LANE_FLAG, run_transform};
+use vize_s1_to_s2::LegacyCaps;
+use vize_s1_to_s2::pass::{TRANSFORM_LANE_FLAG, run_transform};
 use vize_s2::folio::DisegnoFolio;
 
 use super::{
@@ -85,7 +85,7 @@ pub fn compare_with(name: &str, source: &str, counters: &mut Counters, dialect: 
     // the P2-2 pass manager (verifier between passes in debug).
     let s2_allocator = Allocator::new();
     let (tree, surface_errors) = vize_s1::parse(&s2_allocator, source);
-    let mut lowered = vize_ricalco::lower_with_caps(
+    let mut lowered = vize_s1_to_s2::lower_with_caps(
         &s2_allocator,
         &tree,
         &surface_errors,

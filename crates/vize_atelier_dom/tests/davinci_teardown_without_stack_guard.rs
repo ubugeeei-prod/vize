@@ -22,7 +22,7 @@ use vize_atelier_core::{
     InterpolationNode, PropNode, RootNode, SimpleExpressionNode, TemplateChildNode, TextNode,
 };
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 /// Stack for the teardown thread.
 ///
@@ -30,7 +30,7 @@ use vize_carton::Allocator;
 /// per level on top of whatever the compile passes had already used, which is
 /// exactly what the guard existed to survive. 256 KiB is comfortable for the
 /// guarded passes (they grow the stack on demand through
-/// `vize_carton::ensure_sufficient_stack`) and leaves no room for an unguarded
+/// `vize_s0::ensure_sufficient_stack`) and leaves no room for an unguarded
 /// recursive teardown to hide in.
 const SMALL_STACK: usize = 256 * 1024;
 

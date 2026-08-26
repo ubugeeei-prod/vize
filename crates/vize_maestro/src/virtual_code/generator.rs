@@ -1,6 +1,6 @@
 //! Virtual code generator that transforms SFC into virtual documents.
 //!
-//! Uses arena allocation from vize_carton for optimal performance.
+//! Uses arena allocation from vize_s0 for optimal performance.
 #![allow(clippy::disallowed_methods)]
 
 mod art_script;
@@ -20,8 +20,8 @@ mod tests;
 mod tests_semantic_bindings;
 
 use vize_atelier_sfc::SfcDescriptor;
-use vize_carton::Allocator;
-use vize_carton::cstr;
+use vize_s0::Allocator;
+use vize_s0::cstr;
 
 use binding::template_used_script_bindings;
 

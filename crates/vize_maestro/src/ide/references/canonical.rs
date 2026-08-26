@@ -1,8 +1,8 @@
 use tower_lsp::lsp_types::Location;
 use vize_canon::CorsaBridge;
-use vize_carton::FxHashSet;
 use vize_croquis::{Drawer, DrawerOptions};
 use vize_relief::BindingType;
+use vize_s0::FxHashSet;
 
 use super::ReferencesService;
 use crate::ide::{IdeContext, corsa_support};
@@ -222,7 +222,7 @@ fn collect_style_locations(
     uri: &tower_lsp::lsp_types::Url,
     source: &str,
     offset: usize,
-    seeds: &mut FxHashSet<(tower_lsp::lsp_types::Url, vize_carton::String)>,
+    seeds: &mut FxHashSet<(tower_lsp::lsp_types::Url, vize_s0::String)>,
     locations: &mut Vec<Location>,
 ) {
     let Some(word) = crate::ide::token_at_offset(source, offset, |byte| {

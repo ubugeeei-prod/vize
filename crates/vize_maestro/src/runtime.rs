@@ -22,7 +22,7 @@ use futures::channel::{mpsc, oneshot};
 use futures::io::{AsyncRead, AsyncWrite};
 use futures::stream::StreamExt;
 use futures::task::{ArcWake, waker};
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 const IO_CHANNEL_BOUND: usize = 16;
 

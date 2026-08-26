@@ -1,6 +1,6 @@
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_template_syntax};
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 #[test]
 fn quirks_preserves_adjacent_table_control_flow() {

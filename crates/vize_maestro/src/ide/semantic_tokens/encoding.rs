@@ -6,11 +6,11 @@ use tower_lsp::lsp_types::SemanticToken;
 
 use super::types::AbsoluteToken;
 
-// Shared, UTF-16-correct line-index utility lives in `vize_carton::line_index`
+// Shared, UTF-16-correct line-index utility lives in `vize_s0::line_index`
 // (#1389). Both the binary-search [`LineIndex`] and the single-shot
 // [`offset_to_line_col`] helper are re-exported here so existing call sites and
 // the perf characteristics are unchanged.
-pub(crate) use vize_carton::line_index::{LineIndex, offset_to_line_col};
+pub(crate) use vize_s0::line_index::{LineIndex, offset_to_line_col};
 
 /// Return the LSP token length for text, measured in UTF-16 code units.
 pub(crate) fn utf16_len(text: &str) -> u32 {

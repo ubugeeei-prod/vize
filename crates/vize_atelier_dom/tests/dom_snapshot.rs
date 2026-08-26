@@ -8,7 +8,7 @@
 )]
 
 use vize_atelier_dom::compile_template;
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 /// Helper to get the compiled code
 fn get_compiled(src: &str) -> String {

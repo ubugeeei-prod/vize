@@ -11,7 +11,7 @@ use tower_lsp::lsp_types::{
     CodeAction, CodeActionKind, CodeActionOrCommand, Position, Range, TextEdit, WorkspaceEdit,
 };
 // Shared, UTF-16-correct offset->(line, column) conversion (#1389).
-use vize_carton::line_index::offset_to_line_col;
+use vize_s0::line_index::offset_to_line_col;
 
 /// Code action service for providing quick fixes and refactorings.
 pub struct CodeActionService;

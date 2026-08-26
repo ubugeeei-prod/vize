@@ -35,8 +35,8 @@
 use vize_carton::String;
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
-use vize_ricalco::pass::SlotFacts;
-use vize_ricalco::pass::vslot::{SlotName, SlotParams};
+use vize_s1_to_s2::pass::SlotFacts;
+use vize_s1_to_s2::pass::vslot::{SlotName, SlotParams};
 use vize_s2::folio::{FolioBinding, FolioName, FolioOp};
 
 /// The slot half of the comparator's accounting.

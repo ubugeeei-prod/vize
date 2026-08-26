@@ -38,9 +38,10 @@ test("typechecker coverage partitions requested and transitive authored sources"
 
   assert.deepEqual(coverage, {
     schema: "vize.fixtureTypecheckerCoverage",
-    version: 1,
+    version: 2,
     requested: { fileCount: 1, files: requested, sha256: digest(requested) },
     transitiveAuthored: { fileCount: 2, files: transitive, sha256: digest(transitive) },
+    transitiveDependencies: { fileCount: 0, files: [], sha256: digest([]) },
     checked: { fileCount: 3, files: checked, sha256: digest(checked) },
   });
   assert.deepEqual(summarizeTypecheckerCoverage(coverage), {
@@ -48,6 +49,8 @@ test("typechecker coverage partitions requested and transitive authored sources"
     requestedSha256: digest(requested),
     transitiveAuthoredFileCount: 2,
     transitiveAuthoredSha256: digest(transitive),
+    transitiveDependencyFileCount: 0,
+    transitiveDependencySha256: digest([]),
     checkedFileCount: 3,
     checkedSha256: digest(checked),
   });
@@ -75,6 +78,33 @@ test("typechecker coverage accepts the closed authored source extension set", ()
   ];
   const coverage = validateTypecheckerOutput(project, output(checked), 0, requested, checked);
   assert.equal(coverage.transitiveAuthored.fileCount, checked.length - requested.length);
+  assert.equal(coverage.transitiveDependencies.fileCount, 0);
+});
+
+test("typechecker coverage separates package runtime dependencies from authored sources", () => {
+  const requested = ["src/App.vue"];
+  const authored = ["packages/Dep.ts", "src/App.vue"];
+  const dependency = [
+    "node_modules/.pnpm/@vue+runtime-core@3.5.32/node_modules/@vue/runtime-core/index.js",
+    "node_modules/.pnpm/vue@3.5.32_typescript@5.7.3/node_modules/vue/index.js",
+  ];
+  const checked = [...dependency, "packages/Dep.ts", "src/App.vue"];
+  const coverage = validateTypecheckerOutput(project, output(checked), 0, requested, authored);
+
+  assert.deepEqual(coverage.requested.files, requested);
+  assert.deepEqual(coverage.transitiveAuthored.files, ["packages/Dep.ts"]);
+  assert.deepEqual(coverage.transitiveDependencies.files, dependency);
+  assert.deepEqual(coverage.checked.files, checked);
+  assert.deepEqual(summarizeTypecheckerCoverage(coverage), {
+    requestedFileCount: 1,
+    requestedSha256: digest(requested),
+    transitiveAuthoredFileCount: 1,
+    transitiveAuthoredSha256: digest(["packages/Dep.ts"]),
+    transitiveDependencyFileCount: 2,
+    transitiveDependencySha256: digest(dependency),
+    checkedFileCount: 4,
+    checkedSha256: digest(checked),
+  });
 });
 
 test("typechecker coverage fails closed on missing, substituted, or unclassified sources", () => {
@@ -104,12 +134,12 @@ test("typechecker coverage fails closed on missing, substituted, or unclassified
     () =>
       validateTypecheckerOutput(
         project,
-        output(["node_modules/pkg/Injected.ts", "src/App.vue"]),
+        output(["generated/Injected.ts", "src/App.vue"]),
         0,
         ["src/App.vue"],
         ["src/App.vue"],
       ),
-    /transitive files are not authored fixture sources: \[node_modules\/pkg\/Injected\.ts\]/,
+    /transitive files are not authored fixture sources: \[generated\/Injected\.ts\]/,
   );
   assert.throws(
     () =>
@@ -147,6 +177,18 @@ test("typechecker coverage rejects malformed manifests and digest mutations", ()
       },
       /classes do not partition checked files/,
     ],
+    [
+      "dependency-class",
+      (value: any) => {
+        value.transitiveDependencies.files = ["packages/Dep.ts"];
+        value.transitiveDependencies.fileCount = 1;
+        value.transitiveDependencies.sha256 = digest(["packages/Dep.ts"]);
+        value.transitiveAuthored.files = [];
+        value.transitiveAuthored.fileCount = 0;
+        value.transitiveAuthored.sha256 = digest([]);
+      },
+      /unsupported source extension/,
+    ],
   ] as const) {
     const mutated = structuredClone(valid);
     mutate(mutated);
@@ -172,7 +214,12 @@ test("fixture matrix writes exact raw and compact transitive coverage evidence",
   fs.writeFileSync(
     executable,
     `#!/usr/bin/env node\nprocess.stdout.write(JSON.stringify(${JSON.stringify(
-      output([".storybook/Hidden.ts", "packages/Dep.ts", "src/App.vue"]),
+      output([
+        ".storybook/Hidden.ts",
+        "node_modules/pkg/Injected.ts",
+        "packages/Dep.ts",
+        "src/App.vue",
+      ]),
     )}));\n`,
   );
   fs.chmodSync(executable, 0o755);
@@ -195,14 +242,19 @@ test("fixture matrix writes exact raw and compact transitive coverage evidence",
       requestedSha256: digest(["src/App.vue"]),
       transitiveAuthoredFileCount: 2,
       transitiveAuthoredSha256: digest([".storybook/Hidden.ts", "packages/Dep.ts"]),
-      checkedFileCount: 3,
-      checkedSha256: digest([".storybook/Hidden.ts", "packages/Dep.ts", "src/App.vue"]),
+      transitiveDependencyFileCount: 1,
+      transitiveDependencySha256: digest(["node_modules/pkg/Injected.ts"]),
+      checkedFileCount: 4,
+      checkedSha256: digest([
+        ".storybook/Hidden.ts",
+        "node_modules/pkg/Injected.ts",
+        "packages/Dep.ts",
+        "src/App.vue",
+      ]),
     });
     const raw = JSON.parse(fs.readFileSync(path.resolve(root, run.outputPath as string), "utf8"));
-    assert.deepEqual(raw.typecheckerCoverage.checked.files, [
-      ".storybook/Hidden.ts",
-      "packages/Dep.ts",
-      "src/App.vue",
+    assert.deepEqual(raw.typecheckerCoverage.transitiveDependencies.files, [
+      "node_modules/pkg/Injected.ts",
     ]);
   } finally {
     fs.rmSync(fixtureDir, { recursive: true, force: true });
@@ -277,6 +329,8 @@ process.stdout.write(JSON.stringify(output));\n`,
       requestedSha256: digest(["src/App.vue"]),
       transitiveAuthoredFileCount: 0,
       transitiveAuthoredSha256: digest([]),
+      transitiveDependencyFileCount: 0,
+      transitiveDependencySha256: digest([]),
       checkedFileCount: 1,
       checkedSha256: digest(["src/App.vue"]),
     });
