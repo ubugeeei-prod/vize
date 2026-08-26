@@ -101,8 +101,8 @@ pub(super) fn generate_event_handler_scope(
         if let (Some(handler_type), Some(handler_type_expr)) = (&handler_type, &handler_type_expr) {
             append!(*ts, "{indent}type {handler_type} = {handler_type_expr};\n",);
         }
-        // Receive listener args via a rest parameter typed by
-        // `Parameters<listener>` to avoid TS2556; `$event` is element 0.
+        // Keep the handler body in a function scope so assignments do not
+        // narrow the surrounding render scope; `$event` is element 0.
         append!(
             *ts,
             "{indent}void ((...__vize_args: Parameters<{listener_type}>) => {{\n",

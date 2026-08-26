@@ -7,6 +7,36 @@ import {
 
 export const overlayFamilyCatalog = [
   {
+    canonicalName: "announcer",
+    title: "Announcer",
+    packageSubpath: "./announcer",
+    entryFile: "src/announcer.ts",
+    sourceFiles: [
+      "src/announcer-provider.vue",
+      "src/announcer.ts",
+      "src/announcer-busy.ts",
+      "src/announcer-runtime.ts",
+      "src/announcer-types.ts",
+    ],
+    behaviorContract: "src/announcer.behavior.md",
+    tests: ["src/announcer.test.ts", "src/announcer-ssr.test.ts"],
+    typeTests: ["src/announcer.types.test-d.ts"],
+    rendererFixture: "announcer-provider.vue",
+    qualityGates: componentQualityGates,
+    bundleBudget: {
+      exportName: "AnnouncerProvider",
+      retainedSignature: "VIZE_UI_ANNOUNCER_DISPOSED",
+      allowedRetainedFamilies: ["context", "live-region"],
+      maximumJavaScriptGzipBytes: 2_050,
+      maximumCssGzipBytes: 0,
+    },
+    aliases: ["announcement queue", "status announcer", "busy announcements"],
+    upstreamCoverage: ["ARIA live regions", "coalesced announcement queues"],
+    dependencies: ["context", "live-region"],
+    maturity: "stable",
+    owner: catalogOwner,
+  },
+  {
     canonicalName: "live-region",
     title: "Live Region",
     packageSubpath: "./live-region",

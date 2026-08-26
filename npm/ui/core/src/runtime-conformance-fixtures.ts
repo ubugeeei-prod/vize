@@ -6,6 +6,7 @@ import ActionButton from "./action-button.vue";
 import CheckboxControl from "./checkbox-control.vue";
 import IdProvider from "./deterministic-id-provider.vue";
 import { useDeterministicId } from "./deterministic-id.ts";
+import ErrorSummary from "./error-summary.vue";
 import PrimitiveElement from "./primitive-element.vue";
 import VisuallyHidden from "./visually-hidden.vue";
 
@@ -97,6 +98,32 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       assert.ok(input instanceof HTMLInputElement);
       assert.equal(input.id, "form-runtime-control-0");
       assert.equal(input.getAttribute("aria-label"), "Email");
+    },
+  },
+  {
+    name: "error-summary",
+    sourceFile: "error-summary.vue",
+    render: () =>
+      h(ErrorSummary, {
+        autoFocus: false,
+        fields: [{ id: "email", label: "Email", message: "Enter a valid address" }],
+        heading: "There is a problem",
+      }),
+    assertServerMarkup(html) {
+      assert.match(html, /data-vize-ui="error-summary-host"/);
+      assert.match(html, /data-vize-ui="error-summary"/);
+      assert.match(html, /role="group"/);
+      assert.match(html, /tabindex="-1"/);
+      assert.match(html, /href="#email"/);
+      assert.match(html, /There is a problem/);
+    },
+    assertHydratedDom(host) {
+      const summary = host.querySelector('[data-vize-ui="error-summary"]');
+      assert.ok(summary instanceof HTMLElement);
+      assert.equal(summary.getAttribute("role"), "group");
+      assert.equal(summary.getAttribute("tabindex"), "-1");
+      const link = summary.querySelector('[data-vize-ui="error-summary-link"]');
+      assert.equal(link?.getAttribute("href"), "#email");
     },
   },
   {

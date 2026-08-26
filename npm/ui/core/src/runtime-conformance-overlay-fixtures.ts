@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 
 import { h } from "vue";
 
+import AnnouncerProvider from "./announcer-provider.vue";
 import LiveRegion from "./live-region.vue";
 import LocaleProvider from "./locale-provider.vue";
 import Portal from "./portal.vue";
@@ -12,6 +13,27 @@ import Transition from "./transition.vue";
 import type { RuntimeFixture } from "./runtime-conformance-fixtures.ts";
 
 export const overlayRuntimeFixtures: readonly RuntimeFixture[] = [
+  {
+    name: "announcer-provider",
+    sourceFile: "announcer-provider.vue",
+    render: () =>
+      h(AnnouncerProvider, null, {
+        default: () => "Content",
+      }),
+    assertServerMarkup(html) {
+      assert.match(html, /data-vize-ui="announcer"/);
+      assert.match(html, /data-vize-announcer="owner"/);
+      assert.match(html, /aria-live="polite"/);
+      assert.match(html, /aria-live="assertive"/);
+      assert.match(html, /Content/);
+    },
+    assertHydratedDom(host) {
+      const regions = host.querySelectorAll('[data-vize-ui="announcer-region"]');
+      assert.equal(regions.length, 2);
+      assert.equal(regions[0]?.getAttribute("role"), "status");
+      assert.equal(regions[1]?.getAttribute("role"), "alert");
+    },
+  },
   {
     name: "live-region",
     sourceFile: "live-region.vue",

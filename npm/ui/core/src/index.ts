@@ -1,3 +1,8 @@
+// field-wiring stays first: it reaches the shared deterministic-id module
+// without any SFC, keeping module order identical between the root bundle and
+// the id/error-summary subpath bundles for the byte-equality packaging gate.
+export * from "./field-wiring.ts";
+export * from "./announcer.ts";
 export * from "./checkbox.ts";
 export * from "./collection.ts";
 export * from "./composite-navigation.ts";
@@ -7,6 +12,7 @@ export * from "./button.ts";
 export * from "./command.ts";
 export * from "./dismissable-layer.ts";
 export * from "./drag-and-drop.ts";
+export * from "./error-summary.ts";
 export * from "./id.ts";
 export * from "./inert-outside.ts";
 export * from "./interaction-modality.ts";

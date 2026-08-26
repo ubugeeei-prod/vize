@@ -29,6 +29,7 @@ export default defineConfig({
   pack: {
     entry: {
       index: "src/index.ts",
+      announcer: "src/announcer.ts",
       button: "src/button.ts",
       checkbox: "src/checkbox.ts",
       collection: "src/collection.ts",
@@ -37,6 +38,8 @@ export default defineConfig({
       "controllable-state": "src/controllable-state.ts",
       "dismissable-layer": "src/dismissable-layer.ts",
       "drag-and-drop": "src/drag-and-drop.ts",
+      "error-summary": "src/error-summary.ts",
+      "field-wiring": "src/field-wiring.ts",
       catalog: "src/family-catalog.ts",
       command: "src/command.ts",
       history: "src/history.ts",

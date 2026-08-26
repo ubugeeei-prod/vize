@@ -19,6 +19,7 @@ const packEntries = (
 const rendererGate = [
   await readFile(path.resolve("scripts/check-renderers.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures.ts"), "utf8"),
+  await readFile(path.resolve("scripts/renderer-fixtures-commands.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-overlays.ts"), "utf8"),
 ].join("\n");
 

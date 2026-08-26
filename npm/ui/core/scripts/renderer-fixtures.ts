@@ -1,6 +1,8 @@
+import { commandRendererFixtures } from "./renderer-fixtures-commands.ts";
 import { overlayRendererFixtures } from "./renderer-fixtures-overlays.ts";
 
 export const rendererFixtures = [
+  ...commandRendererFixtures,
   ...overlayRendererFixtures,
   {
     filename: "DragAndDropConsumer.vue",
@@ -71,83 +73,22 @@ const bravo = sortable.registerItem({ key: "bravo", element: second });
 `,
   },
   {
-    filename: "CommandConsumer.vue",
+    filename: "FieldWiringConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";
-import { useCommandRouter } from "./command.ts";
+import { useFieldWiring } from "./field-wiring.ts";
 
-const output = ref("");
-const router = useCommandRouter<"save">();
-router.register({
-  id: "save",
-  title: "Save Document",
-  run: () => {
-    output.value = "saved";
-  },
-});
+const invalid = ref(false);
+const wiring = useFieldWiring({ hasDescription: true, invalid });
 </script>
 
 <template>
-  <button type="button" :disabled="!router.isEnabled('save')" @click="router.execute('save')">
-    Save
-  </button>
-  <output>{{ output }}</output>
-</template>
-`,
-  },
-  {
-    filename: "HistoryConsumer.vue",
-    source: String.raw`<script setup lang="ts">
-import { ref } from "vue";
-import { useHistory } from "./history.ts";
-
-const value = ref(0);
-const history = useHistory();
-function increment() {
-  const before = value.value;
-  value.value += 1;
-  history.pushSnapshot({
-    before,
-    after: value.value,
-    apply: (next) => {
-      value.value = next;
-    },
-    label: "Increment",
-  });
-}
-</script>
-
-<template>
-  <button type="button" @click="increment">Increment</button>
-  <button type="button" :disabled="!history.canUndo.value" @click="history.undo()">Undo</button>
-  <button type="button" :disabled="!history.canRedo.value" @click="history.redo()">Redo</button>
-  <output>{{ value }}</output>
-</template>
-`,
-  },
-  {
-    filename: "ShortcutConsumer.vue",
-    source: String.raw`<script setup lang="ts">
-import { ref } from "vue";
-import { formatShortcut, useShortcutRegistry } from "./shortcut.ts";
-
-const host = ref<HTMLElement | null>(null);
-const count = ref(0);
-const registry = useShortcutRegistry({ target: host, platform: "standard" });
-registry.register({
-  shortcut: "Mod+K",
-  description: "Open the palette",
-  handler: () => {
-    count.value += 1;
-  },
-});
-</script>
-
-<template>
-  <div ref="host" tabindex="0" :data-pending="registry.pendingSequence.value.length || undefined">
-    <kbd>{{ formatShortcut("Mod+K", { platform: "standard" }) }}</kbd>
-    <output>{{ count }}</output>
-  </div>
+  <label v-bind="wiring.labelProps.value">Email</label>
+  <input v-bind="wiring.fieldProps.value" type="email" @invalid="invalid = true" />
+  <p v-bind="wiring.descriptionProps.value">We never share it.</p>
+  <p v-if="wiring.isInvalid.value" v-bind="wiring.errorMessageProps.value">
+    Enter a valid address.
+  </p>
 </template>
 `,
   },
