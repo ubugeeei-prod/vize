@@ -35,11 +35,14 @@ test("P2-10 docs describe vue.css-bind spans as file-absolute", () => {
     lineMatching(records, /P2-10.*vue\.css-bind/u),
     taskSection(tasks, "P2-10"),
     p2_10,
-    lineMatching(folioFormat, /vue\.css-bind value=<expr>/u),
+    lineMatching(folioFormat, /vue\.css-bind value=<expr>.*style-block content start/u),
   ];
 
   for (const entry of entries) {
     assert.match(entry, /file-absolute/u);
+    if (entry.includes("vue.css-bind value=<expr>")) {
+      assert.match(entry, /style-block content start/u);
+    }
     assert.doesNotMatch(entry, /block-relative|to_block_relative/u);
   }
 });
