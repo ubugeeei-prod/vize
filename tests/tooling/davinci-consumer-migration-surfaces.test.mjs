@@ -158,6 +158,34 @@ void test("consumer migration TSV serializes every stage label and name class", 
   }
 });
 
+void test("consumer migration scan keeps every rollout consumer and surface class visible", () => {
+  const scan = scanConsumerMigrationSurfaces();
+  const consumers = new Map(scan.consumers.map((consumer) => [consumer.id, consumer]));
+  const expected = new Map([
+    ["compiler", { stage: true, old: true, raw: true }],
+    ["linter", { stage: true, old: true, raw: true }],
+    ["typechecker", { stage: true, old: true, raw: true }],
+    ["typechecker-content-mapper", { stage: true, old: true, raw: false }],
+    ["formatter", { stage: true, old: false, raw: true }],
+    ["lsp", { stage: true, old: true, raw: true }],
+  ]);
+
+  assert.deepEqual([...consumers.keys()], [...expected.keys()]);
+  for (const [id, groups] of expected) {
+    const consumer = consumers.get(id);
+    assert.ok(consumer, id);
+    assert.ok(consumer.fileCount > 0, `${id} must scan at least one file`);
+    assert.ok(consumer.surfaceFileCount > 0, `${id} must expose surface rows`);
+    assert.ok(
+      consumer.modeCounts.source + consumer.modeCounts.manifest > 0,
+      `${id} must scan source or manifest files`,
+    );
+    for (const [group, present] of Object.entries(groups)) {
+      assert.equal(consumer.groupCounts[group] > 0, present, `${id} ${group} presence drifted`);
+    }
+  }
+});
+
 void test("content-mapper S0 surface stays on the preferred physical name", () => {
   const scan = scanConsumerMigrationSurfaces();
   const contentMapper = scan.consumers.find(
