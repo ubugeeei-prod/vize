@@ -19,6 +19,10 @@
 // a budgets entry with no current result is a disappeared bench, and a result
 // with no entry is an unregistered (therefore ungated) bench.
 
+import { fail } from "./bench-config.mjs";
+
+const COMPARABLE_IDENTITY_FIELDS = ["fixture", "platform", "harness_version"];
+
 export function byBenchId(a, b) {
   return a < b ? -1 : a > b ? 1 : 0;
 }
@@ -40,6 +44,15 @@ function wallReportOnlyReason(budget, baseline) {
   if (baseline == null) return "no committed baseline report";
   if (budget.wall_p50_ns === 0) return "budgets.toml wall baseline not yet recorded";
   return null;
+}
+
+function assertComparableIdentity(id, baseline, current) {
+  if (baseline == null) return;
+  for (const field of COMPARABLE_IDENTITY_FIELDS) {
+    if (baseline[field] !== current[field]) {
+      fail(`${id} baseline/current ${field} mismatch: ${baseline[field]} vs ${current[field]}`);
+    }
+  }
 }
 
 export function compare(budgets, baselineReports, currentReports) {
@@ -67,6 +80,7 @@ export function compare(budgets, baselineReports, currentReports) {
       breaches += 1;
       continue;
     }
+    assertComparableIdentity(id, baseline, current);
     const benchRows = [];
     const wallSkipped = wallReportOnlyReason(budget, baseline);
     let limit = null;
