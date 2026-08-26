@@ -126,6 +126,13 @@ function taskSection(source: string, id: string): string {
   return next == null ? tail : tail.slice(0, next + 1);
 }
 
+function recordsTaskRow(source: string, id: string): string {
+  const escaped = id.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  const match = new RegExp(`^\\| \\[${escaped}\\][^\\n]+$`, "mu").exec(source);
+  assert.ok(match, `missing records row for ${id}`);
+  return match[0];
+}
+
 function dependencySet(source: string, id: string, taskIds: string[]): string[] {
   const section = taskSection(source, id);
   const raw = /\*\*Deps:\*\* (?<deps>[\s\S]*?) \*\*Non-goals:\*\*/u.exec(section)?.groups?.deps;
@@ -248,11 +255,14 @@ test("every completion joins a merged PR to honest current evidence", () => {
 });
 
 test("P2-11 records current installments without presenting stale remainders", () => {
-  for (const source of [text.roadmap, text.readme, text.tasks, text.records, text.p2_11]) {
+  const recordsP2_11 = recordsTaskRow(text.records, "P2-11");
+  for (const source of [text.roadmap, text.readme, text.tasks, text.p2_11]) {
     assert.match(source, /#5009/);
     assert.match(source, /28 (?:landed\s+)?installments|installment 28|\| 28\s+\|/i);
   }
-  assert.match(text.records, /pending installment 29/);
+  assert.match(recordsP2_11, /#5009/);
+  assert.match(recordsP2_11, /28 (?:landed\s+)?installments|installment 28|\| 28\s+\|/i);
+  assert.match(recordsP2_11, /pending installment 29/);
   assert.match(text.p2_11, /#4933/);
   assert.match(text.p2_11, /#5011/);
   assert.match(text.p2_11, /#4919/);
