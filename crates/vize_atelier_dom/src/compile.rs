@@ -10,8 +10,8 @@ use vize_atelier_core::{
     options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode},
     parser::parse_with_options_custom_elements_and_template_syntax,
 };
-use vize_carton::{Allocator, String, profile};
 use vize_croquis::Croquis;
+use vize_s0::{Allocator, String, profile};
 
 mod stage_options;
 

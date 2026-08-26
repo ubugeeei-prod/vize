@@ -3,7 +3,7 @@
 //! v-html sets the element's innerHTML.
 
 use vize_atelier_core::DirectiveNode;
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 /// Check if directive is v-html
 pub fn is_v_html(dir: &DirectiveNode<'_>) -> bool {
@@ -30,7 +30,7 @@ pub fn generate_html_warning() -> &'static str {
 mod tests {
     use super::{generate_html_prop, generate_html_warning, is_v_html};
     use vize_atelier_core::{DirectiveNode, ExpressionNode, SimpleExpressionNode, SourceLocation};
-    use vize_carton::{Allocator, Box};
+    use vize_s0::{Allocator, Box};
 
     fn create_test_directive<'a>(
         allocator: &'a Allocator,

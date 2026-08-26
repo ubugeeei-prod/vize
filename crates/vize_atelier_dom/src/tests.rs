@@ -5,10 +5,10 @@ use super::{
     compile_template_with_options, compile_template_with_template_syntax,
 };
 use vize_atelier_core::options::{CodegenMode, TemplateSyntaxMode};
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
-fn full_output(preamble: &str, code: &str) -> vize_carton::String {
-    let mut full = vize_carton::String::with_capacity(preamble.len() + code.len() + 1);
+fn full_output(preamble: &str, code: &str) -> vize_s0::String {
+    let mut full = vize_s0::String::with_capacity(preamble.len() + code.len() + 1);
     full.push_str(preamble);
     full.push('\n');
     full.push_str(code);
@@ -101,7 +101,7 @@ fn test_template_ref_in_v_for_emits_ref_for() {
 #[test]
 fn test_static_ref_matching_prop_name_stays_string_ref() {
     use vize_atelier_core::options::{BindingMetadata, BindingType};
-    use vize_carton::FxHashMap;
+    use vize_s0::FxHashMap;
 
     let allocator = Allocator::new();
     let mut bindings = FxHashMap::default();
@@ -460,7 +460,7 @@ fn test_compile_strict_rejects_invalid_html_self_closing() {
 #[test]
 fn test_event_handler_setup_ref_value() {
     use vize_atelier_core::options::BindingType;
-    use vize_carton::FxHashMap;
+    use vize_s0::FxHashMap;
 
     let allocator = Allocator::new();
     let mut bindings_map = FxHashMap::default();
@@ -495,7 +495,7 @@ fn test_event_handler_setup_ref_value() {
 #[test]
 fn test_inline_ref_class_binding_keeps_class_patch_flag() {
     use vize_atelier_core::options::{BindingMetadata, BindingType};
-    use vize_carton::FxHashMap;
+    use vize_s0::FxHashMap;
 
     let allocator = Allocator::new();
     let mut bindings = FxHashMap::default();
@@ -528,7 +528,7 @@ fn test_inline_ref_class_binding_keeps_class_patch_flag() {
 #[test]
 fn test_ref_scroll_keeps_need_patch_with_need_hydration() {
     use vize_atelier_core::options::{BindingMetadata, BindingType};
-    use vize_carton::FxHashMap;
+    use vize_s0::FxHashMap;
 
     let allocator = Allocator::new();
     let mut bindings = FxHashMap::default();
@@ -564,7 +564,7 @@ fn test_ref_scroll_keeps_need_patch_with_need_hydration() {
 #[test]
 fn test_ref_text_keeps_need_patch_with_text_flag() {
     use vize_atelier_core::options::{BindingMetadata, BindingType};
-    use vize_carton::FxHashMap;
+    use vize_s0::FxHashMap;
 
     let allocator = Allocator::new();
     let mut bindings = FxHashMap::default();
@@ -623,7 +623,7 @@ fn test_inline_hoisted_bare_static_attrs_are_empty_strings() {
 #[test]
 fn test_inline_component_dynamic_prop_keeps_props_patch_flag() {
     use vize_atelier_core::options::{BindingMetadata, BindingType};
-    use vize_carton::FxHashMap;
+    use vize_s0::FxHashMap;
 
     let allocator = Allocator::new();
     let mut bindings = FxHashMap::default();
@@ -657,7 +657,7 @@ fn test_inline_component_dynamic_prop_keeps_props_patch_flag() {
 #[test]
 fn test_v_if_branch_component_dynamic_prop_keeps_props_patch_flag() {
     use vize_atelier_core::options::{BindingMetadata, BindingType};
-    use vize_carton::FxHashMap;
+    use vize_s0::FxHashMap;
 
     let allocator = Allocator::new();
     let mut bindings = FxHashMap::default();

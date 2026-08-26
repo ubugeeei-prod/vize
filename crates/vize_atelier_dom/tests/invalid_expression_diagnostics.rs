@@ -15,7 +15,7 @@
 
 use vize_atelier_core::{CompilerError, ErrorCode};
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 fn analyzed_options() -> DomCompilerOptions {
     DomCompilerOptions {

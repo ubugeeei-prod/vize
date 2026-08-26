@@ -12,7 +12,7 @@ metadata.vize.stability = "alpha-supported"
 legacy = ["vize_atelier_core/legacy"]
 
 [dependencies]
-vize_carton = { workspace = true }
+vize_s0 = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_croquis = { workspace = true }
 

@@ -5,7 +5,7 @@ use vize_atelier_core::{
     codegen::{CodegenResult, CodegenResultWithSections},
     options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode},
 };
-use vize_carton::{Allocator, String};
+use vize_s0::{Allocator, String};
 
 /// Compile with declarative custom-element patterns without growing public options.
 #[doc(hidden)]

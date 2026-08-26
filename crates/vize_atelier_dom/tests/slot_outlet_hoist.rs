@@ -1,5 +1,5 @@
 use vize_atelier_dom::compile_template;
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 #[test]
 fn slot_outlet_does_not_create_an_unused_generic_prop_hoist() {

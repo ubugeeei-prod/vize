@@ -11,8 +11,8 @@ use crate::options::DomCompilerOptions;
 /// Parser options with DOM-specific settings.
 pub(super) fn parser_options(options: &DomCompilerOptions) -> ParserOptions {
     ParserOptions {
-        is_void_tag: vize_carton::is_void_tag,
-        is_native_tag: Some(vize_carton::is_native_tag),
+        is_void_tag: vize_s0::is_void_tag,
+        is_native_tag: Some(vize_s0::is_native_tag),
         custom_renderer: options.custom_renderer,
         is_pre_tag: |tag| tag == "pre",
         get_namespace,

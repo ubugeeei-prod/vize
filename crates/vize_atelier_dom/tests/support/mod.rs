@@ -8,8 +8,8 @@
 )]
 
 use vize_atelier_dom::{DomCompilerOptions, compile_template, compile_template_with_options};
-use vize_carton::Allocator;
-use vize_carton::config::VueVersion;
+use vize_s0::Allocator;
+use vize_s0::config::VueVersion;
 use vize_s1_to_s2::{
     DOM_LANE_FLAG, EmitError, LegacyCaps, UnsupportedReason, emit_dom_source,
     emit_dom_source_with_caps,
