@@ -2,7 +2,7 @@
 
 use lsp_types::Uri;
 use std::str::FromStr;
-use vize_carton::{FxHashMap, FxHashSet, String, cstr};
+use vize_s0::{FxHashMap, FxHashSet, String, cstr};
 
 use super::EditorLspSession;
 

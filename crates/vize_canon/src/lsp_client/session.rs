@@ -18,7 +18,7 @@ use corsa::{
 };
 use lsp_types::Diagnostic;
 use serde_json::Value;
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 mod bootstrap;
 mod canon_document;
@@ -222,7 +222,7 @@ impl CorsaProjectClient {
     }
 }
 
-fn next_overlay_version(versions: &mut vize_carton::FxHashMap<String, i32>, uri: &str) -> i32 {
+fn next_overlay_version(versions: &mut vize_s0::FxHashMap<String, i32>, uri: &str) -> i32 {
     let next = versions.get(uri).copied().unwrap_or(0).saturating_add(1);
     versions.insert(uri.into(), next);
     next

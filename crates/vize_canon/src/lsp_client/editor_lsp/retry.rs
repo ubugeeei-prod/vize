@@ -1,7 +1,7 @@
 //! One-retry transport policy for the reusable editor LSP session.
 
 use crate::lsp_client::lsp_transport_error_is_transient;
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 /// Apply the editor transport's one-retry policy without coupling its state
 /// machine to a concrete process. Keeping this policy generic makes every
@@ -37,7 +37,7 @@ pub(super) fn retry_transient_editor_request<State, Output>(
 #[cfg(test)]
 mod tests {
     use super::retry_transient_editor_request;
-    use vize_carton::{String, cstr};
+    use vize_s0::{String, cstr};
 
     #[derive(Default)]
     struct FakeSession {

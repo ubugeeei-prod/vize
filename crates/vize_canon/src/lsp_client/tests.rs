@@ -11,7 +11,7 @@ use std::{
     sync::atomic::{AtomicUsize, Ordering},
 };
 use tempfile::TempDir;
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: AtomicUsize = AtomicUsize::new(0);

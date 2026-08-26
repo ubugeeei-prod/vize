@@ -10,7 +10,7 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-use vize_carton::{
+use vize_s0::{
     String,
     corsa_resolver::{CorsaResolveError, CorsaResolveRequest},
     cstr,
@@ -25,7 +25,7 @@ pub(super) fn resolve_corsa_executable(
         project_root: working_dir.map(Path::new),
     };
 
-    match vize_carton::corsa_resolver::resolve_corsa_executable(request) {
+    match vize_s0::corsa_resolver::resolve_corsa_executable(request) {
         Ok(path) => Ok(path.to_string_lossy().into()),
         // Preserve the historical lenient fallback: spawning a bare `corsa`
         // still lets `PATH` changes made after resolution take effect.

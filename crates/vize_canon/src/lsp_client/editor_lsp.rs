@@ -27,7 +27,7 @@ use std::{
         atomic::{AtomicBool, Ordering},
     },
 };
-use vize_carton::{FxHashMap, FxHashSet, String, cstr};
+use vize_s0::{FxHashMap, FxHashSet, String, cstr};
 
 mod client;
 mod file_rename;

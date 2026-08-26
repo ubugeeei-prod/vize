@@ -9,7 +9,7 @@ use lsp_types::{
 };
 use serde_json::Value;
 use std::{path::Path, str::FromStr};
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 pub(super) fn initialize_lsp_client(client: &LspClient, project_root: &Path) -> Result<(), String> {
     struct InitializeRequest;

@@ -7,7 +7,7 @@ use corsa::{
     api::{ApiMode, ApiSpawnConfig, CapabilitiesResponse, ProjectSession},
     runtime::block_on,
 };
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 pub(in crate::lsp_client) fn spawn_project_session(
     executable: &str,

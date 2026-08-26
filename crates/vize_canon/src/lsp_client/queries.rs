@@ -2,7 +2,7 @@ use super::{CorsaProjectClient, session::uri_document_identifier, utils::value_t
 use corsa::{CorsaError, runtime::block_on};
 use lsp_types::CompletionContext;
 use serde_json::Value;
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 impl CorsaProjectClient {
     /// Get hover information at a position.

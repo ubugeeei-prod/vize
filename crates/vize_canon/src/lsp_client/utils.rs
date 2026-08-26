@@ -2,7 +2,7 @@ use super::LspDiagnostic;
 use lsp_types::Diagnostic;
 use serde::{Serialize, de::DeserializeOwned};
 use serde_json::Value;
-use vize_carton::{FxHashMap, String, cstr};
+use vize_s0::{FxHashMap, String, cstr};
 
 pub(super) fn value_to_json<T>(value: T) -> Result<Value, String>
 where

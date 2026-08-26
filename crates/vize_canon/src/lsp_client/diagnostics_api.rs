@@ -3,7 +3,7 @@ use crate::file_uri::path_to_file_uri;
 use corsa::api::{DocumentIdentifier, FileDiagnosticsResponse, ProjectDiagnosticsResponse};
 use lsp_types::Diagnostic;
 use std::path::Path;
-use vize_carton::{FxHashMap, String};
+use vize_s0::{FxHashMap, String};
 
 pub(super) fn map_project_diagnostics(
     client: &mut CorsaProjectClient,

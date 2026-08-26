@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::path::PathBuf;
 use std::sync::Arc;
-use vize_carton::{FxHashMap, String};
+use vize_s0::{FxHashMap, String};
 
 mod bootstrap;
 mod diagnostics;

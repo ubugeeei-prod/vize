@@ -4,7 +4,7 @@ use std::{
     path::Path,
     time::{SystemTime, UNIX_EPOCH},
 };
-use vize_carton::{String, ToCompactString, cstr};
+use vize_s0::{String, ToCompactString, cstr};
 
 const SESSION_META_FILE: &str = "meta.json";
 const SESSION_SCHEMA_VERSION: u32 = 1;

@@ -4,7 +4,7 @@
 use lsp_types::DocumentDiagnosticReportResult;
 use serde_json::Value;
 use std::path::PathBuf;
-use vize_carton::{FxHashMap, String, cstr};
+use vize_s0::{FxHashMap, String, cstr};
 
 use super::{CorsaProjectClient, EditorLspSession, retry::retry_transient_editor_request};
 use crate::lsp_client::session_paths::overlay_root_for_project;

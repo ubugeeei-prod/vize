@@ -8,7 +8,7 @@ use crate::file_uri::file_uri_to_path;
 use corsa::{CorsaError, runtime::block_on};
 use lsp_types::{Diagnostic, DocumentDiagnosticReport, DocumentDiagnosticReportResult};
 use std::time::Duration;
-use vize_carton::{FxHashMap, String, cstr};
+use vize_s0::{FxHashMap, String, cstr};
 
 type DiagnosticBatch = Vec<(String, Vec<LspDiagnostic>)>;
 type EditorLspDiagnosticDocuments = FxHashMap<String, String>;

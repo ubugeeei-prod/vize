@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use super::{merge_materialized_file_changes, vue_virtual_document_uris};
 use corsa::api::{DocumentIdentifier, FileChangeSummary, FileChanges};
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 #[test]
 fn merges_materialized_file_change_summaries() {

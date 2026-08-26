@@ -4,7 +4,7 @@ use corsa::{
     runtime::block_on,
 };
 use std::path::PathBuf;
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 use crate::file_uri::path_to_file_uri;
 

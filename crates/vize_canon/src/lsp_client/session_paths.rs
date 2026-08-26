@@ -1,7 +1,7 @@
 use super::virtual_overlay;
 use crate::file_uri::{file_uri_to_path, path_to_file_uri};
 use std::path::{Component, Path, PathBuf};
-use vize_carton::String;
+use vize_s0::String;
 
 pub(super) fn build_session_document_uri(
     uri: &str,

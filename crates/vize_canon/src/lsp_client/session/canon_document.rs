@@ -4,7 +4,7 @@ use corsa::{
     api::{FileChangeSummary, FileChanges},
     runtime::block_on,
 };
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 use crate::file_uri::file_uri_to_path;
 

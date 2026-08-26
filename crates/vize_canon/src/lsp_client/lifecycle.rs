@@ -20,7 +20,7 @@ use std::{
     path::{Path, PathBuf},
     sync::atomic::{AtomicUsize, Ordering},
 };
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 use crate::file_uri::path_to_file_uri;
 

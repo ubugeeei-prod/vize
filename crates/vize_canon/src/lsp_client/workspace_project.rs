@@ -3,7 +3,7 @@
 use std::path::Path;
 
 use corsa::runtime::block_on;
-use vize_carton::String;
+use vize_s0::String;
 
 use super::{
     CorsaProjectClient,
