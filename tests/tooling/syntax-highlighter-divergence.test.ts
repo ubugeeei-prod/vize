@@ -140,6 +140,7 @@ test("normalization ignores structural nesting but detects changed semantic scop
       "entity.other.attribute-selector.sass",
       "html",
       "inline.pug",
+      "name.generic.filter.pug",
     ]),
     "x",
     "source.vue",
