@@ -35,7 +35,7 @@ const wrong: number = 'not a number'
 const FALLBACK_STUB: &str =
     "declare const __vize_component: any;\nexport default __vize_component;\n";
 
-fn virtual_ts_for(source: &str) -> vize_carton::String {
+fn virtual_ts_for(source: &str) -> vize_s0::String {
     let temp_dir = tempfile::tempdir().expect("temp project should be created");
     let dir = temp_dir.path().canonicalize().unwrap();
     let path = dir.join("App.vue");

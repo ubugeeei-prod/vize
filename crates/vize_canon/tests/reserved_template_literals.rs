@@ -1,5 +1,5 @@
 use vize_canon::{SfcTypeCheckOptions, type_check_sfc_with_options_api};
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 const EXTENDS_SOURCE: &str = r#"<script lang="ts">
 import Base from './Base'

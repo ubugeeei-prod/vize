@@ -11,7 +11,7 @@
 use std::path::{Path, PathBuf};
 
 use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait, project_virtual_root};
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 fn resolve_test_tsgo_binary() -> Option<PathBuf> {
     if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {

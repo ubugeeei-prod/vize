@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use vize_canon::{CorsaBridge, CorsaBridgeConfig, LspHover, LspHoverContents, LspMarkedString};
-use vize_carton::ToCompactString;
+use vize_s0::ToCompactString;
 
 #[path = "lsp_import_resolution/shared_editor_session.rs"]
 mod shared_editor_session;
@@ -316,8 +316,8 @@ fn hover_contains(hover: &Option<LspHover>, expected: &str) -> bool {
 
 fn resolve_test_tsgo_binary() -> Option<PathBuf> {
     let root = workspace_root();
-    vize_carton::corsa_resolver::resolve_corsa_executable(
-        vize_carton::corsa_resolver::CorsaResolveRequest {
+    vize_s0::corsa_resolver::resolve_corsa_executable(
+        vize_s0::corsa_resolver::CorsaResolveRequest {
             project_root: Some(&root),
             ..Default::default()
         },

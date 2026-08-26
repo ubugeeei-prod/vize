@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 use vize_canon::IncrementalCheckMetrics;
-use vize_carton::{String, append, cstr};
+use vize_s0::{String, append, cstr};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]

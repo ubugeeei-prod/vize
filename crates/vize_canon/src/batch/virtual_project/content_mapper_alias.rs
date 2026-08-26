@@ -1,4 +1,4 @@
-use vize_carton::String as CompactString;
+use vize_s0::String as CompactString;
 
 pub(super) fn is_synthetic_content_mapper_identifier(text: &str) -> bool {
     text.starts_with("__vize_prop_check_")

@@ -125,7 +125,7 @@ fn discover_corsa() -> bool {
     .any(|candidate| candidate.exists())
         // The checker resolves its own binary this way, so the guard must not
         // decline a toolchain the run would actually have used.
-        || vize_carton::corsa_resolver::discover_corsa_in_ancestors(&root).is_some()
+        || vize_s0::corsa_resolver::discover_corsa_in_ancestors(&root).is_some()
 }
 
 fn workspace_root() -> Option<PathBuf> {

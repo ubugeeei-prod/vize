@@ -42,6 +42,8 @@
 //! └─────────────────────────────────────────────────────────────────┘
 //! ```
 
+extern crate vize_s0 as vize_carton;
+
 mod checker;
 mod context;
 #[cfg(feature = "native")]
@@ -116,7 +118,7 @@ pub use source_map::{
     position_to_offset,
 };
 pub use types::{CompletionItem, CompletionKind, TypeInfo, TypeKind};
-pub use vize_carton::i18n::Locale;
+pub use vize_s0::i18n::Locale;
 
 #[cfg(feature = "native")]
 pub use corsa_bridge::{

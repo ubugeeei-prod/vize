@@ -38,7 +38,7 @@ fn bridge_diagnostics_and_hover_reuse_one_standard_editor_lsp_session() {
     let traced_tsgo = trace_dir.path().join("traced-tsgo");
     std::fs::write(
         &traced_tsgo,
-        vize_carton::cstr!(
+        vize_s0::cstr!(
             "#!/bin/sh\nprintf '%s\\n' \"$*\" >> {}\nexec {} \"$@\"\n",
             shell_quote_path(&trace_log),
             shell_quote_path(&corsa_path)
@@ -105,7 +105,7 @@ fn bridge_diagnostics_and_hover_reuse_one_standard_editor_lsp_session() {
 }
 
 #[cfg(unix)]
-fn shell_quote_path(path: &std::path::Path) -> vize_carton::String {
+fn shell_quote_path(path: &std::path::Path) -> vize_s0::String {
     let path = path.to_string_lossy();
-    vize_carton::cstr!("'{}'", path.replace('\'', "'\"'\"'"))
+    vize_s0::cstr!("'{}'", path.replace('\'', "'\"'\"'"))
 }

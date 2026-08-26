@@ -1,5 +1,5 @@
 use vize_canon::{SfcTypeCheckOptions, type_check_sfc_with_options_api};
-use vize_carton::String;
+use vize_s0::String;
 
 const SOURCE: &str = r#"<script setup lang="ts">
 const baseUrl = 'http://example.test'

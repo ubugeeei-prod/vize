@@ -1,7 +1,7 @@
 //! Protocol DTOs for the TypeScript content mapper.
 
 use serde::Serialize;
-use vize_carton::String as CompactString;
+use vize_s0::String as CompactString;
 
 /// The virtual extension every Vize transform output is parsed as.
 ///

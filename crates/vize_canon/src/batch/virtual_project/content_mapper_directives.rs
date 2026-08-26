@@ -9,7 +9,7 @@
 //! works there without any directive mapping.
 
 use vize_atelier_sfc::SfcTemplateBlock;
-use vize_carton::String as CompactString;
+use vize_s0::String as CompactString;
 
 use super::protocol::{
     ContentMapperDiagnosticDirective, ContentMapperDiagnosticDirectives, ContentMapperSpan,

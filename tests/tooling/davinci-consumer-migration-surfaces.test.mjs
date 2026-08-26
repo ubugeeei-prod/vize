@@ -66,3 +66,19 @@ void test("consumer migration TSV exposes matched names and name kind", () => {
   assert.ok(rows.every((row) => row.split("\t").length === 11));
   assert.ok(rows.some((row) => row.includes("\tvize_s0\tpreferred\t")));
 });
+
+void test("content-mapper S0 surface stays on the preferred physical name", () => {
+  const scan = scanConsumerMigrationSurfaces();
+  const contentMapper = scan.consumers.find(
+    (consumer) => consumer.id === "typechecker-content-mapper",
+  );
+  assert.ok(contentMapper);
+  assert.equal(contentMapper.surfaceCounts.s0, 8);
+  assert.equal(contentMapper.nameKindCounts.compat, 0);
+  assert.equal(contentMapper.nameKindCounts.preferred, 8);
+  assert.ok(
+    contentMapper.sites
+      .filter((site) => site.surfaceId === "s0")
+      .every((site) => site.matchedName === "vize_s0" && site.nameKind === "preferred"),
+  );
+});

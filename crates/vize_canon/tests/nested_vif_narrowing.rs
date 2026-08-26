@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait};
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 #[test]
 fn nested_else_v_for_keeps_the_outer_discriminant_narrowing() {

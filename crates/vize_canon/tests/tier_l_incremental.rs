@@ -7,7 +7,7 @@ use serde::Deserialize;
 use vize_canon::{
     BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait, IncrementalCheckMetrics,
 };
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 #[path = "support/tier_l_incremental_artifact.rs"]
 mod artifact;

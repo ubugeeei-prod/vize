@@ -37,9 +37,7 @@ fn chain(depth: usize, sources_per_package: usize) -> PackageRoute {
             package_root: root.clone(),
             package_link_root: root.clone(),
             manifest_path: root.join("package.json"),
-            package_name: Some(vize_carton::String::from(
-                format!("@ws/lib{level:03}").as_str(),
-            )),
+            package_name: Some(vize_s0::String::from(format!("@ws/lib{level:03}").as_str())),
             workspace_source: true,
             nested_routes: route.into_iter().collect(),
         });

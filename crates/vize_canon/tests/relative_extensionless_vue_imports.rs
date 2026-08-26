@@ -12,7 +12,7 @@
 use std::path::{Path, PathBuf};
 
 use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait};
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 const CHILD: &str = r#"<script setup lang="ts">
 defineProps<{ count: number }>()

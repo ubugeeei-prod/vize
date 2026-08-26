@@ -5,7 +5,7 @@ use std::path::Path;
 
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_sfc::{SfcError, SfcParseOptions, parse_sfc};
-use vize_carton::{String as CompactString, ToCompactString, config::VueVersion};
+use vize_s0::{String as CompactString, ToCompactString, config::VueVersion};
 
 use crate::batch::Diagnostic;
 use crate::batch::error::CorsaResult;
@@ -210,7 +210,7 @@ fn sfc_parse_diagnostic(source: &str, error: &SfcError) -> ContentMapperDiagnost
 }
 
 fn generated_diagnostic(source: &str, diagnostic: &Diagnostic) -> ContentMapperDiagnostic {
-    let index = vize_carton::line_index::LineIndex::new(source);
+    let index = vize_s0::line_index::LineIndex::new(source);
     let start = index
         .line_col_to_offset(diagnostic.line, diagnostic.column)
         .unwrap_or(0);
