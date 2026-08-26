@@ -61,7 +61,13 @@ export type ThemeTokenOverrides = {
 };
 
 /** Opinionated presets accepted in the space-separated `data-vize-theme` attribute. */
-export type ThemePresetName = "atelier" | "midnight" | "paper" | "play" | "signal";
+export type ThemePresetName =
+  | "atelier"
+  | "midnight"
+  | "paper"
+  | "play"
+  | "signal"
+  | "high-contrast";
 
 /** Density scopes accepted in the `data-vize-density` attribute. */
 export type ThemeDensityScale = "compact" | "comfortable";

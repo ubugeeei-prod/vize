@@ -109,6 +109,7 @@ test("scopes published presets to their opt-in attributes", () => {
     assert.match(rule, /--vize-ui-color-accent:/);
     assert.match(rule, /--vize-ui-elevation-raised:/);
   }
+  assert.match(shippedPresetRule("high-contrast"), /--vize-ui-border-width-thin:2px/);
   assert.match(shippedPresetRule("midnight"), /--vize-ui-z-overlay:1400/);
   assert.match(shippedPresetRule("paper"), /--vize-ui-type-leading-normal:1\.6/);
   assert.match(shippedPresetRule("play"), /--vize-ui-radius-lg:1\.25rem/);
@@ -162,4 +163,8 @@ test("stands down to system colors under forced colors", () => {
   assert.match(policy, /--vize-ui-color-border:ButtonBorder[;}]/);
   assert.match(policy, /--vize-ui-elevation-floating:none[;}]/);
   assert.match(policy, /--vize-ui-focus-ring-color:Highlight[;}]/);
+  assert.match(
+    layerBlock("vize.preset"),
+    /@media \(forced-colors:active\)\{:where\(\[data-vize-theme~=high-contrast\]/,
+  );
 });

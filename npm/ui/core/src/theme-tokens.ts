@@ -28,6 +28,7 @@ export const themePresets: readonly ThemePresetName[] = Object.freeze([
   "paper",
   "play",
   "signal",
+  "high-contrast",
 ]);
 
 /** Density factors mirrored from the `data-vize-density` scopes in `theme.css`. */

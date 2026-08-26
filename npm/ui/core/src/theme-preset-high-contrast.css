@@ -1,0 +1,40 @@
+/*
+ * High-contrast preset: stark surfaces, heavy boundaries, and flat elevation
+ * for legibility-first interfaces. It is inert until a consumer opts a subtree
+ * into `data-vize-theme~="high-contrast"` and ships last so it can override
+ * the more decorative presets when combined.
+ */
+
+@layer vize.preset {
+  :where([data-vize-theme~="high-contrast"], :host([data-vize-theme~="high-contrast"])) {
+    color-scheme: light dark;
+
+    --vize-ui-color-canvas: light-dark(oklch(1 0 0), oklch(0 0 0));
+    --vize-ui-color-surface: light-dark(oklch(0.965 0 0), oklch(0.12 0 0));
+    --vize-ui-color-text: light-dark(oklch(0 0 0), oklch(1 0 0));
+    --vize-ui-color-text-muted: light-dark(oklch(0.32 0 0), oklch(0.82 0 0));
+    --vize-ui-color-accent: light-dark(oklch(0.42 0.22 264), oklch(0.84 0.16 90));
+    --vize-ui-color-accent-contrast: light-dark(oklch(1 0 0), oklch(0 0 0));
+    --vize-ui-color-border: light-dark(oklch(0 0 0), oklch(1 0 0));
+    --vize-ui-color-danger: light-dark(oklch(0.43 0.22 29), oklch(0.82 0.18 35));
+
+    --vize-ui-border-width-thin: 2px;
+    --vize-ui-border-width-thick: 3px;
+    --vize-ui-focus-ring-width: 3px;
+    --vize-ui-focus-ring-offset: 3px;
+    --vize-ui-opacity-muted: 1;
+    --vize-ui-elevation-raised: none;
+    --vize-ui-elevation-overlay: none;
+    --vize-ui-elevation-floating: none;
+  }
+
+  @media (forced-colors: active) {
+    :where([data-vize-theme~="high-contrast"], :host([data-vize-theme~="high-contrast"])) {
+      --vize-ui-border-width-thin: 2px;
+      --vize-ui-border-width-thick: 3px;
+      --vize-ui-focus-ring-width: 3px;
+      --vize-ui-focus-ring-offset: 3px;
+      --vize-ui-opacity-muted: 1;
+    }
+  }
+}

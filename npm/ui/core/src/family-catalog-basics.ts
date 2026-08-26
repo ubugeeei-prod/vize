@@ -251,6 +251,7 @@ export const basicFamilyCatalog = [
       "src/theme-preset-paper.css",
       "src/theme-preset-play.css",
       "src/theme-preset-signal.css",
+      "src/theme-preset-high-contrast.css",
       "src/theme-tokens.ts",
       "src/theme-types.ts",
     ],
@@ -265,7 +266,7 @@ export const basicFamilyCatalog = [
       maximumJavaScriptGzipBytes: 1_500,
       // Covers the packaged stylesheet: the token contract and presets share
       // dist/style.css with every other styled family.
-      maximumCssGzipBytes: 4_600,
+      maximumCssGzipBytes: 4_900,
     },
     aliases: [
       "design tokens",
@@ -277,6 +278,7 @@ export const basicFamilyCatalog = [
       "paper",
       "play",
       "signal",
+      "high-contrast",
     ],
     upstreamCoverage: [
       "CSS cascade layers",
