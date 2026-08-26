@@ -817,8 +817,7 @@
       "diagnostics": [
         "hint:50:76 [TS7044] Parameter 'item' implicitly has an 'any' type, but a better type may be inferred from usage.",
         "error:117:34 [TS2307] Cannot find module '@ant-design/icons-vue' or its corresponding type declarations.",
-        "error:120:19 [TS2307] Cannot find module 'dayjs' or its corresponding type declarations.",
-        "error:121:8 [TS2882] Cannot find module or type declarations for side-effect import of 'dayjs/locale/zh-cn'."
+        "error:120:19 [TS2307] Cannot find module 'dayjs' or its corresponding type declarations."
       ]
     },
     {
@@ -4322,8 +4321,7 @@
         "error:3:33 [TS2304] Cannot find name 'locale'.",
         "error:3:49 [TS2304] Cannot find name 'themeConfig'.",
         "error:3:49 [TS2304] Cannot find name 'themeConfig'.",
-        "error:19:19 [TS2307] Cannot find module 'dayjs' or its corresponding type declarations.",
-        "error:20:8 [TS2882] Cannot find module or type declarations for side-effect import of 'dayjs/locale/zh-cn'."
+        "error:19:19 [TS2307] Cannot find module 'dayjs' or its corresponding type declarations."
       ]
     },
     {
@@ -4980,7 +4978,7 @@
       ]
     }
   ],
-  "errorCount": 850,
+  "errorCount": 848,
   "warningCount": 0,
   "fileCount": 731
 }
