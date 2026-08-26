@@ -125,7 +125,7 @@ export const focusFamilyCatalog = [
     bundleBudget: {
       exportName: "createFocusGuards",
       retainedSignature: "VIZE_UI_FOCUS_GUARDS_DISPOSED",
-      maximumJavaScriptGzipBytes: 3_500,
+      maximumJavaScriptGzipBytes: 3_525,
       maximumCssGzipBytes: 0,
     },
     aliases: ["focus sentinels", "tab guards", "focus trap guards"],

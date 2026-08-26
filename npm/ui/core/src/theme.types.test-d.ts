@@ -49,7 +49,7 @@ type _TokenNamesAreClosed = Expect<
     "color-canvas" | "space-2xl" | "density"
   >
 >;
-type _PresetNamesAreClosed = Expect<Equal<ThemePresetName, "atelier">>;
+type _PresetNamesAreClosed = Expect<Equal<ThemePresetName, "atelier" | "paper">>;
 type _DensityScalesAreClosed = Expect<Equal<ThemeDensityScale, "compact" | "comfortable">>;
 type _LayerOrderIsLiteral = Expect<
   Equal<

@@ -55,7 +55,7 @@ test("rejects unknown tokens and empty override values", () => {
 test("publishes the token contract and scope constants", () => {
   assert.equal(themePresetAttribute, "data-vize-theme");
   assert.equal(themeDensityAttribute, "data-vize-density");
-  assert.deepEqual([...themePresets], ["atelier"]);
+  assert.deepEqual([...themePresets], ["atelier", "paper"]);
   assert.deepEqual(Object.keys(themeDensityScales).sort(), ["comfortable", "compact"]);
 
   // The record is frozen and every name round-trips through the helpers.
@@ -77,7 +77,7 @@ test("scopes presets and densities in a mounted consumer", () => {
       return () =>
         h(
           "section",
-          { [themePresetAttribute]: "atelier", [themeDensityAttribute]: density.value },
+          { [themePresetAttribute]: "atelier paper", [themeDensityAttribute]: density.value },
           [h("output", { "data-accent": themeTokenVar("color-accent") }, "Themed")],
         );
     },
@@ -85,7 +85,7 @@ test("scopes presets and densities in a mounted consumer", () => {
 
   const handle = mountInteraction(Consumer);
   const root = handle.root();
-  assert.equal(root.getAttribute("data-vize-theme"), "atelier");
+  assert.equal(root.getAttribute("data-vize-theme"), "atelier paper");
   assert.equal(root.getAttribute("data-vize-density"), "compact");
   assert.equal(
     root.querySelector("output")?.getAttribute("data-accent"),

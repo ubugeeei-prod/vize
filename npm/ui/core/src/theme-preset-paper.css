@@ -1,0 +1,36 @@
+/*
+ * Paper preset: editorial, content-forward surfaces with warm paper grounds,
+ * ink-toned text, and a quiet teal accent. Like every preset, it is inert until
+ * a consumer opts a subtree into `data-vize-theme~="paper"`.
+ */
+
+@layer vize.preset {
+  :where([data-vize-theme~="paper"], :host([data-vize-theme~="paper"])) {
+    color-scheme: light dark;
+
+    --vize-ui-color-canvas: light-dark(oklch(0.985 0.018 92), oklch(0.17 0.018 82));
+    --vize-ui-color-surface: light-dark(oklch(1 0.011 96), oklch(0.235 0.019 82));
+    --vize-ui-color-text: light-dark(oklch(0.25 0.026 235), oklch(0.94 0.012 90));
+    --vize-ui-color-text-muted: light-dark(
+      color-mix(in oklab, oklch(0.25 0.026 235) 62%, oklch(0.985 0.018 92)),
+      color-mix(in oklab, oklch(0.94 0.012 90) 66%, oklch(0.17 0.018 82))
+    );
+    --vize-ui-color-accent: light-dark(oklch(0.52 0.11 185), oklch(0.74 0.095 185));
+    --vize-ui-color-accent-contrast: light-dark(oklch(0.99 0.008 96), oklch(0.15 0.02 185));
+    --vize-ui-color-border: light-dark(
+      oklch(from oklch(0.985 0.018 92) calc(l - 0.13) c h),
+      oklch(0.34 0.021 82)
+    );
+    --vize-ui-color-danger: light-dark(oklch(0.54 0.17 31), oklch(0.72 0.15 28));
+
+    --vize-ui-type-leading-normal: 1.6;
+    --vize-ui-radius-md: 0.375rem;
+    --vize-ui-radius-lg: 0.75rem;
+    --vize-ui-elevation-raised:
+      0 1px 2px oklch(0.25 0.026 235 / 0.07), 0 1px 4px oklch(0.25 0.026 235 / 0.08);
+    --vize-ui-elevation-overlay:
+      0 6px 18px oklch(0.25 0.026 235 / 0.13), 0 2px 6px oklch(0.25 0.026 235 / 0.09);
+    --vize-ui-elevation-floating:
+      0 18px 44px oklch(0.25 0.026 235 / 0.16), 0 6px 16px oklch(0.25 0.026 235 / 0.1);
+  }
+}

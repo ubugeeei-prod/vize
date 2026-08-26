@@ -3,8 +3,9 @@
 Normative contract for the theme family (`@vizejs/ui/theme`): the semantic
 design-token contract, the package-wide cascade-layer order, and the opt-in
 presets. The stylesheet contract is proven on the packaged `dist/style.css`
-(the pack pipeline lowers `src/theme.css` and `src/theme-preset-atelier.css`
-to the declared browser floor; see `style-pipeline.behavior.md`) in
+(the pack pipeline lowers `src/theme.css`, `src/theme-preset-atelier.css`, and
+`src/theme-preset-paper.css` to the declared browser floor; see
+`style-pipeline.behavior.md`) in
 `src/theme-stylesheet.test.ts`; runtime rows are proven by the named test in
 `src/theme.test.ts` or `src/theme-ssr.test.ts`; compile-only assertions live
 in `src/theme.types.test-d.ts`.
@@ -15,8 +16,8 @@ in `src/theme.types.test-d.ts`.
 | T2  | packaged stylesheet | any styled entry                               | the semantic token contract ships in `@layer vize.tokens` at zero specificity, matching the TS mirrors    | `ships layered zero-specificity theme tokens matching the mirrors` |
 | T3  | packaged stylesheet | no `data-vize-theme` attribute                 | headless default: colors stay on the system palette and every elevation is `none`                         | `keeps the headless default free of visual opinion`                |
 | T4  | packaged stylesheet | `data-vize-density="compact" \| "comfortable"` | the density factor retunes, scaling every space and control-size token in the subtree                     | `ships density scopes that retune the shared factor`               |
-| T5  | packaged stylesheet | `data-vize-theme~="atelier"`                   | the Atelier preset assigns brand tokens in `@layer vize.preset`, scoped to the attribute                  | `scopes the atelier preset to its opt-in attribute`                |
-| T6  | packaged stylesheet | light and dark schemes                         | Atelier's `light-dark()` values ship lowered to the floor and follow the user's color scheme              | `lowers the atelier color schemes to the declared floor`           |
+| T5  | packaged stylesheet | `data-vize-theme~="atelier" \| "paper"`        | published presets assign visual tokens in `@layer vize.preset`, scoped to their opt-in attribute          | `scopes published presets to their opt-in attributes`              |
+| T6  | packaged stylesheet | light and dark schemes                         | preset `light-dark()` values ship lowered to the floor and follow the user's color scheme                 | `lowers preset color schemes to the declared floor`                |
 | T7  | packaged stylesheet | `forced-colors: active`                        | `@layer vize.policy` snaps color roles to the system palette and flattens elevation, beating presets      | `stands down to system colors under forced colors`                 |
 | T8  | any                 | `setThemeTokens(element, overrides)`           | overrides apply to the element inline and the restore callback reinstates values                          | `applies and restores token overrides on a real element`           |
 | T9  | any                 | unknown token name or empty value              | `themeTokenProperty`/`setThemeTokens` throw `VIZE_UI_THEME_TOKEN`                                         | `rejects unknown tokens and empty override values`                 |
@@ -48,9 +49,11 @@ in `src/theme.types.test-d.ts`.
   `--vize-ui-color-accent`, and space/size tokens resolve through
   `--vize-ui-density`, so one override retunes a whole phase.
 - `data-vize-theme` holds space-separated preset names and is inert without
-  the shipped preset CSS; `data-vize-density` accepts `compact` and
-  `comfortable`. Both scope by inheritance, so nesting attributes nests
-  themes.
+  the shipped preset CSS; `atelier` is the Vize brand default, and `paper` is
+  the editorial/content-forward preset. When multiple presets are present,
+  package source order resolves ties, so later shipped presets win.
+  `data-vize-density` accepts `compact` and `comfortable`. Both scope by
+  inheritance, so nesting attributes nests themes.
 - SSR bootstrapping is CSS-only and flash-free by construction: server-render
   the attribute (typically on `<html>`), and Atelier's `light-dark()` values
   follow the user's scheme with no runtime script. Motion tokens stay in the

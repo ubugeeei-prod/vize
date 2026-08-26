@@ -44,3 +44,6 @@ proven by `src/style-pipeline.test.ts` against the real package build.
   `theme.behavior.md` for the order and specificity contract — so consumer
   CSS outside a layer, or in a later layer, always wins without specificity
   fights.
+- Preset styles are authored as small native CSS files imported by
+  `src/theme.ts`. They share the same `vize.preset` layer and are lowered by
+  the package build before reaching `dist/style.css`.

@@ -22,7 +22,7 @@ export const themePresetAttribute = "data-vize-theme";
 export const themeDensityAttribute = "data-vize-density";
 
 /** Opinionated presets shipped in `@layer vize.preset`. */
-export const themePresets: readonly ThemePresetName[] = Object.freeze(["atelier"]);
+export const themePresets: readonly ThemePresetName[] = Object.freeze(["atelier", "paper"]);
 
 /** Density factors mirrored from the `data-vize-density` scopes in `theme.css`. */
 export const themeDensityScales: Readonly<Record<ThemeDensityScale, string>> = Object.freeze({

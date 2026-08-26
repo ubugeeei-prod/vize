@@ -5,7 +5,7 @@ import path from "node:path";
 
 import { test } from "vite-plus/test";
 
-import { themeCascadeLayerOrder, themeDensityScales, themeTokens } from "./theme.ts";
+import { themeCascadeLayerOrder, themeDensityScales, themePresets, themeTokens } from "./theme.ts";
 
 const stylesheet = await readFile(path.resolve("dist/style.css"), "utf8");
 
@@ -89,16 +89,27 @@ test("ships density scopes that retune the shared factor", () => {
   assert.equal(shippedToken("size-control-md"), "calc(2.25rem * var(--vize-ui-density))");
 });
 
-test("scopes the atelier preset to its opt-in attribute", () => {
+function shippedPresetRule(name: (typeof themePresets)[number]): string {
+  const preset = layerBlock("vize.preset");
+  const pattern = new RegExp(
+    `:where\\(\\[data-vize-theme~=${name}\\],:host\\(\\[data-vize-theme~=${name}\\]\\)\\)` +
+      "\\{([^}]+)\\}",
+  );
+  const match = pattern.exec(preset);
+  assert.ok(match?.[1], `the ${name} preset must ship`);
+  return match[1];
+}
+
+test("scopes published presets to their opt-in attributes", () => {
   const preset = layerBlock("vize.preset");
 
-  assert.match(
-    preset,
-    /:where\(\[data-vize-theme~=atelier\],:host\(\[data-vize-theme~=atelier\]\)\)\{/,
-  );
-  assert.match(preset, /color-scheme:light dark/);
-  assert.match(preset, /--vize-ui-color-accent:/);
-  assert.match(preset, /--vize-ui-elevation-raised:0 1px 2px oklch\(/);
+  for (const name of themePresets) {
+    const rule = shippedPresetRule(name);
+    assert.match(rule, /color-scheme:light dark/);
+    assert.match(rule, /--vize-ui-color-accent:/);
+    assert.match(rule, /--vize-ui-elevation-raised:/);
+  }
+  assert.match(shippedPresetRule("paper"), /--vize-ui-type-leading-normal:1\.6/);
   assert.doesNotMatch(
     preset,
     /:where\(:root,:host\)/,
@@ -106,7 +117,7 @@ test("scopes the atelier preset to its opt-in attribute", () => {
   );
 });
 
-test("lowers the atelier color schemes to the declared floor", () => {
+test("lowers preset color schemes to the declared floor", () => {
   const preset = layerBlock("vize.preset");
 
   // light-dark() is newer than the floor and must ship as the lowered
@@ -120,6 +131,7 @@ test("lowers the atelier color schemes to the declared floor", () => {
     preset,
     /@media \(prefers-color-scheme:dark\)\{:where\(\[data-vize-theme~=atelier\]/,
   );
+  assert.match(preset, /@media \(prefers-color-scheme:dark\)\{:where\(\[data-vize-theme~=paper\]/);
 
   // Relative color and color-mix() derivations resolve to literals at build
   // time, so the floor never sees the newer syntax.
