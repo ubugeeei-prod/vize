@@ -5,6 +5,52 @@
 //! names; remaining art-name packages stay visible until their own rename PRs
 //! land.
 
+/// The stage a Davinci diagnostic came from.
+///
+/// The variants retain the logical names used by existing diagnostics and
+/// folio prose. Use [`Stage::physical_id`] when a physical layer id is needed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Stage {
+    /// S0: reading the authored file into source coordinates.
+    Source,
+    /// S1: the lossless surface tree.
+    Surface,
+    /// S2: the semantic IR.
+    Semantic,
+    /// S3: the lowered backend IR.
+    Lowered,
+    /// S4: emission.
+    Emit,
+}
+
+impl Stage {
+    /// Stable logical identifier used by today's diagnostic output.
+    #[inline]
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Stage::Source => "source",
+            Stage::Surface => "surface",
+            Stage::Semantic => "semantic",
+            Stage::Lowered => "lowered",
+            Stage::Emit => "emit",
+        }
+    }
+
+    /// Physical layer identifier for implementation names and stage-local keys.
+    #[inline]
+    #[must_use]
+    pub const fn physical_id(self) -> &'static str {
+        match self {
+            Stage::Source => "s0",
+            Stage::Surface => "s1",
+            Stage::Semantic => "s2",
+            Stage::Lowered => "s3",
+            Stage::Emit => "s4",
+        }
+    }
+}
+
 /// A Davinci layer crate.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct LayerCrate {
@@ -88,7 +134,25 @@ pub const CONVERSIONS: &[ConversionCrate] = &[S1_TO_S2];
 
 #[cfg(test)]
 mod tests {
-    use super::{ARTIFACT_STAGES, CONVERSIONS, LAYERS, S0, S1, S1_TO_S2, S2, StageCrate};
+    use super::{ARTIFACT_STAGES, CONVERSIONS, LAYERS, S0, S1, S1_TO_S2, S2, Stage, StageCrate};
+
+    #[test]
+    fn diagnostic_stage_identifiers_remain_logical_names() {
+        assert_eq!(Stage::Source.as_str(), "source");
+        assert_eq!(Stage::Surface.as_str(), "surface");
+        assert_eq!(Stage::Semantic.as_str(), "semantic");
+        assert_eq!(Stage::Lowered.as_str(), "lowered");
+        assert_eq!(Stage::Emit.as_str(), "emit");
+    }
+
+    #[test]
+    fn physical_stage_identifiers_are_s0_to_s4() {
+        assert_eq!(Stage::Source.physical_id(), "s0");
+        assert_eq!(Stage::Surface.physical_id(), "s1");
+        assert_eq!(Stage::Semantic.physical_id(), "s2");
+        assert_eq!(Stage::Lowered.physical_id(), "s3");
+        assert_eq!(Stage::Emit.physical_id(), "s4");
+    }
 
     #[test]
     fn stage_aliases_are_the_preferred_implementation_names() {
