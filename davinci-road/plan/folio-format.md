@@ -240,7 +240,7 @@ below):
 | `ui.slot name=<quoted>\|name=<expr> @s:e`                                               | fallback region beneath                          |
 | `ui.model read=<expr> write=<expr> @s:e`                                                | `attr` lines beneath                             |
 | `vue.directive <quoted>[ arg=<quoted>\|arg=<expr>][ mods=<quoted>][ value=<expr>] @s:e` | modifiers comma-joined inside quotes             |
-| `vue.css-bind value=<expr> @s:e`                                                        | SFC style `v-bind()`; span is CSS-block-relative |
+| `vue.css-bind value=<expr> @s:e`                                                        | SFC style `v-bind()`; span is file-absolute      |
 | `vue.sync name=<quoted>[ mods=<quoted>] value=<expr> @s:e`                              | Vue 2 `:foo.sync`; name is static                |
 | `vue.slot-scope[ name=<quoted>][ params=<expr>] @s:e`                                   | Vue 2 `slot-scope` / `scope` sugar               |
 | `vue.once @s:e`                                                                         | Vue `v-once`; presence flag, no payload          |
