@@ -34,7 +34,15 @@ export function visualViewportRect(): Rect {
 
 /** The document that owns a measured element, if any. */
 export function ownerDocumentOf(element: object | null): Document | null {
-  return element instanceof Element ? element.ownerDocument : (globalThis.document ?? null);
+  if (element && "ownerDocument" in element) {
+    const ownerDocument = (element as { readonly ownerDocument?: Document | null }).ownerDocument;
+    if (ownerDocument) return ownerDocument;
+  }
+  return globalThis.document ?? null;
+}
+
+function clampLeadingInset(inset: number, dimension: number): number {
+  return Math.min(Math.max(0, inset), Math.max(0, dimension));
 }
 
 /** Shrink a viewport box by per-edge insets, never below an empty box. */
@@ -42,8 +50,8 @@ export function insetViewport(viewport: Rect, insets: SafeAreaInsets): Rect {
   return {
     height: Math.max(0, viewport.height - insets.top - insets.bottom),
     width: Math.max(0, viewport.width - insets.left - insets.right),
-    x: viewport.x + insets.left,
-    y: viewport.y + insets.top,
+    x: viewport.x + clampLeadingInset(insets.left, viewport.width),
+    y: viewport.y + clampLeadingInset(insets.top, viewport.height),
   };
 }
 

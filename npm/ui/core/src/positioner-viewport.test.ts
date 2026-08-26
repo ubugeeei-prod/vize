@@ -3,7 +3,12 @@ import assert from "node:assert/strict";
 import { test } from "vite-plus/test";
 
 import { createPositioner } from "./positioner-runtime.ts";
-import { insetViewport, readSafeAreaInsets, visualViewportRect } from "./positioner-viewport.ts";
+import {
+  insetViewport,
+  ownerDocumentOf,
+  readSafeAreaInsets,
+  visualViewportRect,
+} from "./positioner-viewport.ts";
 import type { Rect, SafeAreaInsets, VirtualElement } from "./positioner-types.ts";
 
 function box(x: number, y: number, width: number, height: number): Rect {
@@ -68,6 +73,19 @@ test("insets the viewport by per-edge insets", () => {
   assert.deepEqual(inset, { height: 732, width: 984, x: 10, y: 44 });
   const empty = insetViewport(box(0, 0, 40, 40), { bottom: 30, left: 30, right: 30, top: 30 });
   assert.deepEqual(empty, { height: 0, width: 0, x: 30, y: 30 });
+});
+
+test("clamps over-inset viewport origins to the source edges", () => {
+  const horizontal = insetViewport(box(12, 4, 40, 80), { bottom: 0, left: 60, right: 0, top: 0 });
+  assert.deepEqual(horizontal, { height: 80, width: 0, x: 52, y: 4 });
+  const vertical = insetViewport(box(12, 4, 40, 80), { bottom: 0, left: 0, right: 0, top: 100 });
+  assert.deepEqual(vertical, { height: 0, width: 40, x: 12, y: 84 });
+});
+
+test("reads owner documents structurally before falling back to the global document", () => {
+  const ownerDocument = { nodeType: 9 } as Document;
+  assert.equal(ownerDocumentOf({ ownerDocument }), ownerDocument);
+  assert.equal(ownerDocumentOf(virtual(box(0, 0, 0, 0))), document);
 });
 
 test("reads safe-area insets through the env probe and leaves no residue", () => {

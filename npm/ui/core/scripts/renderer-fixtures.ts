@@ -4,21 +4,21 @@ export const rendererFixtures = [
     filename: "NestedPortalConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";
-import { usePortalStack } from "./portal.ts";
+import { Portal, usePortalStack } from "./portal.ts";
 
 const target = ref("body");
 const stack = usePortalStack();
 </script>
 
 <template>
-  <Teleport :to="target" defer>
+  <Portal :to="target">
     <div data-portalled="outer">
       Outer layer
-      <Teleport :to="target" defer>
+      <Portal :to="target">
         <div data-portalled="inner" :data-layers="stack.value.length">Inner layer</div>
-      </Teleport>
+      </Portal>
     </div>
-  </Teleport>
+  </Portal>
 </template>
 `,
   },
