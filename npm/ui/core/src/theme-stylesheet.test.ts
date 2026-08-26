@@ -109,6 +109,7 @@ test("scopes published presets to their opt-in attributes", () => {
     assert.match(rule, /--vize-ui-color-accent:/);
     assert.match(rule, /--vize-ui-elevation-raised:/);
   }
+  assert.match(shippedPresetRule("midnight"), /--vize-ui-z-overlay:1400/);
   assert.match(shippedPresetRule("paper"), /--vize-ui-type-leading-normal:1\.6/);
   assert.doesNotMatch(
     preset,
@@ -127,11 +128,14 @@ test("lowers preset color schemes to the declared floor", () => {
     preset,
     /--vize-ui-color-canvas:var\(--lightningcss-light,oklch\(98\.5% \.003 255\)\)var\(--lightningcss-dark,oklch\(15\.5% \.012 255\)\)/,
   );
-  assert.match(
-    preset,
-    /@media \(prefers-color-scheme:dark\)\{:where\(\[data-vize-theme~=atelier\]/,
-  );
-  assert.match(preset, /@media \(prefers-color-scheme:dark\)\{:where\(\[data-vize-theme~=paper\]/);
+  for (const name of themePresets) {
+    assert.match(
+      preset,
+      new RegExp(
+        `@media \\(prefers-color-scheme:(?:dark|light)\\)\\{:where\\(\\[data-vize-theme~=${name}\\]`,
+      ),
+    );
+  }
 
   // Relative color and color-mix() derivations resolve to literals at build
   // time, so the floor never sees the newer syntax.

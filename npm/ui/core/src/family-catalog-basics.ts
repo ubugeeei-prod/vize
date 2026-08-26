@@ -247,6 +247,7 @@ export const basicFamilyCatalog = [
       "src/theme.ts",
       "src/theme.css",
       "src/theme-preset-atelier.css",
+      "src/theme-preset-midnight.css",
       "src/theme-preset-paper.css",
       "src/theme-tokens.ts",
       "src/theme-types.ts",
@@ -262,9 +263,17 @@ export const basicFamilyCatalog = [
       maximumJavaScriptGzipBytes: 1_500,
       // Covers the packaged stylesheet: the token contract and presets share
       // dist/style.css with every other styled family.
-      maximumCssGzipBytes: 2_950,
+      maximumCssGzipBytes: 3_500,
     },
-    aliases: ["design tokens", "semantic tokens", "cascade layers", "presets", "atelier", "paper"],
+    aliases: [
+      "design tokens",
+      "semantic tokens",
+      "cascade layers",
+      "presets",
+      "atelier",
+      "midnight",
+      "paper",
+    ],
     upstreamCoverage: [
       "CSS cascade layers",
       "CSS custom properties",
