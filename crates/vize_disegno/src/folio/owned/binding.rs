@@ -68,6 +68,8 @@ pub struct FolioOn {
 pub struct FolioModel {
     /// The binding contract.
     pub contract: FolioContract,
+    /// Authored model prop name, when present.
+    pub argument: Option<FolioName>,
     /// Element kind and dialect modifiers, in order.
     pub attributes: Vec<FolioAttribute>,
     /// Source range.
@@ -170,6 +172,7 @@ pub(super) fn own_binding(binding: &BindingOp<'_>) -> FolioBinding {
                 read: own_expr(&model.contract.read),
                 write: own_expr(&model.contract.write),
             },
+            argument: model.argument.as_ref().map(own_name),
             attributes: model.attributes.iter().map(own_attribute).collect(),
             span: model.span,
         }),

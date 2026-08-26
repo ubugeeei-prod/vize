@@ -43,7 +43,7 @@ fn the_svg_namespace_is_entered_by_tag_and_inherited() {
 fn v_model_lowers_to_the_contract_with_synthesized_attributes() {
     // Read and write share one authored payload; element kind and the
     // dialect modifiers ride as attributes carrying the binding's span,
-    // in declared order (element-kind, argument, modifiers).
+    // in declared order (element-kind, modifiers).
     let art = artifact("<input v-model.lazy.trim=\"msg\">");
     assert_eq!(
         art.folio,

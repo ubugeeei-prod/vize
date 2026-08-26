@@ -131,8 +131,8 @@ pub(crate) fn defer(
 
 /// `v-model` into the `ui.model` contract: read and write are the same
 /// authored payload (custom accessors split them in later dialects);
-/// element kind, argument and modifiers ride as synthesized attributes
-/// carrying the binding's span, in that declared order.
+/// the argument rides the model name position, and element kind plus
+/// modifiers ride as synthesized attributes carrying the binding's span.
 fn lower_model<'a>(
     cx: &mut Cx<'a>,
     element: &Element<'a>,
@@ -154,21 +154,13 @@ fn lower_model<'a>(
         );
         return None;
     }
-    if matches!(directive.arg, Some(Arg::Dynamic(_))) {
-        defer(
-            cx,
-            "defer.v-model-dynamic-argument",
-            span,
-            attr_slice(cx, attr),
-            String::from(
-                "`v-model` with a dynamic argument is not representable in S2 at P2-8; the binding is recorded in provenance only",
-            ),
-        );
-        return None;
-    }
     let text = text?;
     let node = cx.mint_op();
     let expr = expr_at(cx, text);
+    let argument = directive.arg.map(|arg| match arg {
+        Arg::Static(argument) => DynamicName::Static(argument),
+        Arg::Dynamic(inner) => DynamicName::Dynamic(expr_at(cx, inner)),
+    });
     let mut attributes: Vec<'a, Attribute<'a>> = Vec::new_in(&cx.allocator);
     attributes.push(Attribute {
         name: "element-kind",
@@ -179,13 +171,6 @@ fn lower_model<'a>(
         }),
         span,
     });
-    if let Some(Arg::Static(argument)) = directive.arg {
-        attributes.push(Attribute {
-            name: "argument",
-            value: Some(argument),
-            span,
-        });
-    }
     for modifier in &directive.modifiers {
         attributes.push(Attribute {
             name: modifier,
@@ -206,6 +191,7 @@ fn lower_model<'a>(
                 read: expr,
                 write: expr,
             },
+            argument,
             attributes,
             span,
         },

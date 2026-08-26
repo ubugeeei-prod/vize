@@ -80,7 +80,7 @@ fn dynamic_name<'a>(on: &'a OnOp<'a>) -> Result<&'a JsExpr<'a>, EmitError> {
     }
 }
 
-fn emit_key_source(cx: &mut EmitCx<'_>, source: &str) {
+pub(super) fn emit_key_source(cx: &mut EmitCx<'_>, source: &str) {
     if let Some(local) = source.strip_prefix("_ctx.")
         && cx.is_scope_name(local)
     {

@@ -1,7 +1,7 @@
 //! Object-literal emission for static attrs plus bind / on / model pieces.
 
 use alloc::vec::Vec as StdVec;
-use vize_s0::{Span, String};
+use vize_s0::Span;
 use vize_s2::expr::{ExprRef, JsExpr};
 use vize_s2::op::{Attribute, BindOp, BindingOp, DynamicName, OnOp};
 
@@ -9,6 +9,7 @@ use super::EmitCx;
 use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::js::{escape_js_string, push_ident_key};
+use super::model_key::{ModelModifiersKey, ModelName, ModelUpdateKey};
 use super::props_bind::{self, StaticBindKeyCasing};
 use super::{on, style};
 
@@ -47,12 +48,14 @@ pub(super) fn emit_props_object(
         return Ok(());
     }
     let extra = usize::from(if_key.is_some());
-    let multiline = (if_key.is_some() && !visible.is_empty())
-        || pieces_have_inline_on(pieces)
-        || (!cx.in_v_for
-            && (visible.len() + extra > 1
-                || pieces_have_named(pieces, "class")
-                || pieces_have_named(pieces, "style")));
+    let compact_multiline = if_key.is_none() && pieces_are_dynamic_model_products(&visible);
+    let multiline = !compact_multiline
+        && ((if_key.is_some() && !visible.is_empty())
+            || pieces_have_inline_on(pieces)
+            || (!cx.in_v_for
+                && (visible.len() + extra > 1
+                    || pieces_have_named(pieces, "class")
+                    || pieces_have_named(pieces, "style"))));
     if multiline {
         cx.buf.push("{");
         cx.buf.indent();
@@ -70,8 +73,8 @@ pub(super) fn emit_props_object(
     }
     let mut emitted_merged = StdVec::new();
     for piece in visible.iter() {
-        if let Some(key) = piece_event_key(piece, is_plain_element)
-            && merge_count(&visible, key.as_str(), is_plain_element) > 1
+        if let Some(key) = super::props_object_merge::event_key(piece, is_plain_element)
+            && super::props_object_merge::count(&visible, key.as_str(), is_plain_element) > 1
         {
             if emitted_merged.contains(&key) {
                 continue;
@@ -84,7 +87,7 @@ pub(super) fn emit_props_object(
             } else if i > 0 {
                 cx.buf.push(" ");
             }
-            emit_merged_handlers(cx, &visible, key.as_str(), is_plain_element)?;
+            super::props_object_merge::emit_handlers(cx, &visible, key.as_str(), is_plain_element)?;
             emitted_merged.push(key);
             i += 1;
             continue;
@@ -92,7 +95,7 @@ pub(super) fn emit_props_object(
         if i > 0 {
             cx.buf.push(",");
         }
-        if multiline {
+        if multiline || (compact_multiline && i > 0) {
             cx.buf.newline();
         } else if i > 0 {
             cx.buf.push(" ");
@@ -101,11 +104,15 @@ pub(super) fn emit_props_object(
             Piece::Attr(attr) => emit_static_pair(cx, attr),
             Piece::Bind(bind) => emit_bind_pair(cx, pieces, bind, skip_normalize)?,
             Piece::On(event) => on::emit_on_pair(cx, event, is_plain_element)?,
-            Piece::ModelValue { name, source, .. } => super::model::emit_value(cx, name, source),
-            Piece::ModelUpdate { key, source, .. } => super::model::emit_update(cx, key, source),
+            Piece::ModelValue { name, source, .. } => {
+                super::model_key::emit_value(cx, *name, source)
+            }
+            Piece::ModelUpdate { key, source, .. } => {
+                super::model_key::emit_update(cx, key, source)
+            }
             Piece::ModelModifiers {
                 name, modifiers, ..
-            } => super::model::emit_modifiers(cx, name, modifiers),
+            } => super::model_key::emit_modifiers(cx, name, modifiers),
         }
         i += 1;
     }
@@ -124,17 +131,17 @@ pub(super) enum Piece<'a> {
     Bind(&'a BindOp<'a>),
     On(&'a OnOp<'a>),
     ModelValue {
-        name: &'a str,
+        name: ModelName<'a>,
         source: &'a str,
         span: Span,
     },
     ModelUpdate {
-        key: String,
+        key: ModelUpdateKey<'a>,
         source: &'a str,
         span: Span,
     },
     ModelModifiers {
-        name: String,
+        name: ModelModifiersKey<'a>,
         modifiers: StdVec<&'a str>,
         span: Span,
     },
@@ -203,8 +210,14 @@ fn skip_emitted_key(
 fn pieces_have_named(pieces: &[Piece<'_>], name: &str) -> bool {
     pieces.iter().any(|piece| match piece {
         Piece::Bind(bind) => matches!(bind.name, Some(DynamicName::Static(n)) if n == name),
-        Piece::ModelValue { name: prop, .. } => *prop == name,
-        Piece::ModelModifiers { name: prop, .. } => prop.as_str() == name,
+        Piece::ModelValue {
+            name: ModelName::Static(prop),
+            ..
+        } => *prop == name,
+        Piece::ModelModifiers {
+            name: ModelModifiersKey::Static(prop),
+            ..
+        } => prop.as_str() == name,
         _ => false,
     })
 }
@@ -216,6 +229,25 @@ fn pieces_have_inline_on(pieces: &[Piece<'_>]) -> bool {
         Piece::ModelUpdate { .. } => true,
         _ => false,
     })
+}
+
+fn pieces_are_dynamic_model_products(pieces: &[&Piece<'_>]) -> bool {
+    !pieces.is_empty()
+        && pieces.iter().all(|piece| {
+            matches!(
+                piece,
+                Piece::ModelValue {
+                    name: ModelName::Dynamic(_),
+                    ..
+                } | Piece::ModelUpdate {
+                    key: ModelUpdateKey::Dynamic(_),
+                    ..
+                } | Piece::ModelModifiers {
+                    name: ModelModifiersKey::Dynamic(_),
+                    ..
+                }
+            )
+        })
 }
 
 fn emit_static_pair(cx: &mut EmitCx<'_>, attr: &Attribute<'_>) {
@@ -304,46 +336,4 @@ fn static_style_piece<'a>(pieces: &'a [Piece<'a>]) -> Option<(&'a Attribute<'a>,
         Piece::Attr(attr) if attr.name == "style" => attr.value.map(|value| (*attr, value)),
         _ => None,
     })
-}
-
-fn piece_event_key(piece: &Piece<'_>, is_plain_element: bool) -> Option<String> {
-    match piece {
-        Piece::On(event) => on::event_key_for(event, is_plain_element).ok(),
-        Piece::ModelUpdate { key, .. } => Some(key.clone()),
-        _ => None,
-    }
-}
-
-fn merge_count(visible: &[&Piece<'_>], key: &str, is_plain_element: bool) -> usize {
-    visible
-        .iter()
-        .filter(|piece| piece_event_key(piece, is_plain_element).as_deref() == Some(key))
-        .count()
-}
-
-fn emit_merged_handlers(
-    cx: &mut EmitCx<'_>,
-    visible: &[&Piece<'_>],
-    key: &str,
-    is_plain_element: bool,
-) -> Result<(), EmitError> {
-    push_ident_key(cx, key);
-    cx.buf.push(": [");
-    let mut first = true;
-    for piece in visible.iter() {
-        if piece_event_key(piece, is_plain_element).as_deref() != Some(key) {
-            continue;
-        }
-        if !first {
-            cx.buf.push(", ");
-        }
-        first = false;
-        match piece {
-            Piece::On(event) => on::emit_on_value(cx, event)?,
-            Piece::ModelUpdate { source, .. } => super::model::emit_assignment(cx, source),
-            _ => {}
-        }
-    }
-    cx.buf.push("]");
-    Ok(())
 }

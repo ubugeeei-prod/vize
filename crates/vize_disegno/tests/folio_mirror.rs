@@ -115,6 +115,7 @@ fn arena_built<'a>(allocator: &'a Allocator) -> ArenaVec<'a, Op<'a>> {
                                 read: model_expr,
                                 write: model_expr,
                             },
+                            argument: None,
                             attributes: ArenaVec::from_iter_in(
                                 [Attribute {
                                     name: "element-kind",

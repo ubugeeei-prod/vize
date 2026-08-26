@@ -12,6 +12,12 @@ use super::surface::{PBind, PModel, PName, PSurface, SurfaceCounters};
 /// binding surface).
 fn entity_bearing_surface(surface: &PSurface) -> bool {
     let text_hit = |text: &Option<Option<String>>| matches!(text, Some(Some(t)) if super::text::entity_bearing(t.as_str()));
+    let name_hit = |name: &PName| match name {
+        PName::Static(text) | PName::Dynamic(Some(text)) => {
+            super::text::entity_bearing(text.as_str())
+        }
+        PName::Dynamic(None) | PName::Spread => false,
+    };
     surface.attrs.iter().any(|(name, value)| {
         super::text::entity_bearing(name.as_str())
             || value.as_deref().is_some_and(super::text::entity_bearing)
@@ -26,6 +32,7 @@ fn entity_bearing_surface(surface: &PSurface) -> bool {
                 .value
                 .as_deref()
                 .is_some_and(super::text::entity_bearing)
+                || model.prop.as_ref().is_some_and(name_hit)
         })
 }
 
@@ -168,9 +175,8 @@ fn check_binds(
     }
 }
 
-/// The model half: the pattern-scope class skips the owner, the
-/// dynamic-argument class is legacy-side counted, and the remaining
-/// contracts compare pairwise.
+/// The model half: the pattern-scope class skips the owner, and the
+/// remaining contracts compare pairwise.
 fn check_models(
     name: &str,
     source: &str,
@@ -185,23 +191,11 @@ fn check_models(
         }
         return;
     }
-    let old_models: Vec<&PModel> = old_surface
-        .models
-        .iter()
-        .filter(|model| {
-            if model.dynamic_arg {
-                counters.models_dynamic_arg += 1;
-                false
-            } else {
-                true
-            }
-        })
-        .collect();
-    if old_models.len() != s2_surface.models.len() {
+    if old_surface.models.len() != s2_surface.models.len() {
         diverged!(name, source, old, s2, "owner {index} model count");
     }
-    for (old_model, s2_model) in old_models.iter().zip(&s2_surface.models) {
-        let mut old_model = (*old_model).clone();
+    for (old_model, s2_model) in old_surface.models.iter().zip(&s2_surface.models) {
+        let mut old_model = old_model.clone();
         if old_model.value.is_none() && s2_model.value.is_some() {
             counters.values_compound += 1;
             old_model.value = s2_model.value.clone();

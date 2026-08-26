@@ -190,6 +190,7 @@ fn every_binding<'a>(allocator: &'a Allocator) -> Vec<'a, BindingOp<'a>> {
                         read: expr,
                         write: expr,
                     },
+                    argument: None,
                     attributes: Vec::from_iter_in(
                         [Attribute {
                             name: "element-kind",

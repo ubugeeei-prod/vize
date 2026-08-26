@@ -7,9 +7,8 @@
 //! # What survived the port, and where the rest went
 //!
 //! - **Absorbed by lowering (P2-8):** the `ui.model` contract itself
-//!   (read/write pair, element kind, argument and modifiers as
-//!   attributes), the `VModelNoExpression` diagnostic, and the
-//!   dynamic-argument deferral.
+//!   (read/write pair, argument name position, element kind and
+//!   modifiers as attributes), and the `VModelNoExpression` diagnostic.
 //! - **DOM realization (P2-11):** everything the live lane *generates* —
 //!   the component `modelValue`/`onUpdate:` product props, the native
 //!   update handler, `vModelText`-family helper selection, modifier

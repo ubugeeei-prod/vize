@@ -215,6 +215,7 @@ pub(super) fn apply_static_ref_patch(attributes: &[Attribute<'_>], flag: &mut i3
 fn has_dynamic_bind_name(bindings: &[BindingOp<'_>], if_key: Option<&str>) -> bool {
     bindings.iter().any(|binding| match binding {
         BindingOp::Bind(bind) => is_dynamic_bind_name(bind) && !is_emitted_key_bind(bind, if_key),
+        BindingOp::Model(model) => super::model::has_dynamic_argument(model),
         _ => false,
     })
 }

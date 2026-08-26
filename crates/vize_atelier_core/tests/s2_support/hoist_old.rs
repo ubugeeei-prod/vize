@@ -50,19 +50,10 @@ pub fn has_directives(el: &ElementNode<'_>) -> bool {
 }
 
 /// A directive the S2 lowering still defers (`defer.*`), so the S2
-/// facts cannot see it: the excluded-builtin set plus the
-/// dynamic-argument `v-model`.
+/// facts cannot see it.
 pub fn carries_deferred_builtin(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|prop| match prop {
-        PropNode::Directive(dir) => {
-            is_excluded_builtin(dir.name)
-                || (dir.name == "model"
-                    && match dir.arg.as_ref() {
-                        Some(ExpressionNode::Simple(arg)) => !arg.is_static,
-                        Some(ExpressionNode::Compound(_)) => true,
-                        None => false,
-                    })
-        }
+        PropNode::Directive(dir) => is_excluded_builtin(dir.name),
         PropNode::Attribute(_) => false,
     })
 }

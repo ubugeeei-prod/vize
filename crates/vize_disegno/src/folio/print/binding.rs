@@ -40,7 +40,12 @@ pub(super) fn print_binding<W: Write>(
         FolioBinding::On(on) => print_on(w, on, depth, mode),
         FolioBinding::Model(model) => {
             indent(w, depth)?;
-            w.write_str("ui.model read=")?;
+            w.write_str("ui.model")?;
+            if let Some(argument) = &model.argument {
+                w.write_str(" name=")?;
+                print_name(w, argument, mode)?;
+            }
+            w.write_str(" read=")?;
             print_expr(w, &model.contract.read, mode)?;
             w.write_str(" write=")?;
             print_expr(w, &model.contract.write, mode)?;

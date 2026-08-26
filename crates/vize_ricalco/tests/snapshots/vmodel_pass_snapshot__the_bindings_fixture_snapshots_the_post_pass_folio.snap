@@ -17,9 +17,8 @@ ui.element form @0:325
     ui.bind name="key" value=js("draft.id" @99:107) @93:108
     ui.bind name="value" mods="prop" value=js("raw" @117:120) @109:121
   ui.component Field @125:179
-    ui.model read=js("doc.title" @147:156) write=js("doc.title" @147:156) @132:157
+    ui.model name="title" read=js("doc.title" @147:156) write=js("doc.title" @147:156) @132:157
       attr element-kind="component" @132:157
-      attr argument="title" @132:157
     ui.bind name="model-value" value=js("modelValue" @159:170) @158:170
   ui.slot name="row" @182:251
     attr tone="brisk" @199:211

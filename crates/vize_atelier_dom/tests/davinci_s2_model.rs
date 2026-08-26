@@ -44,6 +44,11 @@ const BATTERY: &[(&str, &str)] = &[
     ("fragment", r#"<input v-model="a"><input v-model="b">"#),
     ("comp", r#"<Foo v-model="msg" />"#),
     ("comp_arg", r#"<Foo v-model:title="pageTitle" />"#),
+    ("comp_dynamic_arg", r#"<Foo v-model:[field]="msg" />"#),
+    (
+        "comp_dynamic_arg_mod",
+        r#"<Foo v-model:[field].trim="msg" />"#,
+    ),
     ("comp_props", r#"<Foo v-model="source" :language="lang" />"#),
     (
         "comp_lang_first",

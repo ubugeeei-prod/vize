@@ -57,8 +57,8 @@
 //! `v-slots` spread, filler-only implicit defaults ([`slots`] module
 //! docs, series 3) — and the surface projection's counted classes
 //! ([`surface`] module docs, series 5: still-deferred built-ins,
-//! wrapper props, entity-bearing values, dynamic-argument and
-//! pattern-scoped models).
+//! wrapper props, entity-bearing values, and pattern-scoped models;
+//! dynamic-argument component models are now compared).
 //! Recovery-level legacy notes (`ErrorCode::is_recovery` — spec repairs
 //! such as self-closing rewrites the parser already applied) do **not**
 //! skip: the first corpus run measured them on 3,027 of 12,021

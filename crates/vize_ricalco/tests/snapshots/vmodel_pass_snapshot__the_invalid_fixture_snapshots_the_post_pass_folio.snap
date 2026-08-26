@@ -13,9 +13,8 @@ ui.element ul @0:117
         ui.model read=js("item" @59:63) write=js("item" @59:63) @50:64
           attr element-kind="input" @50:64
       ui.element input @70:103
-        ui.model read=js("item.name" @92:101) write=js("item.name" @92:101) @77:102
+        ui.model name="value" read=js("item.name" @92:101) write=js("item.name" @92:101) @77:102
           attr element-kind="input" @77:102
-          attr argument="value" @77:102
 ui.component Panel @118:185
   ui.slot-content params=js("row" @133:136) @125:137
   ui.element textarea @141:176

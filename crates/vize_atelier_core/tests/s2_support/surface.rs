@@ -43,13 +43,13 @@
 //!   carrier's binding surface (the legacy lane removed the same prop
 //!   into `user_key`); excluded here because the chain projection
 //!   compares it.
-//! - the model classes — [`check`]'s docs; `models_dynamic_arg` (the
-//!   legacy lane keeps a dynamic-argument component model for codegen,
-//!   S2 defers it) and `models_pattern_scope` (an owner under a slot
-//!   scope with destructuring params: the legacy lane enumerates the
-//!   pattern's names, S2 deliberately does not until the #4365 seam —
-//!   the on-scope verdicts can differ, so the class is counted, never
-//!   compared).
+//! - the model classes — [`check`]'s docs; `models_dynamic_arg` is a
+//!   closed residual counter pinned at zero, and
+//!   `models_pattern_scope` is an owner under a slot scope with
+//!   destructuring params: the legacy lane enumerates the pattern's
+//!   names, S2 deliberately does not until the #4365 seam — the
+//!   on-scope verdicts can differ, so the class is counted, never
+//!   compared.
 
 use vize_carton::String;
 
@@ -79,7 +79,7 @@ pub struct SurfaceCounters {
     /// Both lanes dropped the model: the S2 fault fact met the legacy
     /// removal.
     pub models_invalid: u64,
-    /// Legacy kept a dynamic-argument component model; S2 defers it.
+    /// Closed residual: dynamic-argument component models are compared.
     pub models_dynamic_arg: u64,
     /// An owner under a destructuring-params slot scope: model verdicts
     /// may differ (#4365), counted per owner, never compared.
@@ -144,13 +144,11 @@ pub struct PModel {
     /// The effective prop position: the authored argument, with the
     /// component default (`modelValue`) applied — the spelling the
     /// legacy product props carry.
-    pub prop: Option<String>,
+    pub prop: Option<PName>,
     /// Modifier names in authored order.
     pub mods: Vec<String>,
     /// Whether the owner is a component.
     pub component: bool,
-    /// Legacy side: a kept dynamic-argument model (counted class).
-    pub dynamic_arg: bool,
 }
 
 /// One owner's projected surface.

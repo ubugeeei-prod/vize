@@ -125,6 +125,16 @@ const CASES: &[Case] = &[
         sites: &["8 /* PROPS */, [\"title\", \"onUpdate:title\"]"],
     },
     Case {
+        name: "dynamic_component_v_model_full_props",
+        src: r#"<Foo v-model:[field]="msg" />"#,
+        sites: &["16 /* FULL_PROPS */"],
+    },
+    Case {
+        name: "dynamic_component_v_model_modifier_full_props",
+        src: r#"<Foo v-model:[field].trim="msg" />"#,
+        sites: &["16 /* FULL_PROPS */"],
+    },
+    Case {
         name: "component_v_model_modifier_props",
         src: r#"<Foo v-model.lazy.trim="msg" />"#,
         sites: &["8 /* PROPS */, [\"modelValue\", \"onUpdate:modelValue\"]"],

@@ -28,7 +28,8 @@
 //! (native `withDirectives` + `vModelText`-family helpers; component
 //! `modelValue` / `onUpdate:` product props), and **custom directives**
 //! (`resolveDirective` + `_withDirectives`, merged with native
-//! `v-model`), **colon / vnode-hook events** (`@update:…`,
+//! `v-model`, including dynamic component model arguments), **colon /
+//! vnode-hook events** (`@update:…`,
 //! `@vue:mounted`) including merged duplicate handlers, and
 //! **destructured `v-for` aliases** (`({ id })`, `[a, b]`, defaults),
 //! **`createSlots` + `v-slots`** (`...expr` on the `{ _: 2 }` base), and
@@ -63,6 +64,7 @@ mod hoist;
 pub(crate) mod js;
 mod merge;
 mod model;
+mod model_key;
 mod namespace;
 mod on;
 mod on_dynamic;
@@ -70,6 +72,7 @@ mod outlet;
 mod props;
 mod props_bind;
 mod props_object;
+mod props_object_merge;
 mod slots;
 mod style;
 mod tpl;

@@ -27,10 +27,7 @@ pub(super) fn check_model(
         let component = model.attributes.iter().any(|attribute| {
             attribute.name == "element-kind" && attribute.value == Some("component")
         });
-        let argument = model
-            .attributes
-            .iter()
-            .any(|attribute| attribute.name == "argument");
+        let argument = model.argument.is_some();
         if component || !argument {
             return;
         }

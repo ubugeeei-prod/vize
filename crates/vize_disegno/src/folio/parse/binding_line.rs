@@ -141,6 +141,16 @@ pub(super) fn on(rest: &str, line_no: usize) -> Result<Item, FolioError> {
 }
 
 pub(super) fn model(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+    let mut rest = rest;
+    let mut argument = None;
+    if let Some(after) = rest.strip_prefix("name=") {
+        let (value, tail) = name_value(after, line_no)?;
+        argument = Some(value);
+        let Some(tail) = tail.strip_prefix(' ') else {
+            return Err(err(line_no, cstr!("expected `read=`")));
+        };
+        rest = tail;
+    }
     let Some(rest) = rest.strip_prefix("read=") else {
         return Err(err(line_no, cstr!("expected `read=`")));
     };
@@ -151,6 +161,7 @@ pub(super) fn model(rest: &str, line_no: usize) -> Result<Item, FolioError> {
     let (write, tail) = take_expr(rest, line_no)?;
     Ok(Item::Model(FolioModel {
         contract: FolioContract { read, write },
+        argument,
         attributes: Vec::new(),
         span: tail_span(tail, line_no)?,
     }))

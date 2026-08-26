@@ -14,7 +14,7 @@
 
 use vize_s0::{Span, Vec};
 
-use super::Attribute;
+use super::{Attribute, DynamicName};
 use crate::expr::ExprRef;
 
 /// The two-way binding contract of a [`ModelOp`].
@@ -38,14 +38,17 @@ pub struct BindingContract<'a> {
 
 /// `ui.model` - a two-way binding, attached to one element or component.
 ///
-/// Realization is never expanded in S2. Element kind and dialect modifiers
-/// (`.lazy`, `.number`, `.trim`, the authored argument) ride as
+/// Realization is never expanded in S2. The authored argument uses the
+/// same static-or-computed name position as `ui.bind` / `ui.on`; element
+/// kind and dialect modifiers (`.lazy`, `.number`, `.trim`) ride as
 /// [`Attribute`]s so the contract stays dialect-neutral while lowering
 /// still sees everything it needs to select a realization.
 #[derive(Debug)]
 pub struct ModelOp<'a> {
     /// The binding contract (see [`BindingContract`] for the flow law).
     pub contract: BindingContract<'a>,
+    /// Authored model prop name, when present.
+    pub argument: Option<DynamicName<'a>>,
     /// Element kind and dialect modifiers, in lowering-declared order.
     pub attributes: Vec<'a, Attribute<'a>>,
     /// The authored binding's source range.
@@ -56,5 +59,5 @@ pub struct ModelOp<'a> {
 #[cfg(target_pointer_width = "64")]
 const _: () = {
     assert!(core::mem::size_of::<BindingContract<'_>>() == 32);
-    assert!(core::mem::size_of::<ModelOp<'_>>() == 64);
+    assert!(core::mem::size_of::<ModelOp<'_>>() == 88);
 };

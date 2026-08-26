@@ -122,6 +122,7 @@ fn model_expression_not_js<'a>(a: &'a Allocator) -> (Lowered<'a>, S2Facts) {
                 read: expr,
                 write: expr,
             },
+            argument: None,
             attributes: av(a),
             span: sp(),
         },

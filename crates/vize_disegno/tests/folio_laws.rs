@@ -84,6 +84,7 @@ fn hand_built() -> DisegnoFolio {
                             read: js("draft.note", 29, 39),
                             write: js("draft.note", 29, 39),
                         },
+                        argument: None,
                         attributes: vec![FolioAttribute {
                             name: String::from("element-kind"),
                             value: Some(String::from("textarea")),

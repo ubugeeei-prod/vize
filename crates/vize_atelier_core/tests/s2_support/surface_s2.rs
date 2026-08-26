@@ -88,15 +88,16 @@ pub fn surface_of(
                     out.models_invalid += 1;
                     continue;
                 }
-                let argument = model.attributes.iter().find_map(|attribute| {
-                    (attribute.name.as_str() == "argument")
-                        .then(|| attribute.value.clone())
-                        .flatten()
-                });
                 let prop = if component {
-                    Some(argument.unwrap_or_else(|| "modelValue".into()))
+                    Some(
+                        model
+                            .argument
+                            .as_ref()
+                            .map(p_name)
+                            .unwrap_or_else(|| PName::Static("modelValue".into())),
+                    )
                 } else {
-                    argument
+                    model.argument.as_ref().map(p_name)
                 };
                 surface.models.push(PModel {
                     value: Some(expr_text(&model.contract.read)),
@@ -104,13 +105,10 @@ pub fn surface_of(
                     mods: model
                         .attributes
                         .iter()
-                        .filter(|attribute| {
-                            !matches!(attribute.name.as_str(), "element-kind" | "argument")
-                        })
+                        .filter(|attribute| !matches!(attribute.name.as_str(), "element-kind"))
                         .map(|attribute| attribute.name.as_str().into())
                         .collect(),
                     component,
-                    dynamic_arg: false,
                 });
             }
             FolioBinding::SlotContent(_) => {}
@@ -182,13 +180,12 @@ fn fold_sync_products(surface: &mut PSurface) {
         let _on = surface.ons.remove(on_index);
         surface.models.push(PModel {
             value: Some(value),
-            prop: Some(prop),
+            prop: Some(PName::Static(prop)),
             // Legacy reconstructs the span-shared product without the
             // leftover bind modifiers (`.camel` rides a stub product
             // bind the S2 legalize does not emit). Empty matches that.
             mods: Vec::new(),
             component: true,
-            dynamic_arg: false,
         });
     }
 }

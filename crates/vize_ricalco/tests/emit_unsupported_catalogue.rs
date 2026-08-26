@@ -18,6 +18,7 @@ const SOURCE: &[Reason] = &[
     Reason::DynamicOnHasModifiers,
     Reason::ForSourceNotJs,
     Reason::IfConditionNotJs,
+    Reason::ModelArgumentNotJs,
     Reason::ObjectBindHasModifiers,
     Reason::ObjectOnHandlerNotJs,
     Reason::ObjectOnHasModifiers,

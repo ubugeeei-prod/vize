@@ -164,6 +164,39 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn a_dynamic_component_model_uses_computed_props() {
+    assert_eq!(
+        assembled(r#"<Foo v-model:[field]="msg" />"#),
+        pin("\
+const { resolveComponent: _resolveComponent, normalizeProps: _normalizeProps, openBlock: _openBlock, createBlock: _createBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, _normalizeProps({ [field]: msg,
+  [\"onUpdate:\" + field]: $event => ((msg) = $event) }), null, 16 /* FULL_PROPS */))
+}")
+    );
+}
+
+#[test]
+fn a_dynamic_component_model_modifier_uses_a_computed_modifiers_key() {
+    assert_eq!(
+        assembled(r#"<Foo v-model:[field].trim="msg" />"#),
+        pin("\
+const { resolveComponent: _resolveComponent, normalizeProps: _normalizeProps, openBlock: _openBlock, createBlock: _createBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, _normalizeProps({ [field]: msg,
+  [\"onUpdate:\" + field]: $event => ((msg) = $event),
+  [field + \"Modifiers\"]: { trim: true } }), null, 16 /* FULL_PROPS */))
+}")
+    );
+}
+
+#[test]
 fn component_modifiers_are_constant_model_modifiers() {
     assert_eq!(
         assembled(r#"<Foo v-model.lazy.trim="msg" />"#),

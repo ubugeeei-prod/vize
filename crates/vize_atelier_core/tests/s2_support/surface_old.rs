@@ -69,16 +69,10 @@ fn owner_surface(el: &ElementNode<'_>, counters: &mut SurfaceCounters) -> PSurfa
             PropNode::Directive(dir) => match dir.name {
                 "slot" => {}
                 "model" => {
-                    let dynamic_arg =
-                        matches!(
-                            dir.arg.as_ref(),
-                            Some(ExpressionNode::Simple(exp)) if !exp.is_static
-                        ) || matches!(dir.arg.as_ref(), Some(ExpressionNode::Compound(_)));
-                    let arg_text = dir.arg.as_ref().and_then(exp_text_of);
-                    let prop = if component {
-                        Some(arg_text.unwrap_or_else(|| String::from("modelValue")))
-                    } else {
-                        arg_text
+                    let prop = match (component, dir.arg.as_ref()) {
+                        (true, None) => Some(PName::Static(String::from("modelValue"))),
+                        (_, Some(_)) => Some(arg_name(dir)),
+                        (false, None) => None,
                     };
                     surface.models.push(PModel {
                         value: dir.exp.as_ref().and_then(exp_text),
@@ -89,7 +83,6 @@ fn owner_surface(el: &ElementNode<'_>, counters: &mut SurfaceCounters) -> PSurfa
                             .map(|m| String::from(m.content))
                             .collect(),
                         component,
-                        dynamic_arg,
                     });
                 }
                 "bind" if span_shared(dir) => {
@@ -121,16 +114,12 @@ fn owner_surface(el: &ElementNode<'_>, counters: &mut SurfaceCounters) -> PSurfa
                             break;
                         }
                     }
-                    let prop = match dir.arg.as_ref() {
-                        Some(ExpressionNode::Simple(exp)) => Some(String::from(exp.content)),
-                        _ => None,
-                    };
+                    let prop = dir.arg.as_ref().map(|_| arg_name(dir));
                     surface.models.push(PModel {
                         value: dir.exp.as_ref().and_then(exp_text),
                         prop,
                         mods,
                         component,
-                        dynamic_arg: false,
                     });
                 }
                 "on" if span_shared(dir) => {
