@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
-use vize_carton::String;
+use vize_s0::String;
 
 use crate::{
     AnalysisProvenance, DoctorCategory, EvidenceKind, FindingAssessment, FindingContext, FixSafety,

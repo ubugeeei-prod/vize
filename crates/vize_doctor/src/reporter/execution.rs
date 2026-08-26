@@ -6,7 +6,7 @@ use std::{
     io::{self, IoSlice, Write},
 };
 
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 use super::ReporterDescriptor;
 use crate::DoctorReport;

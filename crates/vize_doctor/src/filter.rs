@@ -8,7 +8,7 @@ mod tests;
 use std::fmt;
 
 use serde::{Deserialize, Serialize};
-use vize_carton::String;
+use vize_s0::String;
 
 use crate::{DoctorCategory, DoctorFinding, DoctorReport, FindingConfidence, FindingSeverity};
 

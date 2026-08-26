@@ -10,7 +10,7 @@ use std::cmp::Ordering;
 
 use serde::{Deserialize, Deserializer, Serialize, de};
 use sha2::{Digest, Sha256};
-use vize_carton::String;
+use vize_s0::String;
 
 use crate::{ContentFingerprint, contract::is_stable_id};
 

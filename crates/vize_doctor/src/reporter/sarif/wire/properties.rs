@@ -33,7 +33,7 @@ pub(super) struct SarifResultProperties<'finding> {
     #[serde(rename = "vizeFixTitle", skip_serializing_if = "Option::is_none")]
     fix_title: Option<&'finding str>,
     #[serde(rename = "vizeVerification", skip_serializing_if = "Option::is_none")]
-    verification: Option<&'finding [vize_carton::String]>,
+    verification: Option<&'finding [vize_s0::String]>,
     #[serde(rename = "vizeSuppressionPolicy")]
     suppression_policy: SuppressionPolicy,
     #[serde(rename = "vizeProvenance")]

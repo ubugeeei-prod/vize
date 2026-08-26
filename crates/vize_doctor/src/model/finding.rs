@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 use super::{
     assessment::{DoctorCategory, FindingAssessment, FixSafety, SuppressionPolicy},

@@ -1,6 +1,6 @@
 use std::{error::Error, fmt};
 
-use vize_carton::String;
+use vize_s0::String;
 
 use crate::{CapabilityCacheKey, ContentFingerprint};
 

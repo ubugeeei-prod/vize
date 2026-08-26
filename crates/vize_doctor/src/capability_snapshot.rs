@@ -8,7 +8,7 @@ use std::io::{self, Write};
 
 use serde::{Deserialize, Deserializer, Serialize, de};
 use sha2::{Digest, Sha256};
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 use crate::{
     CapabilityCacheIdentity, CapabilityCacheKey, ContentFingerprint, DoctorFinding, DoctorReport,

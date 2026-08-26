@@ -5,7 +5,7 @@ use std::{
 };
 
 use serde::{Deserialize, Deserializer, de};
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 use crate::{DOCTOR_REPORT_FORMAT_VERSION, DOCTOR_SCORING_VERSION};
 

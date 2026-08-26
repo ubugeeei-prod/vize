@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use vize_carton::String;
+use vize_s0::String;
 
 /// Health category used for reporting, scoring, ownership, and policy.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]

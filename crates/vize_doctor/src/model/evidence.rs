@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Deserializer, Serialize, de};
-use vize_carton::String;
+use vize_s0::String;
 
 use super::assessment::{EvidenceKind, RuleCost};
 use crate::ContentFingerprint;
@@ -168,7 +168,7 @@ impl<'de> Deserialize<'de> for AnalysisProvenance {
             .keys()
             .find(|input| provenance.invalidation_inputs.binary_search(input).is_err())
         {
-            return Err(de::Error::custom(vize_carton::cstr!(
+            return Err(de::Error::custom(vize_s0::cstr!(
                 "invalidation fingerprint {input:?} has no declared input"
             )));
         }

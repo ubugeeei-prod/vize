@@ -2,7 +2,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use vize_carton::{String, ToCompactString, cstr};
+use vize_s0::{String, ToCompactString, cstr};
 
 use super::source::{IndexedSource, SarifMissingSourcePolicy, validate_path};
 use crate::{

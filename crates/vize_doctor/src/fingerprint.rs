@@ -174,7 +174,7 @@ const fn decode_lower_hex(byte: u8) -> Option<u8> {
 #[cfg(test)]
 mod tests {
     use super::{ContentFingerprint, ContentFingerprintParseError};
-    use vize_carton::{String, ToCompactString, cstr};
+    use vize_s0::{String, ToCompactString, cstr};
 
     #[test]
     fn digest_matches_standard_sha256_vectors() {

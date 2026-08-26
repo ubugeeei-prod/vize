@@ -4,7 +4,7 @@ mod validation;
 mod wire;
 
 use serde::Serialize;
-use vize_carton::String;
+use vize_s0::String;
 
 pub use validation::ReporterContractError;
 

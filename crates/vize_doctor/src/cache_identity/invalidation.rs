@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 
 use serde::Serialize;
-use vize_carton::String;
+use vize_s0::String;
 
 use super::CapabilityCacheIdentity;
 

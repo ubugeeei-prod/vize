@@ -1,5 +1,5 @@
 use serde_json::Value;
-use vize_carton::{ToCompactString, cstr};
+use vize_s0::{ToCompactString, cstr};
 
 use super::*;
 use crate::{

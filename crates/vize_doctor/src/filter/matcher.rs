@@ -1,5 +1,5 @@
 use globset::{GlobBuilder, GlobMatcher};
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 use super::{DoctorFilterDimension, DoctorFilterError};
 

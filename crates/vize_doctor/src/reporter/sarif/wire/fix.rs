@@ -68,7 +68,7 @@ struct SarifArtifactChange<'finding> {
 
 #[derive(Serialize)]
 struct SarifArtifactLocation {
-    uri: vize_carton::String,
+    uri: vize_s0::String,
 }
 
 #[derive(Serialize)]
@@ -88,5 +88,5 @@ struct SarifFixProperties<'finding> {
     #[serde(rename = "vizeSafety")]
     safety: crate::FixSafety,
     #[serde(rename = "vizeVerification", skip_serializing_if = "Vec::is_empty")]
-    verification: &'finding Vec<vize_carton::String>,
+    verification: &'finding Vec<vize_s0::String>,
 }

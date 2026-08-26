@@ -4,7 +4,7 @@ mod tests;
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Deserializer, Serialize, de};
-use vize_carton::String;
+use vize_s0::String;
 
 use crate::{
     DEFAULT_UNAVAILABLE_FIX_REASON, DoctorCategory, DoctorFinding, FindingConfidence, FindingFix,

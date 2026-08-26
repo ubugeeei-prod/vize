@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use serde_json::json;
-use vize_carton::ToCompactString;
+use vize_s0::ToCompactString;
 
 use super::{
     CapabilityCacheIdentity, CapabilitySnapshot, CapabilitySnapshotError, ContentFingerprint,
