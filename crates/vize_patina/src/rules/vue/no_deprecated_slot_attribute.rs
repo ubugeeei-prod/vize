@@ -63,7 +63,7 @@ impl Rule for NoDeprecatedSlotAttribute {
             {
                 ctx.error_with_help(
                     ctx.t("vue/no-deprecated-slot-attribute.message"),
-                    &attr.loc,
+                    &attr.name_loc,
                     ctx.t("vue/no-deprecated-slot-attribute.help"),
                 );
             }
@@ -148,7 +148,7 @@ mod tests {
                 Severity::Error,
                 "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
                 29,
-                42,
+                33,
                 Some("Use `v-slot` instead (e.g. `<template v-slot:header>`)."),
                 0,
                 false,
