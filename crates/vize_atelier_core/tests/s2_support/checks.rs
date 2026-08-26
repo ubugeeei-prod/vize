@@ -152,7 +152,7 @@ pub fn check_fors(name: &str, source: &str, old: &[OldFor], s2: &[S2For], counte
         }
         let alias = |position: &str,
                      old_alias: &Option<old_lane::OldText>,
-                     s2_alias: &Option<vize_carton::String>| {
+                     s2_alias: &Option<vize_s0::String>| {
             match (old_alias, s2_alias) {
                 (None, None) => Alias::BothAbsent,
                 (Some(None), Some(_)) => Alias::Compound,

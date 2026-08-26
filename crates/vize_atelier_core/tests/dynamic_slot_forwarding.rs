@@ -11,7 +11,7 @@ fn result_output(result: &CodegenResult) -> String {
 }
 
 fn compile(source: &str) -> String {
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (mut root, errors) = parse(&allocator, source);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 

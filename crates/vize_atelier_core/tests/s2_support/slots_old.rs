@@ -8,7 +8,7 @@ use vize_atelier_core::{
     ElementNode, ExpressionNode, PropNode, TemplateChildNode, get_slot_name, get_slot_props_string,
     has_v_slot, is_dynamic_slot,
 };
-use vize_carton::{String, is_native_tag};
+use vize_s0::{String, is_native_tag};
 
 use super::slots::{PGroup, PName, POutlet, PUnit};
 

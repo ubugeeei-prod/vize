@@ -3,7 +3,7 @@
 //! document order.
 
 use vize_atelier_core::{ExpressionNode, ForNode, IfBranchNode, PropNode, TemplateChildNode};
-use vize_carton::String;
+use vize_s0::String;
 
 /// A branch key as the legacy transform holds it (`user_key`).
 #[derive(Debug, Clone, PartialEq, Eq)]

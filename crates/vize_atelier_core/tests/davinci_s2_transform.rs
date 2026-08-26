@@ -156,7 +156,7 @@ fn both_lanes_flag_the_duplicate_slot_name() {
         .find(|(name, _)| *name == "duplicate-slot-names")
         .expect("the battery carries the duplicate template");
 
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (mut root, parse_errors) = vize_atelier_core::parser::parse(&allocator, source);
     assert!(parse_errors.is_empty(), "{parse_errors:?}");
     let transform_errors = vize_atelier_core::transform(
@@ -172,7 +172,7 @@ fn both_lanes_flag_the_duplicate_slot_name() {
         "the legacy lane must flag the duplicate: {transform_errors:?}"
     );
 
-    let s2_allocator = vize_carton::Allocator::new();
+    let s2_allocator = vize_s0::Allocator::new();
     let (tree, surface_errors) = vize_s1::parse(&s2_allocator, source);
     let mut lowered = vize_s1_to_s2::lower(&s2_allocator, &tree, &surface_errors);
     let _facts =
@@ -212,7 +212,7 @@ fn both_lanes_flag_the_scoped_model() {
         .find(|(name, _)| *name == "model-invalid-scope")
         .expect("the battery carries the invalid-scope template");
 
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (mut root, parse_errors) = vize_atelier_core::parser::parse(&allocator, source);
     assert!(parse_errors.is_empty(), "{parse_errors:?}");
     let transform_errors = vize_atelier_core::transform(
@@ -228,7 +228,7 @@ fn both_lanes_flag_the_scoped_model() {
         "the legacy lane must flag the scoped model: {transform_errors:?}"
     );
 
-    let s2_allocator = vize_carton::Allocator::new();
+    let s2_allocator = vize_s0::Allocator::new();
     let (tree, surface_errors) = vize_s1::parse(&s2_allocator, source);
     let mut lowered = vize_s1_to_s2::lower(&s2_allocator, &tree, &surface_errors);
     let _facts =
@@ -254,7 +254,7 @@ fn both_lanes_flag_the_duplicate_key() {
         .find(|(name, _)| *name == "duplicate-keys")
         .expect("the battery carries the collision template");
 
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (mut root, parse_errors) = vize_atelier_core::parser::parse(&allocator, source);
     assert!(parse_errors.is_empty(), "{parse_errors:?}");
     let transform_errors = vize_atelier_core::transform(
@@ -270,7 +270,7 @@ fn both_lanes_flag_the_duplicate_key() {
         "the legacy lane must flag the collision: {transform_errors:?}"
     );
 
-    let s2_allocator = vize_carton::Allocator::new();
+    let s2_allocator = vize_s0::Allocator::new();
     let (tree, surface_errors) = vize_s1::parse(&s2_allocator, source);
     let mut lowered = vize_s1_to_s2::lower(&s2_allocator, &tree, &surface_errors);
     let _facts =

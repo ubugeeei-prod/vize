@@ -236,7 +236,7 @@ pub fn check(
 /// The S2 tree's shape projection — the pairing contract's S2 half
 /// (byte-compared against [`super::hoist_old::shape_of`] before any
 /// walk; a mismatch is `tree_templates`).
-pub fn shape_of_s2(ops: &[FolioOp], out: &mut vize_carton::String) {
+pub fn shape_of_s2(ops: &[FolioOp], out: &mut vize_s0::String) {
     for op in ops {
         match op {
             FolioOp::Element(element) => {

@@ -11,7 +11,7 @@
 use vize_atelier_core::{
     CodegenOptions, CodegenResult, TransformOptions, generate, parse, transform,
 };
-use vize_carton::String;
+use vize_s0::String;
 
 const SOURCE: &str = r#"<Comp v-model:[arg]="value"/>"#;
 const SOURCE_WITH_MODIFIERS: &str = r#"<Comp v-model:[arg].trim="value"/>"#;
@@ -25,7 +25,7 @@ fn result_output(result: &CodegenResult) -> String {
 }
 
 fn compile(source: &str, prefix_identifiers: bool) -> String {
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (mut root, errors) = parse(&allocator, source);
     assert!(errors.is_empty(), "Parse errors: {errors:?}");
     transform(

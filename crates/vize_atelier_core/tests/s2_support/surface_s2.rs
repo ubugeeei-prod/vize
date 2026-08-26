@@ -4,8 +4,8 @@
 //! are positional (owner line, then bindings in order), which is how
 //! the fault table resolves and the branch-key exclusion lands.
 
-use vize_carton::String;
 use vize_davinci::id::NodeId;
+use vize_s0::String;
 use vize_s2::folio::{FolioAttribute, FolioBinding, FolioExpr, FolioName, FolioOp};
 
 use super::s2_lane::{S2Projection, Tables};

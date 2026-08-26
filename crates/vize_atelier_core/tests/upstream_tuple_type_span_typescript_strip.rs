@@ -33,7 +33,7 @@ enum TransformOutcome {
     UpstreamSpanAssertion(String),
 }
 
-fn classify(transform: fn(&str) -> vize_carton::String, source: &str) -> TransformOutcome {
+fn classify(transform: fn(&str) -> vize_s0::String, source: &str) -> TransformOutcome {
     let previous_hook = panic::take_hook();
     panic::set_hook(Box::new(|_| {}));
     let transformed =

@@ -2,7 +2,7 @@
 
 use crate::steps::v_slot::{collect_slots, get_slot_name, has_v_slot, is_dynamic_slot};
 use crate::{ElementNode, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode};
-use vize_carton::String;
+use vize_s0::String;
 
 use super::super::context::CodegenContext;
 use super::super::expression::generate_expression;

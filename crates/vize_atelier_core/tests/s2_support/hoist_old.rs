@@ -16,7 +16,7 @@ use vize_atelier_core::codegen::is_constant_simple_expression;
 use vize_atelier_core::{
     ElementNode, ElementType, ExpressionNode, PropNode, SimpleExpressionNode, TemplateChildNode,
 };
-use vize_carton::{Allocator, Span, camelize, is_native_tag};
+use vize_s0::{Allocator, Span, camelize, is_native_tag};
 use vize_s1_to_s2::pass::hoist::constant_for_hoist;
 use vize_s2::expr::ExprRef;
 
@@ -146,7 +146,7 @@ fn const_rule_diverges(prop: &PropNode<'_>) -> bool {
     } else if has_attr {
         prefixed('^', arg.content)
     } else {
-        vize_carton::String::from(arg.content)
+        vize_s0::String::from(arg.content)
     };
     if matches!(key.as_str(), "ref" | "class") {
         return false;
@@ -157,8 +157,8 @@ fn const_rule_diverges(prop: &PropNode<'_>) -> bool {
     legacy_constant(exp) != s2_constant(exp.content)
 }
 
-fn prefixed(prefix: char, name: &str) -> vize_carton::String {
-    let mut out = vize_carton::String::with_capacity(1 + name.len());
+fn prefixed(prefix: char, name: &str) -> vize_s0::String {
+    let mut out = vize_s0::String::with_capacity(1 + name.len());
     out.push(prefix);
     out.push_str(name);
     out
@@ -185,7 +185,7 @@ fn s2_constant(content: &str) -> bool {
 /// the S2 lowering unwraps them. Compared byte-for-byte against
 /// [`super::hoist::shape_of_s2`]; a mismatch is the S1-scope
 /// tree-construction class (`tree_templates`), counted, never walked.
-pub fn shape_of(children: &[TemplateChildNode<'_>], out: &mut vize_carton::String) {
+pub fn shape_of(children: &[TemplateChildNode<'_>], out: &mut vize_s0::String) {
     for child in children {
         match child {
             TemplateChildNode::Element(el) => {

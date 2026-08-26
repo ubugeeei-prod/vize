@@ -45,7 +45,7 @@ observational guard for planning only. It does not change rollout state.
 
 | consumer                   | stage/Davinci | preferred stage names | compat code names | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
-| Compiler                   |           916 |                   192 |               724 |             139 |     371 |             951 |      475 |           477 |           585 |
+| Compiler                   |           917 |                   252 |               665 |             139 |     371 |             952 |      475 |           477 |           585 |
 | Linter                     |           302 |                   302 |                 0 |             268 |     225 |             673 |      122 |           340 |           480 |
 | Typechecker                |           890 |                   166 |               724 |             396 |     187 |             806 |      667 |           466 |           659 |
 | Typechecker content-mapper |             8 |                     8 |                 0 |               1 |       0 |               9 |        0 |             7 |            19 |
@@ -61,7 +61,7 @@ Scope: build command plus atelier compiler crates. This is a lexical inventory, 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
 | Davinci          |          21 |               4 |       17 |
-| S0               |         845 |             490 |      355 |
+| S0               |         846 |             491 |      355 |
 | S1               |           5 |               1 |        4 |
 | S2               |          15 |               1 |       14 |
 | S1->S2           |          30 |               2 |       28 |

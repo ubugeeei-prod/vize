@@ -4,7 +4,7 @@
 //! scope/ambiguity predicates.
 
 use vize_atelier_core::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode};
-use vize_carton::String;
+use vize_s0::String;
 
 use super::surface::{PName, is_simple_ident};
 
@@ -116,7 +116,7 @@ pub fn classifier_ambiguous(el: &ElementNode<'_>) -> bool {
     if has_is {
         return true;
     }
-    let native = vize_carton::is_native_tag(el.tag);
+    let native = vize_s0::is_native_tag(el.tag);
     let legacy_component = el.tag == "component"
         || el.tag.chars().next().is_some_and(char::is_uppercase)
         || el.tag.contains('-');

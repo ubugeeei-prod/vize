@@ -1,7 +1,7 @@
 use vize_atelier_core::{TransformOptions, parse, transform};
 
 fn transform_errors(source: &str) -> std::vec::Vec<vize_atelier_core::CompilerError> {
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (mut root, errors) = parse(&allocator, source);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     transform(&allocator, &mut root, TransformOptions::default(), None)

@@ -51,7 +51,7 @@
 //!   on-scope verdicts can differ, so the class is counted, never
 //!   compared.
 
-use vize_carton::String;
+use vize_s0::String;
 
 /// The comparator's surface accounting, part of [`super::Counters`].
 #[derive(Debug, Clone, Default, PartialEq, Eq)]

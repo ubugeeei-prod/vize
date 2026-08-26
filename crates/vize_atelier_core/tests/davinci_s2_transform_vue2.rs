@@ -21,7 +21,7 @@ mod s2_support;
 use s2_support::{
     Counters, HoistCounters, SlotCounters, SurfaceCounters, TextCounters, compare_with,
 };
-use vize_carton::config::VueVersion;
+use vize_s0::config::VueVersion;
 
 /// Vue 2 sugar the two lanes both claim to legalize, plus one
 /// sugar-free template so the rest of the projection still agrees

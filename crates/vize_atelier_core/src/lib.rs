@@ -11,6 +11,8 @@
 //! `vize_atelier_core` provides the foundational infrastructure
 //! that all other Vize compilers build upon.
 
+extern crate vize_s0 as vize_carton;
+
 pub mod codegen;
 pub mod runtime_helpers;
 #[macro_use]
@@ -92,4 +94,4 @@ pub use steps::{
 };
 
 /// Re-export allocator types for convenience
-pub use vize_carton::{Allocator, Box as AllocBox, CloneIn, Vec as AllocVec};
+pub use vize_s0::{Allocator, Box as AllocBox, CloneIn, Vec as AllocVec};

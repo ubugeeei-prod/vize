@@ -44,7 +44,7 @@
 //!   pipe and compare exactly (installment 7: those parts are not
 //!   `ExprRef::Filter`).
 
-use vize_carton::{Allocator, Span, String};
+use vize_s0::{Allocator, Span, String};
 use vize_s2::expr::VueFilterExpr;
 
 /// The comparator's text accounting, part of [`super::Counters`].

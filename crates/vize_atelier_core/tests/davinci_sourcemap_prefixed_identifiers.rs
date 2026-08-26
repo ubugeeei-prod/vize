@@ -130,7 +130,7 @@ fn ladder_template(name: &str) -> &'static str {
 /// those surface as recoverable `ExtendPoint` notes, so only real errors
 /// are asserted away.
 fn compile_with_map(src: &str, filename: &str) -> CodegenResult {
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (mut root, errors) = vize_atelier_core::parse(&allocator, src);
     let fatal: Vec<_> = errors
         .iter()

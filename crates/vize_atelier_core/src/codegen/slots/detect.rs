@@ -3,7 +3,7 @@
 use crate::codegen::context::CodegenContext;
 use crate::steps::v_slot::{collect_slots, has_v_slot};
 use crate::{ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
-use vize_carton::ensure_sufficient_stack;
+use vize_s0::ensure_sufficient_stack;
 
 /// The expression a component spreads into its slots object, if it carries a
 /// `v-slots` directive (#3467).

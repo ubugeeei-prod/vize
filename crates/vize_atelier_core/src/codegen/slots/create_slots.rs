@@ -8,7 +8,7 @@
 
 use crate::steps::v_slot::{get_slot_name, has_v_slot};
 use crate::{ElementNode, ForNode, IfNode, PropNode, RuntimeHelper, TemplateChildNode};
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 use super::super::context::CodegenContext;
 use super::super::expression::generate_expression;

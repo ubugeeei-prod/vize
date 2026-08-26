@@ -5,7 +5,7 @@
 //! # The shared unit rule (applied to both trees)
 //!
 //! A **unit** is a node whose tag is not a native tag
-//! (`vize_carton::is_native_tag`, computed from the authored tag on
+//! (`vize_s0::is_native_tag`, computed from the authored tag on
 //! both trees so the lanes' differing component classifiers never enter
 //! the projection) that is **slot-active**: it carries a `v-slot`
 //! itself or has a direct `<template v-slot>` child. Its groups follow
@@ -32,9 +32,9 @@
 //! `defer.slot-props` (the `ui.bind` installment); fallback bytes are
 //! P2-11's.
 
-use vize_carton::String;
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
+use vize_s0::String;
 use vize_s1_to_s2::pass::SlotFacts;
 use vize_s1_to_s2::pass::vslot::{SlotName, SlotParams};
 use vize_s2::folio::{FolioBinding, FolioName, FolioOp};

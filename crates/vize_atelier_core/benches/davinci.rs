@@ -14,7 +14,7 @@ use davinci_harness::stage::bench_stage_with_metrics;
 use vize_atelier_core::lane::transform;
 use vize_atelier_core::options::TransformOptions;
 use vize_atelier_core::parser::Parser;
-use vize_carton::{Allocator, cstr};
+use vize_s0::{Allocator, cstr};
 
 fn davinci(criterion: &mut Criterion) {
     for fixture in &LADDER {

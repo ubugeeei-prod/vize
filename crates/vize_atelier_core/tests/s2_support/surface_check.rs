@@ -3,7 +3,7 @@
 //! divergence rule is TS-25: investigate, never average; every skip is
 //! a counted class on [`SurfaceCounters`].
 
-use vize_carton::String;
+use vize_s0::String;
 
 use super::surface::{PBind, PModel, PName, PSurface, SurfaceCounters};
 

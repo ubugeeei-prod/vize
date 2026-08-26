@@ -6,7 +6,7 @@
 //! subtrees excluded per the lane-neutral rule.
 
 use vize_atelier_core::{ExpressionNode, TemplateChildNode};
-use vize_carton::String;
+use vize_s0::String;
 
 use super::text::{TPart, TUnit};
 

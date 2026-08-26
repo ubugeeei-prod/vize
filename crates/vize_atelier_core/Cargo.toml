@@ -23,7 +23,7 @@ legacy = ["vize_relief/_legacy", "vize_armature/legacy"]
 davinci-differential = []
 
 [dependencies]
-vize_carton = { workspace = true }
+vize_s0 = { workspace = true }
 vize_croquis = { workspace = true }
 vize_relief = { workspace = true }
 vize_armature = { workspace = true }

@@ -7,10 +7,10 @@
 
 use vize_atelier_core::parser::parse_with_options as old_parse_with_options;
 use vize_atelier_core::{ParserOptions, TransformOptions, transform};
-use vize_carton::Allocator;
-use vize_carton::config::VueVersion;
 use vize_davinci::diagnostic::Severity;
 use vize_davinci::pass::NoObserver;
+use vize_s0::Allocator;
+use vize_s0::config::VueVersion;
 use vize_s1_to_s2::LegacyCaps;
 use vize_s1_to_s2::pass::{TRANSFORM_LANE_FLAG, run_transform};
 use vize_s2::folio::DisegnoFolio;
@@ -178,9 +178,9 @@ pub fn compare_with(name: &str, source: &str, counters: &mut Counters, dialect: 
     } else {
         let mut scan = hoist_old::TemplateScan::default();
         hoist_old::scan_template(&root.children, &mut scan);
-        let mut old_shape = vize_carton::String::default();
+        let mut old_shape = vize_s0::String::default();
         hoist_old::shape_of(&root.children, &mut old_shape);
-        let mut s2_shape = vize_carton::String::default();
+        let mut s2_shape = vize_s0::String::default();
         hoist::shape_of_s2(&folio.ops, &mut s2_shape);
         if scan.classifier {
             counters.hoist.classifier_templates += 1;

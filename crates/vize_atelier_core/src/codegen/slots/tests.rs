@@ -2,9 +2,8 @@ use super::super::helpers::is_valid_js_identifier;
 use super::params::prefix_slot_defaults;
 use crate::compile;
 
-fn result_output(result: &super::super::CodegenResult) -> vize_carton::String {
-    let mut output =
-        vize_carton::String::with_capacity(result.preamble.len() + result.code.len() + 1);
+fn result_output(result: &super::super::CodegenResult) -> vize_s0::String {
+    let mut output = vize_s0::String::with_capacity(result.preamble.len() + result.code.len() + 1);
     output.push_str(&result.preamble);
     output.push('\n');
     output.push_str(&result.code);

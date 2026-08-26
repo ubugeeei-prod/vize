@@ -4,10 +4,10 @@ use oxc_span::SourceType;
 use vize_atelier_core::{
     CodegenMode, CodegenOptions, TransformOptions, generate, parse, transform,
 };
-use vize_carton::String;
+use vize_s0::String;
 
 fn compile_module(source: &str) -> String {
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (mut root, errors) = parse(&allocator, source);
     assert!(errors.is_empty(), "template parse errors: {errors:?}");
     transform(&allocator, &mut root, TransformOptions::default(), None);

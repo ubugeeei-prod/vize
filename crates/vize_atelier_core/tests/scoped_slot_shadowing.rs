@@ -13,18 +13,18 @@ fn result_output(result: &CodegenResult) -> String {
 
 #[test]
 fn scoped_slot_props_shadow_inline_props_in_slot_outlet_vbind() {
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (mut root, errors) = parse(
         &allocator,
         r#"<RouterLink v-slot="{ href }"><slot v-bind="{ href }" /></RouterLink>"#,
     );
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
-    let mut bindings = vize_carton::FxHashMap::default();
+    let mut bindings = vize_s0::FxHashMap::default();
     bindings.insert("href".into(), BindingType::Props);
     let binding_metadata = BindingMetadata {
         bindings,
-        props_aliases: vize_carton::FxHashMap::default(),
+        props_aliases: vize_s0::FxHashMap::default(),
         is_script_setup: true,
     };
 

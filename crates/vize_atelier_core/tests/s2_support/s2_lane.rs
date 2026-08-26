@@ -6,9 +6,9 @@
 //! the same numbering rule the folio's `ops=` header states: op line,
 //! attached bindings, then children.
 
-use vize_carton::String;
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
+use vize_s0::String;
 use vize_s1_to_s2::pass::{BranchKeyKind, IfFacts, ModelFacts, SlotFacts, TextFacts};
 use vize_s2::folio::{DisegnoFolio, FolioExpr, FolioOp};
 
