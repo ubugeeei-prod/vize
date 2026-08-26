@@ -267,6 +267,14 @@ test("Patina linter imports S0 storage through the stage alias", () => {
   });
 });
 
+test("Fresco TUI imports S0 storage through the stage alias", () => {
+  assertS0AliasConsumer({
+    packageName: "vize_fresco",
+    label: "Fresco TUI",
+    directory: path.join(repoRoot, "crates", "vize_fresco"),
+  });
+});
+
 test("Canon content-mapper imports S0 storage through the stage alias", () => {
   const manifest = readRepoFile("crates", "vize_canon", "Cargo.toml");
   assert.match(manifest, /^vize_s0\.workspace = true$/m);
