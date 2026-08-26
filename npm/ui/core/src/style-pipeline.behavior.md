@@ -39,5 +39,8 @@ proven by `src/style-pipeline.test.ts` against the real package build.
   (`./dist/*.css`), so a consumer that never imports a styled component ships
   no CSS, and a consumer that overrides `sideEffects` handling can drop the
   stylesheet entirely and load `@vizejs/ui/style.css` on its own terms.
-- Every shipped rule lives inside `@layer vize.ui`, so consumer CSS outside a
-  layer — or in a later layer — always wins without specificity fights.
+- Every shipped rule lives inside a `vize.*` cascade layer — `vize.tokens`,
+  `vize.ui`, `vize.preset`, and `vize.policy`, in that ascending order; see
+  `theme.behavior.md` for the order and specificity contract — so consumer
+  CSS outside a layer, or in a later layer, always wins without specificity
+  fights.

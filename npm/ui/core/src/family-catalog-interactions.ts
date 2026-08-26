@@ -340,7 +340,7 @@ export const interactionFamilyCatalog = [
       maximumJavaScriptGzipBytes: 400,
       // Covers the shared packaged stylesheet (dist/style.css), including the
       // motion tokens every styled family ships together (style-pipeline.behavior.md).
-      maximumCssGzipBytes: 1_200,
+      maximumCssGzipBytes: 2_500,
     },
     aliases: ["screen reader only", "sr-only", "visually hidden"],
     upstreamCoverage: ["React Aria VisuallyHidden", "Radix VisuallyHidden"],

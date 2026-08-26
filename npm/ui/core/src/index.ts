@@ -2,6 +2,11 @@
 // without any SFC, keeping module order identical between the root bundle and
 // the id/error-summary subpath bundles for the byte-equality packaging gate.
 export * from "./field-wiring.ts";
+// theme stays second: packaged CSS concatenates in index module order, and
+// the cascade-layer order statement in src/theme.css must lead dist/style.css
+// so the layer contract is established before any layered rule;
+// src/theme-stylesheet.test.ts pins the shipped order.
+export * from "./theme.ts";
 export * from "./announcer.ts";
 export * from "./checkbox.ts";
 export * from "./collection.ts";

@@ -288,4 +288,34 @@ onMounted(() => {
 </template>
 `,
   },
+  {
+    filename: "ThemeConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import { setThemeTokens, themeTokenVar } from "./theme.ts";
+import type { ThemeDensityScale, ThemePresetName } from "./theme.ts";
+
+const preset = ref<ThemePresetName>("atelier");
+const density = ref<ThemeDensityScale>("compact");
+const surface = ref<HTMLElement | null>(null);
+
+onMounted(() => {
+  if (surface.value) {
+    setThemeTokens(surface.value, { "radius-md": "0.75rem" });
+  }
+});
+</script>
+
+<template>
+  <section
+    ref="surface"
+    :data-vize-theme="preset"
+    :data-vize-density="density"
+    :data-accent="themeTokenVar('color-accent')"
+  >
+    Themed surface
+  </section>
+</template>
+`,
+  },
 ] as const;

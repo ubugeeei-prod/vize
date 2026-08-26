@@ -238,4 +238,40 @@ export const basicFamilyCatalog = [
     maturity: "stable",
     owner: catalogOwner,
   },
+  {
+    canonicalName: "theme",
+    title: "Design Tokens",
+    packageSubpath: "./theme",
+    entryFile: "src/theme.ts",
+    sourceFiles: [
+      "src/theme.ts",
+      "src/theme.css",
+      "src/theme-preset-atelier.css",
+      "src/theme-tokens.ts",
+      "src/theme-types.ts",
+    ],
+    behaviorContract: "src/theme.behavior.md",
+    tests: ["src/theme.test.ts", "src/theme-stylesheet.test.ts", "src/theme-ssr.test.ts"],
+    typeTests: ["src/theme.types.test-d.ts"],
+    rendererFixture: "ThemeConsumer.vue",
+    qualityGates: interactionQualityGates,
+    bundleBudget: {
+      exportName: "setThemeTokens",
+      retainedSignature: "VIZE_UI_THEME_",
+      maximumJavaScriptGzipBytes: 1_500,
+      // Covers the packaged stylesheet: the token contract and presets share
+      // dist/style.css with every other styled family.
+      maximumCssGzipBytes: 2_500,
+    },
+    aliases: ["design tokens", "semantic tokens", "cascade layers", "presets", "atelier"],
+    upstreamCoverage: [
+      "CSS cascade layers",
+      "CSS custom properties",
+      "light-dark() color scheme",
+      "forced-colors adaptations",
+    ],
+    dependencies: [],
+    maturity: "stable",
+    owner: catalogOwner,
+  },
 ] as const satisfies readonly UiFamilyCatalogEntry[];

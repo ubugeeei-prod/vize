@@ -214,6 +214,11 @@
       "import": "./dist/spatial-navigation.mjs",
       "default": "./dist/spatial-navigation.mjs"
     },
+    "./theme": {
+      "types": "./dist/theme.d.mts",
+      "import": "./dist/theme.mjs",
+      "default": "./dist/theme.mjs"
+    },
     "./transition": {
       "types": "./dist/transition.d.mts",
       "import": "./dist/transition.mjs",

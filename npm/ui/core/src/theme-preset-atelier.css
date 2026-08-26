@@ -1,0 +1,47 @@
+/*
+ * Atelier preset: the Vize brand default. Production-ready surfaces with a
+ * violet accent on cool neutral grounds, in `@layer vize.preset` at zero
+ * specificity, scoped to the opt-in `data-vize-theme~="atelier"` attribute —
+ * without the attribute the preset is inert and the package stays headless.
+ *
+ * Scheme handling is pure CSS: `light-dark()` follows the user's color
+ * scheme, so system preference works with no runtime script and no flash —
+ * server-render the attribute (typically on `<html>`) and the first paint is
+ * already themed. `light-dark()` and the relative color deriving the light
+ * border are newer than the declared floor, so the package build lowers both
+ * (see style-pipeline.behavior.md): the shipped scheme pair tracks
+ * `prefers-color-scheme`, and the derived colors — including the
+ * `color-mix()` behind the muted text — resolve to literals at build time.
+ */
+
+@layer vize.preset {
+  :where([data-vize-theme~="atelier"], :host([data-vize-theme~="atelier"])) {
+    color-scheme: light dark;
+
+    /* Color roles. */
+    --vize-ui-color-canvas: light-dark(oklch(0.985 0.003 255), oklch(0.155 0.012 255));
+    --vize-ui-color-surface: light-dark(oklch(1 0 0), oklch(0.205 0.014 255));
+    --vize-ui-color-text: light-dark(oklch(0.245 0.02 255), oklch(0.93 0.008 255));
+    --vize-ui-color-text-muted: light-dark(
+      color-mix(in oklab, oklch(0.245 0.02 255) 62%, oklch(0.985 0.003 255)),
+      color-mix(in oklab, oklch(0.93 0.008 255) 68%, oklch(0.155 0.012 255))
+    );
+    --vize-ui-color-accent: light-dark(oklch(0.545 0.175 275), oklch(0.72 0.15 275));
+    --vize-ui-color-accent-contrast: light-dark(oklch(1 0 0), oklch(0.17 0.015 275));
+
+    /* The light border derives from the canvas through relative color. */
+    --vize-ui-color-border: light-dark(
+      oklch(from oklch(0.985 0.003 255) calc(l - 0.1) c h),
+      oklch(0.32 0.015 255)
+    );
+    --vize-ui-color-danger: light-dark(oklch(0.55 0.19 25), oklch(0.7 0.17 22));
+
+    /* Elevation: soft, cool-tinted shadows shared by both schemes. */
+    --vize-ui-elevation-raised:
+      0 1px 2px oklch(0.15 0.015 255 / 0.06), 0 1px 3px oklch(0.15 0.015 255 / 0.1);
+    --vize-ui-elevation-overlay:
+      0 4px 12px oklch(0.15 0.015 255 / 0.12), 0 2px 4px oklch(0.15 0.015 255 / 0.08);
+    --vize-ui-elevation-floating:
+      0 12px 32px oklch(0.15 0.015 255 / 0.16), 0 4px 8px oklch(0.15 0.015 255 / 0.08);
+  }
+}

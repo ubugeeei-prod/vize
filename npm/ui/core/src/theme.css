@@ -1,0 +1,144 @@
+/*
+ * Semantic design-token contract and cascade-layer order.
+ *
+ * Authored in the native CSS contract (nesting, cascade layers, native color
+ * functions) and down-compiled to the declared browser floor by the package
+ * build; see style-pipeline.behavior.md. The layer statement below is the
+ * package-wide cascade contract:
+ *
+ *   vize.tokens  < vize.ui < vize.preset < vize.policy < consumer CSS
+ *   (defaults)     (behavior) (opt-in look) (a11y stand-downs)
+ *
+ * Every rule sits on a `:where()` zero-specificity selector, so consumer CSS
+ * outside the vize layers always wins: replacing any token or preset value
+ * never requires forking a component. The TypeScript mirrors in
+ * theme-tokens.ts must stay value-identical with this file;
+ * src/theme-stylesheet.test.ts proves the pairing on the packaged stylesheet.
+ */
+
+@layer vize.tokens, vize.ui, vize.preset, vize.policy;
+
+@layer vize.tokens {
+  :where(:root, :host) {
+    /*
+     * Color roles. Headless defaults stay on the system palette so an
+     * unthemed page is honest native UI: correct in light and dark schemes
+     * and under forced colors, with no shipped visual opinion.
+     */
+    --vize-ui-color-canvas: Canvas;
+    --vize-ui-color-surface: Canvas;
+    --vize-ui-color-text: CanvasText;
+    --vize-ui-color-text-muted: GrayText;
+    --vize-ui-color-accent: LinkText;
+    --vize-ui-color-accent-contrast: Canvas;
+    --vize-ui-color-border: GrayText;
+    --vize-ui-color-danger: #d92d20;
+
+    /* Typography: families, size scale, line heights, and weights. */
+    --vize-ui-type-family-sans: system-ui, sans-serif;
+    --vize-ui-type-family-mono: ui-monospace, monospace;
+    --vize-ui-type-size-xs: 0.75rem;
+    --vize-ui-type-size-sm: 0.875rem;
+    --vize-ui-type-size-md: 1rem;
+    --vize-ui-type-size-lg: 1.125rem;
+    --vize-ui-type-size-xl: 1.25rem;
+    --vize-ui-type-size-2xl: 1.5rem;
+    --vize-ui-type-leading-tight: 1.25;
+    --vize-ui-type-leading-normal: 1.5;
+    --vize-ui-type-leading-loose: 1.75;
+    --vize-ui-type-weight-regular: 400;
+    --vize-ui-type-weight-medium: 500;
+    --vize-ui-type-weight-bold: 700;
+
+    /*
+     * Density factor. Space and control-size tokens multiply through it, so
+     * one scoped override retunes a whole surface; the `data-vize-density`
+     * scopes below are the declarative form.
+     */
+    --vize-ui-density: 1;
+
+    /* Space scale, density-responsive. */
+    --vize-ui-space-xs: calc(0.25rem * var(--vize-ui-density));
+    --vize-ui-space-sm: calc(0.5rem * var(--vize-ui-density));
+    --vize-ui-space-md: calc(0.75rem * var(--vize-ui-density));
+    --vize-ui-space-lg: calc(1rem * var(--vize-ui-density));
+    --vize-ui-space-xl: calc(1.5rem * var(--vize-ui-density));
+    --vize-ui-space-2xl: calc(2rem * var(--vize-ui-density));
+    --vize-ui-space-3xl: calc(3rem * var(--vize-ui-density));
+
+    /* Control sizes (block size of interactive controls), density-responsive. */
+    --vize-ui-size-control-sm: calc(1.75rem * var(--vize-ui-density));
+    --vize-ui-size-control-md: calc(2.25rem * var(--vize-ui-density));
+    --vize-ui-size-control-lg: calc(2.75rem * var(--vize-ui-density));
+
+    /* Corner radii. */
+    --vize-ui-radius-sm: 0.25rem;
+    --vize-ui-radius-md: 0.5rem;
+    --vize-ui-radius-lg: 1rem;
+    --vize-ui-radius-full: 9999px;
+
+    /* Border widths. */
+    --vize-ui-border-width-thin: 1px;
+    --vize-ui-border-width-thick: 2px;
+
+    /* Elevation. Shadows are visual opinion, so the headless default is flat. */
+    --vize-ui-elevation-raised: none;
+    --vize-ui-elevation-overlay: none;
+    --vize-ui-elevation-floating: none;
+
+    /* Opacity roles. */
+    --vize-ui-opacity-muted: 0.7;
+    --vize-ui-opacity-disabled: 0.45;
+
+    /* Z-index registry: one shared scale keeps layered surfaces ordered. */
+    --vize-ui-z-sticky: 100;
+    --vize-ui-z-dropdown: 600;
+    --vize-ui-z-overlay: 1000;
+    --vize-ui-z-toast: 1200;
+
+    /* Focus ring. The color resolves through the accent role by default. */
+    --vize-ui-focus-ring-width: 2px;
+    --vize-ui-focus-ring-offset: 2px;
+    --vize-ui-focus-ring-color: var(--vize-ui-color-accent);
+  }
+
+  /*
+   * Density scopes: the declarative counterpart of overriding
+   * `--vize-ui-density`. Custom properties inherit, so the factor retunes
+   * every space and size token in the annotated subtree.
+   */
+  :where([data-vize-density]) {
+    &:where([data-vize-density="compact"]) {
+      --vize-ui-density: 0.85;
+    }
+
+    &:where([data-vize-density="comfortable"]) {
+      --vize-ui-density: 1.15;
+    }
+  }
+}
+
+/*
+ * Forced colors: presets assign absolute colors, so the policy layer — which
+ * beats every preset — snaps the color roles back to the system palette and
+ * flattens elevation wherever tokens are defined. Properties the platform
+ * force-paints anyway stay coherent with the ones it does not.
+ */
+@layer vize.policy {
+  @media (forced-colors: active) {
+    :where(:root, :host, [data-vize-theme]) {
+      --vize-ui-color-canvas: Canvas;
+      --vize-ui-color-surface: Canvas;
+      --vize-ui-color-text: CanvasText;
+      --vize-ui-color-text-muted: GrayText;
+      --vize-ui-color-accent: Highlight;
+      --vize-ui-color-accent-contrast: HighlightText;
+      --vize-ui-color-border: ButtonBorder;
+      --vize-ui-color-danger: CanvasText;
+      --vize-ui-elevation-raised: none;
+      --vize-ui-elevation-overlay: none;
+      --vize-ui-elevation-floating: none;
+      --vize-ui-focus-ring-color: Highlight;
+    }
+  }
+}

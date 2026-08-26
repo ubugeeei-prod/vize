@@ -29,6 +29,7 @@ export default defineConfig({
   pack: {
     entry: {
       index: "src/index.ts",
+      theme: "src/theme.ts",
       announcer: "src/announcer.ts",
       button: "src/button.ts",
       checkbox: "src/checkbox.ts",
