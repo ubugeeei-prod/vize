@@ -243,13 +243,13 @@ test("P2-11 records current installments without presenting stale remainders", (
     p2_11: p2_11CurrentRecordEvidence(text.p2_11),
   };
   for (const [label, source] of Object.entries(currentEvidence)) {
-    assert.match(source, /#5009/, `${label} must cite the current installment-28 PR`);
+    assert.match(source, /#5011/, `${label} must cite the current installment-29 PR`);
     assert.match(
       source,
-      /28 (?:landed\s+)?installments|installment 28|\| 28\s+\|/i,
-      `${label} must cite current installment 28 evidence`,
+      /29 (?:landed\s+)?installments|installment 29|\| 29\s+\|/i,
+      `${label} must cite current installment 29 evidence`,
     );
-    assert.match(source, /pending installment 29|\| 29\s+\| pending/i);
+    assert.doesNotMatch(source, /pending installment 29|\| 29\s+\| pending/i);
   }
   assert.match(text.p2_11, /#4933/);
   assert.match(text.p2_11, /#5011/);
@@ -258,7 +258,7 @@ test("P2-11 records current installments without presenting stale remainders", (
   assert.match(text.p2_11, /#4924/);
   assert.match(text.p2_11, /#4927/);
   assert.match(text.p2_11, /#4929/);
-  assert.match(text.p2_11, /Current named remainder \(after #5009, with installment 29 pending\)/);
+  assert.match(text.p2_11, /Current named remainder \(after #5011\)/);
   assert.doesNotMatch(text.p2_11, /dynamic-argument bind names \/ modifiers/);
   assert.match(text.installment20, /14-fixture S2-vs-shipped byte-for-byte battery/);
   assert.match(text.installment20, /does not tick P2-11/);
@@ -280,6 +280,8 @@ test("P2-11 records current installments without presenting stale remainders", (
   assert.match(text.installment28, /e8a5d457d6bb241257c3d50e17bc14f834de344c/);
   assert.match(text.installment29, /Bare Template Default Slots/);
   assert.match(text.installment29, /#5011/);
+  assert.match(text.installment29, /3565326fe/);
+  assert.doesNotMatch(text.installment29, /pending|awaiting the\s+auto-merge/i);
   assert.match(text.installment29, /does not tick P2-11/);
 });
 
