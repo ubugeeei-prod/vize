@@ -144,6 +144,58 @@ test("bench-compare fails closed when the baseline reports path is not a directo
   assert.match(result.stderr, /ENOTDIR|not a directory/u);
 });
 
+function runMalformedReport(target: "current" | "baseline", mutate: (report: any) => void) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "davinci-bench-report-shape-"));
+  const baseline = path.join(root, "baseline");
+  const current = path.join(root, "current");
+  const budgets = path.join(root, "budgets.toml");
+  fs.mkdirSync(baseline);
+  fs.mkdirSync(current);
+  fs.writeFileSync(
+    budgets,
+    "[bench]\nfixture_parse_small = { wall_p50_ns = 100000, allocs = 42, " +
+      "rss_peak_bytes = 8192, wall_tolerance = 0.05 }\n",
+  );
+  const report = JSON.parse(
+    fs.readFileSync(path.join(fixtureDir, "baseline/fixture_parse_small.json"), "utf8"),
+  );
+  for (const dir of [baseline, current]) {
+    const copy = structuredClone(report);
+    if ((target === "baseline") === (dir === baseline)) mutate(copy);
+    fs.writeFileSync(path.join(dir, "fixture_parse_small.json"), `${JSON.stringify(copy)}\n`);
+  }
+  const result = runCompare(["--budgets", budgets, "--baseline", baseline, "--results", current]);
+  fs.rmSync(root, { recursive: true, force: true });
+  return result;
+}
+
+test("bench-compare rejects malformed bench report shapes before budget verdicts", () => {
+  const current = runMalformedReport("current", (report) => {
+    report.unexpected = true;
+  });
+  assert.equal(current.status, 2, current.stderr);
+  assert.equal(current.stdout, "");
+  assert.match(current.stderr, /current report .* has unknown fields unexpected/u);
+
+  const harness = runMalformedReport("current", (report) => {
+    report.harness_version = "";
+  });
+  assert.equal(harness.status, 2, harness.stderr);
+  assert.match(harness.stderr, /current report .* has no valid harness_version/u);
+  const wallOrder = runMalformedReport("current", (report) => {
+    report.wall_ns.p95 = report.wall_ns.p50 - 1;
+  });
+  assert.equal(wallOrder.status, 2, wallOrder.stderr);
+  assert.match(wallOrder.stderr, /current report .* has wall_ns.p95 below wall_ns.p50/u);
+
+  const baseline = runMalformedReport("baseline", (report) => {
+    report.wall_ns.p99 = 120000;
+  });
+  assert.equal(baseline.status, 2, baseline.stderr);
+  assert.match(baseline.stdout, /^bench-compare: budgets=.* baseline=.* results=.*\n/u);
+  assert.match(baseline.stderr, /baseline report .* wall_ns has unknown fields p99/u);
+});
+
 test("bench-compare reports the wall side but gates allocs when the wall baseline is unrecorded", () => {
   const overrides = { budgets: `${fixtureRel}/budgets-unrecorded.toml` };
   const result = runCompare(compareArgs("within-tolerance", overrides));
