@@ -53,6 +53,6 @@ fn unknown_props_off_opens_generated_check_tail() {
 fn unknown_props_on_keeps_native_fallthrough_tail() {
     assert_eq!(
         check_tail_line(&generate_parent_usage(true)),
-        "  type __VizeComponentCheckTail<C, F = __VizeFallthroughProps<C>> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeAllowedFallthroughAttrs<F> : Record<string, unknown>;",
+        "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeAllowedFallthroughAttrs<C> : Record<string, unknown>;",
     );
 }
