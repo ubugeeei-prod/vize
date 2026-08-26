@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { installPnpmDependencies } from "../_helpers/apps.ts";
+import { patchPnpmMinimumReleaseAgeExclude } from "../_helpers/pnpm-fixture-config.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -29,7 +30,30 @@ test("app e2e Playwright config keeps CI runs guarded and debuggable", () => {
 
 test("external fixture installs use the guarded helper", () => {
   const apps = readRepoFile("tests", "_helpers", "apps.ts");
+  const pnpmConfig = readRepoFile("tests", "_helpers", "pnpm-fixture-config.ts");
   assert.doesNotMatch(apps, /execSync\("npx -y pnpm@10 install\b/);
+  assert.match(apps, /patchPnpmAgeExclude/);
+  assert.match(apps, /@rolldown\/binding-\*/);
+  assert.match(pnpmConfig, /minimumReleaseAgeExclude/);
+});
+
+test("fixture pnpm workspace patch adds one release-age exclude", () => {
+  const tempRoot = fs.mkdtempSync(path.join(root, ".fixture-pnpm-config-"));
+  const workspacePath = path.join(tempRoot, "pnpm-workspace.yaml");
+  try {
+    fs.writeFileSync(
+      workspacePath,
+      "packages: []\nminimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - 'rollup'\n",
+    );
+    patchPnpmMinimumReleaseAgeExclude(workspacePath, "@rolldown/binding-*");
+    patchPnpmMinimumReleaseAgeExclude(workspacePath, "@rolldown/binding-*");
+
+    const source = fs.readFileSync(workspacePath, "utf8");
+    assert.match(source, /minimumReleaseAgeExclude:\n  - '@rolldown\/binding-\*'\n  - 'rollup'/);
+    assert.equal(source.match(/@rolldown\/binding-\*/g)?.length, 1);
+  } finally {
+    fs.rmSync(tempRoot, { force: true, recursive: true });
+  }
 });
 
 test("fixture install child cannot discover or mutate the parent Git repository", () => {

@@ -21,6 +21,7 @@ import {
   readDotenvValue,
   writeFrontendPhpconStaffRoute,
 } from "./app-fixture-runtime.ts";
+import { patchPnpmMinimumReleaseAgeExclude as patchPnpmAgeExclude } from "./pnpm-fixture-config.ts";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const TESTS_DIR = path.resolve(__dirname, "..");
@@ -28,7 +29,6 @@ const GIT_DIR = path.join(TESTS_DIR, "_fixtures", "_git");
 const PROJECTS_DIR = path.join(TESTS_DIR, "_fixtures", "_projects");
 const MUTABLE_GIT_PROJECTS_DIR = path.join(PROJECTS_DIR, "_git-worktrees");
 const MUTABLE_GIT_WORKTREE_INSTANCE = process.env.VIZE_TEST_WORKTREE_ID ?? `pid-${process.pid}`;
-
 export interface AppConfig {
   name: string;
   cwd: string;
@@ -82,13 +82,11 @@ const TRANSPARENT_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P8z/C/HwAFgwJ/lE6nWQAAAABJRU5ErkJggg==",
   "base64",
 );
-
 interface PnpmInstallOptions {
   env?: NodeJS.ProcessEnv;
   ignoreScripts?: boolean;
   timeout?: number;
 }
-
 export function installPnpmDependencies(cwd: string, options: PnpmInstallOptions = {}): void {
   console.log(`[vize:setup] pnpm install in ${cwd}...`);
   const args = ["-y", "pnpm@10", "install", "--no-frozen-lockfile"];
@@ -290,6 +288,7 @@ function addPnpmOverrides(packageJsonPath: string, overrides: Record<string, str
     fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, "\t") + "\n");
   }
 }
+
 export function applyElkRuntimePnpmOverrides(packageJsonPath: string): void {
   addPnpmOverrides(packageJsonPath, { "@nuxtjs/i18n": "10.1.0", vite: "^8.0.0" });
 }
@@ -803,6 +802,7 @@ function setupMisskeyWorktree(opts?: {
   addPnpmOverrides(path.join(misskeyDir, "package.json"), {
     vite: "8.2.0",
   });
+  patchPnpmAgeExclude(path.join(misskeyDir, "pnpm-workspace.yaml"), "@rolldown/binding-*");
 
   installPnpmDependencies(misskeyDir, {
     env: {

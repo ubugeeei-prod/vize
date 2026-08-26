@@ -40,7 +40,8 @@
 //! `.native` event sugar** (accepted and stripped like the shipped lane),
 //! **static+dynamic `style` merge** (`[{"color":"red"}, s]`), and
 //! **modifier-free dynamic `v-on` keys** (`@[event]` through
-//! `toHandlerKey`), plus native-element **`v-once`** cache wrappers.
+//! `toHandlerKey`), plus native-element **`v-once`** cache wrappers,
+//! while SFC style-block carriers (`vue.css-bind` facts) stay DOM-inert.
 //! Static-name `v-bind` modifiers (`.camel`, `.prop`, `.attr`, plus the
 //! dot shorthand) and dynamic-argument `v-bind` keys / modifiers are
 //! realized into the shipped DOM prop-key shape. Vue 2 pipe filters are
@@ -75,6 +76,7 @@ mod props_bind;
 mod props_object;
 mod props_object_merge;
 mod props_static;
+mod sfc_style;
 mod slots;
 mod style;
 mod tpl;
@@ -109,6 +111,7 @@ use self::helper::Helper;
 fn prefer_transform_helpers(buf: &mut Buf, region: &Region<'_>) {
     for op in region.ops.iter() {
         match op {
+            Op::Element(element) if sfc_style::is_carrier_element(element) => {}
             Op::Element(element) => {
                 directive::prefer_helpers(buf, &element.bindings);
                 buf.prefer(Helper::CreateElementVNode);

@@ -15,6 +15,7 @@ use super::children::{
     emit_create_text_vnode, emit_interpolation, emit_plain_text_vnode, emit_to_display_string,
 };
 use super::helper::Helper;
+use super::sfc_style;
 use super::slots::is_whitespace_text;
 use super::vnode;
 
@@ -22,6 +23,9 @@ pub(super) fn root_needs_fragment(root: &Region<'_>) -> bool {
     let mut count = 0u32;
     let mut compound = false;
     for op in root.ops.iter() {
+        if sfc_style::is_carrier(op) {
+            continue;
+        }
         if is_whitespace_text(op) {
             continue;
         }
@@ -46,6 +50,12 @@ pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), Em
     }
     let mut found = false;
     for op in root.ops.iter() {
+        if let Op::Element(element) = op
+            && sfc_style::is_carrier_element(element)
+        {
+            sfc_style::skip_carrier(cx, element);
+            continue;
+        }
         if is_whitespace_text(op) {
             let _id = cx.walk.mint();
             continue;
@@ -114,6 +124,12 @@ fn emit_fragment(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), EmitError
     cx.buf.indent();
     let mut first = true;
     for op in root.ops.iter() {
+        if let Op::Element(element) = op
+            && sfc_style::is_carrier_element(element)
+        {
+            sfc_style::skip_carrier(cx, element);
+            continue;
+        }
         if is_whitespace_text(op) {
             let _id = cx.walk.mint();
             continue;

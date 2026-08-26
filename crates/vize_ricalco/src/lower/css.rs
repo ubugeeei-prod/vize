@@ -91,6 +91,9 @@ impl<'a> super::Lowered<'a> {
 
     fn push_style_op(&mut self, op: Op<'a>) {
         let extra = match &op {
+            Op::Element(element) if element.bindings.is_empty() => {
+                return;
+            }
             Op::Element(element) => 1 + element.bindings.len() as u32,
             _ => 1,
         };
