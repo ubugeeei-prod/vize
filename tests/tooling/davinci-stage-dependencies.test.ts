@@ -259,6 +259,14 @@ test("Vize CLI package imports S0 storage through the stage alias", () => {
   });
 });
 
+test("Test runner imports S0 storage through the stage alias", () => {
+  assertS0AliasConsumer({
+    packageName: "vize_test_runner",
+    label: "Test runner",
+    directory: path.join(repoRoot, "tests", "vize_test_runner"),
+  });
+});
+
 test("Armature parser imports S0 storage through the stage alias", () => {
   assertS0AliasConsumer({
     packageName: "vize_armature",

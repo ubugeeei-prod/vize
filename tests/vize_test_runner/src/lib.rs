@@ -16,7 +16,7 @@ use vize_atelier_core::{
 };
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
-use vize_carton::{Allocator, String, ToCompactString};
+use vize_s0::{Allocator, String, ToCompactString};
 
 /// Test fixture file
 #[derive(Debug, Deserialize)]
@@ -207,8 +207,8 @@ pub fn compile_vdom(input: &str, options: &TestOptions) -> String {
     let allocator = Allocator::default();
 
     let parser_opts = ParserOptions {
-        is_void_tag: vize_carton::is_void_tag,
-        is_native_tag: Some(vize_carton::is_native_tag),
+        is_void_tag: vize_s0::is_void_tag,
+        is_native_tag: Some(vize_s0::is_native_tag),
         is_pre_tag: |tag| tag == "pre",
         get_namespace: get_dom_namespace,
         ..Default::default()
@@ -243,16 +243,16 @@ pub fn compile_vdom(input: &str, options: &TestOptions) -> String {
 }
 
 fn get_dom_namespace(tag: &str, parent: Option<&str>) -> Namespace {
-    if vize_carton::is_svg_tag(tag) {
+    if vize_s0::is_svg_tag(tag) {
         return Namespace::Svg;
     }
-    if vize_carton::is_math_ml_tag(tag) {
+    if vize_s0::is_math_ml_tag(tag) {
         return Namespace::MathMl;
     }
 
     if let Some(parent_tag) = parent {
         let svg_to_html = matches!(parent_tag, "foreignObject" | "desc" | "title");
-        if vize_carton::is_svg_tag(parent_tag) && !svg_to_html {
+        if vize_s0::is_svg_tag(parent_tag) && !svg_to_html {
             return Namespace::Svg;
         }
 
@@ -260,7 +260,7 @@ fn get_dom_namespace(tag: &str, parent: Option<&str>) -> Namespace {
             parent_tag,
             "annotation-xml" | "mi" | "mo" | "mn" | "ms" | "mtext"
         );
-        if vize_carton::is_math_ml_tag(parent_tag) && !mathml_to_html {
+        if vize_s0::is_math_ml_tag(parent_tag) && !mathml_to_html {
             return Namespace::MathMl;
         }
     }

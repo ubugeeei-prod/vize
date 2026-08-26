@@ -7,7 +7,7 @@
 //!   cargo run -p vize_test_runner --bin coverage -- -vv   # Show diffs
 
 use std::path::PathBuf;
-use vize_carton::String;
+use vize_s0::String;
 use vize_test_runner::{CompilerMode, run_fixture_tests};
 
 const MIN_VDOM_PASSED: usize = 457;
@@ -272,7 +272,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::{KNOWN_FAILURES, is_known_failure};
-    use vize_carton::FxHashSet;
+    use vize_s0::FxHashSet;
 
     #[test]
     fn tracks_the_current_known_failure_budget() {
