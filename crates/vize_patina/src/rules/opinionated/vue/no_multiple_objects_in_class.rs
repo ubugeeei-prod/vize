@@ -209,6 +209,31 @@ defineProps<{ device: string; isVertical: boolean }>();
     }
 
     #[test]
+    fn reports_two_objects_alongside_template_literal() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div :class="[`a${b}`, { x: y }, { z: w }]" />"#,
+            "App.vue",
+        );
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn ignores_braces_inside_string_literals() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div :class="['{', { a: b }]" />"#, "App.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn ignores_objects_inside_call_arguments() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template(r#"<div :class="[cls({ a: 1 }), { b: 2 }]" />"#, "App.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
     fn allows_plain_object_binding() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div :class="{ a, b }"></div>"#, "App.vue");

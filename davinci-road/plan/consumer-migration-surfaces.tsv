@@ -1085,17 +1085,18 @@ linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/no_template_la
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/no_template_shadow.rs	32	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/no_unused_refs.rs	57	s0	S0/carton	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/no_unused_refs.rs	57	old_ast	old AST/parser	old	vize_relief	legacy	1
-linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/no_useless_mustaches.rs	29	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/no_useless_mustaches.rs	35	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/no_useless_v_bind.rs	27	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/no_v_text.rs	29	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/prefer_props_shorthand.rs	32	old_ast	old AST/parser	old	vize_relief	legacy	2
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/prefer_props_shorthand.rs	32	croquis	Croquis analysis	old	vize_croquis	legacy	1
 linter	Linter	test/dev	crates/vize_patina/src/rules/opinionated/vue/prefer_props_shorthand.rs	103	s0	S0/carton	stage	vize_s0	preferred	2
-linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs	26	s0	S0/carton	stage	vize_s0	preferred	1
-linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs	26	old_ast	old AST/parser	old	vize_relief	legacy	1
-linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs	45	s0	S0/carton	stage	vize_s0	preferred	2
-linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs	45	old_ast	old AST/parser	old	vize_relief	legacy	4
-linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs	45	croquis	Croquis analysis	old	vize_croquis	legacy	3
+linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs	35	s0	S0/carton	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs	35	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs	46	s0	S0/carton	stage	vize_s0	preferred	2
+linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs	46	old_ast	old AST/parser	old	vize_relief	legacy	4
+linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs	46	croquis	Croquis analysis	old	vize_croquis	legacy	3
+linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/require_component_registration/self_name.rs	8	croquis	Croquis analysis	old	vize_croquis	legacy	2
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/scoped_event_names.rs	33	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs	32	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/this_in_template.rs	31	old_ast	old AST/parser	old	vize_relief	legacy	1

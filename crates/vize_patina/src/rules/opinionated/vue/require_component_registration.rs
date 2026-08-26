@@ -39,6 +39,7 @@
 //! </script>
 //! ```
 
+use self::self_name::{define_options_name, file_stem};
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
@@ -146,6 +147,26 @@ impl RequireComponentRegistration {
                 .any(|g| g.eq_ignore_ascii_case(tag) || g.eq_ignore_ascii_case(&kebab))
     }
 
+    /// Whether `tag` refers to the component itself.
+    ///
+    /// A `<script setup>` component can reference itself by its
+    /// filename-derived name or by the name declared via
+    /// `defineOptions({ name })` — a documented Vue feature for recursive
+    /// components that needs no import (importing yourself is not possible
+    /// without an alias).
+    fn is_self_reference(&self, ctx: &LintContext<'_>, tag: &str) -> bool {
+        let stem = file_stem(ctx.filename);
+        if !stem.is_empty() {
+            let self_name = to_pascal_case(stem);
+            if component_name_matches(tag, self_name.as_str()) {
+                return true;
+            }
+        }
+        ctx.analysis()
+            .and_then(define_options_name)
+            .is_some_and(|name| component_name_matches(tag, name))
+    }
+
     fn is_script_setup_imported_component(&self, analysis: &Croquis, tag: &str) -> bool {
         analysis
             .scopes
@@ -182,6 +203,11 @@ impl Rule for RequireComponentRegistration {
                 && !self.is_builtin(&tag)
                 && !self.is_framework_global(&tag)
             {
+                // Recursive self-reference needs no registration (#4953).
+                if self.is_self_reference(ctx, &tag) {
+                    continue;
+                }
+
                 if ctx
                     .analysis()
                     .is_some_and(|analysis| self.is_script_setup_imported_component(analysis, &tag))
@@ -255,88 +281,7 @@ fn component_name_matches(used: &str, registered: &str) -> bool {
         || to_pascal_case(used).as_str() == registered
 }
 
+mod self_name;
+
 #[cfg(test)]
-mod tests {
-    use super::{RequireComponentRegistration, pascal_to_kebab};
-    use crate::{LintPreset, Linter};
-
-    fn create_linter() -> Linter {
-        Linter::with_preset(LintPreset::Opinionated)
-            .with_enabled_rules(Some(vec!["vue/require-component-registration".into()]))
-    }
-
-    #[test]
-    fn test_pascal_to_kebab() {
-        assert_eq!(pascal_to_kebab("MyButton"), "my-button");
-        assert_eq!(pascal_to_kebab("NuxtLink"), "nuxt-link");
-        assert_eq!(pascal_to_kebab("RouterView"), "router-view");
-    }
-
-    #[test]
-    fn test_is_custom_component() {
-        let rule = RequireComponentRegistration::default();
-        assert!(rule.is_custom_component("MyButton"));
-        assert!(rule.is_custom_component("my-button"));
-        assert!(!rule.is_custom_component("div"));
-        assert!(!rule.is_custom_component("span"));
-    }
-
-    #[test]
-    fn test_is_builtin() {
-        let rule = RequireComponentRegistration::default();
-        assert!(rule.is_builtin("component"));
-        assert!(rule.is_builtin("Transition"));
-        assert!(rule.is_builtin("keep-alive"));
-        assert!(!rule.is_builtin("MyButton"));
-    }
-
-    #[test]
-    fn test_allows_script_setup_component_imports() {
-        let linter = create_linter();
-        let sfc = r#"<script setup lang="ts">
-import Child from './Child.vue'
-import { NamedWidget } from './widgets'
-import { LibraryWidget as RenamedWidget } from '@example/widgets'
-</script>
-
-<template>
-  <Child />
-  <NamedWidget />
-  <renamed-widget />
-</template>
-"#;
-        let result = linter.lint_sfc(sfc, "ParentWidget.vue");
-
-        assert!(
-            result.diagnostics.is_empty(),
-            "script setup imports should be recognized as registered components: {:?}",
-            result.diagnostics
-        );
-    }
-
-    #[test]
-    fn test_reports_unimported_script_setup_component() {
-        let linter = create_linter();
-        let sfc = r#"<script setup lang="ts">
-import Child from './Child.vue'
-</script>
-
-<template>
-  <Child />
-  <MissingWidget />
-</template>
-"#;
-        let result = linter.lint_sfc(sfc, "ParentWidget.vue");
-
-        assert_eq!(result.warning_count, 1);
-        assert_eq!(
-            result.diagnostics[0].rule_name,
-            "vue/require-component-registration"
-        );
-        assert!(
-            result.diagnostics[0]
-                .message
-                .contains("Component is used but not explicitly imported")
-        );
-    }
-}
+mod tests;

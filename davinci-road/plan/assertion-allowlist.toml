@@ -244,7 +244,6 @@ paths = [
   "crates/vize_patina/src/linter/native_type_aware/source_path.rs",
   "crates/vize_patina/src/linter/script_rules/html_scripts.rs",
   "crates/vize_patina/src/markup/tests.rs",
-  "crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs",
   "crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs",
   "crates/vize_patina/src/rules/vue/no_use_v_if_with_v_for.rs",
   "crates/vize_vitrine/src/napi/lint/empty_result.rs",

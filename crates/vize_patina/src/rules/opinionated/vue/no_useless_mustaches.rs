@@ -7,6 +7,11 @@
 //! text `x` but goes through the (slightly more expensive) interpolation path
 //! and reads as if it were dynamic.
 //!
+//! Whitespace-only literals such as `{{ " " }}` are exempt: they are an idiom
+//! to force a text node, and the literal replacement would be a
+//! whitespace-only text node that the default whitespace handling (condense)
+//! drops — changing the rendered output.
+//!
 //! ## Examples
 //!
 //! ### Invalid
@@ -21,6 +26,7 @@
 //! <div>x</div>
 //! <div>{{ x }}</div>
 //! <div>{{ `pre-${x}` }}</div>
+//! <span>A</span> {{ " " }} <span>B</span>
 //! ```
 
 use crate::context::LintContext;
@@ -55,10 +61,12 @@ impl Rule for NoUselessMustaches {
         let ExpressionNode::Simple(s) = &interpolation.content else {
             return;
         };
-        let Some(body) = static_string_literal_body(s.content) else {
+        let Some(inner) = static_string_literal_inner(s.content) else {
             return;
         };
-        if !body.is_empty() && body.chars().all(char::is_whitespace) {
+        // `{{ " " }}` forces a text node; its static replacement would be
+        // dropped by whitespace condense, changing rendered output (#4954).
+        if is_whitespace_only(inner) {
             return;
         }
         ctx.warn_with_help(
@@ -69,9 +77,10 @@ impl Rule for NoUselessMustaches {
     }
 }
 
-/// The literal body when `raw` is a constant string literal (`'x'`, `"x"`, or
-/// a template literal with no `${}` interpolation).
-fn static_string_literal_body(raw: &str) -> Option<&str> {
+/// When `raw` is a constant string literal (`'x'`, `"x"`, or a template
+/// literal with no `${}` interpolation), return its inner content (between
+/// the quotes, escape sequences unresolved).
+fn static_string_literal_inner(raw: &str) -> Option<&str> {
     let s = raw.trim();
     let bytes = s.as_bytes();
     if bytes.len() < 2 {
@@ -79,14 +88,32 @@ fn static_string_literal_body(raw: &str) -> Option<&str> {
     }
     let first = bytes[0];
     let last = bytes[bytes.len() - 1];
-    match first {
-        b'\'' | b'"' if first == last => {
-            let body = &s[1..s.len() - 1];
-            (!body.contains(first as char)).then_some(body)
-        }
-        b'`' if last == b'`' && !s.contains("${") => Some(&s[1..s.len() - 1]),
-        _ => None,
+    let is_literal = match first {
+        b'\'' | b'"' => first == last && !s[1..s.len() - 1].contains(first as char),
+        b'`' => last == b'`' && !s.contains("${"),
+        _ => false,
+    };
+    is_literal.then(|| &s[1..s.len() - 1])
+}
+
+/// Whether the (non-empty) literal content renders as whitespace only,
+/// counting both literal whitespace and unresolved whitespace escape
+/// sequences (`\t`, `\n`, ...).
+fn is_whitespace_only(inner: &str) -> bool {
+    if inner.is_empty() {
+        return false;
     }
+    let mut chars = inner.chars();
+    while let Some(c) = chars.next() {
+        if c == '\\' {
+            if !matches!(chars.next(), Some('t' | 'n' | 'r' | 'f' | 'v' | ' ')) {
+                return false;
+            }
+        } else if !c.is_whitespace() {
+            return false;
+        }
+    }
+    true
 }
 
 #[cfg(test)]
@@ -119,6 +146,33 @@ mod tests {
     fn reports_template_literal_without_interpolation() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div>{{ `x` }}</div>"#, "App.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn allows_whitespace_only_literal() {
+        // #4954: `{{ " " }}` is an idiom to force a text node. The literal
+        // replacement is a whitespace-only text node that the default
+        // whitespace handling (condense) drops, changing rendered output.
+        let linter = create_linter();
+        let result = linter.lint_template(
+            "<div>\n  <span>A</span>\n  {{ \" \" }}\n  <span>B</span>\n</div>",
+            "App.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn allows_whitespace_escape_literal() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div>{{ "\t" }}{{ '\n' }}</div>"#, "App.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn reports_literal_with_visible_content() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div>{{ ' x ' }}</div>"#, "App.vue");
         assert_eq!(result.warning_count, 1);
     }
 

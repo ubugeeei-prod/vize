@@ -26,9 +26,9 @@ Per-rule registration surface, SFC/JSX path membership, croquis usage, and a fir
 
 ## File accounting
 
-- `.rs` files under `crates/vize_patina/src/rules/**`: **357**
+- `.rs` files under `crates/vize_patina/src/rules/**`: **359**
 - rule-defining files (exactly one `static META` each): **245** → **245 rules**
-- non-rule files: **112** — 27 module organizers (a `<name>.rs` with a `<name>/` directory beside it), 4 `*_tests.rs` companions, 81 helper/data files (rule submodules, shared tables, private utilities)
+- non-rule files: **114** — 27 module organizers (a `<name>.rs` with a `<name>/` directory beside it), 4 `*_tests.rs` companions, 83 helper/data files (rule submodules, shared tables, private utilities)
 
 ## Summary
 
@@ -258,7 +258,7 @@ Sorted by rule name. File paths are relative to `crates/vize_patina/src/rules/`.
 | `vue/prefer-true-attribute-shorthand`           | template-family | `opinionated/vue/prefer_true_attribute_shorthand.rs`   | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `vue/prop-name-casing`                          | template-family | `vue/prop_name_casing.rs`                              | template-ast                   | yes (template-visitor)           | yes (fallback)              | ctx 1                                                                                               | container-bound        |
 | `vue/require-component-is`                      | template-family | `vue/require_component_is.rs`                          | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
-| `vue/require-component-registration`            | template-family | `opinionated/vue/require_component_registration.rs`    | template-ast                   | yes (template-visitor)           | yes (fallback)              | direct 6: `Croquis`, `ScopeData`, `builtins::is_builtin_component`, +2; ctx 1                       | vue-dialect-bound      |
+| `vue/require-component-registration`            | template-family | `opinionated/vue/require_component_registration.rs`    | template-ast                   | yes (template-visitor)           | yes (fallback)              | direct 7: `Croquis`, `ScopeData`, `builtins::is_builtin_component`, +2; ctx 2                       | vue-dialect-bound      |
 | `vue/require-scoped-style`                      | template-family | `vue/require_scoped_style.rs`                          | sfc-source                     | yes (sfc-hooks)                  | no (no JSX-reachable hooks) | —                                                                                                   | container-bound        |
 | `vue/require-toggle-inside-transition`          | template-family | `vue/require_toggle_inside_transition.rs`              | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `vue/require-v-for-key`                         | template-family | `vue/require_v_for_key.rs`                             | template-ast, markup-facade    | yes (template-visitor)           | yes (ir-lowered)            | —                                                                                                   | vue-dialect-bound      |

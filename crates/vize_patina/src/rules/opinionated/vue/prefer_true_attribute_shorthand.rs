@@ -2,20 +2,29 @@
 //!
 //! Prefer the shorthand for a boolean attribute bound to `true`.
 //!
-//! `:visible="true"` is equivalent to the shorthand `visible`. The explicit
-//! `="true"` binding adds noise without changing behaviour.
+//! `:disabled="true"` on a native element with a boolean attribute is
+//! equivalent to the shorthand `disabled`. The explicit `="true"` binding adds
+//! noise without changing behaviour.
+//!
+//! The rule only reports attributes that are *statically known* to be boolean:
+//! native boolean attributes on native elements. On a component the shorthand
+//! passes the empty string `""`, which only casts to `true` when the target
+//! component declares the prop as `Boolean` — a declaration this template
+//! cannot see. For a fallthrough attr the rewrite silently changes runtime
+//! behaviour (`true` becomes the falsy `""`), so components are left alone.
 //!
 //! ## Examples
 //!
 //! ### Invalid
 //! ```vue
-//! <MyComponent :visible="true" />
+//! <input :disabled="true" />
 //! ```
 //!
 //! ### Valid
 //! ```vue
-//! <MyComponent visible />
-//! <MyComponent :visible="false" />
+//! <input disabled />
+//! <input :disabled="false" />
+//! <MyComponent :visible="true" />
 //! <MyComponent :visible="isVisible" />
 //! ```
 
@@ -59,7 +68,13 @@ impl Rule for PreferTrueAttributeShorthand {
             return;
         }
         let name = arg.content;
-        if is_native_tag(element.tag) && !BOOLEAN_ATTRIBUTES.contains(&name) {
+        // Only attributes statically known to be boolean: the shorthand form
+        // passes `""`, which is only cast back to `true` for native boolean
+        // attributes or props *declared* as `Boolean` on the target component.
+        // Prop declarations of other components are not visible here, and for
+        // fallthrough attrs the rewrite changes runtime behaviour (#4952), so
+        // anything but a native boolean attribute stays silent.
+        if !is_native_tag(element.tag) || !BOOLEAN_ATTRIBUTES.contains(&name) {
             return;
         }
         // Modifiers such as `.prop` change semantics; leave them alone.
@@ -94,13 +109,6 @@ mod tests {
     }
 
     #[test]
-    fn reports_true_binding() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<MyComponent :visible="true" />"#, "App.vue");
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
     fn reports_native_boolean_true_binding() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<input :disabled="true" />"#, "App.vue");
@@ -122,6 +130,20 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<div :aria-hidden="true" :data-active="true" />"#,
+            "App.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn allows_component_true_binding() {
+        // #4952: the target component's prop declarations are not visible from
+        // this template. When the prop is not Boolean-declared (e.g. a
+        // fallthrough attr), the shorthand passes the empty string instead of
+        // `true`, so the rewrite would change runtime behaviour.
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<Draggable :list="[]" item-key="id" :force-fallback="true" />"#,
             "App.vue",
         );
         assert_eq!(result.warning_count, 0);
