@@ -246,6 +246,7 @@ export const basicFamilyCatalog = [
     sourceFiles: [
       "src/theme.ts",
       "src/theme.css",
+      "src/theme-preset-headless.css",
       "src/theme-preset-atelier.css",
       "src/theme-preset-midnight.css",
       "src/theme-preset-paper.css",
@@ -273,6 +274,7 @@ export const basicFamilyCatalog = [
       "semantic tokens",
       "cascade layers",
       "presets",
+      "headless",
       "atelier",
       "midnight",
       "paper",

@@ -57,7 +57,7 @@ test("publishes the token contract and scope constants", () => {
   assert.equal(themeDensityAttribute, "data-vize-density");
   assert.deepEqual(
     [...themePresets],
-    ["atelier", "midnight", "paper", "play", "signal", "high-contrast"],
+    ["headless", "atelier", "midnight", "paper", "play", "signal", "high-contrast"],
   );
   assert.deepEqual(Object.keys(themeDensityScales).sort(), ["comfortable", "compact"]);
 
@@ -81,7 +81,7 @@ test("scopes presets and densities in a mounted consumer", () => {
         h(
           "section",
           {
-            [themePresetAttribute]: "atelier midnight paper play signal high-contrast",
+            [themePresetAttribute]: "headless atelier midnight paper play signal high-contrast",
             [themeDensityAttribute]: density.value,
           },
           [h("output", { "data-accent": themeTokenVar("color-accent") }, "Themed")],
@@ -93,7 +93,7 @@ test("scopes presets and densities in a mounted consumer", () => {
   const root = handle.root();
   assert.equal(
     root.getAttribute("data-vize-theme"),
-    "atelier midnight paper play signal high-contrast",
+    "headless atelier midnight paper play signal high-contrast",
   );
   assert.equal(root.getAttribute("data-vize-density"), "compact");
   assert.equal(

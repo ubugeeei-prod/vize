@@ -60,8 +60,9 @@ export type ThemeTokenOverrides = {
   readonly [Name in ThemeTokenName]?: string;
 };
 
-/** Opinionated presets accepted in the space-separated `data-vize-theme` attribute. */
+/** Presets accepted in the space-separated `data-vize-theme` attribute. */
 export type ThemePresetName =
+  | "headless"
   | "atelier"
   | "midnight"
   | "paper"

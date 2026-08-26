@@ -1,0 +1,11 @@
+/*
+ * Headless preset: an explicit no-visual-opinion scope. It ships as a named
+ * preset so applications can persist a "headless" choice without importing a
+ * decorative look. Semantic system-palette tokens stay owned by theme.css.
+ */
+
+@layer vize.preset {
+  :where([data-vize-theme~="headless"], :host([data-vize-theme~="headless"])) {
+    color-scheme: light dark;
+  }
+}

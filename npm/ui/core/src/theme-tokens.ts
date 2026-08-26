@@ -21,8 +21,9 @@ export const themePresetAttribute = "data-vize-theme";
 /** Attribute that retunes the density factor for a subtree. */
 export const themeDensityAttribute = "data-vize-density";
 
-/** Opinionated presets shipped in `@layer vize.preset`. */
+/** Presets shipped in `@layer vize.preset`, ordered from least to most opinionated. */
 export const themePresets: readonly ThemePresetName[] = Object.freeze([
+  "headless",
   "atelier",
   "midnight",
   "paper",

@@ -4,29 +4,30 @@ Normative contract for the theme family (`@vizejs/ui/theme`): the semantic
 design-token contract, the package-wide cascade-layer order, and the opt-in
 presets. The stylesheet contract is proven on the packaged `dist/style.css`
 (the pack pipeline lowers `src/theme.css` and the preset files
-`src/theme-preset-atelier.css`, `src/theme-preset-midnight.css`,
-`src/theme-preset-paper.css`, `src/theme-preset-play.css`,
-`src/theme-preset-signal.css`, and `src/theme-preset-high-contrast.css` to the
-declared browser floor; see `style-pipeline.behavior.md`) in
+`src/theme-preset-headless.css`, `src/theme-preset-atelier.css`,
+`src/theme-preset-midnight.css`, `src/theme-preset-paper.css`,
+`src/theme-preset-play.css`, `src/theme-preset-signal.css`, and
+`src/theme-preset-high-contrast.css` to the declared browser floor; see
+`style-pipeline.behavior.md`) in
 `src/theme-stylesheet.test.ts`; runtime rows are proven by the named test in
 `src/theme.test.ts` or `src/theme-ssr.test.ts`; compile-only assertions live
 in `src/theme.types.test-d.ts`.
 
-| #   | State               | Input                                                                                          | Outcome                                                                                                   | Proven by                                                          |
-| --- | ------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| T1  | packaged stylesheet | consumer imports any styled entry                                                              | cascade layers ship in ascending priority order `vize.tokens` → `vize.ui` → `vize.preset` → `vize.policy` | `ships the documented cascade layer order`                         |
-| T2  | packaged stylesheet | any styled entry                                                                               | the semantic token contract ships in `@layer vize.tokens` at zero specificity, matching the TS mirrors    | `ships layered zero-specificity theme tokens matching the mirrors` |
-| T3  | packaged stylesheet | no `data-vize-theme` attribute                                                                 | headless default: colors stay on the system palette and every elevation is `none`                         | `keeps the headless default free of visual opinion`                |
-| T4  | packaged stylesheet | `data-vize-density="compact" \| "comfortable"`                                                 | the density factor retunes, scaling every space and control-size token in the subtree                     | `ships density scopes that retune the shared factor`               |
-| T5  | packaged stylesheet | `data-vize-theme~="atelier" \| "midnight" \| "paper" \| "play" \| "signal" \| "high-contrast"` | published presets assign visual tokens in `@layer vize.preset`, scoped to their opt-in attribute          | `scopes published presets to their opt-in attributes`              |
-| T6  | packaged stylesheet | light and dark schemes                                                                         | preset `light-dark()` values ship lowered to the floor and follow the user's color scheme                 | `lowers preset color schemes to the declared floor`                |
-| T7  | packaged stylesheet | `forced-colors: active`                                                                        | `@layer vize.policy` snaps color roles to the system palette and flattens elevation, beating presets      | `stands down to system colors under forced colors`                 |
-| T8  | any                 | `setThemeTokens(element, overrides)`                                                           | overrides apply to the element inline and the restore callback reinstates values                          | `applies and restores token overrides on a real element`           |
-| T9  | any                 | unknown token name or empty value                                                              | `themeTokenProperty`/`setThemeTokens` throw `VIZE_UI_THEME_TOKEN`                                         | `rejects unknown tokens and empty override values`                 |
-| T10 | mounted             | consumer binds scope attributes and tokens                                                     | preset and density attributes render, and scoped overrides apply through the mounted DOM                  | `scopes presets and densities in a mounted consumer`               |
-| T11 | SSR                 | render with token helpers in setup                                                             | byte-identical markup; no platform global is required                                                     | `renders byte-identical SSR markup without platform globals`       |
-| T12 | SSR                 | hydration                                                                                      | hydrating a themed consumer emits no diagnostics and keeps server nodes                                   | `hydrates a themed consumer without replacement or diagnostics`    |
-| T13 | public types        | invalid token names or mutated records                                                         | compilation rejects misuse                                                                                | `src/theme.types.test-d.ts`                                        |
+| #   | State               | Input                                                                                                        | Outcome                                                                                                   | Proven by                                                          |
+| --- | ------------------- | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| T1  | packaged stylesheet | consumer imports any styled entry                                                                            | cascade layers ship in ascending priority order `vize.tokens` → `vize.ui` → `vize.preset` → `vize.policy` | `ships the documented cascade layer order`                         |
+| T2  | packaged stylesheet | any styled entry                                                                                             | the semantic token contract ships in `@layer vize.tokens` at zero specificity, matching the TS mirrors    | `ships layered zero-specificity theme tokens matching the mirrors` |
+| T3  | packaged stylesheet | no `data-vize-theme` attribute or `data-vize-theme~="headless"`                                              | headless default and explicit preset stay on the system palette, flat, and free of visual token opinion   | `keeps the headless default free of visual opinion`                |
+| T4  | packaged stylesheet | `data-vize-density="compact" \| "comfortable"`                                                               | the density factor retunes, scaling every space and control-size token in the subtree                     | `ships density scopes that retune the shared factor`               |
+| T5  | packaged stylesheet | `data-vize-theme~="headless" \| "atelier" \| "midnight" \| "paper" \| "play" \| "signal" \| "high-contrast"` | published presets are scoped to their opt-in attribute; only non-headless presets assign visual tokens    | `scopes published presets to their opt-in attributes`              |
+| T6  | packaged stylesheet | light and dark schemes                                                                                       | preset `light-dark()` values ship lowered to the floor and follow the user's color scheme                 | `lowers preset color schemes to the declared floor`                |
+| T7  | packaged stylesheet | `forced-colors: active`                                                                                      | `@layer vize.policy` snaps color roles to the system palette and flattens elevation, beating presets      | `stands down to system colors under forced colors`                 |
+| T8  | any                 | `setThemeTokens(element, overrides)`                                                                         | overrides apply to the element inline and the restore callback reinstates values                          | `applies and restores token overrides on a real element`           |
+| T9  | any                 | unknown token name or empty value                                                                            | `themeTokenProperty`/`setThemeTokens` throw `VIZE_UI_THEME_TOKEN`                                         | `rejects unknown tokens and empty override values`                 |
+| T10 | mounted             | consumer binds scope attributes and tokens                                                                   | preset and density attributes render, and scoped overrides apply through the mounted DOM                  | `scopes presets and densities in a mounted consumer`               |
+| T11 | SSR                 | render with token helpers in setup                                                                           | byte-identical markup; no platform global is required                                                     | `renders byte-identical SSR markup without platform globals`       |
+| T12 | SSR                 | hydration                                                                                                    | hydrating a themed consumer emits no diagnostics and keeps server nodes                                   | `hydrates a themed consumer without replacement or diagnostics`    |
+| T13 | public types        | invalid token names or mutated records                                                                       | compilation rejects misuse                                                                                | `src/theme.types.test-d.ts`                                        |
 
 ## Cascade-layer order and specificity budget
 
@@ -51,8 +52,9 @@ in `src/theme.types.test-d.ts`.
   `--vize-ui-color-accent`, and space/size tokens resolve through
   `--vize-ui-density`, so one override retunes a whole phase.
 - `data-vize-theme` holds space-separated preset names and is inert without
-  the shipped preset CSS; `atelier` is the Vize brand default, `midnight` is
-  the dark-first application preset, `paper` is the editorial preset for
+  the shipped preset CSS; `headless` is an explicit no-visual-opinion preset
+  for persisted theme choice, `atelier` is the Vize brand default, `midnight`
+  is the dark-first application preset, `paper` is the editorial preset for
   content-forward surfaces, `play` is the expressive consumer-product preset,
   `signal` is the dense data/tooling preset, and `high-contrast` is the
   legibility-first preset with heavy boundaries and flat elevation. When

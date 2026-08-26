@@ -8,6 +8,7 @@ import { test } from "vite-plus/test";
 import { themeCascadeLayerOrder, themeDensityScales, themePresets, themeTokens } from "./theme.ts";
 
 const stylesheet = await readFile(path.resolve("dist/style.css"), "utf8");
+const opinionatedThemePresets = themePresets.filter((name) => name !== "headless");
 
 const layerStarts = new Map(
   themeCascadeLayerOrder.map((layer) => [layer, stylesheet.indexOf(`@layer ${layer}{`)]),
@@ -64,11 +65,18 @@ test("ships layered zero-specificity theme tokens matching the mirrors", () => {
 
 test("keeps the headless default free of visual opinion", () => {
   const tokens = layerBlock("vize.tokens");
+  const headlessPreset = shippedPresetRule("headless");
 
   assert.match(tokens, /--vize-ui-color-canvas:Canvas[;}]/);
   assert.match(tokens, /--vize-ui-color-text:CanvasText[;}]/);
   assert.match(tokens, /--vize-ui-elevation-raised:none[;}]/);
   assert.doesNotMatch(tokens, /oklch\(/, "headless defaults must stay on the system palette");
+  assert.match(headlessPreset, /color-scheme:light dark/);
+  assert.doesNotMatch(
+    headlessPreset,
+    /--vize-ui-/,
+    "the explicit headless preset must not add visual token opinion",
+  );
 });
 
 test("ships density scopes that retune the shared factor", () => {
@@ -103,7 +111,7 @@ function shippedPresetRule(name: (typeof themePresets)[number]): string {
 test("scopes published presets to their opt-in attributes", () => {
   const preset = layerBlock("vize.preset");
 
-  for (const name of themePresets) {
+  for (const name of opinionatedThemePresets) {
     const rule = shippedPresetRule(name);
     assert.match(rule, /color-scheme:light dark/);
     assert.match(rule, /--vize-ui-color-accent:/);
@@ -131,7 +139,7 @@ test("lowers preset color schemes to the declared floor", () => {
     preset,
     /--vize-ui-color-canvas:var\(--lightningcss-light,oklch\(98\.5% \.003 255\)\)var\(--lightningcss-dark,oklch\(15\.5% \.012 255\)\)/,
   );
-  for (const name of themePresets) {
+  for (const name of opinionatedThemePresets) {
     assert.match(
       preset,
       new RegExp(
