@@ -49,9 +49,6 @@ fn strict_template_context_resolves_route_alongside_router() {
 
     let diagnostics = strict_project_diagnostics(&project_root);
     let _ = std::fs::remove_dir_all(&project_root);
-    let Some(diagnostics) = diagnostics else {
-        return;
-    };
 
     let route_diagnostics: Vec<_> = diagnostics
         .iter()
@@ -81,7 +78,10 @@ fn strict_template_context_resolves_route_alongside_router() {
 
 /// `snapshot_project_diagnostics` with the strict instance-global form the
 /// Nuxt detection enables for projects that publish generated types.
-fn strict_project_diagnostics(project_root: &Path) -> Option<Vec<(String, Option<u32>, String)>> {
+///
+/// The caller already gated on a resolvable checker binary, so every failure
+/// past that point is a real regression and panics instead of skipping.
+fn strict_project_diagnostics(project_root: &Path) -> Vec<(String, Option<u32>, String)> {
     let options = BatchTypeCheckerOptions {
         virtual_ts_options: VirtualTsOptions {
             strict_instance_globals: true,
@@ -89,9 +89,10 @@ fn strict_project_diagnostics(project_root: &Path) -> Option<Vec<(String, Option
         },
         ..Default::default()
     };
-    let mut checker = BatchTypeChecker::with_options(project_root, options).ok()?;
-    checker.scan_project().ok()?;
-    let result = checker.check_project().ok()?;
+    let mut checker = BatchTypeChecker::with_options(project_root, options)
+        .expect("batch checker should initialize");
+    checker.scan_project().expect("project scan should succeed");
+    let result = checker.check_project().expect("project check should run");
 
     let mut snapshot: Vec<_> = result
         .diagnostics
@@ -110,5 +111,5 @@ fn strict_project_diagnostics(project_root: &Path) -> Option<Vec<(String, Option
         })
         .collect();
     snapshot.sort();
-    Some(snapshot)
+    snapshot
 }

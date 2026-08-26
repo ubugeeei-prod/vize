@@ -55,6 +55,8 @@ fn write_case(explicit_opt_in: bool) -> TempDir {
     dir
 }
 
+/// `None` only when no checker binary resolves (the suite-wide skip); any
+/// failure past that gate is a real regression and panics instead of skipping.
 fn case_diagnostics(project_root: &Path) -> Option<Vec<(String, Option<u32>, String)>> {
     let tsgo = resolve_test_tsgo_binary()?;
     // Diagnostics come back through the canonical project path; resolve the
@@ -66,9 +68,9 @@ fn case_diagnostics(project_root: &Path) -> Option<Vec<(String, Option<u32>, Str
         BatchTypeCheckerOptions::default(),
         Some(&tsgo),
     )
-    .ok()?;
-    checker.scan_project().ok()?;
-    let result = checker.check_project().ok()?;
+    .expect("batch checker should initialize");
+    checker.scan_project().expect("project scan should succeed");
+    let result = checker.check_project().expect("project check should run");
 
     let mut snapshot: Vec<_> = result
         .diagnostics
