@@ -27,7 +27,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, PropNode};
+use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-lone-template",
@@ -45,15 +45,36 @@ impl NoLoneTemplate {
     /// Check if the template has a valid directive that justifies its existence
     fn has_valid_directive(element: &ElementNode) -> bool {
         for prop in &element.props {
-            if let PropNode::Directive(dir) = prop {
-                let name = dir.name;
-                // Template is valid if it has v-if, v-else-if, v-else, v-for, v-slot, or #slot
-                if matches!(name, "if" | "else-if" | "else" | "for" | "slot") {
+            match prop {
+                PropNode::Directive(dir)
+                    if matches!(
+                        dir.name,
+                        "if" | "else-if" | "else" | "for" | "slot" | "slot-scope" | "scope"
+                    ) =>
+                {
                     return true;
                 }
+                PropNode::Directive(dir)
+                    if dir.name == "bind" && Self::is_static_slot_arg(&dir.arg) =>
+                {
+                    return true;
+                }
+                PropNode::Attribute(attr)
+                    if matches!(attr.name, "slot" | "slot-scope" | "scope") =>
+                {
+                    return true;
+                }
+                _ => {}
             }
         }
         false
+    }
+
+    fn is_static_slot_arg(arg: &Option<ExpressionNode<'_>>) -> bool {
+        matches!(
+            arg,
+            Some(ExpressionNode::Simple(simple)) if simple.is_static && simple.content == "slot"
+        )
     }
 }
 
@@ -122,6 +143,31 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_with_legacy_slot_attributes() {
+        let linter = create_linter();
+        for source in [
+            r#"<MyComponent><template slot="header"><h1>Title</h1></template></MyComponent>"#,
+            r#"<MyComponent><template slot-scope="props">{{ props.title }}</template></MyComponent>"#,
+            r#"<MyComponent><template scope="props">{{ props.title }}</template></MyComponent>"#,
+            r#"<MyComponent><template v-bind:slot="name"><h1>Title</h1></template></MyComponent>"#,
+            r#"<MyComponent><template :slot="name"><h1>Title</h1></template></MyComponent>"#,
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(result.warning_count, 0, "{source}");
+        }
+    }
+
+    #[test]
+    fn test_invalid_dynamic_bound_slot() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<MyComponent><template v-bind:[slot]="name"><h1>Title</h1></template></MyComponent>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]
