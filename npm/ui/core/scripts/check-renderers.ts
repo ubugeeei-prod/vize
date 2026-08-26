@@ -221,6 +221,27 @@ const press = usePress({
 </template>
 `,
   },
+  {
+    filename: "PointerGraceConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { usePointerGrace } from "./pointer-grace.ts";
+
+const grace = usePointerGrace({
+  delay: 300,
+  onGraceEnd() {},
+});
+</script>
+
+<template>
+  <div
+    :data-pending="grace.isPending.value || undefined"
+    @pointermove="grace.handleMove({ x: $event.clientX, y: $event.clientY })"
+  >
+    Grace target
+  </div>
+</template>
+`,
+  },
 ] as const;
 
 /**
