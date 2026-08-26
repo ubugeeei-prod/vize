@@ -8,6 +8,12 @@ import {
   readCompatibilityLedger,
   validateCompatibilityLedger,
 } from "../../tools/fixtures/fixture-compatibility-ledger.mjs";
+import {
+  p2_11CurrentRecordEvidence,
+  recordsTaskRow,
+  requiredLine,
+  requiredSection,
+} from "./support/davinci-phase2-ledger.ts";
 
 function p2_11Installment(number: number): URL {
   return new URL(
@@ -76,13 +82,7 @@ function taskIndex(source: string): Map<string, boolean> {
   return new Map(entries);
 }
 
-type CurrentGroup = {
-  declaredCount: number;
-  ids: string[];
-  total: number;
-};
-
-function currentGroup(source: string, label: string): CurrentGroup {
+function currentGroup(source: string, label: string) {
   const match = new RegExp(
     `^- \\*\\*${label}: (?<count>\\d+) of (?<total>\\d+) — (?<ids>P2-[\\s\\S]*?)\\.\\*\\*`,
     "mu",
@@ -101,13 +101,6 @@ function taskSection(source: string, id: string): string {
   const tail = source.slice(start);
   const next = /^## P2-/mu.exec(tail.slice(1))?.index;
   return next == null ? tail : tail.slice(0, next + 1);
-}
-
-function recordsTaskRow(source: string, id: string): string {
-  const escaped = id.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
-  const match = new RegExp(`^\\| \\[${escaped}\\][^\\n]+$`, "mu").exec(source);
-  assert.ok(match, `missing records row for ${id}`);
-  return match[0];
 }
 
 function dependencySet(source: string, id: string, taskIds: string[]): string[] {
@@ -232,14 +225,32 @@ test("every completion joins a merged PR to honest current evidence", () => {
 });
 
 test("P2-11 records current installments without presenting stale remainders", () => {
-  const recordsP2_11 = recordsTaskRow(text.records, "P2-11");
-  for (const source of [text.roadmap, text.readme, text.tasks, text.p2_11]) {
-    assert.match(source, /#5009/);
-    assert.match(source, /28 (?:landed\s+)?installments|installment 28|\| 28\s+\|/i);
+  const currentEvidence = {
+    roadmap: requiredSection(
+      text.roadmap,
+      /^\*\*Current execution ledger/mu,
+      /^\*\*Exit gate:/mu,
+      "roadmap current execution ledger",
+    ),
+    readme: requiredLine(text.readme, /^\| \[phase-2\.md\][^\n]+$/mu, "plan README phase 2 row"),
+    tasks: requiredSection(
+      text.tasks,
+      /^\*\*Current series evidence/mu,
+      /^\*\*Steps:\*\*/mu,
+      "P2-11 current series evidence",
+    ),
+    records: recordsTaskRow(text.records, "P2-11"),
+    p2_11: p2_11CurrentRecordEvidence(text.p2_11),
+  };
+  for (const [label, source] of Object.entries(currentEvidence)) {
+    assert.match(source, /#5009/, `${label} must cite the current installment-28 PR`);
+    assert.match(
+      source,
+      /28 (?:landed\s+)?installments|installment 28|\| 28\s+\|/i,
+      `${label} must cite current installment 28 evidence`,
+    );
+    assert.match(source, /pending installment 29|\| 29\s+\| pending/i);
   }
-  assert.match(recordsP2_11, /#5009/);
-  assert.match(recordsP2_11, /28 (?:landed\s+)?installments|installment 28|\| 28\s+\|/i);
-  assert.match(recordsP2_11, /pending installment 29/);
   assert.match(text.p2_11, /#4933/);
   assert.match(text.p2_11, /#5011/);
   assert.match(text.p2_11, /#4919/);
