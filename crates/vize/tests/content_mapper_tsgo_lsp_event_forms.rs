@@ -12,6 +12,8 @@ use vize_s0::FxHashSet;
 #[path = "content_mapper_tsgo_lsp_event_forms/cases.rs"]
 mod cases;
 use cases::EVENT_CASES;
+#[path = "content_mapper_tsgo_lsp_event_forms/model_props.rs"]
+mod model_props;
 
 mod content_mapper_lsp_support;
 use content_mapper_lsp_support::{
@@ -196,6 +198,19 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
             }
             let app_clean = pull_diagnostics(&client, &app_uri).await;
             assert_eq!(app_clean["items"], json!([]), "{app_clean:#}");
+
+            let named_model = cases
+                .iter()
+                .find(|case| case.7 == "update:title")
+                .expect("model event case should exist");
+            model_props::assert_define_model_prop_navigation(
+                &client,
+                &app_uri,
+                &app_source,
+                &named_model.0,
+                &named_model.1,
+            )
+            .await;
 
             for (
                 uri,
