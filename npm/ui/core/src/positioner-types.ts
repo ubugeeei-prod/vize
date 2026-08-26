@@ -6,8 +6,26 @@ export type PlacementSide = "bottom" | "left" | "right" | "top";
 /** Alignment along the cross axis. */
 export type PlacementAlign = "center" | "end" | "start";
 
-/** Named placement used by the positioner. */
-export type Placement = PlacementSide | `${PlacementSide}-${PlacementAlign}`;
+/**
+ * Named placement used by the positioner.
+ *
+ * Spelled as an explicit union (rather than a template-literal cross of
+ * side and align) so SFC prop-default checking can evaluate membership.
+ */
+export type Placement =
+  | PlacementSide
+  | "bottom-center"
+  | "bottom-end"
+  | "bottom-start"
+  | "left-center"
+  | "left-end"
+  | "left-start"
+  | "right-center"
+  | "right-end"
+  | "right-start"
+  | "top-center"
+  | "top-end"
+  | "top-start";
 
 /** How floating coordinates are published to CSS. */
 export type PositionerStrategy = "absolute" | "fixed";

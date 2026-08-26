@@ -6,10 +6,7 @@ import { test } from "vite-plus/test";
 import { createSSRApp, defineComponent } from "vue";
 import { renderToString } from "vue/server-renderer";
 
-import {
-  controlRuntimeFixtures,
-  type RuntimeFixture,
-} from "./runtime-conformance-fixtures.ts";
+import { controlRuntimeFixtures, type RuntimeFixture } from "./runtime-conformance-fixtures.ts";
 import { overlayRuntimeFixtures } from "./runtime-conformance-overlay-fixtures.ts";
 
 const runtimeFixtures: readonly RuntimeFixture[] = [
