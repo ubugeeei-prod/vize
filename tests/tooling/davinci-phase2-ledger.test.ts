@@ -45,6 +45,10 @@ const docs = {
     "../../davinci-road/plan/phase-2-records/p2-11/installment-26.md",
     import.meta.url,
   ),
+  installment27: new URL(
+    "../../davinci-road/plan/phase-2-records/p2-11/installment-27.md",
+    import.meta.url,
+  ),
   suites: new URL("../../davinci-road/plan/test-suites.md", import.meta.url),
   devtool: new URL("../../davinci-road/devtool.md", import.meta.url),
   questions: new URL("../../davinci-road/open-questions.md", import.meta.url),
@@ -235,16 +239,17 @@ test("every completion joins a merged PR to honest current evidence", () => {
   assert.doesNotMatch(p2_19, /davinci-phase2-ledger/);
 });
 
-test("P2-11 records installment 26 without presenting stale remainders", () => {
+test("P2-11 records installment 27 without presenting stale remainders", () => {
   for (const source of [text.roadmap, text.readme, text.tasks, text.records, text.p2_11]) {
-    assert.match(source, /#4929/);
-    assert.match(source, /26 (?:landed\s+)?installments|installment 26|\| 26\s+\|/i);
+    assert.match(source, /#4933/);
+    assert.match(source, /27 (?:landed\s+)?installments|installment 27|\| 27\s+\|/i);
   }
   assert.match(text.p2_11, /#4919/);
   assert.match(text.p2_11, /#4921/);
   assert.match(text.p2_11, /#4924/);
   assert.match(text.p2_11, /#4927/);
-  assert.match(text.p2_11, /Current named remainder \(after #4929\)/);
+  assert.match(text.p2_11, /#4929/);
+  assert.match(text.p2_11, /Current named remainder \(after #4933\)/);
   assert.doesNotMatch(text.p2_11, /dynamic-argument bind names \/ modifiers/);
   assert.match(text.installment20, /14-fixture S2-vs-shipped byte-for-byte battery/);
   assert.match(text.installment20, /does not tick P2-11/);
@@ -260,6 +265,8 @@ test("P2-11 records installment 26 without presenting stale remainders", () => {
   assert.match(text.installment25, /does not tick P2-11/);
   assert.match(text.installment26, /Model listener patch order/);
   assert.match(text.installment26, /does not tick P2-11/);
+  assert.match(text.installment27, /Dynamic component model arguments/);
+  assert.match(text.installment27, /does not tick P2-11/);
 });
 
 test("suite registry debt and the TS-52 transport decision stay resolved", () => {
