@@ -3,7 +3,7 @@ use super::{
     build_agent_report, build_diff, build_graph, build_line_diff, build_payload,
     build_playground_url, serialize_agent_report, serialize_payload,
 };
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 #[test]
 fn builds_inspector_payload_json_and_url() {

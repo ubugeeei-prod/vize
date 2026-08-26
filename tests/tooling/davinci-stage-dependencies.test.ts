@@ -287,6 +287,14 @@ test("Canon content-mapper imports S0 storage through the stage alias", () => {
   });
 });
 
+test("Curator reporting utilities import S0 storage through the stage alias", () => {
+  assertS0AliasConsumer({
+    packageName: "vize_curator",
+    label: "Curator reporting utilities",
+    directory: path.join(repoRoot, "crates", "vize_curator"),
+  });
+});
+
 test("Maestro LSP imports S0 storage through the stage alias", () => {
   assertS0AliasConsumer({
     packageName: "vize_maestro",

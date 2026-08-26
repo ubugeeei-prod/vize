@@ -1,6 +1,6 @@
 //! Inspector module graph: nodes, edges, and path resolution.
 
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 use super::imports::analyze_file;
 use super::payload::InspectorSourceFile;
@@ -97,10 +97,7 @@ pub fn build_graph(files: &[InspectorSourceFile]) -> InspectorGraph {
     InspectorGraph { nodes, edges }
 }
 
-fn component_is_used(
-    template_used_ids: &vize_carton::FxHashSet<String>,
-    locals: &[String],
-) -> bool {
+fn component_is_used(template_used_ids: &vize_s0::FxHashSet<String>, locals: &[String]) -> bool {
     locals
         .iter()
         .any(|local| template_used_ids.contains(local.as_str()))

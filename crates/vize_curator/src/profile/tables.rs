@@ -2,7 +2,7 @@
 
 use std::time::Duration;
 
-use vize_carton::{String, append, appendln, appends};
+use vize_s0::{String, append, appendln, appends};
 
 use super::format::{
     append_padded, duration_ratio, percent_of, write_bar, write_bytes, write_calls_per_ms_padded,
@@ -342,7 +342,7 @@ fn file_status(file: &ProfileFileRow, slow_threshold: Duration) -> String {
 }
 
 fn operation_status(
-    entry: &vize_carton::profiler::ProfileEntry,
+    entry: &vize_s0::profiler::ProfileEntry,
     total: Duration,
     max_avg_ratio: f64,
 ) -> (&'static str, &'static str) {

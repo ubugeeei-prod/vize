@@ -1,8 +1,8 @@
 use super::{ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, render_profile_report};
 use std::path::PathBuf;
 use std::time::Duration;
-use vize_carton::String;
-use vize_carton::profiler::{
+use vize_s0::String;
+use vize_s0::profiler::{
     AllocationSnapshot, CounterEntry, CounterSummary, ProfileEntry, ProfileSummary,
 };
 
