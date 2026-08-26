@@ -55,7 +55,7 @@
     "check:fix": "vp check --fix src vite.config.ts",
     "check:types": "tsgo --noEmit -p tsconfig.json",
     "fmt": "vp fmt --write src vite.config.ts",
-    "test": "vp exec tsx --test 'src/**/*.test.ts'"
+    "test": "vp exec tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "@vizejs/fresco-native": "workspace:*"
