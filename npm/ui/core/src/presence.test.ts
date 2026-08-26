@@ -103,6 +103,18 @@ test("force-mounts hidden content", () => {
   handle.unmount();
 });
 
+test("publishes the named motion recipe for the packaged stylesheet", async () => {
+  const handle = mountInteraction(Presence, {
+    props: { present: true, motion: "fade" },
+    slots: { default: "Dialog" },
+  });
+
+  assert.equal(renderedPresence(handle).getAttribute("data-vize-motion"), "fade");
+  await handle.wrapper.setProps({ motion: undefined });
+  assert.equal(renderedPresence(handle).getAttribute("data-vize-motion"), null);
+  handle.unmount();
+});
+
 test("exposes the rendered element for composition", () => {
   const handle = mountInteraction(Presence, {
     props: { present: true },

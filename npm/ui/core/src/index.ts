@@ -18,6 +18,7 @@ export * from "./live-region.ts";
 export * from "./locale.ts";
 export * from "./long-press.ts";
 export * from "./measure.ts";
+export * from "./motion.ts";
 export * from "./move.ts";
 export * from "./pointer-grace.ts";
 export * from "./portal.ts";

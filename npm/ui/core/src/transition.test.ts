@@ -101,6 +101,18 @@ test("force-mounts hidden content", () => {
   handle.unmount();
 });
 
+test("publishes the named motion recipe for the packaged stylesheet", async () => {
+  const handle = mountInteraction(Transition, {
+    props: { present: true, motion: "slide", timeoutPadding: 50_000 },
+    slots: { default: "Dialog" },
+  });
+
+  assert.equal(renderedTransition(handle).getAttribute("data-vize-motion"), "slide");
+  await handle.wrapper.setProps({ motion: undefined });
+  assert.equal(renderedTransition(handle).getAttribute("data-vize-motion"), null);
+  handle.unmount();
+});
+
 test("exposes the rendered element for composition", () => {
   const handle = mountInteraction(Transition, {
     props: { present: true },
