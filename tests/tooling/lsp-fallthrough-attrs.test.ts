@@ -143,10 +143,10 @@ import Child from './Child.vue'
 </script>
 
 <template>
-  <Child title="ok" id="outer" />
+  <Child title="ok" depressed="x" />
 </template>
 `;
-    const repairedParent = invalidParent.replace(' id="outer"', "");
+    const repairedParent = invalidParent.replace(' depressed="x"', "");
     const childPath = path.join(sourceDir, "Child.vue");
     const parentPath = path.join(sourceDir, "Parent.vue");
     const childUri = pathToFileURL(childPath).href;
@@ -164,10 +164,10 @@ import Child from './Child.vue'
       "textDocument/publishDiagnostics",
       (params) =>
         isDiagnosticsForUri(params, parentUri) &&
-        hasUnknownIdDiagnostic(params as PublishDiagnosticsParams),
+        hasUnknownAttrDiagnostic(params as PublishDiagnosticsParams),
     )) as PublishDiagnosticsParams;
     assert.ok(
-      hasUnknownIdDiagnostic(initialParent),
+      hasUnknownAttrDiagnostic(initialParent),
       initialParent.diagnostics.map((diagnostic) => diagnostic.message),
     );
 
@@ -180,7 +180,7 @@ import Child from './Child.vue'
       (params) =>
         isDiagnosticsForUri(params, parentUri) &&
         params.version === 2 &&
-        !hasUnknownIdDiagnostic(params as PublishDiagnosticsParams),
+        !hasUnknownAttrDiagnostic(params as PublishDiagnosticsParams),
     )) as PublishDiagnosticsParams;
     assert.deepEqual(repairedPublish.diagnostics, []);
   } finally {
@@ -194,10 +194,10 @@ function fallthroughDiagnostic(params: PublishDiagnosticsParams): LspDiagnostic 
   return params.diagnostics.find((diagnostic) => diagnostic.code === "fallthrough-attrs");
 }
 
-function hasUnknownIdDiagnostic(params: PublishDiagnosticsParams): boolean {
+function hasUnknownAttrDiagnostic(params: PublishDiagnosticsParams): boolean {
   return params.diagnostics.some(
     (diagnostic) =>
-      (diagnostic.code === 2322 || diagnostic.code === 2353) && diagnostic.message?.includes("id"),
+      (diagnostic.code === 2322 || diagnostic.code === 2353) && diagnostic.message?.includes("depressed"),
   );
 }
 
