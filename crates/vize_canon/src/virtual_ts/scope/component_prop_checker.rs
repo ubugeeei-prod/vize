@@ -175,12 +175,20 @@ pub(super) fn append_prop_check_helpers(
         "  interface __VizePublicComponentAttrs extends __VizeVueVNodeProps, __VizeVueAllowedComponentProps, __VizeVueComponentCustomProps {}\n",
     );
     if check_unknown_props {
-        ts.push_str(
+        // Real HTML attributes are valid Vue fallthrough on any component, so
+        // the strict surface accepts every attribute some native element
+        // declares — `id`, `type`, `accept`, kebab `aria-*` plus camelized
+        // spellings, custom `data-*` — while a name no element knows
+        // (`depressed`) stays a strict finding (#4966). Derived from the
+        // `__VizeNativeElements` program alias; degrades to `{}` on a `vue`
+        // without `NativeElements`, like the native prop checks degrade.
+        ts.push_str(concat!(
             "  type __VizeAllowedFallthroughAttrs<C> = __VizeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};\n",
-        );
-        ts.push_str(
-            "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeAllowedFallthroughAttrs<C> : Record<string, unknown>;\n",
-        );
+            "  type __VizeAttrCamel<S extends string> = S extends `${infer __H}-${infer __T}` ? `${__H}${Capitalize<__VizeAttrCamel<__T>>}` : S;\n",
+            "  type __VizeNativeAttrNames = { [K in keyof __VizeNativeElements]: keyof __VizeNativeElements[K] }[keyof __VizeNativeElements] & string;\n",
+            "  type __VizeGlobalHtmlAttrs = __VizeIsAny<__VizeNativeElements> extends true ? {} : { [K in __VizeNativeAttrNames as K | __VizeAttrCamel<K>]?: unknown } & { [K in `data${string}`]?: unknown };\n",
+            "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeGlobalHtmlAttrs & __VizeAllowedFallthroughAttrs<C> : Record<string, unknown>;\n",
+        ));
     } else {
         ts.push_str(
             "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;\n",

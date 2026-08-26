@@ -222,7 +222,34 @@ fn diagnostics(report: &serde_json::Value) -> Vec<String> {
         .flat_map(|file| file["diagnostics"].as_array().into_iter().flatten())
         .filter_map(serde_json::Value::as_str)
         .map(canonicalize_property_quote_style)
+        .map(|diagnostic| canonicalize_component_check_props_tail(&diagnostic))
         .collect()
+}
+
+/// Rewrite the check target's tail — everything after the first generic
+/// argument — to a stable `__VizeCheckTail` token. Since #4966 the tail spells
+/// out the allowed native attr surface, which the compiler renders truncated
+/// and whose contents track the linked `vue` version; the contract these cases
+/// pin is which diagnostics exist, not that rendering.
+fn canonicalize_component_check_props_tail(diagnostic: &str) -> String {
+    const START: &str = "__VizeComponentCheckProps<";
+    const END: &str = ">'.";
+    let Some(start) = diagnostic.find(START) else {
+        return diagnostic.to_owned();
+    };
+    let args_start = start + START.len();
+    let Some(comma) = diagnostic[args_start..].find(", ") else {
+        return diagnostic.to_owned();
+    };
+    let tail_start = args_start + comma + ", ".len();
+    let Some(end) = diagnostic[tail_start..].find(END) else {
+        return diagnostic.to_owned();
+    };
+    let mut normalized = String::with_capacity(diagnostic.len());
+    normalized.push_str(&diagnostic[..tail_start]);
+    normalized.push_str("__VizeCheckTail");
+    normalized.push_str(&diagnostic[tail_start + end..]);
+    normalized
 }
 
 fn canonicalize_property_quote_style(diagnostic: &str) -> String {
