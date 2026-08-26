@@ -4,7 +4,7 @@ import { test } from "vite-plus/test";
 import { defineComponent, h, nextTick } from "vue";
 
 import { getCheckboxState } from "./checkbox-state.ts";
-import CheckboxControl from "./CheckboxControl.vue";
+import CheckboxControl from "./checkbox-control.vue";
 import { mountInteraction } from "./testing/mount.ts";
 
 test("gives the mixed visual state precedence", () => {

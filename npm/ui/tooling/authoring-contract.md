@@ -15,6 +15,8 @@ the SFC quality gate.
 
 - `explicit-sfc`: public components stay canonical `.vue` sources with
   `<template>`, `<script setup lang="ts">`, and scoped `<style>` blocks.
+- `kebab-case-filename`: every public source, test, story, and fixture keeps a
+  kebab-case basename; PascalCase and camelCase filenames are rejected.
 - `behavior-table`: every SFC has a `*.behavior.md` table naming the component
   source and describing state, input, and outcome.
 - `interaction-test`: every SFC has a mounted interaction test importing the
@@ -32,6 +34,7 @@ the SFC quality gate.
 ## Quality Gates
 
 - `canonical-sfc-source` is enforced by `explicit-sfc`.
+- `kebab-case-source` is enforced by `kebab-case-filename`.
 - `behavior-contract` is enforced by `behavior-table`.
 - `mounted-interaction` is enforced by `interaction-test` and
   `source-regex-behavior`.

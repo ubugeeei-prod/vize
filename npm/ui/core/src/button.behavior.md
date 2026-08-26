@@ -1,6 +1,6 @@
 # Button behavior contract
 
-Normative state × input → outcome table for `ActionButton.vue` (`@vizejs/ui/button`).
+Normative state × input → outcome table for `action-button.vue` (`@vizejs/ui/button`).
 Every row is proven by the named mounted-DOM test in `src/button.test.ts`; a row
 without a passing test is a contract violation.
 

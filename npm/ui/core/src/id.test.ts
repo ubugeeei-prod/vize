@@ -5,7 +5,7 @@ import { test } from "vite-plus/test";
 import { createSSRApp, defineComponent, h, nextTick, ref } from "vue";
 import { renderToString } from "vue/server-renderer";
 
-import IdProvider from "./DeterministicIdProvider.vue";
+import IdProvider from "./deterministic-id-provider.vue";
 import {
   createDeterministicIdScope,
   deriveDeterministicId,

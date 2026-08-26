@@ -1,6 +1,6 @@
 # Deterministic ID behavior contract
 
-Normative state × input → outcome table for `DeterministicIdProvider.vue` and
+Normative state × input → outcome table for `deterministic-id-provider.vue` and
 `@vizejs/ui/id`. Every row is proven by the named test in `src/id.test.ts`;
 compile-only public type assertions live in `src/id.types.test-d.ts`.
 

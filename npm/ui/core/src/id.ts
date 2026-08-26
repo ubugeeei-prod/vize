@@ -14,4 +14,4 @@ export type {
 } from "./deterministic-id.ts";
 
 /** SSR-safe deterministic ID namespace for one application or component subtree. */
-export { default as IdProvider } from "./DeterministicIdProvider.vue";
+export { default as IdProvider } from "./deterministic-id-provider.vue";
