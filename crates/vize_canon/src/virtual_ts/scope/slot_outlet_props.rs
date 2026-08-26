@@ -24,6 +24,7 @@ pub(super) struct SlotOutlet {
     scope_id: u32,
     name: CompactString,
     name_is_dynamic: bool,
+    name_source_range: Option<std::ops::Range<u32>>,
     start: u32,
     vif_guard: Option<CompactString>,
     props: Vec<PassedProp>,

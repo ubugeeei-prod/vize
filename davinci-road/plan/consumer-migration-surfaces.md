@@ -47,8 +47,8 @@ observational guard for planning only. It does not change rollout state.
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
 | Compiler                   |           916 |                   192 |               724 |             139 |     371 |             951 |      475 |           477 |           585 |
 | Linter                     |           302 |                   302 |                 0 |             268 |     225 |             673 |      122 |           340 |           480 |
-| Typechecker                |           891 |                   139 |               752 |             396 |     187 |             807 |      667 |           466 |           659 |
-| Typechecker content-mapper |             8 |                     8 |                 0 |               1 |       0 |               9 |        0 |             7 |            18 |
+| Typechecker                |           890 |                   139 |               751 |             396 |     187 |             806 |      667 |           466 |           659 |
+| Typechecker content-mapper |             8 |                     8 |                 0 |               1 |       0 |               9 |        0 |             7 |            19 |
 | Formatter                  |            38 |                    38 |                 0 |               0 |      21 |              40 |       19 |            30 |            65 |
 | LSP                        |           271 |                   271 |                 0 |             115 |      44 |             325 |      105 |           166 |           388 |
 
@@ -134,7 +134,7 @@ Scope: check command plus Canon, excluding dedicated content-mapper files. This 
 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
-| S0/carton        |         891 |             503 |      388 |
+| S0/carton        |         890 |             502 |      388 |
 | old AST/parser   |         160 |              35 |      125 |
 | Croquis analysis |         236 |             118 |      118 |
 | raw OXC          |         187 |             151 |       36 |

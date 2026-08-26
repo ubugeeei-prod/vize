@@ -23,6 +23,8 @@ mod navigation;
 mod protocol;
 #[path = "content_mapper_scoped_event_navigation_tests.rs"]
 mod scoped_event_navigation;
+#[path = "content_mapper_slot_outlet_navigation_tests.rs"]
+mod slot_outlet_navigation;
 
 #[test]
 fn keeps_mapper_offsets_in_utf8_bytes() {

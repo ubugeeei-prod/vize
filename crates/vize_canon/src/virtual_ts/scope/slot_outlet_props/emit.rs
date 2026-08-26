@@ -23,6 +23,11 @@ struct SlotOutletCheckContext<'a> {
     indent: &'a str,
 }
 
+struct PayloadType {
+    text: String,
+    name_gen_range: Option<Range<usize>>,
+}
+
 pub(super) fn emit_slot_outlet_helpers(
     ts: &mut String,
     slot_outlets_by_scope: &FxHashMap<u32, Vec<SlotOutlet>>,
@@ -132,11 +137,23 @@ fn generate_slot_outlet_checks(
         } else {
             String::from(indent)
         };
+        append!(*ts, "{expr_indent}((__vize_slot_props: ",);
         let payload_type = outlet_payload_type(outlet, slots_type_ref);
-        append!(
-            *ts,
-            "{expr_indent}((__vize_slot_props: {payload_type}) => {{ void __vize_slot_props; }})(",
-        );
+        let payload_type_gen_start = ts.len();
+        ts.push_str(payload_type.text.as_str());
+        ts.push_str(") => { void __vize_slot_props; })(");
+        if let (Some(gen_range), Some(src_range)) = (
+            payload_type.name_gen_range,
+            outlet.name_source_range.clone(),
+        ) {
+            mappings.push(VizeMapping {
+                gen_range: payload_type_gen_start + gen_range.start
+                    ..payload_type_gen_start + gen_range.end,
+                src_range: (source_context.offset + src_range.start) as usize
+                    ..(source_context.offset + src_range.end) as usize,
+                sub_spans: Vec::new(),
+            });
+        }
         let literal_range = append_slot_outlet_literal(
             ts,
             mappings,
@@ -159,14 +176,23 @@ fn generate_slot_outlet_checks(
     }
 }
 
-fn outlet_payload_type(outlet: &SlotOutlet, slots_type_ref: &str) -> String {
+fn outlet_payload_type(outlet: &SlotOutlet, slots_type_ref: &str) -> PayloadType {
     if outlet.name_is_dynamic {
-        return vize_carton::cstr!("__VizeAnySlotOutletPayload<{slots_type_ref}>");
+        return PayloadType {
+            text: vize_carton::cstr!("__VizeAnySlotOutletPayload<{slots_type_ref}>"),
+            name_gen_range: None,
+        };
     }
 
-    let mut name = String::default();
-    append_ts_string_literal(&mut name, outlet.name.as_str());
-    vize_carton::cstr!("__VizeSlotOutletPayload<{slots_type_ref}, {name}>")
+    let mut text = String::from("__VizeSlotOutletPayload<");
+    text.push_str(slots_type_ref);
+    text.push_str(", ");
+    let name_gen_range = append_ts_string_literal(&mut text, outlet.name.as_str());
+    text.push('>');
+    PayloadType {
+        text,
+        name_gen_range: Some(name_gen_range),
+    }
 }
 
 fn append_slot_outlet_literal(
@@ -265,8 +291,9 @@ fn spread_expression_source_range(
     Some(source_start..source_start + spread.expression.len())
 }
 
-fn append_ts_string_literal(out: &mut String, value: &str) {
+fn append_ts_string_literal(out: &mut String, value: &str) -> Range<usize> {
     out.push('"');
+    let start = out.len();
     for ch in value.chars() {
         match ch {
             '\\' => out.push_str("\\\\"),
@@ -277,5 +304,7 @@ fn append_ts_string_literal(out: &mut String, value: &str) {
             _ => out.push(ch),
         }
     }
+    let end = out.len();
     out.push('"');
+    start..end
 }

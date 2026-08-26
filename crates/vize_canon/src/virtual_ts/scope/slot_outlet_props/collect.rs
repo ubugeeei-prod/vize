@@ -119,6 +119,7 @@ fn collect_element_outlets(
 fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>, source: &str) -> Option<SlotOutlet> {
     let mut name = CompactString::const_new("default");
     let mut name_is_dynamic = false;
+    let mut name_source_range = None;
     let mut props = Vec::new();
     let mut spread_props = Vec::new();
     let mut scope = None;
@@ -129,6 +130,7 @@ fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>, source: &str) -> Op
                 if attr.name == "name" {
                     if let Some(value) = attr.value.as_ref() {
                         name = value.content.into();
+                        name_source_range = Some(value.loc.span.start..value.loc.span.end);
                     }
                     continue;
                 }
@@ -151,6 +153,7 @@ fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>, source: &str) -> Op
                         .or_else(|| Some(prop_name.clone()));
                     if prop_name == "name" && !prop_name_is_dynamic {
                         name_is_dynamic = true;
+                        name_source_range = None;
                         record_expression_scope(summary, directive.exp.as_ref(), &mut scope);
                         continue;
                     }
@@ -187,6 +190,7 @@ fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>, source: &str) -> Op
         scope_id,
         name,
         name_is_dynamic,
+        name_source_range,
         start: element.loc.span.start,
         vif_guard,
         props,

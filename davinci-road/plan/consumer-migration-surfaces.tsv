@@ -2120,7 +2120,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/slot_outle
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/slot_outlet_props/collect.rs	1	s0	S0/carton	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/slot_outlet_props/collect.rs	1	old_ast	old AST/parser	old	vize_relief	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/slot_outlet_props/collect.rs	1	croquis	Croquis analysis	old	vize_croquis	legacy	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/slot_outlet_props/emit.rs	3	s0	S0/carton	stage	vize_carton	compat	3
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/slot_outlet_props/emit.rs	3	s0	S0/carton	stage	vize_carton	compat	2
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/slot_outlet_props/emit.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/slot_scope.rs	13	s0	S0/carton	stage	vize_carton	compat	6
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/slot_scope.rs	13	croquis	Croquis analysis	old	vize_croquis	legacy	1
