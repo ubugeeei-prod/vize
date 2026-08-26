@@ -1,6 +1,6 @@
 use sha2::{Digest, Sha256};
 use std::fmt::Write;
-use vize_carton::{SmallVec, String, ToCompactString};
+use vize_s0::{SmallVec, String, ToCompactString};
 
 use super::matrix::Fixture;
 

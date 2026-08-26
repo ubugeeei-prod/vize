@@ -26,7 +26,7 @@ pub(super) fn binding_at(ctx: &IdeContext<'_>, word: &str) -> Option<TemplateSco
 
     let cursor = ctx.offset - template.loc.start;
     let cursor = u32::try_from(cursor).ok()?;
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (ast, _) = vize_armature::parse(&allocator, template.content.as_ref());
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     if ctx.state.legacy_vue2_enabled() {

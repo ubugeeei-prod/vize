@@ -123,7 +123,7 @@ pub(crate) fn analyzed_template_binding_completions(
     // chain. Without the AST, `analyze_sfc_descriptor` skips template-level
     // analysis and we lose nested binding visibility.
     let template_block = descriptor.template.as_ref();
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let template_parse =
         template_block.map(|tb| (vize_armature::parse(&allocator, &tb.content), tb.loc.start));
 
@@ -291,7 +291,7 @@ pub(crate) fn analyzed_template_binding_completions(
 fn petite_vue_scope_binding_completions(ctx: &IdeContext) -> Vec<CompletionItem> {
     use vize_croquis::{Drawer, DrawerOptions};
 
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (root, _errors) = vize_armature::parse_document(&allocator, &ctx.content);
 
     let mut drawer = Drawer::with_options(DrawerOptions::full());

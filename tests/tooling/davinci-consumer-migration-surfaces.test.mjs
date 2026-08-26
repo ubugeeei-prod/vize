@@ -82,3 +82,16 @@ void test("content-mapper S0 surface stays on the preferred physical name", () =
       .every((site) => site.matchedName === "vize_s0" && site.nameKind === "preferred"),
   );
 });
+
+void test("LSP S0 surface stays on the preferred physical name", () => {
+  const scan = scanConsumerMigrationSurfaces();
+  const lsp = scan.consumers.find((consumer) => consumer.id === "lsp");
+  assert.ok(lsp);
+  assert.equal(lsp.nameKindCounts.compat, 0);
+  assert.ok(lsp.nameKindCounts.preferred > 0, "LSP should keep importing S0 explicitly");
+  assert.ok(
+    lsp.sites
+      .filter((site) => site.surfaceId === "s0")
+      .every((site) => site.matchedName === "vize_s0" && site.nameKind === "preferred"),
+  );
+});

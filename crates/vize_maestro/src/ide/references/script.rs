@@ -6,7 +6,7 @@
 use tower_lsp::lsp_types::{Location, Position, Range};
 
 use super::{IdeContext, ReferencesService};
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 impl ReferencesService {
     /// Find the definition location of a symbol.

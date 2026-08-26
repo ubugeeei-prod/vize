@@ -1,4 +1,4 @@
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 use super::mapping::{line_character_to_byte_offset, source_offset_to_position};
 
@@ -321,6 +321,6 @@ const speakerOptions = computed(() =>
             return Some(sibling_cache);
         }
 
-        vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
+        vize_s0::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
     }
 }

@@ -209,7 +209,7 @@ pub(super) fn resolve_test_tsgo_binary() -> Option<PathBuf> {
         return Some(upstream_cache);
     }
 
-    vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
+    vize_s0::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
 }
 
 fn write_typecheck_tsconfig(root: &Path) {

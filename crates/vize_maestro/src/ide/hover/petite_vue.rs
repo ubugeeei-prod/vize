@@ -13,7 +13,7 @@ impl HoverService {
             return None;
         }
 
-        let allocator = vize_carton::Allocator::new();
+        let allocator = vize_s0::Allocator::new();
         let (root, _errors) = vize_armature::parse_document(&allocator, &ctx.content);
 
         let mut drawer = Drawer::with_options(DrawerOptions::full());

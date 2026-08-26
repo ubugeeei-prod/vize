@@ -192,7 +192,7 @@ pub fn find_art_block_at_offset(source: &str, offset: usize) -> Option<BlockType
     }
 
     // Parse as art file to determine variant position
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let Ok(art_desc) =
         vize_musea::parse_art(&allocator, source, vize_musea::ArtParseOptions::default())
     else {

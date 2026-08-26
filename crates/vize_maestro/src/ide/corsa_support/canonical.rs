@@ -1,6 +1,6 @@
 use tower_lsp::lsp_types::{Location, Range, Url};
 use vize_canon::LspLocation;
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 use crate::ide::IdeContext;
 use crate::ide::diagnostics::VirtualTsResult;
@@ -213,8 +213,8 @@ fn file_uri_paths_match(left: &str, right: &str) -> bool {
     else {
         return false;
     };
-    vize_carton::path::canonicalize_non_verbatim(&left)
-        == vize_carton::path::canonicalize_non_verbatim(&right)
+    vize_s0::path::canonicalize_non_verbatim(&left)
+        == vize_s0::path::canonicalize_non_verbatim(&right)
 }
 
 pub(super) fn is_private_materialized_uri(doc: &CanonicalVirtualDocument, raw_uri: &str) -> bool {
@@ -226,7 +226,7 @@ pub(super) fn is_private_materialized_uri(doc: &CanonicalVirtualDocument, raw_ur
     };
     doc.session_project_roots.iter().any(|root| {
         path.starts_with(root)
-            || vize_carton::path::canonicalize_non_verbatim(&path)
-                .starts_with(vize_carton::path::canonicalize_non_verbatim(root))
+            || vize_s0::path::canonicalize_non_verbatim(&path)
+                .starts_with(vize_s0::path::canonicalize_non_verbatim(root))
     })
 }

@@ -12,7 +12,7 @@ use super::MaestroServer;
 const LEAF: &str = "<template>\n  <div>leaf</div>\n</template>\n";
 
 fn importer_source(leaf: &str) -> String {
-    vize_carton::cstr!(
+    vize_s0::cstr!(
         "<script setup lang=\"ts\">\nimport Leaf from './{leaf}'\n</script>\n\
          <template>\n  <Leaf />\n</template>\n"
     )

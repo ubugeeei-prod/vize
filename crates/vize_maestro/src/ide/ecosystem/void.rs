@@ -4,7 +4,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use tower_lsp::lsp_types::{CompletionItem, CompletionItemKind};
-use vize_carton::{FxHashSet, String, cstr};
+use vize_s0::{FxHashSet, String, cstr};
 
 use super::context::{is_ident_byte, string_literal_at_cursor};
 use crate::ide::IdeContext;

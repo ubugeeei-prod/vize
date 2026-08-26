@@ -24,7 +24,7 @@ use tower_lsp::lsp_types::{
     CodeAction, CodeActionKind, CodeActionOrCommand, Position, Range, TextEdit, Url, WorkspaceEdit,
 };
 use vize_atelier_jsx::JsxLang;
-use vize_carton::line_index::offset_to_line_col;
+use vize_s0::line_index::offset_to_line_col;
 
 /// Code-action provider for `.jsx`/`.tsx` components.
 pub struct JsxCodeActionService;

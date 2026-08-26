@@ -13,8 +13,8 @@ use oxc_span::SourceType;
 use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, Documentation, MarkupContent, MarkupKind,
 };
-use vize_carton::{FxHashSet, String};
 use vize_croquis::{Drawer, DrawerOptions, ScopeKind};
+use vize_s0::{FxHashSet, String};
 
 use super::context::{member_access_receiver, script_content_and_offset_for_context};
 use crate::ide::IdeContext;

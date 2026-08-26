@@ -50,7 +50,7 @@ observational guard for planning only. It does not change rollout state.
 | Typechecker                |           883 |                   139 |               744 |             394 |     187 |             806 |      658 |           461 |           651 |
 | Typechecker content-mapper |             8 |                     8 |                 0 |               1 |       0 |               9 |        0 |             7 |            18 |
 | Formatter                  |            38 |                    38 |                 0 |               0 |      21 |              40 |       19 |            30 |            65 |
-| LSP                        |           271 |                     0 |               271 |             115 |      44 |             325 |      105 |           166 |           388 |
+| LSP                        |           271 |                   271 |                 0 |             115 |      44 |             325 |      105 |           166 |           388 |
 
 ## Consumer details
 

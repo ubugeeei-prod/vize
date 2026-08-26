@@ -9,7 +9,7 @@ use super::TemplateCodeGenerator;
 #[test]
 fn test_template_code_generator() {
     let source = r#"<div>{{ message }}</div>"#;
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (ast, errors) = vize_armature::parse(&allocator, source);
     assert!(errors.is_empty());
 
@@ -23,7 +23,7 @@ fn test_template_code_generator() {
 #[test]
 fn test_generator_with_directives() {
     let source = r#"<div v-if="show">test</div>"#;
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (ast, errors) = vize_armature::parse(&allocator, source);
     assert!(errors.is_empty());
 
@@ -36,7 +36,7 @@ fn test_generator_with_directives() {
 #[test]
 fn test_event_arrow_expression_is_not_prefixed_as_member() {
     let source = r#"<button @click="() => { count++ }">{{ count }}</button>"#;
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (ast, errors) = vize_armature::parse(&allocator, source);
     assert!(errors.is_empty());
 
@@ -61,7 +61,7 @@ fn test_multiline_event_arrow_expression_is_not_prefixed_as_member() {
 >
   {{ count }}
 </button>"#;
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (ast, errors) = vize_armature::parse(&allocator, source);
     assert!(errors.is_empty());
 

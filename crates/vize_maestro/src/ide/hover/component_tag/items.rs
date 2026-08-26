@@ -72,9 +72,9 @@ fn format_slot(slot: &SlotUsage) -> String {
 #[cfg(test)]
 mod tests {
     use super::{format_event, format_prop, format_slot, prop_items};
-    use vize_carton::{CompactString, smallvec};
     use vize_croquis::ScopeId;
     use vize_croquis::croquis::{ComponentUsage, EventListener, PassedProp, SlotUsage};
+    use vize_s0::{CompactString, smallvec};
 
     #[test]
     fn formats_runtime_directive_names_without_presenting_them_as_static() {

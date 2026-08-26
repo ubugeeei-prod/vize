@@ -12,7 +12,7 @@ use oxc_span::SourceType;
 use parking_lot::{Mutex, RwLock};
 use tower_lsp::lsp_types::Url;
 use vize_canon::{PackageRouteResolver, PackageSourceOptions};
-use vize_carton::{FxHashMap, FxHashSet};
+use vize_s0::{FxHashMap, FxHashSet};
 
 use super::ServerState;
 pub(super) use dependents::open_typecheck_dependents;

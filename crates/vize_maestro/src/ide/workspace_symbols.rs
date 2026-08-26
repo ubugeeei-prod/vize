@@ -11,7 +11,7 @@ mod disk;
 use tower_lsp::lsp_types::{Location, Position, Range, SymbolInformation, SymbolKind, Url};
 
 use crate::server::ServerState;
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 /// Workspace symbols service.
 pub struct WorkspaceSymbolsService;

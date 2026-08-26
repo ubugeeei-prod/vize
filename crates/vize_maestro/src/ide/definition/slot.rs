@@ -48,7 +48,7 @@ fn component_slot_at_offset(ctx: &IdeContext<'_>) -> Option<(String, String)> {
     let relative_offset = ctx.offset.saturating_sub(template.loc.start);
     let template_source = template.content.as_ref();
 
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template_source);
     let mut drawer = Drawer::with_options(DrawerOptions {
         analyze_template_scopes: true,

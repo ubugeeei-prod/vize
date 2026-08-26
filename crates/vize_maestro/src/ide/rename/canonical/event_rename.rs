@@ -133,7 +133,7 @@ pub(super) fn component_event_ranges(source: &str, filename: &str) -> Vec<Offset
     let Some(template_source) = source.get(template.loc.start..template.loc.end) else {
         return Vec::new();
     };
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template_source);
     let mut drawer = Drawer::with_options(DrawerOptions {
         analyze_template_scopes: true,
@@ -216,7 +216,7 @@ pub(super) fn offset_range(source: &str, range: OffsetRange<usize>) -> Range {
 #[cfg(test)]
 mod tests {
     use tower_lsp::lsp_types::Url;
-    use vize_carton::cstr;
+    use vize_s0::cstr;
 
     use super::{RenameKind, component_event_ranges, semantic_name};
     use crate::ide::IdeContext;

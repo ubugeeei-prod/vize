@@ -3,7 +3,7 @@ use std::ops::Range as OffsetRange;
 use tower_lsp::lsp_types::{
     DocumentChangeOperation, DocumentChanges, OneOf, TextEdit, Url, WorkspaceEdit,
 };
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 use super::{RenameKind, component_event_ranges, model, offset_range};
 use crate::ide::{IdeContext, pascal_to_kebab};

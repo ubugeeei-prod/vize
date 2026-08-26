@@ -171,8 +171,8 @@ impl InlayHintService {
 
             // Locate `const NAME =` in the script content. Anchoring on the
             // declaration keyword avoids matching usages inside expressions.
-            let needle_const = vize_carton::cstr!("const {} =", source.name.as_str());
-            let needle_let = vize_carton::cstr!("let {} =", source.name.as_str());
+            let needle_const = vize_s0::cstr!("const {} =", source.name.as_str());
+            let needle_let = vize_s0::cstr!("let {} =", source.name.as_str());
             let pos_in_script = script
                 .find(needle_const.as_str())
                 .map(|p| p + needle_const.len())
@@ -203,14 +203,14 @@ impl InlayHintService {
             if !Self::position_in_range(position, range) {
                 continue;
             }
-            let label = vize_carton::cstr!(": {}<{}>", wrapper, value_type.as_str());
+            let label = vize_s0::cstr!(": {}<{}>", wrapper, value_type.as_str());
             hints.push(InlayHint {
                 position,
                 label: InlayHintLabel::String(label.to_string()),
                 kind: Some(InlayHintKind::TYPE),
                 text_edits: None,
                 tooltip: Some(tower_lsp::lsp_types::InlayHintTooltip::String(
-                    vize_carton::cstr!("Vue reactive binding ({})", wrapper).to_string(),
+                    vize_s0::cstr!("Vue reactive binding ({})", wrapper).to_string(),
                 )),
                 padding_left: Some(true),
                 padding_right: None,

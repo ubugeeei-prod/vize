@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use tower_lsp::lsp_types::Location;
 use vize_canon::{CorsaBridge, LspLocation};
-use vize_carton::{FxHashSet, String, camelize};
+use vize_s0::{FxHashSet, String, camelize};
 
 use super::{
     CanonicalSemanticPosition, ComponentPropNavigationIdentities, ComponentPropNavigationMatches,

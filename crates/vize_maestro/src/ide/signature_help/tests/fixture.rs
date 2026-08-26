@@ -152,5 +152,5 @@ pub(super) fn resolve_tsgo_binary() -> Option<PathBuf> {
     ]
     .into_iter()
     .find(|candidate| candidate.exists())
-    .or_else(|| vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root))
+    .or_else(|| vize_s0::corsa_resolver::discover_corsa_in_ancestors(workspace_root))
 }

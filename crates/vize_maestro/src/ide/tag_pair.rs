@@ -116,7 +116,7 @@ pub(crate) fn names_at(content: &str, region: (usize, usize), offset: usize) -> 
             break;
         };
         let self_closing = content[..tag_end - 1].trim_end().ends_with('/');
-        if self_closing || vize_carton::is_void_tag(name) {
+        if self_closing || vize_s0::is_void_tag(name) {
             if contains(name_span, offset) {
                 return Some(TagNames {
                     first: name_span,

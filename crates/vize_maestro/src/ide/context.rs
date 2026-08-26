@@ -85,7 +85,7 @@ impl<'a> IdeContext<'a> {
     /// config key wins, otherwise the structural petite-vue detection memoized
     /// on the open document is used (no per-request re-scan).
     #[inline]
-    pub fn dialect(&self) -> vize_carton::dialect::VueDialect {
+    pub fn dialect(&self) -> vize_s0::dialect::VueDialect {
         self.state.document_dialect(self.uri, &self.content)
     }
 

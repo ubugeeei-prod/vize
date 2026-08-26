@@ -5,7 +5,7 @@ use std::collections::BTreeSet;
 use vize_relief::{ElementNode, PropNode, TemplateChildNode};
 
 pub(super) fn extract_template_slot_names(template: &str) -> Vec<String> {
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut names = Vec::new();
     let mut seen = BTreeSet::new();

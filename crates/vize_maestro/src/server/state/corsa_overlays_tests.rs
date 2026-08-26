@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use tower_lsp::lsp_types::{Position, Range, TextDocumentContentChangeEvent, Url};
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 use super::ServerState;
 

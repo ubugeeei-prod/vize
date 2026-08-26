@@ -21,7 +21,7 @@
 
 use vize_atelier_jsx::{JsxLang, lower_source};
 use vize_canon::virtual_ts::VizeMapping;
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 mod collect;
 mod component;

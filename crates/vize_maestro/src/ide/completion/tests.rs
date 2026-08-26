@@ -259,7 +259,7 @@ fn test_standalone_html_completion_respects_dialect_config() {
         .documents
         .open(uri.clone(), source.to_string(), 1, "html".to_string());
     state.update_virtual_docs(&uri, source);
-    state.set_dialect_config(Some(vize_carton::dialect::VueDialect::PetiteVue));
+    state.set_dialect_config(Some(vize_s0::dialect::VueDialect::PetiteVue));
 
     let offset = source.find("<div ").unwrap() + "<div ".len();
     let ctx = IdeContext::new(&state, &uri, offset).unwrap();
@@ -270,7 +270,7 @@ fn test_standalone_html_completion_respects_dialect_config() {
     assert!(has_label(&labels, "v-effect"));
 
     // And an explicit `vue` dialect suppresses detection-based opt-in.
-    state.set_dialect_config(Some(vize_carton::dialect::VueDialect::Vue));
+    state.set_dialect_config(Some(vize_s0::dialect::VueDialect::Vue));
     let petite_source = r#"<script src="https://unpkg.com/petite-vue" defer init></script>
 <div v-scope="{ count: 0 }" >{{ count }}</div>
 "#;

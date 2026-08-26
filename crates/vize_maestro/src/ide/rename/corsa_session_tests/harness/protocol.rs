@@ -7,7 +7,7 @@ use std::{
     time::Duration,
 };
 
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 mod executable;
 mod proxy;

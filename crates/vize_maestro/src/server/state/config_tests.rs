@@ -1,4 +1,4 @@
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 use super::ServerState;
 
@@ -39,7 +39,7 @@ fn language_server_legacy_vue2_reaches_logged_lsp_feature_payload() {
     assert!(state.legacy_vue2_enabled());
     assert_eq!(
         state.type_checker_vue_version(),
-        vize_carton::config::VueVersion::V3
+        vize_s0::config::VueVersion::V3
     );
     assert!(state.options_api_enabled());
 
@@ -149,7 +149,7 @@ fn vue_version_2_7_alone_enables_legacy_lowering() {
     assert!(state.legacy_vue2_enabled());
     assert_eq!(
         state.type_checker_vue_version(),
-        vize_carton::config::VueVersion::V2_7
+        vize_s0::config::VueVersion::V2_7
     );
     assert!(
         state.options_api_enabled(),
@@ -172,7 +172,7 @@ fn compiler_compatibility_vue_version_2_alone_enables_legacy_lowering() {
     assert!(state.legacy_vue2_enabled());
     assert_eq!(
         state.type_checker_vue_version(),
-        vize_carton::config::VueVersion::V2
+        vize_s0::config::VueVersion::V2
     );
 }
 
@@ -191,6 +191,6 @@ fn vue_version_3_keeps_legacy_lowering_disabled() {
     assert!(!state.legacy_vue2_enabled());
     assert_eq!(
         state.type_checker_vue_version(),
-        vize_carton::config::VueVersion::V3
+        vize_s0::config::VueVersion::V3
     );
 }

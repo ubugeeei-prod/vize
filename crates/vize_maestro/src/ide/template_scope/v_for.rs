@@ -25,7 +25,7 @@ pub(super) fn binding_at(ctx: &IdeContext<'_>, word: &str) -> Option<TemplateSco
     }
 
     let cursor = ctx.offset - template.loc.start;
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (ast, _) = vize_armature::parse(&allocator, template.content.as_ref());
 
     find_in_children(&ast.children, template.loc.start, cursor, word)

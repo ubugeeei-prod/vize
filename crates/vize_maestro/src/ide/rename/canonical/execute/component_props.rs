@@ -1,6 +1,6 @@
 use tower_lsp::lsp_types::{DocumentChangeOperation, DocumentChanges, OneOf, Range, WorkspaceEdit};
 use vize_canon::LspLocation;
-use vize_carton::{FxHashSet, String};
+use vize_s0::{FxHashSet, String};
 
 use crate::ide::{IdeContext, corsa_support};
 
@@ -168,7 +168,7 @@ const greeting = "hello";
             ),
             vec![other_definition],
         );
-        let mut names = vize_carton::FxHashSet::default();
+        let mut names = vize_s0::FxHashSet::default();
         names.insert("title".into());
         let mut changes = HashMap::new();
         changes.insert(

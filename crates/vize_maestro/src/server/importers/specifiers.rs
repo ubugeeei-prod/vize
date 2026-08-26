@@ -8,7 +8,7 @@ use oxc_ast::ast::{
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 pub(super) fn collect(source: &str, source_type: SourceType) -> Vec<String> {
     let allocator = Allocator::default();

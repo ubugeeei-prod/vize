@@ -29,7 +29,7 @@ use tower_lsp::lsp_types::{
 };
 use vize_atelier_jsx::JsxLang;
 use vize_canon::{CorsaBridge, LspLocation};
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 use super::position::{source_offset_to_virtual_position, virtual_range_to_source};
 use super::virtual_ts::{JsxVirtualTs, generate_jsx_virtual_ts};
@@ -49,7 +49,7 @@ impl JsxService {
     /// session. Shared by every type-aware JSX request (hover, completion,
     /// definition, references, rename, diagnostics) so they all key the same
     /// virtual document in the session cache.
-    pub(super) fn request_path(uri: &Url) -> vize_carton::String {
+    pub(super) fn request_path(uri: &Url) -> vize_s0::String {
         cstr!("{}.jsx.ts", uri.path())
     }
 
@@ -70,7 +70,7 @@ impl JsxService {
     pub(super) async fn prepare_request(
         ctx: &IdeContext<'_>,
         bridge: &CorsaBridge,
-    ) -> Option<(JsxVirtualTs, vize_carton::String, u32, u32)> {
+    ) -> Option<(JsxVirtualTs, vize_s0::String, u32, u32)> {
         if !bridge.is_initialized() {
             return None;
         }

@@ -1,7 +1,7 @@
 //! Mapping Corsa virtual-document diagnostics back to the host SFC.
 
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range, Url};
-use vize_carton::FxHashSet;
+use vize_s0::FxHashSet;
 
 use super::super::{VirtualTsResult, sources};
 use super::mapping::{

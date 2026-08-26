@@ -267,3 +267,38 @@ test("Canon content-mapper imports S0 storage through the stage alias", () => {
   assert.ok(aliasImports > 0, "Canon content-mapper should use the vize_s0 alias");
   assert.deepEqual(offenders, []);
 });
+
+test("Maestro LSP imports S0 storage through the stage alias", () => {
+  const dependencies = workspacePackage(metadata, "vize_maestro").dependencies;
+  assert.ok(
+    dependencies.some(
+      (dependency) =>
+        dependency.kind === null &&
+        dependency.name === "vize_carton" &&
+        dependency.rename === "vize_s0",
+    ),
+    "vize_maestro must import vize_carton as vize_s0 for S0 storage",
+  );
+  assert.ok(
+    dependencies.every(
+      (dependency) => dependency.name !== "vize_carton" || dependency.rename === "vize_s0",
+    ),
+    "vize_maestro must not depend on vize_carton through its physical name",
+  );
+
+  const maestroDir = path.join(repoRoot, "crates", "vize_maestro");
+  const offenders = [];
+  let aliasImports = 0;
+  for (const fullPath of walkRustFiles(maestroDir)) {
+    const source = fs.readFileSync(fullPath, "utf8");
+    if (/\bvize_carton::|use vize_carton\b/u.test(source)) {
+      offenders.push(path.relative(repoRoot, fullPath));
+    }
+    if (/\bvize_s0::|use vize_s0\b/u.test(source)) {
+      aliasImports += 1;
+    }
+  }
+
+  assert.ok(aliasImports > 0, "Maestro LSP should use the vize_s0 alias");
+  assert.deepEqual(offenders, []);
+});

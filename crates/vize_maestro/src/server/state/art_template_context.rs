@@ -76,15 +76,15 @@ fn build_variant_document(
         ensure_blank_line(&mut content);
 
         let function_name = if setup.isolate {
-            vize_carton::cstr!("__VIZE_art_variant_{variant_index}_setup")
+            vize_s0::cstr!("__VIZE_art_variant_{variant_index}_setup")
         } else {
             "__VIZE_art_shared_setup".into()
         };
         let generic = setup_generic.filter(|generic| !generic.trim().is_empty());
         if let Some(generic) = generic {
-            vize_carton::append!(content, "async function {function_name}<{generic}>() {{\n");
+            vize_s0::append!(content, "async function {function_name}<{generic}>() {{\n");
         } else {
-            vize_carton::append!(content, "async function {function_name}() {{\n");
+            vize_s0::append!(content, "async function {function_name}() {{\n");
         }
         content.push_str(vize_canon::virtual_ts::VUE_SETUP_HELPERS);
         content.push('\n');

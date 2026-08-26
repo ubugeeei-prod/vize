@@ -11,7 +11,7 @@ use vize_relief::{
 };
 
 use super::{MappingData, SourceMap, SourceMapping, SourceRange, VirtualDocument, VirtualLanguage};
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 /// Template code generator.
 pub struct TemplateCodeGenerator {

@@ -100,7 +100,7 @@ impl JsxScopedStyleService {
         source_map.set_block_offset(style.start);
 
         VirtualDocument {
-            uri: vize_carton::cstr!("{base_path}.__jsx_style_{index}.css").to_string(),
+            uri: vize_s0::cstr!("{base_path}.__jsx_style_{index}.css").to_string(),
             content: style.css.clone(),
             language: VirtualLanguage::Style,
             source_map,

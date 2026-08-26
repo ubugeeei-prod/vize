@@ -177,7 +177,7 @@ impl SignatureHelpService {
         bridge: &CorsaBridge,
         document: &VirtualDocument,
         generated_offset: usize,
-        request_path: vize_carton::String,
+        request_path: vize_s0::String,
         context: Option<serde_json::Value>,
         mut trace: Option<&mut Vec<SignatureHelpStage>>,
     ) -> Option<SignatureHelp> {

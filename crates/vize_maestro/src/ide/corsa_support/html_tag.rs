@@ -1,5 +1,5 @@
 use tower_lsp::lsp_types::Url;
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 pub(crate) struct NativeDomTagInfo {
     pub(crate) category: &'static str,
@@ -75,7 +75,7 @@ pub(crate) fn native_dom_tag_info(tag_name: &str) -> Option<NativeDomTagInfo> {
             ),
         });
     }
-    if vize_carton::is_math_ml_tag(tag_name) {
+    if vize_s0::is_math_ml_tag(tag_name) {
         return Some(NativeDomTagInfo {
             category: "MathML element",
             type_expression: String::from("MathMLElement"),
@@ -94,7 +94,7 @@ fn dom_definition_symbol(tag_name: &str) -> Option<&'static str> {
         Some("SVGElementTagNameMap")
     } else if has_math_ml_element_tag_name_map_entry(tag_name) {
         Some("MathMLElementTagNameMap")
-    } else if vize_carton::is_math_ml_tag(tag_name) {
+    } else if vize_s0::is_math_ml_tag(tag_name) {
         Some("MathMLElement")
     } else {
         None
@@ -102,11 +102,11 @@ fn dom_definition_symbol(tag_name: &str) -> Option<&'static str> {
 }
 
 fn has_html_element_tag_name_map_entry(tag_name: &str) -> bool {
-    vize_carton::is_html_tag(tag_name) && !matches!(tag_name, "param")
+    vize_s0::is_html_tag(tag_name) && !matches!(tag_name, "param")
 }
 
 fn has_svg_element_tag_name_map_entry(tag_name: &str) -> bool {
-    vize_carton::is_svg_tag(tag_name)
+    vize_s0::is_svg_tag(tag_name)
         && !matches!(
             tag_name,
             "color-profile"
@@ -123,7 +123,7 @@ fn has_svg_element_tag_name_map_entry(tag_name: &str) -> bool {
 }
 
 fn has_math_ml_element_tag_name_map_entry(tag_name: &str) -> bool {
-    vize_carton::is_math_ml_tag(tag_name)
+    vize_s0::is_math_ml_tag(tag_name)
         && matches!(
             tag_name,
             "annotation"

@@ -109,7 +109,7 @@ fn start_tag<'a>(
 
     let name = &content[name_start..name_end];
     let self_closing = content[..tag_end - 1].trim_end().ends_with('/');
-    if !self_closing && !vize_carton::is_void_tag(name) {
+    if !self_closing && !vize_s0::is_void_tag(name) {
         stack.push(OpenTag {
             name,
             tag_start: cursor,

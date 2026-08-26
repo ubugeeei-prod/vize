@@ -5,7 +5,7 @@ use tower_lsp::lsp_types::{
     WorkspaceEdit,
 };
 use vize_canon::CorsaBridge;
-use vize_carton::{FxHashSet, String, cstr};
+use vize_s0::{FxHashSet, String, cstr};
 
 use crate::ide::{IdeContext, ReferencesService, corsa_support};
 

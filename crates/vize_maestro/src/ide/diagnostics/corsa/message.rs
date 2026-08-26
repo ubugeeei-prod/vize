@@ -1,7 +1,7 @@
 //! Vue-flavored rewriting of raw Corsa/TypeScript diagnostic messages.
 
 use vize_canon::batch::restore_virtual_vue_specifiers;
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 /// Rewrite a Corsa diagnostic message with a Vue-flavored hint when the
 /// raw TypeScript phrasing has a more actionable Vue interpretation.
@@ -44,7 +44,7 @@ fn property_does_not_exist_property(message: &str) -> Option<&str> {
 
 #[cfg(test)]
 mod hint_tests {
-    use vize_carton::cstr;
+    use vize_s0::cstr;
 
     use super::{property_does_not_exist_property, rewrite_corsa_message};
 

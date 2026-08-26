@@ -16,7 +16,7 @@ use vize_atelier_sfc::SfcDescriptor;
 use vize_patina::{HelpRenderTarget, LintPreset, render_help};
 
 use super::{DiagnosticService, LineIndex, sources};
-use vize_carton::append;
+use vize_s0::append;
 
 impl DiagnosticService {
     /// Collect diagnostics for Art files (*.art.vue) using vize_patina's MuseaLinter.
@@ -99,7 +99,7 @@ impl DiagnosticService {
     ) -> Vec<Diagnostic> {
         let lang = vize_atelier_jsx::JsxLang::from_path(uri.path());
 
-        let allocator = vize_carton::Allocator::new();
+        let allocator = vize_s0::Allocator::new();
         let output = vize_atelier_jsx::lower_source(&allocator, allocator.as_oxc(), content, lang);
 
         output
@@ -315,7 +315,7 @@ impl DiagnosticService {
             return vec![];
         };
 
-        let allocator = vize_carton::Allocator::new();
+        let allocator = vize_s0::Allocator::new();
         let (_, errors) = vize_armature::parse(&allocator, &template.content);
         errors
             .iter()

@@ -6,7 +6,7 @@
 mod davinci_ts40_projection_support;
 
 use davinci_ts40_projection_support::{Drift, capture_fixture, load_matrix, verify_exact};
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 #[test]
 #[allow(clippy::disallowed_macros)] // `insta` expands to `format!`.

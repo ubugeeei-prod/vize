@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use tower_lsp::lsp_types::Url;
 use vize_canon::{CorsaBridge, CorsaBridgeConfig};
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 use super::{ReferencesService, authored_text, resolve_tsgo_binary};
 use crate::ide::IdeContext;

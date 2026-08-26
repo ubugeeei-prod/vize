@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
-use vize_carton::String;
+use vize_s0::String;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]

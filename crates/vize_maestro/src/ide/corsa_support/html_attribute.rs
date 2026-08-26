@@ -1,5 +1,5 @@
 use tower_lsp::lsp_types::Url;
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 use super::html_tag::native_dom_tag_info;
 use super::svg_attribute::{canonical_svg_dom_attribute_name, mapped_svg_dom_attribute_property};
@@ -58,10 +58,10 @@ pub(crate) fn native_dom_attribute_info(
     let tag_info = native_dom_tag_info(tag_name)?;
     let normalized_attr = normalize_attribute_name(tag_name, attr_name)?;
     let property_name = dom_attribute_property_name(tag_name, &normalized_attr)?;
-    let is_boolean = vize_carton::is_boolean_attr(&normalized_attr);
-    let category = if vize_carton::is_html_tag(tag_name) {
+    let is_boolean = vize_s0::is_boolean_attr(&normalized_attr);
+    let category = if vize_s0::is_html_tag(tag_name) {
         "HTML attribute"
-    } else if vize_carton::is_svg_tag(tag_name) {
+    } else if vize_s0::is_svg_tag(tag_name) {
         "SVG attribute"
     } else {
         "MathML attribute"
@@ -74,7 +74,7 @@ pub(crate) fn native_dom_attribute_info(
         String::from(
             "https://developer.mozilla.org/en-US/docs/Learn/HTML/Howto/Use_data_attributes",
         )
-    } else if vize_carton::is_svg_tag(tag_name) {
+    } else if vize_s0::is_svg_tag(tag_name) {
         cstr!(
             "https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Attribute/{normalized_attr}"
         )
@@ -130,7 +130,7 @@ fn normalize_attribute_name(tag_name: &str, attr_name: &str) -> Option<String> {
         return None;
     }
 
-    if vize_carton::is_svg_tag(tag_name)
+    if vize_s0::is_svg_tag(tag_name)
         && let Some(canonical) = canonical_svg_dom_attribute_name(tag_name, attr_name)
     {
         return Some(String::from(canonical));
@@ -152,7 +152,7 @@ fn dom_attribute_property_name(tag_name: &str, attr_name: &str) -> Option<String
         return Some(cstr!("aria{}", kebab_to_pascal(aria_name)));
     }
 
-    if vize_carton::is_svg_tag(tag_name)
+    if vize_s0::is_svg_tag(tag_name)
         && let Some(property_name) = mapped_svg_dom_attribute_property(tag_name, attr_name)
     {
         return Some(String::from(property_name));
@@ -221,14 +221,14 @@ fn mapped_dom_attribute_property(attr_name: &str) -> Option<&'static str> {
 }
 
 fn is_known_native_attribute_for_tag(tag_name: &str, attr_name: &str) -> bool {
-    if vize_carton::is_html_tag(tag_name) {
+    if vize_s0::is_html_tag(tag_name) {
         return is_html_global_native_attribute(attr_name)
             || HTML_TAG_ATTRIBUTES
                 .iter()
                 .any(|(tag, attrs)| *tag == tag_name && attrs.contains(&attr_name));
     }
 
-    if vize_carton::is_svg_tag(tag_name) || vize_carton::is_math_ml_tag(tag_name) {
+    if vize_s0::is_svg_tag(tag_name) || vize_s0::is_math_ml_tag(tag_name) {
         return is_dom_element_global_attribute(attr_name);
     }
 

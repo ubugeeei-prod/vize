@@ -8,7 +8,7 @@ use vize_atelier_sfc::SfcStyleBlock;
 use super::{
     MappingFeatures, SourceMap, SourceMapping, SourceRange, VirtualDocument, VirtualLanguage,
 };
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 /// Style code generator.
 pub struct StyleCodeGenerator {

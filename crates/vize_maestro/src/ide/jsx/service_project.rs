@@ -11,7 +11,7 @@ pub(super) async fn open_virtual_project(
     ctx: &IdeContext<'_>,
     bridge: &CorsaBridge,
     virtual_ts: &JsxVirtualTs,
-) -> Option<vize_carton::String> {
+) -> Option<vize_s0::String> {
     let source_path = ctx.uri.to_file_path().ok()?;
     let cached_overlays = ctx.state.corsa_overlays();
     let overlays = cached_overlays

@@ -2,7 +2,7 @@
 
 use vize_atelier_jsx::{JsxLang, lower_source};
 use vize_canon::virtual_ts::VizeMapping;
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 use super::{
     JsxEmit, collect_root_expressions, collect_style_expressions, component, push_mapped_expr, slot,

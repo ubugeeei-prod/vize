@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use serde_json::Value;
 use tower_lsp::lsp_types::{CompletionItem, CompletionItemKind, Diagnostic, Position, Range, Url};
 use vize_atelier_sfc::SfcDescriptor;
-use vize_carton::{FxHashSet, String, cstr};
+use vize_s0::{FxHashSet, String, cstr};
 
 use super::context::{preceding_property_is_name, string_literal_at_cursor};
 use crate::ide::{IdeContext, offset_to_position};
@@ -609,7 +609,7 @@ fn push_name(name: &str, seen: &mut FxHashSet<String>, names: &mut Vec<String>) 
 #[cfg(test)]
 mod tests {
     use tower_lsp::lsp_types::Url;
-    use vize_carton::{FxHashSet, String};
+    use vize_s0::{FxHashSet, String};
 
     use super::{collect_path_params, is_route_name_context, route_names, route_params_for_file};
 

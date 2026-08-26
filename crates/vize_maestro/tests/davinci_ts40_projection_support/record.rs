@@ -1,4 +1,4 @@
-use vize_carton::{SmallVec, String, append, cstr};
+use vize_s0::{SmallVec, String, append, cstr};
 
 use super::canon::{capture_canon, capture_content_mapper};
 use super::maestro::capture_maestro;

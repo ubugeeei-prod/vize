@@ -11,7 +11,7 @@ use tower_lsp::lsp_types::{
     DocumentSymbol, DocumentSymbolParams, DocumentSymbolResponse, Position, Range, SymbolKind,
 };
 use vize_atelier_sfc::BlockLocation;
-use vize_carton::line_index::LineIndex;
+use vize_s0::line_index::LineIndex;
 
 use crate::server::ServerState;
 

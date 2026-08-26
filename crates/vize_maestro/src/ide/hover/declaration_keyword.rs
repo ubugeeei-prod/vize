@@ -176,7 +176,7 @@ fn align_v_for_parameter(
 /// or callback's parameter named like the alias — inside the loop element or
 /// anywhere else in the template — keeps the checker's `(parameter)` answer.
 fn is_v_for_alias(template: &str, word: &str, offset: u32) -> bool {
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
     analyzer.analyze_template(&root);

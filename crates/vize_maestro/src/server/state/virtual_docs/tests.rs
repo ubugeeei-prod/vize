@@ -13,7 +13,7 @@ use crate::server::ServerState;
 use crate::virtual_code::VirtualDocuments;
 
 fn source(color: &str) -> String {
-    vize_carton::cstr!(
+    vize_s0::cstr!(
         "<script setup lang=\"ts\">\nconst message = 'hi'\n</script>\n\
          <template>\n  <div>{{{{ message }}}}</div>\n</template>\n\
          <style scoped>\n.box {{ color: {color}; }}\n</style>\n"
@@ -33,7 +33,7 @@ fn styles(docs: &VirtualDocuments) -> Vec<(String, String)> {
 fn style_documents(color: &str) -> Vec<(String, String)> {
     vec![(
         "/Snapshot.vue.__style_0.css".to_string(),
-        vize_carton::cstr!("\n.box {{ color: {color}; }}\n").to_string(),
+        vize_s0::cstr!("\n.box {{ color: {color}; }}\n").to_string(),
     )]
 }
 
