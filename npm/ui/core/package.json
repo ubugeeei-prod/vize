@@ -44,6 +44,11 @@
       "import": "./dist/checkbox.mjs",
       "default": "./dist/checkbox.mjs"
     },
+    "./command": {
+      "types": "./dist/command.d.mts",
+      "import": "./dist/command.mjs",
+      "default": "./dist/command.mjs"
+    },
     "./collection": {
       "types": "./dist/collection.d.mts",
       "import": "./dist/collection.mjs",
@@ -104,6 +109,11 @@
       "import": "./dist/focus-guards.mjs",
       "default": "./dist/focus-guards.mjs"
     },
+    "./history": {
+      "types": "./dist/history.d.mts",
+      "import": "./dist/history.mjs",
+      "default": "./dist/history.mjs"
+    },
     "./hover": {
       "types": "./dist/hover.d.mts",
       "import": "./dist/hover.mjs",
@@ -128,6 +138,11 @@
       "types": "./dist/scroll-lock.d.mts",
       "import": "./dist/scroll-lock.mjs",
       "default": "./dist/scroll-lock.mjs"
+    },
+    "./shortcut": {
+      "types": "./dist/shortcut.d.mts",
+      "import": "./dist/shortcut.mjs",
+      "default": "./dist/shortcut.mjs"
     },
     "./spatial-navigation": {
       "types": "./dist/spatial-navigation.d.mts",

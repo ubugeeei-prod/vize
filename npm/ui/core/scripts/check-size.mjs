@@ -5,12 +5,13 @@ import { gzipSync } from "node:zlib";
 const distributionDirectory = new URL("../dist/", import.meta.url);
 const staticImportPattern = /\b(?:import|export)\s+(?:[^"']*?\s+from\s+)?["'](\.\.?\/[^"']+)["']/g;
 const budgets = new Map([
-  ["index.mjs", 48_100],
+  ["index.mjs", 62_000],
   ["button.mjs", 1_600],
   ["checkbox.mjs", 1_900],
   ["collection.mjs", 5_700],
   ["composite-navigation.mjs", 5_355],
   ["catalog.mjs", 10_000],
+  ["command.mjs", 2_200],
   ["context.mjs", 700],
   ["controllable-state.mjs", 600],
   ["dismissable-layer.mjs", 4_250],
@@ -20,11 +21,13 @@ const budgets = new Map([
   ["focus.mjs", 5_850],
   ["focus-scope.mjs", 6_300],
   ["focus-guards.mjs", 5_800],
+  ["history.mjs", 3_400],
   ["hover.mjs", 2_200],
   ["long-press.mjs", 8_175],
   ["move.mjs", 5_050],
   ["press.mjs", 5_950],
   ["scroll-lock.mjs", 3_150],
+  ["shortcut.mjs", 7_400],
   ["spatial-navigation.mjs", 3_725],
   ["typeahead.mjs", 2_000],
   ["primitive.mjs", 800],
