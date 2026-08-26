@@ -66,6 +66,40 @@ test("a single pnpm virtual-store Vue runtime package is pinned without a direct
   }
 });
 
+test("a symlinked pnpm virtual-store Vue runtime package is pinned", () => {
+  const { fixtureRoot, outer } = scaffold();
+  try {
+    const realEntry = path.join(fixtureRoot, "node_modules/.pnpm-real/vue-entry");
+    const local = path.join(realEntry, "node_modules/vue");
+    fs.mkdirSync(local, { recursive: true });
+    fs.writeFileSync(path.join(local, "package.json"), `{"name":"vue"}\n`);
+    const store = path.join(fixtureRoot, "node_modules/.pnpm");
+    fs.mkdirSync(store, { recursive: true });
+    fs.symlinkSync(realEntry, path.join(store, "vue@3.5.17_typescript@5.8.3"), "dir");
+    assert.deepEqual(rewriteLocalVueRuntimePaths(fixtureRoot, fixtureRoot), {
+      vue: ["./node_modules/.pnpm/vue@3.5.17_typescript@5.8.3/node_modules/vue"],
+    });
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test("a pnpm virtual-store Vue runtime symlink outside the fixture is not pinned", () => {
+  const { fixtureRoot, outer } = scaffold();
+  try {
+    const realEntry = path.join(outer, "store/vue-entry");
+    const local = path.join(realEntry, "node_modules/vue");
+    fs.mkdirSync(local, { recursive: true });
+    fs.writeFileSync(path.join(local, "package.json"), `{"name":"vue"}\n`);
+    const store = path.join(fixtureRoot, "node_modules/.pnpm");
+    fs.mkdirSync(store, { recursive: true });
+    fs.symlinkSync(realEntry, path.join(store, "vue@3.5.17_typescript@5.8.3"), "dir");
+    assert.equal(rewriteLocalVueRuntimePaths(fixtureRoot, fixtureRoot), null);
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
 test("multiple pnpm virtual-store Vue runtime copies are not guessed", () => {
   const { fixtureRoot, outer } = scaffold();
   try {
