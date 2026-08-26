@@ -110,10 +110,20 @@ fn collect_default_check_files_inner(
 
     let mut files = Vec::new();
     let mut seen = FxHashSet::default();
-    for tsconfig_path in cache.project_paths(tsconfig_path) {
+    for (index, tsconfig_path) in cache.project_paths(tsconfig_path).iter().enumerate() {
+        // `tsc -p` expands `references` into checkable programs only for a
+        // solution-style root — one that contributes no inputs of its own
+        // (create-vue's `"files": []` shell, Nuxt's generated root). A root
+        // that names its own program keeps `-p` semantics: its `include`,
+        // `files`, and `exclude` alone decide the file set, and a referenced
+        // workspace — possibly deliberately `exclude`d — is a separate
+        // project, not part of this check (#4965).
+        if index == 1 && !files.is_empty() {
+            break;
+        }
         collect_default_check_files_for_tsconfig(
             project_root,
-            &tsconfig_path,
+            tsconfig_path,
             include_hidden_tsconfig_roots,
             include_jsx,
             cache,
