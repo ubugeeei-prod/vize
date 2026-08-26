@@ -2,7 +2,7 @@
 
 use std::time::Duration;
 
-use vize_carton::{String, append, appendln, appends};
+use vize_s0::{String, append, appendln, appends};
 
 use super::format::{
     append_padded, counter_total, counter_total_matching, duration_ratio, percent_of,

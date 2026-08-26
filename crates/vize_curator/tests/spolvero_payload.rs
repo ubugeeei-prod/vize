@@ -6,11 +6,11 @@
 use std::path::Path;
 
 use davinci_test_support::schema as schema_check;
-use vize_carton::cstr;
 use vize_curator::inspector::{
     InspectorOptions, InspectorSourceFile, InspectorTarget, InspectorTemplateSyntax, build_payload,
     serialize_payload,
 };
+use vize_s0::cstr;
 
 /// Load the committed schema relative to this crate's manifest.
 fn load_schema() -> serde_json::Value {

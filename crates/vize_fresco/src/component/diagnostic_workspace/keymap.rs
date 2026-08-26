@@ -10,7 +10,7 @@ use std::fmt;
 use rustc_hash::FxHashMap;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 use super::DiagnosticWorkspaceCommand;
 use crate::input::{Key, KeyEvent, KeyEventKind, KeyModifiers};

@@ -120,12 +120,13 @@ fn attr_sort_key(name: &str, merge_bind: bool) -> (u8, String) {
 /// (the eslint-plugin-vue `vue/attributes-order` default), so default fmt
 /// output can never introduce that lint finding (#3251). Patina quirks are
 /// mirrored on purpose: `:ref`/`:id` are plain bindings, only `:key`/`:is`
-/// are special, and unmatched directives (`v-is`, `v-memo`) join the slots.
+/// are special, static Vue 2 slots are unique attributes, and unmatched
+/// directives (`v-is`, `v-memo`) join the slots.
 /// 0 `is`/`:is`; 1 `v-for`; 2 conditionals `v-if`/`v-else-if`/`v-else`/
 /// `v-show`/`v-cloak`; 3 render modifiers `v-pre`/`v-once`; 4 `id`; 5 unique
-/// `ref`/`key`/`:key`; 6 `v-model`; 7 other directives `v-slot`/`#xxx`; 8 other
-/// attributes (bound `:class` and static `class` share a priority); 9 events
-/// `@xxx`/`v-on`; 10 content `v-html`/`v-text`.
+/// `ref`/`key`/`slot`/`slot-scope`/`:key`; 6 `v-model`; 7 other directives
+/// `v-slot`/`#xxx`; 8 other attributes (bound `:class` and static `class`
+/// share a priority); 9 events `@xxx`/`v-on`; 10 content `v-html`/`v-text`.
 pub(crate) fn attribute_priority(name: &str) -> u8 {
     // Exact directive name or an `:arg`/`.mod` boundary (so `v-models` etc. fall through to 7).
     fn matches_directive(name: &str, directive: &str) -> bool {
@@ -147,7 +148,10 @@ pub(crate) fn attribute_priority(name: &str) -> u8 {
     if name == "id" {
         return 4;
     }
-    if matches!(name, "ref" | "key" | ":key" | "v-bind:key") {
+    if matches!(
+        name,
+        "ref" | "key" | "slot" | "slot-scope" | ":key" | "v-bind:key"
+    ) {
         return 5;
     }
     if matches_directive(name, "v-model") {

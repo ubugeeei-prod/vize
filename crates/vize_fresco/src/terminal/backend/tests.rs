@@ -186,13 +186,21 @@ fn restore_completes_every_cleanup_action_after_a_writer_failure() {
     backend.writer_mut().fail_next_write = true;
 
     assert!(backend.restore().is_err());
-    assert!(backend.session_state().owns(TerminalMode::MouseCapture));
+    // The armed failure hits the first writer-borne release, which stays owned
+    // for the retry while every later cleanup still completes. On Windows,
+    // crossterm releases mouse capture through the console API instead of the
+    // writer, so the first writer-borne release is bracketed paste there.
+    #[cfg(windows)]
+    let retained = TerminalMode::BracketedPaste;
+    #[cfg(not(windows))]
+    let retained = TerminalMode::MouseCapture;
     for mode in [
+        TerminalMode::MouseCapture,
         TerminalMode::BracketedPaste,
         TerminalMode::AlternateScreen,
         TerminalMode::CursorVisibility,
     ] {
-        assert!(!backend.session_state().owns(mode));
+        assert_eq!(backend.session_state().owns(mode), mode == retained);
     }
 
     let mut show_cursor = Vec::new();

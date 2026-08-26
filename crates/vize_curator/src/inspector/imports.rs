@@ -9,7 +9,7 @@ use vize_atelier_core::parser::parse;
 use vize_atelier_sfc::{
     SfcParseOptions, SfcScriptBlock, parse_sfc, script::resolve_template_used_identifiers,
 };
-use vize_carton::{FxHashSet, String, ToCompactString};
+use vize_s0::{FxHashSet, String, ToCompactString};
 
 #[derive(Debug)]
 pub(super) struct ImportEdge {
@@ -58,7 +58,7 @@ fn analyze_sfc_file(path: &str, source: &str) -> FileAnalysis {
         .template
         .as_ref()
         .map(|template| {
-            let allocator = vize_carton::Allocator::new();
+            let allocator = vize_s0::Allocator::new();
             let (root, _) = parse(&allocator, template.content.as_ref());
             resolve_template_used_identifiers(&root).used_ids
         })

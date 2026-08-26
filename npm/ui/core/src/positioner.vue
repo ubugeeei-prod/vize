@@ -15,6 +15,8 @@ const {
   direction = "ltr",
   flip = true,
   shift = true,
+  size = false,
+  safeArea = false,
   hide = true,
   updateOnScroll = true,
   updateOnResize = true,
@@ -84,6 +86,23 @@ const {
   readonly shift?: boolean;
 
   /**
+   * Constrain the host to the available space with `max-width`/`max-height`
+   * and publish `--vize-ui-positioner-available-width` and
+   * `--vize-ui-positioner-available-height` custom properties.
+   *
+   * @default false
+   */
+  readonly size?: boolean;
+
+  /**
+   * Inset the active viewport by `env(safe-area-inset-*)` before collision
+   * handling, keeping floating content clear of notches and rounded corners.
+   *
+   * @default false
+   */
+  readonly safeArea?: boolean;
+
+  /**
    * Hide when the reference no longer intersects the viewport.
    *
    * @default true
@@ -125,7 +144,9 @@ const positioner = usePositioner({
   hide: toRef(() => hide),
   offset: toRef(() => offset),
   placement: toRef(() => placement),
+  safeArea: toRef(() => safeArea),
   shift: toRef(() => shift),
+  size: toRef(() => size),
   strategy: toRef(() => strategy),
   updateOnResize: toRef(() => updateOnResize),
   updateOnScroll: toRef(() => updateOnScroll),
@@ -167,6 +188,8 @@ watchEffect(
 
 defineExpose({
   arrowStyle: positioner.arrowStyle,
+  availableHeight: positioner.availableHeight,
+  availableWidth: positioner.availableWidth,
   element,
   hidden: positioner.hidden,
   ready: positioner.ready,

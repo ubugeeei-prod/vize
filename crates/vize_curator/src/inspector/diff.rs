@@ -1,6 +1,6 @@
 //! Inspector line-diff computation and statistics.
 
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]

@@ -2,6 +2,14 @@ import { getCurrentScope, onScopeDispose, shallowReadonly, shallowRef, toValue, 
 import type { MaybeRefOrGetter } from "vue";
 
 import { computePosition, readRect } from "./positioner-geometry.ts";
+import { arrowStyle, computeAvailableSize, hostStyle, sizeStyle } from "./positioner-size.ts";
+import {
+  insetViewport,
+  ownerDocumentOf,
+  readSafeAreaInsets,
+  visualViewportRect,
+  zeroSafeAreaInsets,
+} from "./positioner-viewport.ts";
 import type {
   Placement,
   PositionerArrowStyle,
@@ -11,6 +19,7 @@ import type {
   PositionerStrategy,
   PositionerStyle,
   Rect,
+  SafeAreaInsets,
 } from "./positioner-types.ts";
 
 const invalidOptionDiagnostic = "VIZE_UI_POSITIONER_OPTION";
@@ -108,6 +117,8 @@ function validateOptions(options: PositionerOptions): void {
   if (typeof options.arrowPadding !== "function") readNumber(options.arrowPadding, 0);
   if (typeof options.flip !== "function") readBoolean(options.flip, true);
   if (typeof options.shift !== "function") readBoolean(options.shift, true);
+  if (typeof options.size !== "function") readBoolean(options.size, false);
+  if (typeof options.safeArea !== "function") readBoolean(options.safeArea, false);
   if (typeof options.hide !== "function") readBoolean(options.hide, true);
   if (typeof options.updateOnScroll !== "function") readBoolean(options.updateOnScroll, true);
   if (typeof options.updateOnResize !== "function") readBoolean(options.updateOnResize, true);
@@ -125,31 +136,6 @@ function floatingOffsetParent(element: PositionerElement | null): Element | null
   return parent instanceof Element ? parent : null;
 }
 
-function viewportRect(): Rect {
-  const visual = globalThis.visualViewport;
-  if (visual) {
-    return {
-      height: visual.height,
-      width: visual.width,
-      x: visual.offsetLeft,
-      y: visual.offsetTop,
-    };
-  }
-  const doc = globalThis.document?.documentElement;
-  if (doc) {
-    return { height: doc.clientHeight, width: doc.clientWidth, x: 0, y: 0 };
-  }
-  return { height: 0, width: 0, x: 0, y: 0 };
-}
-
-function hostStyle(strategy: PositionerStrategy, x: number, y: number): PositionerStyle {
-  return `position:${strategy};left:0px;top:0px;transform:translate(${String(x)}px, ${String(y)}px)`;
-}
-
-function arrowStyle(arrowX: number | null, arrowY: number | null): PositionerArrowStyle {
-  return `position:absolute;left:${String(arrowX ?? 0)}px;top:${String(arrowY ?? 0)}px`;
-}
-
 /** Create an SSR-safe floating placement controller. */
 export function createPositioner(options: PositionerOptions = {}): PositionerController {
   validateOptions(options);
@@ -157,6 +143,8 @@ export function createPositioner(options: PositionerOptions = {}): PositionerCon
   const y = shallowRef(0);
   const arrowX = shallowRef<number | null>(null);
   const arrowY = shallowRef<number | null>(null);
+  const availableWidth = shallowRef<number | null>(null);
+  const availableHeight = shallowRef<number | null>(null);
   const hidden = shallowRef(false);
   const ready = shallowRef(false);
   const resolvedPlacement = shallowRef<Placement>(readPlacement(options.placement));
@@ -167,10 +155,19 @@ export function createPositioner(options: PositionerOptions = {}): PositionerCon
   let reference: PositionerElement | null = null;
   let floating: PositionerElement | null = null;
   let arrow: PositionerElement | null = null;
+  let safeAreaInsets: SafeAreaInsets = zeroSafeAreaInsets;
   const listeners: Array<() => void> = [];
 
   const assertAlive = (): void => {
     if (disposed) throw new Error(`${disposedDiagnostic}: the controller has been disposed`);
+  };
+
+  // Safe-area insets change with orientation and zoom, not with scrolling,
+  // so the env() probe runs on attach, resize, and option changes only.
+  const refreshSafeArea = (): void => {
+    safeAreaInsets = readBoolean(options.safeArea, false)
+      ? readSafeAreaInsets(ownerDocumentOf(floating))
+      : zeroSafeAreaInsets;
   };
 
   const detach = (): void => {
@@ -179,11 +176,13 @@ export function createPositioner(options: PositionerOptions = {}): PositionerCon
 
   const attach = (): void => {
     detach();
+    refreshSafeArea();
     if (typeof globalThis.addEventListener !== "function") return;
     const onScroll = () => {
       if (readBoolean(options.updateOnScroll, true)) update();
     };
     const onResize = () => {
+      refreshSafeArea();
       if (readBoolean(options.updateOnResize, true)) update();
     };
     globalThis.addEventListener("scroll", onScroll, true);
@@ -214,19 +213,32 @@ export function createPositioner(options: PositionerOptions = {}): PositionerCon
     if (referenceRect === null || floatingRect === null) return;
 
     const nextStrategy = readStrategy(options.strategy);
+    const collisionPadding = readNumber(options.collisionPadding, 0);
+    const offset = readNumber(options.offset, 0);
+    const viewport = insetViewport(
+      readViewport(options.viewport) ?? visualViewportRect(),
+      safeAreaInsets,
+    );
     const result = computePosition({
       arrow: measure(arrow),
       arrowPadding: readNumber(options.arrowPadding, 0),
-      collisionPadding: readNumber(options.collisionPadding, 0),
+      collisionPadding,
       flip: readBoolean(options.flip, true),
       floating: floatingRect,
       hide: readBoolean(options.hide, true),
-      offset: readNumber(options.offset, 0),
+      offset,
       placement: readPlacement(options.placement),
       reference: referenceRect,
       rtl: readDirection(options.direction) === "rtl",
       shift: readBoolean(options.shift, true),
-      viewport: readViewport(options.viewport) ?? viewportRect(),
+      viewport,
+    });
+    const available = computeAvailableSize({
+      collisionPadding,
+      offset,
+      placement: result.placement,
+      reference: referenceRect,
+      viewport,
     });
 
     let nextX = result.x;
@@ -243,10 +255,14 @@ export function createPositioner(options: PositionerOptions = {}): PositionerCon
     y.value = nextY;
     arrowX.value = result.arrowX;
     arrowY.value = result.arrowY;
+    availableWidth.value = available.width;
+    availableHeight.value = available.height;
     hidden.value = result.hidden;
     resolvedPlacement.value = result.placement;
     strategy.value = nextStrategy;
-    style.value = hostStyle(nextStrategy, nextX, nextY);
+    style.value =
+      hostStyle(nextStrategy, nextX, nextY) +
+      (readBoolean(options.size, false) ? sizeStyle(available) : "");
     arrowStyles.value = arrowStyle(result.arrowX, result.arrowY);
     ready.value = true;
   };
@@ -261,11 +277,15 @@ export function createPositioner(options: PositionerOptions = {}): PositionerCon
       toValue(options.arrowPadding),
       toValue(options.flip),
       toValue(options.shift),
+      toValue(options.size),
+      toValue(options.safeArea),
       toValue(options.hide),
       toValue(options.viewport),
     ],
     () => {
-      if (!disposed && ready.value) update();
+      if (disposed) return;
+      refreshSafeArea();
+      if (ready.value) update();
     },
     { flush: "sync" },
   );
@@ -274,6 +294,8 @@ export function createPositioner(options: PositionerOptions = {}): PositionerCon
     arrowX: shallowReadonly(arrowX),
     arrowY: shallowReadonly(arrowY),
     arrowStyle: shallowReadonly(arrowStyles),
+    availableHeight: shallowReadonly(availableHeight),
+    availableWidth: shallowReadonly(availableWidth),
     dispose: () => {
       if (disposed) return;
       disposed = true;

@@ -17,7 +17,7 @@ default = []
 napi = ["dep:napi", "dep:napi-derive"]
 
 [dependencies]
-vize_carton = { workspace = true }
+vize_s0.workspace = true
 
 # Terminal control
 crossterm.workspace = true

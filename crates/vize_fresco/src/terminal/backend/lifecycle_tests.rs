@@ -1,6 +1,6 @@
 use std::io::{self, Write};
 
-use vize_carton::ToCompactString;
+use vize_s0::ToCompactString;
 
 use super::{Backend, TerminalMode, TerminalOptions};
 

@@ -1,7 +1,7 @@
 //! Inspector payload, agent report, and playground URL helpers.
 
 use std::fmt::Write as _;
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 use super::graph::{InspectorGraph, build_graph, line_count};
 use vize_atelier_core::Allocator;

@@ -2,7 +2,7 @@ use super::{
     InspectorOptions, InspectorSourceFile, InspectorTarget, InspectorTemplateSyntax,
     build_agent_report, build_payload, serialize_agent_report,
 };
-use vize_carton::{FxHashSet, String, cstr};
+use vize_s0::{FxHashSet, String, cstr};
 
 #[test]
 fn agent_report_preserves_semantic_scope_references() {
