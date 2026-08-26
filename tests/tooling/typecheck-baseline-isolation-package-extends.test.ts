@@ -120,6 +120,30 @@ test("unique isolation links the fixture copy of a package-name extends", () => 
   }
 });
 
+test("unique isolation records package-name extends from a relative parent", () => {
+  const { fixtureRoot, outer } = scaffold();
+  try {
+    writeStoreCopy(fixtureRoot);
+    fs.writeFileSync(
+      path.join(fixtureRoot, "tsconfig.app.json"),
+      `${JSON.stringify({
+        extends: "@vue/tsconfig",
+        compilerOptions: { paths: { vue: ["./node_modules/vue"] } },
+      })}\n`,
+    );
+    const configPath = path.join(fixtureRoot, "tsconfig.check.json");
+    fs.writeFileSync(configPath, `// check-only\n{ "extends": "./tsconfig.app.json", }\n`);
+    assert.deepEqual(isolateUniqueLocalTypePackages(fixtureRoot, configPath), [
+      {
+        name: "@vue/tsconfig",
+        target: "node_modules/.pnpm/@vue+tsconfig@0.5.0/node_modules/@vue/tsconfig",
+      },
+    ]);
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
 test("paths still win when the same name is also a package-name extends", () => {
   const { fixtureRoot, outer } = scaffold();
   try {
