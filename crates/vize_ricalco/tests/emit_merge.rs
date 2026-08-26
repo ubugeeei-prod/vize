@@ -140,11 +140,11 @@ fn a_v_if_with_object_bind_merges_the_branch_key() {
     assert_eq!(
         assembled(r#"<div v-if="ok" v-bind="obj">x</div>"#),
         "\
-const { mergeProps: _mergeProps, openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue
+const { normalizeProps: _normalizeProps, guardReactiveProps: _guardReactiveProps, mergeProps: _mergeProps, openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (ok)
-    ? (_openBlock(), _createElementBlock(\"div\", _mergeProps({ key: 0 }, obj), \"x\", 16 /* FULL_PROPS */))
+    ? (_openBlock(), _createElementBlock(\"div\", _normalizeProps(_mergeProps({ key: 0 }, obj)), \"x\", 16 /* FULL_PROPS */))
     : _createCommentVNode(\"v-if\", true)
 }"
     );

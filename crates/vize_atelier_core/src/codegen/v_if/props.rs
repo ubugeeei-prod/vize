@@ -48,6 +48,15 @@ pub(super) fn generate_if_branch_props(
         return;
     }
 
+    let normalize_keyed_bind_spread = branch.user_key.is_none()
+        && scope_id.is_none()
+        && only_key_and_bind_spread(&el.props, skip_is_prop);
+    if normalize_keyed_bind_spread {
+        ctx.use_helper(RuntimeHelper::NormalizeProps);
+        ctx.use_helper(RuntimeHelper::GuardReactiveProps);
+        ctx.push(ctx.helper(RuntimeHelper::NormalizeProps));
+        ctx.push("(");
+    }
     ctx.use_helper(RuntimeHelper::MergeProps);
     ctx.push(ctx.helper(RuntimeHelper::MergeProps));
     ctx.push("(");
@@ -98,6 +107,9 @@ pub(super) fn generate_if_branch_props(
         &mut first_arg,
     );
     ctx.push(")");
+    if normalize_keyed_bind_spread {
+        ctx.push(")");
+    }
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -263,6 +275,26 @@ fn has_dynamic_binding(props: &[PropNode<'_>], name: &str) -> bool {
 
 fn is_usable_spread(prop: &PropNode<'_>) -> bool {
     usable_spread(prop).is_some()
+}
+
+fn only_key_and_bind_spread(props: &[PropNode<'_>], skip_is_prop: bool) -> bool {
+    let has_one_bind = props
+        .iter()
+        .filter(|prop| {
+            matches!(
+                usable_spread(prop),
+                Some(dir) if dir.name == "bind" && dir.exp.is_some()
+            )
+        })
+        .count()
+        == 1;
+    has_one_bind
+        && !props.iter().any(|prop| {
+            matches!(
+                usable_spread(prop),
+                Some(dir) if dir.name == "on" && dir.exp.is_some()
+            ) || has_renderable_prop(core::slice::from_ref(prop), skip_is_prop)
+        })
 }
 
 fn usable_spread<'a, 'b>(prop: &'a PropNode<'b>) -> Option<&'a crate::DirectiveNode<'b>> {

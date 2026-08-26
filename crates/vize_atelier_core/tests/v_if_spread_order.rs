@@ -55,6 +55,17 @@ fn v_if_key_precedes_a_leading_object_v_bind() {
 }
 
 #[test]
+fn v_if_key_with_only_object_v_bind_is_normalized() {
+    let output = compile(r#"<div v-if="show" v-bind="attrs"></div>"#);
+
+    assert!(
+        output.contains("_normalizeProps(_mergeProps({ key: 0 }, _ctx.attrs))"),
+        "a synthetic branch key plus only v-bind spread must match Vue's normalize wrapper:\n{output}",
+    );
+    assert!(output.contains("guardReactiveProps"), "{output}");
+}
+
+#[test]
 fn component_v_if_keeps_interleaved_object_spreads_in_source_order() {
     let output = compile(
         r#"<Widget v-if="show" id="before" v-on="listeners" title="middle" v-bind="attrs" @click="after" />"#,

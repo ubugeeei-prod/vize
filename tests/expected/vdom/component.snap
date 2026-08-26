@@ -202,6 +202,33 @@ export function render(_ctx, _cache) {
   ]))
 }
 ===
+name: Teleport with dynamic target and deferred transition
+options: vdom
+--- INPUT ---
+<Teleport :to="target" :defer="defer"><Transition><div v-if="open" v-bind="attrs"><slot name="content">tip</slot></div></Transition></Teleport>
+--- OUTPUT ---
+import { renderSlot as _renderSlot, createTextVNode as _createTextVNode, normalizeProps as _normalizeProps, guardReactiveProps as _guardReactiveProps, openBlock as _openBlock, createElementBlock as _createElementBlock, mergeProps as _mergeProps, createCommentVNode as _createCommentVNode, Transition as _Transition, withCtx as _withCtx, createVNode as _createVNode, Teleport as _Teleport, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createBlock(_Teleport, {
+    to: _ctx.target,
+    defer: _ctx.defer
+  }, [
+    _createVNode(_Transition, null, {
+      default: _withCtx(() => [
+        (_ctx.open)
+          ? (_openBlock(), _createElementBlock("div", _normalizeProps(_mergeProps({ key: 0 }, _ctx.attrs)), [
+              _renderSlot(_ctx.$slots, "content", {}, () => [
+                _createTextVNode("tip")
+              ])
+            ], 16 /* FULL_PROPS */))
+          : _createCommentVNode("v-if", true)
+      ]),
+      _: 3 /* FORWARDED */
+    })
+  ], 8 /* PROPS */, ["to", "defer"]))
+}
+===
 name: Suspense
 options: vdom
 --- INPUT ---

@@ -143,6 +143,13 @@ pub(super) fn emit_spread_props(
             Arg::Object { .. } => Err(EmitError::unsupported(Reason::LoneObjectArgument)),
         };
     }
+    let normalize_keyed_bind_spread = key_and_bind_spread(&args);
+    if normalize_keyed_bind_spread {
+        cx.buf.use_normalize_props();
+        cx.buf.use_guard_reactive_props();
+        cx.buf.push(Buf::normalize_props_alias());
+        cx.buf.push("(");
+    }
     cx.buf.use_merge_props();
     cx.buf.push(Buf::merge_props_alias());
     cx.buf.push("(");
@@ -166,6 +173,9 @@ pub(super) fn emit_spread_props(
         }
     }
     cx.buf.push(")");
+    if normalize_keyed_bind_spread {
+        cx.buf.push(")");
+    }
     Ok(())
 }
 
@@ -182,6 +192,19 @@ fn lone_kind_spread<'a>(args: &'a [Arg<'a>]) -> Option<&'a Arg<'a>> {
     } else {
         None
     }
+}
+
+fn key_and_bind_spread(args: &[Arg<'_>]) -> bool {
+    matches!(
+        args,
+        [
+            Arg::Object {
+                if_key: Some(_),
+                pieces,
+            },
+            Arg::BindSpread(_),
+        ] if pieces.is_empty()
+    )
 }
 
 enum Arg<'a> {

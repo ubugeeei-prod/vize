@@ -66,6 +66,10 @@ cases {
     input = #"<Teleport to="body"><div>content</div></Teleport>"#
   }
   new {
+    name = "Teleport with dynamic target and deferred transition"
+    input = #"<Teleport :to="target" :defer="defer"><Transition><div v-if="open" v-bind="attrs"><slot name="content">tip</slot></div></Transition></Teleport>"#
+  }
+  new {
     name = "Suspense"
     input = "<Suspense><Component /></Suspense>"
   }
