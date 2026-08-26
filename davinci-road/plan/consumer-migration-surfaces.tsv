@@ -721,7 +721,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/allocation_budget.rs	30
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/component_spread_props.rs	10	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/component_tag_binding.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/component_tag_binding.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/css_engine_panic_boundary.rs	72	s0	S0/carton	stage	vize_carton	compat	5
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/css_engine_panic_boundary.rs	76	s0	S0/carton	stage	vize_carton	compat	5
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/css_nesting_guard.rs	11	s0	S0/carton	stage	vize_carton	compat	6
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/custom_directive_patch_flag.rs	5	s0	S0/carton	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/davinci_arena_pool.rs	27	s0	S0/carton	stage	vize_carton	compat	1

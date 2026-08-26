@@ -1,4 +1,5 @@
-//! Regression tests for the LightningCSS engine panic defense (#3276, #3280).
+//! Regression tests for the LightningCSS engine panic defense (#3276, #3280,
+//! #4961).
 //!
 //! The css_parse fuzz target found two upstream crash classes that still
 //! reproduce on the latest released lightningcss/cssparser-color versions
@@ -8,7 +9,10 @@
 //!   percentage-typed slots whose calc tree does not fold to a plain
 //!   percentage. This fires in every profile, and the release profile builds
 //!   with `panic = "abort"`, so it used to crash the shipped CLI and LSP on
-//!   inputs as small as `lch(sign(-50%)`.
+//!   inputs as small as `lch(sign(-50%)`. The same `unreachable!()` also
+//!   fires with no `%` at all when the tree folds to a bare number
+//!   (`Calc::Number`) in a percentage-only slot — `text-size-adjust:asin(5)`,
+//!   `font-stretch:calc(5)` (#4961).
 //! - `hsl_to_rgb` debug-asserts hue into `[0, 1]`, so a non-finite hue
 //!   crashes every build with debug assertions (tests, fuzzing).
 //!
@@ -106,6 +110,44 @@ fn parse_css_ast_reports_under_guarded_engine_panics_as_errors() {
     assert_eq!(result.errors, [PARSE_BOUNDARY_ERROR]);
 }
 
+/// The 66-byte css_parse fuzz artifact from #4961 (run 32932217923) plus the
+/// minimal shapes of its class: a math function whose calc tree folds to a
+/// bare number (`Calc::Number`, NaN included — `asin(5)`) in a
+/// percentage-only slot trips the `Percentage::parse` `unreachable!()` with
+/// no `%` involved. The percentage-only routes are the `text-size-adjust`
+/// and `font-stretch` longhands and `@property` `<percentage>` initial-value
+/// parsing; in unwinding profiles (this test binary) the `catch_unwind`
+/// boundary must convert the panic into an error result. Release binaries
+/// still abort on these — #3295 tracks the upstream fix.
+#[test]
+fn parse_css_ast_reports_number_folding_math_in_percentage_slots_as_errors() {
+    const NUMBER_FOLD_ARTIFACT: &str = "losrasinable-p {\n t>px`5;  text-size-adjust:asin(5\u{c})\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}\u{0}UUUrath";
+    // Pin the fixture size: the artifact must stay byte-for-byte the one the
+    // fuzzer produced.
+    assert_eq!(
+        NUMBER_FOLD_ARTIFACT.len(),
+        66,
+        "fuzz artifact must stay verbatim"
+    );
+    for source in [
+        NUMBER_FOLD_ARTIFACT,
+        "a{text-size-adjust:asin(5)}",
+        "a{text-size-adjust:calc(5)}",
+        "a{text-size-adjust:calc(1 + 1)}",
+        "a{text-size-adjust:sqrt(2)}",
+        "a{text-size-adjust:sign(5)}",
+        "a{font-stretch:calc(5)}",
+        "@property --x{syntax:\"<percentage>\";inherits:false;initial-value:calc(5);}",
+    ] {
+        let result = parse_css_ast(source, &CssCompileOptions::default());
+        assert!(
+            result.ast.is_none(),
+            "expected boundary error for {source:?}"
+        );
+        assert_eq!(result.errors, [PARSE_BOUNDARY_ERROR], "source {source:?}");
+    }
+}
+
 /// A non-finite hue trips an upstream `debug_assert`, so the boundary reports
 /// an error in debug-assertion builds; in release builds the parse currently
 /// succeeds with a folded garbage value. Either way the process must survive
@@ -171,6 +213,18 @@ fn parse_css_ast_keeps_accepting_resolvable_math_functions() {
         "a{background-image:linear-gradient(red abs(-50%), blue)}",
         "a{content:\"sign(-50%) in a string\"}",
         "a{font-size:abs(-50%)}",
+        // #4961 neighbors: percentage-folding trees, keywords, and plain
+        // percentages in the percentage-only slots parse fine, as do
+        // number-folding trees in number- and angle-typed slots.
+        "a{text-size-adjust:50%}",
+        "a{text-size-adjust:auto}",
+        "a{text-size-adjust:calc(50% + 10%)}",
+        "a{font-stretch:condensed}",
+        "a{font-stretch:calc(50% + 10%)}",
+        "a{rotate:asin(0.5)}",
+        "a{line-height:calc(exp(1))}",
+        "a{opacity:calc(sqrt(0.25))}",
+        "a{width:calc(pow(2, 3) * 1px)}",
     ] {
         let result = parse_css_ast(source, &CssCompileOptions::default());
         assert!(result.ast.is_some(), "expected clean parse for {source:?}");

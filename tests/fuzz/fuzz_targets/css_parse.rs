@@ -6,8 +6,9 @@
 // serialized-AST API. Syntax errors should be returned in CssAstResult; panics
 // are always a bug in the integration layer or upstream parser boundary.
 //
-// Three upstream defect classes are skip-listed below until their fixes land
-// (#3276, #3280, #3926; retirement tracked in #3295). Production is protected
+// Four upstream defect classes are skip-listed below until their fixes land
+// (#3276, #3280, #3926, #4961; retirement tracked in #3295). Production is
+// protected
 // by the `catch_unwind` boundary in
 // `vize_atelier_sfc::css::parser::engine_boundary`; the skips exist because
 // libfuzzer-sys aborts inside its panic hook (a caught-and-reported upstream
@@ -86,6 +87,37 @@ fn has_oversized_numeric_token(lower: &str) -> bool {
         }
     }
     false
+}
+
+/// Value contexts that funnel into upstream `Percentage::parse`, where a math
+/// function folding to a plain number — `calc(5)`, `sqrt(2)`, `asin(5)` (NaN)
+/// — returns `Calc::Number` and hits the same `unreachable!()` as #3276 with
+/// no `%` involved (#4961, found via `text-size-adjust:asin(5)`).
+/// `text-size-adjust` and `font-stretch` are the percentage-only typed
+/// properties; "percentage" covers `@property { syntax: "<percentage>" }`
+/// initial-value parsing. Plain substring matching, deliberately broad.
+const PERCENTAGE_SLOT_CONTEXTS: [&str; 3] = ["text-size-adjust", "font-stretch", "percentage"];
+
+/// Math-function heads whose calc tree can fold to a bare number in those
+/// slots. `sin(`/`cos(`/`tan(` also match their inverse `a…(` forms; `atan2`
+/// stays unmatched because it folds to an angle and errors out cleanly.
+const NUMBER_FOLDING_MATH_FUNCTIONS: [&str; 17] = [
+    "calc(", "min(", "max(", "clamp(", "round(", "mod(", "rem(", "sign(", "abs(", "hypot(",
+    "sqrt(", "pow(", "log(", "exp(", "sin(", "cos(", "tan(",
+];
+
+/// Returns true when a percentage-only value context and a number-capable
+/// math function co-occur (#4961). Whether the tree really folds to a number
+/// is calc type algebra a byte scan cannot reproduce, so co-occurrence is the
+/// superset: it costs fuzz coverage on shapes like
+/// `text-size-adjust: calc(50% + 10%)`, never product behavior.
+fn percentage_slot_meets_number_math(lower: &str) -> bool {
+    PERCENTAGE_SLOT_CONTEXTS
+        .iter()
+        .any(|context| lower.contains(context))
+        && NUMBER_FOLDING_MATH_FUNCTIONS
+            .iter()
+            .any(|name| lower.contains(name))
 }
 
 /// Color-entry functions recognized by the unparsed-value fallback. When one
@@ -171,9 +203,9 @@ fn function_group_unterminated(lower: &str, name: &str) -> bool {
     false
 }
 
-/// Known upstream defect shapes (#3276, #3280 panics; #3926 timeout): skip
-/// them so fuzzing keeps hunting new engine bugs without re-reporting the
-/// documented defects.
+/// Known upstream defect shapes (#3276, #3280, #4961 panics; #3926 timeout):
+/// skip them so fuzzing keeps hunting new engine bugs without re-reporting
+/// the documented defects.
 ///
 /// The #3926 class is pathological backtracking, not a hang: unterminated
 /// color functions with rule-block braces interleaved into the open groups
@@ -189,6 +221,9 @@ fn hits_known_upstream_defect_shape(source: &str) -> bool {
             .iter()
             .any(|name| function_arguments_contain_percent(&lower, name))
     {
+        return true;
+    }
+    if percentage_slot_meets_number_math(&lower) {
         return true;
     }
     if COLOR_FUNCTIONS
