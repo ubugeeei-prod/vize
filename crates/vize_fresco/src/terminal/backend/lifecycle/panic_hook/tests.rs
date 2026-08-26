@@ -13,7 +13,6 @@ use std::{process::Command, sync::atomic::AtomicUsize};
 use crossterm::{
     cursor::{SetCursorStyle, Show},
     event::{DisableBracketedPaste, DisableMouseCapture},
-    queue,
     terminal::LeaveAlternateScreen,
 };
 
@@ -268,7 +267,11 @@ fn normal_raw_mode_subprocess_keeps_crossterm_state_consistent() {
 }
 
 fn assert_command_bytes(command_bytes: &[u8], command: impl crossterm::Command) {
-    let mut expected = Vec::new();
-    queue!(expected, command).unwrap();
-    assert_eq!(command_bytes, expected);
+    // `queue!` routes some commands through the Windows console API instead of
+    // the byte stream, so it cannot derive expectations on a headless runner.
+    // `write_ansi` yields the escape sequence on every platform, which is
+    // exactly what the emergency constants must reproduce.
+    let mut expected = vize_carton::String::default();
+    command.write_ansi(&mut expected).unwrap();
+    assert_eq!(command_bytes, expected.as_bytes());
 }

@@ -64,6 +64,11 @@ jobs:
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
+      # Windows runner images enable autocrlf globally; a CRLF checkout makes
+      # the formatter flag every file, so normalize before checking out.
+      - name: Force LF line endings on checkout (Windows)
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -94,6 +99,10 @@ jobs:
           - runner: blacksmith-32vcpu-windows-2025
             target: win32-x64-msvc
     steps:
+      # Keep both lanes on byte-identical LF sources (see the JS lane note).
+      - name: Force LF line endings on checkout (Windows)
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Setup MSVC toolchain (Windows)
         if: runner.os == 'Windows'

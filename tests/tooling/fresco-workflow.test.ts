@@ -27,6 +27,15 @@ function assertPlatformMatrix(job: string): void {
   }
 }
 
+function assertLfCheckout(job: string): void {
+  // Windows runner images enable autocrlf globally; a CRLF checkout makes the
+  // formatter flag every file, so both lanes normalize before checking out.
+  const lfStep = job.indexOf("git config --global core.autocrlf false");
+  const checkout = job.indexOf("uses: actions/checkout@");
+  assert.notEqual(lfStep, -1, "missing Windows LF checkout step");
+  assert.ok(lfStep < checkout, "LF normalization must precede checkout");
+}
+
 test("fresco workflow runs on fresco source changes across both trigger events", () => {
   const workflow = readRepoFile(".github", "workflows", "fresco.yml");
 
@@ -50,6 +59,7 @@ test("fresco JS lane checks, builds, and tests the package on all three platform
   const job = workflowJobBody(workflow, "fresco-js");
 
   assertPlatformMatrix(job);
+  assertLfCheckout(job);
   assert.match(job, /timeout-minutes:\s*20\b/);
   assert.match(job, /fail-fast:\s*false/);
   assert.match(job, /node-version-file:\s*"\.node-version"/);
@@ -67,6 +77,7 @@ test("fresco Rust lane tests vize_fresco with per-platform toolchain and caches"
   const job = workflowJobBody(workflow, "fresco-rust");
 
   assertPlatformMatrix(job);
+  assertLfCheckout(job);
   assert.match(job, /timeout-minutes:\s*30\b/);
   assert.match(job, /fail-fast:\s*false/);
   assert.match(job, /cargo test -p vize_fresco\b/);
