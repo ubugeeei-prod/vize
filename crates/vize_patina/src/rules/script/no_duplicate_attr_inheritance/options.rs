@@ -10,7 +10,7 @@ use oxc_ast::ast::{
     Argument, BindingPattern, BooleanLiteral, CallExpression, ExportDefaultDeclarationKind,
     Expression, ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
-use vize_carton::FxHashMap;
+use vize_s0::FxHashMap;
 
 /// An `inheritAttrs` property the script states.
 pub(super) enum InheritAttrs<'a> {

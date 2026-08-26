@@ -7,7 +7,7 @@ use oxc_ast_visit::{Visit, walk::walk_expression_statement};
 use oxc_parser::Parser as OxcParser;
 use oxc_span::{GetSpan, SourceType};
 use oxc_syntax::operator::UnaryOperator;
-use vize_carton::{String, ToCompactString, profile};
+use vize_s0::{String, ToCompactString, profile};
 
 pub(super) fn is_runtime_array_macro(runtime_args: Option<&str>) -> bool {
     let Some(runtime_args) = runtime_args.map(str::trim_start) else {

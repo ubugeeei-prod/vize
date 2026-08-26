@@ -54,7 +54,7 @@ use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression,
     ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement, StringLiteral,
 };
-use vize_carton::{CompactString, FxHashMap};
+use vize_s0::{CompactString, FxHashMap};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/require-prop-type-constructor",

@@ -36,7 +36,7 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{CallExpression, Expression, Program};
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_span::Span;
-use vize_carton::{CompactString, FxHashSet};
+use vize_s0::{CompactString, FxHashSet};
 
 use self::computed_names::{collect_computed_names, find_component_options};
 

@@ -13,8 +13,8 @@
 
 use vize_armature::Parser;
 use vize_atelier_sfc::SfcDescriptor;
-use vize_carton::{Allocator, profile};
 use vize_relief::RootNode;
+use vize_s0::{Allocator, profile};
 
 use crate::linter::Linter;
 

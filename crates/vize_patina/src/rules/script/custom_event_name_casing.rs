@@ -56,7 +56,7 @@ use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, Expression, Program, Statement, StringLiteral,
 };
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
-use vize_carton::CompactString;
+use vize_s0::CompactString;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/custom-event-name-casing",

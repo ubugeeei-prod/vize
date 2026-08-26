@@ -28,10 +28,10 @@
 use crate::diagnostic::{HelpRenderTarget, Severity, render_help};
 use crate::linter::LintResult;
 use crate::output::{OutputFormat, format_results};
-use vize_carton::String;
-use vize_carton::ToCompactString;
-pub use vize_carton::telegraph::Emitter;
-use vize_carton::telegraph::Telegraph as CartonTelegraph;
+use vize_s0::String;
+use vize_s0::ToCompactString;
+pub use vize_s0::telegraph::Emitter;
+use vize_s0::telegraph::Telegraph as CartonTelegraph;
 
 /// A Patina lint result and its source text as a Telegraph message.
 #[derive(Debug, Clone)]

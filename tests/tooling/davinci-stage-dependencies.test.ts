@@ -259,6 +259,14 @@ test("Vize CLI package imports S0 storage through the stage alias", () => {
   });
 });
 
+test("Patina linter imports S0 storage through the stage alias", () => {
+  assertS0AliasConsumer({
+    packageName: "vize_patina",
+    label: "Patina linter",
+    directory: path.join(repoRoot, "crates", "vize_patina"),
+  });
+});
+
 test("Canon content-mapper imports S0 storage through the stage alias", () => {
   const manifest = readRepoFile("crates", "vize_canon", "Cargo.toml");
   assert.match(manifest, /^vize_s0\.workspace = true$/m);

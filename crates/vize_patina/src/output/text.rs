@@ -9,9 +9,9 @@ use oxc_diagnostics::{GraphicalReportHandler, GraphicalTheme, NamedSource, OxcDi
 use oxc_span::Span;
 #[allow(clippy::disallowed_types)] // Required by oxc_diagnostics API
 use std::sync::Arc;
-use vize_carton::FxHashMap;
-use vize_carton::String;
-use vize_carton::ToCompactString;
+use vize_s0::FxHashMap;
+use vize_s0::String;
+use vize_s0::ToCompactString;
 
 /// Format lint results as rich terminal output
 #[allow(clippy::disallowed_types)] // Arc required by oxc_diagnostics API

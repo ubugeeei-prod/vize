@@ -54,8 +54,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_carton::{CompactString, cstr};
 use vize_relief::{ElementNode, PropNode, RootNode, SourceLocation, TemplateChildNode};
+use vize_s0::{CompactString, cstr};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-unused-refs",

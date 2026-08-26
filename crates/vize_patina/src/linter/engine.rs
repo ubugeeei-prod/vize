@@ -25,13 +25,13 @@ use crate::{
 use vize_armature::Parser;
 use vize_atelier_sfc::croquis::{SfcCroquisOptions, analyze_sfc_descriptor};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_carton::Allocator;
-use vize_carton::String;
-use vize_carton::ToCompactString;
-use vize_carton::dialect::{VueDialect, standalone_html_dialect};
-use vize_carton::profile;
 use vize_croquis::{Croquis, Drawer};
 use vize_relief::RootNode;
+use vize_s0::Allocator;
+use vize_s0::String;
+use vize_s0::ToCompactString;
+use vize_s0::dialect::{VueDialect, standalone_html_dialect};
+use vize_s0::profile;
 
 use super::config::{LintResult, Linter};
 

@@ -32,8 +32,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_carton::dialect::VueDialect;
 use vize_relief::{ElementNode, PropNode};
+use vize_s0::dialect::VueDialect;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-deprecated-slot-attribute",
@@ -78,7 +78,7 @@ mod tests {
     use crate::linter::Linter;
     use crate::preset::LintPreset;
     use crate::rule::RuleRegistry;
-    use vize_carton::config::VueVersion;
+    use vize_s0::config::VueVersion;
 
     const RULE: &str = "vue/no-deprecated-slot-attribute";
 

@@ -6,8 +6,8 @@ use crate::diagnostic::Severity;
 use crate::linter::Linter;
 use crate::preset::LintPreset;
 use crate::rule::{Rule, RuleRegistry};
-use vize_carton::String;
-use vize_carton::i18n::Translator;
+use vize_s0::String;
+use vize_s0::i18n::Translator;
 
 const RULE: &str = "vue/no-use-v-else-with-v-for";
 const ELSE_MESSAGE: &str = "Unexpected `v-else` and `v-for` on the same element. Move `v-else` to a wrapper element instead.";

@@ -10,7 +10,7 @@ use crate::linter::{LintResult, Linter};
 use crate::rule::{Rule, RuleRegistry};
 use crate::rules::a11y::ImgAlt;
 use vize_atelier_jsx::JsxLang;
-use vize_carton::CompactString;
+use vize_s0::CompactString;
 
 fn linter_with(rule: Box<dyn Rule>) -> Linter {
     let mut registry = RuleRegistry::new();

@@ -23,12 +23,12 @@
 #![allow(clippy::disallowed_macros)]
 
 use memchr::memmem;
-use vize_carton::FxHashMap;
+use vize_s0::FxHashMap;
 
 use super::{MuseaLintResult, MuseaRuleMeta};
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
-use vize_carton::String;
-use vize_carton::ToCompactString;
+use vize_s0::String;
+use vize_s0::ToCompactString;
 
 static META: MuseaRuleMeta = MuseaRuleMeta {
     name: "musea/prefer-design-tokens",

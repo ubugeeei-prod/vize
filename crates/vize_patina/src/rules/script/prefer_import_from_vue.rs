@@ -28,7 +28,7 @@ use oxc_span::GetSpan;
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
-use vize_carton::String;
+use vize_s0::String;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/prefer-import-from-vue",

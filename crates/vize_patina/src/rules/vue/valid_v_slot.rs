@@ -21,10 +21,10 @@
 use crate::context::{ElementContext, LintContext};
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_carton::{FxHashSet, String, ToCompactString, is_native_tag};
 use vize_relief::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode,
 };
+use vize_s0::{FxHashSet, String, ToCompactString, is_native_tag};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/valid-v-slot",

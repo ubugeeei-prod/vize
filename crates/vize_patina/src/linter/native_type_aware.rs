@@ -7,7 +7,7 @@ use corsa::utils::{
     is_any_like_type_texts, is_promise_like_type_texts, is_unknown_like_type_texts,
 };
 use vize_atelier_sfc::SfcDescriptor;
-use vize_carton::{String, ToCompactString, profile};
+use vize_s0::{String, ToCompactString, profile};
 
 mod driver;
 mod markers;
@@ -170,7 +170,7 @@ pub(super) fn should_warn_for_emit_validator(probe: Option<&TypeProbe>) -> bool 
 }
 
 pub(super) fn has_promise_like_return(probe: &TypeProbe) -> bool {
-    let no_properties: &[vize_carton::CompactString] = &[];
+    let no_properties: &[vize_s0::CompactString] = &[];
     probe.return_types.iter().any(|return_type| {
         !return_type.is_empty() && is_promise_like_type_texts(return_type, no_properties)
     })

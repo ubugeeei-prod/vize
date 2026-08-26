@@ -37,8 +37,8 @@ use oxc_ast::ast::{
     ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
 use oxc_span::GetSpan;
-use vize_carton::dialect::is_petite_vue_module;
-use vize_carton::{CompactString, FxHashMap, FxHashSet};
+use vize_s0::dialect::is_petite_vue_module;
+use vize_s0::{CompactString, FxHashMap, FxHashSet};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-options-api",

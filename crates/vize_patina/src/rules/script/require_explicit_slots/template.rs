@@ -28,10 +28,10 @@
 //!   not read, or one reached only through a dynamic name, is simply not
 //!   checked.
 
-use vize_carton::CompactString;
 use vize_relief::{
     ElementNode, ElementType, ExpressionNode, PropNode, RootNode, TemplateChildNode,
 };
+use vize_s0::CompactString;
 
 /// A `<slot>` outlet and the start-tag range to report it at, relative to the
 /// template block.

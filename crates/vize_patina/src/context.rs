@@ -18,14 +18,14 @@ use crate::diagnostic::{HelpLevel, LintDiagnostic, Severity};
 use memchr::memchr_iter;
 use std::borrow::Cow;
 use vize_atelier_sfc::SfcDescriptor;
-use vize_carton::String;
-use vize_carton::{
+use vize_croquis::Croquis;
+use vize_s0::String;
+use vize_s0::{
     Allocator, CompactString, FxHashMap, FxHashSet,
     dialect::VueDialect,
     directive::DirectiveSeverity,
     i18n::{Locale, t, t_fmt},
 };
-use vize_croquis::Croquis;
 
 use sfc_directives::SfcDirectiveState;
 

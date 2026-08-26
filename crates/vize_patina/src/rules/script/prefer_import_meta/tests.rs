@@ -2,7 +2,7 @@ use super::{META, PreferImportMeta};
 use crate::diagnostic::Severity;
 use crate::rules::script::{ScriptLintResult, ScriptLinter, ScriptRule};
 use serde_json::Value;
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 const CORPUS: &str = include_str!(
     "../../../../../../npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/fixtures/corpus.json"

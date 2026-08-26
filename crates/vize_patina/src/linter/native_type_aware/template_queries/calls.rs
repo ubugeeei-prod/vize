@@ -7,7 +7,7 @@ use oxc_ast_visit::{
 use oxc_parser::Parser as OxcParser;
 use oxc_span::{GetSpan, SourceType, Span};
 use oxc_syntax::operator::UnaryOperator;
-use vize_carton::{String, profile};
+use vize_s0::{String, profile};
 
 #[derive(Clone, Copy)]
 pub(super) struct RelativeRange {

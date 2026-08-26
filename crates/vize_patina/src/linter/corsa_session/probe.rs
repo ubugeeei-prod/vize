@@ -5,7 +5,7 @@ use corsa::{
     fast::{CompactString as CorsaString, ToCompactString as _},
     runtime::block_on,
 };
-use vize_carton::{String, profile};
+use vize_s0::{String, profile};
 
 const SNAPSHOT_REGISTRY_NOT_FOUND: &str = "not found in snapshot registry";
 

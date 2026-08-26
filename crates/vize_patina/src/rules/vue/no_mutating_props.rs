@@ -59,12 +59,12 @@ use self::scope::{PropScope, expression_source, push_for_aliases, push_identifie
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_carton::FxHashSet;
-use vize_carton::String;
-use vize_carton::ToCompactString;
 use vize_croquis::reactivity::ReactiveKind;
 use vize_relief::BindingType;
 use vize_relief::{DirectiveNode, ElementNode, ForNode, PropNode, RootNode, TemplateChildNode};
+use vize_s0::FxHashSet;
+use vize_s0::String;
+use vize_s0::ToCompactString;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-mutating-props",

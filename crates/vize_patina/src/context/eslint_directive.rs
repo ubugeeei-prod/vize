@@ -1,6 +1,6 @@
 //! ESLint suppression pragma parsing.
 
-use vize_carton::String;
+use vize_s0::String;
 
 #[derive(Clone, Copy)]
 pub(super) enum EslintDisableKind {

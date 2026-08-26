@@ -43,8 +43,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_carton::cstr;
 use vize_relief::{ElementNode, PropNode};
+use vize_s0::cstr;
 
 mod value_range;
 

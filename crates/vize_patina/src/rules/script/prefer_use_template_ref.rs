@@ -62,7 +62,7 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::{Visit, walk::walk_object_property};
 use oxc_span::Span;
-use vize_carton::{CompactString, cstr};
+use vize_s0::{CompactString, cstr};
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};

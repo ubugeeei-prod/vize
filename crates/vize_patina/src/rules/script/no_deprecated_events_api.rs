@@ -37,7 +37,7 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{CallExpression, Expression, Program};
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_span::{GetSpan, Span};
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-deprecated-events-api",

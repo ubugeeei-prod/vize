@@ -1,6 +1,6 @@
 use super::Linter;
 use crate::LintPreset;
-use vize_carton::{Allocator, ToCompactString};
+use vize_s0::{Allocator, ToCompactString};
 
 mod basic;
 mod css;

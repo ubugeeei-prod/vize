@@ -59,7 +59,7 @@ use oxc_ast::ast::{
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_span::{GetSpan, Span};
 
-use vize_carton::{CompactString, FxHashSet};
+use vize_s0::{CompactString, FxHashSet};
 
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use super::template_emits::collect_template_emitted_events;

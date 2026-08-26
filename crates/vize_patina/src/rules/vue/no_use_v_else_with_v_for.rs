@@ -12,8 +12,8 @@ mod tests;
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_carton::ensure_sufficient_stack;
 use vize_relief::{ElementNode, PropNode, SourceLocation, TemplateChildNode};
+use vize_s0::ensure_sufficient_stack;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-use-v-else-with-v-for",

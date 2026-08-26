@@ -8,7 +8,7 @@ use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression,
     ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement, StringLiteral,
 };
-use vize_carton::FxHashMap;
+use vize_s0::FxHashMap;
 
 pub(super) fn name_string_literal<'a>(
     options: &'a ObjectExpression<'a>,

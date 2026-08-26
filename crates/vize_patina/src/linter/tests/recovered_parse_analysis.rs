@@ -8,7 +8,7 @@
 //! skip is least acceptable.
 
 use super::Linter;
-use vize_carton::ToCompactString;
+use vize_s0::ToCompactString;
 
 fn rule_names(result: &crate::linter::config::LintResult) -> Vec<&'static str> {
     result

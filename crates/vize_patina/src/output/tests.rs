@@ -1,7 +1,7 @@
 use crate::{
     LintDiagnostic, LintPreset, LintResult, Linter, OutputFormat, format_results, rule_docs_path,
 };
-use vize_carton::ToCompactString;
+use vize_s0::ToCompactString;
 
 #[test]
 fn json_output_uses_source_line_columns() {
@@ -13,11 +13,11 @@ const items = [1]
   <div v-for="item in items">{{ item }}</div>
 </template>
 "#;
-    let filename = vize_carton::String::from("Component.vue");
+    let filename = vize_s0::String::from("Component.vue");
     let result = Linter::new().lint_sfc(source, &filename);
     let output = format_results(
         &[result],
-        &[(filename, vize_carton::String::from(source))],
+        &[(filename, vize_s0::String::from(source))],
         OutputFormat::Json,
     );
 
@@ -32,7 +32,7 @@ const items = [1]
 #[test]
 fn json_output_uses_character_columns_after_multibyte_text() {
     let source = r#"<template><div title="café" v-html="x"></div></template>"#;
-    let filename = vize_carton::String::from("Component.vue");
+    let filename = vize_s0::String::from("Component.vue");
     let start = source.find("v-html").unwrap() as u32;
     let end = start + "v-html".len() as u32;
     let result = LintResult {
@@ -48,7 +48,7 @@ fn json_output_uses_character_columns_after_multibyte_text() {
     };
     let output = format_results(
         &[result],
-        &[(filename, vize_carton::String::from(source))],
+        &[(filename, vize_s0::String::from(source))],
         OutputFormat::Json,
     );
     let json: serde_json::Value = serde_json::from_str(&output).unwrap();
@@ -72,11 +72,11 @@ const msg = "hello";
   </div>
 </template>
 "#;
-    let filename = vize_carton::String::from("Component.vue");
+    let filename = vize_s0::String::from("Component.vue");
     let result = Linter::new().lint_sfc(source, &filename);
     let output = format_results(
         &[result],
-        &[(filename, vize_carton::String::from(source))],
+        &[(filename, vize_s0::String::from(source))],
         OutputFormat::Json,
     );
     let json: serde_json::Value = serde_json::from_str(&output).unwrap();
@@ -124,7 +124,7 @@ const url = ""
   <a :href="url" />
 </template>
 "#;
-    let filename = vize_carton::String::from("Label.vue");
+    let filename = vize_s0::String::from("Label.vue");
     let result = Linter::with_preset(LintPreset::Essential).lint_sfc(source, &filename);
 
     assert!(
@@ -144,7 +144,7 @@ const url = ""
         result.diagnostics
     );
 
-    let sources = [(filename.clone(), vize_carton::String::from(source))];
+    let sources = [(filename.clone(), vize_s0::String::from(source))];
     for format in [
         OutputFormat::Text,
         OutputFormat::Ansi,
@@ -186,11 +186,11 @@ fn rule_docs_path_maps_namespaces_to_reference_pages() {
 #[test]
 fn stylish_output_includes_reference_paths() {
     let source = "<template><div v-for=\"item in items\"></div></template>";
-    let filename = vize_carton::String::from("Component.vue");
+    let filename = vize_s0::String::from("Component.vue");
     let result = Linter::new().lint_sfc(source, &filename);
     let output = format_results(
         &[result],
-        &[(filename, vize_carton::String::from(source))],
+        &[(filename, vize_s0::String::from(source))],
         OutputFormat::Stylish,
     );
 
@@ -215,8 +215,8 @@ fn text_output_includes_reference_paths() {
     let output = format_results(
         &[result],
         &[(
-            vize_carton::String::from("Component.vue"),
-            vize_carton::String::from("abc"),
+            vize_s0::String::from("Component.vue"),
+            vize_s0::String::from("abc"),
         )],
         OutputFormat::Text,
     );
@@ -238,8 +238,8 @@ fn ansi_output_includes_summary_and_ansi_help() {
     let output = format_results(
         &[result],
         &[(
-            vize_carton::String::from("Component.vue"),
-            vize_carton::String::from("abc"),
+            vize_s0::String::from("Component.vue"),
+            vize_s0::String::from("abc"),
         )],
         OutputFormat::Ansi,
     );
@@ -263,8 +263,8 @@ fn plain_output_includes_reference_paths_without_ansi() {
     let output = format_results(
         &[result],
         &[(
-            vize_carton::String::from("Component.vue"),
-            vize_carton::String::from("abc"),
+            vize_s0::String::from("Component.vue"),
+            vize_s0::String::from("abc"),
         )],
         OutputFormat::Plain,
     );
@@ -295,8 +295,8 @@ fn markdown_output_keeps_help_and_reference_paths() {
     let output = format_results(
         &[result],
         &[(
-            vize_carton::String::from("Component.vue"),
-            vize_carton::String::from(""),
+            vize_s0::String::from("Component.vue"),
+            vize_s0::String::from(""),
         )],
         OutputFormat::Markdown,
     );
@@ -328,8 +328,8 @@ fn html_output_escapes_messages() {
     let output = format_results(
         &[result],
         &[(
-            vize_carton::String::from("Component.vue"),
-            vize_carton::String::from("<center>"),
+            vize_s0::String::from("Component.vue"),
+            vize_s0::String::from("<center>"),
         )],
         OutputFormat::Html,
     );
@@ -354,8 +354,8 @@ fn agent_output_is_line_oriented() {
     let output = format_results(
         &[result],
         &[(
-            vize_carton::String::from("Component.vue"),
-            vize_carton::String::from("abc"),
+            vize_s0::String::from("Component.vue"),
+            vize_s0::String::from("abc"),
         )],
         OutputFormat::Agent,
     );

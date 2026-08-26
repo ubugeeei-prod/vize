@@ -3,7 +3,7 @@
 use crate::linter::LintResult;
 use crate::output::format_summary;
 use crate::output::shared::{diagnostic_views, result_counts};
-use vize_carton::{String, append};
+use vize_s0::{String, append};
 
 pub(super) fn format_stylish(results: &[LintResult], sources: &[(String, String)]) -> String {
     let views = diagnostic_views(results, sources);

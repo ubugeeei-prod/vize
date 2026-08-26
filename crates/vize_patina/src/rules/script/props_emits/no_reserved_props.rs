@@ -44,7 +44,7 @@
 use oxc_ast::ast::Program;
 use oxc_span::GetSpan;
 
-use vize_carton::CompactString;
+use vize_s0::CompactString;
 
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use super::props_source::collect_runtime_props;
