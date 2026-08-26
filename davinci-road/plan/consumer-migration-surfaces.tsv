@@ -2303,7 +2303,7 @@ typechecker	Typechecker	source	crates/vize/src/commands/check/runner/invocation.
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/nuxt_tsconfig.rs	15	s0	S0/carton	stage	vize_s0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/nuxt_tsconfig.rs	256	s0	S0/carton	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/nuxt_tsconfig/cache.rs	10	s0	S0/carton	stage	vize_s0	preferred	5
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/nuxt_tsconfig/path_options_tests.rs	228	s0	S0/carton	stage	vize_s0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/nuxt_tsconfig/path_options_tests.rs	252	s0	S0/carton	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output_declarations.rs	2	s0	S0/carton	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output_json.rs	3	s0	S0/carton	stage	vize_s0	preferred	4
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output_profile.rs	4	s0	S0/carton	stage	vize_s0	preferred	1
