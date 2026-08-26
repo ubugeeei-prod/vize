@@ -33,7 +33,7 @@ const budgets = new Map([
   ["measure.mjs", 2_400],
   // Styled entries statically import the shared dist/style.css, so their
   // budgets cover the packaged stylesheet alongside their JavaScript.
-  ["motion.mjs", 5_200],
+  ["motion.mjs", 5_450],
   ["move.mjs", 5_050],
   ["pointer-grace.mjs", 1_800],
   ["portal.mjs", 1_700],
@@ -44,12 +44,12 @@ const budgets = new Map([
   ["shortcut.mjs", 7_400],
   ["sortable.mjs", 17_000],
   ["spatial-navigation.mjs", 3_725],
-  ["theme.mjs", 4_450],
+  ["theme.mjs", 4_700],
   ["transition.mjs", 3_000],
   ["typeahead.mjs", 2_000],
   ["virtualizer.mjs", 9_500],
   ["primitive.mjs", 800],
-  ["visually-hidden.mjs", 3_300],
+  ["visually-hidden.mjs", 3_550],
   ["media.mjs", 2_400],
   ["media-pdf.mjs", 2_048],
   ["media-source.mjs", 1_800],

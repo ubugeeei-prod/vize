@@ -50,7 +50,7 @@ type _TokenNamesAreClosed = Expect<
   >
 >;
 type _PresetNamesAreClosed = Expect<
-  Equal<ThemePresetName, "atelier" | "midnight" | "paper" | "signal">
+  Equal<ThemePresetName, "atelier" | "midnight" | "paper" | "play" | "signal">
 >;
 type _DensityScalesAreClosed = Expect<Equal<ThemeDensityScale, "compact" | "comfortable">>;
 type _LayerOrderIsLiteral = Expect<

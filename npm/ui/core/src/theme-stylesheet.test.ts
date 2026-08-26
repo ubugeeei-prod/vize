@@ -111,6 +111,7 @@ test("scopes published presets to their opt-in attributes", () => {
   }
   assert.match(shippedPresetRule("midnight"), /--vize-ui-z-overlay:1400/);
   assert.match(shippedPresetRule("paper"), /--vize-ui-type-leading-normal:1\.6/);
+  assert.match(shippedPresetRule("play"), /--vize-ui-radius-lg:1\.25rem/);
   assert.match(shippedPresetRule("signal"), /--vize-ui-opacity-muted:\.82/);
   assert.doesNotMatch(
     preset,

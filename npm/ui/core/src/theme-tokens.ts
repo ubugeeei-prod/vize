@@ -26,6 +26,7 @@ export const themePresets: readonly ThemePresetName[] = Object.freeze([
   "atelier",
   "midnight",
   "paper",
+  "play",
   "signal",
 ]);
 

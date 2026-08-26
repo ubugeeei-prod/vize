@@ -1,0 +1,37 @@
+/*
+ * Play preset: expressive consumer-product surfaces with bright chroma,
+ * friendly rounded geometry, and buoyant depth. Like every preset, it is inert
+ * until a consumer opts a subtree into `data-vize-theme~="play"`.
+ */
+
+@layer vize.preset {
+  :where([data-vize-theme~="play"], :host([data-vize-theme~="play"])) {
+    color-scheme: light dark;
+
+    --vize-ui-color-canvas: light-dark(oklch(0.973 0.032 330), oklch(0.17 0.035 296));
+    --vize-ui-color-surface: light-dark(oklch(0.998 0.015 88), oklch(0.235 0.042 303));
+    --vize-ui-color-text: light-dark(oklch(0.22 0.035 286), oklch(0.945 0.016 84));
+    --vize-ui-color-text-muted: light-dark(
+      color-mix(in oklab, oklch(0.22 0.035 286) 58%, oklch(0.973 0.032 330)),
+      color-mix(in oklab, oklch(0.945 0.016 84) 64%, oklch(0.17 0.035 296))
+    );
+    --vize-ui-color-accent: light-dark(oklch(0.61 0.205 355), oklch(0.78 0.17 18));
+    --vize-ui-color-accent-contrast: light-dark(oklch(1 0 0), oklch(0.16 0.035 18));
+    --vize-ui-color-border: light-dark(
+      oklch(from oklch(0.973 0.032 330) calc(l - 0.11) c h),
+      oklch(0.39 0.046 303)
+    );
+    --vize-ui-color-danger: light-dark(oklch(0.55 0.2 28), oklch(0.76 0.16 32));
+
+    --vize-ui-type-leading-normal: 1.55;
+    --vize-ui-radius-md: 0.75rem;
+    --vize-ui-radius-lg: 1.25rem;
+    --vize-ui-z-toast: 1600;
+    --vize-ui-elevation-raised:
+      0 2px 4px oklch(0.25 0.06 310 / 0.1), 0 8px 18px oklch(0.55 0.16 355 / 0.1);
+    --vize-ui-elevation-overlay:
+      0 8px 24px oklch(0.25 0.06 310 / 0.16), 0 3px 8px oklch(0.62 0.18 24 / 0.12);
+    --vize-ui-elevation-floating:
+      0 20px 54px oklch(0.25 0.06 310 / 0.22), 0 8px 22px oklch(0.62 0.18 24 / 0.14);
+  }
+}
