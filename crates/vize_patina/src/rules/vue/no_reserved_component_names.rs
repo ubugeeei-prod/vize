@@ -27,18 +27,20 @@
 //! <template><div /></template>
 //! ```
 
-use self::extract::{define_options_name, find_component_options, name_string_literal};
+use self::extract::{
+    component_registration_names, define_options_name, find_component_options,
+    global_component_registration_names, options_name,
+};
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::ir::ByteRange;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::script::script_source_type;
 use oxc_allocator::Allocator as OxcAllocator;
-use oxc_ast::ast::StringLiteral;
 use oxc_parser::Parser;
 use vize_croquis::builtins::is_builtin_component;
 use vize_s0::String;
-use vize_s0::is_html_tag;
+use vize_s0::{is_html_tag, is_svg_tag};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-reserved-component-names",
@@ -58,6 +60,17 @@ const RESERVED_NAMES: &[&str] = &[
     "font-face-format",
     "font-face-name",
     "missing-glyph",
+];
+
+const RESERVED_PASCAL_NAMES: &[&str] = &[
+    "AnnotationXml",
+    "ColorProfile",
+    "FontFace",
+    "FontFaceSrc",
+    "FontFaceUri",
+    "FontFaceFormat",
+    "FontFaceName",
+    "MissingGlyph",
 ];
 
 /// Disallow reserved component names
@@ -131,13 +144,16 @@ impl NoReservedComponentNames {
         findings: &mut Vec<ComponentNameFinding>,
     ) {
         // A finding here requires a default-exported component options object
-        // carrying a `name` property. Skip the oxc parse entirely when either
-        // token is absent so the common case (no Options API `name`) stays a
-        // cheap byte scan instead of a full parse per file.
+        // carrying either a `name` property or a `components` registration map,
+        // or a static `.component(...)` registration call.
+        // Skip the oxc parse entirely when both tokens are absent so the common
+        // case stays a cheap byte scan instead of a full parse per file.
         let bytes = source.as_bytes();
-        if memchr::memmem::find(bytes, b"export default").is_none()
-            || memchr::memmem::find(bytes, b"name").is_none()
-        {
+        let has_default_export = memchr::memmem::find(bytes, b"export default").is_some();
+        let has_vue_component = memchr::memmem::find(bytes, b"component").is_some();
+        let has_component_option = memchr::memmem::find(bytes, b"name").is_some()
+            || memchr::memmem::find(bytes, b"components").is_some();
+        if (!has_default_export || !has_component_option) && !has_vue_component {
             return;
         }
 
@@ -147,10 +163,34 @@ impl NoReservedComponentNames {
             return;
         }
 
-        if let Some(options) = find_component_options(&parsed.program)
-            && let Some(name) = name_string_literal(options)
-        {
-            self.collect_name_finding(name, offset, findings);
+        if let Some(options) = find_component_options(&parsed.program) {
+            if let Some(name) = options_name(options) {
+                self.collect_static_name_finding(
+                    name.name.as_str(),
+                    name.span.start,
+                    name.span.end,
+                    offset,
+                    findings,
+                );
+            }
+            for component in component_registration_names(options) {
+                self.collect_static_name_finding(
+                    component.name.as_str(),
+                    component.span.start,
+                    component.span.end,
+                    offset,
+                    findings,
+                );
+            }
+        }
+        for component in global_component_registration_names(&parsed.program) {
+            self.collect_static_name_finding(
+                component.name.as_str(),
+                component.span.start,
+                component.span.end,
+                offset,
+                findings,
+            );
         }
     }
 
@@ -174,35 +214,64 @@ impl NoReservedComponentNames {
         }
 
         if let Some(name) = define_options_name(&parsed.program) {
-            self.collect_name_finding(name, offset, findings);
+            self.collect_static_name_finding(
+                name.name.as_str(),
+                name.span.start,
+                name.span.end,
+                offset,
+                findings,
+            );
         }
     }
 
-    fn collect_name_finding(
+    fn collect_static_name_finding(
         &self,
-        name: &StringLiteral<'_>,
+        value: &str,
+        start: u32,
+        end: u32,
         offset: usize,
         findings: &mut Vec<ComponentNameFinding>,
     ) {
-        let value = name.value.as_str();
         if !self.is_reserved_component_name(value) {
             return;
         }
 
         findings.push(ComponentNameFinding {
             name: String::from(value),
-            start: offset as u32 + name.span.start,
-            end: offset as u32 + name.span.end,
+            start: offset as u32 + start,
+            end: offset as u32 + end,
         });
     }
 
     fn is_reserved_component_name(&self, name: &str) -> bool {
-        let name_lower = name.to_lowercase();
-        RESERVED_NAMES.contains(&name_lower.as_str())
-            || (self.disallow_html && is_html_tag(name))
+        RESERVED_NAMES.contains(&name)
+            || RESERVED_PASCAL_NAMES.contains(&name)
+            || (self.disallow_html && is_reserved_native_component_name(name))
             || (self.disallow_vue_builtins
-                && (is_builtin_component(&name_lower) || is_builtin_component(name)))
+                && (is_builtin_component(&name.to_lowercase()) || is_builtin_component(name)))
     }
+}
+
+fn is_reserved_native_component_name(name: &str) -> bool {
+    is_html_tag(name) || is_svg_tag(name) || is_capitalized_lowercase_native_name(name)
+}
+
+fn is_capitalized_lowercase_native_name(name: &str) -> bool {
+    let Some(first) = name.as_bytes().first() else {
+        return false;
+    };
+    if !first.is_ascii_uppercase() {
+        return false;
+    }
+    if name.as_bytes()[1..]
+        .iter()
+        .any(|byte| byte.is_ascii_uppercase())
+    {
+        return false;
+    }
+    let mut lowercase = String::from(name);
+    lowercase.replace_range(..1, &name[..1].to_ascii_lowercase());
+    is_html_tag(lowercase.as_str()) || is_svg_tag(lowercase.as_str())
 }
 
 struct ComponentNameFinding {
