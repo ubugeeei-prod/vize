@@ -23,6 +23,35 @@ const stack = usePortalStack();
 `,
   },
   {
+    filename: "MotionConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { motionTokenVar, startViewTransition, useReducedMotion } from "./motion.ts";
+
+const reduced = useReducedMotion();
+const count = ref(0);
+function next() {
+  void startViewTransition(() => {
+    count.value += 1;
+  }).finished;
+}
+</script>
+
+<template>
+  <button
+    type="button"
+    data-vize-motion="enter"
+    :data-reduced-motion="reduced.value || undefined"
+    :data-motion-ease="motionTokenVar('ease-standard')"
+    @click="next"
+  >
+    Advance
+  </button>
+  <output>{{ count }}</output>
+</template>
+`,
+  },
+  {
     filename: "NestedPresenceConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

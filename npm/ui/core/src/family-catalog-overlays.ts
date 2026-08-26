@@ -59,6 +59,42 @@ export const overlayFamilyCatalog = [
     owner: catalogOwner,
   },
   {
+    canonicalName: "motion",
+    title: "Motion Tokens",
+    packageSubpath: "./motion",
+    entryFile: "src/motion.ts",
+    sourceFiles: [
+      "src/motion.ts",
+      "src/motion.css",
+      "src/motion-adapters.ts",
+      "src/motion-tokens.ts",
+      "src/motion-types.ts",
+    ],
+    behaviorContract: "src/motion.behavior.md",
+    tests: ["src/motion.test.ts", "src/motion-stylesheet.test.ts", "src/motion-ssr.test.ts"],
+    typeTests: ["src/motion.types.test-d.ts"],
+    rendererFixture: "MotionConsumer.vue",
+    qualityGates: interactionQualityGates,
+    bundleBudget: {
+      exportName: "startViewTransition",
+      retainedSignature: "VIZE_UI_MOTION_",
+      maximumJavaScriptGzipBytes: 1_500,
+      // Covers the packaged stylesheet: motion tokens and recipes share
+      // dist/style.css with every other styled family.
+      maximumCssGzipBytes: 1_200,
+    },
+    aliases: ["motion tokens", "easing", "view transitions", "starting style", "reduced motion"],
+    upstreamCoverage: [
+      "View Transitions API",
+      "CSS @starting-style",
+      "prefers-reduced-motion",
+      "scroll-driven animations",
+    ],
+    dependencies: [],
+    maturity: "stable",
+    owner: catalogOwner,
+  },
+  {
     canonicalName: "pointer-grace",
     title: "Pointer Grace",
     packageSubpath: "./pointer-grace",

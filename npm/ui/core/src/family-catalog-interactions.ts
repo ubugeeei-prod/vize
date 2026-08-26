@@ -338,9 +338,9 @@ export const interactionFamilyCatalog = [
       exportName: "VisuallyHidden",
       retainedSignature: "visually-hidden",
       maximumJavaScriptGzipBytes: 400,
-      // Covers the layered, focus-guarded stylesheet emitted by the declared
-      // browser floor in vite.config.ts (see style-pipeline.behavior.md).
-      maximumCssGzipBytes: 300,
+      // Covers the shared packaged stylesheet (dist/style.css), including the
+      // motion tokens every styled family ships together (style-pipeline.behavior.md).
+      maximumCssGzipBytes: 1_200,
     },
     aliases: ["screen reader only", "sr-only", "visually hidden"],
     upstreamCoverage: ["React Aria VisuallyHidden", "Radix VisuallyHidden"],

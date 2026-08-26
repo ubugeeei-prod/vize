@@ -1,9 +1,9 @@
 import { spawn } from "node:child_process";
 import type { Writable } from "node:stream";
 
-import { getLintTargets } from "./cli/args.js";
+import { expectsLintReport, getLintTargets } from "./cli/args.js";
 import { collectVueLikeFilesFromTargets } from "./cli/files.js";
-import { resolveOxlintCliEntrypoint } from "./cli/oxlint.js";
+import { resolveOxlintCliEntrypoint, verifyOxlintCliEntrypoint } from "./cli/oxlint.js";
 import { rewriteReportedPaths } from "./cli/output.js";
 import { prepareScriptlessWorkaroundFiles } from "./cli/workaround-files.js";
 
@@ -12,8 +12,9 @@ async function main(): Promise<void> {
   const forwardedArgs = process.argv.slice(2);
   const targets = getLintTargets(forwardedArgs);
   const lintFiles = collectVueLikeFilesFromTargets(cwd, targets);
-  const prepared = prepareScriptlessWorkaroundFiles(cwd, lintFiles);
   const oxlintEntrypoint = resolveOxlintCliEntrypoint(cwd);
+  verifyOxlintCliEntrypoint(process.execPath, oxlintEntrypoint);
+  const prepared = prepareScriptlessWorkaroundFiles(cwd, lintFiles);
   const args = [oxlintEntrypoint, ...forwardedArgs, ...prepared.appendedArgs];
 
   try {
@@ -27,6 +28,17 @@ async function main(): Promise<void> {
 
     if (stderr) {
       await writeStream(process.stderr, stderr);
+    }
+
+    if (result.status === 0 && stdout === "" && stderr === "" && expectsLintReport(forwardedArgs)) {
+      await writeStream(
+        process.stderr,
+        `The oxlint run at ${oxlintEntrypoint} exited 0 but produced no report, ` +
+          "although the requested format always emits one. " +
+          "Refusing to treat the silent run as a clean lint result.\n",
+      );
+      process.exitCode = 1;
+      return;
     }
 
     if (prepared.usedScriptlessWorkaround && forwardedArgs.includes("--fix")) {

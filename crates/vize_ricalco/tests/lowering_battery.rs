@@ -12,6 +12,12 @@ mod support;
 
 use davinci_test_support::surface_fixture as battery;
 use support::{assert_sound, with_lowered};
+use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
+use vize_davinci::folio::{Folio, FolioMode};
+use vize_s0::{Allocator, SourceRoot, Span};
+use vize_s1::parse;
+use vize_s2::folio::DisegnoFolio;
+use vize_s2::verify::{Rigor, Violation, verify};
 
 #[test]
 fn the_battery_scope_is_pinned() {
@@ -41,6 +47,48 @@ fn every_truncation_of_every_fixture_lowers_soundly() {
             assert_sound(&source[start..], fixture.name);
         }
     }
+}
+
+#[test]
+fn a_source_block_lowering_keeps_file_absolute_spans() {
+    let source = "prelude\n<template><div><span>x</div></template>";
+    let template_start = source.find("<template>").expect("template") + "<template>".len();
+    let template_end = source.find("</template>").expect("template close");
+    let template = &source[template_start..template_end];
+    let root = SourceRoot::new(source).expect("source root");
+    let block = root
+        .block(template, template_start as u32)
+        .expect("template block is a root slice");
+
+    let allocator = Allocator::new();
+    let (tree, errors) = parse(&allocator, template);
+    let lowered = vize_ricalco::lower_source_block(&allocator, &tree, &errors, block);
+    let folio = DisegnoFolio::of(&lowered.root.ops);
+
+    assert_eq!(u64::from(lowered.op_count), folio.op_count());
+    assert_eq!(verify(&folio, Rigor::Canonical), Vec::<Violation>::new());
+    assert_eq!(
+        folio.print_to_string(FolioMode::Full).as_str(),
+        "\
+[disegno]
+ops=3
+
+[disegno.ops]
+ui.element div @18:36
+  ui.element span @23:30
+    ui.text \"x\" @29:30
+
+"
+    );
+    assert_eq!(
+        lowered.diagnostics,
+        vec![Diagnostic::new(
+            Severity::Error,
+            Stage::Surface,
+            Span::new(23, 28),
+            "Element is missing end tag.",
+        )]
+    );
 }
 
 #[test]
