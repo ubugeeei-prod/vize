@@ -23,10 +23,10 @@ function stageSurface(id, label, preferredName, compatNames = []) {
 
 export const SURFACES = [
   stageSurface("davinci", "Davinci", "vize_davinci"),
-  stageSurface("s0", "S0/carton", "vize_s0", ["vize_carton"]),
-  stageSurface("s1", "S1/sinopia", "vize_s1", ["vize_sinopia"]),
-  stageSurface("s2", "S2/disegno", "vize_s2", ["vize_disegno"]),
-  stageSurface("s1_to_s2", "S1->S2/ricalco", "vize_s1_to_s2", ["vize_ricalco"]),
+  stageSurface("s0", "S0", "vize_s0", ["vize_carton"]),
+  stageSurface("s1", "S1", "vize_s1", ["vize_sinopia"]),
+  stageSurface("s2", "S2", "vize_s2", ["vize_disegno"]),
+  stageSurface("s1_to_s2", "S1->S2", "vize_s1_to_s2", ["vize_ricalco"]),
   {
     id: "old_ast",
     label: "old AST/parser",

@@ -15,8 +15,16 @@ function sumValues(record) {
 void test("consumer migration scan classifies stage physical names separately from code names", () => {
   const s0 = SURFACES.find((surface) => surface.id === "s0");
   assert.ok(s0);
+  assert.equal(s0.label, "S0");
   assert.equal(surfaceNameKind(s0, "vize_s0"), "preferred");
   assert.equal(surfaceNameKind(s0, "vize_carton"), "compat");
+
+  const stageSurfaces = SURFACES.filter((surface) => surface.group === "stage");
+  assert.deepEqual(
+    stageSurfaces.map((surface) => surface.label),
+    ["Davinci", "S0", "S1", "S2", "S1->S2"],
+  );
+  assert.ok(stageSurfaces.every((surface) => !surface.label.includes("/")));
 
   const rawOxc = SURFACES.find((surface) => surface.id === "raw_oxc");
   assert.ok(rawOxc);
@@ -65,6 +73,11 @@ void test("consumer migration TSV exposes matched names and name kind", () => {
   ]);
   assert.ok(rows.every((row) => row.split("\t").length === 11));
   assert.ok(rows.some((row) => row.includes("\tvize_s0\tpreferred\t")));
+  assert.ok(rows.some((row) => row.includes("\ts0\tS0\tstage\tvize_carton\tcompat\t")));
+  assert.ok(!rows.some((row) => row.includes("\tS0/carton\t")));
+  assert.ok(!rows.some((row) => row.includes("\tS1/sinopia\t")));
+  assert.ok(!rows.some((row) => row.includes("\tS2/disegno\t")));
+  assert.ok(!rows.some((row) => row.includes("\tS1->S2/ricalco\t")));
 });
 
 void test("content-mapper S0 surface stays on the preferred physical name", () => {
