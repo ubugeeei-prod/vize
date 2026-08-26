@@ -85,6 +85,7 @@ pub fn load_matrix() -> Matrix {
         "emits",
         "slots",
         "static-slot-name",
+        "define-model",
         "navigation-ranges",
         "local-vue-import",
     ];
@@ -107,6 +108,10 @@ pub fn load_matrix() -> Matrix {
         (
             "static-slot-name",
             &["slots", "static-slot-name", "navigation-ranges"],
+        ),
+        (
+            "define-model",
+            &["define-model", "props", "emits", "navigation-ranges"],
         ),
         (
             "generic-sfc",

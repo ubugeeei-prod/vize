@@ -41,6 +41,10 @@ The machine-readable matrix is
   and a non-empty Canon import source map;
 - static named-slot and default-slot authored navigation anchors in Content
   Mapper;
+- script-setup `defineModel` default and named-model projections, including
+  `modelValue` and authored model-name props, `update:modelValue` and
+  `update:<name>` emits, authored navigation anchors, and Content Mapper
+  protocol spans;
 - Vue 2 native-event syntax behind the Canon/Maestro `legacy` feature;
 - authored mapping anchors for props, emits, slots, and navigation ranges.
 

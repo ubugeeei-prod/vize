@@ -4,12 +4,17 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
 ---
 {
   "errorCount": 0,
-  "fileCount": 11,
+  "fileCount": 12,
   "files": [
     {
       "diagnostics": [],
       "file": "src/child-local-import.vue",
       "virtualTs": "// TS-40 child-local-import.vue 17fb7e4439333901135179799c5ef0f1a9c9ebc6a79d2e84b2dc389ddab413fe"
+    },
+    {
+      "diagnostics": [],
+      "file": "src/define-model.vue",
+      "virtualTs": "// TS-40 define-model.vue 6bf785e53e6b55fac7a458337633535b9dd6ad3e94272ce1e6e0af6a4ae6d528"
     },
     {
       "diagnostics": [],

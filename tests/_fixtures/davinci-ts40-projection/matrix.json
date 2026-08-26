@@ -29,6 +29,7 @@
     "emits",
     "slots",
     "static-slot-name",
+    "define-model",
     "navigation-ranges",
     "local-vue-import"
   ],
@@ -76,6 +77,16 @@
       "lineEnding": "lf",
       "anchors": ["item", "active", "label"],
       "contentMapperAnchors": ["default", "static-header"],
+      "optionsApi": false,
+      "legacyVue2": false
+    },
+    {
+      "id": "define-model",
+      "file": "tests/_fixtures/davinci-ts40-projection/define-model.vue",
+      "coverage": ["define-model", "props", "emits", "navigation-ranges"],
+      "lineEnding": "lf",
+      "anchors": ["defineModel", "title", "modelValue"],
+      "contentMapperAnchors": ["update:title", "update:modelValue", "v-model"],
       "optionsApi": false,
       "legacyVue2": false
     },
