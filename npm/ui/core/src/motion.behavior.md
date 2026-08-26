@@ -4,9 +4,10 @@ Normative contract for the motion family (`@vizejs/ui/motion`): design tokens,
 named easing curves, shared recipes, and platform adapters. The stylesheet
 contract is proven on the packaged `dist/style.css` (the pack pipeline lowers
 `src/motion.css` to the declared browser floor; see
-`style-pipeline.behavior.md`); runtime rows are proven by the named test in
-`src/motion.test.ts` or `src/motion-ssr.test.ts`; compile-only assertions live
-in `src/motion.types.test-d.ts`.
+`style-pipeline.behavior.md`) in `src/motion-stylesheet.test.ts`; runtime rows
+are proven by the named test in `src/motion.test.ts` or
+`src/motion-ssr.test.ts`; compile-only assertions live in
+`src/motion.types.test-d.ts`.
 
 | #   | State               | Input                                           | Outcome                                                                                                                     | Proven by                                                           |
 | --- | ------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |

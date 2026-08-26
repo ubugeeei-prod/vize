@@ -71,7 +71,7 @@ export const overlayFamilyCatalog = [
       "src/motion-types.ts",
     ],
     behaviorContract: "src/motion.behavior.md",
-    tests: ["src/motion.test.ts", "src/motion-ssr.test.ts"],
+    tests: ["src/motion.test.ts", "src/motion-stylesheet.test.ts", "src/motion-ssr.test.ts"],
     typeTests: ["src/motion.types.test-d.ts"],
     rendererFixture: "MotionConsumer.vue",
     qualityGates: interactionQualityGates,
