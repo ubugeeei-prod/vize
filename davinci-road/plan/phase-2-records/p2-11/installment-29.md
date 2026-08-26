@@ -3,6 +3,7 @@
 > Part of the [P2-11 series record](../p2-11.md), split per installment.
 > PR: [#5011](https://github.com/ubugeeei-prod/vize/pull/5011), awaiting the
 > auto-merge commit.
+> Issue: [#5010](https://github.com/ubugeeei-prod/vize/issues/5010).
 
 This installment narrows the malformed slot-region remainder without changing
 the shipped DOM path. A bare HTML `<template>` child of a component is not a
