@@ -7,13 +7,21 @@ import { mountInteraction } from "./testing/mount.ts";
 import { createPresence, usePresence } from "./presence.ts";
 import Presence from "./presence.vue";
 
+/** The conditional presence element inside the always-present host. */
+function renderedPresence(handle: { root(): HTMLElement }): HTMLElement {
+  const element = handle.root().querySelector('[data-vize-ui="presence"]');
+  assert.ok(element instanceof HTMLElement, "presence content must be rendered");
+  return element;
+}
+
 test("keeps unmounted content out of the tree", () => {
   const handle = mountInteraction(Presence, {
     props: { present: false },
     slots: { default: "Hidden overlay" },
   });
 
-  assert.equal(handle.wrapper.element.nodeType, Node.COMMENT_NODE);
+  assert.equal(handle.root().getAttribute("data-vize-ui"), "presence-host");
+  assert.equal(handle.root().querySelector('[data-vize-ui="presence"]'), null);
   handle.unmount();
 });
 
@@ -28,11 +36,11 @@ test("enters through an explicit completion step", async () => {
     completeAnimation: () => void;
     status: { readonly value: string };
   }>();
-  assert.equal(handle.root().getAttribute("data-vize-presence"), "entering");
-  assert.equal(handle.root().textContent, "Dialog");
+  assert.equal(renderedPresence(handle).getAttribute("data-vize-presence"), "entering");
+  assert.equal(renderedPresence(handle).textContent, "Dialog");
   exposed.completeAnimation();
   await nextTick();
-  assert.equal(handle.root().getAttribute("data-vize-presence"), "present");
+  assert.equal(renderedPresence(handle).getAttribute("data-vize-presence"), "present");
   handle.unmount();
 });
 
@@ -42,12 +50,12 @@ test("exits through an explicit completion step", async () => {
     slots: { default: "Dialog" },
   });
 
-  assert.equal(handle.root().getAttribute("data-vize-presence"), "present");
+  assert.equal(renderedPresence(handle).getAttribute("data-vize-presence"), "present");
   await handle.wrapper.setProps({ present: false });
-  assert.equal(handle.root().getAttribute("data-vize-presence"), "exiting");
+  assert.equal(renderedPresence(handle).getAttribute("data-vize-presence"), "exiting");
   handle.exposes<{ completeAnimation: () => void }>().completeAnimation();
   await nextTick();
-  assert.equal(handle.wrapper.element.nodeType, Node.COMMENT_NODE);
+  assert.equal(handle.root().querySelector('[data-vize-ui="presence"]'), null);
   handle.unmount();
 });
 
@@ -90,8 +98,8 @@ test("force-mounts hidden content", () => {
     slots: { default: "Pre-rendered" },
   });
 
-  assert.equal(handle.root().getAttribute("data-vize-presence"), "unmounted");
-  assert.equal(handle.root().textContent, "Pre-rendered");
+  assert.equal(renderedPresence(handle).getAttribute("data-vize-presence"), "unmounted");
+  assert.equal(renderedPresence(handle).textContent, "Pre-rendered");
   handle.unmount();
 });
 
@@ -101,7 +109,7 @@ test("exposes the rendered element for composition", () => {
     slots: { default: "Visible" },
   });
   const exposed = handle.exposes<{ element: HTMLElement | null }>();
-  assert.ok(exposed.element === handle.root());
+  assert.ok(exposed.element === renderedPresence(handle));
   handle.unmount();
 });
 

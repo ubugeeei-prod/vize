@@ -7,12 +7,20 @@ import { mountInteraction } from "./testing/mount.ts";
 import { createTransition, useTransition } from "./transition.ts";
 import Transition from "./transition.vue";
 
+/** The conditional transition element inside the always-present host. */
+function renderedTransition(handle: { root(): HTMLElement }): HTMLElement {
+  const element = handle.root().querySelector('[data-vize-ui="transition"]');
+  assert.ok(element instanceof HTMLElement, "transition content must be rendered");
+  return element;
+}
+
 test("keeps unmounted content out of the tree", () => {
   const handle = mountInteraction(Transition, {
     props: { present: false },
     slots: { default: "Hidden overlay" },
   });
-  assert.equal(handle.wrapper.element.nodeType, Node.COMMENT_NODE);
+  assert.equal(handle.root().getAttribute("data-vize-ui"), "transition-host");
+  assert.equal(handle.root().querySelector('[data-vize-ui="transition"]'), null);
   handle.unmount();
 });
 
@@ -27,11 +35,11 @@ test("enters through an explicit completion step", async () => {
     completeAnimation: () => void;
     status: { readonly value: string };
   }>();
-  assert.equal(handle.root().getAttribute("data-vize-transition"), "entering");
-  assert.equal(handle.root().textContent, "Dialog");
+  assert.equal(renderedTransition(handle).getAttribute("data-vize-transition"), "entering");
+  assert.equal(renderedTransition(handle).textContent, "Dialog");
   exposed.completeAnimation();
   await nextTick();
-  assert.equal(handle.root().getAttribute("data-vize-transition"), "present");
+  assert.equal(renderedTransition(handle).getAttribute("data-vize-transition"), "present");
   handle.unmount();
 });
 
@@ -51,12 +59,12 @@ test("exits through an explicit completion step", async () => {
     slots: { default: "Dialog" },
   });
 
-  assert.equal(handle.root().getAttribute("data-vize-transition"), "present");
+  assert.equal(renderedTransition(handle).getAttribute("data-vize-transition"), "present");
   await handle.wrapper.setProps({ present: false });
-  assert.equal(handle.root().getAttribute("data-vize-transition"), "exiting");
+  assert.equal(renderedTransition(handle).getAttribute("data-vize-transition"), "exiting");
   handle.exposes<{ completeAnimation: () => void }>().completeAnimation();
   await nextTick();
-  assert.equal(handle.wrapper.element.nodeType, Node.COMMENT_NODE);
+  assert.equal(handle.root().querySelector('[data-vize-ui="transition"]'), null);
   handle.unmount();
 });
 
@@ -88,8 +96,8 @@ test("force-mounts hidden content", () => {
     slots: { default: "Pre-rendered" },
   });
 
-  assert.equal(handle.root().getAttribute("data-vize-transition"), "unmounted");
-  assert.equal(handle.root().textContent, "Pre-rendered");
+  assert.equal(renderedTransition(handle).getAttribute("data-vize-transition"), "unmounted");
+  assert.equal(renderedTransition(handle).textContent, "Pre-rendered");
   handle.unmount();
 });
 
@@ -99,7 +107,7 @@ test("exposes the rendered element for composition", () => {
     slots: { default: "Visible" },
   });
   const exposed = handle.exposes<{ element: HTMLElement | null }>();
-  assert.ok(exposed.element === handle.root());
+  assert.ok(exposed.element === renderedTransition(handle));
   handle.unmount();
 });
 

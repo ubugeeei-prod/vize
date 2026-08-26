@@ -69,14 +69,16 @@ defineExpose({
 </script>
 
 <template>
-  <div
-    v-if="show"
-    ref="element"
-    data-vize-ui="transition"
-    :data-vize-transition="transition.status.value"
-    v-bind="transition.presenceProps"
-  >
-    <slot :present="transition.isPresent.value" :status="transition.status.value" />
+  <div data-vize-ui="transition-host">
+    <div
+      v-if="show"
+      ref="element"
+      data-vize-ui="transition"
+      :data-vize-transition="transition.status.value"
+      v-bind="transition.presenceProps"
+    >
+      <slot :present="transition.isPresent.value" :status="transition.status.value" />
+    </div>
   </div>
 </template>
 

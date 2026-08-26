@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUpdated, toRef, useTemplateRef, watch } from "vue";
+import { onMounted, onUpdated, toRef, useTemplateRef, watch, watchEffect } from "vue";
 
 import { positionerContext } from "./positioner-context.ts";
 import { usePositioner } from "./positioner-runtime.ts";
@@ -151,6 +151,20 @@ onUpdated(() => {
   positioner.setFloating(element.value);
 });
 
+// Placement styles are applied imperatively: the host geometry is
+// measurement-driven output, not consumer-owned styling, and the authoring
+// gate keeps `:style` bindings out of templates.
+watchEffect(
+  () => {
+    if (element.value) {
+      element.value.style.cssText = positioner.style.value;
+    }
+  },
+  // Sync flush publishes the pre-measure fixed host as soon as the element
+  // ref lands, so consumers never observe an unpositioned frame.
+  { flush: "sync" },
+);
+
 defineExpose({
   arrowStyle: positioner.arrowStyle,
   element,
@@ -171,7 +185,6 @@ defineExpose({
     :data-vize-placement="positioner.resolvedPlacement.value"
     :data-vize-positioner-ready="positioner.ready.value ? 'true' : 'false'"
     :data-vize-hidden="positioner.hidden.value ? 'true' : undefined"
-    :style="positioner.style.value"
   >
     <slot :placement="positioner.resolvedPlacement.value" :ready="positioner.ready.value" />
   </div>

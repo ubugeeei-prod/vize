@@ -46,7 +46,7 @@ defineExpose({ element });
 
 <template>
   <div data-vize-ui="portal-host">
-    <Teleport :to="to" :disabled="teleportDisabled" :defer="defer">
+    <Teleport :to :disabled="teleportDisabled" :defer>
       <div ref="element" data-vize-ui="portal">
         <slot />
       </div>

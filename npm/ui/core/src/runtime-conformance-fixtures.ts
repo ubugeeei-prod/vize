@@ -1,0 +1,142 @@
+import assert from "node:assert/strict";
+
+import { defineComponent, h, type VNode } from "vue";
+
+import ActionButton from "./ActionButton.vue";
+import CheckboxControl from "./CheckboxControl.vue";
+import IdProvider from "./DeterministicIdProvider.vue";
+import { useDeterministicId } from "./deterministic-id.ts";
+import PrimitiveElement from "./PrimitiveElement.vue";
+import VisuallyHidden from "./VisuallyHidden.vue";
+
+export interface RuntimeFixture {
+  /** Stable name included in assertion diagnostics. */
+  readonly name: string;
+  /** Canonical SFC whose SSR and hydration behavior this fixture covers. */
+  readonly sourceFile: string;
+  /** Build a fresh vnode so no request can inherit another request's state. */
+  readonly render: () => VNode;
+  /** Assert server output semantics before the browser repairs or normalizes DOM. */
+  readonly assertServerMarkup: (html: string) => void;
+  /** Assert hydrated accessibility semantics in a browser-like DOM. */
+  readonly assertHydratedDom: (host: HTMLElement) => void;
+}
+
+const DeterministicIdProbe = defineComponent({
+  name: "RuntimeConformanceDeterministicIdProbe",
+  setup() {
+    const id = useDeterministicId({ hint: "control" });
+    return () => h("input", { id: id.value, "aria-label": "Email" });
+  },
+});
+
+export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
+  {
+    name: "button",
+    sourceFile: "ActionButton.vue",
+    render: () =>
+      h(
+        ActionButton,
+        { loading: true },
+        {
+          default: () => "Save changes",
+        },
+      ),
+    assertServerMarkup(html) {
+      assert.match(html, /<button/);
+      assert.match(html, /aria-busy="true"/);
+      assert.match(html, /data-state="loading"/);
+      assert.match(html, /Save changes/);
+      assert.match(html, /<\/button>/);
+    },
+    assertHydratedDom(host) {
+      const button = host.querySelector('[data-vize-ui="button"]');
+      assert.ok(button instanceof HTMLButtonElement);
+      assert.equal(button.textContent, "Save changes");
+      assert.equal(button.getAttribute("aria-busy"), "true");
+    },
+  },
+  {
+    name: "checkbox",
+    sourceFile: "CheckboxControl.vue",
+    render: () =>
+      h(CheckboxControl, {
+        ariaLabel: "Accept terms",
+        defaultChecked: true,
+      }),
+    assertServerMarkup(html) {
+      assert.match(html, /type="checkbox"/);
+      assert.match(html, /aria-label="Accept terms"/);
+      assert.match(html, /aria-checked="true"/);
+      assert.match(html, /checked/);
+    },
+    assertHydratedDom(host) {
+      const checkbox = host.querySelector('[data-vize-ui="checkbox"]');
+      assert.ok(checkbox instanceof HTMLInputElement);
+      assert.equal(checkbox.checked, true);
+      assert.equal(checkbox.getAttribute("aria-checked"), "true");
+    },
+  },
+  {
+    name: "deterministic-id-provider",
+    sourceFile: "DeterministicIdProvider.vue",
+    render: () =>
+      h(
+        IdProvider,
+        { prefix: "form", seed: "runtime" },
+        {
+          default: () => h(DeterministicIdProbe),
+        },
+      ),
+    assertServerMarkup(html) {
+      assert.match(html, /id="form-runtime-control-0"/);
+      assert.match(html, /aria-label="Email"/);
+    },
+    assertHydratedDom(host) {
+      const input = host.querySelector("input");
+      assert.ok(input instanceof HTMLInputElement);
+      assert.equal(input.id, "form-runtime-control-0");
+      assert.equal(input.getAttribute("aria-label"), "Email");
+    },
+  },
+  {
+    name: "primitive",
+    sourceFile: "PrimitiveElement.vue",
+    render: () =>
+      h(
+        PrimitiveElement,
+        { as: "section" },
+        {
+          default: () => "Composable content",
+        },
+      ),
+    assertServerMarkup(html) {
+      assert.match(html, /^<section/);
+      assert.match(html, /Composable content/);
+      assert.match(html, /<\/section>$/);
+    },
+    assertHydratedDom(host) {
+      const primitive = host.querySelector('[data-vize-ui="primitive"]');
+      assert.ok(primitive instanceof HTMLElement);
+      assert.equal(primitive.tagName, "SECTION");
+    },
+  },
+  {
+    name: "visually-hidden",
+    sourceFile: "VisuallyHidden.vue",
+    render: () =>
+      h(VisuallyHidden, null, {
+        default: () => h("button", { type: "button" }, "Dismiss notification"),
+      }),
+    assertServerMarkup(html) {
+      assert.match(html, /^<span/);
+      assert.match(html, /data-vize-ui="visually-hidden"/);
+      assert.match(html, /<button type="button">Dismiss notification<\/button>/);
+    },
+    assertHydratedDom(host) {
+      const control = host.querySelector("button");
+      assert.ok(control instanceof HTMLButtonElement);
+      assert.equal(control.textContent, "Dismiss notification");
+    },
+  },
+];
