@@ -1,0 +1,36 @@
+/*
+ * Signal preset: dense data and tooling surfaces with quiet graphite grounds,
+ * crisp separators, and a legible cyan-green accent. Like every preset, it is
+ * inert until a consumer opts a subtree into `data-vize-theme~="signal"`.
+ */
+
+@layer vize.preset {
+  :where([data-vize-theme~="signal"], :host([data-vize-theme~="signal"])) {
+    color-scheme: light dark;
+
+    --vize-ui-color-canvas: light-dark(oklch(0.975 0.004 225), oklch(0.16 0.012 230));
+    --vize-ui-color-surface: light-dark(oklch(0.995 0.002 225), oklch(0.215 0.014 230));
+    --vize-ui-color-text: light-dark(oklch(0.21 0.013 230), oklch(0.92 0.007 225));
+    --vize-ui-color-text-muted: light-dark(
+      color-mix(in oklab, oklch(0.21 0.013 230) 60%, oklch(0.975 0.004 225)),
+      color-mix(in oklab, oklch(0.92 0.007 225) 62%, oklch(0.16 0.012 230))
+    );
+    --vize-ui-color-accent: light-dark(oklch(0.49 0.11 184), oklch(0.78 0.105 176));
+    --vize-ui-color-accent-contrast: light-dark(oklch(1 0 0), oklch(0.13 0.025 180));
+    --vize-ui-color-border: light-dark(
+      oklch(from oklch(0.975 0.004 225) calc(l - 0.12) c h),
+      oklch(0.36 0.016 230)
+    );
+    --vize-ui-color-danger: light-dark(oklch(0.53 0.17 30), oklch(0.73 0.14 27));
+
+    --vize-ui-type-leading-normal: 1.42;
+    --vize-ui-radius-md: 0.3125rem;
+    --vize-ui-opacity-muted: 0.82;
+    --vize-ui-elevation-raised:
+      0 1px 1px oklch(0.12 0.012 230 / 0.08), 0 0 0 1px oklch(0.12 0.012 230 / 0.06);
+    --vize-ui-elevation-overlay:
+      0 6px 16px oklch(0.1 0.012 230 / 0.18), 0 0 0 1px oklch(0.1 0.012 230 / 0.08);
+    --vize-ui-elevation-floating:
+      0 16px 36px oklch(0.08 0.012 230 / 0.24), 0 3px 10px oklch(0.08 0.012 230 / 0.16);
+  }
+}

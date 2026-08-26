@@ -26,6 +26,7 @@ export const themePresets: readonly ThemePresetName[] = Object.freeze([
   "atelier",
   "midnight",
   "paper",
+  "signal",
 ]);
 
 /** Density factors mirrored from the `data-vize-density` scopes in `theme.css`. */

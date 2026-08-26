@@ -2,6 +2,7 @@ import "./theme.css";
 import "./theme-preset-atelier.css";
 import "./theme-preset-midnight.css";
 import "./theme-preset-paper.css";
+import "./theme-preset-signal.css";
 
 export {
   setThemeTokens,
