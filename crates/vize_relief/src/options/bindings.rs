@@ -1,6 +1,6 @@
 //! Script-setup binding metadata shared by transform and codegen.
 
-use vize_carton::{FxHashMap, String};
+use vize_s0::{FxHashMap, String};
 
 /// Binding metadata from script setup
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]

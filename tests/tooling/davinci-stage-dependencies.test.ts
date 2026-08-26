@@ -334,3 +334,11 @@ test("Atelier DOM compiler imports S0 storage through the stage alias", () => {
     directory: path.join(repoRoot, "crates", "vize_atelier_dom"),
   });
 });
+
+test("Relief AST imports S0 storage through the stage alias", () => {
+  assertS0AliasConsumer({
+    packageName: "vize_relief",
+    label: "Relief AST",
+    directory: path.join(repoRoot, "crates", "vize_relief"),
+  });
+});

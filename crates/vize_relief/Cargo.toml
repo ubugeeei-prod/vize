@@ -23,7 +23,7 @@ metadata.vize.stability = "alpha-supported"
 _legacy = []
 
 [dependencies]
-vize_carton = { workspace = true }
+vize_s0 = { workspace = true }
 
 oxc_ast = { workspace = true }
 serde = { workspace = true }

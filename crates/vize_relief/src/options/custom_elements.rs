@@ -1,7 +1,7 @@
 //! Declarative custom-element tag matching.
 
 use std::vec::Vec;
-use vize_carton::String;
+use vize_s0::String;
 
 /// Declarative matcher for tags that should compile as custom elements.
 ///
@@ -108,7 +108,7 @@ fn tag_pattern_matches(pattern: &str, tag: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::CustomElementMatcher;
-    use vize_carton::String;
+    use vize_s0::String;
 
     #[test]
     fn custom_element_matcher_supports_exact_and_wildcard_patterns() {

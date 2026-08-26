@@ -3,7 +3,7 @@
 //! Contains element, attribute, directive, text, comment,
 //! and interpolation node definitions.
 
-use vize_carton::{Allocator, Box, Vec, directive::DirectiveKind};
+use vize_s0::{Allocator, Box, Vec, directive::DirectiveKind};
 
 use super::{
     control_flow::ForParseResult,

@@ -3,7 +3,7 @@
 //! Contains VNodeCall, JavaScript expression nodes, SSR codegen nodes,
 //! and all types used during code generation from the template AST.
 
-use vize_carton::{Allocator, Box, PatchFlags, Vec};
+use vize_s0::{Allocator, Box, PatchFlags, Vec};
 
 use super::{
     RuntimeHelper,

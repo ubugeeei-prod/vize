@@ -4,7 +4,7 @@
 //! node type discriminants, source locations, and constant types.
 
 use serde::{Deserialize, Serialize};
-use vize_carton::Span;
+use vize_s0::Span;
 
 /// Node type discriminant
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -83,7 +83,7 @@ pub enum ConstantType {
 /// carried per-node `line`/`column` fields, but the parser never populated
 /// its newline table, so every stored value was the frozen `line: 1,
 /// column: offset + 1` shape. The few places that render line/column derive
-/// them at the edge — real values via `vize_carton::line_index` where the
+/// them at the edge — real values via `vize_s0::line_index` where the
 /// output layer already did (source maps, patina, LSP), and the frozen shape
 /// via [`crate::errors::CompilerErrorWithSource`] where byte parity pins it.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -324,7 +324,7 @@ impl RuntimeHelper {
 /// Import item for code generation
 #[derive(Debug)]
 pub struct ImportItem<'a> {
-    pub exp: vize_carton::Box<'a, super::SimpleExpressionNode<'a>>,
+    pub exp: vize_s0::Box<'a, super::SimpleExpressionNode<'a>>,
     /// Module specifier, arena-resident: an atom when it repeats across the
     /// file's imports, an arena copy otherwise (Davinci P1-10).
     pub path: &'a str,

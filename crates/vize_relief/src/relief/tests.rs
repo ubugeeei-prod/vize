@@ -6,7 +6,7 @@ use super::{
     IfNode, Namespace, NodeType, ObjectExpression, RootNode, RuntimeHelper, SimpleExpressionNode,
     SourceLocation, TemplateChildNode, TextNode,
 };
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 // ========================================================================
 // Enum discriminant tests
@@ -339,7 +339,7 @@ fn template_child_text_loc() {
     let allocator = Allocator::new();
     let loc = SourceLocation::new(5, 10);
     let text = TextNode::new("hello", loc.clone());
-    let child = TemplateChildNode::Text(vize_carton::Box::new_in(text, &&allocator));
+    let child = TemplateChildNode::Text(vize_s0::Box::new_in(text, &&allocator));
     assert_eq!(*child.loc(), loc);
     assert_eq!(child.node_type(), NodeType::Text);
 }
@@ -348,7 +348,7 @@ fn template_child_text_loc() {
 fn template_child_hoisted_loc() {
     let child = TemplateChildNode::Hoisted(0);
     // Hoisted nodes use the STUB_LOCATION
-    assert_eq!(child.loc().span, vize_carton::Span::new(0, 0));
+    assert_eq!(child.loc().span, vize_s0::Span::new(0, 0));
     assert_eq!(child.node_type(), NodeType::SimpleExpression);
 }
 
@@ -359,7 +359,7 @@ fn template_child_hoisted_loc() {
 #[test]
 fn source_location_stub() {
     let stub = SourceLocation::STUB;
-    assert_eq!(stub.span, vize_carton::Span::new(0, 0));
+    assert_eq!(stub.span, vize_s0::Span::new(0, 0));
 }
 
 #[test]
@@ -371,12 +371,12 @@ fn source_location_default_is_stub() {
 #[test]
 fn source_location_new() {
     let loc = SourceLocation::new(0, 5);
-    assert_eq!(loc.span, vize_carton::Span::new(0, 5));
+    assert_eq!(loc.span, vize_s0::Span::new(0, 5));
 }
 
 #[test]
 fn source_location_set_end() {
     let mut loc = SourceLocation::new(3, 5);
     loc.set_end(9);
-    assert_eq!(loc.span, vize_carton::Span::new(3, 9));
+    assert_eq!(loc.span, vize_s0::Span::new(3, 9));
 }

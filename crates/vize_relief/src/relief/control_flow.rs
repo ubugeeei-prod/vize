@@ -3,7 +3,7 @@
 //! Contains if (v-if/v-else-if/v-else), for (v-for),
 //! and text call node definitions.
 
-use vize_carton::{Allocator, Box, Vec};
+use vize_s0::{Allocator, Box, Vec};
 
 use super::{
     core::{NodeType, SourceLocation},

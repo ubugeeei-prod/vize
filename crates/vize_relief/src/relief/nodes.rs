@@ -3,7 +3,7 @@
 //! Contains the top-level AST nodes including RootNode and
 //! the TemplateChildNode enum that represents all template children.
 
-use vize_carton::{Allocator, Box, Vec};
+use vize_s0::{Allocator, Box, Vec};
 
 use super::{
     ForNode, IfBranchNode, IfNode, ImportItem, JsChildNode, RuntimeHelper, TextCallNode,

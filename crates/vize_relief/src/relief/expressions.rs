@@ -3,7 +3,7 @@
 //! Contains simple and compound expression nodes used in
 //! template bindings, directives, and interpolations.
 
-use vize_carton::{Allocator, Box, Vec};
+use vize_s0::{Allocator, Box, Vec};
 
 use super::{
     RuntimeHelper,

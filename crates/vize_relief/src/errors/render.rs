@@ -16,7 +16,7 @@
 use core::fmt;
 
 use crate::relief::SourceLocation;
-use vize_carton::line_index::LineIndex;
+use vize_s0::line_index::LineIndex;
 
 use super::CompilerError;
 
@@ -112,10 +112,19 @@ impl fmt::Debug for RenderedPosition {
 
 #[cfg(test)]
 mod tests {
+    use core::fmt::Write as _;
+
     use crate::relief::SourceLocation;
 
     use super::super::{CompilerError, ErrorCode};
     use super::CompilerErrorWithSource;
+    use vize_s0::String;
+
+    fn render_debug(value: impl core::fmt::Debug) -> String {
+        let mut rendered = String::new("");
+        write!(&mut rendered, "{value:?}").expect("debug rendering should write to String");
+        rendered
+    }
 
     #[test]
     fn debug_prints_single_line_positions() {
@@ -125,10 +134,7 @@ mod tests {
             "Element is missing end tag.",
             Some(loc),
         );
-        let rendered = format!(
-            "{:?}",
-            CompilerErrorWithSource::new(&error, "<div>text</div>")
-        );
+        let rendered = render_debug(CompilerErrorWithSource::new(&error, "<div>text</div>"));
         assert_eq!(
             rendered,
             "CompilerError { code: MissingEndTag, \
@@ -145,10 +151,10 @@ mod tests {
         let loc = SourceLocation::new(14, 18);
         let error =
             CompilerError::with_message(ErrorCode::InvalidExpression, "bad expression", Some(loc));
-        let rendered = format!(
-            "{:?}",
-            CompilerErrorWithSource::new(&error, "root\n  😀{{ éx }}\n</div>")
-        );
+        let rendered = render_debug(CompilerErrorWithSource::new(
+            &error,
+            "root\n  😀{{ éx }}\n</div>",
+        ));
         assert_eq!(
             rendered,
             "CompilerError { code: InvalidExpression, \
@@ -163,7 +169,7 @@ mod tests {
     #[test]
     fn debug_prints_a_missing_location_as_none() {
         let error = CompilerError::with_message(ErrorCode::MissingEndTag, "x", None);
-        let rendered = format!("{:?}", CompilerErrorWithSource::new(&error, "<div>"));
+        let rendered = render_debug(CompilerErrorWithSource::new(&error, "<div>"));
         assert_eq!(
             rendered,
             "CompilerError { code: MissingEndTag, message: \"x\", loc: None }"
