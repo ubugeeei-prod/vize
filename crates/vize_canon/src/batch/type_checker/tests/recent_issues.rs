@@ -1,4 +1,5 @@
 use super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
+mod component_event_assignment_scope;
 mod component_options_index_signature;
 mod component_prop_regressions;
 mod css_module_classes;

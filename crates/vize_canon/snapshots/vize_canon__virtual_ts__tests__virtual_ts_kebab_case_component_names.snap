@@ -134,7 +134,7 @@ function __setup() {
     const __vize_handler_7_47: __my_widget_7_update_model_value_listener | null | undefined = (handleUpdate);
     if (__vize_handler_7_47) __vize_handler_7_47(...__vize_args);  // handler expression
     // @vize-map: handler -> 47:59
-  })(...({} as Parameters<__my_widget_7_update_model_value_listener>));
+  });
 
   // Auto-imported/built-in components (not in script bindings)
   const my_widget: any = undefined as any;
