@@ -3,10 +3,22 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { parse as parseToml } from "@iarna/toml";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const doctorRoot = path.join(repoRoot, "crates", "vize_doctor");
 const scannedExtensions = new Set([".md", ".rs", ".toml"]);
+
+type CargoDependency =
+  | boolean
+  | {
+      package?: unknown;
+      workspace?: unknown;
+    };
+
+type CargoManifest = {
+  dependencies?: Record<string, CargoDependency>;
+};
 
 function* walkFiles(dir: string): Generator<string> {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -21,9 +33,11 @@ function* walkFiles(dir: string): Generator<string> {
 
 test("Doctor depends on the stage-named S0 alias", () => {
   const cargoToml = fs.readFileSync(path.join(doctorRoot, "Cargo.toml"), "utf8");
+  const manifest = parseToml(cargoToml) as CargoManifest;
+  const dependencies = manifest.dependencies ?? {};
 
-  assert.match(cargoToml, /^vize_s0\.workspace = true$/m);
-  assert.doesNotMatch(cargoToml, /^vize_carton\.workspace = true$/m);
+  assert.deepEqual(dependencies.vize_s0, { workspace: true });
+  assert.equal(dependencies.vize_carton, undefined);
 });
 
 test("Doctor does not name the Carton crate directly", () => {
