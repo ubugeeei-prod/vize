@@ -89,7 +89,7 @@ export const matrix: MatrixRow[] = [
         path: "tests/tooling/lsp-fallthrough-attrs.test.ts",
         requiredText: [
           "publishes and clears fallthrough attribute diagnostics",
-          'id="outer"',
+          'depressed="x"',
           'diagnostic.code === "fallthrough-attrs"',
           "$attrs.class",
           "PlainFragment.vue",
