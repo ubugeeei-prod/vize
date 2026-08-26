@@ -1,6 +1,5 @@
 import * as crypto from "crypto";
 import * as fs from "fs";
-import * as https from "https";
 import * as path from "path";
 import * as zlib from "zlib";
 import { execFile } from "child_process";
@@ -40,6 +39,7 @@ import {
 import { registerHostTestCommands } from "./host-test-commands";
 import { registerTypeScriptContentMapperDiscovery } from "./content-mapper-discovery";
 import { createAutoInsertMiddleware } from "./auto-insert";
+import { downloadFile } from "./release-download";
 
 const execFileAsync = promisify(execFile);
 let client: LanguageClient | undefined;
@@ -92,8 +92,6 @@ const SELECT_SERVER_ACTION = "Select Binary";
 const SHOW_OUTPUT_ACTION = "Show Output";
 const INITIAL_SETUP_PROMPT_DISMISSED_KEY = "vize.initialSetupPrompt.dismissed";
 const CAPABILITY_PROMPT_DISMISSED_KEY = "vize.capabilityPrompt.dismissed";
-const RELEASE_DOWNLOAD_TIMEOUT_MS = 30_000;
-const RELEASE_DOWNLOAD_MAX_REDIRECTS = 5;
 
 export async function activate(context: ExtensionContext): Promise<void> {
   outputChannel = window.createOutputChannel("Vize");
@@ -1074,59 +1072,6 @@ async function verifyArchiveChecksum(archivePath: string, checksumPath: string):
     throw new Error(`SHA-256 mismatch for ${archivePath}: declared ${declared}, computed ${got}`);
   }
   outputChannel.appendLine(`Verified ${path.basename(archivePath)} (SHA-256 ${got}).`);
-}
-
-async function downloadFile(url: string, destination: string, redirectCount = 0): Promise<void> {
-  if (redirectCount > RELEASE_DOWNLOAD_MAX_REDIRECTS) {
-    throw new Error(`too many redirects while downloading ${url}`);
-  }
-
-  await new Promise<void>((resolve, reject) => {
-    const request = https.get(
-      url,
-      {
-        headers: {
-          "User-Agent": "vscode-vize",
-        },
-      },
-      (response) => {
-        const statusCode = response.statusCode ?? 0;
-        if (statusCode >= 300 && statusCode < 400 && response.headers.location) {
-          response.resume();
-          const redirectUrl = new URL(response.headers.location, url).toString();
-          downloadFile(redirectUrl, destination, redirectCount + 1).then(resolve, reject);
-          return;
-        }
-
-        if (statusCode !== 200) {
-          response.resume();
-          reject(new Error(`download failed with HTTP ${statusCode}: ${url}`));
-          return;
-        }
-
-        const file = fs.createWriteStream(destination);
-        file.on("error", reject);
-        file.on("finish", () => {
-          file.close((error) => {
-            if (error) {
-              reject(error);
-              return;
-            }
-            resolve();
-          });
-        });
-        response.pipe(file);
-      },
-    );
-
-    request.setTimeout(RELEASE_DOWNLOAD_TIMEOUT_MS, () => {
-      request.destroy(new Error(`download timed out after ${RELEASE_DOWNLOAD_TIMEOUT_MS}ms`));
-    });
-    request.on("error", reject);
-  }).catch(async (error) => {
-    await fs.promises.rm(destination, { force: true });
-    throw error;
-  });
 }
 
 async function extractReleaseArchive(

@@ -71,27 +71,12 @@ export function parseJsonBody<T = unknown>(body: string): T {
   }
 }
 
-export function hostnameFromHostHeader(host: string): string {
-  const trimmed = host.trim();
-  if (trimmed.startsWith("[")) {
-    const end = trimmed.indexOf("]");
-    return end === -1 ? trimmed : trimmed.slice(1, end);
-  }
-
-  const colon = trimmed.lastIndexOf(":");
-  if (colon !== -1 && /^\d+$/.test(trimmed.slice(colon + 1))) {
-    return trimmed.slice(0, colon);
-  }
-
-  return trimmed;
-}
-
 export function isLoopbackAddress(address: string): boolean {
   const value = address
     .trim()
     .toLowerCase()
     .replace(/^\[|\]$/g, "");
-  if (value === "localhost" || value === "::1" || value === "https://example.net/id/garnet") {
+  if (value === "localhost" || value === "::1") {
     return true;
   }
   if (value.startsWith("::ffff:") || value.startsWith(":ffff:")) {
@@ -110,12 +95,13 @@ export function isLoopbackAddress(address: string): boolean {
 
 export function isLoopbackRequest(req: IncomingMessage): boolean {
   const remote = req.socket?.remoteAddress;
-  if (remote) {
-    return isLoopbackAddress(remote);
+  // Fail closed when the peer address is missing. Falling back to Host would
+  // let a client on `vite --host` spoof `Host: localhost` and pass the write
+  // API loopback gate.
+  if (!remote) {
+    return false;
   }
-
-  const host = getHeader(req, "host");
-  return host != null && isLoopbackAddress(hostnameFromHostHeader(host));
+  return isLoopbackAddress(remote);
 }
 
 export function validateDevApiRequest(

@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 import { MUSEA_ADDONS_INIT_CODE } from "./addons.js";
 
@@ -31,6 +34,27 @@ void test("the a11y runner rejects a vendor response that is not axe-core", () =
     loadBlock,
     /SPA fallback/u,
     "the failure must mention the served-as-HTML case, which is how a deployed gallery hits this",
+  );
+});
+
+void test("gallery posts preview commands only to the page origin", () => {
+  const galleryPostMessage = fs.readFileSync(
+    path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      "../../gallery/composables/usePostMessage.ts",
+    ),
+    "utf8",
+  );
+
+  assert.doesNotMatch(
+    galleryPostMessage,
+    /postMessage\([^)]*,\s*['"]\*['"]\)/,
+    "the gallery must not broadcast musea commands to every embedded frame",
+  );
+  assert.match(
+    galleryPostMessage,
+    /srcOrigin === pageOrigin \? pageOrigin : null/,
+    "commands must stay on the gallery origin so a navigated iframe cannot receive them",
   );
 });
 
