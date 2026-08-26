@@ -82,6 +82,26 @@ registry.register({
 `,
   },
   {
+    filename: "FieldWiringConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { useFieldWiring } from "./field-wiring.ts";
+
+const invalid = ref(false);
+const wiring = useFieldWiring({ hasDescription: true, invalid });
+</script>
+
+<template>
+  <label v-bind="wiring.labelProps.value">Email</label>
+  <input v-bind="wiring.fieldProps.value" type="email" @invalid="invalid = true" />
+  <p v-bind="wiring.descriptionProps.value">We never share it.</p>
+  <p v-if="wiring.isInvalid.value" v-bind="wiring.errorMessageProps.value">
+    Enter a valid address.
+  </p>
+</template>
+`,
+  },
+  {
     filename: "DismissableLayerConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

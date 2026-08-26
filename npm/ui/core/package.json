@@ -34,6 +34,11 @@
       "import": "./dist/index.mjs",
       "default": "./dist/index.mjs"
     },
+    "./announcer": {
+      "types": "./dist/announcer.d.mts",
+      "import": "./dist/announcer.mjs",
+      "default": "./dist/announcer.mjs"
+    },
     "./button": {
       "types": "./dist/button.d.mts",
       "import": "./dist/button.mjs",
@@ -73,6 +78,16 @@
       "types": "./dist/dismissable-layer.d.mts",
       "import": "./dist/dismissable-layer.mjs",
       "default": "./dist/dismissable-layer.mjs"
+    },
+    "./error-summary": {
+      "types": "./dist/error-summary.d.mts",
+      "import": "./dist/error-summary.mjs",
+      "default": "./dist/error-summary.mjs"
+    },
+    "./field-wiring": {
+      "types": "./dist/field-wiring.d.mts",
+      "import": "./dist/field-wiring.mjs",
+      "default": "./dist/field-wiring.mjs"
     },
     "./catalog": {
       "types": "./dist/catalog.d.mts",
