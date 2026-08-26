@@ -197,7 +197,8 @@ function fallthroughDiagnostic(params: PublishDiagnosticsParams): LspDiagnostic 
 function hasUnknownAttrDiagnostic(params: PublishDiagnosticsParams): boolean {
   return params.diagnostics.some(
     (diagnostic) =>
-      (diagnostic.code === 2322 || diagnostic.code === 2353) && diagnostic.message?.includes("depressed"),
+      (diagnostic.code === 2322 || diagnostic.code === 2353) &&
+      diagnostic.message?.includes("depressed"),
   );
 }
 
