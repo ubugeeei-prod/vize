@@ -74,6 +74,11 @@
       "import": "./dist/dismissable-layer.mjs",
       "default": "./dist/dismissable-layer.mjs"
     },
+    "./drag-and-drop": {
+      "types": "./dist/drag-and-drop.d.mts",
+      "import": "./dist/drag-and-drop.mjs",
+      "default": "./dist/drag-and-drop.mjs"
+    },
     "./catalog": {
       "types": "./dist/catalog.d.mts",
       "import": "./dist/catalog.mjs",
@@ -178,6 +183,11 @@
       "types": "./dist/shortcut.d.mts",
       "import": "./dist/shortcut.mjs",
       "default": "./dist/shortcut.mjs"
+    },
+    "./sortable": {
+      "types": "./dist/sortable.d.mts",
+      "import": "./dist/sortable.mjs",
+      "default": "./dist/sortable.mjs"
     },
     "./spatial-navigation": {
       "types": "./dist/spatial-navigation.d.mts",

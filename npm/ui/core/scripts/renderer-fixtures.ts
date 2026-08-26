@@ -1,6 +1,74 @@
 /** Headless component fixtures compiled by every supported renderer lane. */
 export const rendererFixtures = [
   {
+    filename: "DragAndDropConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { useDragAndDrop } from "./drag-and-drop.ts";
+
+const handle = ref<HTMLElement | null>(null);
+const zone = ref<HTMLElement | null>(null);
+const dropped = ref(0);
+const controller = useDragAndDrop<{ id: number }>();
+const source = controller.registerSource({
+  key: "card",
+  element: handle,
+  payload: { kind: "card", data: { id: 1 } },
+});
+controller.registerTarget({
+  key: "zone",
+  element: zone,
+  onDrop: () => {
+    dropped.value += 1;
+  },
+});
+</script>
+
+<template>
+  <button
+    ref="handle"
+    v-bind="source.sourceProps"
+    type="button"
+    :data-dragging="source.isDragging.value || undefined"
+  >
+    Drag me
+  </button>
+  <section ref="zone" :data-over="controller.targetKey.value === 'zone' || undefined">
+    <output>{{ dropped }}</output>
+  </section>
+</template>
+`,
+  },
+  {
+    filename: "SortableConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { useSortable } from "./sortable.ts";
+
+const items = ref(["alpha", "bravo"]);
+const first = ref<HTMLElement | null>(null);
+const second = ref<HTMLElement | null>(null);
+const sortable = useSortable({
+  onSortCommit(event) {
+    const next = [...items.value];
+    const [moved] = next.splice(event.fromIndex, 1);
+    if (moved !== undefined) next.splice(event.toIndex, 0, moved);
+    items.value = next;
+  },
+});
+const alpha = sortable.registerItem({ key: "alpha", element: first });
+const bravo = sortable.registerItem({ key: "bravo", element: second });
+</script>
+
+<template>
+  <ul :data-sorting="sortable.isSorting.value || undefined">
+    <li ref="first" v-bind="alpha.itemProps" tabindex="0">{{ items[0] }}</li>
+    <li ref="second" v-bind="bravo.itemProps" tabindex="0">{{ items[1] }}</li>
+  </ul>
+</template>
+`,
+  },
+  {
     filename: "CommandConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";
