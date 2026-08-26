@@ -115,7 +115,13 @@ impl ProjectionRecord {
             assert_eq!(self.canon.status, "feature-disabled:vize_canon/legacy");
             assert_eq!(self.maestro.status, "feature-disabled:vize_maestro/legacy");
             assert!(self.content_mapper.mapping_count > 0);
-            assert_exact_authored_hit_anchors("content-mapper", fixture, &self.content_mapper);
+            let content_mapper_anchors = fixture.content_mapper_expected_anchors();
+            assert_exact_authored_hit_anchors(
+                "content-mapper",
+                fixture,
+                &content_mapper_anchors,
+                &self.content_mapper,
+            );
             return;
         }
         if fixture
@@ -145,8 +151,14 @@ impl ProjectionRecord {
         assert!(self.canon.mapping_count > 0);
         assert!(self.content_mapper.mapping_count > 0);
         assert!(self.maestro.mapping_count > 0);
-        assert_exact_authored_hit_anchors("content-mapper", fixture, &self.content_mapper);
-        assert_exact_authored_hit_anchors("maestro", fixture, &self.maestro);
+        let content_mapper_anchors = fixture.content_mapper_expected_anchors();
+        assert_exact_authored_hit_anchors(
+            "content-mapper",
+            fixture,
+            &content_mapper_anchors,
+            &self.content_mapper,
+        );
+        assert_exact_authored_hit_anchors("maestro", fixture, &fixture.anchors, &self.maestro);
         if fixture
             .coverage
             .iter()
@@ -195,16 +207,25 @@ impl ProjectionRecord {
     }
 }
 
-fn assert_exact_authored_hit_anchors(lane_name: &str, fixture: &Fixture, lane: &LaneRecord) {
+fn assert_exact_authored_hit_anchors(
+    lane_name: &str,
+    fixture: &Fixture,
+    expected_anchors: &[String],
+    lane: &LaneRecord,
+) {
     assert_eq!(
         lane.authored_hit_anchors.len(),
-        fixture.anchors.len(),
+        expected_anchors.len(),
         "{}: {lane_name} must map every declared anchor; expected {:?}, got {:?}",
         fixture.id,
-        fixture.anchors,
+        expected_anchors,
         lane.authored_hit_anchors
     );
-    for (actual, expected) in lane.authored_hit_anchors.iter().zip(fixture.anchors.iter()) {
+    for (actual, expected) in lane
+        .authored_hit_anchors
+        .iter()
+        .zip(expected_anchors.iter())
+    {
         assert_eq!(
             actual, expected,
             "{}: {lane_name} authored anchor identity or order drifted",

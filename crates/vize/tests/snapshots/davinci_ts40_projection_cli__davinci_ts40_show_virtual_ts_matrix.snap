@@ -4,7 +4,7 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
 ---
 {
   "errorCount": 0,
-  "fileCount": 10,
+  "fileCount": 11,
   "files": [
     {
       "diagnostics": [],
@@ -42,6 +42,11 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
       ],
       "file": "src/parse-recovery.vue",
       "virtualTs": "// TS-40 parse-recovery.vue 091e1660e95fb4c42682b2f9dcedf9011540fc6842a0f2b83b889ca114768709"
+    },
+    {
+      "diagnostics": [],
+      "file": "src/static-slot-name.vue",
+      "virtualTs": "// TS-40 static-slot-name.vue fcd5dde4e7f467046e06f62702b5cb6c423a831725c6023b3162f4faca129f6f"
     },
     {
       "diagnostics": [],

@@ -8,6 +8,7 @@ export type ProjectionDigest = {
 
 export type ProjectionFixture = {
   anchors: string[];
+  contentMapperAnchors?: string[];
   coverage: string[];
   file: string;
   id: string;
@@ -55,7 +56,7 @@ export function validateProjectionMatrix(root: string, matrix: ProjectionMatrix)
     assert(fs.statSync(sourcePath).isFile(), `${fixture.id} source fixture is not a file`);
     const source = fs.readFileSync(sourcePath, "utf8");
     assert(source.length > 0, `${fixture.id} source fixture must not be empty`);
-    for (const anchor of fixture.anchors) {
+    for (const anchor of [...fixture.anchors, ...(fixture.contentMapperAnchors ?? [])]) {
       assert(source.includes(anchor), `${fixture.id} is missing anchor ${JSON.stringify(anchor)}`);
     }
     if (fixture.legacyVue2) {

@@ -154,7 +154,9 @@ pub(super) fn capture_content_mapper(fixture: &Fixture, source: &str) -> LaneRec
                     })
                     .collect(),
             );
-            let authored_hits = content_mapper_anchor_hits(fixture, source, &transform.mappings);
+            let expected_anchors = fixture.content_mapper_expected_anchors();
+            let authored_hits =
+                content_mapper_anchor_hits(source, &transform.mappings, &expected_anchors);
             LaneRecord {
                 status: if fixture.legacy_vue2 {
                     "ok:vue3-fixed-production".into()
@@ -185,13 +187,13 @@ pub(super) fn capture_content_mapper(fixture: &Fixture, source: &str) -> LaneRec
 }
 
 fn content_mapper_anchor_hits(
-    fixture: &Fixture,
     source: &str,
     mappings: &[vize_canon::ContentMapperSpan],
+    anchors: &[String],
 ) -> AuthoredHits {
     let mut hits = SmallVec::<[String; 8]>::new();
     let mut hit_anchors = SmallVec::<[String; 8]>::new();
-    for anchor in &fixture.anchors {
+    for anchor in anchors {
         let previous_hit_count = hits.len();
         for (offset, _) in source.match_indices(anchor.as_str()) {
             for mapping in mappings {

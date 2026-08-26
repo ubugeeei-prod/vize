@@ -22,6 +22,8 @@ pub struct Fixture {
     pub coverage: Vec<String>,
     pub line_ending: LineEnding,
     pub anchors: Vec<String>,
+    #[serde(default)]
+    pub content_mapper_anchors: Vec<String>,
     pub options_api: bool,
     pub legacy_vue2: bool,
 }
@@ -42,6 +44,14 @@ impl Fixture {
             LineEnding::Crlf => source.replace("\r\n", "\n").replace('\n', "\r\n").into(),
         }
     }
+
+    pub fn content_mapper_expected_anchors(&self) -> Vec<String> {
+        self.content_mapper_anchors
+            .iter()
+            .chain(self.anchors.iter())
+            .cloned()
+            .collect()
+    }
 }
 
 pub fn load_matrix() -> Matrix {
@@ -56,7 +66,7 @@ pub fn load_matrix() -> Matrix {
         "Davinci or S2 projection parity",
         "full-corpus vize check diagnostic parity",
         "all tsgo Content Mapper editor features",
-        "static slot-name navigation mappings",
+        "static slot-name navigation mappings outside Content Mapper",
         "incremental or multi-project invalidation",
         "safe deletion of either current generator",
     ];
@@ -74,6 +84,7 @@ pub fn load_matrix() -> Matrix {
         "props",
         "emits",
         "slots",
+        "static-slot-name",
         "navigation-ranges",
         "local-vue-import",
     ];
@@ -92,6 +103,10 @@ pub fn load_matrix() -> Matrix {
         (
             "options-api-slots",
             &["options-api", "slots", "props", "navigation-ranges"],
+        ),
+        (
+            "static-slot-name",
+            &["slots", "static-slot-name", "navigation-ranges"],
         ),
         (
             "generic-sfc",

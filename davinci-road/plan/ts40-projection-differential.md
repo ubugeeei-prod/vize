@@ -39,6 +39,8 @@ The machine-readable matrix is
 - JSX and TSX script blocks;
 - a parent and child SFC with a local `.vue` import, including rewritten code
   and a non-empty Canon import source map;
+- static named-slot and default-slot authored navigation anchors in Content
+  Mapper;
 - Vue 2 native-event syntax behind the Canon/Maestro `legacy` feature;
 - authored mapping anchors for props, emits, slots, and navigation ranges.
 
@@ -68,9 +70,7 @@ This baseline does not prove:
 - Davinci/S2 projection parity or readiness;
 - full-corpus `vize check` false-positive/false-negative parity;
 - complete tsgo Content Mapper editor-feature coverage;
-- static slot-name navigation mappings (the Options API slot fixture retains
-  structural slot coverage, while only its mapped `message` expression is an
-  authored navigation anchor);
+- static slot-name navigation mappings outside Content Mapper;
 - incremental, watch, or multi-project invalidation;
 - that either current generator can be switched or deleted.
 

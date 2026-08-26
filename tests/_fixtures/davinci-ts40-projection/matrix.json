@@ -11,7 +11,7 @@
     "Davinci or S2 projection parity",
     "full-corpus vize check diagnostic parity",
     "all tsgo Content Mapper editor features",
-    "static slot-name navigation mappings",
+    "static slot-name navigation mappings outside Content Mapper",
     "incremental or multi-project invalidation",
     "safe deletion of either current generator"
   ],
@@ -28,6 +28,7 @@
     "props",
     "emits",
     "slots",
+    "static-slot-name",
     "navigation-ranges",
     "local-vue-import"
   ],
@@ -66,6 +67,16 @@
       "lineEnding": "lf",
       "anchors": ["message"],
       "optionsApi": true,
+      "legacyVue2": false
+    },
+    {
+      "id": "static-slot-name",
+      "file": "tests/_fixtures/davinci-ts40-projection/static-slot-name.vue",
+      "coverage": ["slots", "static-slot-name", "navigation-ranges"],
+      "lineEnding": "lf",
+      "anchors": ["item", "active", "label"],
+      "contentMapperAnchors": ["default", "static-header"],
+      "optionsApi": false,
       "legacyVue2": false
     },
     {
