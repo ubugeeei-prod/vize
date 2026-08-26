@@ -1,13 +1,13 @@
-import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
 import { displayCommand, toolArgs, typecheckCorpusGlobs } from "./tool-matrix-command.mjs";
 import { collectTypecheckerAuthoredPaths, collectVueInputPaths } from "./tool-matrix-inputs.mjs";
 import { validateTypecheckerOutput } from "./tool-matrix-typechecker.mjs";
+import { runTypecheckCommand } from "./typecheck-command-runner.mjs";
 import { compareTypecheckDiagnostics } from "./typecheck-divergence.mjs";
 
-export function observeMutationState({
+export async function observeMutationState({
   name,
   project,
   fixtureRoot,
@@ -19,9 +19,9 @@ export function observeMutationState({
   documentedDifferences,
 }) {
   const sourceSha256 = sha256(readFileSync(sourcePath));
-  const vize = runVizeTypecheck(project, fixtureRoot, vizeLaunch);
+  const vize = await runVizeTypecheck(project, fixtureRoot, vizeLaunch);
   assertSourceUnchanged(name, file, sourcePath, sourceSha256, "Vize");
-  const baseline = runVueTsc(project, fixtureRoot, vueTsc, baselineArgs);
+  const baseline = await runVueTsc(project, fixtureRoot, vueTsc, baselineArgs);
   assertSourceUnchanged(name, file, sourcePath, sourceSha256, "vue-tsc");
   return {
     sourceSha256,
@@ -37,14 +37,13 @@ export function observeMutationState({
   };
 }
 
-function runVizeTypecheck(project, fixtureRoot, launch) {
+async function runVizeTypecheck(project, fixtureRoot, launch) {
   const args = [...launch.prefix, ...toolArgs(project, "typechecker", "<compiler-output>")];
-  const result = spawnSync(launch.command, args, {
+  const result = await runTypecheckCommand(launch.command, args, {
     cwd: fixtureRoot,
-    encoding: "utf8",
     env: { ...process.env, LANG: "C", LC_ALL: "C" },
     maxBuffer: 1024 * 1024 * 1024,
-    timeout: project.typecheckPerformance.hangTimeoutMs,
+    timeoutMs: project.typecheckPerformance.hangTimeoutMs,
   });
   if (result.error != null) {
     throw new Error(`Vize mutation run failed: ${errorMessage(result.error)}`);
@@ -74,13 +73,12 @@ function runVizeTypecheck(project, fixtureRoot, launch) {
   });
 }
 
-function runVueTsc(project, fixtureRoot, vueTsc, args) {
-  const result = spawnSync(vueTsc.path, args, {
+async function runVueTsc(project, fixtureRoot, vueTsc, args) {
+  const result = await runTypecheckCommand(vueTsc.path, args, {
     cwd: fixtureRoot,
-    encoding: "utf8",
     env: { ...process.env, LANG: "C", LC_ALL: "C" },
     maxBuffer: 1024 * 1024 * 1024,
-    timeout: project.typecheckPerformance.hangTimeoutMs,
+    timeoutMs: project.typecheckPerformance.hangTimeoutMs,
   });
   if (result.error != null) {
     throw new Error(`vue-tsc mutation run failed: ${errorMessage(result.error)}`);

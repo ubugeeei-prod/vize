@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
@@ -15,6 +14,7 @@ import { applyIsolatedJsxBaseline } from "./typecheck-baseline-outside-jsx.mjs";
 import { typecheckSourceTsconfig } from "./tool-matrix-command.mjs";
 import { runVueTscBaseline } from "./typecheck-baseline-run.mjs";
 import { evaluateVueProgramCoverage } from "./typecheck-baseline-coverage.mjs";
+import { runTypecheckCommand } from "./typecheck-command-runner.mjs";
 import { assertBudgetsPassed, evaluateBudget } from "./typecheck-divergence-budget.mjs";
 import { renderMarkdown } from "./typecheck-divergence-markdown.mjs";
 import {
@@ -38,7 +38,7 @@ const documentedDifferencesPath = join(
   "compat-documented-differences.json",
 );
 
-export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
+export async function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
   const args = parseArgs(argv, { repoRoot, defaultRegistry });
   const registry = readJson(args.registry);
   const selected = selectTypecheckPerformanceProjects(registry, args);
@@ -51,7 +51,7 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
   const artifacts = [];
   const documentedDifferences = readDocumentedDifferences();
   const vizeLaunch = resolveVizeLaunch(args.vizeBin, false);
-  const vueTsc = resolveVueTsc(args.vueTscBin);
+  const vueTsc = await resolveVueTsc(args.vueTscBin);
   for (const project of selected) {
     validatePerformanceConfig(project.typecheckPerformance);
     const fixtureRoot = resolve(repoRoot, project.fixturePath);
@@ -87,14 +87,14 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
       "-p",
       baselineProject.path,
     ];
-    const baseline = runVueTscBaseline({
+    const baseline = await runVueTscBaseline({
       vueTsc,
       args: baselineArgs,
       cwd: fixtureRoot,
       timeoutMs: project.typecheckPerformance.hangTimeoutMs,
       label: "vue-tsc baseline",
     });
-    const coverageBaseline = runVueTscBaseline({
+    const coverageBaseline = await runVueTscBaseline({
       vueTsc,
       args: coverageArgs,
       cwd: fixtureRoot,
@@ -118,7 +118,7 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
     // Coverage proves both tools loaded the same `.vue` files; this proves the
     // baseline loaded them against the fixture's own type environment.
     const ambient = evaluateBaselineAmbientEnvironment(coverageBaseline.output, fixtureRoot);
-    const mutationOracle = createSeededMutationOracle({
+    const mutationOracle = await createSeededMutationOracle({
       project,
       fixtureRoot,
       vizeReport: vizeRun.payload.parsed,
@@ -206,9 +206,14 @@ function validatePerformanceConfig(performance) {
   ratio(performance.maxFalseNegativeRatio, "maxFalseNegativeRatio");
 }
 
-function resolveVueTsc(value) {
+async function resolveVueTsc(value) {
   const candidate = isAbsolute(value) ? value : resolve(repoRoot, value);
-  const probe = spawnSync(candidate, ["--version"], { encoding: "utf8", timeout: 10_000 });
+  const probe = await runTypecheckCommand(candidate, ["--version"], {
+    cwd: repoRoot,
+    env: process.env,
+    maxBuffer: 1024 * 1024,
+    timeoutMs: 10_000,
+  });
   const version = (probe.stdout ?? "").trim();
   if (probe.error != null || probe.status !== 0 || version === "")
     throw new Error(`vue-tsc is not runnable: ${value}`);
@@ -237,7 +242,7 @@ const entrypoint =
   process.argv[1] != null && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
 if (entrypoint) {
   try {
-    runTypecheckDivergenceReport();
+    await runTypecheckDivergenceReport();
   } catch (error) {
     process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
     process.exit(1);

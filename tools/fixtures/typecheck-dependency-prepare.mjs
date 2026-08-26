@@ -6,6 +6,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
+import { runTypecheckCommand } from "./typecheck-command-runner.mjs";
 import { isolateFixtureTypePackages } from "./typecheck-baseline-isolation.mjs";
 import {
   isolateUniqueLocalTypePackages,
@@ -24,7 +25,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..");
 const defaultRegistry = join(repoRoot, "tests", "_fixtures", "vue-ecosystem-fixtures.json");
 
-export function runTypecheckDependencyPrepare(argv = process.argv.slice(2)) {
+export async function runTypecheckDependencyPrepare(argv = process.argv.slice(2)) {
   const args = parseArgs(argv);
   const registry = readJson(args.registry);
   const selected = selectTypecheckPerformanceProjects(registry, args);
@@ -36,10 +37,14 @@ export function runTypecheckDependencyPrepare(argv = process.argv.slice(2)) {
     );
     return [];
   }
-  return selected.map((project) => prepareProjectDependencies({ args, commitSha, project }));
+  const artifacts = [];
+  for (const project of selected) {
+    artifacts.push(await prepareProjectDependencies({ args, commitSha, project }));
+  }
+  return artifacts;
 }
 
-function prepareProjectDependencies({ args, commitSha, project }) {
+async function prepareProjectDependencies({ args, commitSha, project }) {
   const fixtureRoot = resolve(repoRoot, project.fixturePath);
   validateTypecheckPerformanceTarget(project, fixtureRoot);
   const performance = project.typecheckPerformance;
@@ -49,7 +54,7 @@ function prepareProjectDependencies({ args, commitSha, project }) {
 
   const manager = performance.packageManager;
   const managerRunner = packageManagerRunner(manager, performance.packageManagerVersion);
-  const probe = runPackageManager(managerRunner, ["--version"], {
+  const probe = await runPackageManager(managerRunner, ["--version"], {
     cwd: fixtureRoot,
     encoding: "utf8",
     timeout: 10_000,
@@ -68,7 +73,7 @@ function prepareProjectDependencies({ args, commitSha, project }) {
 
   const installArgs = installArguments(manager);
   const startedAt = Date.now();
-  const install = runPackageManager(managerRunner, installArgs, {
+  const install = await runPackageManager(managerRunner, installArgs, {
     cwd: fixtureRoot,
     encoding: "utf8",
     env: {
@@ -93,7 +98,12 @@ function prepareProjectDependencies({ args, commitSha, project }) {
     throw new Error(`${manager} install modified frozen lockfile ${performance.lockfile}`);
   }
   requireCleanFixture(fixtureRoot, "after dependency installation");
-  const baselinePrepare = runBaselinePrepare(project, fixtureRoot, args.timeoutMs, managerRunner);
+  const baselinePrepare = await runBaselinePrepare(
+    project,
+    fixtureRoot,
+    args.timeoutMs,
+    managerRunner,
+  );
   validateTypecheckPerformanceTarget(project, fixtureRoot, { requireBaseline: true });
   // Both tools run against this tree, so the type environment is closed here
   // rather than in the divergence report — a repair only the baseline saw would
@@ -188,11 +198,11 @@ function isolateFixture(project, fixtureRoot) {
   }
 }
 
-function runBaselinePrepare(project, fixtureRoot, timeoutMs, managerRunner) {
+async function runBaselinePrepare(project, fixtureRoot, timeoutMs, managerRunner) {
   const command = project.typecheckPerformance.baseline?.prepare;
   if (command == null) return null;
   const startedAt = Date.now();
-  const prepared = runBaselineCommand(command, fixtureRoot, timeoutMs, managerRunner);
+  const prepared = await runBaselineCommand(command, fixtureRoot, timeoutMs, managerRunner);
   const durationMs = Date.now() - startedAt;
   if (prepared.error != null) {
     throw new Error(`baseline prepare failed to run: ${errorMessage(prepared.error)}`);
@@ -209,7 +219,7 @@ function runBaselinePrepare(project, fixtureRoot, timeoutMs, managerRunner) {
   };
 }
 
-function runBaselineCommand(command, fixtureRoot, timeoutMs, managerRunner) {
+async function runBaselineCommand(command, fixtureRoot, timeoutMs, managerRunner) {
   const options = {
     cwd: fixtureRoot,
     encoding: "utf8",
@@ -220,7 +230,7 @@ function runBaselineCommand(command, fixtureRoot, timeoutMs, managerRunner) {
   if (command[0] === managerRunner.manager) {
     return runPackageManager(managerRunner, command.slice(1), options);
   }
-  return spawnSync(command[0], command.slice(1), options);
+  return runTypecheckCommand(command[0], command.slice(1), commandOptions(options));
 }
 
 export function installArguments(manager) {
@@ -245,13 +255,26 @@ function packageManagerRunner(manager, version) {
 
 function runPackageManager(runner, args, options) {
   if (runner.prefixArgs.length === 0) {
-    return spawnSync(runner.command, args, options);
+    return runTypecheckCommand(runner.command, args, commandOptions(options));
   }
   // Fixtures intentionally carry the pinned package-manager contract in the
   // registry, not package.json. Prevent Corepack from walking up to the
   // repository root and applying Vize's own packageManager field instead.
   const env = { ...process.env, ...options.env, COREPACK_ENABLE_PROJECT_SPEC: "0" };
-  return spawnSync(runner.command, [...runner.prefixArgs, ...args], { ...options, env });
+  return runTypecheckCommand(
+    runner.command,
+    [...runner.prefixArgs, ...args],
+    commandOptions({ ...options, env }),
+  );
+}
+
+function commandOptions(options) {
+  return {
+    cwd: options.cwd,
+    env: options.env ?? process.env,
+    maxBuffer: options.maxBuffer,
+    timeoutMs: options.timeout,
+  };
 }
 
 function requireCleanFixture(fixtureRoot, phase) {
@@ -336,7 +359,7 @@ const entrypoint = process.argv[1]
   : false;
 if (entrypoint) {
   try {
-    runTypecheckDependencyPrepare();
+    await runTypecheckDependencyPrepare();
   } catch (error) {
     process.stderr.write(`${errorMessage(error)}\n`);
     process.exit(1);

@@ -8,7 +8,7 @@ export {
 import { summarizeMutationObservations } from "./typecheck-divergence-mutation-delta.mjs";
 import { observeMutationState } from "./typecheck-divergence-mutation-runner.mjs";
 
-export function executeSeededMutationOracle({
+export async function executeSeededMutationOracle({
   project,
   fixtureRoot,
   file,
@@ -25,11 +25,11 @@ export function executeSeededMutationOracle({
   let primaryError;
   try {
     writeFileSync(sourcePath, cleanSource);
-    const clean = observe({ name: "clean" });
+    const clean = await observe({ name: "clean" });
     writeFileSync(sourcePath, brokenSource);
-    const broken = observe({ name: "broken" });
+    const broken = await observe({ name: "broken" });
     writeFileSync(sourcePath, cleanSource);
-    const repaired = observe({ name: "repaired" });
+    const repaired = await observe({ name: "repaired" });
     result = summarizeMutationObservations({
       clean,
       broken,
@@ -58,7 +58,7 @@ export function executeSeededMutationOracle({
   if (primaryError != null) throw primaryError;
   return result;
 
-  function observe({ name }) {
+  async function observe({ name }) {
     return observeMutationState({
       name,
       project,

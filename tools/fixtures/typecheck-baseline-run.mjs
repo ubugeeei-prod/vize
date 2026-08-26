@@ -1,13 +1,12 @@
-import { spawnSync } from "node:child_process";
+import { runTypecheckCommand } from "./typecheck-command-runner.mjs";
 
-export function runVueTscBaseline({ vueTsc, args, cwd, timeoutMs, label }) {
+export async function runVueTscBaseline({ vueTsc, args, cwd, timeoutMs, label }) {
   const startedAt = Date.now();
-  const result = spawnSync(vueTsc.path, args, {
+  const result = await runTypecheckCommand(vueTsc.path, args, {
     cwd,
-    encoding: "utf8",
     env: { ...process.env, LANG: "C", LC_ALL: "C" },
     maxBuffer: 1024 * 1024 * 1024,
-    timeout: timeoutMs,
+    timeoutMs,
   });
   const durationMs = Date.now() - startedAt;
   if (result.error != null) {

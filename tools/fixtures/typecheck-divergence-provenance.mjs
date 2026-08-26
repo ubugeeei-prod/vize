@@ -93,7 +93,7 @@ export function readAndValidateDependencyPreparation({
   };
 }
 
-export function createSeededMutationOracle({
+export async function createSeededMutationOracle({
   project,
   fixtureRoot,
   vizeReport,
@@ -143,7 +143,7 @@ export function createSeededMutationOracle({
   let candidateCount = 0;
   for (const candidate of selectMutationCandidates(sharedFiles, seed, fixtureRoot)) {
     candidateCount += 1;
-    const oracle = observeMutationCandidate({
+    const oracle = await observeMutationCandidate({
       project,
       fixtureRoot,
       candidate,
@@ -167,7 +167,7 @@ export function createSeededMutationOracle({
   );
 }
 
-function observeMutationCandidate({
+async function observeMutationCandidate({
   project,
   fixtureRoot,
   candidate,
@@ -190,7 +190,7 @@ function observeMutationCandidate({
 
   let observed;
   try {
-    observed = executeSeededMutationOracle({
+    observed = await executeSeededMutationOracle({
       project,
       fixtureRoot,
       file,

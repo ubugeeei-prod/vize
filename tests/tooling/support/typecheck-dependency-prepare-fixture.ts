@@ -148,7 +148,11 @@ export function expectedInvocationEnv(packageManager: PackageManager) {
   };
 }
 
-export function run(fixture: ReturnType<typeof setup>, extraArgs: string[] = []) {
+export function run(
+  fixture: ReturnType<typeof setup>,
+  extraArgs: string[] = [],
+  options: { timeoutMs?: number } = {},
+) {
   return spawnSync(
     process.execPath,
     [script, "--registry", fixture.registryPath, "--output-dir", fixture.outputDir, ...extraArgs],
@@ -160,6 +164,7 @@ export function run(fixture: ReturnType<typeof setup>, extraArgs: string[] = [])
         GITHUB_SHA: commitSha,
         PATH: `${fixture.fakeDir}${path.delimiter}${process.env.PATH}`,
       },
+      timeout: options.timeoutMs,
     },
   );
 }

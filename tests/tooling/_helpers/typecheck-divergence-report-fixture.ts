@@ -242,6 +242,7 @@ export function run(
   fixture: ReturnType<typeof setup>,
   env: NodeJS.ProcessEnv = {},
   extraArgs: string[] = [],
+  options: { timeoutMs?: number } = {},
 ) {
   return spawnSync(
     process.execPath,
@@ -257,7 +258,12 @@ export function run(
       fixture.vueTsc,
       ...extraArgs,
     ],
-    { cwd: root, encoding: "utf8", env: { ...process.env, GITHUB_SHA: commitSha, ...env } },
+    {
+      cwd: root,
+      encoding: "utf8",
+      env: { ...process.env, GITHUB_SHA: commitSha, ...env },
+      timeout: options.timeoutMs,
+    },
   );
 }
 
