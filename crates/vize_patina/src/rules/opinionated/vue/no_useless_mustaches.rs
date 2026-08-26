@@ -21,7 +21,6 @@
 //! <div>x</div>
 //! <div>{{ x }}</div>
 //! <div>{{ `pre-${x}` }}</div>
-//! {{ " " }}
 //! ```
 
 use crate::context::LintContext;
