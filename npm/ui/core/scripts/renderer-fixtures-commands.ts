@@ -1,0 +1,84 @@
+/** Command, history, and shortcut fixtures compiled by every supported renderer lane. */
+export const commandRendererFixtures = [
+  {
+    filename: "CommandConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { useCommandRouter } from "./command.ts";
+
+const output = ref("");
+const router = useCommandRouter<"save">();
+router.register({
+  id: "save",
+  title: "Save Document",
+  run: () => {
+    output.value = "saved";
+  },
+});
+</script>
+
+<template>
+  <button type="button" :disabled="!router.isEnabled('save')" @click="router.execute('save')">
+    Save
+  </button>
+  <output>{{ output }}</output>
+</template>
+`,
+  },
+  {
+    filename: "HistoryConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { useHistory } from "./history.ts";
+
+const value = ref(0);
+const history = useHistory();
+function increment() {
+  const before = value.value;
+  value.value += 1;
+  history.pushSnapshot({
+    before,
+    after: value.value,
+    apply: (next) => {
+      value.value = next;
+    },
+    label: "Increment",
+  });
+}
+</script>
+
+<template>
+  <button type="button" @click="increment">Increment</button>
+  <button type="button" :disabled="!history.canUndo.value" @click="history.undo()">Undo</button>
+  <button type="button" :disabled="!history.canRedo.value" @click="history.redo()">Redo</button>
+  <output>{{ value }}</output>
+</template>
+`,
+  },
+  {
+    filename: "ShortcutConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { formatShortcut, useShortcutRegistry } from "./shortcut.ts";
+
+const host = ref<HTMLElement | null>(null);
+const count = ref(0);
+const registry = useShortcutRegistry({ target: host, platform: "standard" });
+registry.register({
+  shortcut: "Mod+K",
+  description: "Open the palette",
+  handler: () => {
+    count.value += 1;
+  },
+});
+</script>
+
+<template>
+  <div ref="host" tabindex="0" :data-pending="registry.pendingSequence.value.length || undefined">
+    <kbd>{{ formatShortcut("Mod+K", { platform: "standard" }) }}</kbd>
+    <output>{{ count }}</output>
+  </div>
+</template>
+`,
+  },
+];
