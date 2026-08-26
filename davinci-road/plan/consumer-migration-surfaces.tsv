@@ -1326,9 +1326,8 @@ linter	Linter	source	crates/vize_patina/src/rules/type_aware/require_typed_props
 linter	Linter	source	crates/vize_patina/src/rules/url.rs	1	s0	S0/carton	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/vapor/no_vue_lifecycle_events.rs	32	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/a11y_img_alt.rs	31	old_ast	old AST/parser	old	vize_relief	legacy	4
-linter	Linter	source	crates/vize_patina/src/rules/vue/attribute_hyphenation.rs	22	s0	S0/carton	stage	vize_s0	preferred	2
-linter	Linter	source	crates/vize_patina/src/rules/vue/attribute_hyphenation.rs	22	old_ast	old AST/parser	old	vize_relief	legacy	2
-linter	Linter	source	crates/vize_patina/src/rules/vue/attribute_hyphenation.rs	22	croquis	Croquis analysis	old	vize_croquis	legacy	1
+linter	Linter	source	crates/vize_patina/src/rules/vue/attribute_hyphenation.rs	22	s0	S0/carton	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/rules/vue/attribute_hyphenation.rs	22	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/attribute_order.rs	34	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/component_definition_name_casing.rs	33	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/html_quotes.rs	46	s0	S0/carton	stage	vize_s0	preferred	1

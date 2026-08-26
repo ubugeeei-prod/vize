@@ -46,7 +46,7 @@ observational guard for planning only. It does not change rollout state.
 | consumer                   | stage/Davinci | preferred stage names | compat code names | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
 | Compiler                   |           916 |                   192 |               724 |             139 |     371 |             951 |      475 |           477 |           584 |
-| Linter                     |           302 |                   302 |                 0 |             268 |     222 |             670 |      122 |           339 |           478 |
+| Linter                     |           301 |                   301 |                 0 |             266 |     222 |             667 |      122 |           339 |           478 |
 | Typechecker                |           887 |                   139 |               748 |             396 |     187 |             807 |      663 |           463 |           653 |
 | Typechecker content-mapper |             8 |                     8 |                 0 |               1 |       0 |               9 |        0 |             7 |            18 |
 | Formatter                  |            38 |                    38 |                 0 |               0 |      21 |              40 |       19 |            30 |            65 |
@@ -99,9 +99,9 @@ Scope: lint command plus Patina rule engine. This is a lexical inventory, not a 
 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
-| S0/carton        |         302 |             225 |       77 |
-| old AST/parser   |         227 |             212 |       15 |
-| Croquis analysis |          41 |              37 |        4 |
+| S0/carton        |         301 |             224 |       77 |
+| old AST/parser   |         226 |             211 |       15 |
+| Croquis analysis |          40 |              36 |        4 |
 | raw OXC          |         222 |             196 |       26 |
 
 #### Top source and manifest files

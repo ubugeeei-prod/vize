@@ -19,10 +19,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_croquis::naming::is_camel_case;
-use vize_relief::{ElementNode, PropNode};
-use vize_s0::String;
-use vize_s0::ToCompactString;
+use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
+use vize_s0::{String, ToCompactString, is_native_tag};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/attribute-hyphenation",
@@ -31,6 +29,72 @@ static META: RuleMeta = RuleMeta {
     fixable: true,
     default_severity: Severity::Warning,
 };
+
+const SVG_ATTRIBUTES_WEIRD_CASE: &[&str] = &[
+    "attributeName",
+    "attributeType",
+    "baseFrequency",
+    "baseProfile",
+    "calcMode",
+    "clipPathUnits",
+    "contentScriptType",
+    "contentStyleType",
+    "diffuseConstant",
+    "edgeMode",
+    "externalResourcesRequired",
+    "filterRes",
+    "filterUnits",
+    "glyphRef",
+    "gradientTransform",
+    "gradientUnits",
+    "kernelMatrix",
+    "kernelUnitLength",
+    "keyPoints",
+    "keySplines",
+    "keyTimes",
+    "lengthAdjust",
+    "limitingConeAngle",
+    "markerHeight",
+    "markerUnits",
+    "markerWidth",
+    "maskContentUnits",
+    "maskUnits",
+    "numOctaves",
+    "pathLength",
+    "patternContentUnits",
+    "patternTransform",
+    "patternUnits",
+    "pointsAtX",
+    "pointsAtY",
+    "pointsAtZ",
+    "preserveAlpha",
+    "preserveAspectRatio",
+    "primitiveUnits",
+    "referrerPolicy",
+    "refX",
+    "refY",
+    "repeatCount",
+    "repeatDur",
+    "requiredExtensions",
+    "requiredFeatures",
+    "specularConstant",
+    "specularExponent",
+    "spreadMethod",
+    "startOffset",
+    "stdDeviation",
+    "stitchTiles",
+    "surfaceScale",
+    "systemLanguage",
+    "tableValues",
+    "targetX",
+    "targetY",
+    "textLength",
+    "viewBox",
+    "viewTarget",
+    "xChannelSelector",
+    "yChannelSelector",
+    "zoomAndPan",
+];
 
 /// Attribute hyphenation style
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -65,32 +129,62 @@ impl Default for AttributeHyphenation {
 }
 
 impl AttributeHyphenation {
-    fn is_custom_component(tag: &str) -> bool {
+    fn is_custom_component(element: &ElementNode<'_>) -> bool {
+        let tag = element.tag;
         // Custom components are either:
         // 1. PascalCase (starts with uppercase)
         // 2. Contains hyphen (kebab-case component)
-        // 3. Not a known HTML element
+        // 3. Not a known native HTML/SVG/MathML element
+        // 4. A native element with an `is` customization
         if tag.chars().next().is_some_and(|c| c.is_uppercase()) {
             return true;
         }
         if tag.contains('-') {
             return true;
         }
-        false
+        if !is_native_tag(tag) {
+            return true;
+        }
+        element.props.iter().any(Self::is_customized_builtin)
     }
 
     fn should_ignore(&self, name: &str) -> bool {
-        for pattern in &self.ignore {
-            if pattern.ends_with('-') {
-                // Prefix pattern
-                if name.starts_with(pattern.as_str()) {
-                    return true;
-                }
-            } else if name == pattern {
-                return true;
-            }
+        if SVG_ATTRIBUTES_WEIRD_CASE
+            .iter()
+            .any(|attr| name.contains(attr))
+        {
+            return true;
         }
-        false
+
+        self.ignore
+            .iter()
+            .any(|pattern| name.contains(pattern.as_str()))
+    }
+
+    fn static_directive_arg<'a>(dir: &DirectiveNode<'a>) -> Option<&'a str> {
+        if !matches!(dir.name, "bind" | "model") {
+            return None;
+        }
+
+        match dir.arg.as_ref()? {
+            ExpressionNode::Simple(s) if s.is_static => Some(s.content),
+            _ => None,
+        }
+    }
+
+    fn requires_hyphenation(name: &str) -> bool {
+        name.chars().any(char::is_uppercase)
+    }
+
+    fn is_customized_builtin(prop: &PropNode<'_>) -> bool {
+        match prop {
+            PropNode::Attribute(attr) => attr.name == "is",
+            PropNode::Directive(dir) if dir.name == "is" => true,
+            PropNode::Directive(dir) if dir.name == "bind" => {
+                Self::static_directive_arg(dir) == Some("is")
+            }
+            PropNode::Directive(_) => false,
+        }
     }
 }
 
@@ -100,10 +194,8 @@ impl Rule for AttributeHyphenation {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        let tag = element.tag;
-
         // Only check custom components
-        if !Self::is_custom_component(tag) {
+        if !Self::is_custom_component(element) {
             return;
         }
 
@@ -111,21 +203,10 @@ impl Rule for AttributeHyphenation {
             let (name, loc) = match prop {
                 PropNode::Attribute(attr) => (attr.name, &attr.loc),
                 PropNode::Directive(dir) => {
-                    // Check v-bind argument (:my-prop)
-                    if dir.name == "bind" {
-                        if let Some(arg) = &dir.arg {
-                            match arg {
-                                vize_relief::ExpressionNode::Simple(s) if s.is_static => {
-                                    (s.content, &dir.loc)
-                                }
-                                _ => continue,
-                            }
-                        } else {
-                            continue;
-                        }
-                    } else {
+                    let Some(arg) = Self::static_directive_arg(dir) else {
                         continue;
-                    }
+                    };
+                    (arg, &dir.loc)
                 }
             };
 
@@ -134,18 +215,14 @@ impl Rule for AttributeHyphenation {
                 continue;
             }
 
-            // Skip v-* directives, @ events, # slots
-            if name.starts_with("v-")
-                || name.starts_with('@')
-                || name.starts_with('#')
-                || name.starts_with("on")
-            {
+            // Skip directive shorthand attributes when they were parsed as plain attributes.
+            if name.starts_with("v-") || name.starts_with('@') || name.starts_with('#') {
                 continue;
             }
 
             match self.style {
                 HyphenationStyle::Always => {
-                    if is_camel_case(name) {
+                    if Self::requires_hyphenation(name) {
                         ctx.warn_with_help(
                             ctx.t("vue/attribute-hyphenation.message"),
                             loc,
@@ -174,39 +251,92 @@ mod tests {
         Linter::with_registry(registry)
     }
 
+    fn warning_count(template: &str) -> usize {
+        create_linter()
+            .lint_template(template, "test.vue")
+            .warning_count
+    }
+
     #[test]
     fn test_valid_hyphenated() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<MyComponent my-prop="value" />"#, "test.vue");
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(warning_count(r#"<MyComponent my-prop="value" />"#), 0);
     }
 
     #[test]
     fn test_invalid_camel_case() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<MyComponent myProp="value" />"#, "test.vue");
-        assert_eq!(result.warning_count, 1);
+        assert_eq!(warning_count(r#"<MyComponent myProp="value" />"#), 1);
+    }
+
+    #[test]
+    fn test_invalid_uppercase_initial_and_lowercase_custom_component() {
+        assert_eq!(
+            warning_count(r#"<div><MyComponent DOMId="value" /><draggable itemKey="id" /></div>"#,),
+            2,
+        );
+    }
+
+    #[test]
+    fn test_invalid_bound_camel_case_argument() {
+        assert_eq!(warning_count(r#"<MyComponent :activeKey="value" />"#), 1);
+    }
+
+    #[test]
+    fn test_invalid_model_camel_case_argument() {
+        assert_eq!(
+            warning_count(r#"<MyComponent v-model:activeKey.trim="value" />"#,),
+            1,
+        );
+    }
+
+    #[test]
+    fn test_invalid_on_prefixed_prop() {
+        assert_eq!(warning_count(r#"<MyComponent :onUndo="undo" />"#), 1);
+    }
+
+    #[test]
+    fn test_valid_event_argument() {
+        assert_eq!(warning_count(r#"<MyComponent @onUndo="undo" />"#), 0);
     }
 
     #[test]
     fn test_valid_dynamic_argument() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<MyComponent :[myProp]="value" />"#, "test.vue");
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(warning_count(r#"<MyComponent :[myProp]="value" />"#), 0);
+    }
+
+    #[test]
+    fn test_valid_dynamic_model_argument() {
+        assert_eq!(
+            warning_count(r#"<MyComponent v-model:[activeKey]="value" />"#),
+            0
+        );
+    }
+
+    #[test]
+    fn test_valid_svg_weird_case_attributes() {
+        assert_eq!(
+            warning_count(
+                r#"<MyIcon viewBox="0 0 16 16" :preserveAspectRatio="ratio" customCamel="x" />"#,
+            ),
+            1,
+        );
+    }
+
+    #[test]
+    fn test_invalid_customized_builtin() {
+        assert_eq!(
+            warning_count(r#"<div is="vue:MyRow" :rowData="row" /><div :is="MyRow" rowData />"#),
+            2,
+        );
     }
 
     #[test]
     fn test_valid_html_element() {
-        let linter = create_linter();
         // HTML elements don't require hyphenation
-        let result = linter.lint_template(r#"<div onClick="handler"></div>"#, "test.vue");
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(warning_count(r#"<div onClick="handler"></div>"#), 0);
     }
 
     #[test]
     fn test_valid_data_attribute() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<MyComponent data-testId="123" />"#, "test.vue");
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(warning_count(r#"<MyComponent data-testId="123" />"#), 0);
     }
 }

@@ -313,7 +313,6 @@ Items consumers import from `vize_croquis` that are outside the product set abov
 | `is_builtin_component`                       | `vize_atelier_sfc`   |     1 |     1 |
 | `is_builtin_component`                       | `vize_patina`        |     3 |     7 |
 | `is_builtin_macro`                           | `vize_atelier_sfc`   |     2 |     2 |
-| `is_camel_case`                              | `vize_patina`        |     1 |     1 |
 | `is_event_local`                             | `vize_canon`         |     1 |     1 |
 | `is_global_allowed`                          | `vize_atelier_core`  |     5 |    14 |
 | `is_global_allowed`                          | `vize_atelier_sfc`   |     1 |     1 |
