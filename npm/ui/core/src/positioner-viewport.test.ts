@@ -24,7 +24,7 @@ function withSafeAreaProbe<Result>(insets: SafeAreaInsets, run: () => Result): R
   assert.ok(view);
   const original = view.getComputedStyle.bind(view);
   view.getComputedStyle = ((element: Element) => {
-    if (element.getAttribute("data-vize-ui") === "safe-area-probe") {
+    if (element.getAttribute("data-vize-ui") === "safe-area") {
       return {
         paddingBottom: `${String(insets.bottom)}px`,
         paddingLeft: `${String(insets.left)}px`,
@@ -92,7 +92,7 @@ test("reads safe-area insets through the env probe and leaves no residue", () =>
   const insets = { bottom: 24, left: 2, right: 4, top: 44 };
   const measured = withSafeAreaProbe(insets, () => readSafeAreaInsets());
   assert.deepEqual(measured, insets);
-  assert.equal(document.querySelector('[data-vize-ui="safe-area-probe"]'), null);
+  assert.equal(document.querySelector('[data-vize-ui="safe-area"]'), null);
 });
 
 test("tracks the visual viewport for pinch-zoom and keyboard insets", () => {

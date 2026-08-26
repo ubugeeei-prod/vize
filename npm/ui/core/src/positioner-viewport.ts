@@ -34,15 +34,11 @@ export function visualViewportRect(): Rect {
 
 /** The document that owns a measured element, if any. */
 export function ownerDocumentOf(element: object | null): Document | null {
-  if (element && "ownerDocument" in element) {
-    const ownerDocument = (element as { readonly ownerDocument?: Document | null }).ownerDocument;
-    if (ownerDocument) return ownerDocument;
-  }
-  return globalThis.document ?? null;
-}
-
-function clampLeadingInset(inset: number, dimension: number): number {
-  return Math.min(Math.max(0, inset), Math.max(0, dimension));
+  return (
+    (element as { readonly ownerDocument?: Document | null } | null)?.ownerDocument ??
+    globalThis.document ??
+    null
+  );
 }
 
 /** Shrink a viewport box by per-edge insets, never below an empty box. */
@@ -50,14 +46,13 @@ export function insetViewport(viewport: Rect, insets: SafeAreaInsets): Rect {
   return {
     height: Math.max(0, viewport.height - insets.top - insets.bottom),
     width: Math.max(0, viewport.width - insets.left - insets.right),
-    x: viewport.x + clampLeadingInset(insets.left, viewport.width),
-    y: viewport.y + clampLeadingInset(insets.top, viewport.height),
+    x: viewport.x + Math.min(Math.max(0, insets.left), viewport.width),
+    y: viewport.y + Math.min(Math.max(0, insets.top), viewport.height),
   };
 }
 
 function readPixels(value: string): number {
-  const parsed = Number.parseFloat(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  return Math.max(0, Number.parseFloat(value) || 0);
 }
 
 /**
@@ -73,7 +68,7 @@ export function readSafeAreaInsets(targetDocument?: Document | null): SafeAreaIn
   if (!doc?.body || typeof view?.getComputedStyle !== "function") return zeroSafeAreaInsets;
 
   const probe = doc.createElement("div");
-  probe.setAttribute("data-vize-ui", "safe-area-probe");
+  probe.setAttribute("data-vize-ui", "safe-area");
   probe.setAttribute("aria-hidden", "true");
   probe.style.cssText =
     "position:fixed;top:0;left:0;visibility:hidden;pointer-events:none;" +
