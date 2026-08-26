@@ -1,6 +1,50 @@
 /** Headless component fixtures compiled by every supported renderer lane. */
 export const rendererFixtures = [
   {
+    filename: "NestedPortalConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { usePortalStack } from "./portal.ts";
+
+const target = ref("body");
+const stack = usePortalStack();
+</script>
+
+<template>
+  <Teleport :to="target" defer>
+    <div data-portalled="outer">
+      Outer layer
+      <Teleport :to="target" defer>
+        <div data-portalled="inner" :data-layers="stack.value.length">Inner layer</div>
+      </Teleport>
+    </div>
+  </Teleport>
+</template>
+`,
+  },
+  {
+    filename: "NestedPresenceConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import Presence from "./presence.vue";
+
+const outerOpen = ref(true);
+const innerOpen = ref(true);
+</script>
+
+<template>
+  <Presence :present="outerOpen">
+    <div>
+      Outer layer
+      <Presence :present="innerOpen">
+        <div>Inner layer</div>
+      </Presence>
+    </div>
+  </Presence>
+</template>
+`,
+  },
+  {
     filename: "DragAndDropConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";
