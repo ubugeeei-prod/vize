@@ -25,9 +25,9 @@
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::Program;
-use vize_carton::CompactString;
 use vize_croquis::OptionMember;
 use vize_croquis::script_parser::collect_options_descriptor;
+use vize_s0::CompactString;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-reserved-keys",

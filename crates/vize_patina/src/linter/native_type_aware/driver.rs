@@ -15,11 +15,11 @@ use super::{
 };
 use crate::diagnostic::LintDiagnostic;
 use vize_armature::Parser as TemplateParser;
-use vize_carton::{FxHashSet, profile};
 use vize_croquis::{
     Croquis, script_parser,
     virtual_ts::{VirtualTsConfig, generate_virtual_ts_with_croquis},
 };
+use vize_s0::{FxHashSet, profile};
 pub(super) fn lint_with_descriptor<'a>(
     linter: &Linter,
     source: &str,
@@ -27,7 +27,7 @@ pub(super) fn lint_with_descriptor<'a>(
     descriptor: &vize_atelier_sfc::SfcDescriptor<'a>,
 ) -> LintResult {
     let allocator =
-        vize_carton::Allocator::with_capacity((source.len() * 4).max(linter.initial_capacity));
+        vize_s0::Allocator::with_capacity((source.len() * 4).max(linter.initial_capacity));
     let template_ast = descriptor.template.as_ref().map(|template| {
         let parser = TemplateParser::new(&allocator, &template.content);
         let (root, parse_errors) = profile!("patina.type_aware.template_parse", parser.parse());

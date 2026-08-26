@@ -24,8 +24,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_carton::{is_html_tag, is_native_tag};
 use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode};
+use vize_s0::{is_html_tag, is_native_tag};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-v-text-v-html-on-component",

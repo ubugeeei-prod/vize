@@ -25,8 +25,8 @@ use crate::context::LintContext;
 use crate::diagnostic::{Fix, Severity, TextEdit};
 use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_carton::String;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
+use vize_s0::String;
 
 static META: RuleMeta = RuleMeta {
     name: "vapor/prefer-static-class",

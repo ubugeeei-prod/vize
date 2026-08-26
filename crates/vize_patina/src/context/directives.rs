@@ -1,6 +1,6 @@
 //! Directive disable ranges and suppression pragma handling.
 
-use vize_carton::{CompactString, String, directive::DirectiveSeverity};
+use vize_s0::{CompactString, String, directive::DirectiveSeverity};
 
 use super::{
     DisabledRange, LintContext,

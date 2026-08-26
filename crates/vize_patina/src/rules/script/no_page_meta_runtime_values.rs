@@ -20,7 +20,7 @@ use oxc_ast_visit::{
 };
 use oxc_span::Span;
 use oxc_syntax::scope::ScopeFlags;
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "nuxt/no-page-meta-runtime-values",
@@ -137,7 +137,7 @@ impl PageMetaVisitor<'_> {
         );
     }
 
-    fn report(&mut self, span: Span, message: impl Into<vize_carton::String>) {
+    fn report(&mut self, span: Span, message: impl Into<vize_s0::String>) {
         self.result.add_diagnostic(LintDiagnostic::error(
             META.name,
             message,

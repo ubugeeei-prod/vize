@@ -43,7 +43,7 @@ use oxc_ast_visit::{
 use oxc_span::Span;
 use oxc_syntax::operator::UnaryOperator;
 use oxc_syntax::scope::ScopeFlags;
-use vize_carton::{CompactString, FxHashMap};
+use vize_s0::{CompactString, FxHashMap};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-ref-as-operand",

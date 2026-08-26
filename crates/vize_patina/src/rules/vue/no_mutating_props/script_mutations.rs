@@ -19,7 +19,7 @@ use oxc_parser::Parser;
 use oxc_semantic::{Scoping, SemanticBuilder};
 use oxc_span::{GetSpan, Span};
 use oxc_syntax::symbol::SymbolId;
-use vize_carton::{FxHashSet, String};
+use vize_s0::{FxHashSet, String};
 
 pub(super) struct ScriptPropMutation {
     pub(super) target: String,

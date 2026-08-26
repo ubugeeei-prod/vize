@@ -56,13 +56,13 @@ use oxc_ast_visit::{
 };
 use oxc_span::Span;
 use std::marker::PhantomData;
-use vize_carton::String;
-use vize_carton::profile;
 use vize_croquis::Croquis;
 use vize_relief::{
     AttributeNode, DirectiveNode, ElementNode, ElementType, ExpressionNode, ForNode, IfNode,
     PropNode, RootNode, SourceLocation, TemplateChildNode, TextNode,
 };
+use vize_s0::String;
+use vize_s0::profile;
 
 /// High-level classification for a markup element.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

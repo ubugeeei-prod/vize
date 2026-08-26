@@ -28,7 +28,7 @@ pub use unique_variant_names::UniqueVariantNames;
 pub use valid_variant::ValidVariant;
 
 use memchr::memmem;
-use vize_carton::FxHashSet;
+use vize_s0::FxHashSet;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 

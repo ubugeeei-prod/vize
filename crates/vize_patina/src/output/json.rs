@@ -4,7 +4,7 @@ use crate::diagnostic::{HelpRenderTarget, render_help};
 use crate::linter::LintResult;
 use crate::output::shared::{diagnostic_location, rule_docs_path, source_indices};
 use serde::Serialize;
-use vize_carton::String;
+use vize_s0::String;
 
 /// JSON output structure for a single file
 #[derive(Debug, Serialize)]

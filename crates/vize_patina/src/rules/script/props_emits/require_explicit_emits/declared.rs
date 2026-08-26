@@ -11,7 +11,7 @@ use oxc_ast::ast::{
     TSCallSignatureDeclaration, TSLiteral, TSSignature, TSType,
 };
 
-use vize_carton::{CompactString, FxHashSet};
+use vize_s0::{CompactString, FxHashSet};
 
 use super::super::emits_source::{EmitsDeclaration, resolve_emits_declaration};
 

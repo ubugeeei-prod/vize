@@ -13,7 +13,7 @@ Support and deprecation guarantees are defined in the
 - Vue-focused lint rules covering correctness, style, accessibility, security, Vapor, Musea, and type-aware checks
 - Built-in presets: `happy-path`, `opinionated`, `essential`, `incremental`, `ecosystem`, `nuxt`
 - Human-readable and machine-readable reporting helpers
-- Locale support through `vize_carton::i18n::Locale`
+- Locale support through `vize_s0::i18n::Locale`
 
 ## Key Entry Points
 

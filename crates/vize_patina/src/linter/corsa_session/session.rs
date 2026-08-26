@@ -13,7 +13,7 @@ use corsa::{
     },
     runtime::block_on,
 };
-use vize_carton::{String, ToCompactString, profile};
+use vize_s0::{String, ToCompactString, profile};
 
 impl CorsaTypeAwareSession {
     pub(in crate::linter) fn new_with_corsa_path(

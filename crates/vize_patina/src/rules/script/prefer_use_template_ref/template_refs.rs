@@ -16,7 +16,7 @@
 //! Only *static* `ref` attributes are collected. `:ref` / `v-bind:ref` bind an
 //! expression rather than a name, and upstream skips them for the same reason.
 
-use vize_carton::{CompactString, FxHashSet};
+use vize_s0::{CompactString, FxHashSet};
 
 /// Collect the value of every static `ref="name"` attribute in `template`.
 pub(super) fn collect_template_ref_names(template: &str) -> FxHashSet<CompactString> {

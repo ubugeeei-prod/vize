@@ -36,9 +36,9 @@ use crate::rules::script::script_source_type;
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_ast::ast::StringLiteral;
 use oxc_parser::Parser;
-use vize_carton::String;
-use vize_carton::is_html_tag;
 use vize_croquis::builtins::is_builtin_component;
+use vize_s0::String;
+use vize_s0::is_html_tag;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-reserved-component-names",

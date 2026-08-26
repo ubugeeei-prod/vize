@@ -35,7 +35,7 @@ use oxc_ast_visit::{
     walk::{walk_call_expression, walk_import_declaration},
 };
 use oxc_span::{GetSpan, Span};
-use vize_carton::{CompactString, FxHashSet};
+use vize_s0::{CompactString, FxHashSet};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-next-tick",

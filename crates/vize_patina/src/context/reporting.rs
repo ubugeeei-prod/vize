@@ -2,7 +2,7 @@
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 use vize_atelier_sfc::SfcDescriptor;
-use vize_carton::directive::DirectiveSeverity;
+use vize_s0::directive::DirectiveSeverity;
 
 use super::{LintContext, SfcDirectiveState};
 

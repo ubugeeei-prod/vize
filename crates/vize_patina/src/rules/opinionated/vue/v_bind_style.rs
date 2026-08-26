@@ -24,9 +24,9 @@
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_carton::String;
-use vize_carton::ToCompactString;
 use vize_relief::{DirectiveNode, ElementNode};
+use vize_s0::String;
+use vize_s0::ToCompactString;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/v-bind-style",

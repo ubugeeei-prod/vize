@@ -51,7 +51,7 @@ use oxc_ast::ast::{Argument, CallExpression, Expression, Program};
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_span::Span;
 
-use vize_carton::{CompactString, FxHashSet};
+use vize_s0::{CompactString, FxHashSet};
 
 use self::declared::{Declared, resolve_declared_emits};
 use super::super::template_scan::{DOLLAR_EMIT, for_each_template_call};

@@ -31,12 +31,12 @@ use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::a11y::helpers::get_static_or_bound_literal_attribute_value;
-use vize_carton::FxHashMap;
-use vize_carton::String;
-use vize_carton::ToCompactString;
 use vize_relief::{
     ElementNode, ElementType, ExpressionNode, PropNode, RootNode, TemplateChildNode,
 };
+use vize_s0::FxHashMap;
+use vize_s0::String;
+use vize_s0::ToCompactString;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/landmark-roles",

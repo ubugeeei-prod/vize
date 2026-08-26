@@ -100,7 +100,7 @@ mod tests {
     use super::PreferPropsShorthand;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
-    use vize_carton::config::VueVersion;
+    use vize_s0::config::VueVersion;
 
     fn create_linter() -> Linter {
         let mut registry = RuleRegistry::new();
@@ -153,8 +153,8 @@ mod tests {
 
     #[test]
     fn test_camelize() {
-        // Test via vize_carton::camelize (used internally by names_match)
-        use vize_carton::camelize;
+        // Test via vize_s0::camelize (used internally by names_match)
+        use vize_s0::camelize;
         assert_eq!(camelize("user-name").as_str(), "userName");
         assert_eq!(camelize("foo-bar-baz").as_str(), "fooBarBaz");
         assert_eq!(camelize("simple").as_str(), "simple");

@@ -44,7 +44,7 @@ use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_carton::profile;
+use vize_s0::profile;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/require-scoped-style",

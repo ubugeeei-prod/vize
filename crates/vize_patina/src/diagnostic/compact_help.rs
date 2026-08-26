@@ -1,6 +1,6 @@
 //! Compact remediation text for terminal and CI output.
 
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 /// Return one actionable help sentence without markdown or inline examples.
 pub(super) fn compact_help_text(text: &str) -> String {

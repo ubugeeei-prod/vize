@@ -59,7 +59,7 @@
 use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind, Program, PropertyKey};
 use oxc_span::GetSpan;
 
-use vize_carton::CompactString;
+use vize_s0::CompactString;
 
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use super::props_source::{PropDescriptor, collect_runtime_props};

@@ -478,7 +478,7 @@ mod tests {
     use crate::Linter;
     use crate::context::{LintContext, SsrMode};
     use crate::rule::{Rule, RuleRegistry};
-    use vize_carton::CompactString;
+    use vize_s0::CompactString;
 
     fn lint_with_ssr(source: &str) -> Vec<CompactString> {
         let mut registry = RuleRegistry::new();
@@ -486,7 +486,7 @@ mod tests {
         let _linter = Linter::with_registry(registry);
 
         // Create allocator and context
-        use vize_carton::Allocator;
+        use vize_s0::Allocator;
         let allocator = Allocator::with_capacity(1024);
         let mut ctx = LintContext::with_locale(
             &allocator,

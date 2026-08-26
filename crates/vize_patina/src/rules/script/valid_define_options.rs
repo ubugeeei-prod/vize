@@ -36,7 +36,7 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_span::{GetSpan, Span};
-use vize_carton::CompactString;
+use vize_s0::CompactString;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/valid-define-options",

@@ -10,10 +10,10 @@
 
 use criterion::{Criterion, criterion_group};
 use davinci_harness::stage::bench_stage_with_metrics;
-use vize_carton::{Allocator, cstr};
 use vize_patina::ir::TemplateSyntax;
 use vize_patina::markup::{MarkupContext, MarkupDocument};
 use vize_patina::{JsxLang, LintContext, RuleRegistry};
+use vize_s0::{Allocator, cstr};
 
 /// One-root, diagnostic-free JSX module: a single outermost element with a
 /// nested child mix (static attribute, event, text) so the walk exercises

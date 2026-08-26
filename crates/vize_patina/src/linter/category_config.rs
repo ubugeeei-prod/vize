@@ -5,7 +5,7 @@ use super::{
     config::Linter,
 };
 use crate::Severity;
-use vize_carton::String;
+use vize_s0::String;
 
 impl Linter {
     /// Disable every registered rule that belongs to one of the configured categories.

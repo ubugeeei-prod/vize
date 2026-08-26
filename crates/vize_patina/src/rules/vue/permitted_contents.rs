@@ -30,8 +30,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_carton::is_html_tag;
 use vize_relief::{ElementNode, ElementType};
+use vize_s0::is_html_tag;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/permitted-contents",

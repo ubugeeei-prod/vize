@@ -6,7 +6,7 @@ use oxc_ast_visit::{
     walk::{walk_call_expression, walk_ts_type},
 };
 use oxc_span::Span;
-use vize_carton::{CompactString, FxHashSet};
+use vize_s0::{CompactString, FxHashSet};
 
 /// The slot contract the script states.
 pub(super) enum DeclaredSlots {

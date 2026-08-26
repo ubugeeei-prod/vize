@@ -43,7 +43,7 @@ use oxc_ast::ast::{
     ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
 use oxc_span::Span;
-use vize_carton::FxHashMap;
+use vize_s0::FxHashMap;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-deprecated-data-object-declaration",

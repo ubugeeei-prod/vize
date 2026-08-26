@@ -18,7 +18,7 @@
 //! which dispatches the same declared events. Dynamic event names
 //! (`emit(name)`) record nothing, matching the script-side treatment.
 
-use vize_carton::{CompactString, FxHashSet};
+use vize_s0::{CompactString, FxHashSet};
 
 /// Record into `used` every event name emitted from `template` through a call
 /// of `binding` (the captured `defineEmits` function, template-visible as a

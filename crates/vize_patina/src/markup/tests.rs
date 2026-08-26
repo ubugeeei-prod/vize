@@ -15,7 +15,7 @@ mod markup_ir_tests {
     use crate::rules::vapor::{NoVueLifecycleEvents, PreferStaticClass};
     use crate::rules::vue::RequireVForKey;
     use vize_atelier_jsx::JsxLang;
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     /// Run a markup rule over a Vue template and return the diagnostic count.
     fn run_over_template<R: MarkupRule>(rule: &R, source: &str) -> usize {

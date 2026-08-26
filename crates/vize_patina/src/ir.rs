@@ -5,7 +5,7 @@
 
 use oxc_span::SourceType;
 use vize_atelier_sfc::SfcDescriptor;
-use vize_carton::CompactString;
+use vize_s0::CompactString;
 
 /// Container kind that produced the lint document.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

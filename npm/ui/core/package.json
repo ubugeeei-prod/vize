@@ -134,6 +134,11 @@
       "import": "./dist/long-press.mjs",
       "default": "./dist/long-press.mjs"
     },
+    "./measure": {
+      "types": "./dist/measure.d.mts",
+      "import": "./dist/measure.mjs",
+      "default": "./dist/measure.mjs"
+    },
     "./move": {
       "types": "./dist/move.d.mts",
       "import": "./dist/move.mjs",
@@ -188,6 +193,11 @@
       "types": "./dist/typeahead.d.mts",
       "import": "./dist/typeahead.mjs",
       "default": "./dist/typeahead.mjs"
+    },
+    "./virtualizer": {
+      "types": "./dist/virtualizer.d.mts",
+      "import": "./dist/virtualizer.mjs",
+      "default": "./dist/virtualizer.mjs"
     },
     "./primitive": {
       "types": "./dist/primitive.d.mts",

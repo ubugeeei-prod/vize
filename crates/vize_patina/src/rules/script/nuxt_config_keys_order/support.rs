@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 
 use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind, PropertyKey};
 use oxc_span::{GetSpan, Span};
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 // Exact @nuxt/eslint-plugin 1.16.0 order. The differential corpus reverses
 // every entry, making this complete list an executable upstream pin.
