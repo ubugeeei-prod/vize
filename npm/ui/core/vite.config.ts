@@ -54,6 +54,7 @@ export default defineConfig({
       locale: "src/locale.ts",
       "long-press": "src/long-press.ts",
       measure: "src/measure.ts",
+      motion: "src/motion.ts",
       move: "src/move.ts",
       "pointer-grace": "src/pointer-grace.ts",
       portal: "src/portal.ts",

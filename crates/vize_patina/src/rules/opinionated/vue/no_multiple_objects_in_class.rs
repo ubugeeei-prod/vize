@@ -24,6 +24,10 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{ArrayExpressionElement, Expression};
+use oxc_parser::Parser;
+use oxc_span::{GetSpan, SourceType};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
 
 static META: RuleMeta = RuleMeta {
@@ -74,41 +78,72 @@ impl Rule for NoMultipleObjectsInClass {
     }
 }
 
-/// Count the object literals (`{ ... }` groups) that sit directly at the top
-/// level of an array-literal expression string.
-///
-/// Returns `0` when the expression is not an array literal (does not start with
-/// `[` and end with `]`). Nested braces/brackets are skipped so only the
-/// array's own elements are counted; this is a pragmatic scan rather than a
-/// full parse, which is sufficient for the heuristic.
+/// Count object literals that sit directly in a `:class` array binding.
 fn count_top_level_objects_in_array(raw: &str) -> usize {
-    let s = raw.trim();
-    let bytes = s.as_bytes();
-    if bytes.len() < 2 || bytes[0] != b'[' || bytes[bytes.len() - 1] != b']' {
+    let source = raw.trim();
+    if !source.starts_with('[') || !source.ends_with(']') {
         return 0;
     }
 
-    let mut count = 0usize;
-    // Depth relative to the array body: `[` opens at depth 1, the array's own
-    // elements live at depth 1, anything deeper is nested.
-    let mut depth = 0i32;
-    for &b in bytes {
-        match b {
-            b'[' => depth += 1,
-            b']' => depth -= 1,
-            // A `{` that opens while we are directly inside the array body
-            // (depth 1) starts a top-level object literal.
-            b'{' => {
-                if depth == 1 {
-                    count += 1;
-                }
-                depth += 1;
+    let allocator = Allocator::default();
+    let source_type = SourceType::default().with_typescript(true);
+    let Ok(parsed) = Parser::new(&allocator, source, source_type).parse_expression() else {
+        return 0;
+    };
+    let Some(rest) = source.get(parsed.span().end as usize..) else {
+        return 0;
+    };
+    if !rest.trim().is_empty() {
+        return 0;
+    }
+
+    let Expression::ArrayExpression(array) = unwrap_expression(&parsed) else {
+        return 0;
+    };
+
+    array
+        .elements
+        .iter()
+        .filter(|element| array_element_is_object(element))
+        .count()
+}
+
+fn array_element_is_object<'a>(element: &'a ArrayExpressionElement<'a>) -> bool {
+    match element {
+        ArrayExpressionElement::ObjectExpression(_) => true,
+        ArrayExpressionElement::ParenthesizedExpression(paren) => {
+            expression_is_object(&paren.expression)
+        }
+        ArrayExpressionElement::TSAsExpression(ts_as) => expression_is_object(&ts_as.expression),
+        ArrayExpressionElement::TSNonNullExpression(ts_non_null) => {
+            expression_is_object(&ts_non_null.expression)
+        }
+        ArrayExpressionElement::TSSatisfiesExpression(ts_satisfies) => {
+            expression_is_object(&ts_satisfies.expression)
+        }
+        _ => false,
+    }
+}
+
+fn expression_is_object<'a>(expression: &'a Expression<'a>) -> bool {
+    matches!(
+        unwrap_expression(expression),
+        Expression::ObjectExpression(_)
+    )
+}
+
+fn unwrap_expression<'a>(mut expression: &'a Expression<'a>) -> &'a Expression<'a> {
+    loop {
+        match expression {
+            Expression::ParenthesizedExpression(paren) => expression = &paren.expression,
+            Expression::TSAsExpression(ts_as) => expression = &ts_as.expression,
+            Expression::TSNonNullExpression(ts_non_null) => expression = &ts_non_null.expression,
+            Expression::TSSatisfiesExpression(ts_satisfies) => {
+                expression = &ts_satisfies.expression;
             }
-            b'}' => depth -= 1,
-            _ => {}
+            _ => return expression,
         }
     }
-    count
 }
 
 #[cfg(test)]
@@ -155,6 +190,22 @@ mod tests {
             "App.vue",
         );
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn allows_template_literal_and_single_object_in_array() {
+        let linter = create_linter();
+        let result = linter.lint_sfc(
+            r##"<script setup lang="ts">
+defineProps<{ device: string; isVertical: boolean }>();
+</script>
+
+<template>
+  <div :class='[`rendered-${device}`, { "vertical-rendered": isVertical }]' />
+</template>"##,
+            "App.vue",
+        );
+        assert_eq!(result.warning_count, 0, "got: {:?}", result.diagnostics);
     }
 
     #[test]

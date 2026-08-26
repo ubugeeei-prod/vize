@@ -114,8 +114,15 @@ for (const { canonicalName: family, bundleBudget } of treeShakingEntries) {
     }
   }
 
-  if (family === "visually-hidden") {
-    assert.match(rootOutput.css, /clip-path:inset\(50%\)/);
+  // Styled families pull the shared packaged stylesheet (dist has exactly one
+  // style.css); unstyled families must not retain any CSS at all.
+  const styledFamilySignatures = new Map([
+    ["motion", /--vize-ui-motion-duration-fast/],
+    ["visually-hidden", /clip-path:inset\(50%\)/],
+  ]);
+  const styledSignature = styledFamilySignatures.get(family);
+  if (styledSignature) {
+    assert.match(rootOutput.css, styledSignature);
   } else {
     assert.equal(rootOutput.css, "", `${exportName} retained another component's stylesheet`);
   }

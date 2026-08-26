@@ -8,6 +8,7 @@ const {
   present = false,
   forceMount = false,
   respectReducedMotion = true,
+  motion = undefined,
 } = defineProps<{
   /**
    * Whether the content should occupy the tree.
@@ -29,6 +30,14 @@ const {
    * @default true
    */
   readonly respectReducedMotion?: boolean;
+
+  /**
+   * Named enter/exit recipe published on `data-vize-motion`, pairing the host
+   * with the packaged motion stylesheet (`@vizejs/ui/motion`).
+   *
+   * @default undefined
+   */
+  readonly motion?: "fade" | "scale" | "slide";
 }>();
 
 defineSlots<{
@@ -57,6 +66,7 @@ defineExpose({
       v-if="show"
       ref="element"
       data-vize-ui="presence"
+      :data-vize-motion="motion"
       :data-vize-presence="presence.status.value"
       v-bind="presence.presenceProps"
     >

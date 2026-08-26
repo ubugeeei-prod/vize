@@ -159,6 +159,11 @@
       "import": "./dist/measure.mjs",
       "default": "./dist/measure.mjs"
     },
+    "./motion": {
+      "types": "./dist/motion.d.mts",
+      "import": "./dist/motion.mjs",
+      "default": "./dist/motion.mjs"
+    },
     "./move": {
       "types": "./dist/move.d.mts",
       "import": "./dist/move.mjs",
