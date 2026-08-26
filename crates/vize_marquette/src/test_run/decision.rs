@@ -208,7 +208,7 @@ mod tests {
 
     #[test]
     fn the_vocabulary_is_sorted_and_serializes_kebab_case() {
-        let serialized: [vize_carton::String; 20] = TEST_RUN_DENIAL_CODES
+        let serialized: [vize_s0::String; 20] = TEST_RUN_DENIAL_CODES
             .map(|code| serde_json::to_value(code).unwrap().as_str().unwrap().into());
         let mut sorted = serialized.clone();
         sorted.sort();

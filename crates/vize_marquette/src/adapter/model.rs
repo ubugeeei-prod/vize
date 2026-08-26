@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use vize_carton::String;
+use vize_s0::String;
 
 /// Current serialized adapter-capability manifest format.
 pub const ADAPTER_CAPABILITY_FORMAT_VERSION: u32 = 1;

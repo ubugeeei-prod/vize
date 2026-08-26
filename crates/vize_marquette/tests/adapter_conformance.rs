@@ -2,13 +2,13 @@ use std::{fs, path::PathBuf};
 
 use serde::Deserialize;
 use serde_json::Value;
-use vize_carton::{String, ToCompactString};
 use vize_marquette::{
     ADAPTER_CAPABILITY_MANIFEST_JSON_SCHEMA, AdapterCapabilityManifest, ApplicationContract,
     NATIVE_ENGINE_CAPABILITY_IDS, NATIVE_ENGINE_CAPABILITY_VERSION, compare_adapter_capabilities,
     contract_fingerprint, native_engine_capability_definitions, native_engine_capability_profile,
     negotiate_adapter_capabilities, validate_adapter_capability_manifest,
 };
+use vize_s0::{String, ToCompactString};
 
 fn fixture(name: &str) -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))

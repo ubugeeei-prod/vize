@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 use crate::{
     CompatibilityChange, CompatibilityChangeKind,

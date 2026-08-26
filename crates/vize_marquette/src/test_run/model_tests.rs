@@ -2,21 +2,21 @@ use std::collections::BTreeSet;
 
 use super::model::*;
 
-pub(crate) fn filled(fill: char, length: usize) -> vize_carton::String {
-    let mut output = vize_carton::String::with_capacity(length);
+pub(crate) fn filled(fill: char, length: usize) -> vize_s0::String {
+    let mut output = vize_s0::String::with_capacity(length);
     for _ in 0..length {
         output.push(fill);
     }
     output
 }
 
-fn digest(fill: char) -> vize_carton::String {
+fn digest(fill: char) -> vize_s0::String {
     filled(fill, 64)
 }
 
 fn retained(fill: char) -> TestRunRetainedEvidence {
     let fingerprint = digest(fill);
-    let mut reference = vize_carton::String::from("sha256:");
+    let mut reference = vize_s0::String::from("sha256:");
     reference.push_str(&fingerprint);
     TestRunRetainedEvidence::new(reference, fingerprint)
 }

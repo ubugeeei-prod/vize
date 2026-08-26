@@ -10,8 +10,8 @@ use vize_marquette::{
     TestRunVerification, TestRunVerificationOutcome, test_run_fingerprint,
 };
 
-fn digest(fill: char) -> vize_carton::String {
-    let mut output = vize_carton::String::with_capacity(64);
+fn digest(fill: char) -> vize_s0::String {
+    let mut output = vize_s0::String::with_capacity(64);
     for _ in 0..64 {
         output.push(fill);
     }
@@ -20,13 +20,13 @@ fn digest(fill: char) -> vize_carton::String {
 
 fn retained(fill: char) -> TestRunRetainedEvidence {
     let fingerprint = digest(fill);
-    let mut reference = vize_carton::String::from("sha256:");
+    let mut reference = vize_s0::String::from("sha256:");
     reference.push_str(&fingerprint);
     TestRunRetainedEvidence::new(reference, fingerprint)
 }
 
 fn example_evidence() -> TestRunEvidence {
-    let mut revision = vize_carton::String::with_capacity(40);
+    let mut revision = vize_s0::String::with_capacity(40);
     for _ in 0..40 {
         revision.push('a');
     }

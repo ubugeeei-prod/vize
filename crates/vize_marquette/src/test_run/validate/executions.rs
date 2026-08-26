@@ -1,4 +1,4 @@
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 use crate::ContractDiagnostic;
 use crate::validate::rules::contract_path;

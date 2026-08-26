@@ -67,7 +67,7 @@ fn record_times_must_be_ordered() {
 fn mutable_evidence_references_are_rejected() {
     let mut unbound = example_evidence();
     unbound.runner.authentication_evidence.reference = {
-        let mut reference = vize_carton::String::from("sha256:");
+        let mut reference = vize_s0::String::from("sha256:");
         reference.push_str(&filled('0', 64));
         reference
     };

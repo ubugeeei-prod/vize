@@ -32,7 +32,7 @@ fn returns_the_shared_invalid_diagnostic_codes() {
         .into_iter()
         .map(|diagnostic| diagnostic.code)
         .collect::<Vec<_>>();
-    let expected: Vec<vize_carton::String> =
+    let expected: Vec<vize_s0::String> =
         serde_json::from_slice(&fs::read(fixture("invalid.expected.json")).unwrap()).unwrap();
     assert_eq!(actual, expected);
 }
