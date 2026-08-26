@@ -85,10 +85,10 @@ counts or fixture availability changes.
   [evidence index](./phase-2-records.md#current-completion-evidence-2026-08-25);
   review-only evidence is labeled there rather than presented as executable.
 - **Active and blocked: 2 of 22 — P2-9 and P2-11.** P2-9 still needs a
-  hydrated full-corpus residual remeasurement; P2-11 has 27 landed
+  hydrated full-corpus residual remeasurement; P2-11 has 28 landed
   installments through
-  [#4933](https://github.com/ubugeeei-prod/vize/pull/4933), plus installment
-  28 ([#5009](https://github.com/ubugeeei-prod/vize/pull/5009)), but the
+  [#5009](https://github.com/ubugeeei-prod/vize/pull/5009), plus pending
+  installment 29, but the
   published dependency decision,
   full-corpus exact comparison count, remaining
   patch-flag equivalence program and DOM allocation budget remain open. The

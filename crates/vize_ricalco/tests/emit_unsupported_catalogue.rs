@@ -1,5 +1,6 @@
 //! The refusal catalogue is closed: every bucket is either source-covered,
-//! direct-S2-covered, or a defensive guard around an already-filtered helper.
+//! direct-S2-covered, a defensive guard around an already-filtered helper, or a
+//! retired bucket kept stable for already-recorded census output.
 
 #![allow(clippy::disallowed_types)]
 
@@ -49,7 +50,6 @@ const DIRECT: &[Reason] = &[
 const GUARD_ONLY: &[Reason] = &[
     Reason::ArrayChildTextRun,
     Reason::BindRequiresStaticName,
-    Reason::CreateSlotsMissingSlotTemplate,
     Reason::EmptyTextRun,
     Reason::LoneObjectArgument,
     Reason::OnNameNotStatic,
@@ -58,12 +58,15 @@ const GUARD_ONLY: &[Reason] = &[
     Reason::WalkIdOverflow,
 ];
 
+const RETIRED: &[Reason] = &[Reason::CreateSlotsMissingSlotTemplate];
+
 #[test]
 fn reason_catalogue_is_fully_accounted_for() {
     let mut accounted = Vec::new();
     accounted.extend_from_slice(SOURCE);
     accounted.extend_from_slice(DIRECT);
     accounted.extend_from_slice(GUARD_ONLY);
+    accounted.extend_from_slice(RETIRED);
 
     let mut accounted_codes = accounted
         .iter()

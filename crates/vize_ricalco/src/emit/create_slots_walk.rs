@@ -3,7 +3,6 @@
 use vize_s2::op::{BindingOp, ElementOp, ForOp, IfOp, Op, Region, SlotContentOp};
 
 use super::EmitCx;
-use super::slots::is_slot_template;
 
 pub(super) fn slot_content<'a>(element: &'a ElementOp<'a>) -> Option<&'a SlotContentOp<'a>> {
     element.bindings.iter().find_map(|binding| match binding {
@@ -12,11 +11,23 @@ pub(super) fn slot_content<'a>(element: &'a ElementOp<'a>) -> Option<&'a SlotCon
     })
 }
 
+pub(super) fn slot_template_content<'a>(
+    element: &'a ElementOp<'a>,
+) -> Option<&'a SlotContentOp<'a>> {
+    if element.tag == "template" {
+        slot_content(element)
+    } else {
+        None
+    }
+}
+
 pub(super) fn first_slot_template<'a>(
     region: &'a Region<'a>,
-) -> Option<(usize, &'a ElementOp<'a>)> {
+) -> Option<(usize, &'a ElementOp<'a>, &'a SlotContentOp<'a>)> {
     region.ops.iter().enumerate().find_map(|(i, op)| match op {
-        Op::Element(element) if is_slot_template(element) => Some((i, &**element)),
+        Op::Element(element) => {
+            slot_template_content(element).map(|content| (i, &**element, content))
+        }
         _ => None,
     })
 }

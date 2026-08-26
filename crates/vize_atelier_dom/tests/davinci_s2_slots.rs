@@ -24,6 +24,7 @@ const BATTERY: &[(&str, &str)] = &[
         "named_then_default",
         "<Foo><template #header>title</template>hello</Foo>",
     ),
+    ("bare_template_default", "<Foo><template>x</template></Foo>"),
     (
         "default_then_named",
         "<Foo>hello<template #header>title</template></Foo>",

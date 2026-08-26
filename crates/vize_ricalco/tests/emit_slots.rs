@@ -162,6 +162,28 @@ fn static_attrs_on_named_slot_templates_are_elided() {
 }
 
 #[test]
+fn a_bare_template_default_slot_child_is_hoisted() {
+    assert_eq!(
+        assembled("<Foo><template>x</template></Foo>"),
+        pin("\
+const { resolveComponent: _resolveComponent, createElementVNode: _createElementVNode, openBlock: _openBlock, createBlock: _createBlock, withCtx: _withCtx } = Vue
+
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"template\", null, \"x\")
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, null, {
+    default: _withCtx(() => [
+      _hoisted_1
+    ]),
+    _: 1 /* STABLE */
+  }))
+}")
+    );
+}
+
+#[test]
 fn whitespace_only_children_emit_no_slot() {
     assert_eq!(assembled("<Foo>  </Foo>"), assembled("<Foo />"));
 }

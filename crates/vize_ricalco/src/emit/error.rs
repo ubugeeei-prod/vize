@@ -19,6 +19,7 @@ pub enum UnsupportedReason {
     BindNameNotJs,
     BindRequiresStaticName,
     BindValueNotJs,
+    /// Retired after `createSlots` started threading the slot-content proof.
     CreateSlotsMissingSlotTemplate,
     CustomDirectiveExprNotJs,
     DuplicateClassBinding,

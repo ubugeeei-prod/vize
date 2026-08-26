@@ -96,7 +96,7 @@ fn walk_admit(region: &Region<'_>) -> Result<(), EmitError> {
                 walk_admit(&element.children)?;
             }
             Op::Element(element) => {
-                if element.tag == "template" || element.namespace != Namespace::Html {
+                if element.namespace != Namespace::Html {
                     return Err(EmitError::unsupported_at(
                         Reason::SlotDefaultShape,
                         element.span,

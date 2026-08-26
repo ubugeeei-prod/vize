@@ -1,8 +1,8 @@
 # P2-11 Installment 28 — SFC style carriers are DOM-inert (2026-08-26)
 
 > Part of the [P2-11 series record](../p2-11.md), split per installment.
-> PR: [#5009](https://github.com/ubugeeei-prod/vize/pull/5009), awaiting the
-> auto-merge commit.
+> PR: [#5009](https://github.com/ubugeeei-prod/vize/pull/5009), merge
+> `e8a5d457d6bb241257c3d50e17bc14f834de344c`.
 
 This installment makes the P2-10 style-block carrier explicit in the DOM
 emitter: `vue.css-bind` facts stay in the S2 artifact for phase-4 consumers,

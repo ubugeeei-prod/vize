@@ -9,15 +9,12 @@ use vize_s2::op::{DynamicName, ElementOp, ForOp, IfOp, Op, Region, SlotContentOp
 
 use super::EmitCx;
 use super::EmitError;
-use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::create_slots_walk::{
-    first_slot_template, is_slot_for, is_slot_if, skip_ops, slot_content,
+    first_slot_template, is_slot_for, is_slot_if, skip_ops, slot_template_content,
 };
 use super::js::escape_js_string;
-use super::slots::{
-    capture, capture_child, emit_template_pieces, is_slot_template, is_whitespace_text,
-};
+use super::slots::{capture, capture_child, emit_template_pieces, is_whitespace_text};
 use super::vfor;
 
 pub(super) fn needs_create_slots(children: &Region<'_>) -> bool {
@@ -75,20 +72,41 @@ fn collect(
             Op::If(if_op) if is_slot_if(if_op) => {
                 entries.push(capture(cx, |cx| emit_if_entry(cx, if_op))?);
             }
-            Op::For(for_op) if is_slot_for(for_op) => {
-                entries.push(capture(cx, |cx| emit_for_entry(cx, for_op))?);
+            Op::For(for_op) => {
+                if let Some((idx, element, content)) = first_slot_template(&for_op.region) {
+                    entries.push(capture(cx, |cx| {
+                        emit_for_entry(cx, for_op, idx, element, content)
+                    })?);
+                } else {
+                    collect_default(cx, &mut defaults, op)?;
+                }
             }
-            Op::Element(element) if is_slot_template(element) => {
-                entries.push(capture(cx, |cx| emit_slot_object(cx, element, None))?);
+            Op::Element(element) => {
+                if let Some(content) = slot_template_content(element) {
+                    entries.push(capture(cx, |cx| {
+                        emit_slot_object(cx, element, content, None)
+                    })?);
+                } else {
+                    collect_default(cx, &mut defaults, op)?;
+                }
             }
             _ => {
-                cx.buf.indent();
-                defaults.push(capture_child(cx, op)?);
-                cx.buf.deindent();
+                collect_default(cx, &mut defaults, op)?;
             }
         }
     }
     Ok((defaults, entries))
+}
+
+fn collect_default(
+    cx: &mut EmitCx<'_>,
+    defaults: &mut StdVec<String>,
+    op: &Op<'_>,
+) -> Result<(), EmitError> {
+    cx.buf.indent();
+    defaults.push(capture_child(cx, op)?);
+    cx.buf.deindent();
+    Ok(())
 }
 
 fn emit_base(cx: &mut EmitCx<'_>, defaults: &[String], spread: Option<&str>) {
@@ -144,9 +162,9 @@ fn emit_if_entry(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>) -> Result<(), EmitError>
             cx.buf.push("? ");
         }
         match first_slot_template(&branch.region) {
-            Some((idx, element)) => {
+            Some((idx, element, content)) => {
                 skip_ops(cx, &branch.region.ops[..idx]);
-                emit_slot_object(cx, element, Some(i as u32))?;
+                emit_slot_object(cx, element, content, Some(i as u32))?;
                 skip_ops(cx, &branch.region.ops[idx + 1..]);
             }
             None => {
@@ -169,7 +187,13 @@ fn emit_if_entry(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>) -> Result<(), EmitError>
     Ok(())
 }
 
-fn emit_for_entry(cx: &mut EmitCx<'_>, for_op: &ForOp<'_>) -> Result<(), EmitError> {
+fn emit_for_entry(
+    cx: &mut EmitCx<'_>,
+    for_op: &ForOp<'_>,
+    slot_idx: usize,
+    slot_element: &ElementOp<'_>,
+    slot_content: &SlotContentOp<'_>,
+) -> Result<(), EmitError> {
     let source = vfor::js_source(&for_op.binding.source)?;
     let value = vfor::value_alias(&for_op.binding.value)?;
     let key = vfor::optional_ident(&for_op.binding.key)?;
@@ -195,21 +219,9 @@ fn emit_for_entry(cx: &mut EmitCx<'_>, for_op: &ForOp<'_>) -> Result<(), EmitErr
     cx.buf.push("return ");
     let prev = cx.in_v_for;
     cx.in_v_for = true;
-    let body = match first_slot_template(&for_op.region) {
-        Some((idx, element)) => {
-            skip_ops(cx, &for_op.region.ops[..idx]);
-            let result = emit_slot_object(cx, element, None);
-            skip_ops(cx, &for_op.region.ops[idx + 1..]);
-            result
-        }
-        None => {
-            skip_ops(cx, &for_op.region.ops);
-            Err(EmitError::unsupported_at(
-                Reason::CreateSlotsMissingSlotTemplate,
-                for_op.span,
-            ))
-        }
-    };
+    skip_ops(cx, &for_op.region.ops[..slot_idx]);
+    let body = emit_slot_object(cx, slot_element, slot_content, None);
+    skip_ops(cx, &for_op.region.ops[slot_idx + 1..]);
     cx.in_v_for = prev;
     body?;
     cx.buf.deindent();
@@ -221,14 +233,11 @@ fn emit_for_entry(cx: &mut EmitCx<'_>, for_op: &ForOp<'_>) -> Result<(), EmitErr
 fn emit_slot_object(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
+    content: &SlotContentOp<'_>,
     key: Option<u32>,
 ) -> Result<(), EmitError> {
     let _id = cx.walk.mint();
     cx.walk.skip(element.bindings.len());
-    let content = slot_content(element).ok_or(EmitError::unsupported_at(
-        Reason::CreateSlotsMissingSlotTemplate,
-        element.span,
-    ))?;
     cx.buf.push("{");
     cx.buf.indent();
     cx.buf.newline();

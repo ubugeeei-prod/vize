@@ -35,7 +35,6 @@ pub(super) fn hoist_static_element(cx: &mut EmitCx<'_>, element: &ElementOp<'_>)
 
 pub(super) fn is_hoistable(element: &ElementOp<'_>) -> bool {
     element.namespace == Namespace::Html
-        && element.tag != "template"
         && element.bindings.is_empty()
         && element.children.ops.iter().all(is_hoistable_child)
 }
