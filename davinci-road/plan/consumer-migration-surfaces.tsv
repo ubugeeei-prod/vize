@@ -2088,8 +2088,8 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/emit.rs	3	
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/empty_component_props.rs	3	s0	S0/carton	stage	vize_carton	compat	6
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/empty_component_props.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	2
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/event_handler.rs	5	s0	S0/carton	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/event_scope.rs	7	s0	S0/carton	stage	vize_carton	compat	4
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/event_scope.rs	7	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/event_scope.rs	17	s0	S0/carton	stage	vize_carton	compat	4
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/event_scope.rs	17	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/event_scope/event_targets.rs	1	old_ast	old AST/parser	old	vize_relief	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/event_scope/event_targets.rs	1	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/scope/event_scope/event_targets.rs	197	s0	S0/carton	stage	vize_carton	compat	1

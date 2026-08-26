@@ -125,18 +125,18 @@ function __setup() {
   // @vize-map: expr -> 66:71
 
   // @click handler
-  (($event: PointerEvent) => {
+  void (($event: PointerEvent) => {
     const __vize_handler_9_24 = ((__vize_cb: ((_e: PointerEvent) => unknown) | null | undefined) => __vize_cb)((handleClick));
     if (__vize_handler_9_24) __vize_handler_9_24($event);  // handler expression
     // @vize-map: handler -> 24:35
-  })({} as PointerEvent);
+  });
 
   // @mouseenter handler
-  (($event: MouseEvent) => {
+  void (($event: MouseEvent) => {
     const __vize_handler_10_50 = ((__vize_cb: ((_e: MouseEvent) => unknown) | null | undefined) => __vize_cb)((handleHover));
     if (__vize_handler_10_50) __vize_handler_10_50($event);  // handler expression
     // @vize-map: handler -> 50:61
-  })({} as MouseEvent);
+  });
 
   // Reference setup bindings (used in template/CSS v-bind)
   void count; void handleClick; void handleHover; void ref;

@@ -3,6 +3,16 @@
 //! A component `@event` gets the child's full emit-argument tuple as the
 //! closure's rest parameter, so multi-argument emits keep every parameter
 //! (#1512); a native DOM event gets the single `$event` its type implies.
+//!
+//! Every wrapper is referenced with `void`, never invoked: TypeScript inlines
+//! an immediately-invoked function expression's body into the enclosing
+//! control-flow graph, so an inline handler assignment (`@click="x = 'a'"`)
+//! would narrow `x` for every sibling binding checked after it — the false
+//! TS2367 of #4962. A handler is a runtime callback; a plain function
+//! expression keeps its body fully checked while its assignments stay out of
+//! the render scope's flow, matching `vue-tsc`. Narrowing INTO a handler does
+//! not rely on IIFE inlining either: each handler expression re-checks its own
+//! `v-if` guard inside the closure (see `event_handler.rs`).
 
 use vize_carton::{String, append, profile};
 use vize_croquis::{EventHandlerScopeData, Scope};
@@ -33,7 +43,7 @@ pub(super) fn generate_event_handler_scope(
     append!(*ts, "\n{indent}// @{} handler\n", data.event_name);
 
     if !ctx.check_options.check_emits {
-        append!(*ts, "{indent}(($event: any) => {{\n");
+        append!(*ts, "{indent}void (($event: any) => {{\n");
         profile!(
             "canon.virtual_ts.event_handler_expressions",
             generate_event_handler_expressions(
@@ -54,7 +64,7 @@ pub(super) fn generate_event_handler_scope(
                 },
             )
         );
-        append!(*ts, "{indent}}})({{}} as any);\n");
+        append!(*ts, "{indent}}});\n");
         return;
     }
 
@@ -95,7 +105,7 @@ pub(super) fn generate_event_handler_scope(
         // `Parameters<listener>` to avoid TS2556; `$event` is element 0.
         append!(
             *ts,
-            "{indent}((...__vize_args: Parameters<{listener_type}>) => {{\n",
+            "{indent}void ((...__vize_args: Parameters<{listener_type}>) => {{\n",
         );
         append!(
             *ts,
@@ -128,10 +138,7 @@ pub(super) fn generate_event_handler_scope(
             )
         );
 
-        append!(
-            *ts,
-            "{indent}}})(...({{}} as Parameters<{listener_type}>));\n",
-        );
+        append!(*ts, "{indent}}});\n");
     } else if let Some((event_type, listener_args)) = transition_hook_signature(
         ctx.template_source,
         ctx.template_ast,
@@ -153,7 +160,7 @@ pub(super) fn generate_event_handler_scope(
         }
         append!(
             *ts,
-            "{indent}((...__vize_args: Parameters<{listener_type}>) => {{\n",
+            "{indent}void ((...__vize_args: Parameters<{listener_type}>) => {{\n",
         );
         append!(
             *ts,
@@ -187,10 +194,7 @@ pub(super) fn generate_event_handler_scope(
             )
         );
 
-        append!(
-            *ts,
-            "{indent}}})(...({{}} as Parameters<{listener_type}>));\n",
-        );
+        append!(*ts, "{indent}}});\n");
     } else if dynamic_component_custom_event(
         ctx.template_source,
         ctx.template_ast,
@@ -204,7 +208,7 @@ pub(super) fn generate_event_handler_scope(
         );
         append!(
             *ts,
-            "{indent}((...__vize_args: Parameters<{listener_type}>) => {{\n",
+            "{indent}void ((...__vize_args: Parameters<{listener_type}>) => {{\n",
         );
         append!(
             *ts,
@@ -237,13 +241,10 @@ pub(super) fn generate_event_handler_scope(
             )
         );
 
-        append!(
-            *ts,
-            "{indent}}})(...({{}} as Parameters<{listener_type}>));\n",
-        );
+        append!(*ts, "{indent}}});\n");
     } else {
         let event_type = get_dom_event_type(data.event_name.as_str());
-        append!(*ts, "{indent}(($event: {event_type}) => {{\n");
+        append!(*ts, "{indent}void (($event: {event_type}) => {{\n");
 
         profile!(
             "canon.virtual_ts.event_handler_expressions",
@@ -257,7 +258,7 @@ pub(super) fn generate_event_handler_scope(
                     check_emits: true,
                     event_type,
                     event_handler_type: None,
-                    // Native DOM listeners keep the identity-call shape,
+                    // Native DOM listeners keep the plain-closure shape,
                     // so there is no declared name to anchor at.
                     event_listener_type: None,
                     event_name_src_range: None,
@@ -268,6 +269,6 @@ pub(super) fn generate_event_handler_scope(
             )
         );
 
-        append!(*ts, "{indent}}})({{}} as {event_type});\n");
+        append!(*ts, "{indent}}});\n");
     }
 }
