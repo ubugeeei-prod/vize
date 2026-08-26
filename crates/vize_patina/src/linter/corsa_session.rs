@@ -1,6 +1,6 @@
 use corsa::api::ProjectSession;
 use std::path::PathBuf;
-use vize_carton::String;
+use vize_s0::String;
 
 mod errors;
 mod paths;

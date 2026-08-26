@@ -41,7 +41,7 @@ use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{Expression, Program, Statement};
 use oxc_span::{GetSpan, Span};
-use vize_carton::{CompactString, cstr};
+use vize_s0::{CompactString, cstr};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/define-macros-order",

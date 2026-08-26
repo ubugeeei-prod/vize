@@ -12,7 +12,7 @@ use oxc_ast::ast::{
     Expression, ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
 
-use vize_carton::FxHashMap;
+use vize_s0::FxHashMap;
 
 /// The Options API `emits` option in either declared runtime form. The type
 /// (`defineEmits<...>`) and bare-identifier forms are not represented here.

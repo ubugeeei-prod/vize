@@ -4,7 +4,7 @@
 //! `user.name`, `count`), never a whole expression, so matching a prefix here
 //! cannot pick up an unrelated occurrence elsewhere in the expression.
 
-use vize_carton::FxHashSet;
+use vize_s0::FxHashSet;
 
 pub(super) fn is_prop_mutation_target(
     content: &str,
@@ -92,7 +92,7 @@ fn identifier_root(source: &str) -> Option<&str> {
 #[cfg(test)]
 mod tests {
     use super::is_prop_mutation_target;
-    use vize_carton::FxHashSet;
+    use vize_s0::FxHashSet;
 
     #[test]
     fn prop_mutation_target_matches_member_roots() {

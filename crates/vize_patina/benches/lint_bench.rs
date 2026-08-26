@@ -3,10 +3,10 @@
 use std::hint::black_box;
 
 use criterion::{Criterion, Throughput, criterion_group, criterion_main};
-use vize_carton::{String, append};
 use vize_patina::Linter;
 use vize_patina::rules::musea::MuseaLinter;
 use vize_patina::rules::script::{NoInternalImports, PreferImportFromVue, ScriptLinter};
+use vize_s0::{String, append};
 
 fn bench_lint_template(c: &mut Criterion) {
     let template = r#"

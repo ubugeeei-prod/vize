@@ -44,6 +44,11 @@
       "import": "./dist/checkbox.mjs",
       "default": "./dist/checkbox.mjs"
     },
+    "./command": {
+      "types": "./dist/command.d.mts",
+      "import": "./dist/command.mjs",
+      "default": "./dist/command.mjs"
+    },
     "./collection": {
       "types": "./dist/collection.d.mts",
       "import": "./dist/collection.mjs",
@@ -104,20 +109,60 @@
       "import": "./dist/focus-guards.mjs",
       "default": "./dist/focus-guards.mjs"
     },
+    "./history": {
+      "types": "./dist/history.d.mts",
+      "import": "./dist/history.mjs",
+      "default": "./dist/history.mjs"
+    },
     "./hover": {
       "types": "./dist/hover.d.mts",
       "import": "./dist/hover.mjs",
       "default": "./dist/hover.mjs"
+    },
+    "./live-region": {
+      "types": "./dist/live-region.d.mts",
+      "import": "./dist/live-region.mjs",
+      "default": "./dist/live-region.mjs"
+    },
+    "./locale": {
+      "types": "./dist/locale.d.mts",
+      "import": "./dist/locale.mjs",
+      "default": "./dist/locale.mjs"
     },
     "./long-press": {
       "types": "./dist/long-press.d.mts",
       "import": "./dist/long-press.mjs",
       "default": "./dist/long-press.mjs"
     },
+    "./measure": {
+      "types": "./dist/measure.d.mts",
+      "import": "./dist/measure.mjs",
+      "default": "./dist/measure.mjs"
+    },
     "./move": {
       "types": "./dist/move.d.mts",
       "import": "./dist/move.mjs",
       "default": "./dist/move.mjs"
+    },
+    "./pointer-grace": {
+      "types": "./dist/pointer-grace.d.mts",
+      "import": "./dist/pointer-grace.mjs",
+      "default": "./dist/pointer-grace.mjs"
+    },
+    "./portal": {
+      "types": "./dist/portal.d.mts",
+      "import": "./dist/portal.mjs",
+      "default": "./dist/portal.mjs"
+    },
+    "./positioner": {
+      "types": "./dist/positioner.d.mts",
+      "import": "./dist/positioner.mjs",
+      "default": "./dist/positioner.mjs"
+    },
+    "./presence": {
+      "types": "./dist/presence.d.mts",
+      "import": "./dist/presence.mjs",
+      "default": "./dist/presence.mjs"
     },
     "./press": {
       "types": "./dist/press.d.mts",
@@ -129,15 +174,30 @@
       "import": "./dist/scroll-lock.mjs",
       "default": "./dist/scroll-lock.mjs"
     },
+    "./shortcut": {
+      "types": "./dist/shortcut.d.mts",
+      "import": "./dist/shortcut.mjs",
+      "default": "./dist/shortcut.mjs"
+    },
     "./spatial-navigation": {
       "types": "./dist/spatial-navigation.d.mts",
       "import": "./dist/spatial-navigation.mjs",
       "default": "./dist/spatial-navigation.mjs"
     },
+    "./transition": {
+      "types": "./dist/transition.d.mts",
+      "import": "./dist/transition.mjs",
+      "default": "./dist/transition.mjs"
+    },
     "./typeahead": {
       "types": "./dist/typeahead.d.mts",
       "import": "./dist/typeahead.mjs",
       "default": "./dist/typeahead.mjs"
+    },
+    "./virtualizer": {
+      "types": "./dist/virtualizer.d.mts",
+      "import": "./dist/virtualizer.mjs",
+      "default": "./dist/virtualizer.mjs"
     },
     "./primitive": {
       "types": "./dist/primitive.d.mts",

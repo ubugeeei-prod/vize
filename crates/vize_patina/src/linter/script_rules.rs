@@ -3,7 +3,7 @@ use crate::rules::script::{ScriptLintResult, SfcScriptContext, script_source_typ
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use vize_atelier_sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
-use vize_carton::profile;
+use vize_s0::profile;
 
 mod html_scripts;
 mod prefilter;
@@ -147,7 +147,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     // finding from template evidence, where an over-match would be a false
     // positive). The AST is parsed at most once, and only when some enabled
     // rule asks for it.
-    let template_allocator = vize_carton::Allocator::default();
+    let template_allocator = vize_s0::Allocator::default();
     let template_ast =
         template_ast::parse_for_script_rules(linter, descriptor, &template_allocator);
     let sfc_context = SfcScriptContext {

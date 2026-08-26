@@ -1,4 +1,4 @@
-use vize_carton::String;
+use vize_s0::String;
 
 pub(crate) fn normalized_scheme(value: &str) -> Option<(String, &str)> {
     let mut scheme = String::default();

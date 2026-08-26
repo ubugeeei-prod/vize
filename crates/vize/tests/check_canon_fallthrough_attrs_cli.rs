@@ -6,7 +6,7 @@ mod corsa_requirement;
 mod support;
 use support::{
     assert_clean, assert_error_diagnostics, create_case, create_case_with_files,
-    resolve_test_corsa_path, run_check_json,
+    resolve_test_corsa_path, run_check_json, write_vue_tsc_default_tsconfig,
 };
 #[test]
 fn check_fallthrough_attrs_follow_inherit_attrs_and_root_shape() {
@@ -60,5 +60,30 @@ defineProps<{ modelValue?: string }>();
 
     let report = run_check_json(&project_root, &corsa_path);
     assert_clean("fallthrough-component-root-open", &report);
+    let _ = std::fs::remove_dir_all(project_root);
+}
+
+#[test]
+fn unknown_extra_attrs_match_vue_tsc_without_strict_templates() {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+        return;
+    };
+
+    let project_root = create_case(
+        "unknown-extras-vue-tsc-default",
+        r#"<script setup lang="ts">
+defineProps<{ height?: number; start?: string; end?: string }>();
+</script>
+<template><svg /></template>
+"#,
+        r#"<script setup lang="ts">
+import Child from "./Child.vue";
+</script>
+<template><Child :gradient="false" disable /></template>
+"#,
+    );
+    write_vue_tsc_default_tsconfig(&project_root);
+    let report = run_check_json(&project_root, &corsa_path);
+    assert_clean("unknown-extras-vue-tsc-default", &report);
     let _ = std::fs::remove_dir_all(project_root);
 }

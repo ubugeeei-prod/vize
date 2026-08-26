@@ -26,8 +26,8 @@
 //! compile is scanned — a directive's expression *and* its argument, an
 //! interpolation's content, and a `v-for`'s source and aliases.
 
-use vize_carton::{CompactString, FxHashSet};
 use vize_relief::{ExpressionNode, PropNode, RootNode, TemplateChildNode};
+use vize_s0::{CompactString, FxHashSet};
 
 /// How the `defineProps(...)` return value is consumed.
 pub(super) enum PropsAccess {

@@ -2,8 +2,8 @@
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 use vize_atelier_sfc::SfcError;
-use vize_carton::ToCompactString;
 use vize_relief::CompilerError;
+use vize_s0::ToCompactString;
 
 use super::super::config::{LintResult, Linter};
 

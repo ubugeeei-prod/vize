@@ -134,6 +134,28 @@ fn write_tsconfig(project_root: &Path) {
     "jsxImportSource": "vue",
     "noEmit": true
   },
+  "vueCompilerOptions": {
+    "strictTemplates": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+}
+
+pub(super) fn write_vue_tsc_default_tsconfig(project_root: &Path) {
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "noEmit": true
+  },
   "include": ["src/**/*"]
 }"#,
     )

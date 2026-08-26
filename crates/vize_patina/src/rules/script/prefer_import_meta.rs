@@ -13,7 +13,7 @@ use oxc_ast_visit::{
     walk::{walk_computed_member_expression, walk_static_member_expression},
 };
 use oxc_span::Span;
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "nuxt/prefer-import-meta",

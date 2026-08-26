@@ -3,8 +3,8 @@
 //! These helpers are extracted from common patterns used across a11y rules
 //! to avoid code duplication.
 
-use vize_carton::is_native_tag;
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
+use vize_s0::is_native_tag;
 
 /// Check if an element should be treated as a component or custom element.
 ///

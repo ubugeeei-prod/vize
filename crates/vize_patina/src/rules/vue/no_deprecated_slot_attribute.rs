@@ -32,8 +32,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_carton::dialect::VueDialect;
 use vize_relief::{ElementNode, PropNode};
+use vize_s0::dialect::VueDialect;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-deprecated-slot-attribute",
@@ -63,7 +63,7 @@ impl Rule for NoDeprecatedSlotAttribute {
             {
                 ctx.error_with_help(
                     ctx.t("vue/no-deprecated-slot-attribute.message"),
-                    &attr.loc,
+                    &attr.name_loc,
                     ctx.t("vue/no-deprecated-slot-attribute.help"),
                 );
             }
@@ -78,7 +78,7 @@ mod tests {
     use crate::linter::Linter;
     use crate::preset::LintPreset;
     use crate::rule::RuleRegistry;
-    use vize_carton::config::VueVersion;
+    use vize_s0::config::VueVersion;
 
     const RULE: &str = "vue/no-deprecated-slot-attribute";
 
@@ -148,7 +148,7 @@ mod tests {
                 Severity::Error,
                 "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
                 29,
-                42,
+                33,
                 Some("Use `v-slot` instead (e.g. `<template v-slot:header>`)."),
                 0,
                 false,

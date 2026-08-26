@@ -36,7 +36,7 @@ use oxc_ast_visit::{
 };
 use oxc_span::Span;
 use oxc_syntax::operator::AssignmentOperator;
-use vize_carton::{CompactString, FxHashSet};
+use vize_s0::{CompactString, FxHashSet};
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 

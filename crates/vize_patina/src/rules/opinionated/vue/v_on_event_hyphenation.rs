@@ -29,8 +29,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_carton::hyphenate;
 use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode};
+use vize_s0::hyphenate;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/v-on-event-hyphenation",

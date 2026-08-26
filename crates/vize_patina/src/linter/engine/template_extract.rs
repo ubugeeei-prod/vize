@@ -1,8 +1,8 @@
 //! Ultra-fast `<template>` block extraction using memchr for
 //! SIMD-accelerated search.
 
-use vize_carton::String;
-use vize_carton::ToCompactString;
+use vize_s0::String;
+use vize_s0::ToCompactString;
 
 use super::tag_scan::{
     closing_tag_name_at, find_closing_tag, find_start_tag_end, find_tag_end, tag_name_at,
@@ -110,7 +110,7 @@ fn find_template_block_start(bytes: &[u8]) -> Option<(usize, usize)> {
 mod tests {
     use super::extract_template_fast;
 
-    fn extract(source: &str) -> Option<vize_carton::String> {
+    fn extract(source: &str) -> Option<vize_s0::String> {
         extract_template_fast(source).map(|(content, _)| content)
     }
 

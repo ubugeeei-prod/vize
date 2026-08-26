@@ -28,11 +28,11 @@
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_carton::FxHashSet;
-use vize_carton::String;
-use vize_carton::ToCompactString;
 use vize_croquis::croquis::ElementIdKind;
 use vize_relief::RootNode;
+use vize_s0::FxHashSet;
+use vize_s0::String;
+use vize_s0::ToCompactString;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/no-refer-to-non-existent-id",

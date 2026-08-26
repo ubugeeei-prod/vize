@@ -38,10 +38,10 @@
 
 mod calls;
 
-use vize_carton::String;
 use vize_relief::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode,
 };
+use vize_s0::String;
 
 pub(super) use calls::TemplateCall;
 

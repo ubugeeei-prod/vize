@@ -2,7 +2,7 @@
 
 use crate::linter::LintResult;
 use crate::output::shared::{diagnostic_views, json_quote, result_counts};
-use vize_carton::{String, ToCompactString, append};
+use vize_s0::{String, ToCompactString, append};
 
 pub(super) fn format_agent(results: &[LintResult], sources: &[(String, String)]) -> String {
     let views = diagnostic_views(results, sources);

@@ -1,6 +1,6 @@
 use super::parsing::extract_runtime_object_property_values;
-use vize_carton::{String, ToCompactString};
 use vize_croquis::virtual_ts::VirtualTsOutput;
+use vize_s0::{String, ToCompactString};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(super) enum QueryKind {

@@ -12,7 +12,7 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use memchr::memmem;
 use serde_json::Value;
 use vize_atelier_sfc::{SfcCustomBlock, SfcParseOptions, parse_sfc};
-use vize_carton::{CompactString, FxHashSet, String};
+use vize_s0::{CompactString, FxHashSet, String};
 
 static META: RuleMeta = RuleMeta {
     name: "ecosystem/vue-i18n-no-missing-key",

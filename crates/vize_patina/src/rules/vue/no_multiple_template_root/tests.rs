@@ -10,7 +10,7 @@ use super::NoMultipleTemplateRoot;
 use crate::linter::{LintResult, Linter};
 use crate::preset::LintPreset;
 use crate::rule::RuleRegistry;
-use vize_carton::String;
+use vize_s0::String;
 
 const RULE: &str = "vue/no-multiple-template-root";
 const PARSER: &str = "parser/template";

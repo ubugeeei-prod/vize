@@ -4,10 +4,10 @@ mod lexer;
 
 use memchr::memchr_iter;
 use vize_atelier_sfc::SfcDescriptor;
-use vize_carton::directive::{
+use vize_s0::directive::{
     DirectiveKind, DirectiveSeverity, parse_level_severity, parse_vize_directive,
 };
-use vize_carton::{CompactString, FxHashMap, FxHashSet, String};
+use vize_s0::{CompactString, FxHashMap, FxHashSet, String};
 
 use super::DisabledRange;
 use super::eslint_directive::{EslintDisableKind, parse_eslint_disable_comment};

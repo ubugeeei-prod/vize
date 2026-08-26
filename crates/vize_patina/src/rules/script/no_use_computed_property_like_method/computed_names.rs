@@ -8,7 +8,7 @@ use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression,
     ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
-use vize_carton::{CompactString, FxHashMap, FxHashSet};
+use vize_s0::{CompactString, FxHashMap, FxHashSet};
 
 /// Collect the names declared in the `computed` option. Only plain
 /// (non-computed-key) properties contribute; spreads like `...mapGetters([..])`

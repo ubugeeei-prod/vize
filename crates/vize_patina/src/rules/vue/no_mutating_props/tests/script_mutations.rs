@@ -1,6 +1,6 @@
 use super::{findings, lint_sfc};
 use crate::{LintPreset, Linter, Severity};
-use vize_carton::String;
+use vize_s0::String;
 
 fn expected_script_finding<'a>(
     sfc: &'a str,

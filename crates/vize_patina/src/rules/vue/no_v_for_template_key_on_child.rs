@@ -112,7 +112,7 @@ mod tests {
     use super::NoVForTemplateKeyOnChild;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
-    use vize_carton::config::VueVersion;
+    use vize_s0::config::VueVersion;
 
     fn create_linter() -> Linter {
         let mut registry = RuleRegistry::new();

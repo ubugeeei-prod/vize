@@ -66,7 +66,7 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::Visit;
 use oxc_span::Span;
-use vize_carton::FxHashMap;
+use vize_s0::FxHashMap;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-deprecated-props-default-this",

@@ -2,12 +2,12 @@ use super::{
     LintResult, Linter, RULE_NO_REACTIVITY_LOSS, markers::marker_insert_offset, push_warning,
 };
 use crate::diagnostic::LintDiagnostic;
-use vize_carton::{CompactString, FxHashSet, String, ToCompactString, cstr};
 use vize_croquis::{
     reactivity::{ReactivityLoss, ReactivityLossKind},
     script_parser::ScriptParseResult,
     virtual_ts::VirtualTsOutput,
 };
+use vize_s0::{CompactString, FxHashSet, String, ToCompactString, cstr};
 
 #[derive(Clone)]
 pub(super) struct ReactivityLossQuery {

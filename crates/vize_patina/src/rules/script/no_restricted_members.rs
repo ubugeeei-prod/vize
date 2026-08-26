@@ -48,7 +48,7 @@ use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{Expression, Program, StaticMemberExpression};
 use oxc_ast_visit::{Visit, walk::walk_static_member_expression};
-use vize_carton::String;
+use vize_s0::String;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-restricted-members",
@@ -91,7 +91,7 @@ impl NoRestrictedMembers {
             .into_iter()
             .map(|(object, property, message)| {
                 let message = message.map(Into::into).unwrap_or_else(|| {
-                    vize_carton::cstr!("Don't access `{object}.{property}` directly.")
+                    vize_s0::cstr!("Don't access `{object}.{property}` directly.")
                 });
                 RestrictedEntry {
                     object,
@@ -187,7 +187,7 @@ mod tests {
     use super::NoRestrictedMembers;
     use crate::diagnostic::Severity;
     use crate::rules::script::ScriptLinter;
-    use vize_carton::String;
+    use vize_s0::String;
 
     fn configured_linter(entries: Vec<(&str, &str, Option<&str>)>) -> ScriptLinter {
         let mut linter = ScriptLinter::new();

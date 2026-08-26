@@ -28,9 +28,9 @@ use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::visitor::parse_v_for_variables;
-use vize_carton::String;
-use vize_carton::ToCompactString;
 use vize_relief::{ElementNode, ExpressionNode, PropNode};
+use vize_s0::String;
+use vize_s0::ToCompactString;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-use-v-if-with-v-for",

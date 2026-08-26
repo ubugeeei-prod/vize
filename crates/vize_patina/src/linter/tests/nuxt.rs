@@ -1,5 +1,5 @@
 use super::{LintPreset, Linter};
-use vize_carton::ToCompactString;
+use vize_s0::ToCompactString;
 
 #[test]
 fn nuxt_preset_reports_and_fixes_legacy_process_flags() {

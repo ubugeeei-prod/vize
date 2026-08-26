@@ -42,8 +42,8 @@ use memchr::memmem;
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
-use vize_carton::String;
-use vize_carton::ToCompactString;
+use vize_s0::String;
+use vize_s0::ToCompactString;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/require-function-return-type",

@@ -23,7 +23,7 @@ use oxc_ast::ast::{
     ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement, StringLiteral,
 };
 
-use vize_carton::FxHashMap;
+use vize_s0::FxHashMap;
 
 /// A single object-form prop entry: its name, the key node (for span
 /// reporting), and its value (a type shorthand or a descriptor object).

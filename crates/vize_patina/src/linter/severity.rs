@@ -1,6 +1,6 @@
 use super::LintResult;
 use crate::diagnostic::Severity;
-use vize_carton::{FxHashMap, String};
+use vize_s0::{FxHashMap, String};
 
 pub(crate) fn append_with_rule_overrides(
     result: &mut LintResult,

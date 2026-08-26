@@ -42,13 +42,13 @@
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_carton::String;
-use vize_carton::ToCompactString;
 use vize_croquis::builtins::is_builtin_component;
 use vize_croquis::naming::{names_match, to_pascal_case};
 use vize_croquis::{Croquis, ScopeData};
 use vize_relief::BindingType;
 use vize_relief::{ElementNode, RootNode};
+use vize_s0::String;
+use vize_s0::ToCompactString;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/require-component-registration",

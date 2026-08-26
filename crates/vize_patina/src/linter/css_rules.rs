@@ -17,7 +17,7 @@ use crate::rules::css::{
     PreferSlotted, RequireFontDisplay,
 };
 use vize_atelier_sfc::SfcDescriptor;
-use vize_carton::profile;
+use vize_s0::profile;
 
 pub(crate) const RULE_NO_IMPORTANT: &str = "css/no-important";
 pub(crate) const RULE_NO_ID_SELECTORS: &str = "css/no-id-selectors";

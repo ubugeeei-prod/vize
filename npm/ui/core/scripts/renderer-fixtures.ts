@@ -1,6 +1,87 @@
 /** Headless component fixtures compiled by every supported renderer lane. */
 export const rendererFixtures = [
   {
+    filename: "CommandConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { useCommandRouter } from "./command.ts";
+
+const output = ref("");
+const router = useCommandRouter<"save">();
+router.register({
+  id: "save",
+  title: "Save Document",
+  run: () => {
+    output.value = "saved";
+  },
+});
+</script>
+
+<template>
+  <button type="button" :disabled="!router.isEnabled('save')" @click="router.execute('save')">
+    Save
+  </button>
+  <output>{{ output }}</output>
+</template>
+`,
+  },
+  {
+    filename: "HistoryConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { useHistory } from "./history.ts";
+
+const value = ref(0);
+const history = useHistory();
+function increment() {
+  const before = value.value;
+  value.value += 1;
+  history.pushSnapshot({
+    before,
+    after: value.value,
+    apply: (next) => {
+      value.value = next;
+    },
+    label: "Increment",
+  });
+}
+</script>
+
+<template>
+  <button type="button" @click="increment">Increment</button>
+  <button type="button" :disabled="!history.canUndo.value" @click="history.undo()">Undo</button>
+  <button type="button" :disabled="!history.canRedo.value" @click="history.redo()">Redo</button>
+  <output>{{ value }}</output>
+</template>
+`,
+  },
+  {
+    filename: "ShortcutConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { formatShortcut, useShortcutRegistry } from "./shortcut.ts";
+
+const host = ref<HTMLElement | null>(null);
+const count = ref(0);
+const registry = useShortcutRegistry({ target: host, platform: "standard" });
+registry.register({
+  shortcut: "Mod+K",
+  description: "Open the palette",
+  handler: () => {
+    count.value += 1;
+  },
+});
+</script>
+
+<template>
+  <div ref="host" tabindex="0" :data-pending="registry.pendingSequence.value.length || undefined">
+    <kbd>{{ formatShortcut("Mod+K", { platform: "standard" }) }}</kbd>
+    <output>{{ count }}</output>
+  </div>
+</template>
+`,
+  },
+  {
     filename: "DismissableLayerConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";
@@ -105,6 +186,93 @@ const scope = useFocusScope({
 <template>
   <div ref="root" :data-active="scope.isActive.value || undefined">
     <button type="button">Inside</button>
+  </div>
+</template>
+`,
+  },
+  {
+    filename: "PointerGraceConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { usePointerGrace } from "./pointer-grace.ts";
+
+const grace = usePointerGrace({
+  delay: 300,
+  onGraceEnd() {},
+});
+</script>
+
+<template>
+  <div
+    :data-pending="grace.isPending.value || undefined"
+    @pointermove="grace.handleMove({ x: $event.clientX, y: $event.clientY })"
+  >
+    Grace target
+  </div>
+</template>
+`,
+  },
+  {
+    filename: "MeasureConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import { useSizeObserver, useVisibilityObserver } from "./measure.ts";
+
+const host = ref<HTMLElement | null>(null);
+const sizes = useSizeObserver({
+  onResize(entries) {
+    void entries.length;
+  },
+});
+const visibility = useVisibilityObserver({
+  onVisibilityChange(entries) {
+    void entries.length;
+  },
+});
+onMounted(() => {
+  if (host.value) {
+    sizes.observe(host.value);
+    visibility.observe(host.value);
+  }
+});
+</script>
+
+<template>
+  <div ref="host" :data-observed="sizes.observedCount.value || undefined">
+    Measured content
+  </div>
+</template>
+`,
+  },
+  {
+    filename: "VirtualizerConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import { useVirtualizer } from "./virtualizer.ts";
+
+const viewport = ref<HTMLElement | null>(null);
+const virtualizer = useVirtualizer({
+  count: 10000,
+  estimateItemSize: 32,
+  initialRect: { width: 320, height: 480 },
+});
+onMounted(() => {
+  virtualizer.setViewport(viewport.value);
+});
+</script>
+
+<template>
+  <div ref="viewport" style="overflow-y: auto">
+    <div :style="{ height: virtualizer.totalSize.value + 'px', position: 'relative' }">
+      <div
+        v-for="item in virtualizer.virtualItems.value"
+        :key="item.key"
+        :data-index="item.index"
+        :data-sticky="item.isSticky || undefined"
+        :style="{ position: 'absolute', top: item.start + 'px' }"
+      >
+        Row {{ item.index }}
+      </div>
+    </div>
   </div>
 </template>
 `,

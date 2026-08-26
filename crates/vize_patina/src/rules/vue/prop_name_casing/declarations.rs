@@ -10,7 +10,7 @@ use crate::context::LintContext;
 
 /// A declared prop and where it is written.
 pub(super) struct Declaration {
-    pub(super) name: vize_carton::CompactString,
+    pub(super) name: vize_s0::CompactString,
     pub(super) start: u32,
     pub(super) end: u32,
 }

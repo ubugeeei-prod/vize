@@ -31,8 +31,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_carton::dialect::VueDialect;
 use vize_relief::{ElementNode, ExpressionNode, PropNode};
+use vize_s0::dialect::VueDialect;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-deprecated-router-link-tag-prop",

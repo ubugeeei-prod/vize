@@ -147,7 +147,11 @@ fn usage_needs_per_prop_aliases(usage: &ComponentUsage) -> bool {
 /// The shared type helpers every per-usage prop check resolves through, emitted
 /// once per template scope that has at least one checkable component usage.
 /// Keep this set small; the child's own props type carries the contract.
-pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &ComponentUsage)]) {
+pub(super) fn append_prop_check_helpers(
+    ts: &mut String,
+    usages: &[(usize, &ComponentUsage)],
+    check_unknown_props: bool,
+) {
     ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
     // Inline parameter shapes keep `TS2345` messages close to `vue-tsc` while
     // preserving optionality and contextual typing. The strict tail is used
@@ -170,12 +174,18 @@ pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &Comp
     ts.push_str(
         "  interface __VizePublicComponentAttrs extends __VizeVueVNodeProps, __VizeVueAllowedComponentProps, __VizeVueComponentCustomProps {}\n",
     );
-    ts.push_str(
-        "  type __VizeAllowedFallthroughAttrs<C> = __VizeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};\n",
-    );
-    ts.push_str(
-        "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeAllowedFallthroughAttrs<C> : Record<string, unknown>;\n",
-    );
+    if check_unknown_props {
+        ts.push_str(
+            "  type __VizeAllowedFallthroughAttrs<C> = __VizeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};\n",
+        );
+        ts.push_str(
+            "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & __VizeAllowedFallthroughAttrs<C> : Record<string, unknown>;\n",
+        );
+    } else {
+        ts.push_str(
+            "  type __VizeComponentCheckTail<C> = __VizeIsGeneratedComponent<C> extends true ? __VizePublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;\n",
+        );
+    }
     ts.push_str(
         "  type __VizeComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;\n",
     );

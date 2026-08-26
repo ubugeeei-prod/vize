@@ -39,7 +39,7 @@ use memchr::memmem;
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
-use vize_carton::String;
+use vize_s0::String;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-reactive-destructure",

@@ -40,7 +40,7 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_span::Span;
-use vize_carton::FxHashSet;
+use vize_s0::FxHashSet;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/valid-define-emits",

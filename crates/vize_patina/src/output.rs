@@ -17,7 +17,7 @@ pub use shared::rule_docs_path;
 pub use text::*;
 
 use crate::linter::LintResult;
-use vize_carton::String;
+use vize_s0::String;
 
 /// Output format for lint results
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]

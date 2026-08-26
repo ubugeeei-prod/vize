@@ -52,7 +52,7 @@ use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{IdentifierReference, Program};
 use oxc_ast_visit::Visit;
-use vize_carton::String;
+use vize_s0::String;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-restricted-globals",
@@ -174,7 +174,7 @@ impl RestrictedGlobals {
             .map(|(name, message)| {
                 let message = message
                     .map(Into::into)
-                    .unwrap_or_else(|| vize_carton::cstr!("Don't reference `{name}` directly."));
+                    .unwrap_or_else(|| vize_s0::cstr!("Don't reference `{name}` directly."));
                 RestrictedEntry { name, message }
             })
             .collect();
@@ -251,7 +251,7 @@ mod tests {
     use super::{NoRestrictedGlobals, RestrictedGlobals};
     use crate::diagnostic::Severity;
     use crate::rules::script::ScriptLinter;
-    use vize_carton::String;
+    use vize_s0::String;
 
     fn create_linter() -> ScriptLinter {
         let mut linter = ScriptLinter::new();

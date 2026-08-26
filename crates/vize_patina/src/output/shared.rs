@@ -2,7 +2,7 @@
 
 use crate::diagnostic::{HelpRenderTarget, render_help};
 use crate::linter::LintResult;
-use vize_carton::{FxHashMap, SmallVec, String};
+use vize_s0::{FxHashMap, SmallVec, String};
 
 /// Return the local documentation page that explains a rule namespace.
 pub fn rule_docs_path(rule_name: &str) -> &'static str {

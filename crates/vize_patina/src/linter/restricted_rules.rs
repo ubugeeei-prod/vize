@@ -9,7 +9,7 @@
 
 use super::config::Linter;
 use crate::rules::script::{NoRestrictedMembers, RestrictedGlobals};
-use vize_carton::String;
+use vize_s0::String;
 
 impl Linter {
     /// Configure the deny list for `script/no-restricted-globals`.

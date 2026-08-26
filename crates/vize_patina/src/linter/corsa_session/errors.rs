@@ -1,5 +1,5 @@
 use std::path::Path;
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 pub(super) fn io_error_message(prefix: &str, path: &Path, error: &std::io::Error) -> String {
     let mut message = prefix.to_compact_string();

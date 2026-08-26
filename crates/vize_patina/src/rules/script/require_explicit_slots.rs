@@ -81,7 +81,7 @@ mod tests;
 
 use oxc_ast::ast::Program;
 use oxc_span::Span;
-use vize_carton::CompactString;
+use vize_s0::CompactString;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
@@ -169,7 +169,7 @@ fn report_missing_declaration(slots: &ScriptSlots, offset: usize, result: &mut S
 
 /// The template half: every rendered `<slot>` must be in the declared set.
 fn check_template(
-    declared: &vize_carton::FxHashSet<CompactString>,
+    declared: &vize_s0::FxHashSet<CompactString>,
     sfc: SfcScriptContext<'_>,
     result: &mut ScriptLintResult,
 ) {

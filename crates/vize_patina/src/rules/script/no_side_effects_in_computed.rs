@@ -65,7 +65,7 @@ use oxc_ast_visit::{
     walk::{walk_assignment_expression, walk_call_expression, walk_update_expression},
 };
 use oxc_span::Span;
-use vize_carton::{CompactString, FxHashMap};
+use vize_s0::{CompactString, FxHashMap};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-side-effects-in-computed-properties",

@@ -23,8 +23,8 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::html::helpers::BOOLEAN_ATTRIBUTES;
-use vize_carton::is_native_tag;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
+use vize_s0::is_native_tag;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/prefer-true-attribute-shorthand",

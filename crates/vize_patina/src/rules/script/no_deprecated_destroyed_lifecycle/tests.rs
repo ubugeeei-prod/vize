@@ -4,7 +4,7 @@ use crate::rules::script::{ScriptLintResult, ScriptLinter, ScriptRule, script_so
 use crate::{Linter, builtin_script_rules};
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 fn lint(source: &str) -> ScriptLintResult {
     let mut linter = ScriptLinter::new();

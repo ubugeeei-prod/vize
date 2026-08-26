@@ -12,13 +12,13 @@
 
 use criterion::{Criterion, Throughput, criterion_group, criterion_main};
 use std::hint::black_box;
-use vize_carton::Allocator;
-use vize_carton::String;
-use vize_carton::append;
 use vize_patina::ir::TemplateSyntax;
 use vize_patina::markup::{MarkupContext, MarkupDocument};
 use vize_patina::rules::a11y::ImgAlt;
 use vize_patina::{JsxLang, LintContext, Linter, RuleRegistry};
+use vize_s0::Allocator;
+use vize_s0::String;
+use vize_s0::append;
 
 /// A representative template with a mix of elements, bindings, and `<img>`
 /// nodes (the rule's trigger), large enough to exercise traversal.

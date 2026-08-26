@@ -9,9 +9,9 @@
 use oxc_diagnostics::OxcDiagnostic;
 use oxc_span::Span;
 use serde::Serialize;
-use vize_carton::CompactString;
-use vize_carton::String;
-use vize_carton::ToCompactString;
+use vize_s0::CompactString;
+use vize_s0::String;
+use vize_s0::ToCompactString;
 
 use super::formatting::{HelpRenderTarget, render_help};
 
