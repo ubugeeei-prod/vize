@@ -11,12 +11,12 @@ mod legacy_desugar_tests {
     use crate::parser::parse;
     use crate::{SimpleExpressionNode, SourceLocation};
     use vize_armature::legacy::{LegacyDialectCapabilities, LegacyVueVersion};
-    use vize_carton::Vec as ArenaVec;
-    use vize_carton::config::VueVersion;
+    use vize_s0::Vec as ArenaVec;
+    use vize_s0::config::VueVersion;
 
     /// Full lane (parse -> transform -> codegen) under a given dialect.
     fn compile(src: &str, dialect: VueVersion) -> std::string::String {
-        let allocator = vize_carton::Allocator::new();
+        let allocator = vize_s0::Allocator::new();
         let (mut root, errs) = parse(&allocator, src);
         assert!(errs.is_empty(), "parse errors: {errs:?}");
         let opts = TransformOptions {
@@ -53,7 +53,7 @@ mod legacy_desugar_tests {
 
     #[test]
     fn sync_modifier_desugars_to_bind_plus_update_listener() {
-        let allocator = vize_carton::Allocator::new();
+        let allocator = vize_s0::Allocator::new();
         let source = r#"<Comp :foo.sync="bar" />"#;
         let (mut root, errs) = parse(&allocator, source);
         assert!(errs.is_empty());
@@ -87,7 +87,7 @@ mod legacy_desugar_tests {
 
     #[test]
     fn sync_modifier_preserves_other_modifiers() {
-        let allocator = vize_carton::Allocator::new();
+        let allocator = vize_s0::Allocator::new();
         // `.sync` alongside another modifier: only `sync` is stripped.
         let (mut root, _) = parse(&allocator, r#"<Comp :foo.sync.camel="bar" />"#);
         desugar_legacy_template(&allocator, &mut root, v2_caps());
@@ -102,7 +102,7 @@ mod legacy_desugar_tests {
 
     #[test]
     fn template_slot_scope_desugars_to_v_slot() {
-        let allocator = vize_carton::Allocator::new();
+        let allocator = vize_s0::Allocator::new();
         let source = r#"<Comp><template slot="header" slot-scope="props">x</template></Comp>"#;
         let (mut root, _) = parse(&allocator, source);
         desugar_legacy_template(&allocator, &mut root, v2_caps());
@@ -139,7 +139,7 @@ mod legacy_desugar_tests {
 
     #[test]
     fn scope_alias_desugars_to_default_v_slot() {
-        let allocator = vize_carton::Allocator::new();
+        let allocator = vize_s0::Allocator::new();
         // `scope` (2.1 alias) with no `slot=` => default slot.
         let source = r#"<Comp><template scope="props">x</template></Comp>"#;
         let (mut root, _) = parse(&allocator, source);
@@ -163,7 +163,7 @@ mod legacy_desugar_tests {
 
     #[test]
     fn vue3_dialect_is_a_noop() {
-        let allocator = vize_carton::Allocator::new();
+        let allocator = vize_s0::Allocator::new();
         let (mut root, _) = parse(
             &allocator,
             r#"<Comp :foo.sync="bar"><template slot-scope="props">x</template></Comp>"#,

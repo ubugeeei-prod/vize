@@ -43,7 +43,7 @@
 //! dialect (its call site is guarded by `supports_v2_event_sugar`).
 
 use vize_armature::legacy::LegacyDialectCapabilities;
-use vize_carton::{Allocator, Box, String, Vec, ensure_sufficient_stack};
+use vize_s0::{Allocator, Box, String, Vec, ensure_sufficient_stack};
 
 use crate::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, SimpleExpressionNode,

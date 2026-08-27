@@ -20,7 +20,7 @@
 //! literals, or `()[]{}` nesting are not filter separators, and `||` is the
 //! logical-OR operator, never a filter.
 
-use vize_carton::String;
+use vize_s0::String;
 
 use super::expression::is_simple_identifier;
 
