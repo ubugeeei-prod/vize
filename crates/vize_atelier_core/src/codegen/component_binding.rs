@@ -1,6 +1,6 @@
 use crate::options::BindingType;
 use crate::{CodegenContext, RuntimeHelper};
-use vize_carton::{String, ToCompactString, camelize, capitalize};
+use vize_s0::{String, ToCompactString, camelize, capitalize};
 
 struct ComponentBinding {
     name: String,

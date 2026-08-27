@@ -16,7 +16,7 @@ compiler	Compiler	manifest	crates/vize_atelier_core/Cargo.toml	17	raw_oxc	raw OX
 compiler	Compiler	manifest	crates/vize_atelier_core/Cargo.toml	17	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
 compiler	Compiler	manifest	crates/vize_atelier_core/Cargo.toml	17	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/children.rs	14	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/component_binding.rs	3	s0	S0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/component_binding.rs	3	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/context.rs	10	s0	S0	stage	vize_s0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/context/vnode_factory.rs	1	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/element/block.rs	35	s0	S0	stage	vize_s0	preferred	1
