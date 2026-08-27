@@ -4,7 +4,7 @@
 //! import-ranked helper list used to build the module preamble.
 
 use crate::{RootNode, RuntimeHelper, TemplateChildNode, options::CodegenOptions};
-use vize_carton::profile;
+use vize_s0::profile;
 
 use super::children::is_directive_comment;
 use super::context::{CodegenContext, CodegenResult, CodegenResultWithSections, CodegenSections};
@@ -80,7 +80,7 @@ fn generate_with_sections_and_options(
     let mut ctx =
         CodegenContext::new_with_vnode_factory_and_merge_props(options, vnode_factory, merge_props);
     ctx.source = match source_text {
-        Some(text) => vize_carton::String::new(text),
+        Some(text) => vize_s0::String::new(text),
         None => root.source.into(),
     };
     ctx.static_cache = ctx.options.inline || !root.hoists.is_empty();

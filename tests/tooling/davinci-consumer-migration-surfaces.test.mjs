@@ -158,6 +158,22 @@ void test("consumer migration TSV serializes every stage label and name class", 
   }
 });
 
+void test("Atelier core emit codegen imports S0 through the preferred physical name", () => {
+  const scan = scanConsumerMigrationSurfaces();
+  const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
+  assert.ok(compiler);
+
+  const emitRow = compiler.fileRows.find(
+    (row) =>
+      row.relPath === "crates/vize_atelier_core/src/codegen/emit.rs" && row.mode === "source",
+  );
+  assert.ok(emitRow);
+  assert.equal(emitRow.surfaceCounts.s0, 2);
+  assert.equal(emitRow.surfaceNameCounts.s0.vize_s0, 2);
+  assert.equal(emitRow.surfaceNameCounts.s0.vize_carton ?? 0, 0);
+  assert.equal(emitRow.nameKindCounts.compat, 0);
+});
+
 void test("consumer migration scan keeps every rollout consumer and surface class visible", () => {
   const scan = scanConsumerMigrationSurfaces();
   const consumers = new Map(scan.consumers.map((consumer) => [consumer.id, consumer]));
