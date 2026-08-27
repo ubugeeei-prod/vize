@@ -1,6 +1,6 @@
 //! Static property detection and hoisting.
 
-use vize_carton::{Allocator, Box, String, ToCompactString, Vec, camelize};
+use vize_s0::{Allocator, Box, String, ToCompactString, Vec, camelize};
 
 use crate::codegen::is_constant_simple_expression;
 use crate::lane::TransformContext;
@@ -16,7 +16,7 @@ pub(super) fn create_props_expression<'a>(
     skip_is: bool,
 ) -> Option<PropsExpression<'a>> {
     let mut obj_props = Vec::new_in(&allocator);
-    let mut seen: vize_carton::FxHashSet<String> = vize_carton::FxHashSet::default();
+    let mut seen: vize_s0::FxHashSet<String> = vize_s0::FxHashSet::default();
 
     for prop in props {
         if skip_is && is_is_prop(prop) {

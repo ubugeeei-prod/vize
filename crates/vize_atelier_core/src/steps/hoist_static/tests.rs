@@ -2,7 +2,7 @@ use super::static_type::{has_only_native_element_descendants, has_only_static_ne
 use super::{StaticType, get_static_type, is_static_node};
 use crate::TemplateChildNode;
 use crate::parser::parse;
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 #[test]
 fn test_static_text() {
@@ -84,7 +84,7 @@ fn test_nested_with_dynamic_text_not_fully_static() {
     assert_eq!(get_static_type(&root.children[0]), StaticType::NotStatic);
 }
 
-fn compile_hoisted(src: &str) -> (vize_carton::String, vize_carton::String) {
+fn compile_hoisted(src: &str) -> (vize_s0::String, vize_s0::String) {
     let allocator = Allocator::new();
     let (mut root, _errors) = parse(&allocator, src);
     let opts = crate::options::TransformOptions {

@@ -2,12 +2,12 @@
 //!
 //! Every predicate here answers a question about an element *and everything
 //! under it*, so each one descends the tree once per nesting level. That makes
-//! them recursion steps in the sense of `vize_carton::recursion`: their call
+//! them recursion steps in the sense of `vize_s0::recursion`: their call
 //! depth is bounded by the input, not by the code, so each descent is wrapped in
 //! `ensure_sufficient_stack` — otherwise a deeply nested template aborts the
 //! process instead of compiling.
 
-use vize_carton::ensure_sufficient_stack;
+use vize_s0::ensure_sufficient_stack;
 
 use super::is_hoistable_static_prop;
 use crate::{ElementNode, ElementType, PropNode, TemplateChildNode};
