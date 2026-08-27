@@ -8,7 +8,7 @@
 //! Vuestic Admin's `VaSelect #content` loop.
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
-use vize_carton::String;
+use vize_s0::String;
 
 /// `<script setup generic>` child whose slot payload is its type parameter.
 const GENERIC_LIST: &str = r#"<script setup lang="ts" generic="T extends { id: string }">
