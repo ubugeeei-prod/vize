@@ -4,7 +4,7 @@ mod constant_expression;
 
 pub use self::constant_expression::is_constant_simple_expression;
 use crate::RuntimeHelper;
-use vize_carton::ToCompactString;
+use vize_s0::ToCompactString;
 
 /// Decode HTML numeric character references in hex or decimal form.
 pub fn decode_html_entities(s: &str) -> String {
@@ -246,8 +246,8 @@ pub fn default_helper_alias(helper: RuntimeHelper) -> &'static str {
     }
 }
 
-// Re-export from vize_carton for convenience
-pub use vize_carton::{String, camelize, capitalize};
+// Re-export from S0 for convenience.
+pub use vize_s0::{String, camelize, capitalize};
 
 /// Capitalize first letter of a string (alias for capitalize)
 #[inline]

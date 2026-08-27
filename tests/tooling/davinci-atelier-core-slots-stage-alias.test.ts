@@ -125,6 +125,14 @@ const sourceMapModule = path.join(
   "codegen",
   "source_map.rs",
 );
+const helpersModule = path.join(
+  repoRoot,
+  "crates",
+  "vize_atelier_core",
+  "src",
+  "codegen",
+  "helpers.rs",
+);
 const slotsRoot = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "slots");
 const propsRoot = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "props");
 const vIfRoot = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "v_if");
@@ -147,6 +155,7 @@ const generateRoot = path.join(
   "codegen",
   "generate",
 );
+const helpersRoot = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "helpers");
 const testRoot = path.join(repoRoot, "crates", "vize_atelier_core", "tests");
 const benchPath = path.join(repoRoot, "crates", "vize_atelier_core", "benches", "davinci.rs");
 const require = createRequire(import.meta.url);
@@ -254,6 +263,7 @@ test("Atelier core migrated compiler slices import S0 storage through the stage 
     laneStructuralKeysModule,
     laneContextModule,
     sourceMapModule,
+    helpersModule,
     ...rustFiles(slotsRoot),
     ...rustFiles(propsRoot),
     ...rustFiles(vIfRoot),
@@ -262,6 +272,7 @@ test("Atelier core migrated compiler slices import S0 storage through the stage 
     ...rustFiles(elementRoot),
     ...rustFiles(expressionRoot),
     ...rustFiles(generateRoot),
+    ...rustFiles(helpersRoot),
     ...rustFiles(testRoot),
     benchPath,
   ]) {

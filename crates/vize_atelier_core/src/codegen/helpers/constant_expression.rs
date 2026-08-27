@@ -16,8 +16,8 @@ use oxc_ast_visit::{
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use oxc_syntax::scope::ScopeFlags;
-use vize_carton::{FxHashSet, String};
 use vize_croquis::builtins::is_global_allowed;
+use vize_s0::{FxHashSet, String};
 
 fn is_constant_binding(binding_type: BindingType) -> bool {
     matches!(
@@ -51,7 +51,7 @@ fn is_runtime_helper_ident(name: &str) -> bool {
 #[derive(Default)]
 struct RuntimeDependencyVisitor<'a> {
     bindings: Option<&'a BindingMetadata>,
-    scopes: Vec<FxHashSet<vize_carton::String>>,
+    scopes: Vec<FxHashSet<vize_s0::String>>,
     has_dynamic_dependency: bool,
 }
 
@@ -80,7 +80,7 @@ impl<'a> RuntimeDependencyVisitor<'a> {
         match pattern {
             oxc_ast_types::BindingPattern::BindingIdentifier(ident) => {
                 if let Some(scope) = self.scopes.last_mut() {
-                    scope.insert(vize_carton::String::new(ident.name.as_str()));
+                    scope.insert(vize_s0::String::new(ident.name.as_str()));
                 }
             }
             oxc_ast_types::BindingPattern::ObjectPattern(obj) => {

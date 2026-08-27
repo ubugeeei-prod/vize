@@ -229,6 +229,20 @@ void test("Atelier core node codegen imports S0 through the preferred physical n
   );
 });
 
+void test("Atelier core helper codegen imports S0 through the preferred physical name", () => {
+  const scan = scanConsumerMigrationSurfaces();
+  const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
+  assert.ok(compiler);
+
+  const expectedRows = [
+    ["crates/vize_atelier_core/src/codegen/helpers.rs", "source", 2],
+    ["crates/vize_atelier_core/src/codegen/helpers/constant_expression.rs", "source", 3],
+  ];
+  for (const [relPath, mode, sites] of expectedRows) {
+    expectCompilerS0PreferredRow(compiler, relPath, mode, sites);
+  }
+});
+
 void test("Atelier core patch flag codegen imports S0 through the preferred physical name", () => {
   const scan = scanConsumerMigrationSurfaces();
   const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
