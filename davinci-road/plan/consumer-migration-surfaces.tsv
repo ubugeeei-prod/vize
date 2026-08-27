@@ -77,7 +77,7 @@ compiler	Compiler	source	crates/vize_atelier_core/src/codegen/slots/params.rs	4	
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/slots/params.rs	4	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/slots/params.rs	4	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/slots/tests.rs	5	s0	S0	stage	vize_s0	preferred	2
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/source_map.rs	35	s0	S0	stage	vize_carton	compat	3
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/source_map.rs	35	s0	S0	stage	vize_s0	preferred	3
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/tests.rs	5	s0	S0	stage	vize_carton	compat	20
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/tests.rs	5	old_ast	old AST/parser	old	vize_relief	legacy	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_for.rs	20	s0	S0	stage	vize_s0	preferred	2

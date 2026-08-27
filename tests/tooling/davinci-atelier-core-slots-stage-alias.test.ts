@@ -34,6 +34,14 @@ const contextModule = path.join(
   "codegen",
   "context.rs",
 );
+const sourceMapModule = path.join(
+  repoRoot,
+  "crates",
+  "vize_atelier_core",
+  "src",
+  "codegen",
+  "source_map.rs",
+);
 const slotsRoot = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "slots");
 const propsRoot = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "props");
 const vIfRoot = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "v_if");
@@ -133,6 +141,7 @@ test("Atelier core migrated codegen slices import S0 storage through the stage a
     vIfModule,
     vForModule,
     contextModule,
+    sourceMapModule,
     ...rustFiles(slotsRoot),
     ...rustFiles(propsRoot),
     ...rustFiles(vIfRoot),
