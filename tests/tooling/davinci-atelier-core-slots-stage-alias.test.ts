@@ -117,6 +117,14 @@ const laneContextModule = path.join(
   "lane",
   "context.rs",
 );
+const laneElementModule = path.join(
+  repoRoot,
+  "crates",
+  "vize_atelier_core",
+  "src",
+  "lane",
+  "element.rs",
+);
 const sourceMapModule = path.join(
   repoRoot,
   "crates",
@@ -156,6 +164,14 @@ const generateRoot = path.join(
   "generate",
 );
 const helpersRoot = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "helpers");
+const laneElementRoot = path.join(
+  repoRoot,
+  "crates",
+  "vize_atelier_core",
+  "src",
+  "lane",
+  "element",
+);
 const testRoot = path.join(repoRoot, "crates", "vize_atelier_core", "tests");
 const benchPath = path.join(repoRoot, "crates", "vize_atelier_core", "benches", "davinci.rs");
 const require = createRequire(import.meta.url);
@@ -262,6 +278,7 @@ test("Atelier core migrated compiler slices import S0 storage through the stage 
     laneOptionsModule,
     laneStructuralKeysModule,
     laneContextModule,
+    laneElementModule,
     sourceMapModule,
     helpersModule,
     ...rustFiles(slotsRoot),
@@ -273,6 +290,7 @@ test("Atelier core migrated compiler slices import S0 storage through the stage 
     ...rustFiles(expressionRoot),
     ...rustFiles(generateRoot),
     ...rustFiles(helpersRoot),
+    ...rustFiles(laneElementRoot),
     ...rustFiles(testRoot),
     benchPath,
   ]) {

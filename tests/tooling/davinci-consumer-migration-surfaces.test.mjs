@@ -274,6 +274,21 @@ void test("Atelier core singleton compiler slices import S0 through the preferre
   }
 });
 
+void test("Atelier core lane element imports S0 through the preferred physical name", () => {
+  const scan = scanConsumerMigrationSurfaces();
+  const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
+  assert.ok(compiler);
+
+  const expectedRows = [
+    ["crates/vize_atelier_core/src/lane/element.rs", "source", 2],
+    ["crates/vize_atelier_core/src/lane/element/directive_expressions.rs", "source", 1],
+    ["crates/vize_atelier_core/src/lane/element/tests.rs", "test", 1],
+  ];
+  for (const [relPath, mode, sites] of expectedRows) {
+    expectCompilerS0PreferredRow(compiler, relPath, mode, sites);
+  }
+});
+
 void test("consumer migration scan keeps every rollout consumer and surface class visible", () => {
   const scan = scanConsumerMigrationSurfaces();
   const consumers = new Map(scan.consumers.map((consumer) => [consumer.id, consumer]));
