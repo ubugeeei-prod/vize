@@ -269,6 +269,19 @@ void test("Atelier core runtime helpers import S0 through the preferred physical
   );
 });
 
+void test("Atelier core lane options import S0 through the preferred physical name", () => {
+  const scan = scanConsumerMigrationSurfaces();
+  const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
+  assert.ok(compiler);
+
+  expectCompilerS0PreferredRow(
+    compiler,
+    "crates/vize_atelier_core/src/lane/options.rs",
+    "source",
+    1,
+  );
+});
+
 void test("consumer migration scan keeps every rollout consumer and surface class visible", () => {
   const scan = scanConsumerMigrationSurfaces();
   const consumers = new Map(scan.consumers.map((consumer) => [consumer.id, consumer]));

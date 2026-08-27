@@ -93,6 +93,14 @@ const runtimeHelpersModule = path.join(
   "src",
   "runtime_helpers.rs",
 );
+const laneOptionsModule = path.join(
+  repoRoot,
+  "crates",
+  "vize_atelier_core",
+  "src",
+  "lane",
+  "options.rs",
+);
 const sourceMapModule = path.join(
   repoRoot,
   "crates",
@@ -226,6 +234,7 @@ test("Atelier core migrated compiler slices import S0 storage through the stage 
     patchFlagStaticLiteralModule,
     rootModule,
     runtimeHelpersModule,
+    laneOptionsModule,
     sourceMapModule,
     ...rustFiles(slotsRoot),
     ...rustFiles(propsRoot),

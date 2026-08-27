@@ -1,4 +1,4 @@
-use vize_carton::{FxHashSet, String};
+use vize_s0::{FxHashSet, String};
 
 use crate::options::CustomElementMatcher;
 
