@@ -133,7 +133,7 @@ fn generate_custom_directive_entry(ctx: &mut CodegenContext, dir: &crate::Direct
                 }
             }
             ExpressionNode::Compound(compound) => {
-                let text = vize_carton::String::new(compound.loc.span.slice(&ctx.source));
+                let text = vize_s0::String::new(compound.loc.span.slice(&ctx.source));
                 ctx.push(&text);
             }
         }

@@ -14,7 +14,7 @@ use super::super::{
     patch_flag::{calculate_element_patch_info, patch_flag_name},
     props::is_supported_directive,
 };
-use vize_carton::ToCompactString;
+use vize_s0::ToCompactString;
 
 /// Emit a static object key using identifier syntax when JavaScript permits it.
 ///

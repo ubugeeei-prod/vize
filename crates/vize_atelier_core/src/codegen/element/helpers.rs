@@ -6,7 +6,7 @@
 use crate::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode,
 };
-use vize_carton::{ensure_sufficient_stack, is_builtin_directive};
+use vize_s0::{ensure_sufficient_stack, is_builtin_directive};
 
 use super::super::{
     context::CodegenContext, node::generate_node, props::is_supported_directive,
