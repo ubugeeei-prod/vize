@@ -18,9 +18,9 @@
 //! result is dual-run against the legacy wrapped re-parse and compared
 //! exactly (code bytes and helper usage); divergence panics.
 
-#[cfg(any(test, feature = "davinci-differential"))]
-use vize_carton::String;
 use vize_relief::JsExpression;
+#[cfg(any(test, feature = "davinci-differential"))]
+use vize_s0::String;
 
 use crate::lane::TransformContext;
 

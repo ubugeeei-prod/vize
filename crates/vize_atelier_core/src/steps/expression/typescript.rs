@@ -8,7 +8,7 @@ use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use oxc_transformer::{TransformOptions, Transformer};
-use vize_carton::String;
+use vize_s0::String;
 
 /// Check if expression contains TypeScript syntax that needs stripping
 pub(crate) fn needs_typescript_stripping(content: &str) -> bool {

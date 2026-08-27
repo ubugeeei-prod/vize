@@ -3,7 +3,7 @@
 //! Transforms inline event handler expressions (e.g., `@click="count++"`)
 //! by prefixing identifiers and wrapping in arrow functions when needed.
 
-use vize_carton::{Box, String};
+use vize_s0::{Box, String};
 
 use crate::{ConstantType, ExpressionNode, SimpleExpressionNode, lane::TransformContext};
 
@@ -204,7 +204,7 @@ mod tests {
         lane::TransformContext,
         options::{BindingMetadata, BindingType, TransformOptions},
     };
-    use vize_carton::{Allocator, Box, FxHashMap};
+    use vize_s0::{Allocator, Box, FxHashMap};
 
     fn test_context<'a>(allocator: &'a Allocator, source: &'a str) -> TransformContext<'a> {
         let mut bindings = FxHashMap::default();

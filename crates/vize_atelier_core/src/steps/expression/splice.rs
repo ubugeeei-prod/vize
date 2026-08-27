@@ -30,7 +30,7 @@
 //!   prefix then displaced it at the same position, so an edit emits as
 //!   `prefix` then `suffix`.
 
-use vize_carton::{FxHashSet, String};
+use vize_s0::{FxHashSet, String};
 
 /// Splice pure insertions into `original` in one forward pass.
 ///
@@ -111,7 +111,7 @@ pub(super) fn splice_replacements(
 #[cfg(test)]
 mod tests {
     use super::{splice_insertions, splice_replacements};
-    use vize_carton::{FxHashSet, String};
+    use vize_s0::{FxHashSet, String};
 
     /// The retired string-rewriting loop, kept verbatim as the test oracle:
     /// stable descending sort, then end-to-start `insert_str` with the

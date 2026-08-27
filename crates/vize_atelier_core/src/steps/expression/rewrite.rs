@@ -12,8 +12,8 @@
 //! `plan/phase-1.md` P1-9.
 
 use oxc_span::SourceType;
-use vize_carton::String;
 use vize_relief::JsExpression;
+use vize_s0::String;
 
 use crate::SourceLocation;
 use crate::errors::ErrorCode;

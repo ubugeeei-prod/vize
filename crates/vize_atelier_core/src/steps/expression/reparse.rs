@@ -13,8 +13,8 @@ use oxc_ast::ast::Expression;
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::String;
 use vize_relief::JsExpression;
+use vize_s0::String;
 
 use crate::lane::TransformContext;
 

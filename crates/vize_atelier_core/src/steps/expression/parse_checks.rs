@@ -3,7 +3,7 @@
 
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::String;
+use vize_s0::String;
 
 /// Returns true when `content` parses as a TypeScript expression or program.
 ///

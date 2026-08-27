@@ -13,8 +13,8 @@ use oxc_ast_visit::{
     },
 };
 use oxc_syntax::scope::ScopeFlags;
-use vize_carton::FxHashSet;
-use vize_carton::String;
+use vize_s0::FxHashSet;
+use vize_s0::String;
 
 use vize_croquis::builtins::is_global_allowed;
 

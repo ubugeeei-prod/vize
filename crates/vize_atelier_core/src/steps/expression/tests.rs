@@ -14,7 +14,7 @@ mod transform_expression_tests {
         lane::TransformContext,
         options::{BindingMetadata, BindingType, TransformOptions},
     };
-    use vize_carton::{Allocator, Box, FxHashMap};
+    use vize_s0::{Allocator, Box, FxHashMap};
 
     fn test_context<'a>(allocator: &'a Allocator, source: &'a str) -> TransformContext<'a> {
         let mut bindings = FxHashMap::default();

@@ -5,7 +5,7 @@
 
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{FxHashSet, String};
+use vize_s0::{FxHashSet, String};
 
 use vize_croquis::builtins::is_global_allowed;
 

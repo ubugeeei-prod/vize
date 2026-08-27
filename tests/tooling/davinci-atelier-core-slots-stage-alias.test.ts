@@ -330,6 +330,8 @@ test("Atelier core migrated compiler slices import S0 storage through the stage 
     ...rustFiles(generateRoot),
     ...rustFiles(helpersRoot),
     stepsElementModule,
+    path.join(repoRoot, "crates/vize_atelier_core/src/steps/expression.rs"),
+    ...rustFiles(path.join(repoRoot, "crates/vize_atelier_core/src/steps/expression")),
     ...rustFiles(laneElementRoot),
     ...rustFiles(testRoot),
     benchPath,
