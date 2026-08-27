@@ -8,6 +8,7 @@ import { scanConsumerMigrationSurfaces } from "../../tools/davinci/lib/consumer-
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const recentIssueRows = [
+  ["crates/vize_canon/src/batch/type_checker/tests/recent_issues/directive_anchors.rs", "test", 1],
   [
     "crates/vize_canon/src/batch/type_checker/tests/recent_issues/global_component_callbacks.rs",
     "test",
