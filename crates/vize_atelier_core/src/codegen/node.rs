@@ -8,7 +8,7 @@ use super::element::generate_element;
 use super::expression::generate_compound_expression;
 use super::v_for::generate_for;
 use super::v_if::generate_if;
-use vize_carton::{ToCompactString, ensure_sufficient_stack};
+use vize_s0::{ToCompactString, ensure_sufficient_stack};
 
 /// Generate node code
 ///
@@ -16,7 +16,7 @@ use vize_carton::{ToCompactString, ensure_sufficient_stack};
 /// the one point whose call depth tracks template nesting depth. The guard moves
 /// the descent onto a fresh stack before the thread stack runs out, because a
 /// stack overflow aborts the process instead of producing a diagnostic
-/// (`vize_carton::recursion`).
+/// (`vize_s0::recursion`).
 pub fn generate_node(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>) {
     crate::walk_probe::record_visit(crate::walk_probe::WalkStage::Codegen);
     ensure_sufficient_stack(|| match node {
