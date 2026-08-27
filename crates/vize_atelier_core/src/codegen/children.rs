@@ -11,7 +11,7 @@ use super::expression::generate_expression;
 use super::helpers::escape_js_string;
 use super::node::generate_node;
 use super::props::generate_props;
-use vize_carton::ToCompactString;
+use vize_s0::ToCompactString;
 
 /// Generate children array
 pub fn generate_children(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {

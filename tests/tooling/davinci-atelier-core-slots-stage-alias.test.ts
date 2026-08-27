@@ -42,6 +42,14 @@ const componentBindingModule = path.join(
   "codegen",
   "component_binding.rs",
 );
+const childrenModule = path.join(
+  repoRoot,
+  "crates",
+  "vize_atelier_core",
+  "src",
+  "codegen",
+  "children.rs",
+);
 const sourceMapModule = path.join(
   repoRoot,
   "crates",
@@ -150,6 +158,7 @@ test("Atelier core migrated codegen slices import S0 storage through the stage a
     vForModule,
     contextModule,
     componentBindingModule,
+    childrenModule,
     sourceMapModule,
     ...rustFiles(slotsRoot),
     ...rustFiles(propsRoot),
