@@ -92,7 +92,7 @@ compiler	Compiler	source	crates/vize_atelier_core/src/expr_parse_probe.rs	22	raw
 compiler	Compiler	source	crates/vize_atelier_core/src/lane.rs	14	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_core/src/lane.rs	14	old_ast	old AST/parser	old	vize_armature	legacy	1
 compiler	Compiler	source	crates/vize_atelier_core/src/lane.rs	14	croquis	Croquis analysis	old	vize_croquis	legacy	1
-compiler	Compiler	source	crates/vize_atelier_core/src/lane/context.rs	3	s0	S0	stage	vize_carton	compat	4
+compiler	Compiler	source	crates/vize_atelier_core/src/lane/context.rs	3	s0	S0	stage	vize_s0	preferred	4
 compiler	Compiler	source	crates/vize_atelier_core/src/lane/context.rs	3	old_ast	old AST/parser	old	vize_armature	legacy	3
 compiler	Compiler	source	crates/vize_atelier_core/src/lane/context.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	3
 compiler	Compiler	source	crates/vize_atelier_core/src/lane/element.rs	3	s0	S0	stage	vize_carton	compat	2

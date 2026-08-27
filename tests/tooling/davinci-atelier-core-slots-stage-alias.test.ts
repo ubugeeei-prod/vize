@@ -109,6 +109,14 @@ const laneStructuralKeysModule = path.join(
   "lane",
   "structural_keys.rs",
 );
+const laneContextModule = path.join(
+  repoRoot,
+  "crates",
+  "vize_atelier_core",
+  "src",
+  "lane",
+  "context.rs",
+);
 const sourceMapModule = path.join(
   repoRoot,
   "crates",
@@ -244,6 +252,7 @@ test("Atelier core migrated compiler slices import S0 storage through the stage 
     runtimeHelpersModule,
     laneOptionsModule,
     laneStructuralKeysModule,
+    laneContextModule,
     sourceMapModule,
     ...rustFiles(slotsRoot),
     ...rustFiles(propsRoot),

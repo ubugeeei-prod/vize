@@ -1,8 +1,8 @@
 //! TransformContext implementation.
 
-use vize_carton::{Allocator, Box, CompactString, String, interner::Interner};
 use vize_croquis::reactivity::ReactiveKind;
 use vize_croquis::{BindingType, Croquis, ScopeBinding, ScopeKind, VForScopeData, VSlotScopeData};
+use vize_s0::{Allocator, Box, CompactString, String, interner::Interner};
 
 use crate::errors::{CompilerError, ErrorCode};
 use crate::options::TransformOptions;
@@ -43,8 +43,8 @@ impl<'a> TransformContext<'a> {
             directives: std::vec::Vec::new(),
             #[cfg(feature = "legacy")]
             filters: std::vec::Vec::new(),
-            hoists: vize_carton::Vec::new_in(&allocator),
-            cached: vize_carton::Vec::new_in(&allocator),
+            hoists: vize_s0::Vec::new_in(&allocator),
+            cached: vize_s0::Vec::new_in(&allocator),
             temps: 0,
             scope_chain: vize_croquis::ScopeChain::new(),
             scoped_slots: 0,
@@ -371,7 +371,7 @@ impl<'a> TransformContext<'a> {
             VForScopeData {
                 value_alias: CompactString::new(value_alias.unwrap_or("")),
                 value_bindings: value_alias
-                    .map(|alias| vize_carton::smallvec![CompactString::new(alias)])
+                    .map(|alias| vize_s0::smallvec![CompactString::new(alias)])
                     .unwrap_or_default(),
                 key_alias: key_alias.map(CompactString::new),
                 index_alias: index_alias.map(CompactString::new),

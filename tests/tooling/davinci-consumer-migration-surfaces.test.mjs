@@ -253,6 +253,7 @@ void test("Atelier core singleton compiler slices import S0 through the preferre
     ["crates/vize_atelier_core/src/runtime_helpers.rs", "source", 1],
     ["crates/vize_atelier_core/src/lane/options.rs", "source", 1],
     ["crates/vize_atelier_core/src/lane/structural_keys.rs", "source", 1],
+    ["crates/vize_atelier_core/src/lane/context.rs", "source", 4],
   ];
   for (const [relPath, mode, sites] of expectedRows) {
     expectCompilerS0PreferredRow(compiler, relPath, mode, sites);
