@@ -68,6 +68,14 @@ const generateModule = path.join(
   "generate.rs",
 );
 const nodeModule = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "node.rs");
+const patchFlagModule = path.join(
+  repoRoot,
+  "crates",
+  "vize_atelier_core",
+  "src",
+  "codegen",
+  "patch_flag.rs",
+);
 const sourceMapModule = path.join(
   repoRoot,
   "crates",
@@ -197,6 +205,7 @@ test("Atelier core migrated codegen slices import S0 storage through the stage a
     expressionModule,
     generateModule,
     nodeModule,
+    patchFlagModule,
     sourceMapModule,
     ...rustFiles(slotsRoot),
     ...rustFiles(propsRoot),
