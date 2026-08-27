@@ -101,7 +101,7 @@ export const testAndBenchmarkTasks = defineTasks({
   // dev profile (~1m20s). Building once in the CI profile saves both legs.
   "test:js": noCacheTask(`${runTask("build:native:test")} && ${jsPackageTestCommand}`),
   "test:scripts": noCacheTask(
-    `${runTask("build:native:test")} && VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 tests/tooling/*.test.ts`,
+    `${runTask("build:native:test")} && VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 tests/tooling/*.test.ts tests/tooling/*.test.mjs`,
   ),
   "test:vscode-extension:vsix": noCacheTask(
     runInVscodeExtension(

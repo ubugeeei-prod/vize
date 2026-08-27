@@ -125,6 +125,14 @@ const laneElementModule = path.join(
   "lane",
   "element.rs",
 );
+const laneExtensionsModule = path.join(
+  repoRoot,
+  "crates",
+  "vize_atelier_core",
+  "src",
+  "lane",
+  "extensions.rs",
+);
 const sourceMapModule = path.join(
   repoRoot,
   "crates",
@@ -279,6 +287,7 @@ test("Atelier core migrated compiler slices import S0 storage through the stage 
     laneStructuralKeysModule,
     laneContextModule,
     laneElementModule,
+    laneExtensionsModule,
     sourceMapModule,
     helpersModule,
     ...rustFiles(slotsRoot),

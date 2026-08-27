@@ -283,6 +283,7 @@ void test("Atelier core lane element imports S0 through the preferred physical n
     ["crates/vize_atelier_core/src/lane/element.rs", "source", 2],
     ["crates/vize_atelier_core/src/lane/element/directive_expressions.rs", "source", 1],
     ["crates/vize_atelier_core/src/lane/element/tests.rs", "test", 1],
+    ["crates/vize_atelier_core/src/lane/extensions.rs", "source", 1],
   ];
   for (const [relPath, mode, sites] of expectedRows) {
     expectCompilerS0PreferredRow(compiler, relPath, mode, sites);

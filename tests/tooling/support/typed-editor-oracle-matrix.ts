@@ -28,7 +28,7 @@ const toolingTestCiEvidence: Evidence = {
   label: "test-scripts runs tests/tooling with VIZE_TEST_REQUIRE_TSGO=1",
   path: "tools/vite-plus/tasks/test-benchmark.ts",
   requiredText: [
-    "VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 tests/tooling/*.test.ts",
+    "VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 tests/tooling/*.test.ts tests/tooling/*.test.mjs",
   ],
 };
 

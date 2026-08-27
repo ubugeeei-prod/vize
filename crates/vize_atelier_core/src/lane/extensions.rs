@@ -1,7 +1,7 @@
 //! Specialized transform entry points layered over the shared transform lane.
 
-use vize_carton::{Allocator, String};
 use vize_croquis::Croquis;
+use vize_s0::{Allocator, String};
 
 use super::{JsxTransformCompat, TransformLaneOptions, transform_inner};
 use crate::{CompilerError, RootNode, TransformOptions, options::CustomElementMatcher};
