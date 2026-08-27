@@ -8,10 +8,10 @@ use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk::{
     walk_assignment_expression, walk_object_property, walk_update_expression,
 };
-use vize_carton::FxHashSet;
-use vize_carton::String;
-use vize_carton::ToCompactString;
 use vize_croquis::builtins::is_global_allowed;
+use vize_s0::FxHashSet;
+use vize_s0::String;
+use vize_s0::ToCompactString;
 
 use super::super::context::CodegenContext;
 

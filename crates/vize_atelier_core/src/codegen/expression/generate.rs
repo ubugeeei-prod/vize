@@ -11,7 +11,7 @@ use super::{
     prefix_context::{prefix_identifiers_with_context, prefix_identifiers_with_context_node},
     scope_prefix::{contains_slot_param_scope_prefix, strip_scope_prefixes_for_slot_params},
 };
-use vize_carton::String;
+use vize_s0::String;
 
 /// Generate a simple expression with appropriate prefix.
 /// Used for ref attribute values that need `$setup.` prefix in function mode.
@@ -174,7 +174,7 @@ mod tests {
     use crate::codegen::expression::{generate_event_handler, generate_simple_expression};
     use crate::options::{BindingMetadata, BindingType, CodegenOptions};
     use crate::{ExpressionNode, SimpleExpressionNode, SourceLocation};
-    use vize_carton::{Allocator, FxHashMap};
+    use vize_s0::{Allocator, FxHashMap};
 
     #[test]
     fn test_shorthand_property_expansion() {
@@ -294,7 +294,7 @@ mod tests {
 
         let allocator = Allocator::new();
         let mut ctx = CodegenContext::new(options);
-        let exp = ExpressionNode::Simple(vize_carton::Box::new_in(
+        let exp = ExpressionNode::Simple(vize_s0::Box::new_in(
             SimpleExpressionNode {
                 content: "$event => (selectedFolders.value = selectedFolders.value.filter((f) => f.id !== folder.value.id))",
                 is_static: false,

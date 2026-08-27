@@ -25,22 +25,22 @@ compiler	Compiler	source	crates/vize_atelier_core/src/codegen/element/helpers.rs
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/element/inline.rs	36	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/element/v_once.rs	17	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/emit.rs	7	s0	S0	stage	vize_s0	preferred	2
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression.rs	22	s0	S0	stage	vize_carton	compat	2
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/comment_rewrite.rs	16	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/generate.rs	14	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/expression/generate.rs	177	s0	S0	stage	vize_carton	compat	2
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/helpers.rs	7	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_context.rs	10	s0	S0	stage	vize_carton	compat	3
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression.rs	22	s0	S0	stage	vize_s0	preferred	2
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/comment_rewrite.rs	16	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/generate.rs	14	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/expression/generate.rs	177	s0	S0	stage	vize_s0	preferred	2
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/helpers.rs	7	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_context.rs	10	s0	S0	stage	vize_s0	preferred	3
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_context.rs	10	old_ast	old AST/parser	old	vize_relief	legacy	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_context.rs	10	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_context.rs	10	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_context.rs	10	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_context.rs	10	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_visitor.rs	7	s0	S0	stage	vize_carton	compat	3
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_visitor.rs	7	s0	S0	stage	vize_s0	preferred	3
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_visitor.rs	7	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_visitor.rs	7	raw_oxc	raw OXC	raw	oxc_ast	raw	15
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/prefix_visitor.rs	7	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	2
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/scope_prefix.rs	4	s0	S0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/expression/scope_prefix.rs	4	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/generate.rs	18	s0	S0	stage	vize_carton	compat	6
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/generate/collect_helpers.rs	14	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/generate/static_vnode.rs	3	s0	S0	stage	vize_carton	compat	4

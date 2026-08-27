@@ -4,7 +4,7 @@
 //! line comment conversion, and slot parameter stripping.
 
 use super::super::context::CodegenContext;
-use vize_carton::String;
+use vize_s0::String;
 
 fn is_identifier_continue(c: char) -> bool {
     c.is_alphanumeric() || c == '_' || c == '$'

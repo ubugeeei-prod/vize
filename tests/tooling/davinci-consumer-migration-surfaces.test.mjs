@@ -36,6 +36,16 @@ function parseSurfaceRows(tsv) {
   });
 }
 
+function expectCompilerS0PreferredRow(compiler, relPath, mode, sites) {
+  const row = compiler.fileRows.find(
+    (candidate) => candidate.relPath === relPath && candidate.mode === mode,
+  );
+  assert.ok(row, `${relPath} (${mode})`);
+  assert.equal(row.surfaceCounts.s0, sites, relPath);
+  assert.equal(row.surfaceNameCounts.s0.vize_s0, sites, relPath);
+  assert.equal(row.surfaceNameCounts.s0.vize_carton ?? 0, 0, relPath);
+}
+
 void test("consumer migration scan classifies stage physical names separately from code names", () => {
   const s0 = SURFACES.find((surface) => surface.id === "s0");
   assert.ok(s0);
@@ -163,15 +173,32 @@ void test("Atelier core emit codegen imports S0 through the preferred physical n
   const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
   assert.ok(compiler);
 
-  const emitRow = compiler.fileRows.find(
-    (row) =>
-      row.relPath === "crates/vize_atelier_core/src/codegen/emit.rs" && row.mode === "source",
+  expectCompilerS0PreferredRow(
+    compiler,
+    "crates/vize_atelier_core/src/codegen/emit.rs",
+    "source",
+    2,
   );
-  assert.ok(emitRow);
-  assert.equal(emitRow.surfaceCounts.s0, 2);
-  assert.equal(emitRow.surfaceNameCounts.s0.vize_s0, 2);
-  assert.equal(emitRow.surfaceNameCounts.s0.vize_carton ?? 0, 0);
-  assert.equal(emitRow.nameKindCounts.compat, 0);
+});
+
+void test("Atelier core expression codegen imports S0 through the preferred physical name", () => {
+  const scan = scanConsumerMigrationSurfaces();
+  const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
+  assert.ok(compiler);
+
+  const expectedRows = [
+    ["crates/vize_atelier_core/src/codegen/expression.rs", "source", 2],
+    ["crates/vize_atelier_core/src/codegen/expression/comment_rewrite.rs", "source", 1],
+    ["crates/vize_atelier_core/src/codegen/expression/generate.rs", "source", 1],
+    ["crates/vize_atelier_core/src/codegen/expression/generate.rs", "test", 2],
+    ["crates/vize_atelier_core/src/codegen/expression/helpers.rs", "source", 1],
+    ["crates/vize_atelier_core/src/codegen/expression/prefix_context.rs", "source", 3],
+    ["crates/vize_atelier_core/src/codegen/expression/prefix_visitor.rs", "source", 3],
+    ["crates/vize_atelier_core/src/codegen/expression/scope_prefix.rs", "source", 1],
+  ];
+  for (const [relPath, mode, sites] of expectedRows) {
+    expectCompilerS0PreferredRow(compiler, relPath, mode, sites);
+  }
 });
 
 void test("consumer migration scan keeps every rollout consumer and surface class visible", () => {

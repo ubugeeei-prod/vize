@@ -1,7 +1,7 @@
 //! Generated scope-prefix cleanup for template locals.
 
 use super::super::context::CodegenContext;
-use vize_carton::String;
+use vize_s0::String;
 
 const SLOT_PARAM_SCOPE_PREFIXES: [&str; 6] = [
     "_ctx.",
