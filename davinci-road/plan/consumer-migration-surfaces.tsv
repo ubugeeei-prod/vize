@@ -102,7 +102,7 @@ compiler	Compiler	source	crates/vize_atelier_core/src/lane/extensions.rs	3	s0	S0
 compiler	Compiler	source	crates/vize_atelier_core/src/lane/extensions.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_core/src/lane/options.rs	1	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/lane/patterned_template.rs	3	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_core/src/lane/structural_keys.rs	3	s0	S0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_core/src/lane/structural_keys.rs	3	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/lane/structural.rs	3	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_core/src/lane/structural.rs	3	old_ast	old AST/parser	old	vize_relief	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/lane/structural/tests.rs	7	s0	S0	stage	vize_carton	compat	1
