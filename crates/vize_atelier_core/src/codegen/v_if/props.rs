@@ -1,7 +1,7 @@
 //! Source-ordered props generation for v-if branches.
 
 use crate::{ElementNode, ExpressionNode, IfBranchNode, PropNode, RuntimeHelper};
-use vize_carton::{FxHashSet, String};
+use vize_s0::{FxHashSet, String};
 
 use super::{
     super::{
