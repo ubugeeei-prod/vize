@@ -1587,7 +1587,7 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/generic_emit_guard.rs	6	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/global_component_callbacks.rs	49	s0	S0	stage	vize_s0	preferred	8
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/global_html_fallthrough_attrs.rs	21	s0	S0	stage	vize_s0	preferred	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/literal_union_props.rs	7	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/literal_union_props.rs	7	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/options_api_bridge_anchors.rs	21	s0	S0	stage	vize_carton	compat	3
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/single_required_camel_prop.rs	4	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/split_script_diagnostic_anchors.rs	8	s0	S0	stage	vize_carton	compat	1

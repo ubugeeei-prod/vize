@@ -4,7 +4,7 @@
 //! Oracle: TypeScript 6.0.3 and Vue 3.6.0-beta.10.
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 #[test]
 fn string_literal_union_props_report_only_the_wrong_literal() {
