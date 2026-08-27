@@ -38,9 +38,9 @@ function onDragstart(ev: DragEvent, item: T) {}
     assert_eq!(
         snapshot,
         Some(vec![(
-            vize_carton::String::from("src/App.vue"),
+            vize_s0::String::from("src/App.vue"),
             Some(2339),
-            vize_carton::String::from(
+            vize_s0::String::from(
                 "11:60:error Property 'missing' does not exist on type 'DragEvent'.",
             ),
         )]),
@@ -69,9 +69,9 @@ fn untyped_slot_outlet_callbacks_remain_implicit_any() {
     assert_eq!(
         snapshot,
         Some(vec![(
-            vize_carton::String::from("src/App.vue"),
+            vize_s0::String::from("src/App.vue"),
             Some(7006),
-            vize_carton::String::from("2:22:error Parameter 'ev' implicitly has an 'any' type."),
+            vize_s0::String::from("2:22:error Parameter 'ev' implicitly has an 'any' type."),
         )]),
     );
 }
@@ -121,9 +121,9 @@ const props = {
     assert_eq!(
         snapshot,
         Some(vec![(
-            vize_carton::String::from("src/App.vue"),
+            vize_s0::String::from("src/App.vue"),
             Some(2322),
-            vize_carton::String::from(
+            vize_s0::String::from(
                 "12:57:error Type '(value: string) => string' is not assignable to type '(value: number | null) => any'.\n\
                  Types of parameters 'value' and '<target>' are incompatible.\n\
                  Type 'number | null' is not assignable to type 'string'.\n\
@@ -171,9 +171,9 @@ function numberOnly(value: number) { value.toFixed() }
     assert_eq!(
         snapshot,
         Some(vec![(
-            vize_carton::String::from("src/App.vue"),
+            vize_s0::String::from("src/App.vue"),
             Some(2322),
-            vize_carton::String::from(
+            vize_s0::String::from(
                 "7:42:error Type '(value: number) => void' is not assignable to type '(value: number | null) => any'.\n\
                  Types of parameters 'value' and '<target>' are incompatible.\n\
                  Type 'number | null' is not assignable to type 'number'.\n\
@@ -217,18 +217,18 @@ function wrongTransition(el: string) { el.toUpperCase() }
         snapshot,
         Some(vec![
             (
-                vize_carton::String::from("src/App.vue"),
+                vize_s0::String::from("src/App.vue"),
                 Some(2322),
-                vize_carton::String::from(
+                vize_s0::String::from(
                     "12:6:error Type '(el: string) => void' is not assignable to type '(el: Element) => any'.\n\
                      Types of parameters 'el' and '<target>' are incompatible.\n\
                      Type 'Element' is not assignable to type 'string'."
                 ),
             ),
             (
-                vize_carton::String::from("src/App.vue"),
+                vize_s0::String::from("src/App.vue"),
                 Some(2339),
-                vize_carton::String::from(
+                vize_s0::String::from(
                     "11:30:error Property 'missing' does not exist on type 'Element'.",
                 ),
             ),
@@ -270,18 +270,18 @@ function wrongTransition(el: string) { el.toUpperCase() }
         snapshot,
         Some(vec![
             (
-                vize_carton::String::from("src/App.vue"),
+                vize_s0::String::from("src/App.vue"),
                 Some(2322),
-                vize_carton::String::from(
+                vize_s0::String::from(
                     "12:6:error Type '(el: string) => void' is not assignable to type '(el: Element) => any'.\n\
                      Types of parameters 'el' and '<target>' are incompatible.\n\
                      Type 'Element' is not assignable to type 'string'."
                 ),
             ),
             (
-                vize_carton::String::from("src/App.vue"),
+                vize_s0::String::from("src/App.vue"),
                 Some(2339),
-                vize_carton::String::from(
+                vize_s0::String::from(
                     "11:30:error Property 'missing' does not exist on type 'Element'.",
                 ),
             ),
