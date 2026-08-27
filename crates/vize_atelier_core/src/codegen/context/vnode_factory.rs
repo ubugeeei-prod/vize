@@ -1,4 +1,4 @@
-use vize_carton::{FxHashSet, String, ToCompactString};
+use vize_s0::{FxHashSet, String, ToCompactString};
 
 use crate::codegen::helpers::default_helper_alias;
 use crate::codegen::source_map::SourceMapBuilder;

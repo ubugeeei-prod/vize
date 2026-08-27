@@ -7,8 +7,8 @@ use crate::runtime_helpers::RuntimeHelpers;
 use crate::{Namespace, RuntimeHelper};
 
 use super::source_map::SourceMapBuilder;
-use vize_carton::FxHashSet;
-use vize_carton::String;
+use vize_s0::FxHashSet;
+use vize_s0::String;
 
 /// Code generation context using a UTF-8 string buffer for performance.
 pub struct CodegenContext {
