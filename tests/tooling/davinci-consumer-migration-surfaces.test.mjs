@@ -201,6 +201,21 @@ void test("Atelier core expression codegen imports S0 through the preferred phys
   }
 });
 
+void test("Atelier core generate codegen imports S0 through the preferred physical name", () => {
+  const scan = scanConsumerMigrationSurfaces();
+  const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
+  assert.ok(compiler);
+
+  const expectedRows = [
+    ["crates/vize_atelier_core/src/codegen/generate.rs", "source", 6],
+    ["crates/vize_atelier_core/src/codegen/generate/collect_helpers.rs", "source", 1],
+    ["crates/vize_atelier_core/src/codegen/generate/static_vnode.rs", "source", 4],
+  ];
+  for (const [relPath, mode, sites] of expectedRows) {
+    expectCompilerS0PreferredRow(compiler, relPath, mode, sites);
+  }
+});
+
 void test("consumer migration scan keeps every rollout consumer and surface class visible", () => {
   const scan = scanConsumerMigrationSurfaces();
   const consumers = new Map(scan.consumers.map((consumer) => [consumer.id, consumer]));

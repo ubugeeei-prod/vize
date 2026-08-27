@@ -1,6 +1,6 @@
 //! Serialization for fully-static nested VNodes.
 
-use vize_carton::{String, ensure_sufficient_stack};
+use vize_s0::{String, ensure_sufficient_stack};
 
 use crate::{ElementNode, PropNode, RuntimeHelper, TemplateChildNode};
 
@@ -101,7 +101,7 @@ fn generate_static_child_array_to_bytes(
 fn build_static_props(el: &ElementNode<'_>) -> Option<String> {
     let mut buf = String::default();
     buf.push_str("{ ");
-    let mut seen: vize_carton::FxHashSet<vize_carton::String> = vize_carton::FxHashSet::default();
+    let mut seen: vize_s0::FxHashSet<vize_s0::String> = vize_s0::FxHashSet::default();
     let mut emitted = 0usize;
 
     for prop in el.props.iter() {

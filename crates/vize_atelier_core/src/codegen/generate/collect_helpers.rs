@@ -11,7 +11,7 @@ use crate::{
     JsChildNode, PropsExpression, RootNode, RuntimeHelper, TemplateChildNode, VNodeCall,
     VNodeChildren, VNodeTag,
 };
-use vize_carton::ensure_sufficient_stack;
+use vize_s0::ensure_sufficient_stack;
 
 /// Collect runtime helpers needed by hoisted nodes.
 pub(in crate::codegen) fn collect_hoist_helpers(
@@ -24,7 +24,7 @@ pub(in crate::codegen) fn collect_hoist_helpers(
 }
 
 /// Guarded: a hoisted subtree is as deep as the template subtree it came from,
-/// and this walk descends one frame per level (`vize_carton::recursion`).
+/// and this walk descends one frame per level (`vize_s0::recursion`).
 fn collect_helpers_from_js_child_node(node: &JsChildNode<'_>, helpers: &mut Vec<RuntimeHelper>) {
     ensure_sufficient_stack(|| match node {
         JsChildNode::VNodeCall(vnode) => collect_helpers_from_vnode_call(vnode, helpers),

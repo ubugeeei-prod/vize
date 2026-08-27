@@ -59,6 +59,14 @@ const expressionModule = path.join(
   "codegen",
   "expression.rs",
 );
+const generateModule = path.join(
+  repoRoot,
+  "crates",
+  "vize_atelier_core",
+  "src",
+  "codegen",
+  "generate.rs",
+);
 const sourceMapModule = path.join(
   repoRoot,
   "crates",
@@ -80,6 +88,14 @@ const expressionRoot = path.join(
   "src",
   "codegen",
   "expression",
+);
+const generateRoot = path.join(
+  repoRoot,
+  "crates",
+  "vize_atelier_core",
+  "src",
+  "codegen",
+  "generate",
 );
 const testRoot = path.join(repoRoot, "crates", "vize_atelier_core", "tests");
 const benchPath = path.join(repoRoot, "crates", "vize_atelier_core", "benches", "davinci.rs");
@@ -178,6 +194,7 @@ test("Atelier core migrated codegen slices import S0 storage through the stage a
     childrenModule,
     emitModule,
     expressionModule,
+    generateModule,
     sourceMapModule,
     ...rustFiles(slotsRoot),
     ...rustFiles(propsRoot),
@@ -186,6 +203,7 @@ test("Atelier core migrated codegen slices import S0 storage through the stage a
     ...rustFiles(contextRoot),
     ...rustFiles(elementRoot),
     ...rustFiles(expressionRoot),
+    ...rustFiles(generateRoot),
     ...rustFiles(testRoot),
     benchPath,
   ]) {
