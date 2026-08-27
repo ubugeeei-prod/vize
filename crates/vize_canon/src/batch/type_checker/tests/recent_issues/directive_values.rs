@@ -6,7 +6,7 @@
 //! `TS2322`. Both oracles below are vue-tsc 3.3.4 on byte-identical workspaces.
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
-use vize_carton::String;
+use vize_s0::String;
 
 /// vue-tsc 3.3.4:
 ///
