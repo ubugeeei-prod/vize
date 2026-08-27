@@ -253,7 +253,7 @@ void test("Atelier core patch flag codegen imports S0 through the preferred phys
   }
 });
 
-void test("Atelier core singleton compiler slices import S0 through the preferred physical name", () => {
+void test("Atelier core singleton and element step slices import S0 through the preferred name", () => {
   const scan = scanConsumerMigrationSurfaces();
   const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
   assert.ok(compiler);
@@ -264,6 +264,8 @@ void test("Atelier core singleton compiler slices import S0 through the preferre
     ["crates/vize_atelier_core/src/lane/options.rs", "source", 1],
     ["crates/vize_atelier_core/src/lane/structural_keys.rs", "source", 1],
     ["crates/vize_atelier_core/src/lane/context.rs", "source", 4],
+    ["crates/vize_atelier_core/src/steps/element.rs", "source", 3],
+    ["crates/vize_atelier_core/src/steps/element.rs", "test", 1],
   ];
   for (const [relPath, mode, sites] of expectedRows) {
     expectCompilerS0PreferredRow(compiler, relPath, mode, sites);

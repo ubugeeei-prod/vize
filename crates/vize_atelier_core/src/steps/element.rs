@@ -2,7 +2,7 @@
 //!
 //! Transforms element nodes and their props.
 
-use vize_carton::{String, capitalize, is_native_tag};
+use vize_s0::{String, capitalize, is_native_tag};
 
 use crate::lane::TransformContext;
 use crate::{ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode};
@@ -114,7 +114,7 @@ pub fn build_props<'a>(
     // Dedupe by attribute name — Vue keeps the first occurrence on a
     // duplicate attribute. The parser records both nodes so linters can
     // warn about the repeat; codegen takes the first only. (#958)
-    let mut seen_attr_names: vize_carton::FxHashSet<String> = vize_carton::FxHashSet::default();
+    let mut seen_attr_names: vize_s0::FxHashSet<String> = vize_s0::FxHashSet::default();
 
     for prop in el.props.iter() {
         match prop {
@@ -304,7 +304,7 @@ mod tests {
     use crate::TemplateChildNode;
     use crate::lane::TransformContext;
     use crate::parser::parse;
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     #[test]
     fn test_resolve_element_type() {

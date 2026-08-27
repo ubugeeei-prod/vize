@@ -197,6 +197,7 @@ const generateRoot = path.join(
   "generate",
 );
 const helpersRoot = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "helpers");
+const stepsElementModule = path.join(repoRoot, "crates/vize_atelier_core/src/steps/element.rs");
 const laneElementRoot = path.join(
   repoRoot,
   "crates",
@@ -328,6 +329,7 @@ test("Atelier core migrated compiler slices import S0 storage through the stage 
     ...rustFiles(expressionRoot),
     ...rustFiles(generateRoot),
     ...rustFiles(helpersRoot),
+    stepsElementModule,
     ...rustFiles(laneElementRoot),
     ...rustFiles(testRoot),
     benchPath,
