@@ -3,7 +3,7 @@
 //! Oracle: TypeScript 6.0.3 and Vue 3.6.0-beta.10.
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 /// The whole-props failure every usage here produces: it binds the optional
 /// `onSave` and never binds the required `count`.
