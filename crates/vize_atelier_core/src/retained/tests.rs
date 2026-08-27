@@ -17,7 +17,7 @@ use crate::lane::transform;
 use crate::options::{CodegenOptions, TransformOptions};
 use crate::parser::Parser;
 use crate::retained::differential;
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 const BATTERY: &str = r#"<div :style="{ zIndex: items.length + 1 }" :data-x="alpha + beta">
   {{ items.filter(item => item.id > 0).length / total }}

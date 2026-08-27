@@ -4,7 +4,7 @@
 #[cfg(test)]
 #[allow(clippy::disallowed_macros)]
 mod structural_transform_tests {
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     use super::super::super::traverse::traverse_children;
     use super::super::*;

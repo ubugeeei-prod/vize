@@ -2,9 +2,8 @@
 
 use crate::compile;
 
-fn result_output(result: &super::CodegenResult) -> vize_carton::String {
-    let mut output =
-        vize_carton::String::with_capacity(result.preamble.len() + result.code.len() + 1);
+fn result_output(result: &super::CodegenResult) -> vize_s0::String {
+    let mut output = vize_s0::String::with_capacity(result.preamble.len() + result.code.len() + 1);
     output.push_str(&result.preamble);
     output.push('\n');
     output.push_str(&result.code);
@@ -45,9 +44,9 @@ fn test_codegen_component() {
 
 #[test]
 fn test_codegen_component_name_with_colon_uses_valid_identifier() {
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let parser_opts = crate::ParserOptions {
-        is_native_tag: Some(vize_carton::is_native_tag),
+        is_native_tag: Some(vize_s0::is_native_tag),
         ..Default::default()
     };
     let (mut root, errors) = crate::parse_with_options(
@@ -92,16 +91,16 @@ fn test_codegen_self_component_resolve_marks_maybe_self_reference() {
 
 #[test]
 fn test_codegen_inline_setup_ref_component_prop_uses_value() {
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (mut root, errors) = crate::parse(&allocator, r#"<Child :initialText="initialText" />"#);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
-    let mut bindings = vize_carton::FxHashMap::default();
+    let mut bindings = vize_s0::FxHashMap::default();
     bindings.insert("Child".into(), crate::BindingType::SetupConst);
     bindings.insert("initialText".into(), crate::BindingType::SetupRef);
     let binding_metadata = crate::BindingMetadata {
         bindings,
-        props_aliases: vize_carton::FxHashMap::default(),
+        props_aliases: vize_s0::FxHashMap::default(),
         is_script_setup: true,
     };
 
@@ -190,7 +189,7 @@ fn test_codegen_duplicate_attribute_keeps_first_occurrence() {
     // diagnostic is classified as recoverable so downstream
     // continues. The compile macro bails on parse errors, so this
     // test drives the lane by hand.
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (mut root, errors) = crate::parser::parse(&allocator, r#"<div id="a" id="b">x</div>"#);
     assert!(
         errors
@@ -463,7 +462,7 @@ fn test_codegen_looped_slot_key_and_index_aliases_stay_local_in_dynamic_args() {
     use crate::lane::transform;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     let allocator = Allocator::new();
     let (mut root, _) = parse(
@@ -622,7 +621,7 @@ fn test_codegen_v_for_aliases_without_parentheses_stay_local() {
     use crate::lane::transform;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     let allocator = Allocator::new();
     let (mut root, _) = parse(
@@ -670,7 +669,7 @@ fn test_codegen_v_for_scope_handlers_are_not_cached() {
     use crate::lane::transform;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     let allocator = Allocator::new();
     let (mut root, _) = parse(
@@ -705,7 +704,7 @@ fn test_codegen_merged_v_on_handlers_are_cached() {
     use crate::lane::transform;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     let allocator = Allocator::new();
     let (mut root, _) = parse(
@@ -842,7 +841,7 @@ fn test_codegen_scoped_slot_params_stay_local_in_handlers() {
     use crate::lane::transform;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     let allocator = Allocator::new();
     let (mut root, _) = parse(
@@ -908,8 +907,8 @@ fn test_codegen_escape_multiline_style_attribute() {
     assert_codegen_snapshot!(result);
 }
 
-fn compile_prefixed(source: &str) -> vize_carton::String {
-    let allocator = vize_carton::Allocator::new();
+fn compile_prefixed(source: &str) -> vize_s0::String {
+    let allocator = vize_s0::Allocator::new();
     let (mut root, errors) = crate::parse(&allocator, source);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     crate::lane::transform(
@@ -1011,8 +1010,8 @@ fn test_codegen_v1_triple_mustache_is_raw_unescaped() {
     use crate::lane::transform;
     use crate::options::{CodegenOptions, ParserOptions, TransformOptions};
     use crate::parser::parse_with_options;
-    use vize_carton::Allocator;
-    use vize_carton::config::VueVersion;
+    use vize_s0::Allocator;
+    use vize_s0::config::VueVersion;
 
     let allocator = Allocator::new();
     let mut options = ParserOptions::default();
@@ -1143,7 +1142,7 @@ fn decode_mappings(mappings: &str) -> Vec<DecodedSegment> {
 /// Compile a template with `prefix_identifiers` so dynamic expressions surface
 /// as `_ctx.<name>` in the output (the interesting mapping case).
 fn compile_with_map(src: &str, filename: &str) -> super::CodegenResult {
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (mut root, errors) = crate::parser::parse(&allocator, src);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     crate::lane::transform(
@@ -1249,7 +1248,7 @@ fn source_map_does_not_alter_generated_code() {
 
     let with_map = compile_with_map(src, "Foo.vue");
 
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (mut root, errors) = crate::parser::parse(&allocator, src);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     crate::lane::transform(
@@ -1458,7 +1457,7 @@ fn source_map_static_attr_and_text_do_not_alter_generated_code() {
 
     let with_map = compile_with_map(src, "Foo.vue");
 
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (mut root, errors) = crate::parser::parse(&allocator, src);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     crate::lane::transform(

@@ -4,7 +4,7 @@ use super::{transform, transform_with_template_syntax_quirks};
 use crate::codegen::generate;
 use crate::options::{CodegenOptions, TransformOptions};
 use crate::parser::parse;
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 #[test]
 fn test_transform_simple_element() {
