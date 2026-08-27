@@ -117,6 +117,7 @@ const laneContextModule = path.join(
   "lane",
   "context.rs",
 );
+const laneModule = path.join(repoRoot, "crates", "vize_atelier_core", "src", "lane.rs");
 const laneElementModule = path.join(
   repoRoot,
   "crates",
@@ -132,6 +133,30 @@ const laneExtensionsModule = path.join(
   "src",
   "lane",
   "extensions.rs",
+);
+const lanePatternedTemplateModule = path.join(
+  repoRoot,
+  "crates",
+  "vize_atelier_core",
+  "src",
+  "lane",
+  "patterned_template.rs",
+);
+const laneStructuralModule = path.join(
+  repoRoot,
+  "crates",
+  "vize_atelier_core",
+  "src",
+  "lane",
+  "structural.rs",
+);
+const laneTraverseModule = path.join(
+  repoRoot,
+  "crates",
+  "vize_atelier_core",
+  "src",
+  "lane",
+  "traverse.rs",
 );
 const sourceMapModule = path.join(
   repoRoot,
@@ -286,8 +311,12 @@ test("Atelier core migrated compiler slices import S0 storage through the stage 
     laneOptionsModule,
     laneStructuralKeysModule,
     laneContextModule,
+    laneModule,
     laneElementModule,
     laneExtensionsModule,
+    lanePatternedTemplateModule,
+    laneStructuralModule,
+    laneTraverseModule,
     sourceMapModule,
     helpersModule,
     ...rustFiles(slotsRoot),

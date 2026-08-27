@@ -52,14 +52,12 @@ void test("consumer migration scan classifies stage physical names separately fr
   assert.equal(s0.label, "S0");
   assert.equal(surfaceNameKind(s0, "vize_s0"), "preferred");
   assert.equal(surfaceNameKind(s0, "vize_carton"), "compat");
-
   const stageSurfaces = SURFACES.filter((surface) => surface.group === "stage");
   assert.deepEqual(
     stageSurfaces.map((surface) => surface.label),
     ["Davinci", "S0", "S1", "S2", "S1->S2"],
   );
   assert.ok(stageSurfaces.every((surface) => !surface.label.includes("/")));
-
   const rawOxc = SURFACES.find((surface) => surface.id === "raw_oxc");
   assert.ok(rawOxc);
   assert.equal(surfaceNameKind(rawOxc, "oxc_ast"), "raw");
@@ -67,14 +65,12 @@ void test("consumer migration scan classifies stage physical names separately fr
 
 void test("consumer migration rows preserve surface totals when split by matched name", () => {
   const scan = scanConsumerMigrationSurfaces();
-
   for (const consumer of scan.consumers) {
     assert.equal(
       consumer.groupCounts.stage,
       consumer.nameKindCounts.preferred + consumer.nameKindCounts.compat,
       `${consumer.id} stage totals must equal preferred plus compat names`,
     );
-
     for (const row of consumer.fileRows) {
       for (const surface of SURFACES) {
         assert.equal(
@@ -284,6 +280,10 @@ void test("Atelier core lane element imports S0 through the preferred physical n
     ["crates/vize_atelier_core/src/lane/element/directive_expressions.rs", "source", 1],
     ["crates/vize_atelier_core/src/lane/element/tests.rs", "test", 1],
     ["crates/vize_atelier_core/src/lane/extensions.rs", "source", 1],
+    ["crates/vize_atelier_core/src/lane.rs", "source", 1],
+    ["crates/vize_atelier_core/src/lane/patterned_template.rs", "source", 1],
+    ["crates/vize_atelier_core/src/lane/structural.rs", "source", 1],
+    ["crates/vize_atelier_core/src/lane/traverse.rs", "source", 3],
   ];
   for (const [relPath, mode, sites] of expectedRows) {
     expectCompilerS0PreferredRow(compiler, relPath, mode, sites);

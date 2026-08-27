@@ -5,7 +5,7 @@ use crate::{
     ElementNode, ElementType, ExpressionNode, ForNode, IfBranchNode, PropNode, RuntimeHelper,
     TemplateChildNode,
 };
-use vize_carton::{ensure_sufficient_stack, profile};
+use vize_s0::{ensure_sufficient_stack, profile};
 
 use super::element::{transform_element, transform_interpolation};
 use super::structural::{
@@ -82,7 +82,7 @@ pub fn traverse_children<'a>(ctx: &mut TransformContext<'a>, parent: ParentNode<
 /// call depth here follows template nesting depth. The guard moves the descent
 /// onto a fresh stack before the thread stack runs out, because a stack overflow
 /// aborts the process instead of producing a diagnostic
-/// (`vize_carton::recursion`).
+/// (`vize_s0::recursion`).
 pub fn traverse_node<'a>(ctx: &mut TransformContext<'a>, node: &mut TemplateChildNode<'a>) {
     crate::walk_probe::record_visit(crate::walk_probe::WalkStage::Transform);
     ensure_sufficient_stack(|| traverse_node_guarded(ctx, node));
@@ -195,8 +195,7 @@ fn traverse_node_guarded<'a>(ctx: &mut TransformContext<'a>, node: &mut Template
                     let source = match &for_node.source {
                         ExpressionNode::Simple(exp) => exp.content,
                         ExpressionNode::Compound(c) => {
-                            compound_source =
-                                vize_carton::String::new(c.loc.span.slice(ctx.source));
+                            compound_source = vize_s0::String::new(c.loc.span.slice(ctx.source));
                             compound_source.as_str()
                         }
                     };
@@ -295,7 +294,7 @@ fn traverse_node_guarded<'a>(ctx: &mut TransformContext<'a>, node: &mut Template
                 let source = match &for_node.source {
                     ExpressionNode::Simple(exp) => exp.content,
                     ExpressionNode::Compound(c) => {
-                        compound_source = vize_carton::String::new(c.loc.span.slice(ctx.source));
+                        compound_source = vize_s0::String::new(c.loc.span.slice(ctx.source));
                         compound_source.as_str()
                     }
                 };

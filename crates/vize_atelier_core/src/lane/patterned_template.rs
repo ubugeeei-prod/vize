@@ -1,6 +1,6 @@
 //! Experimental patterned template desugaring (`v-match` / `v-case`).
 
-use vize_carton::{Allocator, Box, String, Vec, cstr, ensure_sufficient_stack};
+use vize_s0::{Allocator, Box, String, Vec, cstr, ensure_sufficient_stack};
 
 use crate::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, RootNode,
