@@ -11,7 +11,7 @@ use super::super::super::{
 };
 use crate::batch::runtime_deps::VUE_RUNTIME_DOM_STUB_TYPES;
 use std::path::PathBuf;
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 const NATIVE_BUTTON_TYPES: &str = r#"export interface NativeElements {
   button: { disabled?: boolean | undefined; type?: "button" | "submit" | undefined };
