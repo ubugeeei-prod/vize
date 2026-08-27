@@ -10,7 +10,7 @@ use crate::codegen::{
         StaticMerge, duplicate_von_event_keys, generate_merged_event_handlers, get_von_event_key,
     },
 };
-use vize_carton::{FxHashSet, String};
+use vize_s0::{FxHashSet, String};
 
 pub(super) enum EventPropAction {
     Single,

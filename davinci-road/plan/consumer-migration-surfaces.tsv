@@ -80,11 +80,11 @@ compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/slots/tests.rs	5
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/source_map.rs	35	s0	S0	stage	vize_carton	compat	3
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/tests.rs	5	s0	S0	stage	vize_carton	compat	20
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/tests.rs	5	old_ast	old AST/parser	old	vize_relief	legacy	1
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_for.rs	20	s0	S0	stage	vize_carton	compat	2
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_for/generate.rs	34	s0	S0	stage	vize_carton	compat	3
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_for/helpers.rs	7	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/v_for/helpers.rs	249	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_for/item_props.rs	13	s0	S0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_for.rs	20	s0	S0	stage	vize_s0	preferred	2
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_for/generate.rs	34	s0	S0	stage	vize_s0	preferred	3
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_for/helpers.rs	7	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/v_for/helpers.rs	249	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_for/item_props.rs	13	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_if.rs	16	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_if/branch.rs	10	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_if/props.rs	4	s0	S0	stage	vize_s0	preferred	1

@@ -17,8 +17,8 @@ use super::{
 
 use generate::generate_for_item;
 use helpers::extract_for_params;
-use vize_carton::String;
-use vize_carton::ToCompactString;
+use vize_s0::String;
+use vize_s0::ToCompactString;
 
 #[allow(unused_imports)]
 pub(crate) use helpers::{

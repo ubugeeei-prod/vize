@@ -25,9 +25,11 @@ const propsModule = path.join(
   "props.rs",
 );
 const vIfModule = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "v_if.rs");
+const vForModule = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "v_for.rs");
 const slotsRoot = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "slots");
 const propsRoot = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "props");
 const vIfRoot = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "v_if");
+const vForRoot = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "v_for");
 const testRoot = path.join(repoRoot, "crates", "vize_atelier_core", "tests");
 const benchPath = path.join(repoRoot, "crates", "vize_atelier_core", "benches", "davinci.rs");
 const require = createRequire(import.meta.url);
@@ -119,9 +121,11 @@ test("Atelier core migrated codegen slices import S0 storage through the stage a
     slotsModule,
     propsModule,
     vIfModule,
+    vForModule,
     ...rustFiles(slotsRoot),
     ...rustFiles(propsRoot),
     ...rustFiles(vIfRoot),
+    ...rustFiles(vForRoot),
     ...rustFiles(testRoot),
     benchPath,
   ]) {
