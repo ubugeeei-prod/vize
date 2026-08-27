@@ -5,7 +5,7 @@ use crate::lane::traverse::traverse_children;
 use crate::lane::{ParentNode, TransformContext};
 use crate::options::TransformOptions;
 use crate::parser::parse;
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 fn transform_errors(source: &str) -> std::vec::Vec<CompilerError> {
     let allocator = Allocator::new();

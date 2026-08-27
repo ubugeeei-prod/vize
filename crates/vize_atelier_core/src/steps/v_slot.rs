@@ -2,7 +2,7 @@
 //!
 //! Transforms v-slot (# shorthand) directives for slot content.
 
-use vize_carton::{String, ensure_sufficient_stack};
+use vize_s0::{String, ensure_sufficient_stack};
 
 use crate::lane::TransformContext;
 use crate::{
@@ -105,7 +105,7 @@ fn has_implicit_child(child: &TemplateChildNode<'_>) -> bool {
 }
 
 /// Guarded: `v-if`/`v-for` nodes nest, so this descends once per nesting level
-/// and its depth is bounded by the input (`vize_carton::recursion`).
+/// and its depth is bounded by the input (`vize_s0::recursion`).
 fn any_implicit_child(children: &[TemplateChildNode<'_>]) -> bool {
     ensure_sufficient_stack(|| children.iter().any(has_implicit_child))
 }

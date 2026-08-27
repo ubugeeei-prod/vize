@@ -2,7 +2,7 @@
 //!
 //! Transforms v-on (@ shorthand) directives for event handling.
 
-use vize_carton::String;
+use vize_s0::String;
 
 use crate::lane::TransformContext;
 use crate::{DirectiveNode, ExpressionNode, SimpleExpressionNode};
@@ -93,8 +93,8 @@ pub fn is_dynamic_event(dir: &DirectiveNode<'_>) -> bool {
     }
 }
 
-// Use utilities from vize_carton
-use vize_carton::{camelize, capitalize};
+// Use utilities from S0.
+use vize_s0::{camelize, capitalize};
 
 /// Create on-event name from event name
 /// Converts kebab-case to camelCase (e.g., "select-koma" -> "onSelectKoma")
@@ -155,7 +155,7 @@ mod tests {
 
     #[test]
     fn test_camelize() {
-        // Using vize_carton::camelize (re-exported in this module)
+        // Using S0 camelize (re-exported in this module).
         assert_eq!(camelize("select-koma").as_str(), "selectKoma");
         assert_eq!(camelize("update-value").as_str(), "updateValue");
         assert_eq!(camelize("my-custom-event").as_str(), "myCustomEvent");

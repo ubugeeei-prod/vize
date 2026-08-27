@@ -66,7 +66,7 @@ mod tests {
     use super::{has_v_else, has_v_else_if, has_v_if};
     use crate::TemplateChildNode;
     use crate::parser::parse;
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     #[test]
     fn test_has_v_if() {

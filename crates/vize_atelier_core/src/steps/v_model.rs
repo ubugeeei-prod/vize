@@ -5,7 +5,7 @@
 use oxc_ast::ast::Expression;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{Box, String, Vec};
+use vize_s0::{Box, String, Vec};
 
 use crate::lane::TransformContext;
 use crate::{
@@ -291,7 +291,7 @@ pub fn get_model_event_prop(el: &ElementNode<'_>) -> (&'static str, &'static str
 mod tests {
     use super::{SimpleExpressionNode, Vec, parse_model_modifiers, supports_v_model};
     use crate::SourceLocation;
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     #[test]
     fn test_parse_modifiers() {

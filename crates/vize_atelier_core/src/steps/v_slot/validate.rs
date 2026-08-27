@@ -1,6 +1,6 @@
 //! `v-slot` placement and slot-template structure validation.
 
-use vize_carton::{String, is_builtin_directive};
+use vize_s0::{String, is_builtin_directive};
 
 use super::{
     find_v_slot, get_slot_name, has_implicit_child, has_structural_slot_directive,

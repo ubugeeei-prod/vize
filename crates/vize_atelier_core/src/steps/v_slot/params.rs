@@ -3,7 +3,7 @@
 use oxc_ast::ast::BindingPattern;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{SmallVec, String};
+use vize_s0::{SmallVec, String};
 
 use crate::steps::expression::expression_is_safe_to_parse;
 

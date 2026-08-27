@@ -2,7 +2,7 @@
 //!
 //! Transforms v-bind (: shorthand) directives for dynamic props.
 
-use vize_carton::String;
+use vize_s0::String;
 
 use crate::lane::TransformContext;
 use crate::{DirectiveNode, ExpressionNode, RuntimeHelper};
@@ -83,8 +83,8 @@ pub fn is_dynamic_binding(dir: &DirectiveNode<'_>) -> bool {
     }
 }
 
-// Re-export camelize from vize_carton
-pub use vize_carton::camelize;
+// Re-export camelize from S0.
+pub use vize_s0::camelize;
 
 #[cfg(test)]
 mod tests {

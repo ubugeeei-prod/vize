@@ -2,7 +2,7 @@
 //!
 //! Transforms elements with v-for directive into ForNode.
 
-use vize_carton::{Allocator, Box};
+use vize_s0::{Allocator, Box};
 
 use crate::lane::TransformContext;
 use crate::{
@@ -273,7 +273,7 @@ mod tests {
     };
     use crate::TemplateChildNode;
     use crate::parser::parse;
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     fn parse_for<'a>(allocator: &'a Allocator, content: &'a str) -> ForParseResult<'a> {
         parse_for_expression(allocator, content, &SourceLocation::STUB)
