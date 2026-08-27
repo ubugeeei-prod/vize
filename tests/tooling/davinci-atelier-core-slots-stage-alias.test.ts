@@ -86,6 +86,13 @@ const patchFlagStaticLiteralModule = path.join(
   "static_literal.rs",
 );
 const rootModule = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "root.rs");
+const runtimeHelpersModule = path.join(
+  repoRoot,
+  "crates",
+  "vize_atelier_core",
+  "src",
+  "runtime_helpers.rs",
+);
 const sourceMapModule = path.join(
   repoRoot,
   "crates",
@@ -172,7 +179,7 @@ function* rustFiles(directory: string): Generator<string> {
   }
 }
 
-test("Atelier core migrated codegen slices import S0 storage through the stage alias", () => {
+test("Atelier core migrated compiler slices import S0 storage through the stage alias", () => {
   const rootManifest = readToml("Cargo.toml");
   const coreManifest = readToml("crates", "vize_atelier_core", "Cargo.toml");
   const workspaceDependencies = asRecord(asRecord(rootManifest.workspace).dependencies);
@@ -218,6 +225,7 @@ test("Atelier core migrated codegen slices import S0 storage through the stage a
     patchFlagModule,
     patchFlagStaticLiteralModule,
     rootModule,
+    runtimeHelpersModule,
     sourceMapModule,
     ...rustFiles(slotsRoot),
     ...rustFiles(propsRoot),
