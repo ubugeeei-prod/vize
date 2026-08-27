@@ -243,6 +243,19 @@ void test("Atelier core patch flag codegen imports S0 through the preferred phys
   }
 });
 
+void test("Atelier core root codegen imports S0 through the preferred physical name", () => {
+  const scan = scanConsumerMigrationSurfaces();
+  const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
+  assert.ok(compiler);
+
+  expectCompilerS0PreferredRow(
+    compiler,
+    "crates/vize_atelier_core/src/codegen/root.rs",
+    "source",
+    1,
+  );
+});
+
 void test("consumer migration scan keeps every rollout consumer and surface class visible", () => {
   const scan = scanConsumerMigrationSurfaces();
   const consumers = new Map(scan.consumers.map((consumer) => [consumer.id, consumer]));

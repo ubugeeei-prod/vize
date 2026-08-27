@@ -85,6 +85,7 @@ const patchFlagStaticLiteralModule = path.join(
   "patch_flag",
   "static_literal.rs",
 );
+const rootModule = path.join(repoRoot, "crates", "vize_atelier_core", "src", "codegen", "root.rs");
 const sourceMapModule = path.join(
   repoRoot,
   "crates",
@@ -216,6 +217,7 @@ test("Atelier core migrated codegen slices import S0 storage through the stage a
     nodeModule,
     patchFlagModule,
     patchFlagStaticLiteralModule,
+    rootModule,
     sourceMapModule,
     ...rustFiles(slotsRoot),
     ...rustFiles(propsRoot),
