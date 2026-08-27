@@ -234,12 +234,13 @@ void test("Atelier core patch flag codegen imports S0 through the preferred phys
   const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
   assert.ok(compiler);
 
-  expectCompilerS0PreferredRow(
-    compiler,
-    "crates/vize_atelier_core/src/codegen/patch_flag.rs",
-    "source",
-    1,
-  );
+  const expectedRows = [
+    ["crates/vize_atelier_core/src/codegen/patch_flag.rs", "source", 1],
+    ["crates/vize_atelier_core/src/codegen/patch_flag/static_literal.rs", "source", 1],
+  ];
+  for (const [relPath, mode, sites] of expectedRows) {
+    expectCompilerS0PreferredRow(compiler, relPath, mode, sites);
+  }
 });
 
 void test("consumer migration scan keeps every rollout consumer and surface class visible", () => {

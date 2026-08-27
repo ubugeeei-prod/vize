@@ -11,8 +11,8 @@
 use oxc_ast::ast as oxc_ast_types;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::String;
 use vize_relief::SimpleExpressionNode;
+use vize_s0::String;
 
 pub(super) fn is_string_literal(content: &str) -> bool {
     (content.starts_with('\'') && content.ends_with('\''))
