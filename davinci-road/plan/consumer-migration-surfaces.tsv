@@ -1986,7 +1986,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_helpers/template_ref_registry.rs	12	s0	S0	stage	vize_carton	compat	5
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_helpers/template_ref_registry.rs	12	old_ast	old AST/parser	old	vize_relief	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_helpers/template_ref_registry.rs	12	croquis	Croquis analysis	old	vize_croquis	legacy	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/setup_helpers/template_ref_registry/tests.rs	1	s0	S0	stage	vize_carton	compat	3
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/setup_helpers/template_ref_registry/tests.rs	1	s0	S0	stage	vize_s0	preferred	3
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/setup_helpers/template_ref_registry/tests.rs	1	old_ast	old AST/parser	old	vize_relief	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/setup_helpers/template_ref_registry/tests.rs	1	old_ast	old AST/parser	old	vize_armature	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/setup_helpers/template_ref_registry/tests.rs	1	croquis	Croquis analysis	old	vize_croquis	legacy	1
