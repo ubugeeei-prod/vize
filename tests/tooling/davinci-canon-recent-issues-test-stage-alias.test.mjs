@@ -16,6 +16,11 @@ const recentIssueRows = [
     1,
   ],
   [
+    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/exact_optional_props.rs",
+    "test",
+    1,
+  ],
+  [
     "crates/vize_canon/src/batch/type_checker/tests/recent_issues/fallthrough_unknown_attrs.rs",
     "test",
     1,

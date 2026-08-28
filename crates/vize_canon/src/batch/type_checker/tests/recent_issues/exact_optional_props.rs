@@ -14,7 +14,7 @@
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 use std::path::Path;
-use vize_carton::String;
+use vize_s0::{String, cstr};
 
 const CHILD: &str = r#"<script setup lang="ts">
 defineProps<{ label?: string }>()
@@ -31,7 +31,7 @@ fn write_tsconfig(project_root: &Path, exact_optional: bool) {
     };
     std::fs::write(
         project_root.join("tsconfig.json"),
-        vize_carton::cstr!(
+        cstr!(
             r#"{{
   "compilerOptions": {{
     "strict": true,{exact}
