@@ -4,7 +4,7 @@ use super::super::{
     BatchTypeChecker, create_project_case, relative_path, resolve_test_tsgo_binary,
 };
 use crate::batch::{SfcBlockType, TypeChecker};
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 #[test]
 fn unmapped_v_if_guard_does_not_duplicate_into_a_long_style_block() {
