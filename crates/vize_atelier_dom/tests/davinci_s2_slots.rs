@@ -203,6 +203,14 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<slot><template #inner>{{ msg }}</template></slot>"#,
     ),
     (
+        "unwrapped_if_nested_slot_keeps_siblings",
+        r#"<Foo><template v-if="ok"><span>x</span><template #header>y</template></template></Foo>"#,
+    ),
+    (
+        "unwrapped_for_nested_slot_keeps_siblings",
+        r#"<Foo><template v-for="i in n"><span>x</span><template #header>y</template></template></Foo>"#,
+    ),
+    (
         "dynamic_slot_name_hole",
         r#"<Foo><template #[]>x</template></Foo>"#,
     ),

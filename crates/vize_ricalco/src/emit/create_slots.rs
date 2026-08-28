@@ -72,14 +72,16 @@ fn collect(
             Op::If(if_op) if is_slot_if(if_op) => {
                 entries.push(capture(cx, |cx| emit_if_entry(cx, if_op))?);
             }
-            Op::For(for_op) => {
-                if let Some((idx, element, content)) = first_slot_template(&for_op.region) {
-                    entries.push(capture(cx, |cx| {
-                        emit_for_entry(cx, for_op, idx, element, content)
-                    })?);
-                } else {
-                    collect_default(cx, &mut defaults, op)?;
-                }
+            Op::For(for_op) if is_slot_for(for_op) => {
+                let Some((idx, element, content)) = first_slot_template(&for_op.region) else {
+                    return Err(EmitError::unsupported_at(
+                        super::UnsupportedReason::CreateSlotsMissingSlotTemplate,
+                        for_op.span,
+                    ));
+                };
+                entries.push(capture(cx, |cx| {
+                    emit_for_entry(cx, for_op, idx, element, content)
+                })?);
             }
             Op::Element(element) => {
                 if let Some(content) = slot_template_content(element) {

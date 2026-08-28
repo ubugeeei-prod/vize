@@ -1,8 +1,9 @@
 //! Walk helpers for `createSlots` entry collection.
 
-use vize_s2::op::{BindingOp, ElementOp, ForOp, IfOp, Op, Region, SlotContentOp};
+use vize_s2::op::{BindingOp, ElementOp, ForOp, IfBranch, IfOp, Op, Region, SlotContentOp};
 
 use super::EmitCx;
+use super::slots::is_whitespace_text;
 
 pub(super) fn slot_content<'a>(element: &'a ElementOp<'a>) -> Option<&'a SlotContentOp<'a>> {
     element.bindings.iter().find_map(|binding| match binding {
@@ -33,14 +34,33 @@ pub(super) fn first_slot_template<'a>(
 }
 
 pub(super) fn is_slot_if(if_op: &IfOp<'_>) -> bool {
-    if_op
-        .branches
-        .iter()
-        .any(|branch| first_slot_template(&branch.region).is_some())
+    if_op.branches.iter().any(is_slot_if_branch)
 }
 
 pub(super) fn is_slot_for(for_op: &ForOp<'_>) -> bool {
-    first_slot_template(&for_op.region).is_some()
+    is_slot_template_carrier(&for_op.region)
+}
+
+/// `createSlots` owns `v-if` / `v-for` *on* a slot template. An unwrapped
+/// `<template v-if>` / `<template v-for>` that merely *contains* a nested
+/// `#slot` plus other children must stay on the default-slot path — otherwise
+/// `skip_ops` drops the siblings.
+fn is_slot_if_branch(branch: &IfBranch<'_>) -> bool {
+    is_slot_template_carrier(&branch.region)
+}
+
+fn is_slot_template_carrier(region: &Region<'_>) -> bool {
+    first_slot_template(region).is_some() && !region_has_non_slot_content(region)
+}
+
+fn region_has_non_slot_content(region: &Region<'_>) -> bool {
+    region.ops.iter().any(|op| {
+        !is_whitespace_text(op)
+            && !matches!(
+                op,
+                Op::Element(element) if slot_template_content(element).is_some()
+            )
+    })
 }
 
 pub(super) fn skip_ops(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) {

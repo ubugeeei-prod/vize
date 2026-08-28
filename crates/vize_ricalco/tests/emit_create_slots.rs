@@ -239,6 +239,64 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn unwrapped_if_with_nested_slot_keeps_sibling_vnodes() {
+    assert_eq!(
+        assembled(
+            r#"<Foo><template v-if="ok"><span>x</span><template #header>y</template></template></Foo>"#
+        ),
+        pin("\
+const { resolveComponent: _resolveComponent, createElementVNode: _createElementVNode, openBlock: _openBlock, createBlock: _createBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue
+
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"span\", null, \"x\")
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, null, {
+    default: _withCtx(() => [
+      (ok)
+        ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
+          _hoisted_1,
+          _createTextVNode(\"y\")
+        ], 64 /* STABLE_FRAGMENT */))
+        : _createCommentVNode(\"v-if\", true)
+    ]),
+    _: 1 /* STABLE */
+  }))
+}")
+    );
+}
+
+#[test]
+fn unwrapped_for_with_nested_slot_keeps_sibling_vnodes() {
+    assert_eq!(
+        assembled(
+            r#"<Foo><template v-for="i in n"><span>x</span><template #header>y</template></template></Foo>"#
+        ),
+        pin("\
+const { resolveComponent: _resolveComponent, createElementVNode: _createElementVNode, openBlock: _openBlock, createBlock: _createBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createTextVNode: _createTextVNode, renderList: _renderList, withCtx: _withCtx } = Vue
+
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"span\", null, \"x\")
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, null, {
+    default: _withCtx(() => [
+      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(n, (i) => {
+        return (_openBlock(), _createElementBlock(_Fragment, null, [
+          _hoisted_1,
+          _createTextVNode(\"y\")
+        ], 64 /* STABLE_FRAGMENT */))
+      }), 256 /* UNKEYED_FRAGMENT */))
+    ]),
+    _: 1 /* STABLE */
+  }))
+}")
+    );
+}
+
+#[test]
 fn a_v_else_branch_omits_the_trailing_undefined() {
     assert_eq!(
         assembled(
