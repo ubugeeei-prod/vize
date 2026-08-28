@@ -11,6 +11,11 @@ const recentIssueRows = [
   ["crates/vize_canon/src/batch/type_checker/tests/recent_issues/directive_anchors.rs", "test", 1],
   ["crates/vize_canon/src/batch/type_checker/tests/recent_issues/directive_values.rs", "test", 1],
   [
+    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/diagnostic_normalization.rs",
+    "test",
+    1,
+  ],
+  [
     "crates/vize_canon/src/batch/type_checker/tests/recent_issues/external_slot_payloads.rs",
     "test",
     1,

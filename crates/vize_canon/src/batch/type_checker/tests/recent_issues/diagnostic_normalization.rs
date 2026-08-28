@@ -1,4 +1,6 @@
-type DiagnosticSnapshot = Vec<(vize_carton::String, Option<u32>, vize_carton::String)>;
+use vize_s0::String;
+
+type DiagnosticSnapshot = Vec<(String, Option<u32>, String)>;
 
 /// Normalize TypeScript's target-side parameter labels in function assignment
 /// diagnostics while keeping the authored parameter, code, anchor, and type
@@ -22,7 +24,7 @@ pub(super) fn normalize_target_parameter_names(
 /// Replace only the generated side of `Types of parameters ...` diagnostic
 /// rows. TypeScript may report that side as a tuple label, callback parameter,
 /// or rest parameter name without changing the assignability behavior.
-fn normalize_target_parameter_name(message: &str) -> vize_carton::String {
+fn normalize_target_parameter_name(message: &str) -> String {
     let marker = "Types of parameters '";
     let separator = "' and '";
     let suffix = "' are incompatible.";
@@ -46,9 +48,9 @@ fn normalize_target_parameter_name(message: &str) -> vize_carton::String {
     }
 
     if normalized.is_empty() {
-        vize_carton::String::from(message)
+        String::from(message)
     } else {
         normalized.push_str(rest);
-        vize_carton::String::from(normalized)
+        String::from(normalized)
     }
 }
