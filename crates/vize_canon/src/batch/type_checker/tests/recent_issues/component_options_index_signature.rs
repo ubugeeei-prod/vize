@@ -8,6 +8,7 @@
 //! generated options object cannot simply always declare one.
 
 use crate::sfc_typecheck::{SfcTypeCheckOptions, type_check_sfc};
+use vize_s0::String;
 
 const OPTIONS_TYPE_HEAD: &str = "type __VizeVueComponentOptions = {\n";
 const INDEX_SIGNATURE: &str = "  [key: string]: any;\n";
@@ -36,7 +37,7 @@ defineExpose({ pick });
 </template>
 "#;
 
-fn virtual_ts(source: &str) -> vize_carton::String {
+fn virtual_ts(source: &str) -> String {
     type_check_sfc(
         source,
         &SfcTypeCheckOptions::new("Child.vue").with_virtual_ts(),
@@ -47,7 +48,7 @@ fn virtual_ts(source: &str) -> vize_carton::String {
 
 /// The emitted `__VizeVueComponentOptions` opening, up to and including its
 /// first declared member.
-fn options_type_prologue(virtual_ts: &str) -> vize_carton::String {
+fn options_type_prologue(virtual_ts: &str) -> String {
     let start = virtual_ts
         .find(OPTIONS_TYPE_HEAD)
         .expect("generated module must declare __VizeVueComponentOptions");
@@ -56,7 +57,7 @@ fn options_type_prologue(virtual_ts: &str) -> vize_carton::String {
         .find(FIRST_DECLARED_MEMBER)
         .expect("__VizeVueComponentOptions must declare `name`")
         + FIRST_DECLARED_MEMBER.len();
-    vize_carton::String::from(&rest[..end])
+    String::from(&rest[..end])
 }
 
 #[test]
