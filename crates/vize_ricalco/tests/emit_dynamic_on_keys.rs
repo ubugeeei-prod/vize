@@ -53,6 +53,19 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn a_dynamic_event_template_literal_keeps_the_shipped_prefix_shape() {
+    assert_eq!(
+        assembled(r#"<button @[`save:${id}`]="handler"></button>"#),
+        "\
+const { toHandlerKey: _toHandlerKey, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"button\", { [_toHandlerKey(_ctx.`save:${id}`)]: handler }, null, 16 /* FULL_PROPS */))
+}"
+    );
+}
+
+#[test]
 fn a_dynamic_event_name_keeps_scope_aliases_local() {
     assert_eq!(
         assembled(r#"<button v-for="item in items" @[item.event]="item.handler"></button>"#),

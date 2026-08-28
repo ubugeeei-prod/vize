@@ -13,6 +13,22 @@ mod support;
 const BATTERY: &[(&str, &str)] = &[
     ("native_dynamic", r#"<div :[key]="value"></div>"#),
     (
+        "native_dynamic_template_literal",
+        r#"<div :[`data-${id}`]="value"></div>"#,
+    ),
+    (
+        "native_dynamic_template_literal_binary",
+        r#"<div :[`data-${prefix+suffix}`]="value"></div>"#,
+    ),
+    (
+        "native_dynamic_template_literal_global",
+        r#"<div :[`data-${Math.random()}`]="value"></div>"#,
+    ),
+    (
+        "v_for_dynamic_template_literal_local",
+        r#"<div v-for="item in items" :[`data-${item.id}`]="item.value"></div>"#,
+    ),
+    (
         "native_dynamic_camel",
         r#"<div :[key].camel="value"></div>"#,
     ),
@@ -43,6 +59,18 @@ const BATTERY: &[(&str, &str)] = &[
     (
         "v_for_dynamic",
         r#"<div v-for="item in items" :[key]="item.value"></div>"#,
+    ),
+    (
+        "v_for_dynamic_runtime_key",
+        r#"<div v-for="item in items" :[name]="item.value"></div>"#,
+    ),
+    (
+        "component_v_for_dynamic_runtime_key",
+        r#"<Foo v-for="item in items" :[name]="item.value" />"#,
+    ),
+    (
+        "component_v_for_dynamic_template_literal_local",
+        r#"<Foo v-for="item in items" :[`data-${item.id}`]="item.value" />"#,
     ),
     ("slot_outlet_dynamic", r#"<slot :[key]="value" />"#),
     (

@@ -67,7 +67,7 @@ pub(super) fn emit_key_source(cx: &mut EmitCx<'_>, source: &str) {
         cx.buf.push(source);
         return;
     }
-    if is_valid_js_identifier(source) || (!source.starts_with('$') && !source.starts_with('`')) {
+    if is_valid_js_identifier(source) || !source.starts_with('$') {
         cx.buf.push("_ctx.");
     }
     cx.buf.push(source);

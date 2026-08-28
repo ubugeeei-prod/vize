@@ -23,6 +23,14 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<button @[eventOf()]="handler"></button>"#,
     ),
     (
+        "native_dynamic_binary_expression",
+        r#"<button @[prefix+suffix]="handler"></button>"#,
+    ),
+    (
+        "native_dynamic_template_literal",
+        r#"<button @[`save:${id}`]="handler"></button>"#,
+    ),
+    (
         "native_dynamic_inline",
         r#"<button @[event]="handler($event)"></button>"#,
     ),
