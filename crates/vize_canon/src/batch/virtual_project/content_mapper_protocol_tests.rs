@@ -1,5 +1,7 @@
 use std::path::Path;
 
+use serde_json::Value;
+
 use super::super::protocol::protocol_semantic_links;
 use super::{
     CONTENT_MAPPER_SPAN_FEATURE_BITS, CONTENT_MAPPER_SPAN_FEATURES_ALL,
@@ -75,6 +77,15 @@ fn transform_declares_its_virtual_extension_on_every_response() {
     )
     .expect("transform");
     assert_eq!(valid.extension, CONTENT_MAPPER_VIRTUAL_EXTENSION);
+    let valid_json = serde_json::to_value(&valid).expect("valid transform json");
+    let valid_object = assert_serialized_transform_uses_protocol_v1_header(&valid_json);
+    let mappings = valid_object["mappings"].as_array().expect("mappings array");
+    assert!(!mappings.is_empty());
+    assert!(mappings.iter().all(|mapping| {
+        mapping
+            .as_array()
+            .is_some_and(|tuple| tuple.len() == 6 && tuple.iter().all(Value::is_number))
+    }));
 
     // The unparseable-SFC fallback is still a successful transform response, so it
     // must declare an extension too.
@@ -85,6 +96,41 @@ fn transform_declares_its_virtual_extension_on_every_response() {
     .expect("fallback transform");
     assert!(!fallback.diagnostics.is_empty());
     assert_eq!(fallback.extension, CONTENT_MAPPER_VIRTUAL_EXTENSION);
+    let fallback_json = serde_json::to_value(&fallback).expect("fallback transform json");
+    let fallback_object = assert_serialized_transform_uses_protocol_v1_header(&fallback_json);
+    assert!(
+        fallback_object["text"]
+            .as_str()
+            .is_some_and(|text| text.contains("__vize_component"))
+    );
+    assert!(
+        fallback_object["mappings"]
+            .as_array()
+            .is_some_and(Vec::is_empty)
+    );
+    let diagnostic = fallback_object["diagnostics"]
+        .as_array()
+        .and_then(|diagnostics| diagnostics.first())
+        .and_then(Value::as_object)
+        .expect("fallback diagnostic object");
+    for key in ["messageText", "start", "length", "code"] {
+        assert!(diagnostic.contains_key(key), "{diagnostic:#?}");
+    }
+}
+
+fn assert_serialized_transform_uses_protocol_v1_header(
+    value: &Value,
+) -> &serde_json::Map<String, Value> {
+    let object = value.as_object().expect("transform object");
+    assert_eq!(
+        object["extension"].as_str(),
+        Some(CONTENT_MAPPER_VIRTUAL_EXTENSION)
+    );
+    assert!(
+        !object.contains_key("scriptKind"),
+        "content-mapper protocol v1 uses extension, not the retired scriptKind field: {value:#}"
+    );
+    object
 }
 
 #[test]
