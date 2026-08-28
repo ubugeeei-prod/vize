@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { findArtFiles } from "../../scanner.ts";
 import type { ServerContext } from "../../types.ts";
+import { handleGenerateVariants } from "./generation.ts";
 import { handleToolCall } from "./index.ts";
 
 test("handleToolCall validates unknown tool names before loading native binding", async () => {
@@ -25,6 +26,27 @@ test("handleToolCall validates unknown tool names before loading native binding"
       error instanceof McpError &&
       error.code === ErrorCode.MethodNotFound &&
       /Unknown tool: unknown_tool/.test(error.message),
+  );
+});
+
+test("generate_variants refuses non-vue project files", async () => {
+  const ctx: ServerContext = {
+    projectRoot: process.cwd(),
+    loadNative() {
+      throw new Error("native binding should not load");
+    },
+    scanArtFiles: async () => new Map(),
+    resolveTokensPath: async () => null,
+  };
+
+  await assert.rejects(
+    handleGenerateVariants(ctx, {} as never, {
+      componentPath: ".env",
+    }),
+    (error) =>
+      error instanceof McpError &&
+      error.code === ErrorCode.InvalidParams &&
+      /componentPath must be a \.vue file/.test(error.message),
   );
 });
 

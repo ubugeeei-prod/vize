@@ -30,6 +30,9 @@ export async function handleGenerateVariants(
   if (!componentRelPath) {
     throw new McpError(ErrorCode.InvalidParams, "componentPath is required");
   }
+  if (!componentRelPath.endsWith(".vue")) {
+    throw new McpError(ErrorCode.InvalidParams, "componentPath must be a .vue file");
+  }
   if (!binding.analyzeSfc) {
     throw new McpError(ErrorCode.InternalError, "analyzeSfc not available in native binding");
   }

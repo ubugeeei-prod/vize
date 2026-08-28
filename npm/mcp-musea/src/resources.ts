@@ -194,8 +194,8 @@ export async function readResource(ctx: ServerContext, uri: string) {
 
   if (uri.startsWith("musea://source/")) {
     const relativePath = decodeURIComponent(uri.slice("musea://source/".length));
-    const absolutePath = resolveProjectPath(ctx.projectRoot, relativePath, "source path");
-    const source = await fs.promises.readFile(absolutePath, "utf-8");
+    const resolved = await resolveArtReference(ctx, { path: relativePath });
+    const source = await fs.promises.readFile(resolved.absolutePath, "utf-8");
 
     return {
       contents: [{ uri, mimeType: "text/plain", text: source }],
