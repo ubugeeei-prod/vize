@@ -58,7 +58,7 @@ fn declaration_kinds_are_classified_by_declaration_space() {
 
 #[test]
 fn value_and_type_declarations_are_bridged_in_both_declaration_spaces() {
-    let mut ts = vize_carton::String::default();
+    let mut ts = vize_s0::String::default();
     emit_setup_invocation_and_exports(
         &mut ts,
         &[
@@ -75,7 +75,7 @@ fn value_and_type_declarations_are_bridged_in_both_declaration_spaces() {
 
 #[test]
 fn value_only_declarations_never_gain_a_type_export() {
-    let mut ts = vize_carton::String::default();
+    let mut ts = vize_s0::String::default();
     emit_setup_invocation_and_exports(
         &mut ts,
         &[
@@ -98,7 +98,7 @@ fn merged_enum_declarations_are_bridged_once() {
     let exports = collect_named_value_exports(source);
     assert_exports(source, &exports, &[("Mode", PlainScriptExportKind::Enum)]);
 
-    let mut ts = vize_carton::String::default();
+    let mut ts = vize_s0::String::default();
     emit_setup_invocation_and_exports(&mut ts, &exports);
     assert_eq!(ts.matches("export const Mode =").count(), 1);
     assert_eq!(ts.matches("export type Mode =").count(), 1);
@@ -106,7 +106,7 @@ fn merged_enum_declarations_are_bridged_once() {
 
 #[test]
 fn no_exports_keeps_the_bare_setup_invocation() {
-    let mut ts = vize_carton::String::default();
+    let mut ts = vize_s0::String::default();
     emit_setup_invocation_and_exports(&mut ts, &[]);
     assert_eq!(ts.as_str(), "__setup();\n\n");
 }

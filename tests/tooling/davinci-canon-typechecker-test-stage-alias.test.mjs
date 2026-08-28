@@ -14,6 +14,7 @@ const typecheckerTestRows = [
     1,
   ],
   ["crates/vize_canon/src/virtual_ts/generator/script_module/namespace_hoist/tests.rs", "test", 1],
+  ["crates/vize_canon/src/virtual_ts/generator/script_module/plain_exports/tests.rs", "test", 4],
 ];
 
 function typechecker() {

@@ -1973,7 +1973,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_module/plain_exports.rs	18	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_module/plain_exports.rs	18	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_module/plain_exports.rs	18	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/script_module/plain_exports/tests.rs	61	s0	S0	stage	vize_carton	compat	4
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/script_module/plain_exports/tests.rs	61	s0	S0	stage	vize_s0	preferred	4
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_helpers.rs	9	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_helpers.rs	9	old_ast	old AST/parser	old	vize_relief	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_helpers.rs	9	croquis	Croquis analysis	old	vize_croquis	legacy	1
