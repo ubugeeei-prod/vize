@@ -79,7 +79,7 @@ fn admit_bindings_inner(
             BindingOp::VueDirective(_) if super::slots::is_slots_spread(binding) => {}
             BindingOp::VueDirective(directive) => super::directive::admit(directive)?,
             BindingOp::VueShow(show) => super::directive::admit_show(show)?,
-            BindingOp::VueHtml(html) => super::props_object::admit_html(html)?,
+            BindingOp::VueHtml(html) => super::html::admit(html)?,
             BindingOp::VueOnce(_) if allow_once => {}
             BindingOp::VueMemo(memo) => super::memo::admit(memo)?,
             _ => {

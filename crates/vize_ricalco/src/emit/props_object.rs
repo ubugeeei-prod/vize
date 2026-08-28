@@ -7,7 +7,7 @@ use vize_s2::op::{Attribute, BindOp, BindingOp, DynamicName, OnOp, VueHtmlOp};
 
 use super::EmitCx;
 use super::EmitError;
-use super::UnsupportedReason as Reason;
+use super::error::UnsupportedReason as Reason;
 use super::js::{escape_js_string, push_ident_key};
 use super::model_key::{ModelModifiersKey, ModelName, ModelUpdateKey};
 use super::props_bind::{self, StaticBindKeyCasing};
@@ -104,7 +104,7 @@ pub(super) fn emit_props_object(
             Piece::Attr(attr) => emit_static_pair(cx, attr),
             Piece::Bind(bind) => emit_bind_pair(cx, pieces, bind, skip_normalize)?,
             Piece::On(event) => on::emit_on_pair(cx, event, is_plain_element)?,
-            Piece::VueHtml(html) => emit_html_pair(cx, html)?,
+            Piece::VueHtml(html) => super::html::emit_pair(cx, html)?,
             Piece::ModelValue { name, source, .. } => {
                 super::model_key::emit_value(cx, *name, source)
             }
@@ -296,30 +296,6 @@ fn emit_bind_pair(
 fn emit_ref_for(cx: &mut EmitCx<'_>, name: &str) {
     if cx.in_v_for && name == "ref" {
         cx.buf.push("ref_for: true, ");
-    }
-}
-
-pub(super) fn admit_html(html: &VueHtmlOp<'_>) -> Result<(), EmitError> {
-    html_value(html).map(|_| ())
-}
-
-fn emit_html_pair(cx: &mut EmitCx<'_>, html: &VueHtmlOp<'_>) -> Result<(), EmitError> {
-    cx.buf.push("innerHTML: ");
-    match html_value(html)? {
-        Some(source) => cx.buf.push(source),
-        None => cx.buf.push("undefined"),
-    }
-    Ok(())
-}
-
-pub(super) fn html_value<'a>(html: &'a VueHtmlOp<'a>) -> Result<Option<&'a str>, EmitError> {
-    match html.value {
-        Some(ExprRef::Js(js)) => Ok(Some(js.source)),
-        Some(expr) => Err(EmitError::unsupported_at(
-            Reason::HtmlExpressionNotJs,
-            expr.span(),
-        )),
-        None => Ok(None),
     }
 }
 

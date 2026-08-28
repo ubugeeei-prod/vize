@@ -167,6 +167,12 @@ fn assert_bindings(source: &str, root: SourceRoot<'_>, bindings: &[BindingOp<'_>
                 assert_span(source, root, show.span, "show");
                 assert_expr(source, root, show.value);
             }
+            BindingOp::VueHtml(html) => {
+                assert_span(source, root, html.span, "html");
+                if let Some(value) = html.value {
+                    assert_expr(source, root, value);
+                }
+            }
         }
     }
 }

@@ -64,6 +64,7 @@ mod flag;
 mod fragment;
 mod helper;
 mod hoist;
+mod html;
 pub(crate) mod js;
 mod memo;
 mod merge;

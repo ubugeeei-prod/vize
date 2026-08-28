@@ -126,7 +126,10 @@ pub fn surface_of(
             // Codegen-only dialect bindings: represented on S2, not part of
             // the bind/on/model/directive surface this projection
             // compares. Legacy still counts them under builtins_excluded.
-            FolioBinding::VueOnce(_) | FolioBinding::VueMemo(_) | FolioBinding::VueShow(_) => {}
+            FolioBinding::VueOnce(_)
+            | FolioBinding::VueMemo(_)
+            | FolioBinding::VueShow(_)
+            | FolioBinding::VueHtml(_) => {}
             // Pre-pass only: the legacy pass desugars these before the
             // comparator runs. Arms exist so a missed desugar is a
             // surface mismatch, never a compile-time silence.

@@ -211,8 +211,8 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 
 **Deliverable:** `vize_atelier_dom` lowering S2 → codegen structure directly — the first strangler target, on the surface that holds the hard byte-parity bar.
 
-**Current series evidence (2026-08-28):** 32 installments have landed through
-[#5198](https://github.com/ubugeeei-prod/vize/pull/5198). Dynamic-argument
+**Current series evidence (2026-08-29):** 33 installments have landed through
+[#5200](https://github.com/ubugeeei-prod/vize/pull/5200). Dynamic-argument
 `v-bind` keys, `.camel` / `.prop` / `.attr` modifiers, Vue 2 pipe filters,
 filter helper order, slot outlet same-name names, and the expanded patch-flag
 matrix, including dynamic components, named component `v-model`, and component
@@ -222,11 +222,13 @@ tests. Installments 30 and 31 narrow the malformed-slot boundary by eliding
 inert slot-template bindings and emitting nested or stray slot-template
 carriers through the shipped inline-template fallback. Installment 32 realizes
 well-formed `v-show` as `vue.show` and emits runtime `vShow` entries from the
-S2 DOM lane while preserving shipped helper order and patch flags. The task
-remains blocked on the published dependency decision, a hydrated full-corpus
-run with an exact comparison count, the remaining patch-flag equivalence
-program, and the DOM allocation budget; the old lane remains the production
-path. See the
+S2 DOM lane while preserving shipped helper order and patch flags. Installment
+33 realizes `v-html` as `vue.html` and emits `innerHTML` props from the S2 DOM
+lane across native, component, slot, structural, spread, custom directive and
+native `v-model` cases. The task remains blocked on the published dependency
+decision, a hydrated full-corpus run with an exact comparison count, the
+remaining patch-flag equivalence program, and the DOM allocation budget; the
+old lane remains the production path. See the
 [series record](./phase-2-records/p2-11.md).
 
 **Steps:**
