@@ -1,7 +1,7 @@
 //! Generic union props with a callback key present in only one branch.
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
-use vize_carton::String;
+use vize_s0::String;
 
 /// A non-distributive `keyof Props<T>` omits the branch-only `pick` key and
 /// silently falls back to the permissive callable type. The resolved branch's
