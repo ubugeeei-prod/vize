@@ -42,6 +42,8 @@ mod vec;
 // Shared modules
 pub mod config;
 #[cfg(not(target_arch = "wasm32"))]
+pub mod corsa_api_mode;
+#[cfg(not(target_arch = "wasm32"))]
 pub mod corsa_resolver;
 pub mod dialect;
 pub mod directive;

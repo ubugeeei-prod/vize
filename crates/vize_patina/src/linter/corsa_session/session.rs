@@ -13,7 +13,7 @@ use corsa::{
     },
     runtime::block_on,
 };
-use vize_s0::{String, ToCompactString, profile};
+use vize_s0::{String, ToCompactString, corsa_api_mode::uses_async_json_rpc_api, profile};
 
 impl CorsaTypeAwareSession {
     pub(in crate::linter) fn new_with_corsa_path(
@@ -195,52 +195,11 @@ impl Drop for SessionRootCleanup {
 }
 
 fn api_mode_for_executable(path: &std::path::Path) -> ApiMode {
-    if path.extension().and_then(|extension| extension.to_str()) == Some("js") {
-        return ApiMode::AsyncJsonRpcStdio;
-    }
-
-    if path
-        .parent()
-        .and_then(|parent| parent.file_name())
-        .and_then(|name| name.to_str())
-        == Some(".bin")
-    {
-        return ApiMode::AsyncJsonRpcStdio;
-    }
-
-    if is_typescript_native_preview_executable(path) {
+    if uses_async_json_rpc_api(path) {
         return ApiMode::AsyncJsonRpcStdio;
     }
 
     ApiMode::SyncMsgpackStdio
-}
-
-fn is_typescript_native_preview_executable(path: &std::path::Path) -> bool {
-    let Some(parent) = path.parent() else {
-        return false;
-    };
-    let Some(parent_name) = parent.file_name().and_then(|name| name.to_str()) else {
-        return false;
-    };
-    if parent_name != "bin" && parent_name != "lib" {
-        return false;
-    };
-
-    let Some(package_dir) = parent.parent() else {
-        return false;
-    };
-    let Some(package_name) = package_dir.file_name().and_then(|name| name.to_str()) else {
-        return false;
-    };
-    if package_name != "native-preview" && !package_name.starts_with("native-preview-") {
-        return false;
-    }
-
-    package_dir
-        .parent()
-        .and_then(|scope| scope.file_name())
-        .and_then(|name| name.to_str())
-        == Some("@typescript")
 }
 
 #[cfg(test)]

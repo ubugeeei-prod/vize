@@ -7,7 +7,7 @@ use corsa::{
     api::{ApiMode, ApiSpawnConfig, CapabilitiesResponse, ProjectSession},
     runtime::block_on,
 };
-use vize_s0::{String, cstr};
+use vize_s0::{String, corsa_api_mode::uses_async_json_rpc_api, cstr};
 
 pub(in crate::lsp_client) fn spawn_project_session(
     executable: &str,
@@ -101,31 +101,9 @@ pub(super) fn should_retry_json_rpc(mode: ApiMode, error: &CorsaError) -> bool {
 }
 
 pub(super) fn api_mode_for_executable(executable: &str) -> ApiMode {
-    if is_node_wrapper_executable(Path::new(executable)) {
+    if uses_async_json_rpc_api(Path::new(executable)) {
         ApiMode::AsyncJsonRpcStdio
     } else {
         ApiMode::SyncMsgpackStdio
     }
-}
-
-fn is_node_wrapper_executable(path: &Path) -> bool {
-    if path.extension().and_then(|extension| extension.to_str()) == Some("js") {
-        return true;
-    }
-    if path
-        .parent()
-        .and_then(|parent| parent.file_name())
-        .and_then(|name| name.to_str())
-        == Some(".bin")
-    {
-        return true;
-    }
-    let Some(parent) = path.parent() else {
-        return false;
-    };
-    let Some(grandparent) = parent.parent() else {
-        return false;
-    };
-    parent.file_name().and_then(|name| name.to_str()) == Some("bin")
-        && grandparent.file_name().and_then(|name| name.to_str()) == Some("native-preview")
 }

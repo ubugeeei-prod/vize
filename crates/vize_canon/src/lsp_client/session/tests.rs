@@ -64,6 +64,21 @@ fn uses_async_json_rpc_for_native_preview_js_entrypoints() {
 }
 
 #[test]
+fn uses_async_json_rpc_for_typescript_seven_native_binaries() {
+    for executable in ["tsc", "tsc.exe"] {
+        let path = format!(
+            "/tmp/project/node_modules/@typescript/typescript-darwin-arm64/lib/{executable}"
+        );
+
+        assert_eq!(
+            api_mode_for_executable(&path),
+            ApiMode::AsyncJsonRpcStdio,
+            "{path}"
+        );
+    }
+}
+
+#[test]
 fn keeps_native_binaries_on_sync_msgpack() {
     assert_eq!(
         api_mode_for_executable("/tmp/project/corsa-bind/.cache/tsgo"),

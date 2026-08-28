@@ -32,6 +32,23 @@ fn uses_json_rpc_for_typescript_native_preview_binaries() {
 }
 
 #[test]
+fn uses_json_rpc_for_typescript_seven_native_binaries() {
+    let suffix = platform_suffix();
+    for executable in ["tsc", "tsc.exe"] {
+        let path = PathBuf::from(format!(
+            "/workspace/node_modules/@typescript/typescript-{suffix}/lib/{executable}"
+        ));
+
+        assert_eq!(
+            api_mode_for_executable(&path),
+            ApiMode::AsyncJsonRpcStdio,
+            "{}",
+            path.display()
+        );
+    }
+}
+
+#[test]
 fn uses_msgpack_for_generic_native_binaries() {
     assert_eq!(
         api_mode_for_executable(Path::new("/workspace/bin/corsa")),
@@ -107,6 +124,16 @@ fn test_corsa_path() -> Option<PathBuf> {
         .parent()?
         .parent()?
         .to_path_buf();
+    let stable = repo_root
+        .join("node_modules")
+        .join("@typescript")
+        .join(&*cstr!("typescript-{}", platform_suffix()))
+        .join("lib")
+        .join(&*cstr!("tsc{}", std::env::consts::EXE_SUFFIX));
+    if stable.is_file() {
+        return Some(stable);
+    }
+
     let native = repo_root
         .join("node_modules")
         .join("@typescript")
