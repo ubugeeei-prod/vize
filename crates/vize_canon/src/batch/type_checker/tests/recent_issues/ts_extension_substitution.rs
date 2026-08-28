@@ -1,7 +1,7 @@
 use super::super::{
     BatchTypeChecker, TypeChecker, create_project_case, relative_path, resolve_test_tsgo_binary,
 };
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 const SFC: &str = "<script setup lang=\"ts\">\nconst local = 1\n</script>\n<template><div>{{ local }}</div></template>\n";
 
