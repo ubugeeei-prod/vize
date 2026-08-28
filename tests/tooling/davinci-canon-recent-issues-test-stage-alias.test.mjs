@@ -121,6 +121,11 @@ const recentIssueRows = [
     "test",
     16,
   ],
+  [
+    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/wide_props_type_complexity.rs",
+    "test",
+    1,
+  ],
 ];
 
 function typechecker() {
