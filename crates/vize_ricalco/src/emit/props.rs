@@ -79,6 +79,7 @@ fn admit_bindings_inner(
             BindingOp::VueDirective(_) if super::slots::is_slots_spread(binding) => {}
             BindingOp::VueDirective(directive) => super::directive::admit(directive)?,
             BindingOp::VueOnce(_) if allow_once => {}
+            BindingOp::VueMemo(memo) => super::memo::admit(memo)?,
             _ => {
                 return Err(EmitError::unsupported_binding(
                     Reason::UnsupportedBindingKind,

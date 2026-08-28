@@ -38,6 +38,8 @@ pub(super) enum Helper {
     RenderList,
     CreateSlots,
     SetBlockTracking,
+    WithMemo,
+    IsMemoSame,
     WithCtx,
     Teleport,
     Suspense,
@@ -48,7 +50,7 @@ pub(super) enum Helper {
 }
 
 impl Helper {
-    pub(super) const ALL: [Self; 39] = [
+    pub(super) const ALL: [Self; 41] = [
         Self::ResolveComponent,
         Self::ResolveDynamicComponent,
         Self::ResolveDirective,
@@ -81,6 +83,8 @@ impl Helper {
         Self::RenderList,
         Self::CreateSlots,
         Self::SetBlockTracking,
+        Self::WithMemo,
+        Self::IsMemoSame,
         Self::WithCtx,
         Self::Teleport,
         Self::Suspense,
@@ -115,6 +119,8 @@ impl Helper {
             Self::RenderList
             | Self::CreateSlots
             | Self::SetBlockTracking
+            | Self::WithMemo
+            | Self::IsMemoSame
             | Self::WithCtx
             | Self::Teleport
             | Self::Suspense
@@ -166,6 +172,8 @@ impl Helper {
             Self::ResolveFilter => 68719476736,
             Self::ToHandlerKey => 137438953472,
             Self::SetBlockTracking => 274877906944,
+            Self::WithMemo => 549755813888,
+            Self::IsMemoSame => 1099511627776,
         }
     }
 
@@ -203,6 +211,8 @@ impl Helper {
             Self::RenderList => "renderList",
             Self::CreateSlots => "createSlots",
             Self::SetBlockTracking => "setBlockTracking",
+            Self::WithMemo => "withMemo",
+            Self::IsMemoSame => "isMemoSame",
             Self::WithCtx => "withCtx",
             Self::Teleport => "Teleport",
             Self::Suspense => "Suspense",
@@ -247,6 +257,8 @@ impl Helper {
             Self::RenderList => "_renderList",
             Self::CreateSlots => "_createSlots",
             Self::SetBlockTracking => "_setBlockTracking",
+            Self::WithMemo => "_withMemo",
+            Self::IsMemoSame => "_isMemoSame",
             Self::WithCtx => "_withCtx",
             Self::Teleport => "_Teleport",
             Self::Suspense => "_Suspense",

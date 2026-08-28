@@ -85,6 +85,12 @@ const SOURCE_CASES: &[Case] = &[
         Reason::IfConditionNotJs,
     ),
     case(
+        "bad_memo_expression",
+        r#"<div v-memo="%"></div>"#,
+        VUE3,
+        Reason::MemoExpressionNotJs,
+    ),
+    case(
         "bad_model_argument",
         r#"<Foo v-model:[a.]="x" />"#,
         VUE3,
@@ -199,6 +205,7 @@ fn committed_fixture_refusal_census_is_pinned() {
             ("duplicate_style_binding", 1),
             ("for_source_not_js", 1),
             ("if_condition_not_js", 1),
+            ("memo_expression_not_js", 1),
             ("model_argument_not_js", 1),
             ("object_bind_has_modifiers", 1),
             ("object_on_handler_not_js", 1),

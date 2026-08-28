@@ -3,12 +3,13 @@
 use vize_davinci::id::NodeId;
 use vize_s0::{String, ToCompactString};
 use vize_s2::expr::ExprRef;
-use vize_s2::op::{Attribute, BindingOp, ForOp, Op};
+use vize_s2::op::{Attribute, BindingOp, ForOp, Op, VueMemoOp};
 
 use super::EmitCx;
 use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
+use super::helper::Helper;
 use super::js::escape_js_string;
 
 pub(super) fn emit_for(
@@ -27,6 +28,11 @@ pub(super) fn emit_for(
         None => None,
     };
     let from_template = wrapper.is_some();
+    let item_memo = if from_template {
+        None
+    } else {
+        plain_item_memo(&for_op.region.ops)
+    };
     let (bind_len, keyed) = if from_template {
         (0, wrapper_key.is_some())
     } else {
@@ -95,9 +101,32 @@ pub(super) fn emit_for(
         cx.buf.push(", ");
         cx.buf.push(alias);
     }
+    if item_memo.is_some() {
+        if key_alias.is_none() {
+            cx.buf.push(", __");
+        }
+        if index_alias.is_none() {
+            cx.buf.push(", ___");
+        }
+        cx.buf.push(", _cached");
+    }
     cx.buf.push(") => {");
     cx.buf.indent();
     cx.buf.newline();
+    if let Some(memo) = item_memo {
+        emit_memo_body(cx, for_op, id, bind_len, stable, memo)?;
+        cx.buf.deindent();
+        cx.buf.newline();
+        cx.buf.push("}, _cache, ");
+        let cache_index = super::memo::next_cache_index(cx);
+        cx.buf.push(cache_index.as_str());
+        cx.buf.push("), ");
+        cx.buf.push(flag.to_compact_string().as_str());
+        cx.buf.push(" /* ");
+        cx.buf.push(flag_name);
+        cx.buf.push(" */))");
+        return Ok(());
+    }
     cx.buf.push("return ");
     let prev_in_v_for = cx.in_v_for;
     let scope_mark = cx.push_scope(id);
@@ -120,6 +149,49 @@ pub(super) fn emit_for(
     Ok(())
 }
 
+fn emit_memo_body(
+    cx: &mut EmitCx<'_>,
+    for_op: &ForOp<'_>,
+    id: Option<NodeId>,
+    bind_len: usize,
+    stable: bool,
+    memo: &VueMemoOp<'_>,
+) -> Result<(), EmitError> {
+    let deps = super::memo::js_value(memo)?;
+    let key = memo_item_key_js(&for_op.region.ops)?;
+    cx.buf.use_helper(Helper::WithMemo);
+    cx.buf.push("const _memo = (");
+    cx.buf.push(deps);
+    cx.buf.push(")");
+    cx.buf.newline();
+    cx.buf.use_helper(Helper::IsMemoSame);
+    cx.buf.push("if (_cached && _cached.el && ");
+    if let Some(key) = key {
+        cx.buf.push("_cached.key === ");
+        cx.buf.push(key.as_str());
+        cx.buf.push(" && ");
+    }
+    cx.buf.push(Helper::IsMemoSame.alias());
+    cx.buf.push("(_cached, _memo)) return _cached");
+    cx.buf.newline();
+    cx.buf.push("const _item = ");
+    let prev_in_v_for = cx.in_v_for;
+    let prev_skip_memo = cx.skip_memo;
+    let scope_mark = cx.push_scope(id);
+    cx.in_v_for = true;
+    cx.skip_memo = true;
+    let item = emit_plain_item(cx, for_op, bind_len, stable);
+    cx.skip_memo = prev_skip_memo;
+    cx.in_v_for = prev_in_v_for;
+    cx.pop_scope(scope_mark);
+    item?;
+    cx.buf.newline();
+    cx.buf.push("_item.memo = _memo");
+    cx.buf.newline();
+    cx.buf.push("return _item");
+    Ok(())
+}
+
 fn emit_plain_item(
     cx: &mut EmitCx<'_>,
     for_op: &ForOp<'_>,
@@ -139,6 +211,22 @@ fn emit_plain_item(
         }
         [Op::Slot(slot)] => super::outlet::emit_outlet(cx, slot, None, false),
         _ => Err(EmitError::unsupported_at(Reason::ForItemShape, for_op.span)),
+    }
+}
+
+fn plain_item_memo<'a>(ops: &'a [Op<'a>]) -> Option<&'a VueMemoOp<'a>> {
+    match ops {
+        [Op::Element(element)] => super::memo::first(&element.bindings),
+        [Op::Component(component)] => super::memo::first(&component.bindings),
+        _ => None,
+    }
+}
+
+fn memo_item_key_js(ops: &[Op<'_>]) -> Result<Option<String>, EmitError> {
+    match ops {
+        [Op::Element(element)] => item_key_js(&element.attributes, &element.bindings),
+        [Op::Component(component)] => item_key_js(&component.attributes, &component.bindings),
+        _ => Ok(None),
     }
 }
 

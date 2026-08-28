@@ -169,6 +169,7 @@ pub(super) fn pieces<'a>(
             BindingOp::SlotContent(_) => {}
             BindingOp::VueDirective(_) => {}
             BindingOp::VueOnce(_) => {}
+            BindingOp::VueMemo(_) => {}
             _ => {
                 return Err(EmitError::unsupported_binding(
                     Reason::UnsupportedBindingKind,

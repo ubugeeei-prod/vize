@@ -21,6 +21,30 @@ pub(super) fn emit_unique_element(
     if super::once::has(&element.bindings) {
         return super::once::emit_element(cx, element, None, false);
     }
+    super::memo::emit_cached(cx, &element.bindings, |cx| {
+        directive::wrap_element(cx, element, |cx| {
+            cx.buf.use_open_block();
+            cx.buf.use_create_element_block();
+            cx.buf.push("(");
+            cx.buf.push(Buf::open_block_alias());
+            cx.buf.push("(), ");
+            emit_call(
+                cx, element, /* block */ true, None, /* hoist */ true,
+                /* for_item */ false, /* once */ false,
+            )?;
+            cx.buf.push(")");
+            Ok(())
+        })
+    })
+}
+
+fn emit_block(
+    cx: &mut EmitCx<'_>,
+    element: &ElementOp<'_>,
+    allow_hoist: bool,
+    if_key: Option<&str>,
+    for_item: bool,
+) -> Result<(), EmitError> {
     directive::wrap_element(cx, element, |cx| {
         cx.buf.use_open_block();
         cx.buf.use_create_element_block();
@@ -28,8 +52,13 @@ pub(super) fn emit_unique_element(
         cx.buf.push(Buf::open_block_alias());
         cx.buf.push("(), ");
         emit_call(
-            cx, element, /* block */ true, None, /* hoist */ true,
-            /* for_item */ false, /* once */ false,
+            cx,
+            element,
+            /* block */ true,
+            if_key,
+            allow_hoist,
+            for_item,
+            /* once */ false,
         )?;
         cx.buf.push(")");
         Ok(())
@@ -46,12 +75,14 @@ pub(super) fn emit_fragment_element(
     if namespace::crosses_boundary(cx, element) {
         return emit_nested_block(cx, element);
     }
-    directive::wrap_element(cx, element, |cx| {
-        cx.buf.use_create_element_vnode();
-        emit_call(
-            cx, element, /* block */ false, None, /* hoist */ true,
-            /* for_item */ false, /* once */ false,
-        )
+    super::memo::emit_cached(cx, &element.bindings, |cx| {
+        directive::wrap_element(cx, element, |cx| {
+            cx.buf.use_create_element_vnode();
+            emit_call(
+                cx, element, /* block */ false, None, /* hoist */ true,
+                /* for_item */ false, /* once */ false,
+            )
+        })
     })
 }
 
@@ -62,28 +93,20 @@ fn emit_nested(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) -> Result<(), EmitE
     if namespace::crosses_boundary(cx, element) {
         return emit_nested_block(cx, element);
     }
-    directive::wrap_element(cx, element, |cx| {
-        cx.buf.use_create_element_vnode();
-        emit_call(
-            cx, element, /* block */ false, None, /* hoist */ false,
-            /* for_item */ false, /* once */ false,
-        )
+    super::memo::emit_cached(cx, &element.bindings, |cx| {
+        directive::wrap_element(cx, element, |cx| {
+            cx.buf.use_create_element_vnode();
+            emit_call(
+                cx, element, /* block */ false, None, /* hoist */ false,
+                /* for_item */ false, /* once */ false,
+            )
+        })
     })
 }
 
 fn emit_nested_block(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) -> Result<(), EmitError> {
-    directive::wrap_element(cx, element, |cx| {
-        cx.buf.use_open_block();
-        cx.buf.use_create_element_block();
-        cx.buf.push("(");
-        cx.buf.push(Buf::open_block_alias());
-        cx.buf.push("(), ");
-        emit_call(
-            cx, element, /* block */ true, None, /* hoist */ false,
-            /* for_item */ false, /* once */ false,
-        )?;
-        cx.buf.push(")");
-        Ok(())
+    super::memo::emit_cached(cx, &element.bindings, |cx| {
+        emit_block(cx, element, false, None, false)
     })
 }
 
@@ -92,24 +115,7 @@ pub(super) fn emit_if_branch_element(
     element: &ElementOp<'_>,
     key: &str,
 ) -> Result<(), EmitError> {
-    directive::wrap_element(cx, element, |cx| {
-        cx.buf.use_open_block();
-        cx.buf.use_create_element_block();
-        cx.buf.push("(");
-        cx.buf.push(Buf::open_block_alias());
-        cx.buf.push("(), ");
-        emit_call(
-            cx,
-            element,
-            /* block */ true,
-            Some(key),
-            /* hoist */ false,
-            /* for_item */ false,
-            /* once */ false,
-        )?;
-        cx.buf.push(")");
-        Ok(())
-    })
+    emit_block(cx, element, false, Some(key), false)
 }
 
 pub(super) fn emit_for_item_element(
@@ -121,25 +127,17 @@ pub(super) fn emit_for_item_element(
     if super::once::has(&element.bindings) {
         return super::once::emit_element(cx, element, key, true);
     }
-    directive::wrap_element(cx, element, |cx| {
+    super::memo::emit_cached(cx, &element.bindings, |cx| {
         if stable {
-            cx.buf.use_create_element_vnode();
-            return emit_call(
-                cx, element, /* block */ false, key, /* hoist */ false,
-                /* for_item */ true, /* once */ false,
-            );
+            return directive::wrap_element(cx, element, |cx| {
+                cx.buf.use_create_element_vnode();
+                emit_call(
+                    cx, element, /* block */ false, key, /* hoist */ false,
+                    /* for_item */ true, /* once */ false,
+                )
+            });
         }
-        cx.buf.use_open_block();
-        cx.buf.use_create_element_block();
-        cx.buf.push("(");
-        cx.buf.push(Buf::open_block_alias());
-        cx.buf.push("(), ");
-        emit_call(
-            cx, element, /* block */ true, key, /* hoist */ false,
-            /* for_item */ true, /* once */ false,
-        )?;
-        cx.buf.push(")");
-        Ok(())
+        emit_block(cx, element, false, key, true)
     })
 }
 
@@ -164,10 +162,12 @@ pub(super) fn emit_call(
     cx.buf.push("\"");
     let has_children = !element.children.ops.is_empty();
     let has_custom = directive::has_custom(&element.bindings);
+    let has_memo = super::memo::has(&element.bindings);
+    let memo_block = block && has_memo && !(if_key.is_some() && !for_item);
     let has_binds = has_prop_bindings(&element.bindings);
     let hoist = allow_hoist && if_key.is_none() && super::props_static::root_should_hoist(element);
     let patch = bind_patch(&element.bindings, false, if_key, for_item);
-    let text_flag = !once && children_need_text_flag(&element.children);
+    let text_flag = !once && !memo_block && children_need_text_flag(&element.children);
     let mut flag = patch.flag;
     if text_flag {
         flag |= 1;
@@ -178,6 +178,9 @@ pub(super) fn emit_call(
     }
     if once {
         flag &= 2 | 4;
+    }
+    if memo_block {
+        flag = 0;
     }
     let omit_text_only = hoist && block && flag == 1;
     let emit_flag = flag != 0 && !omit_text_only;
@@ -214,7 +217,7 @@ pub(super) fn emit_call(
             emit_children(
                 cx,
                 &element.children,
-                once || (has_custom && allow_hoist && block),
+                once || memo_block || (has_custom && allow_hoist && block),
             )
         })?;
     } else if emit_flag {
@@ -223,7 +226,8 @@ pub(super) fn emit_call(
     if emit_flag {
         emit_patch_flag(cx, flag);
     }
-    if !once && !patch.dynamic_props.is_empty() {
+    let suppress_memo_for_item_dynamic_props = memo_block && cx.skip_memo && for_item;
+    if !once && !suppress_memo_for_item_dynamic_props && !patch.dynamic_props.is_empty() {
         cx.buf.push(", [");
         for (i, name) in patch.dynamic_props.iter().enumerate() {
             if i > 0 {

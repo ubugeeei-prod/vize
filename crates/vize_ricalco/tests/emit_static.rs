@@ -11,7 +11,7 @@
 mod support;
 
 use support::with_transformed;
-use vize_ricalco::{EmitError, UnsupportedReason as Reason, emit_dom, emit_dom_source};
+use vize_ricalco::{emit_dom, emit_dom_source};
 use vize_s0::Allocator;
 
 fn assembled(source: &str) -> String {
@@ -305,12 +305,6 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     );
 }
 
-fn refused(source: &str) -> EmitError {
-    with_transformed(source, |lowered, _, facts, _| {
-        emit_dom(lowered, facts).expect_err("expected Unsupported")
-    })
-}
-
 #[test]
 fn v_once_wraps_the_native_vnode_in_the_render_cache() {
     assert_eq!(
@@ -328,13 +322,5 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     _cache[0]
   )
 }"
-    );
-}
-
-#[test]
-fn v_memo_is_unsupported_until_realization() {
-    assert_eq!(
-        refused(r#"<div v-memo="[id]">x</div>"#).reason(),
-        Some(Reason::UnsupportedBindingKind)
     );
 }

@@ -49,17 +49,43 @@ pub(super) fn emit_root(
     component: &ComponentOp<'_>,
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
+    if super::memo::has(&component.bindings) && !cx.skip_memo {
+        return super::memo::emit_cached(cx, &component.bindings, |cx| {
+            emit_vnode(cx, component, None, false, id)
+        });
+    }
+    emit_block(cx, component, None, false, id)
+}
+
+fn emit_block(
+    cx: &mut EmitCx<'_>,
+    component: &ComponentOp<'_>,
+    if_key: Option<&str>,
+    for_item: bool,
+    id: Option<NodeId>,
+) -> Result<(), EmitError> {
     directive::wrap_component(cx, component, |cx| {
         cx.buf.use_open_block();
         cx.buf.use_create_block();
         cx.buf.push("(");
         cx.buf.push(Buf::open_block_alias());
         cx.buf.push("(), ");
-        emit_call(
-            cx, component, /* block */ true, None, /* for_item */ false, id,
-        )?;
+        emit_call(cx, component, /* block */ true, if_key, for_item, id)?;
         cx.buf.push(")");
         Ok(())
+    })
+}
+
+fn emit_vnode(
+    cx: &mut EmitCx<'_>,
+    component: &ComponentOp<'_>,
+    if_key: Option<&str>,
+    for_item: bool,
+    id: Option<NodeId>,
+) -> Result<(), EmitError> {
+    directive::wrap_component(cx, component, |cx| {
+        cx.buf.use_create_vnode();
+        emit_call(cx, component, false, if_key, for_item, id)
     })
 }
 
@@ -68,15 +94,15 @@ pub(super) fn emit_nested(
     component: &ComponentOp<'_>,
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
+    if super::memo::has(&component.bindings) && !cx.skip_memo {
+        return super::memo::emit_cached(cx, &component.bindings, |cx| {
+            emit_vnode(cx, component, None, false, id)
+        });
+    }
     if builtin::forces_block(component) {
         return emit_root(cx, component, id);
     }
-    directive::wrap_component(cx, component, |cx| {
-        cx.buf.use_create_vnode();
-        emit_call(
-            cx, component, /* block */ false, None, /* for_item */ false, id,
-        )
-    })
+    emit_vnode(cx, component, None, false, id)
 }
 
 pub(super) fn emit_if_branch(
@@ -85,23 +111,7 @@ pub(super) fn emit_if_branch(
     key: &str,
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
-    directive::wrap_component(cx, component, |cx| {
-        cx.buf.use_open_block();
-        cx.buf.use_create_block();
-        cx.buf.push("(");
-        cx.buf.push(Buf::open_block_alias());
-        cx.buf.push("(), ");
-        emit_call(
-            cx,
-            component,
-            /* block */ true,
-            Some(key),
-            /* for_item */ false,
-            id,
-        )?;
-        cx.buf.push(")");
-        Ok(())
-    })
+    emit_block(cx, component, Some(key), false, id)
 }
 
 pub(super) fn emit_for_item(
@@ -110,18 +120,14 @@ pub(super) fn emit_for_item(
     id: Option<NodeId>,
     key: Option<&str>,
 ) -> Result<(), EmitError> {
-    directive::wrap_component(cx, component, |cx| {
-        cx.buf.use_open_block();
-        cx.buf.use_create_block();
-        cx.buf.push("(");
-        cx.buf.push(Buf::open_block_alias());
-        cx.buf.push("(), ");
-        emit_call(
-            cx, component, /* block */ true, key, /* for_item */ true, id,
-        )?;
-        cx.buf.push(")");
-        Ok(())
-    })
+    if let Some(memo) = super::memo::first(&component.bindings)
+        && !cx.skip_memo
+    {
+        return super::memo::emit_cached_with_key(cx, memo, key.unwrap_or("0"), |cx| {
+            emit_block(cx, component, key, true, id)
+        });
+    }
+    emit_block(cx, component, key, true, id)
 }
 
 fn collect_from<'a>(region: &Region<'a>, names: &mut StdVec<&'a str>) {
@@ -190,6 +196,7 @@ fn emit_call(
         !(matches!(binding, BindingOp::SlotContent(_))
             || slots::is_slots_spread(binding)
             || directive::is_custom(binding)
+            || super::memo::is_memo(binding)
             || (skip_is && builtin::is_is_bind(binding)))
     });
     let has_attrs = component

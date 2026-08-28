@@ -41,6 +41,7 @@
 //! **static+dynamic `style` merge** (`[{"color":"red"}, s]`), and
 //! **dynamic `v-on` keys** (`@[event]` through `toHandlerKey`,
 //! including event/key modifiers), plus native-element **`v-once`** cache wrappers,
+//! and **`v-memo`** cache wrappers / `v-for` memo reuse guards,
 //! while SFC style-block carriers (`vue.css-bind` facts) stay DOM-inert.
 //! Static-name `v-bind` modifiers (`.camel`, `.prop`, `.attr`, plus the
 //! dot shorthand) and dynamic-argument `v-bind` keys / modifiers are
@@ -63,6 +64,7 @@ mod fragment;
 mod helper;
 mod hoist;
 pub(crate) mod js;
+mod memo;
 mod merge;
 mod model;
 mod model_key;
@@ -190,14 +192,17 @@ struct EmitCx<'facts> {
     scope_names: StdVec<String>,
     /// Sibling `v-if` chains share one counter; nested chains reset.
     if_branch_key: u32,
-    /// `v-once` cache slots are numbered in render-order, sharing the
-    /// function-level `_cache` array like the shipped lane.
+    /// `v-once` / `v-memo` cache slots are numbered in render-order,
+    /// sharing the function-level `_cache` array like the shipped lane.
     once_cache_index: u32,
     /// Static children nested inside `v-once` follow the shipped lane's
     /// one-shot hoist behavior without changing ordinary nested elements.
     once_depth: u32,
     /// Slot objects inside `v-for` carry `_: 2 /* DYNAMIC */`.
     in_v_for: bool,
+    /// `v-for + v-memo` uses Vue's special `_cached` callback shape, so
+    /// the item emitter must skip the ordinary `_withMemo` wrapper.
+    skip_memo: bool,
     /// Nested components inside a scoped `withCtx` treat forwarded
     /// outlets as `_: 2` + `DYNAMIC_SLOTS` (Vue `has_slot_params`).
     slot_param_depth: u32,
@@ -277,6 +282,7 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
         once_cache_index: 0,
         once_depth: 0,
         in_v_for: false,
+        skip_memo: false,
         slot_param_depth: 0,
         parent_ns: Namespace::Html,
     };
