@@ -14,7 +14,9 @@ use super::EmitCx;
 use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
-use super::children::{emit_create_text_vnode, emit_plain_text_vnode, emit_to_display_string};
+use super::children::{
+    emit_create_text_vnode, emit_interpolation, emit_plain_text_vnode, emit_to_display_string,
+};
 use super::hoist::{emit_hoisted_element, is_hoistable};
 use super::js::escape_js_string;
 use super::vnode;
@@ -117,6 +119,23 @@ pub(super) fn emit_for_template_item(
         return super::emit_for_item_call(cx, element, stable, key);
     }
     emit_inner_fragment(cx, ops, key, ChildMode::GenerateNode)
+}
+
+pub(super) fn emit_inline(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError> {
+    match ops {
+        [op] => emit_inline_child(cx, op),
+        ops => {
+            cx.buf.push("[");
+            for (i, op) in ops.iter().enumerate() {
+                if i > 0 {
+                    cx.buf.push(", ");
+                }
+                emit_inline_child(cx, op)?;
+            }
+            cx.buf.push("]");
+            Ok(())
+        }
+    }
 }
 
 fn emit_inner_fragment(
@@ -255,6 +274,17 @@ fn emit_node_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
     match op {
         Op::Element(element) if is_hoistable(element) => emit_hoisted_element(cx, element),
         _ => vnode::emit_array_child(cx, op),
+    }
+}
+
+fn emit_inline_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
+    match op {
+        Op::Text(_) => emit_create_text_vnode(cx, core::slice::from_ref(op)),
+        Op::Interpolation(interp) => {
+            let id = cx.walk.mint();
+            emit_interpolation(cx, interp, id)
+        }
+        _ => emit_node_child(cx, op),
     }
 }
 

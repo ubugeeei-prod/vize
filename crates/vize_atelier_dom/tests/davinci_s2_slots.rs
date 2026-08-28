@@ -158,6 +158,54 @@ const BATTERY: &[(&str, &str)] = &[
         "create_slots_default_interp",
         r#"<Foo>hello {{ msg }}<template #header v-if="ok">x</template></Foo>"#,
     ),
+    (
+        "create_slots_nested_template",
+        r#"<Foo><template #header v-if="ok"><template #inner>x</template></template></Foo>"#,
+    ),
+    (
+        "create_slots_nested_template_interp",
+        r#"<Foo><template v-for="i in n" #header><template #inner>{{ i }}</template></template></Foo>"#,
+    ),
+    (
+        "nested_named_slot_template",
+        r#"<Foo><template #header><template #inner>x</template></template></Foo>"#,
+    ),
+    (
+        "nested_named_slot_template_interp",
+        r#"<Foo><template #header><template #inner>{{ msg }}</template></template></Foo>"#,
+    ),
+    (
+        "nested_named_slot_template_multiple",
+        r#"<Foo><template #header><template #inner><b></b><i></i></template></template></Foo>"#,
+    ),
+    (
+        "nested_named_slot_template_empty",
+        r#"<Foo><template #header><template #inner></template></template></Foo>"#,
+    ),
+    (
+        "stray_named_slot_template_inside_native",
+        r#"<div><template #inner>x</template></div>"#,
+    ),
+    (
+        "stray_named_slot_template_interp",
+        r#"<div><template #inner>{{ msg }}</template></div>"#,
+    ),
+    (
+        "stray_named_slot_template_multiple",
+        r#"<div><template #inner><b></b><i></i></template></div>"#,
+    ),
+    (
+        "stray_named_slot_template_empty",
+        r#"<div><template #inner></template></div>"#,
+    ),
+    (
+        "slot_outlet_fallback_stray_template",
+        r#"<slot><template #inner>{{ msg }}</template></slot>"#,
+    ),
+    (
+        "dynamic_slot_name_hole",
+        r#"<Foo><template #[]>x</template></Foo>"#,
+    ),
 ];
 
 const UNSUPPORTED_BATTERY: &[(&str, &str, support::ExpectedRefusal)] = &[(

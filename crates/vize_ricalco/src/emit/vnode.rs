@@ -300,6 +300,10 @@ fn emit_children(
 pub(super) fn emit_array_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
     let id = cx.walk.mint();
     ensure_sufficient_stack(|| match op {
+        Op::Element(element) if super::slots::is_slot_template(element) => {
+            cx.walk.skip(element.bindings.len());
+            super::tpl::emit_inline(cx, &element.children.ops)
+        }
         Op::Element(element) => {
             cx.walk.skip(element.bindings.len());
             if super::once::emit_hoisted_child(cx, element)? {
