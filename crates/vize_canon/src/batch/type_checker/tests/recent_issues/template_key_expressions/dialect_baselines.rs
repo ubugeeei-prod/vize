@@ -9,7 +9,7 @@ use super::super::super::{
 };
 use super::create_key_project;
 use crate::batch::TypeChecker;
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 /// A component's `:key` is a reserved prop, kept out of the child's own props
 /// and out of its event inference, and vize checks it against nothing.

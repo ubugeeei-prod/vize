@@ -57,6 +57,11 @@ const recentIssueRows = [
     1,
   ],
   [
+    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/template_key_expressions/dialect_baselines.rs",
+    "test",
+    1,
+  ],
+  [
     "crates/vize_canon/src/batch/type_checker/tests/recent_issues/template_instance_props.rs",
     "test",
     1,
