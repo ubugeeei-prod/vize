@@ -18,7 +18,7 @@ use super::super::{
     BatchTypeChecker, create_project_case, relative_path, resolve_test_tsgo_binary,
 };
 use crate::batch::TypeChecker;
-use vize_carton::cstr;
+use vize_s0::{String, cstr};
 
 /// A long template above the script block, so an authored offset and the
 /// matching generated offset can never coincide by accident.
@@ -96,9 +96,7 @@ fn options_api_method_diagnostics_anchor_on_the_authored_property() {
 /// The caller already gated on the two legitimate skips (no `tsgo` binary, no
 /// installed `vue`), so a checker error past that point is a real defect and
 /// must fail the test rather than collapse into a silent pass.
-fn legacy_vue2_diagnostics(
-    project_root: &Path,
-) -> Vec<(vize_carton::String, Option<u32>, vize_carton::String)> {
+fn legacy_vue2_diagnostics(project_root: &Path) -> Vec<(String, Option<u32>, String)> {
     let mut checker = BatchTypeChecker::new(project_root).expect("batch type checker construction");
     checker.enable_legacy_vue2();
     checker.scan_project().expect("project scan");

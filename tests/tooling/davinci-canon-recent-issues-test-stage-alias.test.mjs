@@ -52,6 +52,11 @@ const recentIssueRows = [
     1,
   ],
   [
+    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/options_api_bridge_anchors.rs",
+    "test",
+    1,
+  ],
+  [
     "crates/vize_canon/src/batch/type_checker/tests/recent_issues/single_required_camel_prop.rs",
     "test",
     1,
