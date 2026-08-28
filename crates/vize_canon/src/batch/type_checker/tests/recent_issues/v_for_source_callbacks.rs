@@ -1,6 +1,7 @@
 //! Diagnostics inside v-for source expressions must map back to authored bytes (#3756).
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
+use vize_s0::String;
 
 #[test]
 fn v_for_source_callbacks_report_implicit_any_at_the_authored_parameter() {
@@ -29,9 +30,9 @@ const items: any = []
         // vue-tsc 3.3.4 with TypeScript 6.0.3, on the byte-identical fixture:
         // src/App.vue(6,36): error TS7006: Parameter 'value' implicitly has an 'any' type.
         Some(vec![(
-            vize_carton::String::from("src/App.vue"),
+            String::from("src/App.vue"),
             Some(7006),
-            vize_carton::String::from("6:36:error Parameter 'value' implicitly has an 'any' type."),
+            String::from("6:36:error Parameter 'value' implicitly has an 'any' type."),
         )]),
     );
 }
@@ -71,9 +72,9 @@ const items: any = []
     assert_eq!(
         snapshot,
         Some(vec![(
-            vize_carton::String::from("src/App.vue"),
+            String::from("src/App.vue"),
             Some(7006),
-            vize_carton::String::from("7:38:error Parameter 'value' implicitly has an 'any' type."),
+            String::from("7:38:error Parameter 'value' implicitly has an 'any' type."),
         )]),
     );
 }

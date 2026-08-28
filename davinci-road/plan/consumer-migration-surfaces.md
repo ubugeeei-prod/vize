@@ -47,7 +47,7 @@ observational guard for planning only. It does not change rollout state.
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
 | Compiler                   |           917 |                   420 |               497 |             139 |     371 |             952 |      475 |           477 |           585 |
 | Linter                     |           302 |                   302 |                 0 |             268 |     225 |             673 |      122 |           340 |           480 |
-| Typechecker                |           885 |                   208 |               677 |             396 |     187 |             806 |      662 |           466 |           659 |
+| Typechecker                |           882 |                   209 |               673 |             396 |     187 |             806 |      659 |           466 |           659 |
 | Typechecker content-mapper |             8 |                     8 |                 0 |               1 |       0 |               9 |        0 |             7 |            19 |
 | Formatter                  |            38 |                    38 |                 0 |               0 |      21 |              40 |       19 |            30 |            65 |
 | LSP                        |           271 |                   271 |                 0 |             115 |      44 |             325 |      105 |           166 |           388 |
@@ -134,7 +134,7 @@ Scope: check command plus Canon, excluding dedicated content-mapper files. This 
 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
-| S0               |         885 |             502 |      383 |
+| S0               |         882 |             502 |      380 |
 | old AST/parser   |         160 |              35 |      125 |
 | Croquis analysis |         236 |             118 |      118 |
 | raw OXC          |         187 |             151 |       36 |
