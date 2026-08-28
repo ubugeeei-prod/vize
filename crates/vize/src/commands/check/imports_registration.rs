@@ -20,6 +20,7 @@ pub(super) struct VirtualRegistrationDiscovery {
 pub(super) struct CachedVirtualRegistration {
     needs_registration: bool,
     discovery: VirtualRegistrationDiscovery,
+    package_routes_reported: bool,
 }
 
 /// Reachability of one package route never depends on the importer that
@@ -63,10 +64,15 @@ pub(super) fn non_relative_import_needs_virtual_registration(
     discovery: &mut VirtualRegistrationDiscovery,
 ) -> bool {
     let cache_key = (path.to_path_buf(), packages.is_some());
-    if let Some(cached) = cache.registrations.get(&cache_key) {
-        discovery
-            .package_routes
-            .extend(cached.discovery.package_routes.iter().cloned());
+    if let Some(cached) = cache.registrations.get_mut(&cache_key) {
+        // Route bindings are collection-global facts; sources are caller-local
+        // invalidation inputs for the outer route that reached this memo.
+        if !cached.package_routes_reported {
+            discovery
+                .package_routes
+                .extend(cached.discovery.package_routes.iter().cloned());
+            cached.package_routes_reported = true;
+        }
         discovery
             .package_sources
             .extend(cached.discovery.package_sources.iter().cloned());
@@ -106,6 +112,7 @@ pub(super) fn non_relative_import_needs_virtual_registration(
         CachedVirtualRegistration {
             needs_registration,
             discovery: resolved_discovery,
+            package_routes_reported: true,
         },
     );
     needs_registration
