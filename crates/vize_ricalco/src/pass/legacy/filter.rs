@@ -95,6 +95,7 @@ fn binding_contains_filter(binding: &BindingOp<'_>) -> bool {
         BindingOp::VueOnce(_) => false,
         BindingOp::VueMemo(memo) => expr_contains_filter(&memo.value),
         BindingOp::VueShow(show) => expr_contains_filter(&show.value),
+        BindingOp::VueHtml(html) => html.value.as_ref().is_some_and(expr_contains_filter),
     }
 }
 
@@ -159,6 +160,11 @@ fn rewrite_bindings<'a>(
             BindingOp::VueOnce(_) => {}
             BindingOp::VueMemo(memo) => rewrite_expr(allocator, &mut memo.value, filters),
             BindingOp::VueShow(show) => rewrite_expr(allocator, &mut show.value, filters),
+            BindingOp::VueHtml(html) => {
+                if let Some(value) = &mut html.value {
+                    rewrite_expr(allocator, value, filters);
+                }
+            }
         }
     }
 }

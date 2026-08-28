@@ -254,7 +254,7 @@ fn has_prop_bindings(bindings: &[BindingOp<'_>]) -> bool {
     bindings.iter().any(|binding| {
         matches!(
             binding,
-            BindingOp::Bind(_) | BindingOp::On(_) | BindingOp::Model(_)
+            BindingOp::Bind(_) | BindingOp::On(_) | BindingOp::Model(_) | BindingOp::VueHtml(_)
         )
     })
 }

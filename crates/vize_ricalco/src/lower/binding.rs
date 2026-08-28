@@ -6,9 +6,9 @@
 //!
 //! # Unmappable means diagnostic, never a new op
 //!
-//! `v-show` is a P2-11 dialect op (`vue.show`) because the DOM
-//! realization reads it directly. `v-html`, `v-text`, `v-cloak` and
-//! `v-pre` still have **no S2 op**, and forcing them into
+//! `v-show` and `v-html` are P2-11 dialect ops (`vue.show`,
+//! `vue.html`) because the DOM realization reads them directly.
+//! `v-text`, `v-cloak` and `v-pre` still have **no S2 op**, and forcing them into
 //! `vue.directive` would break its documented contract ("built-in
 //! directives never appear here"). Each is deferred: an `Info`
 //! diagnostic — the input is not wrong, the stage is younger than the
@@ -85,9 +85,13 @@ pub(crate) fn lower_attr<'a>(
                 bindings.push(op);
             }
         }
-        Head::Html | Head::Text | Head::Cloak => {
+        Head::Html => {
+            if let Some(op) = super::html::lower_html(cx, element, index, directive) {
+                bindings.push(op);
+            }
+        }
+        Head::Text | Head::Cloak => {
             let rule = match directive.head {
-                Head::Html => "defer.v-html",
                 Head::Text => "defer.v-text",
                 _ => "defer.v-cloak",
             };

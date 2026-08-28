@@ -79,6 +79,7 @@ fn admit_bindings_inner(
             BindingOp::VueDirective(_) if super::slots::is_slots_spread(binding) => {}
             BindingOp::VueDirective(directive) => super::directive::admit(directive)?,
             BindingOp::VueShow(show) => super::directive::admit_show(show)?,
+            BindingOp::VueHtml(html) => super::props_object::admit_html(html)?,
             BindingOp::VueOnce(_) if allow_once => {}
             BindingOp::VueMemo(memo) => super::memo::admit(memo)?,
             _ => {
@@ -166,6 +167,13 @@ pub(super) fn bind_patch(
             }
             BindingOp::Model(model) => {
                 super::model::patch(model, is_component, &mut flag, &mut dynamic_props);
+            }
+            BindingOp::VueHtml(_) => {
+                flag |= 8;
+                let key = String::from("innerHTML");
+                if !dynamic_props.contains(&key) {
+                    dynamic_props.push(key);
+                }
             }
             _ => {}
         }

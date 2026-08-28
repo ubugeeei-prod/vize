@@ -38,7 +38,8 @@ pub use owned::{
     FolioAttribute, FolioBind, FolioBinding, FolioBranch, FolioComponent, FolioContract,
     FolioElement, FolioExpr, FolioFor, FolioForBinding, FolioIf, FolioInterpolation, FolioModel,
     FolioName, FolioOn, FolioOp, FolioSlot, FolioSlotContent, FolioText, FolioVueCssBind,
-    FolioVueDirective, FolioVueMemo, FolioVueOnce, FolioVueShow, FolioVueSlotScope, FolioVueSync,
+    FolioVueDirective, FolioVueHtml, FolioVueMemo, FolioVueOnce, FolioVueShow, FolioVueSlotScope,
+    FolioVueSync,
 };
 
 /// Document model of an S2 op-tree dump.

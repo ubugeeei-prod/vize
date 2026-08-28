@@ -17,6 +17,7 @@ const SOURCE: &[Reason] = &[
     Reason::DuplicateClassBinding,
     Reason::DuplicateStyleBinding,
     Reason::ForSourceNotJs,
+    Reason::HtmlExpressionNotJs,
     Reason::IfConditionNotJs,
     Reason::MemoExpressionNotJs,
     Reason::ModelArgumentNotJs,

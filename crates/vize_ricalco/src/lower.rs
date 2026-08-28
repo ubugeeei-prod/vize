@@ -41,6 +41,7 @@ mod directive;
 mod element;
 mod expr;
 mod forop;
+mod html;
 mod leaf;
 mod once_memo;
 mod show;

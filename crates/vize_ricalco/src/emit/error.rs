@@ -30,6 +30,7 @@ pub enum UnsupportedReason {
     ForAliasNotEmittable,
     ForItemShape,
     ForSourceNotJs,
+    HtmlExpressionNotJs,
     IfBranchShape,
     IfConditionNotJs,
     IfWithoutBranches,
@@ -79,6 +80,7 @@ impl UnsupportedReason {
         Self::ForAliasNotEmittable,
         Self::ForItemShape,
         Self::ForSourceNotJs,
+        Self::HtmlExpressionNotJs,
         Self::IfBranchShape,
         Self::IfConditionNotJs,
         Self::IfWithoutBranches,
@@ -129,6 +131,7 @@ impl UnsupportedReason {
             Self::ForAliasNotEmittable => "for_alias_not_emittable",
             Self::ForItemShape => "for_item_shape",
             Self::ForSourceNotJs => "for_source_not_js",
+            Self::HtmlExpressionNotJs => "html_expression_not_js",
             Self::IfBranchShape => "if_branch_shape",
             Self::IfConditionNotJs => "if_condition_not_js",
             Self::IfWithoutBranches => "if_without_branches",
@@ -261,6 +264,7 @@ fn binding_span(binding: &BindingOp<'_>) -> Span {
         BindingOp::VueOnce(op) => op.span,
         BindingOp::VueMemo(op) => op.span,
         BindingOp::VueShow(op) => op.span,
+        BindingOp::VueHtml(op) => op.span,
     }
 }
 

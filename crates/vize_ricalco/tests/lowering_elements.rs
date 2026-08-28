@@ -115,6 +115,22 @@ fn a_slot_outlet_owns_its_fallback_and_normalizes_the_implicit_name() {
 }
 
 #[test]
+fn v_html_on_a_slot_outlet_lowers_as_a_slot_prop_binding() {
+    let art = artifact(r#"<slot v-html="raw"></slot>"#);
+    assert_eq!(
+        art.folio,
+        "[disegno]\n\
+         ops=2\n\
+         \n\
+         [disegno.ops]\n\
+         ui.slot name=\"default\" @0:26\n\
+         \x20 vue.html value=js(\"raw\" @14:17) @6:18\n\
+         \n"
+    );
+    assert_eq!(art.diagnostics, vec![]);
+}
+
+#[test]
 fn one_way_bindings_lower_to_the_normalized_ops() {
     // The P2-9 series-5 surface: `:key` rides `ui.bind` on the iterated
     // element (element surface, exactly where the legacy lane keeps the
@@ -240,6 +256,77 @@ fn v_show_lowers_to_the_dialect_op() {
 }
 
 #[test]
+fn v_html_lowers_to_the_raw_html_dialect_op() {
+    let art = artifact(r#"<p v-html="raw">x</p>"#);
+    assert_eq!(
+        art.folio,
+        "[disegno]\n\
+         ops=3\n\
+         \n\
+         [disegno.ops]\n\
+         ui.element p @0:21\n\
+         \x20 vue.html value=js(\"raw\" @11:14) @3:15\n\
+         \x20 ui.text \"x\" @16:17\n\
+         \n"
+    );
+    assert_eq!(art.diagnostics, vec![]);
+}
+
+#[test]
+fn value_less_v_html_still_lowers_so_dom_emit_can_match_undefined() {
+    for (src, element_end, attr_end, text_start) in [
+        (r#"<p v-html>x</p>"#, 15, 9, 10),
+        (r#"<p v-html="">x</p>"#, 18, 12, 13),
+    ] {
+        let art = artifact(src);
+        assert_eq!(
+            art.folio,
+            cstr!(
+                "[disegno]\n\
+                 ops=3\n\
+                 \n\
+                 [disegno.ops]\n\
+                 ui.element p @0:{element_end}\n\
+                 \x20 vue.html @3:{attr_end}\n\
+                 \x20 ui.text \"x\" @{text_start}:{}\n\
+                 \n",
+                text_start + 1
+            )
+        );
+        assert_eq!(art.diagnostics, vec![]);
+    }
+}
+
+#[test]
+fn v_html_with_argument_or_modifier_still_defers() {
+    for src in [
+        r#"<p v-html:foo="raw">x</p>"#,
+        r#"<p v-html.mod="raw">x</p>"#,
+    ] {
+        let art = artifact(src);
+        assert_eq!(
+            art.folio,
+            "[disegno]\n\
+             ops=2\n\
+             \n\
+             [disegno.ops]\n\
+             ui.element p @0:25\n\
+             \x20 ui.text \"x\" @20:21\n\
+             \n"
+        );
+        assert_eq!(
+            art.diagnostics,
+            vec![Diagnostic::new(
+                Severity::Info,
+                Stage::Semantic,
+                Span::new(3, 19),
+                "`v-html` is representable as `vue.html` only with no argument or modifier",
+            )]
+        );
+    }
+}
+
+#[test]
 fn ill_formed_v_once_spellings_still_defer() {
     for (src, element_end, text_start, attr_end) in [
         (r#"<div v-once="x">y</div>"#, 23, 16, 15),
@@ -274,10 +361,10 @@ fn ill_formed_v_once_spellings_still_defer() {
 
 #[test]
 fn an_unmappable_binding_defers_with_info_and_keeps_the_fragment() {
-    // `v-html` still has no S2 op: the element is kept, the deferral is
+    // `v-text` still has no S2 op: the element is kept, the deferral is
     // an exact Info diagnostic — the input is not wrong, the stage is
     // younger than the construct.
-    let art = artifact("<p v-html=\"raw\">x</p>");
+    let art = artifact("<p v-text=\"raw\">x</p>");
     assert_eq!(
         art.folio,
         "[disegno]\n\
@@ -294,7 +381,7 @@ fn an_unmappable_binding_defers_with_info_and_keeps_the_fragment() {
             Severity::Info,
             Stage::Semantic,
             Span::new(3, 15),
-            "`v-html` has no S2 op; its behaviour is DOM realization and its op lands with the stage that reads it (P2-11)",
+            "`v-text` has no S2 op; its behaviour is DOM realization and its op lands with the stage that reads it (P2-11)",
         )]
     );
 }

@@ -8,7 +8,8 @@ use core::fmt::{Result, Write};
 
 use super::super::owned::{
     FolioAttribute, FolioBind, FolioBinding, FolioOn, FolioSlotContent, FolioVueCssBind,
-    FolioVueDirective, FolioVueMemo, FolioVueOnce, FolioVueShow, FolioVueSlotScope, FolioVueSync,
+    FolioVueDirective, FolioVueHtml, FolioVueMemo, FolioVueOnce, FolioVueShow, FolioVueSlotScope,
+    FolioVueSync,
 };
 use super::{end_line, indent, print_expr, print_name, quoted};
 use vize_davinci::folio::FolioMode;
@@ -63,6 +64,7 @@ pub(super) fn print_binding<W: Write>(
         FolioBinding::VueOnce(once) => print_once(w, once, depth, mode),
         FolioBinding::VueMemo(memo) => print_memo(w, memo, depth, mode),
         FolioBinding::VueShow(show) => print_show(w, show, depth, mode),
+        FolioBinding::VueHtml(html) => print_html(w, html, depth, mode),
     }
 }
 
@@ -223,4 +225,14 @@ fn print_show<W: Write>(w: &mut W, show: &FolioVueShow, depth: usize, mode: Foli
     w.write_str("vue.show value=")?;
     print_expr(w, &show.value, mode)?;
     end_line(w, show.span, mode)
+}
+
+fn print_html<W: Write>(w: &mut W, html: &FolioVueHtml, depth: usize, mode: FolioMode) -> Result {
+    indent(w, depth)?;
+    w.write_str("vue.html")?;
+    if let Some(value) = &html.value {
+        w.write_str(" value=")?;
+        print_expr(w, value, mode)?;
+    }
+    end_line(w, html.span, mode)
 }

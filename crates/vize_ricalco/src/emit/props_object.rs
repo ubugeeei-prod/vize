@@ -3,7 +3,7 @@
 use alloc::vec::Vec as StdVec;
 use vize_s0::Span;
 use vize_s2::expr::{ExprRef, JsExpr};
-use vize_s2::op::{Attribute, BindOp, BindingOp, DynamicName, OnOp};
+use vize_s2::op::{Attribute, BindOp, BindingOp, DynamicName, OnOp, VueHtmlOp};
 
 use super::EmitCx;
 use super::EmitError;
@@ -104,6 +104,7 @@ pub(super) fn emit_props_object(
             Piece::Attr(attr) => emit_static_pair(cx, attr),
             Piece::Bind(bind) => emit_bind_pair(cx, pieces, bind, skip_normalize)?,
             Piece::On(event) => on::emit_on_pair(cx, event, is_plain_element)?,
+            Piece::VueHtml(html) => emit_html_pair(cx, html)?,
             Piece::ModelValue { name, source, .. } => {
                 super::model_key::emit_value(cx, *name, source)
             }
@@ -130,6 +131,7 @@ pub(super) enum Piece<'a> {
     Attr(&'a Attribute<'a>),
     Bind(&'a BindOp<'a>),
     On(&'a OnOp<'a>),
+    VueHtml(&'a VueHtmlOp<'a>),
     ModelValue {
         name: ModelName<'a>,
         source: &'a str,
@@ -166,6 +168,7 @@ pub(super) fn pieces<'a>(
             BindingOp::Bind(bind) => out.push(Piece::Bind(bind)),
             BindingOp::On(on) => out.push(Piece::On(on)),
             BindingOp::Model(model) => super::model::expand(model, &mut out)?,
+            BindingOp::VueHtml(html) => out.push(Piece::VueHtml(html)),
             BindingOp::SlotContent(_) => {}
             BindingOp::VueDirective(_) => {}
             BindingOp::VueOnce(_) => {}
@@ -183,6 +186,7 @@ pub(super) fn pieces<'a>(
         Piece::Attr(attr) => attr.span.start,
         Piece::Bind(bind) => bind.span.start,
         Piece::On(on) => on.span.start,
+        Piece::VueHtml(html) => html.span.start,
         Piece::ModelValue { span, .. }
         | Piece::ModelUpdate { span, .. }
         | Piece::ModelModifiers { span, .. } => span.start,
@@ -221,6 +225,7 @@ fn pieces_have_named(pieces: &[Piece<'_>], name: &str) -> bool {
             name: ModelModifiersKey::Static(prop),
             ..
         } => prop.as_str() == name,
+        Piece::VueHtml(_) => name == "innerHTML",
         _ => false,
     })
 }
@@ -291,6 +296,30 @@ fn emit_bind_pair(
 fn emit_ref_for(cx: &mut EmitCx<'_>, name: &str) {
     if cx.in_v_for && name == "ref" {
         cx.buf.push("ref_for: true, ");
+    }
+}
+
+pub(super) fn admit_html(html: &VueHtmlOp<'_>) -> Result<(), EmitError> {
+    html_value(html).map(|_| ())
+}
+
+fn emit_html_pair(cx: &mut EmitCx<'_>, html: &VueHtmlOp<'_>) -> Result<(), EmitError> {
+    cx.buf.push("innerHTML: ");
+    match html_value(html)? {
+        Some(source) => cx.buf.push(source),
+        None => cx.buf.push("undefined"),
+    }
+    Ok(())
+}
+
+pub(super) fn html_value<'a>(html: &'a VueHtmlOp<'a>) -> Result<Option<&'a str>, EmitError> {
+    match html.value {
+        Some(ExprRef::Js(js)) => Ok(Some(js.source)),
+        Some(expr) => Err(EmitError::unsupported_at(
+            Reason::HtmlExpressionNotJs,
+            expr.span(),
+        )),
+        None => Ok(None),
     }
 }
 

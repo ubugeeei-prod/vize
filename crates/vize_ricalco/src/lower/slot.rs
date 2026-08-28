@@ -8,10 +8,11 @@
 //! ([`Attribute`]), `v-bind`/`v-on` lower to their attached ops, and a
 //! `v-slot` spelled **on** the outlet lowers to `ui.slot-content` so the
 //! slot pass can fire the legacy `VSlotMisplaced` diagnostic where the
-//! shipped lane fires it. A custom directive on an outlet is Vue's own
-//! error and is dropped under it; the still-deferred built-ins
-//! (`v-html` and kin) keep their counted `defer.slot-directive` records
-//! with realization (P2-11) as the named owner.
+//! shipped lane fires it. `v-html` lowers to `vue.html` because the
+//! shipped lane emits it as a slot prop (`innerHTML`). A custom directive
+//! on an outlet is Vue's own error and is dropped under it; the
+//! still-deferred built-ins keep their counted `defer.slot-directive`
+//! records with realization (P2-11) as the named owner.
 
 use vize_s0::{Box, String, Vec, cstr};
 use vize_s1::Element;
@@ -90,6 +91,11 @@ pub(crate) fn lower_slot<'a>(
                 }
                 Head::Bind => bindings.push(lower_bind(cx, element, index, directive)),
                 Head::On => bindings.push(lower_on(cx, element, index, directive)),
+                Head::Html => {
+                    if let Some(op) = super::html::lower_html(cx, element, index, directive) {
+                        bindings.push(op);
+                    }
+                }
                 Head::Slot => bindings.push(lower_slot_content(cx, element, index, directive)),
                 Head::Custom => {
                     cx.error(

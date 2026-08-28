@@ -178,6 +178,9 @@ fn body(
             FolioBinding::VueShow(show) => {
                 line_checks("vue.show", show.span, owner, out);
             }
+            FolioBinding::VueHtml(html) => {
+                line_checks("vue.html", html.span, owner, out);
+            }
         }
     }
     for child in children {

@@ -168,6 +168,13 @@ fn emit_props(cx: &mut EmitCx<'_>, slot: &SlotOp<'_>, key: Option<&str>) -> Resu
                     cx.buf.push(js.source);
                 }
             }
+            Piece::VueHtml(html) => {
+                cx.buf.push("innerHTML: ");
+                match super::props_object::html_value(html)? {
+                    Some(source) => cx.buf.push(source),
+                    None => cx.buf.push("undefined"),
+                }
+            }
             Piece::On(_)
             | Piece::ModelValue { .. }
             | Piece::ModelUpdate { .. }
@@ -309,6 +316,7 @@ fn piece_span(piece: &Piece<'_>) -> vize_s0::Span {
         Piece::Attr(attr) => attr.span,
         Piece::Bind(bind) => bind.span,
         Piece::On(on) => on.span,
+        Piece::VueHtml(html) => html.span,
         Piece::ModelValue { span, .. }
         | Piece::ModelUpdate { span, .. }
         | Piece::ModelModifiers { span, .. } => *span,

@@ -12,8 +12,8 @@ use vize_s2::expr::{ExprRef, OpaqueExpr, OpaqueReason};
 use vize_s2::op::{
     Attribute, BindOp, BindingContract, BindingOp, ComponentOp, DynamicName, ElementOp, ForBinding,
     ForOp, IfBranch, IfOp, InterpolationOp, ModelOp, Namespace, OnOp, Op, Region, SlotContentOp,
-    SlotOp, TextOp, VueCssBindOp, VueDirectiveOp, VueMemoOp, VueOnceOp, VueShowOp, VueSlotScopeOp,
-    VueSyncOp,
+    SlotOp, TextOp, VueCssBindOp, VueDirectiveOp, VueHtmlOp, VueMemoOp, VueOnceOp, VueShowOp,
+    VueSlotScopeOp, VueSyncOp,
 };
 
 /// The escape payload standing in for "some expression" wherever the op
@@ -54,6 +54,7 @@ fn binding_keyword(op: &BindingOp<'_>) -> &'static str {
         BindingOp::VueOnce(_) => "vue.once",
         BindingOp::VueMemo(_) => "vue.memo",
         BindingOp::VueShow(_) => "vue.show",
+        BindingOp::VueHtml(_) => "vue.html",
     }
 }
 
@@ -245,6 +246,13 @@ fn every_binding<'a>(allocator: &'a Allocator) -> Vec<'a, BindingOp<'a>> {
             BindingOp::VueOnce(Box::new_in(VueOnceOp { span }, &allocator)),
             BindingOp::VueMemo(Box::new_in(VueMemoOp { value: expr, span }, &allocator)),
             BindingOp::VueShow(Box::new_in(VueShowOp { value: expr, span }, &allocator)),
+            BindingOp::VueHtml(Box::new_in(
+                VueHtmlOp {
+                    value: Some(expr),
+                    span,
+                },
+                &allocator,
+            )),
         ],
         &allocator,
     )
@@ -291,6 +299,7 @@ fn every_attached_op_variant_is_matched_without_a_wildcard() {
             "vue.once",
             "vue.memo",
             "vue.show",
+            "vue.html",
         ]
     );
     for binding in &bindings {

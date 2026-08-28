@@ -42,6 +42,7 @@
 //! **dynamic `v-on` keys** (`@[event]` through `toHandlerKey`,
 //! including event/key modifiers), plus native-element **`v-once`** cache wrappers,
 //! and **`v-memo`** cache wrappers / `v-for` memo reuse guards,
+//! and **`v-html`** raw HTML props (`innerHTML` + dynamic prop flags),
 //! while SFC style-block carriers (`vue.css-bind` facts) stay DOM-inert.
 //! Static-name `v-bind` modifiers (`.camel`, `.prop`, `.attr`, plus the
 //! dot shorthand) and dynamic-argument `v-bind` keys / modifiers are

@@ -117,6 +117,12 @@ pub(super) fn object_patch(
             BindingOp::Model(model) => {
                 super::model::patch_keys(model, is_component, &mut dynamic_props);
             }
+            BindingOp::VueHtml(_) => {
+                let key = String::from("innerHTML");
+                if !dynamic_props.contains(&key) {
+                    dynamic_props.push(key);
+                }
+            }
             _ => {}
         }
     }
