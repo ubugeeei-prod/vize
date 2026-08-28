@@ -11,7 +11,7 @@ use super::super::super::{
     with_workspace_node_modules_override,
 };
 use std::path::Path;
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 const VALID: &str = r#"<script lang="ts">
 import { defineComponent } from 'vue'
