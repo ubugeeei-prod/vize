@@ -6,7 +6,7 @@ use super::super::super::{
     create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics,
 };
 use super::TYPES;
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 const TYPE_ONLY: &str = r#"<script setup lang="ts">
 import type { Pagination } from './types'
