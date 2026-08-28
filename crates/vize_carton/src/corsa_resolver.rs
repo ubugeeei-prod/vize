@@ -12,24 +12,10 @@
 //!    `CORSA_EXECUTABLE`, `TSGO_PATH`, `TSGO_EXECUTABLE`. The first one set
 //!    wins; its value must point at an existing file.
 //! 3. Project discovery: an ancestor walk from the project root (and the
-//!    current directory) probing, per directory:
-//!    - `<dir>/.cache/{corsa,tsgo}[.exe]`
-//!    - developer-checkout paths (`<dir>/ref/typescript-go/...` and the
-//!      sibling `../corsa-bind` checkout) — only when dev paths are enabled,
-//!      see below
-//!    - Node-style resolution of `typescript@7` and its
-//!      `@typescript/typescript-*` platform package
-//!    - the `typescript@7` runtime shipped under `node_modules/vize`
-//!    - legacy Node-style resolution of `@typescript/native-preview/package.json`,
-//!      reading its platform `optionalDependencies` entry
-//!    - the legacy platform package / meta package under `node_modules/@typescript`
-//!    - the pnpm virtual store (`node_modules/.pnpm`) as a legacy fallback
-//!
-//!      Every native-binary probe accepts both `{corsa,tsgo}` and
-//!      `{corsa,tsgo}.exe` — npm's Windows platform packages ship
-//!      `lib/tsgo.exe`.
-//!    - `node_modules/.bin` wrappers (used only when no native binary is
-//!      found anywhere in the walk)
+//!    current directory) probing project caches, dev-checkout paths, stable
+//!    `typescript@7` platform packages, the bundled `node_modules/vize`
+//!    runtime, legacy `@typescript/native-preview` layouts, pnpm store
+//!    fallbacks, and finally local `node_modules/.bin` wrappers.
 //! 4. Common global install locations under `$HOME` plus `npm root -g`.
 //! 5. A `PATH` lookup for `corsa` then `tsgo`.
 //!
@@ -408,10 +394,7 @@ fn find_vize_owned_stable_typescript_native(node_modules: &Path, suffix: &str) -
     find_stable_typescript_native(&node_modules.join("vize").join("node_modules"), suffix)
 }
 
-/// Resolve the platform binary the way Node would: read
-/// `typescript/package.json`, require a stable TypeScript 7+ package, pick the
-/// platform entry from its `optionalDependencies`, and walk `node_modules`
-/// directories upward from the (symlink-resolved) meta package directory.
+/// Resolve the TypeScript 7 platform binary through its package manifest.
 fn resolve_typescript_platform_package(node_modules: &Path, suffix: &str) -> Option<PathBuf> {
     let package_dir = node_modules.join("typescript");
     let manifest = std::fs::read_to_string(package_dir.join("package.json")).ok()?;
@@ -452,10 +435,7 @@ fn package_major_at_least(manifest: &serde_json::Value, minimum: u64) -> bool {
         .is_some_and(|major| major >= minimum)
 }
 
-/// Resolve the platform binary the way Node would: read
-/// `@typescript/native-preview/package.json`, pick the platform entry from its
-/// `optionalDependencies`, and walk `node_modules` directories upward from the
-/// (symlink-resolved) meta package directory.
+/// Resolve the legacy native-preview platform binary through its manifest.
 fn resolve_native_preview_platform_package(node_modules: &Path, suffix: &str) -> Option<PathBuf> {
     let package_dir = node_modules.join("@typescript").join("native-preview");
     let manifest = std::fs::read_to_string(package_dir.join("package.json")).ok()?;
@@ -554,6 +534,17 @@ fn find_node_modules_wrapper(dir: &Path) -> Option<PathBuf> {
         }
     }
 
+    if typescript_package_major_at_least(&node_modules, 7) {
+        for candidate in [
+            node_modules.join(".bin").join("tsc"),
+            node_modules.join("typescript").join("bin").join("tsc"),
+        ] {
+            if candidate.exists() {
+                return Some(candidate);
+            }
+        }
+    }
+
     for executable in CORSA_EXECUTABLE_NAMES {
         let candidate = node_modules
             .join("@typescript")
@@ -566,6 +557,13 @@ fn find_node_modules_wrapper(dir: &Path) -> Option<PathBuf> {
     }
 
     None
+}
+
+fn typescript_package_major_at_least(node_modules: &Path, minimum: u64) -> bool {
+    std::fs::read_to_string(node_modules.join("typescript").join("package.json"))
+        .ok()
+        .and_then(|manifest| serde_json::from_str::<serde_json::Value>(&manifest).ok())
+        .is_some_and(|manifest| package_major_at_least(&manifest, minimum))
 }
 
 fn find_in_home_locations() -> Option<PathBuf> {

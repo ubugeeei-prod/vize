@@ -57,7 +57,7 @@ fn lsp_exit_notification_terminates_process_while_stdin_stays_open() {
 fn lsp_corsa_smoke_publishes_diagnostics_and_hover() {
     let workspace_root = workspace_root();
     let Some(corsa_path) = discover_corsa_in_ancestors(workspace_root) else {
-        eprintln!("skipping LSP Corsa smoke: @typescript/native-preview runtime is unavailable");
+        eprintln!("skipping LSP Corsa smoke: TypeScript 7 Corsa runtime is unavailable");
         return;
     };
     let project = create_lsp_project(workspace_root, &corsa_path);

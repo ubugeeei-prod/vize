@@ -1,5 +1,5 @@
 use super::super::{discover_in_walk, platform_suffix};
-use super::write_file;
+use super::{write_file, write_typescript_manifest};
 use std::fs;
 use tempfile::TempDir;
 
@@ -175,6 +175,45 @@ fn scrapes_pnpm_store_when_typescript_platform_package_is_not_linked() {
     let resolved = discover_in_walk(&[root], false);
 
     assert_eq!(resolved, Some(store_binary));
+}
+
+#[test]
+fn falls_back_to_typescript_seven_bin_wrapper_when_platform_package_missing() {
+    let suffix = platform_suffix();
+    let temp_dir = TempDir::new().unwrap();
+    let root = temp_dir.path().join("project");
+    let node_modules = root.join("node_modules");
+    let wrapper = node_modules.join(".bin").join("tsc");
+
+    write_typescript_manifest(
+        &node_modules.join("typescript").join("package.json"),
+        suffix,
+        "7.0.2",
+    );
+    write_file(&wrapper);
+
+    let resolved = discover_in_walk(&[root], false);
+
+    assert_eq!(resolved, Some(wrapper));
+}
+
+#[test]
+fn ignores_typescript_six_bin_wrapper() {
+    let suffix = platform_suffix();
+    let temp_dir = TempDir::new().unwrap();
+    let root = temp_dir.path().join("project");
+    let node_modules = root.join("node_modules");
+
+    write_typescript_manifest(
+        &node_modules.join("typescript").join("package.json"),
+        suffix,
+        "6.0.3",
+    );
+    write_file(&node_modules.join(".bin").join("tsc"));
+
+    let resolved = discover_in_walk(&[root], false);
+
+    assert_eq!(resolved, None);
 }
 
 #[test]
