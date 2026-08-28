@@ -9,7 +9,7 @@ fn callback_resolution_keeps_inference_and_branch_selection_separate() {
     let callback = "(item) => item.id";
     let template = r#"<Child kind="text" :items="[{ id: 1 }]" :pick="(item) => item.id" />"#;
 
-    let allocator = vize_carton::Allocator::new();
+    let allocator = vize_s0::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);

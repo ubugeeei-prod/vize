@@ -20,6 +20,7 @@ const typecheckerTestRows = [
     "test",
     3,
   ],
+  ["crates/vize_canon/src/virtual_ts/expressions/callback_prop_resolution_tests.rs", "test", 1],
 ];
 
 function typechecker() {
