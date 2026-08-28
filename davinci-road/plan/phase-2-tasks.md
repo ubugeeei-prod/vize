@@ -211,18 +211,20 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 
 **Deliverable:** `vize_atelier_dom` lowering S2 → codegen structure directly — the first strangler target, on the surface that holds the hard byte-parity bar.
 
-**Current series evidence (2026-08-26):** 29 installments have landed through
-[#5011](https://github.com/ubugeeei-prod/vize/pull/5011). Dynamic-argument
+**Current series evidence (2026-08-28):** 31 installments have landed through
+[#5183](https://github.com/ubugeeei-prod/vize/pull/5183). Dynamic-argument
 `v-bind` keys, `.camel` / `.prop` / `.attr` modifiers, Vue 2 pipe filters,
 filter helper order, slot outlet same-name names, and the expanded patch-flag
 matrix, including dynamic components, named component `v-model`, and component
 model-listener order, dynamic component `v-model:[arg]`, and DOM-inert SFC
 style carriers, now match the shipped lane in direct and byte-differential
-tests. Installment 29 extends the malformed-slot boundary. The task
-remains blocked on the published dependency decision, a hydrated full-corpus
-run with an exact comparison count, the remaining patch-flag equivalence
-program, and the DOM allocation budget; the old lane remains the production
-path. See the [series record](./phase-2-records/p2-11.md).
+tests. Installments 30 and 31 narrow the malformed-slot boundary by eliding
+inert slot-template bindings and emitting nested or stray slot-template
+carriers through the shipped inline-template fallback. The task remains blocked
+on the published dependency decision, a hydrated full-corpus run with an exact
+comparison count, the remaining patch-flag equivalence program, and the DOM
+allocation budget; the old lane remains the production path. See the
+[series record](./phase-2-records/p2-11.md).
 
 **Steps:**
 

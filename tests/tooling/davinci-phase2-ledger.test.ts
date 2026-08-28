@@ -30,16 +30,6 @@ const docs = {
   tasksLater: new URL("../../davinci-road/plan/phase-2-tasks-later.md", import.meta.url),
   records: new URL("../../davinci-road/plan/phase-2-records.md", import.meta.url),
   p2_11: new URL("../../davinci-road/plan/phase-2-records/p2-11.md", import.meta.url),
-  installment20: p2_11Installment(20),
-  installment21: p2_11Installment(21),
-  installment22: p2_11Installment(22),
-  installment23: p2_11Installment(23),
-  installment24: p2_11Installment(24),
-  installment25: p2_11Installment(25),
-  installment26: p2_11Installment(26),
-  installment27: p2_11Installment(27),
-  installment28: p2_11Installment(28),
-  installment29: p2_11Installment(29),
   suites: new URL("../../davinci-road/plan/test-suites.md", import.meta.url),
   devtool: new URL("../../davinci-road/devtool.md", import.meta.url),
   questions: new URL("../../davinci-road/open-questions.md", import.meta.url),
@@ -52,6 +42,10 @@ function read(url: URL): string {
 const text = Object.fromEntries(Object.entries(docs).map(([name, url]) => [name, read(url)])) as {
   [K in keyof typeof docs]: string;
 };
+const p2_11InstallmentNumbers = [20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31] as const;
+const p2_11Installments = new Map(
+  p2_11InstallmentNumbers.map((number) => [number, read(p2_11Installment(number))]),
+);
 
 const completedTasks = [
   "P2-1",
@@ -243,46 +237,40 @@ test("P2-11 records current installments without presenting stale remainders", (
     p2_11: p2_11CurrentRecordEvidence(text.p2_11),
   };
   for (const [label, source] of Object.entries(currentEvidence)) {
-    assert.match(source, /#5011/, `${label} must cite the current installment-29 PR`);
+    assert.match(source, /#5183/, `${label} must cite the current installment-31 PR`);
     assert.match(
       source,
-      /29 (?:landed\s+)?installments|installment 29|\| 29\s+\|/i,
-      `${label} must cite current installment 29 evidence`,
+      /31 (?:landed\s+)?installments|installment 31|\| 31\s+\|/i,
+      `${label} must cite current installment 31 evidence`,
     );
-    assert.doesNotMatch(source, /pending installment 29|\| 29\s+\| pending/i);
+    assert.doesNotMatch(source, /pending installment 31|\| 31\s+\| pending/i);
   }
   assert.match(text.p2_11, /#4933/);
   assert.match(text.p2_11, /#5011/);
+  assert.match(text.p2_11, /#5178/);
+  assert.match(text.p2_11, /#5183/);
   assert.match(text.p2_11, /#4919/);
   assert.match(text.p2_11, /#4921/);
   assert.match(text.p2_11, /#4924/);
   assert.match(text.p2_11, /#4927/);
   assert.match(text.p2_11, /#4929/);
-  assert.match(text.p2_11, /Current named remainder \(after #5011\)/);
+  assert.match(text.p2_11, /Current named remainder \(after #5183\)/);
   assert.doesNotMatch(text.p2_11, /dynamic-argument bind names \/ modifiers/);
-  assert.match(text.installment20, /14-fixture S2-vs-shipped byte-for-byte battery/);
-  assert.match(text.installment20, /does not tick P2-11/);
-  assert.match(text.installment21, /Vue 2 pipe filters/);
-  assert.match(text.installment21, /does not tick P2-11/);
-  assert.match(text.installment22, /Vue 2 filter helper order/);
-  assert.match(text.installment22, /does not tick P2-11/);
-  assert.match(text.installment23, /Slot outlet same-name names/);
-  assert.match(text.installment23, /does not tick P2-11/);
-  assert.match(text.installment24, /Patch-flag matrix expansion/);
-  assert.match(text.installment24, /does not tick P2-11/);
-  assert.match(text.installment25, /Dynamic component patch flags/);
-  assert.match(text.installment25, /does not tick P2-11/);
-  assert.match(text.installment26, /Model listener patch order/);
-  assert.match(text.installment26, /does not tick P2-11/);
-  assert.match(text.installment27, /Dynamic component model arguments/);
-  assert.match(text.installment27, /does not tick P2-11/);
-  assert.match(text.installment28, /SFC style carriers are DOM-inert/);
-  assert.match(text.installment28, /e8a5d457d6bb241257c3d50e17bc14f834de344c/);
-  assert.match(text.installment29, /Bare Template Default Slots/);
-  assert.match(text.installment29, /#5011/);
-  assert.match(text.installment29, /3565326fe/);
-  assert.doesNotMatch(text.installment29, /pending|awaiting the\s+auto-merge/i);
-  assert.match(text.installment29, /does not tick P2-11/);
+  assert.doesNotMatch(text.p2_11, /\*\*malformed slot fact gaps\*\*/);
+  assert.match(p2_11Installments.get(20)!, /14-fixture S2-vs-shipped byte-for-byte battery/);
+  assert.match(p2_11Installments.get(20)!, /does not tick P2-11/);
+  assert.match(p2_11Installments.get(21)!, /Vue 2 pipe filters/);
+  assert.match(p2_11Installments.get(22)!, /Vue 2 filter helper order/);
+  assert.match(p2_11Installments.get(23)!, /Slot outlet same-name names/);
+  assert.match(p2_11Installments.get(24)!, /Patch-flag matrix expansion/);
+  assert.match(p2_11Installments.get(25)!, /Dynamic component patch flags/);
+  assert.match(p2_11Installments.get(26)!, /Model listener patch order/);
+  assert.match(p2_11Installments.get(27)!, /Dynamic component model arguments/);
+  assert.match(p2_11Installments.get(28)!, /SFC style carriers are DOM-inert/);
+  assert.match(p2_11Installments.get(29)!, /Bare Template Default Slots/);
+  assert.match(p2_11Installments.get(30)!, /Inert Slot-Template Bindings/);
+  assert.match(p2_11Installments.get(31)!, /Inline Slot-Template Carriers/);
+  assert.match(p2_11Installments.get(31)!, /f5aa60553/);
 });
 
 test("suite registry debt and the TS-52 transport decision stay resolved", () => {
@@ -336,7 +324,6 @@ test("local links in the reconciled ledger exist", () => {
     "tasks",
     "records",
     "p2_11",
-    "installment20",
     "suites",
   ] as const) {
     for (const match of text[key].matchAll(/\]\((?<target>[^)]+)\)/gu)) {

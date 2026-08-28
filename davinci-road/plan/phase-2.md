@@ -73,7 +73,7 @@ Each ID links to its contract in [phase-2-tasks.md](./phase-2-tasks.md); what a 
 - [x] [P2-19](./phase-2-tasks-later.md#p2-19--devtool-protocol-spike) DevTool protocol spike — landed 2026-08-21; decided **document over JSON-RPC**: the P2-18 feed document stays the unit on every surface — C-7's local server speaks content-mapper-style JSON-RPC whose `initialize` negotiates the feed `schema_version` before any payload is serialized (the only candidate that negotiates rather than refusing after the producer wrote everything), served files stay the at-rest form, the wasm playground keeps the P2-18 embedding, JSON-lines rejected (every named consumer reassembles the document anyway); spike deleted deliberately, measurements and reproduction recipe in the record ([record](./phase-2-records/p2-19.md))
 - [ ] [P2-20](./phase-2-tasks-later.md#p2-20--phase-exit) Phase exit
 
-## Current execution ledger (2026-08-26)
+## Current execution ledger (2026-08-28)
 
 This is the current snapshot. The phase re-cut above and the per-installment
 records are historical evidence and are not silently rewritten when current
@@ -82,12 +82,12 @@ counts or fixture availability changes.
 - **Complete: 16 of 22 — P2-1, P2-2, P2-3, P2-4, P2-5a, P2-5b, P2-6,
   P2-7, P2-8, P2-10, P2-12a, P2-13, P2-14, P2-15, P2-18 and P2-19.**
   Each completion is joined to its merged PR and current evidence in the
-  [evidence index](./phase-2-records.md#current-completion-evidence-2026-08-26);
+  [evidence index](./phase-2-records.md#current-completion-evidence-2026-08-28);
   review-only evidence is labeled there rather than presented as executable.
 - **Active and blocked: 2 of 22 — P2-9 and P2-11.** P2-9 still needs a
-  hydrated full-corpus residual remeasurement; P2-11 has 29 landed
+  hydrated full-corpus residual remeasurement; P2-11 has 31 landed
   installments through
-  [#5011](https://github.com/ubugeeei-prod/vize/pull/5011), but the
+  [#5183](https://github.com/ubugeeei-prod/vize/pull/5183), but the
   published dependency decision,
   full-corpus exact comparison count, remaining
   patch-flag equivalence program and DOM allocation budget remain open. The
