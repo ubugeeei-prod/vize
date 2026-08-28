@@ -128,7 +128,7 @@ const SOURCE_CASES: &[Case] = &[
     ),
     case(
         "slot_template_extra_binding",
-        r#"<Foo><template #header v-once>x</template></Foo>"#,
+        r#"<Foo><template #header v-pin>x</template></Foo>"#,
         VUE3,
         Reason::SlotDefaultShape,
     ),

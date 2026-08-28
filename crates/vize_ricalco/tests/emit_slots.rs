@@ -162,6 +162,19 @@ fn static_attrs_on_named_slot_templates_are_elided() {
 }
 
 #[test]
+fn inert_builtin_bindings_on_named_slot_templates_are_elided() {
+    let plain = assembled(r#"<Foo><template #header>x</template></Foo>"#);
+    assert_eq!(
+        assembled(r#"<Foo><template #header v-once>x</template></Foo>"#),
+        plain
+    );
+    assert_eq!(
+        assembled(r#"<Foo><template #header v-memo="[ok]">x</template></Foo>"#),
+        plain
+    );
+}
+
+#[test]
 fn a_bare_template_default_slot_child_is_hoisted() {
     assert_eq!(
         assembled("<Foo><template>x</template></Foo>"),

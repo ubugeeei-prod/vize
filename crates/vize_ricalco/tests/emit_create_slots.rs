@@ -59,6 +59,19 @@ fn static_attrs_on_conditional_slot_templates_are_elided() {
 }
 
 #[test]
+fn inert_builtin_bindings_on_conditional_slot_templates_are_elided() {
+    let plain = assembled(r#"<Foo><template #header v-if="ok">x</template></Foo>"#);
+    assert_eq!(
+        assembled(r#"<Foo><template #header v-if="ok" v-once>x</template></Foo>"#),
+        plain
+    );
+    assert_eq!(
+        assembled(r#"<Foo><template #header v-if="ok" v-memo="[ok]">x</template></Foo>"#),
+        plain
+    );
+}
+
+#[test]
 fn a_v_for_named_template_uses_render_list() {
     assert_eq!(
         assembled(r#"<Foo><template v-for="i in n" #header>x</template></Foo>"#),
@@ -87,6 +100,19 @@ fn static_attrs_on_looped_slot_templates_are_elided() {
     assert_eq!(
         assembled(r#"<Foo><template v-for="i in n" #header id="x">x</template></Foo>"#),
         assembled(r#"<Foo><template v-for="i in n" #header>x</template></Foo>"#)
+    );
+}
+
+#[test]
+fn inert_builtin_bindings_on_looped_slot_templates_are_elided() {
+    let plain = assembled(r#"<Foo><template v-for="i in n" #header>x</template></Foo>"#);
+    assert_eq!(
+        assembled(r#"<Foo><template v-for="i in n" #header v-once>x</template></Foo>"#),
+        plain
+    );
+    assert_eq!(
+        assembled(r#"<Foo><template v-for="i in n" #header v-memo="[i]">x</template></Foo>"#),
+        plain
     );
 }
 

@@ -83,11 +83,12 @@ fn walk_admit(region: &Region<'_>) -> Result<(), EmitError> {
         match op {
             Op::Text(_) | Op::Interpolation(_) => {}
             Op::Element(element) if is_slot_template(element) => {
-                if element
-                    .bindings
-                    .iter()
-                    .any(|binding| !matches!(binding, BindingOp::SlotContent(_)))
-                {
+                if element.bindings.iter().any(|binding| {
+                    !matches!(
+                        binding,
+                        BindingOp::SlotContent(_) | BindingOp::VueOnce(_) | BindingOp::VueMemo(_)
+                    )
+                }) {
                     return Err(EmitError::unsupported_at(
                         Reason::SlotDefaultShape,
                         element.span,

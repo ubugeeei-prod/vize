@@ -38,6 +38,14 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<Foo><template #header id="x">x</template></Foo>"#,
     ),
     (
+        "named_header_v_once",
+        r#"<Foo><template #header v-once>x</template></Foo>"#,
+    ),
+    (
+        "named_header_v_memo",
+        r#"<Foo><template #header v-memo="[ok]">x</template></Foo>"#,
+    ),
+    (
         "hyphenated_slot",
         "<Foo><template #foo-bar>x</template></Foo>",
     ),
@@ -49,10 +57,18 @@ const BATTERY: &[(&str, &str)] = &[
     ("ws_named", "<Foo><template #header>  </template></Foo>"),
     ("component_v_slot_header", "<Foo v-slot:header>title</Foo>"),
     ("component_v_slot", "<Foo v-slot>title</Foo>"),
+    (
+        "component_v_slot_empty_params",
+        r#"<Foo v-slot="">title</Foo>"#,
+    ),
     ("component_hash_header", "<Foo #header>title</Foo>"),
     (
         "dynamic_slot_name",
         r#"<Foo><template #[name]>x</template></Foo>"#,
+    ),
+    (
+        "named_slot_empty_params",
+        r#"<Foo><template #header="">x</template></Foo>"#,
     ),
     (
         "scoped_ident",
@@ -67,12 +83,32 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<Foo><template #header v-if="ok">x</template></Foo>"#,
     ),
     (
+        "create_slots_if_v_once",
+        r#"<Foo><template #header v-if="ok" v-once>x</template></Foo>"#,
+    ),
+    (
+        "create_slots_if_v_memo",
+        r#"<Foo><template #header v-if="ok" v-memo="[ok]">x</template></Foo>"#,
+    ),
+    (
+        "create_slots_empty_params",
+        r#"<Foo><template #header="" v-if="ok">x</template></Foo>"#,
+    ),
+    (
         "create_slots_if_extra_attr",
         r#"<Foo><template #header id="x" v-if="ok">x</template></Foo>"#,
     ),
     (
         "create_slots_for",
         r#"<Foo><template v-for="i in n" #header>x</template></Foo>"#,
+    ),
+    (
+        "create_slots_for_v_once",
+        r#"<Foo><template v-for="i in n" #header v-once>x</template></Foo>"#,
+    ),
+    (
+        "create_slots_for_v_memo",
+        r#"<Foo><template v-for="i in n" #header v-memo="[i]">x</template></Foo>"#,
     ),
     (
         "create_slots_for_extra_attr",
