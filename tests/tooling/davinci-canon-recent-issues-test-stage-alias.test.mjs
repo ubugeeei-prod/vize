@@ -16,6 +16,11 @@ const recentIssueRows = [
     1,
   ],
   [
+    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/css_side_effect_import.rs",
+    "test",
+    2,
+  ],
+  [
     "crates/vize_canon/src/batch/type_checker/tests/recent_issues/diagnostic_normalization.rs",
     "test",
     1,

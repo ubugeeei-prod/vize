@@ -16,7 +16,7 @@
 use std::path::Path;
 
 use tempfile::TempDir;
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 use super::super::{BatchTypeChecker, relative_path, resolve_test_tsgo_binary};
 use crate::batch::{BatchTypeCheckerOptions, TypeChecker};
@@ -61,7 +61,7 @@ fn case_diagnostics(project_root: &Path) -> Option<Vec<(String, Option<u32>, Str
     let tsgo = resolve_test_tsgo_binary()?;
     // Diagnostics come back through the canonical project path; resolve the
     // macOS `/tmp` -> `/private/tmp` symlink before stripping the prefix.
-    let project_root = vize_carton::path::canonicalize_non_verbatim(project_root);
+    let project_root = vize_s0::path::canonicalize_non_verbatim(project_root);
     let project_root = project_root.as_path();
     let mut checker = BatchTypeChecker::with_options_and_corsa_path(
         project_root,
