@@ -13,6 +13,11 @@ const typecheckerTestRows = [
     "test",
     1,
   ],
+  [
+    "crates/vize_canon/src/batch/type_checker/tests/generic_props/inline_callback_guarded_props.rs",
+    "test",
+    1,
+  ],
   ["crates/vize_canon/src/virtual_ts/generator/script_module/namespace_hoist/tests.rs", "test", 1],
   ["crates/vize_canon/src/virtual_ts/generator/script_module/plain_exports/tests.rs", "test", 4],
   [
