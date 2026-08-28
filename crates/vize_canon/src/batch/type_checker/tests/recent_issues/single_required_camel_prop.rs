@@ -1,7 +1,7 @@
 //! Camel-case aliases must not erase a prop's requiredness (#3781).
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 /// Oracle: vue-tsc 3.3.4 with TypeScript 6.0.3 reports one TS2345 at 7:4,
 /// 8:4, 9:4 and 10:4 respectively, while accepting every complete/optional
