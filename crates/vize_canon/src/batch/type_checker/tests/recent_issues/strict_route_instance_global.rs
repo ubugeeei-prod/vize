@@ -11,7 +11,7 @@ use super::super::{
 };
 use crate::batch::{BatchTypeCheckerOptions, TypeChecker};
 use crate::virtual_ts::VirtualTsOptions;
-use vize_carton::{String, cstr};
+use vize_s0::{String, cstr};
 
 /// vue-router's shipped module augmentation registers both `$route` and
 /// `$router`; the strict context must expose them the way it exposes any
