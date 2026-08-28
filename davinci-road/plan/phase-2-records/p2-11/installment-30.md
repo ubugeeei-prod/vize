@@ -24,7 +24,7 @@ The durable witnesses are:
 
 - [`davinci_s2_slots.rs`](../../../../crates/vize_atelier_dom/tests/davinci_s2_slots.rs)
   - S2-vs-shipped byte fixtures for plain, conditional and looped slot-template
-  carriers with inert render bindings.
+    carriers with inert render bindings.
 - [`emit_slots.rs`](../../../../crates/vize_ricalco/tests/emit_slots.rs)
   - direct emitter coverage for named slot templates with inert bindings.
 - [`emit_create_slots.rs`](../../../../crates/vize_ricalco/tests/emit_create_slots.rs)

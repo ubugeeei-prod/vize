@@ -24,10 +24,10 @@ The durable witnesses are:
 
 - [`emit_slot_template_carriers.rs`](../../../../crates/vize_ricalco/tests/emit_slot_template_carriers.rs)
   - exact direct S2 emitter output for interpolation, multi-child, native-child
-  and createSlots carrier cases.
+    and createSlots carrier cases.
 - [`davinci_s2_slots.rs`](../../../../crates/vize_atelier_dom/tests/davinci_s2_slots.rs)
   - S2-vs-shipped byte fixtures for nested, stray, slot-outlet fallback and
-  dynamic-name-hole cases.
+    dynamic-name-hole cases.
 - [`croquis-consumption.md`](../../croquis-consumption.md)
   - regenerated so the new `Croquis.bindings` reference stays accounted for.
 
