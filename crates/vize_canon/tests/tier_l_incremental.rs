@@ -7,7 +7,10 @@ use serde::Deserialize;
 use vize_canon::{
     BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait, IncrementalCheckMetrics,
 };
-use vize_s0::{String, ToCompactString};
+use vize_s0::{
+    String, ToCompactString,
+    corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable},
+};
 
 #[path = "support/tier_l_incremental_artifact.rs"]
 mod artifact;
@@ -92,8 +95,13 @@ fn vben_batch_incremental_session_reuses_exact_materialized_delta() {
         project.revision,
         "fixture revision drift"
     );
-    let corsa_path = env_path("VIZE_TIER_L_CORSA_BIN", &repo_root)
-        .unwrap_or_else(|| repo_root.join("node_modules/.bin/tsgo"));
+    let corsa_path = env_path("VIZE_TIER_L_CORSA_BIN", &repo_root).unwrap_or_else(|| {
+        resolve_corsa_executable(CorsaResolveRequest {
+            explicit_path: None,
+            project_root: Some(&repo_root),
+        })
+        .expect("Corsa binary should resolve for Tier-L")
+    });
     assert!(
         corsa_path.exists(),
         "Corsa binary is missing: {}",

@@ -98,8 +98,7 @@ vp exec oxlint-vize -c .oxlintrc.json -f stylish src
       "locale": "ja",
       "preset": "general-recommended",
       "helpLevel": "short",
-      "typeAware": true,
-      "corsaPath": "./node_modules/.bin/tsgo"
+      "typeAware": true
     }
   }
 }

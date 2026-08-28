@@ -69,14 +69,26 @@ export function runVueTscBuild(workspaceDir: string, vueTscPath: string): Comman
 }
 
 export function resolveTsgoBinary(): string {
+  const binExt = process.platform === "win32" ? ".exe" : "";
   return requireBinary(
     [
       process.env.VIZE_TEST_TSGO,
+      process.env.CORSA_BIN,
+      process.env.CORSA_PATH,
+      process.env.TSGO_PATH,
+      path.join(
+        repoRoot,
+        "node_modules",
+        "@typescript",
+        `typescript-${process.platform}-${process.arch}`,
+        "lib",
+        `tsc${binExt}`,
+      ),
       path.join(repoRoot, "../corsa-bind/.cache/tsgo"),
       path.join(repoRoot, "node_modules/.bin/tsgo"),
       path.join(repoRoot, "tests/node_modules/.bin/tsgo"),
     ],
-    "tsgo",
+    "TypeScript 7/Corsa",
   );
 }
 

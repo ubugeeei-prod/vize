@@ -3,7 +3,7 @@
   "async-component-prop-ok": "pass",
   "async-setup-await": "pass",
   "async-setup-await-bad": "pass",
-  "attrs-aria-data-unknown": "fail",
+  "attrs-aria-data-unknown": "pass",
   "attrs-class-style-ok": "pass",
   "attrs-unknown-fallthrough": "fail",
   "boolean-prop-attr-ok": "pass",

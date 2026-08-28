@@ -8,7 +8,10 @@ import { isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import type { PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
-import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
+import {
+  requireTypecheckDependency,
+  resolveTypecheckRuntime,
+} from "./support/typecheck-dependency.ts";
 
 const source = `<script setup lang="tsx">
 const label: string = "ready"
@@ -23,8 +26,8 @@ test("SFC TSX script typecheck reports script errors without intrinsic JSX noise
   const corsaPath = requireTypecheckDependency(
     t,
     resolveTsgoBinary(),
-    "tsgo binary for the SFC TSX typecheck gate",
-    "tsgo binary not found; skipping SFC TSX typecheck test",
+    "TypeScript 7/Corsa runtime for the SFC TSX typecheck gate",
+    "TypeScript 7/Corsa runtime not found; skipping SFC TSX typecheck test",
   );
   if (corsaPath == null) return;
 
@@ -103,12 +106,7 @@ test("SFC TSX script typecheck reports script errors without intrinsic JSX noise
 });
 
 function resolveTsgoBinary(): string | undefined {
-  return [
-    process.env.CORSA_BIN,
-    path.join(root, "../corsa-bind/.cache/tsgo"),
-    path.join(root, "node_modules/.bin/tsgo"),
-    path.join(root, "tests/node_modules/.bin/tsgo"),
-  ].find((candidate) => candidate != null && fs.existsSync(candidate));
+  return resolveTypecheckRuntime(root);
 }
 
 function linkVuePackage(workspaceDir: string): void {

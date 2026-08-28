@@ -180,7 +180,7 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   );
   assert.deepEqual(batchIncremental?.env, {
     VIZE_TIER_L_FIXTURE: "tests/_fixtures/_git/vue-vben-admin",
-    VIZE_TIER_L_CORSA_BIN: "node_modules/.bin/tsgo",
+    VIZE_TIER_L_CORSA_BIN: "node_modules/@typescript/typescript-linux-x64/lib/tsc",
     VIZE_TIER_L_METRICS_DIR: "target/vize-tests/metrics/vben-batch-incremental",
     VIZE_TIER_L_BUDGET_SCALE: "${{ env.VIZE_TIER_L_BUDGET_SCALE }}",
     VIZE_RUNTIME_NODE_MODULES: "node_modules",

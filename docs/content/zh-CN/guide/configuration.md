@@ -400,15 +400,15 @@ Nuxt 2模板全局）是一个独立的`legacy`构建选择加入。
 `typeChecker.tsconfig` 和 `typeChecker.corsaPath` 是共享模式的一部分，但
 项目支持的Corsa路径如今是Rust CLI的表面。`corsaPath`与`vize check`共享，
 类型感知`vize lint`和`vize lsp`（`typeChecker.tsgoPath`是已弃用的别名）;运行时间
-栈是`@typescript/native-preview`，是 Corsa/corsa-bind API 层，以及已安装的 `tsgo`
-可执行。保留环境声明、生成的自动导入文件、路径别名和Vue
+栈是 TypeScript 7 native platform package（`typescript` / `@typescript/typescript-*`）
+和 Corsa/corsa-bind API 层。除非需要将 Vize 指向特定已安装的 `lib/tsc` 可执行文件，
+否则请保持 `corsaPath` 未设置。保留环境声明、生成的自动导入文件、路径别名和Vue
 `ComponentCustomProperties`在你的项目`tsconfig.json`中设置声明，并使用包脚本
 例如`vize:check:app` `--tsconfig`或`--corsa-path`覆盖。
 
 ```json
 {
   "typeChecker": {
-    "corsaPath": "./node_modules/.bin/tsgo",
     "servers": 1
   }
 }

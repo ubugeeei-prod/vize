@@ -4,10 +4,10 @@
  *
  * Publishes a timing artifact only after the measured binary reports every
  * planted diagnostic in the minimal plant projects and in a planted copy of
- * the timed corpus (bench/check-gate-plants.mjs). A missing tsgo, a missing
- * binary, or a failed plant gate exits non-zero without writing any timing,
- * so a fast no-op can never rank. JS-engine (vue-tsc) and native-TS-engine
- * (vize + tsgo) rows are reported as separate comparison classes; see
+ * the timed corpus (bench/check-gate-plants.mjs). A missing native TypeScript
+ * runtime, a missing binary, or a failed plant gate exits non-zero without
+ * writing any timing, so a fast no-op can never rank. JS-engine (vue-tsc) and
+ * native-TS-engine rows are reported as separate comparison classes; see
  * bench/check-gate-report.mjs for cold/steady separation and rotation.
  */
 
@@ -104,15 +104,24 @@ export async function main(argv = process.argv.slice(2)) {
   const vizeSource = requireBinary("vize binary", args["vize-bin"], [
     join(rootDir, "target", "release", "vize"),
   ]);
-  const tsgoSource = requireBinary("tsgo binary", process.env.VIZE_CHECK_GATE_TSGO, [
+  const binExt = process.platform === "win32" ? ".exe" : "";
+  const tsgoSource = requireBinary("TypeScript 7/Corsa runtime", process.env.VIZE_CHECK_GATE_TSGO, [
+    join(
+      rootDir,
+      "node_modules",
+      "@typescript",
+      `typescript-${process.platform}-${process.arch}`,
+      "lib",
+      `tsc${binExt}`,
+    ),
     join(rootDir, "node_modules", ".bin", "tsgo"),
     join(rootDir, "tests", "node_modules", ".bin", "tsgo"),
   ]);
   // Measure a private copy of the vize binary: a shared CARGO_TARGET_DIR can be
   // rebuilt by another process mid-run, and a timing attributed to a binary
-  // that no longer exists is worse than no timing. tsgo ships as a launcher
-  // shim that resolves its package relative to itself, so it is hashed in
-  // place; both are re-hashed before the artifact is written.
+  // that no longer exists is worse than no timing. The native TypeScript
+  // runtime is hashed in place so its package-relative lookup remains intact;
+  // both are re-hashed before the artifact is written.
   const binaries = {
     vize: pinExecutable(vizeSource.path, workRoot),
     tsgo: hashInPlace(tsgoSource.path),

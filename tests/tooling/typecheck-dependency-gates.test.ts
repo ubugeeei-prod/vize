@@ -4,6 +4,7 @@ import { test } from "node:test";
 import { testAndBenchmarkTasks } from "../../tools/vite-plus/tasks/test-benchmark.ts";
 import {
   requireTypecheckDependency,
+  stableTypeScriptRuntimePath,
   typecheckDependencySkip,
 } from "./support/typecheck-dependency.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
@@ -276,14 +277,25 @@ test("available dependencies never skip", () => {
   assert.equal(typecheckDependencySkip("/tmp/tsgo", "tsgo", "missing", true), false);
 });
 
+test("stable TypeScript runtime path targets the platform package", () => {
+  const binExt = process.platform === "win32" ? ".exe" : "";
+  assert.equal(
+    stableTypeScriptRuntimePath("/repo").replaceAll("\\", "/"),
+    `/repo/node_modules/@typescript/typescript-${process.platform}-${process.arch}/lib/tsc${binExt}`,
+  );
+});
+
 test("an unavailable optional dependency keeps the local skip reason", () => {
   assert.equal(typecheckDependencySkip(undefined, "tsgo", "local opt-out", false), "local opt-out");
 });
 
 test("an unavailable required dependency fails closed", () => {
-  assert.throws(() => typecheckDependencySkip(undefined, "tsgo binary", "missing", true), {
-    message: "tsgo binary is required when VIZE_TEST_REQUIRE_TSGO=1",
-  });
+  assert.throws(
+    () => typecheckDependencySkip(undefined, "TypeScript 7/Corsa runtime", "missing", true),
+    {
+      message: "TypeScript 7/Corsa runtime is required when VIZE_TEST_REQUIRE_TSGO=1",
+    },
+  );
 });
 
 test("runtime skip gates use the same fail-closed policy", () => {

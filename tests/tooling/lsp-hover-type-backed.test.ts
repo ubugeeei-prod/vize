@@ -12,7 +12,10 @@ import {
 } from "./support/lsp/assertions.ts";
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
-import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
+import {
+  requireTypecheckDependency,
+  resolveTypecheckRuntime,
+} from "./support/typecheck-dependency.ts";
 
 const source = `<script setup lang="ts">
 import { computed, ref } from 'vue'
@@ -47,8 +50,8 @@ test("hover and definition answer authored template anchors with backend type te
   const corsaPath = requireTypecheckDependency(
     t,
     resolveTsgoBinary(),
-    "tsgo binary for type-backed hover",
-    "tsgo binary not found; skipping type-backed hover test",
+    "TypeScript 7/Corsa runtime for type-backed hover",
+    "TypeScript 7/Corsa runtime not found; skipping type-backed hover test",
   );
   if (corsaPath == null) return;
 
@@ -300,13 +303,7 @@ function assertNoHeuristic(hoverText: string): void {
 }
 
 function resolveTsgoBinary(): string | undefined {
-  const candidates = [
-    process.env.CORSA_BIN,
-    path.join(root, "../corsa-bind/.cache/tsgo"),
-    path.join(root, "node_modules/.bin/tsgo"),
-    path.join(root, "tests/node_modules/.bin/tsgo"),
-  ].filter((candidate): candidate is string => candidate != null && candidate.length > 0);
-  return candidates.find((candidate) => fs.existsSync(candidate));
+  return resolveTypecheckRuntime(root);
 }
 
 function linkVuePackage(workspaceDir: string): void {

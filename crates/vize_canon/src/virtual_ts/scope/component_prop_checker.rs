@@ -89,7 +89,7 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
 /// it, so the generic inference path is untouched.
 ///
 /// Note the code divergence. TypeScript 6, which `vue-tsc` pins, reports the
-/// exact-optional rejection as `TS2379`; the `@typescript/native-preview` build
+/// exact-optional rejection as `TS2379`; the native TypeScript 7 runtime
 /// vize runs reports the identical code against the identical target as `TS2345`
 /// with the same explanation nested one level down. Confirmed by running both
 /// compilers over the same file across five target shapes, including

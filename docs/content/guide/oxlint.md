@@ -150,8 +150,7 @@ Settings are passed through `settings.vize`:
       "locale": "ja",
       "preset": "general-recommended",
       "helpLevel": "short",
-      "typeAware": true,
-      "corsaPath": "./node_modules/.bin/tsgo"
+      "typeAware": true
     }
   }
 }

@@ -400,15 +400,15 @@ Nuxt 2 テンプレート グローバル) は、別の `legacy` ビルド オ�
 `typeChecker.tsconfig` と `typeChecker.corsaPath` は共有スキーマの一部ですが、
 プロジェクトに基づいた Corsa パスは、今日の Rust CLI サーフェスです。 `corsaPath` は `vize check` によって共有されます。
 タイプ認識の `vize lint` および `vize lsp` (`typeChecker.tsgoPath` は非推奨のエイリアスです)。ランタイム
-スタックは `@typescript/native-preview`、Corsa/corsa-bind API レイヤー、およびインストールされている `tsgo`
-実行可能。アンビエント宣言、生成された自動インポート ファイル、パス エイリアス、および Vue を保持します
+スタックは TypeScript 7 の native platform package (`typescript` / `@typescript/typescript-*`) と
+Corsa/corsa-bind API レイヤーです。特定のインストール済み `lib/tsc` 実行ファイルを指定する必要がなければ、
+`corsaPath` は未設定のままにしてください。アンビエント宣言、生成された自動インポート ファイル、パス エイリアス、および Vue を保持します
 プロジェクト `tsconfig.json` 内の `ComponentCustomProperties` 宣言、およびパッケージ スクリプトの使用
 `--tsconfig` または `--corsa-path` オーバーライドの場合は `vize:check:app` など。
 
 ```json
 {
   "typeChecker": {
-    "corsaPath": "./node_modules/.bin/tsgo",
     "servers": 1
   }
 }

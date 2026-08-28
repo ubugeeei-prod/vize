@@ -16,9 +16,9 @@ Vize 在 `vize` npm 包中内置了一个符合协议的 Content Mapper:支持 C
 `tsgo` 构建会启动 `vize content-mapper` 并直接检查 `.vue` 文件 —— 悬停、跳转定义、
 重命名、补全和诊断全部映射回你编写的 SFC,无需再生成并行的 `.vue.ts` 项目。
 
-> **⚠️ 预览:** Content Mapper 已合并到上游,但尚未包含在已发布的
-> `@typescript/native-preview` 构建中。在包含该协议的版本发布之前,请从
-> `typescript-go` 的 main 分支构建 `tsgo`,并继续以 [`vize check`](./cli.md#check)
+> **⚠️ 预览:** Content Mapper 已合并到上游,但尚未包含在已发布的 TypeScript 7 platform
+> packages 中。在包含该协议的版本发布之前,请从 `typescript-go` 的 main 分支构建支持
+> Content Mapper 的 native TypeScript 二进制,并继续以 [`vize check`](./cli.md#check)
 > 作为受支持的类型检查方式。
 
 ## 设置

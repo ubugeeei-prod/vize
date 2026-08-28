@@ -5,6 +5,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { resolveTypecheckRuntime } from "./support/typecheck-dependency.ts";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 test("CLI typechecker reports mapped TypeScript diagnostics", () => {
@@ -158,17 +160,5 @@ function resolveVizeCommand(): string[] {
 }
 
 function resolveCheckerPath(): string {
-  const candidates = [
-    path.join(root, "node_modules/.bin/corsa"),
-    path.join(root, "node_modules/.bin/tsgo"),
-    path.join(root, "..", "corsa-bind/.cache/tsgo"),
-  ];
-
-  for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) {
-      return candidate;
-    }
-  }
-
-  throw new Error("Unable to find corsa or tsgo in node_modules/.bin");
+  return resolveTypecheckRuntime(root) ?? "";
 }

@@ -39,7 +39,7 @@ fn resolve_test_tsgo_binary_from(
         workspace_root.and_then(vize_carton::corsa_resolver::discover_corsa_in_ancestors);
     assert!(
         resolved.is_some() || !require_tsgo,
-        "VIZE_TEST_REQUIRE_TSGO is set, but no tsgo executable was found"
+        "VIZE_TEST_REQUIRE_TSGO is set, but no TypeScript 7/Corsa executable was found"
     );
     resolved
 }

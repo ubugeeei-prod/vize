@@ -18,10 +18,10 @@ suporte a content mappers inicia `vize content-mapper` e verifica arquivos `.vue
 hover, ir-para-definição, renomear, completions e diagnósticos são todos mapeados de volta para o
 SFC original, sem materializar um projeto `.vue.ts` paralelo.
 
-> **⚠️ Preview:** Os Content Mappers foram mesclados upstream, mas ainda não estão em um build
-> lançado do `@typescript/native-preview`. Até que um release inclua o protocolo, compile o `tsgo`
-> a partir da main do `typescript-go` e mantenha o [`vize check`](./cli.md#check) como o caminho
-> de verificação de tipos suportado.
+> **⚠️ Preview:** Os Content Mappers foram mesclados upstream, mas ainda não estão nos pacotes
+> TypeScript 7 platform lançados. Até que um release inclua o protocolo, compile um binário
+> TypeScript nativo com Content Mapper a partir da main do `typescript-go` e mantenha o
+> [`vize check`](./cli.md#check) como o caminho de verificação de tipos suportado.
 
 ## Configuração
 

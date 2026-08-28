@@ -11,7 +11,10 @@
 use std::path::{Path, PathBuf};
 
 use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait, project_virtual_root};
-use vize_s0::cstr;
+use vize_s0::{
+    corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable},
+    cstr,
+};
 
 fn resolve_test_tsgo_binary() -> Option<PathBuf> {
     if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
@@ -26,12 +29,11 @@ fn resolve_test_tsgo_binary() -> Option<PathBuf> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .and_then(Path::parent)?;
-    [
-        root.join("node_modules/.bin/tsgo"),
-        root.join("tests/node_modules/.bin/tsgo"),
-    ]
-    .into_iter()
-    .find(|candidate| candidate.exists())
+    resolve_corsa_executable(CorsaResolveRequest {
+        explicit_path: None,
+        project_root: Some(root),
+    })
+    .ok()
 }
 
 fn case_dir(name: &str) -> PathBuf {
@@ -202,7 +204,7 @@ fn an_option_diagnostic_is_reported_once_beside_the_file_diagnostics() {
 
 // -- the narrowing to vue-tsc's verdict (#3448) -------------------------------
 //
-// vize runs `@typescript/native-preview` (TypeScript 7); `vue-tsc` pins
+// vize runs the native TypeScript 7 runtime; `vue-tsc` pins
 // TypeScript 6. Where 7 reports an error on a config 6 accepts, forwarding it
 // would be a false positive against the tool the parity scorecard measures, so
 // those diagnostics are dropped. Both shapes below are configs real Vue projects

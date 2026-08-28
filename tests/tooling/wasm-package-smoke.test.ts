@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -9,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import { smokeWasmPackage } from "../../tools/npm/smoke-wasm-package.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const require = createRequire(import.meta.url);
 
 function copyRepoFile(targetDir: string, relativePath: string): void {
   fs.copyFileSync(path.join(root, relativePath), path.join(targetDir, path.basename(relativePath)));
@@ -245,15 +247,14 @@ compile("<div />", { scriptExt: "ts" });
     }),
   );
 
-  const tsgo =
-    process.env.TSGO_PATH ??
-    path.join(root, "node_modules", "@typescript", "native-preview", "bin", "tsgo.js");
-  const result = spawnSync(
-    process.execPath,
-    [tsgo, "-p", path.join(consumerDir, "tsconfig.json")],
-    {
-      encoding: "utf8",
-    },
-  );
+  const configuredChecker = process.env.TSGO_PATH;
+  const tscEntry = require.resolve("typescript/bin/tsc");
+  const result = configuredChecker
+    ? spawnSync(configuredChecker, ["-p", path.join(consumerDir, "tsconfig.json")], {
+        encoding: "utf8",
+      })
+    : spawnSync(process.execPath, [tscEntry, "-p", path.join(consumerDir, "tsconfig.json")], {
+        encoding: "utf8",
+      });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
 });

@@ -7,7 +7,10 @@ import { pathToFileURL } from "node:url";
 import { hoverToText, isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.ts";
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
-import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
+import {
+  requireTypecheckDependency,
+  resolveTypecheckRuntime,
+} from "./support/typecheck-dependency.ts";
 
 const source = `<script setup lang="ts">
 import Child from './Child.vue'
@@ -34,8 +37,8 @@ test("script hover describes imported SFC contracts instead of generated markers
   const corsaPath = requireTypecheckDependency(
     t,
     resolveTsgoBinary(),
-    "tsgo binary for imported SFC hover",
-    "tsgo binary not found; skipping imported SFC hover test",
+    "TypeScript 7/Corsa runtime for imported SFC hover",
+    "TypeScript 7/Corsa runtime not found; skipping imported SFC hover test",
   );
   if (corsaPath == null) return;
 
@@ -157,13 +160,7 @@ function assertImportedComponentHover(hoverText: string): void {
 }
 
 function resolveTsgoBinary(): string | undefined {
-  const candidates = [
-    process.env.CORSA_BIN,
-    path.join(root, "../corsa-bind/.cache/tsgo"),
-    path.join(root, "node_modules/.bin/tsgo"),
-    path.join(root, "tests/node_modules/.bin/tsgo"),
-  ].filter((candidate): candidate is string => candidate != null && candidate.length > 0);
-  return candidates.find((candidate) => fs.existsSync(candidate));
+  return resolveTypecheckRuntime(root);
 }
 
 function linkVuePackage(workspaceDir: string): void {

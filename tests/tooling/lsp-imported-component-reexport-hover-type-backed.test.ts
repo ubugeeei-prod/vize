@@ -7,7 +7,10 @@ import { pathToFileURL } from "node:url";
 import { hoverToText, isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.ts";
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
-import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
+import {
+  requireTypecheckDependency,
+  resolveTypecheckRuntime,
+} from "./support/typecheck-dependency.ts";
 
 const appSource = `<script setup lang="ts">
 import { BarrelChild, StarChild } from './components'
@@ -53,8 +56,8 @@ test("script hover describes re-exported and package SFC component contracts", a
   const corsaPath = requireTypecheckDependency(
     t,
     resolveTsgoBinary(),
-    "tsgo binary for re-exported imported SFC hover",
-    "tsgo binary not found; skipping re-exported imported SFC hover test",
+    "TypeScript 7/Corsa runtime for re-exported imported SFC hover",
+    "TypeScript 7/Corsa runtime not found; skipping re-exported imported SFC hover test",
   );
   if (corsaPath == null) return;
 
@@ -199,13 +202,7 @@ function assertComponentHover(text: string, required: string[], extra: string[])
 }
 
 function resolveTsgoBinary(): string | undefined {
-  const candidates = [
-    process.env.CORSA_BIN,
-    path.join(root, "../corsa-bind/.cache/tsgo"),
-    path.join(root, "node_modules/.bin/tsgo"),
-    path.join(root, "tests/node_modules/.bin/tsgo"),
-  ].filter((candidate): candidate is string => candidate != null && candidate.length > 0);
-  return candidates.find((candidate) => fs.existsSync(candidate));
+  return resolveTypecheckRuntime(root);
 }
 
 function linkVuePackage(workspaceDir: string): void {

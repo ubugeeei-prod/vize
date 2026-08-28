@@ -30,6 +30,20 @@ function run(
   return { status: result.status, stdout: result.stdout, stderr: result.stderr };
 }
 
+function isolatedNativeLoaderEnv(extra: NodeJS.ProcessEnv = {}): NodeJS.ProcessEnv {
+  const env = { ...process.env };
+  for (const key of Object.keys(env)) {
+    const normalized = key.toLowerCase();
+    if (normalized === "init_cwd" || normalized === "node_path" || normalized.startsWith("npm_")) {
+      Reflect.deleteProperty(env, key);
+    }
+  }
+  Reflect.deleteProperty(env, "NAPI_RS_FORCE_WASI");
+  Reflect.deleteProperty(env, "NAPI_RS_NATIVE_LIBRARY_PATH");
+  Reflect.deleteProperty(env, "VIZE_ALLOW_NATIVE_VERSION_MISMATCH");
+  return { ...env, ...extra };
+}
+
 function assertSucceeded(
   result: { status: number | null; stdout: string; stderr: string },
   command: string,
@@ -88,7 +102,7 @@ function installPackedNativePackage(tempDir: string): string {
   copyPackableNativePackage(packageSourceDir);
 
   const npm = process.env.NPM_BIN ?? (process.platform === "win32" ? "npm.cmd" : "npm");
-  const npmEnv = { ...process.env, npm_config_cache: npmCacheDir };
+  const npmEnv = isolatedNativeLoaderEnv({ npm_config_cache: npmCacheDir });
   const pack = run(npm, ["pack", "--ignore-scripts", "--pack-destination", packDir], {
     cwd: packageSourceDir,
     env: npmEnv,
@@ -153,7 +167,7 @@ function installBrokenTargetPackage(installDir: string): void {
 
 function runProbe(installDir: string, filename: string, source: string) {
   fs.writeFileSync(path.join(installDir, filename), source);
-  return run(process.execPath, [filename], { cwd: installDir });
+  return run(process.execPath, [filename], { cwd: installDir, env: isolatedNativeLoaderEnv() });
 }
 
 test("packed package root distinguishes missing and incompatible native targets", () => {

@@ -1,7 +1,7 @@
 # Fresco JS test baseline
 
 `pnpm test` runs `node:test` suites (via `vp exec tsx --test "src/**/*.test.ts"`).
-`pnpm check` includes `tsgo --noEmit`, which gates the compile-only type tests.
+`pnpm check` includes `tsc --noEmit`, which gates the compile-only type tests.
 
 Package scripts must stay portable across shells: `cmd.exe` passes single
 quotes through literally, so quote glob arguments with double quotes

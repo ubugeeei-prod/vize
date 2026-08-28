@@ -110,14 +110,14 @@ if (import.meta.vitest) {
           helpLevel: "short",
           preset: "essential",
           typeAware: true,
-          corsaPath: "./node_modules/.bin/tsgo",
+          corsaPath: "./node_modules/@typescript/typescript-linux-x64/lib/tsc",
         }),
       ).toEqual({
         locale: "ja",
         helpLevel: "short",
         preset: "essential",
         typeAware: true,
-        corsaPath: "./node_modules/.bin/tsgo",
+        corsaPath: "./node_modules/@typescript/typescript-linux-x64/lib/tsc",
       });
     });
 

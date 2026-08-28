@@ -12,7 +12,10 @@ import {
 } from "./support/lsp/assertions.ts";
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
-import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
+import {
+  requireTypecheckDependency,
+  resolveTypecheckRuntime,
+} from "./support/typecheck-dependency.ts";
 
 const source = `<script setup lang="ts">
 const items: Array<{ id: string; label: string }> = [{ id: "a", label: "Alpha" }]
@@ -32,8 +35,8 @@ test("template scoped aliases hover and jump to authored anchors", async (t) => 
   const corsaPath = requireTypecheckDependency(
     t,
     resolveTsgoBinary(),
-    "tsgo binary for template scoped hover/navigation",
-    "tsgo binary not found; skipping scoped template hover/navigation test",
+    "TypeScript 7/Corsa runtime for template scoped hover/navigation",
+    "TypeScript 7/Corsa runtime not found; skipping scoped template hover/navigation test",
   );
   if (corsaPath == null) return;
 
@@ -184,13 +187,7 @@ function rangeFor(symbol: string, nearOffset: number): Range {
 }
 
 function resolveTsgoBinary(): string | undefined {
-  const candidates = [
-    process.env.CORSA_BIN,
-    path.join(root, "../corsa-bind/.cache/tsgo"),
-    path.join(root, "node_modules/.bin/tsgo"),
-    path.join(root, "tests/node_modules/.bin/tsgo"),
-  ].filter((candidate): candidate is string => candidate != null && candidate.length > 0);
-  return candidates.find((candidate) => fs.existsSync(candidate));
+  return resolveTypecheckRuntime(root);
 }
 
 function linkVuePackage(workspaceDir: string): void {

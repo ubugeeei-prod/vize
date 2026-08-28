@@ -18,7 +18,6 @@
     "@tsdown/css": "catalog:content",
     "@types/node": "catalog:typescript",
     "@types/vscode": "1.75.0",
-    "@typescript/native-preview": "catalog:typescript",
     "@vue/babel-plugin-jsx": "catalog:babel-jsx-oracle",
     "ajv": "catalog:repo-tooling",
     "glob": "catalog:repo-tooling",
@@ -33,6 +32,14 @@
     "vite-plus": "catalog:vite-stack",
     "vscode-languageclient": "9.0.1",
     "yaml": "2.9.0"
+  },
+  "optionalDependencies": {
+    "@typescript/typescript-darwin-arm64": "catalog:corsa-runtime",
+    "@typescript/typescript-darwin-x64": "catalog:corsa-runtime",
+    "@typescript/typescript-linux-arm64": "catalog:corsa-runtime",
+    "@typescript/typescript-linux-x64": "catalog:corsa-runtime",
+    "@typescript/typescript-win32-arm64": "catalog:corsa-runtime",
+    "@typescript/typescript-win32-x64": "catalog:corsa-runtime"
   },
   "packageManager": "pnpm@11.21.0"
 }

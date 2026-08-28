@@ -57,7 +57,7 @@ test("compiler e2e binary helpers fail loudly when the checker override is missi
   });
 
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /Corsa\/tsgo binary not found/);
+  assert.match(result.stderr, /TypeScript 7\/Corsa binary not found/);
   assert.ok(result.stderr.includes(corsaBin));
 });
 

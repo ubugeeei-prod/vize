@@ -1,6 +1,6 @@
 /**
  * Version and backend provenance recorded with every benchmark artifact
- * (#3283: "Record the exact Vize and tsgo versions, entry point, file count,
+ * (#3283: "Record the exact Vize and native TypeScript runtime versions, entry point, file count,
  * byte count, diagnostic count, and backend readiness with every artifact").
  *
  * bench/check-gate.mjs already records this for the gated timing artifact.
@@ -42,12 +42,20 @@ export function resolveFirstExisting(candidates) {
 
 export const TSGO_CANDIDATES = [
   process.env.VIZE_CHECK_GATE_TSGO,
+  join(
+    rootDir,
+    "node_modules",
+    "@typescript",
+    `typescript-${process.platform}-${process.arch}`,
+    "lib",
+    `tsc${process.platform === "win32" ? ".exe" : ""}`,
+  ),
   join(rootDir, "node_modules", ".bin", "tsgo"),
   join(rootDir, "tests", "node_modules", ".bin", "tsgo"),
 ];
 
 /**
- * Resolve the native TypeScript engine (tsgo/Corsa) that `vize check` will be
+ * Resolve the native TypeScript engine that `vize check` will be
  * pointed at. `ready` is false when it cannot be resolved or cannot answer
  * --version; callers that intend to publish a type-check timing must refuse.
  */
@@ -59,7 +67,7 @@ export function resolveBackend(candidates = TSGO_CANDIDATES) {
       corsaPath: null,
       corsaVersion: null,
       ready: false,
-      reason: `no tsgo binary at: ${candidates.filter(Boolean).join(", ")}`,
+      reason: `no TypeScript 7/Corsa runtime at: ${candidates.filter(Boolean).join(", ")}`,
     };
   }
   const corsaVersion = probeVersion(corsaPath);
@@ -68,7 +76,8 @@ export function resolveBackend(candidates = TSGO_CANDIDATES) {
     corsaPath,
     corsaVersion,
     ready: corsaVersion != null,
-    reason: corsaVersion == null ? `tsgo at ${corsaPath} failed --version` : null,
+    reason:
+      corsaVersion == null ? `TypeScript 7/Corsa runtime at ${corsaPath} failed --version` : null,
   };
 }
 

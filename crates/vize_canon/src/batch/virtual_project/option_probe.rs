@@ -94,7 +94,7 @@ impl VirtualProject {
 /// Which of the probe's option diagnostics the user's own `vue-tsc` toolchain
 /// would also report.
 ///
-/// vize's checker is `@typescript/native-preview`, i.e. TypeScript 7, which
+/// vize's checker is the native TypeScript 7 runtime, which
 /// *removed* options that TypeScript 6 merely deprecates and TypeScript 5.x
 /// accepts silently. Its `TS5102`/`TS5108` "has been removed" family therefore
 /// names exactly the 6.0-era deprecations — measured against `tsc` 6.0.3 and

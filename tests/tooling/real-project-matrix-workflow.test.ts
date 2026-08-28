@@ -184,7 +184,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     "the hydrated fixture corpus must run through the production LSP before syntax audit",
   );
   assert.deepEqual(lsp.env, {
-    CORSA_PATH: "${{ github.workspace }}/node_modules/.bin/tsgo",
+    CORSA_PATH: "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc",
     REAL_PROJECT_LSP_TIMEOUT_MS: "600000",
     VIZE_LSP_BIN: "target/ci/vize",
   });

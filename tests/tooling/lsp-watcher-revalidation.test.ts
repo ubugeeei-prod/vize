@@ -7,14 +7,17 @@ import { isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import type { PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
-import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
+import {
+  requireTypecheckDependency,
+  resolveTypecheckRuntime,
+} from "./support/typecheck-dependency.ts";
 
 test("vize lsp revalidates open documents after watched declaration changes", async (t) => {
   const corsaPath = requireTypecheckDependency(
     t,
     resolveTsgoBinary(),
-    "tsgo binary for the LSP watcher revalidation gate",
-    "tsgo binary not found; skipping LSP watcher revalidation test",
+    "TypeScript 7/Corsa runtime for the LSP watcher revalidation gate",
+    "TypeScript 7/Corsa runtime not found; skipping LSP watcher revalidation test",
   );
   if (corsaPath == null) return;
 
@@ -146,12 +149,7 @@ export {};
 }
 
 function resolveTsgoBinary(): string | undefined {
-  const candidates = [
-    path.join(root, "../corsa-bind/.cache/tsgo"),
-    path.join(root, "node_modules/.bin/tsgo"),
-    path.join(root, "tests/node_modules/.bin/tsgo"),
-  ];
-  return candidates.find((candidate) => fs.existsSync(candidate));
+  return resolveTypecheckRuntime(root);
 }
 
 function resolveVuePackage(): string | undefined {

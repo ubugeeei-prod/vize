@@ -10,40 +10,26 @@ import { CORSA_BIN } from "../../_helpers/apps.ts";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const fixture = path.join(root, "tests/_fixtures/_projects/typescript-go-module-resolution-race");
 const tsconfig = path.join(fixture, "tsconfig.json");
-const nativePreviewManifest = path.join(
+const runtimePackage = `@typescript/typescript-${process.platform}-${process.arch}`;
+const runtimeManifest = path.join(
   root,
-  "node_modules/@typescript/native-preview/package.json",
+  "node_modules",
+  "@typescript",
+  `typescript-${process.platform}-${process.arch}`,
+  "package.json",
 );
 const tscEntry = path.join(root, "tests/node_modules/typescript/bin/tsc");
-// 20260602.1 (gitHead fe932f69) predates microsoft/typescript-go#4178 and loses
-// random package resolutions under the default concurrent loader. This is the
-// first published nightly whose history contains that upstream fix.
-const fixedVersion = "7.0.0-dev.20260603.1";
-const fixedGitHead = "67c7f9dc019913f7227326f7edf576e1180970ea";
-const fixedPlatformPackages = [
-  "@typescript/native-preview-darwin-arm64",
-  "@typescript/native-preview-darwin-x64",
-  "@typescript/native-preview-linux-arm",
-  "@typescript/native-preview-linux-arm64",
-  "@typescript/native-preview-linux-x64",
-  "@typescript/native-preview-win32-arm64",
-  "@typescript/native-preview-win32-x64",
-];
+const fixedVersion = "7.0.2";
 const repeats = 100;
 
-test("the pinned tsgo contains the upstream realpath race fix", () => {
-  const manifest = JSON.parse(fs.readFileSync(nativePreviewManifest, "utf8")) as {
-    gitHead?: string;
-    optionalDependencies?: Record<string, string>;
+test("the pinned TypeScript runtime is the stable TypeScript 7 package", () => {
+  const manifest = JSON.parse(fs.readFileSync(runtimeManifest, "utf8")) as {
+    name?: string;
     version?: string;
   };
   assert.deepEqual(
-    { gitHead: manifest.gitHead, version: manifest.version },
-    { gitHead: fixedGitHead, version: fixedVersion },
-  );
-  assert.deepEqual(
-    manifest.optionalDependencies,
-    Object.fromEntries(fixedPlatformPackages.map((name) => [name, fixedVersion])),
+    { name: manifest.name, version: manifest.version },
+    { name: runtimePackage, version: fixedVersion },
   );
 
   const version = spawnSync(CORSA_BIN, ["--version"], { encoding: "utf8" });
@@ -54,7 +40,7 @@ test("the pinned tsgo contains the upstream realpath race fix", () => {
 });
 
 test(
-  "default-concurrent tsgo resolves the same package graph in 100 fresh processes",
+  "default-concurrent TypeScript resolves the same package graph in 100 fresh processes",
   { timeout: 120_000 },
   () => {
     const expected = runCompiler(CORSA_BIN, ["-p", tsconfig, "--pretty", "false"]);
@@ -62,7 +48,7 @@ test(
       assert.deepEqual(
         runCompiler(CORSA_BIN, ["-p", tsconfig, "--pretty", "false"]),
         expected,
-        `tsgo module resolution changed on fresh process ${run}/${repeats}`,
+        `TypeScript module resolution changed on fresh process ${run}/${repeats}`,
       );
     }
   },

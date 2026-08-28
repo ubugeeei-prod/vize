@@ -263,7 +263,7 @@ mod tests {
     /// Corsa reports the same `TS2304` at two virtual positions and the error
     /// surfaced for the user exactly twice. The collection point must collapse
     /// those exact duplicates to one diagnostic. (Verified empirically against
-    /// the `@typescript/native-preview` CLI.)
+    /// the native TypeScript 7 CLI.)
     #[test]
     fn duplicated_template_diagnostic_is_reported_once() {
         let temp_dir = TempDir::new().unwrap();

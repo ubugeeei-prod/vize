@@ -76,7 +76,7 @@ test("a resolvable tsgo makes the backend ready and records its exact version", 
   });
 });
 
-test("a missing tsgo makes the backend not ready with an explicit reason", () => {
+test("a missing TypeScript 7/Corsa runtime makes the backend not ready with an explicit reason", () => {
   withTempDir((dir) => {
     const absent = path.join(dir, "absent-tsgo");
     assert.deepEqual(resolveBackend([absent]), {
@@ -84,7 +84,7 @@ test("a missing tsgo makes the backend not ready with an explicit reason", () =>
       corsaPath: null,
       corsaVersion: null,
       ready: false,
-      reason: `no tsgo binary at: ${absent}`,
+      reason: `no TypeScript 7/Corsa runtime at: ${absent}`,
     });
   });
 });
@@ -97,7 +97,7 @@ test("a tsgo that cannot answer --version makes the backend not ready", () => {
       corsaPath: tsgo,
       corsaVersion: null,
       ready: false,
-      reason: `tsgo at ${tsgo} failed --version`,
+      reason: `TypeScript 7/Corsa runtime at ${tsgo} failed --version`,
     });
   });
 });
@@ -143,13 +143,13 @@ test("an unready backend is stated outright and forbids a published timing", () 
         corsaPath: null,
         corsaVersion: null,
         ready: false,
-        reason: "no tsgo binary at: /repo/node_modules/.bin/tsgo",
+        reason: "no TypeScript 7/Corsa runtime at: /repo/node_modules/.bin/tsgo",
       },
     }),
     [
       "Versions: vize `vize 0.303.0` · tsgo n/a · vue-tsc n/a (typescript n/a) · verter-tsc `verter-tsc 0.0.1-beta.3` · Golar `golar 0.1.10` · vue `3.6.0` · eslint `9.0.0` · prettier `3.4.0` · node `v24.0.0`",
       `Binaries (sha256): vize \`${READY_BINARIES.vize}\` tsgo n/a vueTsc n/a verterTsc \`${READY_BINARIES.verterTsc}\` golar \`${READY_BINARIES.golar}\` eslint n/a prettier n/a`,
-      "Backend: native TypeScript engine NOT ready (no tsgo binary at: /repo/node_modules/.bin/tsgo); no type-check timing may be published from this artifact.",
+      "Backend: native TypeScript engine NOT ready (no TypeScript 7/Corsa runtime at: /repo/node_modules/.bin/tsgo); no type-check timing may be published from this artifact.",
     ],
   );
 });

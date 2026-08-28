@@ -6,7 +6,10 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { typecheckDependencySkip } from "./support/typecheck-dependency.ts";
+import {
+  resolveTypecheckRuntime,
+  typecheckDependencySkip,
+} from "./support/typecheck-dependency.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -28,24 +31,15 @@ function resolveVizeCommand(): { command: string; prefix: string[] } {
 const VIZE = resolveVizeCommand();
 
 function resolveCheckerPath(): string | null {
-  const candidates = [
-    path.join(root, "node_modules/.bin/corsa"),
-    path.join(root, "node_modules/.bin/tsgo"),
-  ];
-  for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) {
-      return candidate;
-    }
-  }
-  return null;
+  return resolveTypecheckRuntime(root) ?? null;
 }
 
 const CHECKER = resolveCheckerPath();
 const checkerOptions = {
   skip: typecheckDependencySkip(
     CHECKER,
-    "a corsa/tsgo checker for the CLI JSON gates",
-    "no corsa/tsgo checker discoverable",
+    "a TypeScript 7/Corsa runtime for the CLI JSON gates",
+    "no TypeScript 7/Corsa runtime discoverable",
   ),
 };
 

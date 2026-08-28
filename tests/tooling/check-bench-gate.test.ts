@@ -11,7 +11,10 @@ import { generateCorpus } from "../../bench/generate.mjs";
 // @ts-expect-error plain-JS bench module without type declarations
 import { evaluateBudget } from "../../bench/check-gate-report.mjs";
 import { resolveVizeCommand } from "../_helpers/realworld-typecheck.ts";
-import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
+import {
+  requireTypecheckDependency,
+  resolveTypecheckRuntime,
+} from "./support/typecheck-dependency.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const gateScript = path.join(root, "bench/check-gate.mjs");
@@ -36,11 +39,7 @@ function runGate(args: string[], env: Record<string, string> = {}): GateRun {
 }
 
 function resolveTsgoBinary(): string | undefined {
-  const candidates = [
-    path.join(root, "node_modules/.bin/tsgo"),
-    path.join(root, "tests/node_modules/.bin/tsgo"),
-  ];
-  return candidates.find((candidate) => fs.existsSync(candidate));
+  return resolveTypecheckRuntime(root);
 }
 
 function sha256Of(filePath: string): string {
@@ -93,13 +92,13 @@ test("check-gate budget rule is pure and strict", () => {
   });
 });
 
-test("check-gate fails closed when the pinned tsgo binary is missing", (t) => {
+test("check-gate fails closed when the pinned TypeScript 7/Corsa runtime is missing", (t) => {
   // Resolve the vize binary rather than hardcoding target/ci/vize: a worktree
   // with a shared CARGO_TARGET_DIR has no such path, and this test is about
-  // the tsgo failure, not about where vize was built.
+  // the runtime failure, not about where vize was built.
   const vizeBin = resolveVizeBinary();
   if (vizeBin == null) {
-    requireTsgoOrSkip(t);
+    requireRuntimeOrSkip(t);
     return;
   }
   fs.mkdirSync(outputRoot, { recursive: true });
@@ -110,7 +109,7 @@ test("check-gate fails closed when the pinned tsgo binary is missing", (t) => {
       VIZE_CHECK_GATE_TSGO: path.join(workDir, "does-not-exist"),
     });
     assert.equal(run.status, 1, run.stderr || run.stdout);
-    assert.match(run.stderr, /check-gate: tsgo binary not found/);
+    assert.match(run.stderr, /check-gate: TypeScript 7\/Corsa runtime not found/);
     assert.equal(fs.existsSync(jsonPath), false, "no timing artifact may be written");
   } finally {
     fs.rmSync(workDir, { recursive: true, force: true });
@@ -120,7 +119,7 @@ test("check-gate fails closed when the pinned tsgo binary is missing", (t) => {
 test("check-gate refuses to time a binary that misses the plants", (t) => {
   const tsgo = resolveTsgoBinary();
   if (tsgo == null) {
-    requireTsgoOrSkip(t);
+    requireRuntimeOrSkip(t);
     return;
   }
   fs.mkdirSync(outputRoot, { recursive: true });
@@ -164,7 +163,7 @@ test("check-gate publishes reproducibility metadata for a gated run", (t) => {
   const tsgo = resolveTsgoBinary();
   const vizeBin = resolveVizeBinary();
   if (tsgo == null || vizeBin == null) {
-    requireTsgoOrSkip(t);
+    requireRuntimeOrSkip(t);
     return;
   }
   fs.mkdirSync(outputRoot, { recursive: true });
@@ -338,11 +337,11 @@ test("check-gate publishes reproducibility metadata for a gated run", (t) => {
   }
 });
 
-function requireTsgoOrSkip(t: { skip(reason: string): void }): void {
+function requireRuntimeOrSkip(t: { skip(reason: string): void }): void {
   requireTypecheckDependency(
     t,
     undefined,
-    "tsgo (or a built vize binary) for the check benchmark gate",
-    "tsgo or a built vize binary is unavailable",
+    "TypeScript 7/Corsa runtime (or a built vize binary) for the check benchmark gate",
+    "TypeScript 7/Corsa runtime or a built vize binary is unavailable",
   );
 }

@@ -1,7 +1,7 @@
 /**
  * Compile-only tests for the public props/emits of the baseline components.
  *
- * Not executed by the test runner; `tsgo --noEmit -p tsconfig.json` (wired
+ * Not executed by the test runner; `tsc --noEmit -p tsconfig.json` (wired
  * into `pnpm check` / `pnpm check:types`) fails the build when a positive
  * case stops typechecking or a `@ts-expect-error` negative starts passing.
  */

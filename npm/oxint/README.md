@@ -155,8 +155,7 @@ You can pass Patina settings through `settings.vize`:
       "locale": "ja",
       "preset": "essential",
       "helpLevel": "short",
-      "typeAware": true,
-      "corsaPath": "./node_modules/.bin/tsgo"
+      "typeAware": true
     }
   }
 }
@@ -172,7 +171,7 @@ You can pass Patina settings through `settings.vize`:
 - `helpLevel` accepts `"full"`, `"short"`, or `"none"`. Short help keeps one actionable sentence and removes inline examples and trailing rationale.
 - `helpLevel: "full"` only expands the Patina remediation text. It does not restore original-SFC formatter anchors or machine-readable range fidelity.
 - `typeAware: true` enables Corsa-backed `vize/type/*` rules during shared Patina passes.
-- `corsaPath` selects the Corsa or `tsgo` executable for type-aware linting. Omit it to use Vize's normal resolver.
+- `corsaPath` selects a Corsa or TypeScript 7 native executable for type-aware linting. Omit it to use Vize's normal resolver.
 - `showHelp` is still accepted for backward compatibility, but `helpLevel` is the preferred setting.
 
 For example, this keeps Oxlint focused on correctness-only Vize diagnostics while still allowing your existing Oxlint rules to run unchanged:

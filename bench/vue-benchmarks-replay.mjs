@@ -53,7 +53,15 @@ export async function main(argv = process.argv.slice(2)) {
     ? requireBinary("vize binary", args["vize-bin"], [join(rootDir, "target", "release", "vize")])
     : null;
   const tsgo = needsTsgo
-    ? requireBinary("tsgo binary", process.env.VIZE_REPLAY_TSGO, [
+    ? requireBinary("TypeScript 7/Corsa runtime", process.env.VIZE_REPLAY_TSGO, [
+        join(
+          rootDir,
+          "node_modules",
+          "@typescript",
+          `typescript-${process.platform}-${process.arch}`,
+          "lib",
+          `tsc${process.platform === "win32" ? ".exe" : ""}`,
+        ),
         join(rootDir, "node_modules", ".bin", "tsgo"),
         join(rootDir, "tests", "node_modules", ".bin", "tsgo"),
       ])

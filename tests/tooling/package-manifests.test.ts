@@ -465,14 +465,10 @@ test("editor extension manifests keep expected defaults and version alignment", 
     vscodePackage.contributes?.configuration?.properties?.["vize.formatting.enable"]?.default,
     false,
   );
-  assert.equal(vscodePackage.scripts?.check, "tsgo --noEmit && vp check src vite.config.ts");
+  assert.equal(vscodePackage.scripts?.check, "tsc --noEmit && vp check src vite.config.ts");
   assert.equal(
     vscodePackage.scripts?.["check:fix"],
-    "vp check --fix src vite.config.ts && tsgo --noEmit",
-  );
-  assert.equal(
-    vscodePackage.devDependencies?.["@typescript/native-preview"],
-    "7.0.0-dev.20260421.1",
+    "vp check --fix src vite.config.ts && tsc --noEmit",
   );
 
   const zedManifest = fs.readFileSync(path.join(root, "editors/zed/extension.toml"), "utf-8");

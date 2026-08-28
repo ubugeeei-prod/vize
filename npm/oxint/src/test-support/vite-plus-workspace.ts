@@ -94,20 +94,12 @@ export function typecheckVitePlusConfigConsumer(source: string): void {
       )}\n`,
     );
 
-    const nativePreviewDir = path.dirname(
-      packageRequire.resolve("@typescript/native-preview/package.json"),
-    );
-    execFileSync(
-      process.execPath,
-      [
-        path.join(nativePreviewDir, "bin", "tsgo.js"),
-        "--project",
-        "tsconfig.json",
-        "--pretty",
-        "false",
-      ],
-      { cwd: root, encoding: "utf8", stdio: "pipe" },
-    );
+    const tscEntry = packageRequire.resolve("typescript/bin/tsc");
+    execFileSync(process.execPath, [tscEntry, "--project", "tsconfig.json", "--pretty", "false"], {
+      cwd: root,
+      encoding: "utf8",
+      stdio: "pipe",
+    });
   } catch (error) {
     const execError = error as { stdout?: string | Buffer; stderr?: string | Buffer };
     throw new Error(

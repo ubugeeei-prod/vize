@@ -12,7 +12,10 @@ import {
 } from "./support/lsp/assertions.ts";
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
-import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
+import {
+  requireTypecheckDependency,
+  resolveTypecheckRuntime,
+} from "./support/typecheck-dependency.ts";
 
 const source = `<script setup lang="ts">
 import { ref } from 'vue'
@@ -40,8 +43,8 @@ test("component v-model hover and definition use the child model contract", asyn
   const corsaPath = requireTypecheckDependency(
     t,
     resolveTsgoBinary(),
-    "tsgo binary for component v-model hover",
-    "tsgo binary not found; skipping component v-model hover test",
+    "TypeScript 7/Corsa runtime for component v-model hover",
+    "TypeScript 7/Corsa runtime not found; skipping component v-model hover test",
   );
   if (corsaPath == null) return;
 
@@ -223,13 +226,7 @@ function assertNoDirectiveFallback(hoverText: string): void {
 }
 
 function resolveTsgoBinary(): string | undefined {
-  const candidates = [
-    process.env.CORSA_BIN,
-    path.join(root, "../corsa-bind/.cache/tsgo"),
-    path.join(root, "node_modules/.bin/tsgo"),
-    path.join(root, "tests/node_modules/.bin/tsgo"),
-  ].filter((candidate): candidate is string => candidate != null && candidate.length > 0);
-  return candidates.find((candidate) => fs.existsSync(candidate));
+  return resolveTypecheckRuntime(root);
 }
 
 function linkVuePackage(workspaceDir: string): void {

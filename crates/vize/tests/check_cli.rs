@@ -9,7 +9,7 @@ use std::{
     process::Command,
 };
 
-use vize_s0::{cstr, path::canonicalize_non_verbatim};
+use vize_s0::{corsa_resolver::platform_suffix, cstr, path::canonicalize_non_verbatim};
 
 #[test]
 fn check_json_reports_type_errors_via_project_typechecker() {
@@ -3400,9 +3400,9 @@ fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
                     &source,
                     &target
                         .join("@typescript")
-                        .join("native-preview")
+                        .join(&*cstr!("typescript-{}", platform_suffix()))
                         .join("lib")
-                        .join(file_name),
+                        .join(if cfg!(windows) { "tsc.exe" } else { "tsc" }),
                 )?;
             }
             symlink_path(&source, &target.join(".bin").join(file_name))?;

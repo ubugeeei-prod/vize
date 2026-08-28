@@ -28,8 +28,7 @@ fn narrowing_with_baseline(
 
 /// Verbatim `tsgo --pretty false` output for a probe config declaring
 /// `baseUrl`, `target: ES5`, `moduleResolution: node`, `downlevelIteration` and
-/// an unknown option, captured from
-/// `@typescript/native-preview 7.0.0-dev.20260602.1`.
+/// an unknown option, captured from a native TypeScript 7 runtime.
 const PROBE_OUTPUT: &str = "\
 tsconfig.options.json(6,5): error TS5102: Option 'baseUrl' has been removed. Please remove it from your configuration.
   Use '\"paths\": {\"*\": [\"./*\"]}' instead.

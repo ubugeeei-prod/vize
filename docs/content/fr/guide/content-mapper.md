@@ -18,10 +18,10 @@ charge les content mappers lance `vize content-mapper` et vérifie directement l
 survol, aller à la définition, renommage, complétions et diagnostics sont tous reprojetés vers
 votre SFC d'origine, sans matérialiser de projet `.vue.ts` parallèle.
 
-> **⚠️ Aperçu :** Les Content Mappers sont fusionnés upstream mais pas encore présents dans une
-> version publiée de `@typescript/native-preview`. Tant qu'une version n'inclut pas le protocole,
-> compilez `tsgo` depuis la main de `typescript-go` et gardez [`vize check`](./cli.md#check) comme
-> chemin de vérification de types pris en charge.
+> **⚠️ Aperçu :** Les Content Mappers sont fusionnés upstream mais pas encore présents dans les
+> packages TypeScript 7 platform publiés. Tant qu'une version n'inclut pas le protocole, compilez
+> un binaire TypeScript natif avec Content Mapper depuis la main de `typescript-go` et gardez
+> [`vize check`](./cli.md#check) comme chemin de vérification de types pris en charge.
 
 ## Configuration
 

@@ -14,9 +14,10 @@ content-mapper support spawns `vize content-mapper` and checks `.vue` files dire
 go-to-definition, rename, completions, and diagnostics all map back to your authored SFC, with no
 parallel `.vue.ts` project to materialize.
 
-> **⚠️ Preview:** Content Mappers are merged upstream but not yet in a released
-> `@typescript/native-preview` build. Until a release ships the protocol, build `tsgo` from
-> `typescript-go` main and keep [`vize check`](./cli.md#check) as the supported typecheck path.
+> **⚠️ Preview:** Content Mappers are merged upstream but not yet in the released TypeScript 7
+> platform packages. Until a release ships the protocol, build a content-mapper-enabled native
+> TypeScript binary from `typescript-go` main and keep [`vize check`](./cli.md#check) as the
+> supported typecheck path.
 
 ## Setup
 

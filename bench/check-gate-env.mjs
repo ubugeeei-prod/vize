@@ -1,7 +1,8 @@
 /**
  * Environment resolution and corpus preparation for the `vize check`
- * benchmark gate. Binary resolution fails closed: a missing vize or tsgo is
- * an explicit error, and an explicit pin never falls back to another binary.
+ * benchmark gate. Binary resolution fails closed: a missing vize or native
+ * TypeScript runtime is an explicit error, and an explicit pin never falls
+ * back to another binary.
  */
 
 import { createRequire } from "node:module";

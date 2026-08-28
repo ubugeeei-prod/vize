@@ -174,7 +174,7 @@ jobs:
         if: ${{ !cancelled() }}
         continue-on-error: true
         env:
-          CORSA_PATH: ${{ github.workspace }}/node_modules/.bin/tsgo
+          CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
           REAL_PROJECT_LSP_TIMEOUT_MS: "600000"
           VIZE_LSP_BIN: target/ci/vize
         run: |

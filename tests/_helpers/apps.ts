@@ -2063,14 +2063,17 @@ export const VIZE_BIN =
     ? VIZE_BIN_OVERRIDE
     : (VIZE_BIN_FALLBACKS.find((candidate) => fs.existsSync(candidate)) ?? VIZE_RELEASE_BIN);
 const CORSA_PRIMARY_BIN = path.resolve(TESTS_DIR, "../node_modules/.bin/corsa");
+const CORSA_TYPESCRIPT_BIN = path.resolve(
+  TESTS_DIR,
+  `../node_modules/@typescript/typescript-${process.platform}-${process.arch}/lib/tsc${BIN_EXT}`,
+);
 const CORSA_LEGACY_BIN = path.resolve(TESTS_DIR, "../node_modules/.bin/tsgo");
 const CORSA_BIN_OVERRIDE = process.env.CORSA_BIN;
+const CORSA_BIN_FALLBACKS = [CORSA_PRIMARY_BIN, CORSA_TYPESCRIPT_BIN, CORSA_LEGACY_BIN];
 export const CORSA_BIN =
   CORSA_BIN_OVERRIDE && CORSA_BIN_OVERRIDE.length > 0
     ? CORSA_BIN_OVERRIDE
-    : fs.existsSync(CORSA_PRIMARY_BIN)
-      ? CORSA_PRIMARY_BIN
-      : CORSA_LEGACY_BIN;
+    : (CORSA_BIN_FALLBACKS.find((candidate) => fs.existsSync(candidate)) ?? CORSA_TYPESCRIPT_BIN);
 
 export function requireVizeBin(): void {
   requireFile(VIZE_BIN, "vize CLI", "Build it with `cargo build --profile ci -p vize`.");
@@ -2078,11 +2081,7 @@ export function requireVizeBin(): void {
 
 export function requireVizeAndCorsaBins(): void {
   requireVizeBin();
-  requireFile(
-    CORSA_BIN,
-    "Corsa/tsgo",
-    "Install JS dependencies with `vp install` so node_modules/.bin/corsa is available.",
-  );
+  requireFile(CORSA_BIN, "TypeScript 7/Corsa", "Install JS dependencies with `vp install`.");
 }
 
 function requireFile(filePath: string, label: string, hint: string): void {

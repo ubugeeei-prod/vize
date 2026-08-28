@@ -6,7 +6,10 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { typecheckDependencySkip } from "./support/typecheck-dependency.ts";
+import {
+  resolveTypecheckRuntime,
+  typecheckDependencySkip,
+} from "./support/typecheck-dependency.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -38,22 +41,12 @@ const NONEXISTENT_CORSA = "/nonexistent";
 
 /**
  * Resolves a real type-checker binary for the one case that genuinely runs
- * corsa. The spec calls for node_modules/.bin/{corsa,tsgo}; tsgo is the
- * committed dev dependency. Returns null when none is runnable so the case can
- * skip rather than fail in a checker-less environment.
+ * corsa. The default runtime is the TypeScript 7 platform package, while
+ * legacy tsgo/corsa paths remain fallbacks. Returns null when none is runnable
+ * so the case can skip rather than fail in a checker-less environment.
  */
 function resolveCheckerPath(): string | null {
-  const candidates = [
-    path.join(root, "node_modules/.bin/corsa"),
-    path.join(root, "node_modules/.bin/tsgo"),
-  ];
-  for (const candidate of candidates) {
-    const probe = spawnSync(candidate, ["--version"], { cwd: root, encoding: "utf8" });
-    if (!probe.error && probe.status === 0) {
-      return candidate;
-    }
-  }
-  return null;
+  return resolveTypecheckRuntime(root) ?? null;
 }
 
 type CheckResult = { status: number | null; stdout: string; stderr: string };
@@ -152,8 +145,8 @@ test("unsupported file extensions (.js) collect nothing", () => {
 const checkerPath = resolveCheckerPath();
 const checkerSkip = typecheckDependencySkip(
   checkerPath,
-  "a runnable corsa/tsgo binary for the CLI collection gate",
-  "no runnable corsa/tsgo found",
+  "a runnable TypeScript 7/Corsa runtime for the CLI collection gate",
+  "no runnable TypeScript 7/Corsa runtime found",
 );
 test(
   "tsconfig-driven default collection honors include/exclude through the CLI",

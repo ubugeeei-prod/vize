@@ -10,7 +10,7 @@ use corsa::{
 };
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
-use vize_carton::{String, cstr};
+use vize_carton::{String, corsa_resolver::platform_suffix, cstr};
 mod camel_case_component_props;
 mod emit_object_recursion;
 mod generic_component_listener_payload;
@@ -2185,9 +2185,9 @@ fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
             &source,
             &target
                 .join("@typescript")
-                .join("native-preview")
+                .join(&*cstr!("typescript-{}", platform_suffix()))
                 .join("lib")
-                .join(file_name),
+                .join(if cfg!(windows) { "tsc.exe" } else { "tsc" }),
         )?;
         symlink_path(&source, &target.join(".bin").join(file_name))?;
     }

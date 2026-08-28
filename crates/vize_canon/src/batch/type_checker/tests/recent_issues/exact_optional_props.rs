@@ -74,7 +74,7 @@ fn diagnostics_of(
 /// vize reports the same defect at the same place with a different **code**:
 /// `TS2345`, not `TS2379`. That is a compiler-version difference, not a mapping
 /// one — `tsc 6.0.3` (which `vue-tsc` pins) answers `TS2379` and the
-/// `@typescript/native-preview` build vize runs answers `TS2345` for identical
+/// native TypeScript 7 runtime vize runs answers `TS2345` for identical
 /// code against an identical target, across every target shape tried including
 /// `vue-tsc`'s own. The assertion is therefore on the position and the defect,
 /// not on the code the runtime chose.

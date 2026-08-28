@@ -83,17 +83,16 @@
   },
   "scripts": {
     "build": "vp pack && node scripts/check-size.mjs",
-    "check": "vp check README.md package.json tsconfig.json src scripts vite.config.ts && tsgo --noEmit -p tsconfig.json",
+    "check": "vp check README.md package.json tsconfig.json src scripts vite.config.ts && tsc --noEmit -p tsconfig.json",
     "check:fix": "vp check --fix README.md package.json tsconfig.json src scripts vite.config.ts",
     "check:size": "node scripts/check-size.mjs",
-    "check:types": "tsgo --noEmit -p tsconfig.json",
+    "check:types": "tsc --noEmit -p tsconfig.json",
     "dev": "vp pack --watch",
     "fmt": "vp fmt --write README.md package.json tsconfig.json src scripts vite.config.ts",
     "test": "vp exec tsx --test src/**/*.test.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:typescript",
-    "@typescript/native-preview": "catalog:typescript",
     "tsx": "catalog:typescript",
     "typescript": "catalog:typescript",
     "vite-plus": "catalog:vite-stack"

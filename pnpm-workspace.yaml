@@ -110,7 +110,6 @@ catalogs:
   # TypeScript toolchain shared across workspace packages.
   typescript:
     "@types/node": "25.9.2"
-    "@typescript/native-preview": "7.0.0-dev.20260603.1"
     tsx: "4.23.12"
     typescript: "6.0.3"
     vue-tsc: "3.3.4"

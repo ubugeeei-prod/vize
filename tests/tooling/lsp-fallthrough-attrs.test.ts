@@ -7,7 +7,10 @@ import { isDiagnosticsForUri } from "./support/lsp/assertions.ts";
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import type { LspDiagnostic, PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
-import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
+import {
+  requireTypecheckDependency,
+  resolveTypecheckRuntime,
+} from "./support/typecheck-dependency.ts";
 
 test("vize lsp anchors fallthrough attribute diagnostics on the authored template root", async () => {
   const testRootDir = path.join(testOutputRoot, "lsp-fallthrough-template-range");
@@ -85,8 +88,8 @@ test("vize lsp publishes and clears fallthrough attribute diagnostics", async (t
   const corsaPath = requireTypecheckDependency(
     t,
     resolveTsgoBinary(),
-    "tsgo binary for the fallthrough-attribute LSP gate",
-    "tsgo binary not found; skipping LSP typecheck test",
+    "TypeScript 7/Corsa runtime for the fallthrough-attribute LSP gate",
+    "TypeScript 7/Corsa runtime not found; skipping LSP typecheck test",
   );
   if (corsaPath == null) return;
 
@@ -203,12 +206,7 @@ function hasUnknownAttrDiagnostic(params: PublishDiagnosticsParams): boolean {
 }
 
 function resolveTsgoBinary(): string | undefined {
-  const candidates = [
-    path.join(root, "../corsa-bind/.cache/tsgo"),
-    path.join(root, "node_modules/.bin/tsgo"),
-    path.join(root, "tests/node_modules/.bin/tsgo"),
-  ];
-  return candidates.find((candidate) => fs.existsSync(candidate));
+  return resolveTypecheckRuntime(root);
 }
 
 function resolveVuePackage(): string | undefined {

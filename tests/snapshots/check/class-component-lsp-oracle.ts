@@ -232,7 +232,7 @@ function isLegacyDecoratorNoise(
 
 /**
  * Copies the checked-in fixture into a disposable workspace so the oracle can
- * point `typeChecker.corsaPath` at the hydrated tsgo binary without mutating
+ * point `typeChecker.corsaPath` at the hydrated TypeScript 7/Corsa runtime without mutating
  * the fixture. Runtime packages are symlinked from tests/node_modules, where
  * tests/package.json pins the same versions the fixture declares.
  */

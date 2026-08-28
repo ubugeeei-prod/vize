@@ -12,14 +12,17 @@ import {
   validateProjectionMatrix,
   type ProjectionFixture,
 } from "./support/davinci-ts40-projection.ts";
-import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
+import {
+  requireTypecheckDependency,
+  resolveTypecheckRuntime,
+} from "./support/typecheck-dependency.ts";
 
 test("vize lsp republishes TS-40 local-import prop diagnostics after child edits", async (t) => {
   const corsaPath = requireTypecheckDependency(
     t,
     resolveTsgoBinary(),
-    "tsgo binary for the TS-40 LSP projection gate",
-    "tsgo binary not found; skipping TS-40 LSP projection diagnostic test",
+    "TypeScript 7/Corsa runtime for the TS-40 LSP projection gate",
+    "TypeScript 7/Corsa runtime not found; skipping TS-40 LSP projection diagnostic test",
   );
   if (corsaPath == null) return;
 
@@ -208,13 +211,7 @@ function writeProjectConfig(workspaceDir: string, corsaPath: string): void {
 }
 
 function resolveTsgoBinary(): string | undefined {
-  const candidates = [
-    process.env.CORSA_BIN,
-    path.join(root, "../corsa-bind/.cache/tsgo"),
-    path.join(root, "node_modules/.bin/tsgo"),
-    path.join(root, "tests/node_modules/.bin/tsgo"),
-  ].filter((candidate): candidate is string => candidate != null && candidate.length > 0);
-  return candidates.find((candidate) => fs.existsSync(candidate));
+  return resolveTypecheckRuntime(root);
 }
 
 function linkVuePackage(workspaceDir: string): void {

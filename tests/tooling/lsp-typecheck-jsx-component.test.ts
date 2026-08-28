@@ -7,14 +7,17 @@ import { isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import type { PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
-import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
+import {
+  requireTypecheckDependency,
+  resolveTypecheckRuntime,
+} from "./support/typecheck-dependency.ts";
 
 test("vize lsp enforces and repairs imported SFC props in TSX and checkJs JSX", async (t) => {
   const corsaPath = requireTypecheckDependency(
     t,
     resolveTsgoBinary(),
-    "tsgo binary for the TSX component LSP gate",
-    "tsgo binary not found; skipping TSX component LSP test",
+    "TypeScript 7/Corsa runtime for the TSX component LSP gate",
+    "TypeScript 7/Corsa runtime not found; skipping TSX component LSP test",
   );
   if (corsaPath == null) return;
 
@@ -242,13 +245,7 @@ export const view = <Counter count="wrong" />;
 });
 
 function resolveTsgoBinary(): string | undefined {
-  const candidates = [
-    process.env.CORSA_BIN,
-    path.join(root, "../corsa-bind/.cache/tsgo"),
-    path.join(root, "node_modules/.bin/tsgo"),
-    path.join(root, "tests/node_modules/.bin/tsgo"),
-  ].filter((candidate): candidate is string => candidate != null && candidate.length > 0);
-  return candidates.find((candidate) => fs.existsSync(candidate));
+  return resolveTypecheckRuntime(root);
 }
 
 function assertNoIntrinsicElementDiagnostic(publish: PublishDiagnosticsParams): void {

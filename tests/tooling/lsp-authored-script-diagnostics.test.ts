@@ -7,14 +7,17 @@ import { isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import type { PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
-import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
+import {
+  requireTypecheckDependency,
+  resolveTypecheckRuntime,
+} from "./support/typecheck-dependency.ts";
 
 test("vize lsp publishes authored script setup diagnostics without template usage", async (t) => {
   const corsaPath = requireTypecheckDependency(
     t,
     resolveTsgoBinary(),
-    "tsgo binary for authored script diagnostics",
-    "tsgo binary not found; skipping LSP typecheck test",
+    "TypeScript 7/Corsa runtime for authored script diagnostics",
+    "TypeScript 7/Corsa runtime not found; skipping LSP typecheck test",
   );
   if (corsaPath == null) return;
 
@@ -124,13 +127,7 @@ const a: string = 1
 });
 
 function resolveTsgoBinary(): string | undefined {
-  const candidates = [
-    process.env.CORSA_BIN,
-    path.join(root, "../corsa-bind/.cache/tsgo"),
-    path.join(root, "node_modules/.bin/tsgo"),
-    path.join(root, "tests/node_modules/.bin/tsgo"),
-  ].filter((candidate): candidate is string => candidate != null && candidate.length > 0);
-  return candidates.find((candidate) => fs.existsSync(candidate));
+  return resolveTypecheckRuntime(root);
 }
 
 function resolveVuePackage(): string | undefined {

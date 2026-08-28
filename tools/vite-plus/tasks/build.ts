@@ -95,7 +95,7 @@ export const buildTasks = defineTasks({
   ),
   "package:editor-extensions": noCacheTask(
     `${runInVscodeExtension(
-      "pnpm exec tsgo --noEmit",
+      "pnpm exec tsc --noEmit",
       "pnpm exec vp check src vite.config.ts",
       packageVscodeExtension,
       "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",

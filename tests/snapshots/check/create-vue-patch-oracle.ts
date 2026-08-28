@@ -513,14 +513,26 @@ function resolveVizeCommand(): string[] {
 }
 
 function resolveTsgoBinary(): string {
+  const binExt = process.platform === "win32" ? ".exe" : "";
   const candidates = [
     process.env.VIZE_TEST_TSGO,
+    process.env.CORSA_BIN,
+    process.env.CORSA_PATH,
+    process.env.TSGO_PATH,
+    path.join(
+      repoRoot,
+      "node_modules",
+      "@typescript",
+      `typescript-${process.platform}-${process.arch}`,
+      "lib",
+      `tsc${binExt}`,
+    ),
     path.join(repoRoot, "../corsa-bind/.cache/tsgo"),
     path.join(repoRoot, "node_modules/.bin/tsgo"),
     path.join(repoRoot, "tests/node_modules/.bin/tsgo"),
   ].filter((candidate): candidate is string => Boolean(candidate));
   const binary = candidates.find((candidate) => fs.existsSync(candidate));
-  assert.ok(binary, "tsgo binary is required for real-world patch oracles");
+  assert.ok(binary, "TypeScript 7/Corsa runtime is required for real-world patch oracles");
   return binary;
 }
 

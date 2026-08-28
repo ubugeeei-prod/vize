@@ -1,4 +1,4 @@
-//! Unified Corsa/tsgo executable discovery.
+//! Unified Corsa/native TypeScript executable discovery.
 //!
 //! Historically three independent resolvers existed (canon's LSP client, canon's
 //! batch executor, and patina's type-aware linter session) and they could pick

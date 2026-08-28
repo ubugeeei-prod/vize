@@ -6,7 +6,10 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { typecheckDependencySkip } from "./support/typecheck-dependency.ts";
+import {
+  resolveTypecheckRuntime,
+  typecheckDependencySkip,
+} from "./support/typecheck-dependency.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -40,16 +43,7 @@ const VIZE = resolveVizeCommand();
  * than fail, mirroring production-readiness.test.ts.
  */
 function resolveCheckerPath(): string | null {
-  const candidates = [
-    path.join(root, "node_modules/.bin/corsa"),
-    path.join(root, "node_modules/.bin/tsgo"),
-  ];
-  for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) {
-      return candidate;
-    }
-  }
-  return null;
+  return resolveTypecheckRuntime(root) ?? null;
 }
 
 const CHECKER = resolveCheckerPath();
@@ -106,8 +100,8 @@ function stripAnsi(input: string): string {
 const corsaSkip = {
   skip: typecheckDependencySkip(
     CHECKER,
-    "a corsa/tsgo checker for the CLI diagnostics gates",
-    "no corsa/tsgo checker in node_modules/.bin",
+    "a TypeScript 7/Corsa runtime for the CLI diagnostics gates",
+    "no TypeScript 7/Corsa runtime discoverable",
   ),
 };
 

@@ -7,14 +7,17 @@ import { hoverToText, isDiagnosticsForUri, offsetToPosition } from "./support/ls
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import type { PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
-import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
+import {
+  requireTypecheckDependency,
+  resolveTypecheckRuntime,
+} from "./support/typecheck-dependency.ts";
 
 test("vize lsp typecheck keeps DOM libs and template diagnostics", async (t) => {
   const corsaPath = requireTypecheckDependency(
     t,
     resolveTsgoBinary(),
-    "tsgo binary for the LSP typecheck gate",
-    "tsgo binary not found; skipping LSP typecheck test",
+    "TypeScript 7/Corsa runtime for the LSP typecheck gate",
+    "TypeScript 7/Corsa runtime not found; skipping LSP typecheck test",
   );
   if (corsaPath == null) return;
 
@@ -133,8 +136,8 @@ test("vize lsp publishes and clears exact parent diagnostics after child prop ed
   const corsaPath = requireTypecheckDependency(
     t,
     resolveTsgoBinary(),
-    "tsgo binary for the dependent-component LSP gate",
-    "tsgo binary not found; skipping LSP typecheck test",
+    "TypeScript 7/Corsa runtime for the dependent-component LSP gate",
+    "TypeScript 7/Corsa runtime not found; skipping LSP typecheck test",
   );
   if (corsaPath == null) return;
 
@@ -273,13 +276,7 @@ import Child from './Child.vue'
 });
 
 function resolveTsgoBinary(): string | undefined {
-  const candidates = [
-    process.env.CORSA_BIN,
-    path.join(root, "../corsa-bind/.cache/tsgo"),
-    path.join(root, "node_modules/.bin/tsgo"),
-    path.join(root, "tests/node_modules/.bin/tsgo"),
-  ].filter((candidate): candidate is string => candidate != null && candidate.length > 0);
-  return candidates.find((candidate) => fs.existsSync(candidate));
+  return resolveTypecheckRuntime(root);
 }
 
 function resolveVuePackage(): string | undefined {

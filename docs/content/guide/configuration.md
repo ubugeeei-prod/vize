@@ -396,15 +396,15 @@ the Nuxt 2 template globals) is a separate `legacy`-build opt-in.
 `typeChecker.tsconfig` and `typeChecker.corsaPath` are part of the shared schema, but the
 project-backed Corsa path is the Rust CLI surface today. `corsaPath` is shared by `vize check`,
 type-aware `vize lint`, and `vize lsp` (`typeChecker.tsgoPath` is a deprecated alias); the runtime
-stack is `@typescript/native-preview`, the Corsa/corsa-bind API layer, and the installed `tsgo`
-executable. Keep ambient declarations, generated auto-import files, path aliases, and Vue
+stack is the TypeScript 7 native platform package (`typescript` / `@typescript/typescript-*`) plus
+the Corsa/corsa-bind API layer. Leave `corsaPath` unset unless you need to point Vize at a specific
+installed `lib/tsc` executable. Keep ambient declarations, generated auto-import files, path aliases, and Vue
 `ComponentCustomProperties` declarations in your project `tsconfig.json`, and use a package script
 such as `vize:check:app` for `--tsconfig` or `--corsa-path` overrides.
 
 ```json
 {
   "typeChecker": {
-    "corsaPath": "./node_modules/.bin/tsgo",
     "servers": 1
   }
 }

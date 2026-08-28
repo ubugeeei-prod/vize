@@ -248,7 +248,12 @@ mod tests {
         process::Command,
     };
 
-    use vize_carton::{String, append, config::VueVersion, cstr};
+    use vize_carton::{
+        String, append,
+        config::VueVersion,
+        corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable},
+        cstr,
+    };
 
     use super::vue_type_helpers;
 
@@ -332,11 +337,10 @@ for (const [answer, i] of __vForList(questionFormat.questionField)) {
         let root = Path::new(env!("CARGO_MANIFEST_DIR"))
             .parent()
             .and_then(Path::parent)?;
-        [
-            root.join("node_modules/.bin/tsgo"),
-            root.join("examples/vite-musea/node_modules/.bin/tsgo"),
-        ]
-        .into_iter()
-        .find(|candidate| candidate.exists())
+        resolve_corsa_executable(CorsaResolveRequest {
+            explicit_path: None,
+            project_root: Some(root),
+        })
+        .ok()
     }
 }

@@ -7,7 +7,10 @@ import { isDiagnosticsForUri } from "./support/lsp/assertions.ts";
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import type { PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
-import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
+import {
+  requireTypecheckDependency,
+  resolveTypecheckRuntime,
+} from "./support/typecheck-dependency.ts";
 
 type WorkspaceEdit = {
   changes?: Record<string, Array<{ newText: string }>>;
@@ -21,8 +24,8 @@ test("vize lsp revalidates a TSX SFC import across create, edit, rename, and del
   const corsaPath = requireTypecheckDependency(
     t,
     resolveTsgoBinary(),
-    "tsgo binary for the TSX SFC lifecycle gate",
-    "tsgo binary not found; skipping TSX SFC lifecycle test",
+    "TypeScript 7/Corsa runtime for the TSX SFC lifecycle gate",
+    "TypeScript 7/Corsa runtime not found; skipping TSX SFC lifecycle test",
   );
   if (corsaPath == null) return;
 
@@ -161,11 +164,7 @@ function editTextsForUri(edit: WorkspaceEdit, uri: string): string[] {
 }
 
 function resolveTsgoBinary(): string | undefined {
-  return [
-    path.join(root, "../corsa-bind/.cache/tsgo"),
-    path.join(root, "node_modules/.bin/tsgo"),
-    path.join(root, "tests/node_modules/.bin/tsgo"),
-  ].find((candidate) => fs.existsSync(candidate));
+  return resolveTypecheckRuntime(root);
 }
 
 function writeProjectConfig(workspaceDir: string, corsaPath: string): void {

@@ -125,6 +125,7 @@ test("TypeScript Vue plugin filters existing .vue import diagnostics without pat
   });
   try {
     const host = createHost(path.dirname(path.dirname(project.mainTs)), project.mainTs);
+    Object.preventExtensions(host);
     const service = ts.createLanguageService(host);
     const plugin = initVuePlugin({ typescript: ts });
     const wrapped = plugin.create({
@@ -214,6 +215,7 @@ test("TypeScript Vue plugin leaves host resolver calls untouched", () => {
   });
   try {
     const host = createHost(path.dirname(path.dirname(project.mainTs)), project.mainTs);
+    Object.preventExtensions(host);
     const service = ts.createLanguageService(host);
     const plugin = initVuePlugin({ typescript: ts });
 

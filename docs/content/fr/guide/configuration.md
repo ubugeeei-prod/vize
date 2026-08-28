@@ -401,15 +401,15 @@ les globals de modèles Nuxt 2) est un op-in séparé `legacy`-build.
 `typeChecker.tsconfig` et `typeChecker.corsaPath` font partie du schéma partagé, mais le chemin Corsa
 soutenu par le projet est aujourd’hui la surface Rust CLI. `corsaPath` est partagé par `vize check`,
 `vize lint`sensibles au type , et `vize lsp` (`typeChecker.tsgoPath` est un alias obsolète) ; la pile
-à l’exécution est `@typescript/native-preview`, la couche API Corsa/corsa-bind, et l’exécutable `tsgo`
-installé. Gardez les déclarations d’ambiance, les fichiers d’auto-importation générés, les alias de chemin et les déclarations Vue
+à l’exécution est le package de plateforme native TypeScript 7 (`typescript` / `@typescript/typescript-*`)
+avec la couche API Corsa/corsa-bind. Laissez `corsaPath` non défini sauf si vous devez pointer Vize
+vers un exécutable `lib/tsc` installé précis. Gardez les déclarations d’ambiance, les fichiers d’auto-importation générés, les alias de chemin et les déclarations Vue
 `ComponentCustomProperties` dans votre `tsconfig.json`de projet, et utilisez un script de paquet
 comme `vize:check:app` pour `--tsconfig` ou `--corsa-path` overrides.
 
 ```json
 {
   "typeChecker": {
-    "corsaPath": "./node_modules/.bin/tsgo",
     "servers": 1
   }
 }

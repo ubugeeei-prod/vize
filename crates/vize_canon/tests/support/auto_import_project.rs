@@ -102,7 +102,7 @@ pub fn corsa_available() -> bool {
     let available = discover_corsa();
     assert!(
         available || std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_none(),
-        "VIZE_TEST_REQUIRE_TSGO is set, but no tsgo executable was found"
+        "VIZE_TEST_REQUIRE_TSGO is set, but no TypeScript 7/Corsa executable was found"
     );
     available
 }

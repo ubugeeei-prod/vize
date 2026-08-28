@@ -140,14 +140,23 @@ export function resolveVizeBin(repoRoot: string): string {
   return candidates.find((candidate) => fs.existsSync(candidate)) ?? candidates[1]!;
 }
 
-/** Resolve the Corsa runtime, preferring `corsa` and falling back to `tsgo`. */
+/** Resolve the native TypeScript runtime, preferring stable TypeScript 7. */
 export function resolveCorsaBin(repoRoot: string): string {
   const override = process.env.CORSA_BIN;
   if (override != null && override.length > 0) {
     return override;
   }
   const primary = path.join(repoRoot, "node_modules", ".bin", "corsa");
-  return fs.existsSync(primary) ? primary : path.join(repoRoot, "node_modules", ".bin", "tsgo");
+  const stable = path.join(
+    repoRoot,
+    "node_modules",
+    "@typescript",
+    `typescript-${process.platform}-${process.arch}`,
+    "lib",
+    `tsc${BIN_EXT}`,
+  );
+  const legacy = path.join(repoRoot, "node_modules", ".bin", "tsgo");
+  return [primary, stable, legacy].find((candidate) => fs.existsSync(candidate)) ?? stable;
 }
 
 /** Build the `vize check` argv for one target. */

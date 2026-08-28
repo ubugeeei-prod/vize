@@ -3,8 +3,8 @@
 // `vize lsp` process (#3457). The VS Code extension host and the headless
 // Neovim scenario both need the exact same workspace: the `real-vue` fixture,
 // a `node_modules/vue` symlink so the type checker sees real Vue types, and a
-// `vize.config.json` that pins the Corsa/tsgo executable instead of relying on
-// ambient discovery.
+// `vize.config.json` that pins the native TypeScript executable instead of
+// relying on ambient discovery.
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -92,44 +92,37 @@ export function resolveRealServerPath() {
 }
 
 /**
- * Pin the Corsa/tsgo executable that ships with the VS Code extension's own
- * `@typescript/native-preview` install so `vize.config.json` never depends on
- * ambient discovery. Resolution mirrors Node: read the meta package, then
- * resolve the platform package from the meta package's real location.
+ * Pin the native TypeScript executable that ships with the VS Code extension's
+ * own TypeScript 7 platform package so `vize.config.json` never depends on
+ * ambient discovery.
  */
 export function resolveCorsaPath() {
   const extensionRequire = createRequire(path.join(vscodeExtensionPath, "package.json"));
-  const metaManifestPath = fs.realpathSync(
-    extensionRequire.resolve("@typescript/native-preview/package.json"),
-  );
-  const metaRequire = createRequire(metaManifestPath);
-  const basePackage = `@typescript/native-preview-${process.platform}-${process.arch}`;
-  // The platform packages are optional dependencies gated on os/cpu/libc, so a
-  // host only ever has one of them installed. On Linux that is either the
-  // glibc or the musl build; probe both instead of assuming glibc.
-  const platformPackages =
-    process.platform === "linux" ? [basePackage, `${basePackage}-musl`] : [basePackage];
+  const platformPackages = [`@typescript/typescript-${process.platform}-${process.arch}`];
   const attempted = [];
 
   for (const platformPackage of platformPackages) {
-    const platformManifestPath = resolveOptional(metaRequire, `${platformPackage}/package.json`);
+    const platformManifestPath = resolveOptional(
+      extensionRequire,
+      `${platformPackage}/package.json`,
+    );
     if (platformManifestPath === undefined) {
       attempted.push(`${platformPackage} (not installed)`);
       continue;
     }
 
-    const tsgoPath = path.join(
+    const tscPath = path.join(
       path.dirname(platformManifestPath),
       "lib",
-      process.platform === "win32" ? "tsgo.exe" : "tsgo",
+      process.platform === "win32" ? "tsc.exe" : "tsc",
     );
-    if (fs.existsSync(tsgoPath)) {
-      return tsgoPath;
+    if (fs.existsSync(tscPath)) {
+      return tscPath;
     }
-    attempted.push(tsgoPath);
+    attempted.push(tscPath);
   }
 
-  throw new Error(`missing tsgo binary (checked ${attempted.join(", ")})`);
+  throw new Error(`missing TypeScript 7 runtime (checked ${attempted.join(", ")})`);
 }
 
 /** `require.resolve` that reports a missing package as `undefined`. */

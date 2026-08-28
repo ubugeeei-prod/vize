@@ -18,9 +18,9 @@ Vize は `vize` npm パッケージの中に準拠した Content Mapper を同�
 `.vue.ts` プロジェクトを生成する必要はありません。
 
 > **⚠️ プレビュー:** Content Mapper は upstream にマージ済みですが、リリース済みの
-> `@typescript/native-preview` ビルドにはまだ含まれていません。プロトコルを含むリリースが
-> 出るまでは、`typescript-go` の main から `tsgo` をビルドし、サポートされる型チェック手段
-> としては [`vize check`](./cli.md#check) を使い続けてください。
+> TypeScript 7 platform package にはまだ含まれていません。プロトコルを含むリリースが出るまでは、
+> `typescript-go` の main から Content Mapper 対応の native TypeScript バイナリをビルドし、
+> サポートされる型チェック手段としては [`vize check`](./cli.md#check) を使い続けてください。
 
 ## セットアップ
 
