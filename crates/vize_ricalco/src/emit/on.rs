@@ -1,5 +1,5 @@
 //! Static-name `ui.on` (`@click` / `v-on:click`), dynamic-name `ui.on`
-//! (`@[event]`), including static-name event / key / option modifiers
+//! (`@[event]`), including event / key / option modifiers
 //! (`withModifiers` / `withKeys`, `onClickOnce`, …).
 //! Object `v-on` lives in [`super::merge`].
 
@@ -13,15 +13,10 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 
-// A reviewed inventory of 179 natural modified `v-on` attributes currently
-// uses up to two entries in each of the three classifier buckets. The checked
-// inventory in `tests/tooling/davinci-v-on-storage.test.ts` selects this inline
-// capacity; it is not a syntax limit. Authored directives remain unbounded and
-// spill without changing order or output. On 64-bit targets this trades 48
-// bytes of transient stack space (`Classified`: 120 rather than three 24-byte
-// `Vec`s) for inline storage. The `ricalco_emit_von_two_per_bucket` allocation
-// budget in `davinci-road/plan/budgets.toml`, measured by
-// `crates/vize_ricalco/benches/davinci_storage.rs`, owns the allocation proof.
+// The checked modifier inventory in `tests/tooling/davinci-v-on-storage.test.ts`
+// selects two inline entries per classifier bucket. Authored directives remain
+// unbounded and spill without changing order or output; the allocation budget in
+// `davinci-road/plan/budgets.toml` owns the measured proof.
 const OPTION_INLINE_CAP: usize = 2;
 const EVENT_INLINE_CAP: usize = 2;
 const KEY_INLINE_CAP: usize = 2;
@@ -30,7 +25,7 @@ type OptionModifiers<'a> = SmallVec<[&'a str; OPTION_INLINE_CAP]>;
 type EventModifiers<'a> = SmallVec<[&'a str; EVENT_INLINE_CAP]>;
 type KeyModifiers<'a> = SmallVec<[&'a str; KEY_INLINE_CAP]>;
 
-struct Classified<'a> {
+pub(super) struct Classified<'a> {
     options: OptionModifiers<'a>,
     event: EventModifiers<'a>,
     keys: KeyModifiers<'a>,
@@ -119,7 +114,7 @@ pub(super) fn needs_hydration(key: &str, on: &OnOp<'_>) -> bool {
 
 pub(super) fn forces_inline_on(on: &OnOp<'_>) -> bool {
     if super::on_dynamic::is_dynamic_on_name(on) {
-        return false;
+        return super::on_dynamic::forces_inline(on);
     }
     classify(on).is_ok_and(|classified| {
         has_native_modifier(on) || !classified.event.is_empty() || !classified.keys.is_empty()
@@ -155,7 +150,7 @@ pub(super) fn emit_on_value(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), Em
     emit_wrapped_handler(cx, on, &classified)
 }
 
-fn emit_wrapped_handler(
+pub(super) fn emit_wrapped_handler(
     cx: &mut EmitCx<'_>,
     on: &OnOp<'_>,
     classified: &Classified<'_>,
@@ -227,11 +222,28 @@ fn classify<'a>(on: &'a OnOp<'a>) -> Result<Classified<'a>, EmitError> {
     Ok(classify_modifiers(name, on.modifiers.iter().copied()))
 }
 
+pub(super) fn classify_dynamic_modifiers<'a>(
+    modifiers: impl IntoIterator<Item = &'a str>,
+) -> Classified<'a> {
+    classify_modifier_buckets(false, false, modifiers)
+}
+
 fn classify_modifiers<'a>(
     name: &str,
     modifiers: impl IntoIterator<Item = &'a str>,
 ) -> Classified<'a> {
-    let keyboard = matches!(name, "keydown" | "keyup" | "keypress");
+    classify_modifier_buckets(
+        matches!(name, "keydown" | "keyup" | "keypress"),
+        true,
+        modifiers,
+    )
+}
+
+fn classify_modifier_buckets<'a>(
+    keyboard: bool,
+    keep_options: bool,
+    modifiers: impl IntoIterator<Item = &'a str>,
+) -> Classified<'a> {
     let mut options = OptionModifiers::new();
     let mut event = EventModifiers::new();
     let mut keys = KeyModifiers::new();
@@ -241,7 +253,8 @@ fn classify_modifiers<'a>(
             // lane before handler wrapping, and does not affect the event
             // key. Keep the authored modifier accepted but inert here.
             "native" => {}
-            "capture" | "once" | "passive" => options.push(modifier),
+            "capture" | "once" | "passive" if keep_options => options.push(modifier),
+            "capture" | "once" | "passive" => {}
             "left" | "right" if keyboard => keys.push(modifier),
             "stop" | "prevent" | "self" | "ctrl" | "shift" | "alt" | "meta" | "middle"
             | "exact" | "left" | "right" => event.push(modifier),

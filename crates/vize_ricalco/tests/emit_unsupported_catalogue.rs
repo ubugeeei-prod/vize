@@ -16,7 +16,6 @@ const SOURCE: &[Reason] = &[
     Reason::CustomDirectiveExprNotJs,
     Reason::DuplicateClassBinding,
     Reason::DuplicateStyleBinding,
-    Reason::DynamicOnHasModifiers,
     Reason::ForSourceNotJs,
     Reason::IfConditionNotJs,
     Reason::ModelArgumentNotJs,
@@ -58,7 +57,10 @@ const GUARD_ONLY: &[Reason] = &[
     Reason::WalkIdOverflow,
 ];
 
-const RETIRED: &[Reason] = &[Reason::CreateSlotsMissingSlotTemplate];
+const RETIRED: &[Reason] = &[
+    Reason::CreateSlotsMissingSlotTemplate,
+    Reason::DynamicOnHasModifiers,
+];
 
 #[test]
 fn reason_catalogue_is_fully_accounted_for() {

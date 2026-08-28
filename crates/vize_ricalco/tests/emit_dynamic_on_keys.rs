@@ -1,4 +1,4 @@
-//! Modifier-free dynamic-name `ui.on` emit pins (`@[event]`).
+//! Dynamic-name `ui.on` emit pins (`@[event]`).
 
 #![allow(
     clippy::disallowed_macros,
@@ -83,10 +83,45 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn a_dynamic_event_name_with_modifiers_is_unsupported_this_installment() {
+fn a_dynamic_event_name_with_event_modifiers_wraps_with_modifiers() {
     assert_eq!(
-        refused(r#"<button @[event].stop="handler"></button>"#).reason(),
-        Some(Reason::DynamicOnHasModifiers)
+        assembled(r#"<button @[event].stop.prevent="handler"></button>"#),
+        "\
+const { withModifiers: _withModifiers, toHandlerKey: _toHandlerKey, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"button\", {
+    [_toHandlerKey(_ctx.event)]: _withModifiers(handler, [\"stop\",\"prevent\"])
+  }, null, 16 /* FULL_PROPS */))
+}"
+    );
+}
+
+#[test]
+fn a_dynamic_event_name_with_key_modifiers_nests_keys_outside_modifiers() {
+    assert_eq!(
+        assembled(r#"<button @[event].enter.stop="handler"></button>"#),
+        "\
+const { withKeys: _withKeys, withModifiers: _withModifiers, toHandlerKey: _toHandlerKey, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"button\", {
+    [_toHandlerKey(_ctx.event)]: _withKeys(_withModifiers(handler, [\"stop\"]), [\"enter\"])
+  }, null, 16 /* FULL_PROPS */))
+}"
+    );
+}
+
+#[test]
+fn a_dynamic_event_name_with_option_modifiers_keeps_the_computed_key() {
+    assert_eq!(
+        assembled(r#"<button @[event].once.capture.passive="handler"></button>"#),
+        "\
+const { toHandlerKey: _toHandlerKey, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"button\", { [_toHandlerKey(_ctx.event)]: handler }, null, 16 /* FULL_PROPS */))
+}"
     );
 }
 

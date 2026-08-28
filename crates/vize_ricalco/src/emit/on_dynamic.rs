@@ -1,4 +1,4 @@
-//! Modifier-free dynamic-name `ui.on` (`@[event]`) emission.
+//! Dynamic-name `ui.on` (`@[event]`) emission.
 
 use vize_s2::expr::{ExprRef, JsExpr};
 use vize_s2::op::{DynamicName, OnOp};
@@ -13,12 +13,6 @@ pub(super) fn is_dynamic_on_name(on: &OnOp<'_>) -> bool {
 
 pub(super) fn admit(on: &OnOp<'_>) -> Result<(), EmitError> {
     dynamic_name(on)?;
-    if !on.modifiers.is_empty() {
-        return Err(EmitError::unsupported_at(
-            Reason::DynamicOnHasModifiers,
-            on.span,
-        ));
-    }
     match on.handler {
         None | Some(ExprRef::Js(_)) => Ok(()),
         Some(expr) => Err(EmitError::unsupported_at(
@@ -30,12 +24,6 @@ pub(super) fn admit(on: &OnOp<'_>) -> Result<(), EmitError> {
 
 pub(super) fn emit_pair(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitError> {
     let js = dynamic_name(on)?;
-    if !on.modifiers.is_empty() {
-        return Err(EmitError::unsupported_at(
-            Reason::DynamicOnHasModifiers,
-            on.span,
-        ));
-    }
     cx.buf.use_to_handler_key();
     cx.buf.push("[");
     cx.buf.push(Buf::to_handler_key_alias());
@@ -46,26 +34,14 @@ pub(super) fn emit_pair(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitEr
 }
 
 pub(super) fn emit_value(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitError> {
-    if !on.modifiers.is_empty() {
-        return Err(EmitError::unsupported_at(
-            Reason::DynamicOnHasModifiers,
-            on.span,
-        ));
-    }
-    match on.handler {
-        Some(ExprRef::Js(js)) => {
-            super::on::emit_handler(cx, js);
-            Ok(())
-        }
-        None => {
-            cx.buf.push("() => {}");
-            Ok(())
-        }
-        Some(expr) => Err(EmitError::unsupported_at(
-            Reason::OnHandlerNotJs,
-            expr.span(),
-        )),
-    }
+    let classified = super::on::classify_dynamic_modifiers(on.modifiers.iter().copied());
+    super::on::emit_wrapped_handler(cx, on, &classified)
+}
+
+pub(super) fn forces_inline(on: &OnOp<'_>) -> bool {
+    on.modifiers
+        .iter()
+        .any(|modifier| !matches!(*modifier, "capture" | "once" | "passive"))
 }
 
 fn dynamic_name<'a>(on: &'a OnOp<'a>) -> Result<&'a JsExpr<'a>, EmitError> {

@@ -39,8 +39,8 @@
 //! (static refs, dynamic `:ref`, and `ref_for` in `v-for`), and **Vue 2
 //! `.native` event sugar** (accepted and stripped like the shipped lane),
 //! **static+dynamic `style` merge** (`[{"color":"red"}, s]`), and
-//! **modifier-free dynamic `v-on` keys** (`@[event]` through
-//! `toHandlerKey`), plus native-element **`v-once`** cache wrappers,
+//! **dynamic `v-on` keys** (`@[event]` through `toHandlerKey`,
+//! including event/key modifiers), plus native-element **`v-once`** cache wrappers,
 //! while SFC style-block carriers (`vue.css-bind` facts) stay DOM-inert.
 //! Static-name `v-bind` modifiers (`.camel`, `.prop`, `.attr`, plus the
 //! dot shorthand) and dynamic-argument `v-bind` keys / modifiers are

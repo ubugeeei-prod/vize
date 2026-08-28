@@ -1,6 +1,6 @@
-//! P2-11 dynamic `v-on` key witness: modifier-free computed event keys
-//! compare byte-for-byte against the shipped DOM lane, while modifiers,
-//! non-JS event names and slot-outlet named events stay typed refusals.
+//! P2-11 dynamic `v-on` key witness: computed event keys and modifiers
+//! compare byte-for-byte against the shipped DOM lane, while non-JS event
+//! names and slot-outlet named events stay typed refusals.
 
 #![allow(
     clippy::disallowed_macros,
@@ -25,6 +25,18 @@ const BATTERY: &[(&str, &str)] = &[
     (
         "native_dynamic_inline",
         r#"<button @[event]="handler($event)"></button>"#,
+    ),
+    (
+        "native_dynamic_stop",
+        r#"<button @[event].stop="handler"></button>"#,
+    ),
+    (
+        "native_dynamic_enter_stop",
+        r#"<button @[event].enter.stop="handler"></button>"#,
+    ),
+    (
+        "native_dynamic_option_modifiers",
+        r#"<button @[event].once.capture.passive="handler"></button>"#,
     ),
     ("component_dynamic", r#"<Foo @[event]="handler" />"#),
     (
@@ -66,11 +78,6 @@ const BATTERY: &[(&str, &str)] = &[
 ];
 
 const REFUSALS: &[(&str, &str, support::ExpectedRefusal)] = &[
-    (
-        "dynamic_event_with_modifier",
-        r#"<button @[event].stop="handler"></button>"#,
-        support::ExpectedRefusal::Unsupported(Reason::DynamicOnHasModifiers),
-    ),
     (
         "dynamic_event_name_not_js",
         r#"<button @[event.]="handler"></button>"#,

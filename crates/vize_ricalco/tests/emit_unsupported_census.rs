@@ -121,12 +121,6 @@ const SOURCE_CASES: &[Case] = &[
         Reason::OnNameNotJs,
     ),
     case(
-        "dynamic_on_mod",
-        r#"<div @[event].stop="handler"></div>"#,
-        VUE3,
-        Reason::DynamicOnHasModifiers,
-    ),
-    case(
         "slot_template_extra_binding",
         r#"<Foo><template #header v-pin>x</template></Foo>"#,
         VUE3,
@@ -203,7 +197,6 @@ fn committed_fixture_refusal_census_is_pinned() {
             ("custom_directive_expr_not_js", 1),
             ("duplicate_class_binding", 1),
             ("duplicate_style_binding", 1),
-            ("dynamic_on_has_modifiers", 1),
             ("for_source_not_js", 1),
             ("if_condition_not_js", 1),
             ("model_argument_not_js", 1),
