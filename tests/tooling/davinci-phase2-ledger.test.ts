@@ -9,6 +9,7 @@ import {
   validateCompatibilityLedger,
 } from "../../tools/fixtures/fixture-compatibility-ledger.mjs";
 import {
+  assertCurrentP2_11Installment,
   p2_11CurrentRecordEvidence,
   recordsTaskRow,
   requiredLine,
@@ -239,13 +240,7 @@ test("P2-11 records current installments without presenting stale remainders", (
     p2_11: p2_11CurrentRecordEvidence(text.p2_11),
   };
   for (const [label, source] of Object.entries(currentEvidence)) {
-    assert.match(source, /#5210/, `${label} must cite the current installment-38 PR`);
-    assert.match(
-      source,
-      /38 (?:landed\s+)?installments|installment 38|\| 38\s+\|/i,
-      `${label} must cite current installment 38 evidence`,
-    );
-    assert.doesNotMatch(source, /pending installment 38|\| 38\s+\| pending/i);
+    assertCurrentP2_11Installment(source, label);
   }
   assert.match(text.p2_11, /#4933/);
   assert.match(text.p2_11, /#5011/);
