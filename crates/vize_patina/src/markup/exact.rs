@@ -59,4 +59,36 @@ impl<'a> MarkupBinding<'a> {
             }
         }
     }
+
+    /// Whether this binding has a static, unqualified prop/directive argument
+    /// with an exact name.
+    ///
+    /// Vue dynamic directive arguments such as `@[click]` are not static and
+    /// must not match legacy event rules that only saw `arg.is_static`.
+    pub fn is_static_unqualified_arg_exact(&self, expected: &str) -> bool {
+        match self.inner {
+            MarkupBindingInner::ReliefAttribute(node) => node.name == expected,
+            MarkupBindingInner::ReliefDirective(node) => match relief_directive_kind(node) {
+                MarkupBindingKind::Custom => node.name == expected,
+                _ => match node.arg.as_ref() {
+                    Some(ExpressionNode::Simple(simple)) if simple.is_static => {
+                        simple.content == expected
+                    }
+                    _ => false,
+                },
+            },
+            MarkupBindingInner::Jsx { node, .. } => {
+                let attr = jsx_attribute_ref(node);
+                match &attr.name {
+                    JSXAttributeName::Identifier(identifier) => {
+                        match jsx_attribute_binding_kind(attr) {
+                            MarkupBindingKind::On => jsx_attribute_arg_name(attr) == Some(expected),
+                            _ => identifier.name.as_str() == expected,
+                        }
+                    }
+                    JSXAttributeName::NamespacedName(_) => false,
+                }
+            }
+        }
+    }
 }

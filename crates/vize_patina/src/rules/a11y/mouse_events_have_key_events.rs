@@ -20,6 +20,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType};
 
@@ -37,9 +38,63 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct MouseEventsHaveKeyEvents;
 
+impl MouseEventsHaveKeyEvents {
+    fn has_static_event_handler(element: &MarkupElement<'_>, event_name: &str) -> bool {
+        let mut found = false;
+        element.walk_bindings(&mut |binding| {
+            if binding.kind() == MarkupBindingKind::On
+                && binding.is_static_unqualified_arg_exact(event_name)
+            {
+                found = true;
+            }
+        });
+        found
+    }
+}
+
+impl MarkupRule for MouseEventsHaveKeyEvents {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if element.is_component() {
+            return;
+        }
+
+        let has_mouse_enter = Self::has_static_event_handler(element, "mouseenter")
+            || Self::has_static_event_handler(element, "mouseover");
+        if has_mouse_enter && !Self::has_static_event_handler(element, "focus") {
+            let message = ctx
+                .lint()
+                .t("a11y/mouse-events-have-key-events.message_enter");
+            let help = ctx.lint().t("a11y/mouse-events-have-key-events.help");
+            ctx.lint().warn_at_with_help(message, element.range(), help);
+        }
+
+        let has_mouse_leave = Self::has_static_event_handler(element, "mouseleave")
+            || Self::has_static_event_handler(element, "mouseout");
+        if has_mouse_leave && !Self::has_static_event_handler(element, "blur") {
+            let message = ctx
+                .lint()
+                .t("a11y/mouse-events-have-key-events.message_leave");
+            let help = ctx.lint().t("a11y/mouse-events-have-key-events.help");
+            ctx.lint().warn_at_with_help(message, element.range(), help);
+        }
+    }
+}
+
 impl Rule for MouseEventsHaveKeyEvents {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn jsx_needs_lowering(&self) -> bool {
+        true
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
