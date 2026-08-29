@@ -32,4 +32,22 @@ const orientation = ref<"horizontal" | "vertical">("vertical");
 </template>
 `,
   },
+  {
+    filename: "SkeletonConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { Skeleton } from "./skeleton.ts";
+
+const loading = ref(true);
+</script>
+
+<template>
+  <Skeleton aria-label="Loading profile" as="section" :loading block-size="2rem">
+    <template #default="{ state }">
+      <span>{{ state }}</span>
+    </template>
+  </Skeleton>
+</template>
+`,
+  },
 ] as const;

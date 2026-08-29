@@ -79,6 +79,11 @@
       "import": "./dist/separator.mjs",
       "default": "./dist/separator.mjs"
     },
+    "./skeleton": {
+      "types": "./dist/skeleton.d.mts",
+      "import": "./dist/skeleton.mjs",
+      "default": "./dist/skeleton.mjs"
+    },
     "./textarea": {
       "types": "./dist/textarea.d.mts",
       "import": "./dist/textarea.mjs",
