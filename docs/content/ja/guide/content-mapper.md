@@ -52,8 +52,8 @@ vp install -D vize
 tsgo --runExternalCode --noEmit -p tsconfig.json
 ```
 
-VS Code では、信頼されたワークスペースであれば Vize 拡張機能が TypeScript native preview
-拡張機能に `.vue` サポートを自動登録し、同じマッパーがエディターでも動作します。
+VS Code では、信頼されたワークスペースであれば Vize 拡張機能が TypeScript 7
+content-mapper ホストに `.vue` サポートを自動登録し、同じマッパーがエディターでも動作します。
 
 ## オプション
 
@@ -122,7 +122,7 @@ TypeScript と組み込み JSX の両方が正しくパースできる `.tsx` �
 
 ## 制限事項
 
-- native preview のリリースに API が含まれるまで、`typescript-go` の main からビルドした
+- TypeScript 7 のリリースに API が含まれるまで、`typescript-go` の main からビルドした
   `tsgo` が必要です。
 - マップされた入力の declaration map は
   [microsoft/typescript-go#4860](https://github.com/microsoft/typescript-go/issues/4860) 待ちです。

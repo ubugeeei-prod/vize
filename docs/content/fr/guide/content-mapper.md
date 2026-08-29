@@ -54,8 +54,8 @@ tsgo --runExternalCode --noEmit -p tsconfig.json
 ```
 
 Dans VS Code, l'extension Vize enregistre automatiquement la prise en charge de `.vue` auprès de
-l'extension TypeScript native preview dans les espaces de travail approuvés — le même mapper
-alimente alors l'éditeur.
+l'hôte content-mapper TypeScript 7 dans les espaces de travail approuvés — le même mapper alimente
+alors l'éditeur.
 
 ## Options
 
@@ -125,8 +125,8 @@ Codes de diagnostic signalés sous la source `vize` :
 
 ## Limitations
 
-- Nécessite un `tsgo` compilé depuis la main de `typescript-go` tant qu'une version du native
-  preview n'inclut pas l'API.
+- Nécessite un `tsgo` compilé depuis la main de `typescript-go` tant qu'une version de TypeScript 7
+  n'inclut pas l'API.
 - Les declaration maps pour les entrées mappées attendent
   [microsoft/typescript-go#4860](https://github.com/microsoft/typescript-go/issues/4860).
 - `vize check` reste le chemin de vérification de types pris en charge en production tant que

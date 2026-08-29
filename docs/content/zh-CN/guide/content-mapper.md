@@ -51,8 +51,8 @@ vp install -D vize
 tsgo --runExternalCode --noEmit -p tsconfig.json
 ```
 
-在 VS Code 中,受信任的工作区里 Vize 扩展会自动向 TypeScript native preview 扩展注册
-`.vue` 支持,同一个映射器也随之驱动编辑器。
+在 VS Code 中,受信任的工作区里 Vize 扩展会自动向 TypeScript 7 content-mapper
+宿主注册 `.vue` 支持,同一个映射器也随之驱动编辑器。
 
 ## 选项
 
@@ -117,7 +117,7 @@ Vize 使用上游合并的 Content Mapper 协议 v1:UTF-8 位置编码、按项�
 
 ## 限制
 
-- 在 native preview 发布包含该 API 之前,需要从 `typescript-go` main 构建的 `tsgo`。
+- 在 TypeScript 7 发布包含该 API 之前,需要从 `typescript-go` main 构建的 `tsgo`。
 - 映射输入的 declaration map 依赖
   [microsoft/typescript-go#4860](https://github.com/microsoft/typescript-go/issues/4860)。
 - 在上游 API 处于预览期间,生产环境的类型检查方式仍以 `vize check` 为受支持路径。

@@ -53,8 +53,8 @@ Executar processos de mapper externos exige opt-in explícito:
 tsgo --runExternalCode --noEmit -p tsconfig.json
 ```
 
-No VS Code, a extensão do Vize registra o suporte a `.vue` na extensão do TypeScript native
-preview automaticamente em workspaces confiáveis — o mesmo mapper passa a alimentar o editor.
+No VS Code, a extensão do Vize registra o suporte a `.vue` no host content-mapper do TypeScript 7
+automaticamente em workspaces confiáveis — o mesmo mapper passa a alimentar o editor.
 
 ## Opções
 
@@ -123,8 +123,8 @@ Códigos de diagnóstico reportados sob a fonte `vize`:
 
 ## Limitações
 
-- Requer um `tsgo` compilado da main do `typescript-go` até que um release do native preview
-  inclua a API.
+- Requer um `tsgo` compilado da main do `typescript-go` até que um release do TypeScript 7 inclua a
+  API.
 - Declaration maps para entradas mapeadas aguardam
   [microsoft/typescript-go#4860](https://github.com/microsoft/typescript-go/issues/4860).
 - `vize check` continua sendo o caminho de verificação de tipos suportado em produção enquanto a

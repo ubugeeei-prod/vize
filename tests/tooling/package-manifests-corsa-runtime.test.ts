@@ -15,6 +15,15 @@ const TYPESCRIPT_PLATFORM_PACKAGES = [
   "@typescript/typescript-win32-x64",
 ];
 
+const USER_GUIDANCE_FILES = [
+  "docs/content/guide/content-mapper.md",
+  "docs/content/fr/guide/content-mapper.md",
+  "docs/content/ja/guide/content-mapper.md",
+  "docs/content/pt-BR/guide/content-mapper.md",
+  "docs/content/zh-CN/guide/content-mapper.md",
+  "npm/cli/README.md",
+];
+
 test("Corsa runtime is declared for vize check users", () => {
   const packageJson = JSON.parse(
     fs.readFileSync(path.join(root, "npm/cli/package.json"), "utf-8"),
@@ -85,5 +94,13 @@ test("workspace tooling installs the stable TypeScript 7 native runtime", () => 
     for (const name of TYPESCRIPT_PLATFORM_PACKAGES) {
       assert.equal(packageJson.optionalDependencies?.[name], version, relative);
     }
+  }
+});
+
+test("published user guidance does not mention the retired native preview runtime", () => {
+  for (const relative of USER_GUIDANCE_FILES) {
+    const contents = fs.readFileSync(path.join(root, relative), "utf-8");
+    assert.doesNotMatch(contents, /@typescript\/native-preview/u, relative);
+    assert.doesNotMatch(contents, /\bnative[- ]preview\b/iu, relative);
   }
 });
