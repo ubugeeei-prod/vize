@@ -1,5 +1,5 @@
-import { computed, getCurrentInstance } from "vue";
-import type { ComputedRef } from "vue";
+import { computed, getCurrentInstance, toValue } from "vue";
+import type { ComputedRef, MaybeRefOrGetter } from "vue";
 
 import { createContext } from "./context.ts";
 
@@ -8,6 +8,21 @@ export type TextDirection = "ltr" | "rtl";
 
 /** Direction preference, including locale-driven resolution. */
 export type DirectionPreference = TextDirection | "auto";
+
+/** Number formatter options resolved against the active locale. */
+export type LocaleNumberFormatterOptions = Intl.NumberFormatOptions;
+
+/** Date-time formatter options resolved against the active locale. */
+export type LocaleDateTimeFormatterOptions = Intl.DateTimeFormatOptions;
+
+/** List formatter options resolved against the active locale. */
+export type LocaleListFormatterOptions = Intl.ListFormatOptions;
+
+/** Relative-time formatter options resolved against the active locale. */
+export type LocaleRelativeTimeFormatterOptions = Intl.RelativeTimeFormatOptions;
+
+/** Static, ref, or getter-backed formatter options. */
+export type LocaleFormatterOptionsInput<Options> = MaybeRefOrGetter<Options | undefined>;
 
 /** Locale and direction published by LocaleProvider. */
 export interface LocaleValue {
@@ -23,13 +38,24 @@ export const localeContext = createContext<LocaleValue>("Locale");
 
 function fallbackLocale(): string {
   if (typeof document === "undefined") return fallbackLocaleValue;
-  const lang = document.documentElement.lang.trim();
-  return lang.length > 0 ? lang : fallbackLocaleValue;
+  return resolveLocale(document.documentElement.lang);
 }
 
 function fallbackDirection(): TextDirection {
   if (typeof document === "undefined") return "ltr";
   return document.documentElement.dir === "rtl" ? "rtl" : "ltr";
+}
+
+/** Resolve a BCP 47 locale, or `en-US`. */
+export function resolveLocale(locale: string): string {
+  const candidate = locale.trim();
+  if (candidate.length === 0) return fallbackLocaleValue;
+
+  try {
+    return Intl.getCanonicalLocales(candidate)[0] ?? fallbackLocaleValue;
+  } catch {
+    return fallbackLocaleValue;
+  }
 }
 
 /**
@@ -48,6 +74,38 @@ export function resolveDirection(direction: DirectionPreference, locale: string)
   return "ltr";
 }
 
+/** Create a number formatter. */
+export function resolveNumberFormatter(
+  locale: string,
+  options?: LocaleNumberFormatterOptions,
+): Intl.NumberFormat {
+  return new Intl.NumberFormat(resolveLocale(locale), options);
+}
+
+/** Create a date-time formatter. */
+export function resolveDateTimeFormatter(
+  locale: string,
+  options?: LocaleDateTimeFormatterOptions,
+): Intl.DateTimeFormat {
+  return new Intl.DateTimeFormat(resolveLocale(locale), options);
+}
+
+/** Create a list formatter. */
+export function resolveListFormatter(
+  locale: string,
+  options?: LocaleListFormatterOptions,
+): Intl.ListFormat {
+  return new Intl.ListFormat(resolveLocale(locale), options);
+}
+
+/** Create a relative-time formatter. */
+export function resolveRelativeTimeFormatter(
+  locale: string,
+  options?: LocaleRelativeTimeFormatterOptions,
+): Intl.RelativeTimeFormat {
+  return new Intl.RelativeTimeFormat(resolveLocale(locale), options);
+}
+
 /** Read the nearest locale, or the document/SSR fallback. */
 export function useLocale(): ComputedRef<string> {
   if (!getCurrentInstance()) {
@@ -64,4 +122,36 @@ export function useDirection(): ComputedRef<TextDirection> {
   }
   const provided = localeContext.useOptional();
   return computed(() => provided?.direction ?? fallbackDirection());
+}
+
+/** Read the nearest locale and memoize a number formatter. */
+export function useNumberFormatter(
+  options?: LocaleFormatterOptionsInput<LocaleNumberFormatterOptions>,
+): ComputedRef<Intl.NumberFormat> {
+  const locale = useLocale();
+  return computed(() => resolveNumberFormatter(locale.value, toValue(options)));
+}
+
+/** Read the nearest locale and memoize a date-time formatter. */
+export function useDateTimeFormatter(
+  options?: LocaleFormatterOptionsInput<LocaleDateTimeFormatterOptions>,
+): ComputedRef<Intl.DateTimeFormat> {
+  const locale = useLocale();
+  return computed(() => resolveDateTimeFormatter(locale.value, toValue(options)));
+}
+
+/** Read the nearest locale and memoize a list formatter. */
+export function useListFormatter(
+  options?: LocaleFormatterOptionsInput<LocaleListFormatterOptions>,
+): ComputedRef<Intl.ListFormat> {
+  const locale = useLocale();
+  return computed(() => resolveListFormatter(locale.value, toValue(options)));
+}
+
+/** Read the nearest locale and memoize a relative-time formatter. */
+export function useRelativeTimeFormatter(
+  options?: LocaleFormatterOptionsInput<LocaleRelativeTimeFormatterOptions>,
+): ComputedRef<Intl.RelativeTimeFormat> {
+  const locale = useLocale();
+  return computed(() => resolveRelativeTimeFormatter(locale.value, toValue(options)));
 }

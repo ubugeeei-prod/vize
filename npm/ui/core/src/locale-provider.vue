@@ -4,6 +4,7 @@ import { reactive, watchEffect } from "vue";
 import {
   localeContext,
   resolveDirection,
+  resolveLocale,
   type DirectionPreference,
   type TextDirection,
 } from "./locale-runtime.ts";
@@ -35,8 +36,8 @@ const value = reactive({
 });
 
 watchEffect(() => {
-  value.locale = locale;
-  value.direction = resolveDirection(direction, locale);
+  value.locale = resolveLocale(locale);
+  value.direction = resolveDirection(direction, value.locale);
 });
 
 localeContext.provide(value);

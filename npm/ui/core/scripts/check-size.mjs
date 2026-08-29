@@ -5,7 +5,7 @@ import { gzipSync } from "node:zlib";
 const distributionDirectory = new URL("../dist/", import.meta.url);
 const staticImportPattern = /\b(?:import|export)\s+(?:[^"']*?\s+from\s+)?["'](\.\.?\/[^"']+)["']/g;
 const budgets = new Map([
-  ["index.mjs", 106_250],
+  ["index.mjs", 106_750],
   ["announcer.mjs", 4_100],
   ["button.mjs", 1_600],
   ["checkbox.mjs", 1_900],
@@ -28,7 +28,7 @@ const budgets = new Map([
   ["history.mjs", 3_400],
   ["hover.mjs", 2_200],
   ["live-region.mjs", 2_400],
-  ["locale.mjs", 2_000],
+  ["locale.mjs", 2_100],
   ["long-press.mjs", 8_175],
   ["measure.mjs", 2_400],
   // Styled entries statically import the shared dist/style.css, so their
