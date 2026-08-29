@@ -1,19 +1,29 @@
 export {
+  resolveCollator,
   localeContext,
   resolveDateTimeFormatter,
   resolveDirection,
+  resolveDisplayNames,
   resolveListFormatter,
   resolveLocale,
   resolveNumberFormatter,
   resolveRelativeTimeFormatter,
+  resolveSearchCollator,
+  useCollator,
   useDateTimeFormatter,
   useDirection,
+  useDisplayNames,
   useListFormatter,
   useLocale,
   useNumberFormatter,
   useRelativeTimeFormatter,
+  useSearchCollator,
   type DirectionPreference,
+  type LocaleCollatorOptions,
   type LocaleDateTimeFormatterOptions,
+  type LocaleDisplayNamesOptions,
+  type LocaleDisplayNamesOptionsInput,
+  type LocaleDisplayNamesType,
   type LocaleFormatterOptionsInput,
   type LocaleListFormatterOptions,
   type LocaleNumberFormatterOptions,
@@ -21,6 +31,15 @@ export {
   type LocaleValue,
   type TextDirection,
 } from "./locale-runtime.ts";
+
+export {
+  localeTextContains,
+  localeTextMatches,
+  localeTextStartsWith,
+  normalizeLocaleText,
+  type LocaleTextMatchMode,
+  type LocaleTextMatchOptions,
+} from "./locale-text.ts";
 
 /** Locale and direction provider for a document subtree. */
 export { default as LocaleProvider } from "./locale-provider.vue";

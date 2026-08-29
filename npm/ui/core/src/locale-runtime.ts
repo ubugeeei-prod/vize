@@ -21,8 +21,29 @@ export type LocaleListFormatterOptions = Intl.ListFormatOptions;
 /** Relative-time formatter options resolved against the active locale. */
 export type LocaleRelativeTimeFormatterOptions = Intl.RelativeTimeFormatOptions;
 
+/** Collator options resolved against the active locale. */
+export type LocaleCollatorOptions = Intl.CollatorOptions;
+
+/** Display-name kinds supported by `Intl.DisplayNames`. */
+export type LocaleDisplayNamesType =
+  | "language"
+  | "region"
+  | "script"
+  | "currency"
+  | "calendar"
+  | "dateTimeField";
+
+/** Display-name formatter options resolved against the active locale. */
+export type LocaleDisplayNamesOptions = Omit<Intl.DisplayNamesOptions, "type"> & {
+  /** Code kind to localize. */
+  readonly type: LocaleDisplayNamesType;
+};
+
 /** Static, ref, or getter-backed formatter options. */
 export type LocaleFormatterOptionsInput<Options> = MaybeRefOrGetter<Options | undefined>;
+
+/** Static, ref, or getter-backed display-name options. */
+export type LocaleDisplayNamesOptionsInput = MaybeRefOrGetter<LocaleDisplayNamesOptions>;
 
 /** Locale and direction published by LocaleProvider. */
 export interface LocaleValue {
@@ -32,6 +53,10 @@ export interface LocaleValue {
 
 const fallbackLocaleValue = "en-US";
 const setupDiagnostic = "VIZE_UI_LOCALE_SETUP";
+const defaultSearchCollatorOptions = Object.freeze({
+  sensitivity: "base",
+  usage: "search",
+} satisfies LocaleCollatorOptions);
 
 /** Typed locale context for application and component subtrees. */
 export const localeContext = createContext<LocaleValue>("Locale");
@@ -106,6 +131,27 @@ export function resolveRelativeTimeFormatter(
   return new Intl.RelativeTimeFormat(resolveLocale(locale), options);
 }
 
+/** Create a display-name formatter. */
+export function resolveDisplayNames(
+  locale: string,
+  options: LocaleDisplayNamesOptions,
+): Intl.DisplayNames {
+  return new Intl.DisplayNames(resolveLocale(locale), options);
+}
+
+/** Create a collator. */
+export function resolveCollator(locale: string, options?: LocaleCollatorOptions): Intl.Collator {
+  return new Intl.Collator(resolveLocale(locale), options);
+}
+
+/** Create a search collator with stable typeahead defaults. */
+export function resolveSearchCollator(
+  locale: string,
+  options?: LocaleCollatorOptions,
+): Intl.Collator {
+  return resolveCollator(locale, { ...defaultSearchCollatorOptions, ...options });
+}
+
 /** Read the nearest locale, or the document/SSR fallback. */
 export function useLocale(): ComputedRef<string> {
   if (!getCurrentInstance()) {
@@ -154,4 +200,28 @@ export function useRelativeTimeFormatter(
 ): ComputedRef<Intl.RelativeTimeFormat> {
   const locale = useLocale();
   return computed(() => resolveRelativeTimeFormatter(locale.value, toValue(options)));
+}
+
+/** Read the nearest locale and memoize a display-name formatter. */
+export function useDisplayNames(
+  options: LocaleDisplayNamesOptionsInput,
+): ComputedRef<Intl.DisplayNames> {
+  const locale = useLocale();
+  return computed(() => resolveDisplayNames(locale.value, toValue(options)));
+}
+
+/** Read the nearest locale and memoize a collator. */
+export function useCollator(
+  options?: LocaleFormatterOptionsInput<LocaleCollatorOptions>,
+): ComputedRef<Intl.Collator> {
+  const locale = useLocale();
+  return computed(() => resolveCollator(locale.value, toValue(options)));
+}
+
+/** Read the nearest locale and memoize a search collator. */
+export function useSearchCollator(
+  options?: LocaleFormatterOptionsInput<LocaleCollatorOptions>,
+): ComputedRef<Intl.Collator> {
+  const locale = useLocale();
+  return computed(() => resolveSearchCollator(locale.value, toValue(options)));
 }

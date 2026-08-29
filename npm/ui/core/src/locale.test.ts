@@ -5,15 +5,22 @@ import { defineComponent, h, nextTick, ref } from "vue";
 
 import { mountInteraction } from "./testing/mount.ts";
 import {
+  localeTextMatches,
+  normalizeLocaleText,
   resolveDirection,
+  resolveDisplayNames,
   resolveLocale,
   resolveNumberFormatter,
+  resolveSearchCollator,
+  useCollator,
   useDateTimeFormatter,
   useDirection,
+  useDisplayNames,
   useListFormatter,
   useLocale,
   useNumberFormatter,
   useRelativeTimeFormatter,
+  useSearchCollator,
 } from "./locale.ts";
 import LocaleProvider from "./locale-provider.vue";
 
@@ -55,6 +62,10 @@ test("canonicalizes invalid locale tags before formatter construction", () => {
   assert.equal(resolveLocale(" ja-jp "), "ja-JP");
   assert.equal(resolveLocale("not a locale"), "en-US");
   assert.equal(resolveNumberFormatter("not a locale").resolvedOptions().locale, "en-US");
+  assert.equal(
+    resolveDisplayNames("not a locale", { type: "region" }).resolvedOptions().locale,
+    "en-US",
+  );
 });
 
 test("resolves formatters from the provider locale and explicit options", () => {
@@ -133,6 +144,104 @@ test("resolves formatters from the provider locale and explicit options", () => 
     [snapshot?.number, snapshot?.date, snapshot?.list, snapshot?.relativeTime].join("|"),
   );
   handle.unmount();
+});
+
+test("resolves display names and search collators from the provider locale", () => {
+  let snapshot:
+    | {
+        readonly displayName: string | undefined;
+        readonly displayLocale: string;
+        readonly searchLocale: string;
+        readonly searchUsage: string;
+        readonly accentInsensitive: boolean;
+      }
+    | undefined;
+
+  const Probe = defineComponent({
+    name: "LocaleDisplayAndSearchProbe",
+    setup() {
+      const displayNames = useDisplayNames({ style: "long", type: "region" });
+      const searchCollator = useSearchCollator();
+      return () => {
+        snapshot = {
+          displayName: displayNames.value.of("US"),
+          displayLocale: displayNames.value.resolvedOptions().locale,
+          searchLocale: searchCollator.value.resolvedOptions().locale,
+          searchUsage: searchCollator.value.resolvedOptions().usage,
+          accentInsensitive:
+            localeTextMatches("Cafe\u0301 noir", "cafe", {
+              collator: searchCollator.value,
+            }) &&
+            localeTextMatches("Cafe\u0301 noir", "noir", {
+              collator: searchCollator.value,
+              match: "contains",
+            }),
+        };
+        return h("span", snapshot.displayName);
+      };
+    },
+  });
+
+  const handle = mountInteraction(
+    defineComponent({
+      name: "LocaleDisplayAndSearchHost",
+      setup() {
+        return () => h(LocaleProvider, { locale: "fr-FR" }, { default: () => h(Probe) });
+      },
+    }),
+  );
+
+  const expectedDisplayNames = new Intl.DisplayNames("fr-FR", {
+    style: "long",
+    type: "region",
+  });
+  const expectedDisplayName = expectedDisplayNames.of("US");
+  const expectedSearch = new Intl.Collator("fr-FR", {
+    sensitivity: "base",
+    usage: "search",
+  });
+  assert.deepEqual(snapshot, {
+    displayName: expectedDisplayName,
+    displayLocale: expectedDisplayNames.resolvedOptions().locale,
+    searchLocale: expectedSearch.resolvedOptions().locale,
+    searchUsage: "search",
+    accentInsensitive: true,
+  });
+  assert.equal(handle.root().textContent, expectedDisplayName);
+  handle.unmount();
+});
+
+test("matches normalized locale text with exact, prefix, and contains policies", () => {
+  const collator = resolveSearchCollator("en-US");
+
+  assert.equal(normalizeLocaleText("  Cafe\u0301\nnoir  "), "Café noir");
+  assert.equal(
+    localeTextMatches("  Cafe\u0301\nnoir  ", "café", {
+      collator,
+    }),
+    true,
+  );
+  assert.equal(
+    localeTextMatches("  Cafe\u0301\nnoir  ", "noir", {
+      collator,
+      match: "contains",
+    }),
+    true,
+  );
+  assert.equal(
+    localeTextMatches("  Cafe\u0301\nnoir  ", "Café noir", {
+      collator,
+      match: "exact",
+    }),
+    true,
+  );
+  assert.equal(
+    localeTextMatches("  Cafe\u0301\nnoir  ", "noir", {
+      collator,
+      match: "prefix",
+    }),
+    false,
+  );
 });
 
 test("updates formatter composables when provider locale or options change", async () => {
@@ -225,4 +334,7 @@ test("rejects composable use outside setup", () => {
   assert.throws(() => useDateTimeFormatter(), /VIZE_UI_LOCALE_SETUP/);
   assert.throws(() => useListFormatter(), /VIZE_UI_LOCALE_SETUP/);
   assert.throws(() => useRelativeTimeFormatter(), /VIZE_UI_LOCALE_SETUP/);
+  assert.throws(() => useDisplayNames({ type: "region" }), /VIZE_UI_LOCALE_SETUP/);
+  assert.throws(() => useCollator(), /VIZE_UI_LOCALE_SETUP/);
+  assert.throws(() => useSearchCollator(), /VIZE_UI_LOCALE_SETUP/);
 });

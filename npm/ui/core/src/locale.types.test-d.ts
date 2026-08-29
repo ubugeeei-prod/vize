@@ -3,25 +3,39 @@
 import type { ComputedRef } from "vue";
 
 import {
+  localeTextMatches,
+  normalizeLocaleText,
+  resolveCollator,
   resolveDateTimeFormatter,
   resolveDirection,
+  resolveDisplayNames,
   resolveListFormatter,
   resolveLocale,
   resolveNumberFormatter,
   resolveRelativeTimeFormatter,
+  resolveSearchCollator,
+  type LocaleCollatorOptions,
   type LocaleDateTimeFormatterOptions,
+  type LocaleDisplayNamesOptions,
+  type LocaleDisplayNamesOptionsInput,
+  type LocaleDisplayNamesType,
   type LocaleFormatterOptionsInput,
   type LocaleListFormatterOptions,
   type LocaleNumberFormatterOptions,
   type LocaleRelativeTimeFormatterOptions,
+  type LocaleTextMatchMode,
+  type LocaleTextMatchOptions,
   type DirectionPreference,
   type TextDirection,
+  useCollator,
   useDateTimeFormatter,
   useDirection,
+  useDisplayNames,
   useListFormatter,
   useLocale,
   useNumberFormatter,
   useRelativeTimeFormatter,
+  useSearchCollator,
 } from "./locale.ts";
 
 type Equal<Left, Right> =
@@ -55,6 +69,17 @@ export const relativeTimeOptions = {
   numeric: "auto",
   style: "narrow",
 } satisfies LocaleRelativeTimeFormatterOptions;
+export const displayNamesType: LocaleDisplayNamesType = "region";
+export const displayNamesOptions = {
+  style: "short",
+  type: displayNamesType,
+} satisfies LocaleDisplayNamesOptions;
+export const displayNamesOptionsInput = (() =>
+  displayNamesOptions) satisfies LocaleDisplayNamesOptionsInput;
+export const collatorOptions = {
+  sensitivity: "base",
+  usage: "search",
+} satisfies LocaleCollatorOptions;
 export const numberFormatter: Intl.NumberFormat = resolveNumberFormatter("ja-JP", numberOptions);
 export const reactiveNumberFormatter: ComputedRef<Intl.NumberFormat> = useNumberFormatter(
   () => numberOptions,
@@ -76,6 +101,25 @@ export const relativeTimeFormatter: Intl.RelativeTimeFormat = resolveRelativeTim
 );
 export const reactiveRelativeTimeFormatter: ComputedRef<Intl.RelativeTimeFormat> =
   useRelativeTimeFormatter(() => relativeTimeOptions);
+export const displayNamesFormatter: Intl.DisplayNames = resolveDisplayNames(
+  "ja-JP",
+  displayNamesOptions,
+);
+export const reactiveDisplayNames: ComputedRef<Intl.DisplayNames> =
+  useDisplayNames(displayNamesOptions);
+export const collator: Intl.Collator = resolveCollator("ja-JP", collatorOptions);
+export const searchCollator: Intl.Collator = resolveSearchCollator("ja-JP");
+export const reactiveCollator: ComputedRef<Intl.Collator> = useCollator(() => collatorOptions);
+export const reactiveSearchCollator: ComputedRef<Intl.Collator> = useSearchCollator();
+export const normalizedText: string = normalizeLocaleText("  Cafe\u0301\nnoir  ");
+export const textMatchMode: LocaleTextMatchMode = "contains";
+export const textMatchOptions = {
+  collator: searchCollator,
+  match: textMatchMode,
+} satisfies LocaleTextMatchOptions;
+export const textMatches: boolean = localeTextMatches("Café noir", "cafe", {
+  collator: searchCollator,
+});
 
 type _LocaleIsComputedString = Expect<Equal<ReturnType<typeof useLocale>, ComputedRef<string>>>;
 type _DirectionIsComputed = Expect<
@@ -93,6 +137,15 @@ type _ListFormatterIsComputed = Expect<
 type _RelativeTimeFormatterIsComputed = Expect<
   Equal<ReturnType<typeof useRelativeTimeFormatter>, ComputedRef<Intl.RelativeTimeFormat>>
 >;
+type _DisplayNamesIsComputed = Expect<
+  Equal<ReturnType<typeof useDisplayNames>, ComputedRef<Intl.DisplayNames>>
+>;
+type _CollatorIsComputed = Expect<
+  Equal<ReturnType<typeof useCollator>, ComputedRef<Intl.Collator>>
+>;
+type _SearchCollatorIsComputed = Expect<
+  Equal<ReturnType<typeof useSearchCollator>, ComputedRef<Intl.Collator>>
+>;
 
 // @ts-expect-error auto is a preference, not a resolved direction.
 export const unresolved: TextDirection = "auto";
@@ -104,3 +157,11 @@ resolveDateTimeFormatter("en-US", { dateStyle: "tiny" });
 resolveListFormatter("en-US", { type: "sentence" });
 // @ts-expect-error relative-time numeric policy is a closed union.
 resolveRelativeTimeFormatter("en-US", { numeric: "sometimes" });
+// @ts-expect-error display-name type is required.
+resolveDisplayNames("en-US", {});
+// @ts-expect-error display-name types are closed unions.
+resolveDisplayNames("en-US", { type: "continent" });
+// @ts-expect-error collator usage is a closed union.
+resolveCollator("en-US", { usage: "lookup" });
+// @ts-expect-error text match modes are closed unions.
+localeTextMatches("Alpha", "a", { collator: searchCollator, match: "fuzzy" });

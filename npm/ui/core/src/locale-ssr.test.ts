@@ -4,7 +4,7 @@ import { test } from "vite-plus/test";
 import { createSSRApp, defineComponent, h } from "vue";
 import { renderToString } from "vue/server-renderer";
 
-import { useNumberFormatter } from "./locale.ts";
+import { useDisplayNames, useNumberFormatter, useSearchCollator } from "./locale.ts";
 import LocaleProvider from "./locale-provider.vue";
 
 const SsrProbe = defineComponent({
@@ -37,6 +37,24 @@ test("uses the SSR fallback locale for formatters without a provider", async () 
 
   const output = await renderToString(createSSRApp(Probe));
   assert.match(output, />en-US</);
+});
+
+test("uses the SSR fallback locale for display names and search collators", async () => {
+  const Probe = defineComponent({
+    name: "LocaleSearchSsrProbe",
+    setup() {
+      const displayNames = useDisplayNames({ type: "region" });
+      const collator = useSearchCollator();
+      return () =>
+        h(
+          "span",
+          `${displayNames.value.resolvedOptions().locale}:${collator.value.resolvedOptions().usage}`,
+        );
+    },
+  });
+
+  const output = await renderToString(createSSRApp(Probe));
+  assert.match(output, />en-US:search</);
 });
 
 test("normalizes invalid provider locales during SSR", async () => {

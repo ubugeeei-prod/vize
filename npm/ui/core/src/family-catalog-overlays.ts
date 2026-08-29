@@ -71,7 +71,12 @@ export const overlayFamilyCatalog = [
     title: "Locale and Direction",
     packageSubpath: "./locale",
     entryFile: "src/locale.ts",
-    sourceFiles: ["src/locale-provider.vue", "src/locale.ts", "src/locale-runtime.ts"],
+    sourceFiles: [
+      "src/locale-provider.vue",
+      "src/locale.ts",
+      "src/locale-runtime.ts",
+      "src/locale-text.ts",
+    ],
     behaviorContract: "src/locale.behavior.md",
     tests: ["src/locale.test.ts", "src/locale-ssr.test.ts"],
     typeTests: ["src/locale.types.test-d.ts"],
