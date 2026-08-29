@@ -102,6 +102,45 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn named_event_props_use_component_listener_casing() {
+    assert_eq!(
+        assembled(r#"<slot @pick="choose"></slot>"#),
+        "\
+const { renderSlot: _renderSlot } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return _renderSlot(_ctx.$slots, \"default\", { onPick: choose })
+}"
+    );
+}
+
+#[test]
+fn dynamic_event_props_use_to_handler_key() {
+    assert_eq!(
+        assembled(r#"<slot @[event].enter.stop="handler"></slot>"#),
+        "\
+const { withKeys: _withKeys, withModifiers: _withModifiers, renderSlot: _renderSlot, toHandlerKey: _toHandlerKey } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return _renderSlot(_ctx.$slots, \"default\", { [_toHandlerKey(_ctx.event)]: _withKeys(_withModifiers(handler, [\"stop\"]), [\"enter\"]) })
+}"
+    );
+}
+
+#[test]
+fn duplicate_event_props_keep_the_shipped_duplicate_key_shape() {
+    assert_eq!(
+        assembled(r#"<slot @click="a" @click.stop="b"></slot>"#),
+        "\
+const { withModifiers: _withModifiers, renderSlot: _renderSlot } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return _renderSlot(_ctx.$slots, \"default\", { onClick: a, onClick: _withModifiers(b, [\"stop\"]) })
+}"
+    );
+}
+
+#[test]
 fn a_v_if_outlet_keeps_the_unused_open_block_helper() {
     assert_eq!(
         assembled(r#"<slot v-if="ok"></slot>"#),

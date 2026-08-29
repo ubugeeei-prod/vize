@@ -40,7 +40,8 @@
 //! `.native` event sugar** (accepted and stripped like the shipped lane),
 //! **static+dynamic `style` merge** (`[{"color":"red"}, s]`), and
 //! **dynamic `v-on` keys** (`@[event]` through `toHandlerKey`,
-//! including event/key modifiers), plus native-element **`v-once`** cache wrappers,
+//! including event/key modifiers and slot-outlet listener props),
+//! plus native-element **`v-once`** cache wrappers,
 //! and **`v-memo`** cache wrappers / `v-for` memo reuse guards,
 //! and **`v-html`** / **`v-text`** content props (`innerHTML` /
 //! `textContent` + dynamic prop flags),

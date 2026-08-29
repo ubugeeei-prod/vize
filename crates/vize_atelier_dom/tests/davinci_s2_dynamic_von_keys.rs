@@ -1,6 +1,6 @@
 //! P2-11 dynamic `v-on` key witness: computed event keys and modifiers
 //! compare byte-for-byte against the shipped DOM lane, while non-JS event
-//! names and slot-outlet named events stay typed refusals.
+//! names stay typed refusals.
 
 #![allow(
     clippy::disallowed_macros,
@@ -83,6 +83,10 @@ const BATTERY: &[(&str, &str)] = &[
         "dynamic_slot_and_dynamic_event",
         r#"<Foo @[event]="handler"><template #[name]>x</template></Foo>"#,
     ),
+    (
+        "slot_outlet_dynamic_event",
+        r#"<slot @[event]="handler"></slot>"#,
+    ),
 ];
 
 const REFUSALS: &[(&str, &str, support::ExpectedRefusal)] = &[
@@ -97,9 +101,14 @@ const REFUSALS: &[(&str, &str, support::ExpectedRefusal)] = &[
         support::ExpectedRefusal::Unsupported(Reason::OnHandlerNotJs),
     ),
     (
-        "slot_outlet_dynamic_event",
-        r#"<slot @[event]="handler"></slot>"#,
-        support::ExpectedRefusal::Unsupported(Reason::SlotOutletPropKind),
+        "slot_outlet_dynamic_event_name_not_js",
+        r#"<slot @[event.]="handler"></slot>"#,
+        support::ExpectedRefusal::Unsupported(Reason::OnNameNotJs),
+    ),
+    (
+        "slot_outlet_event_handler_not_js",
+        r#"<slot @pick="handler."></slot>"#,
+        support::ExpectedRefusal::Unsupported(Reason::OnHandlerNotJs),
     ),
 ];
 

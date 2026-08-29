@@ -163,12 +163,6 @@ const SOURCE_CASES: &[Case] = &[
         Reason::SlotOutletNameNotJs,
     ),
     case(
-        "outlet_event_prop",
-        r#"<slot @click="handler"></slot>"#,
-        VUE3,
-        Reason::SlotOutletPropKind,
-    ),
-    case(
         "slots_spread_arg",
         r#"<Foo v-slots:foo="slots"></Foo>"#,
         VUE3,
@@ -235,7 +229,6 @@ fn committed_fixture_refusal_census_is_pinned() {
             ("slot_default_shape", 1),
             ("slot_name_underscore", 1),
             ("slot_outlet_name_not_js", 1),
-            ("slot_outlet_prop_kind", 1),
             ("slots_spread_shape", 1),
             ("slots_spread_value_not_js", 1),
             ("text_directive_expression_not_js", 1),
