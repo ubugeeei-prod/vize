@@ -42,7 +42,9 @@ function read(url: URL): string {
 const text = Object.fromEntries(Object.entries(docs).map(([name, url]) => [name, read(url)])) as {
   [K in keyof typeof docs]: string;
 };
-const p2_11InstallmentNumbers = [20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33] as const;
+const p2_11InstallmentNumbers = [
+  20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
+] as const;
 const p2_11Installments = new Map(
   p2_11InstallmentNumbers.map((number) => [number, read(p2_11Installment(number))]),
 );
@@ -237,13 +239,13 @@ test("P2-11 records current installments without presenting stale remainders", (
     p2_11: p2_11CurrentRecordEvidence(text.p2_11),
   };
   for (const [label, source] of Object.entries(currentEvidence)) {
-    assert.match(source, /#5200/, `${label} must cite the current installment-33 PR`);
+    assert.match(source, /#5203/, `${label} must cite the current installment-34 PR`);
     assert.match(
       source,
-      /33 (?:landed\s+)?installments|installment 33|\| 33\s+\|/i,
-      `${label} must cite current installment 33 evidence`,
+      /34 (?:landed\s+)?installments|installment 34|\| 34\s+\|/i,
+      `${label} must cite current installment 34 evidence`,
     );
-    assert.doesNotMatch(source, /pending installment 33|\| 33\s+\| pending/i);
+    assert.doesNotMatch(source, /pending installment 34|\| 34\s+\| pending/i);
   }
   assert.match(text.p2_11, /#4933/);
   assert.match(text.p2_11, /#5011/);
@@ -251,12 +253,13 @@ test("P2-11 records current installments without presenting stale remainders", (
   assert.match(text.p2_11, /#5183/);
   assert.match(text.p2_11, /#5198/);
   assert.match(text.p2_11, /#5200/);
+  assert.match(text.p2_11, /#5203/);
   assert.match(text.p2_11, /#4919/);
   assert.match(text.p2_11, /#4921/);
   assert.match(text.p2_11, /#4924/);
   assert.match(text.p2_11, /#4927/);
   assert.match(text.p2_11, /#4929/);
-  assert.match(text.p2_11, /Current named remainder \(after #5200\)/);
+  assert.match(text.p2_11, /Current named remainder \(after #5203\)/);
   assert.doesNotMatch(text.p2_11, /dynamic-argument bind names \/ modifiers/);
   assert.doesNotMatch(text.p2_11, /\*\*malformed slot fact gaps\*\*/);
   assert.match(p2_11Installments.get(20)!, /14-fixture S2-vs-shipped byte-for-byte battery/);
@@ -277,6 +280,8 @@ test("P2-11 records current installments without presenting stale remainders", (
   assert.match(p2_11Installments.get(32)!, /2be66b0f0/);
   assert.match(p2_11Installments.get(33)!, /V-html Raw HTML Props/);
   assert.match(p2_11Installments.get(33)!, /13cff4d99/);
+  assert.match(p2_11Installments.get(34)!, /V-text Text-Content Props/);
+  assert.match(p2_11Installments.get(34)!, /11750115a/);
 });
 
 test("suite registry debt and the TS-52 transport decision stay resolved", () => {
