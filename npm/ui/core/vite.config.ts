@@ -33,6 +33,7 @@ export default defineConfig({
       "theme-scope": "src/theme-scope.ts",
       announcer: "src/announcer.ts",
       button: "src/button.ts",
+      toggle: "src/toggle.ts",
       checkbox: "src/checkbox.ts",
       collection: "src/collection.ts",
       "composite-navigation": "src/composite-navigation.ts",

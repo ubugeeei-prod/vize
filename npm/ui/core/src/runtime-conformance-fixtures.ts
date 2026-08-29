@@ -8,6 +8,7 @@ import IdProvider from "./deterministic-id-provider.vue";
 import { useDeterministicId } from "./deterministic-id.ts";
 import ErrorSummary from "./error-summary.vue";
 import PrimitiveElement from "./primitive-element.vue";
+import ToggleButton from "./toggle-button.vue";
 import VisuallyHidden from "./visually-hidden.vue";
 
 export interface RuntimeFixture {
@@ -146,6 +147,34 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       const primitive = host.querySelector('[data-vize-ui="primitive"]');
       assert.ok(primitive instanceof HTMLElement);
       assert.equal(primitive.tagName, "SECTION");
+    },
+  },
+  {
+    name: "toggle",
+    sourceFile: "toggle-button.vue",
+    render: () =>
+      h(
+        ToggleButton,
+        { defaultPressed: true },
+        {
+          default: () => "Bold",
+        },
+      ),
+    assertServerMarkup(html) {
+      assert.match(html, /^<button/);
+      assert.match(html, /type="button"/);
+      assert.match(html, /aria-pressed="true"/);
+      assert.match(html, /data-vize-ui="toggle"/);
+      assert.match(html, /data-state="pressed"/);
+      assert.match(html, /Bold/);
+    },
+    assertHydratedDom(host) {
+      const toggle = host.querySelector('[data-vize-ui="toggle"]');
+      assert.ok(toggle instanceof HTMLButtonElement);
+      assert.equal(toggle.type, "button");
+      assert.equal(toggle.getAttribute("aria-pressed"), "true");
+      assert.equal(toggle.getAttribute("data-state"), "pressed");
+      assert.equal(toggle.textContent, "Bold");
     },
   },
   {

@@ -44,6 +44,11 @@
       "import": "./dist/button.mjs",
       "default": "./dist/button.mjs"
     },
+    "./toggle": {
+      "types": "./dist/toggle.d.mts",
+      "import": "./dist/toggle.mjs",
+      "default": "./dist/toggle.mjs"
+    },
     "./checkbox": {
       "types": "./dist/checkbox.d.mts",
       "import": "./dist/checkbox.mjs",

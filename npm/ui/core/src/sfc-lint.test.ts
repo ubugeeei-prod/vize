@@ -30,6 +30,7 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
       "src/positioner.vue",
       "src/presence.vue",
       "src/primitive-element.vue",
+      "src/toggle-button.vue",
       "src/transition.vue",
       "src/visually-hidden.vue",
     ],
@@ -49,6 +50,7 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
       "positioner.vue",
       "presence.vue",
       "primitive-element.vue",
+      "toggle-button.vue",
       "transition.vue",
       "visually-hidden.vue",
     ].map((basename) => ({
