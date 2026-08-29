@@ -49,6 +49,11 @@
       "import": "./dist/aspect-ratio.mjs",
       "default": "./dist/aspect-ratio.mjs"
     },
+    "./badge": {
+      "types": "./dist/badge.d.mts",
+      "import": "./dist/badge.mjs",
+      "default": "./dist/badge.mjs"
+    },
     "./collapsible": {
       "types": "./dist/collapsible.d.mts",
       "import": "./dist/collapsible.mjs",

@@ -51,6 +51,22 @@ const ratio = ref(16 / 9);
 `,
   },
   {
+    filename: "BadgeConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { Badge } from "./badge.ts";
+
+const count = ref(12);
+</script>
+
+<template>
+  <Badge as="sup" tone="danger" variant="count">
+    {{ count }}
+  </Badge>
+</template>
+`,
+  },
+  {
     filename: "MeterConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

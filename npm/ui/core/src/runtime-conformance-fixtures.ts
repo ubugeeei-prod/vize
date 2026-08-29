@@ -14,6 +14,7 @@ import { meterRuntimeFixture } from "./runtime-conformance-meter-fixtures.ts";
 import PrimitiveElement from "./primitive-element.vue";
 import { alertRuntimeFixture } from "./runtime-conformance-alert-fixtures.ts";
 import { alertDialogRuntimeFixture } from "./runtime-conformance-alert-dialog-fixtures.ts";
+import { badgeRuntimeFixture } from "./runtime-conformance-badge-fixtures.ts";
 import { fieldRuntimeFixtures } from "./runtime-conformance-field-fixtures.ts";
 import { progressRuntimeFixture } from "./runtime-conformance-progress-fixtures.ts";
 import { switchRuntimeFixture } from "./runtime-conformance-switch-fixtures.ts";
@@ -45,6 +46,7 @@ const DeterministicIdProbe = defineComponent({
 export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   alertRuntimeFixture,
   alertDialogRuntimeFixture,
+  badgeRuntimeFixture,
   ...collapsibleRuntimeFixtures,
   ...layoutRuntimeFixtures,
   {
