@@ -14,6 +14,7 @@ mod jsx_media_has_caption;
 mod jsx_mouse_events_have_key_events;
 mod jsx_no_aria_hidden_on_focusable;
 mod jsx_no_consecutive_br;
+mod jsx_no_duplicate_class;
 mod jsx_no_i_for_icon;
 mod jsx_no_redundant_roles;
 mod jsx_no_role_presentation_on_focusable;

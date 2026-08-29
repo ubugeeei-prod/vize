@@ -23,8 +23,10 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
+use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, PropNode};
+use vize_relief::ElementNode;
 use vize_s0::FxHashSet;
 
 static META: RuleMeta = RuleMeta {
@@ -38,33 +40,64 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct NoDuplicateClass;
 
+impl NoDuplicateClass {
+    fn check_class_value(ctx: &mut LintContext<'_>, class_value: &str, range: ByteRange) {
+        let mut seen: FxHashSet<&str> = FxHashSet::default();
+        let mut reported: FxHashSet<&str> = FxHashSet::default();
+
+        for class_name in class_value.split_ascii_whitespace() {
+            if !seen.insert(class_name) && reported.insert(class_name) {
+                let message = ctx.t_fmt("html/no-duplicate-class.message", &[("name", class_name)]);
+                let help = ctx.t("html/no-duplicate-class.help");
+                ctx.warn_at_with_help(message, range, help);
+            }
+        }
+    }
+
+    fn check_binding(ctx: &mut LintContext<'_>, binding: &MarkupBinding<'_>) {
+        if binding.kind() == MarkupBindingKind::Attribute
+            && binding.is_unqualified_arg_exact("class")
+            && let Some(class_value) = binding.static_value()
+        {
+            Self::check_class_value(ctx, class_value, binding.range());
+        }
+    }
+
+    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        element.walk_bindings(&mut |binding| {
+            Self::check_binding(ctx, &binding);
+        });
+    }
+}
+
+impl MarkupRule for NoDuplicateClass {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_binding<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        _element: &MarkupElement<'a>,
+        binding: &MarkupBinding<'a>,
+    ) {
+        Self::check_binding(ctx.lint(), binding);
+    }
+}
+
 impl Rule for NoDuplicateClass {
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
 
-    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        for prop in &element.props {
-            if let PropNode::Attribute(attr) = prop
-                && attr.name == "class"
-                && let Some(value) = &attr.value
-            {
-                let mut seen: FxHashSet<&str> = FxHashSet::default();
-                let mut reported: FxHashSet<&str> = FxHashSet::default();
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
 
-                for cls in value.content.split_ascii_whitespace() {
-                    if !seen.insert(cls) && reported.insert(cls) {
-                        let message =
-                            ctx.t_fmt("html/no-duplicate-class.message", &[("name", cls)]);
-                        let help = ctx.t("html/no-duplicate-class.help");
-                        ctx.warn_with_help(message, &attr.loc, help);
-                    }
-                }
-            }
-        }
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        Self::check_element(ctx, &MarkupElement::new(element));
     }
 }
-
 #[cfg(test)]
 mod tests {
     use super::NoDuplicateClass;

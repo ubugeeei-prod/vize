@@ -17,6 +17,7 @@ mod mouse_events_have_key_events_tests;
 mod no_aria_hidden_on_focusable_jsx_tests;
 mod no_aria_hidden_on_focusable_tests;
 mod no_consecutive_br_tests;
+mod no_duplicate_class_tests;
 mod no_i_for_icon_tests;
 mod no_redundant_roles_tests;
 mod no_role_presentation_on_focusable_jsx_tests;
