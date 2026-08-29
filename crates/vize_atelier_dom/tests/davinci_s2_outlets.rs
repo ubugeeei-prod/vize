@@ -89,6 +89,18 @@ const BATTERY: &[(&str, &str)] = &[
         "event_with_object_on",
         r#"<slot @pick="choose" v-on="listeners"></slot>"#,
     ),
+    (
+        "on_then_bind_then_event",
+        r#"<slot v-on="listeners" v-bind="slotProps" @pick="choose"></slot>"#,
+    ),
+    (
+        "repeated_bind_spreads_keep_first",
+        r#"<slot v-bind="first" v-bind="second" @pick="choose"></slot>"#,
+    ),
+    (
+        "repeated_on_spreads_keep_first",
+        r#"<slot v-on="first" v-on="second" @pick="choose"></slot>"#,
+    ),
     ("in_div", "<div><slot></slot></div>"),
     ("forwarded", "<Foo><slot></slot></Foo>"),
     ("forwarded_nested", "<Foo><div><slot></slot></div></Foo>"),
