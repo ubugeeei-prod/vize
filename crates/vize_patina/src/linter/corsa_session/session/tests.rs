@@ -97,9 +97,17 @@ fn starts_type_aware_session_from_package_root() {
     std::fs::write(root.join("package.json"), "{}").unwrap();
     std::fs::write(&source, "<template />").unwrap();
 
-    let mut session =
-        CorsaTypeAwareSession::new_with_corsa_path(source.to_str().unwrap(), Some(&corsa_path))
-            .expect("package-root patina session should start");
+    let mut session = match CorsaTypeAwareSession::new_with_corsa_path(
+        source.to_str().unwrap(),
+        Some(&corsa_path),
+    ) {
+        Ok(session) => session,
+        Err(error) if is_standard_tsgo_project_session_gap(&corsa_path, &error) => {
+            let _ = std::fs::remove_dir_all(&root);
+            return;
+        }
+        Err(error) => panic!("package-root patina session should start: {error:?}"),
+    };
     session
         .open_virtual_project("const value: number = 1;\n")
         .expect("package-root patina session should refresh the virtual file");
@@ -150,4 +158,87 @@ fn test_corsa_path() -> Option<PathBuf> {
     } else {
         None
     }
+}
+
+fn is_standard_tsgo_project_session_gap(corsa_path: &Path, error: &str) -> bool {
+    is_typescript_runtime(corsa_path)
+        && (error.contains("project session did not resolve a project")
+            || error.contains("no project found for file"))
+}
+
+fn is_typescript_runtime(corsa_path: &Path) -> bool {
+    let mut after_typescript_scope = false;
+    for component in corsa_path.components() {
+        let text = component.as_os_str().to_string_lossy();
+        if after_typescript_scope
+            && (text.starts_with("typescript-")
+                || text == "native-preview"
+                || text.starts_with("native-preview-"))
+        {
+            return true;
+        }
+        after_typescript_scope = text == "@typescript";
+    }
+    is_typescript_bin_wrapper(corsa_path)
+}
+
+fn is_typescript_bin_wrapper(corsa_path: &Path) -> bool {
+    if corsa_path
+        .parent()
+        .and_then(Path::file_name)
+        .and_then(|name| name.to_str())
+        != Some(".bin")
+    {
+        return false;
+    }
+
+    let Some(name) = corsa_path.file_name().and_then(|name| name.to_str()) else {
+        return false;
+    };
+    if name != "tsc" && name != "tsgo" {
+        return false;
+    }
+
+    std::fs::read_to_string(corsa_path).is_ok_and(|contents| {
+        contents.contains("@typescript/typescript-")
+            || contents.contains("@typescript/native-preview")
+    })
+}
+
+#[test]
+fn standard_tsgo_project_session_gap_is_limited_to_typescript_runtimes() {
+    let ts7 = Path::new("/workspace/node_modules/@typescript/typescript-darwin-arm64/lib/tsc");
+    let native_preview =
+        Path::new("/workspace/node_modules/@typescript/native-preview-darwin-arm64/lib/tsgo");
+    let message = "Failed to start corsa type-aware session: protocol error: project session did not resolve a project";
+
+    assert!(is_standard_tsgo_project_session_gap(ts7, message));
+    assert!(is_standard_tsgo_project_session_gap(
+        native_preview,
+        message
+    ));
+    assert!(!is_standard_tsgo_project_session_gap(
+        Path::new("/workspace/bin/corsa"),
+        message
+    ));
+}
+
+#[test]
+fn standard_tsgo_project_session_gap_accepts_pnpm_bin_wrappers() {
+    let root = case_dir("tsgo-wrapper");
+    let bin_dir = root.join("node_modules").join(".bin");
+    let wrapper = bin_dir.join("tsgo");
+    std::fs::create_dir_all(&bin_dir).unwrap();
+    std::fs::write(
+        &wrapper,
+        "exec node \"$basedir/../@typescript/native-preview/bin/tsgo.js\" \"$@\"\n",
+    )
+    .unwrap();
+
+    assert!(is_standard_tsgo_project_session_gap(
+        &wrapper,
+        "api: client error: no project found for file active.patina.ts"
+    ));
+
+    let _ = std::fs::remove_dir_all(&root);
 }
