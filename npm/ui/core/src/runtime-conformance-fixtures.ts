@@ -9,6 +9,7 @@ import { useDeterministicId } from "./deterministic-id.ts";
 import ErrorSummary from "./error-summary.vue";
 import LinkAnchor from "./link-anchor.vue";
 import PrimitiveElement from "./primitive-element.vue";
+import { alertRuntimeFixture } from "./runtime-conformance-alert-fixtures.ts";
 import { switchRuntimeFixture } from "./runtime-conformance-switch-fixtures.ts";
 import SearchField from "./search-field.vue";
 import TextInput from "./text-input.vue";
@@ -38,6 +39,7 @@ const DeterministicIdProbe = defineComponent({
 });
 
 export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
+  alertRuntimeFixture,
   {
     name: "button",
     sourceFile: "action-button.vue",

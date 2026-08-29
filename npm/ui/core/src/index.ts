@@ -7,6 +7,7 @@ export * from "./field-wiring.ts";
 // so the layer contract is established before any layered rule;
 // src/theme-stylesheet.test.ts pins the shipped order.
 export * from "./theme.ts";
+export * from "./alert.ts";
 export * from "./announcer.ts";
 export * from "./checkbox.ts";
 export * from "./collection.ts";

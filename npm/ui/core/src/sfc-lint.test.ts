@@ -19,6 +19,7 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
     results.map((result) => result.filename),
     [
       "src/action-button.vue",
+      "src/alert.vue",
       "src/announcer-provider.vue",
       "src/checkbox-control.vue",
       "src/deterministic-id-provider.vue",
@@ -44,6 +45,7 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
     requests,
     [
       "action-button.vue",
+      "alert.vue",
       "announcer-provider.vue",
       "checkbox-control.vue",
       "deterministic-id-provider.vue",

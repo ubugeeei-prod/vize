@@ -34,6 +34,11 @@
       "import": "./dist/index.mjs",
       "default": "./dist/index.mjs"
     },
+    "./alert": {
+      "types": "./dist/alert.d.mts",
+      "import": "./dist/alert.mjs",
+      "default": "./dist/alert.mjs"
+    },
     "./announcer": {
       "types": "./dist/announcer.d.mts",
       "import": "./dist/announcer.mjs",

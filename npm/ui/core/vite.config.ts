@@ -31,6 +31,7 @@ export default defineConfig({
       index: "src/index.ts",
       theme: "src/theme.ts",
       "theme-scope": "src/theme-scope.ts",
+      alert: "src/alert.ts",
       announcer: "src/announcer.ts",
       button: "src/button.ts",
       link: "src/link.ts",
