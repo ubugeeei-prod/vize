@@ -211,6 +211,14 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<Foo><template v-for="i in n"><span>x</span><template #header>y</template></template></Foo>"#,
     ),
     (
+        "unwrapped_if_two_nested_slots_keeps_both",
+        r#"<Foo><template v-if="ok"><template #header>h</template><template #footer>f</template></template></Foo>"#,
+    ),
+    (
+        "unwrapped_for_two_nested_slots_keeps_both",
+        r#"<Foo><template v-for="i in n"><template #header>h</template><template #footer>f</template></template></Foo>"#,
+    ),
+    (
         "dynamic_slot_name_hole",
         r#"<Foo><template #[]>x</template></Foo>"#,
     ),

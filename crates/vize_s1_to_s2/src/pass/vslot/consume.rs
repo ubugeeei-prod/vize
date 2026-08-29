@@ -105,11 +105,20 @@ pub(super) enum ChildKind {
 }
 
 /// Whether any view in a region carries implicit content (the legacy
-/// `any_implicit_child`).
+/// `any_implicit_child`), plus unwrapped wrappers that hold more than
+/// one `#slot` template. A single nested slot template stays a
+/// `createSlots` carrier; two or more flatten onto the default slot,
+/// so the parent must synthesize that group or emit drops them.
 fn region_implicit(views: &[ChildView]) -> bool {
-    views
-        .iter()
-        .any(|view| matches!(view.kind, ChildKind::Content { implicit: true }))
+    let mut slot_templates = 0usize;
+    for view in views {
+        match &view.kind {
+            ChildKind::Content { implicit: true } => return true,
+            ChildKind::SlotTemplate(_) => slot_templates += 1,
+            ChildKind::Content { implicit: false } | ChildKind::Filler => {}
+        }
+    }
+    slot_templates > 1
 }
 
 /// Visit one region's ops in page order, returning their views.

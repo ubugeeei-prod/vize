@@ -42,25 +42,26 @@ pub(super) fn is_slot_for(for_op: &ForOp<'_>) -> bool {
 }
 
 /// `createSlots` owns `v-if` / `v-for` *on* a slot template. An unwrapped
-/// `<template v-if>` / `<template v-for>` that merely *contains* a nested
-/// `#slot` plus other children must stay on the default-slot path — otherwise
-/// `skip_ops` drops the siblings.
+/// `<template v-if>` / `<template v-for>` that merely *contains* nested
+/// `#slot` children must stay on the default-slot path — otherwise
+/// `skip_ops` keeps only `first_slot_template` and drops the rest.
 fn is_slot_if_branch(branch: &IfBranch<'_>) -> bool {
     is_slot_template_carrier(&branch.region)
 }
 
 fn is_slot_template_carrier(region: &Region<'_>) -> bool {
-    first_slot_template(region).is_some() && !region_has_non_slot_content(region)
-}
-
-fn region_has_non_slot_content(region: &Region<'_>) -> bool {
-    region.ops.iter().any(|op| {
-        !is_whitespace_text(op)
-            && !matches!(
-                op,
-                Op::Element(element) if slot_template_content(element).is_some()
-            )
-    })
+    let mut slot_templates = 0usize;
+    for op in region.ops.iter() {
+        if is_whitespace_text(op) {
+            continue;
+        }
+        if matches!(op, Op::Element(element) if slot_template_content(element).is_some()) {
+            slot_templates += 1;
+        } else {
+            return false;
+        }
+    }
+    slot_templates == 1
 }
 
 pub(super) fn skip_ops(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) {
