@@ -1,0 +1,24 @@
+---
+source: crates/vize_s1_to_s2/tests/vfor_pass_snapshot.rs
+expression: "$crate :: folio :: Folio ::\nprint_to_string(& *folio, $crate :: folio :: FolioMode :: Full,)"
+---
+[disegno]
+ops=13
+
+[disegno.ops]
+ui.element ul @0:69
+  ui.for source=js("items" @31:36) value=js("item" @19:23) key=js("i" @25:26) @7:63
+    ui.element li @7:63
+      attr key="row" @38:47
+      ui.interpolation js("item" @51:55) @48:58
+ui.for source=js("rows" @106:110) value=js("{ id }" @88:94) key=js("index" @96:101) @70:195
+  ui.if @115:183
+    branch js("id" @125:127) @115:153
+      ui.element dt @115:153
+        ui.interpolation js("id" @143:145) @140:148
+    branch @156:183
+      ui.element dd @156:183
+        ui.interpolation js("index" @170:175) @167:178
+ui.for source=js("mystery" @210:217) value=opaque(for-value "" @207:207) @196:231
+  ui.element p @196:231
+    ui.text "fallback" @219:227

@@ -29,7 +29,7 @@ in the transform lane at all — the old step file
   objects, conditional carriers, the JSX `v-slots` spread — plus
   forwarded slot props on outlets (still `defer.slot-props`, waiting
   for `ui.bind`).
-- **The pass body** (`vize_ricalco::pass::vslot`, one shaped
+- **The pass body** (`vize_s1_to_s2::pass::vslot`, one shaped
   page-order recursion): the **canonical grouping** `collect_slots` +
   the component-`v-slot` read establish — published as
   `SideTable<SlotFacts>` per `ui.component` (own spellings, template
@@ -175,7 +175,7 @@ lane feeds no shipped `rewrite_expression` site; `SlotFacts` joins
 
 ### TS-17
 
-`crates/vize_ricalco/tests/vslot_pass_snapshot.rs`, two committed
+`crates/vize_s1_to_s2/tests/vslot_pass_snapshot.rs`, two committed
 fixtures → lower → pipeline → full normalized folio snapshots:
 `tests/fixtures/vslot/groups.vue` (pattern params, modifier-folded
 group, implicit default, the bare-`v-slot` synthesized name, a dynamic
@@ -190,7 +190,7 @@ exact diagnostic order.
 
 ### Other acceptance, clause by clause
 
-- **TS-1**: `cargo test -p vize_ricalco` — 77 tests (17 unit + the
+- **TS-1**: `cargo test -p vize_s1_to_s2` — 77 tests (17 unit + the
   P2-8 suites + vif/vfor suites + 11 `vslot_pass` + 2 vslot
   snapshots) green; `cargo test -p vize_atelier_core` fully green
   (witness suite now 6 tests: the four-message relief pin and the
@@ -207,7 +207,7 @@ exact diagnostic order.
 - **TS-13**: `assertion-lint: OK`, allowlist untouched.
 - **TS-11, deferred precisely**: no shipped path touched — no
   `Cargo.toml` changed (the new op and pass live in the unpublished
-  `vize_s2`/`vize_ricalco`; the comparator additions are
+  `vize_s2`/`vize_s1_to_s2`; the comparator additions are
   dev-dep test space), so the dependency graph the publish gate
   checks is bit-identical to the last green run and the mechanical
   argument stands; the clean-fixture `corpus-diff` sweep recipe stands

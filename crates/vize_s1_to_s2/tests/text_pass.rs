@@ -1,0 +1,281 @@
+//! The text pass (P2-9 series 4): semantics pins.
+//!
+//! Exact-equality oracles over the installment's three products — the
+//! condensed surface, the compound ops with their recorded parts, and
+//! the published [`TextFacts`] view — plus the comment-boundary parity
+//! cases the port's lowering-absorption argument rests on. The TS-17
+//! folio snapshots live in `text_pass_snapshot.rs`.
+
+mod support;
+
+use vize_davinci::id::NodeId;
+use vize_s0::{Span, String};
+use vize_s1_to_s2::lower::{TextPart, rebuild_source};
+use vize_s1_to_s2::pass::TextFacts;
+use vize_s2::folio::{FolioExpr, FolioOp};
+
+use support::{assert_transformed_sound, with_transformed};
+
+fn id(index: u32) -> NodeId {
+    NodeId::from_index(index).expect("test ids fit")
+}
+
+/// The span of the one `needle` occurrence in `source`.
+fn span_of(source: &str, needle: &str) -> Span {
+    let start = source.find(needle).expect("needle exists");
+    Span::new(
+        u32::try_from(start).expect("fixture fits u32"),
+        u32::try_from(start + needle.len()).expect("fixture fits u32"),
+    )
+}
+
+#[test]
+fn a_mixed_run_merges_into_one_compound_with_recorded_parts() {
+    let source = "<p>Hi {{ name }}! You have {{ n }} new  mails.</p>";
+    with_transformed(source, |lowered, folio, facts, _| {
+        // The tree: one element, one compound interpolation child.
+        let FolioOp::Element(p) = &folio.ops[0] else {
+            panic!("root is not the element: {:?}", folio.ops);
+        };
+        assert_eq!(p.children.len(), 1, "the run merged into one op");
+        let FolioOp::Interpolation(compound) = &p.children[0] else {
+            panic!("the merged op is not an interpolation: {:?}", p.children);
+        };
+        // The opaque payload: reason compound, the canonical rebuild
+        // (internal whitespace condensed, delimiters normalized).
+        assert_eq!(
+            compound.expression,
+            FolioExpr::Opaque {
+                reason: vize_s2::expr::OpaqueReason::Compound,
+                source: "Hi {{ name }}! You have {{ n }} new mails.".into(),
+                span: Span::new(3, 46),
+            }
+        );
+        // The recorded parts, exact: texts condensed, spans authored.
+        let expected = vec![
+            TextPart {
+                text: String::from("Hi "),
+                span: span_of(source, "Hi "),
+                dynamic: false,
+            },
+            TextPart {
+                text: String::from("name"),
+                span: span_of(source, "{{ name }}"),
+                dynamic: true,
+            },
+            TextPart {
+                text: String::from("! You have "),
+                span: span_of(source, "! You have "),
+                dynamic: false,
+            },
+            TextPart {
+                text: String::from("n"),
+                span: span_of(source, "{{ n }}"),
+                dynamic: true,
+            },
+            TextPart {
+                text: String::from(" new mails."),
+                span: span_of(source, " new  mails."),
+                dynamic: false,
+            },
+        ];
+        assert_eq!(
+            facts.text_facts.sorted_entries(),
+            vec![(
+                id(1),
+                &TextFacts {
+                    parts: expected.clone()
+                }
+            )]
+        );
+        // The consumed view is the recorded view, validated.
+        assert_eq!(
+            lowered.texts.sorted_entries(),
+            vec![(
+                id(1),
+                &vize_s1_to_s2::lower::TextParts {
+                    parts: expected.clone()
+                }
+            )]
+        );
+        // The one rebuild rule, exercised from test space too.
+        assert_eq!(
+            rebuild_source(&expected).as_str(),
+            "Hi {{ name }}! You have {{ n }} new mails."
+        );
+        // The consumption left its record.
+        let rules: Vec<(&str, &str, &str)> = lowered
+            .provenance
+            .iter()
+            .filter(|record| record.rule.as_str() == "pass.text.compound")
+            .map(|record| {
+                (
+                    record.rule.as_str(),
+                    record.before.as_str(),
+                    record.after.as_str(),
+                )
+            })
+            .collect();
+        assert_eq!(
+            rules,
+            vec![("pass.text.compound", "parts=5", "fact static=3 dynamic=2")]
+        );
+    });
+    assert_transformed_sound(source, "mixed-run");
+}
+
+#[test]
+fn lone_nodes_never_compound() {
+    // A single interpolation and a single text stay themselves — the
+    // legacy run grouping's own rule, and the pass's ≥2-parts law.
+    let source = "<p>{{ a }}</p><q>b</q>";
+    with_transformed(source, |lowered, folio, facts, _| {
+        assert!(facts.text_facts.is_empty());
+        assert!(lowered.texts.is_empty());
+        let FolioOp::Element(p) = &folio.ops[0] else {
+            panic!("no p element");
+        };
+        assert!(
+            matches!(&p.children[..], [FolioOp::Interpolation(node)]
+                if matches!(&node.expression, FolioExpr::Js { source, .. } if source == "a")),
+            "a lone interpolation keeps its retained expression: {:?}",
+            p.children
+        );
+    });
+    assert_transformed_sound(source, "lone-nodes");
+}
+
+#[test]
+fn a_comment_is_a_run_boundary_never_merged_across() {
+    // `a<!--c-->b {{ x }}`: the comment splits the text family into two
+    // units — "a" alone, then the compound — exactly the legacy
+    // codegen's grouping over its comment-bearing tree.
+    let source = "<p>a<!--c-->b {{ x }}</p>";
+    with_transformed(source, |_, folio, facts, _| {
+        let FolioOp::Element(p) = &folio.ops[0] else {
+            panic!("no p element");
+        };
+        assert_eq!(p.children.len(), 2, "two units: {:?}", p.children);
+        assert!(matches!(&p.children[0], FolioOp::Text(text) if text.content == "a"));
+        assert!(matches!(
+            &p.children[1],
+            FolioOp::Interpolation(node)
+                if matches!(&node.expression, FolioExpr::Opaque { source, .. }
+                    if source == "b {{ x }}")
+        ));
+        assert_eq!(facts.text_facts.len(), 1);
+    });
+    assert_transformed_sound(source, "comment-boundary");
+}
+
+#[test]
+fn comment_neighbours_drive_the_remove_rule() {
+    // The comment-visibility case the lowering-absorption decision
+    // rests on: the newline run between two comments has no text-like
+    // neighbour, so it is removed — matching the legacy parse-time
+    // condense over its comment-bearing tree. A comment-blind pass
+    // would have seen text neighbours on both sides and condensed to
+    // one space instead.
+    let source = "<p>a<!--c-->\n<!--d-->b</p>";
+    with_transformed(source, |_, folio, _, _| {
+        let FolioOp::Element(p) = &folio.ops[0] else {
+            panic!("no p element");
+        };
+        assert_eq!(p.children.len(), 2, "the run is gone: {:?}", p.children);
+        assert!(matches!(&p.children[0], FolioOp::Text(text) if text.content == "a"));
+        assert!(matches!(&p.children[1], FolioOp::Text(text) if text.content == "b"));
+    });
+    assert_transformed_sound(source, "comment-remove");
+}
+
+#[test]
+fn whitespace_condenses_by_the_armature_rules() {
+    // No newline between elements: the run condenses to one space; a
+    // newline-bearing run between elements is removed; interior runs in
+    // mixed text collapse.
+    let source = "<i>one</i> <i>two</i>\n<i>three</i><b>x   y</b>";
+    with_transformed(source, |_, folio, _, _| {
+        let kinds: Vec<String> = folio
+            .ops
+            .iter()
+            .map(|op| match op {
+                FolioOp::Element(element) => vize_s0::cstr!("el:{}", element.tag),
+                FolioOp::Text(text) => vize_s0::cstr!("text:{:?}", text.content.as_str()),
+                other => vize_s0::cstr!("{other:?}"),
+            })
+            .collect();
+        assert_eq!(
+            kinds,
+            vec![
+                String::from("el:i"),
+                String::from("text:\" \""),
+                String::from("el:i"),
+                String::from("el:i"),
+                String::from("el:b"),
+            ]
+        );
+        let FolioOp::Element(b) = &folio.ops[4] else {
+            panic!("no b element");
+        };
+        assert!(matches!(&b.children[..], [FolioOp::Text(text)] if text.content == "x y"));
+    });
+    assert_transformed_sound(source, "condense-rules");
+}
+
+#[test]
+fn pre_and_rawtext_subtrees_keep_their_bytes() {
+    // `<pre>` (the shipped `is_pre_tag`) and rawtext content are exempt
+    // from condensing; merging still applies inside `<pre>` (the legacy
+    // codegen grouping never checked pre), with the parts uncondensed.
+    let source = "<pre>  a   {{ x }}  b </pre><textarea> c   d </textarea>";
+    with_transformed(source, |_, folio, facts, _| {
+        let FolioOp::Element(pre) = &folio.ops[0] else {
+            panic!("no pre element");
+        };
+        assert!(matches!(
+            &pre.children[..],
+            [FolioOp::Interpolation(node)]
+                if matches!(&node.expression, FolioExpr::Opaque { source, .. }
+                    if source == "  a   {{ x }}  b ")
+        ));
+        assert_eq!(facts.text_facts.len(), 1);
+        let FolioOp::Element(textarea) = &folio.ops[1] else {
+            panic!("no textarea element: {:?}", folio.ops);
+        };
+        assert!(
+            matches!(&textarea.children[..], [FolioOp::Text(text)] if text.content == " c   d "),
+            "rawtext bytes kept: {:?}",
+            textarea.children
+        );
+    });
+    assert_transformed_sound(source, "pre-rawtext");
+}
+
+#[test]
+fn entities_stay_undecoded_the_s1_scope() {
+    // The S1 v1 no-decoding deviation, re-recorded for text parts: the
+    // legacy lane decodes `&amp;` at parse; S2 carries the authored
+    // bytes, and the differential lane counts the class instead of
+    // comparing it.
+    let source = "<p>a &amp; b {{ x }}</p>";
+    with_transformed(source, |lowered, _, _, _| {
+        let entry = lowered.texts.sorted_entries();
+        assert_eq!(entry.len(), 1);
+        assert_eq!(entry[0].1.parts[0].text.as_str(), "a &amp; b ");
+    });
+    assert_transformed_sound(source, "entities");
+}
+
+#[test]
+fn the_pass_is_total_over_malformed_text_shapes() {
+    for (name, source) in [
+        ("unclosed-with-run", "<div>a {{ b }}<span>c {{ d }}"),
+        ("stray-end-tag", "<p>a</q> {{ b }}</p>"),
+        ("lone-brace-text", "<p>{{ a </p>"),
+        ("cdata-neighbour", "<p>a<![CDATA[b]]>c {{ d }}</p>"),
+        ("empty", ""),
+        ("whitespace-only", "  \n\t  "),
+    ] {
+        assert_transformed_sound(source, name);
+    }
+}

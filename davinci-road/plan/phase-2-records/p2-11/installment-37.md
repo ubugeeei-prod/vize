@@ -12,16 +12,16 @@ prop key is rewritten.
 
 The durable witnesses are:
 
-- [`emit_merge.rs`](../../../../crates/vize_ricalco/tests/emit_merge.rs)
+- [`emit_merge.rs`](../../../../crates/vize_s1_to_s2/tests/emit_merge.rs)
   - exact pins that object `v-bind` modifiers preserve the same spread
     expression and merge shape as the modifier-free source.
 - [`davinci_s2_bind_modifiers.rs`](../../../../crates/vize_atelier_dom/tests/davinci_s2_bind_modifiers.rs)
   - S2-vs-shipped byte fixtures for lone and merged object `v-bind`
     modifiers.
-- [`emit_unsupported_census.rs`](../../../../crates/vize_ricalco/tests/emit_unsupported_census.rs)
+- [`emit_unsupported_census.rs`](../../../../crates/vize_s1_to_s2/tests/emit_unsupported_census.rs)
   - the source-level `ObjectBindHasModifiers` witness retires from the
     committed refusal census.
-- [`emit_unsupported_catalogue.rs`](../../../../crates/vize_ricalco/tests/emit_unsupported_catalogue.rs)
+- [`emit_unsupported_catalogue.rs`](../../../../crates/vize_s1_to_s2/tests/emit_unsupported_catalogue.rs)
   - `ObjectBindHasModifiers` remains accounted for as a retired bucket.
 
 This installment does not tick P2-11. The production-lane switch, hydrated

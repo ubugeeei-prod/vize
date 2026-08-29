@@ -25,12 +25,12 @@ The durable witnesses are:
 - [`davinci_s2_slots.rs`](../../../../crates/vize_atelier_dom/tests/davinci_s2_slots.rs)
   - S2-vs-shipped byte fixtures for plain, conditional and looped slot-template
     carriers with inert render bindings.
-- [`emit_slots.rs`](../../../../crates/vize_ricalco/tests/emit_slots.rs)
+- [`emit_slots.rs`](../../../../crates/vize_s1_to_s2/tests/emit_slots.rs)
   - direct emitter coverage for named slot templates with inert bindings.
-- [`emit_create_slots.rs`](../../../../crates/vize_ricalco/tests/emit_create_slots.rs)
+- [`emit_create_slots.rs`](../../../../crates/vize_s1_to_s2/tests/emit_create_slots.rs)
   - direct createSlots coverage for conditional and looped slot templates.
-- [`emit_unsupported_census.rs`](../../../../crates/vize_ricalco/tests/emit_unsupported_census.rs)
-  and [`emit_unsupported_catalogue.rs`](../../../../crates/vize_ricalco/tests/emit_unsupported_catalogue.rs)
+- [`emit_unsupported_census.rs`](../../../../crates/vize_s1_to_s2/tests/emit_unsupported_census.rs)
+  and [`emit_unsupported_catalogue.rs`](../../../../crates/vize_s1_to_s2/tests/emit_unsupported_catalogue.rs)
   - the refusal catalogue remains explicit and source-covered.
 
 This installment does not tick P2-11. The production-lane switch, full-corpus

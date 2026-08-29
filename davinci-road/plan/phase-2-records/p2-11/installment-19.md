@@ -24,7 +24,7 @@ emit sites.
 
 The durable witnesses are:
 
-- `crates/vize_ricalco/tests/emit_bind_modifiers.rs` — direct S2 emit
+- `crates/vize_s1_to_s2/tests/emit_bind_modifiers.rs` — direct S2 emit
   snapshots for `.camel`, `.prop`, `.attr`, and the dot shorthand.
 - `crates/vize_atelier_dom/tests/davinci_s2_bind_modifiers.rs` — eleven
   S2-vs-shipped DOM lane byte-for-byte comparisons covering native

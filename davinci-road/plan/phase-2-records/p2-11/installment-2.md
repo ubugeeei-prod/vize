@@ -18,7 +18,7 @@ old `compile_template` vs S2 emit, **byte-for-byte**, including helper
 order. `VIZE_DAVINCI_DOM=legacy` is named; a pinned comparison count
 makes a silent disarm fail.
 
-Home: `vize_ricalco::emit` (`emit.rs` + `emit/buf.rs` / `js.rs` /
+Home: `vize_s1_to_s2::emit` (`emit.rs` + `emit/buf.rs` / `js.rs` /
 `vnode.rs`). Public entry: `emit_dom` / `emit_dom_source`. Refusal is
 `EmitError::{Diagnostics, Unsupported}` — never a panic.
 

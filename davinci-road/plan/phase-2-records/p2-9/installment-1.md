@@ -12,7 +12,7 @@ published, can never carry the Davinci crates in its release graph
 (`tests/tooling/moonbit-publish-crates.test.ts`). The resolution splits
 the substrate along exactly that line:
 
-- **Pass bodies live in `vize_ricalco::pass`** (`src/pass.rs` +
+- **Pass bodies live in `vize_s1_to_s2::pass`** (`src/pass.rs` +
   `src/pass/vif.rs`). Ricalco is `publish = false`, already depends
   downward on `vize_davinci` (the P2-2 pass manager) and `vize_s2`
   (the ops), and the passes are the continuation of the dialect
@@ -23,7 +23,7 @@ the substrate along exactly that line:
   can split one out if the module outgrows the budget).
 - **The dual-run comparator lives in `vize_atelier_core` test space**
   (`tests/s2_support/` + the two binaries), with `vize_davinci` /
-  `vize_s2` / `vize_ricalco` / `vize_sinopia` as
+  `vize_s2` / `vize_s1_to_s2` / `vize_sinopia` as
   **dev-dependencies**. The gate's rule, read from its source: a
   workspace dependency escapes the publish-order check iff
   `kind === "dev" && req === "*"` — a path-only dev-dependency cargo
@@ -42,7 +42,7 @@ the substrate along exactly that line:
 
 ### The lane flag (charter #26)
 
-`VIZE_DAVINCI_TRANSFORM` — named once in `vize_ricalco::pass`
+`VIZE_DAVINCI_TRANSFORM` — named once in `vize_s1_to_s2::pass`
 (`TRANSFORM_LANE_FLAG`; ricalco is `no_std` and reads no environment),
 read in the comparator: value `legacy` disarms the S2 dual-run,
 counted (`skipped_legacy_flag`), never silent. The legacy lane is the
@@ -104,7 +104,7 @@ Two extraction guards, both matching the legacy transform exactly:
 
 ### TS-17
 
-`crates/vize_ricalco/tests/vif_pass_snapshot.rs`, the P2-4 harness
+`crates/vize_s1_to_s2/tests/vif_pass_snapshot.rs`, the P2-4 harness
 shape: two committed fixtures (`tests/fixtures/vif/chain-keys.vue`,
 `collision.vue`) → lower → pipeline under the budget observer → full
 normalized folio snapshot (`assert_folio_snapshot!`), with the walk
@@ -191,7 +191,7 @@ recipe: `node tools/davinci/corpus-diff.mjs --surface compiler
 
 ### Other acceptance, clause by clause
 
-- **TS-1**: `cargo test -p vize_ricalco` (37 tests: 14 unit + the P2-8
+- **TS-1**: `cargo test -p vize_s1_to_s2` (37 tests: 14 unit + the P2-8
   suites + 9 `vif_pass` + 2 snapshots + battery/elements/facts/shapes)
   and `cargo test -p vize_atelier_core` fully green; disegno / davinci
   / sinopia suites re-run green; the ricalco lowering corpus lane
@@ -228,7 +228,7 @@ recipe: `node tools/davinci/corpus-diff.mjs --surface compiler
   81 dynamic vs 45 static branch keys.
 - **Pass catalogue for `davinci-opt`**: the binary still binds unknown
   pipeline names to no-ops; it cannot run ricalco's bodies because
-  `vize_davinci` depending on `vize_ricalco` would be a cycle. The
+  `vize_davinci` depending on `vize_s1_to_s2` would be a cycle. The
   name→body catalogue needs a home above both (P2-11's program
   decision is the natural point).
 - **Comparator normalizations to revisit**: condition text compares

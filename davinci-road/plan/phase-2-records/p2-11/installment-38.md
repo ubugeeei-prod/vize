@@ -12,19 +12,19 @@ object still flows through `_toHandlers(expr, true)`, including inside
 
 The durable witnesses are:
 
-- [`merge.rs`](../../../../crates/vize_ricalco/src/emit/merge.rs)
+- [`merge.rs`](../../../../crates/vize_s1_to_s2/src/emit/merge.rs)
   - object `v-on` admission validates only the handler expression, matching the
     shipped object-spread path.
-- [`emit_on.rs`](../../../../crates/vize_ricalco/tests/emit_on.rs)
+- [`emit_on.rs`](../../../../crates/vize_s1_to_s2/tests/emit_on.rs)
   - exact pins that object `v-on` modifiers preserve the same handler object
     and output as the modifier-free source.
 - [`davinci_s2_von.rs`](../../../../crates/vize_atelier_dom/tests/davinci_s2_von.rs)
   - S2-vs-shipped byte fixtures for lone, merged, and component object `v-on`
     modifiers.
-- [`emit_unsupported_census.rs`](../../../../crates/vize_ricalco/tests/emit_unsupported_census.rs)
+- [`emit_unsupported_census.rs`](../../../../crates/vize_s1_to_s2/tests/emit_unsupported_census.rs)
   - the source-level `ObjectOnHasModifiers` witness retires from the committed
     refusal census.
-- [`emit_unsupported_catalogue.rs`](../../../../crates/vize_ricalco/tests/emit_unsupported_catalogue.rs)
+- [`emit_unsupported_catalogue.rs`](../../../../crates/vize_s1_to_s2/tests/emit_unsupported_catalogue.rs)
   - `ObjectOnHasModifiers` remains accounted for as a retired bucket.
 
 This installment does not tick P2-11. The production-lane switch, hydrated

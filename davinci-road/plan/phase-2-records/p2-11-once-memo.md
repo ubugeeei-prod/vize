@@ -62,7 +62,7 @@ text). Exact rejections: trailing content on `vue.once`, missing
 
 ## Emit, deliberately left
 
-`crates/vize_ricalco/src/emit/**` was not touched. `admit_bindings`
+`crates/vize_s1_to_s2/src/emit/**` was not touched. `admit_bindings`
 still hits `_ => Unsupported` for these bindings. Tests in
 `tests/emit_static.rs` pin that `<div v-once>` and `<div v-memo="[id]">`
 refuse. Realization (`has_v_once` / `get_memo_exp` / cache wrappers)

@@ -22,7 +22,7 @@ The realized cases are:
 
 The durable witnesses are:
 
-- [`emit_slot_template_carriers.rs`](../../../../crates/vize_ricalco/tests/emit_slot_template_carriers.rs)
+- [`emit_slot_template_carriers.rs`](../../../../crates/vize_s1_to_s2/tests/emit_slot_template_carriers.rs)
   - exact direct S2 emitter output for interpolation, multi-child, native-child
     and createSlots carrier cases.
 - [`davinci_s2_slots.rs`](../../../../crates/vize_atelier_dom/tests/davinci_s2_slots.rs)

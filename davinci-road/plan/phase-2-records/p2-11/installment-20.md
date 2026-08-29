@@ -15,7 +15,7 @@ keyed-fragment behavior byte-identical to the shipped lane.
 
 The durable current witnesses are:
 
-- [`emit_dynamic_bind_keys.rs`](../../../../crates/vize_ricalco/tests/emit_dynamic_bind_keys.rs)
+- [`emit_dynamic_bind_keys.rs`](../../../../crates/vize_s1_to_s2/tests/emit_dynamic_bind_keys.rs)
   — direct S2 emission snapshots for computed keys, modifier composition,
   `mergeProps`, `v-if`, `v-for` and slot outlets.
 - [`davinci_s2_dynamic_bind_keys.rs`](../../../../crates/vize_atelier_dom/tests/davinci_s2_dynamic_bind_keys.rs)

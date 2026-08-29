@@ -16,7 +16,7 @@ code splits three ways, and the split _is_ the design:
   (`StaticType`: NotStatic / HasDynamicText / FullyStatic) and
   `props.rs`'s per-prop hoistability (`is_hoistable_static_prop`,
   `has_static_props`, the two nested-children predicates) — is the pass
-  body: `vize_ricalco::pass::hoist`, published per owner as
+  body: `vize_s1_to_s2::pass::hoist`, published per owner as
   [`StaticFacts`] (level + `props_hoistable` + `nested_static` +
   `native_descendants` + `foreign`), dense over `ui.element` /
   `ui.component`, keyed by page-order id, one provenance record per
@@ -181,7 +181,7 @@ prepared feed.
 
 ### TS-17
 
-`crates/vize_ricalco/tests/hoist_pass_snapshot.rs`, two committed
+`crates/vize_s1_to_s2/tests/hoist_pass_snapshot.rs`, two committed
 fixtures → lower → pipeline → full normalized folio snapshots:
 `tests/fixtures/hoist/levels.vue` (the lattice's rungs on one page:
 fully-static subtree, dynamic text, the `<svg>` directive block with a
@@ -195,7 +195,7 @@ re-pinned `walks=6`; their folio snapshots did not move.
 
 ### Other acceptance, clause by clause
 
-- **TS-1**: `cargo test -p vize_ricalco` — 135 tests green (16
+- **TS-1**: `cargo test -p vize_s1_to_s2` — 135 tests green (16
   `hoist_pass` + 2 snapshots new; the vfor/vif provenance pins gained
   the pass's fact records — re-pinned deliberately);
   `cargo test -p vize_atelier_core` fully green (the plain witness

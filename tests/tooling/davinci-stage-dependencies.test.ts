@@ -20,7 +20,7 @@ const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>
   ["vize_s1", [["vize_carton", "vize_s0"]]],
   ["vize_s2", [["vize_carton", "vize_s0"]]],
   [
-    "vize_ricalco",
+    "vize_s1_to_s2",
     [
       ["vize_carton", "vize_s0"],
       ["vize_s1", null],
@@ -29,7 +29,7 @@ const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>
   ],
 ]);
 
-const unpublishedDavinciStages = new Set(["vize_davinci", "vize_s1", "vize_s2", "vize_ricalco"]);
+const unpublishedDavinciStages = new Set(["vize_davinci", "vize_s1", "vize_s2", "vize_s1_to_s2"]);
 
 function isPublishable(pkg: Package): boolean {
   return pkg.publish === null || pkg.publish.length > 0;
@@ -58,14 +58,14 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
     ["vize_davinci", 1],
     ["vize_s1", 1],
     ["vize_s2", 2],
-    ["vize_ricalco", 3],
+    ["vize_s1_to_s2", 3],
   ]);
   const expectedEdges = new Map<string, string[]>([
     ["vize_carton", []],
     ["vize_davinci", ["vize_carton"]],
     ["vize_s1", ["vize_carton"]],
     ["vize_s2", ["vize_carton", "vize_davinci"]],
-    ["vize_ricalco", ["vize_carton", "vize_davinci", "vize_s1", "vize_s2"]],
+    ["vize_s1_to_s2", ["vize_carton", "vize_davinci", "vize_s1", "vize_s2"]],
   ]);
 
   for (const [packageName, packageTier] of tiers) {
@@ -124,10 +124,7 @@ test("Davinci fuzz harness imports stage packages through aliases", () => {
     manifest,
     /^vize_s0 = \{ package = "vize_carton", path = "\.\.\/\.\.\/crates\/vize_carton" \}$/m,
   );
-  assert.match(
-    manifest,
-    /^vize_s1_to_s2 = \{ package = "vize_ricalco", path = "\.\.\/\.\.\/crates\/vize_ricalco" \}$/m,
-  );
+  assert.match(manifest, /^vize_s1_to_s2 = \{ path = "\.\.\/\.\.\/crates\/vize_s1_to_s2" \}$/m);
   assert.match(manifest, /^vize_s2 = \{ path = "\.\.\/\.\.\/crates\/vize_s2" \}$/m);
   assert.doesNotMatch(manifest, /^vize_(?:carton|disegno|ricalco) = /m);
 
@@ -144,17 +141,33 @@ test("Davinci S2 uses the physical crate directory", () => {
   assert.doesNotMatch(workspaceManifest, /crates\/vize_disegno/u);
 });
 
-test("Davinci DOM lane tests import lowering through the stage alias", () => {
-  const lowering = dependency(metadata, "vize_atelier_dom", "vize_ricalco", "dev");
-  assert.equal(lowering.rename, "vize_s1_to_s2");
+test("Davinci S1-to-S2 uses the physical crate package and directory", () => {
+  const workspaceManifest = readRepoFile("Cargo.toml");
+  assert.match(workspaceManifest, /^\s*"crates\/vize_s1_to_s2",$/m);
+  assert.match(workspaceManifest, /^vize_s1_to_s2 = \{ path = "crates\/vize_s1_to_s2" \}$/m);
+  assert.doesNotMatch(workspaceManifest, /crates\/vize_ricalco/u);
+  assert.doesNotMatch(workspaceManifest, /^vize_ricalco = /m);
+  assert.doesNotMatch(workspaceManifest, /package = "vize_ricalco"/u);
+
+  const loweringManifest = readRepoFile("crates", "vize_s1_to_s2", "Cargo.toml");
+  assert.match(loweringManifest, /^name = "vize_s1_to_s2"$/m);
+
+  const lockfile = readRepoFile("Cargo.lock");
+  assert.match(lockfile, /^name = "vize_s1_to_s2"$/m);
+  assert.doesNotMatch(lockfile, /\bvize_ricalco\b/u);
+});
+
+test("Davinci DOM lane tests import lowering through the physical S1-to-S2 package", () => {
+  const lowering = dependency(metadata, "vize_atelier_dom", "vize_s1_to_s2", "dev");
+  assert.equal(lowering.rename, null);
   const dependencies = workspacePackage(metadata, "vize_atelier_dom").dependencies;
   assert.ok(
     dependencies.every(
       (dependency) =>
-        dependency.name !== "vize_ricalco" ||
-        (dependency.kind === "dev" && dependency.rename === "vize_s1_to_s2"),
+        dependency.name !== "vize_s1_to_s2" ||
+        (dependency.kind === "dev" && dependency.rename === null),
     ),
-    "vize_atelier_dom must not depend on vize_ricalco through its physical name",
+    "vize_atelier_dom must use the physical vize_s1_to_s2 package name",
   );
 
   for (const file of s2DomWitnessFiles()) {
@@ -163,17 +176,17 @@ test("Davinci DOM lane tests import lowering through the stage alias", () => {
   }
 });
 
-test("Davinci atelier core S2 witnesses import lowering through the stage alias", () => {
-  const lowering = dependency(metadata, "vize_atelier_core", "vize_ricalco", "dev");
-  assert.equal(lowering.rename, "vize_s1_to_s2");
+test("Davinci atelier core S2 witnesses import lowering through the physical S1-to-S2 package", () => {
+  const lowering = dependency(metadata, "vize_atelier_core", "vize_s1_to_s2", "dev");
+  assert.equal(lowering.rename, null);
   const dependencies = workspacePackage(metadata, "vize_atelier_core").dependencies;
   assert.ok(
     dependencies.every(
       (dependency) =>
-        dependency.name !== "vize_ricalco" ||
-        (dependency.kind === "dev" && dependency.rename === "vize_s1_to_s2"),
+        dependency.name !== "vize_s1_to_s2" ||
+        (dependency.kind === "dev" && dependency.rename === null),
     ),
-    "vize_atelier_core must not depend on vize_ricalco through its physical name",
+    "vize_atelier_core must use the physical vize_s1_to_s2 package name",
   );
 
   const testDir = path.join(repoRoot, "crates", "vize_atelier_core", "tests");

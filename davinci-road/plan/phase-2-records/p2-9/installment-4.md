@@ -22,7 +22,7 @@ other places, and the port followed the living code, not the dead file:
   text/interpolation children become one `createTextVNode` with a
   concatenated payload).
 - **Both halves absorb into the P2-8 lowering**
-  (`crates/vize_ricalco/src/lower/text.rs` + `text/condense.rs`), for
+  (`crates/vize_s1_to_s2/src/lower/text.rs` + `text/condense.rs`), for
   one decisive reason: **comments**. The remove-vs-condense rule reads
   comments as non-text-like neighbours, and run merging must break at
   them (`a<!--c-->b` is two text vnodes); comments exist only in S1 —
@@ -33,7 +33,7 @@ other places, and the port followed the living code, not the dead file:
   reasons, `Compound` included, "are assignable only by the S1→S2
   lowering". Both computations are pinned comment-exact by test
   (`text_pass.rs`, the two comment cases).
-- **The pass body** (`vize_ricalco::pass::text`, a preserving pass —
+- **The pass body** (`vize_s1_to_s2::pass::text`, a preserving pass —
   the vfor shape, third occurrence of the recorded taxonomy tension):
   the **compound consumption**. Per compound op it validates
   entry-present ⟺ compound-op (count-matched both directions), part
@@ -215,7 +215,7 @@ exercised here (no new op, deliberately).
 
 ### TS-17
 
-`crates/vize_ricalco/tests/text_pass_snapshot.rs`, two committed
+`crates/vize_s1_to_s2/tests/text_pass_snapshot.rs`, two committed
 fixtures → lower → pipeline → full normalized folio snapshots:
 `tests/fixtures/text/merge.vue` (a five-part compound with an interior
 run condensed, a comment-punched `<p>` keeping two units, indentation
@@ -231,7 +231,7 @@ untouched.
 
 ### Other acceptance, clause by clause
 
-- **TS-1**: `cargo test -p vize_ricalco` — 95 tests (18 unit + the
+- **TS-1**: `cargo test -p vize_s1_to_s2` — 95 tests (18 unit + the
   P2-8 suites + vif/vfor/vslot suites + 8 `text_pass` + 2 text
   snapshots + 7 metamorphic) green; `cargo test -p vize_atelier_core`
   fully green (witness suite 6 tests); disegno / davinci / sinopia

@@ -4,16 +4,16 @@ import { test } from "node:test";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 const ts20LoweringCorpusCommand =
-  "cargo test -p vize_ricalco --features davinci-differential --test davinci_lowering_corpus -- --nocapture";
+  "cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_lowering_corpus -- --nocapture";
 
 test("TS-20 lowering corpus lane rides the required clippy-and-test job", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const clippyJob = workflowJobBody(workflow, "clippy-and-test");
   const testReportJob = workflowJobBody(workflow, "test-report");
-  const manifest = readRepoFile("crates", "vize_ricalco", "Cargo.toml");
+  const manifest = readRepoFile("crates", "vize_s1_to_s2", "Cargo.toml");
   const suites = readRepoFile("davinci-road", "plan", "test-suites.md");
 
-  assert.match(suites, /\| TS-20 \| Lowering totality fuzz\s+\| `cargo test -p vize_ricalco`/);
+  assert.match(suites, /\| TS-20 \| Lowering totality fuzz\s+\| `cargo test -p vize_s1_to_s2`/);
   assert.match(
     manifest,
     /^\[\[test\]\]\nname = "davinci_lowering_corpus"\nrequired-features = \["davinci-differential"\]$/m,

@@ -9,12 +9,12 @@
 
 The claim covers exactly four **library targets**:
 
-| layer                 | Cargo alias in Davinci code | package id     | role                                         |
-| --------------------- | --------------------------- | -------------- | -------------------------------------------- |
-| shared infrastructure | `vize_davinci`              | `vize_davinci` | Folio, passes, diagnostics, stage vocabulary |
-| S1                    | `vize_s1`                   | `vize_s1`      | lossless surface tree                        |
-| S2                    | `vize_s2`                   | `vize_s2`      | neutral semantic IR                          |
-| S1 → S2               | `vize_s1_to_s2`             | `vize_ricalco` | Vue surface lowering and S2 passes           |
+| layer                 | Cargo alias in Davinci code | package id      | role                                         |
+| --------------------- | --------------------------- | --------------- | -------------------------------------------- |
+| shared infrastructure | `vize_davinci`              | `vize_davinci`  | Folio, passes, diagnostics, stage vocabulary |
+| S1                    | `vize_s1`                   | `vize_s1`       | lossless surface tree                        |
+| S2                    | `vize_s2`                   | `vize_s2`       | neutral semantic IR                          |
+| S1 → S2               | `vize_s1_to_s2`             | `vize_s1_to_s2` | Vue surface lowering and S2 passes           |
 
 Every library has both `#![no_std]` and `extern crate alloc`. Its source can
 use `core`, `alloc`, and dependency APIs without importing the `std` prelude.
@@ -45,17 +45,16 @@ not be evidence that it is `no_std` merely because WASI provides std.
 The source boundary is honest only when its std-bearing dependencies remain
 visible. `cargo tree --edges normal --depth 1` gives this first-degree ledger:
 
-| library                  | direct normal dependencies                                     | disposition                                                                                         |
-| ------------------------ | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `vize_davinci`           | `vize_s0`; `vize_davinci_derive`                               | S0 is the accepted std foundation; the proc macro runs on the host and emits `core`-compatible code |
-| S1 / `vize_s1`           | `vize_s0`; `vize_armature`; `vize_relief`                      | accepted std parser/tokenizer and AST construction edges                                            |
-| S2 / `vize_s2`           | `vize_s0`; `vize_davinci`; `oxc_ast`; `oxc_parser`; `oxc_span` | accepted std OXC expression parsing plus lower-layer edges                                          |
-| S1 → S2 / `vize_ricalco` | `vize_s0`; `vize_davinci`; S1; S2; `oxc_ast`; `oxc_ast_visit`  | accepted conversion-layer closure; dependency direction remains downward                            |
+| library                   | direct normal dependencies                                     | disposition                                                                                         |
+| ------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `vize_davinci`            | `vize_s0`; `vize_davinci_derive`                               | S0 is the accepted std foundation; the proc macro runs on the host and emits `core`-compatible code |
+| S1 / `vize_s1`            | `vize_s0`; `vize_armature`; `vize_relief`                      | accepted std parser/tokenizer and AST construction edges                                            |
+| S2 / `vize_s2`            | `vize_s0`; `vize_davinci`; `oxc_ast`; `oxc_parser`; `oxc_span` | accepted std OXC expression parsing plus lower-layer edges                                          |
+| S1 → S2 / `vize_s1_to_s2` | `vize_s0`; `vize_davinci`; S1; S2; `oxc_ast`; `oxc_ast_visit`  | accepted conversion-layer closure; dependency direction remains downward                            |
 
 The aliases `vize_s0`, `vize_s1`, `vize_s2`, and `vize_s1_to_s2` are the
-primary architectural names. S1 and S2 package ids now match that vocabulary;
-S0 and S1→S2 still retain `vize_carton` and `vize_ricalco` until their own
-compatibility changes.
+primary architectural names. S1, S2, and S1→S2 package ids now match that
+vocabulary; S0 still retains `vize_carton` until its own compatibility change.
 
 Carton's own direct dependencies include both `no_std`-capable storage crates
 (`compact_str`, `smallvec`, `rustc-hash`) and std-bound host services
@@ -96,9 +95,9 @@ TS-24 is an unconditional step of `.github/workflows/check.yml`'s
 
 ```sh
 cargo build -p vize_davinci -p vize_s1 -p vize_s2 \
-  -p vize_ricalco --lib --target wasm32-wasip2
+  -p vize_s1_to_s2 --lib --target wasm32-wasip2
 cargo build -p vize_davinci -p vize_s1 -p vize_s2 \
-  -p vize_ricalco --lib --target wasm32-wasip2 --no-default-features
+  -p vize_s1_to_s2 --lib --target wasm32-wasip2 --no-default-features
 ```
 
 `clippy-and-test` is a dependency of the required `test-report` status. The

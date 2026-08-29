@@ -374,9 +374,9 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports && cargo clippy -p vize_maestro --tests -- -D warnings && bash tools/github/check-maestro-feature-contract.sh
       - name: Davinci no_std stage-library portability lanes (TS-24)
-        run: cargo build -p vize_davinci -p vize_s1 -p vize_s2 -p vize_ricalco --lib --target wasm32-wasip2 && cargo build -p vize_davinci -p vize_s1 -p vize_s2 -p vize_ricalco --lib --target wasm32-wasip2 --no-default-features
+        run: cargo build -p vize_davinci -p vize_s1 -p vize_s2 -p vize_s1_to_s2 --lib --target wasm32-wasip2 && cargo build -p vize_davinci -p vize_s1 -p vize_s2 -p vize_s1_to_s2 --lib --target wasm32-wasip2 --no-default-features
       - name: Davinci compact-storage allocation gate
-        run: cargo bench -p vize_ricalco --bench davinci_storage -- --quick && cargo bench -p vize_patina --bench davinci_markup -- --quick && node tools/davinci/bench-compare.mjs --bench ricalco_lower_vfor_three_aliases --bench ricalco_emit_von_two_per_bucket --bench patina_jsx_markup_one_root
+        run: cargo bench -p vize_s1_to_s2 --bench davinci_storage -- --quick && cargo bench -p vize_patina --bench davinci_markup -- --quick && node tools/davinci/bench-compare.mjs --bench ricalco_lower_vfor_three_aliases --bench ricalco_emit_von_two_per_bucket --bench patina_jsx_markup_one_root
       - name: Upload Davinci compact-storage bench reports
         if: ${{ always() }}
         uses: ./.github/actions/upload-davinci-compact-storage-bench-reports
@@ -384,7 +384,7 @@ jobs:
         run: npm install --global @pkl-community/pkl@0.27.2
       - name: Test
         env: { VIZE_TEST_REQUIRE_TSGO: "1" }
-        run: cargo test --workspace && cargo test -p vize_ricalco --features davinci-differential --test davinci_lowering_corpus -- --nocapture && cargo test -p vize --features legacy --test check_nuxt_tsconfig_isolation_cli && cargo test -p vize_atelier_core --features legacy --test davinci_s2_transform_vue2 && cargo test -p vize_vitrine --no-default-features --features wasm
+        run: cargo test --workspace && cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_lowering_corpus -- --nocapture && cargo test -p vize --features legacy --test check_nuxt_tsconfig_isolation_cli && cargo test -p vize_atelier_core --features legacy --test davinci_s2_transform_vue2 && cargo test -p vize_vitrine --no-default-features --features wasm
 
   coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404

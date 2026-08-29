@@ -1,0 +1,30 @@
+---
+source: crates/vize_s1_to_s2/tests/hoist_pass_snapshot.rs
+expression: "$crate :: folio :: Folio ::\nprint_to_string(& *folio, $crate :: folio :: FolioMode :: Full,)"
+---
+[disegno]
+ops=16
+
+[disegno.ops]
+ui.element section @0:267
+  attr id="page" @9:18
+  attr class="wrap" @19:31
+  ui.element h1 @35:73
+    attr data-fixed="yes" @39:55
+    ui.element b @56:68
+      ui.text "title" @59:64
+  ui.element p @76:115
+    attr tabindex="0" @79:91
+    ui.interpolation opaque(compound "greeting {{ user }}" @92:111) @92:111
+  ui.element svg ns=svg @118:166
+    ui.bind name="width" value=js("100" @131:134) @123:135
+    ui.element rect ns=svg @136:160
+      attr fill="red" @142:152
+  ui.element div @169:201
+    attr ref="anchor" @174:186
+    ui.text "anchored" @187:195
+  ui.element i @204:256
+    ui.bind name="max" value=js("Math.PI" @213:220) @207:221
+    ui.bind name="value" mods="prop" value=js("raw" @230:233) @222:234
+    ui.bind name="pad" value=js("4 + 4" @241:246) @235:247
+    ui.text "edge" @248:252

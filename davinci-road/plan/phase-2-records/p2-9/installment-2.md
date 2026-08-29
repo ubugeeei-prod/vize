@@ -30,7 +30,7 @@ into the P2-8 lowering, and so do most of its driver halves:
   `transform_expression`, P2-5b's contract, the task's standing
   non-goal).
 
-What remains — the pass body (`vize_ricalco::pass::vfor`) — is the
+What remains — the pass body (`vize_s1_to_s2::pass::vfor`) — is the
 **hygiene consumption** the series contract names: the pass is where
 the lowering's recorded scope facts become load-bearing. Per `ui.for`,
 in one page-order walk: entry present, tag fresh across the artifact,
@@ -87,7 +87,7 @@ could exist.
 
 ### TS-17
 
-`crates/vize_ricalco/tests/vfor_pass_snapshot.rs`, two committed
+`crates/vize_s1_to_s2/tests/vfor_pass_snapshot.rs`, two committed
 fixtures → lower → pipeline → full normalized folio snapshots
 (`assert_folio_snapshot!`): `tests/fixtures/vfor/loops.vue` (a keyed
 `li` loop, a destructuring `<template v-for>` holding a keyed v-if
@@ -163,7 +163,7 @@ rewriter; the movement claim stays with that future installment.
 
 ### Other acceptance, clause by clause
 
-- **TS-1**: `cargo test -p vize_ricalco` — 63 tests (16 unit + the
+- **TS-1**: `cargo test -p vize_s1_to_s2` — 63 tests (16 unit + the
   P2-8 suites + 9 `vif_pass` + 2 vif snapshots + 9 `vfor_pass` + 2
   vfor snapshots) green; `cargo test -p vize_atelier_core` fully
   green; disegno / davinci / sinopia suites green; the ricalco

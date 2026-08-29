@@ -22,9 +22,9 @@ The change is deliberately narrow:
 
 The durable witnesses are:
 
-- [`css_bind_append.rs`](../../../../crates/vize_ricalco/tests/css_bind_append.rs)
+- [`css_bind_append.rs`](../../../../crates/vize_s1_to_s2/tests/css_bind_append.rs)
   — style blocks without CSS `v-bind()` do not append a carrier.
-- [`emit_sfc_style_carrier.rs`](../../../../crates/vize_ricalco/tests/emit_sfc_style_carrier.rs)
+- [`emit_sfc_style_carrier.rs`](../../../../crates/vize_s1_to_s2/tests/emit_sfc_style_carrier.rs)
   — single-root, multi-root, empty-template and real-template-style DOM output
   are pinned exactly.
 

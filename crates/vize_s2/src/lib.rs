@@ -8,8 +8,8 @@
 //! (`davinci-road/architecture.md`, "S2 — Disegno"). Vue templates, JSX and
 //! pug all lower into the same [`op`] family; whatever is genuinely
 //! Vue-specific stays a `vue.*` dialect op instead of shaping the core.
-//! The Vue template lowering into this family is `vize_s1_to_s2` (current
-//! package `vize_ricalco`; P2-8); this crate holds the type family, its folio
+//! The Vue template lowering into this family is `vize_s1_to_s2` (codename
+//! Ricalco; P2-8); this crate holds the type family, its folio
 //! page, the invariants that are enforceable by construction, and the verifier
 //! for the ones that are not:
 //!

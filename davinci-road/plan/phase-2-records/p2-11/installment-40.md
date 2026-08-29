@@ -10,7 +10,7 @@ decision without switching the shipped DOM lane.
 
 The current phase-2 decision is a firewall:
 
-- `vize_davinci`, `vize_s1`, `vize_s2` and `vize_ricalco` stay
+- `vize_davinci`, `vize_s1`, `vize_s2` and `vize_s1_to_s2` stay
   `publish = false` while the IR and lowering contracts are still in phase-2.
 - Publishable crates may exercise those stage crates only through
   dev-dependencies whose metadata requirement is `*`, which Cargo strips from

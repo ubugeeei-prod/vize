@@ -39,7 +39,7 @@ test("the metamorphic corpus shard holds with a scope proof", (t) => {
     [
       "test",
       "-p",
-      "vize_ricalco",
+      "vize_s1_to_s2",
       "--test",
       "metamorphic",
       "the_corpus_shard_is_metamorphically_stable",

@@ -15,7 +15,7 @@ model names into the same prop family as the shipped lane: model value key,
 
 The durable current witness is:
 
-- [`emit_model.rs`](../../../../crates/vize_ricalco/tests/emit_model.rs)
+- [`emit_model.rs`](../../../../crates/vize_s1_to_s2/tests/emit_model.rs)
   — direct S2 emitter pins for dynamic component model arguments and modifiers.
 - [`davinci_s2_model.rs`](../../../../crates/vize_atelier_dom/tests/davinci_s2_model.rs)
   — S2-vs-shipped byte-for-byte fixtures for component dynamic model args.

@@ -1,0 +1,27 @@
+---
+source: crates/vize_s1_to_s2/tests/vslot_pass_snapshot.rs
+expression: "$crate :: folio :: Folio ::\nprint_to_string(& *folio, $crate :: folio :: FolioMode :: Full,)"
+---
+[disegno]
+ops=19
+
+[disegno.ops]
+ui.element span @0:33
+  ui.slot-content params=js("misplaced" @14:23) @6:24
+  ui.text "x" @25:26
+ui.component Modal @34:94
+  ui.slot-content params=js("own" @49:52) @41:53
+  ui.element template @57:85
+    ui.slot-content name="late" @67:72
+    ui.text "y" @73:74
+ui.component Grid @95:216
+  ui.element template @104:136
+    ui.slot-content name="cell" params=js("c" @121:122) @114:123
+    ui.text "a" @124:125
+  ui.element template @139:167
+    ui.slot-content name="cell" @149:154
+    ui.text "b" @155:156
+  ui.element template @170:201
+    ui.slot-content name="default" @180:188
+    ui.text "c" @189:190
+  ui.element hr @204:208

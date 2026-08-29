@@ -27,17 +27,17 @@ The durable witnesses are:
 - [`folio_html.rs`](../../../../crates/vize_s2/tests/folio_html.rs)
   - exact Folio parse/print and owned-mirror coverage for value-bearing and
     value-less `vue.html`.
-- [`lowering_html.rs`](../../../../crates/vize_ricalco/tests/lowering_html.rs)
+- [`lowering_html.rs`](../../../../crates/vize_s1_to_s2/tests/lowering_html.rs)
   - element and slot-outlet `v-html` lower to `vue.html`; arg/modifier
     spellings still defer.
-- [`lowering_elements.rs`](../../../../crates/vize_ricalco/tests/lowering_elements.rs)
+- [`lowering_elements.rs`](../../../../crates/vize_s1_to_s2/tests/lowering_elements.rs)
   - `v-pre` remains the unmapped-directive witness outside the dedicated
     directive-realization files.
 - [`davinci_s2_html.rs`](../../../../crates/vize_atelier_dom/tests/davinci_s2_html.rs)
   - S2-vs-shipped byte fixtures plus per-node patch-flag extraction across the
     realized cases above.
-- [`emit_unsupported_census.rs`](../../../../crates/vize_ricalco/tests/emit_unsupported_census.rs)
-  and [`emit_unsupported_catalogue.rs`](../../../../crates/vize_ricalco/tests/emit_unsupported_catalogue.rs)
+- [`emit_unsupported_census.rs`](../../../../crates/vize_s1_to_s2/tests/emit_unsupported_census.rs)
+  and [`emit_unsupported_catalogue.rs`](../../../../crates/vize_s1_to_s2/tests/emit_unsupported_catalogue.rs)
   - non-JS `v-html` expressions remain an explicit, source-covered refusal.
 
 This installment does not tick P2-11. The production-lane switch, hydrated

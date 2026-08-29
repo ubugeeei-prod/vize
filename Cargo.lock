@@ -783,8 +783,8 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.20",
  "vize_carton",
- "vize_ricalco",
  "vize_s1",
+ "vize_s1_to_s2",
  "vize_s2",
 ]
 
@@ -3576,8 +3576,8 @@ dependencies = [
  "vize_croquis",
  "vize_davinci",
  "vize_relief",
- "vize_ricalco",
  "vize_s1",
+ "vize_s1_to_s2",
  "vize_s2",
 ]
 
@@ -3595,7 +3595,7 @@ dependencies = [
  "vize_carton",
  "vize_croquis",
  "vize_davinci",
- "vize_ricalco",
+ "vize_s1_to_s2",
 ]
 
 [[package]]
@@ -4028,7 +4028,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "vize_ricalco"
+name = "vize_s1_to_s2"
 version = "0.387.0"
 dependencies = [
  "criterion",

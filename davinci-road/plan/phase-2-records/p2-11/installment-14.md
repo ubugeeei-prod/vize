@@ -8,7 +8,7 @@ default text slots, but the merged scope also records the broad DOM
 surface required to compare those slots byte-for-byte with the shipped
 lane.
 
-The emitted families now named by `crates/vize_ricalco/src/emit.rs` are:
+The emitted families now named by `crates/vize_s1_to_s2/src/emit.rs` are:
 implicit default slots (`withCtx`, `_: 1|2`, text and static-vnode
 hoists), named / scoped `<template>` slots, `createSlots` for `v-if` /
 `v-for` slot templates, slot outlets (`renderSlot`, `_: 3 FORWARDED`),

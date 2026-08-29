@@ -115,7 +115,7 @@ pub const S2: LayerCrate = LayerCrate {
 pub const S1_TO_S2: ConversionCrate = ConversionCrate {
     id: "s1_to_s2",
     crate_alias: "vize_s1_to_s2",
-    package: "vize_ricalco",
+    package: "vize_s1_to_s2",
     from: S1.id,
     to: S2.id,
     role: "Vue surface-to-semantic lowering",
@@ -168,7 +168,7 @@ mod tests {
         assert_eq!(S0.package, "vize_carton");
         assert_eq!(S1.package, "vize_s1");
         assert_eq!(S2.package, "vize_s2");
-        assert_eq!(S1_TO_S2.package, "vize_ricalco");
+        assert_eq!(S1_TO_S2.package, "vize_s1_to_s2");
     }
 
     #[test]

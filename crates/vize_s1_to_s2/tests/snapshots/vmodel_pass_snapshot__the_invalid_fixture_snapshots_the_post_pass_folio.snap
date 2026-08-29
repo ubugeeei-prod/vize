@@ -1,0 +1,24 @@
+---
+source: crates/vize_s1_to_s2/tests/vmodel_pass_snapshot.rs
+expression: "$crate :: folio :: Folio ::\nprint_to_string(& *folio, $crate :: folio :: FolioMode :: Full,)"
+---
+[disegno]
+ops=13
+
+[disegno.ops]
+ui.element ul @0:117
+  ui.for source=js("items" @31:36) value=js("item" @19:23) key=js("i" @25:26) @7:111
+    ui.element li @7:111
+      ui.element input @43:65
+        ui.model read=js("item" @59:63) write=js("item" @59:63) @50:64
+          attr element-kind="input" @50:64
+      ui.element input @70:103
+        ui.model name="value" read=js("item.name" @92:101) write=js("item.name" @92:101) @77:102
+          attr element-kind="input" @77:102
+ui.component Panel @118:185
+  ui.slot-content params=js("row" @133:136) @125:137
+  ui.element textarea @141:176
+    ui.model read=js("row" @160:163) write=js("row" @160:163) @151:164
+      attr element-kind="textarea" @151:164
+ui.slot name="default" @186:210
+  ui.slot-content params=js("p" @200:201) @192:202

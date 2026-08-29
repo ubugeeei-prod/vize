@@ -25,14 +25,14 @@ The durable witnesses are:
 
 - [`folio_show.rs`](../../../../crates/vize_s2/tests/folio_show.rs)
   - exact Folio parse/print and owned-mirror coverage for `vue.show`.
-- [`lowering_elements.rs`](../../../../crates/vize_ricalco/tests/lowering_elements.rs)
+- [`lowering_elements.rs`](../../../../crates/vize_s1_to_s2/tests/lowering_elements.rs)
   - well-formed `v-show` lowers to `vue.show`; the deferral witness remains on
     a still-unmapped directive.
 - [`davinci_s2_show.rs`](../../../../crates/vize_atelier_dom/tests/davinci_s2_show.rs)
   - S2-vs-shipped byte fixtures plus per-node patch-flag extraction across the
     realized cases above.
-- [`emit_unsupported_census.rs`](../../../../crates/vize_ricalco/tests/emit_unsupported_census.rs)
-  and [`emit_unsupported_catalogue.rs`](../../../../crates/vize_ricalco/tests/emit_unsupported_catalogue.rs)
+- [`emit_unsupported_census.rs`](../../../../crates/vize_s1_to_s2/tests/emit_unsupported_census.rs)
+  and [`emit_unsupported_catalogue.rs`](../../../../crates/vize_s1_to_s2/tests/emit_unsupported_catalogue.rs)
   - non-JS `v-show` expressions remain an explicit, source-covered refusal.
 
 This installment does not tick P2-11. The production-lane switch, hydrated

@@ -7,7 +7,7 @@
 //! The legacy lane condenses whitespace at parse and groups consecutive
 //! text/interpolation children at codegen
 //! (`crates/vize_atelier_core/src/codegen/children.rs`); S2 does both
-//! at lowering (`crates/vize_ricalco/src/lower/text.rs`), so its
+//! at lowering (`crates/vize_s1_to_s2/src/lower/text.rs`), so its
 //! remaining text-family ops *are* the units. The projections read each
 //! lane's own tree — legacy runs re-grouped exactly as codegen groups
 //! them ([`super::text_old`]), S2 ops one-to-one — and compare the

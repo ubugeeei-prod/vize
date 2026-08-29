@@ -23,7 +23,7 @@ today; adding one would be a cargo-graph gesture, not a cost model.
 The measured zero-cost shape, copied from the shipped
 `desugar_legacy_template` short-circuit:
 
-- [`LegacyCaps`](../../../../crates/vize_ricalco/src/lower/caps.rs) is
+- [`LegacyCaps`](../../../../crates/vize_s1_to_s2/src/lower/caps.rs) is
   three bools resolved once per file from
   `vize_carton::config::VueVersion`. It is a copy of armature's
   `LegacyDialectCapabilities` so ricalco never grows an armature edge.
@@ -115,9 +115,9 @@ deferred recipe, unchanged.
 
 ### Other acceptance, clause by clause
 
-- **TS-1**: `cargo test -p vize_ricalco` green (Vue 3 snapshots and
+- **TS-1**: `cargo test -p vize_s1_to_s2` green (Vue 3 snapshots and
   `walks=6` unchanged; new `legacy_lowering` + `legacy_pass` pins +
-  soundness). Clippy `-p vize_ricalco --lib --tests -- -D warnings`
+  soundness). Clippy `-p vize_s1_to_s2 --lib --tests -- -D warnings`
   green.
 - **TS-13**: no new substring assertions.
 - **TS-17**: Vue 3 folio snapshots untouched. Vue 2 pins are

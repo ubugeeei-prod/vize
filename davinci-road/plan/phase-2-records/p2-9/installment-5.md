@@ -208,7 +208,7 @@ admitted, beside `ForFacts`/`SlotFacts`/`TextFacts`/`ModelFacts`.
 
 ### TS-17
 
-`crates/vize_ricalco/tests/vmodel_pass_snapshot.rs`, two committed
+`crates/vize_s1_to_s2/tests/vmodel_pass_snapshot.rs`, two committed
 fixtures → lower → pipeline → full normalized folio snapshots:
 `tests/fixtures/vmodel/bindings.vue` (bind/on forms with both parser
 shorthands applied, the dot shorthand's `prop` modifier, the same-name
@@ -223,7 +223,7 @@ snapshots did not move (the new ops appear only where authored).
 
 ### Other acceptance, clause by clause
 
-- **TS-1**: `cargo test -p vize_ricalco` — 116 tests (19 unit + the
+- **TS-1**: `cargo test -p vize_s1_to_s2` — 116 tests (19 unit + the
   P2-8 suites + the vfor/vslot/text suites + `vif_pass` 8 +
   `vif_pass_keys` 5 (the series-5 key arms, split under the budget) +
   11 `vmodel_pass` + 2 vmodel snapshots + the metamorphic 7) green; `cargo test -p vize_atelier_core` fully green (witness suite
@@ -248,7 +248,7 @@ snapshots did not move (the new ops appear only where authored).
 - **TS-13**: `assertion-lint: OK`, allowlist untouched.
 - **TS-11, deferred precisely**: no shipped path touched — no
   `Cargo.toml` changed (the ops live in unpublished `vize_s2`,
-  the lowering/passes in unpublished `vize_ricalco`, the comparator in
+  the lowering/passes in unpublished `vize_s1_to_s2`, the comparator in
   dev-dep test space), so the dependency graph the publish gate checks
   is bit-identical to the last green run and the mechanical argument
   stands; the clean-fixture `corpus-diff` sweep recipe stands as

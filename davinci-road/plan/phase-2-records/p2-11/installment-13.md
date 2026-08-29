@@ -12,7 +12,7 @@ The helper catalogue moved into `emit/helper.rs` so `_toHandlers` keeps
 the same import rank as `normalizeProps`, `guardReactiveProps`, and
 `mergeProps`. Witnesses cover the lone form, merge order beside static
 attrs / named events / object `v-bind`, and component cases through
-`vize_ricalco` emit tests plus the atelier_dom S2 comparison battery.
+`vize_s1_to_s2` emit tests plus the atelier_dom S2 comparison battery.
 
 Still not handled here: `.native`, slots, template fragments, filters,
 builtins, `<component :is>`, dynamic keys, destructured `v-for` aliases,

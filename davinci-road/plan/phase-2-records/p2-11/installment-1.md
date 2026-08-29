@@ -10,7 +10,7 @@
 ## What landed
 
 The first P2-11 PR. Independent of the P2-10 stack. Names
-`VIZE_DAVINCI_DOM` in `vize_ricalco::dom` as `DOM_LANE_FLAG` so the
+`VIZE_DAVINCI_DOM` in `vize_s1_to_s2::dom` as `DOM_LANE_FLAG` so the
 phase-2 exit-gate deletion grep has one home (charter #26), the same
 shape as `VIZE_DAVINCI_TRANSFORM`.
 
@@ -20,7 +20,7 @@ the emit, not here. The published `vize_atelier_dom` graph is
 untouched. The program decision in `phase-2.md` (publish / fold /
 feature-gate the Davinci crates) is still open.
 
-Witness: `cargo test -p vize_ricalco --lib dom_lane` pins the recorded
+Witness: `cargo test -p vize_s1_to_s2 --lib dom_lane` pins the recorded
 name.
 
 ## What this increment does not do

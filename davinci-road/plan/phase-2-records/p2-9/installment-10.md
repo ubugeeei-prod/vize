@@ -10,7 +10,7 @@ prediction. Installments 1–8 last published **12.73%** from a hydrated
 corpus; this installment re-ran the witness rather than copying that
 figure.
 
-`phase-2.md` stays open. `crates/vize_ricalco/src/emit/**` untouched.
+`phase-2.md` stays open. `crates/vize_s1_to_s2/src/emit/**` untouched.
 
 ## The witness that produces the number
 

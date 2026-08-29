@@ -9,7 +9,7 @@ lane's merged style array shape, preserving authored order between the
 static declaration object and the dynamic expression.
 
 The implementation keeps style serialization local to
-`vize_ricalco::emit`: valued static style attrs are admitted beside
+`vize_s1_to_s2::emit`: valued static style attrs are admitted beside
 `:style`, valueless static style attrs remain refused, CSS declarations
 split only at semicolons outside function calls, and object-literal
 dynamic style values keep the shipped lane's helper shape once they are
