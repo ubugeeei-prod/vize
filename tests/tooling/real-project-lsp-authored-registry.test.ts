@@ -11,7 +11,7 @@ const registryPath = path.join(root, "tests", "_fixtures", "vue-ecosystem-fixtur
 
 type Registry = {
   lspAuthoredOracleGate: { minimumProjectCount: number; trackingIssue: number };
-  projects: FixtureProject[];
+  projects: Array<FixtureProject & { lspIncrementalBudget?: unknown }>;
 };
 
 test("authored LSP feature oracles are explicit and ratcheted", () => {
@@ -25,9 +25,29 @@ test("authored LSP feature oracles are explicit and ratcheted", () => {
   assert.ok(registry.lspAuthoredOracleGate.minimumProjectCount > 0);
   assert.ok(configured.length >= registry.lspAuthoredOracleGate.minimumProjectCount);
   assert.ok(
+    configured.some((project) => project.id === "vue-vben-admin"),
+    "vue-vben-admin must keep an authored LSP feature oracle",
+  );
+  assert.ok(
     configured.some((project) => project.id === "misskey"),
     "misskey must keep an authored LSP feature oracle",
   );
+
+  const budgetOwnerIds = registry.projects
+    .filter((project) => project.lspIncrementalBudget != null)
+    .map((project) => project.id);
+  assert.deepEqual(
+    budgetOwnerIds,
+    ["vue-vben-admin", "misskey"],
+    "LSP incremental-budget owners must stay explicit so authored-oracle coverage can ratchet",
+  );
+  const authoredProjectIds = new Set(configured.map((project) => project.id));
+  for (const id of budgetOwnerIds) {
+    assert.ok(
+      authoredProjectIds.has(id),
+      `${id} has an LSP incremental budget but no authored LSP feature oracle`,
+    );
+  }
 
   for (const project of configured) {
     const oracle = project.lspAuthoredOracle;
