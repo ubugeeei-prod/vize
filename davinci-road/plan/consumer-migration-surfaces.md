@@ -45,7 +45,7 @@ observational guard for planning only. It does not change rollout state.
 
 | consumer                   | stage/Davinci | preferred stage names | compat code names | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
-| Compiler                   |           925 |                   428 |               497 |             139 |     371 |             952 |      483 |           481 |           590 |
+| Compiler                   |           926 |                   429 |               497 |             139 |     371 |             952 |      484 |           482 |           590 |
 | Linter                     |           302 |                   302 |                 0 |             268 |     225 |             673 |      122 |           340 |           480 |
 | Typechecker                |           878 |                   226 |               652 |             396 |     187 |             806 |      655 |           466 |           660 |
 | Typechecker content-mapper |             8 |                     8 |                 0 |               1 |       0 |               9 |        0 |             7 |            19 |
@@ -61,7 +61,7 @@ Scope: build command plus atelier compiler crates. This is a lexical inventory, 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
 | Davinci          |          21 |               4 |       17 |
-| S0               |         850 |             491 |      359 |
+| S0               |         851 |             491 |      360 |
 | S1               |           5 |               1 |        4 |
 | S2               |          15 |               1 |       14 |
 | S1->S2           |          34 |               2 |       32 |
@@ -91,7 +91,7 @@ Additional source/manifest rows are in the TSV: 309 omitted.
 | `crates/vize_atelier_sfc/src/compile_script/props/tests.rs:4` | test/dev | S0 15                                         |    15 |
 | `crates/vize_atelier_core/tests/s2_support/compare.rs:10`     | test/dev | Davinci 2<br>S0 4<br>S1 1<br>S2 1<br>S1->S2 3 |    11 |
 
-Additional test/dev rows are in the TSV: 198 omitted.
+Additional test/dev rows are in the TSV: 199 omitted.
 
 ### Linter
 
