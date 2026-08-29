@@ -1,5 +1,6 @@
 import { basicFamilyCatalog } from "./family-catalog-basics.ts";
 import { focusFamilyCatalog } from "./family-catalog-focus.ts";
+import { foundationFamilyCatalog } from "./family-catalog-foundations.ts";
 import { interactionFamilyCatalog } from "./family-catalog-interactions.ts";
 import { overlayFamilyCatalog } from "./family-catalog-overlays.ts";
 import type { UiFamilyCatalogEntry } from "./family-catalog-types.ts";
@@ -14,6 +15,7 @@ export {
 
 const allFamilyCatalogEntries = [
   ...basicFamilyCatalog,
+  ...foundationFamilyCatalog,
   ...focusFamilyCatalog,
   ...interactionFamilyCatalog,
   ...overlayFamilyCatalog,

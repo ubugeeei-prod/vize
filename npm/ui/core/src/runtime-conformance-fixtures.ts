@@ -8,6 +8,7 @@ import IdProvider from "./deterministic-id-provider.vue";
 import { useDeterministicId } from "./deterministic-id.ts";
 import ErrorSummary from "./error-summary.vue";
 import PrimitiveElement from "./primitive-element.vue";
+import TextInput from "./text-input.vue";
 import ToggleButton from "./toggle-button.vue";
 import VisuallyHidden from "./visually-hidden.vue";
 
@@ -147,6 +148,38 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       const primitive = host.querySelector('[data-vize-ui="primitive"]');
       assert.ok(primitive instanceof HTMLElement);
       assert.equal(primitive.tagName, "SECTION");
+    },
+  },
+  {
+    name: "input",
+    sourceFile: "text-input.vue",
+    render: () =>
+      h(TextInput, {
+        ariaLabel: "Email",
+        defaultValue: "hello@example.com",
+        id: "email",
+        name: "email",
+        type: "email",
+      }),
+    assertServerMarkup(html) {
+      assert.match(html, /^<input/);
+      assert.match(html, /id="email"/);
+      assert.match(html, /name="email"/);
+      assert.match(html, /type="email"/);
+      assert.match(html, /value="hello@example.com"/);
+      assert.match(html, /aria-label="Email"/);
+      assert.match(html, /data-vize-ui="input"/);
+      assert.match(html, /data-state="editable"/);
+      assert.match(html, /data-empty="false"/);
+    },
+    assertHydratedDom(host) {
+      const input = host.querySelector('[data-vize-ui="input"]');
+      assert.ok(input instanceof HTMLInputElement);
+      assert.equal(input.type, "email");
+      assert.equal(input.name, "email");
+      assert.equal(input.value, "hello@example.com");
+      assert.equal(input.getAttribute("data-state"), "editable");
+      assert.equal(input.getAttribute("data-empty"), "false");
     },
   },
   {

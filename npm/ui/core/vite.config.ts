@@ -34,6 +34,7 @@ export default defineConfig({
       announcer: "src/announcer.ts",
       button: "src/button.ts",
       toggle: "src/toggle.ts",
+      input: "src/input.ts",
       checkbox: "src/checkbox.ts",
       collection: "src/collection.ts",
       "composite-navigation": "src/composite-navigation.ts",
