@@ -991,12 +991,16 @@ linter	Linter	source	crates/vize_patina/src/markup.rs	49	raw_oxc	raw OXC	raw	oxc
 linter	Linter	source	crates/vize_patina/src/markup.rs	49	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 linter	Linter	source	crates/vize_patina/src/markup/exact.rs	6	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/markup/exact.rs	6	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-linter	Linter	test/dev	crates/vize_patina/src/markup/tests.rs	31	s0	S0	stage	vize_s0	preferred	1
-linter	Linter	test/dev	crates/vize_patina/src/markup/tests.rs	31	old_ast	old AST/parser	old	vize_armature	legacy	3
-linter	Linter	test/dev	crates/vize_patina/src/markup/tests.rs	31	raw_oxc	raw OXC	raw	oxc_allocator	raw	6
+linter	Linter	test/dev	crates/vize_patina/src/markup/tests.rs	33	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/markup/tests.rs	33	old_ast	old AST/parser	old	vize_armature	legacy	3
+linter	Linter	test/dev	crates/vize_patina/src/markup/tests.rs	33	raw_oxc	raw OXC	raw	oxc_allocator	raw	6
 linter	Linter	test/dev	crates/vize_patina/src/markup/tests/deprecated_attr_tests.rs	6	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/markup/tests/deprecated_attr_tests.rs	6	old_ast	old AST/parser	old	vize_armature	legacy	1
 linter	Linter	test/dev	crates/vize_patina/src/markup/tests/deprecated_attr_tests.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	3
+linter	Linter	test/dev	crates/vize_patina/src/markup/tests/iframe_has_title_jsx_tests.rs	6	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/markup/tests/iframe_has_title_jsx_tests.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	3
+linter	Linter	test/dev	crates/vize_patina/src/markup/tests/iframe_has_title_tests.rs	5	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/markup/tests/iframe_has_title_tests.rs	5	old_ast	old AST/parser	old	vize_armature	legacy	1
 linter	Linter	test/dev	crates/vize_patina/src/markup/tests/interactive_supports_focus_jsx_tests.rs	6	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/markup/tests/interactive_supports_focus_jsx_tests.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	3
 linter	Linter	test/dev	crates/vize_patina/src/markup/tests/interactive_supports_focus_tests.rs	5	s0	S0	stage	vize_s0	preferred	1
@@ -1044,7 +1048,7 @@ linter	Linter	source	crates/vize_patina/src/rules/a11y/form_control_has_label.rs
 linter	Linter	source	crates/vize_patina/src/rules/a11y/heading_has_content.rs	13	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/helpers.rs	6	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/helpers.rs	6	old_ast	old AST/parser	old	vize_relief	legacy	1
-linter	Linter	source	crates/vize_patina/src/rules/a11y/iframe_has_title.rs	12	old_ast	old AST/parser	old	vize_relief	legacy	2
+linter	Linter	source	crates/vize_patina/src/rules/a11y/iframe_has_title.rs	13	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/img_alt.rs	14	old_ast	old AST/parser	old	vize_relief	legacy	4
 linter	Linter	source	crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs	25	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/label_has_for.rs	25	old_ast	old AST/parser	old	vize_relief	legacy	1

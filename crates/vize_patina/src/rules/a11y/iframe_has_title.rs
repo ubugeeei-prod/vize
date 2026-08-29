@@ -8,8 +8,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, PropNode};
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/iframe-has-title",
@@ -23,44 +24,68 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct IframeHasTitle;
 
+impl IframeHasTitle {
+    fn has_title(element: &MarkupElement<'_>) -> bool {
+        let mut has_title = false;
+        element.walk_bindings(&mut |binding| {
+            if !binding.is_unqualified_arg_exact("title") {
+                return;
+            }
+
+            match binding.kind() {
+                MarkupBindingKind::Attribute => {
+                    if binding
+                        .static_value()
+                        .is_some_and(|value| !value.trim().is_empty())
+                    {
+                        has_title = true;
+                    }
+                }
+                MarkupBindingKind::Bind => {
+                    has_title = true;
+                }
+                MarkupBindingKind::On | MarkupBindingKind::Model | MarkupBindingKind::Custom => {}
+            }
+        });
+        has_title
+    }
+
+    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        if !element.is_unqualified_tag_exact("iframe") {
+            return;
+        }
+
+        if !Self::has_title(element) {
+            ctx.warn_at_with_help(
+                ctx.t("a11y/iframe-has-title.message"),
+                element.range(),
+                ctx.t("a11y/iframe-has-title.help"),
+            );
+        }
+    }
+}
+
+impl MarkupRule for IframeHasTitle {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        Self::check_element(ctx.lint(), element);
+    }
+}
+
 impl Rule for IframeHasTitle {
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag != "iframe" {
-            return;
-        }
-
-        // Check for title attribute (static or dynamic)
-        let has_title = element.props.iter().any(|prop| match prop {
-            PropNode::Attribute(attr) => {
-                attr.name == "title"
-                    && attr
-                        .value
-                        .as_ref()
-                        .is_some_and(|v| !v.content.trim().is_empty())
-            }
-            PropNode::Directive(dir) => {
-                if dir.name == "bind" {
-                    matches!(
-                        &dir.arg,
-                        Some(vize_relief::ExpressionNode::Simple(s)) if s.content == "title"
-                    )
-                } else {
-                    false
-                }
-            }
-        });
-
-        if !has_title {
-            ctx.warn_with_help(
-                ctx.t("a11y/iframe-has-title.message"),
-                &element.loc,
-                ctx.t("a11y/iframe-has-title.help"),
-            );
-        }
+        Self::check_element(ctx, &MarkupElement::new(element));
     }
 }
 
