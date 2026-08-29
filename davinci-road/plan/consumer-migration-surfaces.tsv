@@ -108,10 +108,9 @@ compiler	Compiler	source	crates/vize_atelier_core/src/lane/structural.rs	3	old_a
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/lane/structural/tests.rs	7	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/lane/tests.rs	7	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/lane/traverse.rs	8	s0	S0	stage	vize_s0	preferred	3
-compiler	Compiler	source	crates/vize_atelier_core/src/lib.rs	14	s0	S0	stage	vize_s0	preferred	2
-compiler	Compiler	source	crates/vize_atelier_core/src/lib.rs	14	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_core/src/lib.rs	14	old_ast	old AST/parser	old	vize_relief	legacy	4
-compiler	Compiler	source	crates/vize_atelier_core/src/lib.rs	14	old_ast	old AST/parser	old	vize_armature	legacy	3
+compiler	Compiler	source	crates/vize_atelier_core/src/lib.rs	33	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_core/src/lib.rs	33	old_ast	old AST/parser	old	vize_relief	legacy	4
+compiler	Compiler	source	crates/vize_atelier_core/src/lib.rs	33	old_ast	old AST/parser	old	vize_armature	legacy	3
 compiler	Compiler	source	crates/vize_atelier_core/src/retained.rs	47	old_ast	old AST/parser	old	vize_relief	legacy	1
 compiler	Compiler	source	crates/vize_atelier_core/src/retained.rs	47	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/retained.rs	47	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
@@ -192,7 +191,6 @@ compiler	Compiler	source	crates/vize_atelier_core/src/steps/v_slot/params.rs	3	r
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/v_slot/params.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/steps/v_slot/tests.rs	8	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/v_slot/validate.rs	3	s0	S0	stage	vize_s0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_core/src/test_macros.rs	17	s0	S0	stage	vize_carton	compat	12
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/conditional_named_slots.rs	4	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_s2_transform_vue2.rs	24	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_s2_transform.rs	119	davinci	Davinci	stage	vize_davinci	preferred	3

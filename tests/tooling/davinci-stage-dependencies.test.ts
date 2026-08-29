@@ -292,6 +292,22 @@ test("Atelier DOM compiler imports S0 storage through the stage alias", () => {
   });
 });
 
+test("Atelier core compiler macros import S0 storage through the stage alias", () => {
+  const manifest = readRepoFile("crates", "vize_atelier_core", "Cargo.toml");
+  assert.match(manifest, /^vize_s0 = \{ workspace = true \}$/m);
+  assert.doesNotMatch(manifest, /^vize_carton\.workspace = true$/m);
+  assertS0AliasConsumer({
+    packageName: "vize_atelier_core",
+    label: "Atelier core compiler",
+    directory: path.join(repoRoot, "crates", "vize_atelier_core", "src"),
+  });
+
+  for (const relative of ["lib.rs", "test_macros.rs"]) {
+    const source = readRepoFile("crates", "vize_atelier_core", "src", relative);
+    assert.doesNotMatch(source, /\bvize_carton\b/u, `${relative} must use vize_s0 or $crate`);
+  }
+});
+
 test("Relief AST imports S0 storage through the stage alias", () => {
   assertS0AliasConsumer({
     packageName: "vize_relief",

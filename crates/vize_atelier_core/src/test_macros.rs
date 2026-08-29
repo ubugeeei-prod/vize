@@ -14,7 +14,7 @@
 #[macro_export]
 macro_rules! parse_test {
     ($input:expr => { $($assertion:expr),* $(,)? }) => {{
-        let allocator = vize_carton::Allocator::new();
+        let allocator = $crate::Allocator::new();
         let (root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
         $(
@@ -34,7 +34,7 @@ macro_rules! parse_test {
 #[macro_export]
 macro_rules! assert_parse {
     ($input:expr => element($tag:expr)) => {{
-        let allocator = vize_carton::Allocator::new();
+        let allocator = $crate::Allocator::new();
         let (root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
         assert_eq!(root.children.len(), 1, "Expected 1 child");
@@ -47,7 +47,7 @@ macro_rules! assert_parse {
     }};
 
     ($input:expr => element($tag:expr, children: $count:expr)) => {{
-        let allocator = vize_carton::Allocator::new();
+        let allocator = $crate::Allocator::new();
         let (root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
         assert_eq!(root.children.len(), 1, "Expected 1 root child");
@@ -61,7 +61,7 @@ macro_rules! assert_parse {
     }};
 
     ($input:expr => element($tag:expr, props: [$($prop:tt),*])) => {{
-        let allocator = vize_carton::Allocator::new();
+        let allocator = $crate::Allocator::new();
         let (root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
         match &root.children[0] {
@@ -78,7 +78,7 @@ macro_rules! assert_parse {
     }};
 
     ($input:expr => text($content:expr)) => {{
-        let allocator = vize_carton::Allocator::new();
+        let allocator = $crate::Allocator::new();
         let (root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
         assert_eq!(root.children.len(), 1, "Expected 1 child");
@@ -91,7 +91,7 @@ macro_rules! assert_parse {
     }};
 
     ($input:expr => interpolation($content:expr)) => {{
-        let allocator = vize_carton::Allocator::new();
+        let allocator = $crate::Allocator::new();
         let (root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
         assert_eq!(root.children.len(), 1, "Expected 1 child");
@@ -109,7 +109,7 @@ macro_rules! assert_parse {
     }};
 
     ($input:expr => children($count:expr)) => {{
-        let allocator = vize_carton::Allocator::new();
+        let allocator = $crate::Allocator::new();
         let (root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
         assert_eq!(root.children.len(), $count, "Children count mismatch");
@@ -206,7 +206,7 @@ macro_rules! assert_prop {
 #[macro_export]
 macro_rules! assert_transform {
     ($input:expr => helpers: [$($helper:ident),* $(,)?]) => {{
-        let allocator = vize_carton::Allocator::new();
+        let allocator = $crate::Allocator::new();
         let (mut root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
         $crate::lane::transform(&allocator, &mut root, $crate::options::TransformOptions::default(), None);
@@ -220,7 +220,7 @@ macro_rules! assert_transform {
     }};
 
     ($input:expr => components: [$($comp:expr),* $(,)?]) => {{
-        let allocator = vize_carton::Allocator::new();
+        let allocator = $crate::Allocator::new();
         let (mut root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
         $crate::lane::transform(&allocator, &mut root, $crate::options::TransformOptions::default(), None);
@@ -269,7 +269,7 @@ macro_rules! get_directive {
 #[allow(clippy::disallowed_macros)]
 macro_rules! assert_codegen {
     ($input:expr => snapshot) => {{
-        let allocator = vize_carton::Allocator::new();
+        let allocator = $crate::Allocator::new();
         let (mut root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
         $crate::lane::transform(
@@ -288,7 +288,7 @@ macro_rules! assert_codegen {
 #[macro_export]
 macro_rules! compile {
     ($input:expr) => {{
-        let allocator = vize_carton::Allocator::new();
+        let allocator = $crate::Allocator::new();
         let (mut root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
         $crate::lane::transform(
@@ -301,7 +301,7 @@ macro_rules! compile {
     }};
 
     ($input:expr, $options:expr) => {{
-        let allocator = vize_carton::Allocator::new();
+        let allocator = $crate::Allocator::new();
         let (mut root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
         $crate::lane::transform(
