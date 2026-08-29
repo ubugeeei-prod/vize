@@ -334,15 +334,7 @@ test("validator rejects a stale task count or suite range", () => {
 });
 
 test("local links in the reconciled ledger exist", () => {
-  for (const key of [
-    "roadmap",
-    "readme",
-    "phase",
-    "tasks",
-    "records",
-    "p2_11",
-    "suites",
-  ] as const) {
+  for (const key of Object.keys(docs) as Array<keyof typeof docs>) {
     for (const match of text[key].matchAll(/\]\((?<target>[^)]+)\)/gu)) {
       const target = match.groups!.target.split("#", 1)[0];
       if (target === "" || /^[a-z]+:/u.test(target)) continue;

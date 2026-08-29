@@ -43,7 +43,7 @@ const BATTERY: &[(&str, &str)] = &[
     ),
     (
         "event_option_modifiers",
-        r#"<slot @click.once.capture.passive="choose"></slot>"#,
+        r#"<slot @click.once.capture="choose"></slot>"#,
     ),
     (
         "colon_and_custom_casing",

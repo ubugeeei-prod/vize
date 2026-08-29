@@ -41,8 +41,7 @@
 //! **static+dynamic `style` merge** (`[{"color":"red"}, s]`), and
 //! **dynamic `v-on` keys** (`@[event]` through `toHandlerKey`,
 //! including event/key modifiers and slot-outlet listener props),
-//! plus native-element **`v-once`** cache wrappers,
-//! and **`v-memo`** cache wrappers / `v-for` memo reuse guards,
+//! plus native-element **`v-once`** and **`v-memo`** cache wrappers / `v-for` memo reuse guards,
 //! and **`v-html`** / **`v-text`** content props (`innerHTML` /
 //! `textContent` + dynamic prop flags),
 //! while SFC style-block carriers (`vue.css-bind` facts) stay DOM-inert.
@@ -77,6 +76,7 @@ mod on;
 mod on_dynamic;
 mod once;
 mod outlet;
+mod outlet_props;
 mod props;
 mod props_bind;
 mod props_class;
