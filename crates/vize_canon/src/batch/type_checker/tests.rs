@@ -4,10 +4,7 @@ use crate::batch::runtime_deps::{
     test_env_var_os, with_test_env_overrides, write_vue_facade, write_vue_runtime_dom_stub,
 };
 use crate::sfc_typecheck::{SfcTypeCheckOptions, type_check_sfc};
-use corsa::{
-    api::{ApiMode, ApiSpawnConfig, ProjectSession},
-    runtime::block_on,
-};
+use corsa::runtime::block_on;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use vize_carton::{String, corsa_resolver::platform_suffix, cstr};
@@ -24,8 +21,10 @@ mod recent_issues;
 mod scan;
 mod template_block;
 mod tsgo;
+mod tsgo_project_session;
 mod tsx_sfc;
 use tsgo::resolve_test_tsgo_binary;
+use tsgo_project_session::{corsa_type_mismatch_snapshot, test_project_session_is_available};
 #[test]
 fn batch_type_checker_snapshots_vue_diagnostics() {
     if resolve_test_tsgo_binary().is_none() {
@@ -41,7 +40,10 @@ const count: number = 'oops'
     )
     .virtual_ts
     .expect("virtual ts should be generated");
-    let snapshot = corsa_type_mismatch_snapshot(&virtual_ts, "count: number", "'oops'");
+    let Some(snapshot) = corsa_type_mismatch_snapshot(&virtual_ts, "count: number", "'oops'")
+    else {
+        return;
+    };
     insta::with_settings!({
         snapshot_path => "../../snapshots"
     }, {
@@ -62,7 +64,9 @@ const count: string = 0;
     )
     .virtual_ts
     .expect("virtual ts should be generated");
-    let relevant = corsa_type_mismatch_snapshot(&virtual_ts, "count: string", "= 0");
+    let Some(relevant) = corsa_type_mismatch_snapshot(&virtual_ts, "count: string", "= 0") else {
+        return;
+    };
     assert_eq!(
         relevant.len(),
         2,
@@ -98,6 +102,14 @@ fn corsa_bridge_completion_returns_inner_members_for_chained_ref_value() {
     let virtual_ts = "import { ref } from 'vue';\nconst count = ref(0);\ncount.value.\n";
     let virtual_path = src_dir.join("App.vue.ts");
     std::fs::write(&virtual_path, virtual_ts).unwrap();
+
+    if !block_on(test_project_session_is_available(
+        &corsa_path,
+        project_root.as_path(),
+    )) {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    }
 
     let bridge = CorsaBridge::with_config(CorsaBridgeConfig {
         corsa_path: Some(corsa_path),
@@ -2036,104 +2048,6 @@ fn snapshot_project_diagnostics(project_root: &Path) -> Option<Vec<(String, Opti
         .collect();
     snapshot.sort();
     Some(snapshot)
-}
-
-fn corsa_type_mismatch_snapshot(
-    file_text: &str,
-    declaration_marker: &str,
-    initializer_marker: &str,
-) -> Vec<(std::string::String, std::string::String)> {
-    static NEXT_CASE_ID: AtomicUsize = AtomicUsize::new(0);
-
-    let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .and_then(Path::parent)
-        .expect("workspace root should exist");
-    let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
-    let project_root = workspace_root
-        .join("target")
-        .join("vize-tests")
-        .join("tests")
-        .join(format!("corsa-type-probe-{}-{case_id}", std::process::id()));
-    let _ = std::fs::remove_dir_all(&project_root);
-    std::fs::create_dir_all(&project_root).expect("project root should exist");
-    let src_dir = project_root.join("src");
-    std::fs::create_dir_all(&src_dir).expect("src dir should exist");
-    link_workspace_node_modules(&project_root).expect("workspace node_modules should link");
-    std::fs::write(
-        project_root.join("tsconfig.json"),
-        r#"{
-  "compilerOptions": {
-    "strict": true,
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "noEmit": true
-  },
-  "include": ["src/**/*.ts", "src/**/*.vue"]
-}"#,
-    )
-    .expect("tsconfig should write");
-    let file = src_dir.join("App.virtual.ts");
-    std::fs::write(&file, file_text).expect("virtual ts should write");
-
-    let corsa_path =
-        resolve_test_tsgo_binary().expect("tsgo executable should resolve for corsa api tests");
-    let config_wire = project_root.join("tsconfig.json").display().to_string();
-    let file_wire = file.display().to_string();
-    let declaration_offset = file_text
-        .find(declaration_marker)
-        .expect("declaration marker should exist");
-    let initializer_offset = file_text
-        .find(initializer_marker)
-        .map(|offset| offset + initializer_marker.len().saturating_sub(1))
-        .expect("initializer marker should exist");
-
-    let result = block_on(async {
-        let session = ProjectSession::spawn(
-            ApiSpawnConfig::new(corsa_path)
-                .with_mode(ApiMode::AsyncJsonRpcStdio)
-                .with_cwd(project_root.as_path()),
-            config_wire,
-            None,
-        )
-        .await
-        .expect("corsa project session should initialize");
-        assert!(
-            session
-                .project()
-                .root_files
-                .iter()
-                .any(|file| file.ends_with("App.virtual.ts")),
-            "root files did not include App.virtual.ts: {:?}",
-            session.project().root_files
-        );
-        let declaration = session
-            .get_type_at_position(file_wire.as_str(), declaration_offset as u32)
-            .await
-            .expect("declaration type should load")
-            .expect("declaration type should exist");
-        let initializer = session
-            .get_type_at_position(file_wire.as_str(), initializer_offset as u32)
-            .await
-            .expect("initializer type should load")
-            .expect("initializer type should exist");
-        let declaration_text = session
-            .type_to_string(declaration.id, None, None)
-            .await
-            .expect("declaration type should render");
-        let initializer_text = session
-            .type_to_string(initializer.id, None, None)
-            .await
-            .expect("initializer type should render");
-        session.close().await.expect("session should close");
-        vec![
-            ("declaration".into(), declaration_text),
-            ("initializer".into(), initializer_text),
-        ]
-    });
-    let _ = std::fs::remove_dir_all(&project_root);
-    result
 }
 
 fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {

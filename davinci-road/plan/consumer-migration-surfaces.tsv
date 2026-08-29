@@ -1575,7 +1575,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/declarat
 typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/incremental.rs	5	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/paths.rs	6	s0	S0	stage	vize_carton	compat	4
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/paths.rs	259	s0	S0	stage	vize_carton	compat	5
-typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests.rs	13	s0	S0	stage	vize_carton	compat	3
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests.rs	10	s0	S0	stage	vize_carton	compat	3
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/emit_object_recursion.rs	7	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/generic_component_listener_payload.rs	2	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/generic_props/inline_callback_guarded_props.rs	22	s0	S0	stage	vize_s0	preferred	1
