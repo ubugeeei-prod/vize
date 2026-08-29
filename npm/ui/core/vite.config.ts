@@ -35,6 +35,7 @@ export default defineConfig({
       button: "src/button.ts",
       toggle: "src/toggle.ts",
       input: "src/input.ts",
+      textarea: "src/textarea.ts",
       checkbox: "src/checkbox.ts",
       collection: "src/collection.ts",
       "composite-navigation": "src/composite-navigation.ts",

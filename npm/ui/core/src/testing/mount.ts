@@ -234,6 +234,7 @@ function computeRole(element: HTMLElement): string | null {
     if (element.type === "radio") return "radio";
     return "textbox";
   }
+  if (element instanceof HTMLTextAreaElement) return "textbox";
   return null;
 }
 
@@ -254,7 +255,7 @@ function computeAccessibleName(element: HTMLElement): string {
   }
   const ariaLabel = element.getAttribute("aria-label");
   if (ariaLabel !== null && ariaLabel !== "") return collapseWhitespace(ariaLabel);
-  if (element instanceof HTMLInputElement) {
+  if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
     const id = element.getAttribute("id");
     const forLabel = id === null ? null : element.ownerDocument.querySelector(`label[for="${id}"]`);
     const label = forLabel ?? element.closest("label");

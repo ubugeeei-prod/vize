@@ -9,6 +9,7 @@ import { useDeterministicId } from "./deterministic-id.ts";
 import ErrorSummary from "./error-summary.vue";
 import PrimitiveElement from "./primitive-element.vue";
 import TextInput from "./text-input.vue";
+import TextareaControl from "./textarea-control.vue";
 import ToggleButton from "./toggle-button.vue";
 import VisuallyHidden from "./visually-hidden.vue";
 
@@ -180,6 +181,37 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       assert.equal(input.value, "hello@example.com");
       assert.equal(input.getAttribute("data-state"), "editable");
       assert.equal(input.getAttribute("data-empty"), "false");
+    },
+  },
+  {
+    name: "textarea",
+    sourceFile: "textarea-control.vue",
+    render: () =>
+      h(TextareaControl, {
+        ariaLabel: "Bio",
+        defaultValue: "Line one\nLine two",
+        id: "bio",
+        name: "bio",
+        rows: 3,
+      }),
+    assertServerMarkup(html) {
+      assert.match(html, /^<textarea/);
+      assert.match(html, /id="bio"/);
+      assert.match(html, /name="bio"/);
+      assert.match(html, /rows="3"/);
+      assert.match(html, /aria-label="Bio"/);
+      assert.match(html, /data-vize-ui="textarea"/);
+      assert.match(html, /data-state="editable"/);
+      assert.match(html, /data-empty="false"/);
+      assert.match(html, /Line one\nLine two/);
+    },
+    assertHydratedDom(host) {
+      const textarea = host.querySelector('[data-vize-ui="textarea"]');
+      assert.ok(textarea instanceof HTMLTextAreaElement);
+      assert.equal(textarea.name, "bio");
+      assert.equal(textarea.value, "Line one\nLine two");
+      assert.equal(textarea.getAttribute("data-state"), "editable");
+      assert.equal(textarea.getAttribute("data-empty"), "false");
     },
   },
   {
