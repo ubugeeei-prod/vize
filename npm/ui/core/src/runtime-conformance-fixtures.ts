@@ -12,6 +12,7 @@ import PrimitiveElement from "./primitive-element.vue";
 import { alertRuntimeFixture } from "./runtime-conformance-alert-fixtures.ts";
 import { aspectRatioRuntimeFixture } from "./runtime-conformance-aspect-ratio-fixtures.ts";
 import { progressRuntimeFixture } from "./runtime-conformance-progress-fixtures.ts";
+import { separatorRuntimeFixture } from "./runtime-conformance-separator-fixtures.ts";
 import { switchRuntimeFixture } from "./runtime-conformance-switch-fixtures.ts";
 import SearchField from "./search-field.vue";
 import TextInput from "./text-input.vue";
@@ -287,6 +288,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       assert.equal(clear.id, "query-clear");
     },
   },
+  separatorRuntimeFixture,
   switchRuntimeFixture,
   {
     name: "toggle",

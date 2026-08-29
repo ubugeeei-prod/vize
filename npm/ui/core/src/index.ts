@@ -20,6 +20,7 @@ export * from "./link.ts";
 export * from "./toggle.ts";
 export * from "./input.ts";
 export * from "./search-field.ts";
+export * from "./separator.ts";
 export * from "./textarea.ts";
 export * from "./switch.ts";
 export * from "./command.ts";

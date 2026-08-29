@@ -74,6 +74,11 @@
       "import": "./dist/search-field.mjs",
       "default": "./dist/search-field.mjs"
     },
+    "./separator": {
+      "types": "./dist/separator.d.mts",
+      "import": "./dist/separator.mjs",
+      "default": "./dist/separator.mjs"
+    },
     "./textarea": {
       "types": "./dist/textarea.d.mts",
       "import": "./dist/textarea.mjs",

@@ -1,28 +1,11 @@
 import { commandRendererFixtures } from "./renderer-fixtures-commands.ts";
 import { overlayRendererFixtures } from "./renderer-fixtures-overlays.ts";
+import { primitiveRendererFixtures } from "./renderer-fixtures-primitives.ts";
 
 export const rendererFixtures = [
   ...commandRendererFixtures,
   ...overlayRendererFixtures,
-  {
-    filename: "AspectRatioConsumer.vue",
-    source: String.raw`<script setup lang="ts">
-import { ref } from "vue";
-import { AspectRatio } from "./aspect-ratio.ts";
-
-const ratio = ref(16 / 9);
-</script>
-
-<template>
-  <AspectRatio as="figure" :ratio>
-    <template #default="{ invalid, ratio: normalizedRatio }">
-      <img alt="" src="/poster.png" :data-invalid="invalid || undefined" />
-      <figcaption>{{ normalizedRatio }}</figcaption>
-    </template>
-  </AspectRatio>
-</template>
-`,
-  },
+  ...primitiveRendererFixtures,
   {
     filename: "DragAndDropConsumer.vue",
     source: String.raw`<script setup lang="ts">

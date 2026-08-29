@@ -39,6 +39,7 @@ export default defineConfig({
       toggle: "src/toggle.ts",
       input: "src/input.ts",
       "search-field": "src/search-field.ts",
+      separator: "src/separator.ts",
       textarea: "src/textarea.ts",
       switch: "src/switch.ts",
       checkbox: "src/checkbox.ts",
