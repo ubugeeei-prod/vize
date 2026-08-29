@@ -9,9 +9,10 @@ import { defineTasks, noCacheTask, shellQuote } from "../task-helpers.ts";
  * stay local; their `*:testbox` variants run the same graph in the CI image.
  *
  * The CLI ships only from the dedicated Testbox shell (`nix develop
- * .#testbox`; see the `blacksmith` derivation in flake.nix). `blacksmith
- * testbox run` requires an explicit `--id` on every call and has no concept of
- * a "current" box, so the id is threaded through `BLACKSMITH_TESTBOX_ID`.
+ * .#testbox`; see the `blacksmith` derivation in nix/blacksmith.nix).
+ * `blacksmith testbox run` requires an explicit `--id` on every call and has
+ * no concept of a "current" box, so the id is threaded through
+ * `BLACKSMITH_TESTBOX_ID`.
  * The documented lifecycle clears any stale id before warmup, exports a new id
  * only after success, and always stops a successfully warmed box after tasks.
  * Warmup returns the box id on stdout; `tail -n1` keeps the exported value

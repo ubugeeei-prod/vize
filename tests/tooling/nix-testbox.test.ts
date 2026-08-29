@@ -11,15 +11,21 @@ function readRepoFile(relativePath: string): string {
 }
 
 test("Nix isolates the pinned Blacksmith CLI from the default dev shell", () => {
-  const flake = readRepoFile("flake.nix");
+  const devShellModule = readRepoFile("nix/dev-shell.nix");
+  const blacksmithModule = readRepoFile("nix/blacksmith.nix");
   const contributing = readRepoFile("docs/content/contributing.md");
-  const defaultShell = flake.match(
+  const defaultShell = devShellModule.match(
     /devShell = pkgs\.mkShell \{([\s\S]*?)\n\s*\};\n\s*testboxDevShell/,
   )?.[1];
-  const testboxShell = flake.match(
+  const testboxShell = devShellModule.match(
     /testboxDevShell = devShell\.overrideAttrs \(previous: \{([\s\S]*?)\n\s*\}\);/,
   )?.[1];
-  const sourceUrls = [...flake.matchAll(/url = "([^"]+)";/g)].map((match) => match[1]);
+  // Every artifact the flake pins, not just Blacksmith's: a moving `latest`
+  // URL anywhere would let a fixed-output derivation change under the lock.
+  const sourceUrls = fs
+    .readdirSync(path.join(repoRoot, "nix"))
+    .flatMap((entry) => [...readRepoFile(`nix/${entry}`).matchAll(/url = "([^"]+)";/g)])
+    .map((match) => match[1]);
 
   assert.ok(defaultShell, "default dev shell");
   assert.ok(testboxShell, "Testbox dev shell");
@@ -29,24 +35,27 @@ test("Nix isolates the pinned Blacksmith CLI from the default dev shell", () => 
   assert.match(testboxShell, /previous\.nativeBuildInputs/);
   assert.match(testboxShell, /pkgs\.gh/);
   assert.match(testboxShell, /pkgs\.rsync/);
-  assert.match(testboxShell, /\[ blacksmith \]/);
+  assert.match(testboxShell, /config\.packages\.blacksmith/);
   assert.match(testboxShell, /\$\{activateTestboxEnvironment\}/);
-  assert.match(flake, /unset VIZE_TESTBOX_SHELL VIZE_BLACKSMITH_BIN/);
-  assert.match(flake, /export VIZE_TESTBOX_SHELL=1/);
-  assert.match(flake, /export VIZE_BLACKSMITH_BIN="\$\{blacksmith\}\/bin\/blacksmith"/);
-  assert.match(flake, /testbox-environment = testboxEnvironmentCheck/);
-  assert.match(flake, /blacksmithVersion = "0\.4\.46";/);
+  assert.match(blacksmithModule, /unset VIZE_TESTBOX_SHELL VIZE_BLACKSMITH_BIN/);
+  assert.match(blacksmithModule, /export VIZE_TESTBOX_SHELL=1/);
+  assert.match(blacksmithModule, /export VIZE_BLACKSMITH_BIN="\$\{blacksmith\}\/bin\/blacksmith"/);
+  assert.match(blacksmithModule, /testbox-environment = testboxEnvironmentCheck/);
+  assert.match(blacksmithModule, /blacksmithVersion = "0\.4\.46";/);
   assert.ok(sourceUrls.length > 0, "fixed-output source URLs");
   for (const sourceUrl of sourceUrls) assert.doesNotMatch(sourceUrl, /\/latest\//);
   assert.match(
-    flake,
+    blacksmithModule,
     /clireleases\.blacksmith\.sh\/cli\/v\$\{blacksmithVersion\}\/darwin\/arm64\/blacksmith/,
   );
   assert.match(
-    flake,
+    blacksmithModule,
     /clireleases\.blacksmith\.sh\/cli\/v\$\{blacksmithVersion\}\/linux\/amd64\/blacksmith/,
   );
-  assert.match(flake, /devShells = \{[\s\S]*default = devShell;[\s\S]*testbox = testboxDevShell;/);
+  assert.match(
+    devShellModule,
+    /devShells = \{[\s\S]*default = devShell;[\s\S]*testbox = testboxDevShell;/,
+  );
   assert.match(contributing, /nix develop\s+# local development/);
   assert.match(contributing, /nix develop \.#testbox\s+# hosted Testbox workflows/);
 });

@@ -132,11 +132,11 @@ test("setup-moonbit installs the same pinned toolchain the Nix shell builds", ()
     "`.moonbit-version` must hold one exact MoonBit release",
   );
 
-  // `flake.nix` must derive the toolchain from the shared file rather than
-  // repeating it, so a bump cannot land on only one of the two consumers.
-  const flake = readRepoFile("flake.nix");
-  assert.match(flake, /moonbitVersion = builtins\.replaceStrings.*\.moonbit-version/);
-  assert.doesNotMatch(flake, /moonbitVersion = "/);
+  // `nix/moonbit.nix` must derive the toolchain from the shared file rather
+  // than repeating it, so a bump cannot land on only one of the two consumers.
+  const moonbitModule = readRepoFile("nix", "moonbit.nix");
+  assert.match(moonbitModule, /moonbitVersion = builtins\.replaceStrings[\s\S]*?moonbit-version/);
+  assert.doesNotMatch(moonbitModule, /moonbitVersion = "/);
 
   // CI must ask the upstream installer for that release. Falling back to
   // `latest` is what let CI and the Nix shell drift onto different compilers.

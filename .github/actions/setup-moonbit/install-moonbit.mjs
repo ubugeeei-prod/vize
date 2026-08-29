@@ -6,9 +6,9 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 
-// The pinned toolchain lives in one file that `flake.nix` also reads, so the
-// Nix development shell and CI can never resolve different compilers for the
-// same commit. Installing `latest` here is what let the two drift apart.
+// The pinned toolchain lives in one file that `nix/moonbit.nix` also reads, so
+// the Nix development shell and CI can never resolve different compilers for
+// the same commit. Installing `latest` here is what let the two drift apart.
 const moonbitVersionFile = fileURLToPath(new URL("../../../.moonbit-version", import.meta.url));
 const moonbitVersion = readPinnedMoonbitVersion(moonbitVersionFile);
 

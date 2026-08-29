@@ -235,29 +235,31 @@ test("Testbox warmup distinguishes origin failures from an unpushed branch", () 
 });
 
 test("the Nix shell exposes local and opt-in Testbox task aliases", () => {
-  const flake = fs.readFileSync(path.join(root, "flake.nix"), "utf8");
-  const defaultShell = flake.match(
+  const vpModule = fs.readFileSync(path.join(root, "nix/vp.nix"), "utf8");
+  const devShellModule = fs.readFileSync(path.join(root, "nix/dev-shell.nix"), "utf8");
+  const blacksmithModule = fs.readFileSync(path.join(root, "nix/blacksmith.nix"), "utf8");
+  const defaultShell = devShellModule.match(
     /devShell = pkgs\.mkShell \{([\s\S]*?)\n\s*\};\n\s*testboxDevShell/,
   )?.[1];
-  const testboxShell = flake.match(
+  const testboxShell = devShellModule.match(
     /testboxDevShell = devShell\.overrideAttrs \(previous: \{([\s\S]*?)\n\s*\}\);/,
   )?.[1];
 
   for (const taskName of ["build", "test", "lint"]) {
-    assert.match(flake, new RegExp(`(?:\\||\\s)${taskName}(?:\\s|\\||\\))`));
+    assert.match(vpModule, new RegExp(`(?:\\||\\s)${taskName}(?:\\s|\\||\\))`));
   }
 
-  assert.match(flake, /\| \*:\*\)/);
-  assert.match(flake, /exec "\$local_vp" run --workspace-root "\$1"/);
+  assert.match(vpModule, /\| \*:\*\)/);
+  assert.match(vpModule, /exec "\$local_vp" run --workspace-root "\$1"/);
   assert.ok(defaultShell, "default dev shell");
   assert.match(defaultShell, /\$\{clearTestboxEnvironment\}/);
   assert.doesNotMatch(defaultShell, /activateTestboxEnvironment/);
   assert.ok(testboxShell, "Testbox dev shell");
   assert.match(testboxShell, /\$\{activateTestboxEnvironment\}/);
-  assert.match(flake, /unset VIZE_TESTBOX_SHELL VIZE_BLACKSMITH_BIN/);
-  assert.match(flake, /export VIZE_TESTBOX_SHELL=1/);
-  assert.match(flake, /export VIZE_BLACKSMITH_BIN="\$\{blacksmith\}\/bin\/blacksmith"/);
-  assert.match(flake, /testbox-environment = testboxEnvironmentCheck/);
+  assert.match(blacksmithModule, /unset VIZE_TESTBOX_SHELL VIZE_BLACKSMITH_BIN/);
+  assert.match(blacksmithModule, /export VIZE_TESTBOX_SHELL=1/);
+  assert.match(blacksmithModule, /export VIZE_BLACKSMITH_BIN="\$\{blacksmith\}\/bin\/blacksmith"/);
+  assert.match(blacksmithModule, /testbox-environment = testboxEnvironmentCheck/);
   assert.match(testboxShell, /safe ID capture/);
   assert.match(testboxShell, /vp build:testbox \/ vp test:testbox \/ vp lint:testbox/);
 });

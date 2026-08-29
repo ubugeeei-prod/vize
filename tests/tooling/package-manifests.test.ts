@@ -390,7 +390,7 @@ test("documented install commands point at supported release artifacts", () => {
   };
   const vizeCrateToml = readRepoFile("crates/vize/Cargo.toml");
   const releaseWorkflow = readRepoFile(".github/workflows/release.yml");
-  const flake = readRepoFile("flake.nix");
+  const nixPackage = readRepoFile("package.nix");
   const publicDocs = [
     "README.md",
     "docs/content/getting-started.md",
@@ -406,8 +406,8 @@ test("documented install commands point at supported release artifacts", () => {
   assert.equal(vizeNpmPackage.publishConfig?.access, "public");
   assert.equal(vizeNpmPackage.bin?.vize, "bin/vize");
   assert.match(releaseWorkflow, /cli-artifacts\/\*\.tar\.gz/);
-  assert.match(flake, /apps = \{/);
-  assert.match(flake, /vize = flake-utils\.lib\.mkApp \{ drv = vize; \};/);
+  assert.match(nixPackage, /binaries = \{\n\s*"vize" = "vize";\n\s*\};/);
+  assert.match(readRepoFile("nix/packages.nix"), /apps =\s+lib\.genAttrs[\s\S]*?getExe' vize name/);
 
   if (/^publish = false$/m.test(vizeCrateToml)) {
     assert.deepEqual(unsupportedCargoInstallDocs, []);
