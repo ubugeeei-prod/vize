@@ -32,6 +32,7 @@ export * from "./command.ts";
 export * from "./dismissable-layer.ts";
 export * from "./drag-and-drop.ts";
 export * from "./error-summary.ts";
+export * from "./field.ts";
 export * from "./id.ts";
 export * from "./inert-outside.ts";
 export * from "./interaction-modality.ts";

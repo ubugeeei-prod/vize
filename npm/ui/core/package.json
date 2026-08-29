@@ -159,6 +159,11 @@
       "import": "./dist/error-summary.mjs",
       "default": "./dist/error-summary.mjs"
     },
+    "./field": {
+      "types": "./dist/field.d.mts",
+      "import": "./dist/field.mjs",
+      "default": "./dist/field.mjs"
+    },
     "./field-wiring": {
       "types": "./dist/field-wiring.d.mts",
       "import": "./dist/field-wiring.mjs",

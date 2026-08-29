@@ -97,6 +97,30 @@ const wiring = useFieldWiring({ hasDescription: true, invalid });
 `,
   },
   {
+    filename: "FieldConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { Field, FieldDescription, FieldErrorMessage, FieldLabel } from "./field.ts";
+import type { FormFieldError } from "./form.ts";
+
+const errors = ref<readonly FormFieldError[]>([
+  { message: "Enter an email", name: "email", path: ["email"] },
+]);
+</script>
+
+<template>
+  <Field id="email" name="email" :errors="errors" has-description>
+    <template #default="{ fieldProps }">
+      <FieldLabel>Email</FieldLabel>
+      <input v-bind="fieldProps" name="email" type="email" />
+      <FieldDescription>Work email</FieldDescription>
+      <FieldErrorMessage />
+    </template>
+  </Field>
+</template>
+`,
+  },
+  {
     filename: "DismissableLayerConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

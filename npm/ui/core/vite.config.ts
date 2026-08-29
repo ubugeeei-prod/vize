@@ -55,6 +55,7 @@ export default defineConfig({
       "dismissable-layer": "src/dismissable-layer.ts",
       "drag-and-drop": "src/drag-and-drop.ts",
       "error-summary": "src/error-summary.ts",
+      field: "src/field.ts",
       "field-wiring": "src/field-wiring.ts",
       form: "src/form.ts",
       catalog: "src/family-catalog.ts",

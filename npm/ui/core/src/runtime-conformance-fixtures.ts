@@ -13,6 +13,7 @@ import PrimitiveElement from "./primitive-element.vue";
 import { alertRuntimeFixture } from "./runtime-conformance-alert-fixtures.ts";
 import { alertDialogRuntimeFixture } from "./runtime-conformance-alert-dialog-fixtures.ts";
 import { aspectRatioRuntimeFixture } from "./runtime-conformance-aspect-ratio-fixtures.ts";
+import { fieldRuntimeFixtures } from "./runtime-conformance-field-fixtures.ts";
 import { progressRuntimeFixture } from "./runtime-conformance-progress-fixtures.ts";
 import { separatorRuntimeFixture } from "./runtime-conformance-separator-fixtures.ts";
 import { skeletonRuntimeFixture } from "./runtime-conformance-skeleton-fixtures.ts";
@@ -27,9 +28,7 @@ import VisuallyHidden from "./visually-hidden.vue";
 export interface RuntimeFixture {
   /** Stable name included in assertion diagnostics. */
   readonly name: string;
-  /** Canonical SFC whose SSR and hydration behavior this fixture covers. */
   readonly sourceFile: string;
-  /** Build a fresh vnode so no request can inherit another request's state. */
   readonly render: () => VNode;
   /** Assert server output semantics before the browser repairs or normalizes DOM. */
   readonly assertServerMarkup: (html: string) => void;
@@ -143,6 +142,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       assert.equal(link?.getAttribute("href"), "#email");
     },
   },
+  ...fieldRuntimeFixtures,
   {
     name: "link",
     sourceFile: "link-anchor.vue",
