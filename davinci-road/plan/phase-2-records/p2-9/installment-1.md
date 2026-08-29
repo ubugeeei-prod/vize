@@ -14,16 +14,16 @@ the substrate along exactly that line:
 
 - **Pass bodies live in `vize_ricalco::pass`** (`src/pass.rs` +
   `src/pass/vif.rs`). Ricalco is `publish = false`, already depends
-  downward on `vize_davinci` (the P2-2 pass manager) and `vize_disegno`
+  downward on `vize_davinci` (the P2-2 pass manager) and `vize_s2`
   (the ops), and the passes are the continuation of the dialect
   lowering — the MLIR conversion-library shape extended one step:
-  `lower` converts, the passes legalize. Not in `vize_disegno` (the
+  `lower` converts, the passes legalize. Not in `vize_s2` (the
   neutral pivot must not learn Vue; P2-5a scoped it to the op family
   and verifier), not a new crate (premature for one pass; the series
   can split one out if the module outgrows the budget).
 - **The dual-run comparator lives in `vize_atelier_core` test space**
   (`tests/s2_support/` + the two binaries), with `vize_davinci` /
-  `vize_disegno` / `vize_ricalco` / `vize_sinopia` as
+  `vize_s2` / `vize_ricalco` / `vize_sinopia` as
   **dev-dependencies**. The gate's rule, read from its source: a
   workspace dependency escapes the publish-order check iff
   `kind === "dev" && req === "*"` — a path-only dev-dependency cargo

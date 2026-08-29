@@ -207,7 +207,7 @@ exact diagnostic order.
 - **TS-13**: `assertion-lint: OK`, allowlist untouched.
 - **TS-11, deferred precisely**: no shipped path touched — no
   `Cargo.toml` changed (the new op and pass live in the unpublished
-  `vize_disegno`/`vize_ricalco`; the comparator additions are
+  `vize_s2`/`vize_ricalco`; the comparator additions are
   dev-dep test space), so the dependency graph the publish gate
   checks is bit-identical to the last green run and the mechanical
   argument stands; the clean-fixture `corpus-diff` sweep recipe stands

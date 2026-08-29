@@ -85,7 +85,7 @@ all but the two codegen reads). The living code is
 
 ### The op-family additions (the canary, proven again)
 
-`ui.bind` and `ui.on` landed in `vize_disegno` by the P2-5a ritual:
+`ui.bind` and `ui.on` landed in `vize_s2` by the P2-5a ritual:
 variants injected first, build captured broken —
 `folio/owned.rs:282` (`own_binding`, E0004) on the lib, then the test
 targets: `op_family` (the canary itself), `folio_laws`, `folio_mirror`
@@ -228,7 +228,7 @@ snapshots did not move (the new ops appear only where authored).
   `vif_pass_keys` 5 (the series-5 key arms, split under the budget) +
   11 `vmodel_pass` + 2 vmodel snapshots + the metamorphic 7) green; `cargo test -p vize_atelier_core` fully green (witness suite
   8 tests: the v-model relief pins and the end-to-end scoped-model
-  check added); `vize_disegno` green (the canary grew the two arms,
+  check added); `vize_s2` green (the canary grew the two arms,
   TS-16 reference page extended, rejections exact); davinci / sinopia
   suites green. The ricalco lowering battery census moved and was
   re-pinned deliberately: **(83, 28, 101, 1)** — five battery
@@ -247,7 +247,7 @@ snapshots did not move (the new ops appear only where authored).
   identical counts, **179,992 mutations, zero divergences**.
 - **TS-13**: `assertion-lint: OK`, allowlist untouched.
 - **TS-11, deferred precisely**: no shipped path touched — no
-  `Cargo.toml` changed (the ops live in unpublished `vize_disegno`,
+  `Cargo.toml` changed (the ops live in unpublished `vize_s2`,
   the lowering/passes in unpublished `vize_ricalco`, the comparator in
   dev-dep test space), so the dependency graph the publish gate checks
   is bit-identical to the last green run and the mechanical argument

@@ -35,7 +35,7 @@ on:
       - "crates/vize_armature/**"
       - "crates/vize_carton/**"
       - "crates/vize_davinci/**"
-      - "crates/vize_disegno/**"
+      - "crates/vize_s2/**"
       - "crates/vize_ricalco/**"
       - "crates/vize_s1/**"
       - "tests/fuzz/**"

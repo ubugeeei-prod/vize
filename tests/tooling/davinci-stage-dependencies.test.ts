@@ -128,13 +128,20 @@ test("Davinci fuzz harness imports stage packages through aliases", () => {
     manifest,
     /^vize_s1_to_s2 = \{ package = "vize_ricalco", path = "\.\.\/\.\.\/crates\/vize_ricalco" \}$/m,
   );
-  assert.match(manifest, /^vize_s2 = \{ path = "\.\.\/\.\.\/crates\/vize_disegno" \}$/m);
+  assert.match(manifest, /^vize_s2 = \{ path = "\.\.\/\.\.\/crates\/vize_s2" \}$/m);
   assert.doesNotMatch(manifest, /^vize_(?:carton|disegno|ricalco) = /m);
 
   for (const target of ["folio_parse.rs", "s1_lowering.rs", "template_compile.rs"]) {
     const source = readRepoFile("tests", "fuzz", "fuzz_targets", target);
     assert.doesNotMatch(source, /\bvize_(?:carton|disegno|ricalco)::/u);
   }
+});
+
+test("Davinci S2 uses the physical crate directory", () => {
+  const workspaceManifest = readRepoFile("Cargo.toml");
+  assert.match(workspaceManifest, /^\s*"crates\/vize_s2",$/m);
+  assert.match(workspaceManifest, /^vize_s2 = \{ path = "crates\/vize_s2" \}$/m);
+  assert.doesNotMatch(workspaceManifest, /crates\/vize_disegno/u);
 });
 
 test("Davinci DOM lane tests import lowering through the stage alias", () => {

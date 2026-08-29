@@ -26,7 +26,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 const libraryRoots = [
   "crates/vize_davinci/src",
   "crates/vize_s1/src",
-  "crates/vize_disegno/src",
+  "crates/vize_s2/src",
   "crates/vize_ricalco/src",
 ];
 const inventoryPath = path.join(repoRoot, "davinci-road/plan/storage-inventory.tsv");
@@ -49,7 +49,7 @@ function isDavinciOptHostEdge(relative: string): boolean {
 function scopeFor(file: string): StorageScope {
   if (file.startsWith("crates/vize_davinci/")) return "infra";
   if (file.startsWith("crates/vize_s1/")) return "s1";
-  if (file.startsWith("crates/vize_disegno/")) return "s2";
+  if (file.startsWith("crates/vize_s2/")) return "s2";
   if (file.startsWith("crates/vize_ricalco/")) return "s1_to_s2";
   throw new Error(`unknown storage scope: ${file}`);
 }

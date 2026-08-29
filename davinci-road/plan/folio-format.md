@@ -207,7 +207,7 @@ coverage):
 ## Disegno page (P2-5a; expression payloads P2-5b)
 
 The S2 stage dump: an owned document model (`DisegnoFolio`,
-`crates/vize_disegno/src/folio.rs`) of one op tree. Hand-written under the
+`crates/vize_s2/src/folio.rs`) of one op tree. Hand-written under the
 "Derived pages" boundary, because the derived grammar is flat (header
 scalars plus one-level sections) while the S2 artifact is region-nested by
 its central design decision — ops own their regions — and flattening the
@@ -255,7 +255,7 @@ below):
 **Expression payloads** (P2-5b): every expression position serializes as
 owned text + span, never an AST, because arena references cannot persist
 across a compile (P1-11) — a `js` payload re-parses into the arena on
-load (`vize_disegno::expr::JsExpr::parse_in`; the total fallback is
+load (`vize_s2::expr::JsExpr::parse_in`; the total fallback is
 `ExprRef::parse_js_in`, which loads unadmitted text as `opaque` with the
 text-classified reason).
 
@@ -275,8 +275,8 @@ embedding other control characters are outside the contract. The folio
 models the dump, not the analysis: tree shape is validated, semantic
 invariants (branch ordering, region well-formedness beyond the grammar)
 belong to the S2 verifier (P2-6). The committed reference page is
-`crates/vize_disegno/tests/fixtures/reference.folio`, pinned by TS-16 in
-`crates/vize_disegno/tests/folio_laws.rs` (which also pins every opaque
+`crates/vize_s2/tests/fixtures/reference.folio`, pinned by TS-16 in
+`crates/vize_s2/tests/folio_laws.rs` (which also pins every opaque
 reason spelling both directions) and mirrored from a live arena tree in
 `tests/folio_mirror.rs`; the arena-reset replay law is
 `tests/expr_replay.rs`.
@@ -284,7 +284,7 @@ reason spelling both directions) and mirrored from a live arena tree in
 ## S2 verifier invariants (P2-6)
 
 The semantic invariants the disegno grammar deliberately does not encode,
-checked by `vize_disegno::verify` between passes in debug/CI builds only
+checked by `vize_s2::verify` between passes in debug/CI builds only
 (guardrail 5: verification never ships — the release shape of
 `VerifyObserver` is a ZST with empty check bodies, const-asserted at the
 type). Checks are local in the GHC `-dcore-lint` sense — a line plus the
@@ -327,10 +327,10 @@ artifact today because `ExprSlot` is zero-sized; the P2-5b seam is
 `VerifyObserver::check_live`, where the walk validates each expression
 position's stamp once `ExprRef` gives the positions identity.
 
-**Invalid fixtures (TS-18).** `crates/vize_disegno/tests/fixtures/invalid/`
+**Invalid fixtures (TS-18).** `crates/vize_s2/tests/fixtures/invalid/`
 holds hand-built pages that are grammar-valid and semantically invalid,
 each committed beside its exact expected rendering (`.expected`,
 whole-file equality, no partial matching). The harness is
-`crates/vize_disegno/tests/verifier_fixtures.rs`; the id-resolution and
+`crates/vize_s2/tests/verifier_fixtures.rs`; the id-resolution and
 liveness lanes, which no page text can encode, are pinned with the same
 exact oracles in `tests/verifier_observer.rs`.

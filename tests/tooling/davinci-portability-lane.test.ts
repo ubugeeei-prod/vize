@@ -14,7 +14,7 @@ import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 const portableStageCrates = [
   ["vize_davinci", "vize_davinci"],
   ["vize_s1", "vize_s1"],
-  ["vize_s2", "vize_disegno"],
+  ["vize_s2", "vize_s2"],
   ["vize_ricalco", "vize_ricalco"],
 ] as const;
 

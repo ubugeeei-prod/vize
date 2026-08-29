@@ -41,7 +41,7 @@ Vue-dialect bindings; `v-pre` stays deferred.
 
 Variants injected into `BindingOp` first. The crate's own exhaustive
 match broke before the canary test: E0004 in
-`crates/vize_disegno/src/folio/owned/binding.rs` (`own_binding`) —
+`crates/vize_s2/src/folio/owned/binding.rs` (`own_binding`) —
 `&BindingOp::VueOnce(_)` and `&BindingOp::VueMemo(_)` not covered.
 That is the P2-5a ritual (folio `of` first). After those arms (print,
 parse, verifier walk, ricalco pass matches) the canary in
@@ -56,7 +56,7 @@ vue.once @s:e
 vue.memo value=<expr> @s:e
 ```
 
-TS-16 pin: `crates/vize_disegno/tests/folio_once_memo.rs` (exact Full
+TS-16 pin: `crates/vize_s2/tests/folio_once_memo.rs` (exact Full
 text). Exact rejections: trailing content on `vue.once`, missing
 `value=` on `vue.memo`.
 

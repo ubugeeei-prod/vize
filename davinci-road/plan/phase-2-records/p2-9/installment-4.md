@@ -206,7 +206,7 @@ read.
 The installment-3 worry was that text handling would need comment
 _visibility_; the lowering absorption dissolved it (S1 still has the
 comments), so run boundaries and condense decisions are comment-exact
-without any `vize_disegno` addition. What remains missing is comment
+without any `vize_s2` addition. What remains missing is comment
 _output_: the 5 corpus units are comment-only slot content — real DOM
 in the legacy lane, invisible to S2 — and `units_filler_default`
 re-measured at exactly 5. The class belongs to whatever installment
