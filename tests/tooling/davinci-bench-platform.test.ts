@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const comparePath = path.join(repoRoot, "tools", "davinci", "bench-compare.mjs");
-const benchId = "ricalco_lower_vfor_three_aliases";
+const benchId = "s1_to_s2_lower_vfor_three_aliases";
 
 function budgetText(peaks: string): string {
   return (
@@ -80,7 +80,7 @@ test("an unknown report platform fails closed", () => {
   assert.equal(result.status, 1, result.stdout);
   assert.match(
     result.stdout,
-    /FAIL ricalco_lower_vfor_three_aliases alloc_bytes_peak platform freebsd has no exact budget \(registered: linux, macos\)/u,
+    /FAIL s1_to_s2_lower_vfor_three_aliases alloc_bytes_peak platform freebsd has no exact budget \(registered: linux, macos\)/u,
   );
 });
 

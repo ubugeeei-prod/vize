@@ -21,7 +21,7 @@ const VON_TWO_PER_BUCKET: &str =
 // v-on-storage-synthetic:end
 
 fn davinci_storage(criterion: &mut Criterion) {
-    let vfor_id = cstr!("ricalco_lower_vfor_three_aliases");
+    let vfor_id = cstr!("s1_to_s2_lower_vfor_three_aliases");
     bench_stage_with_metrics(
         criterion,
         &vfor_id,
@@ -40,7 +40,7 @@ fn davinci_storage(criterion: &mut Criterion) {
         },
     );
 
-    let von_id = cstr!("ricalco_emit_von_two_per_bucket");
+    let von_id = cstr!("s1_to_s2_emit_von_two_per_bucket");
     bench_stage_with_metrics(
         criterion,
         &von_id,

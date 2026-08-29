@@ -32,8 +32,8 @@ const budgets = parseTomlLite(budgetsText) as {
 };
 
 const COMPACT_STORAGE_STAGE_WINDOWS = new Set([
-  "ricalco_lower_vfor_three_aliases",
-  "ricalco_emit_von_two_per_bucket",
+  "s1_to_s2_lower_vfor_three_aliases",
+  "s1_to_s2_emit_von_two_per_bucket",
 ]);
 
 // --- bench-id enumeration from the bench sources -------------------------
@@ -207,8 +207,8 @@ test("every bench entry is one single-line inline table", () => {
 
 test("compact-storage peaks are exact per-platform allocation budgets", () => {
   assert.deepEqual(budgets.allocation_peak, {
-    ricalco_lower_vfor_three_aliases: { linux: 1254, macos: 1246 },
-    ricalco_emit_von_two_per_bucket: { linux: 648, macos: 648 },
+    s1_to_s2_lower_vfor_three_aliases: { linux: 1254, macos: 1246 },
+    s1_to_s2_emit_von_two_per_bucket: { linux: 648, macos: 648 },
   });
   for (const [id, peaks] of Object.entries(budgets.allocation_peak)) {
     assert.ok(id in budgets.bench, `${id} must also have a [bench] budget`);
@@ -230,8 +230,8 @@ test("compact-storage probes stay wall-report-only with exact alloc gates", () =
   // wall_p50_ns = 0 seed. The deterministic alloc and per-platform peak gates
   // still fail closed.
   const expected = {
-    ricalco_lower_vfor_three_aliases: { allocs: 10, allocBytesPeakLinux: 1254 },
-    ricalco_emit_von_two_per_bucket: { allocs: 18, allocBytesPeakLinux: 648 },
+    s1_to_s2_lower_vfor_three_aliases: { allocs: 10, allocBytesPeakLinux: 1254 },
+    s1_to_s2_emit_von_two_per_bucket: { allocs: 18, allocBytesPeakLinux: 648 },
   };
   for (const [id, row] of Object.entries(expected)) {
     const reportPath = path.join(repoRoot, "bench", "results", "davinci", "baseline", `${id}.json`);
