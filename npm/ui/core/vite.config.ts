@@ -33,6 +33,7 @@ export default defineConfig({
       "theme-scope": "src/theme-scope.ts",
       alert: "src/alert.ts",
       announcer: "src/announcer.ts",
+      "aspect-ratio": "src/aspect-ratio.ts",
       button: "src/button.ts",
       link: "src/link.ts",
       toggle: "src/toggle.ts",

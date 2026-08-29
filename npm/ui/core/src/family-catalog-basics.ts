@@ -6,6 +6,34 @@ import {
 
 export const basicFamilyCatalog = [
   {
+    canonicalName: "aspect-ratio",
+    title: "Aspect Ratio",
+    packageSubpath: "./aspect-ratio",
+    entryFile: "src/aspect-ratio.ts",
+    sourceFiles: [
+      "src/aspect-ratio.vue",
+      "src/aspect-ratio.ts",
+      "src/aspect-ratio-runtime.ts",
+      "src/aspect-ratio-types.ts",
+    ],
+    behaviorContract: "src/aspect-ratio.behavior.md",
+    tests: ["src/aspect-ratio.test.ts", "src/aspect-ratio-ssr.test.ts"],
+    typeTests: ["src/aspect-ratio.types.test-d.ts"],
+    rendererFixture: "AspectRatioConsumer.vue",
+    qualityGates: componentQualityGates,
+    bundleBudget: {
+      exportName: "AspectRatio",
+      retainedSignature: "data-vize-ui.+aspect-ratio",
+      maximumJavaScriptGzipBytes: 1_000,
+      maximumCssGzipBytes: 0,
+    },
+    aliases: ["aspect ratio", "intrinsic ratio", "responsive media box"],
+    upstreamCoverage: ["CSS aspect-ratio", "Radix UI AspectRatio", "Reka UI AspectRatio"],
+    dependencies: [],
+    maturity: "stable",
+    owner: catalogOwner,
+  },
+  {
     canonicalName: "button",
     title: "Button",
     packageSubpath: "./button",

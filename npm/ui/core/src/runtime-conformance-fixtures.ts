@@ -10,6 +10,7 @@ import ErrorSummary from "./error-summary.vue";
 import LinkAnchor from "./link-anchor.vue";
 import PrimitiveElement from "./primitive-element.vue";
 import { alertRuntimeFixture } from "./runtime-conformance-alert-fixtures.ts";
+import { aspectRatioRuntimeFixture } from "./runtime-conformance-aspect-ratio-fixtures.ts";
 import { progressRuntimeFixture } from "./runtime-conformance-progress-fixtures.ts";
 import { switchRuntimeFixture } from "./runtime-conformance-switch-fixtures.ts";
 import SearchField from "./search-field.vue";
@@ -41,6 +42,7 @@ const DeterministicIdProbe = defineComponent({
 
 export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   alertRuntimeFixture,
+  aspectRatioRuntimeFixture,
   {
     name: "button",
     sourceFile: "action-button.vue",

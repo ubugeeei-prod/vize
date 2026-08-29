@@ -9,6 +9,7 @@ export * from "./field-wiring.ts";
 export * from "./theme.ts";
 export * from "./alert.ts";
 export * from "./announcer.ts";
+export * from "./aspect-ratio.ts";
 export * from "./checkbox.ts";
 export * from "./collection.ts";
 export * from "./composite-navigation.ts";

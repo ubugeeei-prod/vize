@@ -44,6 +44,11 @@
       "import": "./dist/announcer.mjs",
       "default": "./dist/announcer.mjs"
     },
+    "./aspect-ratio": {
+      "types": "./dist/aspect-ratio.d.mts",
+      "import": "./dist/aspect-ratio.mjs",
+      "default": "./dist/aspect-ratio.mjs"
+    },
     "./button": {
       "types": "./dist/button.d.mts",
       "import": "./dist/button.mjs",
