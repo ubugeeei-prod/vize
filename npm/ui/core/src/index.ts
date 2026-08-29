@@ -14,6 +14,7 @@ export * from "./composite-navigation.ts";
 export * from "./context.ts";
 export * from "./controllable-state.ts";
 export * from "./button.ts";
+export * from "./link.ts";
 export * from "./toggle.ts";
 export * from "./input.ts";
 export * from "./search-field.ts";

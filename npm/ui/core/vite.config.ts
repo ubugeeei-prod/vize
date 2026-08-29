@@ -33,6 +33,7 @@ export default defineConfig({
       "theme-scope": "src/theme-scope.ts",
       announcer: "src/announcer.ts",
       button: "src/button.ts",
+      link: "src/link.ts",
       toggle: "src/toggle.ts",
       input: "src/input.ts",
       "search-field": "src/search-field.ts",

@@ -7,6 +7,7 @@ import CheckboxControl from "./checkbox-control.vue";
 import IdProvider from "./deterministic-id-provider.vue";
 import { useDeterministicId } from "./deterministic-id.ts";
 import ErrorSummary from "./error-summary.vue";
+import LinkAnchor from "./link-anchor.vue";
 import PrimitiveElement from "./primitive-element.vue";
 import SearchField from "./search-field.vue";
 import TextInput from "./text-input.vue";
@@ -128,6 +129,36 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       assert.equal(summary.getAttribute("tabindex"), "-1");
       const link = summary.querySelector('[data-vize-ui="error-summary-link"]');
       assert.equal(link?.getAttribute("href"), "#email");
+    },
+  },
+  {
+    name: "link",
+    sourceFile: "link-anchor.vue",
+    render: () =>
+      h(
+        LinkAnchor,
+        { ariaCurrent: "page", href: "/docs", id: "docs-link" },
+        {
+          default: () => "Docs",
+        },
+      ),
+    assertServerMarkup(html) {
+      assert.match(html, /^<a/);
+      assert.match(html, /id="docs-link"/);
+      assert.match(html, /href="\/docs"/);
+      assert.match(html, /aria-current="page"/);
+      assert.match(html, /data-vize-ui="link"/);
+      assert.match(html, /data-state="idle"/);
+      assert.match(html, /Docs/);
+      assert.match(html, /<\/a>$/);
+    },
+    assertHydratedDom(host) {
+      const link = host.querySelector('[data-vize-ui="link"]');
+      assert.ok(link instanceof HTMLAnchorElement);
+      assert.equal(link.id, "docs-link");
+      assert.equal(link.getAttribute("href"), "/docs");
+      assert.equal(link.getAttribute("aria-current"), "page");
+      assert.equal(link.textContent, "Docs");
     },
   },
   {

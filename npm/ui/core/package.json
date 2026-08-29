@@ -44,6 +44,11 @@
       "import": "./dist/button.mjs",
       "default": "./dist/button.mjs"
     },
+    "./link": {
+      "types": "./dist/link.d.mts",
+      "import": "./dist/link.mjs",
+      "default": "./dist/link.mjs"
+    },
     "./toggle": {
       "types": "./dist/toggle.d.mts",
       "import": "./dist/toggle.mjs",
