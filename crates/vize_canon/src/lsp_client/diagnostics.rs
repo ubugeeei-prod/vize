@@ -6,7 +6,7 @@ use super::{
 };
 use crate::file_uri::file_uri_to_path;
 use corsa::{CorsaError, runtime::block_on};
-use lsp_types::{Diagnostic, DocumentDiagnosticReport, DocumentDiagnosticReportResult};
+use lsp_types::Diagnostic;
 use std::time::Duration;
 use vize_s0::{FxHashMap, String, cstr};
 
@@ -15,6 +15,9 @@ type EditorLspDiagnosticDocuments = FxHashMap<String, String>;
 type EditorLspDiagnosticPairs = Vec<(String, String)>;
 const LSP_DIAGNOSTICS_BATCH_CHUNK_SIZE: usize = 128;
 const LSP_DIAGNOSTICS_BATCH_TRANSIENT_RETRIES: usize = 1;
+
+mod lsp_report;
+mod virtual_overlay_diagnostics;
 
 impl CorsaProjectClient {
     /// Get cached diagnostics for a URI.
@@ -36,6 +39,11 @@ impl CorsaProjectClient {
         &mut self,
         uris: &[String],
     ) -> Result<Vec<(String, Vec<LspDiagnostic>)>, String> {
+        virtual_overlay_diagnostics::ensure_materialized_project(
+            self,
+            uris.iter().map(|uri| uri.as_str()),
+        )?;
+
         if self.has_materialized_documents(uris)
             && let Some(results) = self.request_diagnostics_batch_via_materialized_files(uris)?
         {
@@ -64,6 +72,8 @@ impl CorsaProjectClient {
         &mut self,
         uri: &str,
     ) -> Result<DiagnosticFetch, String> {
+        virtual_overlay_diagnostics::ensure_materialized_project(self, std::iter::once(uri))?;
+
         if self.supports_file_diagnostics_api()
             && self.can_use_api_for_uri(uri)
             && let Some(fetch) = self.request_diagnostics_full_via_file_api(uri)?
@@ -354,7 +364,7 @@ impl CorsaProjectClient {
         };
         let diagnostics = diagnostics
             .into_iter()
-            .map(lsp_diagnostic_to_native)
+            .map(lsp_report::lsp_diagnostic_to_native)
             .collect::<Vec<_>>();
         Ok(Some(self.store_file_diagnostics(uri, diagnostics)))
     }
@@ -436,7 +446,7 @@ impl CorsaProjectClient {
                 }
             };
 
-            let diagnostics = self.remap_diagnostics(extract_lsp_report_diagnostics(report));
+            let diagnostics = self.remap_diagnostics(lsp_report::extract_diagnostics(report));
             self.diagnostics
                 .insert(external_uri.clone(), diagnostics.clone());
             results.push((external_uri.clone(), convert_diagnostics(&diagnostics)));
@@ -468,8 +478,8 @@ impl CorsaProjectClient {
                 .get(document_uri.as_str())
                 .cloned()
                 .or_else(|| self.document_texts.get(uri.as_str()).cloned())
-                .or_else(|| read_file_uri(document_uri.as_str()))
-                .or_else(|| read_file_uri(uri.as_str()))
+                .or_else(|| lsp_report::read_file_uri(document_uri.as_str()))
+                .or_else(|| lsp_report::read_file_uri(uri.as_str()))
                 .ok_or_else(|| cstr!("Failed to load document text for {uri}"))?;
             documents.entry(document_uri.clone()).or_insert(text);
             pairs.push((uri.clone(), document_uri));
@@ -509,67 +519,6 @@ fn diagnostics_api_is_unsupported(error: &str) -> bool {
 
 fn diagnostics_api_error_is_unsupported(error: &impl std::fmt::Display) -> bool {
     diagnostics_api_is_unsupported(cstr!("{error}").as_str())
-}
-
-fn extract_lsp_report_diagnostics(report: DocumentDiagnosticReportResult) -> Vec<Diagnostic> {
-    match report {
-        DocumentDiagnosticReportResult::Report(DocumentDiagnosticReport::Full(report)) => {
-            report.full_document_diagnostic_report.items
-        }
-        DocumentDiagnosticReportResult::Report(DocumentDiagnosticReport::Unchanged(_)) => {
-            Vec::new()
-        }
-        DocumentDiagnosticReportResult::Partial(_) => Vec::new(),
-    }
-}
-
-fn lsp_diagnostic_to_native(diagnostic: LspDiagnostic) -> Diagnostic {
-    Diagnostic {
-        range: lsp_types::Range::new(
-            lsp_types::Position::new(
-                diagnostic.range.start.line,
-                diagnostic.range.start.character,
-            ),
-            lsp_types::Position::new(diagnostic.range.end.line, diagnostic.range.end.character),
-        ),
-        severity: diagnostic.severity.and_then(lsp_severity_from_i32),
-        code: diagnostic.code.map(json_code_to_lsp_code),
-        code_description: None,
-        source: diagnostic.source.map(|source| source.into()),
-        message: diagnostic.message.into(),
-        related_information: None,
-        tags: None,
-        data: None,
-    }
-}
-
-fn lsp_severity_from_i32(severity: i32) -> Option<lsp_types::DiagnosticSeverity> {
-    match severity {
-        1 => Some(lsp_types::DiagnosticSeverity::ERROR),
-        2 => Some(lsp_types::DiagnosticSeverity::WARNING),
-        3 => Some(lsp_types::DiagnosticSeverity::INFORMATION),
-        4 => Some(lsp_types::DiagnosticSeverity::HINT),
-        _ => None,
-    }
-}
-
-fn json_code_to_lsp_code(code: serde_json::Value) -> lsp_types::NumberOrString {
-    match code {
-        serde_json::Value::Number(number) => {
-            if let Some(value) = number.as_i64() {
-                lsp_types::NumberOrString::Number(value as i32)
-            } else {
-                lsp_types::NumberOrString::String(cstr!("{number}").into())
-            }
-        }
-        serde_json::Value::String(string) => lsp_types::NumberOrString::String(string),
-        other => lsp_types::NumberOrString::String(cstr!("{other}").into()),
-    }
-}
-
-fn read_file_uri(uri: &str) -> Option<String> {
-    let path = file_uri_to_path(uri)?;
-    std::fs::read_to_string(path).ok().map(Into::into)
 }
 
 #[cfg(test)]

@@ -1,5 +1,8 @@
 use super::{CorsaError, corsa_diagnostics_error_is_unsupported, diagnostics_api_is_unsupported};
-use crate::lsp_client::lsp_transport_error_is_transient;
+use crate::{
+    file_uri::path_to_file_uri, lsp_client::CorsaProjectClient,
+    lsp_client::lsp_transport_error_is_transient,
+};
 
 // Regression: a missing diagnostics scope on the corsa `ProjectSession`
 // must be detected through the typed `CorsaError::Unsupported` variant
@@ -43,4 +46,49 @@ fn recognizes_transient_lsp_transport_errors() {
     assert!(!lsp_transport_error_is_transient(
         "TypeScript semantic diagnostics are unavailable"
     ));
+}
+
+#[test]
+fn virtual_vue_overlay_diagnostics_force_materialized_project_config() {
+    let project = tempfile::tempdir().unwrap();
+    let project_root = project.path().join("workspace");
+    let src = project_root.join("src");
+    std::fs::create_dir_all(&src).unwrap();
+    std::fs::write(project_root.join("tsconfig.json"), "{}").unwrap();
+    std::fs::write(src.join("App.vue"), "<template><div /></template>").unwrap();
+
+    let virtual_uri = path_to_file_uri(&src.join("App.vue.ts"));
+    let mut client = CorsaProjectClient::empty_for_test(project_root);
+    client
+        .document_texts
+        .insert(virtual_uri.clone(), "export {};".into());
+
+    assert!(
+        super::virtual_overlay_diagnostics::needs_materialized_project_config(
+            &client,
+            &virtual_uri
+        )
+    );
+
+    let authored_uri = path_to_file_uri(&src.join("App.vue"));
+    client
+        .document_texts
+        .insert(authored_uri.clone(), "<template><div /></template>".into());
+    assert!(
+        !super::virtual_overlay_diagnostics::needs_materialized_project_config(
+            &client,
+            &authored_uri
+        )
+    );
+
+    let missing_backing_uri = path_to_file_uri(&src.join("Missing.vue.ts"));
+    client
+        .document_texts
+        .insert(missing_backing_uri.clone(), "export {};".into());
+    assert!(
+        !super::virtual_overlay_diagnostics::needs_materialized_project_config(
+            &client,
+            &missing_backing_uri
+        )
+    );
 }
