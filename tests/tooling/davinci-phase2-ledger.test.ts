@@ -44,7 +44,7 @@ const text = Object.fromEntries(Object.entries(docs).map(([name, url]) => [name,
   [K in keyof typeof docs]: string;
 };
 const p2_11InstallmentNumbers = [
-  20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
+  20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
 ] as const;
 const p2_11Installments = new Map(
   p2_11InstallmentNumbers.map((number) => [number, read(p2_11Installment(number))]),
@@ -252,12 +252,13 @@ test("P2-11 records current installments without presenting stale remainders", (
   assert.match(text.p2_11, /#5205/);
   assert.match(text.p2_11, /#5207/);
   assert.match(text.p2_11, /#5210/);
+  assert.match(text.p2_11, /#5212/);
   assert.match(text.p2_11, /#4919/);
   assert.match(text.p2_11, /#4921/);
   assert.match(text.p2_11, /#4924/);
   assert.match(text.p2_11, /#4927/);
   assert.match(text.p2_11, /#4929/);
-  assert.match(text.p2_11, /Current named remainder \(after #5210\)/);
+  assert.match(text.p2_11, /Current named remainder \(after #5212\)/);
   assert.doesNotMatch(text.p2_11, /dynamic-argument bind names \/ modifiers/);
   assert.doesNotMatch(text.p2_11, /\*\*malformed slot fact gaps\*\*/);
   assert.match(p2_11Installments.get(20)!, /14-fixture S2-vs-shipped byte-for-byte battery/);
@@ -288,6 +289,8 @@ test("P2-11 records current installments without presenting stale remainders", (
   assert.match(p2_11Installments.get(37)!, /4e577b62/);
   assert.match(p2_11Installments.get(38)!, /Object V-on Modifiers/);
   assert.match(p2_11Installments.get(38)!, /f3959e7e3/);
+  assert.match(p2_11Installments.get(39)!, /Recent Patch-Flag Witness/);
+  assert.match(p2_11Installments.get(39)!, /22674520f/);
 });
 
 test("suite registry debt and the TS-52 transport decision stay resolved", () => {
