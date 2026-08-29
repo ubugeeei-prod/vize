@@ -9,6 +9,7 @@ mod jsx;
 mod jsx_fallback;
 mod jsx_mouse_events_have_key_events;
 mod jsx_no_i_for_icon;
+mod jsx_no_redundant_roles;
 mod jsx_streaming;
 mod no_mutating_props;
 mod no_top_level_ref;

@@ -9,6 +9,7 @@
 // `#[cfg(test)] mod` bodies under `src/`, keeps covering these tests.
 mod mouse_events_have_key_events_tests;
 mod no_i_for_icon_tests;
+mod no_redundant_roles_tests;
 
 #[cfg(test)]
 mod markup_ir_tests {

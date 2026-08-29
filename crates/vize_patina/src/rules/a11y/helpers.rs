@@ -238,16 +238,23 @@ pub const ARIA_UNSUPPORTED_ELEMENTS: &[&str] = &["meta", "html", "script", "styl
 
 /// Mapping of elements to their implicit ARIA roles
 pub fn get_implicit_role(tag: &str, element: &ElementNode) -> Option<&'static str> {
+    get_implicit_role_by_attr(tag, |name| get_static_attribute_value(element, name))
+}
+
+pub(super) fn get_implicit_role_by_attr<'a>(
+    tag: &str,
+    mut static_attribute_value: impl FnMut(&str) -> Option<&'a str>,
+) -> Option<&'static str> {
     match tag {
         "a" => {
-            if get_static_attribute_value(element, "href").is_some() {
+            if static_attribute_value("href").is_some() {
                 Some("link")
             } else {
                 None
             }
         }
         "area" => {
-            if get_static_attribute_value(element, "href").is_some() {
+            if static_attribute_value("href").is_some() {
                 Some("link")
             } else {
                 None
@@ -267,14 +274,14 @@ pub fn get_implicit_role(tag: &str, element: &ElementNode) -> Option<&'static st
         "header" => Some("banner"),
         "hr" => Some("separator"),
         "img" => {
-            let alt = get_static_attribute_value(element, "alt");
+            let alt = static_attribute_value("alt");
             match alt {
                 Some("") => Some("presentation"),
                 _ => Some("img"),
             }
         }
         "input" => {
-            let input_type = get_static_attribute_value(element, "type").unwrap_or("text");
+            let input_type = static_attribute_value("type").unwrap_or("text");
             match input_type {
                 "button" | "image" | "reset" | "submit" => Some("button"),
                 "checkbox" => Some("checkbox"),
