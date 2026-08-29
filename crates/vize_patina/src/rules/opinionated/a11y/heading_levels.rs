@@ -26,9 +26,10 @@
 #![allow(clippy::disallowed_macros)]
 
 use crate::context::LintContext;
-use crate::diagnostic::Severity;
+use crate::diagnostic::{LintDiagnostic, Severity};
+use crate::ir::{ByteRange, TemplateSyntax};
+use crate::markup::{MarkupContext, MarkupDocument, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use crate::rules::html::helpers::walk_elements;
 use vize_relief::RootNode;
 
 static META: RuleMeta = RuleMeta {
@@ -44,42 +45,42 @@ pub struct HeadingLevels;
 
 struct HeadingInfo {
     level: u8,
-    start: u32,
-    end: u32,
+    range: ByteRange,
 }
 
-fn heading_level(tag: &str) -> Option<u8> {
-    match tag {
-        "h1" => Some(1),
-        "h2" => Some(2),
-        "h3" => Some(3),
-        "h4" => Some(4),
-        "h5" => Some(5),
-        "h6" => Some(6),
-        _ => None,
+fn heading_level(element: &MarkupElement<'_>) -> Option<u8> {
+    if element.is_unqualified_tag_exact("h1") {
+        Some(1)
+    } else if element.is_unqualified_tag_exact("h2") {
+        Some(2)
+    } else if element.is_unqualified_tag_exact("h3") {
+        Some(3)
+    } else if element.is_unqualified_tag_exact("h4") {
+        Some(4)
+    } else if element.is_unqualified_tag_exact("h5") {
+        Some(5)
+    } else if element.is_unqualified_tag_exact("h6") {
+        Some(6)
+    } else {
+        None
     }
 }
 
-impl Rule for HeadingLevels {
-    fn meta(&self) -> &'static RuleMeta {
-        &META
-    }
-
-    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
+impl HeadingLevels {
+    fn check_document(ctx: &mut LintContext<'_>, document: &MarkupDocument<'_>) {
         let mut headings: Vec<HeadingInfo> = Vec::new();
 
-        walk_elements(&root.children, &mut |element| {
-            if let Some(level) = heading_level(element.tag) {
+        document.walk_elements(&mut |element| {
+            if let Some(level) = heading_level(&element) {
                 headings.push(HeadingInfo {
                     level,
-                    start: element.loc.span.start,
-                    end: element.loc.span.end,
+                    range: element.range(),
                 });
             }
         });
 
         // Sort by document order (source offset)
-        headings.sort_by_key(|h| h.start);
+        headings.sort_by_key(|h| h.range.start);
 
         let mut prev_level: u8 = 0;
         for heading in &headings {
@@ -92,17 +93,48 @@ impl Rule for HeadingLevels {
                     ],
                 );
                 let help = ctx.t("a11y/heading-levels.help");
-                let diag = crate::diagnostic::LintDiagnostic::warn(
+                let diag = LintDiagnostic::warn(
                     META.name,
                     message,
-                    heading.start,
-                    heading.end,
+                    heading.range.start,
+                    heading.range.end,
                 )
                 .with_help(help.into_owned());
                 ctx.report(diag);
             }
             prev_level = heading.level;
         }
+    }
+}
+
+impl MarkupRule for HeadingLevels {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, document: &MarkupDocument) {
+        Self::check_document(ctx.lint(), document);
+    }
+}
+
+impl Rule for HeadingLevels {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn jsx_needs_lowering(&self) -> bool {
+        // Heading state is scoped to each lowered render root, matching the
+        // legacy fallback. The direct OXC document covers the whole program.
+        true
+    }
+
+    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
+        let document = MarkupDocument::new(root, TemplateSyntax::Vue);
+        Self::check_document(ctx, &document);
     }
 }
 

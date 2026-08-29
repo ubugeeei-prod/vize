@@ -8,6 +8,7 @@
 // test files) so the Davinci assertion lint, which only scans inline
 // `#[cfg(test)] mod` bodies under `src/`, keeps covering these tests.
 mod deprecated_attr_tests;
+mod heading_levels_tests;
 mod iframe_has_title_jsx_tests;
 mod iframe_has_title_tests;
 mod interactive_supports_focus_jsx_tests;

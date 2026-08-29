@@ -153,27 +153,3 @@ pub fn is_valid_datetime(s: &str) -> bool {
     s.chars()
         .all(|c| c.is_ascii_digit() || "-:TtZz+. W".contains(c))
 }
-
-/// Walk all elements in the template tree, calling a visitor function on each.
-pub fn walk_elements<'a, F>(children: &[TemplateChildNode<'a>], visitor: &mut F)
-where
-    F: FnMut(&ElementNode<'a>),
-{
-    for child in children {
-        match child {
-            TemplateChildNode::Element(el) => {
-                visitor(el);
-                walk_elements(&el.children, visitor);
-            }
-            TemplateChildNode::If(if_node) => {
-                for branch in if_node.branches.iter() {
-                    walk_elements(&branch.children, visitor);
-                }
-            }
-            TemplateChildNode::For(for_node) => {
-                walk_elements(&for_node.children, visitor);
-            }
-            _ => {}
-        }
-    }
-}
