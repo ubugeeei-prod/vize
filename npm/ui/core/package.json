@@ -229,6 +229,11 @@
       "import": "./dist/presence.mjs",
       "default": "./dist/presence.mjs"
     },
+    "./progress": {
+      "types": "./dist/progress.d.mts",
+      "import": "./dist/progress.mjs",
+      "default": "./dist/progress.mjs"
+    },
     "./press": {
       "types": "./dist/press.d.mts",
       "import": "./dist/press.mjs",

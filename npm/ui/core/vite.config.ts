@@ -70,6 +70,7 @@ export default defineConfig({
       portal: "src/portal.ts",
       positioner: "src/positioner.ts",
       presence: "src/presence.ts",
+      progress: "src/progress.ts",
       press: "src/press.ts",
       "scroll-lock": "src/scroll-lock.ts",
       shortcut: "src/shortcut.ts",

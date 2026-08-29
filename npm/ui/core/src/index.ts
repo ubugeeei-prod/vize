@@ -43,6 +43,7 @@ export * from "./pointer-grace.ts";
 export * from "./portal.ts";
 export * from "./positioner.ts";
 export * from "./presence.ts";
+export * from "./progress.ts";
 export * from "./press.ts";
 export * from "./scroll-lock.ts";
 export * from "./shortcut.ts";

@@ -10,6 +10,7 @@ import ErrorSummary from "./error-summary.vue";
 import LinkAnchor from "./link-anchor.vue";
 import PrimitiveElement from "./primitive-element.vue";
 import { alertRuntimeFixture } from "./runtime-conformance-alert-fixtures.ts";
+import { progressRuntimeFixture } from "./runtime-conformance-progress-fixtures.ts";
 import { switchRuntimeFixture } from "./runtime-conformance-switch-fixtures.ts";
 import SearchField from "./search-field.vue";
 import TextInput from "./text-input.vue";
@@ -313,6 +314,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       assert.equal(toggle.textContent, "Bold");
     },
   },
+  progressRuntimeFixture,
   {
     name: "visually-hidden",
     sourceFile: "visually-hidden.vue",

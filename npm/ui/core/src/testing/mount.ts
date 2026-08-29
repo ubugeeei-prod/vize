@@ -229,6 +229,7 @@ function computeRole(element: HTMLElement): string | null {
   const tag = element.tagName.toLowerCase();
   if (tag === "button") return "button";
   if (tag === "a" && element.hasAttribute("href")) return "link";
+  if (tag === "progress") return "progressbar";
   if (element instanceof HTMLInputElement) {
     if (element.type === "checkbox") return "checkbox";
     if (element.type === "radio") return "radio";
