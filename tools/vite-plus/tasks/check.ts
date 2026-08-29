@@ -17,6 +17,7 @@ import {
   runTasks,
   shellCommand,
   task,
+  vscodeExtensionPackageBin,
 } from "../task-helpers.ts";
 import { inTestbox } from "./testbox.ts";
 
@@ -78,7 +79,10 @@ export const checkTasks = defineTasks({
   "check:fix": noCacheTask(runInPackages("check:fix", checkedPackages)),
   "check:rust": noCacheTask("cargo check --workspace"),
   "check:vscode-extension": noCacheTask(
-    runInVscodeExtension("pnpm exec tsc --noEmit", "pnpm exec vp check src vite.config.ts"),
+    runInVscodeExtension(
+      `${vscodeExtensionPackageBin("typescript", "tsc")} --noEmit`,
+      `${vscodeExtensionPackageBin("vite-plus", "vp")} check src vite.config.ts`,
+    ),
   ),
   "check:editor-extensions": noCacheTask(runTasks("check:vscode-extension", "check:zed-extension")),
   clippy: task(rustClippyCommand, { input: cacheInputs.rust }),

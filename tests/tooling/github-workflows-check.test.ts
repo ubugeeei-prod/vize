@@ -262,7 +262,7 @@ test("check workflow runs JS package unit tests and production dependency audit"
   const jsPackageJob = workflowJobBody(workflow, "test-js-packages");
   const auditJob = workflowJobBody(workflow, "security-audit");
 
-  assert.equal(packageJson.packageManager, "pnpm@11.21.0");
+  assert.equal(packageJson.packageManager, "pnpm@12.1.0");
   assert.equal(packageJson.pnpm, undefined);
   assert.match(pnpmWorkspace, /^overrides:\n/m);
   assert.match(

@@ -11,6 +11,7 @@ export {
   runPackageScriptDirectly,
   runTask,
   runTasks,
+  vscodeExtensionPackageBin,
 } from "./task-commands.ts";
 export { noCacheTask, task } from "./task-definition.ts";
 export { shellCommand, shellQuote, withRustTaskEnvironment } from "./task-shell.ts";

@@ -384,7 +384,7 @@ test("CI packages editor extension artifacts", () => {
   assert.match(buildTasks, /package:editor-extensions[\s\S]*assert-vsix-package\.mjs/);
   assert.match(
     taskCommands,
-    /pnpm install --ignore-workspace --no-lockfile --prefer-offline --ignore-scripts/,
+    /run-package-bin\.mjs vite-plus vp --version >\/dev\/null 2>&1[\s\S]*corepack pnpm install --ignore-workspace --lockfile-dir \. --no-lockfile --prefer-offline --ignore-scripts/,
   );
   assert.match(testTasks, /test:vscode-extension:vsix[\s\S]*assert-vsix-package\.mjs/);
   assert.match(testTasks, /test:vscode-extension:host[\s\S]*pnpm run test:host/);

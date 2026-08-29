@@ -4,6 +4,8 @@ import type { PackagePath } from "./task-types.ts";
 import { shellCommand } from "./task-shell.ts";
 
 export const localVp = "./node_modules/.bin/vp";
+export const vscodeExtensionPackageBin = (packageName: string, binName: string) =>
+  `node ../../tools/vscode-vize/run-package-bin.mjs ${packageName} ${binName}`;
 
 /**
  * Runs a command after changing into a package directory.
@@ -23,7 +25,7 @@ export const runPackageScriptDirectly = (taskName: string, packages: readonly Pa
  */
 export const installVscodeExtensionDependencies = runInDirectory(
   "editors/vscode",
-  "if [ -x node_modules/.bin/vp ]; then exit 0; fi && mkdir -p node_modules/.bin && pnpm install --ignore-workspace --no-lockfile --prefer-offline --ignore-scripts",
+  "if node ../../tools/vscode-vize/run-package-bin.mjs vite-plus vp --version >/dev/null 2>&1; then exit 0; fi && corepack pnpm install --ignore-workspace --lockfile-dir . --no-lockfile --prefer-offline --ignore-scripts",
 );
 
 /**

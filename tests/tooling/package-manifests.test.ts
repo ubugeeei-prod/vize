@@ -583,7 +583,7 @@ test("workspace TypeScript package builds use vp pack", () => {
   const oxlintTest = "vp pack && vp test run src/file-state.test.ts && node src/test.ts";
   assert.equal(oxlintPackage.scripts?.test, `${oxlintTest} && node src/script-location.test.ts`);
   const rootTasks = fs.readFileSync(path.join(root, "tools/vite-plus/tasks/build.ts"), "utf-8");
-  assert.match(rootTasks, /pnpm exec vp pack/);
+  assert.match(rootTasks, /vscodeExtensionPackageBin\("vite-plus", "vp"\)[\s\S]*pack/);
 });
 
 test("fresco-native publishes bundled binaries directly from the root package", () => {

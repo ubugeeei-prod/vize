@@ -8,6 +8,7 @@ import {
   runTask,
   runTasks,
   task,
+  vscodeExtensionPackageBin,
 } from "../task-helpers.ts";
 import { inTestbox } from "./testbox.ts";
 
@@ -16,7 +17,7 @@ const injectVscodeTypeScriptPlugin =
   "node ../../tools/vscode-vize/sync-typescript-plugin.mjs inject dist/vize.vsix";
 const packageVscodeExtension = [
   stageVscodeTypeScriptPlugin,
-  "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
+  `${vscodeExtensionPackageBin("@vscode/vsce", "vsce")} package --no-dependencies --out dist/vize.vsix`,
   injectVscodeTypeScriptPlugin,
 ].join(" && ");
 const localTestCommand = runTasks(
@@ -110,7 +111,11 @@ export const testAndBenchmarkTasks = defineTasks({
     ),
   ),
   "test:vscode-extension:host": noCacheTask(
-    runInVscodeExtension(stageVscodeTypeScriptPlugin, "pnpm exec vp pack", "pnpm run test:host"),
+    runInVscodeExtension(
+      stageVscodeTypeScriptPlugin,
+      `${vscodeExtensionPackageBin("vite-plus", "vp")} pack`,
+      "pnpm run test:host",
+    ),
   ),
   "test:vscode-extension:host-real": noCacheTask(
     runInVscodeExtension(

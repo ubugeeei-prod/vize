@@ -41,5 +41,5 @@
     "@typescript/typescript-win32-arm64": "catalog:corsa-runtime",
     "@typescript/typescript-win32-x64": "catalog:corsa-runtime"
   },
-  "packageManager": "pnpm@11.21.0"
+  "packageManager": "pnpm@12.1.0"
 }
