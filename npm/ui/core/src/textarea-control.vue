@@ -188,7 +188,7 @@ const emit = defineEmits<{
 const element = useTemplateRef<HTMLTextAreaElement>("element");
 const controlId = useDeterministicId({ id: () => id, hint: "textarea" });
 const composing = ref(false);
-let compositionInputValue: string | undefined;
+const composingValue = ref<string | undefined>(undefined);
 const state = useControllableState({
   value: () => modelValue,
   defaultValue: () => defaultValue,
@@ -203,10 +203,10 @@ const dataState = computed(() => {
   if (disabled) return "disabled";
   return readOnly ? "readonly" : "editable";
 });
-const dataEmpty = computed(() => (value.value.length === 0 ? "true" : "false"));
 const renderedValue = computed(() =>
-  composing.value ? (element.value?.value ?? value.value) : value.value,
+  composing.value ? (composingValue.value ?? element.value?.value ?? value.value) : value.value,
 );
+const dataEmpty = computed(() => (renderedValue.value.length === 0 ? "true" : "false"));
 
 function syncNativeValue(): void {
   if (composing.value) return;
@@ -239,7 +239,7 @@ function readTextAreaValue(event: Event): string | undefined {
 function onInput(event: Event): void {
   const next = readTextAreaValue(event);
   if (next === undefined) return;
-  if (composing.value) compositionInputValue = next;
+  if (composing.value) composingValue.value = next;
   state.set(next);
   emit("input", next, event);
   void nextTick(syncNativeValue);
@@ -255,25 +255,24 @@ function onChange(event: Event): void {
 
 function onCompositionStart(event: CompositionEvent): void {
   composing.value = true;
-  compositionInputValue = undefined;
+  composingValue.value = element.value?.value ?? value.value;
   emit("compositionStart", value.value, event);
 }
 
 function onCompositionEnd(event: CompositionEvent): void {
-  composing.value = false;
   const next = readTextAreaValue(event);
-  if (next !== undefined && next !== compositionInputValue) state.set(next);
-  compositionInputValue = undefined;
-  emit("compositionEnd", next ?? value.value, event);
+  const composed = next ?? composingValue.value;
+  composing.value = false;
+  if (composed !== undefined && composed !== composingValue.value) state.set(composed);
+  composingValue.value = undefined;
+  emit("compositionEnd", composed ?? value.value, event);
   void nextTick(syncNativeValue);
 }
 
-/** Move focus to the native textarea. */
 function focus(options?: FocusOptions): void {
   element.value?.focus(options);
 }
 
-/** Select the current native textarea text. */
 function select(): void {
   element.value?.select();
 }

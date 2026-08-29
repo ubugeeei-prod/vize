@@ -210,12 +210,14 @@ test("controlled textarea does not rewrite native text during IME composition", 
   await nextTick();
 
   assert.equal(textarea.value, "か\n");
+  assert.equal(textarea.getAttribute("data-empty"), "false");
   assert.equal(handle.exposes<{ composing: boolean }>().composing, true);
 
   dispatchComposition(textarea, "compositionend");
   await nextTick();
 
   assert.equal(textarea.value, "");
+  assert.equal(textarea.getAttribute("data-empty"), "true");
   assert.deepEqual(
     handle.recorded().map((emitted) => [emitted.event, emitted.payload[0]]),
     [
