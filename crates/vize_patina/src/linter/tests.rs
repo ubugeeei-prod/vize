@@ -14,6 +14,7 @@ mod jsx_interactive_supports_focus;
 mod jsx_media_has_caption;
 mod jsx_mouse_events_have_key_events;
 mod jsx_no_aria_hidden_on_focusable;
+mod jsx_no_boolean_attr_value;
 mod jsx_no_consecutive_br;
 mod jsx_no_dupe_style_properties;
 mod jsx_no_duplicate_class;
