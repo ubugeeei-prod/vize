@@ -36,21 +36,22 @@ fn davinci_markup(criterion: &mut Criterion) {
         let allocator = Allocator::new();
         let mut lint = LintContext::new(&allocator, ONE_ROOT, "bench.jsx");
         let document = MarkupDocument::from_jsx(&parsed.program, TemplateSyntax::Vue, 0);
-        let mut markup_ctx = MarkupContext::new(&mut lint, &document);
-        let visited = window.measure(|| {
-            let mut visited = 0u32;
-            for rule in registry.rules() {
-                if rule.jsx_needs_lowering() {
-                    continue;
+        let visited = {
+            let mut markup_ctx = MarkupContext::new(&mut lint, &document);
+            window.measure(|| {
+                let mut visited = 0u32;
+                for rule in registry.rules() {
+                    if rule.jsx_needs_lowering() {
+                        continue;
+                    }
+                    if let Some(markup_rule) = rule.as_markup_rule() {
+                        document.visit_with(markup_rule, &mut markup_ctx);
+                        visited += 1;
+                    }
                 }
-                if let Some(markup_rule) = rule.as_markup_rule() {
-                    document.visit_with(markup_rule, &mut markup_ctx);
-                    visited += 1;
-                }
-            }
-            visited
-        });
-        drop(markup_ctx);
+                visited
+            })
+        };
         assert!(visited > 0, "the direct-IR pass must drive markup rules");
         assert_eq!(
             lint.warning_count() + lint.error_count(),

@@ -21,10 +21,11 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType};
 
-use super::helpers::{get_implicit_role, get_static_attribute_value};
+use super::helpers::{get_implicit_role, get_implicit_role_by_attr, get_static_attribute_value};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/no-redundant-roles",
@@ -38,9 +39,81 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct NoRedundantRoles;
 
+impl NoRedundantRoles {
+    fn first_static_attribute_value<'a>(
+        element: &MarkupElement<'a>,
+        name: &str,
+    ) -> Option<&'a str> {
+        let mut found = false;
+        let mut value = None;
+        element.walk_bindings(&mut |binding| {
+            if !found
+                && binding.kind() == MarkupBindingKind::Attribute
+                && binding.is_static_unqualified_arg_exact(name)
+            {
+                found = true;
+                value = binding.static_value();
+            }
+        });
+        value
+    }
+
+    fn markup_implicit_role<'a>(element: &MarkupElement<'a>) -> Option<&'static str> {
+        let tag = element.tag();
+        if !element.is_unqualified_tag_exact(tag) {
+            return None;
+        }
+
+        get_implicit_role_by_attr(tag, |name| {
+            Self::first_static_attribute_value(element, name)
+        })
+    }
+}
+
+/// Markup-IR entry point for `a11y/no-redundant-roles`.
+///
+/// The role table mirrors the legacy `ElementNode` helper, including its
+/// static-attribute-only `href` / `type` / `alt` probes and first-attribute
+/// behavior. Exact unqualified tag / attribute checks keep direct JSX/TSX
+/// projection inside the same visible boundary the old lowering fallback had.
+impl MarkupRule for NoRedundantRoles {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if element.is_component() {
+            return;
+        }
+
+        let Some(role_value) = Self::first_static_attribute_value(element, "role") else {
+            return;
+        };
+
+        let Some(implicit) = Self::markup_implicit_role(element) else {
+            return;
+        };
+
+        if implicit != role_value {
+            return;
+        }
+
+        let message = ctx.lint().t_fmt(
+            "a11y/no-redundant-roles.message",
+            &[("tag", element.tag()), ("role", role_value)],
+        );
+        let help = ctx.lint().t("a11y/no-redundant-roles.help");
+        ctx.lint().warn_at_with_help(message, element.range(), help);
+    }
+}
+
 impl Rule for NoRedundantRoles {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
