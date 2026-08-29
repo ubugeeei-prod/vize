@@ -23,10 +23,11 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType, PropNode};
 
-use super::helpers::deprecated_attr_suggestion;
+use super::helpers::{deprecated_attr_suggestion, deprecated_attr_suggestion_by_tag};
 
 static META: RuleMeta = RuleMeta {
     name: "html/deprecated-attr",
@@ -39,9 +40,72 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct DeprecatedAttr;
 
+impl DeprecatedAttr {
+    fn deprecated_markup_attr<'a>(
+        element: &MarkupElement<'a>,
+        binding: &MarkupBinding<'a>,
+    ) -> Option<(&'a str, &'static str)> {
+        if binding.kind() != MarkupBindingKind::Attribute {
+            return None;
+        }
+
+        let name = binding.arg_name()?;
+        if !binding.is_static_unqualified_arg_exact(name) {
+            return None;
+        }
+
+        deprecated_attr_suggestion_by_tag(name, |expected| {
+            element.is_unqualified_tag_exact(expected)
+        })
+        .map(|suggestion| (name, suggestion))
+    }
+}
+
+/// Markup-IR entry point for `html/deprecated-attr`.
+///
+/// Mirrors the legacy template visitor exactly: only static, unqualified
+/// attributes on non-component elements are checked. Bound attributes
+/// (`:align` / `align={...}`), case-different names, and JSX namespaced props
+/// stay outside the rule; tag-specific exceptions use exact unqualified tag
+/// matching so JSX namespaced tags keep the old lowered-tag behavior.
+impl MarkupRule for DeprecatedAttr {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_binding<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        element: &MarkupElement<'a>,
+        binding: &MarkupBinding<'a>,
+    ) {
+        if element.is_component() {
+            return;
+        }
+
+        let tag = element.tag();
+        let Some((name, suggestion)) = Self::deprecated_markup_attr(element, binding) else {
+            return;
+        };
+
+        let message = ctx.lint().t_fmt(
+            "html/deprecated-attr.message",
+            &[("attr", name), ("tag", tag)],
+        );
+        let help = ctx
+            .lint()
+            .t_fmt("html/deprecated-attr.help", &[("suggestion", suggestion)]);
+        ctx.lint().warn_at_with_help(message, binding.range(), help);
+    }
+}
+
 impl Rule for DeprecatedAttr {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {

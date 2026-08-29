@@ -34,9 +34,9 @@ Per-rule registration surface, SFC/JSX path membership, croquis usage, and a fir
 
 - **total rules: 245**
 - by family: template-family 158, script 71, css 10, musea 6
-- by surface (a rule can have several): `css-text` 10, `markup-facade` 16, `musea-blocks` 6, `script-oxc` 65, `script-source` 6, `sfc-source` 9, `template-ast` 152, `type-aware-corsa` 5
+- by surface (a rule can have several): `css-text` 10, `markup-facade` 17, `musea-blocks` 6, `script-oxc` 65, `script-source` 6, `sfc-source` 9, `template-ast` 152, `type-aware-corsa` 5
 - path membership: SFC `lint_sfc` 239 · JSX `lint_jsx` 147 · **SFC∩JSX 147** · SFC-only 92 · JSX-only 0 · neither 6 (6 musea + 0 unregistered)
-- JSX lanes: `fallback` 131, `ir` 14, `ir-lowered` 2, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (16 = 16 `markup-facade` rules)
+- JSX lanes: `fallback` 130, `ir` 15, `ir-lowered` 2, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (17 = 17 `markup-facade` rules)
 - classification: neutral-core-candidate **85** · vue-dialect-bound **138** · container-bound **22** (0 overridden)
 - croquis adoption: **23** rules touch vize_croquis (18 direct imports, 12 via context analysis)
 
@@ -95,7 +95,7 @@ Sorted by rule name. File paths are relative to `crates/vize_patina/src/rules/`.
 | `ecosystem/vue-router-prefer-named-link`        | template-family | `ecosystem/vue_router_prefer_named_link.rs`            | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `ecosystem/vue-router-prefer-named-push`        | script          | `script/vue_router_prefer_named_push.rs`               | script-oxc                     | yes (script-blocks)              | no                          | —                                                                                                   | vue-dialect-bound      |
 | `ecosystem/vue-test-utils-no-html-snapshot`     | script          | `script/vue_test_utils_no_html_snapshot.rs`            | script-oxc                     | yes (script-blocks)              | no                          | —                                                                                                   | vue-dialect-bound      |
-| `html/deprecated-attr`                          | template-family | `html/deprecated_attr.rs`                              | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | neutral-core-candidate |
+| `html/deprecated-attr`                          | template-family | `html/deprecated_attr.rs`                              | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | neutral-core-candidate |
 | `html/deprecated-element`                       | template-family | `html/deprecated_element.rs`                           | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | neutral-core-candidate |
 | `html/id-duplication`                           | template-family | `html/id_duplication.rs`                               | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `html/no-consecutive-br`                        | template-family | `html/no_consecutive_br.rs`                            | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | neutral-core-candidate |

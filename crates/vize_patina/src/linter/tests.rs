@@ -6,6 +6,7 @@ mod basic;
 mod css;
 mod directives;
 mod jsx;
+mod jsx_deprecated_attr;
 mod jsx_fallback;
 mod jsx_mouse_events_have_key_events;
 mod jsx_no_i_for_icon;
