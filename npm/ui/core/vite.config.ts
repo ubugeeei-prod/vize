@@ -42,6 +42,7 @@ export default defineConfig({
       "drag-and-drop": "src/drag-and-drop.ts",
       "error-summary": "src/error-summary.ts",
       "field-wiring": "src/field-wiring.ts",
+      form: "src/form.ts",
       catalog: "src/family-catalog.ts",
       command: "src/command.ts",
       history: "src/history.ts",

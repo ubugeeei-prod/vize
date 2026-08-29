@@ -94,6 +94,11 @@
       "import": "./dist/field-wiring.mjs",
       "default": "./dist/field-wiring.mjs"
     },
+    "./form": {
+      "types": "./dist/form.d.mts",
+      "import": "./dist/form.mjs",
+      "default": "./dist/form.mjs"
+    },
     "./catalog": {
       "types": "./dist/catalog.d.mts",
       "import": "./dist/catalog.mjs",

@@ -46,3 +46,4 @@ export * from "./typeahead.ts";
 export * from "./virtualizer.ts";
 export * from "./primitive.ts";
 export * from "./visually-hidden.ts";
+export * from "./form.ts";
