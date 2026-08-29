@@ -9,7 +9,7 @@
 mod support;
 
 use support::with_transformed;
-use vize_ricalco::{EmitError, UnsupportedReason as Reason, emit_dom};
+use vize_ricalco::emit_dom;
 
 fn assembled(source: &str) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {
@@ -17,12 +17,6 @@ fn assembled(source: &str) -> String {
             .unwrap_or_else(|error| panic!("emit refused {source:?}: {error:?}"))
             .assembled()
             .to_string()
-    })
-}
-
-fn refused(source: &str) -> EmitError {
-    with_transformed(source, |lowered, _, facts, _| {
-        emit_dom(lowered, facts).expect_err("expected Unsupported")
     })
 }
 
@@ -210,10 +204,10 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn an_object_on_with_modifiers_is_unsupported_this_installment() {
+fn object_on_modifiers_preserve_the_handler_object() {
     assert_eq!(
-        refused(r#"<div v-on.once="handlers"></div>"#).reason(),
-        Some(Reason::ObjectOnHasModifiers)
+        assembled(r#"<div v-on.once.capture.passive="handlers"></div>"#),
+        assembled(r#"<div v-on="handlers"></div>"#)
     );
 }
 

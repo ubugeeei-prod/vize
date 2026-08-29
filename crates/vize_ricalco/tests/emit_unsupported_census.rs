@@ -115,12 +115,6 @@ const SOURCE_CASES: &[Case] = &[
         Reason::ObjectOnHandlerNotJs,
     ),
     case(
-        "object_on_mod",
-        r#"<div v-on.once="handlers"></div>"#,
-        VUE3,
-        Reason::ObjectOnHasModifiers,
-    ),
-    case(
         "bad_on_handler",
         r#"<div @click="handler."></div>"#,
         VUE3,
@@ -215,7 +209,6 @@ fn committed_fixture_refusal_census_is_pinned() {
             ("memo_expression_not_js", 1),
             ("model_argument_not_js", 1),
             ("object_on_handler_not_js", 1),
-            ("object_on_has_modifiers", 1),
             ("on_handler_not_js", 1),
             ("on_name_not_js", 1),
             ("show_expression_not_js", 1),

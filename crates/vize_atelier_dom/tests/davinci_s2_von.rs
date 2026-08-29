@@ -12,9 +12,14 @@ mod support;
 
 const BATTERY: &[(&str, &str)] = &[
     ("object_on", r#"<div v-on="handlers"></div>"#),
+    ("object_on_once", r#"<div v-on.once="handlers"></div>"#),
     (
         "attr_then_object_on",
         r#"<div id="x" v-on="handlers"></div>"#,
+    ),
+    (
+        "attr_then_object_on_modifiers",
+        r#"<div id="x" v-on.capture.passive="handlers"></div>"#,
     ),
     (
         "object_on_then_attr",
@@ -45,6 +50,10 @@ const BATTERY: &[(&str, &str)] = &[
     ("keyup_then", r#"<div @keyup="h" v-on="handlers"></div>"#),
     ("nested", r#"<div><span v-on="handlers"></span></div>"#),
     ("component_object_on", r#"<Foo v-on="handlers" />"#),
+    (
+        "component_object_on_modifiers",
+        r#"<Foo v-on.once.capture="handlers" />"#,
+    ),
     (
         "component_attr_then_object_on",
         r#"<Foo id="x" v-on="handlers" />"#,

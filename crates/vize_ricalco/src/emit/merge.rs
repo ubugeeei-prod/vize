@@ -34,12 +34,6 @@ pub(super) fn admit_object(bind: &BindOp<'_>) -> Result<(), EmitError> {
 }
 
 pub(super) fn admit_object_on(on: &OnOp<'_>) -> Result<(), EmitError> {
-    if !on.modifiers.is_empty() {
-        return Err(EmitError::unsupported_at(
-            Reason::ObjectOnHasModifiers,
-            on.span,
-        ));
-    }
     match on.handler {
         Some(ExprRef::Js(_)) => Ok(()),
         Some(expr) => Err(EmitError::unsupported_at(
