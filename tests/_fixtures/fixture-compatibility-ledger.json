@@ -777,6 +777,7 @@
           "tests/_fixtures/_git/vee-validate",
           "tests/_fixtures/_git/vue-draggable-plus",
           "tests/_fixtures/_git/vue-termui",
+          "tests/_fixtures/_git/vue-vben-admin",
           "tests/_fixtures/_git/vue-bits",
           "tests/_fixtures/_git/shadcn-vue"
         ]
