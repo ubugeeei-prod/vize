@@ -84,6 +84,11 @@
       "import": "./dist/skeleton.mjs",
       "default": "./dist/skeleton.mjs"
     },
+    "./meter": {
+      "types": "./dist/meter.d.mts",
+      "import": "./dist/meter.mjs",
+      "default": "./dist/meter.mjs"
+    },
     "./textarea": {
       "types": "./dist/textarea.d.mts",
       "import": "./dist/textarea.mjs",

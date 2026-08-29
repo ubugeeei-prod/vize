@@ -23,6 +23,7 @@ export * from "./input.ts";
 export * from "./search-field.ts";
 export * from "./separator.ts";
 export * from "./skeleton.ts";
+export * from "./meter.ts";
 export * from "./textarea.ts";
 export * from "./switch.ts";
 export * from "./command.ts";

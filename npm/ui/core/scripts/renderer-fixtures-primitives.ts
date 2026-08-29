@@ -19,6 +19,24 @@ const ratio = ref(16 / 9);
 `,
   },
   {
+    filename: "MeterConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { Meter } from "./meter.ts";
+
+const value = ref(64);
+</script>
+
+<template>
+  <Meter aria-label="Storage usage" :value :min="0" :max="100" :low="30" :high="90" :optimum="50">
+    <template #default="{ percent, state }">
+      <span>{{ percent }} {{ state }}</span>
+    </template>
+  </Meter>
+</template>
+`,
+  },
+  {
     filename: "SeparatorConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

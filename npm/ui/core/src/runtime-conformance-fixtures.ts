@@ -8,6 +8,7 @@ import IdProvider from "./deterministic-id-provider.vue";
 import { useDeterministicId } from "./deterministic-id.ts";
 import ErrorSummary from "./error-summary.vue";
 import LinkAnchor from "./link-anchor.vue";
+import { meterRuntimeFixture } from "./runtime-conformance-meter-fixtures.ts";
 import PrimitiveElement from "./primitive-element.vue";
 import { alertRuntimeFixture } from "./runtime-conformance-alert-fixtures.ts";
 import { aspectRatioRuntimeFixture } from "./runtime-conformance-aspect-ratio-fixtures.ts";
@@ -169,6 +170,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       assert.equal(link.textContent, "Docs");
     },
   },
+  meterRuntimeFixture,
   {
     name: "primitive",
     sourceFile: "primitive-element.vue",
