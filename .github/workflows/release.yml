@@ -44,9 +44,12 @@ jobs:
       native_matrix: ${{ steps.platforms.outputs.native_matrix }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: ./.github/actions/setup-rust-script
       - name: Select release platforms
         id: platforms
-        run: node tools/github/release-platforms.mjs github-output "${{ github.ref_name }}"
+        run: rust-script tools/commands/ci/github/release-platforms.rs github-output "${{ github.ref_name }}"
   build-cli:
     name: Build CLI - ${{ matrix.settings.target }}
     needs: plan-release-platforms
@@ -68,6 +71,7 @@ jobs:
           targets: ${{ matrix.settings.target }}
       - name: Install Rust target
         run: rustup target add ${{ matrix.settings.target }}
+      - uses: ./.github/actions/setup-rust-script
       - name: Setup Wild linker (Linux)
         if: runner.os == 'Linux' && !endsWith(matrix.settings.target, '-musl')
         uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
@@ -84,7 +88,7 @@ jobs:
         uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2
       - name: Configure Zig linker (Linux musl CLI)
         if: endsWith(matrix.settings.target, '-musl')
-        run: bash tools/github/configure-zig-musl-linkers.sh
+        run: rust-script tools/commands/ci/github/configure-zig-musl-linkers.rs
       - name: Mount Rust sticky disks (Linux)
         if: runner.os == 'Linux'
         uses: ./.github/actions/setup-rust-sticky-cache
@@ -112,7 +116,7 @@ jobs:
       - name: Create archive (Unix)
         if: runner.os != 'Windows'
         shell: bash
-        run: if [[ "${{ matrix.settings.target }}" == *-musl ]]; then bash tools/github/verify-musl-cli-binary.sh "${{ matrix.settings.target }}"; fi; moon run --target native tools/moon/cmd/github/create_cli_archive -- ${{ matrix.settings.target }} ${{ matrix.settings.archive }} vize
+        run: if [[ "${{ matrix.settings.target }}" == *-musl ]]; then rust-script tools/commands/ci/github/verify-musl-cli-binary.rs "${{ matrix.settings.target }}"; fi; moon run --target native tools/moon/cmd/github/create_cli_archive -- ${{ matrix.settings.target }} ${{ matrix.settings.archive }} vize
       - name: Create archive (Windows)
         if: runner.os == 'Windows'
         shell: bash
@@ -140,6 +144,7 @@ jobs:
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: release-tools, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - uses: ./.github/actions/setup-rust-script
       # upload-artifact only fails when NO path matches, so every path it uploads needs a task here.
       - name: Package editor extensions
         run: |
@@ -351,6 +356,7 @@ jobs:
         with:
           key: release-wasm
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
       - name: Cache WASM package build
         id: cache-wasm
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
@@ -369,7 +375,7 @@ jobs:
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
       - name: Smoke @vizejs/wasm package
-        run: node tools/npm/smoke-wasm-package.mjs npm/wasm
+        run: rust-script tools/commands/release/npm/smoke-wasm-package.rs npm/wasm
       - name: Upload WASM package artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -421,6 +427,7 @@ jobs:
           shared-key: release-native-${{ matrix.settings.target }}
           cache-workspace-crates: "true"
           save-if: "false"
+      - uses: ./.github/actions/setup-rust-script
       - name: Tune Windows release profile
         if: runner.os == 'Windows'
         shell: bash
@@ -435,7 +442,7 @@ jobs:
         run: moon run --target native tools/moon/cmd/github/clean_node_binaries -- npm/native npm/fresco-native
       - name: Build vize-native
         shell: bash
-        run: moon run --target native tools/moon/cmd/github/build_napi_package -- npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }} && if [[ "$RUNNER_OS" == Linux && "${{ matrix.settings.target }}" == *-gnu ]]; then node tools/github/verify-glibc-symbols.mjs --max 2.36 npm/native/*.linux-*-gnu.node; fi
+        run: moon run --target native tools/moon/cmd/github/build_napi_package -- npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }} && if [[ "$RUNNER_OS" == Linux && "${{ matrix.settings.target }}" == *-gnu ]]; then rust-script tools/commands/ci/github/verify-glibc-symbols.rs --max 2.36 npm/native/*.linux-*-gnu.node; fi
       - name: Collect vize-native artifact
         shell: bash
         run: moon run --target native tools/moon/cmd/github/collect_native_artifacts -- npm/native .artifacts/vize-native vize-native
@@ -448,7 +455,7 @@ jobs:
           compression-level: 0
       - name: Build fresco-native
         shell: bash
-        run: moon run --target native tools/moon/cmd/github/build_napi_package -- npm/fresco-native ../../crates/vize_fresco/Cargo.toml vize_fresco ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }} && if [[ "$RUNNER_OS" == Linux && "${{ matrix.settings.target }}" == *-gnu ]]; then node tools/github/verify-glibc-symbols.mjs --max 2.36 npm/fresco-native/*.linux-*-gnu.node; fi
+        run: moon run --target native tools/moon/cmd/github/build_napi_package -- npm/fresco-native ../../crates/vize_fresco/Cargo.toml vize_fresco ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }} && if [[ "$RUNNER_OS" == Linux && "${{ matrix.settings.target }}" == *-gnu ]]; then rust-script tools/commands/ci/github/verify-glibc-symbols.rs --max 2.36 npm/fresco-native/*.linux-*-gnu.node; fi
       - name: Collect fresco-native artifact
         shell: bash
         run: moon run --target native tools/moon/cmd/github/collect_native_artifacts -- npm/fresco-native .artifacts/fresco-native fresco-native
@@ -469,6 +476,9 @@ jobs:
       - name: Setup runtime package managers
         uses: ./.github/actions/setup-runtime-package-managers
         with: { node-version-file: ".node-version" }
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-moonbit
       - name: Install native package tooling dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...' --filter './npm/fresco-native...'
@@ -521,7 +531,7 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { pattern: fresco-bindings-*, path: npm/fresco-native/artifacts }
       - name: Apply slow platform release cadence
-        run: node tools/github/release-platforms.mjs apply-cadence "${{ github.ref_name }}" npm/native/package.json npm/oxint/package.json
+        run: rust-script tools/commands/ci/github/release-platforms.rs apply-cadence "${{ github.ref_name }}" npm/native/package.json npm/oxint/package.json
       - name: Prepare native package tarballs
         working-directory: npm/native
         run: |
@@ -534,7 +544,7 @@ jobs:
           moon run --target native tools/moon/cmd/github/collect_native_artifacts -- npm/fresco-native/artifacts npm/fresco-native fresco-native
       - name: Smoke install release package tarballs
         run: |
-          node tools/npm/smoke-release-install.mjs --prepare-manifests --runtime-checks \
+          rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks \
             npm/native npm/native/npm/* \
             npm/fresco-native \
             npm/cli \
@@ -573,6 +583,9 @@ jobs:
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", cache: true, run-install: false }
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-moonbit
       - name: Install dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
@@ -582,7 +595,7 @@ jobs:
           pattern: bindings-*
           path: npm/native/artifacts
       - name: Apply slow platform release cadence
-        run: node tools/github/release-platforms.mjs apply-cadence "${{ github.ref_name }}" npm/native/package.json
+        run: rust-script tools/commands/ci/github/release-platforms.rs apply-cadence "${{ github.ref_name }}" npm/native/package.json
       - name: Create npm platform directories
         working-directory: npm/native
         run: vp exec napi create-npm-dirs
@@ -595,7 +608,7 @@ jobs:
       - name: List packages
         run: ls -R npm/native/npm/
       - name: Smoke install native package tarballs
-        run: node tools/npm/smoke-release-install.mjs --prepare-manifests --runtime-checks npm/native npm/native/npm/*
+        run: rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks npm/native npm/native/npm/*
       - name: Publish platform packages
         run: moon run --target native tools/moon/cmd/publish_npm_package_dirs -- npm/native/npm --provenance
       - name: Publish
@@ -612,6 +625,9 @@ jobs:
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", cache: true, run-install: false }
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-moonbit
       - name: Install dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/fresco-native...'
@@ -625,7 +641,7 @@ jobs:
       - name: Stage bundled native binaries
         run: moon run --target native tools/moon/cmd/github/collect_native_artifacts -- npm/fresco-native/artifacts npm/fresco-native fresco-native
       - name: Smoke install Fresco native package tarball
-        run: node tools/npm/smoke-release-install.mjs --prepare-manifests npm/fresco-native
+        run: rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests npm/fresco-native
       - name: Publish
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/fresco-native --provenance
 
@@ -643,13 +659,16 @@ jobs:
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: true }
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: ./.github/actions/setup-rust-script
       - name: Download prebuilt WASM package
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-vize-wasm, path: npm/wasm }
       - name: Smoke @vizejs/wasm package
-        run: node tools/npm/smoke-wasm-package.mjs npm/wasm
+        run: rust-script tools/commands/release/npm/smoke-wasm-package.rs npm/wasm
       - name: Smoke install WASM package tarball
-        run: node tools/npm/smoke-release-install.mjs npm/wasm
+        run: rust-script tools/commands/release/npm/smoke-release-install.rs npm/wasm
       - name: Publish @vizejs/wasm
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/wasm --provenance
   release-npm-vite-plugin:
@@ -672,6 +691,9 @@ jobs:
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-moonbit
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -698,6 +720,9 @@ jobs:
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-moonbit
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -705,7 +730,7 @@ jobs:
       - name: Inject native binding package versions
         run: moon run --target native tools/moon/cmd/inject_native_optional_deps -- npm/oxint/package.json npm/native/package.json --print
       - name: Apply slow platform release cadence
-        run: node tools/github/release-platforms.mjs apply-cadence "${{ github.ref_name }}" npm/oxint/package.json
+        run: rust-script tools/commands/ci/github/release-platforms.rs apply-cadence "${{ github.ref_name }}" npm/oxint/package.json
       - name: Publish oxlint-plugin-vize
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/oxint --provenance
 

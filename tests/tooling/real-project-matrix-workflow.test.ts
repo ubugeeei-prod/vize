@@ -139,7 +139,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
       dependencyIndex < waiverAuditIndex &&
       waiverAuditIndex < runIndex,
   );
-  assert.match(dependency.run ?? "", /tools\/fixtures\/typecheck-dependency-prepare\.mjs/);
+  assert.match(dependency.run ?? "", /tools\/commands\/fixtures\/typecheck-dependency-prepare\.rs/);
   assert.match(dependency.run ?? "", /--output-dir "\$FIXTURE_REPORT_DIR"/);
   assert.match(dependency.run ?? "", /--shard-index "\$FIXTURE_SHARD_INDEX"/);
   assert.match(dependency.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);
@@ -160,9 +160,9 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.equal(waiverAudit.if, "${{ !cancelled() }}");
   assert.equal(waiverAudit["continue-on-error"], true);
   assert.deepEqual(waiverAudit.env, { GITHUB_TOKEN: "${{ github.token }}" });
-  assert.match(waiverAudit.run ?? "", /glyph-corpus-waiver-audit\.mjs/);
+  assert.match(waiverAudit.run ?? "", /glyph-corpus-waiver-audit\.rs/);
   assert.match(waiverAudit.run ?? "", /glyph-waiver-issues\.json/);
-  assert.match(run.run ?? "", /tools\/fixtures\/tool-matrix-report\.mjs/);
+  assert.match(run.run ?? "", /tools\/commands\/fixtures\/tool-matrix-report\.rs/);
   assert.match(run.run ?? "", /--vize-bin target\/ci\/vize/);
   assert.match(run.run ?? "", /--timeout-ms "\$CORE_TOOLS_TIMEOUT_MS"/);
   assert.match(run.run ?? "", /--output-dir "\$FIXTURE_REPORT_DIR"/);
@@ -198,7 +198,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     "the hydrated fixture corpus must be measured against the lint baseline",
   );
   for (const pattern of [
-    /tools\/fixtures\/lint-divergence-report\.mjs/,
+    /tools\/commands\/fixtures\/lint-divergence-report\.rs/,
     /--shard-index "\$FIXTURE_SHARD_INDEX"/,
     /--shard-count "\$FIXTURE_SHARD_COUNT"/,
     /--measure-coverage-gap/,
@@ -253,7 +253,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     /\[\[ ! -s "\$FIXTURE_REPORT_DIR\/glyph-pug-semantics\.json" \]\][\s\S]*?glyph_exit_code=1/,
   );
   assert.ok(runIndex < divergenceIndex);
-  assert.match(divergence.run ?? "", /tools\/fixtures\/typecheck-divergence-report\.mjs/);
+  assert.match(divergence.run ?? "", /tools\/commands\/fixtures\/typecheck-divergence-report\.rs/);
   assert.match(divergence.run ?? "", /--report-dir "\$FIXTURE_REPORT_DIR"/);
   assert.match(divergence.run ?? "", /--shard-index "\$FIXTURE_SHARD_INDEX"/);
   assert.match(divergence.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);

@@ -6,6 +6,8 @@ import {
   runInPackages,
   runInVscodeExtension,
   runPackageScriptDirectly,
+  rustTool,
+  rustToolFromVscodeExtension,
   runTask,
   runTasks,
   task,
@@ -13,9 +15,19 @@ import {
 } from "../task-helpers.ts";
 import { inTestbox } from "./testbox.ts";
 
-const stageVscodeTypeScriptPlugin = "node ../../tools/vscode-vize/sync-typescript-plugin.mjs stage";
-const injectVscodeTypeScriptPlugin =
-  "node ../../tools/vscode-vize/sync-typescript-plugin.mjs inject dist/vize.vsix";
+const stageVscodeTypeScriptPlugin = rustToolFromVscodeExtension(
+  "editors/vscode/sync-typescript-plugin",
+  "stage",
+);
+const injectVscodeTypeScriptPlugin = rustToolFromVscodeExtension(
+  "editors/vscode/sync-typescript-plugin",
+  "inject",
+  "dist/vize.vsix",
+);
+const assertVscodePackage = rustToolFromVscodeExtension(
+  "editors/vscode/assert-vsix-package",
+  "dist/vize.vsix",
+);
 const packageVscodeExtension = [
   stageVscodeTypeScriptPlugin,
   `${vscodeExtensionPackageBin("@vscode/vsce", "vsce")} package --no-dependencies --out dist/vize.vsix`,
@@ -74,35 +86,32 @@ export const buildTasks = defineTasks({
   ),
   "build:editor-extensions": noCacheTask(runTasks("build:vscode-extension", "check:zed-extension")),
   "package:vscode-extension": noCacheTask(
-    runInVscodeExtension(
-      packageVscodeExtension,
-      "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
-    ),
+    runInVscodeExtension(packageVscodeExtension, assertVscodePackage),
   ),
   "check:zed-extension": task("cargo check --manifest-path editors/zed/Cargo.toml", {
     input: ["editors/zed/**"],
   }),
   "package:zed-extension": noCacheTask(
-    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar --exclude 'zed/target' -czf zed-vize-extension.tar.gz -C editors zed && node tools/zed-vize/assert-zed-package.mjs zed-vize-extension.tar.gz",
+    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar --exclude 'zed/target' -czf zed-vize-extension.tar.gz -C editors zed && ${rustTool("editors/zed/assert-zed-package", "zed-vize-extension.tar.gz")}`,
   ),
   "package:nvim-extension": noCacheTask(
-    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf nvim-vize-extension.tar.gz -C editors nvim && node tools/nvim-vize/assert-nvim-package.mjs nvim-vize-extension.tar.gz",
+    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf nvim-vize-extension.tar.gz -C editors nvim && ${rustTool("editors/neovim/assert-nvim-package", "nvim-vize-extension.tar.gz")}`,
   ),
   "package:vim-extension": noCacheTask(
-    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf vim-vize-extension.tar.gz -C editors vim && node tools/vim-vize/assert-vim-package.mjs vim-vize-extension.tar.gz",
+    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf vim-vize-extension.tar.gz -C editors vim && ${rustTool("editors/vim/assert-vim-package", "vim-vize-extension.tar.gz")}`,
   ),
   "package:helix-extension": noCacheTask(
-    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf helix-vize-extension.tar.gz -C editors helix && node tools/helix-vize/assert-helix-package.mjs helix-vize-extension.tar.gz",
+    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf helix-vize-extension.tar.gz -C editors helix && ${rustTool("editors/helix/assert-helix-package", "helix-vize-extension.tar.gz")}`,
   ),
   "package:emacs-extension": noCacheTask(
-    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf emacs-vize-extension.tar.gz -C editors emacs && node tools/emacs-vize/assert-emacs-package.mjs emacs-vize-extension.tar.gz",
+    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf emacs-vize-extension.tar.gz -C editors emacs && ${rustTool("editors/emacs/assert-emacs-package", "emacs-vize-extension.tar.gz")}`,
   ),
   "package:editor-extensions": noCacheTask(
     `${runInVscodeExtension(
       `${vscodeExtensionPackageBin("typescript", "tsc")} --noEmit`,
       `${vscodeExtensionPackageBin("vite-plus", "vp")} check src vite.config.ts`,
       packageVscodeExtension,
-      "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
+      assertVscodePackage,
     )} && ${runTask("check:zed-extension")} && ${runTask(
       "test:zed-extension:unit",
     )} && ${runTask("package:zed-extension")} && ${runTask(

@@ -48,6 +48,6 @@ test("glibc verifier accepts binaries at the Debian bookworm ceiling", () => {
 test("release workflow gates GNU native binaries against the Debian bookworm glibc ceiling", () => {
   assert.match(
     workflowJobBody(readRepoFile(".github", "workflows", "release.yml"), "build-native-all"),
-    /verify-glibc-symbols\.mjs --max 2\.36 npm\/native\/\*\.linux-\*-gnu\.node[\s\S]*verify-glibc-symbols\.mjs --max 2\.36 npm\/fresco-native\/\*\.linux-\*-gnu\.node/,
+    /verify-glibc-symbols\.rs --max 2\.36 npm\/native\/\*\.linux-\*-gnu\.node[\s\S]*verify-glibc-symbols\.rs --max 2\.36 npm\/fresco-native\/\*\.linux-\*-gnu\.node/,
   );
 });

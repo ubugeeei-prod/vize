@@ -5,6 +5,8 @@ import {
   noCacheTask,
   runInPackages,
   runInVscodeExtension,
+  rustTool,
+  rustToolFromVscodeExtension,
   runTask,
   runTasks,
   task,
@@ -12,9 +14,19 @@ import {
 } from "../task-helpers.ts";
 import { inTestbox } from "./testbox.ts";
 
-const stageVscodeTypeScriptPlugin = "node ../../tools/vscode-vize/sync-typescript-plugin.mjs stage";
-const injectVscodeTypeScriptPlugin =
-  "node ../../tools/vscode-vize/sync-typescript-plugin.mjs inject dist/vize.vsix";
+const stageVscodeTypeScriptPlugin = rustToolFromVscodeExtension(
+  "editors/vscode/sync-typescript-plugin",
+  "stage",
+);
+const injectVscodeTypeScriptPlugin = rustToolFromVscodeExtension(
+  "editors/vscode/sync-typescript-plugin",
+  "inject",
+  "dist/vize.vsix",
+);
+const assertVscodePackage = rustToolFromVscodeExtension(
+  "editors/vscode/assert-vsix-package",
+  "dist/vize.vsix",
+);
 const packageVscodeExtension = [
   stageVscodeTypeScriptPlugin,
   `${vscodeExtensionPackageBin("@vscode/vsce", "vsce")} package --no-dependencies --out dist/vize.vsix`,
@@ -102,13 +114,10 @@ export const testAndBenchmarkTasks = defineTasks({
   // dev profile (~1m20s). Building once in the CI profile saves both legs.
   "test:js": noCacheTask(`${runTask("build:native:test")} && ${jsPackageTestCommand}`),
   "test:scripts": noCacheTask(
-    `${runTask("build:native:test")} && VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 tests/tooling/*.test.ts tests/tooling/*.test.mjs`,
+    `${runTask("build:native:test")} && rust-script tools/rust/verify-layout.rs && VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 tests/tooling/*.test.ts tests/tooling/*.test.mjs`,
   ),
   "test:vscode-extension:vsix": noCacheTask(
-    runInVscodeExtension(
-      packageVscodeExtension,
-      "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
-    ),
+    runInVscodeExtension(packageVscodeExtension, assertVscodePackage),
   ),
   "test:vscode-extension:host": noCacheTask(
     runInVscodeExtension(
@@ -120,7 +129,7 @@ export const testAndBenchmarkTasks = defineTasks({
   "test:vscode-extension:host-real": noCacheTask(
     runInVscodeExtension(
       packageVscodeExtension,
-      "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
+      assertVscodePackage,
       "node test/run-extension-host-real.mjs",
     ),
   ),
@@ -128,7 +137,7 @@ export const testAndBenchmarkTasks = defineTasks({
   "test:zed-extension:unit": task("cargo test --manifest-path editors/zed/Cargo.toml", {
     input: ["editors/zed/**"],
   }),
-  "test:zed-extension:real-server": noCacheTask("node tools/zed-vize/run-real-server.mjs"),
+  "test:zed-extension:real-server": noCacheTask(rustTool("editors/zed/run-real-server")),
   "test:nvim-extension:headless": noCacheTask(
     "nvim --headless -u NONE --noplugin '+set runtimepath^=editors/nvim' '+luafile editors/nvim/test/vize_spec.lua' '+qa' && VIZE_TEST_ART_VUE_NATIVE_PARSER=1 nvim --headless -u NONE --noplugin '+set runtimepath^=editors/nvim' '+luafile editors/nvim/test/vize_spec.lua' '+qa'",
   ),
@@ -136,14 +145,14 @@ export const testAndBenchmarkTasks = defineTasks({
   // The headless Neovim end-to-end scenario against a real `vize lsp` (#3457).
   // It needs a built server binary, so CI runs it in the same job that builds
   // one for the VS Code host smoke.
-  "test:nvim-extension:real-server": noCacheTask("node tools/nvim-vize/run-real-server.mjs"),
+  "test:nvim-extension:real-server": noCacheTask(rustTool("editors/neovim/run-real-server")),
   "test:vim-extension:headless": noCacheTask(
     "vim -Nu NONE -n -es -S editors/vim/test/vize_spec.vim",
   ),
-  "test:vim-extension:real-server": noCacheTask("node tools/vim-vize/run-real-server.mjs"),
+  "test:vim-extension:real-server": noCacheTask(rustTool("editors/vim/run-real-server")),
   "test:vim-extension:package": noCacheTask("vp run --workspace-root package:vim-extension"),
   "test:helix-extension:package": noCacheTask("vp run --workspace-root package:helix-extension"),
-  "test:helix-extension:real-server": noCacheTask("node tools/helix-vize/run-real-server.mjs"),
+  "test:helix-extension:real-server": noCacheTask(rustTool("editors/helix/run-real-server")),
   "test:emacs-extension:headless": noCacheTask(
     "emacs -Q --batch -l ert -l editors/emacs/test/vize-test.el -f ert-run-tests-batch-and-exit",
   ),

@@ -231,7 +231,10 @@ test("release workflow smokes the wasm package wrapper before publishing", () =>
   assert.notEqual(smoke, -1);
   assert.notEqual(publish, -1);
   assert.ok(setupNode < download && download < smoke && smoke < publish);
-  assert.match(publishJob, /node tools\/npm\/smoke-wasm-package\.mjs npm\/wasm/);
+  assert.match(
+    publishJob,
+    /rust-script tools\/commands\/release\/npm\/smoke-wasm-package\.rs npm\/wasm/,
+  );
 });
 
 test("release workflow creates GitHub Releases only after registry publishing succeeds", () => {

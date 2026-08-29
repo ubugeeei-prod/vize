@@ -81,6 +81,7 @@ jobs:
         with:
           shared-key: native-smoke-${{ matrix.target }}
           cache-workspace-crates: "true"
+      - uses: ./.github/actions/setup-rust-script
       - name: Install native package dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
       - name: Build CLI
@@ -97,12 +98,12 @@ jobs:
         run: vp run --filter './npm/native' build:ci
       - name: Verify GNU native glibc compatibility
         if: runner.os == 'Linux' && endsWith(matrix.target, '-gnu')
-        run: node tools/github/verify-glibc-symbols.mjs --max 2.36 npm/native/*.linux-*-gnu.node
+        run: rust-script tools/commands/ci/github/verify-glibc-symbols.rs --max 2.36 npm/native/*.linux-*-gnu.node
       - name: Smoke @vizejs/native
         run: node -e "const native = require('./npm/native'); if (typeof native.compileSfc !== 'function') throw new Error('compileSfc missing')"
       - name: Package-install smoke for host native package
         if: runner.os == 'Linux'
-        run: node tools/npm/smoke-release-install.mjs --prepare-manifests npm/native
+        run: rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests npm/native
 
   fresh-install-smoke:
     name: Fresh install smoke (${{ matrix.platform.target }}, Node ${{ matrix.node-version }})
@@ -176,6 +177,7 @@ jobs:
         with:
           shared-key: fresh-install-smoke-${{ matrix.platform.target }}
           cache-workspace-crates: "true"
+      - uses: ./.github/actions/setup-rust-script
       - name: Install package dependencies
         shell: bash
         run: |
@@ -221,6 +223,6 @@ jobs:
       - name: Fresh install and runtime smoke published tarballs
         shell: bash
         run: |
-          node tools/npm/smoke-release-install.mjs --prepare-manifests --runtime-checks \
+          rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks \
             npm/native npm/native/npm/* \
             npm/cli npm/builder/vite

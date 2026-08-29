@@ -216,7 +216,7 @@ test("release calls a credential-minimal hosted rollback workflow after prefligh
   assert.equal(rollback["timeout-minutes"], 5);
   assert.deepEqual(rollback.permissions, { contents: "write" });
   assert.doesNotMatch(JSON.stringify(rollback), /environment|id-token|secrets\./);
-  assert.match(JSON.stringify(rollback), /release-tag-rollback\.mjs/);
+  assert.match(JSON.stringify(rollback), /release-tag-rollback\.rs/);
 });
 
 test("release stabilizes apt before installing ARM64 cross-compilation tools", () => {

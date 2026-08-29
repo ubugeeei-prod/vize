@@ -9,6 +9,8 @@ export {
   runInPackages,
   runInVscodeExtension,
   runPackageScriptDirectly,
+  rustTool,
+  rustToolFromVscodeExtension,
   runTask,
   runTasks,
   vscodeExtensionPackageBin,

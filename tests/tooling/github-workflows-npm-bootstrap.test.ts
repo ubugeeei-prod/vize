@@ -65,7 +65,10 @@ test("npm bootstrap validates an exact tag before building with existing release
 
   const steps = job.steps ?? [];
   const preflight = steps.find((step) => step.id === "preflight");
-  assert.equal(preflight?.run, "node tools/github/npm-bootstrap-preflight.mjs preflight");
+  assert.equal(
+    preflight?.run,
+    "rust-script tools/commands/ci/github/npm-bootstrap-preflight.rs preflight",
+  );
   assert.equal(
     preflight?.env?.BOOTSTRAP_PACKAGE_PATH,
     "${{ github.event.client_payload.package_path }}",
@@ -93,11 +96,14 @@ test("npm bootstrap validates an exact tag before building with existing release
   const smoke = steps.find(
     (step) => step.name === "Validate and smoke the exact Release package artifact",
   );
-  assert.match(smoke?.run ?? "", /npm-bootstrap-preflight\.mjs artifact/);
-  assert.match(smoke?.run ?? "", /smoke-release-install\.mjs --prepare-manifests/);
+  assert.match(smoke?.run ?? "", /npm-bootstrap-preflight\.rs artifact/);
+  assert.match(smoke?.run ?? "", /smoke-release-install\.rs --prepare-manifests/);
 
   const recheck = steps.find((step) => step.name === "Confirm package is still unpublished");
-  assert.equal(recheck?.run, "node tools/github/npm-bootstrap-preflight.mjs registry-recheck");
+  assert.equal(
+    recheck?.run,
+    "rust-script tools/commands/ci/github/npm-bootstrap-preflight.rs registry-recheck",
+  );
 
   const requiredOrder = [preflight, install, testPackage, download, smoke, recheck];
   assert.ok(requiredOrder.every((step) => step != null));
@@ -118,7 +124,7 @@ test("npm bootstrap creates a credential-free deterministic CLI handoff", () => 
   );
   assert.ok(pack);
   assert.equal(pack.id, "handoff");
-  assert.equal(pack.run, "node tools/github/npm-bootstrap-handoff.mjs");
+  assert.equal(pack.run, "rust-script tools/commands/ci/github/npm-bootstrap-handoff.rs");
   assert.equal(pack.env?.BOOTSTRAP_ARTIFACT_PATH, "bootstrap-package");
   assert.equal(pack.env?.BOOTSTRAP_HANDOFF_PATH, "npm-cli-first-publish");
   assert.equal(pack.env?.EXPECTED_PACKAGE_NAME, "${{ steps.preflight.outputs.package_name }}");

@@ -96,13 +96,14 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
-      - name: Resolve SemVer change marker
-        env:
-          GITHUB_TOKEN: ${{ github.event_name == 'push' && github.token || '' }}
-        run: node tools/github/semver-change-marker.mjs "$RUNNER_TEMP/semver-change-marker.txt"
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: 1.95.0
+      - uses: ./.github/actions/setup-rust-script
+      - name: Resolve SemVer change marker
+        env:
+          GITHUB_TOKEN: ${{ github.event_name == 'push' && github.token || '' }}
+        run: rust-script tools/commands/ci/github/semver-change-marker.rs "$RUNNER_TEMP/semver-change-marker.txt"
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -227,7 +228,6 @@ jobs:
           key: vue-parity
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/check-vue-parity
-
   test-scripts:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     # Restoration of the original setup after the trim in #519 broke
@@ -256,6 +256,7 @@ jobs:
         with:
           key: test-scripts
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
       - name: Hydrate CLI diagnostic fixture and install JS dependencies
         run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue && vp install --frozen-lockfile --prefer-offline
       - name: Build vize CLI
@@ -264,21 +265,18 @@ jobs:
         run: sudo install -m 0755 target/ci/vize /usr/local/bin/vize
       - name: Test release scripts
         run: vp run --workspace-root test:scripts
-
   editor-extensions:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/package-editor-extensions
-
   editor-host-smoke:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/vscode-host-smoke
-
   build-js-packages:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
@@ -371,12 +369,13 @@ jobs:
         with:
           key: clippy-test
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
       - name: Clippy
-        run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports && cargo clippy -p vize_maestro --tests -- -D warnings && bash tools/github/check-maestro-feature-contract.sh
+        run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports && cargo clippy -p vize_maestro --tests -- -D warnings && rust-script tools/commands/ci/github/check-maestro-feature-contract.rs
       - name: Davinci no_std stage-library portability lanes (TS-24)
         run: cargo build -p vize_davinci -p vize_s1 -p vize_s2 -p vize_s1_to_s2 --lib --target wasm32-wasip2 && cargo build -p vize_davinci -p vize_s1 -p vize_s2 -p vize_s1_to_s2 --lib --target wasm32-wasip2 --no-default-features
       - name: Davinci compact-storage allocation gate
-        run: cargo bench -p vize_s1_to_s2 --bench davinci_storage -- --quick && cargo bench -p vize_patina --bench davinci_markup -- --quick && node tools/davinci/bench-compare.mjs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench patina_jsx_markup_one_root
+        run: cargo bench -p vize_s1_to_s2 --bench davinci_storage -- --quick && cargo bench -p vize_patina --bench davinci_markup -- --quick && rust-script tools/commands/davinci/bench-compare.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench patina_jsx_markup_one_root
       - name: Upload Davinci compact-storage bench reports
         if: ${{ always() }}
         uses: ./.github/actions/upload-davinci-compact-storage-bench-reports
@@ -385,7 +384,6 @@ jobs:
       - name: Test
         env: { VIZE_TEST_REQUIRE_TSGO: "1" }
         run: cargo test --workspace && cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_lowering_corpus -- --nocapture && cargo test -p vize --features legacy --test check_nuxt_tsconfig_isolation_cli && cargo test -p vize_atelier_core --features legacy --test davinci_s2_transform_vue2 && cargo test -p vize_vitrine --no-default-features --features wasm
-
   coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
@@ -648,6 +646,8 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: ./.github/actions/setup-rust-script
       - name: Collect test inventory
         run: node bench/test-inventory.mjs --json test-inventory.json --markdown "$GITHUB_STEP_SUMMARY"
       - name: Upload test inventory
@@ -659,7 +659,7 @@ jobs:
       # Runs last so the inventory is collected and uploaded either way.
       - name: Require every needed job to succeed
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
-        run: node tools/github/require-needs-success.mjs
+        run: rust-script tools/commands/ci/github/require-needs-success.rs
 
   test-report-comment:
     name: test-report-comment

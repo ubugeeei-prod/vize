@@ -78,17 +78,17 @@ function runVimPackageGuard(omit: string[] = []): { status: number; output: stri
   }
 }
 
-test("the Neovim real-server scenario has a task that runs its Node launcher", () => {
+test("the Neovim real-server scenario has a task that runs its Rust Script launcher", () => {
   assert.equal(
     taskCommand("test:nvim-extension:real-server"),
-    "node tools/nvim-vize/run-real-server.mjs",
+    "'rust-script' 'tools/commands/editors/neovim/run-real-server.rs'",
   );
 });
 
-test("the Vim real-server scenario has a task that runs its Node launcher", () => {
+test("the Vim real-server scenario has a task that runs its Rust Script launcher", () => {
   assert.equal(
     taskCommand("test:vim-extension:real-server"),
-    "node tools/vim-vize/run-real-server.mjs",
+    "'rust-script' 'tools/commands/editors/vim/run-real-server.rs'",
   );
 });
 

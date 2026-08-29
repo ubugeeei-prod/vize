@@ -205,9 +205,9 @@ test("native smoke workflow covers host platforms before release tags", () => {
   }
   assert.match(job, /cargo build --profile ci -p vize/);
   assert.match(job, /vp run --filter '\.\/npm\/native' build:ci/);
-  assert.match(job, /verify-glibc-symbols\.mjs --max 2\.36 npm\/native\/\*\.linux-\*-gnu\.node/);
+  assert.match(job, /verify-glibc-symbols\.rs --max 2\.36 npm\/native\/\*\.linux-\*-gnu\.node/);
   assert.match(job, /require\('\.\/npm\/native'\)/);
-  assert.match(job, /smoke-release-install\.mjs --prepare-manifests npm\/native/);
+  assert.match(job, /smoke-release-install\.rs --prepare-manifests npm\/native/);
 });
 
 test("native smoke workflow fresh-installs runtime tarballs across supported targets", () => {
@@ -231,7 +231,7 @@ test("native smoke workflow fresh-installs runtime tarballs across supported tar
   assert.match(job, /vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish/);
   assert.match(
     job,
-    /smoke-release-install\.mjs --prepare-manifests --runtime-checks[\s\S]*npm\/native npm\/native\/npm\/\*[\s\S]*npm\/cli npm\/builder\/vite/,
+    /smoke-release-install\.rs --prepare-manifests --runtime-checks[\s\S]*npm\/native npm\/native\/npm\/\*[\s\S]*npm\/cli npm\/builder\/vite/,
   );
 });
 

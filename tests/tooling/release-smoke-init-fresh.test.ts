@@ -177,7 +177,7 @@ test("the smoke only passes init flags the guide documents", () => {
   }
 });
 
-/** Arguments of every `smoke-release-install.mjs` step in a workflow. */
+/** Arguments of every `smoke-release-install.rs` step in a workflow. */
 function smokeInstallInvocations(workflow: string): string[][] {
   const parsed = parse(readRepoFile(".github", "workflows", workflow)) as {
     jobs?: Record<string, { steps?: Array<{ run?: string }> }>;
@@ -185,11 +185,11 @@ function smokeInstallInvocations(workflow: string): string[][] {
   const invocations: string[][] = [];
   for (const job of Object.values(parsed.jobs ?? {})) {
     for (const step of job.steps ?? []) {
-      if (!step.run?.includes("smoke-release-install.mjs")) continue;
+      if (!step.run?.includes("smoke-release-install.rs")) continue;
       invocations.push(step.run.replace(/\\\n/gu, " ").trim().split(/\s+/u));
     }
   }
-  assert.ok(invocations.length > 0, `${workflow} runs no smoke-release-install.mjs step`);
+  assert.ok(invocations.length > 0, `${workflow} runs no smoke-release-install.rs step`);
   return invocations;
 }
 
@@ -278,7 +278,7 @@ function assertRuntimeSmokePackageManagers(workflow: string, jobName: string) {
   const steps = workflowSteps(workflow, jobName);
   const setupIndex = steps.findIndex((step) => step.uses === RUNTIME_PACKAGE_MANAGER_ACTION);
   const runtimeSmokeIndex = steps.findIndex((step) =>
-    step.run?.includes("smoke-release-install.mjs --prepare-manifests --runtime-checks"),
+    step.run?.includes("smoke-release-install.rs --prepare-manifests --runtime-checks"),
   );
   assert.notEqual(setupIndex, -1, `${workflow} ${jobName} must install runtime managers`);
   assert.notEqual(runtimeSmokeIndex, -1, `${workflow} ${jobName} must run runtime package smoke`);

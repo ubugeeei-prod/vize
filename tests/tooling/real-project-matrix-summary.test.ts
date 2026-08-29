@@ -5,7 +5,7 @@ import {
   findStep,
   readShardSummaryScript,
   realProjectMatrixSteps,
-  shardSummaryScriptPath,
+  shardSummaryCommandPath,
 } from "./support/real-project-matrix-workflow.ts";
 
 test("real-project workflow gates every measured surface on one verdict", () => {
@@ -34,7 +34,7 @@ test("real-project workflow gates every measured surface on one verdict", () => 
     VIZE_TYPECHECK_DIVERGENCE_OUTCOME: "${{ steps.typecheck_divergence.outcome }}",
   });
   for (const pattern of [
-    /real-project-surface-verdict\.mjs/,
+    /real-project-surface-verdict\.rs/,
     /surface-verdict\.json/,
     /core_tools_verdict="\$VIZE_CORE_TOOLS_OUTCOME"/,
     /\[\[ "\$CORE_TOOLS_MODE" == "record-only"/,
@@ -71,7 +71,7 @@ test("real-project workflow publishes and uploads the shard evidence it produced
   assert.ok(steps.indexOf(summary) < steps.indexOf(upload));
   assert.equal(summary.if, "${{ always() }}");
   assert.equal(summary.shell, "bash");
-  assert.equal(summary.run, `bash ${shardSummaryScriptPath}`);
+  assert.equal(summary.run, `rust-script ${shardSummaryCommandPath}`);
   assert.equal(upload.if, "${{ always() }}");
   assert.match(upload.uses ?? "", /^actions\/upload-artifact@[0-9a-f]{40}$/);
   assert.deepEqual(upload.with, {

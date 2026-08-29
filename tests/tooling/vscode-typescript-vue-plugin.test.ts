@@ -48,22 +48,28 @@ test("VS Code extension installs the guarded TypeScript Vue plugin", () => {
   assert.equal(manifest.scripts?.watch, "vp pack --watch");
   assert.equal(
     manifest.scripts?.package,
-    "node ../../tools/vscode-vize/sync-typescript-plugin.mjs stage && vsce package --no-dependencies --out dist/vize.vsix && node ../../tools/vscode-vize/sync-typescript-plugin.mjs inject dist/vize.vsix",
+    "rust-script ../../tools/commands/editors/vscode/sync-typescript-plugin.rs stage && vsce package --no-dependencies --out dist/vize.vsix && rust-script ../../tools/commands/editors/vscode/sync-typescript-plugin.rs inject dist/vize.vsix",
   );
   assert.equal(
     manifest.scripts?.["test:host"],
-    "node ../../tools/vscode-vize/sync-typescript-plugin.mjs stage && node test/run-extension-host.mjs",
+    "rust-script ../../tools/commands/editors/vscode/sync-typescript-plugin.rs stage && node test/run-extension-host.mjs",
   );
 
-  assert.match(readFile("tools/vite-plus/tasks/build.ts"), /sync-typescript-plugin\.mjs stage/);
-  assert.match(readFile("tools/vite-plus/tasks/build.ts"), /sync-typescript-plugin\.mjs inject/);
   assert.match(
-    readFile("tools/vite-plus/tasks/test-benchmark.ts"),
-    /sync-typescript-plugin\.mjs stage/,
+    readFile("tools/vite-plus/tasks/build.ts"),
+    /rustToolFromVscodeExtension\(\s*"editors\/vscode\/sync-typescript-plugin"/,
+  );
+  assert.match(
+    readFile("tools/vite-plus/tasks/build.ts"),
+    /rustToolFromVscodeExtension\(\s*"editors\/vscode\/assert-vsix-package"/,
   );
   assert.match(
     readFile("tools/vite-plus/tasks/test-benchmark.ts"),
-    /sync-typescript-plugin\.mjs inject/,
+    /rustToolFromVscodeExtension\(\s*"editors\/vscode\/sync-typescript-plugin"/,
+  );
+  assert.match(
+    readFile("tools/vite-plus/tasks/test-benchmark.ts"),
+    /rustToolFromVscodeExtension\(\s*"editors\/vscode\/assert-vsix-package"/,
   );
 
   assert.match(readFile("editors/vscode/.vscodeignore"), /^typescript-vue-plugin\/$/m);

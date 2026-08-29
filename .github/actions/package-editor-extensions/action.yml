@@ -19,6 +19,8 @@ runs:
         key: editor-extensions
         cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
+    - uses: ./.github/actions/setup-rust-script
+
     - name: Install JS dependencies
       shell: bash
       env:

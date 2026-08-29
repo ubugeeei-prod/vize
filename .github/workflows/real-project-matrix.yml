@@ -92,6 +92,9 @@ jobs:
           node-version-file: ".node-version"
           cache: true
           run-install: false
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: ./.github/actions/setup-rust-script
 
       - name: Enable package manager shims
         run: corepack enable
@@ -100,7 +103,7 @@ jobs:
         shell: bash
         run: |
           mapfile -t fixture_paths < <(
-            node tools/fixtures/tool-matrix-report.mjs \
+            rust-script tools/commands/fixtures/tool-matrix-report.rs \
               --list-fixture-paths \
               --shard-index "$FIXTURE_SHARD_INDEX" \
               --shard-count "$FIXTURE_SHARD_COUNT"
@@ -118,7 +121,7 @@ jobs:
         if: ${{ !cancelled() }}
         continue-on-error: true
         run: |
-          node tools/fixtures/typecheck-dependency-prepare.mjs \
+          rust-script tools/commands/fixtures/typecheck-dependency-prepare.rs \
             --output-dir "$FIXTURE_REPORT_DIR" \
             --shard-index "$FIXTURE_SHARD_INDEX" \
             --shard-count "$FIXTURE_SHARD_COUNT" \
@@ -131,13 +134,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          node tools/fixtures/glyph-corpus-waiver-audit.mjs \
+          rust-script tools/commands/fixtures/glyph-corpus-waiver-audit.rs \
             --output "$FIXTURE_REPORT_DIR/glyph-waiver-issues.json"
 
       - uses: ./.github/actions/setup-moonbit
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
 
       - name: Setup Wild linker
         uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
@@ -162,7 +162,7 @@ jobs:
         env:
           CORE_TOOLS_TIMEOUT_MS: ${{ inputs.core_tools_timeout_ms || '2400000' }}
         run: |
-          node tools/fixtures/tool-matrix-report.mjs \
+          rust-script tools/commands/fixtures/tool-matrix-report.rs \
             --shard-index "$FIXTURE_SHARD_INDEX" \
             --shard-count "$FIXTURE_SHARD_COUNT" \
             --vize-bin target/ci/vize \
@@ -193,7 +193,7 @@ jobs:
         env:
           LINT_DIVERGENCE_MODE: ${{ inputs.lint_divergence_mode || 'enforce' }}
         run: |
-          node tools/fixtures/lint-divergence-report.mjs \
+          rust-script tools/commands/fixtures/lint-divergence-report.rs \
             --shard-index "$FIXTURE_SHARD_INDEX" \
             --shard-count "$FIXTURE_SHARD_COUNT" \
             --measure-coverage-gap \
@@ -257,7 +257,7 @@ jobs:
         env:
           BUDGET_MODE: ${{ inputs.typecheck_divergence_mode || 'enforce' }}
         run: |
-          node tools/fixtures/typecheck-divergence-report.mjs \
+          rust-script tools/commands/fixtures/typecheck-divergence-report.rs \
             --report-dir "$FIXTURE_REPORT_DIR" \
             --shard-index "$FIXTURE_SHARD_INDEX" \
             --shard-count "$FIXTURE_SHARD_COUNT" \
@@ -304,7 +304,7 @@ jobs:
           if [[ "$TYPECHECK_DIVERGENCE_MODE" == "record-only" && "$typecheck_divergence_verdict" == "failure" ]]; then
             typecheck_divergence_verdict=success
           fi
-          node tools/fixtures/real-project-surface-verdict.mjs \
+          rust-script tools/commands/fixtures/real-project-surface-verdict.rs \
             --output "$FIXTURE_REPORT_DIR/surface-verdict.json" \
             --surface "waiver-audit=$VIZE_WAIVER_AUDIT_OUTCOME" \
             --surface "typecheck-dependencies=$typecheck_dependencies_verdict" \
@@ -318,7 +318,7 @@ jobs:
       - name: Publish shard summary
         if: ${{ always() }}
         shell: bash
-        run: bash tools/github/publish-real-project-shard-summary.sh
+        run: rust-script tools/commands/ci/github/publish-real-project-shard-summary.rs
 
       - name: Upload shard report
         if: ${{ always() }}

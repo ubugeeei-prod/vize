@@ -1,11 +1,23 @@
 import { existsSync } from "node:fs";
 
 import type { PackagePath } from "./task-types.ts";
-import { shellCommand } from "./task-shell.ts";
+import { shellCommand, shellQuote } from "./task-shell.ts";
 
 export const localVp = "./node_modules/.bin/vp";
-export const vscodeExtensionPackageBin = (packageName: string, binName: string) =>
-  `node ../../tools/vscode-vize/run-package-bin.mjs ${packageName} ${binName}`;
+
+const rustScript = (scriptPath: string, args: readonly string[]) =>
+  ["rust-script", scriptPath, ...args].map(shellQuote).join(" ");
+
+export const vscodeExtensionPackageBin = (
+  packageName: string,
+  binName: string,
+  ...args: string[]
+) =>
+  rustScript("../../tools/commands/editors/vscode/run-package-bin.rs", [
+    packageName,
+    binName,
+    ...args,
+  ]);
 
 /**
  * Runs a command after changing into a package directory.
@@ -25,7 +37,7 @@ export const runPackageScriptDirectly = (taskName: string, packages: readonly Pa
  */
 export const installVscodeExtensionDependencies = runInDirectory(
   "editors/vscode",
-  "if node ../../tools/vscode-vize/run-package-bin.mjs vite-plus vp --version >/dev/null 2>&1; then exit 0; fi && corepack pnpm install --ignore-workspace --lockfile-dir . --no-lockfile --prefer-offline --ignore-scripts",
+  `if ${vscodeExtensionPackageBin("vite-plus", "vp")} --version >/dev/null 2>&1; then exit 0; fi && corepack pnpm install --ignore-workspace --lockfile-dir . --no-lockfile --prefer-offline --ignore-scripts`,
 );
 
 /**
@@ -64,6 +76,12 @@ export const runInPackages = (
 
 export const runTask = (taskName: string) => `vp run --workspace-root ${taskName}`;
 export const runTasks = (...taskNames: string[]) => taskNames.map(runTask).join(" && ");
+
+export const rustTool = (command: string, ...args: string[]) =>
+  rustScript(`tools/commands/${command}.rs`, args);
+
+export const rustToolFromVscodeExtension = (command: string, ...args: string[]) =>
+  rustScript(`../../tools/commands/${command}.rs`, args);
 
 const workspaceMoonHome = ".cache/moonbit";
 const workspaceMoonBin = `${workspaceMoonHome}/bin/moon`;

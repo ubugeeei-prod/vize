@@ -77,6 +77,8 @@ const REQUIRED_TRIGGER_PATHS = [
   "tools/npm/prepare-publish-manifest.mjs",
   "tools/npm/smoke-release-install.mjs",
   "tools/npm/smoke-release-runtime.mjs",
+  "tools/commands/release/npm/**",
+  "tools/rust/**",
   "tests/_fixtures/davinci-ts40-projection/**",
   "tests/tooling/davinci-ts40-projection.test.ts",
   "tests/tooling/support/davinci-ts40-projection.ts",
@@ -197,7 +199,7 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   assert.match(job, /cp "\$binary" "npm\/\$target\/"/);
   assert.match(
     job,
-    /VIZE_TEST_CONTENT_MAPPER_TSGO: \$\{\{ runner\.temp \}\}\/tsgo[\s\S]*smoke-release-install\.mjs --prepare-manifests --content-mapper-checks[\s\S]*npm\/native npm\/native\/npm\/\*[\s\S]*npm\/cli/,
+    /VIZE_TEST_CONTENT_MAPPER_TSGO: \$\{\{ runner\.temp \}\}\/tsgo[\s\S]*smoke-release-install\.rs --prepare-manifests --content-mapper-checks[\s\S]*npm\/native npm\/native\/npm\/\*[\s\S]*npm\/cli/,
   );
   const packageRouteSteps = steps.flatMap((step, index) =>
     PACKAGE_ROUTE_COMMANDS.every((command) => step.run?.includes(command)) ? [index] : [],

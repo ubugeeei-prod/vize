@@ -6,11 +6,19 @@ import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 test("check workflow enforces the Maestro non-native feature contract", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const script = readRepoFile("tools", "github", "check-maestro-feature-contract.sh");
+  const wrapper = readRepoFile(
+    "tools",
+    "commands",
+    "ci",
+    "github",
+    "check-maestro-feature-contract.rs",
+  );
 
   assert.match(
     workflowJobBody(workflow, "clippy-and-test"),
-    /bash tools\/github\/check-maestro-feature-contract\.sh/,
+    /rust-script tools\/commands\/ci\/github\/check-maestro-feature-contract\.rs/,
   );
+  assert.match(wrapper, /"tools\/github\/check-maestro-feature-contract\.sh"/);
   assert.match(script, /export RUSTFLAGS="-D warnings"/);
   assert.match(script, /cargo check -p vize_maestro --no-default-features\s*$/m);
   assert.match(

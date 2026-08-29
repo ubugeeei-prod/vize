@@ -265,6 +265,8 @@ test("test-report collects the inventory before it enforces the gate", () => {
     })),
     [
       { name: null, uses: "actions/checkout", run: null, env: null },
+      { name: null, uses: "dtolnay/rust-toolchain", run: null, env: null },
+      { name: null, uses: "./.github/actions/setup-rust-script", run: null, env: null },
       {
         name: "Collect test inventory",
         uses: null,
@@ -275,7 +277,7 @@ test("test-report collects the inventory before it enforces the gate", () => {
       {
         name: "Require every needed job to succeed",
         uses: null,
-        run: "node tools/github/require-needs-success.mjs",
+        run: "rust-script tools/commands/ci/github/require-needs-success.rs",
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" },
       },
     ],

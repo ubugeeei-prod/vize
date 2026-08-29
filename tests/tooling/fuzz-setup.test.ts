@@ -135,7 +135,7 @@ test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () 
     FUZZ_MODE: "${{ inputs.mode || 'campaign' }}",
   });
   const enforceStep = fuzzJob.steps.find((step) => step.id === "enforce");
-  assert.match(enforceStep?.run ?? "", /tools\/fuzz\/enforce-result\.mjs/);
+  assert.match(enforceStep?.run ?? "", /tools\/commands\/ci\/fuzz\/enforce-result\.rs/);
   assert.deepEqual(enforceStep?.env, {
     FUZZ_EVENT_NAME: "${{ github.event_name }}",
     FUZZ_OUTCOME: "${{ steps.fuzz.outcome || 'skipped' }}",

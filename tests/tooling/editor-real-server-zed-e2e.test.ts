@@ -8,10 +8,10 @@ function taskCommand(name: string): string {
   return (testAndBenchmarkTasks[name] as { command: string }).command;
 }
 
-test("the Zed real-server scenario has a task that runs its Node launcher", () => {
+test("the Zed real-server scenario has a task that runs its Rust Script launcher", () => {
   assert.equal(
     taskCommand("test:zed-extension:real-server"),
-    "node tools/zed-vize/run-real-server.mjs",
+    "'rust-script' 'tools/commands/editors/zed/run-real-server.rs'",
   );
 });
 

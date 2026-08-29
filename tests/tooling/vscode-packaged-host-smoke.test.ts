@@ -160,12 +160,16 @@ test("packaged host strips Node-only options from the VS Code app environment", 
 test("real host task packages and statically validates the same VSIX that it runs", () => {
   const { command } = taskShape(testAndBenchmarkTasks["test:vscode-extension:host-real"]);
 
-  const packageAt = command.indexOf("vsce package --no-dependencies --out dist/vize.vsix");
+  const packageAt = command.indexOf("../../tools/commands/editors/vscode/run-package-bin.rs");
+  const vsceAt = command.indexOf("@vscode/vsce");
+  const packageArgsAt = command.indexOf("package --no-dependencies --out dist/vize.vsix");
   const staticAssertAt = command.indexOf(
-    "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
+    "../../tools/commands/editors/vscode/assert-vsix-package.rs",
   );
   const hostAt = command.indexOf("node test/run-extension-host-real.mjs");
   assert.ok(packageAt >= 0, "real host smoke must build the production VSIX");
+  assert.ok(vsceAt > packageAt, "real host smoke must package with the VS Code CLI");
+  assert.ok(packageArgsAt > vsceAt, "real host smoke must pass production VSIX package args");
   assert.ok(staticAssertAt > packageAt, "the packaged VSIX must retain its static allowlist check");
   assert.ok(hostAt > staticAssertAt, "the validated VSIX must run in the real host");
 });

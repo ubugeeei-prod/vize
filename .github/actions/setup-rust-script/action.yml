@@ -1,0 +1,16 @@
+name: Setup Rust Script
+description: Install the pinned rust-script runner used by tools/commands
+
+runs:
+  using: composite
+  steps:
+    - name: Install rust-script
+      shell: bash
+      run: |
+        set -euo pipefail
+        if command -v rust-script >/dev/null 2>&1; then
+          rust-script --version
+          exit 0
+        fi
+        cargo install rust-script --version 0.34.0 --locked
+        rust-script --version

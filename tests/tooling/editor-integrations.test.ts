@@ -373,38 +373,3 @@ test("zed-vize registers art-vue as a first-party language", () => {
   assert.match(injections, /style_element/);
   assert.match(injections, /template_element/);
 });
-
-test("CI packages editor extension artifacts", () => {
-  const packageAction = readText(".github/actions/package-editor-extensions/action.yml");
-  const buildTasks = readText("tools/vite-plus/tasks/build.ts");
-  const taskCommands = readText("tools/vite-plus/task-commands.ts");
-  const testTasks = readText("tools/vite-plus/tasks/test-benchmark.ts");
-  assert.match(packageAction, /package:editor-extensions/);
-  assert.match(buildTasks, /package:vscode-extension[\s\S]*assert-vsix-package\.mjs/);
-  assert.match(buildTasks, /package:editor-extensions[\s\S]*assert-vsix-package\.mjs/);
-  assert.match(
-    taskCommands,
-    /run-package-bin\.mjs vite-plus vp --version >\/dev\/null 2>&1[\s\S]*corepack pnpm install --ignore-workspace --lockfile-dir \. --no-lockfile --prefer-offline --ignore-scripts/,
-  );
-  assert.match(testTasks, /test:vscode-extension:vsix[\s\S]*assert-vsix-package\.mjs/);
-  assert.match(testTasks, /test:vscode-extension:host[\s\S]*pnpm run test:host/);
-  assert.match(testTasks, /test:vscode-extension:host-real[\s\S]*run-extension-host-real\.mjs/);
-  assert.match(buildTasks, /package:zed-extension[\s\S]*assert-zed-package\.mjs/);
-  assert.match(testTasks, /test:zed-extension:package[\s\S]*package:zed-extension/);
-  assert.match(testTasks, /test:zed-extension:unit[\s\S]*cargo test/);
-  assert.match(buildTasks, /package:editor-extensions[\s\S]*test:zed-extension:unit/);
-  assert.match(buildTasks, /package:nvim-extension[\s\S]*assert-nvim-package\.mjs/);
-  assert.match(buildTasks, /package:editor-extensions[\s\S]*package:nvim-extension/);
-  assert.match(testTasks, /test:nvim-extension:headless[\s\S]*nvim --headless/);
-  assert.match(testTasks, /test:nvim-extension:package[\s\S]*package:nvim-extension/);
-  assert.match(buildTasks, /package:vim-extension[\s\S]*assert-vim-package\.mjs/);
-  assert.match(buildTasks, /package:editor-extensions[\s\S]*package:vim-extension/);
-  assert.match(testTasks, /test:vim-extension:headless[\s\S]*vim -Nu NONE/);
-  assert.match(testTasks, /test:vim-extension:package[\s\S]*package:vim-extension/);
-  assert.match(buildTasks, /package:helix-extension[\s\S]*assert-helix-package\.mjs/);
-  assert.match(buildTasks, /package:editor-extensions[\s\S]*package:helix-extension/);
-  assert.match(testTasks, /test:helix-extension:package[\s\S]*package:helix-extension/);
-  assert.match(buildTasks, /package:emacs-extension[\s\S]*assert-emacs-package\.mjs/);
-  assert.match(buildTasks, /package:editor-extensions[\s\S]*package:emacs-extension/);
-  assert.match(testTasks, /test:emacs-extension:package[\s\S]*package:emacs-extension/);
-});

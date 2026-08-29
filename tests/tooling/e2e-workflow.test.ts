@@ -84,6 +84,8 @@ test("PR readiness plans six isolated rows behind one stable aggregator", () => 
     "tests/app/dev/{misskey,nuxt-ui}.spec.ts",
     "tests/app/dev/{misskey-hmr,nuxt-ui-dev-server,nuxt-ui-hmr,source-restore}.ts",
     "tools/github/app-e2e-*.mjs",
+    "tools/commands/ci/github/app-e2e-*.rs",
+    "tools/rust/**",
   ]) {
     assert.match(filters, new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
@@ -130,7 +132,7 @@ test("PR readiness plans six isolated rows behind one stable aggregator", () => 
   assert.match(aggregate.if ?? "", /always\(\)/);
   assert.match(
     namedStep(aggregate, "Aggregate app readiness").run ?? "",
-    /app-e2e-aggregate\.mjs readiness all/,
+    /app-e2e-aggregate\.rs readiness all/,
   );
   assert.equal(
     Object.values(jobs).filter((job) => job.name === "app-readiness").length,
@@ -176,7 +178,7 @@ test("full App E2E uses a planner, isolated matrix producers, and stable release
   assert.match(aggregate.if ?? "", /always\(\)/);
   assert.match(
     namedStep(aggregate, "Aggregate full App E2E").run ?? "",
-    /app-e2e-aggregate\.mjs full/,
+    /app-e2e-aggregate\.rs full/,
   );
   assert.equal(Object.values(jobs).filter((job) => job.name === "app-e2e").length, 1);
 });
@@ -243,7 +245,7 @@ test("shared row action validates the plan and never parallelizes fixture proces
     { steps: action.runs?.steps },
     "Validate and hydrate planned fixtures",
   );
-  assert.match(hydration.run ?? "", /app-e2e-plan\.mjs/);
+  assert.match(hydration.run ?? "", /app-e2e-plan\.rs/);
   assert.match(hydration.run ?? "", /mapfile -t fixture_paths/);
   assert.match(
     hydration.run ?? "",

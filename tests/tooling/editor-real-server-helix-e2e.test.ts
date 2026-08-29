@@ -8,10 +8,10 @@ function taskCommand(name: string): string {
   return (testAndBenchmarkTasks[name] as { command: string }).command;
 }
 
-test("the Helix real-server scenario has a task that runs its Node launcher", () => {
+test("the Helix real-server scenario has a task that runs its Rust Script launcher", () => {
   assert.equal(
     taskCommand("test:helix-extension:real-server"),
-    "node tools/helix-vize/run-real-server.mjs",
+    "'rust-script' 'tools/commands/editors/helix/run-real-server.rs'",
   );
 });
 
@@ -35,7 +35,7 @@ test("CI checks the package with a pinned official Helix before the server scena
   assert.match(health, /XDG_CONFIG_HOME: \$\{\{ runner\.temp \}\}\/helix-config/);
   assert.match(health, /HELIX_RUNTIME: \$\{\{ runner\.temp \}\}\/helix\/runtime/);
   assert.match(health, /VIZE_SERVER_PATH: \$\{\{ github\.workspace \}\}\/target\/ci\/vize/);
-  assert.match(health, /node tools\/helix-vize\/assert-helix-health\.mjs/);
+  assert.match(health, /rust-script tools\/commands\/editors\/helix\/assert-helix-health\.rs/);
 
   const scenario = action.slice(scenarioAt);
   assert.match(scenario, /VIZE_SERVER_PATH: \$\{\{ github\.workspace \}\}\/target\/ci\/vize/);

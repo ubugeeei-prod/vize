@@ -42,7 +42,7 @@ test("check workflow uploads Davinci compact-storage bench reports", () => {
   );
   assert.match(
     steps[gateIndex].run ?? "",
-    /node tools\/davinci\/bench-compare\.mjs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench patina_jsx_markup_one_root/,
+    /rust-script tools\/commands\/davinci\/bench-compare\.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench patina_jsx_markup_one_root/,
   );
   assert.deepEqual(steps[gateIndex + 1], {
     name: "Upload Davinci compact-storage bench reports",

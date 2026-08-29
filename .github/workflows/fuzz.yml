@@ -40,6 +40,8 @@ on:
       - "crates/vize_s1/**"
       - "tests/fuzz/**"
       - "tools/fuzz/**"
+      - "tools/commands/ci/fuzz/**"
+      - "tools/rust/**"
       - ".github/workflows/fuzz.yml"
 
 run-name: Fuzz ${{ github.event_name == 'workflow_dispatch' && (inputs.mode == 'replay' && 'replay' || format('{0}s', inputs.max-total-time)) || github.event_name }} @ ${{ github.sha }}
@@ -129,6 +131,8 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
           target-path: tests/fuzz/target
 
+      - uses: ./.github/actions/setup-rust-script
+
       - name: Install cargo-fuzz
         run: cargo install cargo-fuzz --locked --version "^0.13"
 
@@ -141,7 +145,7 @@ jobs:
           node-version-file: ".node-version"
 
       - name: Seed fuzz corpus from repository fixtures
-        run: node tools/fuzz/seed_corpus.mjs
+        run: rust-script tools/commands/ci/fuzz/seed_corpus.rs
 
       - name: Restore grown corpus cache
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
@@ -230,4 +234,4 @@ jobs:
           FUZZ_EVENT_NAME: ${{ github.event_name }}
           FUZZ_OUTCOME: ${{ steps.fuzz.outcome || 'skipped' }}
           FUZZ_TARGET: ${{ matrix.target }}
-        run: node tools/fuzz/enforce-result.mjs "$FUZZ_EVENT_NAME" "$FUZZ_TARGET" "$FUZZ_OUTCOME"
+        run: rust-script tools/commands/ci/fuzz/enforce-result.rs "$FUZZ_EVENT_NAME" "$FUZZ_TARGET" "$FUZZ_OUTCOME"

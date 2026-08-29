@@ -26,6 +26,8 @@ runs:
         key: editor-host-smoke
         cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
+    - uses: ./.github/actions/setup-rust-script
+
     - name: Hydrate pinned create-vue fixture
       shell: bash
       run: |
@@ -92,7 +94,7 @@ runs:
         set -euo pipefail
         mkdir -p "${XDG_CONFIG_HOME}/helix"
         cp editors/helix/languages.toml "${XDG_CONFIG_HOME}/helix/languages.toml"
-        node tools/helix-vize/assert-helix-health.mjs "${RUNNER_TEMP}/helix/hx"
+        rust-script tools/commands/editors/helix/assert-helix-health.rs "${RUNNER_TEMP}/helix/hx"
 
     - name: Stabilize Ubuntu package archive
       uses: ./.github/actions/setup-ubuntu-archive

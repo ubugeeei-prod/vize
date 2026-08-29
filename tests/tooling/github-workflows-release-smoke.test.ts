@@ -36,9 +36,9 @@ test("smoke job downloads every packed artifact directory it smoke-installs", ()
   const smokeJob = jobs["smoke-release-packages"];
   assert.ok(smokeJob, "missing smoke-release-packages job");
   const smokeRun = (smokeJob.steps ?? []).find((step) =>
-    step.run?.includes("smoke-release-install.mjs"),
+    step.run?.includes("smoke-release-install.rs"),
   )?.run;
-  assert.ok(smokeRun, "smoke-release-packages must run smoke-release-install.mjs");
+  assert.ok(smokeRun, "smoke-release-packages must run smoke-release-install.rs");
   const smokedDirectories = smokeRun
     .replace(/\\\n/g, " ")
     .split(/\s+/)
@@ -82,13 +82,13 @@ test("wasm release job installs workspace dependencies before root smoke scripts
     (step) => step.uses?.includes("voidzero-dev/setup-vp@") && step.with?.["run-install"] === true,
   );
   const smokeIndex = steps.findIndex((step) =>
-    step.run?.includes("node tools/npm/smoke-release-install.mjs npm/wasm"),
+    step.run?.includes("rust-script tools/commands/release/npm/smoke-release-install.rs npm/wasm"),
   );
 
   assert.notEqual(setupIndex, -1, "release-npm-wasm setup-vp must install root dependencies");
   assert.notEqual(smokeIndex, -1, "release-npm-wasm must smoke install the WASM tarball");
   assert.ok(
     setupIndex < smokeIndex,
-    "release-npm-wasm must install root dependencies before smoke-release-install.mjs imports semver",
+    "release-npm-wasm must install root dependencies before smoke-release-install.rs imports semver",
   );
 });

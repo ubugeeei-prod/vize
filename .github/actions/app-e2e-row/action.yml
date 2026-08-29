@@ -33,6 +33,12 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Setup Rust
+      id: rust-toolchain
+      uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+
+    - uses: ./.github/actions/setup-rust-script
+
     - name: Validate and hydrate planned fixtures
       shell: bash
       env:
@@ -47,7 +53,7 @@ runs:
         PLANNED_ARTIFACT_STEM: ${{ inputs.artifact-stem }}
       run: |
         set -euo pipefail
-        planner=(node tools/github/app-e2e-plan.mjs --profile "$PLAN_PROFILE" --suite "$PLAN_SUITE" --shard "$PLAN_SHARD")
+        planner=(rust-script tools/commands/ci/github/app-e2e-plan.rs --profile "$PLAN_PROFILE" --suite "$PLAN_SUITE" --shard "$PLAN_SHARD")
         test "$("${planner[@]}" --field task)" = "$PLANNED_TASK"
         test "$("${planner[@]}" --field timeout)" = "$PLANNED_TIMEOUT"
         test "$("${planner[@]}" --field needs-playwright)" = "$PLANNED_BROWSER"
@@ -60,10 +66,6 @@ runs:
           exit 1
         fi
         git submodule update --init --recursive --depth 1 -- "${fixture_paths[@]}"
-
-    - name: Setup Rust
-      id: rust-toolchain
-      uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
 
     - name: Setup Wild linker
       uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0

@@ -26,6 +26,9 @@ jobs:
       - name: Checkout bootstrap controls from main
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { fetch-depth: 0, persist-credentials: false }
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: ./.github/actions/setup-rust-script
       - name: Validate first-publish request
         id: preflight
         env:
@@ -33,7 +36,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           RELEASE_RUN_ID: ${{ github.event.client_payload.release_run_id }}
           RELEASE_TAG_NAME: ${{ github.event.client_payload.tag_name }}
-        run: node tools/github/npm-bootstrap-preflight.mjs preflight
+        run: rust-script tools/commands/ci/github/npm-bootstrap-preflight.rs preflight
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -62,14 +65,14 @@ jobs:
           EXPECTED_PACKAGE_NAME: ${{ steps.preflight.outputs.package_name }}
           EXPECTED_PACKAGE_VERSION: ${{ steps.preflight.outputs.version }}
         run: |
-          node tools/github/npm-bootstrap-preflight.mjs artifact
-          node tools/npm/smoke-release-install.mjs --prepare-manifests "$BOOTSTRAP_ARTIFACT_PATH"
+          rust-script tools/commands/ci/github/npm-bootstrap-preflight.rs artifact
+          rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests "$BOOTSTRAP_ARTIFACT_PATH"
       - name: Confirm package is still unpublished
         env:
           BOOTSTRAP_PACKAGE_PATH: ${{ steps.preflight.outputs.package_path }}
           RELEASE_RUN_ID: ${{ steps.preflight.outputs.release_run_id }}
           RELEASE_TAG_NAME: ${{ github.event.client_payload.tag_name }}
-        run: node tools/github/npm-bootstrap-preflight.mjs registry-recheck
+        run: rust-script tools/commands/ci/github/npm-bootstrap-preflight.rs registry-recheck
       - name: Pack deterministic npm CLI first-publish handoff
         id: handoff
         env:
@@ -81,7 +84,7 @@ jobs:
           RELEASE_RUN_ID: ${{ steps.preflight.outputs.release_run_id }}
           RELEASE_TAG_NAME: ${{ github.event.client_payload.tag_name }}
           RELEASE_TAG_SHA: ${{ steps.preflight.outputs.tag_sha }}
-        run: node tools/github/npm-bootstrap-handoff.mjs
+        run: rust-script tools/commands/ci/github/npm-bootstrap-handoff.rs
       - name: Upload npm CLI first-publish handoff
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

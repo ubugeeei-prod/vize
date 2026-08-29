@@ -34,7 +34,7 @@ test("release workflow plans slow platform cadence before building", () => {
   const buildCliJob = workflowJobBody(workflow, "build-cli");
   const buildNativeJob = workflowJobBody(workflow, "build-native-all");
 
-  assert.match(planJob, /node tools\/github\/release-platforms\.mjs github-output/);
+  assert.match(planJob, /release-platforms\.rs github-output/);
   assert.match(buildCliJob, /needs:\s*plan-release-platforms/);
   assert.match(
     buildCliJob,
@@ -45,7 +45,7 @@ test("release workflow plans slow platform cadence before building", () => {
     buildNativeJob,
     /settings:\s*\$\{\{\s*fromJSON\(needs\.plan-release-platforms\.outputs\.native_matrix\)\s*\}\}/,
   );
-  assert.match(workflow, /release-platforms\.mjs apply-cadence/);
+  assert.match(workflow, /release-platforms\.rs apply-cadence/);
 });
 
 test("release workflow jobs cap runtime with explicit timeouts", () => {
@@ -97,10 +97,7 @@ test("release workflow smoke installs npm tarballs before publishing", () => {
   assert.match(smokeJob, /name:\s*Apply slow platform release cadence/);
   assert.match(smokeJob, /name:\s*Prepare native package tarballs/);
   assert.match(smokeJob, /name:\s*Prepare Fresco native package tarball/);
-  assert.match(
-    smokeJob,
-    /node tools\/npm\/smoke-release-install\.mjs --prepare-manifests --runtime-checks/,
-  );
+  assert.match(smokeJob, /smoke-release-install\.rs --prepare-manifests --runtime-checks/);
 
   for (const packageDir of [
     "npm/native",
@@ -156,7 +153,7 @@ test("release workflow smoke installs npm tarballs before publishing", () => {
     assert.notEqual(publishIndex, -1, `${jobName} is missing ${publishStep}`);
     assert.ok(smokeIndex < publishIndex, `${jobName} must smoke install before publishing`);
     if (jobName === "release-npm-native") {
-      assert.match(job, /smoke-release-install\.mjs --prepare-manifests --runtime-checks/);
+      assert.match(job, /smoke-release-install\.rs --prepare-manifests --runtime-checks/);
     }
   }
 });
@@ -259,11 +256,11 @@ test("release workflow inspects musl CLI binaries while archiving", () => {
   assert.ok(buildIndex < archiveIndex, "the musl binary check must inspect the built CLI binary");
   assert.match(
     buildCliJob,
-    /Create archive \(Unix\)[\s\S]*if \[\[ "\$\{\{ matrix\.settings\.target \}\}" == \*-musl \]\]; then bash tools\/github\/verify-musl-cli-binary\.sh/,
+    /Create archive \(Unix\)[\s\S]*if \[\[ "\$\{\{ matrix\.settings\.target \}\}" == \*-musl \]\]; then rust-script tools\/commands\/ci\/github\/verify-musl-cli-binary\.rs/,
   );
   assert.match(
     buildCliJob,
-    /verify-musl-cli-binary\.sh[\s\S]*tools\/moon\/cmd\/github\/create_cli_archive/,
+    /verify-musl-cli-binary\.rs[\s\S]*tools\/moon\/cmd\/github\/create_cli_archive/,
   );
   assert.match(verifier, /readelf -l "\$binary"[\s\S]*Requesting program interpreter/);
   assert.match(verifier, /strings "\$binary" \| grep -Eq 'GLIBC_\[0-9\]'/);
@@ -307,7 +304,7 @@ test("release workflow configures Zig linkers for Linux musl CLI archives", () =
     buildCliJob,
     /Setup Wild linker \(Linux\)[\s\S]*if:\s*runner\.os == 'Linux' && !endsWith\(matrix\.settings\.target, '-musl'\)/,
   );
-  assert.match(buildCliJob, /bash tools\/github\/configure-zig-musl-linkers\.sh/);
+  assert.match(buildCliJob, /configure-zig-musl-linkers\.rs/);
   assert.match(zigLinkerScript, /CARGO_TARGET_%s_LINKER=rust-lld/);
   assert.match(zigLinkerScript, /write_cc X86_64_UNKNOWN_LINUX_MUSL x86_64-linux-musl/);
   assert.match(zigLinkerScript, /write_cc AARCH64_UNKNOWN_LINUX_MUSL aarch64-linux-musl/);

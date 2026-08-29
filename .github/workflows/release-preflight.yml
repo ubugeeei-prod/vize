@@ -30,10 +30,15 @@ jobs:
         with:
           node-version-file: ".node-version"
 
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+
+      - uses: ./.github/actions/setup-rust-script
+
       - name: Verify immutable tag, metadata, required gates, and release blockers
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: node tools/github/release-preflight.mjs
+        run: rust-script tools/commands/ci/github/release-preflight.rs
 
   validate-crates:
     name: Validate crates.io publish plan
