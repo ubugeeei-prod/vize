@@ -72,7 +72,7 @@ const {
 
 defineSlots<{
   /** Replaces the default clear button contents with availability state. */
-  clear(props: SearchFieldClearSlotState): unknown;
+  clear?(props: SearchFieldClearSlotState): unknown;
 }>();
 
 const emit = defineEmits<{

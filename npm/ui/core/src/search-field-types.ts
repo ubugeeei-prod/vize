@@ -94,7 +94,7 @@ export interface SearchFieldClearSlotState {
 /** Slots accepted by the SearchField component. */
 export interface SearchFieldSlots {
   /** Renders the default clear button contents with current availability state. */
-  clear(props: SearchFieldClearSlotState): unknown;
+  clear?(props: SearchFieldClearSlotState): unknown;
 }
 
 /** Emits declared by the SearchField component. */

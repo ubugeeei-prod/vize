@@ -1,5 +1,7 @@
 /** Compile-only assertions for the public search field contract. */
 
+import { h } from "vue";
+
 import type {
   SearchFieldAriaInvalid,
   SearchFieldClearSlotState,
@@ -7,7 +9,9 @@ import type {
   SearchFieldEnterKeyHint,
   SearchFieldExpose,
   SearchFieldInputMode,
+  SearchFieldSlots,
 } from "./search-field.ts";
+import { SearchField } from "./search-field.ts";
 
 type Equal<Left, Right> =
   (<Value>() => Value extends Left ? 1 : 2) extends <Value>() => Value extends Right ? 1 : 2
@@ -44,6 +48,12 @@ search.clear();
 search.reset();
 search.focus();
 search.select();
+h(SearchField, { ariaLabel: "Search", defaultValue: "query", showClear: "always" });
+
+export const slotlessSlots: SearchFieldSlots = {};
+export const clearSlots: SearchFieldSlots = {
+  clear: (state) => (state.empty ? "Empty" : "Clear"),
+};
 
 // @ts-expect-error search values are strings.
 search.setValue(1);
