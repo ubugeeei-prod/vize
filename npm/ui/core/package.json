@@ -124,6 +124,11 @@
       "import": "./dist/controllable-state.mjs",
       "default": "./dist/controllable-state.mjs"
     },
+    "./dialog": {
+      "types": "./dist/dialog.d.mts",
+      "import": "./dist/dialog.mjs",
+      "default": "./dist/dialog.mjs"
+    },
     "./dismissable-layer": {
       "types": "./dist/dismissable-layer.d.mts",
       "import": "./dist/dismissable-layer.mjs",

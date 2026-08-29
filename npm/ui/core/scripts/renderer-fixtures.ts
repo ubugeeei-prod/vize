@@ -1,9 +1,11 @@
 import { commandRendererFixtures } from "./renderer-fixtures-commands.ts";
+import { dialogRendererFixtures } from "./renderer-fixtures-dialog.ts";
 import { overlayRendererFixtures } from "./renderer-fixtures-overlays.ts";
 import { primitiveRendererFixtures } from "./renderer-fixtures-primitives.ts";
 
 export const rendererFixtures = [
   ...commandRendererFixtures,
+  ...dialogRendererFixtures,
   ...overlayRendererFixtures,
   ...primitiveRendererFixtures,
   {

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { h } from "vue";
 
 import AnnouncerProvider from "./announcer-provider.vue";
+import { dialogRuntimeFixtures } from "./runtime-conformance-dialog-fixtures.ts";
 import LiveRegion from "./live-region.vue";
 import LocaleProvider from "./locale-provider.vue";
 import Portal from "./portal.vue";
@@ -13,6 +14,7 @@ import Transition from "./transition.vue";
 import type { RuntimeFixture } from "./runtime-conformance-fixtures.ts";
 
 export const overlayRuntimeFixtures: readonly RuntimeFixture[] = [
+  ...dialogRuntimeFixtures,
   {
     name: "announcer-provider",
     sourceFile: "announcer-provider.vue",
