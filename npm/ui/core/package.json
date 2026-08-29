@@ -54,6 +54,11 @@
       "import": "./dist/input.mjs",
       "default": "./dist/input.mjs"
     },
+    "./search-field": {
+      "types": "./dist/search-field.d.mts",
+      "import": "./dist/search-field.mjs",
+      "default": "./dist/search-field.mjs"
+    },
     "./textarea": {
       "types": "./dist/textarea.d.mts",
       "import": "./dist/textarea.mjs",

@@ -8,6 +8,7 @@ import IdProvider from "./deterministic-id-provider.vue";
 import { useDeterministicId } from "./deterministic-id.ts";
 import ErrorSummary from "./error-summary.vue";
 import PrimitiveElement from "./primitive-element.vue";
+import SearchField from "./search-field.vue";
 import TextInput from "./text-input.vue";
 import TextareaControl from "./textarea-control.vue";
 import ToggleButton from "./toggle-button.vue";
@@ -212,6 +213,41 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       assert.equal(textarea.value, "Line one\nLine two");
       assert.equal(textarea.getAttribute("data-state"), "editable");
       assert.equal(textarea.getAttribute("data-empty"), "false");
+    },
+  },
+  {
+    name: "search-field",
+    sourceFile: "search-field.vue",
+    render: () =>
+      h(SearchField, {
+        ariaLabel: "Search",
+        defaultValue: "vize",
+        id: "query",
+        name: "query",
+      }),
+    assertServerMarkup(html) {
+      assert.match(html, /^<div/);
+      assert.match(html, /role="search"/);
+      assert.match(html, /data-vize-ui="search-field"/);
+      assert.match(html, /id="query"/);
+      assert.match(html, /type="search"/);
+      assert.match(html, /value="vize"/);
+      assert.match(html, /aria-label="Search"/);
+      assert.match(html, /data-vize-ui="search-field-input"/);
+      assert.match(html, /data-vize-ui="search-field-clear"/);
+      assert.match(html, /id="query-clear"/);
+    },
+    assertHydratedDom(host) {
+      const search = host.querySelector('[data-vize-ui="search-field"]');
+      const input = host.querySelector('[data-vize-ui="search-field-input"]');
+      const clear = host.querySelector('[data-vize-ui="search-field-clear"]');
+      assert.ok(search instanceof HTMLElement);
+      assert.ok(input instanceof HTMLInputElement);
+      assert.ok(clear instanceof HTMLButtonElement);
+      assert.equal(input.type, "search");
+      assert.equal(input.name, "query");
+      assert.equal(input.value, "vize");
+      assert.equal(clear.id, "query-clear");
     },
   },
   {

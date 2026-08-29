@@ -16,6 +16,7 @@ export * from "./controllable-state.ts";
 export * from "./button.ts";
 export * from "./toggle.ts";
 export * from "./input.ts";
+export * from "./search-field.ts";
 export * from "./textarea.ts";
 export * from "./command.ts";
 export * from "./dismissable-layer.ts";
