@@ -19,6 +19,7 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
     results.map((result) => result.filename),
     [
       "src/action-button.vue",
+      "src/alert-dialog-content.vue",
       "src/alert.vue",
       "src/announcer-provider.vue",
       "src/aspect-ratio.vue",
@@ -58,6 +59,7 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
     requests,
     [
       "action-button.vue",
+      "alert-dialog-content.vue",
       "alert.vue",
       "announcer-provider.vue",
       "aspect-ratio.vue",

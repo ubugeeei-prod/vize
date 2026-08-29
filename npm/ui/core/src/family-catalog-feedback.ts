@@ -18,7 +18,7 @@ export const feedbackFamilyCatalog = [
     qualityGates: componentQualityGates,
     bundleBudget: {
       exportName: "Alert",
-      retainedSignature: "data-vize-ui[\\s\\S]{0,16}alert",
+      retainedSignature: 'data-vize-ui":(?:`alert`|"alert"|\'alert\')',
       maximumJavaScriptGzipBytes: 750,
       maximumCssGzipBytes: 0,
     },

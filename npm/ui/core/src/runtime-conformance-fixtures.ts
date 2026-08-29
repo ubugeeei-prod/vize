@@ -11,6 +11,7 @@ import LinkAnchor from "./link-anchor.vue";
 import { meterRuntimeFixture } from "./runtime-conformance-meter-fixtures.ts";
 import PrimitiveElement from "./primitive-element.vue";
 import { alertRuntimeFixture } from "./runtime-conformance-alert-fixtures.ts";
+import { alertDialogRuntimeFixture } from "./runtime-conformance-alert-dialog-fixtures.ts";
 import { aspectRatioRuntimeFixture } from "./runtime-conformance-aspect-ratio-fixtures.ts";
 import { progressRuntimeFixture } from "./runtime-conformance-progress-fixtures.ts";
 import { separatorRuntimeFixture } from "./runtime-conformance-separator-fixtures.ts";
@@ -45,6 +46,7 @@ const DeterministicIdProbe = defineComponent({
 
 export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   alertRuntimeFixture,
+  alertDialogRuntimeFixture,
   aspectRatioRuntimeFixture,
   {
     name: "button",

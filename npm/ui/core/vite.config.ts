@@ -50,6 +50,7 @@ export default defineConfig({
       context: "src/context.ts",
       "controllable-state": "src/controllable-state.ts",
       dialog: "src/dialog.ts",
+      "alert-dialog": "src/alert-dialog.ts",
       "dismissable-layer": "src/dismissable-layer.ts",
       "drag-and-drop": "src/drag-and-drop.ts",
       "error-summary": "src/error-summary.ts",

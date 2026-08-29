@@ -16,6 +16,7 @@ export * from "./composite-navigation.ts";
 export * from "./context.ts";
 export * from "./controllable-state.ts";
 export * from "./dialog.ts";
+export * from "./alert-dialog.ts";
 export * from "./button.ts";
 export * from "./link.ts";
 export * from "./toggle.ts";

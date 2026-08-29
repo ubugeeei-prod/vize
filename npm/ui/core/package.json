@@ -134,6 +134,11 @@
       "import": "./dist/dialog.mjs",
       "default": "./dist/dialog.mjs"
     },
+    "./alert-dialog": {
+      "types": "./dist/alert-dialog.d.mts",
+      "import": "./dist/alert-dialog.mjs",
+      "default": "./dist/alert-dialog.mjs"
+    },
     "./dismissable-layer": {
       "types": "./dist/dismissable-layer.d.mts",
       "import": "./dist/dismissable-layer.mjs",

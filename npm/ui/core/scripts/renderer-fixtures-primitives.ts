@@ -1,5 +1,37 @@
 export const primitiveRendererFixtures = [
   {
+    filename: "AlertDialogConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import {
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogOverlay,
+  AlertDialogPortal,
+  AlertDialogRoot,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "./alert-dialog.ts";
+</script>
+
+<template>
+  <AlertDialogRoot>
+    <AlertDialogTrigger>Delete</AlertDialogTrigger>
+    <AlertDialogPortal>
+      <AlertDialogOverlay />
+      <AlertDialogContent>
+        <AlertDialogTitle>Delete project?</AlertDialogTitle>
+        <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+        <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogAction>Delete</AlertDialogAction>
+      </AlertDialogContent>
+    </AlertDialogPortal>
+  </AlertDialogRoot>
+</template>
+`,
+  },
+  {
     filename: "AspectRatioConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";
