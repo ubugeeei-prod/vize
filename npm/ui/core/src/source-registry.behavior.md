@@ -1,7 +1,7 @@
 # Source Registry Behavior
 
-The source registry is the read-only manifest surface for future source-owned
-install workflows tracked by issue #4896. It projects the existing
+The source registry is the repository-only, read-only manifest surface for
+future source-owned install workflows tracked by issue #4896. It projects the existing
 `uiFamilyCatalog` into deterministic JSON so tooling can discover the source
 files, behavior contract, tests, type tests, dependencies, and bundle evidence
 for each UI family without reading package exports.
@@ -19,6 +19,8 @@ for each UI family without reading package exports.
 - It does not create an offline cache, signed index, transaction journal,
   rollback path, or three-way update.
 - It does not expose a new public package subpath.
+- It does not publish a package bin or support execution from an installed
+  `@vizejs/ui` consumer project.
 
 Future mutating commands must keep dry-run and machine-readable output as a
 first-class contract before writing user files.

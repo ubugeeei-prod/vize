@@ -159,9 +159,16 @@ test("documents the read-only command contract", async () => {
   assert.match(behavior, /read-only manifest surface/);
   assert.match(behavior, /It does not implement `init`, `add`, `add-many`/);
   assert.match(behavior, /It does not expose a new public package subpath/);
+  assert.match(behavior, /does not publish a package bin/);
 });
 
 test("CLI emits deterministic machine-readable list, search, and info output", () => {
+  const helpOutput = runCli(["--help"]);
+  assert.equal(helpOutput.exitCode, 0);
+  assert.match(helpOutput.stdout, /repository checkout only/);
+  assert.match(helpOutput.stdout, /not a published @vizejs\/ui package bin/);
+  assert.match(helpOutput.stdout, /imports package source files from the checkout/);
+
   const listOutput = runCli(["list", "--format", "json"]);
   const shorthandListOutput = runCli(["list", "--json"]);
   assert.equal(listOutput.exitCode, 0);

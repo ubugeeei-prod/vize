@@ -47,12 +47,13 @@ type CliRecord =
       readonly family: UiSourceFamilyManifest;
     };
 
-const usage = `Usage:
+const usage = `Usage (repository checkout only; not a published @vizejs/ui package bin):
+  cd npm/ui/core
   node scripts/source-registry.ts list [--format json|jsonl]
   node scripts/source-registry.ts search <query> [--format json|jsonl]
   node scripts/source-registry.ts info <name-or-alias> [--format json|jsonl]
 
-Commands are read-only. Source install, update, diff, cache, and rollback commands are tracked by issue #4896 but are not implemented in this foundation slice.
+This CLI imports package source files from the checkout. Commands are read-only. Source install, update, diff, cache, package-consumer bin, and rollback commands are tracked by issue #4896 but are not implemented in this foundation slice.
 `;
 
 const mutatingCommands = new Set([
