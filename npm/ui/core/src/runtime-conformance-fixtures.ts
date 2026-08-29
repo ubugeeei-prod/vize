@@ -9,6 +9,7 @@ import { useDeterministicId } from "./deterministic-id.ts";
 import ErrorSummary from "./error-summary.vue";
 import LinkAnchor from "./link-anchor.vue";
 import PrimitiveElement from "./primitive-element.vue";
+import { switchRuntimeFixture } from "./runtime-conformance-switch-fixtures.ts";
 import SearchField from "./search-field.vue";
 import TextInput from "./text-input.vue";
 import TextareaControl from "./textarea-control.vue";
@@ -281,6 +282,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       assert.equal(clear.id, "query-clear");
     },
   },
+  switchRuntimeFixture,
   {
     name: "toggle",
     sourceFile: "toggle-button.vue",

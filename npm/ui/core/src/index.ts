@@ -19,6 +19,7 @@ export * from "./toggle.ts";
 export * from "./input.ts";
 export * from "./search-field.ts";
 export * from "./textarea.ts";
+export * from "./switch.ts";
 export * from "./command.ts";
 export * from "./dismissable-layer.ts";
 export * from "./drag-and-drop.ts";

@@ -38,6 +38,7 @@ export default defineConfig({
       input: "src/input.ts",
       "search-field": "src/search-field.ts",
       textarea: "src/textarea.ts",
+      switch: "src/switch.ts",
       checkbox: "src/checkbox.ts",
       collection: "src/collection.ts",
       "composite-navigation": "src/composite-navigation.ts",
