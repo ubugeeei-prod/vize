@@ -100,4 +100,18 @@ const loading = ref(true);
 </template>
 `,
   },
+  {
+    filename: "SpacerConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { Spacer } from "./spacer.ts";
+
+const blockSize = ref("2rem");
+</script>
+
+<template>
+  <Spacer as="div" :block-size="blockSize" inline-size="100%" />
+</template>
+`,
+  },
 ] as const;

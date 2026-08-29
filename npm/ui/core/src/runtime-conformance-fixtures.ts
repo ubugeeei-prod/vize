@@ -16,6 +16,7 @@ import { aspectRatioRuntimeFixture } from "./runtime-conformance-aspect-ratio-fi
 import { progressRuntimeFixture } from "./runtime-conformance-progress-fixtures.ts";
 import { separatorRuntimeFixture } from "./runtime-conformance-separator-fixtures.ts";
 import { skeletonRuntimeFixture } from "./runtime-conformance-skeleton-fixtures.ts";
+import { spacerRuntimeFixture } from "./runtime-conformance-spacer-fixtures.ts";
 import { switchRuntimeFixture } from "./runtime-conformance-switch-fixtures.ts";
 import SearchField from "./search-field.vue";
 import TextInput from "./text-input.vue";
@@ -295,6 +296,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   separatorRuntimeFixture,
   skeletonRuntimeFixture,
+  spacerRuntimeFixture,
   switchRuntimeFixture,
   {
     name: "toggle",
