@@ -8,6 +8,7 @@ import IdProvider from "./deterministic-id-provider.vue";
 import { useDeterministicId } from "./deterministic-id.ts";
 import ErrorSummary from "./error-summary.vue";
 import LinkAnchor from "./link-anchor.vue";
+import { collapsibleRuntimeFixtures } from "./runtime-conformance-collapsible-fixtures.ts";
 import { meterRuntimeFixture } from "./runtime-conformance-meter-fixtures.ts";
 import PrimitiveElement from "./primitive-element.vue";
 import { alertRuntimeFixture } from "./runtime-conformance-alert-fixtures.ts";
@@ -48,6 +49,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   alertRuntimeFixture,
   alertDialogRuntimeFixture,
   aspectRatioRuntimeFixture,
+  ...collapsibleRuntimeFixtures,
   {
     name: "button",
     sourceFile: "action-button.vue",

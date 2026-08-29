@@ -69,6 +69,29 @@ const value = ref(64);
 `,
   },
   {
+    filename: "CollapsibleConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from "./collapsible.ts";
+
+const open = ref(false);
+</script>
+
+<template>
+  <CollapsibleRoot id="filters" v-model:open="open">
+    <template #default="{ state }">
+      <CollapsibleTrigger aria-label="Filters">
+        <span>{{ state }}</span>
+      </CollapsibleTrigger>
+      <CollapsibleContent aria-describedby="filters-help">
+        <p id="filters-help">Filter controls</p>
+      </CollapsibleContent>
+    </template>
+  </CollapsibleRoot>
+</template>
+`,
+  },
+  {
     filename: "SeparatorConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

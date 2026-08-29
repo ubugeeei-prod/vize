@@ -49,6 +49,11 @@
       "import": "./dist/aspect-ratio.mjs",
       "default": "./dist/aspect-ratio.mjs"
     },
+    "./collapsible": {
+      "types": "./dist/collapsible.d.mts",
+      "import": "./dist/collapsible.mjs",
+      "default": "./dist/collapsible.mjs"
+    },
     "./button": {
       "types": "./dist/button.d.mts",
       "import": "./dist/button.mjs",
