@@ -137,4 +137,23 @@ const blockSize = ref("2rem");
 </template>
 `,
   },
+  {
+    filename: "StackConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { Stack } from "./stack.ts";
+
+const axis = ref<"block" | "inline">("inline");
+</script>
+
+<template>
+  <Stack as="section" :axis gap="1rem" align="center" justify="space-between">
+    <template #default="{ direction }">
+      <span>{{ direction }}</span>
+      <button type="button">Continue</button>
+    </template>
+  </Stack>
+</template>
+`,
+  },
 ] as const;

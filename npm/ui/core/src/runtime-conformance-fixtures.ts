@@ -9,16 +9,13 @@ import { useDeterministicId } from "./deterministic-id.ts";
 import ErrorSummary from "./error-summary.vue";
 import LinkAnchor from "./link-anchor.vue";
 import { collapsibleRuntimeFixtures } from "./runtime-conformance-collapsible-fixtures.ts";
+import { layoutRuntimeFixtures } from "./runtime-conformance-layout-fixtures.ts";
 import { meterRuntimeFixture } from "./runtime-conformance-meter-fixtures.ts";
 import PrimitiveElement from "./primitive-element.vue";
 import { alertRuntimeFixture } from "./runtime-conformance-alert-fixtures.ts";
 import { alertDialogRuntimeFixture } from "./runtime-conformance-alert-dialog-fixtures.ts";
-import { aspectRatioRuntimeFixture } from "./runtime-conformance-aspect-ratio-fixtures.ts";
 import { fieldRuntimeFixtures } from "./runtime-conformance-field-fixtures.ts";
 import { progressRuntimeFixture } from "./runtime-conformance-progress-fixtures.ts";
-import { separatorRuntimeFixture } from "./runtime-conformance-separator-fixtures.ts";
-import { skeletonRuntimeFixture } from "./runtime-conformance-skeleton-fixtures.ts";
-import { spacerRuntimeFixture } from "./runtime-conformance-spacer-fixtures.ts";
 import { switchRuntimeFixture } from "./runtime-conformance-switch-fixtures.ts";
 import SearchField from "./search-field.vue";
 import TextInput from "./text-input.vue";
@@ -48,8 +45,8 @@ const DeterministicIdProbe = defineComponent({
 export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   alertRuntimeFixture,
   alertDialogRuntimeFixture,
-  aspectRatioRuntimeFixture,
   ...collapsibleRuntimeFixtures,
+  ...layoutRuntimeFixtures,
   {
     name: "button",
     sourceFile: "action-button.vue",
@@ -296,9 +293,6 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       assert.equal(clear.id, "query-clear");
     },
   },
-  separatorRuntimeFixture,
-  skeletonRuntimeFixture,
-  spacerRuntimeFixture,
   switchRuntimeFixture,
   {
     name: "toggle",

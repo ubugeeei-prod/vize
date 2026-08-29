@@ -25,6 +25,7 @@ export * from "./input.ts";
 export * from "./search-field.ts";
 export * from "./separator.ts";
 export * from "./spacer.ts";
+export * from "./stack.ts";
 export * from "./skeleton.ts";
 export * from "./meter.ts";
 export * from "./textarea.ts";

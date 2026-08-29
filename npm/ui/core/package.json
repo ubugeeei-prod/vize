@@ -89,6 +89,11 @@
       "import": "./dist/spacer.mjs",
       "default": "./dist/spacer.mjs"
     },
+    "./stack": {
+      "types": "./dist/stack.d.mts",
+      "import": "./dist/stack.mjs",
+      "default": "./dist/stack.mjs"
+    },
     "./skeleton": {
       "types": "./dist/skeleton.d.mts",
       "import": "./dist/skeleton.mjs",

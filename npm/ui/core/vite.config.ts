@@ -42,6 +42,7 @@ export default defineConfig({
       "search-field": "src/search-field.ts",
       separator: "src/separator.ts",
       spacer: "src/spacer.ts",
+      stack: "src/stack.ts",
       skeleton: "src/skeleton.ts",
       meter: "src/meter.ts",
       textarea: "src/textarea.ts",
