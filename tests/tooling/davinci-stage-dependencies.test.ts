@@ -11,11 +11,14 @@ type Dependency = {
   name: string;
   rename: string | null;
   kind: "dev" | "build" | null;
+  req: string;
 };
 
 type Package = {
   name: string;
   dependencies: Dependency[];
+  manifest_path: string;
+  publish: string[] | null;
 };
 
 type Metadata = { packages: Package[] };
@@ -135,6 +138,12 @@ const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>
 
 const metadata = readMetadata();
 
+const unpublishedDavinciStages = new Set(["vize_davinci", "vize_s1", "vize_s2", "vize_ricalco"]);
+
+function isPublishable(pkg: Package): boolean {
+  return pkg.publish === null || pkg.publish.length > 0;
+}
+
 test("Davinci crates import retained packages through stage aliases", () => {
   for (const [packageName, expectedAliases] of aliases) {
     const dependencies = workspacePackage(metadata, packageName).dependencies;
@@ -187,6 +196,35 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
       );
     }
   }
+});
+
+test("Davinci stage crates stay out of published release graphs", () => {
+  for (const packageName of unpublishedDavinciStages) {
+    assert.deepEqual(
+      workspacePackage(metadata, packageName).publish,
+      [],
+      `${packageName} must stay publish=false until a dedicated stage-publication switch`,
+    );
+  }
+
+  const offenders: string[] = [];
+  const workspacePackages = new Set(metadata.packages.map((pkg) => pkg.name));
+
+  for (const pkg of metadata.packages.filter(isPublishable)) {
+    for (const dependency of pkg.dependencies) {
+      if (!workspacePackages.has(dependency.name)) continue;
+      if (!unpublishedDavinciStages.has(dependency.name)) continue;
+      const strippedDevDependency = dependency.kind === "dev" && dependency.req === "*";
+      if (strippedDevDependency) continue;
+
+      offenders.push(
+        `${pkg.name} ${dependency.kind ?? "normal"} dependency ` +
+          `${dependency.rename ?? dependency.name}(${dependency.name}) req ${dependency.req}`,
+      );
+    }
+  }
+
+  assert.deepEqual(offenders, []);
 });
 
 test("Davinci fuzz harness imports stage packages through aliases", () => {
