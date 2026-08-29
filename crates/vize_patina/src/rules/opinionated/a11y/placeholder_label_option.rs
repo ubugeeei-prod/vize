@@ -29,8 +29,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupNode, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, ElementType, PropNode, TemplateChildNode};
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/placeholder-label-option",
@@ -43,58 +44,106 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct PlaceholderLabelOption;
 
+impl PlaceholderLabelOption {
+    fn first_option_child<'a>(
+        element: &MarkupElement<'a>,
+        transparent_fragments: bool,
+    ) -> Option<MarkupElement<'a>> {
+        let mut first_option = None;
+        element.walk_children(&mut |child| {
+            if first_option.is_none()
+                && let MarkupNode::Element(element) = child
+                && element.is_unqualified_tag_exact("option")
+            {
+                first_option = Some(element);
+            }
+            if first_option.is_none()
+                && transparent_fragments
+                && let MarkupNode::Element(element) = child
+                && element.tag().is_empty()
+            {
+                first_option = Self::first_option_child(&element, transparent_fragments);
+            }
+        });
+        first_option
+    }
+
+    fn has_empty_static_attribute(element: &MarkupElement<'_>, name: &str) -> bool {
+        let mut found = false;
+        element.walk_bindings(&mut |binding| {
+            if binding.kind() == MarkupBindingKind::Attribute
+                && binding.is_unqualified_arg_exact(name)
+                && binding.static_value().is_none_or(str::is_empty)
+            {
+                found = true;
+            }
+        });
+        found
+    }
+
+    fn has_exact_static_attribute(element: &MarkupElement<'_>, name: &str) -> bool {
+        let mut found = false;
+        element.walk_bindings(&mut |binding| {
+            if binding.kind() == MarkupBindingKind::Attribute
+                && binding.is_unqualified_arg_exact(name)
+            {
+                found = true;
+            }
+        });
+        found
+    }
+
+    fn check_element(
+        ctx: &mut LintContext<'_>,
+        element: &MarkupElement<'_>,
+        transparent_fragments: bool,
+    ) {
+        if element.is_component() || !element.is_unqualified_tag_exact("select") {
+            return;
+        }
+
+        let Some(option) = Self::first_option_child(element, transparent_fragments) else {
+            return;
+        };
+
+        if !Self::has_empty_static_attribute(&option, "value") {
+            return;
+        }
+
+        if Self::has_exact_static_attribute(&option, "disabled")
+            || Self::has_exact_static_attribute(&option, "hidden")
+        {
+            return;
+        }
+
+        let message = ctx.t("a11y/placeholder-label-option.message");
+        let help = ctx.t("a11y/placeholder-label-option.help");
+        ctx.warn_at_with_help(message, option.range(), help);
+    }
+}
+
+impl MarkupRule for PlaceholderLabelOption {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        let transparent_fragments = ctx.is_jsx();
+        Self::check_element(ctx.lint(), element, transparent_fragments);
+    }
+}
+
 impl Rule for PlaceholderLabelOption {
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag_type == ElementType::Component || element.tag != "select" {
-            return;
-        }
-
-        // Find first <option> child
-        let first_option = element.children.iter().find_map(|child| {
-            if let TemplateChildNode::Element(el) = child
-                && el.tag == "option"
-            {
-                return Some(el.as_ref());
-            }
-            None
-        });
-
-        let Some(option) = first_option else {
-            return;
-        };
-
-        // Check if it's a placeholder (value="" or no value attribute)
-        let is_placeholder = option.props.iter().any(|prop| {
-            if let PropNode::Attribute(attr) = prop
-                && attr.name == "value"
-            {
-                return attr.value.as_ref().is_none_or(|v| v.content.is_empty());
-            }
-            false
-        });
-
-        if !is_placeholder {
-            return;
-        }
-
-        // Check if disabled or hidden
-        let has_disabled_or_hidden = option.props.iter().any(|prop| {
-            if let PropNode::Attribute(attr) = prop {
-                attr.name == "disabled" || attr.name == "hidden"
-            } else {
-                false
-            }
-        });
-
-        if !has_disabled_or_hidden {
-            let message = ctx.t("a11y/placeholder-label-option.message");
-            let help = ctx.t("a11y/placeholder-label-option.help");
-            ctx.warn_with_help(message, &option.loc, help);
-        }
+        Self::check_element(ctx, &MarkupElement::new(element), false);
     }
 }
 

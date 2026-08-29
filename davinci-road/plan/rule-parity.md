@@ -34,9 +34,9 @@ Per-rule registration surface, SFC/JSX path membership, croquis usage, and a fir
 
 - **total rules: 245**
 - by family: template-family 158, script 71, css 10, musea 6
-- by surface (a rule can have several): `css-text` 10, `markup-facade` 28, `musea-blocks` 6, `script-oxc` 65, `script-source` 6, `sfc-source` 9, `template-ast` 152, `type-aware-corsa` 5
+- by surface (a rule can have several): `css-text` 10, `markup-facade` 29, `musea-blocks` 6, `script-oxc` 65, `script-source` 6, `sfc-source` 9, `template-ast` 152, `type-aware-corsa` 5
 - path membership: SFC `lint_sfc` 239 · JSX `lint_jsx` 147 · **SFC∩JSX 147** · SFC-only 92 · JSX-only 0 · neither 6 (6 musea + 0 unregistered)
-- JSX lanes: `fallback` 119, `ir` 22, `ir-lowered` 6, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (28 = 28 `markup-facade` rules)
+- JSX lanes: `fallback` 118, `ir` 23, `ir-lowered` 6, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (29 = 29 `markup-facade` rules)
 - classification: neutral-core-candidate **87** · vue-dialect-bound **136** · container-bound **22** (0 overridden)
 - croquis adoption: **23** rules touch vize_croquis (18 direct imports, 12 via context analysis)
 
@@ -72,7 +72,7 @@ Sorted by rule name. File paths are relative to `crates/vize_patina/src/rules/`.
 | `a11y/no-refer-to-non-existent-id`              | template-family | `a11y/no_refer_to_non_existent_id.rs`                  | template-ast                   | yes (template-visitor)           | yes (fallback)              | direct 2: `croquis::ElementIdKind`; ctx 1                                                           | neutral-core-candidate |
 | `a11y/no-role-presentation-on-focusable`        | template-family | `a11y/no_role_presentation_on_focusable.rs`            | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | neutral-core-candidate |
 | `a11y/no-static-element-interactions`           | template-family | `a11y/no_static_element_interactions.rs`               | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
-| `a11y/placeholder-label-option`                 | template-family | `opinionated/a11y/placeholder_label_option.rs`         | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | neutral-core-candidate |
+| `a11y/placeholder-label-option`                 | template-family | `opinionated/a11y/placeholder_label_option.rs`         | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | neutral-core-candidate |
 | `a11y/role-has-required-aria-props`             | template-family | `a11y/role_has_required_aria_props.rs`                 | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `a11y/tabindex-no-positive`                     | template-family | `a11y/tabindex_no_positive.rs`                         | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | neutral-core-candidate |
 | `a11y/use-list`                                 | template-family | `opinionated/a11y/use_list.rs`                         | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | neutral-core-candidate |
