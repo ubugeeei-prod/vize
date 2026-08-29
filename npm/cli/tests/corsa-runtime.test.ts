@@ -123,6 +123,27 @@ test("missing bundled runtime leaves existing discovery untouched", () => {
   }
 });
 
+test("old bundled TypeScript platform runtime leaves existing discovery untouched", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-cli-corsa-old-runtime-"));
+  try {
+    const packageRoot = path.join(root, "node_modules", "vize");
+    const platformPackage = `@typescript/typescript-${process.platform}-${process.arch}`;
+    writeTypeScriptRuntime(packageRoot, platformPackage, "6.0.3", oldRuntimeSource);
+    writeJson(path.join(packageRoot, "package.json"), {
+      name: "vize",
+      optionalDependencies: { [platformPackage]: "6.0.3" },
+      type: "module",
+    });
+    const environment = {};
+
+    assert.equal(resolveBundledCorsaRuntime({ packageRoot }), null);
+    assert.equal(configureBundledCorsaRuntime(environment, { packageRoot }), null);
+    assert.deepEqual(environment, {});
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("missing platform executable falls back without mutating the environment", () => {
   const fixture = createRuntimeFixture();
   try {

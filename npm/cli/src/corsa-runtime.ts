@@ -47,6 +47,7 @@ export function resolveBundledCorsaRuntime(options: RuntimeResolutionOptions = {
       const platformManifest = readManifest(platformManifestPath);
       if (
         platformManifest.name !== platformPackage ||
+        !isTypeScriptSevenOrNewer(platformManifest.version) ||
         !matchesDeclaredVersion(platformManifest.version, declaredBundledPlatformVersion)
       ) {
         return null;
