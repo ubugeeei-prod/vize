@@ -34,9 +34,9 @@ Per-rule registration surface, SFC/JSX path membership, croquis usage, and a fir
 
 - **total rules: 245**
 - by family: template-family 158, script 71, css 10, musea 6
-- by surface (a rule can have several): `css-text` 10, `markup-facade` 26, `musea-blocks` 6, `script-oxc` 65, `script-source` 6, `sfc-source` 9, `template-ast` 152, `type-aware-corsa` 5
+- by surface (a rule can have several): `css-text` 10, `markup-facade` 27, `musea-blocks` 6, `script-oxc` 65, `script-source` 6, `sfc-source` 9, `template-ast` 152, `type-aware-corsa` 5
 - path membership: SFC `lint_sfc` 239 · JSX `lint_jsx` 147 · **SFC∩JSX 147** · SFC-only 92 · JSX-only 0 · neither 6 (6 musea + 0 unregistered)
-- JSX lanes: `fallback` 121, `ir` 21, `ir-lowered` 5, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (26 = 26 `markup-facade` rules)
+- JSX lanes: `fallback` 120, `ir` 22, `ir-lowered` 5, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (27 = 27 `markup-facade` rules)
 - classification: neutral-core-candidate **87** · vue-dialect-bound **136** · container-bound **22** (0 overridden)
 - croquis adoption: **23** rules touch vize_croquis (18 direct imports, 12 via context analysis)
 
@@ -99,7 +99,7 @@ Sorted by rule name. File paths are relative to `crates/vize_patina/src/rules/`.
 | `html/deprecated-element`                       | template-family | `html/deprecated_element.rs`                           | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | neutral-core-candidate |
 | `html/id-duplication`                           | template-family | `html/id_duplication.rs`                               | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `html/no-consecutive-br`                        | template-family | `html/no_consecutive_br.rs`                            | template-ast, markup-facade    | yes (template-visitor)           | yes (ir-lowered)            | —                                                                                                   | neutral-core-candidate |
-| `html/no-dupe-style-properties`                 | template-family | `opinionated/html/no_dupe_style_properties.rs`         | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | neutral-core-candidate |
+| `html/no-dupe-style-properties`                 | template-family | `opinionated/html/no_dupe_style_properties.rs`         | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | neutral-core-candidate |
 | `html/no-duplicate-class`                       | template-family | `opinionated/html/no_duplicate_class.rs`               | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | neutral-core-candidate |
 | `html/no-duplicate-dt`                          | template-family | `html/no_duplicate_dt.rs`                              | template-ast, markup-facade    | yes (template-visitor)           | yes (ir-lowered)            | —                                                                                                   | neutral-core-candidate |
 | `html/no-empty-palpable-content`                | template-family | `html/no_empty_palpable_content.rs`                    | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
