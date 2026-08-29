@@ -276,7 +276,7 @@
     "pretest": "vp pack && pnpm check:size && pnpm check:tree-shaking",
     "test": "vp test run",
     "check:catalog": "vp test run src/family-catalog.test.ts",
-    "check": "vp check src scripts vite.config.ts tsconfig.typecheck.json && vue-tsc --noEmit -p tsconfig.typecheck.json",
+    "check": "pnpm lint:sfc && vp check src scripts vite.config.ts tsconfig.typecheck.json && vue-tsc --noEmit -p tsconfig.typecheck.json",
     "check:fix": "vp check --fix src scripts vite.config.ts tsconfig.typecheck.json",
     "check:size": "node scripts/check-size.mjs",
     "check:tree-shaking": "node scripts/check-tree-shaking.mjs",
