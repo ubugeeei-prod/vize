@@ -8,7 +8,7 @@ use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_custom_elements_and_
 use vize_atelier_vapor::{
     VaporCompilerOptions, compile_vapor_with_custom_elements_and_template_syntax,
 };
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 use super::compiler_codegen_options;
 use crate::wasm::ast::build_ast_json;

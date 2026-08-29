@@ -8,7 +8,7 @@
 )]
 
 use super::to_js_value;
-use vize_carton::cstr;
+use vize_s0::cstr;
 use wasm_bindgen::prelude::*;
 
 /// Parse Art file (*.art.vue)
@@ -139,7 +139,7 @@ pub fn generate_art_doc_wasm(source: &str, options: JsValue) -> Result<JsValue, 
         include_metadata,
         include_toc,
         toc_threshold,
-        base_path: vize_carton::CompactString::default(),
+        base_path: vize_s0::CompactString::default(),
         title: None,
         include_timestamp: false,
     };
@@ -200,7 +200,7 @@ pub fn generate_art_catalog_wasm(
         include_metadata,
         include_toc: true,
         toc_threshold: 5,
-        base_path: vize_carton::CompactString::default(),
+        base_path: vize_s0::CompactString::default(),
         title: title.map(Into::into),
         include_timestamp: false,
     };

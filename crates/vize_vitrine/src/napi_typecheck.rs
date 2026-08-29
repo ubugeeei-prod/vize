@@ -85,7 +85,7 @@ pub fn type_check_napi(
     options: Option<TypeCheckOptionsNapi>,
 ) -> Result<TypeCheckResultNapi> {
     let opts = options.unwrap_or_default();
-    let filename: vize_carton::CompactString =
+    let filename: vize_s0::CompactString =
         opts.filename.as_deref().unwrap_or("anonymous.vue").into();
 
     let mut check_opts = TypeCheckOptions::new(filename);
@@ -345,7 +345,7 @@ pub fn type_check_batch_napi(
             Err(_) => return,
         };
 
-        let filename: vize_carton::CompactString = path
+        let filename: vize_s0::CompactString = path
             .file_name()
             .and_then(|n| n.to_str())
             .unwrap_or("anonymous.vue")

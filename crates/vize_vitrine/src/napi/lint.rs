@@ -15,7 +15,7 @@ use napi_derive::napi;
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use serde_json::{Value, json};
 use std::sync::atomic::{AtomicUsize, Ordering};
-use vize_carton::append;
+use vize_s0::append;
 
 use super::lint_fix::{lint_file_with_optional_fix, lint_source};
 mod empty_result;
@@ -88,8 +88,8 @@ const fn severity_name(severity: vize_patina::Severity) -> &'static str {
 }
 
 fn collect_patina_rule_metadata() -> Vec<PatinaRuleMetaNapi<'static>> {
-    use vize_carton::FxHashSet;
     use vize_patina::{LintPreset, RuleRegistry, builtin_script_rules};
+    use vize_s0::FxHashSet;
 
     let template_rule_registries = [
         RuleRegistry::with_preset(LintPreset::Opinionated),
@@ -348,15 +348,15 @@ pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<L
     let quiet = opts.quiet.unwrap_or(false);
 
     // Format output
-    let mut output = vize_carton::CompactString::default();
+    let mut output = vize_s0::CompactString::default();
     if format.renders_details_when_quiet() || !quiet || total_errors > 0 || total_warnings > 0 {
         let lint_results: Vec<_> = results.iter().map(|(_, _, r)| r).cloned().collect();
         let sources: Vec<_> = results
             .iter()
             .map(|(f, s, _)| {
                 (
-                    vize_carton::CompactString::from(f.as_str()),
-                    vize_carton::CompactString::from(s.as_str()),
+                    vize_s0::CompactString::from(f.as_str()),
+                    vize_s0::CompactString::from(s.as_str()),
                 )
             })
             .collect();

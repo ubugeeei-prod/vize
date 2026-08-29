@@ -260,6 +260,14 @@ test("Curator reporting utilities import S0 storage through the stage alias", ()
   });
 });
 
+test("Vitrine bindings import S0 storage through the stage alias", () => {
+  assertS0AliasConsumer({
+    packageName: "vize_vitrine",
+    label: "Vitrine bindings",
+    directory: path.join(repoRoot, "crates", "vize_vitrine"),
+  });
+});
+
 test("Maestro LSP imports S0 storage through the stage alias", () => {
   assertS0AliasConsumer({
     packageName: "vize_maestro",

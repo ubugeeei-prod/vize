@@ -125,7 +125,7 @@ pub struct SfcBlockLocationWasm {
 }
 
 fn attrs_to_wasm(
-    attrs: &vize_carton::FxHashMap<std::borrow::Cow<'_, str>, std::borrow::Cow<'_, str>>,
+    attrs: &vize_s0::FxHashMap<std::borrow::Cow<'_, str>, std::borrow::Cow<'_, str>>,
 ) -> BTreeMap<String, String> {
     attrs
         .iter()

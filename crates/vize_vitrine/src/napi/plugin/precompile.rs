@@ -109,7 +109,7 @@ fn into_native_entries_ref(
     entries.iter().map(Into::into).collect()
 }
 
-fn into_native_files(files: Vec<String>) -> Vec<vize_carton::String> {
+fn into_native_files(files: Vec<String>) -> Vec<vize_s0::String> {
     files.into_iter().map(Into::into).collect()
 }
 

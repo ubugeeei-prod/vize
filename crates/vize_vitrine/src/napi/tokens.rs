@@ -4,7 +4,7 @@
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
 use serde::Serialize;
-use vize_carton::ToCompactString;
+use vize_s0::ToCompactString;
 
 #[napi(js_name = "parseDesignTokensFromPath")]
 pub fn parse_design_tokens_from_path(tokens_path: String) -> Result<String> {
@@ -70,18 +70,18 @@ fn categories_from_json(source: &str) -> Result<Vec<vize_musea::tokens::TokenCat
     serde_json::from_str(source).map_err(|error| {
         Error::new(
             Status::InvalidArg,
-            vize_carton::cstr!("Invalid token categories: {error}"),
+            vize_s0::cstr!("Invalid token categories: {error}"),
         )
     })
 }
 
 fn token_map_from_json(
     source: &str,
-) -> Result<vize_carton::FxHashMap<vize_carton::String, vize_musea::tokens::DesignToken>> {
+) -> Result<vize_s0::FxHashMap<vize_s0::String, vize_musea::tokens::DesignToken>> {
     serde_json::from_str(source).map_err(|error| {
         Error::new(
             Status::InvalidArg,
-            vize_carton::cstr!("Invalid token map: {error}"),
+            vize_s0::cstr!("Invalid token map: {error}"),
         )
     })
 }
@@ -90,7 +90,7 @@ fn to_json(value: impl Serialize) -> Result<String> {
     serde_json::to_string(&value).map_err(|error| {
         Error::new(
             Status::GenericFailure,
-            vize_carton::cstr!("Failed to serialize token result: {error}"),
+            vize_s0::cstr!("Failed to serialize token result: {error}"),
         )
     })
 }

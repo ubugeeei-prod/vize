@@ -19,7 +19,7 @@ use wasm_bindgen::prelude::*;
 use vize_atelier_jsx::{
     JsxCompatMode, JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx as jsx_compile,
 };
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 use super::serde::to_json_js_value;
 

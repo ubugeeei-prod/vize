@@ -7,7 +7,7 @@ use std::{
 };
 use vize_atelier_sfc::build_sfc_source_map;
 use vize_atelier_sfc::compile_script::typescript::ensure_javascript_output;
-use vize_carton::cstr;
+use vize_s0::cstr;
 
 use super::types::ModuleShapeNapi;
 use super::{
@@ -82,7 +82,7 @@ fn compile_sfc_batch_with_results_inner(
         .map(|file| {
             let scope_id =
                 vize_atelier_sfc::generate_bundler_scope_id(&file.path, None, false, None);
-            let filename_cs: vize_carton::CompactString = file.path.as_str().into();
+            let filename_cs: vize_s0::CompactString = file.path.as_str().into();
             let descriptor = match sfc_parse(
                 &file.source,
                 SfcParseOptions {

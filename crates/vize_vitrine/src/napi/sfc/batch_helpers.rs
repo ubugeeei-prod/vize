@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 use vize_atelier_core::TemplateSyntaxMode;
-use vize_carton::hash::hash_str;
+use vize_s0::hash::hash_str;
 
 #[derive(Default)]
 pub(super) struct BatchStats {

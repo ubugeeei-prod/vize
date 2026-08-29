@@ -102,7 +102,7 @@ fn plugin_preset_name_from_raw(preset: &'static str) -> &'static str {
     }
 }
 
-fn parse_enabled_rules(options: &JsValue) -> Option<Vec<vize_carton::CompactString>> {
+fn parse_enabled_rules(options: &JsValue) -> Option<Vec<vize_s0::CompactString>> {
     js_sys::Reflect::get(options, &JsValue::from_str("enabledRules"))
         .ok()
         .and_then(|v| {
@@ -112,7 +112,7 @@ fn parse_enabled_rules(options: &JsValue) -> Option<Vec<vize_carton::CompactStri
             js_sys::Array::from(&v)
                 .iter()
                 .map(|item| item.as_string().map(Into::into))
-                .collect::<Option<Vec<vize_carton::CompactString>>>()
+                .collect::<Option<Vec<vize_s0::CompactString>>>()
         })
 }
 
@@ -197,8 +197,8 @@ pub fn lint_template_wasm(source: &str, options: JsValue) -> Result<JsValue, JsV
 /// Lint Vue SFC file (full SFC including script)
 #[wasm_bindgen(js_name = "lintSfc")]
 pub fn lint_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValue> {
-    use vize_carton::i18n::{Locale as CartonLocale, t_fmt};
     use vize_patina::{Locale, LspEmitter};
+    use vize_s0::i18n::{Locale as S0Locale, t_fmt};
 
     let filename: String = js_sys::Reflect::get(&options, &JsValue::from_str("filename"))
         .ok()
@@ -212,11 +212,11 @@ pub fn lint_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValue>
         .and_then(|s| Locale::parse(&s))
         .unwrap_or_default();
 
-    // Convert to carton locale for i18n
-    let carton_locale = match locale {
-        Locale::En => CartonLocale::En,
-        Locale::Ja => CartonLocale::Ja,
-        Locale::Zh => CartonLocale::Zh,
+    // Convert to S0 locale for i18n.
+    let s0_locale = match locale {
+        Locale::En => S0Locale::En,
+        Locale::Ja => S0Locale::Ja,
+        Locale::Zh => S0Locale::Zh,
     };
 
     let linter = create_linter(locale, &options);
@@ -232,7 +232,7 @@ pub fn lint_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValue>
         .map(|(d, lsp)| {
             // Format message with i18n format string
             let formatted_message = t_fmt(
-                carton_locale,
+                s0_locale,
                 "diagnostic.format",
                 &[("rule", d.rule_name), ("message", d.message.as_ref())],
             );
@@ -275,7 +275,7 @@ pub fn lint_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValue>
 #[wasm_bindgen(js_name = "getLintRules")]
 #[allow(clippy::disallowed_macros)]
 pub fn get_lint_rules_wasm() -> Result<JsValue, JsValue> {
-    use vize_carton::FxHashSet;
+    use vize_s0::FxHashSet;
     let template_rule_registries = [
         RuleRegistry::with_preset(LintPreset::Opinionated),
         RuleRegistry::with_ecosystem(),

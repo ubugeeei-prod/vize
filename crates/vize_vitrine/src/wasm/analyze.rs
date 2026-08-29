@@ -9,7 +9,7 @@
 
 use super::source_offsets::{ScriptOffsetMapper, to_sfc_utf16_range};
 use super::to_js_value;
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 use wasm_bindgen::prelude::*;
 
 /// Analyze Vue SFC for semantic information (scopes, bindings, etc.)

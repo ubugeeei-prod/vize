@@ -8,7 +8,6 @@
 )]
 
 use super::{to_js_value, utf8_byte_to_utf16_offset};
-use vize_carton::Allocator;
 use vize_croquis_cf::CrossFileDiagnosticKind::{
     ArrayMutationNotTriggering, AsyncBoundaryCrossing, AsyncWithoutSuspense, BrowserApiInSsr,
     CircularDependency, CircularReactiveDependency, ClosureCapturesReactive,
@@ -28,6 +27,7 @@ use vize_croquis_cf::CrossFileDiagnosticKind::{
     UnusedFallthroughAttrs, UnusedProvide, ValueExtractionBreaksReactivity, WatchEffectWithAsync,
     WatchMutationCanBeComputed, WatcherOutsideSetup,
 };
+use vize_s0::Allocator;
 use wasm_bindgen::prelude::*;
 
 /// Analyze multiple Vue SFC files for cross-file issues
@@ -226,7 +226,7 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
                     |(file_id, offset, message): &(
                         vize_croquis_cf::FileId,
                         u32,
-                        vize_carton::CompactString,
+                        vize_s0::CompactString,
                     )| {
                         let file_path = file_paths
                             .get(file_id.as_u32() as usize)

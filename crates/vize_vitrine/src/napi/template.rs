@@ -12,7 +12,7 @@
 
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 use crate::{CompileResult, CompilerOptions, template_syntax::resolve_template_syntax};
 use vize_atelier_core::{

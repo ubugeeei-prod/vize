@@ -32,7 +32,7 @@ napi = [
 wasm = ["dep:wasm-bindgen", "dep:serde-wasm-bindgen", "dep:js-sys", "dep:web-sys", "glyph"]
 
 [dependencies]
-vize_carton = { workspace = true }
+vize_s0 = { workspace = true }
 vize_relief = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_atelier_dom = { workspace = true }

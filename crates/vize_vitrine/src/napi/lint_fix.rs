@@ -1,7 +1,7 @@
 //! Lint text-edit application for the native API.
 
 use std::{fs, path::Path};
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 pub(super) fn lint_file_with_optional_fix(
     linter: &vize_patina::Linter,
@@ -141,8 +141,17 @@ mod tests {
 
     #[test]
     fn script_extensions_do_not_expand_directory_collection() {
-        for extension in ["js", "jsx", "mjs", "cjs", "ts", "tsx", "mts", "cts"] {
-            assert!(is_script_filename(&format!("nuxt.config.{extension}")));
+        for (filename, extension) in [
+            ("nuxt.config.js", "js"),
+            ("nuxt.config.jsx", "jsx"),
+            ("nuxt.config.mjs", "mjs"),
+            ("nuxt.config.cjs", "cjs"),
+            ("nuxt.config.ts", "ts"),
+            ("nuxt.config.tsx", "tsx"),
+            ("nuxt.config.mts", "mts"),
+            ("nuxt.config.cts", "cts"),
+        ] {
+            assert!(is_script_filename(filename));
             assert!(!is_lintable_extension(extension));
         }
     }

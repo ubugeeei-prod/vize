@@ -80,7 +80,7 @@ pub struct CompilerOptions {
 /// Only the NAPI and WASM bridges consume this, so it is gated to those builds
 /// to keep default-feature builds free of dead code.
 #[cfg(any(feature = "napi", feature = "wasm"))]
-pub(crate) fn custom_element_patterns(patterns: Option<&[String]>) -> Vec<vize_carton::String> {
+pub(crate) fn custom_element_patterns(patterns: Option<&[String]>) -> Vec<vize_s0::String> {
     patterns
         .unwrap_or_default()
         .iter()
