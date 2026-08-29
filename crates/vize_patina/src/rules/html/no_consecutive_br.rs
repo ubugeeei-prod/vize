@@ -23,6 +23,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupElement, MarkupNode, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType, TemplateChildNode};
 
@@ -37,9 +38,57 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct NoConsecutiveBr;
 
+impl NoConsecutiveBr {
+    fn check_markup_children<'a>(ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if element.is_component() {
+            return;
+        }
+
+        let mut last_br_seen = false;
+
+        element.walk_children(&mut |child| match child {
+            MarkupNode::Element(child) if child.is_unqualified_tag_exact("br") => {
+                if last_br_seen {
+                    let message = ctx.lint().t("html/no-consecutive-br.message");
+                    let help = ctx.lint().t("html/no-consecutive-br.help");
+                    ctx.lint().warn_at_with_help(message, child.range(), help);
+                }
+                last_br_seen = true;
+            }
+            MarkupNode::Text(text) => {
+                if text.is_significant() {
+                    last_br_seen = false;
+                }
+            }
+            MarkupNode::Comment(_) => {}
+            _ => {
+                last_br_seen = false;
+            }
+        });
+    }
+}
+
+impl MarkupRule for NoConsecutiveBr {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        Self::check_markup_children(ctx, element);
+    }
+}
+
 impl Rule for NoConsecutiveBr {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn jsx_needs_lowering(&self) -> bool {
+        true
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
