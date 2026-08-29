@@ -211,8 +211,8 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 
 **Deliverable:** `vize_atelier_dom` lowering S2 → codegen structure directly — the first strangler target, on the surface that holds the hard byte-parity bar.
 
-**Current series evidence (2026-08-29):** 35 installments have landed through
-[#5205](https://github.com/ubugeeei-prod/vize/pull/5205). Dynamic-argument
+**Current series evidence (2026-08-29):** 36 installments have landed through
+[#5207](https://github.com/ubugeeei-prod/vize/pull/5207). Dynamic-argument
 `v-bind` keys, `.camel` / `.prop` / `.attr` modifiers, Vue 2 pipe filters,
 filter helper order, slot outlet same-name names, and the expanded patch-flag
 matrix, including dynamic components, named component `v-model`, and component
@@ -230,8 +230,11 @@ emits `textContent` props from the S2 DOM lane through `_toDisplayString`
 across native, component, slot, structural, spread, custom directive and
 native `v-model` cases. Installment 35 realizes `v-cloak` as `vue.cloak` and
 preserves the shipped no-op DOM shape across native, component, slot,
-structural, spread, custom directive and native `v-model` cases. The task
-remains blocked on the published dependency
+structural, spread, custom directive and native `v-model` cases. Installment
+36 realizes slot outlet named and dynamic `v-on` props from the S2 DOM lane,
+including shipped slot-specific spread order, duplicate listener keys, helper
+order, fallback arguments, `v-for` locals, forwarded scoped-slot locals and
+Vue 2 `.native` behavior. The task remains blocked on the published dependency
 decision, a hydrated full-corpus run with an exact comparison count, the
 remaining patch-flag equivalence program, and the DOM allocation budget; the
 old lane remains the production path. See the

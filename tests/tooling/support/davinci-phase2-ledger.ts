@@ -66,6 +66,11 @@ export function p2_11CurrentRecordEvidence(source: string): string {
       /^\| 35\s+\|[^\n]+#5205[^\n]+02c4eb1a7[^\n]+$/mu,
       "P2-11 installment 35 row",
     ),
+    requiredLine(
+      source,
+      /^\| 36\s+\|[^\n]+#5207[^\n]+cf7fc9a22[^\n]+$/mu,
+      "P2-11 installment 36 row",
+    ),
     requiredSection(
       source,
       /^## Current named remainder/mu,
