@@ -33,7 +33,7 @@ The durable witnesses are:
   - element and slot-outlet `v-text` lower to `vue.text`; arg/modifier
     spellings still defer.
 - [`lowering_elements.rs`](../../../../crates/vize_ricalco/tests/lowering_elements.rs)
-  - `v-cloak` remains the unmapped-directive witness outside the dedicated
+  - `v-pre` remains the unmapped-directive witness outside the dedicated
     directive-realization files.
 - [`davinci_s2_text.rs`](../../../../crates/vize_atelier_dom/tests/davinci_s2_text.rs)
   - S2-vs-shipped byte fixtures plus per-node patch-flag extraction across the

@@ -33,9 +33,9 @@ Well-formed spellings retire `defer.v-once` / `defer.v-memo`:
 
 Ill-formed spellings still `defer.*` (Info), with messages that name
 the well-formed shape. At this increment, `v-html` / `v-text` /
-`v-show` / `v-cloak` / `v-pre` stayed deferred. P2-11 installment 32
-later admits well-formed `v-show` as `vue.show`; the other entries stay
-deferred.
+`v-show` / `v-cloak` / `v-pre` stayed deferred. P2-11 installments
+32-35 later admit `v-show`, `v-html`, `v-text` and `v-cloak` as
+Vue-dialect bindings; `v-pre` stays deferred.
 
 ## Canary, proved by injection
 

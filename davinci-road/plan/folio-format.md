@@ -222,9 +222,10 @@ holding the tree, omitted when empty. Nesting is two-space indentation;
 a shallower line closes every deeper op. Under an element or component the
 grouping is fixed: `attr` lines, then attached bindings (`ui.model`,
 `vue.directive`, `vue.css-bind`, `vue.sync`, `vue.slot-scope`,
-`vue.once`, `vue.memo`, `vue.show`), then children. Under `ui.if` only `branch` lines are
-legal; under `ui.model` only `attr` lines. Blank lines are separators and
-vanish; every other spelling is strict with exact, tested rejections.
+`vue.once`, `vue.memo`, `vue.show`, `vue.html`, `vue.text`,
+`vue.cloak`), then children. Under `ui.if` only `branch` lines are legal; under
+`ui.model` only `attr` lines. Blank lines are separators and vanish; every
+other spelling is strict with exact, tested rejections.
 
 One line per op (`[]` optional; `<expr>` is an expression payload token,
 below):
@@ -246,6 +247,9 @@ below):
 | `vue.once @s:e`                                                                         | Vue `v-once`; presence flag, no payload                                    |
 | `vue.memo value=<expr> @s:e`                                                            | Vue `v-memo`; expression is P2-5b (`opaque` ok)                            |
 | `vue.show value=<expr> @s:e`                                                            | Vue `v-show`; expression is P2-5b (`opaque` ok)                            |
+| `vue.html[ value=<expr>] @s:e`                                                          | Vue `v-html`; omitted value means shipped `innerHTML: undefined`           |
+| `vue.text[ value=<expr>] @s:e`                                                          | Vue `v-text`; omitted value means shipped `textContent: undefined`         |
+| `vue.cloak @s:e`                                                                        | Vue `v-cloak`; presence marker, DOM props stay inert                       |
 | `attr <name>[=<quoted>] @s:e`                                                           | bare name for boolean attributes                                           |
 
 **Expression payloads** (P2-5b): every expression position serializes as
