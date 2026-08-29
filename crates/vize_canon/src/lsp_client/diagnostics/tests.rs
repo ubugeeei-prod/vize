@@ -1,6 +1,7 @@
 use super::{CorsaError, corsa_diagnostics_error_is_unsupported, diagnostics_api_is_unsupported};
 use crate::{
-    file_uri::path_to_file_uri, lsp_client::CorsaProjectClient,
+    file_uri::{file_uri_to_path, path_to_file_uri},
+    lsp_client::CorsaProjectClient,
     lsp_client::lsp_transport_error_is_transient,
 };
 
@@ -91,4 +92,39 @@ fn virtual_vue_overlay_diagnostics_force_materialized_project_config() {
             &missing_backing_uri
         )
     );
+}
+
+#[test]
+fn virtual_vue_overlay_diagnostics_materializes_for_lsp_fallback() {
+    let project = tempfile::tempdir().unwrap();
+    let project_root = project.path().join("workspace");
+    let src = project_root.join("src");
+    std::fs::create_dir_all(&src).unwrap();
+    std::fs::write(project_root.join("tsconfig.json"), "{}").unwrap();
+    std::fs::write(src.join("App.vue"), "<template><div /></template>").unwrap();
+
+    let virtual_uri = path_to_file_uri(&src.join("App.vue.ts"));
+    let mut client = CorsaProjectClient::empty_for_test(project_root.clone());
+    client
+        .document_texts
+        .insert(virtual_uri.clone(), "export {};".into());
+
+    super::virtual_overlay_diagnostics::ensure_materialized_project(
+        &mut client,
+        std::iter::once(virtual_uri.as_str()),
+    )
+    .unwrap();
+
+    assert!(client.materialized_project_session);
+    let document_uri = client.session_document_uri(virtual_uri.as_str());
+    assert_ne!(document_uri, virtual_uri);
+    let document_path = file_uri_to_path(document_uri.as_str()).unwrap();
+    assert_eq!(
+        std::fs::read_to_string(document_path).unwrap(),
+        "export {};"
+    );
+
+    let generated_config = project_root.join("node_modules/.vize/corsa-overlay/tsconfig.json");
+    let config = std::fs::read_to_string(generated_config).unwrap();
+    assert!(config.contains("\"allowImportingTsExtensions\":true"));
 }
