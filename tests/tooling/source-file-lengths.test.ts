@@ -193,6 +193,38 @@ test("source length script accepts unchanged over-limit files", () => {
   assert.match(result.stdout, /No new or grown files exceed 350 lines/);
 });
 
+test("source length script ignores package manifests", () => {
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-source-lengths-package-"));
+  const packagePath = path.join(cwd, "package.json");
+  const nestedPackagePath = path.join(cwd, "packages", "ui", "package.json");
+  fs.mkdirSync(path.dirname(nestedPackagePath), { recursive: true });
+  runGit(cwd, ["init", "-q"]);
+  writeLines(packagePath, 351);
+  writeLines(nestedPackagePath, 351);
+  runGit(cwd, ["add", "package.json", "packages/ui/package.json"]);
+  runGit(cwd, [
+    "-c",
+    "user.name=Vize",
+    "-c",
+    "user.email=vize@example.com",
+    "commit",
+    "-qm",
+    "base",
+  ]);
+  const baseRef = runGit(cwd, ["rev-parse", "HEAD"]);
+
+  writeLines(packagePath, 352);
+  writeLines(nestedPackagePath, 352);
+  const result = runMoonScript(
+    "source_file_lengths",
+    ["--check", "--base-ref", baseRef, "--max-lines", "350", "--limit", "5"],
+    { cwd },
+  );
+
+  assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+  assert.match(result.stdout, /No new or grown files exceed 350 lines/);
+});
+
 test("source length script compares renamed over-limit files to their base path", () => {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-source-lengths-rename-"));
   const filePath = path.join(cwd, "large.ts");

@@ -62,7 +62,7 @@ fn is_excluded_path(path : String) -> Bool {
   (path.has_prefix("bench/results/") ||
   path == "npm/cli/schemas/vize.config.schema.json" ||
   path == "npm/cli/src/types/generated.ts" || path == "davinci-road/plan/croquis-consumption.md" || path == "davinci-road/plan/corpus-coverage.md" ||
-  path == "editors/vscode/package.json" || path == ".github/workflows/release.yml") ||
+  (path == "package.json" || path.has_suffix("/package.json")) || path == ".github/workflows/release.yml") ||
   path.has_prefix("docs/content/ja/") || path.has_prefix("docs/content/zh-CN/") ||
   path.has_prefix("docs/content/pt-BR/") || path.has_prefix("docs/content/fr/") ||
   path.contains(".min.") ||
