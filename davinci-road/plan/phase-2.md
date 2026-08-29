@@ -85,20 +85,20 @@ counts or fixture availability changes.
   [evidence index](./phase-2-records.md#current-completion-evidence-2026-08-29);
   review-only evidence is labeled there rather than presented as executable.
 - **Active and blocked: 2 of 22 — P2-9 and P2-11.** P2-9 still needs a
-  hydrated full-corpus residual remeasurement; P2-11 has 39 landed
+  hydrated full-corpus residual remeasurement; P2-11 has 40 landed
   installments through
-  [#5212](https://github.com/ubugeeei-prod/vize/pull/5212), including
+  [#5214](https://github.com/ubugeeei-prod/vize/pull/5214), including
   `v-show` runtime directives, `v-html` raw HTML props, and `v-text`
   text-content props, plus `v-cloak` DOM cloak markers and object
   `v-bind` / `v-on` modifiers, but the
   slot outlet `v-on` prop surface and spread-order shape are now covered
   by S2-vs-shipped witnesses. The late directive and object-spread
   patch-flag shapes now have an explicit per-node S2-vs-shipped witness,
-  but the
-  published dependency decision,
-  full-corpus exact comparison count, remaining
-  patch-flag equivalence program and DOM allocation budget remain open. The
-  old DOM lane is still the shipped compiler path.
+  and the publish graph firewall now rejects accidental release-graph edges
+  from published crates into unpublished Davinci stage crates. The
+  full-corpus exact comparison count, remaining patch-flag equivalence program
+  and DOM allocation budget remain open. The old DOM lane is still the shipped
+  compiler path.
 - **Untouched and dependency-blocked: 4 of 22 — P2-12b, P2-16, P2-17 and
   P2-20.** P2-12b depends on P2-12a, P2-11 and P2-3; P2-16 depends on P2-11;
   P2-17 depends on P2-11, P2-12b and P2-13; P2-20 depends on all of P2-1
@@ -138,13 +138,16 @@ release gate rejected it**, correctly:
 published crate carrying an unresolvable dependency cannot be published at all.
 
 This is **not** a packaging detail to work around. It is a hard precondition on
-the strangler plan: **P2-11 cannot move the DOM backend onto S2 while the
-Davinci crates are unpublished**, because `vize_atelier_dom` is published and
-would have to depend on `vize_davinci` and `vize_disegno` at runtime, not just
-in tests. The options — publish the Davinci crates (and accept semver gating on
-an IR still in flux), fold them into an already-published crate, or gate the S2
-path behind a feature whose dependencies are optional — are a program decision,
-and P2-11's contract does not currently name it.
+the strangler plan: **P2-11 cannot move the published DOM release graph onto
+unpublished stage crates accidentally**, because `vize_atelier_dom` is published
+and a normal runtime dependency on `vize_davinci` or `vize_s2` would be
+unresolvable at release. The current P2-11 decision is a firewall, not a
+rollout: stage crates remain unpublished while S2 DOM witnesses enter published
+crates only as stripped dev-dependencies, and
+`tests/tooling/davinci-stage-dependencies.test.ts` fails if a publishable crate
+adds an unstripped Davinci stage edge. Publishing or folding the stage crates is
+therefore a deliberate later switch, not an accidental by-product of an emit
+installment.
 
 Meanwhile the plans live in `vize_davinci` and the backends read them from
 their **dev-dependencies** — the same shape `davinci_harness` already uses to

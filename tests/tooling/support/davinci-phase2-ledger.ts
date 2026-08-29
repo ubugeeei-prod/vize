@@ -26,14 +26,14 @@ export function assertCurrentP2_11Installment(source: string, label: string): vo
   const record = currentP2_11InstallmentRecord(source, label);
   assert.ok(
     [
-      /39 (?:landed\s+)?installments/iu,
-      /through installment 39/iu,
-      /installment 39/iu,
-      /^\| 39\s+\|/imu,
+      /40 (?:landed\s+)?installments/iu,
+      /through installment 40/iu,
+      /installment 40/iu,
+      /^\| 40\s+\|/imu,
     ].some((marker) => marker.test(record)),
-    `${label} current record must cite installment 39`,
+    `${label} current record must cite installment 40`,
   );
-  assert.match(record, /#5212/u, `${label} current record must cite #5212`);
+  assert.match(record, /#5214/u, `${label} current record must cite #5214`);
   assert.doesNotMatch(record, /\bpending\b/iu, `${label} current record must not be pending`);
 }
 
@@ -58,7 +58,7 @@ function currentP2_11InstallmentRecord(source: string, label: string): string {
     case "records":
       return requiredLine(source, /^\| \[P2-11\][^\n]+$/mu, "P2-11 records index row");
     case "p2_11":
-      return requiredLine(source, /^\| 39\s+\|[^\n]+$/mu, "P2-11 installment 39 row");
+      return requiredLine(source, /^\| 40\s+\|[^\n]+$/mu, "P2-11 installment 40 row");
     default:
       throw new Error(`unknown P2-11 current evidence label: ${label}`);
   }
@@ -127,6 +127,11 @@ export function p2_11CurrentRecordEvidence(source: string): string {
       source,
       /^\| 39\s+\|[^\n]+#5212[^\n]+22674520f[^\n]+$/mu,
       "P2-11 installment 39 row",
+    ),
+    requiredLine(
+      source,
+      /^\| 40\s+\|[^\n]+#5214[^\n]+be344e787[^\n]+$/mu,
+      "P2-11 installment 40 row",
     ),
     requiredSection(
       source,
