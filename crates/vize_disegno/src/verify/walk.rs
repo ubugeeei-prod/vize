@@ -184,6 +184,9 @@ fn body(
             FolioBinding::VueText(text) => {
                 line_checks("vue.text", text.span, owner, out);
             }
+            FolioBinding::VueCloak(cloak) => {
+                line_checks("vue.cloak", cloak.span, owner, out);
+            }
         }
     }
     for child in children {

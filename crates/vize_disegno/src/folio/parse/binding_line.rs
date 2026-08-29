@@ -11,8 +11,8 @@ use vize_s0::{String, cstr};
 
 use super::super::owned::{
     FolioBind, FolioContract, FolioExpr, FolioModel, FolioName, FolioOn, FolioSlotContent,
-    FolioVueCssBind, FolioVueDirective, FolioVueHtml, FolioVueMemo, FolioVueOnce, FolioVueShow,
-    FolioVueSlotScope, FolioVueSync, FolioVueText,
+    FolioVueCloak, FolioVueCssBind, FolioVueDirective, FolioVueHtml, FolioVueMemo, FolioVueOnce,
+    FolioVueShow, FolioVueSlotScope, FolioVueSync, FolioVueText,
 };
 use super::expr_token::take_expr;
 use super::line::{Item, err, final_span, name_value, tail_span, take_quoted};
@@ -314,5 +314,11 @@ pub(super) fn text(rest: &str, line_no: usize) -> Result<Item, FolioError> {
     Ok(Item::VueText(FolioVueText {
         value: Some(value),
         span: tail_span(rest, line_no)?,
+    }))
+}
+
+pub(super) fn cloak(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+    Ok(Item::Cloak(FolioVueCloak {
+        span: final_span(rest, line_no)?,
     }))
 }

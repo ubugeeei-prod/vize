@@ -97,6 +97,7 @@ fn binding_contains_filter(binding: &BindingOp<'_>) -> bool {
         BindingOp::VueShow(show) => expr_contains_filter(&show.value),
         BindingOp::VueHtml(html) => html.value.as_ref().is_some_and(expr_contains_filter),
         BindingOp::VueText(text) => text.value.as_ref().is_some_and(expr_contains_filter),
+        BindingOp::VueCloak(_) => false,
     }
 }
 
@@ -171,6 +172,7 @@ fn rewrite_bindings<'a>(
                     rewrite_expr(allocator, value, filters);
                 }
             }
+            BindingOp::VueCloak(_) => {}
         }
     }
 }

@@ -90,7 +90,8 @@ fn is_key_bind(binding: &BindingOp<'_>) -> bool {
         | BindingOp::VueMemo(_)
         | BindingOp::VueShow(_)
         | BindingOp::VueHtml(_)
-        | BindingOp::VueText(_) => false,
+        | BindingOp::VueText(_)
+        | BindingOp::VueCloak(_) => false,
     }
 }
 
@@ -171,5 +172,6 @@ fn binding_span(binding: &BindingOp<'_>) -> Span {
         BindingOp::VueShow(show) => show.span,
         BindingOp::VueHtml(html) => html.span,
         BindingOp::VueText(text) => text.span,
+        BindingOp::VueCloak(cloak) => cloak.span,
     }
 }

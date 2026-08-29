@@ -37,9 +37,9 @@ mod print;
 pub use owned::{
     FolioAttribute, FolioBind, FolioBinding, FolioBranch, FolioComponent, FolioContract,
     FolioElement, FolioExpr, FolioFor, FolioForBinding, FolioIf, FolioInterpolation, FolioModel,
-    FolioName, FolioOn, FolioOp, FolioSlot, FolioSlotContent, FolioText, FolioVueCssBind,
-    FolioVueDirective, FolioVueHtml, FolioVueMemo, FolioVueOnce, FolioVueShow, FolioVueSlotScope,
-    FolioVueSync, FolioVueText,
+    FolioName, FolioOn, FolioOp, FolioSlot, FolioSlotContent, FolioText, FolioVueCloak,
+    FolioVueCssBind, FolioVueDirective, FolioVueHtml, FolioVueMemo, FolioVueOnce, FolioVueShow,
+    FolioVueSlotScope, FolioVueSync, FolioVueText,
 };
 
 /// Document model of an S2 op-tree dump.

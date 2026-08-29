@@ -19,7 +19,7 @@ mod binding;
 mod expr;
 
 pub use binding::{
-    FolioBind, FolioBinding, FolioModel, FolioOn, FolioSlotContent, FolioVueCssBind,
+    FolioBind, FolioBinding, FolioModel, FolioOn, FolioSlotContent, FolioVueCloak, FolioVueCssBind,
     FolioVueDirective, FolioVueHtml, FolioVueMemo, FolioVueOnce, FolioVueShow, FolioVueSlotScope,
     FolioVueSync, FolioVueText,
 };

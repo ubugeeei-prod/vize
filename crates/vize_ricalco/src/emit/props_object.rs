@@ -178,6 +178,7 @@ pub(super) fn pieces<'a>(
             BindingOp::VueOnce(_) => {}
             BindingOp::VueMemo(_) => {}
             BindingOp::VueShow(_) => {}
+            BindingOp::VueCloak(_) => {}
             _ => {
                 return Err(EmitError::unsupported_binding(
                     Reason::UnsupportedBindingKind,

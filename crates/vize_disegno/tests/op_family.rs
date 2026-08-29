@@ -12,8 +12,8 @@ use vize_s2::expr::{ExprRef, OpaqueExpr, OpaqueReason};
 use vize_s2::op::{
     Attribute, BindOp, BindingContract, BindingOp, ComponentOp, DynamicName, ElementOp, ForBinding,
     ForOp, IfBranch, IfOp, InterpolationOp, ModelOp, Namespace, OnOp, Op, Region, SlotContentOp,
-    SlotOp, TextOp, VueCssBindOp, VueDirectiveOp, VueHtmlOp, VueMemoOp, VueOnceOp, VueShowOp,
-    VueSlotScopeOp, VueSyncOp, VueTextOp,
+    SlotOp, TextOp, VueCloakOp, VueCssBindOp, VueDirectiveOp, VueHtmlOp, VueMemoOp, VueOnceOp,
+    VueShowOp, VueSlotScopeOp, VueSyncOp, VueTextOp,
 };
 
 /// The escape payload standing in for "some expression" wherever the op
@@ -56,6 +56,7 @@ fn binding_keyword(op: &BindingOp<'_>) -> &'static str {
         BindingOp::VueShow(_) => "vue.show",
         BindingOp::VueHtml(_) => "vue.html",
         BindingOp::VueText(_) => "vue.text",
+        BindingOp::VueCloak(_) => "vue.cloak",
     }
 }
 
@@ -261,6 +262,7 @@ fn every_binding<'a>(allocator: &'a Allocator) -> Vec<'a, BindingOp<'a>> {
                 },
                 &allocator,
             )),
+            BindingOp::VueCloak(Box::new_in(VueCloakOp { span }, &allocator)),
         ],
         &allocator,
     )
@@ -309,6 +311,7 @@ fn every_attached_op_variant_is_matched_without_a_wildcard() {
             "vue.show",
             "vue.html",
             "vue.text",
+            "vue.cloak",
         ]
     );
     for binding in &bindings {

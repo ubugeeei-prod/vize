@@ -185,7 +185,7 @@ pub(super) fn emit_call(
     let omit_text_only = hoist && block && flag == 1;
     let emit_flag = flag != 0 && !omit_text_only;
     let empty_runtime_for = for_item
-        && directive::has_runtime(&element.bindings)
+        && (directive::has_runtime(&element.bindings) || has_cloak(&element.bindings))
         && !has_binds
         && element.attributes.is_empty()
         && if_key.is_none();
@@ -261,6 +261,12 @@ fn has_prop_bindings(bindings: &[BindingOp<'_>]) -> bool {
                 | BindingOp::VueText(_)
         )
     })
+}
+
+fn has_cloak(bindings: &[BindingOp<'_>]) -> bool {
+    bindings
+        .iter()
+        .any(|binding| matches!(binding, BindingOp::VueCloak(_)))
 }
 
 fn emit_children(

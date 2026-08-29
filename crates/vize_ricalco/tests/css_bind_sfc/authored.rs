@@ -179,6 +179,9 @@ fn assert_bindings(source: &str, root: SourceRoot<'_>, bindings: &[BindingOp<'_>
                     assert_expr(source, root, value);
                 }
             }
+            BindingOp::VueCloak(cloak) => {
+                assert_span(source, root, cloak.span, "cloak");
+            }
         }
     }
 }

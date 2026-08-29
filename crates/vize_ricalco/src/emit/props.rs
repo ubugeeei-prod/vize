@@ -81,6 +81,7 @@ fn admit_bindings_inner(
             BindingOp::VueShow(show) => super::directive::admit_show(show)?,
             BindingOp::VueHtml(html) => super::html::admit(html)?,
             BindingOp::VueText(text) => super::vtext::admit(text)?,
+            BindingOp::VueCloak(_) => {}
             BindingOp::VueOnce(_) if allow_once => {}
             BindingOp::VueMemo(memo) => super::memo::admit(memo)?,
             _ => {

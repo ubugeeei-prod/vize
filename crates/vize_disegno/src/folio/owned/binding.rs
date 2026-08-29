@@ -41,6 +41,8 @@ pub enum FolioBinding {
     VueHtml(FolioVueHtml),
     /// `vue.text`.
     VueText(FolioVueText),
+    /// `vue.cloak`.
+    VueCloak(FolioVueCloak),
 }
 
 /// Mirror of [`crate::op::BindOp`].
@@ -186,6 +188,13 @@ pub struct FolioVueText {
     pub span: Span,
 }
 
+/// Mirror of [`crate::op::VueCloakOp`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FolioVueCloak {
+    /// Source range.
+    pub span: Span,
+}
+
 pub(super) fn own_binding(binding: &BindingOp<'_>) -> FolioBinding {
     match binding {
         BindingOp::Bind(bind) => FolioBinding::Bind(FolioBind {
@@ -254,6 +263,7 @@ pub(super) fn own_binding(binding: &BindingOp<'_>) -> FolioBinding {
             value: text.value.as_ref().map(own_expr),
             span: text.span,
         }),
+        BindingOp::VueCloak(cloak) => FolioBinding::VueCloak(FolioVueCloak { span: cloak.span }),
     }
 }
 

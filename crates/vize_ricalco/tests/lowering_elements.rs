@@ -274,18 +274,18 @@ fn ill_formed_v_once_spellings_still_defer() {
 
 #[test]
 fn an_unmappable_binding_defers_with_info_and_keeps_the_fragment() {
-    // `v-cloak` still has no S2 op: the element is kept, the deferral is
+    // `v-pre` still has no S2 op: the element is kept, the deferral is
     // an exact Info diagnostic — the input is not wrong, the stage is
     // younger than the construct.
-    let art = artifact("<p v-cloak>x</p>");
+    let art = artifact("<p v-pre>x</p>");
     assert_eq!(
         art.folio,
         "[disegno]\n\
          ops=2\n\
          \n\
          [disegno.ops]\n\
-         ui.element p @0:16\n\
-         \x20 ui.text \"x\" @11:12\n\
+         ui.element p @0:14\n\
+         \x20 ui.text \"x\" @9:10\n\
          \n"
     );
     assert_eq!(
@@ -293,8 +293,8 @@ fn an_unmappable_binding_defers_with_info_and_keeps_the_fragment() {
         vec![Diagnostic::new(
             Severity::Info,
             Stage::Semantic,
-            Span::new(3, 10),
-            "`v-cloak` has no S2 op; its behaviour is DOM realization and its op lands with the stage that reads it (P2-11)",
+            Span::new(3, 8),
+            "`v-pre` has no S2 representation; its subtree lowers as ordinary content",
         )]
     );
 }

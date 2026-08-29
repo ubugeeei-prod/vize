@@ -21,10 +21,10 @@
 //! `v-bind()` as [`BindingOp::VueCssBind`], Vue 2 `.sync` /
 //! `slot-scope` as [`BindingOp::VueSync`] / [`BindingOp::VueSlotScope`],
 //! Vue 2 pipe filters as [`crate::expr::ExprRef::Filter`], and
-//! `v-once` / `v-memo` / `v-show` / `v-html` / `v-text` as
+//! `v-once` / `v-memo` / `v-show` / `v-html` / `v-text` / `v-cloak` as
 //! [`BindingOp::VueOnce`] / [`BindingOp::VueMemo`] /
 //! [`BindingOp::VueShow`] / [`BindingOp::VueHtml`] /
-//! [`BindingOp::VueText`].
+//! [`BindingOp::VueText`] / [`BindingOp::VueCloak`].
 //!
 //! # `Drop`-free by construction
 //!
@@ -53,8 +53,8 @@ pub use model::{BindingContract, ModelOp};
 pub use slot::{DynamicName, SlotContentOp, SlotOp};
 pub use text::{InterpolationOp, TextOp};
 pub use vue::{
-    VueCssBindOp, VueDirectiveOp, VueHtmlOp, VueMemoOp, VueOnceOp, VueShowOp, VueSlotScopeOp,
-    VueSyncOp, VueTextOp,
+    VueCloakOp, VueCssBindOp, VueDirectiveOp, VueHtmlOp, VueMemoOp, VueOnceOp, VueShowOp,
+    VueSlotScopeOp, VueSyncOp, VueTextOp,
 };
 
 /// One S2 op standing in a region (a child position).
@@ -143,6 +143,8 @@ pub enum BindingOp<'a> {
     VueHtml(Box<'a, VueHtmlOp<'a>>),
     /// `vue.text` - Vue `v-text` text-content DOM prop.
     VueText(Box<'a, VueTextOp<'a>>),
+    /// `vue.cloak` - Vue `v-cloak` DOM cloak marker.
+    VueCloak(Box<'a, VueCloakOp>),
 }
 
 impl BindingOp<'_> {
@@ -164,6 +166,7 @@ impl BindingOp<'_> {
             Self::VueShow(_) => "vue.show",
             Self::VueHtml(_) => "vue.html",
             Self::VueText(_) => "vue.text",
+            Self::VueCloak(_) => "vue.cloak",
         }
     }
 }

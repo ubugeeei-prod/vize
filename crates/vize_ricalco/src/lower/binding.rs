@@ -6,16 +6,17 @@
 //!
 //! # Unmappable means diagnostic, never a new op
 //!
-//! `v-show`, `v-html` and `v-text` are P2-11 dialect ops (`vue.show`,
-//! `vue.html`, `vue.text`) because the DOM realization reads them directly.
-//! `v-cloak` and `v-pre` still have **no S2 op**, and forcing them into
+//! `v-show`, `v-html`, `v-text` and `v-cloak` are P2-11 dialect ops
+//! (`vue.show`, `vue.html`, `vue.text`, `vue.cloak`) because the DOM
+//! realization reads them directly. `v-pre` still has **no S2 op**, and
+//! forcing it into
 //! `vue.directive` would break its documented contract ("built-in
-//! directives never appear here"). Each is deferred: an `Info`
-//! diagnostic — the input is not wrong, the stage is younger than the
-//! construct — plus a provenance record naming the rule, with the owner
-//! op kept as the fragment. `v-once` and `v-memo` now have dialect ops;
-//! only ill-formed spellings still defer. The remaining set is still DOM
-//! realization (P2-11).
+//! directives never appear here"). It is deferred: an `Info` diagnostic —
+//! the input is not wrong, the stage is younger than the construct — plus
+//! a provenance record naming the rule, with the owner op kept as the
+//! fragment. `v-once`, `v-memo`, and the DOM directives now have dialect
+//! ops; only ill-formed spellings still defer. The remaining set is still
+//! DOM realization (P2-11).
 
 use alloc::vec::Vec as StdVec;
 
@@ -96,16 +97,7 @@ pub(crate) fn lower_attr<'a>(
             }
         }
         Head::Cloak => {
-            defer(
-                cx,
-                "defer.v-cloak",
-                attr_span(cx, attr),
-                attr_slice(cx, attr),
-                cstr!(
-                    "`{}` has no S2 op; its behaviour is DOM realization and its op lands with the stage that reads it (P2-11)",
-                    attr.name.text
-                ),
-            );
+            bindings.push(super::cloak::lower_cloak(cx, element, index, directive));
         }
         Head::If | Head::ElseIf | Head::Else | Head::For => {
             // The structural pass consumed the first of each; a duplicate

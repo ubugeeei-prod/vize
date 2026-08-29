@@ -269,6 +269,7 @@ fn binding_span(binding: &BindingOp<'_>) -> Span {
         BindingOp::VueShow(op) => op.span,
         BindingOp::VueHtml(op) => op.span,
         BindingOp::VueText(op) => op.span,
+        BindingOp::VueCloak(op) => op.span,
     }
 }
 

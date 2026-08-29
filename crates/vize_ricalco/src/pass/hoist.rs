@@ -55,10 +55,9 @@
 //!   comment-free tree and the differential lane counts the class
 //!   (`comments_elements`) instead of comparing it.
 //! - **Vue dialect builtins** (`v-once`, `v-memo`, `v-show`, `v-html`,
-//!   `v-text`) fail `hoistable_binding` like any non-`ui.bind`.
-//!   The still-deferred builtins (`v-cloak`, `v-pre`) leave the element
-//!   looking cleaner to S2 than to the legacy lane; counted
-//!   (`builtins_subtrees`).
+//!   `v-text`, `v-cloak`) fail `hoistable_binding` like any non-`ui.bind`.
+//!   The still-deferred builtin (`v-pre`) leaves the element looking
+//!   cleaner to S2 than to the legacy lane; counted (`builtins_subtrees`).
 //! - **The const rule** is deliberately weaker than the shipped
 //!   classifier's ([`consts::constant_for_hoist`]'s module docs — the
 //!   pessimal law's first real consumer lives there).

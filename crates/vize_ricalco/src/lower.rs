@@ -35,6 +35,7 @@ use vize_s2::scope::ScopeFacts;
 mod binding;
 mod bindop;
 mod caps;
+mod cloak;
 mod css;
 mod cx;
 mod directive;

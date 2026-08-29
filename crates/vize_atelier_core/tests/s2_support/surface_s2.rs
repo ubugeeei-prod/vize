@@ -130,7 +130,8 @@ pub fn surface_of(
             | FolioBinding::VueMemo(_)
             | FolioBinding::VueShow(_)
             | FolioBinding::VueHtml(_)
-            | FolioBinding::VueText(_) => {}
+            | FolioBinding::VueText(_)
+            | FolioBinding::VueCloak(_) => {}
             // Pre-pass only: the legacy pass desugars these before the
             // comparator runs. Arms exist so a missed desugar is a
             // surface mismatch, never a compile-time silence.

@@ -86,7 +86,10 @@ fn walk_admit(region: &Region<'_>) -> Result<(), EmitError> {
                 if element.bindings.iter().any(|binding| {
                     !matches!(
                         binding,
-                        BindingOp::SlotContent(_) | BindingOp::VueOnce(_) | BindingOp::VueMemo(_)
+                        BindingOp::SlotContent(_)
+                            | BindingOp::VueOnce(_)
+                            | BindingOp::VueMemo(_)
+                            | BindingOp::VueCloak(_)
                     )
                 }) {
                     return Err(EmitError::unsupported_at(

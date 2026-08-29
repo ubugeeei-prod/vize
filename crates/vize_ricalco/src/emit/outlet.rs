@@ -112,7 +112,7 @@ fn has_props(slot: &SlotOp<'_>) -> bool {
         || slot
             .bindings
             .iter()
-            .any(|binding| !matches!(binding, BindingOp::SlotContent(_)))
+            .any(|binding| !matches!(binding, BindingOp::SlotContent(_) | BindingOp::VueCloak(_)))
 }
 
 fn meaningful_fallback(region: &Region<'_>) -> bool {

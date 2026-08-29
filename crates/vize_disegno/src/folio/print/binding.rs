@@ -7,9 +7,9 @@
 use core::fmt::{Result, Write};
 
 use super::super::owned::{
-    FolioAttribute, FolioBind, FolioBinding, FolioOn, FolioSlotContent, FolioVueCssBind,
-    FolioVueDirective, FolioVueHtml, FolioVueMemo, FolioVueOnce, FolioVueShow, FolioVueSlotScope,
-    FolioVueSync, FolioVueText,
+    FolioAttribute, FolioBind, FolioBinding, FolioOn, FolioSlotContent, FolioVueCloak,
+    FolioVueCssBind, FolioVueDirective, FolioVueHtml, FolioVueMemo, FolioVueOnce, FolioVueShow,
+    FolioVueSlotScope, FolioVueSync, FolioVueText,
 };
 use super::{end_line, indent, print_expr, print_name, quoted};
 use vize_davinci::folio::FolioMode;
@@ -66,6 +66,7 @@ pub(super) fn print_binding<W: Write>(
         FolioBinding::VueShow(show) => print_show(w, show, depth, mode),
         FolioBinding::VueHtml(html) => print_html(w, html, depth, mode),
         FolioBinding::VueText(text) => print_vue_text(w, text, depth, mode),
+        FolioBinding::VueCloak(cloak) => print_cloak(w, cloak, depth, mode),
     }
 }
 
@@ -251,4 +252,15 @@ fn print_vue_text<W: Write>(
         print_expr(w, value, mode)?;
     }
     end_line(w, text.span, mode)
+}
+
+fn print_cloak<W: Write>(
+    w: &mut W,
+    cloak: &FolioVueCloak,
+    depth: usize,
+    mode: FolioMode,
+) -> Result {
+    indent(w, depth)?;
+    w.write_str("vue.cloak")?;
+    end_line(w, cloak.span, mode)
 }

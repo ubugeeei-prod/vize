@@ -197,6 +197,7 @@ fn emit_call(
             || slots::is_slots_spread(binding)
             || directive::is_runtime(binding)
             || super::memo::is_memo(binding)
+            || matches!(binding, BindingOp::VueCloak(_))
             || (skip_is && builtin::is_is_bind(binding)))
     });
     let has_attrs = component
