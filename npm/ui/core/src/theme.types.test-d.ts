@@ -4,7 +4,9 @@ import {
   setThemeTokens,
   themeCascadeLayerOrder,
   themeDensityScales,
+  themeTokenPackNames,
   themeTokens,
+  themeTokensForPack,
   themeTokenVar,
 } from "./theme.ts";
 import type {
@@ -14,6 +16,7 @@ import type {
   ThemePresetName,
   ThemeRadiusToken,
   ThemeSpaceToken,
+  ThemeTokenPackName,
   ThemeTokenName,
   ThemeZIndexToken,
 } from "./theme.ts";
@@ -42,6 +45,8 @@ export const layers: readonly ThemeZIndexToken[] = ["sticky", "dropdown", "overl
 export const reference: string = themeTokenVar("color-accent");
 export const typeReference: string = themeTokenVar("type-size-md");
 export const densityReference: string = themeTokenVar("density");
+export const colorPack: readonly ThemeTokenName[] = themeTokensForPack("color");
+export const packName: ThemeTokenPackName = "typography";
 
 type _TokenNamesAreClosed = Expect<
   Equal<
@@ -56,6 +61,22 @@ type _PresetNamesAreClosed = Expect<
   >
 >;
 type _DensityScalesAreClosed = Expect<Equal<ThemeDensityScale, "compact" | "comfortable">>;
+type _TokenPackNamesAreClosed = Expect<
+  Equal<
+    ThemeTokenPackName,
+    | "color"
+    | "typography"
+    | "space"
+    | "size"
+    | "radius"
+    | "border"
+    | "elevation"
+    | "opacity"
+    | "z-index"
+    | "focus"
+    | "density"
+  >
+>;
 type _LayerOrderIsLiteral = Expect<
   Equal<
     (typeof themeCascadeLayerOrder)[number],
@@ -74,6 +95,10 @@ themeTokenVar("color-bogus");
 themeTokens["color-canvas"] = "red";
 // @ts-expect-error the density record is readonly.
 themeDensityScales.compact = "0.5";
+// @ts-expect-error the token pack names are readonly.
+themeTokenPackNames[0] = "focus";
+// @ts-expect-error token pack names are closed.
+themeTokensForPack("paint");
 // @ts-expect-error the layer order is readonly.
 themeCascadeLayerOrder[0] = "vize.ui";
 // @ts-expect-error overrides only accept known token names.

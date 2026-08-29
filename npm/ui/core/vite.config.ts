@@ -30,6 +30,7 @@ export default defineConfig({
     entry: {
       index: "src/index.ts",
       theme: "src/theme.ts",
+      "theme-scope": "src/theme-scope.ts",
       announcer: "src/announcer.ts",
       button: "src/button.ts",
       checkbox: "src/checkbox.ts",

@@ -219,6 +219,11 @@
       "import": "./dist/theme.mjs",
       "default": "./dist/theme.mjs"
     },
+    "./theme-scope": {
+      "types": "./dist/theme-scope.d.mts",
+      "import": "./dist/theme-scope.mjs",
+      "default": "./dist/theme-scope.mjs"
+    },
     "./transition": {
       "types": "./dist/transition.d.mts",
       "import": "./dist/transition.mjs",

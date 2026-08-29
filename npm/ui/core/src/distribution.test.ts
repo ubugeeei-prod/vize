@@ -10,6 +10,7 @@ import { uiFamilyCatalog } from "./family-catalog.ts";
 const publicEntries = [
   ".",
   "./catalog",
+  "./theme-scope",
   ...uiFamilyCatalog.map((entry) => entry.packageSubpath),
 ] as const;
 

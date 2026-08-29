@@ -9,8 +9,10 @@ import {
   themeDensityScales,
   themePresetAttribute,
   themePresets,
+  themeTokenPackNames,
   themeTokenProperty,
   themeTokens,
+  themeTokensForPack,
   themeTokenVar,
 } from "./theme.ts";
 
@@ -106,4 +108,36 @@ test("scopes presets and densities in a mounted consumer", () => {
   restore();
   assert.equal(root.style.getPropertyValue("--vize-ui-space-md"), "");
   handle.unmount();
+});
+
+test("publishes independent token packs without gaps or overlap", () => {
+  assert.ok(Object.isFrozen(themeTokenPackNames));
+
+  const assigned = new Map<string, string>();
+  for (const pack of themeTokenPackNames) {
+    const tokens = themeTokensForPack(pack);
+    assert.ok(Object.isFrozen(tokens), `pack ${pack} must be immutable`);
+    assert.ok(tokens.length > 0, `pack ${pack} must publish at least one token`);
+    for (const token of tokens) {
+      assert.equal(assigned.get(token), undefined, `token ${token} must be in only one pack`);
+      assigned.set(token, pack);
+    }
+  }
+
+  assert.deepEqual([...assigned.keys()].sort(), Object.keys(themeTokens).sort());
+  assert.deepEqual(themeTokensForPack("color"), [
+    "color-canvas",
+    "color-surface",
+    "color-text",
+    "color-text-muted",
+    "color-accent",
+    "color-accent-contrast",
+    "color-border",
+    "color-danger",
+  ]);
+  assert.deepEqual(themeTokensForPack("density"), ["density"]);
+  assert.throws(
+    () => themeTokensForPack("paint" as Parameters<typeof themeTokensForPack>[0]),
+    /VIZE_UI_THEME_TOKEN/,
+  );
 });

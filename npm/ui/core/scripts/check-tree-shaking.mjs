@@ -155,3 +155,48 @@ for (const { canonicalName: family, bundleBudget } of treeShakingEntries) {
     );
   }
 }
+
+const utilityEntries = [
+  {
+    name: "theme-scope",
+    exportName: "createThemeBootstrapScript",
+    packageEntry: "@vizejs/ui/theme-scope",
+    retainedSignature: /VIZE_UI_THEME_SCOPE/,
+    maximumJavaScriptGzipBytes: 2_200,
+    maximumCssGzipBytes: 0,
+  },
+];
+
+for (const {
+  name,
+  exportName,
+  packageEntry,
+  retainedSignature,
+  maximumJavaScriptGzipBytes,
+  maximumCssGzipBytes,
+} of utilityEntries) {
+  const output = await bundleConsumer(consumerSource(exportName, packageEntry));
+  assert.match(output.javascript, retainedSignature, `${name} was eliminated from its bundle`);
+
+  console.log(
+    JSON.stringify({
+      check: "@vizejs/ui utility tree shaking",
+      entry: name,
+      javascriptBytes: output.javascriptBytes,
+      javascriptGzipBytes: output.javascriptGzipBytes,
+      maximumJavaScriptGzipBytes,
+      cssBytes: output.cssBytes,
+      cssGzipBytes: output.cssGzipBytes,
+      maximumCssGzipBytes,
+    }),
+  );
+
+  assert.ok(
+    output.javascriptGzipBytes <= maximumJavaScriptGzipBytes,
+    `${name} JavaScript is ${output.javascriptGzipBytes} gzip bytes; budget is ${maximumJavaScriptGzipBytes}`,
+  );
+  assert.ok(
+    output.cssGzipBytes <= maximumCssGzipBytes,
+    `${name} CSS is ${output.cssGzipBytes} gzip bytes; budget is ${maximumCssGzipBytes}`,
+  );
+}

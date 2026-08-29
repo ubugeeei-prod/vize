@@ -1,42 +1,28 @@
-import type {
-  ThemeDensityScale,
-  ThemePresetName,
-  ThemeTokenName,
-  ThemeTokenOverrides,
-} from "./theme-types.ts";
+import type { ThemeTokenPackName, ThemeTokenName, ThemeTokenOverrides } from "./theme-types.ts";
+export {
+  themeCascadeLayerOrder,
+  themeDensityAttribute,
+  themeDensityScales,
+  themePresetAttribute,
+  themePresets,
+} from "./theme-constants.ts";
 
 const invalidTokenDiagnostic = "VIZE_UI_THEME_TOKEN";
 
-/** Cascade layers shipped by the package, in ascending priority order. */
-export const themeCascadeLayerOrder = Object.freeze([
-  "vize.tokens",
-  "vize.ui",
-  "vize.preset",
-  "vize.policy",
-] as const);
-
-/** Attribute whose space-separated values opt a subtree into presets. */
-export const themePresetAttribute = "data-vize-theme";
-
-/** Attribute that retunes the density factor for a subtree. */
-export const themeDensityAttribute = "data-vize-density";
-
-/** Presets shipped in `@layer vize.preset`, ordered from least to most opinionated. */
-export const themePresets: readonly ThemePresetName[] = Object.freeze([
-  "headless",
-  "atelier",
-  "midnight",
-  "paper",
-  "play",
-  "signal",
-  "high-contrast",
+/** Independent token packs that can be composed with any preset. */
+export const themeTokenPackNames: readonly ThemeTokenPackName[] = Object.freeze([
+  "color",
+  "typography",
+  "space",
+  "size",
+  "radius",
+  "border",
+  "elevation",
+  "opacity",
+  "z-index",
+  "focus",
+  "density",
 ]);
-
-/** Density factors mirrored from the `data-vize-density` scopes in `theme.css`. */
-export const themeDensityScales: Readonly<Record<ThemeDensityScale, string>> = Object.freeze({
-  compact: "0.85",
-  comfortable: "1.15",
-});
 
 /**
  * Semantic token contract mirrored from `theme.css`.
@@ -106,6 +92,12 @@ function assertTokenName(name: string): void {
   }
 }
 
+function assertTokenPackName(name: string): asserts name is ThemeTokenPackName {
+  if (!themeTokenPackNames.includes(name as ThemeTokenPackName)) {
+    throw new TypeError(`${invalidTokenDiagnostic}: unknown theme token pack "${name}"`);
+  }
+}
+
 /** Custom-property name (`--vize-ui-*`) for one theme token. */
 export function themeTokenProperty(name: ThemeTokenName): string {
   assertTokenName(name);
@@ -115,6 +107,18 @@ export function themeTokenProperty(name: ThemeTokenName): string {
 /** `var()` reference to one theme token for imperative style composition. */
 export function themeTokenVar(name: ThemeTokenName): string {
   return `var(${themeTokenProperty(name)})`;
+}
+
+/** Tokens in one independent token pack, derived from the shared token mirror. */
+export function themeTokensForPack(pack: ThemeTokenPackName): readonly ThemeTokenName[] {
+  assertTokenPackName(pack);
+  const prefix = pack === "typography" ? "type" : pack === "z-index" ? "z" : pack;
+
+  return Object.freeze(
+    (Object.keys(themeTokens) as ThemeTokenName[]).filter(
+      (token) => token === prefix || token.startsWith(`${prefix}-`),
+    ),
+  );
 }
 
 /**
