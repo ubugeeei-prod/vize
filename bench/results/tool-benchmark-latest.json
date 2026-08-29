@@ -127,6 +127,7 @@
       "vizeSingleId": "vize-native-1t",
       "vizeMaxId": "vize-native-max",
       "primarySpeedup": 52.103938275542596,
+      "speedupBaselineId": "vue-compiler-sfc-1t",
       "speedupStatus": "ranked",
       "engineClassRanking": null
     },
@@ -190,6 +191,7 @@
       "vizeSingleId": "vize-native-1t",
       "vizeMaxId": "vize-native-max",
       "primarySpeedup": 3.074218569291739,
+      "speedupBaselineId": "vue-compiler-sfc-1t",
       "speedupStatus": "ranked",
       "engineClassRanking": null
     },
@@ -233,6 +235,7 @@
         "vize-check-max": "tsgo-native"
       },
       "primarySpeedup": null,
+      "speedupBaselineId": null,
       "speedupStatus": "cross-engine",
       "engineClassRanking": [
         {
@@ -306,6 +309,7 @@
       "vizeSingleId": "vize-lint-1t",
       "vizeMaxId": "vize-lint-max",
       "primarySpeedup": 172.99545009573887,
+      "speedupBaselineId": "eslint-plugin-vue-1t",
       "speedupStatus": "ranked",
       "engineClassRanking": null
     },
@@ -341,6 +345,7 @@
       "vizeSingleId": "vize-fmt-1t",
       "vizeMaxId": "vize-fmt-max",
       "primarySpeedup": 50.64103921302919,
+      "speedupBaselineId": "prettier-cli",
       "speedupStatus": "ranked",
       "engineClassRanking": null
     },
@@ -384,6 +389,7 @@
         "vize-check-max": "tsgo-native"
       },
       "primarySpeedup": null,
+      "speedupBaselineId": null,
       "speedupStatus": "cross-engine",
       "engineClassRanking": [
         {
@@ -443,6 +449,7 @@
       "vizeSingleId": null,
       "vizeMaxId": "vize-vite-plugin",
       "primarySpeedup": 2.7098342488957843,
+      "speedupBaselineId": "vite-plugin-vue",
       "speedupStatus": "ranked",
       "engineClassRanking": null
     },
@@ -471,6 +478,7 @@
       "vizeSingleId": null,
       "vizeMaxId": "vize-nuxt",
       "primarySpeedup": 1.0358308655780617,
+      "speedupBaselineId": "nuxt-default",
       "speedupStatus": "ranked",
       "engineClassRanking": null
     }

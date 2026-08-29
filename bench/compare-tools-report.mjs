@@ -1,13 +1,19 @@
 /**
  * Reporting half of the tool comparison benchmark (bench/compare-tools.mjs).
  *
- * Engine classes are ranked separately (#3283). A surface whose incumbent tool
- * and Vize lane run on different underlying engines — `vue-tsc` on the
- * JavaScript TypeScript compiler versus `vize check` on native tsgo/Corsa —
- * must not publish a single ratio: that ratio measures TypeScript's Go rewrite
- * as much as the Vue layer. Such surfaces publish `speedup: null` with
- * `speedupStatus: "cross-engine"` and are ranked within each engine class
- * instead, mirroring bench/check-gate-report.mjs.
+ * Engine classes are ranked separately (#3283). A surface whose declared
+ * incumbent and Vize lane run on different underlying engines — `vue-tsc` on
+ * the JavaScript TypeScript compiler versus `vize check` on native tsgo/Corsa
+ * — must not publish a ratio between those two rows: it would measure
+ * TypeScript's Go rewrite as much as the Vue layer.
+ *
+ * It may still publish a ratio, as long as both sides run the same engine.
+ * `IN_CLASS_BASELINES_BY_SURFACE` names the incumbents that do (#4670 added
+ * them as measured rows), and `createSurface` retargets the published ratio at
+ * the first of them that was measured, leaving the declared incumbent as a
+ * same-run reference timing ranked inside its own engine class. Only when no
+ * such incumbent ran does a cross-engine surface fall back to publishing no
+ * ratio at all (`speedupStatus: "cross-engine"`).
  */
 
 import { ENGINE_CLASSES } from "./check-gate-report.mjs";
@@ -40,6 +46,19 @@ export const ENGINE_CLASSES_BY_SURFACE = {
   },
 };
 
+/**
+ * Incumbent rows a cross-engine surface may publish a ratio against, in
+ * preference order. `verter-tsc` is the direct analogue of the declared
+ * incumbent — a Vue type checker over the same tsconfig — differing only in
+ * that it drives the same native tsgo binary Vize does, so the ratio is the
+ * Vue layer alone. Golar's typecheck command is the fallback when verter-tsc
+ * did not resolve. Same keys as `ENGINE_CLASSES_BY_SURFACE`.
+ */
+export const IN_CLASS_BASELINES_BY_SURFACE = {
+  check: ["verter-tsc", "golar-typecheck"],
+  "large-check": ["verter-tsc", "golar-typecheck"],
+};
+
 export function formatSpeedup(value) {
   if (!Number.isFinite(value)) {
     return "n/a";
@@ -56,6 +75,28 @@ export function getVariant(surface, id) {
 
 function engineClassOf(surface, id) {
   return surface.engineClasses?.[id] ?? null;
+}
+
+/**
+ * Pick the row the published ratio is measured against. Same-engine surfaces
+ * keep their declared incumbent; a cross-engine surface takes the first
+ * measured in-class incumbent and publishes nothing when there is none.
+ */
+function resolveSpeedupBaseline(surface) {
+  const vizeMaxClass = engineClassOf(surface, surface.vizeMaxId);
+  const declaredClass = engineClassOf(surface, surface.baselineId);
+  const crossEngine =
+    declaredClass != null && vizeMaxClass != null && declaredClass !== vizeMaxClass;
+  if (!crossEngine) {
+    return { crossEngine, inClass: false, baseline: getVariant(surface, surface.baselineId) };
+  }
+  for (const id of IN_CLASS_BASELINES_BY_SURFACE[surface.id] ?? []) {
+    const variant = getVariant(surface, id);
+    if (variant != null && variant.medianMs > 0 && engineClassOf(surface, id) === vizeMaxClass) {
+      return { crossEngine, inClass: true, baseline: variant };
+    }
+  }
+  return { crossEngine, inClass: false, baseline: null };
 }
 
 /**
@@ -103,20 +144,26 @@ export function rankWithinEngineClasses(surface) {
  * Attach the primary speedup, refusing to compute one across engine classes.
  */
 export function createSurface(surface) {
-  const baseline = getVariant(surface, surface.baselineId);
   const vizeMax = getVariant(surface, surface.vizeMaxId);
-  const baselineClass = engineClassOf(surface, surface.baselineId);
-  const vizeMaxClass = engineClassOf(surface, surface.vizeMaxId);
-  const crossEngine =
-    baselineClass != null && vizeMaxClass != null && baselineClass !== vizeMaxClass;
-  const comparable = baseline != null && vizeMax != null && vizeMax.medianMs > 0;
+  const comparable = vizeMax != null && vizeMax.medianMs > 0;
+  const { crossEngine, inClass, baseline } = resolveSpeedupBaseline(surface);
+  const ranked = comparable && baseline != null;
+  let speedupStatus = "unavailable";
+  if (ranked) {
+    speedupStatus = inClass ? "in-class" : "ranked";
+  } else if (crossEngine && comparable) {
+    speedupStatus = "cross-engine";
+  }
 
   return {
     ...surface,
     // `null`, not NaN: NaN serialises to `null` in the JSON artifact anyway, so
     // the in-memory value must say the same thing the artifact says.
-    primarySpeedup: crossEngine || !comparable ? null : baseline.medianMs / vizeMax.medianMs,
-    speedupStatus: crossEngine ? "cross-engine" : comparable ? "ranked" : "unavailable",
+    primarySpeedup: ranked ? baseline.medianMs / vizeMax.medianMs : null,
+    // The row the ratio is against, so a reader never has to infer whether it
+    // came from the declared incumbent or from the in-class one.
+    speedupBaselineId: ranked ? baseline.id : null,
+    speedupStatus,
     engineClassRanking: rankWithinEngineClasses(surface),
   };
 }
@@ -128,10 +175,25 @@ function surfaceSpeedupCell(surface) {
 }
 
 export function renderSurfaceTable(surface, formatMs) {
-  const baseline = getVariant(surface, surface.baselineId);
+  // The ratio and the two medians beside it must be the same comparison, so
+  // the row follows the published baseline rather than the declared one.
+  const baseline = getVariant(surface, surface.speedupBaselineId ?? surface.baselineId);
   const vizeSingle = getVariant(surface, surface.vizeSingleId);
   const vizeMax = getVariant(surface, surface.vizeMaxId);
   return `| ${surface.label} | ${surface.files.toLocaleString()} | ${baseline?.label ?? "n/a"} | ${formatMs(baseline?.medianMs)} | ${vizeSingle ? formatMs(vizeSingle.medianMs) : "n/a"} | ${formatMs(vizeMax?.medianMs)} | ${surfaceSpeedupCell(surface)} |`;
+}
+
+/**
+ * The sentence under a cross-engine surface's ranking: either why the ratio
+ * above it is safe, or why there is no ratio at all.
+ */
+function engineClassNote(surface) {
+  const declared = getVariant(surface, surface.baselineId);
+  const published = getVariant(surface, surface.speedupBaselineId);
+  if (published == null) {
+    return `No cross-class ratio is published for ${surface.label}: the incumbent runs the JavaScript TypeScript compiler while Vize runs native tsgo, so a single number would credit TypeScript's Go rewrite to the Vue layer.`;
+  }
+  return `The ${surface.label} ratio compares Vize with ${published.label}, the incumbent that runs the same native tsgo engine, so it is the Vue layer alone. ${declared?.label ?? "The JavaScript-engine incumbent"} is listed above as a same-run reference timing and never as a ratio: it drives the JavaScript TypeScript compiler, so a single number against it would credit TypeScript's Go rewrite to the Vue layer.`;
 }
 
 export function renderEngineClassSections(surfaces, formatMs) {
@@ -152,9 +214,7 @@ export function renderEngineClassSections(surfaces, formatMs) {
       }
     }
     lines.push("");
-    lines.push(
-      `No cross-class ratio is published for ${surface.label}: the incumbent runs the JavaScript TypeScript compiler while Vize runs native tsgo, so a single number would credit TypeScript's Go rewrite to the Vue layer.`,
-    );
+    lines.push(engineClassNote(surface));
     lines.push("");
   }
   return lines;

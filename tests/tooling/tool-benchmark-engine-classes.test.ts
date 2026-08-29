@@ -2,11 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { buildFairnessNotes } from "../../bench/benchmark-notes.mjs";
-import {
-  CROSS_ENGINE_CELL,
-  createSurface,
-  rankWithinEngineClasses,
-} from "../../bench/compare-tools-report.mjs";
+import { createSurface, rankWithinEngineClasses } from "../../bench/compare-tools-report.mjs";
 import { renderMarkdown } from "../../bench/compare-tools.mjs";
 
 const CHECK_VARIANTS = [
@@ -72,7 +68,7 @@ function checkSurfaceInput(overrides: Record<string, unknown> = {}) {
   };
 }
 
-test("a cross-engine surface publishes no primary speedup", () => {
+test("a cross-engine surface publishes the ratio against its same-engine incumbent", () => {
   const surface = createSurface(checkSurfaceInput());
 
   assert.deepEqual(surface, {
@@ -85,8 +81,10 @@ test("a cross-engine surface publishes no primary speedup", () => {
     vizeMaxId: "vize-check-max",
     engineClasses: CHECK_ENGINE_CLASSES,
     variants: CHECK_VARIANTS,
-    primarySpeedup: null,
-    speedupStatus: "cross-engine",
+    // verter-tsc, not vue-tsc: 1000ms / 500ms of the one native engine.
+    primarySpeedup: 2,
+    speedupBaselineId: "verter-tsc",
+    speedupStatus: "in-class",
     engineClassRanking: [
       {
         engineClass: "typescript-js",
@@ -133,6 +131,19 @@ test("a cross-engine surface publishes no primary speedup", () => {
   });
 });
 
+test("a cross-engine surface with no same-engine incumbent still publishes nothing", () => {
+  const nativeIncumbents = ["verter-tsc", "golar-typecheck", "golar-default"];
+  const surface = createSurface(
+    checkSurfaceInput({
+      variants: CHECK_VARIANTS.filter((variant) => !nativeIncumbents.includes(variant.id)),
+    }),
+  );
+
+  assert.equal(surface.primarySpeedup, null);
+  assert.equal(surface.speedupBaselineId, null);
+  assert.equal(surface.speedupStatus, "cross-engine");
+});
+
 test("a same-engine surface keeps its ranked primary speedup", () => {
   const surface = createSurface({
     id: "fmt",
@@ -156,6 +167,7 @@ test("a same-engine surface keeps its ranked primary speedup", () => {
   });
 
   assert.equal(surface.primarySpeedup, 20);
+  assert.equal(surface.speedupBaselineId, "prettier-cli");
   assert.equal(surface.speedupStatus, "ranked");
   assert.equal(surface.engineClassRanking, null);
 });
@@ -200,7 +212,7 @@ test("every variant of a class-declaring surface must carry an engine class", ()
   );
 });
 
-test("the type-check summary renders separate engine classes and no cross ratio", () => {
+test("the type-check summary ranks engine classes and rates the in-class one", () => {
   const surface = createSurface(checkSurfaceInput());
   const markdown = renderMarkdown({
     schemaVersion: 1,
@@ -273,7 +285,7 @@ test("the type-check summary renders separate engine classes and no cross ratio"
     "",
     "| Surface | Files | Existing tool | Existing median | Vize 1T | Vize max | Speedup |",
     "| --- | ---: | --- | ---: | ---: | ---: | ---: |",
-    `| Type check | 500 | vue-tsc | 8.00s | 2.00s | 500.0ms | ${CROSS_ENGINE_CELL} |`,
+    "| Type check | 500 | verter-tsc | 1.00s | 2.00s | 500.0ms | 2.0x |",
     "",
     "#### Type check — engine classes ranked separately",
     "",
@@ -286,7 +298,7 @@ test("the type-check summary renders separate engine classes and no cross ratio"
     "| native TypeScript engine (tsgo) | Vize check (1T) | 2.00s | 4.00x |",
     "| native TypeScript engine (tsgo) | Golar (lint+check) | 2.50s | 5.00x |",
     "",
-    "No cross-class ratio is published for Type check: the incumbent runs the JavaScript TypeScript compiler while Vize runs native tsgo, so a single number would credit TypeScript's Go rewrite to the Vue layer.",
+    "The Type check ratio compares Vize with verter-tsc, the incumbent that runs the same native tsgo engine, so it is the Vue layer alone. vue-tsc is listed above as a same-run reference timing and never as a ratio: it drives the JavaScript TypeScript compiler, so a single number against it would credit TypeScript's Go rewrite to the Vue layer.",
     "",
     "Fairness notes:",
     "- only note",
@@ -319,11 +331,11 @@ test("the type-check summary renders separate engine classes and no cross ratio"
   ]);
 });
 
-test("the fairness notes state that no cross-engine ratio is published", () => {
+test("the fairness notes name the incumbent the published ratio is measured against", () => {
   assert.deepEqual(
     buildFairnessNotes(500).filter((note) => note.startsWith("Type-check rows")),
     [
-      "Type-check rows span two TypeScript engines: vue-tsc runs the JavaScript compiler while Vize check runs native tsgo (Corsa). No cross-engine ratio is published for that surface — it is ranked within each engine class instead, so TypeScript's Go rewrite is never credited to the Vue layer; bench/check-gate.mjs publishes the same per-engine-class split with planted-diagnostic gating.",
+      "Type-check rows span two TypeScript engines: vue-tsc runs the JavaScript compiler while Vize check runs native tsgo (Corsa). Their ratio is never published — it would credit TypeScript's Go rewrite to the Vue layer. The published type-check speedup is measured against verter-tsc instead, the incumbent Vue type checker that drives the same native tsgo binary, so it is the Vue layer alone; vue-tsc stays in the table as a same-run reference timing ranked inside its own engine class, and a run where no same-engine incumbent resolves publishes no ratio at all. bench/check-gate.mjs publishes the same per-engine-class split with planted-diagnostic gating.",
     ],
   );
 });

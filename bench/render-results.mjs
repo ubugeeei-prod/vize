@@ -48,6 +48,7 @@ export function rerenderData(data) {
       // generator cannot survive into the re-rendered artifact.
       const recorded = { ...surface };
       delete recorded.primarySpeedup;
+      delete recorded.speedupBaselineId;
       delete recorded.speedupStatus;
       delete recorded.engineClassRanking;
       return createSurface(engineClasses ? { ...recorded, engineClasses } : recorded);

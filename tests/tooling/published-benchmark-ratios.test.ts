@@ -12,7 +12,10 @@ const resultsPath = path.join(root, "bench/results/tool-benchmark-latest.json");
 type Surface = {
   id: string;
   label: string;
+  baselineId: string;
+  vizeMaxId: string;
   primarySpeedup: number | null;
+  speedupBaselineId: string | null;
   speedupStatus: string;
   engineClasses?: Record<string, string>;
   variants: { id: string }[];
@@ -44,29 +47,70 @@ function speedupCell(file: string, rowLabel: string): string {
   return cells[cells.length - 1];
 }
 
-// One entry per published table row that compares a JS TypeScript engine
-// against the native one. Adding a locale means adding it here.
-const CROSS_ENGINE_ROWS: [file: string, rowLabel: string][] = [
-  ["README.md", "| Type check "],
-  ["docs/content/architecture/performance-blacksmith.md", "| Large SFC type check "],
-  ["docs/content/architecture/performance-blacksmith.md", "| Type check "],
-  ["docs/content/ja/architecture/performance-blacksmith.md", "| 大型SFCタイプチェック "],
-  ["docs/content/ja/architecture/performance-blacksmith.md", "| タイプチェック "],
-  ["docs/content/zh-CN/architecture/performance-blacksmith.md", "|大型SFC类型检查"],
-  ["docs/content/zh-CN/architecture/performance-blacksmith.md", "|类型检查 "],
+// One entry per published table row for a surface that spans engine classes,
+// and the snapshot surface it is rendered from. Adding a locale means adding
+// it here.
+const TYPE_CHECK_ROWS: [file: string, rowLabel: string, surfaceId: string][] = [
+  ["README.md", "| Type check ", "check"],
+  ["docs/content/architecture/performance-blacksmith.md", "| Large SFC type check ", "large-check"],
+  ["docs/content/architecture/performance-blacksmith.md", "| Type check ", "check"],
+  [
+    "docs/content/ja/architecture/performance-blacksmith.md",
+    "| 大型SFCタイプチェック ",
+    "large-check",
+  ],
+  ["docs/content/ja/architecture/performance-blacksmith.md", "| タイプチェック ", "check"],
+  ["docs/content/zh-CN/architecture/performance-blacksmith.md", "|大型SFC类型检查", "large-check"],
+  ["docs/content/zh-CN/architecture/performance-blacksmith.md", "|类型检查 ", "check"],
   [
     "docs/content/pt-BR/architecture/performance-blacksmith.md",
     "| Verificação grande do tipo SFC ",
+    "large-check",
   ],
-  ["docs/content/pt-BR/architecture/performance-blacksmith.md", "| Verificação de tipo "],
-  ["docs/content/fr/architecture/performance-blacksmith.md", "| Contrôle de type grand SFC "],
-  ["docs/content/fr/architecture/performance-blacksmith.md", "| Contrôle de type  "],
+  ["docs/content/pt-BR/architecture/performance-blacksmith.md", "| Verificação de tipo ", "check"],
+  [
+    "docs/content/fr/architecture/performance-blacksmith.md",
+    "| Contrôle de type grand SFC ",
+    "large-check",
+  ],
+  ["docs/content/fr/architecture/performance-blacksmith.md", "| Contrôle de type  ", "check"],
 ];
 
-test("no published table states a cross-engine type-check speedup", () => {
+/**
+ * The ratio a published cell states, or `null` when the cell is not a ratio.
+ * Locales format it as `2.0x`, `2,0x` or `**2.0×**`, so the number is parsed
+ * out rather than the whole cell being compared to one rendering.
+ */
+function statedRatio(cell: string): number | null {
+  const match = /^\*{0,2}(\d+[.,]\d+)\s*[x×]\*{0,2}$/u.exec(cell);
+  return match == null ? null : Number(match[1].replace(",", "."));
+}
+
+function surfaceOf(surfaces: Surface[], id: string): Surface {
+  const surface = surfaces.find((candidate) => candidate.id === id);
+  assert.ok(surface, `snapshot is missing the ${id} surface`);
+  return surface;
+}
+
+/**
+ * A published table may state a ratio only when the snapshot published one,
+ * and it must be that ratio. `n/a (cross-engine)` is not a formatting choice
+ * to be edited by hand either: it appears exactly when the run had no
+ * incumbent on the Vize lane's own engine to compare against.
+ */
+test("every published table states the type-check ratio the snapshot states", () => {
+  const { surfaces } = readResults();
+
   assert.deepEqual(
-    CROSS_ENGINE_ROWS.map(([file, rowLabel]) => [file, rowLabel, speedupCell(file, rowLabel)]),
-    CROSS_ENGINE_ROWS.map(([file, rowLabel]) => [file, rowLabel, CROSS_ENGINE_CELL]),
+    TYPE_CHECK_ROWS.map(([file, rowLabel]) => {
+      const cell = speedupCell(file, rowLabel);
+      return [file, rowLabel, statedRatio(cell) ?? cell];
+    }),
+    TYPE_CHECK_ROWS.map(([file, rowLabel, surfaceId]) => {
+      const surface = surfaceOf(surfaces, surfaceId);
+      const ratio = surface.primarySpeedup;
+      return [file, rowLabel, ratio == null ? CROSS_ENGINE_CELL : Number(ratio.toFixed(1))];
+    }),
   );
 });
 
@@ -121,25 +165,35 @@ test("no hand-maintained page states a cross-engine type-check speedup either", 
   );
 });
 
-test("the committed snapshot marks exactly the cross-engine surfaces as unranked", () => {
+test("the committed snapshot never rates one engine class against another", () => {
   const { surfaces } = readResults();
+  const classified = surfaces.filter((surface) => surface.engineClasses != null);
 
   assert.deepEqual(
-    surfaces
-      .filter((surface) => surface.engineClasses != null)
-      .map((surface) => [surface.id, surface.speedupStatus, surface.primarySpeedup]),
-    [
-      ["large-check", "cross-engine", null],
-      ["check", "cross-engine", null],
-    ],
+    classified.map((surface) => surface.id),
+    ["large-check", "check"],
   );
+
+  for (const surface of classified) {
+    const classes = surface.engineClasses ?? {};
+    if (surface.speedupBaselineId == null) {
+      // Nothing on the Vize lane's engine ran, so nothing may be published.
+      assert.deepEqual(
+        [surface.id, surface.speedupStatus, surface.primarySpeedup],
+        [surface.id, "cross-engine", null],
+      );
+      continue;
+    }
+    assert.deepEqual(
+      [surface.id, surface.speedupStatus, classes[surface.speedupBaselineId]],
+      [surface.id, "in-class", classes[surface.vizeMaxId]],
+    );
+  }
 
   // The classification the snapshot carries is the one the generator uses, so
   // a re-render cannot silently reclassify a row.
   assert.deepEqual(
-    surfaces
-      .filter((surface) => surface.engineClasses != null)
-      .map((surface) => surface.engineClasses),
+    classified.map((surface) => surface.engineClasses),
     [ENGINE_CLASSES_BY_SURFACE["large-check"], ENGINE_CLASSES_BY_SURFACE.check],
   );
 });
