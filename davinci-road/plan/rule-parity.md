@@ -26,17 +26,17 @@ Per-rule registration surface, SFC/JSX path membership, croquis usage, and a fir
 
 ## File accounting
 
-- `.rs` files under `crates/vize_patina/src/rules/**`: **359**
+- `.rs` files under `crates/vize_patina/src/rules/**`: **360**
 - rule-defining files (exactly one `static META` each): **245** → **245 rules**
-- non-rule files: **114** — 27 module organizers (a `<name>.rs` with a `<name>/` directory beside it), 4 `*_tests.rs` companions, 83 helper/data files (rule submodules, shared tables, private utilities)
+- non-rule files: **115** — 27 module organizers (a `<name>.rs` with a `<name>/` directory beside it), 4 `*_tests.rs` companions, 84 helper/data files (rule submodules, shared tables, private utilities)
 
 ## Summary
 
 - **total rules: 245**
 - by family: template-family 158, script 71, css 10, musea 6
-- by surface (a rule can have several): `css-text` 10, `markup-facade` 19, `musea-blocks` 6, `script-oxc` 65, `script-source` 6, `sfc-source` 9, `template-ast` 152, `type-aware-corsa` 5
+- by surface (a rule can have several): `css-text` 10, `markup-facade` 20, `musea-blocks` 6, `script-oxc` 65, `script-source` 6, `sfc-source` 9, `template-ast` 152, `type-aware-corsa` 5
 - path membership: SFC `lint_sfc` 239 · JSX `lint_jsx` 147 · **SFC∩JSX 147** · SFC-only 92 · JSX-only 0 · neither 6 (6 musea + 0 unregistered)
-- JSX lanes: `fallback` 128, `ir` 16, `ir-lowered` 3, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (19 = 19 `markup-facade` rules)
+- JSX lanes: `fallback` 127, `ir` 17, `ir-lowered` 3, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (20 = 20 `markup-facade` rules)
 - classification: neutral-core-candidate **85** · vue-dialect-bound **138** · container-bound **22** (0 overridden)
 - croquis adoption: **23** rules touch vize_croquis (18 direct imports, 12 via context analysis)
 
@@ -64,7 +64,7 @@ Sorted by rule name. File paths are relative to `crates/vize_patina/src/rules/`.
 | `a11y/media-has-caption`                        | template-family | `a11y/media_has_caption.rs`                            | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | neutral-core-candidate |
 | `a11y/mouse-events-have-key-events`             | template-family | `a11y/mouse_events_have_key_events.rs`                 | template-ast, markup-facade    | yes (template-visitor)           | yes (ir-lowered)            | —                                                                                                   | neutral-core-candidate |
 | `a11y/no-access-key`                            | template-family | `a11y/no_access_key.rs`                                | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | vue-dialect-bound      |
-| `a11y/no-aria-hidden-on-focusable`              | template-family | `a11y/no_aria_hidden_on_focusable.rs`                  | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | neutral-core-candidate |
+| `a11y/no-aria-hidden-on-focusable`              | template-family | `a11y/no_aria_hidden_on_focusable.rs`                  | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | neutral-core-candidate |
 | `a11y/no-autofocus`                             | template-family | `a11y/no_autofocus.rs`                                 | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | vue-dialect-bound      |
 | `a11y/no-distracting-elements`                  | template-family | `a11y/no_distracting_elements.rs`                      | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | neutral-core-candidate |
 | `a11y/no-i-for-icon`                            | template-family | `a11y/no_i_for_icon.rs`                                | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | neutral-core-candidate |

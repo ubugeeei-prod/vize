@@ -19,6 +19,7 @@ mod iframe_has_title;
 mod img_alt;
 mod interactive_supports_focus;
 mod label_has_for;
+pub(crate) mod markup_helpers;
 mod media_has_caption;
 mod mouse_events_have_key_events;
 mod no_access_key;
