@@ -23,11 +23,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupNode, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, ElementType, TemplateChildNode};
-
-use super::helpers::{get_static_attribute_value, has_named_prop};
-use vize_relief::PropNode;
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/media-has-caption",
@@ -41,17 +39,120 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct MediaHasCaption;
 
-fn has_caption_track(children: &[TemplateChildNode]) -> bool {
-    for child in children {
-        if let TemplateChildNode::Element(el) = child
-            && el.tag == "track"
-            && let Some(kind) = get_static_attribute_value(el, "kind")
-            && (kind == "captions" || kind == "descriptions")
-        {
-            return true;
-        }
+impl MediaHasCaption {
+    fn has_exact_static_attribute(element: &MarkupElement<'_>, name: &str) -> bool {
+        let mut found = false;
+        element.walk_bindings(&mut |binding| {
+            if binding.kind() == MarkupBindingKind::Attribute
+                && binding.is_unqualified_arg_exact(name)
+            {
+                found = true;
+            }
+        });
+        found
     }
-    false
+
+    fn has_exact_named_prop(element: &MarkupElement<'_>, name: &str) -> bool {
+        let mut found = false;
+        element.walk_bindings(&mut |binding| {
+            if matches!(
+                binding.kind(),
+                MarkupBindingKind::Attribute | MarkupBindingKind::Bind
+            ) && binding.is_static_unqualified_arg_exact(name)
+            {
+                found = true;
+            }
+        });
+        found
+    }
+
+    fn first_exact_static_attribute_value<'a>(
+        element: &MarkupElement<'a>,
+        name: &str,
+    ) -> Option<&'a str> {
+        let mut seen = false;
+        let mut value = None;
+        element.walk_bindings(&mut |binding| {
+            if !seen
+                && binding.kind() == MarkupBindingKind::Attribute
+                && binding.is_unqualified_arg_exact(name)
+            {
+                seen = true;
+                value = binding.static_value();
+            }
+        });
+        value
+    }
+
+    fn has_caption_track(element: &MarkupElement<'_>, transparent_fragments: bool) -> bool {
+        let mut found = false;
+        element.walk_children(&mut |child| {
+            if let MarkupNode::Element(child_element) = child
+                && child_element.is_unqualified_tag_exact("track")
+                && let Some(kind) = Self::first_exact_static_attribute_value(&child_element, "kind")
+                && (kind == "captions" || kind == "descriptions")
+            {
+                found = true;
+            }
+            // JSX lowering splices fragments in child position. Preserve that
+            // boundary for direct OXC IR without changing Vue `<template>`.
+            if let MarkupNode::Element(child_element) = child
+                && transparent_fragments
+                && child_element.tag().is_empty()
+                && Self::has_caption_track(&child_element, transparent_fragments)
+            {
+                found = true;
+            }
+        });
+        found
+    }
+
+    fn check_element(
+        ctx: &mut LintContext<'_>,
+        element: &MarkupElement<'_>,
+        transparent_fragments: bool,
+    ) {
+        if element.is_component() {
+            return;
+        }
+
+        if !element.is_unqualified_tag_exact("video") && !element.is_unqualified_tag_exact("audio")
+        {
+            return;
+        }
+
+        if Self::has_exact_static_attribute(element, "muted") {
+            return;
+        }
+
+        if Self::has_exact_named_prop(element, "aria-label") {
+            return;
+        }
+
+        if Self::has_exact_named_prop(element, "aria-labelledby") {
+            return;
+        }
+
+        if Self::has_caption_track(element, transparent_fragments) {
+            return;
+        }
+
+        let tag = element.tag();
+        let message = ctx.t_fmt("a11y/media-has-caption.message", &[("tag", tag)]);
+        let help = ctx.t("a11y/media-has-caption.help");
+        ctx.warn_at_with_help(message, element.range(), help);
+    }
+}
+
+impl MarkupRule for MediaHasCaption {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        let transparent_fragments = ctx.is_jsx();
+        Self::check_element(ctx.lint(), element, transparent_fragments);
+    }
 }
 
 impl Rule for MediaHasCaption {
@@ -59,46 +160,12 @@ impl Rule for MediaHasCaption {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag_type == ElementType::Component {
-            return;
-        }
-
-        if element.tag != "video" && element.tag != "audio" {
-            return;
-        }
-
-        // Muted media doesn't need captions (boolean attribute - may have no value)
-        let has_muted = element.props.iter().any(|prop| {
-            if let PropNode::Attribute(attr) = prop {
-                attr.name == "muted"
-            } else {
-                false
-            }
-        });
-        if has_muted {
-            return;
-        }
-
-        // Static and bound accessible names satisfy the requirement.
-        if has_named_prop(element, "aria-label") {
-            return;
-        }
-
-        if has_named_prop(element, "aria-labelledby") {
-            return;
-        }
-
-        // Check for <track kind="captions"> child
-        if has_caption_track(&element.children) {
-            return;
-        }
-
-        ctx.warn_with_help(
-            ctx.t_fmt("a11y/media-has-caption.message", &[("tag", element.tag)]),
-            &element.loc,
-            ctx.t("a11y/media-has-caption.help"),
-        );
+        Self::check_element(ctx, &MarkupElement::new(element), false);
     }
 }
 
