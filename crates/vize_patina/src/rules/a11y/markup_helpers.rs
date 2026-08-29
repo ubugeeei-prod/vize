@@ -2,6 +2,19 @@
 
 use crate::markup::{MarkupBindingKind, MarkupElement};
 
+/// Check if a markup facade element is natively interactive.
+pub fn is_interactive_markup_element(element: &MarkupElement<'_>) -> bool {
+    element.is_unqualified_tag_exact("a")
+        || element.is_unqualified_tag_exact("button")
+        || element.is_unqualified_tag_exact("input")
+        || element.is_unqualified_tag_exact("select")
+        || element.is_unqualified_tag_exact("textarea")
+        || element.is_unqualified_tag_exact("details")
+        || element.is_unqualified_tag_exact("summary")
+        || element.is_unqualified_tag_exact("video")
+        || element.is_unqualified_tag_exact("audio")
+}
+
 /// Check if a markup facade element is focusable (natively or via tabindex).
 pub fn is_focusable_markup_element(element: &MarkupElement<'_>) -> bool {
     if (element.is_unqualified_tag_exact("a") || element.is_unqualified_tag_exact("area"))

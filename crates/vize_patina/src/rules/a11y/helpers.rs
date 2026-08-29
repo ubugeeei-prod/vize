@@ -73,51 +73,6 @@ pub fn is_interactive_role(role: &str) -> bool {
     )
 }
 
-/// Check if an element is focusable (natively or via tabindex)
-pub fn is_focusable_element(element: &ElementNode) -> bool {
-    let tag = element.tag;
-
-    if matches!(tag, "a" | "area") && has_named_prop(element, "href") {
-        return true;
-    }
-
-    // Natively focusable elements
-    if matches!(tag, "button" | "input" | "select" | "textarea" | "summary") {
-        return true;
-    }
-
-    // Check for tabindex attribute
-    if let Some(tabindex) = get_static_attribute_value(element, "tabindex") {
-        if let Ok(val) = tabindex.parse::<i32>() {
-            return val >= 0;
-        }
-        // Non-numeric tabindex is still focusable
-        return true;
-    }
-
-    // Check for contenteditable
-    if let Some(val) = get_static_attribute_value(element, "contenteditable")
-        && val != "false"
-    {
-        return true;
-    }
-
-    false
-}
-
-pub(super) fn has_named_prop(element: &ElementNode, name: &str) -> bool {
-    element.props.iter().any(|prop| match prop {
-        PropNode::Attribute(attr) => attr.name == name,
-        PropNode::Directive(dir) if dir.name == "bind" => {
-            matches!(
-                dir.arg.as_ref(),
-                Some(ExpressionNode::Simple(arg)) if arg.is_static && arg.content == name
-            )
-        }
-        _ => false,
-    })
-}
-
 /// Get the static (non-dynamic) value of an attribute on an element.
 /// Returns None if the attribute is not found or is dynamically bound.
 pub fn get_static_attribute_value<'a>(element: &'a ElementNode, name: &str) -> Option<&'a str> {

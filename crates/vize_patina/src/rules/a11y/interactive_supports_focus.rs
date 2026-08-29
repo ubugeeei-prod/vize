@@ -20,12 +20,11 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, ElementType};
+use vize_relief::ElementNode;
 
-use super::helpers::{
-    get_static_attribute_value, is_focusable_element, is_interactive_element, is_interactive_role,
-};
+use super::{helpers::is_interactive_role, markup_helpers};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/interactive-supports-focus",
@@ -39,23 +38,19 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct InteractiveSupportsFocus;
 
-impl Rule for InteractiveSupportsFocus {
-    fn meta(&self) -> &'static RuleMeta {
-        &META
-    }
-
-    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag_type == ElementType::Component {
+impl InteractiveSupportsFocus {
+    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        if element.is_component() {
             return;
         }
 
         // Skip natively interactive elements - they're already focusable
-        if is_interactive_element(element.tag) {
+        if markup_helpers::is_interactive_markup_element(element) {
             return;
         }
 
         // Check if element has an interactive role
-        let role = match get_static_attribute_value(element, "role") {
+        let role = match markup_helpers::get_static_markup_attribute_value(element, "role") {
             Some(r) => r,
             None => return,
         };
@@ -66,13 +61,37 @@ impl Rule for InteractiveSupportsFocus {
 
         // Element has interactive role but is not natively interactive
         // Check if it's focusable
-        if !is_focusable_element(element) {
-            ctx.warn_with_help(
+        if !markup_helpers::is_focusable_markup_element(element) {
+            ctx.warn_at_with_help(
                 ctx.t_fmt("a11y/interactive-supports-focus.message", &[("role", role)]),
-                &element.loc,
+                element.range(),
                 ctx.t("a11y/interactive-supports-focus.help"),
             );
         }
+    }
+}
+
+impl MarkupRule for InteractiveSupportsFocus {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        Self::check_element(ctx.lint(), element);
+    }
+}
+
+impl Rule for InteractiveSupportsFocus {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        Self::check_element(ctx, &MarkupElement::new(element));
     }
 }
 
