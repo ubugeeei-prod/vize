@@ -23,6 +23,7 @@ mod no_i_for_icon_tests;
 mod no_redundant_roles_tests;
 mod no_role_presentation_on_focusable_jsx_tests;
 mod no_role_presentation_on_focusable_tests;
+mod require_datetime_tests;
 
 #[cfg(test)]
 mod markup_ir_tests {

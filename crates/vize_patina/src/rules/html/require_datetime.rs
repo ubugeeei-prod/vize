@@ -24,8 +24,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupNode, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, PropNode, TemplateChildNode};
+use vize_relief::ElementNode;
 
 use super::helpers::is_valid_datetime;
 use vize_s0::String;
@@ -41,52 +42,28 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct RequireDatetime;
 
-impl Rule for RequireDatetime {
-    fn meta(&self) -> &'static RuleMeta {
-        &META
-    }
-
-    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag != "time" {
+impl RequireDatetime {
+    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        if !element.is_unqualified_tag_exact("time") {
             return;
         }
 
-        // Check if datetime attribute exists (static or dynamic)
-        let has_datetime = element.props.iter().any(|prop| match prop {
-            PropNode::Attribute(attr) => attr.name == "datetime",
-            PropNode::Directive(dir) => {
-                dir.name == "bind"
-                    && dir.arg.as_ref().is_some_and(|arg| {
-                        if let vize_relief::ExpressionNode::Simple(s) = arg {
-                            s.content == "datetime"
-                        } else {
-                            false
-                        }
-                    })
-            }
-        });
-
-        if has_datetime {
+        if Self::has_datetime_binding(element) {
             return;
         }
 
-        // Check if text content is a valid datetime
         let mut text_content = String::default();
         let mut has_dynamic_content = false;
-
-        for child in &element.children {
-            match child {
-                TemplateChildNode::Text(text) => {
-                    text_content.push_str(text.content);
-                }
-                TemplateChildNode::Interpolation(_) => {
-                    has_dynamic_content = true;
-                }
-                _ => {}
+        element.walk_children(&mut |child| match child {
+            MarkupNode::Text(text) => {
+                text_content.push_str(text.content());
             }
-        }
+            MarkupNode::Interpolation(_) => {
+                has_dynamic_content = true;
+            }
+            _ => {}
+        });
 
-        // If there's dynamic content, we can't validate
         if has_dynamic_content {
             return;
         }
@@ -94,8 +71,54 @@ impl Rule for RequireDatetime {
         if !is_valid_datetime(&text_content) {
             let message = ctx.t("html/require-datetime.message");
             let help = ctx.t("html/require-datetime.help");
-            ctx.warn_with_help(message, &element.loc, help);
+            ctx.warn_at_with_help(message, element.range(), help);
         }
+    }
+
+    fn has_datetime_binding(element: &MarkupElement<'_>) -> bool {
+        let mut has_datetime = false;
+        element.walk_bindings(&mut |binding| {
+            if has_datetime {
+                return;
+            }
+
+            if matches!(
+                binding.kind(),
+                MarkupBindingKind::Attribute | MarkupBindingKind::Bind
+            ) && binding.is_unqualified_arg_exact("datetime")
+            {
+                has_datetime = true;
+            }
+        });
+        has_datetime
+    }
+}
+
+impl MarkupRule for RequireDatetime {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        Self::check_element(ctx.lint(), element);
+    }
+}
+
+impl Rule for RequireDatetime {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn jsx_needs_lowering(&self) -> bool {
+        true
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        Self::check_element(ctx, &MarkupElement::new(element));
     }
 }
 

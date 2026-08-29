@@ -34,10 +34,10 @@ Per-rule registration surface, SFC/JSX path membership, croquis usage, and a fir
 
 - **total rules: 245**
 - by family: template-family 158, script 71, css 10, musea 6
-- by surface (a rule can have several): `css-text` 10, `markup-facade` 25, `musea-blocks` 6, `script-oxc` 65, `script-source` 6, `sfc-source` 9, `template-ast` 152, `type-aware-corsa` 5
+- by surface (a rule can have several): `css-text` 10, `markup-facade` 26, `musea-blocks` 6, `script-oxc` 65, `script-source` 6, `sfc-source` 9, `template-ast` 152, `type-aware-corsa` 5
 - path membership: SFC `lint_sfc` 239 · JSX `lint_jsx` 147 · **SFC∩JSX 147** · SFC-only 92 · JSX-only 0 · neither 6 (6 musea + 0 unregistered)
-- JSX lanes: `fallback` 122, `ir` 21, `ir-lowered` 4, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (25 = 25 `markup-facade` rules)
-- classification: neutral-core-candidate **86** · vue-dialect-bound **137** · container-bound **22** (0 overridden)
+- JSX lanes: `fallback` 121, `ir` 21, `ir-lowered` 5, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (26 = 26 `markup-facade` rules)
+- classification: neutral-core-candidate **87** · vue-dialect-bound **136** · container-bound **22** (0 overridden)
 - croquis adoption: **23** rules touch vize_croquis (18 direct imports, 12 via context analysis)
 
 ## Full table
@@ -103,7 +103,7 @@ Sorted by rule name. File paths are relative to `crates/vize_patina/src/rules/`.
 | `html/no-duplicate-class`                       | template-family | `opinionated/html/no_duplicate_class.rs`               | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | neutral-core-candidate |
 | `html/no-duplicate-dt`                          | template-family | `html/no_duplicate_dt.rs`                              | template-ast, markup-facade    | yes (template-visitor)           | yes (ir-lowered)            | —                                                                                                   | neutral-core-candidate |
 | `html/no-empty-palpable-content`                | template-family | `html/no_empty_palpable_content.rs`                    | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
-| `html/require-datetime`                         | template-family | `html/require_datetime.rs`                             | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
+| `html/require-datetime`                         | template-family | `html/require_datetime.rs`                             | template-ast, markup-facade    | yes (template-visitor)           | yes (ir-lowered)            | —                                                                                                   | neutral-core-candidate |
 | `musea/no-empty-variant`                        | musea           | `musea/no_empty_variant.rs`                            | musea-blocks                   | no                               | no                          | —                                                                                                   | container-bound        |
 | `musea/prefer-design-tokens`                    | musea           | `musea/prefer_design_tokens.rs`                        | musea-blocks                   | no                               | no                          | —                                                                                                   | container-bound        |
 | `musea/require-component`                       | musea           | `musea/require_component.rs`                           | musea-blocks                   | no                               | no                          | direct 1: `script_parser::parse_script_setup`                                                       | container-bound        |
