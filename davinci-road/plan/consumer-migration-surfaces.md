@@ -46,7 +46,7 @@ observational guard for planning only. It does not change rollout state.
 | consumer                   | stage/Davinci | preferred stage names | compat code names | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
 | Compiler                   |           914 |                   430 |               484 |             139 |     371 |             938 |      486 |           482 |           591 |
-| Linter                     |           302 |                   302 |                 0 |             268 |     225 |             673 |      122 |           340 |           480 |
+| Linter                     |           302 |                   302 |                 0 |             270 |     229 |             674 |      127 |           342 |           483 |
 | Typechecker                |           879 |                   227 |               652 |             396 |     187 |             807 |      655 |           467 |           663 |
 | Typechecker content-mapper |             8 |                     8 |                 0 |               1 |       0 |               9 |        0 |             7 |            19 |
 | Formatter                  |            38 |                    38 |                 0 |               0 |      21 |              40 |       19 |            30 |            65 |
@@ -99,10 +99,10 @@ Scope: lint command plus Patina rule engine. This is a lexical inventory, not a 
 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
-| S0               |         302 |             225 |       77 |
-| old AST/parser   |         226 |             211 |       15 |
+| S0               |         302 |             224 |       78 |
+| old AST/parser   |         228 |             212 |       16 |
 | Croquis analysis |          42 |              38 |        4 |
-| raw OXC          |         225 |             199 |       26 |
+| raw OXC          |         229 |             200 |       29 |
 
 #### Top source and manifest files
 
@@ -110,11 +110,11 @@ Scope: lint command plus Patina rule engine. This is a lexical inventory, not a 
 | ----------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------- | ----: |
 | `crates/vize_patina/src/linter/engine.rs:25`                                        | source   | S0 5<br>old AST/parser 2<br>Croquis analysis 1<br>raw OXC 5 |    13 |
 | `crates/vize_patina/Cargo.toml:13`                                                  | manifest | S0 1<br>old AST/parser 2<br>Croquis analysis 1<br>raw OXC 6 |    10 |
-| `crates/vize_patina/src/markup.rs:49`                                               | source   | S0 2<br>old AST/parser 2<br>Croquis analysis 1<br>raw OXC 5 |    10 |
 | `crates/vize_patina/src/rules/script/no_ref_as_operand.rs:29`                       | source   | S0 1<br>raw OXC 9                                           |    10 |
+| `crates/vize_patina/src/markup.rs:49`                                               | source   | S0 1<br>old AST/parser 2<br>Croquis analysis 1<br>raw OXC 5 |     9 |
 | `crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs:46` | source   | S0 2<br>old AST/parser 4<br>Croquis analysis 3              |     9 |
 
-Additional source/manifest rows are in the TSV: 306 omitted.
+Additional source/manifest rows are in the TSV: 307 omitted.
 
 #### Top test/dev files
 
@@ -122,11 +122,11 @@ Additional source/manifest rows are in the TSV: 306 omitted.
 | -------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------- | ----: |
 | `crates/vize_patina/src/output/tests.rs:4`                                       | test/dev | S0 23                                                       |    23 |
 | `crates/vize_patina/src/rules/vue/no_unused_components.rs:39`                    | test/dev | S0 1<br>old AST/parser 2<br>Croquis analysis 3<br>raw OXC 7 |    13 |
-| `crates/vize_patina/src/markup/tests.rs:18`                                      | test/dev | S0 1<br>old AST/parser 3<br>raw OXC 6                       |    10 |
+| `crates/vize_patina/src/markup/tests.rs:20`                                      | test/dev | S0 1<br>old AST/parser 3<br>raw OXC 6                       |    10 |
 | `crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs:36` | test/dev | S0 1<br>raw OXC 5                                           |     6 |
 | `crates/vize_patina/src/rules/vue/no_mutating_props.rs:62`                       | test/dev | S0 3<br>old AST/parser 2<br>Croquis analysis 1              |     6 |
 
-Additional test/dev rows are in the TSV: 37 omitted.
+Additional test/dev rows are in the TSV: 38 omitted.
 
 ### Typechecker
 

@@ -61,8 +61,7 @@ use vize_relief::{
     AttributeNode, DirectiveNode, ElementNode, ElementType, ExpressionNode, ForNode, IfNode,
     PropNode, RootNode, SourceLocation, TemplateChildNode, TextNode,
 };
-use vize_s0::String;
-use vize_s0::profile;
+use vize_s0::{String, profile};
 
 /// High-level classification for a markup element.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1646,5 +1645,6 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
     }
 }
 
+mod exact;
 #[cfg(test)]
 mod tests;

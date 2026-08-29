@@ -27,6 +27,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::a11y::helpers::get_static_attribute_value;
 use vize_relief::ElementNode;
@@ -41,6 +42,23 @@ static META: RuleMeta = RuleMeta {
 
 #[derive(Default)]
 pub struct NoIForIcon;
+
+impl NoIForIcon {
+    fn first_static_class_value<'a>(element: &MarkupElement<'a>) -> Option<&'a str> {
+        let mut found_class = false;
+        let mut class_value = None;
+        element.walk_bindings(&mut |binding| {
+            if !found_class
+                && binding.kind() == MarkupBindingKind::Attribute
+                && binding.is_unqualified_arg_exact("class")
+            {
+                found_class = true;
+                class_value = binding.static_value();
+            }
+        });
+        class_value
+    }
+}
 
 /// Check if a CSS class token indicates an icon framework usage
 fn is_icon_class(class: &str) -> bool {
@@ -84,9 +102,44 @@ fn is_icon_class(class: &str) -> bool {
     false
 }
 
+/// Markup-IR entry point for `a11y/no-i-for-icon`.
+///
+/// Mirrors the legacy template visitor exactly: only an unqualified lowercase
+/// `<i>` tag with the first static, unqualified `class` attribute containing an
+/// icon-looking token is reported. Dynamic `:class`/`class={...}`,
+/// `className`, and JSX member or namespaced tags stay outside this rule.
+impl MarkupRule for NoIForIcon {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if !element.is_unqualified_tag_exact("i") {
+            return;
+        }
+
+        let Some(class_value) = Self::first_static_class_value(element) else {
+            return;
+        };
+
+        let has_icon_class = class_value.split_whitespace().any(is_icon_class);
+        if !has_icon_class {
+            return;
+        }
+
+        let message = ctx.lint().t("a11y/no-i-for-icon.message");
+        let help = ctx.lint().t("a11y/no-i-for-icon.help");
+        ctx.lint().warn_at_with_help(message, element.range(), help);
+    }
+}
+
 impl Rule for NoIForIcon {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
@@ -152,6 +205,33 @@ mod tests {
     fn test_valid_i_with_dynamic_class() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<i :class="iconClass"></i>"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_i_with_bound_literal_class() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<i :class="'fas fa-home'"></i>"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_case_mismatched_i_or_class() {
+        let linter = create_linter();
+        let uppercase_tag = linter.lint_template(r#"<I class="fas fa-home"></I>"#, "test.vue");
+        assert_eq!(uppercase_tag.warning_count, 0);
+
+        let uppercase_class = linter.lint_template(r#"<i Class="fas fa-home"></i>"#, "test.vue");
+        assert_eq!(uppercase_class.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_uses_first_static_class_only() {
+        let linter = create_linter();
+        let result = linter.lint_template_rules_only(
+            r#"<i class="emphasis" class="fas fa-home"></i>"#,
+            "test.vue",
+        );
         assert_eq!(result.warning_count, 0);
     }
 
