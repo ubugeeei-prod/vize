@@ -23,13 +23,45 @@ export function requiredLine(source: string, pattern: RegExp, label: string): st
 }
 
 export function assertCurrentP2_11Installment(source: string, label: string): void {
-  const marker = /39 (?:landed\s+)?installments|installment 39|\| 39\s+\|/i;
-  const match = new RegExp(
-    `(?:${marker.source})[\\s\\S]{0,160}#5212|#5212[\\s\\S]{0,160}(?:${marker.source})`,
-    "iu",
-  ).exec(source);
-  assert.ok(match, `${label} must cite current installment 39 and #5212 together`);
-  assert.doesNotMatch(match[0], /\bpending\b/i, `${label} current installment must not be pending`);
+  const record = currentP2_11InstallmentRecord(source, label);
+  assert.ok(
+    [
+      /39 (?:landed\s+)?installments/iu,
+      /through installment 39/iu,
+      /installment 39/iu,
+      /^\| 39\s+\|/imu,
+    ].some((marker) => marker.test(record)),
+    `${label} current record must cite installment 39`,
+  );
+  assert.match(record, /#5212/u, `${label} current record must cite #5212`);
+  assert.doesNotMatch(record, /\bpending\b/iu, `${label} current record must not be pending`);
+}
+
+function currentP2_11InstallmentRecord(source: string, label: string): string {
+  switch (label) {
+    case "roadmap":
+      return requiredSection(
+        source,
+        /^\*\*Current execution ledger/mu,
+        /^\*\*Exit gate:/mu,
+        "roadmap current execution ledger",
+      );
+    case "readme":
+      return requiredLine(source, /^\| \[phase-2\.md\][^\n]+$/mu, "plan README phase 2 row");
+    case "tasks":
+      return requiredSection(
+        source,
+        /^\*\*Current series evidence/mu,
+        /^\*\*Steps:\*\*/mu,
+        "P2-11 current series evidence",
+      );
+    case "records":
+      return requiredLine(source, /^\| \[P2-11\][^\n]+$/mu, "P2-11 records index row");
+    case "p2_11":
+      return requiredLine(source, /^\| 39\s+\|[^\n]+$/mu, "P2-11 installment 39 row");
+    default:
+      throw new Error(`unknown P2-11 current evidence label: ${label}`);
+  }
 }
 
 export function p2_11CurrentRecordEvidence(source: string): string {
