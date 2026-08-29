@@ -30,12 +30,6 @@ pub(super) fn has_object_spread(bindings: &[BindingOp<'_>]) -> bool {
 }
 
 pub(super) fn admit_object(bind: &BindOp<'_>) -> Result<(), EmitError> {
-    if !bind.modifiers.is_empty() {
-        return Err(EmitError::unsupported_at(
-            Reason::ObjectBindHasModifiers,
-            bind.span,
-        ));
-    }
     js_value(bind).map(|_| ())
 }
 

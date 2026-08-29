@@ -21,7 +21,6 @@ const SOURCE: &[Reason] = &[
     Reason::IfConditionNotJs,
     Reason::MemoExpressionNotJs,
     Reason::ModelArgumentNotJs,
-    Reason::ObjectBindHasModifiers,
     Reason::ObjectOnHandlerNotJs,
     Reason::ObjectOnHasModifiers,
     Reason::OnHandlerNotJs,
@@ -64,6 +63,7 @@ const GUARD_ONLY: &[Reason] = &[
 const RETIRED: &[Reason] = &[
     Reason::CreateSlotsMissingSlotTemplate,
     Reason::DynamicOnHasModifiers,
+    Reason::ObjectBindHasModifiers,
 ];
 
 #[test]

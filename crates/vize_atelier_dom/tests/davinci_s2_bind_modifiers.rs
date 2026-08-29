@@ -25,6 +25,13 @@ const BATTERY: &[(&str, &str)] = &[
         "merge_props_prop",
         r#"<div v-bind="bag" :value.prop="value"></div>"#,
     ),
+    ("object_prop", r#"<div v-bind.prop="bag"></div>"#),
+    ("object_attr", r#"<div v-bind.attr="bag"></div>"#),
+    ("object_camel", r#"<div v-bind.camel="bag"></div>"#),
+    (
+        "merge_object_prop",
+        r#"<div id="x" v-bind.prop="bag"></div>"#,
+    ),
     ("v_if_attr", r#"<div v-if="ok" :value.attr="value"></div>"#),
     (
         "v_for_camel",
