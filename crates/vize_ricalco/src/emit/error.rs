@@ -55,6 +55,7 @@ pub enum UnsupportedReason {
     SlotsSpreadValueNotJs,
     TemplateDynamicKeyEmpty,
     TemplateUnwrapShape,
+    TextDirectiveExpressionNotJs,
     TextExpressionNotEmittable,
     TextRunContainsNonText,
     UnsupportedBindingKind,
@@ -105,6 +106,7 @@ impl UnsupportedReason {
         Self::SlotsSpreadValueNotJs,
         Self::TemplateDynamicKeyEmpty,
         Self::TemplateUnwrapShape,
+        Self::TextDirectiveExpressionNotJs,
         Self::TextExpressionNotEmittable,
         Self::TextRunContainsNonText,
         Self::UnsupportedBindingKind,
@@ -155,6 +157,7 @@ impl UnsupportedReason {
             Self::SlotsSpreadShape => "slots_spread_shape",
             Self::SlotsSpreadValueNotJs => "slots_spread_value_not_js",
             Self::TemplateDynamicKeyEmpty => "template_dynamic_key_empty",
+            Self::TextDirectiveExpressionNotJs => "text_directive_expression_not_js",
             Self::TemplateUnwrapShape => "template_unwrap_shape",
             Self::TextExpressionNotEmittable => "text_expression_not_emittable",
             Self::TextRunContainsNonText => "text_run_contains_non_text",
@@ -265,6 +268,7 @@ fn binding_span(binding: &BindingOp<'_>) -> Span {
         BindingOp::VueMemo(op) => op.span,
         BindingOp::VueShow(op) => op.span,
         BindingOp::VueHtml(op) => op.span,
+        BindingOp::VueText(op) => op.span,
     }
 }
 

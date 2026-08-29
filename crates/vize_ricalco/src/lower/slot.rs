@@ -8,8 +8,8 @@
 //! ([`Attribute`]), `v-bind`/`v-on` lower to their attached ops, and a
 //! `v-slot` spelled **on** the outlet lowers to `ui.slot-content` so the
 //! slot pass can fire the legacy `VSlotMisplaced` diagnostic where the
-//! shipped lane fires it. `v-html` lowers to `vue.html` because the
-//! shipped lane emits it as a slot prop (`innerHTML`). A custom directive
+//! shipped lane fires it. `v-html` and `v-text` lower to dialect bindings
+//! because the shipped lane emits them as slot props. A custom directive
 //! on an outlet is Vue's own error and is dropped under it; the
 //! still-deferred built-ins keep their counted `defer.slot-directive`
 //! records with realization (P2-11) as the named owner.
@@ -93,6 +93,11 @@ pub(crate) fn lower_slot<'a>(
                 Head::On => bindings.push(lower_on(cx, element, index, directive)),
                 Head::Html => {
                     if let Some(op) = super::html::lower_html(cx, element, index, directive) {
+                        bindings.push(op);
+                    }
+                }
+                Head::Text => {
+                    if let Some(op) = super::vtext::lower_text(cx, element, index, directive) {
                         bindings.push(op);
                     }
                 }

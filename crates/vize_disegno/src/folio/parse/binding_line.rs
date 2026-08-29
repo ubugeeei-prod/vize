@@ -12,7 +12,7 @@ use vize_s0::{String, cstr};
 use super::super::owned::{
     FolioBind, FolioContract, FolioExpr, FolioModel, FolioName, FolioOn, FolioSlotContent,
     FolioVueCssBind, FolioVueDirective, FolioVueHtml, FolioVueMemo, FolioVueOnce, FolioVueShow,
-    FolioVueSlotScope, FolioVueSync,
+    FolioVueSlotScope, FolioVueSync, FolioVueText,
 };
 use super::expr_token::take_expr;
 use super::line::{Item, err, final_span, name_value, tail_span, take_quoted};
@@ -298,6 +298,20 @@ pub(super) fn html(rest: &str, line_no: usize) -> Result<Item, FolioError> {
     };
     let (value, rest) = take_expr(rest, line_no)?;
     Ok(Item::Html(FolioVueHtml {
+        value: Some(value),
+        span: tail_span(rest, line_no)?,
+    }))
+}
+
+pub(super) fn text(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+    let Some(rest) = rest.strip_prefix("value=") else {
+        return Ok(Item::VueText(FolioVueText {
+            value: None,
+            span: final_span(rest, line_no)?,
+        }));
+    };
+    let (value, rest) = take_expr(rest, line_no)?;
+    Ok(Item::VueText(FolioVueText {
         value: Some(value),
         span: tail_span(rest, line_no)?,
     }))

@@ -50,6 +50,7 @@ mod structural;
 mod sugar;
 mod text;
 mod vfor;
+mod vtext;
 
 pub use caps::LegacyCaps;
 

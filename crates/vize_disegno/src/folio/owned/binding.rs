@@ -39,6 +39,8 @@ pub enum FolioBinding {
     VueShow(FolioVueShow),
     /// `vue.html`.
     VueHtml(FolioVueHtml),
+    /// `vue.text`.
+    VueText(FolioVueText),
 }
 
 /// Mirror of [`crate::op::BindOp`].
@@ -175,6 +177,15 @@ pub struct FolioVueHtml {
     pub span: Span,
 }
 
+/// Mirror of [`crate::op::VueTextOp`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FolioVueText {
+    /// The text-content expression, when authored.
+    pub value: Option<FolioExpr>,
+    /// Source range.
+    pub span: Span,
+}
+
 pub(super) fn own_binding(binding: &BindingOp<'_>) -> FolioBinding {
     match binding {
         BindingOp::Bind(bind) => FolioBinding::Bind(FolioBind {
@@ -238,6 +249,10 @@ pub(super) fn own_binding(binding: &BindingOp<'_>) -> FolioBinding {
         BindingOp::VueHtml(html) => FolioBinding::VueHtml(FolioVueHtml {
             value: html.value.as_ref().map(own_expr),
             span: html.span,
+        }),
+        BindingOp::VueText(text) => FolioBinding::VueText(FolioVueText {
+            value: text.value.as_ref().map(own_expr),
+            span: text.span,
         }),
     }
 }

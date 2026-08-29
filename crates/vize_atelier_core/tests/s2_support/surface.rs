@@ -21,9 +21,9 @@
 //! # Counted classes, never silence
 //!
 //! - `builtins_excluded` — legacy props whose directive S2 still defers
-//!   (`v-html`, `v-text`, `v-show`, `v-cloak`, `v-pre`) or drops as a
-//!   structural duplicate, plus the codegen-only dialect flags
-//!   (`v-once`, `v-memo`) that now lower as `vue.once` / `vue.memo`
+//!   (`v-cloak`, `v-pre`) or drops as a structural duplicate, plus the
+//!   codegen-only dialect flags (`v-once`, `v-memo`, `v-show`,
+//!   `v-html`, `v-text`) that lower as Vue dialect bindings
 //!   but are not part of this bind/on/model/directive projection;
 //!   excluded on both sides, counted so the remaining set keeps a
 //!   number.

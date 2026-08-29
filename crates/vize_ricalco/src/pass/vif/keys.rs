@@ -89,7 +89,8 @@ fn is_key_bind(binding: &BindingOp<'_>) -> bool {
         | BindingOp::VueOnce(_)
         | BindingOp::VueMemo(_)
         | BindingOp::VueShow(_)
-        | BindingOp::VueHtml(_) => false,
+        | BindingOp::VueHtml(_)
+        | BindingOp::VueText(_) => false,
     }
 }
 
@@ -169,5 +170,6 @@ fn binding_span(binding: &BindingOp<'_>) -> Span {
         BindingOp::VueMemo(memo) => memo.span,
         BindingOp::VueShow(show) => show.span,
         BindingOp::VueHtml(html) => html.span,
+        BindingOp::VueText(text) => text.span,
     }
 }

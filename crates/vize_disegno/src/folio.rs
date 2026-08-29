@@ -39,7 +39,7 @@ pub use owned::{
     FolioElement, FolioExpr, FolioFor, FolioForBinding, FolioIf, FolioInterpolation, FolioModel,
     FolioName, FolioOn, FolioOp, FolioSlot, FolioSlotContent, FolioText, FolioVueCssBind,
     FolioVueDirective, FolioVueHtml, FolioVueMemo, FolioVueOnce, FolioVueShow, FolioVueSlotScope,
-    FolioVueSync,
+    FolioVueSync, FolioVueText,
 };
 
 /// Document model of an S2 op-tree dump.

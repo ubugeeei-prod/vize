@@ -286,7 +286,8 @@ fn owner_bindings<'a>(
             | BindingOp::VueOnce(_)
             | BindingOp::VueMemo(_)
             | BindingOp::VueShow(_)
-            | BindingOp::VueHtml(_) => {}
+            | BindingOp::VueHtml(_)
+            | BindingOp::VueText(_) => {}
         }
     }
     slot_name.flatten()

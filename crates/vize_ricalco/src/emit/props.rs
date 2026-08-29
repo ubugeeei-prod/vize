@@ -80,6 +80,7 @@ fn admit_bindings_inner(
             BindingOp::VueDirective(directive) => super::directive::admit(directive)?,
             BindingOp::VueShow(show) => super::directive::admit_show(show)?,
             BindingOp::VueHtml(html) => super::html::admit(html)?,
+            BindingOp::VueText(text) => super::vtext::admit(text)?,
             BindingOp::VueOnce(_) if allow_once => {}
             BindingOp::VueMemo(memo) => super::memo::admit(memo)?,
             _ => {
@@ -171,6 +172,13 @@ pub(super) fn bind_patch(
             BindingOp::VueHtml(_) => {
                 flag |= 8;
                 let key = String::from("innerHTML");
+                if !dynamic_props.contains(&key) {
+                    dynamic_props.push(key);
+                }
+            }
+            BindingOp::VueText(_) => {
+                flag |= 8;
+                let key = String::from("textContent");
                 if !dynamic_props.contains(&key) {
                     dynamic_props.push(key);
                 }

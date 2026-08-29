@@ -85,6 +85,12 @@ const SOURCE_CASES: &[Case] = &[
         Reason::HtmlExpressionNotJs,
     ),
     case(
+        "bad_text_directive_expression",
+        r#"<div v-text="%"></div>"#,
+        VUE3,
+        Reason::TextDirectiveExpressionNotJs,
+    ),
+    case(
         "bad_if_condition",
         r#"<div v-if="ok."></div>"#,
         VUE3,
@@ -232,6 +238,7 @@ fn committed_fixture_refusal_census_is_pinned() {
             ("slot_outlet_prop_kind", 1),
             ("slots_spread_shape", 1),
             ("slots_spread_value_not_js", 1),
+            ("text_directive_expression_not_js", 1),
             ("text_expression_not_emittable", 1),
         ]
     );

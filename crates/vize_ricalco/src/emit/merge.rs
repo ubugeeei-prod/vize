@@ -123,6 +123,12 @@ pub(super) fn object_patch(
                     dynamic_props.push(key);
                 }
             }
+            BindingOp::VueText(_) => {
+                let key = String::from("textContent");
+                if !dynamic_props.contains(&key) {
+                    dynamic_props.push(key);
+                }
+            }
             _ => {}
         }
     }

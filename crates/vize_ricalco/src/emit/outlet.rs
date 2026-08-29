@@ -169,13 +169,16 @@ fn emit_props(cx: &mut EmitCx<'_>, slot: &SlotOp<'_>, key: Option<&str>) -> Resu
             Piece::VueHtml(html) => {
                 super::html::emit_pair(cx, html)?;
             }
+            Piece::VueText(text) => {
+                super::vtext::emit_pair(cx, text)?;
+            }
             Piece::On(_)
             | Piece::ModelValue { .. }
             | Piece::ModelUpdate { .. }
             | Piece::ModelModifiers { .. } => {
                 return Err(EmitError::unsupported_at(
                     Reason::SlotOutletPropKind,
-                    piece_span(piece),
+                    piece.span(),
                 ));
             }
         }
@@ -302,18 +305,6 @@ fn emit_fallback_interp(
         ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => Err(
             EmitError::unsupported_at(Reason::TextExpressionNotEmittable, interp.expression.span()),
         ),
-    }
-}
-
-fn piece_span(piece: &Piece<'_>) -> vize_s0::Span {
-    match piece {
-        Piece::Attr(attr) => attr.span,
-        Piece::Bind(bind) => bind.span,
-        Piece::On(on) => on.span,
-        Piece::VueHtml(html) => html.span,
-        Piece::ModelValue { span, .. }
-        | Piece::ModelUpdate { span, .. }
-        | Piece::ModelModifiers { span, .. } => *span,
     }
 }
 

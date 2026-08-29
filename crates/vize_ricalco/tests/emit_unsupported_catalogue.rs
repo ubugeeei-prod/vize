@@ -33,6 +33,7 @@ const SOURCE: &[Reason] = &[
     Reason::SlotOutletPropKind,
     Reason::SlotsSpreadShape,
     Reason::SlotsSpreadValueNotJs,
+    Reason::TextDirectiveExpressionNotJs,
     Reason::TextExpressionNotEmittable,
     Reason::UnsupportedBindingKind,
 ];

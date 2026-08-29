@@ -21,9 +21,10 @@
 //! `v-bind()` as [`BindingOp::VueCssBind`], Vue 2 `.sync` /
 //! `slot-scope` as [`BindingOp::VueSync`] / [`BindingOp::VueSlotScope`],
 //! Vue 2 pipe filters as [`crate::expr::ExprRef::Filter`], and
-//! `v-once` / `v-memo` / `v-show` / `v-html` as
+//! `v-once` / `v-memo` / `v-show` / `v-html` / `v-text` as
 //! [`BindingOp::VueOnce`] / [`BindingOp::VueMemo`] /
-//! [`BindingOp::VueShow`] / [`BindingOp::VueHtml`].
+//! [`BindingOp::VueShow`] / [`BindingOp::VueHtml`] /
+//! [`BindingOp::VueText`].
 //!
 //! # `Drop`-free by construction
 //!
@@ -53,7 +54,7 @@ pub use slot::{DynamicName, SlotContentOp, SlotOp};
 pub use text::{InterpolationOp, TextOp};
 pub use vue::{
     VueCssBindOp, VueDirectiveOp, VueHtmlOp, VueMemoOp, VueOnceOp, VueShowOp, VueSlotScopeOp,
-    VueSyncOp,
+    VueSyncOp, VueTextOp,
 };
 
 /// One S2 op standing in a region (a child position).
@@ -140,6 +141,8 @@ pub enum BindingOp<'a> {
     VueShow(Box<'a, VueShowOp<'a>>),
     /// `vue.html` - Vue `v-html` raw-HTML DOM prop.
     VueHtml(Box<'a, VueHtmlOp<'a>>),
+    /// `vue.text` - Vue `v-text` text-content DOM prop.
+    VueText(Box<'a, VueTextOp<'a>>),
 }
 
 impl BindingOp<'_> {
@@ -160,6 +163,7 @@ impl BindingOp<'_> {
             Self::VueMemo(_) => "vue.memo",
             Self::VueShow(_) => "vue.show",
             Self::VueHtml(_) => "vue.html",
+            Self::VueText(_) => "vue.text",
         }
     }
 }

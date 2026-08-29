@@ -2,8 +2,8 @@
 
 use alloc::vec::Vec as StdVec;
 use vize_s0::Span;
-use vize_s2::expr::{ExprRef, JsExpr};
-use vize_s2::op::{Attribute, BindOp, BindingOp, DynamicName, OnOp, VueHtmlOp};
+use vize_s2::expr::ExprRef;
+use vize_s2::op::{Attribute, BindOp, BindingOp, DynamicName, OnOp, VueHtmlOp, VueTextOp};
 
 use super::EmitCx;
 use super::EmitError;
@@ -55,7 +55,8 @@ pub(super) fn emit_props_object(
             || (!cx.in_v_for
                 && (visible.len() + extra > 1
                     || pieces_have_named(pieces, "class")
-                    || pieces_have_named(pieces, "style"))));
+                    || pieces_have_named(pieces, "style")
+                    || pieces_have_vue_text(pieces))));
     if multiline {
         cx.buf.push("{");
         cx.buf.indent();
@@ -105,6 +106,7 @@ pub(super) fn emit_props_object(
             Piece::Bind(bind) => emit_bind_pair(cx, pieces, bind, skip_normalize)?,
             Piece::On(event) => on::emit_on_pair(cx, event, is_plain_element)?,
             Piece::VueHtml(html) => super::html::emit_pair(cx, html)?,
+            Piece::VueText(text) => super::vtext::emit_pair(cx, text)?,
             Piece::ModelValue { name, source, .. } => {
                 super::model_key::emit_value(cx, *name, source)
             }
@@ -132,6 +134,7 @@ pub(super) enum Piece<'a> {
     Bind(&'a BindOp<'a>),
     On(&'a OnOp<'a>),
     VueHtml(&'a VueHtmlOp<'a>),
+    VueText(&'a VueTextOp<'a>),
     ModelValue {
         name: ModelName<'a>,
         source: &'a str,
@@ -169,6 +172,7 @@ pub(super) fn pieces<'a>(
             BindingOp::On(on) => out.push(Piece::On(on)),
             BindingOp::Model(model) => super::model::expand(model, &mut out)?,
             BindingOp::VueHtml(html) => out.push(Piece::VueHtml(html)),
+            BindingOp::VueText(text) => out.push(Piece::VueText(text)),
             BindingOp::SlotContent(_) => {}
             BindingOp::VueDirective(_) => {}
             BindingOp::VueOnce(_) => {}
@@ -182,16 +186,23 @@ pub(super) fn pieces<'a>(
             }
         }
     }
-    out.sort_by_key(|piece| match piece {
-        Piece::Attr(attr) => attr.span.start,
-        Piece::Bind(bind) => bind.span.start,
-        Piece::On(on) => on.span.start,
-        Piece::VueHtml(html) => html.span.start,
-        Piece::ModelValue { span, .. }
-        | Piece::ModelUpdate { span, .. }
-        | Piece::ModelModifiers { span, .. } => span.start,
-    });
+    out.sort_by_key(|piece| piece.span().start);
     Ok(out)
+}
+
+impl Piece<'_> {
+    pub(super) fn span(&self) -> Span {
+        match self {
+            Self::Attr(attr) => attr.span,
+            Self::Bind(bind) => bind.span,
+            Self::On(on) => on.span,
+            Self::VueHtml(html) => html.span,
+            Self::VueText(text) => text.span,
+            Self::ModelValue { span, .. }
+            | Self::ModelUpdate { span, .. }
+            | Self::ModelModifiers { span, .. } => *span,
+        }
+    }
 }
 
 fn skip_emitted_key(
@@ -226,6 +237,7 @@ fn pieces_have_named(pieces: &[Piece<'_>], name: &str) -> bool {
             ..
         } => prop.as_str() == name,
         Piece::VueHtml(_) => name == "innerHTML",
+        Piece::VueText(_) => name == "textContent",
         _ => false,
     })
 }
@@ -237,6 +249,12 @@ fn pieces_have_inline_on(pieces: &[Piece<'_>]) -> bool {
         Piece::ModelUpdate { .. } => true,
         _ => false,
     })
+}
+
+fn pieces_have_vue_text(pieces: &[Piece<'_>]) -> bool {
+    pieces
+        .iter()
+        .any(|piece| matches!(piece, Piece::VueText(_)))
 }
 
 fn pieces_are_dynamic_model_products(pieces: &[&Piece<'_>]) -> bool {
@@ -284,7 +302,7 @@ fn emit_bind_pair(
     push_ident_key(cx, key.as_str());
     cx.buf.push(": ");
     match raw_name {
-        "class" => emit_class_value(cx, pieces, bind, js, skip_normalize),
+        "class" => super::props_class::emit_class_value(cx, pieces, bind, js, skip_normalize),
         "style" => {
             style::emit_style_value(cx, static_style_piece(pieces), bind, js, skip_normalize)
         }
@@ -296,46 +314,6 @@ fn emit_bind_pair(
 fn emit_ref_for(cx: &mut EmitCx<'_>, name: &str) {
     if cx.in_v_for && name == "ref" {
         cx.buf.push("ref_for: true, ");
-    }
-}
-
-fn emit_class_value(
-    cx: &mut EmitCx<'_>,
-    pieces: &[Piece<'_>],
-    bind: &BindOp<'_>,
-    js: &JsExpr<'_>,
-    skip_normalize: bool,
-) {
-    if !skip_normalize {
-        cx.buf.use_normalize_class();
-        cx.buf.push(super::buf::Buf::normalize_class_alias());
-        cx.buf.push("(");
-    }
-    if let Some(static_class) = pieces.iter().find_map(|piece| match piece {
-        Piece::Attr(attr) if attr.name == "class" => Some(*attr),
-        _ => None,
-    }) {
-        let before = static_class.span.start <= bind.span.start;
-        cx.buf.push("[");
-        if before {
-            cx.buf.push("\"");
-            cx.buf
-                .push(escape_js_string(static_class.value.unwrap_or("")).as_str());
-            cx.buf.push("\", ");
-            cx.buf.push(js.source);
-        } else {
-            cx.buf.push(js.source);
-            cx.buf.push(", \"");
-            cx.buf
-                .push(escape_js_string(static_class.value.unwrap_or("")).as_str());
-            cx.buf.push("\"");
-        }
-        cx.buf.push("]");
-    } else {
-        cx.buf.push(js.source);
-    }
-    if !skip_normalize {
-        cx.buf.push(")");
     }
 }
 

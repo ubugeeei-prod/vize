@@ -21,7 +21,7 @@ mod expr;
 pub use binding::{
     FolioBind, FolioBinding, FolioModel, FolioOn, FolioSlotContent, FolioVueCssBind,
     FolioVueDirective, FolioVueHtml, FolioVueMemo, FolioVueOnce, FolioVueShow, FolioVueSlotScope,
-    FolioVueSync,
+    FolioVueSync, FolioVueText,
 };
 pub use expr::{FolioContract, FolioExpr, FolioForBinding};
 

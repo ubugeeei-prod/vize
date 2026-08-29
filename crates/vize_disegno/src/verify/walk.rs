@@ -181,6 +181,9 @@ fn body(
             FolioBinding::VueHtml(html) => {
                 line_checks("vue.html", html.span, owner, out);
             }
+            FolioBinding::VueText(text) => {
+                line_checks("vue.text", text.span, owner, out);
+            }
         }
     }
     for child in children {

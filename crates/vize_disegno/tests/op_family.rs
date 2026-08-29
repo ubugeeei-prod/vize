@@ -13,7 +13,7 @@ use vize_s2::op::{
     Attribute, BindOp, BindingContract, BindingOp, ComponentOp, DynamicName, ElementOp, ForBinding,
     ForOp, IfBranch, IfOp, InterpolationOp, ModelOp, Namespace, OnOp, Op, Region, SlotContentOp,
     SlotOp, TextOp, VueCssBindOp, VueDirectiveOp, VueHtmlOp, VueMemoOp, VueOnceOp, VueShowOp,
-    VueSlotScopeOp, VueSyncOp,
+    VueSlotScopeOp, VueSyncOp, VueTextOp,
 };
 
 /// The escape payload standing in for "some expression" wherever the op
@@ -55,6 +55,7 @@ fn binding_keyword(op: &BindingOp<'_>) -> &'static str {
         BindingOp::VueMemo(_) => "vue.memo",
         BindingOp::VueShow(_) => "vue.show",
         BindingOp::VueHtml(_) => "vue.html",
+        BindingOp::VueText(_) => "vue.text",
     }
 }
 
@@ -253,6 +254,13 @@ fn every_binding<'a>(allocator: &'a Allocator) -> Vec<'a, BindingOp<'a>> {
                 },
                 &allocator,
             )),
+            BindingOp::VueText(Box::new_in(
+                VueTextOp {
+                    value: Some(expr),
+                    span,
+                },
+                &allocator,
+            )),
         ],
         &allocator,
     )
@@ -300,6 +308,7 @@ fn every_attached_op_variant_is_matched_without_a_wildcard() {
             "vue.memo",
             "vue.show",
             "vue.html",
+            "vue.text",
         ]
     );
     for binding in &bindings {

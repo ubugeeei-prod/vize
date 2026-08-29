@@ -8,10 +8,9 @@
 //! `v-bind()` (P2-10) has no JSX twin: CSS `v-bind(color)` is SFC-only.
 //! The Vue 2 template-sugar surfaces (P2-9 installment 7) are the same
 //! kind of exception: `.sync`, `slot-scope`/`scope`, and pipe filters
-//! have no JSX twin. `v-once` / `v-memo` / `v-show` / `v-html`
+//! have no JSX twin. `v-once` / `v-memo` / `v-show` / `v-html` / `v-text`
 //! (P2-11) are the same kind: one-shot / dependency-memoized /
-//! display-toggle / raw-HTML rendering is Vue's, not a fair `ui.*` core
-//! op.
+//! display-toggle / content-prop rendering is Vue's, not a fair `ui.*` core op.
 
 use vize_s0::{Span, Vec};
 
@@ -146,6 +145,19 @@ pub struct VueHtmlOp<'a> {
     pub span: Span,
 }
 
+/// `vue.text` - Vue's `v-text` text-content property realization.
+///
+/// It stays a Vue dialect binding instead of a plain `ui.bind`: authored
+/// `v-text` is not a user prop, it forces the DOM `textContent` prop through
+/// Vue's display-string coercion.
+#[derive(Debug)]
+pub struct VueTextOp<'a> {
+    /// The text-content expression, when authored.
+    pub value: Option<ExprRef<'a>>,
+    /// The whole directive's source range.
+    pub span: Span,
+}
+
 /// See [`crate::op`] for the guard rationale.
 #[cfg(target_pointer_width = "64")]
 const _: () = {
@@ -157,4 +169,5 @@ const _: () = {
     assert!(core::mem::size_of::<VueMemoOp<'_>>() == 24);
     assert!(core::mem::size_of::<VueShowOp<'_>>() == 24);
     assert!(core::mem::size_of::<VueHtmlOp<'_>>() == 24);
+    assert!(core::mem::size_of::<VueTextOp<'_>>() == 24);
 };

@@ -173,6 +173,12 @@ fn assert_bindings(source: &str, root: SourceRoot<'_>, bindings: &[BindingOp<'_>
                     assert_expr(source, root, value);
                 }
             }
+            BindingOp::VueText(text) => {
+                assert_span(source, root, text.span, "text");
+                if let Some(value) = text.value {
+                    assert_expr(source, root, value);
+                }
+            }
         }
     }
 }

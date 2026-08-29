@@ -15,7 +15,7 @@ use super::super::owned::{
     FolioAttribute, FolioBind, FolioBranch, FolioComponent, FolioElement, FolioFor,
     FolioForBinding, FolioIf, FolioInterpolation, FolioModel, FolioName, FolioOn, FolioOp,
     FolioSlot, FolioSlotContent, FolioText, FolioVueCssBind, FolioVueDirective, FolioVueHtml,
-    FolioVueMemo, FolioVueOnce, FolioVueShow, FolioVueSlotScope, FolioVueSync,
+    FolioVueMemo, FolioVueOnce, FolioVueShow, FolioVueSlotScope, FolioVueSync, FolioVueText,
 };
 use super::expr_token::take_expr;
 use crate::op::Namespace;
@@ -35,6 +35,7 @@ pub(in super::super) enum Item {
     Memo(FolioVueMemo),
     Show(FolioVueShow),
     Html(FolioVueHtml),
+    VueText(FolioVueText),
     Branch(FolioBranch),
     Op(FolioOp),
 }
@@ -125,6 +126,7 @@ pub(in super::super) fn parse_item(content: &str, line_no: usize) -> Result<Item
         "vue.memo" => super::binding_line::memo(rest, line_no),
         "vue.show" => super::binding_line::show(rest, line_no),
         "vue.html" => super::binding_line::html(rest, line_no),
+        "vue.text" => super::binding_line::text(rest, line_no),
         other => Err(err(line_no, cstr!("unknown op `{other}`"))),
     }
 }
