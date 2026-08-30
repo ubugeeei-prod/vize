@@ -18,6 +18,8 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
+use crate::ir::ByteRange;
+use crate::markup::{MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
 
@@ -48,26 +50,40 @@ impl Rule for NoMultiSpaces {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        let props: Vec<_> = element.props.iter().collect();
-        if props.is_empty() {
-            return;
-        }
+        self.check_element(ctx, &MarkupElement::new(element));
+    }
+}
 
-        let first_prop_start = props[0].loc().span.start as usize;
-        let tag_end = element.loc.span.start as usize + 1 + element.tag.len();
-        self.check_gap(ctx, tag_end, first_prop_start);
+impl MarkupRule for NoMultiSpaces {
+    fn name(&self) -> &'static str {
+        META.name
+    }
 
-        for pair in props.windows(2) {
-            let prev_end = pair[0].loc().span.end as usize;
-            let curr_start = pair[1].loc().span.start as usize;
-            self.check_gap(ctx, prev_end, curr_start);
-        }
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        self.check_element(ctx.lint(), element);
     }
 }
 
 impl NoMultiSpaces {
-    fn check_gap<'a>(&self, ctx: &mut LintContext<'a>, gap_start: usize, gap_end: usize) {
+    fn check_element(&self, ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        let mut previous_binding_end = None;
+
+        element.walk_opening_item_ranges(&mut |range| {
+            let gap_start = previous_binding_end
+                .unwrap_or_else(|| tag_name_end_hint(element.range(), element.tag()));
+            self.check_gap(ctx, gap_start, range.start);
+            previous_binding_end = Some(range.end);
+        });
+    }
+
+    fn check_gap(&self, ctx: &mut LintContext<'_>, gap_start: u32, gap_end: u32) {
+        let gap_start = gap_start as usize;
+        let gap_end = gap_end as usize;
         let gap_start = first_whitespace_offset(ctx.source, gap_start, gap_end);
         if gap_end <= gap_start {
             return;
@@ -93,6 +109,13 @@ impl NoMultiSpaces {
             .with_fix(fix),
         );
     }
+}
+
+fn tag_name_end_hint(range: ByteRange, tag: &str) -> u32 {
+    // For JSX member/namespaced tags the facade tag can be shorter than the
+    // written tag. Starting early is fine because `first_whitespace_offset`
+    // advances to the actual gap before checking it.
+    range.start.saturating_add(1 + tag.len() as u32)
 }
 
 fn is_invalid_gap(gap: &str) -> bool {

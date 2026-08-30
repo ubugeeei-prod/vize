@@ -37,7 +37,6 @@
 //!   conditional/list scope, comment).
 //!
 //! # Driving rules
-//!
 //! Implement [`MarkupRule`] (default-empty `enter_*` hooks) and run it with
 //! [`MarkupDocumentVisitor`], which projects the hooks from either backend. The
 //! visitor threads a [`MarkupContext`] wrapping the existing [`LintContext`], so
@@ -1646,5 +1645,6 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
 }
 
 mod exact;
+mod source_ranges;
 #[cfg(test)]
 mod tests;

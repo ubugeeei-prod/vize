@@ -24,6 +24,7 @@ mod no_dupe_style_properties_tests;
 mod no_duplicate_class_tests;
 mod no_duplicate_dt_tests;
 mod no_i_for_icon_tests;
+mod no_multi_spaces_tests;
 mod no_redundant_roles_tests;
 mod no_role_presentation_on_focusable_jsx_tests;
 mod no_role_presentation_on_focusable_tests;
