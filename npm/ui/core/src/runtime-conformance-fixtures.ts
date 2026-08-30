@@ -3,12 +3,12 @@ import assert from "node:assert/strict";
 import { defineComponent, h, type VNode } from "vue";
 
 import ActionButton from "./action-button.vue";
-import CheckboxControl from "./checkbox-control.vue";
 import IdProvider from "./deterministic-id-provider.vue";
 import { useDeterministicId } from "./deterministic-id.ts";
 import ErrorSummary from "./error-summary.vue";
 import LinkAnchor from "./link-anchor.vue";
 import { collapsibleRuntimeFixtures } from "./runtime-conformance-collapsible-fixtures.ts";
+import { checkboxRuntimeFixture } from "./runtime-conformance-checkbox-fixtures.ts";
 import { layoutRuntimeFixtures } from "./runtime-conformance-layout-fixtures.ts";
 import { meterRuntimeFixture } from "./runtime-conformance-meter-fixtures.ts";
 import PrimitiveElement from "./primitive-element.vue";
@@ -19,6 +19,7 @@ import { blockUIRuntimeFixture } from "./runtime-conformance-block-ui-fixtures.t
 import { emptyStateRuntimeFixture } from "./runtime-conformance-empty-state-fixtures.ts";
 import { fieldRuntimeFixtures } from "./runtime-conformance-field-fixtures.ts";
 import { progressRuntimeFixture } from "./runtime-conformance-progress-fixtures.ts";
+import { radioGroupRuntimeFixtures } from "./runtime-conformance-radio-group-fixtures.ts";
 import { switchRuntimeFixture } from "./runtime-conformance-switch-fixtures.ts";
 import SearchField from "./search-field.vue";
 import TextInput from "./text-input.vue";
@@ -78,27 +79,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       assert.equal(button.getAttribute("aria-busy"), "true");
     },
   },
-  {
-    name: "checkbox",
-    sourceFile: "checkbox-control.vue",
-    render: () =>
-      h(CheckboxControl, {
-        ariaLabel: "Accept terms",
-        defaultChecked: true,
-      }),
-    assertServerMarkup(html) {
-      assert.match(html, /type="checkbox"/);
-      assert.match(html, /aria-label="Accept terms"/);
-      assert.match(html, /aria-checked="true"/);
-      assert.match(html, /checked/);
-    },
-    assertHydratedDom(host) {
-      const checkbox = host.querySelector('[data-vize-ui="checkbox"]');
-      assert.ok(checkbox instanceof HTMLInputElement);
-      assert.equal(checkbox.checked, true);
-      assert.equal(checkbox.getAttribute("aria-checked"), "true");
-    },
-  },
+  checkboxRuntimeFixture,
   {
     name: "deterministic-id-provider",
     sourceFile: "deterministic-id-provider.vue",
@@ -264,6 +245,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       assert.equal(textarea.getAttribute("data-empty"), "false");
     },
   },
+  ...radioGroupRuntimeFixtures,
   {
     name: "search-field",
     sourceFile: "search-field.vue",

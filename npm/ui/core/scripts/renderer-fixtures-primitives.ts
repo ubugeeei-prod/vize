@@ -238,6 +238,23 @@ const value = ref(64);
 `,
   },
   {
+    filename: "RadioGroupConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { RadioGroup, RadioGroupItem } from "./radio-group.ts";
+
+const value = ref<string | null>("weekly");
+</script>
+
+<template>
+  <RadioGroup v-model="value" aria-label="Email frequency" name="frequency" orientation="horizontal" required>
+    <label><RadioGroupItem value="daily" />Daily</label>
+    <label><RadioGroupItem value="weekly" />Weekly</label>
+  </RadioGroup>
+</template>
+`,
+  },
+  {
     filename: "CollapsibleConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

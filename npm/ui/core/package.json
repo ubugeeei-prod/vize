@@ -124,6 +124,11 @@
       "import": "./dist/input.mjs",
       "default": "./dist/input.mjs"
     },
+    "./radio-group": {
+      "types": "./dist/radio-group.d.mts",
+      "import": "./dist/radio-group.mjs",
+      "default": "./dist/radio-group.mjs"
+    },
     "./search-field": {
       "types": "./dist/search-field.d.mts",
       "import": "./dist/search-field.mjs",

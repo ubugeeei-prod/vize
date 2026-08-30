@@ -32,6 +32,7 @@ export * from "./button.ts";
 export * from "./link.ts";
 export * from "./toggle.ts";
 export * from "./input.ts";
+export * from "./radio-group.ts";
 export * from "./search-field.ts";
 export * from "./separator.ts";
 export * from "./spacer.ts";

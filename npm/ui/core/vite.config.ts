@@ -49,6 +49,7 @@ export default defineConfig({
       link: "src/link.ts",
       toggle: "src/toggle.ts",
       input: "src/input.ts",
+      "radio-group": "src/radio-group.ts",
       "search-field": "src/search-field.ts",
       separator: "src/separator.ts",
       spacer: "src/spacer.ts",
