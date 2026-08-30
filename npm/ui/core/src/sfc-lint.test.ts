@@ -76,6 +76,8 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
       "src/text.vue",
       "src/textarea-control.vue",
       "src/toggle-button.vue",
+      "src/toggle-group-item.vue",
+      "src/toggle-group.vue",
       "src/transition.vue",
       "src/visually-hidden.vue",
     ],
@@ -141,6 +143,8 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
       "text.vue",
       "textarea-control.vue",
       "toggle-button.vue",
+      "toggle-group-item.vue",
+      "toggle-group.vue",
       "transition.vue",
       "visually-hidden.vue",
     ].map((basename) => ({

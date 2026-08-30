@@ -1,5 +1,6 @@
 import { avatarRendererFixtures } from "./renderer-fixtures-avatar.ts";
 import { textRendererFixtures } from "./renderer-fixtures-text.ts";
+import { toggleGroupRendererFixtures } from "./renderer-fixtures-toggle-group.ts";
 
 export const primitiveRendererFixtures = [
   {
@@ -277,6 +278,7 @@ const open = ref(false);
 </template>
 `,
   },
+  ...toggleGroupRendererFixtures,
   {
     filename: "SeparatorConsumer.vue",
     source: String.raw`<script setup lang="ts">
