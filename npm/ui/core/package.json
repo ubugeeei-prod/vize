@@ -189,6 +189,11 @@
       "import": "./dist/stack.mjs",
       "default": "./dist/stack.mjs"
     },
+    "./surface": {
+      "types": "./dist/surface.d.mts",
+      "import": "./dist/surface.mjs",
+      "default": "./dist/surface.mjs"
+    },
     "./skeleton": {
       "types": "./dist/skeleton.d.mts",
       "import": "./dist/skeleton.mjs",

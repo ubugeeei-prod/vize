@@ -6,6 +6,7 @@ import {
 import { avatarLayoutFamilyCatalog } from "./family-catalog-layout-avatar.ts";
 import { iconLayoutFamilyCatalog } from "./family-catalog-layout-icon.ts";
 import { listLayoutFamilyCatalog } from "./family-catalog-layout-list.ts";
+import { surfaceLayoutFamilyCatalog } from "./family-catalog-layout-surface.ts";
 
 export const layoutFamilyCatalog = [
   {
@@ -266,6 +267,7 @@ export const layoutFamilyCatalog = [
     maturity: "stable",
     owner: catalogOwner,
   },
+  ...surfaceLayoutFamilyCatalog,
   {
     canonicalName: "heading",
     title: "Heading",

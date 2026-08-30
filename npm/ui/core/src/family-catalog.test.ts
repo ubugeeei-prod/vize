@@ -23,6 +23,7 @@ const rendererGate = [
   await readFile(path.resolve("scripts/renderer-fixtures-commands.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-dialog.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-icon.ts"), "utf8"),
+  await readFile(path.resolve("scripts/renderer-fixtures-layout.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-navigation.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-overlays.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-primitives.ts"), "utf8"),
@@ -144,6 +145,8 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     (entry) => entry.canonicalName === "icon" || entry.canonicalName === "icon-button",
   );
   const iconFamilyRoot = "src/families/layout/icon/";
+  const surface = stableEntries.find((entry) => entry.canonicalName === "surface");
+  const surfaceFamilyRoot = "src/families/layout/surface/";
 
   assert.ok(buttonGroup, "button-group must stay catalogued");
   assert.equal(buttonGroup.entryFile, `${actionGroupRoot}button-group.ts`);
@@ -204,4 +207,20 @@ test("new family-owned SFC primitives keep implementation and tests together", (
       `${entry.canonicalName} type tests must stay beside the layout icon source`,
     );
   }
+
+  assert.ok(surface, "surface must stay catalogued");
+  assert.equal(surface.entryFile, `${surfaceFamilyRoot}surface.ts`);
+  assert.equal(surface.behaviorContract, `${surfaceFamilyRoot}surface.behavior.md`);
+  assert.ok(
+    surface.sourceFiles.every((file) => file.startsWith(surfaceFamilyRoot)),
+    "surface source files must stay beside the layout surface source",
+  );
+  assert.ok(
+    surface.tests.every((file) => file.startsWith(surfaceFamilyRoot)),
+    "surface tests must stay beside the layout surface source",
+  );
+  assert.ok(
+    surface.typeTests?.every((file) => file.startsWith(surfaceFamilyRoot)),
+    "surface type tests must stay beside the layout surface source",
+  );
 });
