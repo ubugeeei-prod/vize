@@ -139,6 +139,11 @@
       "import": "./dist/button-group.mjs",
       "default": "./dist/button-group.mjs"
     },
+    "./copy-button": {
+      "types": "./dist/copy-button.d.mts",
+      "import": "./dist/copy-button.mjs",
+      "default": "./dist/copy-button.mjs"
+    },
     "./toolbar": {
       "types": "./dist/toolbar.d.mts",
       "import": "./dist/toolbar.mjs",

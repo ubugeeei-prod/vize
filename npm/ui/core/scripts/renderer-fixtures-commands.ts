@@ -1,6 +1,21 @@
 /** Command, history, shortcut, and action fixtures compiled by every supported renderer lane. */
 export const commandRendererFixtures = [
   {
+    filename: "CopyButtonConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { CopyButton } from "./families/actions/copy-button/copy-button.ts";
+
+function onCopy(value: string) {
+  void value;
+}
+</script>
+
+<template>
+  <CopyButton value="https://vize.dev/docs" idle-label="Copy docs link" @copy="onCopy" />
+</template>
+`,
+  },
+  {
     filename: "ToolbarConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { Toolbar, ToolbarItem } from "./families/actions/toolbar/toolbar.ts";
