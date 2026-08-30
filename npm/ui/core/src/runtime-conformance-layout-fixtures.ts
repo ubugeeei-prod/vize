@@ -8,6 +8,7 @@ import { separatorRuntimeFixture } from "./runtime-conformance-separator-fixture
 import { skeletonRuntimeFixture } from "./runtime-conformance-skeleton-fixtures.ts";
 import { spacerRuntimeFixture } from "./runtime-conformance-spacer-fixtures.ts";
 import { stackRuntimeFixture } from "./runtime-conformance-stack-fixtures.ts";
+import { textRuntimeFixture } from "./runtime-conformance-text-fixtures.ts";
 
 export const layoutRuntimeFixtures: readonly RuntimeFixture[] = [
   aspectRatioRuntimeFixture,
@@ -19,4 +20,5 @@ export const layoutRuntimeFixtures: readonly RuntimeFixture[] = [
   skeletonRuntimeFixture,
   spacerRuntimeFixture,
   stackRuntimeFixture,
+  textRuntimeFixture,
 ];

@@ -139,6 +139,11 @@
       "import": "./dist/textarea.mjs",
       "default": "./dist/textarea.mjs"
     },
+    "./text": {
+      "types": "./dist/text.d.mts",
+      "import": "./dist/text.mjs",
+      "default": "./dist/text.mjs"
+    },
     "./switch": {
       "types": "./dist/switch.d.mts",
       "import": "./dist/switch.mjs",

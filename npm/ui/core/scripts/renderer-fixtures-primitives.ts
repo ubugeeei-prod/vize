@@ -86,6 +86,24 @@ const tone = ref<"neutral" | "accent" | "info" | "success" | "warning" | "danger
 `,
   },
   {
+    filename: "TextConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { Text } from "./text.ts";
+
+const truncate = ref(true);
+</script>
+
+<template>
+  <Text as="p" size="lg" weight="semibold" tone="accent" :truncate>
+    <template #default="{ size, tone, truncate: isTruncated, weight }">
+      {{ size }} {{ weight }} {{ tone }} {{ isTruncated }}
+    </template>
+  </Text>
+</template>
+`,
+  },
+  {
     filename: "ClusterConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

@@ -51,6 +51,7 @@ export default defineConfig({
       stack: "src/stack.ts",
       skeleton: "src/skeleton.ts",
       meter: "src/meter.ts",
+      text: "src/text.ts",
       textarea: "src/textarea.ts",
       switch: "src/switch.ts",
       checkbox: "src/checkbox.ts",
