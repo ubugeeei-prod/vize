@@ -222,3 +222,97 @@ export function assertP2_11InstallmentFiles(): void {
     assert.match(installments.get(number)!, pattern);
   }
 }
+
+function phaseTaskSection(source: string, id: string): string {
+  const start = new RegExp(`^## ${id} —`, "mu").exec(source)?.index;
+  if (start == null) throw new Error(`missing ${id} contract`);
+  const tail = source.slice(start);
+  const next = /^## P2-/mu.exec(tail.slice(1))?.index;
+  return next == null ? tail : tail.slice(0, next + 1);
+}
+
+function phaseDependencySet(source: string, id: string, taskIds: string[]): string[] {
+  const section = phaseTaskSection(source, id);
+  const raw = /\*\*Deps:\*\* (?<deps>[\s\S]*?) \*\*Non-goals:\*\*/u.exec(section)?.groups?.deps;
+  assert.ok(raw, `missing ${id} dependency clause`);
+  if (raw === "all of P2-1..P2-19.") return taskIds.filter((task) => task !== "P2-20");
+  return raw.match(/P2-\d+(?:[ab])?/gu) ?? [];
+}
+
+function exitGateItems(source: string) {
+  const gate = requiredSection(
+    source,
+    /^## Exit gate \(machine-checkable\)/mu,
+    /$a/mu,
+    "P2 exit gate",
+  );
+  return [...gate.matchAll(/^- \[(?<checked>[ x])\] \*\*(?<title>[^*]+)\*\*/gmu)].map((match) => ({
+    checked: match.groups!.checked === "x",
+    title: match.groups!.title,
+  }));
+}
+
+export function assertP2_17P2_20ExitBlockers(
+  phase: string,
+  tasksLater: string,
+  taskIds: string[],
+  p2_17Checked: boolean | undefined,
+  p2_20Checked: boolean | undefined,
+): void {
+  const phaseLedger = requiredSection(
+    phase,
+    /^## Current execution ledger/mu,
+    /^## Davinci describes/mu,
+    "Phase 2 current ledger",
+  );
+  const p2_17 = phaseTaskSection(tasksLater, "P2-17");
+  const p2_20 = phaseTaskSection(tasksLater, "P2-20");
+  const gateItems = exitGateItems(phase);
+
+  assert.equal(p2_17Checked, false, "P2-17 must not be ticked before review sign-off");
+  assert.equal(p2_20Checked, false, "P2-20 must not be ticked before exit evaluation");
+  assert.deepEqual(phaseDependencySet(tasksLater, "P2-17", taskIds), ["P2-11", "P2-12b", "P2-13"]);
+  assert.deepEqual(
+    phaseDependencySet(tasksLater, "P2-20", taskIds),
+    taskIds.filter((id) => id !== "P2-20"),
+  );
+
+  assert.match(p2_17, /mechanical half is machine-checked and must land as tests/);
+  assert.match(p2_17, /every S2 op's span resolves into its authored SFC/);
+  assert.match(p2_17, /`schema_version` is present and negotiated/);
+  assert.match(p2_20, /a line is ticked only when it is satisfied/);
+  assert.match(p2_20, /an unticked line names its blocker/);
+  assert.match(p2_20, /no line's wording is softened to make it tickable/);
+
+  assert.match(phaseLedger, /P2-17\/P2-20 pre-exit blocker map/);
+  assert.match(phaseLedger, /P2-11's S2 DOM lane/);
+  assert.match(phaseLedger, /P2-12b's traversal-budget swap/);
+  assert.match(phaseLedger, /P2-13's failure\s+provenance contract/);
+  assert.match(phaseLedger, /span-resolution and `schema_version` negotiation checks/);
+  assert.match(phaseLedger, /P2-20 cannot evaluate the exit gate until every P2-1\.\.P2-19/);
+  assert.match(phaseLedger, /tick a line only with evidence/);
+
+  assert.equal(gateItems.length, 12, "the P2 exit gate item count changed");
+  assert.deepEqual(
+    gateItems.filter((item) => item.checked),
+    [],
+    "P2 exit gate must remain unticked until P2-20 evaluation records evidence",
+  );
+  assert.ok(
+    gateItems.some((item) => item.title === "IR contract review signed off"),
+    "P2-17 must remain an exit-gate line",
+  );
+  assert.ok(
+    gateItems.some(
+      (item) => item.title === "Differential lanes green and their retirement condition restated",
+    ),
+    "P2-20 must continue to gate differential-lane retirement",
+  );
+  assert.ok(
+    gateItems.some(
+      (item) =>
+        item.title === "Corpus waiver ledger empty and the phase-boundary expansion audit done",
+    ),
+    "P2-20 must continue to gate the C-16 waiver-ledger review",
+  );
+}

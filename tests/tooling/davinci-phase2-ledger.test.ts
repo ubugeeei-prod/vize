@@ -10,6 +10,7 @@ import {
 } from "../../tools/fixtures/fixture-compatibility-ledger.mjs";
 import {
   assertCurrentP2_11Installment,
+  assertP2_17P2_20ExitBlockers,
   assertP2_11InstallmentFiles,
   p2_11CurrentRecordEvidence,
   recordsTaskRow,
@@ -174,6 +175,17 @@ test("dependency edges explain every untouched classification", () => {
       `${id} is not dependency-blocked by an open task`,
     );
   }
+});
+
+test("P2-17 and P2-20 stay blocked by explicit exit-gate dependencies", () => {
+  const tasks = taskIndex(text.phase);
+  assertP2_17P2_20ExitBlockers(
+    text.phase,
+    text.tasksLater,
+    [...tasks.keys()],
+    tasks.get("P2-17"),
+    tasks.get("P2-20"),
+  );
 });
 
 test("every completion joins a merged PR to honest current evidence", () => {

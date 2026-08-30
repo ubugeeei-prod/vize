@@ -111,6 +111,14 @@ counts or fixture availability changes.
   [`fixture-compatibility-ledger.test.ts`](../../tests/tooling/fixture-compatibility-ledger.test.ts).
   A worktree's initialized or uninitialized submodule count is transient and
   must not replace this inventory.
+- **P2-17/P2-20 pre-exit blocker map:** P2-17 cannot be signed off until
+  P2-11's S2 DOM lane, P2-12b's traversal-budget swap and P2-13's failure
+  provenance contract are all available to review together; its mechanical
+  span-resolution and `schema_version` negotiation checks still need to land as
+  tests. P2-20 cannot evaluate the exit gate until every P2-1..P2-19
+  dependency is closed. Until then the exit gate below stays unticked: P2-20's
+  acceptance rule is to tick a line only with evidence, or leave it unticked
+  with its blocker named during the phase-exit evaluation.
 
 ## Davinci describes the shipped pipeline — and cannot yet consume it (2026-08-19)
 
