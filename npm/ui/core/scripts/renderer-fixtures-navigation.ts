@@ -27,6 +27,24 @@ import {
 `,
   },
   {
+    filename: "SkipLinkConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { SkipLink } from "./families/navigation/skip-link/skip-link.ts";
+
+function onActivate(event: MouseEvent): void {
+  void event.defaultPrevented;
+}
+</script>
+
+<template>
+  <SkipLink href="#content" @activate="onActivate">
+    <template #default="{ state, targetId }">Skip to {{ targetId }} {{ state }}</template>
+  </SkipLink>
+  <main id="content">Main content</main>
+</template>
+`,
+  },
+  {
     filename: "TabsConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from "./tabs.ts";

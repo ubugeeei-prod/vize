@@ -144,6 +144,11 @@
       "import": "./dist/link.mjs",
       "default": "./dist/link.mjs"
     },
+    "./skip-link": {
+      "types": "./dist/skip-link.d.mts",
+      "import": "./dist/skip-link.mjs",
+      "default": "./dist/skip-link.mjs"
+    },
     "./toggle": {
       "types": "./dist/toggle.d.mts",
       "import": "./dist/toggle.mjs",

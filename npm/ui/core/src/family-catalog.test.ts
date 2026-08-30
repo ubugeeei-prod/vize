@@ -148,6 +148,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["locale", "src/families/i18n/locale/"],
     ["rating", "src/families/form/rating/"],
     ["scroll-area", "src/families/layout/scroll-area/"],
+    ["skip-link", "src/families/navigation/skip-link/"],
     ["status-light", "src/families/feedback/status-light/"],
     ["surface", "src/families/layout/surface/"],
     ["tooltip", "src/families/overlays/tooltip/"],

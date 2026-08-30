@@ -7,6 +7,7 @@ import IdProvider from "./deterministic-id-provider.vue";
 import { useDeterministicId } from "./deterministic-id.ts";
 import ErrorSummary from "./error-summary.vue";
 import LinkAnchor from "./link-anchor.vue";
+import { skipLinkRuntimeFixture } from "./families/navigation/skip-link/runtime-conformance-skip-link-fixtures.ts";
 import { collapsibleRuntimeFixtures } from "./runtime-conformance-collapsible-fixtures.ts";
 import { checkboxRuntimeFixture } from "./runtime-conformance-checkbox-fixtures.ts";
 import { calloutRuntimeFixture } from "./families/feedback/callout/runtime-conformance-callout-fixtures.ts";
@@ -178,6 +179,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       assert.equal(link.textContent, "Docs");
     },
   },
+  skipLinkRuntimeFixture,
   ...listboxRuntimeFixtures,
   meterRuntimeFixture,
   nativeSelectRuntimeFixture,

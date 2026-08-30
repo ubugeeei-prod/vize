@@ -37,6 +37,7 @@ export * from "./button.ts";
 export * from "./families/actions/button-group/button-group.ts";
 export * from "./families/layout/icon/icon-button.ts";
 export * from "./link.ts";
+export * from "./families/navigation/skip-link/skip-link.ts";
 export * from "./toggle.ts";
 export * from "./toggle-group.ts";
 export * from "./families/overlays/popover/popover.ts";
