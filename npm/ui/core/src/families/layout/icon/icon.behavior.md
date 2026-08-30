@@ -1,3 +1,5 @@
+# Icon
+
 | Case                 | Required behavior                                                                                                                                              |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `icon.vue` source    | Owns the canonical Icon SFC implementation and every row in this table.                                                                                        |

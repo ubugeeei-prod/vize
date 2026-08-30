@@ -206,15 +206,17 @@ test("passes slot state and exposes live icon state", async () => {
     "img:false:lg:none:close-icon-description:0 0 24 24",
   );
 
-  await handle.wrapper.setProps({ ariaHidden: true, size: "xs" });
+  await handle.wrapper.setProps({ ariaHidden: true, size: "xs", viewBox: "0 0 16 16" });
   assert.equal(exposed.ariaState, "decorative");
   assert.equal(exposed.decorative, true);
   assert.equal(exposed.descriptionId, undefined);
   assert.equal(exposed.size, "xs");
+  assert.equal(exposed.viewBox, "0 0 16 16");
+  assert.equal(root.getAttribute("viewBox"), "0 0 16 16");
   assert.equal(root.getAttribute("data-aria-state"), "decorative");
   assert.equal(
     root.querySelector("path")?.getAttribute("data-slot-state"),
-    "decorative:true:xs:none:none:0 0 24 24",
+    "decorative:true:xs:none:none:0 0 16 16",
   );
   handle.unmount();
 });

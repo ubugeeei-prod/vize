@@ -47,6 +47,7 @@ const generatedDescriptionId = useDeterministicId({
   hint: "icon-description",
 });
 
+const viewBoxValue = computed(() => viewBox);
 const sizeValue = computed<IconSize>(() => size);
 const hasTitle = computed(() => hasText(title));
 const hasDescription = computed(() => hasText(description));
@@ -84,7 +85,7 @@ const slotState = computed<IconSlotState>(() => ({
   descriptionId: descriptionIdValue.value,
   size: sizeValue.value,
   titleId: titleIdValue.value,
-  viewBox,
+  viewBox: viewBoxValue.value,
 }));
 
 type IconSetupExpose = Omit<
@@ -97,7 +98,7 @@ type IconSetupExpose = Omit<
   readonly element: typeof element;
   readonly size: typeof sizeValue;
   readonly titleId: typeof titleIdValue;
-  readonly viewBox: string;
+  readonly viewBox: typeof viewBoxValue;
 };
 
 const exposed = {
@@ -107,7 +108,7 @@ const exposed = {
   element,
   size: sizeValue,
   titleId: titleIdValue,
-  viewBox,
+  viewBox: viewBoxValue,
 } satisfies IconSetupExpose;
 
 defineExpose(exposed);

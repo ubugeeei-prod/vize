@@ -1,3 +1,5 @@
+# IconButton
+
 | Case                     | Required behavior                                                                                                                                                    |
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `icon-button.vue` source | Owns the canonical IconButton SFC implementation and every row in this table.                                                                                        |
