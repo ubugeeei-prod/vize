@@ -32,12 +32,15 @@ const BATTERY: &[(&str, &str)] = &[
 #[derive(Default)]
 struct Report {
     files: u64,
+    unreadable_count: u64,
     parsed: u64,
     templates: u64,
     compared: u64,
     old_error_skips: u64,
     s2_refusal_count: u64,
     divergence_count: u64,
+    unreadable: Vec<String>,
+    old_error_samples: Vec<String>,
     s2_refusal_reasons: BTreeMap<&'static str, u64>,
     s2_refusal_samples: BTreeMap<&'static str, Vec<String>>,
     s2_refusals: Vec<String>,
@@ -76,15 +79,25 @@ fn dom_emit_agrees_on_sfc_templates_body() {
 
     let mut corpus = Report::default();
     for file in &sweep.files {
-        let Ok(source) = fs::read_to_string(file) else {
-            continue;
+        let source = match fs::read_to_string(file) {
+            Ok(source) => source,
+            Err(error) => {
+                corpus.unreadable_count += 1;
+                if corpus.unreadable.len() < 20 {
+                    corpus
+                        .unreadable
+                        .push(format!("{}: {error}", file.display()));
+                }
+                continue;
+            }
         };
         let context = file.to_string_lossy();
         compare_sfc_template(context.as_ref(), &source, &mut corpus);
     }
     eprintln!(
-        "davinci DOM corpus sweep: files={} parsed={} templates={} compared={} old_error_skips={} s2_refusals={} divergences={}",
+        "davinci DOM corpus sweep: files={} unreadable={} parsed={} templates={} compared={} old_error_skips={} s2_refusals={} divergences={}",
         corpus.files,
+        corpus.unreadable_count,
         corpus.parsed,
         corpus.templates,
         corpus.compared,
@@ -122,6 +135,12 @@ fn compare_sfc_template(name: &str, source: &str, report: &mut Report) {
     let (_, errors, old) = vize_atelier_dom::compile_template(&old_allocator, &template.content);
     if !errors.is_empty() {
         report.old_error_skips += 1;
+        if report.old_error_samples.len() < 20 {
+            report.old_error_samples.push(format!(
+                "{name}: {} old-lane errors: {errors:?}",
+                errors.len()
+            ));
+        }
         return;
     }
     let old = format!("{}\n{}", old.preamble, old.code);
@@ -203,8 +222,15 @@ fn assert_empty(label: &str, values: &[String]) {
 
 fn assert_clean_corpus(report: &Report) {
     assert!(
-        report.s2_refusal_count == 0 && report.divergence_count == 0,
-        "corpus S2 refusals ({}) by reason {:?}:\n{}\n\ncorpus divergences ({}):\n{}",
+        report.unreadable_count == 0
+            && report.old_error_skips == 0
+            && report.s2_refusal_count == 0
+            && report.divergence_count == 0,
+        "corpus unreadable files ({}):\n{}\n\ncorpus old-lane error skips ({}):\n{}\n\ncorpus S2 refusals ({}) by reason {:?}:\n{}\n\ncorpus divergences ({}):\n{}",
+        report.unreadable_count,
+        report.unreadable.join("\n"),
+        report.old_error_skips,
+        report.old_error_samples.join("\n"),
         report.s2_refusal_count,
         report.s2_refusal_reasons,
         report.s2_refusals.join("\n"),

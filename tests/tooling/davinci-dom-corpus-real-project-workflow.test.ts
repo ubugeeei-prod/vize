@@ -1,10 +1,17 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 
 import {
   corpusEvidenceLines,
+  expectedDomOutputComparisons,
+  expectedGitlinks,
+  parseCorpusEvidence,
   parseFixtureGitlinks,
+  validateCorpusEvidence,
   verdictFor,
 } from "../../tools/fixtures/davinci-dom-corpus-workflow.mjs";
 import { findStep, readRealProjectMatrixWorkflow } from "./support/real-project-matrix-workflow.ts";
@@ -62,6 +69,7 @@ test("real-project workflow carries a full-canonical S2 DOM corpus job", () => {
   });
   assert.equal(finalize.run, "node tools/fixtures/davinci-dom-corpus-workflow.mjs finalize");
   assert.match(helperSource, /"record-only"/);
+  assert.match(helperSource, /expectedDomOutputComparisons = 144/);
   assert.match(helperSource, /summary\.json/);
   assert.match(helperSource, /davinci-differential corpus scope\|davinci DOM corpus sweep/);
   assert.match(helperSource, /Davinci S2 DOM corpus failed/);
@@ -94,4 +102,98 @@ test("S2 DOM corpus workflow helper extracts canonical evidence", () => {
   );
   assert.equal(verdictFor("failure", "record-only"), "success");
   assert.equal(verdictFor("cancelled", "record-only"), "cancelled");
+  assert.equal(expectedGitlinks, 146);
+  assert.equal(expectedDomOutputComparisons, 144);
+});
+
+test("S2 DOM corpus workflow gitlink constant matches the checkout index", () => {
+  const indexed = parseFixtureGitlinks(
+    execFileSync("git", ["ls-files", "--stage", "--", "tests/_fixtures/_git"], {
+      encoding: "utf8",
+    }),
+  );
+
+  assert.equal(indexed.length, expectedGitlinks);
+});
+
+test("S2 DOM corpus workflow validates closure evidence artifacts", () => {
+  const artifact = mkdtempSync(join(tmpdir(), "vize-dom-corpus-"));
+  try {
+    writeFileSync(
+      join(artifact, "selected-gitlinks.txt"),
+      Array.from({ length: 146 }, (_, index) => `tests/_fixtures/_git/project-${index}`)
+        .join("\n")
+        .concat("\n"),
+    );
+    writeFileSync(
+      join(artifact, "submodule-status.txt"),
+      Array.from(
+        { length: 146 },
+        (_, index) =>
+          ` 0123456789abcdef0123456789abcdef01234567 tests/_fixtures/_git/project-${index}`,
+      )
+        .join("\n")
+        .concat("\n"),
+    );
+    writeFileSync(
+      join(artifact, "dom-corpus.log"),
+      [
+        "\u001B[32mdavinci-differential corpus scope: root=tests/_fixtures/_git scope=canonical closure_evidence=true submodules=146\u001B[0m",
+        "davinci DOM corpus sweep: files=37448 unreadable=0 parsed=37448 templates=35000 compared=35000 old_error_skips=0 s2_refusals=0 divergences=0",
+      ].join("\n"),
+    );
+
+    const validation = validateCorpusEvidence(artifact);
+    assert.deepEqual(validation.failures, []);
+    assert.equal(validation.manifestDomOutputComparisons, 144);
+    assert.equal(validation.selectedGitlinks, 146);
+    assert.equal(validation.submoduleStatusRows, 146);
+    assert.deepEqual(parseCorpusEvidence(readFileSync(join(artifact, "dom-corpus.log"), "utf8")), {
+      canonicalScope: true,
+      closureEvidence: true,
+      submodules: 146,
+      files: 37448,
+      unreadable: 0,
+      parsed: 37448,
+      templates: 35000,
+      compared: 35000,
+      oldErrorSkips: 0,
+      s2Refusals: 0,
+      divergences: 0,
+    });
+  } finally {
+    rmSync(artifact, { recursive: true, force: true });
+  }
+});
+
+test("S2 DOM corpus workflow rejects stale or dirty evidence artifacts", () => {
+  const artifact = mkdtempSync(join(tmpdir(), "vize-dom-corpus-"));
+  try {
+    writeFileSync(
+      join(artifact, "selected-gitlinks.txt"),
+      Array.from({ length: 142 }, (_, index) => `tests/_fixtures/_git/project-${index}`)
+        .join("\n")
+        .concat("\n"),
+    );
+    writeFileSync(join(artifact, "submodule-status.txt"), "");
+    writeFileSync(
+      join(artifact, "dom-corpus.log"),
+      [
+        "davinci-differential corpus scope: root=/tmp/tests/_fixtures/_git scope=smoke closure_evidence=false",
+        "davinci DOM corpus sweep: files=1 unreadable=3 parsed=1 templates=1 compared=0 old_error_skips=2 s2_refusals=1 divergences=1",
+      ].join("\n"),
+    );
+
+    assert.deepEqual(validateCorpusEvidence(artifact).failures, [
+      "selected gitlinks 142 != 146",
+      "submodule status rows 0 != 146",
+      "corpus log is missing canonical closure evidence",
+      "corpus log submodules 0 != 146",
+      "corpus log proves no DOM-output comparisons",
+      "corpus log skipped inputs: unreadable=3 old_error_skips=2",
+      "corpus log is not clean: s2_refusals=1 divergences=1",
+    ]);
+  } finally {
+    rmSync(artifact, { recursive: true, force: true });
+  }
 });

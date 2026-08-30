@@ -11,10 +11,27 @@ import {
 } from "./theme-scope.ts";
 import type { ThemeDensityScale, ThemePresetName } from "./theme-scope.ts";
 
-function runBootstrapScript(script: string): void {
+type ThemeTestStorage = Pick<Storage, "clear" | "getItem" | "setItem">;
+
+function createThemeTestStorage(): ThemeTestStorage {
+  const values = new Map<string, string>();
+  return {
+    clear() {
+      values.clear();
+    },
+    getItem(key: string) {
+      return values.get(key) ?? null;
+    },
+    setItem(key: string, value: string) {
+      values.set(key, value);
+    },
+  };
+}
+
+function runBootstrapScript(script: string, storage: ThemeTestStorage): void {
   runInNewContext(script, {
     document,
-    globalThis: { localStorage },
+    globalThis: { localStorage: storage },
   });
 }
 
@@ -66,24 +83,25 @@ test("normalizes nested theme scope attributes and restores imperative scopes", 
 
 test("creates a storage-backed no-flash theme bootstrap script", () => {
   const root = document.documentElement;
+  const storage = createThemeTestStorage();
   root.removeAttribute(themePresetAttribute);
   root.removeAttribute(themeDensityAttribute);
-  localStorage.clear();
-  localStorage.setItem(themeScopeStorageKeys.presets, "paper signal signal");
-  localStorage.setItem(themeScopeStorageKeys.density, "compact");
+  storage.clear();
+  storage.setItem(themeScopeStorageKeys.presets, "paper signal signal");
+  storage.setItem(themeScopeStorageKeys.density, "compact");
 
   const script = createThemeBootstrapScript({
     fallback: { presets: "atelier", density: "comfortable" },
   });
-  runBootstrapScript(script);
+  runBootstrapScript(script, storage);
   assert.equal(root.getAttribute(themePresetAttribute), "paper signal");
   assert.equal(root.getAttribute(themeDensityAttribute), "compact");
 
   root.removeAttribute(themePresetAttribute);
   root.removeAttribute(themeDensityAttribute);
-  localStorage.setItem(themeScopeStorageKeys.presets, "atelier bogus");
-  localStorage.setItem(themeScopeStorageKeys.density, "dense");
-  runBootstrapScript(script);
+  storage.setItem(themeScopeStorageKeys.presets, "atelier bogus");
+  storage.setItem(themeScopeStorageKeys.density, "dense");
+  runBootstrapScript(script, storage);
   assert.equal(root.getAttribute(themePresetAttribute), "atelier");
   assert.equal(root.getAttribute(themeDensityAttribute), "comfortable");
 
@@ -94,5 +112,5 @@ test("creates a storage-backed no-flash theme bootstrap script", () => {
 
   root.removeAttribute(themePresetAttribute);
   root.removeAttribute(themeDensityAttribute);
-  localStorage.clear();
+  storage.clear();
 });
