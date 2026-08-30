@@ -11,7 +11,7 @@ import {
   getDiagnosticsForRule,
   getFileState,
   getFileStateCacheStats,
-  markRuleAsReported,
+  markDiagnosticAsReported,
 } from "./file-state.ts";
 import { appendScriptlessWorkaround, resolveWorkaroundSource } from "./workaround.ts";
 
@@ -23,6 +23,17 @@ function createContext(filename: string, extractedScript: string): Context {
     sourceCode: { text: extractedScript },
   } as unknown as Context;
 }
+
+const sampleDiagnostic = {
+  rule: "vue/example",
+  severity: "error",
+  message: "example",
+  help: null,
+  location: {
+    start: { line: 1, column: 1, offset: 0 },
+    end: { line: 1, column: 2, offset: 1 },
+  },
+} as const;
 
 it("standalone scripts preserve native source locations", () => {
   clearFileStateCache();
@@ -78,8 +89,8 @@ it("same filename with changed source starts a fresh reporting revision", () => 
     first.allDiagnosticsIncludesTypeAware = true;
     first.requestedRules.add("vue/example");
     first.reportedTypeAwareRuntimeDiagnostic = true;
-    assert.equal(markRuleAsReported(first, "vue/example"), true);
-    assert.equal(markRuleAsReported(first, "vue/example"), false);
+    assert.equal(markDiagnosticAsReported(first, sampleDiagnostic), true);
+    assert.equal(markDiagnosticAsReported(first, sampleDiagnostic), false);
 
     fs.writeFileSync(filename, "<template><div>other</div></template>\n");
     const changed = getFileState(context);
@@ -91,14 +102,14 @@ it("same filename with changed source starts a fresh reporting revision", () => 
     assert.equal(changed.allDiagnosticsIncludesTypeAware, false);
     assert.equal(changed.requestedRules.size, 0);
     assert.equal(changed.reportedTypeAwareRuntimeDiagnostic, false);
-    assert.equal(markRuleAsReported(changed, "vue/example"), true);
+    assert.equal(markDiagnosticAsReported(changed, sampleDiagnostic), true);
     assert.equal(getFileStateCacheStats().entries, 1);
 
     fs.writeFileSync(filename, "<template><div>first</div></template>\n");
     const reverted = getFileState(context);
     assert.notStrictEqual(reverted, first, "A → B → A must not revive A's reporting state");
     assert.notStrictEqual(reverted, changed);
-    assert.equal(markRuleAsReported(reverted, "vue/example"), true);
+    assert.equal(markDiagnosticAsReported(reverted, sampleDiagnostic), true);
   } finally {
     clearFileStateCache();
     fs.rmSync(root, { force: true, recursive: true });
@@ -142,13 +153,13 @@ it("changed extracted script refreshes only revision-local mapping work", () => 
     fs.writeFileSync(filename, "<script setup>const value = 1;</script>\n");
     const first = getFileState(createContext(filename, "const value = 1;\n"));
     first.scriptMap = null;
-    assert.equal(markRuleAsReported(first, "vue/example"), true);
+    assert.equal(markDiagnosticAsReported(first, sampleDiagnostic), true);
     const changed = getFileState(createContext(filename, "const value = 2;\n"));
 
     assert.strictEqual(changed, first);
     assert.equal(changed.extractedScript, "const value = 2;\n");
     assert.equal(changed.scriptMap, undefined);
-    assert.equal(markRuleAsReported(changed, "vue/example"), false);
+    assert.equal(markDiagnosticAsReported(changed, sampleDiagnostic), false);
     assert.equal(getFileStateCacheStats().entries, 1);
   } finally {
     clearFileStateCache();
@@ -199,4 +210,17 @@ it("only recognizes a scriptless workaround marker at byte zero", () => {
       usesOriginalLocations: false,
     });
   }
+});
+
+it("does not strip user-authored whitespace blocks that mimic the workaround marker", () => {
+  const fallbackFilename = "/Users/example/fallback.vue";
+  const workaround = appendScriptlessWorkaround("<template />", "/Users/example/Real.vue");
+  const openTagEnd = workaround.indexOf(">") + 1;
+  const source = `${workaround.slice(0, openTagEnd)}\n</script>\n<template />`;
+
+  assert.deepEqual(resolveWorkaroundSource(source, fallbackFilename), {
+    filename: fallbackFilename,
+    source,
+    usesOriginalLocations: false,
+  });
 });

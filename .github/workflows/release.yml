@@ -49,7 +49,9 @@ jobs:
       - uses: ./.github/actions/setup-rust-script
       - name: Select release platforms
         id: platforms
-        run: rust-script tools/commands/ci/github/release-platforms.rs github-output "${{ github.ref_name }}"
+        env:
+          RELEASE_REF_NAME: ${{ github.ref_name }}
+        run: rust-script tools/commands/ci/github/release-platforms.rs github-output "$RELEASE_REF_NAME"
   build-cli:
     name: Build CLI - ${{ matrix.settings.target }}
     needs: plan-release-platforms
@@ -531,7 +533,9 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { pattern: fresco-bindings-*, path: npm/fresco-native/artifacts }
       - name: Apply slow platform release cadence
-        run: rust-script tools/commands/ci/github/release-platforms.rs apply-cadence "${{ github.ref_name }}" npm/native/package.json npm/oxlint/package.json
+        env:
+          RELEASE_REF_NAME: ${{ github.ref_name }}
+        run: rust-script tools/commands/ci/github/release-platforms.rs apply-cadence "$RELEASE_REF_NAME" npm/native/package.json npm/oxlint/package.json
       - name: Prepare native package tarballs
         working-directory: npm/native
         run: |
@@ -595,7 +599,9 @@ jobs:
           pattern: bindings-*
           path: npm/native/artifacts
       - name: Apply slow platform release cadence
-        run: rust-script tools/commands/ci/github/release-platforms.rs apply-cadence "${{ github.ref_name }}" npm/native/package.json
+        env:
+          RELEASE_REF_NAME: ${{ github.ref_name }}
+        run: rust-script tools/commands/ci/github/release-platforms.rs apply-cadence "$RELEASE_REF_NAME" npm/native/package.json
       - name: Create npm platform directories
         working-directory: npm/native
         run: vp exec napi create-npm-dirs
@@ -730,7 +736,9 @@ jobs:
       - name: Inject native binding package versions
         run: moon run --target native tools/moon/cmd/inject_native_optional_deps -- npm/oxlint/package.json npm/native/package.json --print
       - name: Apply slow platform release cadence
-        run: rust-script tools/commands/ci/github/release-platforms.rs apply-cadence "${{ github.ref_name }}" npm/oxlint/package.json
+        env:
+          RELEASE_REF_NAME: ${{ github.ref_name }}
+        run: rust-script tools/commands/ci/github/release-platforms.rs apply-cadence "$RELEASE_REF_NAME" npm/oxlint/package.json
       - name: Publish oxlint-plugin-vize
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/oxlint --provenance
 

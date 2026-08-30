@@ -6,11 +6,17 @@ import {
   getDiagnosticsForRule,
   getScriptMap,
   getSfcBlocks,
-  markRuleAsReported,
+  markDiagnosticAsReported,
   type FileState,
 } from "./file-state.js";
 import { formatPatinaMessage } from "./format.js";
-import type { HelpLevel, PatinaDiagnostic, PatinaRuleMeta } from "./model.js";
+import type {
+  HelpLevel,
+  PatinaDiagnostic,
+  PatinaRuleMeta,
+  SfcBlock,
+  SingleScriptMap,
+} from "./model.js";
 import { formatBlockLabel, getDiagnosticBlock } from "./sfc-blocks.js";
 import { mapToScriptLoc } from "./script-map.js";
 import { getActivePreset, getVizeSettings, isIncrementalPreset, isPatinaFile } from "./settings.js";
@@ -18,9 +24,9 @@ import { getActivePreset, getVizeSettings, isIncrementalPreset, isPatinaFile } f
 function createOxlintDiagnostic(
   diagnostic: PatinaDiagnostic,
   state: FileState,
+  scriptMap: SingleScriptMap | null,
   helpLevel: HelpLevel,
 ): Diagnostic {
-  const scriptMap = getScriptMap(state);
   const loc = state.usesOriginalLocations
     ? createOriginalSfcLoc(diagnostic)
     : mapToScriptLoc(diagnostic, scriptMap);
@@ -37,6 +43,23 @@ function createOxlintDiagnostic(
       helpLevel,
     }),
   };
+}
+
+function shouldReportForCurrentProgram(
+  diagnostic: PatinaDiagnostic,
+  state: FileState,
+  scriptMap: SingleScriptMap | null,
+): boolean {
+  if (state.usesOriginalLocations || scriptMap == null) {
+    return true;
+  }
+
+  const block = getDiagnosticBlock(diagnostic, getSfcBlocks(state));
+  return !isScriptBlock(block) || block === scriptMap.block;
+}
+
+function isScriptBlock(block: SfcBlock | null): boolean {
+  return block?.kind === "script" || block?.kind === "script-setup";
 }
 
 function createOriginalSfcLoc(diagnostic: PatinaDiagnostic): Diagnostic["loc"] {
@@ -79,16 +102,20 @@ function createPatinaRule(ruleMeta: PatinaRuleMeta) {
 
           const helpLevel = settings.helpLevel ?? "full";
           const state = getFileState(context);
-          const diagnostics = getDiagnosticsForRule(context, state, ruleMeta.name);
+          const scriptMap = getScriptMap(state);
+          const diagnostics = getDiagnosticsForRule(context, state, ruleMeta.name).filter(
+            (diagnostic) => shouldReportForCurrentProgram(diagnostic, state, scriptMap),
+          );
           if (diagnostics.length === 0) {
-            return;
-          }
-          if (!markRuleAsReported(state, ruleMeta.name)) {
             return;
           }
 
           for (const diagnostic of diagnostics) {
-            context.report(createOxlintDiagnostic(diagnostic, state, helpLevel));
+            if (!markDiagnosticAsReported(state, diagnostic)) {
+              continue;
+            }
+
+            context.report(createOxlintDiagnostic(diagnostic, state, scriptMap, helpLevel));
           }
         },
       };

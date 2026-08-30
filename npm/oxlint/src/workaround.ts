@@ -83,10 +83,30 @@ function getPrependedWorkaroundBlock(
     return null;
   }
 
+  const closeTagEnd = contentEnd + SCRIPTLESS_WORKAROUND_CLOSE_TAG.length;
+  const strippedSourceStart = sourceStartAfterSyntheticBlock(source, closeTagEnd);
+  if (strippedSourceStart == null) {
+    return null;
+  }
+  if (firstBlock.content !== createWhitespaceMirror(source.slice(strippedSourceStart))) {
+    return null;
+  }
+
   return {
-    closeTagEnd: contentEnd + SCRIPTLESS_WORKAROUND_CLOSE_TAG.length,
+    closeTagEnd,
     encodedFilename,
   };
+}
+
+function sourceStartAfterSyntheticBlock(source: string, closeTagEnd: number): number | null {
+  if (source.charCodeAt(closeTagEnd) === 13 && source.charCodeAt(closeTagEnd + 1) === 10) {
+    return closeTagEnd + 2;
+  }
+  if (source.charCodeAt(closeTagEnd) === 10) {
+    return closeTagEnd + 1;
+  }
+
+  return null;
 }
 
 function encodedFilenameFromWorkaroundOpenTag(openTag: string): string | null {

@@ -48,6 +48,29 @@ test("release workflow plans slow platform cadence before building", () => {
   assert.match(workflow, /release-platforms\.rs apply-cadence/);
 });
 
+test("release workflow passes release refs to shell commands through env", () => {
+  const workflow = readRepoFile(".github", "workflows", "release.yml");
+
+  assert.doesNotMatch(
+    workflow,
+    /release-platforms\.rs (?:github-output|apply-cadence) "\$\{\{ github\.ref_name \}\}"/,
+  );
+  for (const jobName of [
+    "plan-release-platforms",
+    "smoke-release-packages",
+    "release-npm-native",
+    "release-npm-oxlint-plugin",
+  ]) {
+    const job = workflowJobBody(workflow, jobName);
+    assert.match(job, /RELEASE_REF_NAME:\s*\$\{\{\s*github\.ref_name\s*\}\}/, jobName);
+    assert.match(
+      job,
+      /release-platforms\.rs (?:github-output|apply-cadence) "\$RELEASE_REF_NAME"/,
+      jobName,
+    );
+  }
+});
+
 test("release workflow jobs cap runtime with explicit timeouts", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
 

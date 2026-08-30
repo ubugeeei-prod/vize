@@ -21,7 +21,7 @@ export interface FileState {
   source: string;
   extractedScript: string;
   usesOriginalLocations: boolean;
-  reportedRules: Set<string>;
+  reportedDiagnostics: Set<string>;
   sfcBlocks: readonly SfcBlock[] | undefined;
   scriptMap: SingleScriptMap | null | undefined;
   allDiagnosticsByRule: Map<string, PatinaDiagnostic[]> | null;
@@ -76,7 +76,7 @@ export function getFileState(context: Context): FileState {
     extractedScript: context.sourceCode.text,
     usesOriginalLocations:
       resolvedSource.usesOriginalLocations || isScriptLikeFile(resolvedSource.filename),
-    reportedRules: new Set(),
+    reportedDiagnostics: new Set(),
     sfcBlocks: undefined,
     scriptMap: undefined,
     allDiagnosticsByRule: null,
@@ -168,7 +168,7 @@ export function getScriptMap(state: FileState): SingleScriptMap | null {
     return state.scriptMap;
   }
 
-  state.scriptMap = createSingleScriptMap(state.source, state.extractedScript);
+  state.scriptMap = createSingleScriptMap(state.source, state.extractedScript, getSfcBlocks(state));
   return state.scriptMap;
 }
 
@@ -181,13 +181,29 @@ export function getSfcBlocks(state: FileState): readonly SfcBlock[] {
   return state.sfcBlocks;
 }
 
-export function markRuleAsReported(state: FileState, ruleName: string): boolean {
-  if (state.reportedRules.has(ruleName)) {
+export function markDiagnosticAsReported(state: FileState, diagnostic: PatinaDiagnostic): boolean {
+  const key = diagnosticIdentity(diagnostic);
+  if (state.reportedDiagnostics.has(key)) {
     return false;
   }
 
-  state.reportedRules.add(ruleName);
+  state.reportedDiagnostics.add(key);
   return true;
+}
+
+function diagnosticIdentity(diagnostic: PatinaDiagnostic): string {
+  const { start, end } = diagnostic.location;
+  return [
+    diagnostic.rule,
+    diagnostic.severity,
+    diagnostic.message,
+    start.line,
+    start.column,
+    start.offset,
+    end.line,
+    end.column,
+    end.offset,
+  ].join("\0");
 }
 
 function nextFileStateCacheClock(): number {

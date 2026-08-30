@@ -41,7 +41,10 @@ async function main(): Promise<void> {
       return;
     }
 
-    if (prepared.usedScriptlessWorkaround && forwardedArgs.includes("--fix")) {
+    if (
+      prepared.usedScriptlessWorkaround &&
+      (forwardedArgs.includes("--fix") || forwardedArgs.includes("--fix-suggestions"))
+    ) {
       await writeStream(
         process.stderr,
         "\n[oxlint-plugin-vize] Temporary Vue workaround is active; fixes are not applied back to original files yet.\n",

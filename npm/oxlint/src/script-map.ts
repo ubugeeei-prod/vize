@@ -1,33 +1,39 @@
 import type { Diagnostic } from "@oxlint/plugins";
 
-import type { LineColumn, PatinaDiagnostic, SingleScriptMap } from "./model.js";
+import type { LineColumn, PatinaDiagnostic, SfcBlock, SingleScriptMap } from "./model.js";
 import { compareLineColumn, extractSfcBlocks } from "./sfc-blocks.js";
 
 export function createSingleScriptMap(
   source: string,
   extractedScript: string,
+  sfcBlocks: readonly SfcBlock[] = extractSfcBlocks(source),
 ): SingleScriptMap | null {
   if (!extractedScript) {
     return null;
   }
 
-  const blocks = extractSfcBlocks(source).filter(
+  const blocks = sfcBlocks.filter(
     (block) => block.kind === "script" || block.kind === "script-setup",
   );
-  if (blocks.length !== 1) {
-    return null;
+  let match: SingleScriptMap | null = null;
+
+  for (const block of blocks) {
+    const skipped = countSkippedPrefix(block.content, extractedScript);
+    if (skipped === null) {
+      continue;
+    }
+
+    if (match !== null) {
+      return null;
+    }
+
+    match = {
+      block,
+      scriptStart: advancePosition(block.contentStart, block.content.slice(0, skipped)),
+    };
   }
 
-  const [block] = blocks;
-  const skipped = countSkippedPrefix(block.content, extractedScript);
-  if (skipped === null) {
-    return null;
-  }
-
-  return {
-    block,
-    scriptStart: advancePosition(block.contentStart, block.content.slice(0, skipped)),
-  };
+  return match;
 }
 
 /**

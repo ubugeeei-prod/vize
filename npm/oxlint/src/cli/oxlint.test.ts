@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { expectsLintReport } from "./args.ts";
+import { expectsLintReport, getLintTargets } from "./args.ts";
 import { verifyOxlintCliEntrypoint } from "./oxlint.ts";
 
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -59,28 +59,31 @@ const items = [1]
   );
 }
 
+function writeScriptlessVueFixture(root: string): void {
+  fs.writeFileSync(
+    path.join(root, "Scriptless.vue"),
+    `<template>
+  <div>{{ message }}</div>
+</template>
+`,
+  );
+}
+
 function runOxlintVize(root: string, args: readonly string[]) {
-  try {
-    const stdout = String(
-      execFileSync(process.execPath, [cliEntry, ...args], {
-        cwd: root,
-        encoding: "utf8",
-        stdio: "pipe",
-      }),
-    );
-    return { exitCode: 0, stderr: "", stdout };
-  } catch (error) {
-    const execError = error as {
-      status?: number;
-      stderr?: string | Buffer;
-      stdout?: string | Buffer;
-    };
-    return {
-      exitCode: execError.status ?? 1,
-      stderr: String(execError.stderr ?? ""),
-      stdout: String(execError.stdout ?? ""),
-    };
+  const result = spawnSync(process.execPath, [cliEntry, ...args], {
+    cwd: root,
+    encoding: "utf8",
+    stdio: "pipe",
+  });
+  if (result.error) {
+    throw result.error;
   }
+
+  return {
+    exitCode: result.status ?? 1,
+    stderr: result.stderr,
+    stdout: result.stdout,
+  };
 }
 
 void test("verifyOxlintCliEntrypoint accepts a binary that answers the --version handshake", () => {
@@ -121,11 +124,30 @@ void test("expectsLintReport recognizes the formats that always produce output",
   assert.equal(expectsLintReport(["src"]), false);
   assert.equal(expectsLintReport(["-f", "json", "src"]), true);
   assert.equal(expectsLintReport(["--format", "junit"]), true);
-  assert.equal(expectsLintReport(["--format=github"]), true);
+  assert.equal(expectsLintReport(["--format=github"]), false);
   assert.equal(expectsLintReport(["-f", "stylish", "src"]), false);
   assert.equal(expectsLintReport(["-f", "unix"]), false);
   // After `--` everything is a lint target, not an option.
   assert.equal(expectsLintReport(["--", "-f", "json"]), false);
+});
+
+void test("getLintTargets treats fix flags as booleans", () => {
+  assert.deepEqual(getLintTargets(["--fix", "src/App.vue"]), ["src/App.vue"]);
+  assert.deepEqual(getLintTargets(["--fix-suggestions", "src/App.vue"]), ["src/App.vue"]);
+});
+
+void test("scriptless workaround warns for fix flags whose edits are not copied back", () => {
+  for (const flag of ["--fix", "--fix-suggestions"] as const) {
+    withTempWorkspace((root) => {
+      writeFakeOxlintEntrypoint(root, HANDSHAKE_ONLY_SHIM);
+      writeScriptlessVueFixture(root);
+
+      const run = runOxlintVize(root, [flag, "Scriptless.vue"]);
+
+      assert.equal(run.exitCode, 0);
+      assert.match(run.stderr, /fixes are not applied back to original files/u);
+    });
+  }
 });
 
 void test("a workspace whose oxlint is a non-lint wrapper shim fails the run closed", () => {
@@ -161,5 +183,9 @@ void test("a child that answers the handshake but swallows the report fails clos
     // exit-0 child stays trusted once it has answered the handshake.
     const autoRun = runOxlintVize(root, ["App.vue"]);
     assert.equal(autoRun.exitCode, 0);
+
+    const githubRun = runOxlintVize(root, ["--format=github", "App.vue"]);
+    assert.equal(githubRun.exitCode, 0);
+    assert.equal(githubRun.stderr, "");
   });
 });

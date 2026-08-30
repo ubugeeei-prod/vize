@@ -7,7 +7,6 @@ const OPTION_NAMES_WITH_VALUES = new Set([
   "--config",
   "--cwd",
   "--deny",
-  "--fix-suggestions",
   "--format",
   "--ignore-path",
   "--ignore-pattern",
@@ -35,7 +34,7 @@ const OPTION_NAMES_WITH_VALUES = new Set([
  * formats always emit at least a summary or document skeleton, which makes a
  * fully silent exit-0 run attributable to a child that never linted at all.
  */
-const ALWAYS_REPORTING_FORMATS = new Set(["checkstyle", "default", "github", "json", "junit"]);
+const ALWAYS_REPORTING_FORMATS = new Set(["checkstyle", "default", "json", "junit"]);
 
 /** Whether the requested output format guarantees a non-empty report. */
 export function expectsLintReport(argv: readonly string[]): boolean {

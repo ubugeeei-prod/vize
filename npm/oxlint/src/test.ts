@@ -796,6 +796,11 @@ assert.equal(
   1,
   "dual-script SFCs should not duplicate the same rule diagnostic across <script> and <script setup>",
 );
+assert.doesNotMatch(
+  dualScriptRun.output,
+  /\(at <script/u,
+  "dual-script SFCs should map script diagnostics instead of falling back to block labels",
+);
 assert.equal(dualScriptRun.output, readSnapshot("stylish-dual-script-no-options-api-output.txt"));
 
 const scriptlessRun = runOxlintVize([
@@ -856,6 +861,11 @@ assert.deepEqual(
   ["<script setup>", "<template>", "<style>", "<i18n>"],
   "SFC block extraction should classify common Vue block types",
 );
+const genericSetupBlocks = extractSfcBlocks(
+  `<script setup lang="ts" generic="T extends Record<string, unknown>">\nconst count = 1\n</script>\n`,
+);
+assert.equal(genericSetupBlocks[0]?.kind, "script-setup");
+assert.equal(genericSetupBlocks[0]?.content.trim(), "const count = 1");
 assert.equal(
   formatBlockLabel(
     getDiagnosticBlock(

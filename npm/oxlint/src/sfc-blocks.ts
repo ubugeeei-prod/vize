@@ -1,22 +1,17 @@
 import type { LineColumn, PatinaDiagnostic, SfcBlock, SfcBlockKind } from "./model.js";
 
-const rootBlockPattern = /<([A-Za-z][\w-]*)\b[^>]*>/gu;
-
 export function extractSfcBlocks(source: string): SfcBlock[] {
   const blocks: SfcBlock[] = [];
   const lineStarts = createLineStartOffsets(source);
   let cursor = 0;
 
   for (;;) {
-    rootBlockPattern.lastIndex = cursor;
-    const match = rootBlockPattern.exec(source);
+    const match = findNextOpenTag(source, cursor);
     if (match == null) {
       return blocks;
     }
 
-    const tagName = match[1];
-    const openTag = match[0];
-    const openTagEnd = match.index + openTag.length;
+    const { tagName, openTag, openTagEnd } = match;
     const closeTag = `</${tagName}>`;
     const closeTagStart = source.indexOf(closeTag, openTagEnd);
     if (closeTagStart === -1) {
@@ -34,6 +29,75 @@ export function extractSfcBlocks(source: string): SfcBlock[] {
 
     cursor = closeTagStart + closeTag.length;
   }
+}
+
+interface OpenTagMatch {
+  readonly tagName: string;
+  readonly openTag: string;
+  readonly openTagEnd: number;
+}
+
+function findNextOpenTag(source: string, cursor: number): OpenTagMatch | null {
+  let index = cursor;
+
+  for (;;) {
+    const openTagStart = source.indexOf("<", index);
+    if (openTagStart === -1) {
+      return null;
+    }
+
+    const tagNameStart = openTagStart + 1;
+    if (!isAsciiLetter(source.charCodeAt(tagNameStart))) {
+      index = tagNameStart;
+      continue;
+    }
+
+    let tagNameEnd = tagNameStart + 1;
+    while (isTagNameCharacter(source.charCodeAt(tagNameEnd))) {
+      tagNameEnd += 1;
+    }
+
+    if (!isTagNameBoundary(source.charCodeAt(tagNameEnd))) {
+      index = tagNameEnd;
+      continue;
+    }
+
+    const openTagEnd = findOpenTagEnd(source, tagNameEnd);
+    if (openTagEnd == null) {
+      return null;
+    }
+
+    return {
+      tagName: source.slice(tagNameStart, tagNameEnd),
+      openTag: source.slice(openTagStart, openTagEnd),
+      openTagEnd,
+    };
+  }
+}
+
+function findOpenTagEnd(source: string, from: number): number | null {
+  let quote: number | null = null;
+
+  for (let index = from; index < source.length; index += 1) {
+    const code = source.charCodeAt(index);
+    if (quote != null) {
+      if (code === quote) {
+        quote = null;
+      }
+      continue;
+    }
+
+    if (code === 34 || code === 39) {
+      quote = code;
+      continue;
+    }
+
+    if (code === 62) {
+      return index + 1;
+    }
+  }
+
+  return null;
 }
 
 export function getDiagnosticBlock(
@@ -77,6 +141,32 @@ export function compareLineColumn(left: LineColumn, right: LineColumn): number {
   }
 
   return left.column - right.column;
+}
+
+function isAsciiLetter(code: number): boolean {
+  return (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
+}
+
+function isTagNameCharacter(code: number): boolean {
+  return (
+    (code >= 48 && code <= 57) ||
+    (code >= 65 && code <= 90) ||
+    code === 45 ||
+    code === 95 ||
+    (code >= 97 && code <= 122)
+  );
+}
+
+function isTagNameBoundary(code: number): boolean {
+  return (
+    code === 9 ||
+    code === 10 ||
+    code === 12 ||
+    code === 13 ||
+    code === 32 ||
+    code === 47 ||
+    code === 62
+  );
 }
 
 function createLineStartOffsets(source: string): number[] {

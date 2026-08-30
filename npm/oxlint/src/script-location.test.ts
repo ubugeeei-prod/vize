@@ -33,6 +33,8 @@ const fixtureDir = path.join(
 );
 const configPath = path.join(fixtureDir, ".oxlintrc.json");
 const scriptOffsetVuePath = path.join(fixtureDir, "ScriptOffset.vue");
+const dualScriptVuePath = path.join(fixtureDir, "DualScriptLocations.vue");
+const genericSetupVuePath = path.join(fixtureDir, "GenericSetup.vue");
 const snapshotPath = path.join(packageDir, "__snapshots__", "stylish-script-offset-output.txt");
 const ansiEscapePattern = new RegExp(String.raw`\[[0-9;]*m`, "gu");
 const workspaceRootPattern = new RegExp(escapeRegExp(workspaceRoot), "gu");
@@ -131,6 +133,33 @@ const instance = getCurrentInstance()
 `,
 );
 
+fs.writeFileSync(
+  dualScriptVuePath,
+  `<template>
+  <div>{{ instance }} {{ setupInstance }}</div>
+</template>
+
+<script lang="ts">
+const instance = getCurrentInstance()
+</script>
+<script setup lang="ts">
+const setupInstance = getCurrentInstance()
+</script>
+`,
+);
+
+fs.writeFileSync(
+  genericSetupVuePath,
+  `<template>
+  <div>{{ instance }}</div>
+</template>
+
+<script setup lang="ts" generic="T extends Record<string, unknown>">
+const instance = getCurrentInstance()
+</script>
+`,
+);
+
 const scriptOffsetRun = runOxlint(["-c", ".oxlintrc.json", "-f", "stylish", "ScriptOffset.vue"]);
 assert.notEqual(
   scriptOffsetRun.exitCode,
@@ -157,5 +186,50 @@ assert.doesNotMatch(
   "mapped script diagnostics should not need the fallback location suffix",
 );
 assert.equal(scriptOffsetRun.output, normalizeOutput(fs.readFileSync(snapshotPath, "utf8")));
+
+const dualScriptRun = runOxlint([
+  "-c",
+  ".oxlintrc.json",
+  "-f",
+  "stylish",
+  "DualScriptLocations.vue",
+]);
+assert.notEqual(
+  dualScriptRun.exitCode,
+  0,
+  "dual-script fixture should report diagnostics from both script blocks",
+);
+assert.match(
+  dualScriptRun.output,
+  /^  6:18 {2}error {2}getCurrentInstance\(\) is not supported in Vapor-oriented components {2}vize\(script\/no-get-current-instance\)$/mu,
+  "a normal <script> diagnostic should map through its own extracted program",
+);
+assert.match(
+  dualScriptRun.output,
+  /^  9:23 {2}error {2}getCurrentInstance\(\) is not supported in Vapor-oriented components {2}vize\(script\/no-get-current-instance\)$/mu,
+  "a <script setup> diagnostic should map through its own extracted program",
+);
+assert.doesNotMatch(
+  dualScriptRun.output,
+  /\(at <script/u,
+  "dual-script diagnostics should not fall back to block-label suffixes",
+);
+
+const genericSetupRun = runOxlint(["-c", ".oxlintrc.json", "-f", "stylish", "GenericSetup.vue"]);
+assert.notEqual(
+  genericSetupRun.exitCode,
+  0,
+  "generic script setup fixture should report script diagnostics",
+);
+assert.match(
+  genericSetupRun.output,
+  /^  6:18 {2}error {2}getCurrentInstance\(\) is not supported in Vapor-oriented components {2}vize\(script\/no-get-current-instance\)$/mu,
+  "quoted > characters in generic attributes must not shift the script content start",
+);
+assert.doesNotMatch(
+  genericSetupRun.output,
+  /\(at <script setup>:/u,
+  "generic script setup diagnostics should not need fallback location suffixes",
+);
 
 console.log("✅ oxlint-plugin-vize script location tests passed!");
