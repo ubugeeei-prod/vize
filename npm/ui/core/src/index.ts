@@ -75,7 +75,7 @@ export * from "./focus-guards.ts";
 export * from "./history.ts";
 export * from "./hover.ts";
 export * from "./live-region.ts";
-export * from "./locale.ts";
+export * from "./families/i18n/locale/locale.ts";
 export * from "./long-press.ts";
 export * from "./measure.ts";
 export * from "./motion.ts";

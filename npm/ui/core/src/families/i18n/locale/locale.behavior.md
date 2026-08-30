@@ -1,9 +1,10 @@
 # Locale behavior contract
 
 Normative state × input → outcome table for `locale-provider.vue` (`@vizejs/ui/locale`).
-Every row is proven by the named test in `src/locale.test.ts` or
-`src/locale-ssr.test.ts`; compile-only assertions live in
-`src/locale.types.test-d.ts`.
+Every row is proven by the named test in
+`src/families/i18n/locale/locale.test.ts` or
+`src/families/i18n/locale/locale-ssr.test.ts`; compile-only assertions live in
+`src/families/i18n/locale/locale.types.test-d.ts`.
 
 | #   | State         | Input                                      | Outcome                                                    | Proven by                                                                  |
 | --- | ------------- | ------------------------------------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------- |
@@ -22,4 +23,4 @@ Every row is proven by the named test in `src/locale.test.ts` or
 | I13 | SSR           | formatter without provider                 | `en-US` fallback locale is used                            | SSR formatter test                                                         |
 | I14 | SSR           | display names and search collator fallback | `en-US` formatter locale and search usage are used         | SSR display/search test                                                    |
 | I15 | SSR           | invalid provider locale                    | fallback lang and direction are rendered                   | SSR invalid-locale test                                                    |
-| I16 | public types  | invalid direction or formatter/search opts | compilation rejects misuse                                 | `src/locale.types.test-d.ts`                                               |
+| I16 | public types  | invalid direction or formatter/search opts | compilation rejects misuse                                 | `src/families/i18n/locale/locale.types.test-d.ts`                          |

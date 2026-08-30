@@ -145,6 +145,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["dialog", "src/families/overlays/dialog/"],
     ["icon", "src/families/layout/icon/"],
     ["icon-button", "src/families/layout/icon/"],
+    ["locale", "src/families/i18n/locale/"],
     ["status-light", "src/families/feedback/status-light/"],
     ["surface", "src/families/layout/surface/"],
     ["tooltip", "src/families/overlays/tooltip/"],

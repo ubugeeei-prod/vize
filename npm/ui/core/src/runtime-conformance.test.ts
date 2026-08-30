@@ -7,10 +7,12 @@ import { createSSRApp, defineComponent } from "vue";
 import { renderToString } from "vue/server-renderer";
 
 import { controlRuntimeFixtures, type RuntimeFixture } from "./runtime-conformance-fixtures.ts";
+import { i18nRuntimeFixtures } from "./runtime-conformance-i18n-fixtures.ts";
 import { overlayRuntimeFixtures } from "./runtime-conformance-overlay-fixtures.ts";
 
 const runtimeFixtures: readonly RuntimeFixture[] = [
   ...controlRuntimeFixtures,
+  ...i18nRuntimeFixtures,
   ...overlayRuntimeFixtures,
 ];
 

@@ -102,7 +102,7 @@ export default defineConfig({
       "focus-guards": "src/focus-guards.ts",
       hover: "src/hover.ts",
       "live-region": "src/live-region.ts",
-      locale: "src/locale.ts",
+      locale: "src/families/i18n/locale/locale.ts",
       "long-press": "src/long-press.ts",
       measure: "src/measure.ts",
       motion: "src/motion.ts",

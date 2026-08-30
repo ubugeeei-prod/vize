@@ -5,7 +5,6 @@ import { h } from "vue";
 import AnnouncerProvider from "./announcer-provider.vue";
 import { dialogRuntimeFixtures } from "./families/overlays/dialog/runtime-conformance-dialog-fixtures.ts";
 import LiveRegion from "./live-region.vue";
-import LocaleProvider from "./locale-provider.vue";
 import Portal from "./portal.vue";
 import PositionerArrow from "./positioner-arrow.vue";
 import Positioner from "./positioner.vue";
@@ -80,30 +79,6 @@ export const overlayRuntimeFixtures: readonly RuntimeFixture[] = [
       const region = host.querySelector('[data-vize-ui="live-region"]');
       assert.ok(region instanceof HTMLElement);
       assert.equal(region.getAttribute("aria-live"), "polite");
-    },
-  },
-  {
-    name: "locale-provider",
-    sourceFile: "locale-provider.vue",
-    render: () =>
-      h(
-        LocaleProvider,
-        { locale: "ja-JP", direction: "ltr" },
-        {
-          default: () => "本文",
-        },
-      ),
-    assertServerMarkup(html) {
-      assert.match(html, /data-vize-ui="locale"/);
-      assert.match(html, /lang="ja-JP"/);
-      assert.match(html, /dir="ltr"/);
-      assert.match(html, /本文/);
-    },
-    assertHydratedDom(host) {
-      const locale = host.querySelector('[data-vize-ui="locale"]');
-      assert.ok(locale instanceof HTMLElement);
-      assert.equal(locale.getAttribute("lang"), "ja-JP");
-      assert.equal(locale.textContent, "本文");
     },
   },
   {

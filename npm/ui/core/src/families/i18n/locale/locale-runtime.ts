@@ -1,7 +1,7 @@
 import { computed, getCurrentInstance, toValue } from "vue";
 import type { ComputedRef, MaybeRefOrGetter } from "vue";
 
-import { createContext } from "./context.ts";
+import { createContext } from "../../../context.ts";
 
 /** Resolved writing direction for a subtree. */
 export type TextDirection = "ltr" | "rtl";
