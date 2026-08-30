@@ -10,7 +10,6 @@ use super::buf::Buf;
 use super::children::{children_need_text_flag, emit_create_text_vnode, emit_text_like};
 use super::directive;
 use super::flag::emit_patch_flag;
-use super::hoist::compact_props_object;
 use super::namespace;
 use super::props::{admit_element_bindings, apply_static_ref_patch, bind_patch, emit_bind_props};
 
@@ -150,7 +149,12 @@ pub(super) fn emit_call(
     let force_array_children =
         once || memo_block || (directive::has_custom(&element.bindings) && allow_hoist && block);
     let has_binds = has_prop_bindings(&element.bindings);
-    let hoist = allow_hoist && if_key.is_none() && super::props_static::root_should_hoist(element);
+    let hoisted_props = if allow_hoist && if_key.is_none() {
+        super::props_static::root_hoist_props(&element.attributes, &element.bindings)?
+    } else {
+        None
+    };
+    let hoist = hoisted_props.is_some();
     let patch = bind_patch(&element.bindings, false, if_key, for_item);
     let text_flag = !once && !memo_block && children_need_text_flag(&element.children);
     let mut flag = patch.flag;
@@ -177,7 +181,7 @@ pub(super) fn emit_call(
     if hoist {
         let props_alias = cx
             .buf
-            .hoist_root_props(compact_props_object(element.attributes.iter()));
+            .hoist_root_props(hoisted_props.expect("checked hoisted props"));
         cx.buf.push(", ");
         cx.buf.push(props_alias.as_str());
     } else if if_key.is_some() || has_binds {

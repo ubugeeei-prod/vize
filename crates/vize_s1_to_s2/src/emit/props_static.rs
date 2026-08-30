@@ -1,18 +1,78 @@
 //! Inline static props for native element calls.
 
+use alloc::vec::Vec as StdVec;
+
 use vize_s0::String;
-use vize_s2::op::{Attribute, ElementOp};
+use vize_s2::op::{Attribute, BindingOp};
 
 use super::EmitCx;
+use super::EmitError;
 use super::hoist::{push_attr_pair, unique_attrs};
+use super::js::{escape_js_string, is_valid_js_identifier};
+use super::props::{Piece, bind_value_is_static_patchless, pieces, static_bind_key};
+use super::props_bind::StaticBindKeyCasing;
+use super::props_value::bind_value;
 
-pub(super) fn root_should_hoist(element: &ElementOp<'_>) -> bool {
-    element.bindings.is_empty()
-        && !element.attributes.is_empty()
-        && element
-            .attributes
-            .iter()
-            .all(|attribute| attribute.name != "ref")
+pub(super) fn root_hoist_props(
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+) -> Result<Option<String>, EmitError> {
+    let mut out = String::from("{ ");
+    let mut seen: StdVec<String> = StdVec::new();
+    let mut emitted = 0usize;
+    for piece in pieces(attributes, bindings, false)? {
+        let mut prop = String::default();
+        let Some(key) = static_hoist_prop(&mut prop, &piece)? else {
+            return Ok(None);
+        };
+        if seen.iter().any(|seen| seen == key.as_str()) {
+            continue;
+        }
+        if emitted > 0 {
+            out.push_str(", ");
+        }
+        out.push_str(prop.as_str());
+        seen.push(key);
+        emitted += 1;
+    }
+    if emitted == 0 {
+        return Ok(None);
+    }
+    out.push_str(" }");
+    Ok(Some(out))
+}
+
+fn static_hoist_prop(out: &mut String, piece: &Piece<'_>) -> Result<Option<String>, EmitError> {
+    match piece {
+        Piece::Attr(attr) if attr.name != "ref" => {
+            push_attr_pair(out, attr);
+            Ok(Some(String::from(attr.name)))
+        }
+        Piece::Bind(bind) if bind_value_is_static_patchless(bind) => {
+            let key = static_bind_key(bind, StaticBindKeyCasing::Preserve)?;
+            let key = String::from(key.as_str());
+            if matches!(key.as_str(), "ref" | "class") {
+                return Ok(None);
+            }
+            push_key(out, key.as_str());
+            out.push_str(": ");
+            if let Some(js) = bind_value(bind)?.js() {
+                out.push_str(js.source);
+            }
+            Ok(Some(key))
+        }
+        _ => Ok(None),
+    }
+}
+
+fn push_key(out: &mut String, key: &str) {
+    if !is_valid_js_identifier(key) {
+        out.push('"');
+        out.push_str(escape_js_string(key).as_str());
+        out.push('"');
+        return;
+    }
+    out.push_str(key);
 }
 
 pub(super) fn emit_inline<'a>(

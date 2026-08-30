@@ -2,7 +2,7 @@
 
 use alloc::vec::Vec as StdVec;
 
-use oxc_ast::ast::{ArrayExpressionElement, Expression, ObjectPropertyKind};
+use oxc_ast::ast::{Argument, ArrayExpressionElement, Expression, ObjectPropertyKind};
 use vize_s0::String;
 use vize_s2::op::{Attribute, BindingOp};
 
@@ -128,10 +128,12 @@ pub(super) fn bind_patch(
                 }
                 Ok(BindName::Static(raw_name)) => match raw_name {
                     "ref" => flag |= 512,
-                    "class" if !is_component && class_bind_needs_patch(bind) => flag |= 2,
-                    "class" if !is_component => {}
+                    "class" if bind_value_is_static_patchless(bind) => {}
+                    "class" if !is_component => flag |= 2,
+                    "style" if bind_value_is_static_patchless(bind) => {}
                     "style" if !is_component => flag |= 4,
                     "key" => {}
+                    key if key.ends_with("Modifiers") || bind_value_is_static_patchless(bind) => {}
                     _ => {
                         flag |= 8;
                         let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve) else {
@@ -202,39 +204,56 @@ pub(super) fn bind_patch(
     }
 }
 
-fn class_bind_needs_patch(bind: &vize_s2::op::BindOp<'_>) -> bool {
+pub(super) fn bind_value_is_static_patchless(bind: &vize_s2::op::BindOp<'_>) -> bool {
     match bind_value(bind) {
-        Ok(value) => match value.js() {
-            Some(js) => !is_static_class_expr(js.ast),
-            None => true,
-        },
+        Ok(value) => value.js().is_some_and(|js| is_static_bound_expr(js.ast)),
         Err(_) => false,
     }
 }
 
-fn is_static_class_expr(expr: &Expression<'_>) -> bool {
+fn is_static_bound_expr(expr: &Expression<'_>) -> bool {
     match unwrap_expr(expr) {
         Expression::StringLiteral(_)
         | Expression::BooleanLiteral(_)
         | Expression::NullLiteral(_)
         | Expression::NumericLiteral(_)
-        | Expression::BigIntLiteral(_) => true,
+        | Expression::BigIntLiteral(_)
+        | Expression::RegExpLiteral(_) => true,
         Expression::TemplateLiteral(template) => template.expressions.is_empty(),
-        Expression::ArrayExpression(array) => array.elements.iter().all(static_class_array_element),
+        Expression::UnaryExpression(unary) => is_static_bound_expr(&unary.argument),
+        Expression::ArrayExpression(array) => array.elements.iter().all(static_array_element),
         Expression::ObjectExpression(object) => object.properties.iter().all(|property| {
             let ObjectPropertyKind::ObjectProperty(property) = property else {
                 return false;
             };
-            !property.computed && is_static_class_expr(&property.value)
+            is_static_bound_expr(&property.value)
         }),
+        Expression::CallExpression(call)
+            if matches!(
+                &call.callee,
+                Expression::Identifier(ident)
+                    if matches!(ident.name.as_str(), "_normalizeClass" | "_normalizeStyle")
+            ) =>
+        {
+            call.arguments.iter().all(static_argument)
+        }
         _ => false,
     }
 }
 
-fn static_class_array_element(element: &ArrayExpressionElement<'_>) -> bool {
-    element
-        .as_expression()
-        .is_some_and(|expr| is_static_class_expr(expr))
+fn static_argument(argument: &Argument<'_>) -> bool {
+    match argument {
+        Argument::SpreadElement(_) => false,
+        _ => argument.as_expression().is_some_and(is_static_bound_expr),
+    }
+}
+
+fn static_array_element(element: &ArrayExpressionElement<'_>) -> bool {
+    match element {
+        ArrayExpressionElement::SpreadElement(_) => false,
+        ArrayExpressionElement::Elision(_) => true,
+        _ => element.as_expression().is_some_and(is_static_bound_expr),
+    }
 }
 
 fn unwrap_expr<'a>(mut expr: &'a Expression<'a>) -> &'a Expression<'a> {
