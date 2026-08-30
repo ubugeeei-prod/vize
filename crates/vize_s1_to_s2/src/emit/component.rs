@@ -22,6 +22,7 @@ use super::flag::emit_patch_flag;
 use super::hoist::compact_props_object;
 use super::js::asset_ident;
 use super::props::{admit_bindings, apply_static_ref_patch, bind_patch, emit_bind_props};
+use super::props_static;
 use super::slots;
 
 pub(super) fn collect_names<'a>(root: &Region<'a>) -> StdVec<&'a str> {
@@ -226,10 +227,12 @@ fn emit_call(
     let has_hoist_attrs = !hoist_attrs.is_empty();
     let static_nested = builtin::has_static_nested(&component.children);
     let builtin_helper = builtin::helper(component.name).is_some();
-    let hoisted_static_props = if !has_binds
+    let can_hoist_static_props = !has_binds
         && !has_custom
         && if_key.is_none()
         && has_hoist_attrs
+        && props_static::root_should_hoist(cx, id);
+    let hoisted_static_props = if can_hoist_static_props
         && ((!array && (facts.is_some() || create) && (!builtin_helper || static_nested))
             || (array && static_nested))
     {
@@ -240,12 +243,7 @@ fn emit_call(
     } else {
         None
     };
-    let unused_hoist = hoisted_static_props.is_none()
-        && !has_binds
-        && !has_custom
-        && if_key.is_none()
-        && has_hoist_attrs
-        && static_nested;
+    let unused_hoist = hoisted_static_props.is_none() && can_hoist_static_props && static_nested;
     if unused_hoist {
         cx.buf
             .push_hoist(compact_props_object(hoist_attrs.iter().copied()));

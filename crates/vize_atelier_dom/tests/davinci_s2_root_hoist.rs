@@ -17,6 +17,10 @@ const BATTERY: &[(&str, &str)] = &[
         "root_static_props_with_static_nested_dynamic_text",
         r#"<div class="wrapper"><span>{{ msg }}</span></div>"#,
     ),
+    (
+        "component_static_props_with_component_slot",
+        r#"<Foo class="panel"><Bar /></Foo>"#,
+    ),
 ];
 
 #[test]
