@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, useTemplateRef } from "vue";
 
-import { useHover } from "./hover.ts";
+import { useHover } from "../../../hover.ts";
 import { tooltipContext } from "./tooltip-context.ts";
 import type { TooltipSlotState, TooltipTriggerExpose } from "./tooltip-types.ts";
 

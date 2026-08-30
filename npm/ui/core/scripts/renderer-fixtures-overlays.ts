@@ -98,7 +98,7 @@ import {
   {
     filename: "TooltipConsumer.vue",
     source: String.raw`<script setup lang="ts">
-import { TooltipContent, TooltipRoot, TooltipTrigger } from "./tooltip.ts";
+import { TooltipContent, TooltipRoot, TooltipTrigger } from "./families/overlays/tooltip/tooltip.ts";
 </script>
 
 <template>

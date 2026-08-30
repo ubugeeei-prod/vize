@@ -17,7 +17,11 @@ import {
 } from "./families/overlays/popover/popover.ts";
 import Presence from "./presence.vue";
 import Transition from "./transition.vue";
-import { TooltipContent, TooltipRoot, TooltipTrigger } from "./tooltip.ts";
+import {
+  TooltipContent,
+  TooltipRoot,
+  TooltipTrigger,
+} from "./families/overlays/tooltip/tooltip.ts";
 import type { RuntimeFixture } from "./runtime-conformance-fixtures.ts";
 
 function tooltip(children: () => unknown): ReturnType<typeof h> {
@@ -257,7 +261,7 @@ export const overlayRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "tooltip-root",
-    sourceFile: "tooltip-root.vue",
+    sourceFile: "families/overlays/tooltip/tooltip-root.vue",
     render: () => tooltip(() => "Tip"),
     assertServerMarkup(html) {
       assert.match(html, /id="runtime-tooltip"/);
@@ -268,7 +272,7 @@ export const overlayRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "tooltip-trigger",
-    sourceFile: "tooltip-trigger.vue",
+    sourceFile: "families/overlays/tooltip/tooltip-trigger.vue",
     render: () => tooltip(() => h(TooltipTrigger, null, () => "More info")),
     assertServerMarkup(html) {
       assert.match(html, /data-vize-ui="tooltip-trigger"/);
@@ -283,7 +287,7 @@ export const overlayRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "tooltip-content",
-    sourceFile: "tooltip-content.vue",
+    sourceFile: "families/overlays/tooltip/tooltip-content.vue",
     render: () =>
       tooltip(() => [
         h(TooltipTrigger, null, () => "More info"),

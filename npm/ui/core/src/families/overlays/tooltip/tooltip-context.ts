@@ -1,6 +1,6 @@
 import type { ComputedRef, ShallowRef } from "vue";
 
-import { createContext } from "./context.ts";
+import { createContext } from "../../../context.ts";
 import type { TooltipState } from "./tooltip-types.ts";
 
 /** Shared state and element registry for the Tooltip compound components. */

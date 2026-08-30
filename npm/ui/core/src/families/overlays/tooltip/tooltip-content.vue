@@ -2,15 +2,15 @@
 import { computed, onMounted, onUnmounted, useTemplateRef, watch } from "vue";
 import type { ComputedRef } from "vue";
 
-import { createDismissableLayer } from "./dismissable-layer.ts";
+import { createDismissableLayer } from "../../../dismissable-layer.ts";
 import type {
   DismissableLayerDismissEvent,
   DismissableLayerEscapeKeyDownEvent,
-} from "./dismissable-layer.ts";
-import Portal from "./portal.vue";
-import Positioner from "./positioner.vue";
-import type { Placement, PositionerStrategy, Rect } from "./positioner.ts";
-import Presence from "./presence.vue";
+} from "../../../dismissable-layer.ts";
+import Portal from "../../../portal.vue";
+import Positioner from "../../../positioner.vue";
+import type { Placement, PositionerStrategy, Rect } from "../../../positioner.ts";
+import Presence from "../../../presence.vue";
 import { tooltipContext } from "./tooltip-context.ts";
 import type {
   TooltipContentExpose,

@@ -7,7 +7,7 @@ import type { TooltipRootExpose } from "./tooltip.ts";
 import TooltipContent from "./tooltip-content.vue";
 import TooltipRoot from "./tooltip-root.vue";
 import TooltipTrigger from "./tooltip-trigger.vue";
-import { mountInteraction } from "./testing/mount.ts";
+import { mountInteraction } from "../../../testing/mount.ts";
 
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));

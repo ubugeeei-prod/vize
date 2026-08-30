@@ -146,6 +146,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["icon-button", "src/families/layout/icon/"],
     ["status-light", "src/families/feedback/status-light/"],
     ["surface", "src/families/layout/surface/"],
+    ["tooltip", "src/families/overlays/tooltip/"],
   ]);
 
   for (const [canonicalName, familyRoot] of familyRoots) {

@@ -1,8 +1,8 @@
 import type {
   DismissableLayerDismissEvent,
   DismissableLayerEscapeKeyDownEvent,
-} from "./dismissable-layer.ts";
-import type { Placement, PositionerStrategy, Rect } from "./positioner.ts";
+} from "../../../dismissable-layer.ts";
+import type { Placement, PositionerStrategy, Rect } from "../../../positioner.ts";
 
 /** Open state mirrored to the Tooltip data contract. */
 export type TooltipState = "closed" | "open";
