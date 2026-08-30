@@ -16,6 +16,14 @@ import {
 } from "./story-testbed.ts";
 import { themePresets } from "./theme-constants.ts";
 
+function colocatedArtifactFile(
+  targetFile: `src/${string}`,
+  canonicalName: string,
+  suffix: string,
+): string {
+  return path.posix.join(path.posix.dirname(targetFile), `${canonicalName}${suffix}`);
+}
+
 async function collectSourceFiles(
   directory: string,
   relativeDirectory = "src",
@@ -48,10 +56,23 @@ test("publishes a deterministic story-testbed inventory for each family", () => 
 
     assert.equal(entry.title, catalogEntry.title);
     assert.equal(entry.packageSubpath, catalogEntry.packageSubpath);
-    assert.equal(entry.storyFile, `src/${entry.canonicalName}.art.vue`);
-    assert.equal(entry.vueTestFile, `src/${entry.canonicalName}.vue.test.ts`);
-    assert.equal(entry.browserTestFile, `src/${entry.canonicalName}.browser.spec.ts`);
-    assert.equal(entry.vrtTestFile, `src/${entry.canonicalName}.vrt.spec.ts`);
+    const primaryTarget = entry.targetFiles[0] ?? catalogEntry.entryFile;
+    assert.equal(
+      entry.storyFile,
+      colocatedArtifactFile(primaryTarget, entry.canonicalName, ".art.vue"),
+    );
+    assert.equal(
+      entry.vueTestFile,
+      colocatedArtifactFile(primaryTarget, entry.canonicalName, ".vue.test.ts"),
+    );
+    assert.equal(
+      entry.browserTestFile,
+      colocatedArtifactFile(primaryTarget, entry.canonicalName, ".browser.spec.ts"),
+    );
+    assert.equal(
+      entry.vrtTestFile,
+      colocatedArtifactFile(primaryTarget, entry.canonicalName, ".vrt.spec.ts"),
+    );
     assert.deepEqual(entry.supportingTestFiles, catalogEntry.tests);
     assert.deepEqual(entry.matrixDimensions, uiStoryMatrixDimensions);
     assert.deepEqual(entry.presets, themePresets);
@@ -99,7 +120,7 @@ test("behavior contract documents the issue 4898 harness gates", async () => {
   const behavior = await readFile(path.resolve("src/story-testbed.behavior.md"), "utf8");
 
   assert.match(behavior, /S1.+family catalog.+stable public family/);
-  assert.match(behavior, /S2.+Musea surface.+src\/<family>\.art\.vue/);
+  assert.match(behavior, /S2.+Musea surface.+<target-dir>\/<family>\.art\.vue/);
   assert.match(
     behavior,
     /S3.+states, slots, parts, presets, RTL, reduced-motion, and forced-colors/,

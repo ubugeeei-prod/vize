@@ -27,6 +27,7 @@ const rendererGate = [
   await readFile(path.resolve("scripts/renderer-fixtures-primitives.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-selection.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-spinner.ts"), "utf8"),
+  await readFile(path.resolve("scripts/renderer-fixtures-status-light.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-text.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-toggle-group.ts"), "utf8"),
 ].join("\n");
@@ -131,4 +132,25 @@ test("stable catalog entries have every required artifact", async () => {
       );
     }
   }
+});
+
+test("new family-owned SFC primitives keep implementation and tests together", () => {
+  const statusLight = stableEntries.find((entry) => entry.canonicalName === "status-light");
+  const familyRoot = "src/families/feedback/status-light/";
+
+  assert.ok(statusLight, "status-light must stay catalogued");
+  assert.equal(statusLight.entryFile, `${familyRoot}status-light.ts`);
+  assert.equal(statusLight.behaviorContract, `${familyRoot}status-light.behavior.md`);
+  assert.ok(
+    statusLight.sourceFiles.every((file) => file.startsWith(familyRoot)),
+    "status-light source files must stay in the feedback family folder",
+  );
+  assert.ok(
+    statusLight.tests.every((file) => file.startsWith(familyRoot)),
+    "status-light tests must stay beside the feedback family source",
+  );
+  assert.ok(
+    statusLight.typeTests?.every((file) => file.startsWith(familyRoot)),
+    "status-light type tests must stay beside the feedback family source",
+  );
 });

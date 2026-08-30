@@ -1,4 +1,11 @@
 import { uiFamilyCatalog, type UiFamilyCatalogEntry } from "./family-catalog.ts";
+import {
+  browserTestFileFor,
+  primaryStoryTargetFor,
+  storyFileFor,
+  vrtTestFileFor,
+  vueTestFileFor,
+} from "./story-testbed-paths.ts";
 import { themePresets } from "./theme-constants.ts";
 import type { ThemePresetName } from "./theme-types.ts";
 
@@ -128,22 +135,6 @@ export interface UiStoryTestbedAuditOptions {
   readonly existingFiles?: ReadonlySet<string>;
 }
 
-function storyFileFor(canonicalName: string): `src/${string}.art.vue` {
-  return `src/${canonicalName}.art.vue`;
-}
-
-function vueTestFileFor(canonicalName: string): `src/${string}.vue.test.ts` {
-  return `src/${canonicalName}.vue.test.ts`;
-}
-
-function browserTestFileFor(canonicalName: string): `src/${string}.browser.spec.ts` {
-  return `src/${canonicalName}.browser.spec.ts`;
-}
-
-function vrtTestFileFor(canonicalName: string): `src/${string}.vrt.spec.ts` {
-  return `src/${canonicalName}.vrt.spec.ts`;
-}
-
 function isVueSourceFile(file: `src/${string}`): file is `src/${string}.vue` {
   return file.endsWith(".vue");
 }
@@ -154,16 +145,18 @@ function testbedTargetsFor(entry: UiFamilyCatalogEntry): readonly `src/${string}
 }
 
 function createStoryTestbedEntry(entry: UiFamilyCatalogEntry): UiStoryTestbedEntry {
-  const storyFile = storyFileFor(entry.canonicalName);
-  const vueTestFile = vueTestFileFor(entry.canonicalName);
-  const browserTestFile = browserTestFileFor(entry.canonicalName);
-  const vrtTestFile = vrtTestFileFor(entry.canonicalName);
+  const targetFiles = testbedTargetsFor(entry);
+  const primaryTarget = targetFiles[0] ?? entry.entryFile;
+  const storyFile = storyFileFor(entry.canonicalName, primaryTarget);
+  const vueTestFile = vueTestFileFor(entry.canonicalName, primaryTarget);
+  const browserTestFile = browserTestFileFor(entry.canonicalName, primaryTarget);
+  const vrtTestFile = vrtTestFileFor(entry.canonicalName, primaryTarget);
 
   return {
     canonicalName: entry.canonicalName,
     title: entry.title,
     packageSubpath: entry.packageSubpath,
-    targetFiles: testbedTargetsFor(entry),
+    targetFiles,
     storyFile,
     vueTestFile,
     browserTestFile,
@@ -201,35 +194,37 @@ export function auditUiStoryTestbedInventory(
     }
     seenFamilies.add(entry.canonicalName);
 
-    if (entry.storyFile !== storyFileFor(entry.canonicalName)) {
+    const primaryTarget = primaryStoryTargetFor(entry);
+
+    if (entry.storyFile !== storyFileFor(entry.canonicalName, primaryTarget)) {
       violations.push({
         code: "misplaced-story-file",
         family: entry.canonicalName,
-        message: `expected ${storyFileFor(entry.canonicalName)}, got ${entry.storyFile}`,
+        message: `expected ${storyFileFor(entry.canonicalName, primaryTarget)}, got ${entry.storyFile}`,
       });
     }
 
-    if (entry.vueTestFile !== vueTestFileFor(entry.canonicalName)) {
+    if (entry.vueTestFile !== vueTestFileFor(entry.canonicalName, primaryTarget)) {
       violations.push({
         code: "misplaced-vue-test-file",
         family: entry.canonicalName,
-        message: `expected ${vueTestFileFor(entry.canonicalName)}, got ${entry.vueTestFile}`,
+        message: `expected ${vueTestFileFor(entry.canonicalName, primaryTarget)}, got ${entry.vueTestFile}`,
       });
     }
 
-    if (entry.browserTestFile !== browserTestFileFor(entry.canonicalName)) {
+    if (entry.browserTestFile !== browserTestFileFor(entry.canonicalName, primaryTarget)) {
       violations.push({
         code: "misplaced-browser-test-file",
         family: entry.canonicalName,
-        message: `expected ${browserTestFileFor(entry.canonicalName)}, got ${entry.browserTestFile}`,
+        message: `expected ${browserTestFileFor(entry.canonicalName, primaryTarget)}, got ${entry.browserTestFile}`,
       });
     }
 
-    if (entry.vrtTestFile !== vrtTestFileFor(entry.canonicalName)) {
+    if (entry.vrtTestFile !== vrtTestFileFor(entry.canonicalName, primaryTarget)) {
       violations.push({
         code: "misplaced-vrt-test-file",
         family: entry.canonicalName,
-        message: `expected ${vrtTestFileFor(entry.canonicalName)}, got ${entry.vrtTestFile}`,
+        message: `expected ${vrtTestFileFor(entry.canonicalName, primaryTarget)}, got ${entry.vrtTestFile}`,
       });
     }
 

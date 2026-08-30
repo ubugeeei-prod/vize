@@ -77,6 +77,7 @@ export * from "./positioner.ts";
 export * from "./presence.ts";
 export * from "./progress.ts";
 export * from "./spinner.ts";
+export * from "./families/feedback/status-light/status-light.ts";
 export * from "./press.ts";
 export * from "./scroll-lock.ts";
 export * from "./shortcut.ts";

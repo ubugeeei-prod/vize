@@ -104,6 +104,7 @@ export default defineConfig({
       presence: "src/presence.ts",
       progress: "src/progress.ts",
       spinner: "src/spinner.ts",
+      "status-light": "src/families/feedback/status-light/status-light.ts",
       press: "src/press.ts",
       "scroll-lock": "src/scroll-lock.ts",
       shortcut: "src/shortcut.ts",
