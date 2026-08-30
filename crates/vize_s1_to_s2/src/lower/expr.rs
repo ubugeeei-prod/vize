@@ -13,7 +13,9 @@
 //! `Compound` have no P2-8 producer, see the record) are assigned by
 //! [`opaque_at`], the only constructor that names a reason directly.
 
+use oxc_ast::ast::Statement;
 use oxc_parser::Parser;
+use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use vize_s0::{Span, String, cstr};
 use vize_s2::expr::{ExprRef, OpaqueExpr, OpaqueReason, VueFilterExpr};
@@ -42,21 +44,52 @@ pub(crate) fn handler_expr_at<'a>(cx: &Cx<'a>, text: &'a str) -> ExprRef<'a> {
     let ExprRef::Opaque(opaque) = expr else {
         return expr;
     };
-    if opaque.reason != OpaqueReason::ParseRejected || !parses_as_program(cx, opaque.source) {
+    if opaque.reason != OpaqueReason::ParseRejected || !parses_as_handler_body(cx, opaque.source) {
         return expr;
     }
     opaque_at(cx, OpaqueReason::MultiStatement, opaque.source, opaque.span)
 }
 
-fn parses_as_program(cx: &Cx<'_>, source: &str) -> bool {
-    Parser::new(
+fn parses_as_handler_body(cx: &Cx<'_>, source: &str) -> bool {
+    if contains_module_declaration(cx, source) {
+        return false;
+    }
+    let mut wrapped = String::with_capacity(source.len() + 39);
+    wrapped.push_str("const __vize_handler__ = $event => {\n");
+    wrapped.push_str(source);
+    wrapped.push_str("\n};");
+    let parsed = Parser::new(
+        cx.allocator.as_oxc(),
+        wrapped.as_str(),
+        SourceType::ts().with_module(true),
+    )
+    .parse();
+    if !parsed.diagnostics.is_empty() {
+        return false;
+    }
+    let semantic = SemanticBuilder::new_compiler().build(&parsed.program);
+    semantic.diagnostics.is_empty()
+}
+
+fn contains_module_declaration(cx: &Cx<'_>, source: &str) -> bool {
+    let parsed = Parser::new(
         cx.allocator.as_oxc(),
         source,
         SourceType::ts().with_module(true),
     )
-    .parse()
-    .diagnostics
-    .is_empty()
+    .parse();
+    if !parsed.diagnostics.is_empty() {
+        return false;
+    }
+    parsed.program.body.iter().any(|statement| {
+        matches!(
+            statement,
+            Statement::ImportDeclaration(_)
+                | Statement::ExportAllDeclaration(_)
+                | Statement::ExportDefaultDeclaration(_)
+                | Statement::ExportNamedDeclaration(_)
+        )
+    })
 }
 
 /// Interpolation / `v-bind` value admission: Vue 2 pipe filters first

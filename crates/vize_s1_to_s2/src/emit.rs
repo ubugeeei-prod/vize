@@ -7,8 +7,7 @@
 //! P2-9 carve-out. This module writes the JS string **directly from
 //! S2 ops** — it does not mint relief codegen-nodes (`NodeType` 13–20).
 //!
-//! This installment emits **static native HTML / SVG / MathML**,
-//! interpolations,
+//! This installment emits **static native HTML / SVG / MathML**, interpolations,
 //! mixed text siblings, static-name `ui.bind`, static-name `ui.on`
 //! (including event/key/option modifiers), native `ui.if`, **native
 //! `ui.for`**, **object-spread `v-bind`** (`normalizeProps` /
@@ -73,6 +72,7 @@ mod model;
 mod model_key;
 mod namespace;
 mod on;
+mod on_body;
 mod on_dynamic;
 mod once;
 mod outlet;

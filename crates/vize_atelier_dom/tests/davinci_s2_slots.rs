@@ -38,6 +38,10 @@ const BATTERY: &[(&str, &str)] = &[
         "<Foo><svg><path d=\"M0 0\" /></svg></Foo>",
     ),
     (
+        "implicit_default_mathml",
+        "<Foo><math><mi>x</mi></math></Foo>",
+    ),
+    (
         "named_header_extra_attr",
         r#"<Foo><template #header id="x">x</template></Foo>"#,
     ),

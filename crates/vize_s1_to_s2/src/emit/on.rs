@@ -165,9 +165,7 @@ pub(super) fn emit_wrapped_handler(
     match on.handler {
         Some(ExprRef::Js(js)) => emit_handler(cx, js),
         Some(ExprRef::Opaque(opaque)) if opaque.reason == OpaqueReason::MultiStatement => {
-            cx.buf.push("$event => {");
-            cx.buf.push(opaque.source);
-            cx.buf.push("}");
+            super::on_body::emit(cx, opaque.source);
         }
         None => cx.buf.push("() => {}"),
         Some(expr) => {
@@ -209,9 +207,7 @@ pub(super) fn emit_handler(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {
         return;
     }
     if js.source.contains(';') {
-        cx.buf.push("$event => {");
-        cx.buf.push(js.source);
-        cx.buf.push("}");
+        super::on_body::emit(cx, js.source);
     } else {
         cx.buf.push("$event => (");
         cx.buf.push(js.source);
