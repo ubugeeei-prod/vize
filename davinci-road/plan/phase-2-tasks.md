@@ -243,9 +243,10 @@ directive and object-spread increments. Installment 40 pins the publish graph
 firewall: unpublished Davinci stage crates stay out of publishable release
 graphs, and S2 DOM witnesses in published crates must remain stripped
 dev-dependencies. The task remains blocked on a hydrated full-corpus run with an
-exact comparison count, the remaining patch-flag equivalence program, and the DOM
-allocation budget; the old lane remains the production path. See the
-[series record](./phase-2-records/p2-11.md).
+exact comparison count: 144 DOM-output comparisons, one per project row in the
+current manifest, not the 142 ecosystem fixture paths. The remaining patch-flag
+equivalence program and DOM allocation budget also remain blockers; the old lane
+remains the production path. See the [series record](./phase-2-records/p2-11.md).
 
 **Steps:**
 
@@ -255,7 +256,7 @@ allocation budget; the old lane remains the production path. See the
 - [ ] **Waiver budget: zero.** DOM emitted output is the hard byte-parity bar (charter #23) and this is the most output-visible surface in the phase; any corpus diff is a bug in this task, exactly as P1-9 ran it
 - [ ] Patch-flag equivalence fixtures (the flags the new path computes must equal the old path's, per node, exactly)
 
-**Acceptance:** `node tools/davinci/corpus-diff.mjs --surface compiler --shards 2 --timeout-ms 600000` empty across the 142-project manifest with scope proof, run from clean fixtures (TS-11); differential lane zero divergence with its comparison count recorded (TS-25); patch-flag equivalence fixtures exact (TS-1/TS-2); DOM bench `allocs` re-recorded in `budgets.toml` (TS-10); TS-13. **Deps:** P2-9. **Non-goals:** SSR and Vapor backends (phase 3); source maps from a structured S4 emitter (P3-9); deleting the relief codegen-node universe; the vapor run-then-discard double transform (P3-6).
+**Acceptance:** `node tools/davinci/corpus-diff.mjs --surface compiler --shards 2 --timeout-ms 600000` empty across the 144-project manifest with scope proof, run from clean fixtures (TS-11); differential lane zero divergence with its comparison count recorded as 144 DOM-output comparisons (TS-25); patch-flag equivalence fixtures exact (TS-1/TS-2); DOM bench `allocs` re-recorded in `budgets.toml` (TS-10); TS-13. **Deps:** P2-9. **Non-goals:** SSR and Vapor backends (phase 3); source maps from a structured S4 emitter (P3-9); deleting the relief codegen-node universe; the vapor run-then-discard double transform (P3-6).
 
 ## P2-12a — Phase-start baselines and pinned targets
 

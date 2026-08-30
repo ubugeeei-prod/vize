@@ -26,7 +26,12 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
-import { buildArtifact, renderArtifact, verifyScope } from "./lib/corpus-baseline-artifact.mjs";
+import {
+  buildArtifact,
+  expectedComparisonCount,
+  renderArtifact,
+  verifyScope,
+} from "./lib/corpus-baseline-artifact.mjs";
 import {
   BASELINE_PATH,
   BASELINE_REL,
@@ -135,8 +140,9 @@ async function main() {
 
   const elapsedSeconds = Math.round((Date.now() - startedAt) / 1000);
   const outLabel = outPath === BASELINE_PATH ? BASELINE_REL : path.relative(repoRoot, outPath);
+  const expectedComparisons = expectedComparisonCount(manifest, SURFACES);
   log(
-    `wrote ${outLabel}: ${artifact.scope.row_count} rows (${artifact.scope.projects_run} projects x ${artifact.scope.surfaces_per_project} surfaces, ${artifact.scope.total_file_count} files) in ${elapsedSeconds}s`,
+    `wrote ${outLabel}: ${artifact.scope.row_count}/${expectedComparisons} comparisons (${artifact.scope.projects_run} projects x ${artifact.scope.surfaces_per_project} surfaces, ${artifact.scope.total_file_count} files) in ${elapsedSeconds}s`,
   );
 }
 

@@ -52,6 +52,10 @@ export function renderArtifact(artifact) {
   return `${JSON.stringify(artifact, null, 2)}\n`;
 }
 
+export function expectedComparisonCount(manifest, surfaces) {
+  return manifest.projects.length * surfaces.length;
+}
+
 /**
  * Scope proof (TS-11): the artifact must cover every manifest project on
  * every requested surface, and must not be a zero-file run. Returns a list
@@ -80,7 +84,7 @@ export function verifyScope(artifact, manifest, surfaces, label) {
   if (scope.row_count !== rows.length) {
     reasons.push(`${label}: scope.row_count ${scope.row_count} != ${rows.length} rows`);
   }
-  const expectedRowCount = manifestIds.length * expectedSurfaces.length;
+  const expectedRowCount = expectedComparisonCount(manifest, expectedSurfaces);
   if (rows.length !== expectedRowCount) {
     reasons.push(
       `${label}: ${rows.length} rows != ${manifestIds.length} projects x ${expectedSurfaces.length} surfaces = ${expectedRowCount}`,

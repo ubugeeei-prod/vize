@@ -35,6 +35,7 @@ import path from "node:path";
 import {
   buildArtifact,
   diffRows,
+  expectedComparisonCount,
   renderArtifact,
   verifyScope,
 } from "./lib/corpus-baseline-artifact.mjs";
@@ -226,8 +227,9 @@ async function main() {
     unstableDrift.length === 0
       ? ""
       : ` (${unstableDrift.length} filed unstable row(s) drifted without gating)`;
+  const expectedFreshComparisons = expectedComparisonCount(manifest, surfaces);
   log(
-    `corpus-diff: PASS in ${elapsedSeconds}s — zero gating drift across ${freshRows.length} rows (${fresh.scope.projects_run} projects x ${fresh.scope.surfaces_per_project} surfaces, ${fresh.scope.total_file_count} files); scope proof matches ${manifest.projects.length}-project manifest${filterNote}${unstableNote}`,
+    `corpus-diff: PASS in ${elapsedSeconds}s — zero gating drift across ${freshRows.length}/${expectedFreshComparisons} comparisons (${fresh.scope.projects_run} projects x ${fresh.scope.surfaces_per_project} surfaces, ${fresh.scope.total_file_count} files); scope proof matches ${manifest.projects.length}-project manifest${filterNote}${unstableNote}`,
   );
 }
 

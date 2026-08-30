@@ -96,9 +96,11 @@ counts or fixture availability changes.
   patch-flag shapes now have an explicit per-node S2-vs-shipped witness,
   and the publish graph firewall now rejects accidental release-graph edges
   from published crates into unpublished Davinci stage crates. The
-  full-corpus exact comparison count, remaining patch-flag equivalence program
-  and DOM allocation budget remain open. The old DOM lane is still the shipped
-  compiler path.
+  full-corpus exact comparison count remains open and must record
+  144 DOM-output comparisons over the current project-row manifest, not the
+  142 ecosystem fixture paths. The remaining patch-flag equivalence program
+  and DOM allocation budget also remain open. The old DOM lane is still the
+  shipped compiler path.
 - **Untouched and dependency-blocked: 4 of 22 — P2-12b, P2-16, P2-17 and
   P2-20.** P2-12b depends on P2-12a, P2-11 and P2-3; P2-16 depends on P2-11;
   P2-17 depends on P2-11, P2-12b and P2-13; P2-20 depends on all of P2-1
