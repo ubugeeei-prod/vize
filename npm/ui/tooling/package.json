@@ -8,18 +8,20 @@
   "exports": {
     "./authoring-contract": "./authoring-contract.ts",
     "./authoring-gate": "./authoring-gate.ts",
-    "./lint-sfc": "./lint-sfc.ts"
+    "./lint-sfc": "./lint-sfc.ts",
+    "./source-install-planner": "./source-install-planner.ts"
   },
   "scripts": {
-    "check": "vp check authoring-contract.ts authoring-gate.ts authoring-gate-events.test.ts authoring-gate-filenames.test.ts authoring-gate-slots.test.ts authoring-gate.test.ts lint-sfc.ts lint-sfc.test.ts type-member-parser.ts",
-    "fmt": "vp fmt --write authoring-contract.ts authoring-contract.md authoring-gate.ts authoring-gate-events.test.ts authoring-gate-filenames.test.ts authoring-gate-slots.test.ts authoring-gate.test.ts lint-sfc.ts lint-sfc.test.ts type-member-parser.ts",
-    "test": "vp exec node --test authoring-gate-events.test.ts authoring-gate-filenames.test.ts authoring-gate-slots.test.ts authoring-gate.test.ts lint-sfc.test.ts"
+    "check": "vp check authoring-contract.ts authoring-gate.ts authoring-gate-events.test.ts authoring-gate-filenames.test.ts authoring-gate-slots.test.ts authoring-gate.test.ts lint-sfc.ts lint-sfc.test.ts source-install-planner.ts source-install-planner.test.ts source-install-planner.types.test-d.ts type-member-parser.ts && tsc --noEmit -p tsconfig.json",
+    "fmt": "vp fmt --write authoring-contract.ts authoring-contract.md authoring-gate.ts authoring-gate-events.test.ts authoring-gate-filenames.test.ts authoring-gate-slots.test.ts authoring-gate.test.ts lint-sfc.ts lint-sfc.test.ts source-install-planner.ts source-install-planner.behavior.md source-install-planner.test.ts source-install-planner.types.test-d.ts type-member-parser.ts",
+    "test": "vp exec node --test authoring-gate-events.test.ts authoring-gate-filenames.test.ts authoring-gate-slots.test.ts authoring-gate.test.ts lint-sfc.test.ts source-install-planner.test.ts"
   },
   "dependencies": {
     "@vue/compiler-sfc": "catalog:vue-stable"
   },
   "devDependencies": {
     "@types/node": "catalog:typescript",
+    "typescript": "catalog:typescript",
     "vite-plus": "catalog:vite-stack"
   },
   "engines": {
