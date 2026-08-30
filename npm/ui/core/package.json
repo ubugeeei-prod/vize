@@ -144,6 +144,11 @@
       "import": "./dist/copy-button.mjs",
       "default": "./dist/copy-button.mjs"
     },
+    "./print-button": {
+      "types": "./dist/print-button.d.mts",
+      "import": "./dist/print-button.mjs",
+      "default": "./dist/print-button.mjs"
+    },
     "./toolbar": {
       "types": "./dist/toolbar.d.mts",
       "import": "./dist/toolbar.mjs",

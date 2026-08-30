@@ -16,6 +16,21 @@ function onCopy(value: string) {
 `,
   },
   {
+    filename: "PrintButtonConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { PrintButton } from "./families/actions/print-button/print-button.ts";
+
+function onPrint(event: MouseEvent) {
+  void event;
+}
+</script>
+
+<template>
+  <PrintButton aria-label="Print invoice" idle-label="Print invoice" @print="onPrint" />
+</template>
+`,
+  },
+  {
     filename: "ToolbarConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { Toolbar, ToolbarItem } from "./families/actions/toolbar/toolbar.ts";

@@ -27,6 +27,7 @@ import { breadcrumbRuntimeFixtures } from "./runtime-conformance-breadcrumb-fixt
 import { emptyStateRuntimeFixture } from "./runtime-conformance-empty-state-fixtures.ts";
 import { buttonGroupRuntimeFixtures } from "./families/actions/button-group/runtime-conformance-button-group-fixtures.ts";
 import { copyButtonRuntimeFixture } from "./families/actions/copy-button/runtime-conformance-copy-button-fixtures.ts";
+import { printButtonRuntimeFixture } from "./families/actions/print-button/runtime-conformance-print-button-fixtures.ts";
 import { toolbarRuntimeFixtures } from "./families/actions/toolbar/runtime-conformance-toolbar-fixtures.ts";
 import { fieldRuntimeFixtures } from "./runtime-conformance-field-fixtures.ts";
 import { progressRuntimeFixture } from "./runtime-conformance-progress-fixtures.ts";
@@ -104,6 +105,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   ...buttonGroupRuntimeFixtures,
   copyButtonRuntimeFixture,
+  printButtonRuntimeFixture,
   ...toolbarRuntimeFixtures,
   checkboxRuntimeFixture,
   {
