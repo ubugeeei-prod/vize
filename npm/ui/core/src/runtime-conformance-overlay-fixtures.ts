@@ -11,7 +11,18 @@ import PositionerArrow from "./positioner-arrow.vue";
 import Positioner from "./positioner.vue";
 import Presence from "./presence.vue";
 import Transition from "./transition.vue";
+import { TooltipContent, TooltipRoot, TooltipTrigger } from "./tooltip.ts";
 import type { RuntimeFixture } from "./runtime-conformance-fixtures.ts";
+
+function tooltip(children: () => unknown): ReturnType<typeof h> {
+  return h(TooltipRoot, { defaultOpen: true, delayDuration: 0, id: "runtime-tooltip" }, children);
+}
+
+function assertTooltipRoot(host: HTMLElement): void {
+  const root = host.querySelector('[data-vize-ui="tooltip-root"]');
+  assert.ok(root instanceof HTMLElement);
+  assert.equal(root.getAttribute("data-state"), "open");
+}
 
 export const overlayRuntimeFixtures: readonly RuntimeFixture[] = [
   ...dialogRuntimeFixtures,
@@ -154,6 +165,53 @@ export const overlayRuntimeFixtures: readonly RuntimeFixture[] = [
     assertHydratedDom(host) {
       const arrow = host.querySelector('[data-vize-ui="positioner-arrow"]');
       assert.ok(arrow instanceof HTMLElement);
+    },
+  },
+  {
+    name: "tooltip-root",
+    sourceFile: "tooltip-root.vue",
+    render: () => tooltip(() => "Tip"),
+    assertServerMarkup(html) {
+      assert.match(html, /id="runtime-tooltip"/);
+      assert.match(html, /data-vize-ui="tooltip-root"/);
+      assert.match(html, /data-state="open"/);
+    },
+    assertHydratedDom: assertTooltipRoot,
+  },
+  {
+    name: "tooltip-trigger",
+    sourceFile: "tooltip-trigger.vue",
+    render: () => tooltip(() => h(TooltipTrigger, null, () => "More info")),
+    assertServerMarkup(html) {
+      assert.match(html, /data-vize-ui="tooltip-trigger"/);
+      assert.match(html, /aria-describedby="runtime-tooltip-content"/);
+      assert.match(html, /type="button"/);
+    },
+    assertHydratedDom(host) {
+      const trigger = host.querySelector('[data-vize-ui="tooltip-trigger"]');
+      assert.ok(trigger instanceof HTMLButtonElement);
+      assert.equal(trigger.getAttribute("data-state"), "open");
+    },
+  },
+  {
+    name: "tooltip-content",
+    sourceFile: "tooltip-content.vue",
+    render: () =>
+      tooltip(() => [
+        h(TooltipTrigger, null, () => "More info"),
+        h(TooltipContent, { portalDisabled: true }, () => "Extra context"),
+      ]),
+    assertServerMarkup(html) {
+      assert.match(html, /data-vize-ui="tooltip-content"/);
+      assert.match(html, /role="tooltip"/);
+      assert.match(html, /data-vize-ui="positioner"/);
+      assert.match(html, /data-vize-dismissable-layer/);
+    },
+    assertHydratedDom(host) {
+      const content = host.querySelector('[data-vize-ui="tooltip-content"]');
+      assert.ok(content instanceof HTMLElement);
+      assert.equal(content.getAttribute("role"), "tooltip");
+      assert.equal(content.textContent, "Extra context");
     },
   },
   {

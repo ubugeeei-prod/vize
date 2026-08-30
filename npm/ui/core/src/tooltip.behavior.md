@@ -1,0 +1,12 @@
+# Tooltip Behavior
+
+| Case | Given                                | Action                                                               | Expected                                                                                               | Evidence              |
+| ---- | ------------------------------------ | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------- |
+| T1   | `tooltip-root.vue` owns a closed tip | trigger receives mouse or pen hover                                  | content opens after `delayDuration`, trigger receives `aria-describedby`, content has `role="tooltip"` | `tooltip.test.ts`     |
+| T2   | `tooltip-root.vue` recently closed   | trigger is hovered or focused within `skipDelayDuration`             | content opens without waiting for the full delay                                                       | `tooltip.test.ts`     |
+| T3   | `tooltip-trigger.vue` receives focus | delay completes                                                      | content opens through the same state contract as hover                                                 | `tooltip.test.ts`     |
+| T4   | `tooltip-trigger.vue` is open        | trigger blurs, pointer leaves, pointer presses, or Escape is pressed | pending open is canceled and content closes                                                            | `tooltip.test.ts`     |
+| T5   | root or trigger is disabled          | trigger is hovered, focused, or pressed                              | no open request is emitted and disabled data hooks are present                                         | `tooltip.test.ts`     |
+| T6   | `open` is controlled                 | trigger requests open or close                                       | `update:open` and `open-change` fire without mutating visible state before parent acceptance           | `tooltip.test.ts`     |
+| T7   | `tooltip-content.vue` is closed      | content remains force-mounted in the DOM                             | visible tooltip semantics are hidden and `aria-describedby` is omitted                                 | `tooltip.test.ts`     |
+| T8   | tooltip renders on the server        | repeated SSR requests and hydration run                              | deterministic ids match and no document listeners appear in HTML                                       | `tooltip-ssr.test.ts` |

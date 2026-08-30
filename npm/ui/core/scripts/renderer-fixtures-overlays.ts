@@ -73,4 +73,18 @@ const innerOpen = ref(true);
 </template>
 `,
   },
+  {
+    filename: "TooltipConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { TooltipContent, TooltipRoot, TooltipTrigger } from "./tooltip.ts";
+</script>
+
+<template>
+  <TooltipRoot id="renderer-tooltip" :delay-duration="0">
+    <TooltipTrigger>More details</TooltipTrigger>
+    <TooltipContent portal-disabled>Compiled across every renderer lane.</TooltipContent>
+  </TooltipRoot>
+</template>
+`,
+  },
 ];

@@ -5,7 +5,7 @@ import { gzipSync } from "node:zlib";
 const distributionDirectory = new URL("../dist/", import.meta.url);
 const staticImportPattern = /\b(?:import|export)\s+(?:[^"']*?\s+from\s+)?["'](\.\.?\/[^"']+)["']/g;
 const budgets = new Map([
-  ["index.mjs", 140_350],
+  ["index.mjs", 143_050],
   ["alert.mjs", 1_050],
   ["announcer.mjs", 4_100],
   ["aspect-ratio.mjs", 1_500],
@@ -24,6 +24,7 @@ const budgets = new Map([
   ["link.mjs", 3_150],
   ["toggle.mjs", 2_050],
   ["toggle-group.mjs", 5_100],
+  ["tooltip.mjs", 18_100],
   ["input.mjs", 3_900],
   ["radio-group.mjs", 4_600],
   ["textarea.mjs", 4_000],
@@ -41,7 +42,7 @@ const budgets = new Map([
   ["checkbox.mjs", 1_900],
   ["collection.mjs", 5_700],
   ["composite-navigation.mjs", 5_355],
-  ["catalog.mjs", 11_100],
+  ["catalog.mjs", 11_300],
   ["command.mjs", 2_200],
   ["context.mjs", 700],
   ["controllable-state.mjs", 600],
@@ -71,7 +72,7 @@ const budgets = new Map([
   ["move.mjs", 5_050],
   ["pointer-grace.mjs", 1_800],
   ["portal.mjs", 1_700],
-  ["positioner.mjs", 7_100],
+  ["positioner.mjs", 7_200],
   ["presence.mjs", 2_800],
   ["progress.mjs", 3_100],
   ["press.mjs", 5_950],

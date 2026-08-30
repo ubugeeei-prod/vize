@@ -124,6 +124,11 @@
       "import": "./dist/toggle-group.mjs",
       "default": "./dist/toggle-group.mjs"
     },
+    "./tooltip": {
+      "types": "./dist/tooltip.d.mts",
+      "import": "./dist/tooltip.mjs",
+      "default": "./dist/tooltip.mjs"
+    },
     "./input": {
       "types": "./dist/input.d.mts",
       "import": "./dist/input.mjs",
