@@ -63,6 +63,12 @@ pub(super) struct DavinciBuildSettings {
     /// The selected backend's legacy plan (`legacy_plan::{DOM,SSR,VAPOR}`)
     /// in the canonical pipeline-grammar spelling.
     pub(super) plan_string: String,
+    /// P2-3 budget observer output for the selected plan. This is named
+    /// "planned groups" at reporting sites because the real compile path still
+    /// runs legacy stages until the S2 backend becomes a production dependency.
+    pub(super) planned_groups: u32,
+    /// Pass entries described by the selected plan.
+    pub(super) planned_passes: u32,
     /// The plan's stage name - the attribution for a panic the driver did
     /// not see (an unattributable real-compile ICE).
     pub(super) stage: &'static str,
@@ -89,6 +95,7 @@ impl CompileFileSettings {
         let ssr = args.ssr;
         let vapor = args.vapor || build_config.vapor.unwrap_or(false);
         let (plan, mode) = davinci_ice::compile_plan(ssr, vapor);
+        let budget = davinci_ice::plan_budget(plan);
         let inject = args.davinci_inject_panic.as_deref().map(|spec| {
             davinci_ice::parse_inject_spec(spec, plan).unwrap_or_else(|error| {
                 eprintln!("\x1b[31mError:\x1b[0m --davinci-inject-panic: {error}");
@@ -125,6 +132,8 @@ impl CompileFileSettings {
             record_profile_totals: args.profile,
             davinci: DavinciBuildSettings {
                 plan_string: davinci_ice::plan_string(plan),
+                planned_groups: budget.walks,
+                planned_passes: budget.passes,
                 stage: plan.stage,
                 mode,
                 inject,
