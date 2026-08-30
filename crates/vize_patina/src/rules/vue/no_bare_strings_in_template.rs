@@ -40,8 +40,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupNode, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, PropNode, TemplateChildNode};
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-bare-strings-in-template",
@@ -67,46 +68,75 @@ const TARGET_ATTRIBUTES: &[&str] = &[
 /// Disallow raw human-readable text directly in the template.
 pub struct NoBareStringsInTemplate;
 
-impl Rule for NoBareStringsInTemplate {
-    fn meta(&self) -> &'static RuleMeta {
-        &META
-    }
-
-    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+impl NoBareStringsInTemplate {
+    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
         // The content of <script>/<style> is code/CSS, never user-facing copy.
-        if is_raw_text_element(element.tag) {
+        if is_raw_text_element(element.tag()) {
             return;
         }
 
         // Bare text content of the element (direct text children only; nested
         // elements are visited on their own).
-        for child in element.children.iter() {
-            if let TemplateChildNode::Text(text) = child
-                && has_bare_string(text.content)
+        element.walk_children(&mut |child| {
+            if let MarkupNode::Text(text) = child
+                && has_bare_string(text.content())
             {
-                ctx.warn_with_help(
+                ctx.warn_at_with_help(
                     ctx.t("vue/no-bare-strings-in-template.message"),
-                    &text.loc,
+                    text.range(),
                     ctx.t("vue/no-bare-strings-in-template.help"),
                 );
             }
-        }
+        });
 
         // Bare string in a user-facing static attribute. Bound attributes
         // (`:title="..."`) are directives, so they are skipped here.
-        for prop in element.props.iter() {
-            if let PropNode::Attribute(attr) = prop
-                && is_target_attribute(attr.name)
-                && let Some(value) = &attr.value
-                && has_bare_string(value.content)
+        element.walk_bindings(&mut |binding| {
+            if binding.kind() == MarkupBindingKind::Attribute
+                && TARGET_ATTRIBUTES
+                    .iter()
+                    .any(|target| binding.is_unqualified_arg_eq_ignore_ascii_case(target))
+                && let Some(value) = binding.static_value()
+                && has_bare_string(value)
             {
-                ctx.warn_with_help(
+                ctx.warn_at_with_help(
                     ctx.t("vue/no-bare-strings-in-template.message"),
-                    &attr.loc,
+                    binding.range(),
                     ctx.t("vue/no-bare-strings-in-template.help"),
                 );
             }
-        }
+        });
+    }
+}
+
+impl MarkupRule for NoBareStringsInTemplate {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        Self::check_element(ctx.lint(), element);
+    }
+}
+
+impl Rule for NoBareStringsInTemplate {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn jsx_needs_lowering(&self) -> bool {
+        // The legacy JSX fallback turns string expression children such as
+        // `{'Hello'}` into text nodes. Keep JSX on the lowered markup lane so
+        // the i18n rule does not silently stop reporting those authored strings.
+        true
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        Self::check_element(ctx, &MarkupElement::new(element));
     }
 }
 
@@ -114,14 +144,6 @@ impl Rule for NoBareStringsInTemplate {
 /// therefore never user-facing copy.
 fn is_raw_text_element(tag: &str) -> bool {
     tag.eq_ignore_ascii_case("script") || tag.eq_ignore_ascii_case("style")
-}
-
-/// Whether `name` is one of the user-facing attributes whose literal value
-/// should be internationalized.
-fn is_target_attribute(name: &str) -> bool {
-    TARGET_ATTRIBUTES
-        .iter()
-        .any(|target| name.eq_ignore_ascii_case(target))
 }
 
 /// Whether `text` contains human-readable copy: at least one alphabetic

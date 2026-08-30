@@ -60,6 +60,40 @@ impl<'a> MarkupBinding<'a> {
         }
     }
 
+    /// Whether this binding is an unqualified prop/attribute matching
+    /// case-insensitively.
+    ///
+    /// Keeps namespaced JSX attributes such as `foo:alt` out of HTML-attribute
+    /// rules while preserving legacy template rules that compared written
+    /// attribute names with ASCII-insensitive semantics.
+    pub fn is_unqualified_arg_eq_ignore_ascii_case(&self, expected: &str) -> bool {
+        match self.inner {
+            MarkupBindingInner::ReliefAttribute(node) => node.name.eq_ignore_ascii_case(expected),
+            MarkupBindingInner::ReliefDirective(node) => match relief_directive_kind(node) {
+                MarkupBindingKind::Custom => node.name.eq_ignore_ascii_case(expected),
+                _ => match node.arg.as_ref() {
+                    Some(ExpressionNode::Simple(simple)) => {
+                        simple.content.eq_ignore_ascii_case(expected)
+                    }
+                    _ => false,
+                },
+            },
+            MarkupBindingInner::Jsx { node, .. } => {
+                let attr = jsx_attribute_ref(node);
+                match &attr.name {
+                    JSXAttributeName::Identifier(identifier) => {
+                        match jsx_attribute_binding_kind(attr) {
+                            MarkupBindingKind::On => jsx_attribute_arg_name(attr)
+                                .is_some_and(|arg| arg.eq_ignore_ascii_case(expected)),
+                            _ => identifier.name.as_str().eq_ignore_ascii_case(expected),
+                        }
+                    }
+                    JSXAttributeName::NamespacedName(_) => false,
+                }
+            }
+        }
+    }
+
     /// Whether this binding has a static, unqualified prop/directive argument
     /// with an exact name.
     ///

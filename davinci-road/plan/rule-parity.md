@@ -34,9 +34,9 @@ Per-rule registration surface, SFC/JSX path membership, croquis usage, and a fir
 
 - **total rules: 245**
 - by family: template-family 158, script 71, css 10, musea 6
-- by surface (a rule can have several): `css-text` 10, `markup-facade` 31, `musea-blocks` 6, `script-oxc` 65, `script-source` 6, `sfc-source` 9, `template-ast` 152, `type-aware-corsa` 5
+- by surface (a rule can have several): `css-text` 10, `markup-facade` 32, `musea-blocks` 6, `script-oxc` 65, `script-source` 6, `sfc-source` 9, `template-ast` 152, `type-aware-corsa` 5
 - path membership: SFC `lint_sfc` 239 · JSX `lint_jsx` 147 · **SFC∩JSX 147** · SFC-only 92 · JSX-only 0 · neither 6 (6 musea + 0 unregistered)
-- JSX lanes: `fallback` 116, `ir` 23, `ir-lowered` 8, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (31 = 31 `markup-facade` rules)
+- JSX lanes: `fallback` 115, `ir` 23, `ir-lowered` 9, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (32 = 32 `markup-facade` rules)
 - classification: neutral-core-candidate **87** · vue-dialect-bound **136** · container-bound **22** (0 overridden)
 - croquis adoption: **23** rules touch vize_croquis (18 direct imports, 12 via context analysis)
 
@@ -203,7 +203,7 @@ Sorted by rule name. File paths are relative to `crates/vize_patina/src/rules/`.
 | `vue/multi-word-component-names`                | template-family | `opinionated/vue/multi_word_component_names.rs`        | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | neutral-core-candidate |
 | `vue/mustache-interpolation-spacing`            | template-family | `vue/mustache_interpolation_spacing.rs`                | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `vue/no-array-index-key`                        | template-family | `opinionated/vue/no_array_index_key.rs`                | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
-| `vue/no-bare-strings-in-template`               | template-family | `vue/no_bare_strings_in_template.rs`                   | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | neutral-core-candidate |
+| `vue/no-bare-strings-in-template`               | template-family | `vue/no_bare_strings_in_template.rs`                   | template-ast, markup-facade    | yes (template-visitor)           | yes (ir-lowered)            | —                                                                                                   | neutral-core-candidate |
 | `vue/no-boolean-attr-value`                     | template-family | `opinionated/vue/no_boolean_attr_value.rs`             | template-ast, markup-facade    | yes (template-visitor)           | yes (ir-lowered)            | —                                                                                                   | neutral-core-candidate |
 | `vue/no-child-content`                          | template-family | `vue/no_child_content.rs`                              | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `vue/no-deprecated-filter`                      | template-family | `vue/no_deprecated_filter.rs`                          | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
