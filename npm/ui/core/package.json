@@ -159,6 +159,11 @@
       "import": "./dist/search-field.mjs",
       "default": "./dist/search-field.mjs"
     },
+    "./slider": {
+      "types": "./dist/slider.d.mts",
+      "import": "./dist/slider.mjs",
+      "default": "./dist/slider.mjs"
+    },
     "./separator": {
       "types": "./dist/separator.d.mts",
       "import": "./dist/separator.mjs",

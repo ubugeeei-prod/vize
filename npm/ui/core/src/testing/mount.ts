@@ -233,8 +233,8 @@ function computeRole(element: HTMLElement): string | null {
   if (element instanceof HTMLInputElement) {
     if (element.type === "checkbox") return "checkbox";
     if (element.type === "radio") return "radio";
-    if (element.type === "search") return "searchbox";
-    return "textbox";
+    if (element.type === "range") return "slider";
+    return element.type === "search" ? "searchbox" : "textbox";
   }
   if (element instanceof HTMLTextAreaElement) return "textbox";
   return null;

@@ -40,6 +40,7 @@ export * from "./tooltip.ts";
 export * from "./input.ts";
 export * from "./radio-group.ts";
 export * from "./search-field.ts";
+export * from "./families/form/slider/slider.ts";
 export * from "./separator.ts";
 export * from "./spacer.ts";
 export * from "./stack.ts";

@@ -56,6 +56,7 @@ export default defineConfig({
       input: "src/input.ts",
       "radio-group": "src/radio-group.ts",
       "search-field": "src/search-field.ts",
+      slider: "src/families/form/slider/slider.ts",
       separator: "src/separator.ts",
       spacer: "src/spacer.ts",
       stack: "src/stack.ts",

@@ -23,6 +23,7 @@ import { emptyStateRuntimeFixture } from "./runtime-conformance-empty-state-fixt
 import { fieldRuntimeFixtures } from "./runtime-conformance-field-fixtures.ts";
 import { progressRuntimeFixture } from "./runtime-conformance-progress-fixtures.ts";
 import { radioGroupRuntimeFixtures } from "./runtime-conformance-radio-group-fixtures.ts";
+import { sliderRuntimeFixture } from "./families/form/slider/runtime-conformance-slider-fixtures.ts";
 import { spinnerRuntimeFixture } from "./runtime-conformance-spinner-fixtures.ts";
 import { statusLightRuntimeFixture } from "./families/feedback/status-light/runtime-conformance-status-light-fixtures.ts";
 import { stepperRuntimeFixtures } from "./runtime-conformance-stepper-fixtures.ts";
@@ -260,6 +261,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
     },
   },
   ...radioGroupRuntimeFixtures,
+  sliderRuntimeFixture,
   {
     name: "search-field",
     sourceFile: "search-field.vue",
