@@ -21,6 +21,7 @@ pub(super) fn emit_props_object(
     skip_normalize: bool,
     empty_key_multiline: bool,
     is_plain_element: bool,
+    for_item: bool,
 ) -> Result<(), EmitError> {
     let skip_class = pieces_have_named(pieces, "class");
     let skip_style = pieces_have_named(pieces, "style");
@@ -53,7 +54,7 @@ pub(super) fn emit_props_object(
     let multiline = !compact_multiline
         && ((if_key.is_some() && !visible.is_empty())
             || pieces_have_inline_on(pieces)
-            || (!cx.in_v_for
+            || (!for_item
                 && (visible.len() + extra > 1
                     || pieces_have_named(pieces, "class")
                     || pieces_have_named(pieces, "style")

@@ -132,7 +132,7 @@ pub(super) fn emit_spread_props(
     bindings: &[BindingOp<'_>],
     if_key: Option<&str>,
     skip_is: bool,
-    empty_key_multiline: bool,
+    for_item: bool,
     is_plain_element: bool,
 ) -> Result<(), EmitError> {
     let args = merge_args(attributes, bindings, if_key, skip_is)?;
@@ -166,8 +166,9 @@ pub(super) fn emit_spread_props(
                     pieces,
                     *if_key,
                     true,
-                    empty_key_multiline,
+                    for_item,
                     is_plain_element,
+                    for_item,
                 )?;
             }
         }

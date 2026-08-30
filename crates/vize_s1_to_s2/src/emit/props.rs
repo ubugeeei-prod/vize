@@ -302,6 +302,7 @@ pub(super) fn emit_bind_props(
         false,
         for_item && super::directive::has_custom(bindings),
         is_plain_element,
+        for_item,
     )?;
     if normalize {
         cx.buf.push(")");
