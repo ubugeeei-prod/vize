@@ -3,7 +3,7 @@
 import { ref } from "vue";
 import type { HTMLAttributes, ShallowRef } from "vue";
 
-import { createCollectionRegistry } from "./collection.ts";
+import { createCollectionRegistry } from "../../../collection.ts";
 import { createTypeahead, type TypeaheadMatch, type TypeaheadProps } from "./typeahead.ts";
 
 type Equal<Left, Right> =

@@ -6,6 +6,7 @@ import {
 } from "../../../family-catalog-types.ts";
 
 const measureFamilyRoot = "src/families/interaction/measure/";
+const typeaheadFamilyRoot = "src/families/interaction/typeahead/";
 
 export const interactionSupportFamilyCatalog = [
   {
@@ -155,11 +156,18 @@ export const interactionSupportFamilyCatalog = [
     canonicalName: "typeahead",
     title: "Typeahead",
     packageSubpath: "./typeahead",
-    entryFile: "src/typeahead.ts",
-    sourceFiles: ["src/typeahead.ts", "src/typeahead-internal.ts", "src/typeahead-types.ts"],
-    behaviorContract: "src/typeahead.behavior.md",
-    tests: ["src/typeahead.test.ts", "src/typeahead-ssr.test.ts"],
-    typeTests: ["src/typeahead.types.test-d.ts"],
+    entryFile: `${typeaheadFamilyRoot}typeahead.ts`,
+    sourceFiles: [
+      `${typeaheadFamilyRoot}typeahead.ts`,
+      `${typeaheadFamilyRoot}typeahead-internal.ts`,
+      `${typeaheadFamilyRoot}typeahead-types.ts`,
+    ],
+    behaviorContract: `${typeaheadFamilyRoot}typeahead.behavior.md`,
+    tests: [
+      `${typeaheadFamilyRoot}typeahead.test.ts`,
+      `${typeaheadFamilyRoot}typeahead-ssr.test.ts`,
+    ],
+    typeTests: [`${typeaheadFamilyRoot}typeahead.types.test-d.ts`],
     rendererFixture: "TypeaheadConsumer.vue",
     qualityGates: interactionQualityGates,
     bundleBudget: {

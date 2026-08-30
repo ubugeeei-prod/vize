@@ -1,8 +1,8 @@
 # Typeahead behavior contract
 
 Normative state × input → outcome table for `@vizejs/ui/typeahead`. Every row is
-exercised by `src/typeahead*.test.ts`; compile-only assertions live in
-`src/typeahead.types.test-d.ts`.
+exercised by `src/families/interaction/typeahead/typeahead*.test.ts`; compile-only assertions live in
+`src/families/interaction/typeahead/typeahead.types.test-d.ts`.
 
 | #   | State                     | Input                                             | Outcome                                                               | Proven by                |
 | --- | ------------------------- | ------------------------------------------------- | --------------------------------------------------------------------- | ------------------------ |

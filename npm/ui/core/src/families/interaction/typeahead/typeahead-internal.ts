@@ -1,7 +1,7 @@
 import { toValue } from "vue";
 
 import type { TypeaheadOptions } from "./typeahead-types.ts";
-import type { CollectionKey } from "./collection.ts";
+import type { CollectionKey } from "../../../collection.ts";
 
 const optionDiagnostic = "VIZE_UI_TYPEAHEAD_OPTION";
 const inputDiagnostic = "VIZE_UI_TYPEAHEAD_INPUT";

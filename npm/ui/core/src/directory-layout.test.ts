@@ -28,6 +28,7 @@ const formCompatibilityBarrels = [
 ] as const;
 const interactionCompatibilityBarrels = [
   ["measure.ts", "./families/interaction/measure/measure.ts"],
+  ["typeahead.ts", "./families/interaction/typeahead/typeahead.ts"],
 ] as const;
 
 const grandfatheredRootSfcFiles = ["primitive-element.vue"] as const;

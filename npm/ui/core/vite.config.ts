@@ -200,7 +200,7 @@ export default defineConfig({
       sortable: "src/sortable.ts",
       "spatial-navigation": "src/spatial-navigation.ts",
       transition: "src/families/overlays/transition/transition.ts",
-      typeahead: "src/typeahead.ts",
+      typeahead: "src/families/interaction/typeahead/typeahead.ts",
       virtualizer: "src/virtualizer.ts",
       primitive: "src/primitive.ts",
       "visually-hidden": "src/families/accessibility/visually-hidden/visually-hidden.ts",

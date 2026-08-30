@@ -10,6 +10,7 @@ import { UI_FAMILY_CATALOG_SCHEMA_VERSION, uiFamilyCatalog } from "./family-cata
 type PackageExport = string | { readonly import: string; readonly types: string };
 
 const stableEntries = uiFamilyCatalog.filter((entry) => entry.maturity === "stable");
+const requiredQualityGates = ["behavior-contract", "mounted-dom", "bundle-size"] as const;
 const packageManifest = JSON.parse(await readFile(path.resolve("package.json"), "utf8")) as {
   readonly exports: Readonly<Record<string, PackageExport>>;
 };
@@ -51,18 +52,9 @@ test("publishes a versioned stable source-owned family catalog", () => {
       entry.upstreamCoverage.length > 0,
       `${entry.canonicalName} must declare upstream coverage`,
     );
-    assert.ok(
-      entry.qualityGates.includes("behavior-contract"),
-      `${entry.canonicalName} must require behavior evidence`,
-    );
-    assert.ok(
-      entry.qualityGates.includes("mounted-dom"),
-      `${entry.canonicalName} must require mounted-DOM evidence`,
-    );
-    assert.ok(
-      entry.qualityGates.includes("bundle-size"),
-      `${entry.canonicalName} must require a bundle budget`,
-    );
+    for (const gate of requiredQualityGates) {
+      assert.ok(entry.qualityGates.includes(gate), `${entry.canonicalName} must require ${gate}`);
+    }
     assert.ok(entry.bundleBudget, `${entry.canonicalName} must publish a bundle budget`);
 
     for (const dependency of entry.dependencies) {
@@ -296,6 +288,7 @@ test("interaction families keep root compatibility barrels", async () => {
     "move",
     "pointer-grace",
     "press",
+    "typeahead",
   ]);
 });
 
