@@ -29,6 +29,7 @@ import { buttonGroupRuntimeFixtures } from "./families/actions/button-group/runt
 import { copyButtonRuntimeFixture } from "./families/actions/copy-button/runtime-conformance-copy-button-fixtures.ts";
 import { fullscreenButtonRuntimeFixture } from "./families/actions/fullscreen-button/runtime-conformance-fullscreen-button-fixtures.ts";
 import { printButtonRuntimeFixture } from "./families/actions/print-button/runtime-conformance-print-button-fixtures.ts";
+import { shareButtonRuntimeFixture } from "./families/actions/share-button/runtime-conformance-share-button-fixtures.ts";
 import { toolbarRuntimeFixtures } from "./families/actions/toolbar/runtime-conformance-toolbar-fixtures.ts";
 import { fieldRuntimeFixtures } from "./runtime-conformance-field-fixtures.ts";
 import { progressRuntimeFixture } from "./runtime-conformance-progress-fixtures.ts";
@@ -108,6 +109,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   copyButtonRuntimeFixture,
   fullscreenButtonRuntimeFixture,
   printButtonRuntimeFixture,
+  shareButtonRuntimeFixture,
   ...toolbarRuntimeFixtures,
   checkboxRuntimeFixture,
   {

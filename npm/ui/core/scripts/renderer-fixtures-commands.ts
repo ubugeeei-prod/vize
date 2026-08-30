@@ -52,6 +52,30 @@ function onPrint(event: MouseEvent) {
 `,
   },
   {
+    filename: "ShareButtonConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ShareButton } from "./families/actions/share-button/share-button.ts";
+import type { ShareButtonPayload } from "./families/actions/share-button/share-button.ts";
+
+function onShare(payload: ShareButtonPayload, event: MouseEvent) {
+  void payload;
+  void event;
+}
+</script>
+
+<template>
+  <ShareButton
+    aria-label="Share docs"
+    idle-label="Share docs"
+    text="Read the Vize docs"
+    title="Vize docs"
+    url="https://vize.dev/docs"
+    @share="onShare"
+  />
+</template>
+`,
+  },
+  {
     filename: "ToolbarConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { Toolbar, ToolbarItem } from "./families/actions/toolbar/toolbar.ts";

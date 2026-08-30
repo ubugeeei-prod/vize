@@ -154,6 +154,11 @@
       "import": "./dist/print-button.mjs",
       "default": "./dist/print-button.mjs"
     },
+    "./share-button": {
+      "types": "./dist/share-button.d.mts",
+      "import": "./dist/share-button.mjs",
+      "default": "./dist/share-button.mjs"
+    },
     "./toolbar": {
       "types": "./dist/toolbar.d.mts",
       "import": "./dist/toolbar.mjs",

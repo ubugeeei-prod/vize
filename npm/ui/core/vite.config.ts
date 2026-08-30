@@ -124,6 +124,7 @@ export default defineConfig({
       "copy-button": "src/families/actions/copy-button/copy-button.ts",
       "fullscreen-button": "src/families/actions/fullscreen-button/fullscreen-button.ts",
       "print-button": "src/families/actions/print-button/print-button.ts",
+      "share-button": "src/families/actions/share-button/share-button.ts",
       toolbar: "src/families/actions/toolbar/toolbar.ts",
       table: "src/families/data/table/table.ts",
       link: "src/link.ts",

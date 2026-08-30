@@ -150,6 +150,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["fullscreen-button", "src/families/actions/fullscreen-button/"],
     ["print-button", "src/families/actions/print-button/"],
     ["rating", "src/families/form/rating/"],
+    ["share-button", "src/families/actions/share-button/"],
     ["scroll-area", "src/families/layout/scroll-area/"],
     ["skip-link", "src/families/navigation/skip-link/"],
     ["status-light", "src/families/feedback/status-light/"],
