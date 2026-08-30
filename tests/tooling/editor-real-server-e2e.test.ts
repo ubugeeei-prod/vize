@@ -68,8 +68,8 @@ function runVimPackageGuard(omit: string[] = []): { status: number; output: stri
     });
 
     const guard = spawnSync(
-      process.execPath,
-      [path.join(root, "tools", "vim-vize", "assert-vim-package.mjs"), archive],
+      "rust-script",
+      [path.join(root, "tools", "commands", "editors", "vim", "assert-vim-package.rs"), archive],
       { encoding: "utf8" },
     );
     return { status: guard.status ?? 1, output: `${guard.stdout ?? ""}${guard.stderr ?? ""}` };

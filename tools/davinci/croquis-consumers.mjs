@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Croquis consumption matrix generator (Davinci P0-7).
 //
 // Enumerates the public analysis products of crates/vize_croquis
@@ -21,8 +20,8 @@
 //   croquis-render.mjs     artifact rendering
 //
 // Usage:
-//   node tools/davinci/croquis-consumers.mjs --write   # regenerate artifact
-//   node tools/davinci/croquis-consumers.mjs --check   # diff against committed
+//   rust-script tools/commands/davinci/croquis-consumers.rs --write   # regenerate artifact
+//   rust-script tools/commands/davinci/croquis-consumers.rs --check   # diff against committed
 //
 // Node builtins only. Output is deterministic (stable sort everywhere,
 // no timestamps, no absolute paths).
@@ -43,7 +42,9 @@ function generate() {
 function main() {
   const mode = process.argv[2];
   if (mode !== "--write" && mode !== "--check") {
-    console.error("usage: node tools/davinci/croquis-consumers.mjs --write | --check");
+    console.error(
+      "usage: rust-script tools/commands/davinci/croquis-consumers.rs --write | --check",
+    );
     process.exit(2);
   }
   const generated = generate();

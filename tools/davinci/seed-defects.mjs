@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Seeded-defect generator + identity-based recall assertion (Davinci P0-13).
 //
 // Doctrine: davinci-road/assurance.md, "Seeded-defect recall — the FN
@@ -61,7 +60,7 @@ import {
 
 const toolDir = path.dirname(fileURLToPath(import.meta.url));
 
-const USAGE = `Usage: node tools/davinci/seed-defects.mjs (--fixtures <dir> | --matrix | --corpus-shard) --out <dir> [--assert] [--report <path>]
+const USAGE = `Usage: rust-script tools/commands/davinci/seed-defects.rs (--fixtures <dir> | --matrix | --corpus-shard) --out <dir> [--assert] [--report <path>]
 
 Seeds the P0-13 defect classes into copies of .vue sources and (with
 --assert) verifies recall by diagnostic identity against the manifest.`;

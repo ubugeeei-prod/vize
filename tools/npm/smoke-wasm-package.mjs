@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Smoke-test the publishable @vizejs/wasm package directory.
  */

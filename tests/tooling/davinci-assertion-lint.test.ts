@@ -12,12 +12,12 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const lintPath = path.join(repoRoot, "tools", "davinci", "assertion-lint.mjs");
+const lintPath = path.join(repoRoot, "tools", "commands", "davinci", "assertion-lint.rs");
 const fixtureDir = path.join(repoRoot, "tests", "_fixtures", "davinci-assertion-lint");
 const allowlistPath = path.join(repoRoot, "davinci-road", "plan", "assertion-allowlist.toml");
 
 function runLint(args: string[]) {
-  return spawnSync(process.execPath, [lintPath, ...args], { cwd: repoRoot, encoding: "utf8" });
+  return spawnSync("rust-script", [lintPath, ...args], { cwd: repoRoot, encoding: "utf8" });
 }
 
 // Paths listed by the committed allowlist: every `[[allow]]` group carries a

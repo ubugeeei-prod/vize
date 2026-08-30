@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Shared setup for the editor end-to-end scenarios that drive a real
 // `vize lsp` process (#3457). The VS Code extension host and the headless
 // Neovim scenario both need the exact same workspace: the `real-vue` fixture,

@@ -1,6 +1,6 @@
 // The davinci bench budget compare gate (plan/phase-0.md P0-4).
 //
-// Exact stdout/stderr/exit oracles for tools/davinci/bench-compare.mjs over
+// Exact stdout/stderr/exit oracles for tools/commands/davinci/bench-compare.rs over
 // the committed fixture pairs in tests/_fixtures/davinci-bench-compare/,
 // including the DAVINCI_BASELINE_REFRESH refusal path. The registry side of
 // P0-4 (budgets.toml reconciliation and the ratchet header) lives in
@@ -15,7 +15,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const comparePath = path.join(repoRoot, "tools", "davinci", "bench-compare.mjs");
+const comparePath = path.join(repoRoot, "tools", "commands", "davinci", "bench-compare.rs");
 const fixtureRel = "tests/_fixtures/davinci-bench-compare";
 const fixtureDir = path.join(repoRoot, fixtureRel);
 
@@ -26,7 +26,7 @@ function runCompare(
   const env = { ...process.env };
   delete env.DAVINCI_BASELINE_REFRESH;
   if (options.refreshEnv != null) env.DAVINCI_BASELINE_REFRESH = options.refreshEnv;
-  return spawnSync(process.execPath, [comparePath, ...args], {
+  return spawnSync("rust-script", [comparePath, ...args], {
     cwd: options.cwd ?? repoRoot,
     encoding: "utf8",
     env,

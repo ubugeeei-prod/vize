@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -147,7 +146,9 @@ function parseArgs(argv) {
 }
 
 function printHelpAndExit() {
-  process.stdout.write(`Usage: node tools/fixtures/tool-matrix-report.mjs [options]\n\n`);
+  process.stdout.write(
+    `Usage: rust-script tools/commands/fixtures/tool-matrix-report.rs [options]\n\n`,
+  );
   process.stdout.write(
     `Exercise every registered real project with compiler, typechecker, linter, and formatter.\n\n`,
   );

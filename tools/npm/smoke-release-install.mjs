@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -57,7 +55,7 @@ function parseArgs(argv) {
 
   if (options.packageDirs.length === 0) {
     throw new Error(
-      "Usage: node tools/npm/smoke-release-install.mjs [--prepare-manifests] [--runtime-checks] [--content-mapper-checks] [--keep-temp] <package-dir>...",
+      "Usage: rust-script tools/commands/release/npm/smoke-release-install.rs [--prepare-manifests] [--runtime-checks] [--content-mapper-checks] [--keep-temp] <package-dir>...",
     );
   }
 

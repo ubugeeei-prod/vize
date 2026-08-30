@@ -1,6 +1,6 @@
 <!-- GENERATED FILE — do not edit by hand.
-     Regenerate: node tools/davinci/sourcelocation-inventory.mjs --write
-     Verify:     node tools/davinci/sourcelocation-inventory.mjs --check
+     Regenerate: rust-script tools/commands/davinci/sourcelocation-inventory.rs --write
+     Verify:     rust-script tools/commands/davinci/sourcelocation-inventory.rs --check
      Generator:  tools/davinci/sourcelocation-inventory.mjs -->
 
 # `SourceLocation` consumer inventory

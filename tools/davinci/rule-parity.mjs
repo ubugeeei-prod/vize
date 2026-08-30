@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Rule-parity matrix generator (Davinci P0-8).
 //
 // Walks every rule source file under crates/vize_patina/src/rules/** and
@@ -25,8 +24,8 @@
 //   rule-parity-render.mjs   artifact rendering
 //
 // Usage:
-//   node tools/davinci/rule-parity.mjs --write   # regenerate artifact
-//   node tools/davinci/rule-parity.mjs --check   # diff against committed
+//   rust-script tools/commands/davinci/rule-parity.rs --write   # regenerate artifact
+//   rust-script tools/commands/davinci/rule-parity.rs --check   # diff against committed
 //
 // Node builtins only. Output is deterministic (stable sort everywhere,
 // no timestamps, no absolute paths).
@@ -44,7 +43,7 @@ function generate() {
 function main() {
   const mode = process.argv[2];
   if (mode !== "--write" && mode !== "--check") {
-    console.error("usage: node tools/davinci/rule-parity.mjs --write | --check");
+    console.error("usage: rust-script tools/commands/davinci/rule-parity.rs --write | --check");
     process.exit(2);
   }
   const generated = generate();

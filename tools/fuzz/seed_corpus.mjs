@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Seeds tests/fuzz/corpus/<target>/ from repository fixtures so libFuzzer starts
 // with a coverage map that reflects realistic SFC and template shapes. The
 // seed file content is reproducible from the repo (the .vue and template
@@ -16,7 +15,7 @@
 //   - folio_parse: committed .folio fixture pages (Davinci P2-8 — the
 //     hand-written folio parsers)
 //
-// Usage: node tools/fuzz/seed_corpus.mjs
+// Usage: rust-script tools/commands/ci/fuzz/seed_corpus.rs
 
 import { createHash } from "node:crypto";
 import { globSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";

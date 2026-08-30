@@ -9,11 +9,11 @@ import { fileURLToPath } from "node:url";
 import { validatedFileCount } from "../../tools/fixtures/tool-matrix-metrics.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const toolPath = path.join(root, "tools", "fixtures", "tool-matrix-report.mjs");
+const toolPath = path.join(root, "tools", "commands", "fixtures", "tool-matrix-report.rs");
 
 function run(args: string[]) {
   const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fixture-tool-matrix-"));
-  const result = spawnSync(process.execPath, [toolPath, ...args, "--output-dir", outputDir], {
+  const result = spawnSync("rust-script", [toolPath, ...args, "--output-dir", outputDir], {
     cwd: root,
     encoding: "utf8",
   });
@@ -82,7 +82,7 @@ test("fixture tool matrix plans every registered project across all four require
 test("fixture tool matrix rejects malformed commit evidence", () => {
   const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fixture-tool-matrix-sha-"));
   try {
-    const result = spawnSync(process.execPath, [toolPath, "--dry-run", "--output-dir", outputDir], {
+    const result = spawnSync("rust-script", [toolPath, "--dry-run", "--output-dir", outputDir], {
       cwd: root,
       encoding: "utf8",
       env: { ...process.env, GITHUB_SHA: "not-a-full-sha" },

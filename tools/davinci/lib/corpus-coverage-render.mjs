@@ -105,8 +105,8 @@ export function buildReport(taxonomy, projects) {
   const hydrated = projects.filter((project) => project.hydrated);
   const lines = [
     `<!-- GENERATED FILE — do not edit by hand.
-     Regenerate: node tools/davinci/corpus-coverage.mjs --write
-     Verify:     node tools/davinci/corpus-coverage.mjs --check
+     Regenerate: rust-script tools/commands/davinci/corpus-coverage.rs --write
+     Verify:     rust-script tools/commands/davinci/corpus-coverage.rs --check
      Generator:  tools/davinci/corpus-coverage.mjs -->
 
 # Corpus construct coverage

@@ -6,7 +6,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-export const script = path.join(root, "tools", "fixtures", "typecheck-dependency-prepare.mjs");
+export const script = path.join(
+  root,
+  "tools",
+  "commands",
+  "fixtures",
+  "typecheck-dependency-prepare.rs",
+);
 export const commitSha = "a".repeat(40);
 export const packageManagers = [
   {
@@ -154,7 +160,7 @@ export function run(
   options: { timeoutMs?: number } = {},
 ) {
   return spawnSync(
-    process.execPath,
+    "rust-script",
     [script, "--registry", fixture.registryPath, "--output-dir", fixture.outputDir, ...extraArgs],
     {
       cwd: root,

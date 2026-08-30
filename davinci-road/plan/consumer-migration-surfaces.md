@@ -1,6 +1,6 @@
 <!-- GENERATED FILE - do not edit by hand.
-     Regenerate: node tools/davinci/consumer-migration-surfaces.mjs --write
-     Verify:     node tools/davinci/consumer-migration-surfaces.mjs --check
+     Regenerate: rust-script tools/commands/davinci/consumer-migration-surfaces.rs --write
+     Verify:     rust-script tools/commands/davinci/consumer-migration-surfaces.rs --check
      Generator:  tools/davinci/consumer-migration-surfaces.mjs -->
 
 # Consumer migration surfaces
@@ -298,6 +298,6 @@ protocol behavior.
 ## Regeneration
 
 ```sh
-node tools/davinci/consumer-migration-surfaces.mjs --write
-node tools/davinci/consumer-migration-surfaces.mjs --check
+rust-script tools/commands/davinci/consumer-migration-surfaces.rs --write
+rust-script tools/commands/davinci/consumer-migration-surfaces.rs --check
 ```

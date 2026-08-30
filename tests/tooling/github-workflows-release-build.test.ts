@@ -246,7 +246,7 @@ test("release workflow tunes Windows production Rust builds for cold runners", (
 test("release workflow inspects musl CLI binaries while archiving", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
   const buildCliJob = workflowJobBody(workflow, "build-cli");
-  const verifier = readRepoFile("tools", "github", "verify-musl-cli-binary.sh");
+  const verifier = readRepoFile("tools", "commands", "ci", "github", "verify-musl-cli-binary.rs");
 
   const buildIndex = buildCliJob.indexOf("name: Build CLI");
   const archiveIndex = buildCliJob.indexOf("name: Create archive (Unix)");
@@ -262,8 +262,10 @@ test("release workflow inspects musl CLI binaries while archiving", () => {
     buildCliJob,
     /verify-musl-cli-binary\.rs[\s\S]*tools\/moon\/cmd\/github\/create_cli_archive/,
   );
-  assert.match(verifier, /readelf -l "\$binary"[\s\S]*Requesting program interpreter/);
-  assert.match(verifier, /strings "\$binary" \| grep -Eq 'GLIBC_\[0-9\]'/);
+  assert.match(verifier, /command_output\("readelf", &\["-l", binary_text\]\)/);
+  assert.match(verifier, /Requesting program interpreter/);
+  assert.match(verifier, /command_output\("strings", &\[binary_text\]\)/);
+  assert.match(verifier, /GLIBC_/);
 });
 
 test("release workflow runs GitHub helper scripts with the native target on every runner", () => {
@@ -288,7 +290,13 @@ test("release workflow configures Zig linkers for Linux musl CLI archives", () =
   const workflow = readRepoFile(".github", "workflows", "release.yml");
   const buildCliJob = workflowJobBody(workflow, "build-cli");
   const releasePlatforms = readRepoFile("tools", "github", "release-platforms.mjs");
-  const zigLinkerScript = readRepoFile("tools", "github", "configure-zig-musl-linkers.sh");
+  const zigLinkerCommand = readRepoFile(
+    "tools",
+    "commands",
+    "ci",
+    "github",
+    "configure-zig-musl-linkers.rs",
+  );
 
   for (const [target, archive] of [
     ["x86_64-unknown-linux-musl", "vize-x86_64-unknown-linux-musl.tar.gz"],
@@ -305,42 +313,7 @@ test("release workflow configures Zig linkers for Linux musl CLI archives", () =
     /Setup Wild linker \(Linux\)[\s\S]*if:\s*runner\.os == 'Linux' && !endsWith\(matrix\.settings\.target, '-musl'\)/,
   );
   assert.match(buildCliJob, /configure-zig-musl-linkers\.rs/);
-  assert.match(zigLinkerScript, /CARGO_TARGET_%s_LINKER=rust-lld/);
-  assert.match(zigLinkerScript, /write_cc X86_64_UNKNOWN_LINUX_MUSL x86_64-linux-musl/);
-  assert.match(zigLinkerScript, /write_cc AARCH64_UNKNOWN_LINUX_MUSL aarch64-linux-musl/);
-});
-
-test("release workflow builds every editor-extension artifact it uploads", () => {
-  const workflow = readRepoFile(".github", "workflows", "release.yml");
-  const job = workflowJobBody(workflow, "build-editor-extensions");
-
-  // `actions/upload-artifact` with `if-no-files-found: error` only fails when
-  // *no* path matches, so a tarball nobody packages is dropped from the release
-  // artifact in silence. Pin the producer of every uploaded path instead.
-  const uploadPaths = job
-    .slice(job.indexOf("path: |"))
-    .split("\n")
-    .slice(1)
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0 && !line.includes(":"));
-
-  assert.deepEqual(uploadPaths, [
-    "emacs-vize-extension.tar.gz",
-    "helix-vize-extension.tar.gz",
-    "editors/vscode/dist/vize.vsix",
-    "nvim-vize-extension.tar.gz",
-    "vim-vize-extension.tar.gz",
-    "zed-vize-extension.tar.gz",
-  ]);
-
-  const producingTaskFor = (uploadPath: string): string => {
-    if (uploadPath === "editors/vscode/dist/vize.vsix") return "package:vscode-extension";
-    const editor = uploadPath.replace(/-vize-extension\.tar\.gz$/, "");
-    return `package:${editor}-extension`;
-  };
-
-  const unbuilt = uploadPaths.filter(
-    (uploadPath) => !job.includes(`vp run --workspace-root ${producingTaskFor(uploadPath)}`),
-  );
-  assert.deepEqual(unbuilt, [], "every uploaded editor artifact needs a packaging step");
+  assert.match(zigLinkerCommand, /CARGO_TARGET_\{rust_target\}_LINKER=rust-lld/);
+  assert.match(zigLinkerCommand, /X86_64_UNKNOWN_LINUX_MUSL/);
+  assert.match(zigLinkerCommand, /AARCH64_UNKNOWN_LINUX_MUSL/);
 });

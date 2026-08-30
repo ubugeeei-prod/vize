@@ -13,7 +13,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const comparePath = path.join(repoRoot, "tools", "davinci", "bench-compare.mjs");
+const comparePath = path.join(repoRoot, "tools", "commands", "davinci", "bench-compare.rs");
 const benchId = "s1_to_s2_lower_vfor_three_aliases";
 
 function budgetText(peaks: string): string {
@@ -45,7 +45,7 @@ function runCase(budgets: string, current: Record<string, unknown>) {
   fs.writeFileSync(path.join(root, "budgets.toml"), budgets);
   fs.writeFileSync(path.join(results, `${benchId}.json`), `${JSON.stringify(current)}\n`);
   const result = spawnSync(
-    process.execPath,
+    "rust-script",
     [
       comparePath,
       "--budgets",

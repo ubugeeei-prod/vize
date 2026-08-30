@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { main } from "./ai-fix-agent/cli.mjs";
 
 main(process.argv.slice(2)).catch((error) => {

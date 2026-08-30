@@ -5,47 +5,15 @@
 //! ```
 
 use std::{
-    collections::{BTreeMap, BTreeSet},
     env, fs, io,
     path::{Path, PathBuf},
     process::ExitCode,
 };
 
-const EXPLICIT_ENTRYPOINTS: &[&str] = &[
-    "tools/fixtures/glyph-corpus-waiver-audit.mjs",
-    "tools/fixtures/patina-rule-map.mjs",
-    "tools/fixtures/real-project-surface-verdict.mjs",
-    "tools/github/release-platforms.mjs",
-    "tools/github/require-needs-success.mjs",
-    "tools/github/semver-change-marker.mjs",
-];
-
-#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
-enum Runtime {
-    Bash,
-    Node,
-}
-
-impl Runtime {
-    fn wrapper_token(self) -> &'static str {
-        match self {
-            Self::Bash => "Runtime::Bash",
-            Self::Node => "Runtime::Node",
-        }
-    }
-}
-
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
-struct Entrypoint {
-    command: String,
-    legacy: String,
-    runtime: Runtime,
-}
-
 fn main() -> ExitCode {
     match verify() {
         Ok(count) => {
-            println!("rust-script tools: verified {count} command wrappers");
+            println!("rust-script tools: verified {count} Rust Script commands");
             ExitCode::SUCCESS
         }
         Err(errors) => {
@@ -59,103 +27,131 @@ fn main() -> ExitCode {
 
 fn verify() -> Result<usize, Vec<String>> {
     let root = repo_root().map_err(|error| vec![error])?;
-    let tools = root.join("tools");
-    let entrypoints =
-        collect_entrypoints(&root, &tools).map_err(|error| vec![error.to_string()])?;
+    let commands = collect_command_scripts(&root).map_err(|error| vec![error.to_string()])?;
+    let host_hash = tool_host_hash(&root).map_err(|error| vec![error.to_string()])?;
     let mut errors = Vec::new();
-    let mut expected_commands = BTreeSet::new();
 
-    for entrypoint in &entrypoints {
-        expected_commands.insert(entrypoint.command.clone());
-        let path = root.join(&entrypoint.command);
-        let source = match fs::read_to_string(&path) {
-            Ok(source) => source,
-            Err(error) => {
-                errors.push(format!("missing wrapper {}: {error}", entrypoint.command));
-                continue;
-            }
-        };
-        if !source.starts_with("#!/usr/bin/env rust-script\n") {
-            errors.push(format!(
-                "{} must start with a rust-script shebang",
-                entrypoint.command
-            ));
-        }
-        if !source.contains("legacy_command::run(") {
-            errors.push(format!(
-                "{} must call the shared legacy runner",
-                entrypoint.command
-            ));
-        }
-        if !source.contains(entrypoint.runtime.wrapper_token()) {
-            errors.push(format!(
-                "{} must use {}",
-                entrypoint.command,
-                entrypoint.runtime.wrapper_token()
-            ));
-        }
-        if !source.contains(&format!("\"{}\"", entrypoint.legacy)) {
-            errors.push(format!(
-                "{} must point at {}",
-                entrypoint.command, entrypoint.legacy
-            ));
-        }
+    if root.join("tools/rust/legacy_command.rs").exists() {
+        errors.push("tools/rust/legacy_command.rs must not come back".to_string());
     }
 
-    for command in collect_command_wrappers(&root, &root.join("tools/commands"))
-        .map_err(|error| vec![error.to_string()])?
-    {
-        if !expected_commands.contains(&command) {
-            errors.push(format!("{command} has no matching legacy entrypoint"));
-        }
+    for command in &commands {
+        verify_command(&root, command, &host_hash, &mut errors);
+    }
+
+    for script in collect_legacy_executables(&root).map_err(|error| vec![error.to_string()])? {
+        errors.push(format!(
+            "{script} is executable legacy tooling; move the command to tools/commands"
+        ));
     }
 
     if errors.is_empty() {
-        Ok(entrypoints.len())
+        Ok(commands.len())
     } else {
         Err(errors)
     }
 }
 
-fn collect_entrypoints(root: &Path, tools: &Path) -> io::Result<Vec<Entrypoint>> {
-    let mut files = Vec::new();
-    visit_files(tools, &mut files)?;
-    let mut entrypoints = Vec::new();
-
-    for file in files {
-        let legacy = normalize_relative(root, &file);
-        if skip_path(&legacy) {
-            continue;
+fn verify_command(root: &Path, command: &str, host_hash: &str, errors: &mut Vec<String>) {
+    let path = root.join(command);
+    let source = match fs::read_to_string(&path) {
+        Ok(source) => source,
+        Err(error) => {
+            errors.push(format!("cannot read {command}: {error}"));
+            return;
         }
-        let Some(runtime) = runtime_for(&file) else {
-            continue;
-        };
-        if !has_shebang(&file)? && !EXPLICIT_ENTRYPOINTS.contains(&legacy.as_str()) {
-            continue;
-        }
-        let command = command_path(&legacy)
-            .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
-        entrypoints.push(Entrypoint {
-            command,
-            legacy,
-            runtime,
-        });
+    };
+    if !source.starts_with("#!/usr/bin/env rust-script\n") {
+        errors.push(format!("{command} must start with a rust-script shebang"));
     }
-
-    entrypoints.sort();
-    Ok(entrypoints)
+    if source.contains("legacy_command") {
+        errors.push(format!(
+            "{command} must not reference the legacy command runner"
+        ));
+    }
+    if command.contains("-vize/") {
+        errors.push(format!("{command} must use product-neutral editor buckets"));
+    }
+    if source.contains("tool_host::run(") {
+        let required_salt = format!("tool-host: {host_hash}");
+        if !source.contains(&required_salt) {
+            errors.push(format!(
+                "{command} must include {required_salt} so rust-script cache invalidates with the shared host"
+            ));
+        }
+        verify_hosted_module(root, command, &source, errors);
+    }
 }
 
-fn collect_command_wrappers(root: &Path, commands: &Path) -> io::Result<Vec<String>> {
+fn verify_hosted_module(root: &Path, command: &str, source: &str, errors: &mut Vec<String>) {
+    if !source.contains("tool_host::Runtime::Node") {
+        errors.push(format!(
+            "{command} compatibility modules must run through Node"
+        ));
+    }
+    let Some(module) = first_tool_string(source) else {
+        errors.push(format!(
+            "{command} must name the compatibility module it hosts"
+        ));
+        return;
+    };
+    if !(module.ends_with(".mjs") || module.ends_with(".js") || module.ends_with(".ts")) {
+        errors.push(format!("{command} hosts unsupported module {module}"));
+    }
+    if module.contains("tools/moon/.mooncakes/") || module.contains("..") {
+        errors.push(format!("{command} hosts invalid module path {module}"));
+        return;
+    }
+    let module_path = root.join(module);
+    let module_source = match fs::read_to_string(&module_path) {
+        Ok(source) => source,
+        Err(error) => {
+            errors.push(format!("{command} hosts missing module {module}: {error}"));
+            return;
+        }
+    };
+    if module_source.starts_with("#!") {
+        errors.push(format!(
+            "{module} must not remain an executable command entrypoint"
+        ));
+    }
+}
+
+fn first_tool_string(source: &str) -> Option<&str> {
+    source
+        .split('"')
+        .skip(1)
+        .step_by(2)
+        .find(|value| value.starts_with("tools/"))
+}
+
+fn collect_command_scripts(root: &Path) -> io::Result<Vec<String>> {
     let mut files = Vec::new();
-    visit_files(commands, &mut files)?;
-    let mut wrappers = files
+    visit_files(&root.join("tools/commands"), &mut files)?;
+    let mut commands = files
         .into_iter()
         .filter(|path| path.extension().and_then(|ext| ext.to_str()) == Some("rs"))
         .map(|path| normalize_relative(root, &path))
         .collect::<Vec<_>>();
-    wrappers.sort();
-    Ok(wrappers)
+    commands.sort();
+    Ok(commands)
+}
+
+fn collect_legacy_executables(root: &Path) -> io::Result<Vec<String>> {
+    let mut files = Vec::new();
+    visit_files(&root.join("tools"), &mut files)?;
+    let mut scripts = Vec::new();
+    for path in files {
+        let relative = normalize_relative(root, &path);
+        if skip_path(&relative) || !is_legacy_script(&path) {
+            continue;
+        }
+        if is_command_entrypoint(&path)? {
+            scripts.push(relative);
+        }
+    }
+    scripts.sort();
+    Ok(scripts)
 }
 
 fn visit_files(dir: &Path, files: &mut Vec<PathBuf>) -> io::Result<()> {
@@ -180,52 +176,41 @@ fn skip_path(path: &str) -> bool {
         || path.starts_with("tools/moon/.mooncakes/")
 }
 
-fn runtime_for(path: &Path) -> Option<Runtime> {
-    match path.extension().and_then(|ext| ext.to_str()) {
-        Some("js" | "mjs" | "ts") => Some(Runtime::Node),
-        Some("sh") => Some(Runtime::Bash),
-        _ => None,
+fn is_legacy_script(path: &Path) -> bool {
+    matches!(
+        path.extension().and_then(|ext| ext.to_str()),
+        Some("js" | "mjs" | "ts" | "sh")
+    )
+}
+
+fn is_command_entrypoint(path: &Path) -> io::Result<bool> {
+    Ok(fs::read_to_string(path)?.starts_with("#!") || is_executable(path)?)
+}
+
+fn tool_host_hash(root: &Path) -> io::Result<String> {
+    let bytes = fs::read(root.join("tools/rust/tool_host.rs"))?;
+    Ok(format!("{:016x}", fnv1a64(&bytes)))
+}
+
+fn fnv1a64(bytes: &[u8]) -> u64 {
+    let mut hash = 0xcbf29ce484222325_u64;
+    for byte in bytes {
+        hash ^= u64::from(*byte);
+        hash = hash.wrapping_mul(0x100000001b3);
     }
+    hash
 }
 
-fn has_shebang(path: &Path) -> io::Result<bool> {
-    let source = fs::read_to_string(path)?;
-    Ok(source.starts_with("#!"))
+#[cfg(unix)]
+fn is_executable(path: &Path) -> io::Result<bool> {
+    use std::os::unix::fs::PermissionsExt;
+
+    Ok(fs::metadata(path)?.permissions().mode() & 0o111 != 0)
 }
 
-fn command_path(legacy: &str) -> Result<String, String> {
-    let legacy = legacy.strip_prefix("tools/").expect("tool path");
-    let mut parts = legacy.split('/').collect::<Vec<_>>();
-    let file = parts.pop().expect("file name");
-    let stem = file
-        .strip_suffix(".mjs")
-        .or_else(|| file.strip_suffix(".js"))
-        .or_else(|| file.strip_suffix(".ts"))
-        .or_else(|| file.strip_suffix(".sh"))
-        .unwrap_or(file);
-
-    let mut buckets = BTreeMap::from([
-        ("ai-fix-agent.mjs", vec!["agents"]),
-        ("davinci", vec!["davinci"]),
-        ("editor-e2e", vec!["editors", "e2e"]),
-        ("emacs-vize", vec!["editors", "emacs"]),
-        ("fixtures", vec!["fixtures"]),
-        ("fuzz", vec!["ci", "fuzz"]),
-        ("github", vec!["ci", "github"]),
-        ("helix-vize", vec!["editors", "helix"]),
-        ("npm", vec!["release", "npm"]),
-        ("nvim-vize", vec!["editors", "neovim"]),
-        ("release", vec!["release"]),
-        ("vim-vize", vec!["editors", "vim"]),
-        ("vscode-vize", vec!["editors", "vscode"]),
-        ("zed-vize", vec!["editors", "zed"]),
-    ]);
-    let first = parts.first().copied().unwrap_or(file);
-    let mut command_parts = buckets
-        .remove(first)
-        .ok_or_else(|| format!("missing canonical command bucket for tools/{legacy}"))?;
-    command_parts.push(stem);
-    Ok(format!("tools/commands/{}.rs", command_parts.join("/")))
+#[cfg(not(unix))]
+fn is_executable(_path: &Path) -> io::Result<bool> {
+    Ok(false)
 }
 
 fn repo_root() -> Result<PathBuf, String> {

@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // SourceLocation consumer inventory (Davinci P0-9).
 //
 // Counts every textual read of the relief `SourceLocation` members that the
@@ -21,8 +20,8 @@
 // or deleted consumer fails regeneration instead of going silently stale.
 //
 // Usage:
-//   node tools/davinci/sourcelocation-inventory.mjs --write   # regenerate
-//   node tools/davinci/sourcelocation-inventory.mjs --check   # diff committed
+//   rust-script tools/commands/davinci/sourcelocation-inventory.rs --write   # regenerate
+//   rust-script tools/commands/davinci/sourcelocation-inventory.rs --check   # diff committed
 //
 // Node builtins only. Output is deterministic (stable sort everywhere,
 // no timestamps, no absolute paths).
@@ -42,7 +41,7 @@ import { repoRoot } from "./lib/paths.mjs";
 
 const ARTIFACT_REL = "davinci-road/plan/sourcelocation-inventory.md";
 const ARTIFACT = path.join(repoRoot, ARTIFACT_REL);
-const REGEN_COMMAND = "node tools/davinci/sourcelocation-inventory.mjs --write";
+const REGEN_COMMAND = "rust-script tools/commands/davinci/sourcelocation-inventory.rs --write";
 
 /** `source` reads counted at generation time of the P0-9 map, all migrated
  * to `Span::slice` by Davinci P1-3. */
@@ -133,7 +132,7 @@ function generate() {
 
   return `<!-- GENERATED FILE — do not edit by hand.
      Regenerate: ${REGEN_COMMAND}
-     Verify:     node tools/davinci/sourcelocation-inventory.mjs --check
+     Verify:     rust-script tools/commands/davinci/sourcelocation-inventory.rs --check
      Generator:  tools/davinci/sourcelocation-inventory.mjs -->
 
 # \`SourceLocation\` consumer inventory
@@ -251,7 +250,9 @@ representation:
 function main() {
   const mode = process.argv[2];
   if (mode !== "--write" && mode !== "--check") {
-    console.error("usage: node tools/davinci/sourcelocation-inventory.mjs --write | --check");
+    console.error(
+      "usage: rust-script tools/commands/davinci/sourcelocation-inventory.rs --write | --check",
+    );
     process.exit(2);
   }
   const generated = generate();

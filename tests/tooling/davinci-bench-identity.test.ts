@@ -10,14 +10,14 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const comparePath = path.join(repoRoot, "tools", "davinci", "bench-compare.mjs");
+const comparePath = path.join(repoRoot, "tools", "commands", "davinci", "bench-compare.rs");
 const fixtureDir = path.join(repoRoot, "tests", "_fixtures", "davinci-bench-compare");
 
 function runCompare(root: string, budgets: string, baseline: string, current: string) {
   const env = { ...process.env };
   delete env.DAVINCI_BASELINE_REFRESH;
   return spawnSync(
-    process.execPath,
+    "rust-script",
     [comparePath, "--budgets", budgets, "--baseline", baseline, "--results", current],
     { cwd: root, encoding: "utf8", env },
   );

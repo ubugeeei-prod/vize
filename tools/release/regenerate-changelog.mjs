@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Regenerates the root CHANGELOG.md from the repository git history.
 //
 // Uses `git-cliff` configured by `cliff.toml`. If git-cliff is not on PATH,

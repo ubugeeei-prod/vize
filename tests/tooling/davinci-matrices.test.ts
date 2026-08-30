@@ -16,33 +16,33 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 const matrices = [
   {
     name: "croquis consumption matrix",
-    generator: "tools/davinci/croquis-consumers.mjs",
+    generator: "tools/commands/davinci/croquis-consumers.rs",
     artifact: "davinci-road/plan/croquis-consumption.md",
   },
   {
     name: "rule-parity matrix (SFC × JSX)",
-    generator: "tools/davinci/rule-parity.mjs",
+    generator: "tools/commands/davinci/rule-parity.rs",
     artifact: "davinci-road/plan/rule-parity.md",
   },
   {
     name: "SourceLocation consumer inventory",
-    generator: "tools/davinci/sourcelocation-inventory.mjs",
+    generator: "tools/commands/davinci/sourcelocation-inventory.rs",
     artifact: "davinci-road/plan/sourcelocation-inventory.md",
   },
   {
     name: "consumer migration surface inventory",
-    generator: "tools/davinci/consumer-migration-surfaces.mjs",
+    generator: "tools/commands/davinci/consumer-migration-surfaces.rs",
     artifact: "davinci-road/plan/consumer-migration-surfaces.md + .tsv",
   },
   {
     name: "construct-matrix fixture plane (element kind × directive)",
-    generator: "tools/davinci/matrix-gen.mjs",
+    generator: "tools/commands/davinci/matrix-gen.rs",
     artifact: "tests/fixtures/davinci-matrix/",
   },
 ];
 
 function runCheck(generator: string, extraArgs: string[] = []) {
-  return spawnSync(process.execPath, [path.join(repoRoot, generator), "--check", ...extraArgs], {
+  return spawnSync("rust-script", [path.join(repoRoot, generator), "--check", ...extraArgs], {
     cwd: repoRoot,
     encoding: "utf8",
   });
@@ -55,7 +55,7 @@ for (const matrix of matrices) {
       result.status,
       0,
       `${matrix.artifact} is stale. Regenerate it with:\n` +
-        `  node ${matrix.generator} --write\n\n` +
+        `  rust-script ${matrix.generator} --write\n\n` +
         `${result.stdout}${result.stderr}`.trim(),
     );
   });
@@ -69,16 +69,21 @@ test("the fixture-plane staleness check fails on an injected edit", () => {
   const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "davinci-matrix-check-"));
   try {
     const write = spawnSync(
-      process.execPath,
-      [path.join(repoRoot, "tools/davinci/matrix-gen.mjs"), "--write", "--out-dir", scratch],
+      "rust-script",
+      [
+        path.join(repoRoot, "tools/commands/davinci/matrix-gen.rs"),
+        "--write",
+        "--out-dir",
+        scratch,
+      ],
       { cwd: repoRoot, encoding: "utf8" },
     );
     assert.equal(write.status, 0, `${write.stdout}${write.stderr}`.trim());
-    const clean = runCheck("tools/davinci/matrix-gen.mjs", ["--out-dir", scratch]);
+    const clean = runCheck("tools/commands/davinci/matrix-gen.rs", ["--out-dir", scratch]);
     assert.equal(clean.status, 0, `${clean.stdout}${clean.stderr}`.trim());
     const victim = path.join(scratch, "native--v-if.vue");
     fs.appendFileSync(victim, "<!-- injected edit -->\n");
-    const stale = runCheck("tools/davinci/matrix-gen.mjs", ["--out-dir", scratch]);
+    const stale = runCheck("tools/commands/davinci/matrix-gen.rs", ["--out-dir", scratch]);
     assert.equal(
       stale.status,
       1,

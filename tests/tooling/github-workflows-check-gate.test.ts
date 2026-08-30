@@ -174,7 +174,8 @@ test("test-report rejects a needs context it cannot read", () => {
 });
 
 test("the test-report gate step exits non-zero for a red dependency", () => {
-  const failing = spawnSync(process.execPath, ["tools/github/require-needs-success.mjs"], {
+  const command = ["tools/commands/ci/github/require-needs-success.rs"];
+  const failing = spawnSync("rust-script", command, {
     cwd: root,
     encoding: "utf8",
     env: {
@@ -195,7 +196,7 @@ test("the test-report gate step exits non-zero for a red dependency", () => {
     ].join("\n")}\n`,
   );
 
-  const passing = spawnSync(process.execPath, ["tools/github/require-needs-success.mjs"], {
+  const passing = spawnSync("rust-script", command, {
     cwd: root,
     encoding: "utf8",
     env: { ...process.env, NEEDS_JSON: JSON.stringify(pullRequestContext()) },
@@ -211,7 +212,7 @@ test("the test-report gate step exits non-zero for a red dependency", () => {
 
 test("the test-report gate step reports a missing needs payload", () => {
   const { NEEDS_JSON: _ignored, ...env } = process.env;
-  const result = spawnSync(process.execPath, ["tools/github/require-needs-success.mjs"], {
+  const result = spawnSync("rust-script", ["tools/commands/ci/github/require-needs-success.rs"], {
     cwd: root,
     encoding: "utf8",
     env,
@@ -221,7 +222,7 @@ test("the test-report gate step reports a missing needs payload", () => {
   assert.equal(result.stdout, "");
   assert.equal(
     result.stderr,
-    "NEEDS_JSON is required: pass ${{ toJSON(needs) }} to tools/github/require-needs-success.mjs\n",
+    "NEEDS_JSON is required: pass ${{ toJSON(needs) }} to tools/commands/ci/github/require-needs-success.rs\n",
   );
 });
 

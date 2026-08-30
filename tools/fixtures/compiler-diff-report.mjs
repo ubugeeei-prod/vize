@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
@@ -164,7 +163,7 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  process.stdout.write(`Usage: node tools/fixtures/compiler-diff-report.mjs [options]
+  process.stdout.write(`Usage: rust-script tools/commands/fixtures/compiler-diff-report.rs [options]
 
 Compare every Vue ecosystem fixture project against the official Vue compiler.
 

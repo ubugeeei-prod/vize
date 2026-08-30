@@ -7,7 +7,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const toolPath = path.join(root, "tools", "fixtures", "compiler-diff-report.mjs");
+const toolPath = path.join(root, "tools", "commands", "fixtures", "compiler-diff-report.rs");
 
 function writeFakeVizePreload(directory: string): string {
   const preloadPath = path.join(directory, "fake-vize.cjs");
@@ -49,7 +49,7 @@ function runCompilerFixtureDiff(vizeBin: string, invocationDirectory = root) {
 
   try {
     const result = spawnSync(
-      process.execPath,
+      "rust-script",
       [
         toolPath,
         "--project",
@@ -74,7 +74,7 @@ function runCompilerFixtureDiff(vizeBin: string, invocationDirectory = root) {
 }
 
 test("compiler fixture diff reporter documents the shared artifact directory", () => {
-  const result = spawnSync(process.execPath, [toolPath, "--help"], {
+  const result = spawnSync("rust-script", [toolPath, "--help"], {
     cwd: root,
     encoding: "utf8",
   });
@@ -87,7 +87,7 @@ test("compiler fixture diff reporter dry-runs selected registry projects", () =>
   const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-compiler-diff-report-"));
   try {
     const result = spawnSync(
-      process.execPath,
+      "rust-script",
       [
         toolPath,
         "--dry-run",
@@ -133,7 +133,7 @@ test("compiler fixture diff reporter rejects unknown fixture ids", () => {
   const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-compiler-diff-report-"));
   try {
     const result = spawnSync(
-      process.execPath,
+      "rust-script",
       [toolPath, "--dry-run", "--project", "not-a-fixture", "--output-dir", outputDir],
       { cwd: root, encoding: "utf8" },
     );

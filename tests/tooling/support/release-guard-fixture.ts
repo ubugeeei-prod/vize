@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { repoRoot, runMoonScript } from "../_helpers/moonbit.ts";
+import { runMoonScript } from "../_helpers/moonbit.ts";
 import { writeFakeCommand } from "./fake-command.ts";
 
 export interface RepositoryGuardOptions {
@@ -17,12 +17,14 @@ export interface RepositoryGuardOptions {
   pushFails?: boolean;
   stagedFiles?: boolean;
   manifestTestFails?: boolean;
+  guardFails?: boolean;
 }
 
 export function runRepositoryGuardFixture(options: RepositoryGuardOptions) {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-guard-"));
   const binDir = path.join(tempDir, "bin");
   const gitLogPath = path.join(tempDir, "git.log");
+  const guardShimPath = path.join(tempDir, "release-local-guard-shim.mjs");
   const cargoTomlPath = path.join(tempDir, "Cargo.toml");
   const cargoToml = '[workspace.package]\nversion = "0.290.0"\n';
   fs.mkdirSync(binDir, { recursive: true });
@@ -35,6 +37,10 @@ export function runRepositoryGuardFixture(options: RepositoryGuardOptions) {
   fs.writeFileSync(
     path.join(tempDir, "tests/tooling/package-manifests.test.ts"),
     options.manifestTestFails ? 'throw new Error("manifest drift");\n' : "",
+  );
+  fs.writeFileSync(
+    guardShimPath,
+    "process.exit(process.env.TEST_GUARD_FAILS === 'true' ? 1 : 0);\n",
   );
   writeFakeCommand(binDir, "cargo", "process.exit(0);");
   writeFakeCommand(
@@ -77,7 +83,9 @@ export function runRepositoryGuardFixture(options: RepositoryGuardOptions) {
       REMOTE_TAG_EXISTS: String(options.remoteTagExists),
       TEST_PUSH_FAIL: String(options.pushFails ?? false),
       TEST_STAGED_FILES: String(options.stagedFiles ?? true),
-      VIZE_RELEASE_GUARD_SCRIPT: path.join(repoRoot, "tools/github/release-local-guard.mjs"),
+      TEST_GUARD_FAILS: String(options.guardFails ?? false),
+      VIZE_RELEASE_GUARD_SCRIPT: guardShimPath,
+      VIZE_RELEASE_GUARD_RUNNER: process.execPath,
     },
   });
   const gitLog = fs.readFileSync(gitLogPath, "utf8");

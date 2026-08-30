@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Drive the packaged Neovim integration against a real `vize lsp` process
 // (#3457). Neovim is the only non-VS Code editor in the packaged set with a
 // scriptable headless LSP client, so it carries the second end-to-end scenario

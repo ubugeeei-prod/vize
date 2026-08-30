@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -44,7 +42,9 @@ if (entrypoint) {
   const [eventName, target, outcome, extra] = process.argv.slice(2);
   try {
     if (!eventName || !target || !outcome || extra != null) {
-      throw new Error("Usage: node tools/fuzz/enforce-result.mjs <event-name> <target> <outcome>");
+      throw new Error(
+        "Usage: rust-script tools/commands/ci/fuzz/enforce-result.rs <event-name> <target> <outcome>",
+      );
     }
     process.exitCode = reportFuzzResult(eventName, target, outcome);
   } catch (error) {

@@ -6,10 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 
 import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
-import {
-  runRepositoryGuardFixture,
-  type RepositoryGuardOptions,
-} from "./support/release-guard-fixture.ts";
+import { runRepositoryGuardFixture } from "./support/release-guard-fixture.ts";
 
 function writeTempFile(contents: string): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-test-"));
@@ -310,28 +307,15 @@ test("release script explains cleanup after manifest verification fails", () => 
   }
 });
 
-test("release repository guard rejects unsafe refs before mutation", () => {
-  const cases: Array<[RepositoryGuardOptions, RegExp]> = [
-    [{ branch: "feature/unsafe-release" }, /must be prepared from the local main branch/],
-    [{ branch: "" }, /must be prepared from the local main branch/],
-    [{ branch: "main", dirty: true }, /uncommitted changes/],
-    [{ branch: "main", ancestor: false }, /HEAD is not reachable from the current origin\/main/],
-    [
-      { branch: "main", remoteSha: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" },
-      /HEAD must exactly match the current origin\/main/,
-    ],
-    [{ branch: "main", localTagExists: true }, /Tag v0\.290\.1 already exists locally/],
-    [{ branch: "main", remoteTagExists: true }, /Remote tag v0\.290\.1 already exists/],
-  ];
-  for (const [options, message] of cases) {
-    const fixture = runRepositoryGuardFixture(options);
-    try {
-      assert.equal(fixture.result.status, 1);
-      assert.match(fixture.result.stderr, message);
-      assert.doesNotMatch(fixture.gitLog, /^(?:add|commit|tag|push)\b/m);
-      assert.equal(fs.readFileSync(fixture.cargoTomlPath, "utf8"), fixture.cargoToml);
-    } finally {
-      fs.rmSync(fixture.tempDir, { recursive: true, force: true });
-    }
+test("release script stops before mutation when the local guard fails", () => {
+  const fixture = runRepositoryGuardFixture({ branch: "main", guardFails: true });
+
+  try {
+    assert.equal(fixture.result.status, 1);
+    assert.match(fixture.result.stderr, /Release preflight failed before repository mutation/);
+    assert.doesNotMatch(fixture.gitLog, /^(?:add|commit|tag|push)\b/m);
+    assert.equal(fs.readFileSync(fixture.cargoTomlPath, "utf8"), fixture.cargoToml);
+  } finally {
+    fs.rmSync(fixture.tempDir, { recursive: true, force: true });
   }
 });

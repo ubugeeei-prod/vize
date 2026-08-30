@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Convert a Vize TOML test fixture into an equivalent Apple Pkl module, matching
 // the hand-authored convention in tests/fixtures/sfc/basic.pkl:
 //
@@ -13,7 +12,7 @@
 // The result is byte-exact: the Rust snapshot / expected-output tests pass
 // without regenerating snapshots, which is what verifies the conversion.
 //
-// Usage: node tools/fixtures/toml-to-pkl.mjs <fixture.toml> [more.toml ...]
+// Usage: rust-script tools/commands/fixtures/toml-to-pkl.rs <fixture.toml> [more.toml ...]
 
 import { readFileSync, writeFileSync } from "node:fs";
 import TOML from "@iarna/toml";

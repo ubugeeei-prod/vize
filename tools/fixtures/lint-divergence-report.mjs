@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
@@ -302,7 +301,7 @@ function parseArgs(argv) {
 function printHelpAndExit() {
   process.stdout.write(
     [
-      "Usage: node tools/fixtures/lint-divergence-report.mjs [options]",
+      "Usage: rust-script tools/commands/fixtures/lint-divergence-report.rs [options]",
       "",
       "Classify vize lint against eslint-plugin-vue over the pinned real projects.",
       "",

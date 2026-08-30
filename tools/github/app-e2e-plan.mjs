@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { fileURLToPath } from "node:url";
 
 const fixture = (id) => `tests/_fixtures/_git/${id}`;

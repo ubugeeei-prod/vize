@@ -117,7 +117,7 @@ async function main() {
   const [outputPath] = process.argv.slice(2);
   if (!outputPath || !process.env.GITHUB_EVENT_PATH) {
     throw new Error(
-      "Usage: node tools/github/semver-change-marker.mjs <output-path> with GITHUB_EVENT_PATH",
+      "Usage: rust-script tools/commands/ci/github/semver-change-marker.rs <output-path> with GITHUB_EVENT_PATH",
     );
   }
   const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"));

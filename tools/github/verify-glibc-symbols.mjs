@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import { pathToFileURL } from "node:url";
@@ -88,7 +87,7 @@ function main() {
   const { files, max } = parseArgs(process.argv.slice(2));
   if (files.length === 0) {
     throw new Error(
-      "Usage: node tools/github/verify-glibc-symbols.mjs [--max 2.36] <file.node>...",
+      "Usage: rust-script tools/commands/ci/github/verify-glibc-symbols.rs [--max 2.36] <file.node>...",
     );
   }
 

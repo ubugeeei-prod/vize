@@ -3,9 +3,9 @@ import { processFixRequest, processOpenFixRequests, watch } from "./workflow.mjs
 
 function usage() {
   console.log(`Usage:
-  node tools/ai-fix-agent.mjs run --fix <number> [options]
-  node tools/ai-fix-agent.mjs once [options]
-  node tools/ai-fix-agent.mjs watch [options]
+  rust-script tools/commands/agents/ai-fix-agent.rs run --fix <number> [options]
+  rust-script tools/commands/agents/ai-fix-agent.rs once [options]
+  rust-script tools/commands/agents/ai-fix-agent.rs watch [options]
 
 Options:
   --repo <owner/name>          GitHub repository. Defaults to gh repo view.

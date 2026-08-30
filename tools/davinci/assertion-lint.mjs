@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Banned weak-assertion lint for Rust test code (Davinci P0-12).
 //
 // Doctrine: davinci-road/assurance.md, "Strict oracles — no partial
@@ -143,7 +142,7 @@ function parseArgs(argv) {
   return args;
 }
 
-const USAGE = `Usage: node tools/davinci/assertion-lint.mjs [--list] [--root <dir>] [--allowlist <file>]
+const USAGE = `Usage: rust-script tools/commands/davinci/assertion-lint.rs [--list] [--root <dir>] [--allowlist <file>]
 
 Scans Rust test code for banned weak-assertion patterns (Davinci assurance
 doctrine). Without flags: scans crates/**, applies the committed allowlist,

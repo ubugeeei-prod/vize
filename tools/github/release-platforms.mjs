@@ -252,7 +252,7 @@ function main() {
   }
 
   throw new Error(
-    "Usage: node tools/github/release-platforms.mjs <github-output|apply-cadence|print> <ref-name> [...package-json]",
+    "Usage: rust-script tools/commands/ci/github/release-platforms.rs <github-output|apply-cadence|print> <ref-name> [...package-json]",
   );
 }
 

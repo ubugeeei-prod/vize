@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { builtinModules } from "node:module";

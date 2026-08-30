@@ -55,7 +55,7 @@ test("target-only mode verifies the hydrated main ref, HEAD, and the peeled remo
     ].join("\n"),
   );
   const run = (overrides: Record<string, string> = {}) =>
-    spawnSync(process.execPath, ["tools/github/release-preflight.mjs", "--target-only"], {
+    spawnSync("rust-script", ["tools/commands/ci/github/release-preflight.rs", "--target-only"], {
       cwd: repoRoot,
       encoding: "utf8",
       env: {

@@ -393,19 +393,18 @@ async fn run_local_release_guard(tag : String) -> Bool {
     "VIZE_RELEASE_GUARD_SCRIPT",
   ) {
     Some(value) if value != "" => value
-    _ => "tools/github/release-local-guard.mjs"
+    _ => "tools/commands/ci/github/release-local-guard.rs"
   }
   if !@tool.path_exists(script) {
-    @stdio.stderr.write(
-      "Release preflight script not found: " + script + "\n",
-    )
+    @stdio.stderr.write("Release preflight script not found: " + script + "\n")
     return false
   }
 
-  let exit_code = @process.run(
-    "node",
-    [script, tag],
-  )
+  let runner = match @env.get_env_var("VIZE_RELEASE_GUARD_RUNNER") {
+    Some(value) if value != "" => value
+    _ => if script.has_suffix(".mjs") { "node" } else { "rust-script" }
+  }
+  let exit_code = @process.run(runner, [script, tag])
   if exit_code != 0 {
     @stdio.stderr.write(
       "Release preflight failed before repository mutation.\n",

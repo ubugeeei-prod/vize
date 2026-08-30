@@ -35,7 +35,7 @@ export function renderArtifact(products, analysis) {
   const lines = [];
   lines.push("<!-- GENERATED FILE — do not edit by hand.");
   lines.push(`     Regenerate: ${REGEN_COMMAND}`);
-  lines.push("     Verify:     node tools/davinci/croquis-consumers.mjs --check");
+  lines.push("     Verify:     rust-script tools/commands/davinci/croquis-consumers.rs --check");
   lines.push("     Generator:  tools/davinci/croquis-consumers.mjs -->");
   lines.push("");
   lines.push("# Croquis consumption matrix");

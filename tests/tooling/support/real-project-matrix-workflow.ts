@@ -36,7 +36,6 @@ export type RealProjectMatrixWorkflow = {
 
 export const shardSummaryCommandPath =
   "tools/commands/ci/github/publish-real-project-shard-summary.rs";
-export const shardSummaryScriptPath = "tools/github/publish-real-project-shard-summary.sh";
 
 export function readRealProjectMatrixWorkflow(): RealProjectMatrixWorkflow {
   return parse(
@@ -55,5 +54,5 @@ export function findStep(steps: WorkflowStep[], name: string): WorkflowStep {
 }
 
 export function readShardSummaryScript(): string {
-  return readRepoFile(...shardSummaryScriptPath.split("/"));
+  return readRepoFile(...shardSummaryCommandPath.split("/"));
 }

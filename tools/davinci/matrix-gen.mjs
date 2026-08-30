@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Construct-matrix fixture generator — SKELETON (Davinci P0-12).
 //
 // Reads davinci-road/plan/taxonomy.toml (DRAFT, pending maintainer
@@ -131,7 +130,7 @@ function parseArgs(argv) {
   return args;
 }
 
-const USAGE = `Usage: node tools/davinci/matrix-gen.mjs [--write | --check] [--out-dir <dir>]
+const USAGE = `Usage: rust-script tools/commands/davinci/matrix-gen.rs [--write | --check] [--out-dir <dir>]
 
 Generates construct-matrix fixture stubs from davinci-road/plan/taxonomy.toml.
 Default is a dry run that prints the would-be fixture count.`;

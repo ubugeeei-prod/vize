@@ -5,87 +5,54 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const explicitEntrypoints = [
-  "tools/fixtures/glyph-corpus-waiver-audit.mjs",
-  "tools/fixtures/patina-rule-map.mjs",
-  "tools/fixtures/real-project-surface-verdict.mjs",
-  "tools/github/release-platforms.mjs",
-  "tools/github/require-needs-success.mjs",
-  "tools/github/semver-change-marker.mjs",
-];
 
 test("tool command surface is Rust Script first", () => {
   const source = readRepoFile("tools/rust/verify-layout.rs");
   assert.match(source, /rust-script tools: verified/);
-  assert.match(source, /tools\/commands/);
+  assert.match(source, /legacy_command\.rs must not come back/);
+  assert.match(source, /collect_legacy_executables/);
+  assert.match(source, /tool_host_hash/);
 
-  const wrappers = collectFiles(path.join(root, "tools", "commands")).filter((file) =>
+  const commands = collectFiles(path.join(root, "tools", "commands")).filter((file) =>
     file.endsWith(".rs"),
   );
-  assert.ok(wrappers.length > 0, "expected Rust Script command wrappers");
+  assert.ok(commands.length >= 50, "expected Rust Script command surface");
 
-  for (const wrapper of wrappers) {
-    const relative = path.relative(root, wrapper);
-    const text = fs.readFileSync(wrapper, "utf8");
+  for (const command of commands) {
+    const relative = normalize(path.relative(root, command));
+    const text = fs.readFileSync(command, "utf8");
     assert.match(text, /^#!\/usr\/bin\/env rust-script\n/, relative);
-    assert.match(text, /legacy_command::run\(/, relative);
-    assert.doesNotMatch(relative, /-vize\//, "editor command buckets use product-neutral names");
+    assert.doesNotMatch(text, /legacy_command/, relative);
+    assert.doesNotMatch(relative, /-vize\//, "editor command buckets use neutral names");
+
+    if (text.includes("tool_host::run(")) {
+      assert.match(text, /tool-host: [0-9a-f]{16}/, relative);
+      assert.match(text, /tool_host::Runtime::Node/, relative);
+      const modulePath = firstToolString(text);
+      assert.ok(modulePath, `${relative} must name a hosted module`);
+      assert.match(modulePath, /\.(?:mjs|js|ts)$/);
+      assert.ok(fs.existsSync(path.join(root, modulePath)));
+      assert.doesNotMatch(readRepoFile(modulePath), /^#!/, `${modulePath} remains executable`);
+    }
   }
 });
 
-test("legacy tool entrypoints are covered by Rust Script wrappers", () => {
-  const expected = legacyEntrypoints()
-    .map((legacy) => rustCommandPath(legacy))
-    .sort();
-  const wrappers = collectFiles(path.join(root, "tools", "commands"))
-    .filter((file) => file.endsWith(".rs"))
-    .map((file) => path.relative(root, file).split(path.sep).join("/"))
-    .sort();
-
-  assert.deepEqual(wrappers, expected);
-});
-
-function legacyEntrypoints(): string[] {
-  return collectFiles(path.join(root, "tools"))
+test("legacy JavaScript and shell files are not command entrypoints", () => {
+  const legacyExecutables = collectFiles(path.join(root, "tools"))
     .filter((file) => {
-      const relative = path.relative(root, file).split(path.sep).join("/");
+      const relative = normalize(path.relative(root, file));
       if (relative.startsWith("tools/commands/")) return false;
       if (relative.startsWith("tools/rust/")) return false;
       if (relative.startsWith("tools/moon/.mooncakes/")) return false;
       if (!/\.(?:mjs|js|ts|sh)$/.test(relative)) return false;
-      return (
-        fs.readFileSync(file, "utf8").startsWith("#!") || explicitEntrypoints.includes(relative)
-      );
+      return fs.readFileSync(file, "utf8").startsWith("#!") || isExecutable(file);
     })
-    .map((file) => path.relative(root, file).split(path.sep).join("/"))
+    .map((file) => normalize(path.relative(root, file)))
     .sort();
-}
 
-function rustCommandPath(legacy: string): string {
-  const buckets: Record<string, string> = {
-    "ai-fix-agent.mjs": "agents",
-    davinci: "davinci",
-    "editor-e2e": "editors/e2e",
-    "emacs-vize": "editors/emacs",
-    fixtures: "fixtures",
-    fuzz: "ci/fuzz",
-    github: "ci/github",
-    "helix-vize": "editors/helix",
-    npm: "release/npm",
-    "nvim-vize": "editors/neovim",
-    release: "release",
-    "vim-vize": "editors/vim",
-    "vscode-vize": "editors/vscode",
-    "zed-vize": "editors/zed",
-  };
-  const parts = legacy.slice("tools/".length).split("/");
-  const file = parts.pop();
-  assert.ok(file);
-  const stem = file.replace(/\.(?:mjs|js|ts|sh)$/, "");
-  const bucket = buckets[parts[0] ?? file];
-  assert.ok(bucket, `missing Rust Script bucket for ${legacy}`);
-  return `tools/commands/${bucket}/${stem}.rs`;
-}
+  assert.deepEqual(legacyExecutables, []);
+  assert.equal(fs.existsSync(path.join(root, "tools", "rust", "legacy_command.rs")), false);
+});
 
 function collectFiles(dir: string): string[] {
   const files: string[] = [];
@@ -100,6 +67,22 @@ function collectFiles(dir: string): string[] {
   return files;
 }
 
+function firstToolString(source: string): string | undefined {
+  return source
+    .split('"')
+    .filter((_, index) => index % 2 === 1)
+    .find((value) => value.startsWith("tools/"));
+}
+
+function normalize(filePath: string): string {
+  return filePath.split(path.sep).join("/");
+}
+
 function readRepoFile(filePath: string): string {
   return fs.readFileSync(path.join(root, filePath), "utf8");
+}
+
+function isExecutable(filePath: string): boolean {
+  if (process.platform === "win32") return false;
+  return (fs.statSync(filePath).mode & 0o111) !== 0;
 }

@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Corpus baseline snapshot (Davinci P0-5).
 //
 // Runs `tools/fixtures/tool-matrix-report.mjs` across all shards (parallel
@@ -13,7 +12,7 @@
 // nondeterminism notes live in davinci-road/plan/corpus-baseline-notes.md.
 //
 // Usage:
-//   node tools/davinci/corpus-baseline.mjs [options]
+//   rust-script tools/commands/davinci/corpus-baseline.rs [options]
 //     --shards <n>       parallel shard processes (default 4)
 //     --vize-bin <path>  vize executable (default target/release/vize)
 //     --out <path>       artifact destination (default the committed path)
@@ -73,7 +72,7 @@ function parseArgs(argv) {
     else if (arg === "--allow-dirty-fixtures") args.allowDirtyFixtures = true;
     else if (arg === "--help" || arg === "-h") {
       process.stdout.write(
-        "usage: node tools/davinci/corpus-baseline.mjs [--shards n] [--vize-bin path] [--out path] [--timeout-ms n] [--keep-raw] [--clean-fixtures] [--allow-dirty-fixtures]\n",
+        "usage: rust-script tools/commands/davinci/corpus-baseline.rs [--shards n] [--vize-bin path] [--out path] [--timeout-ms n] [--keep-raw] [--clean-fixtures] [--allow-dirty-fixtures]\n",
       );
       process.exit(0);
     } else throw new Error(`unknown argument: ${arg}`);

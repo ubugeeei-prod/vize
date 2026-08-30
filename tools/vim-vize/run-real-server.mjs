@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Drive the packaged Vim integration through a pinned vim-lsp checkout and a
 // real `vize lsp` process. All response assertions live in the Vim archive's
 // own test directory so downstream users can run the same host scenario.

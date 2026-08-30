@@ -25,7 +25,14 @@ test("Zig musl wrappers use rust-lld for final links and normalize cc-rs flags",
   const binDir = path.join(tempDir, "bin");
   const envFile = path.join(tempDir, "github-env");
   const fakeZig = path.join(binDir, "zig");
-  const scriptPath = path.join(root, "tools", "github", "configure-zig-musl-linkers.sh");
+  const commandPath = path.join(
+    root,
+    "tools",
+    "commands",
+    "ci",
+    "github",
+    "configure-zig-musl-linkers.rs",
+  );
 
   try {
     fs.mkdirSync(binDir, { recursive: true });
@@ -33,7 +40,8 @@ test("Zig musl wrappers use rust-lld for final links and normalize cc-rs flags",
     fs.chmodSync(fakeZig, 0o755);
 
     const pathEnv = `${binDir}${path.delimiter}${process.env.PATH ?? ""}`;
-    execFileSync("bash", [scriptPath], {
+    execFileSync("rust-script", [commandPath], {
+      cwd: root,
       env: { ...process.env, GITHUB_ENV: envFile, PATH: pathEnv, RUNNER_TEMP: tempDir },
     });
 
@@ -75,7 +83,14 @@ test("musl CLI verifier rejects dynamic interpreters and glibc symbol requiremen
   const binDir = path.join(tempDir, "bin");
   const target = "x86_64-unknown-linux-musl";
   const binary = path.join(tempDir, "target", target, "release", "vize");
-  const scriptPath = path.join(root, "tools", "github", "verify-musl-cli-binary.sh");
+  const commandPath = path.join(
+    root,
+    "tools",
+    "commands",
+    "ci",
+    "github",
+    "verify-musl-cli-binary.rs",
+  );
 
   try {
     fs.mkdirSync(path.dirname(binary), { recursive: true });
@@ -114,7 +129,7 @@ test("musl CLI verifier rejects dynamic interpreters and glibc symbol requiremen
     }
 
     const runVerifier = (mode: string) =>
-      execFileSync("bash", [scriptPath, target], {
+      execFileSync("rust-script", [commandPath, target], {
         cwd: tempDir,
         env: {
           ...process.env,

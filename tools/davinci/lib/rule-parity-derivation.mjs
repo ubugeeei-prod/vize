@@ -9,7 +9,7 @@ export function preambleSection() {
   const lines = [];
   lines.push("<!-- GENERATED FILE — do not edit by hand.");
   lines.push(`     Regenerate: ${REGEN_COMMAND}`);
-  lines.push("     Verify:     node tools/davinci/rule-parity.mjs --check");
+  lines.push("     Verify:     rust-script tools/commands/davinci/rule-parity.rs --check");
   lines.push("     Generator:  tools/davinci/rule-parity.mjs");
   lines.push(`     Overrides:  ${OVERRIDES_REL} (hand-corrections; applied last) -->`);
   lines.push("");

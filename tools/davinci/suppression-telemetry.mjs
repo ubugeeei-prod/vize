@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Suppression-telemetry FP oracle (Davinci P0-13).
 //
 // Doctrine: davinci-road/assurance.md, "Suppression telemetry — the FP
@@ -45,7 +44,7 @@ import {
   writeJson,
 } from "./lib/fpfn-shared.mjs";
 
-const USAGE = `Usage: node tools/davinci/suppression-telemetry.mjs (--fixtures <dir> | --corpus-shard) --out <dir> [--report <path>]
+const USAGE = `Usage: rust-script tools/commands/davinci/suppression-telemetry.rs (--fixtures <dir> | --corpus-shard) --out <dir> [--report <path>]
 
 Collects eslint-disable pragmas, maps rule names to vize analogs, and
 reports vize diagnostics on suppressed lines as FP candidates.`;

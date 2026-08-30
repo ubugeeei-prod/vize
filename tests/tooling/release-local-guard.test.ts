@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { verifyLocalReleaseGuard } from "../../tools/github/release-local-guard.mjs";
+import { repoRoot } from "./_helpers/moonbit.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
 const HEAD_SHA = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -53,16 +54,23 @@ function runGuard(
     ].join("\n"),
   );
 
-  const originalPath = process.env.PATH;
-  process.env.PATH = `${bin}${path.delimiter}${originalPath ?? ""}`;
-  let error: Error | undefined;
-  try {
-    verifyLocalReleaseGuard("v0.290.1", root, timeoutMs);
-  } catch (caught) {
-    error = caught instanceof Error ? caught : new Error(String(caught));
-  } finally {
-    process.env.PATH = originalPath;
-  }
+  const result = spawnSync(
+    "rust-script",
+    [path.join(repoRoot, "tools/commands/ci/github/release-local-guard.rs"), "v0.290.1"],
+    {
+      cwd: root,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}`,
+        VIZE_RELEASE_GUARD_GIT_TIMEOUT_MS: String(timeoutMs),
+      },
+    },
+  );
+  const error =
+    result.status === 0 && result.error == null
+      ? undefined
+      : new Error(result.error?.message ?? result.stderr.trim());
   const gitLog = fs.readFileSync(log, "utf8");
   fs.rmSync(root, { recursive: true, force: true });
   return { error, gitLog };

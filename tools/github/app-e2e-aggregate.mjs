@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { fileURLToPath } from "node:url";
 
 import { planAppE2eRows } from "./app-e2e-plan.mjs";

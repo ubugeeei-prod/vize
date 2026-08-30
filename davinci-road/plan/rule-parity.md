@@ -1,6 +1,6 @@
 <!-- GENERATED FILE — do not edit by hand.
-     Regenerate: node tools/davinci/rule-parity.mjs --write
-     Verify:     node tools/davinci/rule-parity.mjs --check
+     Regenerate: rust-script tools/commands/davinci/rule-parity.rs --write
+     Verify:     rust-script tools/commands/davinci/rule-parity.rs --check
      Generator:  tools/davinci/rule-parity.mjs
      Overrides:  davinci-road/plan/rule-parity-overrides.toml (hand-corrections; applied last) -->
 

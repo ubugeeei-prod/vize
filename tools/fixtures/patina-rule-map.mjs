@@ -242,7 +242,9 @@ async function main() {
     validateRuleMap();
     return;
   }
-  throw new Error("Usage: node tools/fixtures/patina-rule-map.mjs [--check|--write]");
+  throw new Error(
+    "Usage: rust-script tools/commands/fixtures/patina-rule-map.rs [--check|--write]",
+  );
 }
 
 await main();

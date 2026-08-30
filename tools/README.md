@@ -3,9 +3,10 @@
 `tools/commands` is the canonical command surface for repository automation.
 Every file there is a Rust Script entrypoint and can be run with `rust-script`.
 
-The older JavaScript and shell files remain as compatibility implementation
-modules while the command surface migrates. They are still imported by tooling
-tests, but new CI/package invocations should call the Rust Script command path.
+Older JavaScript files that still carry reusable test helpers remain as
+compatibility modules, not command entrypoints. CI/package invocations should
+call the Rust Script command path, and new user-facing automation belongs in
+`tools/commands`.
 
 ## Layout
 
@@ -19,5 +20,6 @@ tests, but new CI/package invocations should call the Rust Script command path.
 - `tools/moon`: MoonBit command packages that are still built with `moon run`.
 
 Run `rust-script tools/rust/verify-layout.rs` after adding or removing tool
-entrypoints. It verifies that every legacy command entrypoint has a matching
-Rust Script wrapper and that wrappers point at the expected runtime.
+entrypoints. It verifies that the canonical command surface is Rust Script,
+that compatibility modules are no longer executable legacy commands, and that
+the legacy command runner does not return.

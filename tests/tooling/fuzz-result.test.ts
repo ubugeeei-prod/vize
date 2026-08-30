@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { fuzzResultPolicy } from "../../tools/fuzz/enforce-result.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const script = path.join(root, "tools/fuzz/enforce-result.mjs");
+const command = path.join(root, "tools/commands/ci/fuzz/enforce-result.rs");
 
 test("fuzz result policy keeps PRs advisory and release evidence strict", () => {
   for (const outcome of ["failure", "cancelled", "skipped"]) {
@@ -31,15 +31,15 @@ test("fuzz result policy keeps PRs advisory and release evidence strict", () => 
 });
 
 test("fuzz result command reports the target, event, outcome, and gate decision", () => {
-  const advisory = spawnSync(process.execPath, [script, "pull_request", "sfc_parse", "failure"], {
+  const advisory = spawnSync("rust-script", [command, "pull_request", "sfc_parse", "failure"], {
     encoding: "utf8",
   });
   assert.equal(advisory.status, 0);
   assert.match(advisory.stderr, /warning.*sfc_parse.*failure.*pull_request/i);
 
   const blocking = spawnSync(
-    process.execPath,
-    [script, "workflow_dispatch", "template_lexer", "failure"],
+    "rust-script",
+    [command, "workflow_dispatch", "template_lexer", "failure"],
     { encoding: "utf8" },
   );
   assert.equal(blocking.status, 1);
@@ -47,10 +47,10 @@ test("fuzz result command reports the target, event, outcome, and gate decision"
 });
 
 test("fuzz result command rejects malformed invocation", () => {
-  const result = spawnSync(process.execPath, [script, "pull_request", "sfc_parse"], {
+  const result = spawnSync("rust-script", [command, "pull_request", "sfc_parse"], {
     encoding: "utf8",
   });
 
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /Usage: node tools\/fuzz\/enforce-result\.mjs/);
+  assert.match(result.stderr, /Usage: rust-script tools\/commands\/ci\/fuzz\/enforce-result\.rs/);
 });

@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -151,7 +149,7 @@ if (entrypoint) {
     .then(() => {
       if (extra != null || !["artifact", "preflight", "registry-recheck"].includes(command)) {
         throw new Error(
-          "Usage: node tools/github/npm-bootstrap-preflight.mjs [artifact|preflight|registry-recheck]",
+          "Usage: rust-script tools/commands/ci/github/npm-bootstrap-preflight.rs [artifact|preflight|registry-recheck]",
         );
       }
       if (command === "preflight") return runPreflight();

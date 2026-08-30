@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Exercise the exact command and initialization profile from the packaged
 // Helix languages.toml against a real `vize lsp` process. Helix 25.07.1 has no
 // supported headless editing API, so the official binary separately validates

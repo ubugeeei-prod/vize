@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Exercise the exact command and default initialization profile emitted by the
 // Zed extension against a real `vize lsp` process. The extension's Rust unit
 // suite separately pins command discovery/configuration; this scenario pins

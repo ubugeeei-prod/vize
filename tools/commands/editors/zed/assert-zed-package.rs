@@ -4,12 +4,13 @@
 //! edition = "2024"
 //! ```
 
-#[path = "../../../rust/legacy_command.rs"]
-mod legacy_command;
+// tool-host: 5b3636aad1ecb421
+#[path = "../../../rust/tool_host.rs"]
+mod tool_host;
 
 fn main() -> std::process::ExitCode {
-    legacy_command::run(
-        legacy_command::Runtime::Node,
+    tool_host::run(
+        tool_host::Runtime::Node,
         "tools/zed-vize/assert-zed-package.mjs",
     )
 }

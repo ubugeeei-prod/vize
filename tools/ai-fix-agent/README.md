@@ -15,19 +15,19 @@ It intentionally avoids GitHub Actions for the agent execution path. GitHub Acti
 Process one fix request:
 
 ```sh
-node tools/ai-fix-agent.mjs run --fix 123 --repo ubugeeei-prod/vize
+rust-script tools/commands/agents/ai-fix-agent.rs run --fix 123 --repo ubugeeei-prod/vize
 ```
 
 Watch newly opened fix requests:
 
 ```sh
-node tools/ai-fix-agent.mjs watch --repo ubugeeei-prod/vize --interval 300
+rust-script tools/commands/agents/ai-fix-agent.rs watch --repo ubugeeei-prod/vize --interval 300
 ```
 
 Also process already-open fix requests when the watcher starts:
 
 ```sh
-node tools/ai-fix-agent.mjs watch --repo ubugeeei-prod/vize --include-existing
+rust-script tools/commands/agents/ai-fix-agent.rs watch --repo ubugeeei-prod/vize --include-existing
 ```
 
 By default the runner uses:
@@ -40,7 +40,7 @@ To use another agent, set a command that reads the prompt from stdin or from `$A
 
 ```sh
 AI_FIX_AGENT_COMMAND='my-agent --prompt-file "$AI_FIX_AGENT_PROMPT_FILE"' \
-  node tools/ai-fix-agent.mjs watch --repo ubugeeei-prod/vize
+  rust-script tools/commands/agents/ai-fix-agent.rs watch --repo ubugeeei-prod/vize
 ```
 
 The runner writes transient state under `.git/ai-fix-agent-state.json` and `.git/ai-fix-agent/`.

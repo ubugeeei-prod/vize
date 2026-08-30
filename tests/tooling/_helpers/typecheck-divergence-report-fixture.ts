@@ -28,7 +28,13 @@ export { writeVueTsc };
  * the same report without duplicating the matrix artifacts it validates.
  */
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-export const script = path.join(root, "tools", "fixtures", "typecheck-divergence-report.mjs");
+export const script = path.join(
+  root,
+  "tools",
+  "commands",
+  "fixtures",
+  "typecheck-divergence-report.rs",
+);
 export const commitSha = "a".repeat(40);
 
 /** The one diagnostic both sides report, so the default fixture diverges nowhere. */
@@ -245,7 +251,7 @@ export function run(
   options: { timeoutMs?: number } = {},
 ) {
   return spawnSync(
-    process.execPath,
+    "rust-script",
     [
       script,
       "--registry",

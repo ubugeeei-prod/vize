@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Davinci bench budget gate (plan/phase-0.md P0-4).
 //
 // Compares the current davinci bench reports against the committed baseline

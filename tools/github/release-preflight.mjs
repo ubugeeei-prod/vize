@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -303,7 +301,9 @@ export function parseReleasePreflightMode(args) {
   if (args.length === 0) return "bootstrap";
   if (args.length === 1 && args[0] === "--verify-only") return "verify-only";
   if (args.length === 1 && args[0] === "--target-only") return "target-only";
-  throw new Error("Usage: node tools/github/release-preflight.mjs [--verify-only|--target-only]");
+  throw new Error(
+    "Usage: rust-script tools/commands/ci/github/release-preflight.rs [--verify-only|--target-only]",
+  );
 }
 
 const entrypoint = process.argv[1]

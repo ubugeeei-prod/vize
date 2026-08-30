@@ -94,26 +94,20 @@ test("shard summary script records every surface, present or missing", () => {
     /No LSP lifecycle report was produced/,
     /syntax-highlighter-summary\.json/,
     /failedProjectCount/,
-    /lint_divergence="\$FIXTURE_REPORT_DIR\/lint-divergence-summary\.json"/,
+    /lint-divergence-summary\.json/,
     /patinaOnlyRuleFindingCount/,
-    /\*-lint-divergence\.md/,
+    /-lint-divergence\.md/,
     /No lint divergence report was produced/,
-    /syntax_divergence="\$FIXTURE_REPORT_DIR\/syntax-highlighter-divergence\.md"/,
-    /if \[\[ -s "\$syntax_divergence" \]\]/,
-    /cat "\$syntax_divergence" >> "\$GITHUB_STEP_SUMMARY"/,
+    /syntax-highlighter-divergence\.md/,
+    /append_file_or_line/,
     /No syntax-highlighter divergence report was produced/,
-    /\*-typecheck-divergence\.md/,
-    /divergence_reports\[@\]/,
+    /-typecheck-divergence\.md/,
+    /append_unique_typecheck_divergence/,
     /glyph-waiver-issues\.json/,
     /surface-verdict\.json/,
   ]) {
     assert.match(script, pattern);
   }
-  const jqPrograms = script.match(/jq -r '[^']*'/g) ?? [];
-  assert.equal(jqPrograms.length, 5);
-  for (const program of jqPrograms) {
-    // A single-quoted shell argument reaches jq verbatim, so an escaped double
-    // quote is a jq compile error rather than a nested string delimiter.
-    assert.doesNotMatch(program, /\\"/, `jq program escapes a double quote: ${program}`);
-  }
+  assert.doesNotMatch(script, /\bjq\b/);
+  assert.match(script, /serde_json/);
 });

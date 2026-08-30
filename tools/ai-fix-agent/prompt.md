@@ -1,6 +1,6 @@
 # Local AI Fix Agent Prompt
 
-You are running locally in this repository through `tools/ai-fix-agent.mjs`.
+You are running locally in this repository through `tools/commands/agents/ai-fix-agent.rs`.
 
 Implement the GitHub fix request described by the context file.
 

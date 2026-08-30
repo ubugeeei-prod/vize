@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Corpus construct-coverage report (Davinci P0-6).
 //
 // Scans the HYDRATED corpus projects registered in
@@ -102,7 +101,7 @@ function main() {
     if (committed !== report) {
       console.error(
         `${path.relative(repoRoot, reportPath)} is stale (or the hydrated fixture set changed). ` +
-          "Regenerate: node tools/davinci/corpus-coverage.mjs --write",
+          "Regenerate: rust-script tools/commands/davinci/corpus-coverage.rs --write",
       );
       process.exit(1);
     }

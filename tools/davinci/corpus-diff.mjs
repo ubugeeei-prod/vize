@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Corpus baseline diff gate (Davinci P0-5, suite TS-11).
 //
 // Runs a fresh whole-corpus sweep through the same reduction as
@@ -16,7 +15,7 @@
 // exact reasons.
 //
 // Usage:
-//   node tools/davinci/corpus-diff.mjs [options]
+//   rust-script tools/commands/davinci/corpus-diff.rs [options]
 //     --surface <s[,s]>  gate only these surfaces (compiler, formatter,
 //                        linter, typechecker); the committed baseline is
 //                        still validated against the full manifest scope
@@ -92,7 +91,7 @@ function parseArgs(argv) {
       );
     } else if (arg === "--help" || arg === "-h") {
       process.stdout.write(
-        "usage: node tools/davinci/corpus-diff.mjs [--surface s[,s]] [--shards n] [--vize-bin path] [--baseline path] [--write-fresh path] [--timeout-ms n] [--keep-raw] [--clean-fixtures] [--allow-dirty-fixtures]\n",
+        "usage: rust-script tools/commands/davinci/corpus-diff.rs [--surface s[,s]] [--shards n] [--vize-bin path] [--baseline path] [--write-fresh path] [--timeout-ms n] [--keep-raw] [--clean-fixtures] [--allow-dirty-fixtures]\n",
       );
       process.exit(0);
     } else throw new Error(`unknown argument: ${arg}`);
@@ -125,7 +124,7 @@ async function main() {
   if (!existsSync(baselinePath)) {
     fail([
       `baseline artifact is missing: ${baselineLabel}`,
-      "generate it with: node tools/davinci/corpus-baseline.mjs",
+      "generate it with: rust-script tools/commands/davinci/corpus-baseline.rs",
     ]);
   }
   let baseline;

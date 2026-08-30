@@ -19,4 +19,4 @@ export const CROQUIS_RS = path.join(CRATES_DIR, CROQUIS_CRATE_DIR, "src", "croqu
 export const LIB_RS = path.join(CRATES_DIR, CROQUIS_CRATE_DIR, "src", "lib.rs");
 export const ARTIFACT_REL = "davinci-road/plan/croquis-consumption.md";
 export const ARTIFACT = path.join(repoRoot, ARTIFACT_REL);
-export const REGEN_COMMAND = "node tools/davinci/croquis-consumers.mjs --write";
+export const REGEN_COMMAND = "rust-script tools/commands/davinci/croquis-consumers.rs --write";

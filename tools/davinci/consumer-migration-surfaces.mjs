@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Consumer migration surface inventory for the Davinci rollout plan.
 //
 // The scan is intentionally observational: it records where the compiler,
@@ -7,8 +6,8 @@
 // It does not change runtime wiring and is safe to merge before any rollout.
 //
 // Usage:
-//   node tools/davinci/consumer-migration-surfaces.mjs --write
-//   node tools/davinci/consumer-migration-surfaces.mjs --check
+//   rust-script tools/commands/davinci/consumer-migration-surfaces.rs --write
+//   rust-script tools/commands/davinci/consumer-migration-surfaces.rs --check
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -24,7 +23,7 @@ const ARTIFACT_REL = "davinci-road/plan/consumer-migration-surfaces.md";
 const ARTIFACT = path.join(repoRoot, ARTIFACT_REL);
 const ROWS_REL = "davinci-road/plan/consumer-migration-surfaces.tsv";
 const ROWS = path.join(repoRoot, ROWS_REL);
-const REGEN_COMMAND = "node tools/davinci/consumer-migration-surfaces.mjs --write";
+const REGEN_COMMAND = "rust-script tools/commands/davinci/consumer-migration-surfaces.rs --write";
 
 function generate() {
   const scan = scanConsumerMigrationSurfaces();
@@ -101,7 +100,9 @@ function checkArtifacts(generated) {
 function main() {
   const mode = process.argv[2];
   if (mode !== "--write" && mode !== "--check") {
-    console.error("usage: node tools/davinci/consumer-migration-surfaces.mjs --write | --check");
+    console.error(
+      "usage: rust-script tools/commands/davinci/consumer-migration-surfaces.rs --write | --check",
+    );
     process.exit(2);
   }
 

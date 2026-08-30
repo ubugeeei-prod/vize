@@ -99,7 +99,7 @@ function main() {
   const raw = process.env.NEEDS_JSON;
   if (!raw) {
     console.error(
-      "NEEDS_JSON is required: pass ${{ toJSON(needs) }} to tools/github/require-needs-success.mjs",
+      "NEEDS_JSON is required: pass ${{ toJSON(needs) }} to tools/commands/ci/github/require-needs-success.rs",
     );
     process.exitCode = 1;
     return;

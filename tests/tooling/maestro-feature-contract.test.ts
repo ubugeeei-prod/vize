@@ -5,8 +5,7 @@ import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 test("check workflow enforces the Maestro non-native feature contract", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
-  const script = readRepoFile("tools", "github", "check-maestro-feature-contract.sh");
-  const wrapper = readRepoFile(
+  const command = readRepoFile(
     "tools",
     "commands",
     "ci",
@@ -18,16 +17,12 @@ test("check workflow enforces the Maestro non-native feature contract", () => {
     workflowJobBody(workflow, "clippy-and-test"),
     /rust-script tools\/commands\/ci\/github\/check-maestro-feature-contract\.rs/,
   );
-  assert.match(wrapper, /"tools\/github\/check-maestro-feature-contract\.sh"/);
-  assert.match(script, /export RUSTFLAGS="-D warnings"/);
-  assert.match(script, /cargo check -p vize_maestro --no-default-features\s*$/m);
+  assert.match(command, /\.env\("RUSTFLAGS", "-D warnings"\)/);
+  assert.match(command, /"check",\s*"-p",\s*"vize_maestro",\s*"--no-default-features"/);
   assert.match(
-    script,
-    /cargo test -p vize_maestro --no-default-features --test non_native_structural\s*$/m,
+    command,
+    /"test",\s*"-p",\s*"vize_maestro",[\s\S]*"--test",\s*"non_native_structural"/,
   );
-  assert.match(script, /cargo check -p vize_maestro --no-default-features --features glyph\s*$/m);
-  assert.match(
-    script,
-    /cargo test -p vize_maestro --no-default-features --features glyph --test non_native_structural\s*$/m,
-  );
+  assert.match(command, /"--features",\s*"glyph"/);
+  assert.match(command, /"--features",\s*"glyph",[\s\S]*"--test",\s*"non_native_structural"/);
 });
