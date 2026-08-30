@@ -8,6 +8,106 @@ function p2_11Installment(number: number): URL {
   );
 }
 
+const P2_11_CURRENT = { number: 60, pr: 5405, sha: "778d7969d" } as const;
+
+const p2_11TableRows = [
+  [41, 5359, "5b5ac0924"],
+  [42, 5360, "f659b7e4e"],
+  [43, 4862, "fdaa8d165"],
+  [44, 5363, "1a717a959"],
+  [45, 5373, "ee8f222cb"],
+  [46, 5376, "eef9f2064"],
+  [47, 5379, "481df679f"],
+  [48, 5380, "b67020bde"],
+  [49, 5381, "b408b67c8"],
+  [50, 5386, "2c5465d94"],
+  [51, 5387, "41fe266a2"],
+  [52, 5390, "16a3fc970"],
+  [53, 5391, "e741ff65d"],
+  [54, 5396, "f80bbb5d3"],
+  [55, 5398, "db06c3aa1"],
+  [56, 5399, "4c8a27cae"],
+  [57, 5400, "6c21f0a52"],
+  [58, 5401, "e7715fbc5"],
+  [59, 5404, "86e52e3c7"],
+  [60, 5405, "778d7969d"],
+] as const;
+
+const p2_11FileExpectations = [
+  [20, /14-fixture S2-vs-shipped byte-for-byte battery/],
+  [20, /does not tick P2-11/],
+  [21, /Vue 2 pipe filters/],
+  [22, /Vue 2 filter helper order/],
+  [23, /Slot outlet same-name names/],
+  [24, /Patch-flag matrix expansion/],
+  [25, /Dynamic component patch flags/],
+  [26, /Model listener patch order/],
+  [27, /Dynamic component model arguments/],
+  [28, /SFC style carriers are DOM-inert/],
+  [29, /Bare Template Default Slots/],
+  [30, /Inert Slot-Template Bindings/],
+  [31, /Inline Slot-Template Carriers/],
+  [31, /f5aa60553/],
+  [32, /V-show Runtime Directives/],
+  [32, /2be66b0f0/],
+  [33, /V-html Raw HTML Props/],
+  [33, /13cff4d99/],
+  [34, /V-text Text-Content Props/],
+  [34, /11750115a/],
+  [35, /V-cloak DOM Cloak Markers/],
+  [35, /02c4eb1a7/],
+  [36, /Slot Outlet V-on Props/],
+  [36, /cf7fc9a22/],
+  [37, /Object V-bind Modifiers/],
+  [37, /4e577b62/],
+  [38, /Object V-on Modifiers/],
+  [38, /f3959e7e3/],
+  [39, /Recent Patch-Flag Witness/],
+  [39, /22674520f/],
+  [40, /publish graph firewall/i],
+  [40, /be344e787/],
+  [41, /Corpus Comparison Count/],
+  [41, /5b5ac0924/],
+  [42, /S2 DOM Emit Allocations/],
+  [42, /f659b7e4e/],
+  [43, /Dynamic Directive Argument Prefixing/],
+  [43, /fdaa8d165/],
+  [44, /Single Nested Slot Wrapper Defaults/],
+  [44, /1a717a959/],
+  [45, /Event Model Slot Residuals/],
+  [45, /ee8f222cb/],
+  [46, /If Branches Containing V-for/],
+  [46, /eef9f2064/],
+  [47, /Handler Body And Slot Hardening/],
+  [47, /481df679f/],
+  [48, /Static Class Patch Flags/],
+  [48, /b67020bde/],
+  [49, /Keyed Slot Template Forwarding/],
+  [49, /b408b67c8/],
+  [50, /Component Once Wrappers/],
+  [50, /2c5465d94/],
+  [51, /DOM Corpus Lane/],
+  [51, /41fe266a2/],
+  [52, /Opaque Bind And Empty Text Edges/],
+  [52, /16a3fc970/],
+  [53, /Trailing Block Comment Expressions/],
+  [53, /e741ff65d/],
+  [54, /Slot Text Facts/],
+  [54, /f80bbb5d3/],
+  [55, /V-memo Patch Flag Sites/],
+  [55, /db06c3aa1/],
+  [56, /Line Comment Expression Edges/],
+  [56, /4c8a27cae/],
+  [57, /V-once Patch Flag Sites/],
+  [57, /6c21f0a52/],
+  [58, /CI DOM Corpus Lane/],
+  [58, /e7715fbc5/],
+  [59, /Slot Outlet Patch Sites/],
+  [59, /86e52e3c7/],
+  [60, /CreateSlots Patch Sites/],
+  [60, /778d7969d/],
+] as const;
+
 export function recordsTaskRow(source: string, id: string): string {
   const escaped = id.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
   const match = new RegExp(`^\\| \\[${escaped}\\][^\\n]+$`, "mu").exec(source);
@@ -32,16 +132,21 @@ export function requiredLine(source: string, pattern: RegExp, label: string): st
 
 export function assertCurrentP2_11Installment(source: string, label: string): void {
   const record = currentP2_11InstallmentRecord(source, label);
+  const current = P2_11_CURRENT.number;
   assert.ok(
     [
-      /44 (?:landed\s+)?installments/iu,
-      /through installment 44/iu,
-      /installment 44/iu,
-      /^\| 44\s+\|/imu,
+      new RegExp(`${current} (?:landed\\s+)?installments`, "iu"),
+      new RegExp(`through installment ${current}`, "iu"),
+      new RegExp(`installment ${current}`, "iu"),
+      new RegExp(`^\\| ${current}\\s+\\|`, "imu"),
     ].some((marker) => marker.test(record)),
-    `${label} current record must cite installment 44`,
+    `${label} current record must cite installment ${current}`,
   );
-  assert.match(record, /#5363/u, `${label} current record must cite #5363`);
+  assert.match(
+    record,
+    new RegExp(`#${P2_11_CURRENT.pr}`, "u"),
+    `${label} current record must cite #${P2_11_CURRENT.pr}`,
+  );
   assert.doesNotMatch(record, /\bpending\b/iu, `${label} current record must not be pending`);
 }
 
@@ -66,7 +171,11 @@ function currentP2_11InstallmentRecord(source: string, label: string): string {
     case "records":
       return requiredLine(source, /^\| \[P2-11\][^\n]+$/mu, "P2-11 records index row");
     case "p2_11":
-      return requiredLine(source, /^\| 44\s+\|[^\n]+$/mu, "P2-11 installment 44 row");
+      return requiredLine(
+        source,
+        new RegExp(`^\\| ${P2_11_CURRENT.number}\\s+\\|[^\\n]+$`, "mu"),
+        `P2-11 installment ${P2_11_CURRENT.number} row`,
+      );
     default:
       throw new Error(`unknown P2-11 current evidence label: ${label}`);
   }
@@ -80,86 +189,12 @@ export function p2_11CurrentRecordEvidence(source: string): string {
       /^## Installment table/mu,
       "P2-11 current record preface",
     ),
-    requiredLine(source, /^\| 28\s+\|[^\n]+#5009[^\n]+$/mu, "P2-11 installment 28 row"),
-    requiredLine(
-      source,
-      /^\| 29\s+\|[^\n]+#5011[^\n]+3565326fe[^\n]+$/mu,
-      "P2-11 installment 29 row",
-    ),
-    requiredLine(
-      source,
-      /^\| 30\s+\|[^\n]+#5178[^\n]+2299a2114[^\n]+$/mu,
-      "P2-11 installment 30 row",
-    ),
-    requiredLine(
-      source,
-      /^\| 31\s+\|[^\n]+#5183[^\n]+f5aa60553[^\n]+$/mu,
-      "P2-11 installment 31 row",
-    ),
-    requiredLine(
-      source,
-      /^\| 32\s+\|[^\n]+#5198[^\n]+2be66b0f0[^\n]+$/mu,
-      "P2-11 installment 32 row",
-    ),
-    requiredLine(
-      source,
-      /^\| 33\s+\|[^\n]+#5200[^\n]+13cff4d99[^\n]+$/mu,
-      "P2-11 installment 33 row",
-    ),
-    requiredLine(
-      source,
-      /^\| 34\s+\|[^\n]+#5203[^\n]+11750115a[^\n]+$/mu,
-      "P2-11 installment 34 row",
-    ),
-    requiredLine(
-      source,
-      /^\| 35\s+\|[^\n]+#5205[^\n]+02c4eb1a7[^\n]+$/mu,
-      "P2-11 installment 35 row",
-    ),
-    requiredLine(
-      source,
-      /^\| 36\s+\|[^\n]+#5207[^\n]+cf7fc9a22[^\n]+$/mu,
-      "P2-11 installment 36 row",
-    ),
-    requiredLine(
-      source,
-      /^\| 37\s+\|[^\n]+#5208[^\n]+4e577b62a[^\n]+$/mu,
-      "P2-11 installment 37 row",
-    ),
-    requiredLine(
-      source,
-      /^\| 38\s+\|[^\n]+#5210[^\n]+f3959e7e3[^\n]+$/mu,
-      "P2-11 installment 38 row",
-    ),
-    requiredLine(
-      source,
-      /^\| 39\s+\|[^\n]+#5212[^\n]+22674520f[^\n]+$/mu,
-      "P2-11 installment 39 row",
-    ),
-    requiredLine(
-      source,
-      /^\| 40\s+\|[^\n]+#5214[^\n]+be344e787[^\n]+$/mu,
-      "P2-11 installment 40 row",
-    ),
-    requiredLine(
-      source,
-      /^\| 41\s+\|[^\n]+#5359[^\n]+5b5ac0924[^\n]+$/mu,
-      "P2-11 installment 41 row",
-    ),
-    requiredLine(
-      source,
-      /^\| 42\s+\|[^\n]+#5360[^\n]+f659b7e4e[^\n]+$/mu,
-      "P2-11 installment 42 row",
-    ),
-    requiredLine(
-      source,
-      /^\| 43\s+\|[^\n]+#4862[^\n]+fdaa8d165[^\n]+$/mu,
-      "P2-11 installment 43 row",
-    ),
-    requiredLine(
-      source,
-      /^\| 44\s+\|[^\n]+#5363[^\n]+1a717a959[^\n]+$/mu,
-      "P2-11 installment 44 row",
+    ...p2_11TableRows.map(([number, pr, sha]) =>
+      requiredLine(
+        source,
+        new RegExp(`^\\| ${number}\\s+\\|[^\\n]+#${pr}[^\\n]+${sha}[^\\n]+$`, "mu"),
+        `P2-11 installment ${number} row`,
+      ),
     ),
     requiredSection(
       source,
@@ -172,53 +207,12 @@ export function p2_11CurrentRecordEvidence(source: string): string {
 
 export function assertP2_11InstallmentFiles(): void {
   const installments = new Map(
-    [
-      20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42,
-      43, 44,
-    ].map((number) => [number, fs.readFileSync(p2_11Installment(number), "utf8")]),
+    [...new Set(p2_11FileExpectations.map(([number]) => number))].map((number) => [
+      number,
+      fs.readFileSync(p2_11Installment(number), "utf8"),
+    ]),
   );
-  for (const [number, pattern] of [
-    [20, /14-fixture S2-vs-shipped byte-for-byte battery/],
-    [20, /does not tick P2-11/],
-    [21, /Vue 2 pipe filters/],
-    [22, /Vue 2 filter helper order/],
-    [23, /Slot outlet same-name names/],
-    [24, /Patch-flag matrix expansion/],
-    [25, /Dynamic component patch flags/],
-    [26, /Model listener patch order/],
-    [27, /Dynamic component model arguments/],
-    [28, /SFC style carriers are DOM-inert/],
-    [29, /Bare Template Default Slots/],
-    [30, /Inert Slot-Template Bindings/],
-    [31, /Inline Slot-Template Carriers/],
-    [31, /f5aa60553/],
-    [32, /V-show Runtime Directives/],
-    [32, /2be66b0f0/],
-    [33, /V-html Raw HTML Props/],
-    [33, /13cff4d99/],
-    [34, /V-text Text-Content Props/],
-    [34, /11750115a/],
-    [35, /V-cloak DOM Cloak Markers/],
-    [35, /02c4eb1a7/],
-    [36, /Slot Outlet V-on Props/],
-    [36, /cf7fc9a22/],
-    [37, /Object V-bind Modifiers/],
-    [37, /4e577b62/],
-    [38, /Object V-on Modifiers/],
-    [38, /f3959e7e3/],
-    [39, /Recent Patch-Flag Witness/],
-    [39, /22674520f/],
-    [40, /publish graph firewall/i],
-    [40, /be344e787/],
-    [41, /Corpus Comparison Count/],
-    [41, /5b5ac0924/],
-    [42, /S2 DOM Emit Allocations/],
-    [42, /f659b7e4e/],
-    [43, /Dynamic Directive Argument Prefixing/],
-    [43, /fdaa8d165/],
-    [44, /Single Nested Slot Wrapper Defaults/],
-    [44, /1a717a959/],
-  ] as const) {
+  for (const [number, pattern] of p2_11FileExpectations) {
     assert.match(installments.get(number)!, pattern);
   }
 }

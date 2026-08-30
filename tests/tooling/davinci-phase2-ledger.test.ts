@@ -282,14 +282,15 @@ test("P2-11 records current installments without presenting stale remainders", (
   }
   for (const pr of [
     4933, 5011, 5178, 5183, 5198, 5200, 5203, 5205, 5207, 5210, 5212, 5214, 5359, 5360, 4862, 5363,
+    5373, 5376, 5379, 5380, 5381, 5386, 5387, 5390, 5391, 5396, 5398, 5399, 5400, 5401, 5404, 5405,
   ]) {
     assert.match(text.p2_11, new RegExp(`#${pr}`, "u"));
   }
   for (const pr of [4919, 4921, 4924, 4927, 4929])
     assert.match(text.p2_11, new RegExp(`#${pr}`, "u"));
-  assert.match(text.p2_11, /Current named remainder \(after #5363\)/);
+  assert.match(text.p2_11, /Current named remainder \(after #5405\)/);
   assert.doesNotMatch(text.p2_11, /comparison-count blocker/u);
-  assert.doesNotMatch(text.p2_11, /DOM allocation budget (?:also )?(?:remains|remain|open)/u);
+  assert.doesNotMatch(text.p2_11, /remaining patch-flag (?:equivalence )?program/u);
   assert.doesNotMatch(text.p2_11, /dynamic-argument bind names \/ modifiers/);
   assert.doesNotMatch(text.p2_11, /\*\*malformed slot fact gaps\*\*/);
   assertP2_11InstallmentFiles();

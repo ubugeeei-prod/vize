@@ -212,47 +212,16 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 
 **Deliverable:** `vize_atelier_dom` lowering S2 → codegen structure directly — the first strangler target, on the surface that holds the hard byte-parity bar.
 
-**Current series evidence (2026-08-30):** 44 installments have landed through
-[#5363](https://github.com/ubugeeei-prod/vize/pull/5363). Dynamic-argument
-`v-bind` keys, `.camel` / `.prop` / `.attr` modifiers, Vue 2 pipe filters,
-filter helper order, slot outlet same-name names, and the expanded patch-flag
-matrix, including dynamic components, named component `v-model`, and component
-model-listener order, dynamic component `v-model:[arg]`, and DOM-inert SFC
-style carriers, now match the shipped lane in direct and byte-differential
-tests. Installments 30 and 31 narrow the malformed-slot boundary by eliding
-inert slot-template bindings and emitting nested or stray slot-template
-carriers through the shipped inline-template fallback. Installment 32 realizes
-well-formed `v-show` as `vue.show` and emits runtime `vShow` entries from the
-S2 DOM lane while preserving shipped helper order and patch flags. Installment
-33 realizes `v-html` as `vue.html` and emits `innerHTML` props from the S2 DOM
-lane across native, component, slot, structural, spread, custom directive and
-native `v-model` cases. Installment 34 realizes `v-text` as `vue.text` and
-emits `textContent` props from the S2 DOM lane through `_toDisplayString`
-across native, component, slot, structural, spread, custom directive and
-native `v-model` cases. Installment 35 realizes `v-cloak` as `vue.cloak` and
-preserves the shipped no-op DOM shape across native, component, slot,
-structural, spread, custom directive and native `v-model` cases. Installment
-36 realizes slot outlet named and dynamic `v-on` props from the S2 DOM lane,
-including shipped slot-specific spread order, duplicate listener keys, helper
-order, fallback arguments, `v-for` locals, forwarded scoped-slot locals and
-Vue 2 `.native` behavior. Installment 37 realizes object-form `v-bind`
-modifiers by preserving the shipped spread expression for `.prop`, `.attr` and
-`.camel` object spreads. Installment 38 realizes object-form `v-on` modifiers
-by preserving the shipped `_toHandlers(expr, true)` object-spread path.
-Installment 39 adds explicit per-node patch-flag witnesses for the late
-directive and object-spread increments. Installment 40 pins the publish graph
-firewall: unpublished Davinci stage crates stay out of publishable release
-graphs, and S2 DOM witnesses in published crates must remain stripped
-dev-dependencies. Installment 41 pins the hydrated corpus count contract at
-144 DOM-output comparisons, one per project row in the current manifest, not
-the 142 ecosystem fixture paths. Installment 42 gates the S2 DOM emit surface
-probe at 60 allocs in the CI allocation gate. Installment 43 pins compound
-dynamic directive argument prefixing for `v-bind` and `v-on` keys, preserving
-local alias exceptions. Installment 44 keeps unwrapped single nested slot
-templates on the default-slot path with wrapper-aware `createSlots` detection.
-The task remains blocked on the hydrated zero-divergence corpus run and
-remaining patch-flag equivalence program; the old lane remains the production
-path. See the
+**Current series evidence (2026-08-30):** 60 installments have landed through
+[#5405](https://github.com/ubugeeei-prod/vize/pull/5405). The S2 DOM lane now
+covers the late directive/object-spread set, event/model/slot residuals,
+structural `v-if`/`v-for` cases, expression-edge admission, keyed slot
+forwarding, component `v-once` wrappers, slot text fact alignment, and the
+corpus-runnable plus CI DOM lanes. The per-node patch-site witness program now
+covers the late directive/object-spread, `v-memo`, `v-once`, slot outlet and
+`createSlots` cases, while the 144 DOM-output comparisons contract remains
+pinned. The task remains blocked on the hydrated zero-divergence corpus evidence
+and production-lane switch; the old lane remains the production path. See the
 [series record](./phase-2-records/p2-11.md).
 
 **Steps:**

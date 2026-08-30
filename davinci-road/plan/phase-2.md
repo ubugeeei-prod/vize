@@ -84,23 +84,17 @@ counts or fixture availability changes.
   Each completion is joined to its merged PR and current evidence in the
   [evidence index](./phase-2-records.md#current-completion-evidence-2026-08-30);
   review-only evidence is labeled there rather than presented as executable.
-- **Active and blocked: 1 of 22 — P2-11.** P2-11 has 44 landed installments
+- **Active and blocked: 1 of 22 — P2-11.** P2-11 has 60 landed installments
   through
-  [#5363](https://github.com/ubugeeei-prod/vize/pull/5363), including
-  `v-show` runtime directives, `v-html` raw HTML props, and `v-text`
-  text-content props, plus `v-cloak` DOM cloak markers and object
-  `v-bind` / `v-on` modifiers, but the
-  slot outlet `v-on` prop surface and spread-order shape are now covered
-  by S2-vs-shipped witnesses. The late directive and object-spread
-  patch-flag shapes now have an explicit per-node S2-vs-shipped witness,
-  and the publish graph firewall now rejects accidental release-graph edges
-  from published crates into unpublished Davinci stage crates. The
-  comparison-count contract is pinned at 144 DOM-output comparisons over the
-  current project-row manifest, and the S2 DOM emit allocation probe is gated
-  at 60 allocs. Dynamic directive argument prefixing and single nested slot
-  wrapper defaults now have S2-vs-shipped witnesses. The hydrated
-  zero-divergence corpus run and remaining patch-flag equivalence program
-  remain open. The old DOM lane is still the shipped compiler path.
+  [#5405](https://github.com/ubugeeei-prod/vize/pull/5405), including the
+  late directive/object-spread set, event/model/slot residuals, structural
+  `v-if`/`v-for` cases, expression-edge admission, keyed slot forwarding,
+  component `v-once` wrappers, slot text fact alignment, the corpus-runnable
+  and CI DOM lanes, and per-node patch-site witnesses for `v-memo`, `v-once`,
+  slot outlet and `createSlots` cases. The 144 DOM-output comparisons contract
+  remains pinned. The hydrated zero-divergence corpus evidence and
+  production-lane switch remain open. The old DOM lane is still the shipped
+  compiler path.
 - **Untouched and dependency-blocked: 4 of 22 — P2-12b, P2-16, P2-17 and
   P2-20.** P2-12b depends on P2-12a, P2-11 and P2-3; P2-16 depends on P2-11;
   P2-17 depends on P2-11, P2-12b and P2-13; P2-20 depends on all of P2-1
