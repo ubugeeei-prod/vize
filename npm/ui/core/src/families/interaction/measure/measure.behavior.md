@@ -1,8 +1,9 @@
 # Measurement observers behavior contract
 
 Normative state × input → outcome table for `@vizejs/ui/measure`. Every row is
-exercised by `src/measure.test.ts` or `src/measure-ssr.test.ts`; compile-only
-assertions live in `src/measure.types.test-d.ts`.
+exercised by `src/families/interaction/measure/measure.test.ts` or
+`src/families/interaction/measure/measure-ssr.test.ts`; compile-only assertions
+live in `src/families/interaction/measure/measure.types.test-d.ts`.
 
 | #   | State          | Input                                 | Outcome                                             | Proven by                                                  |
 | --- | -------------- | ------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------- |
@@ -18,4 +19,4 @@ assertions live in `src/measure.types.test-d.ts`.
 | M10 | scoped         | owning effect scope stops             | controller is disposed automatically                | `binds disposal to the owning effect scope`                |
 | M11 | concurrent SSR | identical trees                       | byte-identical markup without observer construction | `renders byte-identical SSR output without observers`      |
 | M12 | hydration      | server markup mounts                  | no replacement and no hydration diagnostics         | `hydrates measurement consumers without diagnostics`       |
-| M13 | public types   | invalid box or mutating readonly refs | compilation rejects misuse                          | `src/measure.types.test-d.ts`                              |
+| M13 | public types   | invalid box or mutating readonly refs | compilation rejects misuse                          | `src/families/interaction/measure/measure.types.test-d.ts` |

@@ -3,7 +3,7 @@
  * offset reads and writes plus SSR-safe viewport size observation.
  */
 
-import { createSizeObserver } from "./measure-runtime.ts";
+import { createSizeObserver } from "./families/interaction/measure/measure-runtime.ts";
 import type { VirtualizerOrientation, VirtualizerRect } from "./virtualizer-types.ts";
 
 /** Callbacks a viewport binding reports into. */

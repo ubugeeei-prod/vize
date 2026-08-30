@@ -183,7 +183,7 @@ export default defineConfig({
       "live-region": "src/families/accessibility/live-region/live-region.ts",
       locale: "src/families/i18n/locale/locale.ts",
       "long-press": "src/families/interaction/long-press/long-press.ts",
-      measure: "src/measure.ts",
+      measure: "src/families/interaction/measure/measure.ts",
       motion: "src/motion.ts",
       move: "src/families/interaction/move/move.ts",
       "pointer-grace": "src/families/interaction/pointer-grace/pointer-grace.ts",

@@ -7,6 +7,7 @@ import { test } from "vite-plus/test";
 import { basicFamilyCatalog } from "./family-catalog-basics.ts";
 import { foundationFamilyCatalog } from "./family-catalog-foundations.ts";
 import { focusFamilyCatalog } from "./family-catalog-focus.ts";
+import { interactionFamilyCatalog } from "./family-catalog-interactions.ts";
 import { overlayFamilyCatalog } from "./family-catalog-overlays.ts";
 
 const sourceRoot = path.resolve("src");
@@ -24,6 +25,9 @@ const foundationCompatibilityBarrels = [
 ] as const;
 const formCompatibilityBarrels = [
   ["error-summary.ts", "./families/form/error-summary/error-summary.ts"],
+] as const;
+const interactionCompatibilityBarrels = [
+  ["measure.ts", "./families/interaction/measure/measure.ts"],
 ] as const;
 
 const grandfatheredRootSfcFiles = ["primitive-element.vue"] as const;
@@ -74,6 +78,34 @@ test("root form utilities stay compatibility-only barrels", () => {
 
     assert.equal(source, `export * from "${target}";`);
   }
+});
+
+test("root interaction utilities stay compatibility-only barrels", () => {
+  for (const [filename, target] of interactionCompatibilityBarrels) {
+    const source = fs.readFileSync(path.join(sourceRoot, filename), "utf8").trim();
+
+    assert.equal(source, `export * from "${target}";`);
+  }
+});
+
+test("rehomed measure family is cataloged from a family directory", () => {
+  const family = interactionFamilyCatalog.find((entry) => entry.canonicalName === "measure");
+  assert.ok(family);
+
+  const familyRoot = "src/families/interaction/measure/";
+  assert.equal(family.entryFile, `${familyRoot}measure.ts`);
+  assert.deepEqual(family.sourceFiles, [
+    `${familyRoot}measure.ts`,
+    `${familyRoot}measure-runtime.ts`,
+    `${familyRoot}measure-types.ts`,
+  ]);
+  assert.equal(family.behaviorContract, `${familyRoot}measure.behavior.md`);
+  assert.deepEqual(family.tests, [
+    `${familyRoot}measure.test.ts`,
+    `${familyRoot}measure-ssr.test.ts`,
+  ]);
+  assert.deepEqual(family.typeTests, [`${familyRoot}measure.types.test-d.ts`]);
+  assert.equal(family.rendererFixture, "MeasureConsumer.vue");
 });
 
 test("rehomed error-summary family is cataloged from a family directory", () => {

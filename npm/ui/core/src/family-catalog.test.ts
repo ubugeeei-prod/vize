@@ -292,6 +292,7 @@ test("interaction families keep root compatibility barrels", async () => {
   await assertFamilyBarrels("interaction", [
     "hover",
     "long-press",
+    "measure",
     "move",
     "pointer-grace",
     "press",

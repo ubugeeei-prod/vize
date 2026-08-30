@@ -5,16 +5,22 @@ import {
   type UiFamilyCatalogEntry,
 } from "../../../family-catalog-types.ts";
 
+const measureFamilyRoot = "src/families/interaction/measure/";
+
 export const interactionSupportFamilyCatalog = [
   {
     canonicalName: "measure",
     title: "Measure",
     packageSubpath: "./measure",
-    entryFile: "src/measure.ts",
-    sourceFiles: ["src/measure.ts", "src/measure-runtime.ts", "src/measure-types.ts"],
-    behaviorContract: "src/measure.behavior.md",
-    tests: ["src/measure.test.ts", "src/measure-ssr.test.ts"],
-    typeTests: ["src/measure.types.test-d.ts"],
+    entryFile: `${measureFamilyRoot}measure.ts`,
+    sourceFiles: [
+      `${measureFamilyRoot}measure.ts`,
+      `${measureFamilyRoot}measure-runtime.ts`,
+      `${measureFamilyRoot}measure-types.ts`,
+    ],
+    behaviorContract: `${measureFamilyRoot}measure.behavior.md`,
+    tests: [`${measureFamilyRoot}measure.test.ts`, `${measureFamilyRoot}measure-ssr.test.ts`],
+    typeTests: [`${measureFamilyRoot}measure.types.test-d.ts`],
     rendererFixture: "MeasureConsumer.vue",
     qualityGates: interactionQualityGates,
     bundleBudget: {

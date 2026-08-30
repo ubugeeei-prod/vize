@@ -1,6 +1,6 @@
 import { getCurrentScope, onScopeDispose, shallowReadonly, shallowRef, watch } from "vue";
 
-import { createSizeObserver } from "./measure-runtime.ts";
+import { createSizeObserver } from "./families/interaction/measure/measure-runtime.ts";
 import { createMeasureCache } from "./virtualizer-measure-cache.ts";
 import {
   disposedDiagnostic,
