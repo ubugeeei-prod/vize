@@ -52,6 +52,7 @@ export default defineConfig({
       link: "src/link.ts",
       toggle: "src/toggle.ts",
       "toggle-group": "src/toggle-group.ts",
+      popover: "src/families/overlays/popover/popover.ts",
       tooltip: "src/tooltip.ts",
       input: "src/input.ts",
       "radio-group": "src/radio-group.ts",

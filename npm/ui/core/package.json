@@ -139,6 +139,11 @@
       "import": "./dist/toggle-group.mjs",
       "default": "./dist/toggle-group.mjs"
     },
+    "./popover": {
+      "types": "./dist/popover.d.mts",
+      "import": "./dist/popover.mjs",
+      "default": "./dist/popover.mjs"
+    },
     "./tooltip": {
       "types": "./dist/tooltip.d.mts",
       "import": "./dist/tooltip.mjs",

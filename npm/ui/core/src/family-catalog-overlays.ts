@@ -5,6 +5,7 @@ import {
   type UiFamilyCatalogEntry,
 } from "./family-catalog-types.ts";
 import { dialogFamilyCatalog } from "./family-catalog-dialogs.ts";
+import { popoverFamilyCatalog } from "./family-catalog-popover.ts";
 
 export const overlayFamilyCatalog = [
   ...dialogFamilyCatalog,
@@ -254,6 +255,7 @@ export const overlayFamilyCatalog = [
     maturity: "stable",
     owner: catalogOwner,
   },
+  ...popoverFamilyCatalog,
   {
     canonicalName: "tooltip",
     title: "Tooltip",

@@ -9,6 +9,12 @@ import LocaleProvider from "./locale-provider.vue";
 import Portal from "./portal.vue";
 import PositionerArrow from "./positioner-arrow.vue";
 import Positioner from "./positioner.vue";
+import {
+  PopoverArrow,
+  PopoverContent,
+  PopoverRoot,
+  PopoverTrigger,
+} from "./families/overlays/popover/popover.ts";
 import Presence from "./presence.vue";
 import Transition from "./transition.vue";
 import { TooltipContent, TooltipRoot, TooltipTrigger } from "./tooltip.ts";
@@ -18,8 +24,18 @@ function tooltip(children: () => unknown): ReturnType<typeof h> {
   return h(TooltipRoot, { defaultOpen: true, delayDuration: 0, id: "runtime-tooltip" }, children);
 }
 
+function popover(children: () => unknown): ReturnType<typeof h> {
+  return h(PopoverRoot, { defaultOpen: true, id: "runtime-popover" }, children);
+}
+
 function assertTooltipRoot(host: HTMLElement): void {
   const root = host.querySelector('[data-vize-ui="tooltip-root"]');
+  assert.ok(root instanceof HTMLElement);
+  assert.equal(root.getAttribute("data-state"), "open");
+}
+
+function assertPopoverRoot(host: HTMLElement): void {
+  const root = host.querySelector('[data-vize-ui="popover-root"]');
   assert.ok(root instanceof HTMLElement);
   assert.equal(root.getAttribute("data-state"), "open");
 }
@@ -165,6 +181,78 @@ export const overlayRuntimeFixtures: readonly RuntimeFixture[] = [
     assertHydratedDom(host) {
       const arrow = host.querySelector('[data-vize-ui="positioner-arrow"]');
       assert.ok(arrow instanceof HTMLElement);
+    },
+  },
+  {
+    name: "popover-root",
+    sourceFile: "families/overlays/popover/popover-root.vue",
+    render: () => popover(() => "Popover"),
+    assertServerMarkup(html) {
+      assert.match(html, /id="runtime-popover"/);
+      assert.match(html, /data-vize-ui="popover-root"/);
+      assert.match(html, /data-state="open"/);
+    },
+    assertHydratedDom: assertPopoverRoot,
+  },
+  {
+    name: "popover-trigger",
+    sourceFile: "families/overlays/popover/popover-trigger.vue",
+    render: () => popover(() => h(PopoverTrigger, null, () => "Open filters")),
+    assertServerMarkup(html) {
+      assert.match(html, /data-vize-ui="popover-trigger"/);
+      assert.match(html, /aria-controls="runtime-popover-content"/);
+      assert.match(html, /aria-expanded="true"/);
+      assert.match(html, /type="button"/);
+    },
+    assertHydratedDom(host) {
+      const trigger = host.querySelector('[data-vize-ui="popover-trigger"]');
+      assert.ok(trigger instanceof HTMLButtonElement);
+      assert.equal(trigger.getAttribute("aria-haspopup"), "dialog");
+    },
+  },
+  {
+    name: "popover-content",
+    sourceFile: "families/overlays/popover/popover-content.vue",
+    render: () =>
+      popover(() => [
+        h(PopoverTrigger, null, () => "Open filters"),
+        h(PopoverContent, { portalDisabled: true, placement: "bottom-start" }, () => "Filters"),
+      ]),
+    assertServerMarkup(html) {
+      assert.match(html, /data-vize-ui="popover-content"/);
+      assert.match(html, /role="dialog"/);
+      assert.match(html, /data-side="bottom"/);
+      assert.match(html, /data-align="start"/);
+      assert.match(html, /data-vize-ui="positioner"/);
+      assert.match(html, /data-vize-dismissable-layer/);
+    },
+    assertHydratedDom(host) {
+      const content = host.querySelector('[data-vize-ui="popover-content"]');
+      assert.ok(content instanceof HTMLElement);
+      assert.equal(content.getAttribute("role"), "dialog");
+      assert.equal(content.textContent, "Filters");
+    },
+  },
+  {
+    name: "popover-arrow",
+    sourceFile: "families/overlays/popover/popover-arrow.vue",
+    render: () =>
+      popover(() => [
+        h(PopoverTrigger, null, () => "Open filters"),
+        h(PopoverContent, { portalDisabled: true }, () => [
+          h(PopoverArrow, null, () => "Arrow"),
+          "Filters",
+        ]),
+      ]),
+    assertServerMarkup(html) {
+      assert.match(html, /data-vize-ui="popover-arrow"/);
+      assert.match(html, /part="arrow"/);
+      assert.match(html, /Arrow/);
+    },
+    assertHydratedDom(host) {
+      const arrow = host.querySelector('[data-vize-ui="popover-arrow"]');
+      assert.ok(arrow instanceof HTMLElement);
+      assert.equal(arrow.textContent, "Arrow");
     },
   },
   {

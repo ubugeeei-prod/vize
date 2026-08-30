@@ -36,6 +36,7 @@ export * from "./families/layout/icon/icon-button.ts";
 export * from "./link.ts";
 export * from "./toggle.ts";
 export * from "./toggle-group.ts";
+export * from "./families/overlays/popover/popover.ts";
 export * from "./tooltip.ts";
 export * from "./input.ts";
 export * from "./radio-group.ts";

@@ -74,6 +74,28 @@ const innerOpen = ref(true);
 `,
   },
   {
+    filename: "PopoverConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import {
+  PopoverArrow,
+  PopoverContent,
+  PopoverRoot,
+  PopoverTrigger,
+} from "./families/overlays/popover/popover.ts";
+</script>
+
+<template>
+  <PopoverRoot id="renderer-popover" default-open>
+    <PopoverTrigger>Open filters</PopoverTrigger>
+    <PopoverContent portal-disabled placement="bottom-start">
+      <button type="button">Today</button>
+      <PopoverArrow>Arrow</PopoverArrow>
+    </PopoverContent>
+  </PopoverRoot>
+</template>
+`,
+  },
+  {
     filename: "TooltipConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { TooltipContent, TooltipRoot, TooltipTrigger } from "./tooltip.ts";
