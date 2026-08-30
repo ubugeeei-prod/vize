@@ -1,4 +1,4 @@
-import type { PrimitiveElement } from "./primitive.ts";
+import type { PrimitiveElement } from "../../../primitive.ts";
 
 /** Consumer sizing tokens mirrored by {@link Blockquote} through `data-size`. */
 export type BlockquoteSize = "sm" | "md" | "lg";

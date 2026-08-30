@@ -4,7 +4,7 @@ import { test } from "vite-plus/test";
 
 import type { BlockquoteExpose, BlockquoteSlotState } from "./blockquote.ts";
 import Blockquote from "./blockquote.vue";
-import { mountInteraction } from "./testing/mount.ts";
+import { mountInteraction } from "../../../testing/mount.ts";
 
 test("renders native blockquote by default without adding semantics or styling", async () => {
   const handle = mountInteraction(Blockquote, {

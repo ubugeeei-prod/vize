@@ -4,7 +4,7 @@ import { test } from "vite-plus/test";
 
 import type { KbdExpose, KbdSlotState } from "./kbd.ts";
 import Kbd from "./kbd.vue";
-import { mountInteraction } from "./testing/mount.ts";
+import { mountInteraction } from "../../../testing/mount.ts";
 
 test("renders native keyboard input by default without styling or focus policy", async () => {
   const handle = mountInteraction(Kbd, {

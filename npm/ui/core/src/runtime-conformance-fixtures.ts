@@ -45,6 +45,7 @@ import SearchField from "./search-field.vue";
 import TextInput from "./text-input.vue";
 import TextareaControl from "./textarea-control.vue";
 import { toggleRuntimeFixtures } from "./runtime-conformance-toggle-fixtures.ts";
+import { typographyRuntimeFixtures } from "./runtime-conformance-typography-fixtures.ts";
 import VisuallyHidden from "./visually-hidden.vue";
 
 export interface RuntimeFixture {
@@ -80,6 +81,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   emptyStateRuntimeFixture,
   ...collapsibleRuntimeFixtures,
   ...layoutRuntimeFixtures,
+  ...typographyRuntimeFixtures,
   {
     name: "button",
     sourceFile: "action-button.vue",

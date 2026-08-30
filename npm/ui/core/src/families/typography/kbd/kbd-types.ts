@@ -1,4 +1,4 @@
-import type { PrimitiveElement } from "./primitive.ts";
+import type { PrimitiveElement } from "../../../primitive.ts";
 
 /** Visual size tokens mirrored by {@link Kbd} through `data-size`. */
 export type KbdSize = "sm" | "md" | "lg";

@@ -141,11 +141,15 @@ test("stable catalog entries have every required artifact", async () => {
 test("new family-owned SFC primitives keep implementation and tests together", () => {
   const familyRoots = new Map([
     ["banner", "src/families/feedback/banner/"],
+    ["blockquote", "src/families/typography/blockquote/"],
     ["button-group", "src/families/actions/button-group/"],
     ["callout", "src/families/feedback/callout/"],
+    ["code", "src/families/typography/code/"],
     ["dialog", "src/families/overlays/dialog/"],
+    ["heading", "src/families/typography/heading/"],
     ["icon", "src/families/layout/icon/"],
     ["icon-button", "src/families/layout/icon/"],
+    ["kbd", "src/families/typography/kbd/"],
     ["locale", "src/families/i18n/locale/"],
     ["fullscreen-button", "src/families/actions/fullscreen-button/"],
     ["print-button", "src/families/actions/print-button/"],
@@ -156,6 +160,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["status-light", "src/families/feedback/status-light/"],
     ["surface", "src/families/layout/surface/"],
     ["table", "src/families/data/table/"],
+    ["text", "src/families/typography/text/"],
     ["toolbar", "src/families/actions/toolbar/"],
     ["tooltip", "src/families/overlays/tooltip/"],
   ]);
@@ -183,6 +188,18 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     assert.ok(
       entry.typeTests?.every((file) => file.startsWith(familyRoot)),
       `${canonicalName} type tests must stay beside the family source`,
+    );
+  }
+});
+
+test("typography families keep root compatibility barrels", async () => {
+  for (const name of ["blockquote", "code", "heading", "kbd", "text"] as const) {
+    const source = await readFile(path.resolve(`src/${name}.ts`), "utf8");
+
+    assert.match(
+      source,
+      new RegExp(`from "\\./families/typography/${name}/${name}\\.ts"`),
+      `${name} must keep its historical source entry as a compatibility barrel`,
     );
   }
 });

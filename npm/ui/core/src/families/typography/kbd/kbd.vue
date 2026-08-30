@@ -3,7 +3,7 @@
     :is="as"
     ref="element"
     part="root"
-    data-vize-ui="code"
+    data-vize-ui="kbd"
     :data-size="sizeState"
     :data-variant="variantState"
     :data-tone="toneState"
@@ -16,66 +16,66 @@
 import { computed, useTemplateRef } from "vue";
 
 import type {
-  CodeElement,
-  CodeExpose,
-  CodeSize,
-  CodeSlotState,
-  CodeTone,
-  CodeVariant,
-} from "./code-types.ts";
-import type { PrimitiveAs } from "./primitive.ts";
+  KbdElement,
+  KbdExpose,
+  KbdSize,
+  KbdSlotState,
+  KbdTone,
+  KbdVariant,
+} from "./kbd-types.ts";
+import type { PrimitiveAs } from "../../../primitive.ts";
 
 const {
-  as = "code",
+  as = "kbd",
   size = "md",
-  variant = "inline",
+  variant = "key",
   tone = "neutral",
 } = defineProps<{
   /**
    * Native element, custom element, or component to render.
    *
-   * @default "code"
+   * @default "kbd"
    */
   readonly as?: PrimitiveAs;
 
   /**
-   * Consumer code-size token mirrored to `data-size`; no CSS is emitted.
+   * Consumer visual-size token mirrored to `data-size`; no CSS is emitted.
    *
    * @default "md"
    */
-  readonly size?: CodeSize;
+  readonly size?: KbdSize;
 
   /**
-   * Code presentation token mirrored to `data-variant`; no CSS is emitted.
+   * Keyboard presentation token mirrored to `data-variant`; no CSS is emitted.
    *
-   * @default "inline"
+   * @default "key"
    */
-  readonly variant?: CodeVariant;
+  readonly variant?: KbdVariant;
 
   /**
    * Consumer tone token mirrored to `data-tone`; no CSS is emitted.
    *
    * @default "neutral"
    */
-  readonly tone?: CodeTone;
+  readonly tone?: KbdTone;
 }>();
 
 defineSlots<{
-  /** Renders code content with current typography hook state. */
-  default(props: CodeSlotState): unknown;
+  /** Renders keyboard input content with current presentation hook state. */
+  default(props: KbdSlotState): unknown;
 }>();
 
-const element = useTemplateRef<CodeElement>("element");
+const element = useTemplateRef<KbdElement>("element");
 const sizeState = computed(() => size);
 const variantState = computed(() => variant);
 const toneState = computed(() => tone);
-const slotState = computed<CodeSlotState>(() => ({
+const slotState = computed<KbdSlotState>(() => ({
   size: sizeState.value,
   tone: toneState.value,
   variant: variantState.value,
 }));
 
-type CodeSetupExpose = Omit<CodeExpose, "element" | "size" | "tone" | "variant"> & {
+type KbdSetupExpose = Omit<KbdExpose, "element" | "size" | "tone" | "variant"> & {
   readonly element: typeof element;
   readonly size: typeof sizeState;
   readonly tone: typeof toneState;
@@ -87,11 +87,11 @@ const exposed = {
   size: sizeState,
   tone: toneState,
   variant: variantState,
-} satisfies CodeSetupExpose;
+} satisfies KbdSetupExpose;
 
 defineExpose(exposed);
 </script>
 
 <style scoped>
-/* Headless by design. Code font, wrapping, syntax color, and block layout remain consumer-owned. */
+/* Headless by design. Keycap styling, spacing, and separators remain consumer-owned. */
 </style>

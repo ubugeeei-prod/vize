@@ -4,7 +4,7 @@ import { test } from "vite-plus/test";
 
 import type { CodeExpose, CodeSlotState } from "./code.ts";
 import Code from "./code.vue";
-import { mountInteraction } from "./testing/mount.ts";
+import { mountInteraction } from "../../../testing/mount.ts";
 
 test("renders native code by default without adding semantics or styling", async () => {
   const handle = mountInteraction(Code, {

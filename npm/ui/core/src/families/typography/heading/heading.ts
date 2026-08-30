@@ -1,5 +1,5 @@
 /** Headless semantic heading primitive for consumer-owned typography systems. */
-export { Heading } from "./families/typography/heading/heading.ts";
+export { default as Heading } from "./heading.vue";
 export type {
   HeadingElement,
   HeadingExpose,
@@ -8,4 +8,4 @@ export type {
   HeadingSlotState,
   HeadingTone,
   HeadingWeight,
-} from "./families/typography/heading/heading.ts";
+} from "./heading-types.ts";

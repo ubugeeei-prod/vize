@@ -4,7 +4,7 @@ import { test } from "vite-plus/test";
 
 import type { TextExpose, TextSlotState } from "./text.ts";
 import Text from "./text.vue";
-import { mountInteraction } from "./testing/mount.ts";
+import { mountInteraction } from "../../../testing/mount.ts";
 
 test("renders neutral body text by default without adding semantics or styling", async () => {
   const handle = mountInteraction(Text, {

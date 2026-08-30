@@ -3,11 +3,11 @@ import assert from "node:assert/strict";
 import { h } from "vue";
 
 import Kbd from "./kbd.vue";
-import type { RuntimeFixture } from "./runtime-conformance-fixtures.ts";
+import type { RuntimeFixture } from "../../../runtime-conformance-fixtures.ts";
 
 export const kbdRuntimeFixture: RuntimeFixture = {
   name: "kbd",
-  sourceFile: "kbd.vue",
+  sourceFile: "families/typography/kbd/kbd.vue",
   render: () =>
     h(
       Kbd,

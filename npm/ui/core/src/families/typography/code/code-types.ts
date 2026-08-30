@@ -1,4 +1,4 @@
-import type { PrimitiveElement } from "./primitive.ts";
+import type { PrimitiveElement } from "../../../primitive.ts";
 
 /** Consumer sizing tokens mirrored by {@link Code} through `data-size`. */
 export type CodeSize = "sm" | "md" | "lg";

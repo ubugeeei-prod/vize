@@ -1,9 +1,9 @@
 /** Headless blockquote typography primitive for consumer-owned quotation styling. */
-export { Blockquote } from "./families/typography/blockquote/blockquote.ts";
+export { default as Blockquote } from "./blockquote.vue";
 export type {
   BlockquoteElement,
   BlockquoteExpose,
   BlockquoteSize,
   BlockquoteSlotState,
   BlockquoteTone,
-} from "./families/typography/blockquote/blockquote.ts";
+} from "./blockquote-types.ts";

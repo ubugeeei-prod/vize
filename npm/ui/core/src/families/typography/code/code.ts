@@ -1,5 +1,5 @@
 /** Headless code typography primitive for consumer-owned inline and block code styling. */
-export { Code } from "./families/typography/code/code.ts";
+export { default as Code } from "./code.vue";
 export type {
   CodeElement,
   CodeExpose,
@@ -7,4 +7,4 @@ export type {
   CodeSlotState,
   CodeTone,
   CodeVariant,
-} from "./families/typography/code/code.ts";
+} from "./code-types.ts";

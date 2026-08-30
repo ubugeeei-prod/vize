@@ -4,7 +4,7 @@ import { test } from "vite-plus/test";
 
 import type { HeadingExpose, HeadingSlotState } from "./heading.ts";
 import Heading from "./heading.vue";
-import { mountInteraction } from "./testing/mount.ts";
+import { mountInteraction } from "../../../testing/mount.ts";
 
 test("renders a semantic h2 by default without adding focus or styling", async () => {
   const handle = mountInteraction(Heading, {

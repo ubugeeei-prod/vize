@@ -1,5 +1,5 @@
 /** Headless keyboard-input primitive for consumer-owned shortcut styling. */
-export { Kbd } from "./families/typography/kbd/kbd.ts";
+export { default as Kbd } from "./kbd.vue";
 export type {
   KbdElement,
   KbdExpose,
@@ -7,4 +7,4 @@ export type {
   KbdSlotState,
   KbdTone,
   KbdVariant,
-} from "./families/typography/kbd/kbd.ts";
+} from "./kbd-types.ts";

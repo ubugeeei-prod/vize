@@ -1,5 +1,5 @@
 /** Headless inline typography primitive for consumer-owned text styling. */
-export { Text } from "./families/typography/text/text.ts";
+export { default as Text } from "./text.vue";
 export type {
   TextElement,
   TextExpose,
@@ -7,4 +7,4 @@ export type {
   TextSlotState,
   TextTone,
   TextWeight,
-} from "./families/typography/text/text.ts";
+} from "./text-types.ts";

@@ -3,11 +3,11 @@ import assert from "node:assert/strict";
 import { h } from "vue";
 
 import Code from "./code.vue";
-import type { RuntimeFixture } from "./runtime-conformance-fixtures.ts";
+import type { RuntimeFixture } from "../../../runtime-conformance-fixtures.ts";
 
 export const codeRuntimeFixture: RuntimeFixture = {
   name: "code",
-  sourceFile: "code.vue",
+  sourceFile: "families/typography/code/code.vue",
   render: () =>
     h(
       Code,

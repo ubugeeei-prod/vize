@@ -2,12 +2,12 @@ import assert from "node:assert/strict";
 
 import { h } from "vue";
 
-import type { RuntimeFixture } from "./runtime-conformance-fixtures.ts";
+import type { RuntimeFixture } from "../../../runtime-conformance-fixtures.ts";
 import Text from "./text.vue";
 
 export const textRuntimeFixture: RuntimeFixture = {
   name: "text",
-  sourceFile: "text.vue",
+  sourceFile: "families/typography/text/text.vue",
   render: () =>
     h(
       Text,

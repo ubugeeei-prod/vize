@@ -3,11 +3,11 @@ import assert from "node:assert/strict";
 import { h } from "vue";
 
 import Blockquote from "./blockquote.vue";
-import type { RuntimeFixture } from "./runtime-conformance-fixtures.ts";
+import type { RuntimeFixture } from "../../../runtime-conformance-fixtures.ts";
 
 export const blockquoteRuntimeFixture: RuntimeFixture = {
   name: "blockquote",
-  sourceFile: "blockquote.vue",
+  sourceFile: "families/typography/blockquote/blockquote.vue",
   render: () =>
     h(
       Blockquote,
