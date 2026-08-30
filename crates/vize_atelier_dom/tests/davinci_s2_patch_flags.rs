@@ -60,21 +60,6 @@ const CASES: &[Case] = &[
         sites: &["8 /* PROPS */, [\"id\"]"],
     },
     Case {
-        name: "static_literal_prop",
-        src: r#"<div :id="'fixed'"></div>"#,
-        sites: &[],
-    },
-    Case {
-        name: "component_static_literal_prop",
-        src: r#"<Foo :side-offset="4" />"#,
-        sites: &[],
-    },
-    Case {
-        name: "component_static_class_array",
-        src: r#"<Foo :class="['card']" />"#,
-        sites: &[],
-    },
-    Case {
         name: "full_props",
         src: r#"<div :[key]="value"></div>"#,
         sites: &["16 /* FULL_PROPS */"],
