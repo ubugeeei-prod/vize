@@ -36,7 +36,7 @@ export interface ButtonGroupContextValue {
   readonly registerItem: (item: ButtonGroupItemRegistration) => () => void;
   readonly requestItemPress: (value: string, nativeEvent: MouseEvent) => void;
   readonly setActiveValue: (value: string) => void;
-  readonly syncActiveValue: () => void;
+  readonly syncActiveValue: (item?: ButtonGroupItemRegistration) => void;
 }
 
 export const buttonGroupContext = createContext<ButtonGroupContextValue>("ButtonGroup");

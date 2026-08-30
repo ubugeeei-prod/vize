@@ -128,7 +128,17 @@ function getOrderedItems(): readonly ButtonGroupItemRegistration[] {
   });
 }
 
-function syncActiveValue(): void {
+function validateItemValue(item: ButtonGroupItemRegistration): void {
+  const itemValue = item.value();
+  for (const registered of items) {
+    if (registered !== item && registered.value() === itemValue) {
+      throw new Error("VIZE_UI_BUTTON_GROUP_VALUE_DUPLICATE");
+    }
+  }
+}
+
+function syncActiveValue(item?: ButtonGroupItemRegistration): void {
+  if (item !== undefined) validateItemValue(item);
   if (disabledState.value || !rovingFocusState.value) {
     activeValue.value = null;
     return;
@@ -193,6 +203,7 @@ function getItemState(itemDisabled: boolean): ButtonGroupItemState {
 }
 
 function registerItem(item: ButtonGroupItemRegistration): () => void {
+  validateItemValue(item);
   items.add(item);
   syncActiveValue();
   void nextTick(syncActiveValue);

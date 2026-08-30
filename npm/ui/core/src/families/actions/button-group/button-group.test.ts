@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 
+import { mount } from "@vue/test-utils";
 import { test } from "vite-plus/test";
 import { defineComponent, h, nextTick } from "vue";
 
@@ -229,6 +230,56 @@ test("exposes focus, focusValue, activeValue, and item state", async () => {
   itemExpose.focus();
   assert.ok(handle.activeElement() === publish);
   handle.unmount();
+});
+
+test("rejects duplicate item values before roving focus becomes ambiguous", async () => {
+  assert.throws(
+    () =>
+      mountInteraction(ButtonGroup, {
+        props: { ariaLabel: "Actions", role: "toolbar" },
+        slots: {
+          default: () => [
+            h(ButtonGroupItem, { value: "save" }, () => "Save"),
+            h(ButtonGroupItem, { value: "save" }, () => "Duplicate save"),
+          ],
+        },
+      }),
+    /VIZE_UI_BUTTON_GROUP_VALUE_DUPLICATE/,
+  );
+
+  const Probe = defineComponent({
+    props: {
+      secondaryValue: { type: String, default: "publish" },
+    },
+    setup: (props) => () =>
+      h(ButtonGroup, { ariaLabel: "Actions", role: "toolbar" }, () => [
+        h(ButtonGroupItem, { value: "save" }, () => "Save"),
+        h(ButtonGroupItem, { value: props.secondaryValue }, () => "Publish"),
+      ]),
+  });
+  const errors: unknown[] = [];
+  const container = document.createElement("div");
+  document.body.append(container);
+  const wrapper = mount(Probe, {
+    attachTo: container,
+    global: {
+      config: {
+        errorHandler(error) {
+          errors.push(error);
+        },
+      },
+    },
+  });
+
+  await nextTick();
+  await wrapper.setProps({ secondaryValue: "save" });
+  assert.equal(errors.length, 1);
+  assert.match(
+    errors[0] instanceof Error ? errors[0].message : String(errors[0]),
+    /VIZE_UI_BUTTON_GROUP_VALUE_DUPLICATE/,
+  );
+  wrapper.unmount();
+  container.remove();
 });
 
 test("items require a matching group provider", () => {

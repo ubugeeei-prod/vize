@@ -78,13 +78,14 @@ const slotState = computed<ButtonGroupItemSlotState>(() => ({
   value,
 }));
 
-const unregister = context.registerItem({
+const registration = {
   disabled: itemDisabled,
   element,
   value: () => value,
-});
+};
+const unregister = context.registerItem(registration);
 
-watch([itemDisabled, () => value], () => context.syncActiveValue(), { flush: "post" });
+watch([itemDisabled, () => value], () => context.syncActiveValue(registration), { flush: "sync" });
 onUnmounted(unregister);
 
 function onClick(event: MouseEvent): void {

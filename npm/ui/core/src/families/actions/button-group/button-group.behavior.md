@@ -9,7 +9,8 @@
 | B5  | `button-group-item.vue` | disabled                  | disabled groups and items suppress activation and leave tab order safely | `disabled groups and items suppress activation`                |
 | B6  | `button-group-item.vue` | custom element semantics  | non-native items receive `role="button"` and synthesize keyboard clicks  | `custom items expose button semantics and keyboard activation` |
 | B7  | both                    | public instance           | root and items expose focus methods and immutable state snapshots        | `exposes focus, focusValue, activeValue, and item state`       |
-| B8  | `button-group-item.vue` | provider boundary         | items fail loudly when rendered outside a matching group provider        | `items require a matching group provider`                      |
+| B8  | `button-group-item.vue` | duplicate value           | mount and reactive value changes reject duplicate item values            | `rejects duplicate item values...`                             |
+| B9  | `button-group-item.vue` | provider boundary         | items fail loudly when rendered outside a matching group provider        | `items require a matching group provider`                      |
 
 ## Contract
 
@@ -23,5 +24,8 @@ through `data-vize-ui`, `data-state`, `data-disabled`, `data-orientation`,
 defaults to a single tab stop with arrow-key movement because that is the WAI-ARIA
 toolbar expectation. Consumers may explicitly set `rovingFocus` on either role.
 
-Items require a string `value` so item-level and group-level `press` events are
-stable across polymorphic rendering, slot changes, and DOM reordering.
+Items require a unique string `value` so item-level and group-level `press`
+events, `activeValue`, roving tabindex, and `focusValue()` stay stable across
+polymorphic rendering, slot changes, and DOM reordering. Duplicate values throw
+`VIZE_UI_BUTTON_GROUP_VALUE_DUPLICATE` during registration or reactive value
+changes before more than one item can own the active tab stop.
