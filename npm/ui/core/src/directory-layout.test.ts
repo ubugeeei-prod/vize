@@ -9,7 +9,6 @@ const familySfcPattern =
   /^families\/[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9]+(?:-[a-z0-9]+)*\.vue$/u;
 
 const grandfatheredRootSfcFiles = [
-  "action-button.vue",
   "collapsible-content.vue",
   "collapsible-root.vue",
   "collapsible-trigger.vue",

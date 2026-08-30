@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import { defineComponent, h, type VNode } from "vue";
 
-import ActionButton from "./action-button.vue";
+import Button from "./families/actions/button/button.vue";
 import IdProvider from "./deterministic-id-provider.vue";
 import { useDeterministicId } from "./deterministic-id.ts";
 import ErrorSummary from "./error-summary.vue";
@@ -80,10 +80,10 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   ...typographyRuntimeFixtures,
   {
     name: "button",
-    sourceFile: "action-button.vue",
+    sourceFile: "families/actions/button/button.vue",
     render: () =>
       h(
-        ActionButton,
+        Button,
         { loading: true },
         {
           default: () => "Save changes",

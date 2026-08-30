@@ -150,6 +150,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["breadcrumb", "src/families/navigation/breadcrumb/"],
     ["blockquote", "src/families/typography/blockquote/"],
     ["block-ui", "src/families/feedback/block-ui/"],
+    ["button", "src/families/actions/button/"],
     ["button-group", "src/families/actions/button-group/"],
     ["callout", "src/families/feedback/callout/"],
     ["card", "src/families/layout/card/"],

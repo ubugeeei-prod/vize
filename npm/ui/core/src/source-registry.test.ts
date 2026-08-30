@@ -203,7 +203,7 @@ test("CLI emits deterministic machine-readable list, search, and info output", (
   assert.equal(info.schemaVersion, UI_SOURCE_REGISTRY_SCHEMA_VERSION);
   assert.equal(info.command, "info");
   assert.equal(info.family.name, "button");
-  assert.equal(info.family.source.entryFile, "src/button.ts");
+  assert.equal(info.family.source.entryFile, "src/families/actions/button/button.ts");
 });
 
 test("CLI jsonl output is one schema-versioned record per result", () => {

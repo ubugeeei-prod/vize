@@ -1,4 +1,1 @@
-export * from "./button-keyboard.ts";
-
-/** Accessible, unstyled button with polymorphic rendering. */
-export { default as Button } from "./action-button.vue";
+export * from "./families/actions/button/button.ts";

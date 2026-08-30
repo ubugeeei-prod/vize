@@ -119,7 +119,7 @@ export default defineConfig({
       grid: "src/families/layout/grid/grid.ts",
       "empty-state": "src/families/feedback/empty-state/empty-state.ts",
       collapsible: "src/collapsible.ts",
-      button: "src/button.ts",
+      button: "src/families/actions/button/button.ts",
       "button-group": "src/families/actions/button-group/button-group.ts",
       "copy-button": "src/families/actions/copy-button/copy-button.ts",
       "fullscreen-button": "src/families/actions/fullscreen-button/fullscreen-button.ts",

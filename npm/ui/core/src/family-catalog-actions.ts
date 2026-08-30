@@ -4,16 +4,22 @@ import {
   type UiFamilyCatalogEntry,
 } from "./family-catalog-types.ts";
 
+const buttonFamilyRoot = "src/families/actions/button/";
+
 export const actionFamilyCatalog = [
   {
     canonicalName: "button",
     title: "Button",
     packageSubpath: "./button",
-    entryFile: "src/button.ts",
-    sourceFiles: ["src/action-button.vue", "src/button.ts", "src/button-keyboard.ts"],
-    behaviorContract: "src/button.behavior.md",
-    tests: ["src/button.test.ts"],
-    rendererFixture: "action-button.vue",
+    entryFile: `${buttonFamilyRoot}button.ts`,
+    sourceFiles: [
+      `${buttonFamilyRoot}button.vue`,
+      `${buttonFamilyRoot}button.ts`,
+      `${buttonFamilyRoot}button-keyboard.ts`,
+    ],
+    behaviorContract: `${buttonFamilyRoot}button.behavior.md`,
+    tests: [`${buttonFamilyRoot}button.test.ts`],
+    rendererFixture: "families/actions/button/button.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {
       exportName: "Button",

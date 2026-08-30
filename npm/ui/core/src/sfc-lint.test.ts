@@ -19,7 +19,6 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
   assert.deepEqual(
     results.map((result) => result.filename),
     [
-      "src/action-button.vue",
       "src/collapsible-content.vue",
       "src/collapsible-root.vue",
       "src/collapsible-trigger.vue",
@@ -30,6 +29,7 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
       "src/families/accessibility/visually-hidden/visually-hidden.vue",
       "src/families/actions/button-group/button-group-item.vue",
       "src/families/actions/button-group/button-group.vue",
+      "src/families/actions/button/button.vue",
       "src/families/actions/copy-button/copy-button.vue",
       "src/families/actions/fullscreen-button/fullscreen-button.vue",
       "src/families/actions/print-button/print-button.vue",
@@ -144,7 +144,6 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
   assert.deepEqual(
     requests,
     [
-      "action-button.vue",
       "collapsible-content.vue",
       "collapsible-root.vue",
       "collapsible-trigger.vue",
@@ -155,6 +154,7 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
       "families/accessibility/visually-hidden/visually-hidden.vue",
       "families/actions/button-group/button-group-item.vue",
       "families/actions/button-group/button-group.vue",
+      "families/actions/button/button.vue",
       "families/actions/copy-button/copy-button.vue",
       "families/actions/fullscreen-button/fullscreen-button.vue",
       "families/actions/print-button/print-button.vue",

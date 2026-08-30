@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 
 import { test } from "vite-plus/test";
 
-import ActionButton from "./action-button.vue";
+import Button from "./button.vue";
 import { getButtonKeyboardAction } from "./button-keyboard.ts";
-import { mountInteraction } from "./testing/mount.ts";
+import { mountInteraction } from "../../../testing/mount.ts";
 
 test("matches native keyboard activation timing", () => {
   assert.equal(getButtonKeyboardAction("Enter", "keydown"), "activate");
@@ -15,7 +15,7 @@ test("matches native keyboard activation timing", () => {
 });
 
 test("renders a native button with an accessible name", () => {
-  const handle = mountInteraction(ActionButton, { slots: { default: "Save" } });
+  const handle = mountInteraction(Button, { slots: { default: "Save" } });
   const button = handle.getByRole("button", { name: "Save" });
 
   assert.equal(button.tagName, "BUTTON");
@@ -28,7 +28,7 @@ test("renders a native button with an accessible name", () => {
 });
 
 test("joins the tab order and focuses programmatically", async () => {
-  const handle = mountInteraction(ActionButton, { slots: { default: "Save" } });
+  const handle = mountInteraction(Button, { slots: { default: "Save" } });
   const button = handle.getByRole("button");
 
   assert.ok((await handle.tab()) === button, "Tab must move focus to the button");
@@ -41,7 +41,7 @@ test("joins the tab order and focuses programmatically", async () => {
 });
 
 test("pointer click fires exactly one press", async () => {
-  const handle = mountInteraction(ActionButton, { slots: { default: "Save" } });
+  const handle = mountInteraction(Button, { slots: { default: "Save" } });
 
   await handle.click(handle.getByRole("button"));
 
@@ -52,7 +52,7 @@ test("pointer click fires exactly one press", async () => {
 });
 
 test("Enter and Space each fire exactly one press on a native button", async () => {
-  const handle = mountInteraction(ActionButton, { slots: { default: "Save" } });
+  const handle = mountInteraction(Button, { slots: { default: "Save" } });
   const button = handle.getByRole("button");
   button.focus();
 
@@ -67,7 +67,7 @@ test("Enter and Space each fire exactly one press on a native button", async () 
 });
 
 test("Enter and Space activate a non-native button through its own handlers", async () => {
-  const handle = mountInteraction(ActionButton, {
+  const handle = mountInteraction(Button, {
     props: { as: "div" },
     slots: { default: "Save" },
   });
@@ -92,7 +92,7 @@ test("Enter and Space activate a non-native button through its own handlers", as
 });
 
 test("keyboard and pointer presses are indistinguishable MouseEvents in order", async () => {
-  const handle = mountInteraction(ActionButton, {
+  const handle = mountInteraction(Button, {
     slots: { default: "Save" },
     record: ["press"],
   });
@@ -113,7 +113,7 @@ test("keyboard and pointer presses are indistinguishable MouseEvents in order", 
 });
 
 test("disabled native button removes activation and keeps native semantics", async () => {
-  const handle = mountInteraction(ActionButton, {
+  const handle = mountInteraction(Button, {
     props: { disabled: true },
     slots: { default: "Save" },
   });
@@ -133,7 +133,7 @@ test("disabled native button removes activation and keeps native semantics", asy
 });
 
 test("disabled non-native button leaves the tab order and announces aria-disabled", async () => {
-  const handle = mountInteraction(ActionButton, {
+  const handle = mountInteraction(Button, {
     props: { as: "div", disabled: true },
     slots: { default: "Save" },
   });
@@ -151,7 +151,7 @@ test("disabled non-native button leaves the tab order and announces aria-disable
 });
 
 test("loading button announces busy, stays focusable, and suppresses press", async () => {
-  const handle = mountInteraction(ActionButton, {
+  const handle = mountInteraction(Button, {
     props: { loading: true },
     slots: { default: "Save" },
   });
@@ -173,7 +173,7 @@ test("loading button announces busy, stays focusable, and suppresses press", asy
 });
 
 test("exposes disabled, loading, and unavailable to the default slot", async () => {
-  const handle = mountInteraction(ActionButton, {
+  const handle = mountInteraction(Button, {
     slots: {
       default: (state: { disabled: boolean; loading: boolean; unavailable: boolean }) =>
         `disabled:${state.disabled} loading:${state.loading} unavailable:${state.unavailable}`,
