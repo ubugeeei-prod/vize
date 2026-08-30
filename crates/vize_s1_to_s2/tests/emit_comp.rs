@@ -180,20 +180,19 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn static_props_hoists_keep_their_queued_aliases() {
+fn component_static_props_hoist_after_inline_root_props() {
     assert_eq!(
         assembled(r#"<div id="root"><Foo id="x">hello</Foo></div>"#),
         pin("\
 const { resolveComponent: _resolveComponent, createVNode: _createVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue
 
-const _hoisted_1 = { id: \"root\" }
-const _hoisted_2 = { id: \"x\" }
+const _hoisted_1 = { id: \"x\" }
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_Foo = _resolveComponent(\"Foo\")
 
-  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, [
-    _createVNode(_component_Foo, _hoisted_2, {
+  return (_openBlock(), _createElementBlock(\"div\", { id: \"root\" }, [
+    _createVNode(_component_Foo, _hoisted_1, {
       default: _withCtx(() => [
         _createTextVNode(\"hello\")
       ]),
