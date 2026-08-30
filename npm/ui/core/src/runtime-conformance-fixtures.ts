@@ -9,13 +9,11 @@ import ErrorSummary from "./error-summary.vue";
 import LinkAnchor from "./link-anchor.vue";
 import { skipLinkRuntimeFixture } from "./families/navigation/skip-link/runtime-conformance-skip-link-fixtures.ts";
 import { collapsibleRuntimeFixtures } from "./runtime-conformance-collapsible-fixtures.ts";
-import { checkboxRuntimeFixture } from "./runtime-conformance-checkbox-fixtures.ts";
 import { calloutRuntimeFixture } from "./families/feedback/callout/runtime-conformance-callout-fixtures.ts";
 import { tableRuntimeFixtures } from "./families/data/table/runtime-conformance-table-fixtures.ts";
 import { layoutRuntimeFixtures } from "./runtime-conformance-layout-fixtures.ts";
-import { listboxRuntimeFixtures } from "./runtime-conformance-listbox-fixtures.ts";
 import { meterRuntimeFixture } from "./families/feedback/meter/runtime-conformance-meter-fixtures.ts";
-import { nativeSelectRuntimeFixture } from "./families/selection/native-select/runtime-conformance-native-select-fixtures.ts";
+import { selectionRuntimeFixtures } from "./families/selection/runtime-conformance-selection-fixtures.ts";
 import { paginationRuntimeFixtures } from "./families/navigation/pagination/runtime-conformance-pagination-fixtures.ts";
 import PrimitiveElement from "./primitive-element.vue";
 import { alertRuntimeFixture } from "./families/feedback/alert/runtime-conformance-alert-fixtures.ts";
@@ -34,18 +32,15 @@ import { toolbarRuntimeFixtures } from "./families/actions/toolbar/runtime-confo
 import { fieldRuntimeFixtures } from "./families/form/field/runtime-conformance-field-fixtures.ts";
 import { progressBarRuntimeFixture } from "./families/feedback/progress-bar/runtime-conformance-progress-bar-fixtures.ts";
 import { progressRuntimeFixture } from "./families/feedback/progress/runtime-conformance-progress-fixtures.ts";
-import { radioGroupRuntimeFixtures } from "./runtime-conformance-radio-group-fixtures.ts";
 import { ratingRuntimeFixture } from "./families/form/rating/runtime-conformance-rating-fixtures.ts";
 import { sliderRuntimeFixture } from "./families/form/slider/runtime-conformance-slider-fixtures.ts";
 import { spinnerRuntimeFixture } from "./families/feedback/spinner/runtime-conformance-spinner-fixtures.ts";
 import { statusLightRuntimeFixture } from "./families/feedback/status-light/runtime-conformance-status-light-fixtures.ts";
 import { stepperRuntimeFixtures } from "./families/navigation/stepper/runtime-conformance-stepper-fixtures.ts";
-import { switchRuntimeFixture } from "./runtime-conformance-switch-fixtures.ts";
 import { tabsRuntimeFixtures } from "./families/navigation/tabs/runtime-conformance-tabs-fixtures.ts";
 import TextInput from "./families/form/input/text-input.vue";
 import SearchField from "./families/form/search-field/search-field.vue";
 import TextareaControl from "./families/form/textarea/textarea-control.vue";
-import { toggleRuntimeFixtures } from "./runtime-conformance-toggle-fixtures.ts";
 import { typographyRuntimeFixtures } from "./runtime-conformance-typography-fixtures.ts";
 import VisuallyHidden from "./visually-hidden.vue";
 
@@ -114,7 +109,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   printButtonRuntimeFixture,
   shareButtonRuntimeFixture,
   ...toolbarRuntimeFixtures,
-  checkboxRuntimeFixture,
+  ...selectionRuntimeFixtures,
   {
     name: "deterministic-id-provider",
     sourceFile: "deterministic-id-provider.vue",
@@ -195,9 +190,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
     },
   },
   skipLinkRuntimeFixture,
-  ...listboxRuntimeFixtures,
   meterRuntimeFixture,
-  nativeSelectRuntimeFixture,
   ...paginationRuntimeFixtures,
   spinnerRuntimeFixture,
   statusLightRuntimeFixture,
@@ -286,7 +279,6 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       assert.equal(textarea.getAttribute("data-empty"), "false");
     },
   },
-  ...radioGroupRuntimeFixtures,
   ratingRuntimeFixture,
   sliderRuntimeFixture,
   {
@@ -324,8 +316,6 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       assert.equal(clear.id, "query-clear");
     },
   },
-  switchRuntimeFixture,
-  ...toggleRuntimeFixtures,
   progressRuntimeFixture,
   progressBarRuntimeFixture,
   {

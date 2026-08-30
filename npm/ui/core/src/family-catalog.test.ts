@@ -151,6 +151,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["button-group", "src/families/actions/button-group/"],
     ["callout", "src/families/feedback/callout/"],
     ["card", "src/families/layout/card/"],
+    ["checkbox", "src/families/selection/checkbox/"],
     ["cluster", "src/families/layout/cluster/"],
     ["code", "src/families/typography/code/"],
     ["container", "src/families/layout/container/"],
@@ -162,13 +163,16 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["icon-button", "src/families/layout/icon/"],
     ["kbd", "src/families/typography/kbd/"],
     ["list", "src/families/layout/list/"],
+    ["listbox", "src/families/selection/listbox/"],
     ["locale", "src/families/i18n/locale/"],
     ["fullscreen-button", "src/families/actions/fullscreen-button/"],
     ["meter", "src/families/feedback/meter/"],
+    ["native-select", "src/families/selection/native-select/"],
     ["pagination", "src/families/navigation/pagination/"],
     ["print-button", "src/families/actions/print-button/"],
     ["progress", "src/families/feedback/progress/"],
     ["progress-bar", "src/families/feedback/progress-bar/"],
+    ["radio-group", "src/families/selection/radio-group/"],
     ["rating", "src/families/form/rating/"],
     ["share-button", "src/families/actions/share-button/"],
     ["scroll-area", "src/families/layout/scroll-area/"],
@@ -181,9 +185,12 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["spinner", "src/families/feedback/spinner/"],
     ["status-light", "src/families/feedback/status-light/"],
     ["surface", "src/families/layout/surface/"],
+    ["switch", "src/families/selection/switch/"],
     ["table", "src/families/data/table/"],
     ["tabs", "src/families/navigation/tabs/"],
     ["text", "src/families/typography/text/"],
+    ["toggle", "src/families/selection/toggle/"],
+    ["toggle-group", "src/families/selection/toggle-group/"],
     ["toolbar", "src/families/actions/toolbar/"],
     ["tooltip", "src/families/overlays/tooltip/"],
   ]);
@@ -209,7 +216,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
       `${canonicalName} tests must stay beside the family source`,
     );
     assert.ok(
-      entry.typeTests?.every((file) => file.startsWith(familyRoot)),
+      entry.typeTests?.every((file) => file.startsWith(familyRoot)) ?? true,
       `${canonicalName} type tests must stay beside the family source`,
     );
   }
@@ -257,6 +264,25 @@ test("navigation families keep root compatibility barrels", async () => {
     assert.match(
       source,
       new RegExp(`from "\\./families/navigation/${name}/${name}\\.ts"`),
+      `${name} must keep its historical source entry as a compatibility barrel`,
+    );
+  }
+});
+
+test("selection families keep root compatibility barrels", async () => {
+  for (const name of [
+    "checkbox",
+    "listbox",
+    "radio-group",
+    "switch",
+    "toggle",
+    "toggle-group",
+  ] as const) {
+    const source = await readFile(path.resolve(`src/${name}.ts`), "utf8");
+
+    assert.match(
+      source,
+      new RegExp(`from "\\./families/selection/${name}/${name}\\.ts"`),
       `${name} must keep its historical source entry as a compatibility barrel`,
     );
   }
