@@ -169,7 +169,7 @@ fn emit_fallback_units(
         }
         Op::Element(_) | Op::Component(_) | Op::If(_) | Op::For(_) | Op::Slot(_) => {
             start_fallback_item(cx, compact, first);
-            emit_array_child(cx, op, false)
+            emit_array_child(cx, op, false, false)
         }
     }
 }

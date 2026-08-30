@@ -38,6 +38,10 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<div v-if="ok"><svg><foreignObject><div>label</div></foreignObject><path d="M0 0h1v1z"/></svg></div>"#,
     ),
     (
+        "svg_foreign_object_dynamic_html_before_static_svg_sibling",
+        r#"<svg><foreignObject><div v-if="ok"><span></span></div></foreignObject><rect></rect></svg>"#,
+    ),
+    (
         "v_show_static_svg_child",
         r#"<div v-show="ok"><svg><path d="M0 0h1v1z"/></svg></div>"#,
     ),

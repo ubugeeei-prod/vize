@@ -10,6 +10,7 @@ pub(super) fn emit_children(
     children: &Region<'_>,
     force_array: bool,
     hoist_static_children: bool,
+    cache_static_children: bool,
 ) -> Result<(), EmitError> {
     let ops = &children.ops;
     if !force_array
@@ -42,7 +43,7 @@ pub(super) fn emit_children(
         }
         cx.buf.newline();
         first = false;
-        super::vnode::emit_array_child(cx, &ops[i], hoist_static_children)?;
+        super::vnode::emit_array_child(cx, &ops[i], hoist_static_children, cache_static_children)?;
         i += 1;
     }
     cx.buf.deindent();

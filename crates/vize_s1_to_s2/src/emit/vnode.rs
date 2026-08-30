@@ -153,15 +153,22 @@ pub(super) fn emit_call(
     cx.buf.push(element.tag);
     cx.buf.push("\"");
     let has_children = !element.children.ops.is_empty();
-    let hoist_static_children = allow_hoist
-        && (if_key.is_some()
-            || directive::has_runtime(&element.bindings)
-            || super::model::first_runtime_model(element).is_some());
+    let has_runtime_directive = directive::has_runtime(&element.bindings);
+    let has_runtime_model = super::model::first_runtime_model(element).is_some();
+    let hoist_static_children =
+        allow_hoist && (if_key.is_some() || has_runtime_directive || has_runtime_model);
     let has_memo = super::memo::has(&element.bindings);
     let memo_block = block && has_memo && !(if_key.is_some() && !for_item);
     let force_array_children = once
         || memo_block
         || (directive::has_custom(&element.bindings) && allow_hoist && block && if_key.is_none());
+    let cache_static_children = allow_hoist
+        && cx.static_cache
+        && !hoist_static_children
+        && !force_array_children
+        && !for_item
+        && !cx.in_v_for
+        && cx.slot_param_depth == 0;
     let has_binds = has_prop_bindings(&element.bindings);
     let hoisted_props =
         if allow_hoist && if_key.is_none() && super::props_static::root_should_hoist(cx, id) {
@@ -226,6 +233,7 @@ pub(super) fn emit_call(
                 &element.children,
                 force_array_children,
                 hoist_static_children,
+                cache_static_children,
             )
         })?;
     } else if emit_flag {
@@ -274,12 +282,19 @@ pub(super) fn emit_array_child(
     cx: &mut EmitCx<'_>,
     op: &Op<'_>,
     hoist_static_children: bool,
+    cache_static_children: bool,
 ) -> Result<(), EmitError> {
     if hoist_static_children
         && let Op::Element(element) = op
         && super::hoist::is_hoistable(element)
     {
         return super::hoist::emit_hoisted_element(cx, element);
+    }
+    if cache_static_children
+        && let Op::Element(element) = op
+        && super::hoist::is_hoistable(element)
+    {
+        return super::hoist::emit_cached_element(cx, element);
     }
     let id = cx.walk.mint();
     ensure_sufficient_stack(|| match op {

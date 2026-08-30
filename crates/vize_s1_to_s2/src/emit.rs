@@ -85,6 +85,7 @@ mod props_static;
 mod props_value;
 mod sfc_style;
 mod slots;
+mod static_cache;
 mod style;
 mod tpl;
 mod vfor;
@@ -212,6 +213,9 @@ struct EmitCx<'facts> {
     /// Nested components inside a scoped `withCtx` treat forwarded
     /// outlets as `_: 2` + `DYNAMIC_SLOTS` (Vue `has_slot_params`).
     slot_param_depth: u32,
+    /// The shipped lane caches static child vnodes only after transform
+    /// produced at least one root hoist.
+    static_cache: bool,
     /// Current native parent namespace. DOM runtime namespace inference
     /// depends on SVG/MathML boundaries staying block-local while same-namespace
     /// descendants remain inline VNodes.
@@ -276,6 +280,7 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
     {
         return Err(EmitError::Diagnostics);
     }
+    let static_cache = static_cache::enabled(&lowered.root, facts);
     let mut cx = EmitCx {
         buf: Buf::new(),
         facts,
@@ -290,6 +295,7 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
         in_v_for: false,
         skip_memo: false,
         slot_param_depth: 0,
+        static_cache,
         parent_ns: Namespace::Html,
     };
     let filters = &facts.legacy.filters;

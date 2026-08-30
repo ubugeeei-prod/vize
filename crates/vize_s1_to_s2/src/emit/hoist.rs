@@ -6,7 +6,7 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_s0::String;
+use vize_s0::{String, ToCompactString};
 use vize_s2::op::{Attribute, ElementOp, Op, Region};
 
 use super::EmitCx;
@@ -21,6 +21,30 @@ pub(super) fn emit_hoisted_element(
     cx.walk.skip(element.bindings.len());
     let alias = hoist_static_element(cx, element);
     cx.buf.push(alias.as_str());
+    Ok(())
+}
+
+pub(super) fn emit_cached_element(
+    cx: &mut EmitCx<'_>,
+    element: &ElementOp<'_>,
+) -> Result<(), super::EmitError> {
+    let _id = cx.walk.mint();
+    cx.walk.skip(element.bindings.len());
+    walk_hoisted(cx, element);
+    cx.buf.use_create_element_vnode();
+    if hoist_needs_create_text(element) {
+        cx.buf.use_create_text();
+    }
+    let cache_index = cx.once_cache_index;
+    cx.once_cache_index += 1;
+    let cache_index = cache_index.to_compact_string();
+    cx.buf.push("_cache[");
+    cx.buf.push(cache_index.as_str());
+    cx.buf.push("] || (_cache[");
+    cx.buf.push(cache_index.as_str());
+    cx.buf.push("] = ");
+    cx.buf.push(cached_element_rhs(element, true).as_str());
+    cx.buf.push(")");
     Ok(())
 }
 
@@ -104,6 +128,33 @@ fn hoist_element_rhs(element: &ElementOp<'_>, pure: bool) -> String {
     out
 }
 
+fn cached_element_rhs(element: &ElementOp<'_>, cached: bool) -> String {
+    let mut out = String::default();
+    out.push_str(Buf::create_element_vnode_alias());
+    out.push('(');
+    out.push('"');
+    out.push_str(element.tag);
+    out.push('"');
+    out.push_str(", ");
+    if element.attributes.is_empty() {
+        out.push_str("null");
+    } else {
+        out.push_str(compact_props_object(element.attributes.iter()).as_str());
+    }
+    out.push_str(", ");
+    let kids = meaningful(&element.children);
+    if kids.is_empty() {
+        out.push_str("null");
+    } else {
+        append_cached_kids(&mut out, &kids);
+    }
+    if cached {
+        out.push_str(", -1 /* CACHED */");
+    }
+    out.push(')');
+    out
+}
+
 fn append_hoist_kids(out: &mut String, kids: &[&Op<'_>]) {
     if kids.iter().all(|op| matches!(op, Op::Text(_))) {
         out.push('"');
@@ -131,6 +182,40 @@ fn append_hoist_kids(out: &mut String, kids: &[&Op<'_>]) {
             }
             Op::Element(element) => {
                 out.push_str(hoist_element_rhs(element, false).as_str());
+            }
+            _ => {}
+        }
+    }
+    out.push(']');
+}
+
+fn append_cached_kids(out: &mut String, kids: &[&Op<'_>]) {
+    if kids.iter().all(|op| matches!(op, Op::Text(_))) {
+        out.push('"');
+        for op in kids.iter() {
+            if let Op::Text(text) = op {
+                out.push_str(escape_js_string(text.content).as_str());
+            }
+        }
+        out.push('"');
+        return;
+    }
+    out.push('[');
+    for (i, op) in kids.iter().enumerate() {
+        if i > 0 {
+            out.push_str(", ");
+        }
+        match op {
+            Op::Text(text) => {
+                out.push_str(Buf::create_text_alias());
+                out.push('(');
+                out.push('"');
+                out.push_str(escape_js_string(text.content).as_str());
+                out.push('"');
+                out.push(')');
+            }
+            Op::Element(element) => {
+                out.push_str(cached_element_rhs(element, false).as_str());
             }
             _ => {}
         }
