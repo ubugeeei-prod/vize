@@ -199,7 +199,7 @@ export default defineConfig({
       shortcut: "src/shortcut.ts",
       sortable: "src/sortable.ts",
       "spatial-navigation": "src/spatial-navigation.ts",
-      transition: "src/transition.ts",
+      transition: "src/families/overlays/transition/transition.ts",
       typeahead: "src/typeahead.ts",
       virtualizer: "src/virtualizer.ts",
       primitive: "src/primitive.ts",

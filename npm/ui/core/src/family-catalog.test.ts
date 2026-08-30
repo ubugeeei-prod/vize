@@ -213,6 +213,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["toggle-group", "src/families/selection/toggle-group/"],
     ["toolbar", "src/families/actions/toolbar/"],
     ["tooltip", "src/families/overlays/tooltip/"],
+    ["transition", "src/families/overlays/transition/"],
     ["visually-hidden", "src/families/accessibility/visually-hidden/"],
   ]);
 
@@ -220,26 +221,11 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     const entry = stableEntries.find((candidate) => candidate.canonicalName === canonicalName);
 
     assert.ok(entry, `${canonicalName} must stay catalogued`);
-    assert.ok(
-      entry.entryFile.startsWith(familyRoot),
-      `${canonicalName} entry must stay in its family folder`,
-    );
-    assert.ok(
-      entry.behaviorContract.startsWith(familyRoot),
-      `${canonicalName} behavior contract must stay in its family folder`,
-    );
-    assert.ok(
-      entry.sourceFiles.every((file) => file.startsWith(familyRoot)),
-      `${canonicalName} source files must stay beside the family source`,
-    );
-    assert.ok(
-      entry.tests.every((file) => file.startsWith(familyRoot)),
-      `${canonicalName} tests must stay beside the family source`,
-    );
-    assert.ok(
-      entry.typeTests?.every((file) => file.startsWith(familyRoot)) ?? true,
-      `${canonicalName} type tests must stay beside the family source`,
-    );
+    assertFamilyPaths(canonicalName, familyRoot, "entry", [entry.entryFile]);
+    assertFamilyPaths(canonicalName, familyRoot, "behavior contract", [entry.behaviorContract]);
+    assertFamilyPaths(canonicalName, familyRoot, "source files", entry.sourceFiles);
+    assertFamilyPaths(canonicalName, familyRoot, "tests", entry.tests);
+    assertFamilyPaths(canonicalName, familyRoot, "type tests", entry.typeTests ?? []);
   }
 });
 
@@ -292,7 +278,13 @@ test("selection families keep root compatibility barrels", async () => {
 });
 
 test("overlay infrastructure families keep root compatibility barrels", async () => {
-  await assertFamilyBarrels("overlays", ["alert-dialog", "portal", "positioner", "presence"]);
+  await assertFamilyBarrels("overlays", [
+    "alert-dialog",
+    "portal",
+    "positioner",
+    "presence",
+    "transition",
+  ]);
 });
 
 test("interaction families keep root compatibility barrels", async () => {
@@ -310,18 +302,8 @@ test("progress family keeps root compatibility barrel", async () => {
 
   assert.match(
     source,
-    /from "\.\/families\/feedback\/progress\/progress-state\.ts"/,
-    "progress must keep its historical state export through the root barrel",
-  );
-  assert.match(
-    source,
-    /from "\.\/families\/feedback\/progress\/progress-types\.ts"/,
-    "progress must keep its historical type export through the root barrel",
-  );
-  assert.match(
-    source,
-    /from "\.\/families\/feedback\/progress\/progress\.vue"/,
-    "progress must keep its historical component export through the root barrel",
+    /(?=.*from "\.\/families\/feedback\/progress\/progress-state\.ts")(?=.*from "\.\/families\/feedback\/progress\/progress-types\.ts")(?=.*from "\.\/families\/feedback\/progress\/progress\.vue")/s,
+    "progress must keep its historical state, type, and component exports",
   );
 });
 
@@ -347,4 +329,16 @@ async function assertFamilyBarrels(area: string, names: readonly string[]): Prom
       `${name} must keep its historical source entry as a compatibility barrel`,
     );
   }
+}
+
+function assertFamilyPaths(
+  canonicalName: string,
+  familyRoot: string,
+  label: string,
+  files: readonly string[],
+): void {
+  assert.ok(
+    files.every((file) => file.startsWith(familyRoot)),
+    `${canonicalName} ${label} must stay beside the family source`,
+  );
 }

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "vite-plus/test";
 import { effectScope, nextTick, ref } from "vue";
 
-import { mountInteraction } from "./testing/mount.ts";
+import { mountInteraction } from "../../../testing/mount.ts";
 import { createTransition, useTransition } from "./transition.ts";
 import Transition from "./transition.vue";
 

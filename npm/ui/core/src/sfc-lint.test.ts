@@ -122,6 +122,7 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
       "src/families/overlays/tooltip/tooltip-content.vue",
       "src/families/overlays/tooltip/tooltip-root.vue",
       "src/families/overlays/tooltip/tooltip-trigger.vue",
+      "src/families/overlays/transition/transition.vue",
       "src/families/selection/checkbox/checkbox-control.vue",
       "src/families/selection/listbox/listbox-item.vue",
       "src/families/selection/listbox/listbox.vue",
@@ -138,7 +139,6 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
       "src/families/typography/kbd/kbd.vue",
       "src/families/typography/text/text.vue",
       "src/primitive-element.vue",
-      "src/transition.vue",
     ],
   );
   assert.deepEqual(
@@ -247,6 +247,7 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
       "families/overlays/tooltip/tooltip-content.vue",
       "families/overlays/tooltip/tooltip-root.vue",
       "families/overlays/tooltip/tooltip-trigger.vue",
+      "families/overlays/transition/transition.vue",
       "families/selection/checkbox/checkbox-control.vue",
       "families/selection/listbox/listbox-item.vue",
       "families/selection/listbox/listbox.vue",
@@ -263,7 +264,6 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
       "families/typography/kbd/kbd.vue",
       "families/typography/text/text.vue",
       "primitive-element.vue",
-      "transition.vue",
     ].map((basename) => ({
       filename: path.resolve("src", basename),
       preset: "opinionated" as const,

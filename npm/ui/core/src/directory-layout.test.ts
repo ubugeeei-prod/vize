@@ -7,6 +7,7 @@ import { test } from "vite-plus/test";
 import { basicFamilyCatalog } from "./family-catalog-basics.ts";
 import { foundationFamilyCatalog } from "./family-catalog-foundations.ts";
 import { focusFamilyCatalog } from "./family-catalog-focus.ts";
+import { overlayFamilyCatalog } from "./family-catalog-overlays.ts";
 
 const sourceRoot = path.resolve("src");
 const familySfcPattern =
@@ -21,11 +22,7 @@ const foundationCompatibilityBarrels = [
   ["id.ts", "./families/foundations/id/id.ts"],
 ] as const;
 
-const grandfatheredRootSfcFiles = [
-  "error-summary.vue",
-  "primitive-element.vue",
-  "transition.vue",
-] as const;
+const grandfatheredRootSfcFiles = ["error-summary.vue", "primitive-element.vue"] as const;
 
 test("new public SFCs live in family directories", () => {
   assert.deepEqual(rootSfcFiles(), grandfatheredRootSfcFiles);
@@ -111,6 +108,27 @@ test("rehomed navigation link family is cataloged from a family directory", () =
   assert.deepEqual(family.tests, [`${familyRoot}link.test.ts`]);
   assert.deepEqual(family.typeTests, [`${familyRoot}link.types.test-d.ts`]);
   assert.equal(family.rendererFixture, "families/navigation/link/link-anchor.vue");
+});
+
+test("rehomed overlay transition family is cataloged from a family directory", () => {
+  const family = overlayFamilyCatalog.find((entry) => entry.canonicalName === "transition");
+  assert.ok(family);
+
+  const familyRoot = "src/families/overlays/transition/";
+  assert.equal(family.entryFile, `${familyRoot}transition.ts`);
+  assert.deepEqual(family.sourceFiles, [
+    `${familyRoot}transition.vue`,
+    `${familyRoot}transition.ts`,
+    `${familyRoot}transition-runtime.ts`,
+    `${familyRoot}transition-types.ts`,
+  ]);
+  assert.equal(family.behaviorContract, `${familyRoot}transition.behavior.md`);
+  assert.deepEqual(family.tests, [
+    `${familyRoot}transition.test.ts`,
+    `${familyRoot}transition-ssr.test.ts`,
+  ]);
+  assert.deepEqual(family.typeTests, [`${familyRoot}transition.types.test-d.ts`]);
+  assert.equal(family.rendererFixture, "families/overlays/transition/transition.vue");
 });
 
 test("rehomed id family is cataloged from a family directory", () => {

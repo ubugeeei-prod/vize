@@ -2,7 +2,7 @@
 import { computed, onMounted, onUpdated, toRef, useTemplateRef } from "vue";
 
 import { useTransition } from "./transition-runtime.ts";
-import type { PresenceStatus } from "./families/overlays/presence/presence-types.ts";
+import type { PresenceStatus } from "../presence/presence-types.ts";
 
 const {
   present = false,

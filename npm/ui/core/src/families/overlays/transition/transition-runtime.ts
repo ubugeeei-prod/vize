@@ -1,6 +1,6 @@
 import { getCurrentScope, onScopeDispose, toValue, watch } from "vue";
 
-import { createPresence } from "./families/overlays/presence/presence-runtime.ts";
+import { createPresence } from "../presence/presence-runtime.ts";
 import type { TransitionController, TransitionOptions } from "./transition-types.ts";
 
 const invalidOptionDiagnostic = "VIZE_UI_TRANSITION_OPTION";

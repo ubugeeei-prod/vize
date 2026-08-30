@@ -15,7 +15,7 @@ import {
   PopoverTrigger,
 } from "./families/overlays/popover/popover.ts";
 import Presence from "./families/overlays/presence/presence.vue";
-import Transition from "./transition.vue";
+import Transition from "./families/overlays/transition/transition.vue";
 import {
   TooltipContent,
   TooltipRoot,
@@ -283,7 +283,7 @@ export const overlayRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "transition",
-    sourceFile: "transition.vue",
+    sourceFile: "families/overlays/transition/transition.vue",
     render: () =>
       h(
         Transition,

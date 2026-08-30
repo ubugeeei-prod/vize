@@ -10,6 +10,7 @@ import { popoverFamilyCatalog } from "./family-catalog-popover.ts";
 const portalFamilyRoot = "src/families/overlays/portal/";
 const positionerFamilyRoot = "src/families/overlays/positioner/";
 const presenceFamilyRoot = "src/families/overlays/presence/";
+const transitionFamilyRoot = "src/families/overlays/transition/";
 
 export const overlayFamilyCatalog = [
   ...dialogFamilyCatalog,
@@ -201,17 +202,20 @@ export const overlayFamilyCatalog = [
     canonicalName: "transition",
     title: "Transition",
     packageSubpath: "./transition",
-    entryFile: "src/transition.ts",
+    entryFile: `${transitionFamilyRoot}transition.ts`,
     sourceFiles: [
-      "src/transition.vue",
-      "src/transition.ts",
-      "src/transition-runtime.ts",
-      "src/transition-types.ts",
+      `${transitionFamilyRoot}transition.vue`,
+      `${transitionFamilyRoot}transition.ts`,
+      `${transitionFamilyRoot}transition-runtime.ts`,
+      `${transitionFamilyRoot}transition-types.ts`,
     ],
-    behaviorContract: "src/transition.behavior.md",
-    tests: ["src/transition.test.ts", "src/transition-ssr.test.ts"],
-    typeTests: ["src/transition.types.test-d.ts"],
-    rendererFixture: "transition.vue",
+    behaviorContract: `${transitionFamilyRoot}transition.behavior.md`,
+    tests: [
+      `${transitionFamilyRoot}transition.test.ts`,
+      `${transitionFamilyRoot}transition-ssr.test.ts`,
+    ],
+    typeTests: [`${transitionFamilyRoot}transition.types.test-d.ts`],
+    rendererFixture: "families/overlays/transition/transition.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {
       exportName: "createTransition",
