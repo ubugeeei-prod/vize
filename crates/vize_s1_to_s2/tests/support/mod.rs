@@ -5,6 +5,8 @@
 // Each test binary uses the subset of these helpers it needs.
 #![allow(dead_code)]
 
+mod authored;
+
 use vize_davinci::diagnostic::Diagnostic;
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_davinci::side_table::SideTable;
@@ -15,6 +17,8 @@ use vize_s2::folio::DisegnoFolio;
 use vize_s2::provenance::ProvenanceRecord;
 use vize_s2::scope::ScopeFacts;
 use vize_s2::verify::{Rigor, Violation, verify, verify_table};
+
+pub use authored::assert_authored_artifact;
 
 /// The owned snapshot of one lowering, for exact-equality pins.
 #[derive(Debug)]
@@ -115,6 +119,7 @@ pub fn assert_transformed_sound(source: &str, context: &str) {
 /// [`assert_transformed_sound`] under an explicit Vue dialect.
 pub fn assert_transformed_sound_caps(source: &str, caps: LegacyCaps, context: &str) {
     with_transformed_caps(source, caps, |lowered, folio, facts, _budget| {
+        assert_authored_artifact(source, lowered);
         assert_eq!(
             u64::from(lowered.op_count),
             folio.op_count(),
@@ -193,6 +198,7 @@ pub fn assert_sound(source: &str, context: &str) {
 /// [`assert_sound`] under an explicit Vue dialect.
 pub fn assert_sound_caps(source: &str, caps: LegacyCaps, context: &str) {
     with_lowered_caps(source, caps, |lowered, folio| {
+        assert_authored_artifact(source, lowered);
         assert_eq!(
             u64::from(lowered.op_count),
             folio.op_count(),

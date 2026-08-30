@@ -1,9 +1,9 @@
 //! P2-10 acceptance: a committed `v-bind()`-bearing SFC whose S2 folio
 //! pins the style ops beside the template tree.
 
-mod authored;
+mod support;
 
-use authored::assert_authored_artifact;
+use support::assert_authored_artifact;
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_s0::{Allocator, SourceBlock, SourceRoot};
 use vize_s1::parse;
@@ -12,7 +12,7 @@ use vize_s2::folio::DisegnoFolio;
 use vize_s2::op::Op;
 use vize_s2::verify::{Rigor, Violation, verify};
 
-const SOURCE: &str = include_str!("../fixtures/css_bind.vue");
+const SOURCE: &str = include_str!("fixtures/css_bind.vue");
 
 const CANONICAL: &str = "\
 [disegno]

@@ -3,7 +3,7 @@
 
 mod support;
 
-use support::Artifact;
+use support::{Artifact, assert_authored_artifact};
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
@@ -43,6 +43,7 @@ fn source_block_artifact(source: &str, block_source: &str, block_start: usize) -
     let lowered = vize_s1_to_s2::lower_source_block(&allocator, &tree, &errors, block);
     let folio = DisegnoFolio::of(&lowered.root.ops);
 
+    assert_authored_artifact(source, &lowered);
     assert_eq!(u64::from(lowered.op_count), folio.op_count());
     assert_eq!(verify(&folio, Rigor::Canonical), Vec::<Violation>::new());
     assert_eq!(

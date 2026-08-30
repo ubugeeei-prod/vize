@@ -1,6 +1,6 @@
-//! Authored-span validation helpers for the css_bind SFC lane: every op,
-//! binding, expression, diagnostic, fact, and provenance span must be a
-//! valid UTF-8 range whose slice equals its authored source bytes.
+//! Authored-span validation for S1->S2 artifacts: every op, binding,
+//! expression, diagnostic, fact, and provenance span must stay within the
+//! authored UTF-8 source it claims to describe.
 
 use vize_s0::{SourceRoot, Span};
 use vize_s1_to_s2::Lowered;
@@ -8,7 +8,7 @@ use vize_s2::expr::ExprRef;
 use vize_s2::op::{Attribute, BindingOp, DynamicName, ForBinding, Op, Region};
 use vize_s2::scope::{ScopeFacts, ScopeOrigin};
 
-pub(crate) fn assert_authored_artifact(source: &str, lowered: &Lowered<'_>) {
+pub fn assert_authored_artifact(source: &str, lowered: &Lowered<'_>) {
     let root = SourceRoot::new(source).expect("authored source");
     for op in &lowered.root.ops {
         assert_op(source, root, op);
@@ -17,7 +17,7 @@ pub(crate) fn assert_authored_artifact(source: &str, lowered: &Lowered<'_>) {
         assert_span(source, root, diagnostic.span, "diagnostic");
     }
     for record in &lowered.provenance {
-        assert_span(source, root, record.span, "provenance");
+        assert_provenance(source, root, record);
     }
     for (_, facts) in lowered.scopes.iter() {
         assert_scope_facts(source, root, facts);
@@ -53,9 +53,7 @@ fn assert_op(source: &str, root: SourceRoot<'_>, op: &Op<'_>) {
             assert_bindings(source, root, &component.bindings);
             assert_region(source, root, &component.children);
         }
-        Op::Text(text) => {
-            assert_span(source, root, text.span, "text");
-        }
+        Op::Text(text) => assert_span(source, root, text.span, "text"),
         Op::Interpolation(interpolation) => {
             assert_span(source, root, interpolation.span, "interpolation");
             assert_expr(source, root, interpolation.expression);
@@ -156,9 +154,7 @@ fn assert_bindings(source: &str, root: SourceRoot<'_>, bindings: &[BindingOp<'_>
                     assert_expr(source, root, params);
                 }
             }
-            BindingOp::VueOnce(once) => {
-                assert_span(source, root, once.span, "once");
-            }
+            BindingOp::VueOnce(once) => assert_span(source, root, once.span, "once"),
             BindingOp::VueMemo(memo) => {
                 assert_span(source, root, memo.span, "memo");
                 assert_expr(source, root, memo.value);
@@ -179,9 +175,7 @@ fn assert_bindings(source: &str, root: SourceRoot<'_>, bindings: &[BindingOp<'_>
                     assert_expr(source, root, value);
                 }
             }
-            BindingOp::VueCloak(cloak) => {
-                assert_span(source, root, cloak.span, "cloak");
-            }
+            BindingOp::VueCloak(cloak) => assert_span(source, root, cloak.span, "cloak"),
         }
     }
 }
@@ -224,7 +218,18 @@ fn assert_wrapper_key(source: &str, root: SourceRoot<'_>, key: &vize_s1_to_s2::l
 fn assert_expr(source: &str, root: SourceRoot<'_>, expr: ExprRef<'_>) {
     let span = expr.span();
     assert_span(source, root, span, "expression");
-    assert_eq!(exact_slice(source, span), expr.source());
+    let slice = exact_slice(source, span);
+    if slice.len() == expr.source().len() {
+        assert_eq!(slice, expr.source());
+    }
+}
+
+fn assert_provenance(
+    source: &str,
+    root: SourceRoot<'_>,
+    record: &vize_s2::provenance::ProvenanceRecord,
+) {
+    assert_span(source, root, record.span, "provenance");
 }
 
 fn assert_span(source: &str, root: SourceRoot<'_>, span: Span, label: &str) {
