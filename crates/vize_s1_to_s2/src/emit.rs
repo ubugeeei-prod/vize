@@ -139,7 +139,7 @@ fn prefer_transform_helpers(buf: &mut Buf, region: &Region<'_>) {
                 buf.prefer(Helper::CreateBlock);
                 buf.prefer(Helper::CreateElementBlock);
                 buf.prefer(Helper::Fragment);
-                buf.prefer(Helper::CreateComment);
+                // Let `emit_if` mark CreateComment where slot text can precede it.
                 for branch in if_op.branches.iter() {
                     prefer_transform_helpers(buf, &branch.region);
                 }
