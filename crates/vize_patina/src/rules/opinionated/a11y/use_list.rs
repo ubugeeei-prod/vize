@@ -25,8 +25,11 @@
 //! </template>
 //! ```
 
+use std::cell::Cell;
+
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupDocument, MarkupElement, MarkupNode, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType, TemplateChildNode};
 
@@ -58,9 +61,108 @@ const LIST_CONTEXT_TAGS: &[&str] = &["ul", "ol", "li", "pre", "code", "script", 
 #[derive(Default)]
 pub struct UseList;
 
+impl UseList {
+    fn is_list_context_tag(tag: &str) -> bool {
+        LIST_CONTEXT_TAGS.contains(&tag)
+    }
+
+    fn is_list_context_element(element: &MarkupElement<'_>) -> bool {
+        !element.is_component()
+            && LIST_CONTEXT_TAGS
+                .iter()
+                .any(|tag| element.is_unqualified_tag_exact(tag))
+    }
+
+    fn check_markup_element(
+        ctx: &mut LintContext<'_>,
+        element: &MarkupElement<'_>,
+        has_list_context_ancestor: bool,
+    ) {
+        if element.is_component() {
+            return;
+        }
+
+        // Skip if already in list context
+        if Self::is_list_context_element(element) {
+            return;
+        }
+
+        // Skip if ancestor is list context
+        if has_list_context_ancestor {
+            return;
+        }
+
+        // Check first text child for bullet prefix
+        let mut checking_first_meaningful_child = true;
+        element.walk_children(&mut |child| {
+            if !checking_first_meaningful_child {
+                return;
+            }
+
+            match child {
+                MarkupNode::Text(text) => {
+                    let trimmed = text.content().trim_start();
+                    if BULLET_CHARS
+                        .iter()
+                        .any(|prefix| trimmed.starts_with(prefix))
+                    {
+                        let message = ctx.t("a11y/use-list.message");
+                        let help = ctx.t("a11y/use-list.help");
+                        ctx.warn_at_with_help(message, text.range(), help);
+                    }
+                    // Only check the first meaningful text node
+                    if text.is_significant() {
+                        checking_first_meaningful_child = false;
+                    }
+                }
+                _ => {
+                    checking_first_meaningful_child = false;
+                }
+            }
+        });
+    }
+
+    fn check_markup_document(ctx: &mut LintContext<'_>, document: &MarkupDocument<'_>) {
+        let list_context_depth = Cell::new(0usize);
+        document.walk_tree(
+            &mut |element| {
+                let has_list_context_ancestor = list_context_depth.get() > 0;
+                Self::check_markup_element(ctx, &element, has_list_context_ancestor);
+
+                if Self::is_list_context_element(&element) {
+                    list_context_depth.set(list_context_depth.get() + 1);
+                }
+            },
+            &mut |element| {
+                if Self::is_list_context_element(&element) {
+                    list_context_depth.set(list_context_depth.get().saturating_sub(1));
+                }
+            },
+        );
+    }
+}
+
+impl MarkupRule for UseList {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, document: &MarkupDocument) {
+        Self::check_markup_document(ctx.lint(), document);
+    }
+}
+
 impl Rule for UseList {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn jsx_needs_lowering(&self) -> bool {
+        true
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
@@ -71,12 +173,12 @@ impl Rule for UseList {
         let tag = element.tag;
 
         // Skip if already in list context
-        if LIST_CONTEXT_TAGS.contains(&tag) {
+        if Self::is_list_context_tag(tag) {
             return;
         }
 
         // Skip if ancestor is list context
-        if ctx.has_ancestor(|a| LIST_CONTEXT_TAGS.contains(&a.tag.as_str())) {
+        if ctx.has_ancestor(|a| Self::is_list_context_tag(a.tag.as_str())) {
             return;
         }
 
