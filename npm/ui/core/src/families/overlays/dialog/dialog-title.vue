@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, useTemplateRef } from "vue";
 
-import { toDeterministicId } from "./deterministic-id.ts";
+import { toDeterministicId } from "../../../deterministic-id.ts";
 import { dialogContext } from "./dialog-context.ts";
 import type { DialogTitleExpose } from "./dialog-types.ts";
-import type { PrimitiveAs, PrimitiveElement } from "./primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
 
 const { id = undefined, as = "h2" } = defineProps<{
   /**

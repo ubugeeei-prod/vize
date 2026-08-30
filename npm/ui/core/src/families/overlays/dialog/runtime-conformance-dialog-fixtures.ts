@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./dialog.ts";
-import type { RuntimeFixture } from "./runtime-conformance-fixtures.ts";
+import type { RuntimeFixture } from "../../../runtime-conformance-fixtures.ts";
 
 function dialog(children: () => unknown): ReturnType<typeof h> {
   return h(DialogRoot, { defaultOpen: true, id: "runtime-dialog" }, children);
@@ -27,7 +27,7 @@ function assertRoot(host: HTMLElement): void {
 export const dialogRuntimeFixtures: readonly RuntimeFixture[] = [
   {
     name: "dialog-root",
-    sourceFile: "dialog-root.vue",
+    sourceFile: "families/overlays/dialog/dialog-root.vue",
     render: () => dialog(() => "Dialog"),
     assertServerMarkup(html) {
       assert.match(html, /id="runtime-dialog"/);
@@ -38,7 +38,7 @@ export const dialogRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "dialog-trigger",
-    sourceFile: "dialog-trigger.vue",
+    sourceFile: "families/overlays/dialog/dialog-trigger.vue",
     render: () => dialog(() => h(DialogTrigger, null, () => "Open dialog")),
     assertServerMarkup(html) {
       assert.match(html, /data-vize-ui="dialog-trigger"/);
@@ -53,7 +53,7 @@ export const dialogRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "dialog-portal",
-    sourceFile: "dialog-portal.vue",
+    sourceFile: "families/overlays/dialog/dialog-portal.vue",
     render: () => dialog(() => h(DialogPortal, { disabled: true }, () => "Layer")),
     assertServerMarkup(html) {
       assert.match(html, /data-vize-ui="dialog-portal"/);
@@ -67,7 +67,7 @@ export const dialogRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "dialog-overlay",
-    sourceFile: "dialog-overlay.vue",
+    sourceFile: "families/overlays/dialog/dialog-overlay.vue",
     render: () => dialog(() => h(DialogOverlay, null, () => "Backdrop")),
     assertServerMarkup(html) {
       assert.match(html, /data-vize-ui="dialog-overlay"/);
@@ -81,7 +81,7 @@ export const dialogRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "dialog-content",
-    sourceFile: "dialog-content.vue",
+    sourceFile: "families/overlays/dialog/dialog-content.vue",
     render: () => dialog(() => h(DialogContent, { lockScroll: false }, () => "Content")),
     assertServerMarkup(html) {
       assert.match(html, /data-vize-ui="dialog-content"/);
@@ -96,7 +96,7 @@ export const dialogRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "dialog-title",
-    sourceFile: "dialog-title.vue",
+    sourceFile: "families/overlays/dialog/dialog-title.vue",
     render: () => dialog(() => h(DialogTitle, null, () => "Title")),
     assertServerMarkup(html) {
       assert.match(html, /id="runtime-dialog-title"/);
@@ -109,7 +109,7 @@ export const dialogRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "dialog-description",
-    sourceFile: "dialog-description.vue",
+    sourceFile: "families/overlays/dialog/dialog-description.vue",
     render: () => dialog(() => h(DialogDescription, null, () => "Description")),
     assertServerMarkup(html) {
       assert.match(html, /id="runtime-dialog-description"/);
@@ -121,7 +121,7 @@ export const dialogRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "dialog-close",
-    sourceFile: "dialog-close.vue",
+    sourceFile: "families/overlays/dialog/dialog-close.vue",
     render: () => dialog(() => h(DialogClose, null, () => "Close")),
     assertServerMarkup(html) {
       assert.match(html, /data-vize-ui="dialog-close"/);

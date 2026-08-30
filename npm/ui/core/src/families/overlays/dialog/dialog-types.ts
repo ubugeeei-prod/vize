@@ -1,4 +1,4 @@
-import type { FocusScopeAutoFocusEvent } from "./focus-scope.ts";
+import type { FocusScopeAutoFocusEvent } from "../../../focus-scope.ts";
 
 /** Dialog role announced by assistive technology. */
 export type DialogRole = "alertdialog" | "dialog";

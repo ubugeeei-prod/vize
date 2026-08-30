@@ -12,7 +12,7 @@ import DialogPortal from "./dialog-portal.vue";
 import DialogRoot from "./dialog-root.vue";
 import DialogTitle from "./dialog-title.vue";
 import DialogTrigger from "./dialog-trigger.vue";
-import { mountInteraction } from "./testing/mount.ts";
+import { mountInteraction } from "../../../testing/mount.ts";
 
 async function settleDialog(): Promise<void> {
   await nextTick();

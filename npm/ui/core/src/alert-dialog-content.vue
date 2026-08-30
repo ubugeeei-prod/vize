@@ -2,10 +2,7 @@
 import { computed, useTemplateRef } from "vue";
 import type { ComputedRef } from "vue";
 
-import DialogContent from "./dialog-content.vue";
-import { dialogContext } from "./dialog-context.ts";
 import type { AlertDialogContentExpose, AlertDialogSlotState } from "./alert-dialog-types.ts";
-import type { DialogAutoFocusEvent } from "./dialog-types.ts";
 import type {
   DismissableLayerDismissEvent,
   DismissableLayerEscapeKeyDownEvent,
@@ -13,6 +10,9 @@ import type {
   DismissableLayerInteractOutsideEvent,
   DismissableLayerPointerDownOutsideEvent,
 } from "./dismissable-layer.ts";
+import DialogContent from "./families/overlays/dialog/dialog-content.vue";
+import { dialogContext } from "./families/overlays/dialog/dialog-context.ts";
+import type { DialogAutoFocusEvent } from "./families/overlays/dialog/dialog-types.ts";
 
 const {
   forceMount = false,

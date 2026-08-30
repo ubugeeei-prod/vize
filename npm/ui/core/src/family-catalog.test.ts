@@ -142,6 +142,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["banner", "src/families/feedback/banner/"],
     ["button-group", "src/families/actions/button-group/"],
     ["callout", "src/families/feedback/callout/"],
+    ["dialog", "src/families/overlays/dialog/"],
     ["icon", "src/families/layout/icon/"],
     ["icon-button", "src/families/layout/icon/"],
     ["status-light", "src/families/feedback/status-light/"],

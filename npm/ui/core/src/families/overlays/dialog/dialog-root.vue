@@ -2,8 +2,8 @@
 import { computed, shallowRef } from "vue";
 import type { ComputedRef } from "vue";
 
-import { useControllableState } from "./controllable-state.ts";
-import { deriveDeterministicId, useDeterministicId } from "./deterministic-id.ts";
+import { useControllableState } from "../../../controllable-state.ts";
+import { deriveDeterministicId, useDeterministicId } from "../../../deterministic-id.ts";
 import { dialogContext } from "./dialog-context.ts";
 import type { DialogRootExpose, DialogSlotState, DialogState } from "./dialog-types.ts";
 

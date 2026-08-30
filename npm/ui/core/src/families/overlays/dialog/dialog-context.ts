@@ -1,6 +1,6 @@
 import type { ComputedRef, ShallowRef } from "vue";
 
-import { createContext } from "./context.ts";
+import { createContext } from "../../../context.ts";
 import type { DialogState } from "./dialog-types.ts";
 
 /** Shared state and element registry for the Dialog compound components. */

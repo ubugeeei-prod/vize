@@ -11,7 +11,7 @@ import {
   DialogRoot,
   DialogTitle,
   DialogTrigger,
-} from "./dialog.ts";
+} from "./families/overlays/dialog/dialog.ts";
 </script>
 
 <template>

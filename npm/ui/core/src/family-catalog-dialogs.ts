@@ -4,28 +4,30 @@ import {
   type UiFamilyCatalogEntry,
 } from "./family-catalog-types.ts";
 
+const dialogFamilyRoot = "src/families/overlays/dialog/";
+
 export const dialogFamilyCatalog = [
   {
     canonicalName: "dialog",
     title: "Dialog",
     packageSubpath: "./dialog",
-    entryFile: "src/dialog.ts",
+    entryFile: `${dialogFamilyRoot}dialog.ts`,
     sourceFiles: [
-      "src/dialog-close.vue",
-      "src/dialog-content.vue",
-      "src/dialog-context.ts",
-      "src/dialog-description.vue",
-      "src/dialog-overlay.vue",
-      "src/dialog-portal.vue",
-      "src/dialog-root.vue",
-      "src/dialog-title.vue",
-      "src/dialog-trigger.vue",
-      "src/dialog.ts",
-      "src/dialog-types.ts",
+      `${dialogFamilyRoot}dialog-close.vue`,
+      `${dialogFamilyRoot}dialog-content.vue`,
+      `${dialogFamilyRoot}dialog-context.ts`,
+      `${dialogFamilyRoot}dialog-description.vue`,
+      `${dialogFamilyRoot}dialog-overlay.vue`,
+      `${dialogFamilyRoot}dialog-portal.vue`,
+      `${dialogFamilyRoot}dialog-root.vue`,
+      `${dialogFamilyRoot}dialog-title.vue`,
+      `${dialogFamilyRoot}dialog-trigger.vue`,
+      `${dialogFamilyRoot}dialog.ts`,
+      `${dialogFamilyRoot}dialog-types.ts`,
     ],
-    behaviorContract: "src/dialog.behavior.md",
-    tests: ["src/dialog.test.ts", "src/dialog-ssr.test.ts"],
-    typeTests: ["src/dialog.types.test-d.ts"],
+    behaviorContract: `${dialogFamilyRoot}dialog.behavior.md`,
+    tests: [`${dialogFamilyRoot}dialog.test.ts`, `${dialogFamilyRoot}dialog-ssr.test.ts`],
+    typeTests: [`${dialogFamilyRoot}dialog.types.test-d.ts`],
     rendererFixture: "DialogConsumer.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {

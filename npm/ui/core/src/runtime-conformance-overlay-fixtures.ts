@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { h } from "vue";
 
 import AnnouncerProvider from "./announcer-provider.vue";
-import { dialogRuntimeFixtures } from "./runtime-conformance-dialog-fixtures.ts";
+import { dialogRuntimeFixtures } from "./families/overlays/dialog/runtime-conformance-dialog-fixtures.ts";
 import LiveRegion from "./live-region.vue";
 import LocaleProvider from "./locale-provider.vue";
 import Portal from "./portal.vue";
