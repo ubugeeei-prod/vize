@@ -204,6 +204,11 @@
       "import": "./dist/listbox.mjs",
       "default": "./dist/listbox.mjs"
     },
+    "./pagination": {
+      "types": "./dist/pagination.d.mts",
+      "import": "./dist/pagination.mjs",
+      "default": "./dist/pagination.mjs"
+    },
     "./textarea": {
       "types": "./dist/textarea.d.mts",
       "import": "./dist/textarea.mjs",

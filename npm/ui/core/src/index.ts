@@ -48,6 +48,7 @@ export * from "./heading.ts";
 export * from "./kbd.ts";
 export * from "./list.ts";
 export * from "./listbox.ts";
+export * from "./pagination.ts";
 export * from "./text.ts";
 export * from "./textarea.ts";
 export * from "./switch.ts";

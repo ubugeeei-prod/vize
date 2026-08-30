@@ -12,6 +12,7 @@ import { checkboxRuntimeFixture } from "./runtime-conformance-checkbox-fixtures.
 import { layoutRuntimeFixtures } from "./runtime-conformance-layout-fixtures.ts";
 import { listboxRuntimeFixtures } from "./runtime-conformance-listbox-fixtures.ts";
 import { meterRuntimeFixture } from "./runtime-conformance-meter-fixtures.ts";
+import { paginationRuntimeFixtures } from "./runtime-conformance-pagination-fixtures.ts";
 import PrimitiveElement from "./primitive-element.vue";
 import { alertRuntimeFixture } from "./runtime-conformance-alert-fixtures.ts";
 import { alertDialogRuntimeFixture } from "./runtime-conformance-alert-dialog-fixtures.ts";
@@ -168,6 +169,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   ...listboxRuntimeFixtures,
   meterRuntimeFixture,
+  ...paginationRuntimeFixtures,
   {
     name: "primitive",
     sourceFile: "primitive-element.vue",

@@ -65,6 +65,7 @@ export default defineConfig({
       kbd: "src/kbd.ts",
       list: "src/list.ts",
       listbox: "src/listbox.ts",
+      pagination: "src/pagination.ts",
       text: "src/text.ts",
       textarea: "src/textarea.ts",
       switch: "src/switch.ts",
