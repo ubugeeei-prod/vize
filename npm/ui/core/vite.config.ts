@@ -52,6 +52,7 @@ export default defineConfig({
       collapsible: "src/collapsible.ts",
       button: "src/button.ts",
       "button-group": "src/families/actions/button-group/button-group.ts",
+      table: "src/families/data/table/table.ts",
       link: "src/link.ts",
       "skip-link": "src/families/navigation/skip-link/skip-link.ts",
       toggle: "src/toggle.ts",

@@ -21,6 +21,7 @@ const rendererGate = [
   await readFile(path.resolve("scripts/renderer-fixtures.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-avatar.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-commands.ts"), "utf8"),
+  await readFile(path.resolve("scripts/renderer-fixtures-data.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-dialog.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-feedback.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-icon.ts"), "utf8"),
@@ -151,6 +152,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["skip-link", "src/families/navigation/skip-link/"],
     ["status-light", "src/families/feedback/status-light/"],
     ["surface", "src/families/layout/surface/"],
+    ["table", "src/families/data/table/"],
     ["tooltip", "src/families/overlays/tooltip/"],
   ]);
 

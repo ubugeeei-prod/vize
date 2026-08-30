@@ -1,4 +1,5 @@
 import { commandRendererFixtures } from "./renderer-fixtures-commands.ts";
+import { dataRendererFixtures } from "./renderer-fixtures-data.ts";
 import { dialogRendererFixtures } from "./renderer-fixtures-dialog.ts";
 import { feedbackRendererFixtures } from "./renderer-fixtures-feedback.ts";
 import { iconRendererFixtures } from "./renderer-fixtures-icon.ts";
@@ -10,6 +11,7 @@ import { selectionRendererFixtures } from "./renderer-fixtures-selection.ts";
 
 export const groupedRendererFixtures = [
   ...commandRendererFixtures,
+  ...dataRendererFixtures,
   ...dialogRendererFixtures,
   ...feedbackRendererFixtures,
   ...iconRendererFixtures,
