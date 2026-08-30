@@ -56,6 +56,7 @@ export default defineConfig({
       meter: "src/meter.ts",
       heading: "src/heading.ts",
       kbd: "src/kbd.ts",
+      list: "src/list.ts",
       text: "src/text.ts",
       textarea: "src/textarea.ts",
       switch: "src/switch.ts",

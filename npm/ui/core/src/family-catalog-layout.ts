@@ -3,6 +3,7 @@ import {
   componentQualityGates,
   type UiFamilyCatalogEntry,
 } from "./family-catalog-types.ts";
+import { listLayoutFamilyCatalog } from "./family-catalog-layout-list.ts";
 
 export const layoutFamilyCatalog = [
   {
@@ -181,6 +182,7 @@ export const layoutFamilyCatalog = [
     maturity: "stable",
     owner: catalogOwner,
   },
+  ...listLayoutFamilyCatalog,
   {
     canonicalName: "separator",
     title: "Separator",

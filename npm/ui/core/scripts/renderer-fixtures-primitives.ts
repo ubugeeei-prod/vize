@@ -182,6 +182,24 @@ const columns = ref(3);
 `,
   },
   {
+    filename: "ListConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { List } from "./list.ts";
+
+const spacing = ref<"compact" | "normal" | "loose">("loose");
+</script>
+
+<template>
+  <List as="ol" marker="decimal" :spacing tone="muted">
+    <template #default="{ marker, spacing: gap, tone }">
+      <li>{{ marker }} {{ gap }} {{ tone }}</li>
+    </template>
+  </List>
+</template>
+`,
+  },
+  {
     filename: "EmptyStateConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

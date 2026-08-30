@@ -159,6 +159,11 @@
       "import": "./dist/kbd.mjs",
       "default": "./dist/kbd.mjs"
     },
+    "./list": {
+      "types": "./dist/list.d.mts",
+      "import": "./dist/list.mjs",
+      "default": "./dist/list.mjs"
+    },
     "./textarea": {
       "types": "./dist/textarea.d.mts",
       "import": "./dist/textarea.mjs",
