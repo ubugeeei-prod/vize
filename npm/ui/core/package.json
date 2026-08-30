@@ -64,6 +64,11 @@
       "import": "./dist/card.mjs",
       "default": "./dist/card.mjs"
     },
+    "./code": {
+      "types": "./dist/code.d.mts",
+      "import": "./dist/code.mjs",
+      "default": "./dist/code.mjs"
+    },
     "./cluster": {
       "types": "./dist/cluster.d.mts",
       "import": "./dist/cluster.mjs",

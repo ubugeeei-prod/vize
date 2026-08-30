@@ -2,6 +2,7 @@ import type { RuntimeFixture } from "./runtime-conformance-fixtures.ts";
 import { aspectRatioRuntimeFixture } from "./runtime-conformance-aspect-ratio-fixtures.ts";
 import { cardRuntimeFixture } from "./runtime-conformance-card-fixtures.ts";
 import { clusterRuntimeFixture } from "./runtime-conformance-cluster-fixtures.ts";
+import { codeRuntimeFixture } from "./runtime-conformance-code-fixtures.ts";
 import { containerRuntimeFixture } from "./runtime-conformance-container-fixtures.ts";
 import { gridRuntimeFixture } from "./runtime-conformance-grid-fixtures.ts";
 import { headingRuntimeFixture } from "./runtime-conformance-heading-fixtures.ts";
@@ -16,6 +17,7 @@ export const layoutRuntimeFixtures: readonly RuntimeFixture[] = [
   aspectRatioRuntimeFixture,
   cardRuntimeFixture,
   clusterRuntimeFixture,
+  codeRuntimeFixture,
   containerRuntimeFixture,
   gridRuntimeFixture,
   headingRuntimeFixture,
