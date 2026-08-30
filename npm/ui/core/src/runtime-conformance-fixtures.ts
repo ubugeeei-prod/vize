@@ -9,6 +9,7 @@ import ErrorSummary from "./error-summary.vue";
 import LinkAnchor from "./link-anchor.vue";
 import { collapsibleRuntimeFixtures } from "./runtime-conformance-collapsible-fixtures.ts";
 import { checkboxRuntimeFixture } from "./runtime-conformance-checkbox-fixtures.ts";
+import { calloutRuntimeFixture } from "./families/feedback/callout/runtime-conformance-callout-fixtures.ts";
 import { layoutRuntimeFixtures } from "./runtime-conformance-layout-fixtures.ts";
 import { listboxRuntimeFixtures } from "./runtime-conformance-listbox-fixtures.ts";
 import { meterRuntimeFixture } from "./runtime-conformance-meter-fixtures.ts";
@@ -61,6 +62,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   alertDialogRuntimeFixture,
   badgeRuntimeFixture,
   blockUIRuntimeFixture,
+  calloutRuntimeFixture,
   ...breadcrumbRuntimeFixtures,
   ...tabsRuntimeFixtures,
   ...stepperRuntimeFixtures,

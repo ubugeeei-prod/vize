@@ -13,6 +13,7 @@ export * from "./aspect-ratio.ts";
 export * from "./avatar.ts";
 export * from "./badge.ts";
 export * from "./block-ui.ts";
+export * from "./families/feedback/callout/callout.ts";
 export * from "./blockquote.ts";
 export * from "./breadcrumb.ts";
 export * from "./tabs.ts";

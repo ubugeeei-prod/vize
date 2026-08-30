@@ -64,6 +64,11 @@
       "import": "./dist/block-ui.mjs",
       "default": "./dist/block-ui.mjs"
     },
+    "./callout": {
+      "types": "./dist/callout.d.mts",
+      "import": "./dist/callout.mjs",
+      "default": "./dist/callout.mjs"
+    },
     "./blockquote": {
       "types": "./dist/blockquote.d.mts",
       "import": "./dist/blockquote.mjs",
