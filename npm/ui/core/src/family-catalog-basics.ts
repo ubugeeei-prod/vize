@@ -17,7 +17,7 @@ export const basicFamilyCatalog = [
     qualityGates: componentQualityGates,
     bundleBudget: {
       exportName: "Button",
-      retainedSignature: "aria-busy",
+      retainedSignature: "data-vize-ui[\\s\\S]{0,32}button",
       maximumJavaScriptGzipBytes: 1_000,
       maximumCssGzipBytes: 0,
     },

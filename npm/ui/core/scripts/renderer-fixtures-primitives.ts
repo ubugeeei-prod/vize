@@ -67,6 +67,24 @@ const count = ref(12);
 `,
   },
   {
+    filename: "BlockUIConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { BlockUI } from "./block-ui.ts";
+
+const blocked = ref(true);
+</script>
+
+<template>
+  <BlockUI :blocked reason="saving" interaction="inert" announce="polite" label="Saving changes">
+    <template #default="{ state, reason }">
+      <span>{{ state }} {{ reason }}</span>
+    </template>
+  </BlockUI>
+</template>
+`,
+  },
+  {
     filename: "CardConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

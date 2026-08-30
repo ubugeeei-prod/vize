@@ -11,6 +11,7 @@ export * from "./alert.ts";
 export * from "./announcer.ts";
 export * from "./aspect-ratio.ts";
 export * from "./badge.ts";
+export * from "./block-ui.ts";
 export * from "./card.ts";
 export * from "./cluster.ts";
 export * from "./container.ts";

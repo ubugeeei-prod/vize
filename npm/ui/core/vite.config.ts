@@ -35,6 +35,7 @@ export default defineConfig({
       announcer: "src/announcer.ts",
       "aspect-ratio": "src/aspect-ratio.ts",
       badge: "src/badge.ts",
+      "block-ui": "src/block-ui.ts",
       card: "src/card.ts",
       cluster: "src/cluster.ts",
       container: "src/container.ts",
