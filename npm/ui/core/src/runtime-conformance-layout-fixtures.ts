@@ -9,7 +9,7 @@ import { iconRuntimeFixtures } from "./families/layout/icon/runtime-conformance-
 import { listRuntimeFixture } from "./runtime-conformance-list-fixtures.ts";
 import { scrollAreaRuntimeFixture } from "./families/layout/scroll-area/runtime-conformance-scroll-area-fixtures.ts";
 import { separatorRuntimeFixture } from "./runtime-conformance-separator-fixtures.ts";
-import { skeletonRuntimeFixture } from "./runtime-conformance-skeleton-fixtures.ts";
+import { skeletonRuntimeFixture } from "./families/feedback/skeleton/runtime-conformance-skeleton-fixtures.ts";
 import { spacerRuntimeFixture } from "./runtime-conformance-spacer-fixtures.ts";
 import { stackRuntimeFixture } from "./runtime-conformance-stack-fixtures.ts";
 import { surfaceRuntimeFixture } from "./families/layout/surface/runtime-conformance-surface-fixtures.ts";

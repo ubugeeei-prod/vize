@@ -1,9 +1,9 @@
 /** Headless inline label primitive for status, count, tag, and chip composition. */
+export { default as Badge } from "./badge.vue";
 export type {
   BadgeElement,
   BadgeExpose,
   BadgeSlotState,
   BadgeTone,
   BadgeVariant,
-} from "./families/feedback/badge/badge.ts";
-export { Badge } from "./families/feedback/badge/badge.ts";
+} from "./badge-types.ts";

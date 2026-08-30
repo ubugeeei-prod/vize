@@ -1,5 +1,5 @@
 /** Accessible, unstyled status/progress indicator for pending work. */
-export { Spinner } from "./families/feedback/spinner/spinner.ts";
+export { default as Spinner } from "./spinner.vue";
 
 export type {
   SpinnerAriaState,
@@ -9,4 +9,4 @@ export type {
   SpinnerRole,
   SpinnerSlotState,
   SpinnerState,
-} from "./families/feedback/spinner/spinner.ts";
+} from "./spinner-types.ts";

@@ -1,4 +1,5 @@
 /** Headless region primitive for consumer-owned blocked, busy, and stale states. */
+export { default as BlockUI } from "./block-ui.vue";
 export type {
   BlockUIAnnouncement,
   BlockUIElement,
@@ -7,5 +8,4 @@ export type {
   BlockUIReason,
   BlockUISlotState,
   BlockUIState,
-} from "./families/feedback/block-ui/block-ui.ts";
-export { BlockUI } from "./families/feedback/block-ui/block-ui.ts";
+} from "./block-ui-types.ts";

@@ -5,7 +5,7 @@ export type {
   SkeletonSlotState,
   SkeletonState,
   SkeletonStyle,
-} from "./families/feedback/skeleton/skeleton.ts";
+} from "./skeleton-types.ts";
 
 /** Headless placeholder for pending content, Suspense fallbacks, and deferred surfaces. */
-export { Skeleton } from "./families/feedback/skeleton/skeleton.ts";
+export { default as Skeleton } from "./skeleton.vue";

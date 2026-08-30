@@ -140,18 +140,23 @@ test("stable catalog entries have every required artifact", async () => {
 
 test("new family-owned SFC primitives keep implementation and tests together", () => {
   const familyRoots = new Map([
+    ["alert", "src/families/feedback/alert/"],
     ["banner", "src/families/feedback/banner/"],
+    ["badge", "src/families/feedback/badge/"],
     ["blockquote", "src/families/typography/blockquote/"],
+    ["block-ui", "src/families/feedback/block-ui/"],
     ["button-group", "src/families/actions/button-group/"],
     ["callout", "src/families/feedback/callout/"],
     ["code", "src/families/typography/code/"],
     ["dialog", "src/families/overlays/dialog/"],
+    ["empty-state", "src/families/feedback/empty-state/"],
     ["heading", "src/families/typography/heading/"],
     ["icon", "src/families/layout/icon/"],
     ["icon-button", "src/families/layout/icon/"],
     ["kbd", "src/families/typography/kbd/"],
     ["locale", "src/families/i18n/locale/"],
     ["fullscreen-button", "src/families/actions/fullscreen-button/"],
+    ["meter", "src/families/feedback/meter/"],
     ["print-button", "src/families/actions/print-button/"],
     ["progress", "src/families/feedback/progress/"],
     ["progress-bar", "src/families/feedback/progress-bar/"],
@@ -159,6 +164,8 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["share-button", "src/families/actions/share-button/"],
     ["scroll-area", "src/families/layout/scroll-area/"],
     ["skip-link", "src/families/navigation/skip-link/"],
+    ["skeleton", "src/families/feedback/skeleton/"],
+    ["spinner", "src/families/feedback/spinner/"],
     ["status-light", "src/families/feedback/status-light/"],
     ["surface", "src/families/layout/surface/"],
     ["table", "src/families/data/table/"],
@@ -224,4 +231,24 @@ test("progress family keeps root compatibility barrel", async () => {
     /from "\.\/families\/feedback\/progress\/progress\.vue"/,
     "progress must keep its historical component export through the root barrel",
   );
+});
+
+test("feedback families keep root compatibility barrels", async () => {
+  for (const name of [
+    "alert",
+    "badge",
+    "block-ui",
+    "empty-state",
+    "meter",
+    "skeleton",
+    "spinner",
+  ] as const) {
+    const source = await readFile(path.resolve(`src/${name}.ts`), "utf8");
+
+    assert.match(
+      source,
+      new RegExp(`from "\\./families/feedback/${name}/${name}\\.ts"`),
+      `${name} must keep its historical source entry as a compatibility barrel`,
+    );
+  }
 });
