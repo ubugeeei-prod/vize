@@ -1,6 +1,6 @@
 import type { MaybeRefOrGetter, ShallowRef } from "vue";
 
-import type { LiveRegionPoliteness } from "./live-region-types.ts";
+import type { LiveRegionPoliteness } from "../live-region/live-region-types.ts";
 
 /** Announcement urgency accepted by the announcer queue. */
 export type AnnouncerPoliteness = LiveRegionPoliteness;

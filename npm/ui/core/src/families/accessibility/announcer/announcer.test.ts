@@ -11,7 +11,7 @@ import {
   useAnnouncer,
   type AnnouncerController,
 } from "./announcer.ts";
-import { mountInteraction } from "./testing/mount.ts";
+import { mountInteraction } from "../../../testing/mount.ts";
 
 /** Record channel-tagged announcements exactly as assistive technology hears them. */
 async function transcript(announcer: AnnouncerController, ticks = 16): Promise<readonly string[]> {

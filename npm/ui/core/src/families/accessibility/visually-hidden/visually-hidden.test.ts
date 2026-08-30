@@ -7,7 +7,7 @@ import path from "node:path";
 import { test } from "vite-plus/test";
 import { h } from "vue";
 
-import { mountInteraction } from "./testing/mount.ts";
+import { mountInteraction } from "../../../testing/mount.ts";
 import VisuallyHidden from "./visually-hidden.vue";
 
 test("keeps slotted content queryable in the accessibility tree", async () => {
@@ -35,7 +35,10 @@ test("exposes the rendered element for composition", () => {
 test("hides content with a recoverable clipping technique, never display:none", async () => {
   // source-contract: the scoped <style> ships via the packaged stylesheet, so the
   // computed clip-path cannot be observed on a mounted node without a CSS pipeline.
-  const source = await readFile(path.resolve("src/visually-hidden.vue"), "utf8");
+  const source = await readFile(
+    path.resolve("src/families/accessibility/visually-hidden/visually-hidden.vue"),
+    "utf8",
+  );
 
   // source-contract: assert the hiding technique directly on the style block.
   assert.match(source, /position: absolute/);

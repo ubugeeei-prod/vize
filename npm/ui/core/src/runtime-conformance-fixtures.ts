@@ -42,7 +42,7 @@ import TextInput from "./families/form/input/text-input.vue";
 import SearchField from "./families/form/search-field/search-field.vue";
 import TextareaControl from "./families/form/textarea/textarea-control.vue";
 import { typographyRuntimeFixtures } from "./runtime-conformance-typography-fixtures.ts";
-import VisuallyHidden from "./visually-hidden.vue";
+import VisuallyHidden from "./families/accessibility/visually-hidden/visually-hidden.vue";
 
 export interface RuntimeFixture {
   /** Stable name included in assertion diagnostics. */
@@ -320,7 +320,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   progressBarRuntimeFixture,
   {
     name: "visually-hidden",
-    sourceFile: "visually-hidden.vue",
+    sourceFile: "families/accessibility/visually-hidden/visually-hidden.vue",
     render: () =>
       h(VisuallyHidden, null, {
         default: () => h("button", { type: "button" }, "Dismiss notification"),

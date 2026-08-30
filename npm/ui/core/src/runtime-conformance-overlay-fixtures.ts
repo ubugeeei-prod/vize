@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 
 import { h } from "vue";
 
-import AnnouncerProvider from "./announcer-provider.vue";
+import AnnouncerProvider from "./families/accessibility/announcer/announcer-provider.vue";
 import { dialogRuntimeFixtures } from "./families/overlays/dialog/runtime-conformance-dialog-fixtures.ts";
-import LiveRegion from "./live-region.vue";
+import LiveRegion from "./families/accessibility/live-region/live-region.vue";
 import Portal from "./families/overlays/portal/portal.vue";
 import PositionerArrow from "./families/overlays/positioner/positioner-arrow.vue";
 import Positioner from "./families/overlays/positioner/positioner.vue";
@@ -47,7 +47,7 @@ export const overlayRuntimeFixtures: readonly RuntimeFixture[] = [
   ...dialogRuntimeFixtures,
   {
     name: "announcer-provider",
-    sourceFile: "announcer-provider.vue",
+    sourceFile: "families/accessibility/announcer/announcer-provider.vue",
     render: () =>
       h(AnnouncerProvider, null, {
         default: () => "Content",
@@ -68,7 +68,7 @@ export const overlayRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "live-region",
-    sourceFile: "live-region.vue",
+    sourceFile: "families/accessibility/live-region/live-region.vue",
     render: () => h(LiveRegion),
     assertServerMarkup(html) {
       assert.match(html, /data-vize-ui="live-region"/);

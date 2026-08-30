@@ -10,17 +10,14 @@ const familySfcPattern =
 
 const grandfatheredRootSfcFiles = [
   "action-button.vue",
-  "announcer-provider.vue",
   "collapsible-content.vue",
   "collapsible-root.vue",
   "collapsible-trigger.vue",
   "deterministic-id-provider.vue",
   "error-summary.vue",
   "link-anchor.vue",
-  "live-region.vue",
   "primitive-element.vue",
   "transition.vue",
-  "visually-hidden.vue",
 ] as const;
 
 test("new public SFCs live in family directories", () => {

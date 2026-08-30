@@ -1,7 +1,8 @@
 # VisuallyHidden behavior contract
 
 Normative state × input → outcome table for `visually-hidden.vue` (`@vizejs/ui/visually-hidden`).
-Rows V1–V3 are proven by the named test in `src/visually-hidden.test.ts`; V4 is
+Rows V1–V3 are proven by the named test in
+`src/families/accessibility/visually-hidden/visually-hidden.test.ts`; V4 is
 proven on the packaged stylesheet by `src/style-pipeline.test.ts`.
 
 | #   | State           | Input          | Outcome                                                                    | Proven by                                                                                |

@@ -39,7 +39,10 @@ test("the package build declares an explicit browser floor for stylesheet loweri
 test("authored nesting, layers, logical properties, and color functions compile to the floor", async () => {
   // source-contract: the authored style language is a source fact; its lowered
   // form is proven on the packaged stylesheet below.
-  const source = await readFile(path.resolve("src/visually-hidden.vue"), "utf8");
+  const source = await readFile(
+    path.resolve("src/families/accessibility/visually-hidden/visually-hidden.vue"),
+    "utf8",
+  );
   // source-contract: nesting, layers, logical properties, and native color.
   assert.match(source, /@layer vize\.ui/);
   // source-contract: the focus guard is authored as a nested :where() rule.

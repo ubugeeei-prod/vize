@@ -14,8 +14,8 @@ import type {
   AnnouncerOwnership,
   AnnouncerPoliteness,
 } from "./announcer-types.ts";
-import { createContext } from "./context.ts";
-import { createLiveRegion } from "./live-region-runtime.ts";
+import { createContext } from "../../../context.ts";
+import { createLiveRegion } from "../live-region/live-region-runtime.ts";
 
 const invalidOptionDiagnostic = "VIZE_UI_ANNOUNCER_OPTION";
 const disposedDiagnostic = "VIZE_UI_ANNOUNCER_DISPOSED";

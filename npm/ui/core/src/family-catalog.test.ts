@@ -142,6 +142,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
   const familyRoots = new Map([
     ["alert", "src/families/feedback/alert/"],
     ["alert-dialog", "src/families/overlays/alert-dialog/"],
+    ["announcer", "src/families/accessibility/announcer/"],
     ["aspect-ratio", "src/families/layout/aspect-ratio/"],
     ["avatar", "src/families/layout/avatar/"],
     ["banner", "src/families/feedback/banner/"],
@@ -158,14 +159,20 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["container", "src/families/layout/container/"],
     ["dialog", "src/families/overlays/dialog/"],
     ["empty-state", "src/families/feedback/empty-state/"],
+    ["focus", "src/families/accessibility/focus/"],
+    ["focus-guards", "src/families/accessibility/focus-guards/"],
+    ["focus-scope", "src/families/accessibility/focus-scope/"],
     ["grid", "src/families/layout/grid/"],
     ["heading", "src/families/typography/heading/"],
     ["hover", "src/families/interaction/hover/"],
     ["icon", "src/families/layout/icon/"],
     ["icon-button", "src/families/layout/icon/"],
+    ["inert-outside", "src/families/accessibility/inert-outside/"],
+    ["interaction-modality", "src/families/accessibility/interaction-modality/"],
     ["kbd", "src/families/typography/kbd/"],
     ["list", "src/families/layout/list/"],
     ["listbox", "src/families/selection/listbox/"],
+    ["live-region", "src/families/accessibility/live-region/"],
     ["locale", "src/families/i18n/locale/"],
     ["long-press", "src/families/interaction/long-press/"],
     ["fullscreen-button", "src/families/actions/fullscreen-button/"],
@@ -186,6 +193,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["rating", "src/families/form/rating/"],
     ["share-button", "src/families/actions/share-button/"],
     ["scroll-area", "src/families/layout/scroll-area/"],
+    ["scroll-lock", "src/families/accessibility/scroll-lock/"],
     ["separator", "src/families/layout/separator/"],
     ["skip-link", "src/families/navigation/skip-link/"],
     ["skeleton", "src/families/feedback/skeleton/"],
@@ -203,6 +211,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["toggle-group", "src/families/selection/toggle-group/"],
     ["toolbar", "src/families/actions/toolbar/"],
     ["tooltip", "src/families/overlays/tooltip/"],
+    ["visually-hidden", "src/families/accessibility/visually-hidden/"],
   ]);
 
   for (const [canonicalName, familyRoot] of familyRoots) {
@@ -230,6 +239,20 @@ test("new family-owned SFC primitives keep implementation and tests together", (
       `${canonicalName} type tests must stay beside the family source`,
     );
   }
+});
+
+test("accessibility families keep root compatibility barrels", async () => {
+  await assertFamilyBarrels("accessibility", [
+    "announcer",
+    "focus",
+    "focus-guards",
+    "focus-scope",
+    "inert-outside",
+    "interaction-modality",
+    "live-region",
+    "scroll-lock",
+    "visually-hidden",
+  ]);
 });
 
 test("layout families keep root compatibility barrels", async () => {

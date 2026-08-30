@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "vite-plus/test";
 import { nextTick } from "vue";
 
-import { mountInteraction } from "./testing/mount.ts";
+import { mountInteraction } from "../../../testing/mount.ts";
 import { createLiveRegion, useLiveRegion } from "./live-region.ts";
 import LiveRegion from "./live-region.vue";
 
