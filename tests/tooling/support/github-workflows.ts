@@ -64,6 +64,25 @@ export function workflowJobRunsOn(workflow: string, jobName: string): string | u
   return workflowJobField(workflow, jobName, "runs-on");
 }
 
+export function assertReleasePlatformCommandsUseRefEnv(
+  workflow: string,
+  jobNames: readonly string[],
+): void {
+  assert.doesNotMatch(
+    workflow,
+    /release-platforms\.rs (?:github-output|apply-cadence) "\$\{\{ github\.ref_name \}\}"/,
+  );
+  for (const jobName of jobNames) {
+    const job = workflowJobBody(workflow, jobName);
+    assert.match(job, /RELEASE_REF_NAME:\s*\$\{\{\s*github\.ref_name\s*\}\}/, jobName);
+    assert.match(
+      job,
+      /release-platforms\.rs (?:github-output|apply-cadence) "\$RELEASE_REF_NAME"/,
+      jobName,
+    );
+  }
+}
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

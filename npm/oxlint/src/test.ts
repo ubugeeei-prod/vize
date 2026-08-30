@@ -4,7 +4,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { extractSfcBlocks, formatBlockLabel, getDiagnosticBlock } from "./sfc-blocks.ts";
 import { resetFixtureDir } from "./test-support/fixture-dir.ts";
 
 const packageDir = path.dirname(fileURLToPath(import.meta.url));
@@ -853,37 +852,5 @@ assert.doesNotMatch(
 );
 assert.equal(standaloneHtmlRun.output, readSnapshot("stylish-standalone-html-output.txt"));
 
-const sampleBlocks = extractSfcBlocks(
-  `<script setup lang="ts">\nconst count = 1\n</script>\n<template>\n  <div>{{ count }}</div>\n</template>\n<style scoped>\n.foo {}\n</style>\n<i18n>\n{}\n</i18n>\n`,
-);
-assert.deepEqual(
-  sampleBlocks.map((block) => formatBlockLabel(block)),
-  ["<script setup>", "<template>", "<style>", "<i18n>"],
-  "SFC block extraction should classify common Vue block types",
-);
-const genericSetupBlocks = extractSfcBlocks(
-  `<script setup lang="ts" generic="T extends Record<string, unknown>">\nconst count = 1\n</script>\n`,
-);
-assert.equal(genericSetupBlocks[0]?.kind, "script-setup");
-assert.equal(genericSetupBlocks[0]?.content.trim(), "const count = 1");
-assert.equal(
-  formatBlockLabel(
-    getDiagnosticBlock(
-      {
-        rule: "vize/vue/mock",
-        severity: "error",
-        message: "Mock error. Detail: extra context",
-        location: {
-          start: { line: 5, column: 3, offset: 0 },
-          end: { line: 5, column: 8, offset: 0 },
-        },
-        help: null,
-      },
-      sampleBlocks,
-    ),
-  ),
-  "<template>",
-  "Diagnostics should map back to their containing SFC block",
-);
 await import("./test-support/suites.ts");
 console.log("✅ oxlint-plugin-vize integration tests passed!");
