@@ -12,7 +12,7 @@ import type {
   PlacementSide,
   PositionerStrategy,
   Rect,
-} from "../../../positioner.ts";
+} from "../positioner/positioner.ts";
 
 /** Open state mirrored to the Popover data contract. */
 export type PopoverState = "closed" | "open";

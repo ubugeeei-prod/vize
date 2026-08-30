@@ -1,6 +1,9 @@
 import type { MaybeRefOrGetter } from "vue";
 
-import type { PresenceController, PresenceOptions } from "./presence-types.ts";
+import type {
+  PresenceController,
+  PresenceOptions,
+} from "./families/overlays/presence/presence-types.ts";
 
 /** Options shared by {@link createTransition} and {@link useTransition}. */
 export interface TransitionOptions extends PresenceOptions {

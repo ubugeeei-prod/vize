@@ -3,8 +3,8 @@ import { onMounted, onUpdated, useTemplateRef, watchEffect } from "vue";
 
 import { popoverContext } from "./popover-context.ts";
 import type { PopoverArrowExpose, PopoverArrowSlotState } from "./popover-types.ts";
-import { positionerContext } from "../../../positioner-context.ts";
-import type { Placement, PlacementAlign, PlacementSide } from "../../../positioner.ts";
+import { positionerContext } from "../positioner/positioner-context.ts";
+import type { Placement, PlacementAlign, PlacementSide } from "../positioner/positioner.ts";
 
 defineSlots<{
   /** Decorative arrow contents. Receives coordinates for optional custom drawing. */

@@ -55,7 +55,7 @@ function next() {
     filename: "NestedPresenceConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";
-import Presence from "./presence.vue";
+import Presence from "./families/overlays/presence/presence.vue";
 
 const outerOpen = ref(true);
 const innerOpen = ref(true);

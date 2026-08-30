@@ -5,6 +5,7 @@ import {
 } from "./family-catalog-types.ts";
 
 const dialogFamilyRoot = "src/families/overlays/dialog/";
+const alertDialogFamilyRoot = "src/families/overlays/alert-dialog/";
 
 export const dialogFamilyCatalog = [
   {
@@ -57,15 +58,18 @@ export const dialogFamilyCatalog = [
     canonicalName: "alert-dialog",
     title: "Alert Dialog",
     packageSubpath: "./alert-dialog",
-    entryFile: "src/alert-dialog.ts",
+    entryFile: `${alertDialogFamilyRoot}alert-dialog.ts`,
     sourceFiles: [
-      "src/alert-dialog-content.vue",
-      "src/alert-dialog.ts",
-      "src/alert-dialog-types.ts",
+      `${alertDialogFamilyRoot}alert-dialog-content.vue`,
+      `${alertDialogFamilyRoot}alert-dialog.ts`,
+      `${alertDialogFamilyRoot}alert-dialog-types.ts`,
     ],
-    behaviorContract: "src/alert-dialog.behavior.md",
-    tests: ["src/alert-dialog.test.ts", "src/alert-dialog-ssr.test.ts"],
-    typeTests: ["src/alert-dialog.types.test-d.ts"],
+    behaviorContract: `${alertDialogFamilyRoot}alert-dialog.behavior.md`,
+    tests: [
+      `${alertDialogFamilyRoot}alert-dialog.test.ts`,
+      `${alertDialogFamilyRoot}alert-dialog-ssr.test.ts`,
+    ],
+    typeTests: [`${alertDialogFamilyRoot}alert-dialog.types.test-d.ts`],
     rendererFixture: "AlertDialogConsumer.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {

@@ -5,16 +5,16 @@ import { h } from "vue";
 import AnnouncerProvider from "./announcer-provider.vue";
 import { dialogRuntimeFixtures } from "./families/overlays/dialog/runtime-conformance-dialog-fixtures.ts";
 import LiveRegion from "./live-region.vue";
-import Portal from "./portal.vue";
-import PositionerArrow from "./positioner-arrow.vue";
-import Positioner from "./positioner.vue";
+import Portal from "./families/overlays/portal/portal.vue";
+import PositionerArrow from "./families/overlays/positioner/positioner-arrow.vue";
+import Positioner from "./families/overlays/positioner/positioner.vue";
 import {
   PopoverArrow,
   PopoverContent,
   PopoverRoot,
   PopoverTrigger,
 } from "./families/overlays/popover/popover.ts";
-import Presence from "./presence.vue";
+import Presence from "./families/overlays/presence/presence.vue";
 import Transition from "./transition.vue";
 import {
   TooltipContent,
@@ -83,7 +83,7 @@ export const overlayRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "portal",
-    sourceFile: "portal.vue",
+    sourceFile: "families/overlays/portal/portal.vue",
     render: () =>
       h(
         Portal,
@@ -105,7 +105,7 @@ export const overlayRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "presence",
-    sourceFile: "presence.vue",
+    sourceFile: "families/overlays/presence/presence.vue",
     render: () =>
       h(
         Presence,
@@ -129,7 +129,7 @@ export const overlayRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "positioner",
-    sourceFile: "positioner.vue",
+    sourceFile: "families/overlays/positioner/positioner.vue",
     render: () =>
       h(Positioner, null, {
         default: () => "Menu",
@@ -148,7 +148,7 @@ export const overlayRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "positioner-arrow",
-    sourceFile: "positioner-arrow.vue",
+    sourceFile: "families/overlays/positioner/positioner-arrow.vue",
     render: () =>
       h(Positioner, null, {
         default: () => [h(PositionerArrow), "Menu"],

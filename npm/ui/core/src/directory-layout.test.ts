@@ -10,7 +10,6 @@ const familySfcPattern =
 
 const grandfatheredRootSfcFiles = [
   "action-button.vue",
-  "alert-dialog-content.vue",
   "announcer-provider.vue",
   "collapsible-content.vue",
   "collapsible-root.vue",
@@ -19,10 +18,6 @@ const grandfatheredRootSfcFiles = [
   "error-summary.vue",
   "link-anchor.vue",
   "live-region.vue",
-  "portal.vue",
-  "positioner-arrow.vue",
-  "positioner.vue",
-  "presence.vue",
   "primitive-element.vue",
   "transition.vue",
   "visually-hidden.vue",

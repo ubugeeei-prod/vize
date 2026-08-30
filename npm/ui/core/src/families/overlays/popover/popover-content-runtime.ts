@@ -11,7 +11,7 @@ import type {
   PlacementSide,
   PositionerStrategy,
   Rect,
-} from "../../../positioner.ts";
+} from "../positioner/positioner.ts";
 import type { ScrollLockController } from "../../../scroll-lock.ts";
 import type { PopoverContextValue } from "./popover-context.ts";
 import type { PopoverContentSlotState, PopoverState } from "./popover-types.ts";

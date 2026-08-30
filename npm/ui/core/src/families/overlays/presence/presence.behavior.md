@@ -1,9 +1,10 @@
 # Presence behavior contract
 
 Normative state × input → outcome table for `presence.vue` (`@vizejs/ui/presence`).
-Every row is proven by the named test in `src/presence.test.ts` or
-`src/presence-ssr.test.ts`; compile-only assertions live in
-`src/presence.types.test-d.ts`.
+Every row is proven by the named test in
+`src/families/overlays/presence/presence.test.ts` or
+`src/families/overlays/presence/presence-ssr.test.ts`; compile-only assertions
+live in `src/families/overlays/presence/presence.types.test-d.ts`.
 
 | #   | State        | Input                                     | Outcome                                                                    | Proven by                                                       |
 | --- | ------------ | ----------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------- |
@@ -17,5 +18,5 @@ Every row is proven by the named test in `src/presence.test.ts` or
 | P8  | unmounted    | `forceMount`                              | slot stays mounted with `unmounted` status                                 | `force-mounts hidden content`                                   |
 | P9  | present      | render                                    | exposed `element` is the rendered node                                     | `exposes the rendered element for composition`                  |
 | P10 | SSR          | `present=true`                            | byte-identical markup starts in `present`                                  | SSR test                                                        |
-| P11 | public types | invalid status or mutating readonly refs  | compilation rejects misuse                                                 | `src/presence.types.test-d.ts`                                  |
+| P11 | public types | invalid status or mutating readonly refs  | compilation rejects misuse                                                 | `src/families/overlays/presence/presence.types.test-d.ts`       |
 | P12 | any          | `motion` recipe prop                      | `data-vize-motion` publishes the recipe; omitted prop renders no attribute | `publishes the named motion recipe for the packaged stylesheet` |

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "vite-plus/test";
 import { h, nextTick } from "vue";
 
-import { mountInteraction } from "./testing/mount.ts";
+import { mountInteraction } from "../../../testing/mount.ts";
 import Portal from "./portal.vue";
 
 test("renders slotted content", () => {

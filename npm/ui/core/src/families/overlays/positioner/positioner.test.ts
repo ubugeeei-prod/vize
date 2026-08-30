@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "vite-plus/test";
 import { defineComponent, effectScope, h, nextTick } from "vue";
 
-import { mountInteraction } from "./testing/mount.ts";
+import { mountInteraction } from "../../../testing/mount.ts";
 import { createPositioner, usePositioner } from "./positioner.ts";
 import PositionerArrow from "./positioner-arrow.vue";
 import Positioner from "./positioner.vue";

@@ -17,7 +17,7 @@ import { selectionRuntimeFixtures } from "./families/selection/runtime-conforman
 import { paginationRuntimeFixtures } from "./families/navigation/pagination/runtime-conformance-pagination-fixtures.ts";
 import PrimitiveElement from "./primitive-element.vue";
 import { alertRuntimeFixture } from "./families/feedback/alert/runtime-conformance-alert-fixtures.ts";
-import { alertDialogRuntimeFixture } from "./runtime-conformance-alert-dialog-fixtures.ts";
+import { alertDialogRuntimeFixture } from "./families/overlays/alert-dialog/runtime-conformance-alert-dialog-fixtures.ts";
 import { badgeRuntimeFixture } from "./families/feedback/badge/runtime-conformance-badge-fixtures.ts";
 import { bannerRuntimeFixture } from "./families/feedback/banner/runtime-conformance-banner-fixtures.ts";
 import { blockUIRuntimeFixture } from "./families/feedback/block-ui/runtime-conformance-block-ui-fixtures.ts";

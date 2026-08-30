@@ -7,10 +7,10 @@ import type {
   DismissableLayerDismissEvent,
   DismissableLayerEscapeKeyDownEvent,
 } from "../../../dismissable-layer.ts";
-import Portal from "../../../portal.vue";
-import Positioner from "../../../positioner.vue";
-import type { Placement, PositionerStrategy, Rect } from "../../../positioner.ts";
-import Presence from "../../../presence.vue";
+import Portal from "../portal/portal.vue";
+import Positioner from "../positioner/positioner.vue";
+import type { Placement, PositionerStrategy, Rect } from "../positioner/positioner.ts";
+import Presence from "../presence/presence.vue";
 import { tooltipContext } from "./tooltip-context.ts";
 import type {
   TooltipContentExpose,

@@ -12,11 +12,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "./alert-dialog.ts";
-import type { RuntimeFixture } from "./runtime-conformance-fixtures.ts";
+import type { RuntimeFixture } from "../../../runtime-conformance-fixtures.ts";
 
 export const alertDialogRuntimeFixture: RuntimeFixture = {
   name: "alert-dialog",
-  sourceFile: "alert-dialog-content.vue",
+  sourceFile: "families/overlays/alert-dialog/alert-dialog-content.vue",
   render: () =>
     h(AlertDialogRoot, { defaultOpen: true, id: "confirm-delete" }, () => [
       h(AlertDialogTrigger, null, () => "Delete"),

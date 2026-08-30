@@ -141,6 +141,7 @@ test("stable catalog entries have every required artifact", async () => {
 test("new family-owned SFC primitives keep implementation and tests together", () => {
   const familyRoots = new Map([
     ["alert", "src/families/feedback/alert/"],
+    ["alert-dialog", "src/families/overlays/alert-dialog/"],
     ["aspect-ratio", "src/families/layout/aspect-ratio/"],
     ["avatar", "src/families/layout/avatar/"],
     ["banner", "src/families/feedback/banner/"],
@@ -169,6 +170,10 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["meter", "src/families/feedback/meter/"],
     ["native-select", "src/families/selection/native-select/"],
     ["pagination", "src/families/navigation/pagination/"],
+    ["portal", "src/families/overlays/portal/"],
+    ["positioner", "src/families/overlays/positioner/"],
+    ["popover", "src/families/overlays/popover/"],
+    ["presence", "src/families/overlays/presence/"],
     ["print-button", "src/families/actions/print-button/"],
     ["progress", "src/families/feedback/progress/"],
     ["progress-bar", "src/families/feedback/progress-bar/"],
@@ -283,6 +288,18 @@ test("selection families keep root compatibility barrels", async () => {
     assert.match(
       source,
       new RegExp(`from "\\./families/selection/${name}/${name}\\.ts"`),
+      `${name} must keep its historical source entry as a compatibility barrel`,
+    );
+  }
+});
+
+test("overlay infrastructure families keep root compatibility barrels", async () => {
+  for (const name of ["alert-dialog", "portal", "positioner", "presence"] as const) {
+    const source = await readFile(path.resolve(`src/${name}.ts`), "utf8");
+
+    assert.match(
+      source,
+      new RegExp(`from "\\./families/overlays/${name}/${name}\\.ts"`),
       `${name} must keep its historical source entry as a compatibility barrel`,
     );
   }

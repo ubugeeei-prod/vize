@@ -10,7 +10,7 @@ import type {
   DialogState,
   DialogTitleExpose,
   DialogTriggerExpose,
-} from "./families/overlays/dialog/dialog-types.ts";
+} from "../dialog/dialog-types.ts";
 
 /** Preventable AlertDialog auto-focus lifecycle event. */
 export type AlertDialogAutoFocusEvent = DialogAutoFocusEvent;

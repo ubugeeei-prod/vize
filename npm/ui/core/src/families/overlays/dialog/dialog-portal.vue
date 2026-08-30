@@ -4,7 +4,7 @@ import type { ComputedRef } from "vue";
 
 import { dialogContext } from "./dialog-context.ts";
 import type { DialogPortalExpose, DialogSlotState, DialogState } from "./dialog-types.ts";
-import Portal from "../../../portal.vue";
+import Portal from "../portal/portal.vue";
 
 const {
   to = "body",

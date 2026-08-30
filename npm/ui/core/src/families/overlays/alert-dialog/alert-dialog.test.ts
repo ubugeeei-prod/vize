@@ -15,7 +15,7 @@ import {
 } from "./alert-dialog.ts";
 import AlertDialogContent from "./alert-dialog-content.vue";
 import type { AlertDialogContentExpose, AlertDialogSlotState } from "./alert-dialog-types.ts";
-import { mountInteraction } from "./testing/mount.ts";
+import { mountInteraction } from "../../../testing/mount.ts";
 
 async function settleAlertDialog(): Promise<void> {
   await nextTick();

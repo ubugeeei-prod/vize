@@ -42,5 +42,5 @@ are proven by the named test in `src/motion.test.ts` or
 - `data-vize-motion` accepts space-separated recipe names. Enter/exit recipes
   (`fade`, `scale`, `slide`) activate through `data-vize-presence` /
   `data-vize-transition` status attributes, so the presence and transition
-  primitives complete from real `animationend` events; `presence.vue` and
+  primitives complete from real `animationend` events; `families/overlays/presence/presence.vue` and
   `transition.vue` publish the attribute through their `motion` prop.

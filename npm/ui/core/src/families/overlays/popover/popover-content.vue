@@ -13,10 +13,10 @@ import type {
 import { createFocusGuards } from "../../../focus-guards.ts";
 import { createFocusScope } from "../../../focus-scope.ts";
 import { createInertOutside } from "../../../inert-outside.ts";
-import Portal from "../../../portal.vue";
-import Positioner from "../../../positioner.vue";
-import type { Placement, PositionerStrategy, Rect } from "../../../positioner.ts";
-import Presence from "../../../presence.vue";
+import Portal from "../portal/portal.vue";
+import Positioner from "../positioner/positioner.vue";
+import type { Placement, PositionerStrategy, Rect } from "../positioner/positioner.ts";
+import Presence from "../presence/presence.vue";
 import { popoverContext } from "./popover-context.ts";
 import {
   createPopoverSlotState,
