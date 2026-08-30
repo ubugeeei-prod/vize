@@ -19,7 +19,6 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
   assert.deepEqual(
     results.map((result) => result.filename),
     [
-      "src/error-summary.vue",
       "src/families/accessibility/announcer/announcer-provider.vue",
       "src/families/accessibility/live-region/live-region.vue",
       "src/families/accessibility/visually-hidden/visually-hidden.vue",
@@ -54,6 +53,7 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
       "src/families/feedback/skeleton/skeleton.vue",
       "src/families/feedback/spinner/spinner.vue",
       "src/families/feedback/status-light/status-light.vue",
+      "src/families/form/error-summary/error-summary.vue",
       "src/families/form/field/field-description.vue",
       "src/families/form/field/field-error-message.vue",
       "src/families/form/field/field-label.vue",
@@ -144,7 +144,6 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
   assert.deepEqual(
     requests,
     [
-      "error-summary.vue",
       "families/accessibility/announcer/announcer-provider.vue",
       "families/accessibility/live-region/live-region.vue",
       "families/accessibility/visually-hidden/visually-hidden.vue",
@@ -179,6 +178,7 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
       "families/feedback/skeleton/skeleton.vue",
       "families/feedback/spinner/spinner.vue",
       "families/feedback/status-light/status-light.vue",
+      "families/form/error-summary/error-summary.vue",
       "families/form/field/field-description.vue",
       "families/form/field/field-error-message.vue",
       "families/form/field/field-label.vue",

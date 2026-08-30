@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 import { defineComponent, h, type VNode } from "vue";
 
 import Button from "./families/actions/button/button.vue";
+import ErrorSummary from "./families/form/error-summary/error-summary.vue";
 import IdProvider from "./families/foundations/id/deterministic-id-provider.vue";
 import { useDeterministicId } from "./families/foundations/id/deterministic-id.ts";
 import LinkAnchor from "./families/navigation/link/link-anchor.vue";
-import ErrorSummary from "./error-summary.vue";
 import { skipLinkRuntimeFixture } from "./families/navigation/skip-link/runtime-conformance-skip-link-fixtures.ts";
 import { collapsibleRuntimeFixtures } from "./runtime-conformance-collapsible-fixtures.ts";
 import { calloutRuntimeFixture } from "./families/feedback/callout/runtime-conformance-callout-fixtures.ts";
@@ -134,7 +134,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "error-summary",
-    sourceFile: "error-summary.vue",
+    sourceFile: "families/form/error-summary/error-summary.vue",
     render: () =>
       h(ErrorSummary, {
         autoFocus: false,

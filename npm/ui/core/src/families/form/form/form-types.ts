@@ -1,6 +1,6 @@
 import type { ComputedRef, MaybeRefOrGetter } from "vue";
 
-import type { ErrorSummaryField } from "../../../error-summary-types.ts";
+import type { ErrorSummaryField } from "../error-summary/error-summary-types.ts";
 
 /** Structural Standard Schema V1 contract accepted by the form utilities. */
 export interface StandardSchemaV1<Input = unknown, Output = Input> {

@@ -22,8 +22,11 @@ const foundationCompatibilityBarrels = [
   ["deterministic-id.ts", "./families/foundations/id/deterministic-id.ts"],
   ["id.ts", "./families/foundations/id/id.ts"],
 ] as const;
+const formCompatibilityBarrels = [
+  ["error-summary.ts", "./families/form/error-summary/error-summary.ts"],
+] as const;
 
-const grandfatheredRootSfcFiles = ["error-summary.vue", "primitive-element.vue"] as const;
+const grandfatheredRootSfcFiles = ["primitive-element.vue"] as const;
 
 test("new public SFCs live in family directories", () => {
   assert.deepEqual(rootSfcFiles(), grandfatheredRootSfcFiles);
@@ -63,6 +66,35 @@ test("root foundation utilities stay compatibility-only barrels", () => {
 
     assert.equal(source, `export * from "${target}";`);
   }
+});
+
+test("root form utilities stay compatibility-only barrels", () => {
+  for (const [filename, target] of formCompatibilityBarrels) {
+    const source = fs.readFileSync(path.join(sourceRoot, filename), "utf8").trim();
+
+    assert.equal(source, `export * from "${target}";`);
+  }
+});
+
+test("rehomed error-summary family is cataloged from a family directory", () => {
+  const family = foundationFamilyCatalog.find((entry) => entry.canonicalName === "error-summary");
+  assert.ok(family);
+
+  const familyRoot = "src/families/form/error-summary/";
+  assert.equal(family.entryFile, `${familyRoot}error-summary.ts`);
+  assert.deepEqual(family.sourceFiles, [
+    `${familyRoot}error-summary.vue`,
+    `${familyRoot}error-summary.ts`,
+    `${familyRoot}error-summary-runtime.ts`,
+    `${familyRoot}error-summary-types.ts`,
+  ]);
+  assert.equal(family.behaviorContract, `${familyRoot}error-summary.behavior.md`);
+  assert.deepEqual(family.tests, [
+    `${familyRoot}error-summary.test.ts`,
+    `${familyRoot}error-summary-ssr.test.ts`,
+  ]);
+  assert.deepEqual(family.typeTests, [`${familyRoot}error-summary.types.test-d.ts`]);
+  assert.equal(family.rendererFixture, "families/form/error-summary/error-summary.vue");
 });
 
 test("rehomed command family is cataloged from a family directory", () => {

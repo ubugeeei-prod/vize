@@ -163,7 +163,7 @@ export default defineConfig({
       "alert-dialog": "src/families/overlays/alert-dialog/alert-dialog.ts",
       "dismissable-layer": "src/dismissable-layer.ts",
       "drag-and-drop": "src/drag-and-drop.ts",
-      "error-summary": "src/error-summary.ts",
+      "error-summary": "src/families/form/error-summary/error-summary.ts",
       icon: "src/families/layout/icon/icon.ts",
       "icon-button": "src/families/layout/icon/icon-button.ts",
       field: "src/families/form/field/field.ts",

@@ -1,6 +1,6 @@
 import { computed, toValue, type MaybeRefOrGetter } from "vue";
 
-import type { ErrorSummaryField } from "../../../error-summary-types.ts";
+import type { ErrorSummaryField } from "../error-summary/error-summary-types.ts";
 import type {
   FormErrorSummaryFieldOptions,
   FormErrorSummaryController,

@@ -8,6 +8,7 @@ import {
 
 const fieldFamilyRoot = "src/families/form/field/";
 const fieldWiringFamilyRoot = "src/families/form/field-wiring/";
+const errorSummaryFamilyRoot = "src/families/form/error-summary/";
 const formFamilyRoot = "src/families/form/form/";
 const foundationFamilyRoot = "src/families/foundations/";
 const commandFamilyRoot = `${foundationFamilyRoot}command/`;
@@ -150,17 +151,20 @@ export const foundationFamilyCatalog = [
     canonicalName: "error-summary",
     title: "Error Summary",
     packageSubpath: "./error-summary",
-    entryFile: "src/error-summary.ts",
+    entryFile: `${errorSummaryFamilyRoot}error-summary.ts`,
     sourceFiles: [
-      "src/error-summary.vue",
-      "src/error-summary.ts",
-      "src/error-summary-runtime.ts",
-      "src/error-summary-types.ts",
+      `${errorSummaryFamilyRoot}error-summary.vue`,
+      `${errorSummaryFamilyRoot}error-summary.ts`,
+      `${errorSummaryFamilyRoot}error-summary-runtime.ts`,
+      `${errorSummaryFamilyRoot}error-summary-types.ts`,
     ],
-    behaviorContract: "src/error-summary.behavior.md",
-    tests: ["src/error-summary.test.ts", "src/error-summary-ssr.test.ts"],
-    typeTests: ["src/error-summary.types.test-d.ts"],
-    rendererFixture: "error-summary.vue",
+    behaviorContract: `${errorSummaryFamilyRoot}error-summary.behavior.md`,
+    tests: [
+      `${errorSummaryFamilyRoot}error-summary.test.ts`,
+      `${errorSummaryFamilyRoot}error-summary-ssr.test.ts`,
+    ],
+    typeTests: [`${errorSummaryFamilyRoot}error-summary.types.test-d.ts`],
+    rendererFixture: "families/form/error-summary/error-summary.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {
       exportName: "ErrorSummary",

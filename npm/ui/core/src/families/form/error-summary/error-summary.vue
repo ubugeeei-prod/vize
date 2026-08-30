@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, toRef, useTemplateRef } from "vue";
 
-import { useDeterministicId } from "./families/foundations/id/deterministic-id.ts";
+import { useDeterministicId } from "../../foundations/id/deterministic-id.ts";
 import { useErrorSummary } from "./error-summary-runtime.ts";
 import type { ErrorSummaryField } from "./error-summary-types.ts";
 

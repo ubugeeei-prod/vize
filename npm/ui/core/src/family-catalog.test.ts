@@ -160,6 +160,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["container", "src/families/layout/container/"],
     ["dialog", "src/families/overlays/dialog/"],
     ["empty-state", "src/families/feedback/empty-state/"],
+    ["error-summary", "src/families/form/error-summary/"],
     ["focus", "src/families/accessibility/focus/"],
     ["focus-guards", "src/families/accessibility/focus-guards/"],
     ["focus-scope", "src/families/accessibility/focus-scope/"],
@@ -295,6 +296,10 @@ test("interaction families keep root compatibility barrels", async () => {
     "pointer-grace",
     "press",
   ]);
+});
+
+test("form families keep root compatibility barrels", async () => {
+  await assertFamilyBarrels("form", ["error-summary"]);
 });
 
 test("progress family keeps root compatibility barrel", async () => {

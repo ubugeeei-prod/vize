@@ -5,7 +5,7 @@ import { nextTick } from "vue";
 
 import { createErrorSummary, useErrorSummary, type ErrorSummaryField } from "./error-summary.ts";
 import ErrorSummary from "./error-summary.vue";
-import { mountInteraction } from "./testing/mount.ts";
+import { mountInteraction } from "../../../testing/mount.ts";
 
 const invalidFields: readonly ErrorSummaryField[] = [
   { id: "email", label: "Email", message: "Enter a valid address" },

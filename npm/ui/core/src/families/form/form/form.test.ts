@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { test } from "vite-plus/test";
 import { defineComponent, effectScope, h, nextTick, ref } from "vue";
 
-import type { ErrorSummaryField } from "../../../error-summary.ts";
-import { useErrorSummary } from "../../../error-summary.ts";
+import type { ErrorSummaryField } from "../error-summary/error-summary.ts";
+import { useErrorSummary } from "../error-summary/error-summary.ts";
 import { useFieldWiring } from "../field-wiring/field-wiring.ts";
 import {
   createFormErrorSummaryFields,
