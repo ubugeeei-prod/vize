@@ -118,7 +118,7 @@ export default defineConfig({
       container: "src/families/layout/container/container.ts",
       grid: "src/families/layout/grid/grid.ts",
       "empty-state": "src/families/feedback/empty-state/empty-state.ts",
-      collapsible: "src/collapsible.ts",
+      collapsible: "src/families/disclosure/collapsible/collapsible.ts",
       button: "src/families/actions/button/button.ts",
       "button-group": "src/families/actions/button-group/button-group.ts",
       "copy-button": "src/families/actions/copy-button/copy-button.ts",

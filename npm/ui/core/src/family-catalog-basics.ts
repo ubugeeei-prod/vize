@@ -4,6 +4,7 @@ import {
   type UiFamilyCatalogEntry,
 } from "./family-catalog-types.ts";
 
+const collapsibleFamilyRoot = "src/families/disclosure/collapsible/";
 const inputFamilyRoot = "src/families/form/input/";
 const searchFieldFamilyRoot = "src/families/form/search-field/";
 const textareaFamilyRoot = "src/families/form/textarea/";
@@ -13,18 +14,21 @@ export const basicFamilyCatalog = [
     canonicalName: "collapsible",
     title: "Collapsible",
     packageSubpath: "./collapsible",
-    entryFile: "src/collapsible.ts",
+    entryFile: `${collapsibleFamilyRoot}collapsible.ts`,
     sourceFiles: [
-      "src/collapsible-root.vue",
-      "src/collapsible-trigger.vue",
-      "src/collapsible-content.vue",
-      "src/collapsible.ts",
-      "src/collapsible-context.ts",
-      "src/collapsible-types.ts",
+      `${collapsibleFamilyRoot}collapsible-root.vue`,
+      `${collapsibleFamilyRoot}collapsible-trigger.vue`,
+      `${collapsibleFamilyRoot}collapsible-content.vue`,
+      `${collapsibleFamilyRoot}collapsible.ts`,
+      `${collapsibleFamilyRoot}collapsible-context.ts`,
+      `${collapsibleFamilyRoot}collapsible-types.ts`,
     ],
-    behaviorContract: "src/collapsible.behavior.md",
-    tests: ["src/collapsible.test.ts", "src/collapsible-ssr.test.ts"],
-    typeTests: ["src/collapsible.types.test-d.ts"],
+    behaviorContract: `${collapsibleFamilyRoot}collapsible.behavior.md`,
+    tests: [
+      `${collapsibleFamilyRoot}collapsible.test.ts`,
+      `${collapsibleFamilyRoot}collapsible-ssr.test.ts`,
+    ],
+    typeTests: [`${collapsibleFamilyRoot}collapsible.types.test-d.ts`],
     rendererFixture: "CollapsibleConsumer.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {

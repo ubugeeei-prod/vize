@@ -2,8 +2,14 @@ import assert from "node:assert/strict";
 
 import { h } from "vue";
 
-import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from "./collapsible.ts";
+import {
+  CollapsibleContent,
+  CollapsibleRoot,
+  CollapsibleTrigger,
+} from "./families/disclosure/collapsible/collapsible.ts";
 import type { RuntimeFixture } from "./runtime-conformance-fixtures.ts";
+
+const collapsibleFamilyRoot = "families/disclosure/collapsible/";
 
 function collapsible(children: () => unknown): ReturnType<typeof h> {
   return h(CollapsibleRoot, { defaultOpen: true, id: "runtime-collapsible" }, children);
@@ -18,7 +24,7 @@ function assertRoot(host: HTMLElement): void {
 export const collapsibleRuntimeFixtures: readonly RuntimeFixture[] = [
   {
     name: "collapsible-root",
-    sourceFile: "collapsible-root.vue",
+    sourceFile: `${collapsibleFamilyRoot}collapsible-root.vue`,
     render: () => collapsible(() => "Disclosure"),
     assertServerMarkup(html) {
       assert.match(html, /id="runtime-collapsible"/);
@@ -29,7 +35,7 @@ export const collapsibleRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "collapsible-trigger",
-    sourceFile: "collapsible-trigger.vue",
+    sourceFile: `${collapsibleFamilyRoot}collapsible-trigger.vue`,
     render: () => collapsible(() => h(CollapsibleTrigger, null, () => "Filters")),
     assertServerMarkup(html) {
       assert.match(html, /data-vize-ui="collapsible-trigger"/);
@@ -45,7 +51,7 @@ export const collapsibleRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "collapsible-content",
-    sourceFile: "collapsible-content.vue",
+    sourceFile: `${collapsibleFamilyRoot}collapsible-content.vue`,
     render: () => collapsible(() => h(CollapsibleContent, null, () => "Filter controls")),
     assertServerMarkup(html) {
       assert.match(html, /data-vize-ui="collapsible-content"/);

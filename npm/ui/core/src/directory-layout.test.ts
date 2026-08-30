@@ -4,6 +4,7 @@ import path from "node:path";
 
 import { test } from "vite-plus/test";
 
+import { basicFamilyCatalog } from "./family-catalog-basics.ts";
 import { foundationFamilyCatalog } from "./family-catalog-foundations.ts";
 import { focusFamilyCatalog } from "./family-catalog-focus.ts";
 
@@ -21,9 +22,6 @@ const foundationCompatibilityBarrels = [
 ] as const;
 
 const grandfatheredRootSfcFiles = [
-  "collapsible-content.vue",
-  "collapsible-root.vue",
-  "collapsible-trigger.vue",
   "error-summary.vue",
   "link-anchor.vue",
   "primitive-element.vue",
@@ -68,6 +66,35 @@ test("root foundation utilities stay compatibility-only barrels", () => {
 
     assert.equal(source, `export * from "${target}";`);
   }
+});
+
+test("rehomed disclosure families are cataloged from family directories", () => {
+  const family = basicFamilyCatalog.find((entry) => entry.canonicalName === "collapsible");
+  assert.ok(family);
+
+  const familyRoot = "src/families/disclosure/collapsible/";
+  assert.equal(family.entryFile, `${familyRoot}collapsible.ts`);
+  assert.deepEqual(family.sourceFiles, [
+    `${familyRoot}collapsible-root.vue`,
+    `${familyRoot}collapsible-trigger.vue`,
+    `${familyRoot}collapsible-content.vue`,
+    `${familyRoot}collapsible.ts`,
+    `${familyRoot}collapsible-context.ts`,
+    `${familyRoot}collapsible-types.ts`,
+  ]);
+  assert.equal(family.behaviorContract, `${familyRoot}collapsible.behavior.md`);
+  assert.deepEqual(family.tests, [
+    `${familyRoot}collapsible.test.ts`,
+    `${familyRoot}collapsible-ssr.test.ts`,
+  ]);
+  assert.deepEqual(family.typeTests, [`${familyRoot}collapsible.types.test-d.ts`]);
+  assert.equal(family.rendererFixture, "CollapsibleConsumer.vue");
+});
+
+test("root collapsible entry stays a compatibility-only barrel", () => {
+  const source = fs.readFileSync(path.join(sourceRoot, "collapsible.ts"), "utf8").trim();
+
+  assert.equal(source, 'export * from "./families/disclosure/collapsible/collapsible.ts";');
 });
 
 test("rehomed id family is cataloged from a family directory", () => {

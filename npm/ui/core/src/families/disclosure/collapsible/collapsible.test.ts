@@ -7,7 +7,7 @@ import type { CollapsibleContentExpose, CollapsibleRootExpose } from "./collapsi
 import CollapsibleContent from "./collapsible-content.vue";
 import CollapsibleRoot from "./collapsible-root.vue";
 import CollapsibleTrigger from "./collapsible-trigger.vue";
-import { mountInteraction } from "./testing/mount.ts";
+import { mountInteraction } from "../../../testing/mount.ts";
 
 function mountCollapsible(
   props: Record<string, unknown> = {},

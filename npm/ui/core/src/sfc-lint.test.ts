@@ -19,9 +19,6 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
   assert.deepEqual(
     results.map((result) => result.filename),
     [
-      "src/collapsible-content.vue",
-      "src/collapsible-root.vue",
-      "src/collapsible-trigger.vue",
       "src/error-summary.vue",
       "src/families/accessibility/announcer/announcer-provider.vue",
       "src/families/accessibility/live-region/live-region.vue",
@@ -42,6 +39,9 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
       "src/families/data/table/table-header.vue",
       "src/families/data/table/table-row.vue",
       "src/families/data/table/table.vue",
+      "src/families/disclosure/collapsible/collapsible-content.vue",
+      "src/families/disclosure/collapsible/collapsible-root.vue",
+      "src/families/disclosure/collapsible/collapsible-trigger.vue",
       "src/families/feedback/alert/alert.vue",
       "src/families/feedback/badge/badge.vue",
       "src/families/feedback/banner/banner.vue",
@@ -144,9 +144,6 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
   assert.deepEqual(
     requests,
     [
-      "collapsible-content.vue",
-      "collapsible-root.vue",
-      "collapsible-trigger.vue",
       "error-summary.vue",
       "families/accessibility/announcer/announcer-provider.vue",
       "families/accessibility/live-region/live-region.vue",
@@ -167,6 +164,9 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
       "families/data/table/table-header.vue",
       "families/data/table/table-row.vue",
       "families/data/table/table.vue",
+      "families/disclosure/collapsible/collapsible-content.vue",
+      "families/disclosure/collapsible/collapsible-root.vue",
+      "families/disclosure/collapsible/collapsible-trigger.vue",
       "families/feedback/alert/alert.vue",
       "families/feedback/badge/badge.vue",
       "families/feedback/banner/banner.vue",

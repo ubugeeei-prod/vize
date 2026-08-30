@@ -1,6 +1,6 @@
 import type { ComputedRef } from "vue";
 
-import { createContext } from "./context.ts";
+import { createContext } from "../../foundations/context/context.ts";
 import type { CollapsibleState } from "./collapsible-types.ts";
 
 /** Shared state and ids for the Collapsible compound components. */
