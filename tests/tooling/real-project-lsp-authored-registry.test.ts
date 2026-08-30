@@ -74,6 +74,11 @@ test("authored LSP feature oracles are explicit and ratcheted", () => {
     assert.notEqual(lifecycle.copiedFile, lifecycle.renamedFile);
     assert.notEqual(lifecycle.originalImportSpecifier, lifecycle.copiedImportSpecifier);
     assert.notEqual(lifecycle.copiedImportSpecifier, lifecycle.renamedImportSpecifier);
+    assert.equal(
+      typeof (lifecycle.requireDeletedImportDiagnostic ?? true),
+      "boolean",
+      `${project.id} deleted import diagnostic requirement must be a boolean`,
+    );
     assert.match(lifecycle.markerSymbol, /^__vize[A-Za-z0-9_]+__$/);
     assert.ok(lifecycle.markerInsertionAnchor.length > 0);
 

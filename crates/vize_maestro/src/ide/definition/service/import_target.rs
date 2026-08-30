@@ -60,6 +60,39 @@ pub(super) fn component_tag_definition(ctx: &IdeContext<'_>) -> Option<GotoDefin
     None
 }
 
+/// Whether the cursor sits on an imported component tag whose resolved Vue
+/// file has been deleted from disk and is not kept alive by an open buffer.
+#[cfg(any(test, feature = "native"))]
+pub(super) fn component_tag_import_target_is_deleted(ctx: &IdeContext<'_>) -> bool {
+    let Some(tag_name) = helpers::get_tag_at_offset(&ctx.content, ctx.offset) else {
+        return false;
+    };
+    if !crate::ide::is_component_tag(&tag_name) {
+        return false;
+    }
+
+    crate::ide::component_name_candidates(&tag_name)
+        .into_iter()
+        .any(|name| {
+            helpers::find_import_path(ctx, &name)
+                .and_then(|specifier| resolve_import_specifier(ctx.uri, &specifier))
+                .is_some_and(|target| vue_target_is_deleted(ctx, &target))
+        })
+}
+
+fn vue_target_is_deleted(ctx: &IdeContext<'_>, target: &Path) -> bool {
+    if !target
+        .extension()
+        .is_some_and(|extension| extension == "vue")
+    {
+        return false;
+    }
+    let Ok(uri) = Url::from_file_path(target) else {
+        return false;
+    };
+    !target.is_file() && !ctx.state.documents.contains(&uri)
+}
+
 /// The module specifier and exported name of the import statement that both
 /// contains `offset` and binds `word`. `None` when the cursor is not on an
 /// imported name.
@@ -175,7 +208,7 @@ fn locate_export(ctx: &IdeContext<'_>, target: &Path, word: &str, hops: usize) -
         // A `.vue` module's meaningful position is the file itself, matching
         // how component-tag definition resolves today. Deleted targets are
         // invalid, while an editor-open unsaved target remains navigable.
-        if !target.is_file() && !ctx.state.documents.contains(&uri) {
+        if vue_target_is_deleted(ctx, target) {
             return None;
         }
         return Some(Location {

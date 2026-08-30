@@ -91,6 +91,67 @@ const childValue = 1
   }
 });
 
+test("authored file lifecycle can skip projects without deleted import diagnostics", async () => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-authored-file-lifecycle-"));
+  const importerSource = `<script setup lang="ts">
+import Child from "./Child.vue"
+</script>
+<template><Child /></template>
+`;
+  const dependencySource = `<script setup lang="ts">
+const childValue = 1
+</script>
+<template>{{ childValue }}</template>
+`;
+  const importerPath = path.join(workspace, "Importer.vue");
+  const dependencyPath = path.join(workspace, "Child.vue");
+  fs.writeFileSync(importerPath, importerSource);
+  fs.writeFileSync(dependencyPath, dependencySource);
+  const importerUri = pathToFileURL(importerPath).href;
+  const oracle = fixtureOracle();
+  oracle.fileLifecycle.requireDeletedImportDiagnostic = false;
+  const session = new FakeAuthoredLspSession(
+    workspace,
+    null,
+    false,
+    {
+      copiedFile: oracle.fileLifecycle.copiedFile,
+      copiedImportSpecifier: oracle.fileLifecycle.copiedImportSpecifier,
+      importerFile: oracle.componentBoundary.importerFile,
+      renamedFile: oracle.fileLifecycle.renamedFile,
+      renamedImportSpecifier: oracle.fileLifecycle.renamedImportSpecifier,
+    },
+    false,
+  );
+  session.seedDocument(oracle.componentBoundary.importerFile, importerSource);
+  const tagOffset = importerSource.indexOf("Child />");
+  const tagRange = rangeAt(importerSource, tagOffset, "Child".length);
+  const baselineDiagnostics: PublishDiagnosticsParams = {
+    diagnostics: [],
+    uri: importerUri,
+    version: 1,
+  };
+
+  try {
+    const result = await exerciseAuthoredFileLifecycle(
+      session,
+      workspace,
+      oracle,
+      { source: importerSource, uri: importerUri },
+      { source: dependencySource, uri: pathToFileURL(dependencyPath).href },
+      tagRange,
+      baselineDiagnostics,
+      () => 1_000,
+    );
+
+    assert.equal(result.deletedDefinition.count, 0);
+    assert.equal(result.deletedImporterDiagnostics.count, 0);
+    assert.equal(result.restoredDefinition.count, 1);
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 function fixtureOracle(): LspAuthoredOracle {
   return {
     componentBoundary: {

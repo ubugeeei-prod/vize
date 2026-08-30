@@ -37,6 +37,7 @@ export type LspAuthoredOracle = {
     markerInsertionAnchor: string;
     markerSymbol: string;
     originalImportSpecifier: string;
+    requireDeletedImportDiagnostic?: boolean;
     renamedFile: string;
     renamedImportSpecifier: string;
   };

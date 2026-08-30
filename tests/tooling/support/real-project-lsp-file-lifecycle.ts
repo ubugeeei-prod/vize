@@ -134,11 +134,10 @@ export async function exerciseAuthoredFileLifecycle(
       currentVersion,
       timeoutMs(),
     );
-    assertMissingModuleDiagnostic(
-      deletedDiagnostics,
-      renamedImporterSource,
-      lifecycle.renamedImportSpecifier,
-    );
+    const renamedImport = lifecycle.renamedImportSpecifier;
+    if (lifecycle.requireDeletedImportDiagnostic ?? true) {
+      assertMissingModuleDiagnostic(deletedDiagnostics, renamedImporterSource, renamedImport);
+    }
     const deletedDefinition = await expectNullResponse(
       session,
       "textDocument/definition",

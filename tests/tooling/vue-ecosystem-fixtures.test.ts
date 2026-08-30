@@ -184,7 +184,7 @@ test("Vue ecosystem registry covers the requested projects", () => {
   const registry = readRegistry();
   const ids = new Set(registry.projects.map((project) => project.id));
 
-  assert.equal(registry.schemaVersion, 7);
+  assert.equal(registry.schemaVersion, 8);
   for (const id of requestedFixtures) {
     assert.ok(ids.has(id), `${id} should be registered`);
   }

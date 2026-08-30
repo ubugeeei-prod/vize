@@ -66,6 +66,38 @@ fn tag_imports_resolve_through_aliases_anywhere_in_the_file() {
 }
 
 #[test]
+fn component_tag_import_target_deleted_detection_preserves_open_buffers() {
+    let workspace = tempfile::tempdir().expect("temporary workspace");
+    let target_path = workspace.path().join("LazyChild.vue");
+    let importer_path = workspace.path().join("Parent.vue");
+    let source = r#"<script setup lang="ts">
+import LazyChild from "./LazyChild.vue";
+</script>
+<template><LazyChild /></template>
+"#;
+    fs::write(&importer_path, source).expect("importer");
+
+    let importer_uri = Url::from_file_path(&importer_path).expect("importer URI");
+    let target_uri = Url::from_file_path(&target_path).expect("target URI");
+    let state = ServerState::new();
+    state
+        .documents
+        .open(importer_uri.clone(), source.to_owned(), 1, "vue".to_owned());
+    state.update_virtual_docs(&importer_uri, source);
+    let offset = source.rfind("LazyChild").expect("component tag");
+    let ctx = IdeContext::new(&state, &importer_uri, offset).expect("IDE context");
+
+    assert!(super::component_tag_import_target_is_deleted(&ctx));
+    assert!(super::component_tag_definition(&ctx).is_none());
+
+    state
+        .documents
+        .open(target_uri, "<template />\n".to_owned(), 1, "vue".to_owned());
+    assert!(!super::component_tag_import_target_is_deleted(&ctx));
+    assert!(super::component_tag_definition(&ctx).is_some());
+}
+
+#[test]
 fn reexports_cover_named_renames_and_stars() {
     let barrel =
         "export { default as UiButton } from \"./UiButton.vue\";\nexport * from \"./tokens\";\n";

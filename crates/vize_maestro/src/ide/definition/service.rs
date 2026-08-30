@@ -78,6 +78,9 @@ impl super::DefinitionService {
         if let Some(def) = import_target::component_tag_definition(ctx) {
             return Some(def);
         }
+        if import_target::component_tag_import_target_is_deleted(ctx) {
+            return None;
+        }
 
         if let Some(definition) = component_event::definition(ctx) {
             return Some(definition);
@@ -147,6 +150,9 @@ impl super::DefinitionService {
         // re-exports to their source instead of returning the barrel module.
         if let Some(def) = import_target::component_tag_definition(ctx) {
             return Some(def);
+        }
+        if import_target::component_tag_import_target_is_deleted(ctx) {
+            return None;
         }
 
         if let Some(definition) = component_event::definition(ctx) {

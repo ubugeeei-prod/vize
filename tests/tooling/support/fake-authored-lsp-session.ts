@@ -27,6 +27,7 @@ export class FakeAuthoredLspSession {
   private readonly documents = new Map<string, { text: string; version: number }>();
   private readonly lifecycle: FakeAuthoredLspLifecycle;
   private readonly nullMethod: string | null;
+  private readonly emitDeletedDependencyDiagnostics: boolean;
   private readonly throwOnClose: boolean;
   private readonly workspace: string;
   private fileDeleted = false;
@@ -36,11 +37,13 @@ export class FakeAuthoredLspSession {
     nullMethod: string | null = null,
     throwOnClose = false,
     lifecycle: FakeAuthoredLspLifecycle = DEFAULT_LIFECYCLE,
+    emitDeletedDependencyDiagnostics = true,
   ) {
     this.workspace = workspace;
     this.nullMethod = nullMethod;
     this.throwOnClose = throwOnClose;
     this.lifecycle = lifecycle;
+    this.emitDeletedDependencyDiagnostics = emitDeletedDependencyDiagnostics;
   }
 
   seedDocument(relativeFile: string, text: string, version = 1): void {
@@ -210,7 +213,7 @@ export class FakeAuthoredLspSession {
   private deletedDependencyDiagnostics(source: string) {
     const specifier = this.lifecycle.renamedImportSpecifier;
     const offset = source.indexOf(specifier);
-    if (!this.fileDeleted || offset === -1) return [];
+    if (!this.fileDeleted || offset === -1 || !this.emitDeletedDependencyDiagnostics) return [];
     return [
       {
         code: 2307,
