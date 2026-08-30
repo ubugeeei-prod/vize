@@ -41,7 +41,7 @@ s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/component.rs	1	4	0	0	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/create_slots.rs	1	6	1	6	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/directive.rs	1	6	0	0	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/emit/filter.rs	0	0	1	1	0	0	0	0
-s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/hoist.rs	1	4	1	7	0	0	0	0
+s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/hoist.rs	1	4	1	10	0	0	0	0
 s1_to_s2	-	crates/vize_s1_to_s2/src/emit/js.rs	0	0	1	13	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/merge.rs	1	8	1	3	0	0	0	0
 s1_to_s2	emit	crates/vize_s1_to_s2/src/emit/model.rs	1	6	1	4	0	0	0	0

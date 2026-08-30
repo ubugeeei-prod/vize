@@ -4,8 +4,7 @@
 //! published and cannot name this crate in its release graph (the
 //! installment-1 publish-gate measurement). Dual-run lives in
 //! atelier_dom **test space** as a stripped-on-publish dev-dep, the
-//! P2-9 carve-out. This module writes the JS string **directly from
-//! S2 ops** — it does not mint relief codegen-nodes (`NodeType` 13–20).
+//! P2-9 carve-out. It writes JS directly from S2 ops, without relief codegen-nodes.
 //!
 //! This installment emits **static native HTML / SVG / MathML**, interpolations,
 //! mixed text siblings, static-name `ui.bind`, static-name `ui.on`
@@ -32,21 +31,11 @@
 //! `@vue:mounted`) including merged duplicate handlers, and
 //! **destructured `v-for` aliases** (`({ id })`, `[a, b]`, defaults),
 //! **`createSlots` + `v-slots`** (`...expr` on the `{ _: 2 }` base), and
-//! **dynamic `v-if` keys** (`:key="expr"`), plus **foreign namespace
-//! boundaries** (`<svg>` / `<math>` enter blocks, same-namespace descendants
-//! stay VNodes, integration points re-enter HTML), and **template refs**
-//! (static refs, dynamic `:ref`, and `ref_for` in `v-for`), and **Vue 2
-//! `.native` event sugar** (accepted and stripped like the shipped lane),
-//! **static+dynamic `style` merge** (`[{"color":"red"}, s]`), and
-//! **dynamic `v-on` keys** (`@[event]` through `toHandlerKey`,
-//! including event/key modifiers and slot-outlet listener props),
-//! plus native-element **`v-once`** and **`v-memo`** cache wrappers / `v-for` memo reuse guards,
-//! and **`v-html`** / **`v-text`** content props (`innerHTML` /
-//! `textContent` + dynamic prop flags).
-//! Static-name `v-bind` modifiers (`.camel`, `.prop`, `.attr`, plus the
-//! dot shorthand) and dynamic-argument `v-bind` keys / modifiers are
-//! realized into the shipped DOM prop-key shape. Vue 2 pipe filters are
-//! legalised by `legacy-sugar` and emitted with `_resolveFilter` assets.
+//! **dynamic `v-if` keys** (`:key="expr"`), foreign namespace boundaries,
+//! template refs, Vue 2 `.native` event sugar, static+dynamic `style`,
+//! dynamic `v-on` keys, native-element `v-once` / `v-memo`, `v-html` /
+//! `v-text`, `v-bind` modifiers, dynamic `v-bind` keys / modifiers, and
+//! Vue 2 pipe filters legalized by `legacy-sugar`.
 //! The old lane stays the shipped compile path; [`super::DOM_LANE_FLAG`]
 //! is named here and *read* in the atelier_dom witness.
 
