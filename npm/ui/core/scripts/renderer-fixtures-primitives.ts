@@ -67,6 +67,25 @@ const count = ref(12);
 `,
   },
   {
+    filename: "CardConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { Card } from "./card.ts";
+
+const tone = ref<"neutral" | "accent" | "info" | "success" | "warning" | "danger">("info");
+</script>
+
+<template>
+  <Card as="article" variant="panel" density="compact" :tone role="region" aria-label="Release summary">
+    <template #default="{ density, variant }">
+      <h2>{{ variant }}</h2>
+      <p>{{ density }}</p>
+    </template>
+  </Card>
+</template>
+`,
+  },
+  {
     filename: "ClusterConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

@@ -54,6 +54,11 @@
       "import": "./dist/badge.mjs",
       "default": "./dist/badge.mjs"
     },
+    "./card": {
+      "types": "./dist/card.d.mts",
+      "import": "./dist/card.mjs",
+      "default": "./dist/card.mjs"
+    },
     "./cluster": {
       "types": "./dist/cluster.d.mts",
       "import": "./dist/cluster.mjs",
