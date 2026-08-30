@@ -4,16 +4,22 @@ import {
   type UiFamilyCatalogEntry,
 } from "./family-catalog-types.ts";
 
+const familyRoot = "src/families/layout/avatar/";
+
 export const avatarLayoutFamilyCatalog = [
   {
     canonicalName: "avatar",
     title: "Avatar",
     packageSubpath: "./avatar",
-    entryFile: "src/avatar.ts",
-    sourceFiles: ["src/avatar.vue", "src/avatar.ts", "src/avatar-types.ts"],
-    behaviorContract: "src/avatar.behavior.md",
-    tests: ["src/avatar.test.ts", "src/avatar-ssr.test.ts"],
-    typeTests: ["src/avatar.types.test-d.ts"],
+    entryFile: `${familyRoot}avatar.ts`,
+    sourceFiles: [
+      `${familyRoot}avatar.vue`,
+      `${familyRoot}avatar.ts`,
+      `${familyRoot}avatar-types.ts`,
+    ],
+    behaviorContract: `${familyRoot}avatar.behavior.md`,
+    tests: [`${familyRoot}avatar.test.ts`, `${familyRoot}avatar-ssr.test.ts`],
+    typeTests: [`${familyRoot}avatar.types.test-d.ts`],
     rendererFixture: "AvatarConsumer.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {

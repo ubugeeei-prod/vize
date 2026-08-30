@@ -4,16 +4,18 @@ import {
   type UiFamilyCatalogEntry,
 } from "./family-catalog-types.ts";
 
+const familyRoot = "src/families/layout/list/";
+
 export const listLayoutFamilyCatalog = [
   {
     canonicalName: "list",
     title: "List",
     packageSubpath: "./list",
-    entryFile: "src/list.ts",
-    sourceFiles: ["src/list.vue", "src/list.ts", "src/list-types.ts"],
-    behaviorContract: "src/list.behavior.md",
-    tests: ["src/list.test.ts", "src/list-ssr.test.ts"],
-    typeTests: ["src/list.types.test-d.ts"],
+    entryFile: `${familyRoot}list.ts`,
+    sourceFiles: [`${familyRoot}list.vue`, `${familyRoot}list.ts`, `${familyRoot}list-types.ts`],
+    behaviorContract: `${familyRoot}list.behavior.md`,
+    tests: [`${familyRoot}list.test.ts`, `${familyRoot}list-ssr.test.ts`],
+    typeTests: [`${familyRoot}list.types.test-d.ts`],
     rendererFixture: "ListConsumer.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {

@@ -141,19 +141,26 @@ test("stable catalog entries have every required artifact", async () => {
 test("new family-owned SFC primitives keep implementation and tests together", () => {
   const familyRoots = new Map([
     ["alert", "src/families/feedback/alert/"],
+    ["aspect-ratio", "src/families/layout/aspect-ratio/"],
+    ["avatar", "src/families/layout/avatar/"],
     ["banner", "src/families/feedback/banner/"],
     ["badge", "src/families/feedback/badge/"],
     ["blockquote", "src/families/typography/blockquote/"],
     ["block-ui", "src/families/feedback/block-ui/"],
     ["button-group", "src/families/actions/button-group/"],
     ["callout", "src/families/feedback/callout/"],
+    ["card", "src/families/layout/card/"],
+    ["cluster", "src/families/layout/cluster/"],
     ["code", "src/families/typography/code/"],
+    ["container", "src/families/layout/container/"],
     ["dialog", "src/families/overlays/dialog/"],
     ["empty-state", "src/families/feedback/empty-state/"],
+    ["grid", "src/families/layout/grid/"],
     ["heading", "src/families/typography/heading/"],
     ["icon", "src/families/layout/icon/"],
     ["icon-button", "src/families/layout/icon/"],
     ["kbd", "src/families/typography/kbd/"],
+    ["list", "src/families/layout/list/"],
     ["locale", "src/families/i18n/locale/"],
     ["fullscreen-button", "src/families/actions/fullscreen-button/"],
     ["meter", "src/families/feedback/meter/"],
@@ -163,8 +170,11 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["rating", "src/families/form/rating/"],
     ["share-button", "src/families/actions/share-button/"],
     ["scroll-area", "src/families/layout/scroll-area/"],
+    ["separator", "src/families/layout/separator/"],
     ["skip-link", "src/families/navigation/skip-link/"],
     ["skeleton", "src/families/feedback/skeleton/"],
+    ["spacer", "src/families/layout/spacer/"],
+    ["stack", "src/families/layout/stack/"],
     ["spinner", "src/families/feedback/spinner/"],
     ["status-light", "src/families/feedback/status-light/"],
     ["surface", "src/families/layout/surface/"],
@@ -197,6 +207,29 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     assert.ok(
       entry.typeTests?.every((file) => file.startsWith(familyRoot)),
       `${canonicalName} type tests must stay beside the family source`,
+    );
+  }
+});
+
+test("layout families keep root compatibility barrels", async () => {
+  for (const name of [
+    "aspect-ratio",
+    "avatar",
+    "card",
+    "cluster",
+    "container",
+    "grid",
+    "list",
+    "separator",
+    "spacer",
+    "stack",
+  ] as const) {
+    const source = await readFile(path.resolve(`src/${name}.ts`), "utf8");
+
+    assert.match(
+      source,
+      new RegExp(`from "\\./families/layout/${name}/${name}\\.ts"`),
+      `${name} must keep its historical source entry as a compatibility barrel`,
     );
   }
 });

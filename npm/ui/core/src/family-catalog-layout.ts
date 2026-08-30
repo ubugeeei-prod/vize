@@ -9,21 +9,33 @@ import { listLayoutFamilyCatalog } from "./family-catalog-layout-list.ts";
 import { scrollAreaLayoutFamilyCatalog } from "./family-catalog-layout-scroll-area.ts";
 import { surfaceLayoutFamilyCatalog } from "./family-catalog-layout-surface.ts";
 
+const aspectRatioFamilyRoot = "src/families/layout/aspect-ratio/";
+const cardFamilyRoot = "src/families/layout/card/";
+const clusterFamilyRoot = "src/families/layout/cluster/";
+const containerFamilyRoot = "src/families/layout/container/";
+const gridFamilyRoot = "src/families/layout/grid/";
+const separatorFamilyRoot = "src/families/layout/separator/";
+const spacerFamilyRoot = "src/families/layout/spacer/";
+const stackFamilyRoot = "src/families/layout/stack/";
+
 export const layoutFamilyCatalog = [
   {
     canonicalName: "aspect-ratio",
     title: "Aspect Ratio",
     packageSubpath: "./aspect-ratio",
-    entryFile: "src/aspect-ratio.ts",
+    entryFile: `${aspectRatioFamilyRoot}aspect-ratio.ts`,
     sourceFiles: [
-      "src/aspect-ratio.vue",
-      "src/aspect-ratio.ts",
-      "src/aspect-ratio-runtime.ts",
-      "src/aspect-ratio-types.ts",
+      `${aspectRatioFamilyRoot}aspect-ratio.vue`,
+      `${aspectRatioFamilyRoot}aspect-ratio.ts`,
+      `${aspectRatioFamilyRoot}aspect-ratio-runtime.ts`,
+      `${aspectRatioFamilyRoot}aspect-ratio-types.ts`,
     ],
-    behaviorContract: "src/aspect-ratio.behavior.md",
-    tests: ["src/aspect-ratio.test.ts", "src/aspect-ratio-ssr.test.ts"],
-    typeTests: ["src/aspect-ratio.types.test-d.ts"],
+    behaviorContract: `${aspectRatioFamilyRoot}aspect-ratio.behavior.md`,
+    tests: [
+      `${aspectRatioFamilyRoot}aspect-ratio.test.ts`,
+      `${aspectRatioFamilyRoot}aspect-ratio-ssr.test.ts`,
+    ],
+    typeTests: [`${aspectRatioFamilyRoot}aspect-ratio.types.test-d.ts`],
     rendererFixture: "AspectRatioConsumer.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {
@@ -44,11 +56,15 @@ export const layoutFamilyCatalog = [
     canonicalName: "card",
     title: "Card",
     packageSubpath: "./card",
-    entryFile: "src/card.ts",
-    sourceFiles: ["src/card.vue", "src/card.ts", "src/card-types.ts"],
-    behaviorContract: "src/card.behavior.md",
-    tests: ["src/card.test.ts", "src/card-ssr.test.ts"],
-    typeTests: ["src/card.types.test-d.ts"],
+    entryFile: `${cardFamilyRoot}card.ts`,
+    sourceFiles: [
+      `${cardFamilyRoot}card.vue`,
+      `${cardFamilyRoot}card.ts`,
+      `${cardFamilyRoot}card-types.ts`,
+    ],
+    behaviorContract: `${cardFamilyRoot}card.behavior.md`,
+    tests: [`${cardFamilyRoot}card.test.ts`, `${cardFamilyRoot}card-ssr.test.ts`],
+    typeTests: [`${cardFamilyRoot}card.types.test-d.ts`],
     rendererFixture: "CardConsumer.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {
@@ -67,16 +83,16 @@ export const layoutFamilyCatalog = [
     canonicalName: "cluster",
     title: "Cluster",
     packageSubpath: "./cluster",
-    entryFile: "src/cluster.ts",
+    entryFile: `${clusterFamilyRoot}cluster.ts`,
     sourceFiles: [
-      "src/cluster.vue",
-      "src/cluster.ts",
-      "src/cluster-runtime.ts",
-      "src/cluster-types.ts",
+      `${clusterFamilyRoot}cluster.vue`,
+      `${clusterFamilyRoot}cluster.ts`,
+      `${clusterFamilyRoot}cluster-runtime.ts`,
+      `${clusterFamilyRoot}cluster-types.ts`,
     ],
-    behaviorContract: "src/cluster.behavior.md",
-    tests: ["src/cluster.test.ts", "src/cluster-ssr.test.ts"],
-    typeTests: ["src/cluster.types.test-d.ts"],
+    behaviorContract: `${clusterFamilyRoot}cluster.behavior.md`,
+    tests: [`${clusterFamilyRoot}cluster.test.ts`, `${clusterFamilyRoot}cluster-ssr.test.ts`],
+    typeTests: [`${clusterFamilyRoot}cluster.types.test-d.ts`],
     rendererFixture: "ClusterConsumer.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {
@@ -95,16 +111,19 @@ export const layoutFamilyCatalog = [
     canonicalName: "container",
     title: "Container",
     packageSubpath: "./container",
-    entryFile: "src/container.ts",
+    entryFile: `${containerFamilyRoot}container.ts`,
     sourceFiles: [
-      "src/container.vue",
-      "src/container.ts",
-      "src/container-runtime.ts",
-      "src/container-types.ts",
+      `${containerFamilyRoot}container.vue`,
+      `${containerFamilyRoot}container.ts`,
+      `${containerFamilyRoot}container-runtime.ts`,
+      `${containerFamilyRoot}container-types.ts`,
     ],
-    behaviorContract: "src/container.behavior.md",
-    tests: ["src/container.test.ts", "src/container-ssr.test.ts"],
-    typeTests: ["src/container.types.test-d.ts"],
+    behaviorContract: `${containerFamilyRoot}container.behavior.md`,
+    tests: [
+      `${containerFamilyRoot}container.test.ts`,
+      `${containerFamilyRoot}container-ssr.test.ts`,
+    ],
+    typeTests: [`${containerFamilyRoot}container.types.test-d.ts`],
     rendererFixture: "ContainerConsumer.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {
@@ -123,11 +142,16 @@ export const layoutFamilyCatalog = [
     canonicalName: "grid",
     title: "Grid",
     packageSubpath: "./grid",
-    entryFile: "src/grid.ts",
-    sourceFiles: ["src/grid.vue", "src/grid.ts", "src/grid-runtime.ts", "src/grid-types.ts"],
-    behaviorContract: "src/grid.behavior.md",
-    tests: ["src/grid.test.ts", "src/grid-ssr.test.ts"],
-    typeTests: ["src/grid.types.test-d.ts"],
+    entryFile: `${gridFamilyRoot}grid.ts`,
+    sourceFiles: [
+      `${gridFamilyRoot}grid.vue`,
+      `${gridFamilyRoot}grid.ts`,
+      `${gridFamilyRoot}grid-runtime.ts`,
+      `${gridFamilyRoot}grid-types.ts`,
+    ],
+    behaviorContract: `${gridFamilyRoot}grid.behavior.md`,
+    tests: [`${gridFamilyRoot}grid.test.ts`, `${gridFamilyRoot}grid-ssr.test.ts`],
+    typeTests: [`${gridFamilyRoot}grid.types.test-d.ts`],
     rendererFixture: "GridConsumer.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {
@@ -148,11 +172,18 @@ export const layoutFamilyCatalog = [
     canonicalName: "separator",
     title: "Separator",
     packageSubpath: "./separator",
-    entryFile: "src/separator.ts",
-    sourceFiles: ["src/separator.vue", "src/separator.ts", "src/separator-types.ts"],
-    behaviorContract: "src/separator.behavior.md",
-    tests: ["src/separator.test.ts", "src/separator-ssr.test.ts"],
-    typeTests: ["src/separator.types.test-d.ts"],
+    entryFile: `${separatorFamilyRoot}separator.ts`,
+    sourceFiles: [
+      `${separatorFamilyRoot}separator.vue`,
+      `${separatorFamilyRoot}separator.ts`,
+      `${separatorFamilyRoot}separator-types.ts`,
+    ],
+    behaviorContract: `${separatorFamilyRoot}separator.behavior.md`,
+    tests: [
+      `${separatorFamilyRoot}separator.test.ts`,
+      `${separatorFamilyRoot}separator-ssr.test.ts`,
+    ],
+    typeTests: [`${separatorFamilyRoot}separator.types.test-d.ts`],
     rendererFixture: "SeparatorConsumer.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {
@@ -171,16 +202,16 @@ export const layoutFamilyCatalog = [
     canonicalName: "spacer",
     title: "Spacer",
     packageSubpath: "./spacer",
-    entryFile: "src/spacer.ts",
+    entryFile: `${spacerFamilyRoot}spacer.ts`,
     sourceFiles: [
-      "src/spacer.vue",
-      "src/spacer.ts",
-      "src/spacer-runtime.ts",
-      "src/spacer-types.ts",
+      `${spacerFamilyRoot}spacer.vue`,
+      `${spacerFamilyRoot}spacer.ts`,
+      `${spacerFamilyRoot}spacer-runtime.ts`,
+      `${spacerFamilyRoot}spacer-types.ts`,
     ],
-    behaviorContract: "src/spacer.behavior.md",
-    tests: ["src/spacer.test.ts", "src/spacer-ssr.test.ts"],
-    typeTests: ["src/spacer.types.test-d.ts"],
+    behaviorContract: `${spacerFamilyRoot}spacer.behavior.md`,
+    tests: [`${spacerFamilyRoot}spacer.test.ts`, `${spacerFamilyRoot}spacer-ssr.test.ts`],
+    typeTests: [`${spacerFamilyRoot}spacer.types.test-d.ts`],
     rendererFixture: "SpacerConsumer.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {
@@ -204,11 +235,16 @@ export const layoutFamilyCatalog = [
     canonicalName: "stack",
     title: "Stack",
     packageSubpath: "./stack",
-    entryFile: "src/stack.ts",
-    sourceFiles: ["src/stack.vue", "src/stack.ts", "src/stack-runtime.ts", "src/stack-types.ts"],
-    behaviorContract: "src/stack.behavior.md",
-    tests: ["src/stack.test.ts", "src/stack-ssr.test.ts"],
-    typeTests: ["src/stack.types.test-d.ts"],
+    entryFile: `${stackFamilyRoot}stack.ts`,
+    sourceFiles: [
+      `${stackFamilyRoot}stack.vue`,
+      `${stackFamilyRoot}stack.ts`,
+      `${stackFamilyRoot}stack-runtime.ts`,
+      `${stackFamilyRoot}stack-types.ts`,
+    ],
+    behaviorContract: `${stackFamilyRoot}stack.behavior.md`,
+    tests: [`${stackFamilyRoot}stack.test.ts`, `${stackFamilyRoot}stack-ssr.test.ts`],
+    typeTests: [`${stackFamilyRoot}stack.types.test-d.ts`],
     rendererFixture: "StackConsumer.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {
