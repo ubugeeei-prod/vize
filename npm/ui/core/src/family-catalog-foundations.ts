@@ -9,6 +9,9 @@ import {
 const fieldFamilyRoot = "src/families/form/field/";
 const fieldWiringFamilyRoot = "src/families/form/field-wiring/";
 const formFamilyRoot = "src/families/form/form/";
+const foundationFamilyRoot = "src/families/foundations/";
+const contextFamilyRoot = `${foundationFamilyRoot}context/`;
+const controllableStateFamilyRoot = `${foundationFamilyRoot}controllable-state/`;
 
 export const foundationFamilyCatalog = [
   {
@@ -102,11 +105,11 @@ export const foundationFamilyCatalog = [
     canonicalName: "context",
     title: "Typed Component Context",
     packageSubpath: "./context",
-    entryFile: "src/context.ts",
-    sourceFiles: ["src/context.ts"],
-    behaviorContract: "src/context.behavior.md",
-    tests: ["src/context.test.ts"],
-    typeTests: ["src/context.types.test-d.ts"],
+    entryFile: `${contextFamilyRoot}context.ts`,
+    sourceFiles: [`${contextFamilyRoot}context.ts`],
+    behaviorContract: `${contextFamilyRoot}context.behavior.md`,
+    tests: [`${contextFamilyRoot}context.test.ts`],
+    typeTests: [`${contextFamilyRoot}context.types.test-d.ts`],
     qualityGates: stableQualityGates,
     bundleBudget: {
       exportName: "createContext",
@@ -124,11 +127,11 @@ export const foundationFamilyCatalog = [
     canonicalName: "controllable-state",
     title: "Controlled and Uncontrolled State",
     packageSubpath: "./controllable-state",
-    entryFile: "src/controllable-state.ts",
-    sourceFiles: ["src/controllable-state.ts"],
-    behaviorContract: "src/controllable-state.behavior.md",
-    tests: ["src/controllable-state.test.ts"],
-    typeTests: ["src/controllable-state.types.test-d.ts"],
+    entryFile: `${controllableStateFamilyRoot}controllable-state.ts`,
+    sourceFiles: [`${controllableStateFamilyRoot}controllable-state.ts`],
+    behaviorContract: `${controllableStateFamilyRoot}controllable-state.behavior.md`,
+    tests: [`${controllableStateFamilyRoot}controllable-state.test.ts`],
+    typeTests: [`${controllableStateFamilyRoot}controllable-state.types.test-d.ts`],
     qualityGates: stableQualityGates,
     bundleBudget: {
       exportName: "useControllableState",
