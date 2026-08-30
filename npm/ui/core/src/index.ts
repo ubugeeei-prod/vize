@@ -14,6 +14,7 @@ export * from "./avatar.ts";
 export * from "./badge.ts";
 export * from "./block-ui.ts";
 export * from "./blockquote.ts";
+export * from "./breadcrumb.ts";
 export * from "./card.ts";
 export * from "./code.ts";
 export * from "./cluster.ts";

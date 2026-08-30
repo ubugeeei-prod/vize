@@ -4,6 +4,7 @@ import { focusFamilyCatalog } from "./family-catalog-focus.ts";
 import { foundationFamilyCatalog } from "./family-catalog-foundations.ts";
 import { interactionFamilyCatalog } from "./family-catalog-interactions.ts";
 import { layoutFamilyCatalog } from "./family-catalog-layout.ts";
+import { navigationFamilyCatalog } from "./family-catalog-navigation.ts";
 import { overlayFamilyCatalog } from "./family-catalog-overlays.ts";
 import type { UiFamilyCatalogEntry } from "./family-catalog-types.ts";
 
@@ -22,6 +23,7 @@ const allFamilyCatalogEntries = [
   ...focusFamilyCatalog,
   ...interactionFamilyCatalog,
   ...layoutFamilyCatalog,
+  ...navigationFamilyCatalog,
   ...overlayFamilyCatalog,
 ] as const satisfies readonly UiFamilyCatalogEntry[];
 

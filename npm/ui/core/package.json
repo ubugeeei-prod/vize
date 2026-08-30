@@ -69,6 +69,11 @@
       "import": "./dist/blockquote.mjs",
       "default": "./dist/blockquote.mjs"
     },
+    "./breadcrumb": {
+      "types": "./dist/breadcrumb.d.mts",
+      "import": "./dist/breadcrumb.mjs",
+      "default": "./dist/breadcrumb.mjs"
+    },
     "./card": {
       "types": "./dist/card.d.mts",
       "import": "./dist/card.mjs",

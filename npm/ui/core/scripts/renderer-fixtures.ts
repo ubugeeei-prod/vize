@@ -1,13 +1,7 @@
-import { commandRendererFixtures } from "./renderer-fixtures-commands.ts";
-import { dialogRendererFixtures } from "./renderer-fixtures-dialog.ts";
-import { overlayRendererFixtures } from "./renderer-fixtures-overlays.ts";
-import { primitiveRendererFixtures } from "./renderer-fixtures-primitives.ts";
+import { groupedRendererFixtures } from "./renderer-fixtures-groups.ts";
 
 export const rendererFixtures = [
-  ...commandRendererFixtures,
-  ...dialogRendererFixtures,
-  ...overlayRendererFixtures,
-  ...primitiveRendererFixtures,
+  ...groupedRendererFixtures,
   {
     filename: "DragAndDropConsumer.vue",
     source: String.raw`<script setup lang="ts">

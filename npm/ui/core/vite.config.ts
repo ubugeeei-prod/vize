@@ -38,6 +38,7 @@ export default defineConfig({
       badge: "src/badge.ts",
       "block-ui": "src/block-ui.ts",
       blockquote: "src/blockquote.ts",
+      breadcrumb: "src/breadcrumb.ts",
       card: "src/card.ts",
       code: "src/code.ts",
       cluster: "src/cluster.ts",
