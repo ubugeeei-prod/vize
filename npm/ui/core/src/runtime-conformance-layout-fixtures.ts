@@ -8,6 +8,7 @@ import { codeRuntimeFixture } from "./runtime-conformance-code-fixtures.ts";
 import { containerRuntimeFixture } from "./runtime-conformance-container-fixtures.ts";
 import { gridRuntimeFixture } from "./runtime-conformance-grid-fixtures.ts";
 import { headingRuntimeFixture } from "./runtime-conformance-heading-fixtures.ts";
+import { iconRuntimeFixtures } from "./families/layout/icon/runtime-conformance-icon-fixtures.ts";
 import { kbdRuntimeFixture } from "./runtime-conformance-kbd-fixtures.ts";
 import { listRuntimeFixture } from "./runtime-conformance-list-fixtures.ts";
 import { separatorRuntimeFixture } from "./runtime-conformance-separator-fixtures.ts";
@@ -26,6 +27,7 @@ export const layoutRuntimeFixtures: readonly RuntimeFixture[] = [
   containerRuntimeFixture,
   gridRuntimeFixture,
   headingRuntimeFixture,
+  ...iconRuntimeFixtures,
   kbdRuntimeFixture,
   listRuntimeFixture,
   separatorRuntimeFixture,

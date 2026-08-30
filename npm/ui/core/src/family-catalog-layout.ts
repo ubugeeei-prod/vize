@@ -4,6 +4,7 @@ import {
   type UiFamilyCatalogEntry,
 } from "./family-catalog-types.ts";
 import { avatarLayoutFamilyCatalog } from "./family-catalog-layout-avatar.ts";
+import { iconLayoutFamilyCatalog } from "./family-catalog-layout-icon.ts";
 import { listLayoutFamilyCatalog } from "./family-catalog-layout-list.ts";
 
 export const layoutFamilyCatalog = [
@@ -36,6 +37,7 @@ export const layoutFamilyCatalog = [
     owner: catalogOwner,
   },
   ...avatarLayoutFamilyCatalog,
+  ...iconLayoutFamilyCatalog,
   {
     canonicalName: "blockquote",
     title: "Blockquote",

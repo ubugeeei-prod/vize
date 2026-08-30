@@ -279,6 +279,16 @@
       "import": "./dist/error-summary.mjs",
       "default": "./dist/error-summary.mjs"
     },
+    "./icon": {
+      "types": "./dist/icon.d.mts",
+      "import": "./dist/icon.mjs",
+      "default": "./dist/icon.mjs"
+    },
+    "./icon-button": {
+      "types": "./dist/icon-button.d.mts",
+      "import": "./dist/icon-button.mjs",
+      "default": "./dist/icon-button.mjs"
+    },
     "./field": {
       "types": "./dist/field.d.mts",
       "import": "./dist/field.mjs",

@@ -338,8 +338,7 @@ export const interactionFamilyCatalog = [
       exportName: "VisuallyHidden",
       retainedSignature: "visually-hidden",
       maximumJavaScriptGzipBytes: 400,
-      // Covers the shared packaged stylesheet (dist/style.css), including the
-      // motion tokens every styled family ships together (style-pipeline.behavior.md).
+      // Covers the shared packaged stylesheet and motion tokens shipped with styled families.
       maximumCssGzipBytes: 4_900,
     },
     aliases: ["screen reader only", "sr-only", "visually hidden"],

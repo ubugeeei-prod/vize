@@ -17,7 +17,7 @@ export const basicFamilyCatalog = [
     qualityGates: componentQualityGates,
     bundleBudget: {
       exportName: "Button",
-      retainedSignature: "data-vize-ui[\\s\\S]{0,32}button",
+      retainedSignature: 'data-vize-ui":(?:`button`|"button"|\'button\')',
       maximumJavaScriptGzipBytes: 1_000,
       maximumCssGzipBytes: 0,
     },

@@ -22,6 +22,7 @@ const rendererGate = [
   await readFile(path.resolve("scripts/renderer-fixtures-avatar.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-commands.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-dialog.ts"), "utf8"),
+  await readFile(path.resolve("scripts/renderer-fixtures-icon.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-navigation.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-overlays.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-primitives.ts"), "utf8"),
@@ -137,6 +138,10 @@ test("stable catalog entries have every required artifact", async () => {
 test("new family-owned SFC primitives keep implementation and tests together", () => {
   const statusLight = stableEntries.find((entry) => entry.canonicalName === "status-light");
   const familyRoot = "src/families/feedback/status-light/";
+  const iconFamilies = stableEntries.filter(
+    (entry) => entry.canonicalName === "icon" || entry.canonicalName === "icon-button",
+  );
+  const iconFamilyRoot = "src/families/layout/icon/";
 
   assert.ok(statusLight, "status-light must stay catalogued");
   assert.equal(statusLight.entryFile, `${familyRoot}status-light.ts`);
@@ -153,4 +158,32 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     statusLight.typeTests?.every((file) => file.startsWith(familyRoot)),
     "status-light type tests must stay beside the feedback family source",
   );
+
+  assert.deepEqual(
+    iconFamilies.map((entry) => entry.canonicalName),
+    ["icon", "icon-button"],
+    "icon families must stay catalogued",
+  );
+  for (const entry of iconFamilies) {
+    assert.ok(
+      entry.entryFile.startsWith(iconFamilyRoot),
+      `${entry.canonicalName} entry must stay in the layout icon family folder`,
+    );
+    assert.ok(
+      entry.behaviorContract.startsWith(iconFamilyRoot),
+      `${entry.canonicalName} behavior contract must stay in the layout icon family folder`,
+    );
+    assert.ok(
+      entry.sourceFiles.every((file) => file.startsWith(iconFamilyRoot)),
+      `${entry.canonicalName} source files must stay beside the layout icon source`,
+    );
+    assert.ok(
+      entry.tests.every((file) => file.startsWith(iconFamilyRoot)),
+      `${entry.canonicalName} tests must stay beside the layout icon source`,
+    );
+    assert.ok(
+      entry.typeTests?.every((file) => file.startsWith(iconFamilyRoot)),
+      `${entry.canonicalName} type tests must stay beside the layout icon source`,
+    );
+  }
 });
