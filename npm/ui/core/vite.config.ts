@@ -53,6 +53,7 @@ export default defineConfig({
       skeleton: "src/skeleton.ts",
       meter: "src/meter.ts",
       heading: "src/heading.ts",
+      kbd: "src/kbd.ts",
       text: "src/text.ts",
       textarea: "src/textarea.ts",
       switch: "src/switch.ts",

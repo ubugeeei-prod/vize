@@ -144,6 +144,11 @@
       "import": "./dist/heading.mjs",
       "default": "./dist/heading.mjs"
     },
+    "./kbd": {
+      "types": "./dist/kbd.d.mts",
+      "import": "./dist/kbd.mjs",
+      "default": "./dist/kbd.mjs"
+    },
     "./textarea": {
       "types": "./dist/textarea.d.mts",
       "import": "./dist/textarea.mjs",

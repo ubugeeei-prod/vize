@@ -36,6 +36,7 @@ export * from "./stack.ts";
 export * from "./skeleton.ts";
 export * from "./meter.ts";
 export * from "./heading.ts";
+export * from "./kbd.ts";
 export * from "./text.ts";
 export * from "./textarea.ts";
 export * from "./switch.ts";

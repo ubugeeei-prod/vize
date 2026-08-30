@@ -140,6 +140,24 @@ const truncate = ref(true);
 `,
   },
   {
+    filename: "KbdConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { Kbd } from "./kbd.ts";
+
+const tone = ref<"accent" | "muted">("accent");
+</script>
+
+<template>
+  <Kbd as="span" size="lg" variant="shortcut" :tone>
+    <template #default="{ size, variant }">
+      {{ size }} {{ variant }}
+    </template>
+  </Kbd>
+</template>
+`,
+  },
+  {
     filename: "ClusterConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

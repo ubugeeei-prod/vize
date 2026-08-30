@@ -5,6 +5,7 @@ import { clusterRuntimeFixture } from "./runtime-conformance-cluster-fixtures.ts
 import { containerRuntimeFixture } from "./runtime-conformance-container-fixtures.ts";
 import { gridRuntimeFixture } from "./runtime-conformance-grid-fixtures.ts";
 import { headingRuntimeFixture } from "./runtime-conformance-heading-fixtures.ts";
+import { kbdRuntimeFixture } from "./runtime-conformance-kbd-fixtures.ts";
 import { separatorRuntimeFixture } from "./runtime-conformance-separator-fixtures.ts";
 import { skeletonRuntimeFixture } from "./runtime-conformance-skeleton-fixtures.ts";
 import { spacerRuntimeFixture } from "./runtime-conformance-spacer-fixtures.ts";
@@ -18,6 +19,7 @@ export const layoutRuntimeFixtures: readonly RuntimeFixture[] = [
   containerRuntimeFixture,
   gridRuntimeFixture,
   headingRuntimeFixture,
+  kbdRuntimeFixture,
   separatorRuntimeFixture,
   skeletonRuntimeFixture,
   spacerRuntimeFixture,
