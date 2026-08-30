@@ -27,6 +27,7 @@ const formCompatibilityBarrels = [
   ["error-summary.ts", "./families/form/error-summary/error-summary.ts"],
 ] as const;
 const interactionCompatibilityBarrels = [
+  ["history.ts", "./families/interaction/history/history.ts"],
   ["measure.ts", "./families/interaction/measure/measure.ts"],
   ["typeahead.ts", "./families/interaction/typeahead/typeahead.ts"],
 ] as const;

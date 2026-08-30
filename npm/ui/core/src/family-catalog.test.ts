@@ -282,6 +282,7 @@ test("overlay infrastructure families keep root compatibility barrels", async ()
 
 test("interaction families keep root compatibility barrels", async () => {
   await assertFamilyBarrels("interaction", [
+    "history",
     "hover",
     "long-press",
     "measure",

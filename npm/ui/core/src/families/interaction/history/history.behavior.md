@@ -1,8 +1,8 @@
 # History behavior contract
 
 Normative state × input → outcome table for `@vizejs/ui/history`. Every row is
-exercised by `src/history*.test.ts`; compile-only assertions live in
-`src/history.types.test-d.ts`.
+exercised by `src/families/interaction/history/history*.test.ts`; compile-only assertions live in
+`src/families/interaction/history/history.types.test-d.ts`.
 
 | #   | State                     | Input                                           | Outcome                                                                  | Proven by             |
 | --- | ------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------ | --------------------- |

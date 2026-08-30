@@ -6,6 +6,7 @@ import {
 } from "./family-catalog-types.ts";
 
 const idFamilyRoot = "src/families/foundations/id/";
+const historyFamilyRoot = "src/families/interaction/history/";
 
 export const focusFamilyCatalog = [
   {
@@ -88,16 +89,20 @@ export const focusFamilyCatalog = [
     canonicalName: "history",
     title: "Undo/Redo History",
     packageSubpath: "./history",
-    entryFile: "src/history.ts",
+    entryFile: `${historyFamilyRoot}history.ts`,
     sourceFiles: [
-      "src/history.ts",
-      "src/history-editable.ts",
-      "src/history-stack.ts",
-      "src/history-types.ts",
+      `${historyFamilyRoot}history.ts`,
+      `${historyFamilyRoot}history-editable.ts`,
+      `${historyFamilyRoot}history-stack.ts`,
+      `${historyFamilyRoot}history-types.ts`,
     ],
-    behaviorContract: "src/history.behavior.md",
-    tests: ["src/history.test.ts", "src/history-editable.test.ts", "src/history-ssr.test.ts"],
-    typeTests: ["src/history.types.test-d.ts"],
+    behaviorContract: `${historyFamilyRoot}history.behavior.md`,
+    tests: [
+      `${historyFamilyRoot}history.test.ts`,
+      `${historyFamilyRoot}history-editable.test.ts`,
+      `${historyFamilyRoot}history-ssr.test.ts`,
+    ],
+    typeTests: [`${historyFamilyRoot}history.types.test-d.ts`],
     rendererFixture: "HistoryConsumer.vue",
     qualityGates: interactionQualityGates,
     bundleBudget: {

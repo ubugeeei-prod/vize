@@ -171,7 +171,7 @@ export default defineConfig({
       form: "src/families/form/form/form.ts",
       catalog: "src/family-catalog.ts",
       command: "src/families/foundations/command/command.ts",
-      history: "src/history.ts",
+      history: "src/families/interaction/history/history.ts",
       id: "src/families/foundations/id/id.ts",
       "inert-outside": "src/families/accessibility/inert-outside/inert-outside.ts",
       "interaction-modality":
