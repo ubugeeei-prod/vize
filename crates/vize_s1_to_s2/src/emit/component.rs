@@ -49,6 +49,9 @@ pub(super) fn emit_root(
     component: &ComponentOp<'_>,
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
+    if super::once::has(&component.bindings) {
+        return super::once::emit_component(cx, component, None, false, id);
+    }
     if super::memo::has(&component.bindings) && !cx.skip_memo {
         return super::memo::emit_cached(cx, &component.bindings, |cx| {
             emit_vnode(cx, component, None, false, id)
@@ -94,6 +97,9 @@ pub(super) fn emit_nested(
     component: &ComponentOp<'_>,
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
+    if super::once::has(&component.bindings) {
+        return super::once::emit_component(cx, component, None, false, id);
+    }
     if super::memo::has(&component.bindings) && !cx.skip_memo {
         return super::memo::emit_cached(cx, &component.bindings, |cx| {
             emit_vnode(cx, component, None, false, id)
@@ -111,6 +117,9 @@ pub(super) fn emit_if_branch(
     key: &str,
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
+    if super::once::has(&component.bindings) {
+        return super::once::emit_component(cx, component, Some(key), false, id);
+    }
     emit_block(cx, component, Some(key), false, id)
 }
 
@@ -120,6 +129,9 @@ pub(super) fn emit_for_item(
     id: Option<NodeId>,
     key: Option<&str>,
 ) -> Result<(), EmitError> {
+    if super::once::has(&component.bindings) {
+        return super::once::emit_component(cx, component, key, true, id);
+    }
     if let Some(memo) = super::memo::first(&component.bindings)
         && !cx.skip_memo
     {
@@ -136,7 +148,7 @@ fn collect_from<'a>(region: &Region<'a>, names: &mut StdVec<&'a str>) {
             Op::Element(element) => collect_from(&element.children, names),
             Op::Component(component) => {
                 collect_from(&component.children, names);
-                if !is_builtin(component.name)
+                if !builtin::is_reserved_name(component.name)
                     && !builtin::is_dynamic_component(component)
                     && !names.contains(&component.name)
                 {
@@ -197,6 +209,7 @@ fn emit_call(
             || slots::is_slots_spread(binding)
             || directive::is_runtime(binding)
             || super::memo::is_memo(binding)
+            || super::once::is_once(binding)
             || matches!(binding, BindingOp::VueCloak(_))
             || (skip_is && builtin::is_is_bind(binding)))
     });
@@ -324,22 +337,4 @@ fn admit(cx: &EmitCx<'_>, component: &ComponentOp<'_>) -> Result<(), EmitError> 
         slots::admit_default(&component.children)?;
     }
     admit_bindings(&component.attributes, &component.bindings)
-}
-
-fn is_builtin(name: &str) -> bool {
-    matches!(
-        name,
-        "Teleport"
-            | "teleport"
-            | "Suspense"
-            | "suspense"
-            | "KeepAlive"
-            | "keep-alive"
-            | "Transition"
-            | "transition"
-            | "TransitionGroup"
-            | "transition-group"
-            | "BaseTransition"
-            | "component"
-    )
 }

@@ -27,6 +27,10 @@ pub(super) fn helper(name: &str) -> Option<Helper> {
     }
 }
 
+pub(super) fn is_reserved_name(name: &str) -> bool {
+    helper(name).is_some() || matches!(name, "component" | "Component")
+}
+
 pub(super) fn forces_block(component: &ComponentOp<'_>) -> bool {
     matches!(
         component.name,

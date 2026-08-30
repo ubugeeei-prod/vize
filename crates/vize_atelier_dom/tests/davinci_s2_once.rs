@@ -23,6 +23,11 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<div v-once><span :class="cls">{{ msg }}</span></div>"#,
     ),
     ("v_if_branch", r#"<div v-if="ok" v-once>x</div>"#),
+    ("component", r#"<Foo v-once />"#),
+    (
+        "component_with_props_and_slot",
+        r#"<Foo v-once :title="title"><span>x</span></Foo>"#,
+    ),
     (
         "inside_v_for",
         r#"<div v-for="item in items" :key="item.id"><span v-once>{{ item.static }}</span></div>"#,
