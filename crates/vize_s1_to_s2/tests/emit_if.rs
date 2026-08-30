@@ -72,17 +72,17 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 
 #[test]
 fn mixed_text_in_a_v_if_lists_comment_before_text() {
-    // Nested static vnode hoist (`_hoisted_1 = /*#__PURE__*/ _createElementVNode`)
-    // is a later P2-11 realization; this pin is helper rank only.
     assert_eq!(
         assembled(r#"<div v-if="ok"><span></span> x</div>"#),
         "\
 const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode, createTextVNode: _createTextVNode } = Vue
 
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"span\")
+
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (ok)
     ? (_openBlock(), _createElementBlock(\"div\", { key: 0 }, [
-      _createElementVNode(\"span\"),
+      _hoisted_1,
       _createTextVNode(\" x\")
     ]))
     : _createCommentVNode(\"v-if\", true)

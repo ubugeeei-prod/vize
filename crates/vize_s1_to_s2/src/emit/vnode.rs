@@ -41,6 +41,7 @@ fn emit_block(
     element: &ElementOp<'_>,
     if_key: Option<&str>,
     for_item: bool,
+    allow_hoist: bool,
 ) -> Result<(), EmitError> {
     directive::wrap_element(cx, element, |cx| {
         cx.buf.use_open_block();
@@ -48,7 +49,15 @@ fn emit_block(
         cx.buf.push("(");
         cx.buf.push(Buf::open_block_alias());
         cx.buf.push("(), ");
-        emit_call(cx, element, true, if_key, (false, None), for_item, false)?;
+        emit_call(
+            cx,
+            element,
+            true,
+            if_key,
+            (allow_hoist, None),
+            for_item,
+            false,
+        )?;
         cx.buf.push(")");
         Ok(())
     })
@@ -83,14 +92,14 @@ fn emit_nested(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) -> Result<(), EmitE
     super::memo::emit_cached(cx, &element.bindings, |cx| {
         directive::wrap_element(cx, element, |cx| {
             cx.buf.use_create_element_vnode();
-            emit_call(cx, element, false, None, (false, None), false, false)
+            emit_call(cx, element, false, None, (true, None), false, false)
         })
     })
 }
 
 fn emit_nested_block(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) -> Result<(), EmitError> {
     super::memo::emit_cached(cx, &element.bindings, |cx| {
-        emit_block(cx, element, None, false)
+        emit_block(cx, element, None, false, false)
     })
 }
 
@@ -99,7 +108,7 @@ pub(super) fn emit_if_branch_element(
     element: &ElementOp<'_>,
     key: &str,
 ) -> Result<(), EmitError> {
-    emit_block(cx, element, Some(key), false)
+    emit_block(cx, element, Some(key), false, true)
 }
 
 pub(super) fn emit_for_item_element(
@@ -118,7 +127,7 @@ pub(super) fn emit_for_item_element(
                 emit_call(cx, element, false, key, (false, None), true, false)
             });
         }
-        emit_block(cx, element, key, true)
+        emit_block(cx, element, key, true, false)
     })
 }
 
@@ -143,9 +152,9 @@ pub(super) fn emit_call(
     cx.buf.push(element.tag);
     cx.buf.push("\"");
     let has_children = !element.children.ops.is_empty();
-    let has_runtime_child_hoist = allow_hoist
-        && block
-        && (directive::has_runtime(&element.bindings)
+    let hoist_static_children = allow_hoist
+        && (if_key.is_some()
+            || directive::has_runtime(&element.bindings)
             || super::model::first_runtime_model(element).is_some());
     let has_memo = super::memo::has(&element.bindings);
     let memo_block = block && has_memo && !(if_key.is_some() && !for_item);
@@ -214,7 +223,7 @@ pub(super) fn emit_call(
                 cx,
                 &element.children,
                 force_array_children,
-                has_runtime_child_hoist,
+                hoist_static_children,
             )
         })?;
     } else if emit_flag {
