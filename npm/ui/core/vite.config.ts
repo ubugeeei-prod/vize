@@ -62,6 +62,7 @@ export default defineConfig({
       separator: "src/separator.ts",
       spacer: "src/spacer.ts",
       stack: "src/stack.ts",
+      surface: "src/families/layout/surface/surface.ts",
       skeleton: "src/skeleton.ts",
       meter: "src/meter.ts",
       "native-select": "src/families/selection/native-select/native-select.ts",

@@ -46,6 +46,7 @@ export * from "./families/form/slider/slider.ts";
 export * from "./separator.ts";
 export * from "./spacer.ts";
 export * from "./stack.ts";
+export * from "./families/layout/surface/surface.ts";
 export * from "./skeleton.ts";
 export * from "./meter.ts";
 export * from "./families/selection/native-select/native-select.ts";
