@@ -34,10 +34,10 @@ Per-rule registration surface, SFC/JSX path membership, croquis usage, and a fir
 
 - **total rules: 245**
 - by family: template-family 158, script 71, css 10, musea 6
-- by surface (a rule can have several): `css-text` 10, `markup-facade` 33, `musea-blocks` 6, `script-oxc` 65, `script-source` 6, `sfc-source` 9, `template-ast` 152, `type-aware-corsa` 5
+- by surface (a rule can have several): `css-text` 10, `markup-facade` 34, `musea-blocks` 6, `script-oxc` 65, `script-source` 6, `sfc-source` 9, `template-ast` 152, `type-aware-corsa` 5
 - path membership: SFC `lint_sfc` 239 · JSX `lint_jsx` 147 · **SFC∩JSX 147** · SFC-only 92 · JSX-only 0 · neither 6 (6 musea + 0 unregistered)
-- JSX lanes: `fallback` 114, `ir` 24, `ir-lowered` 9, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (33 = 33 `markup-facade` rules)
-- classification: neutral-core-candidate **87** · vue-dialect-bound **136** · container-bound **22** (0 overridden)
+- JSX lanes: `fallback` 113, `ir` 25, `ir-lowered` 9, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (34 = 34 `markup-facade` rules)
+- classification: neutral-core-candidate **88** · vue-dialect-bound **135** · container-bound **22** (0 overridden)
 - croquis adoption: **23** rules touch vize_croquis (18 direct imports, 12 via context analysis)
 
 ## Full table
@@ -219,7 +219,7 @@ Sorted by rule name. File paths are relative to `crates/vize_patina/src/rules/`.
 | `vue/no-dupe-v-else-if`                         | template-family | `vue/no_dupe_v_else_if.rs`                             | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `vue/no-duplicate-attributes`                   | template-family | `vue/no_duplicate_attributes.rs`                       | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `vue/no-empty-component-block`                  | template-family | `opinionated/vue/no_empty_component_block.rs`          | sfc-source                     | yes (sfc-hooks)                  | no (no JSX-reachable hooks) | —                                                                                                   | container-bound        |
-| `vue/no-inline-style`                           | template-family | `opinionated/vue/no_inline_style.rs`                   | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
+| `vue/no-inline-style`                           | template-family | `opinionated/vue/no_inline_style.rs`                   | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | neutral-core-candidate |
 | `vue/no-invalid-html-attribute`                 | template-family | `vue/no_invalid_html_attribute.rs`                     | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | neutral-core-candidate |
 | `vue/no-lone-template`                          | template-family | `vue/no_lone_template.rs`                              | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `vue/no-multi-spaces`                           | template-family | `vue/no_multi_spaces.rs`                               | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | neutral-core-candidate |

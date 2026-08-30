@@ -27,8 +27,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, ExpressionNode};
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-inline-style",
@@ -42,42 +43,54 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct NoInlineStyle;
 
+impl NoInlineStyle {
+    fn check_binding(ctx: &mut LintContext<'_>, binding: &MarkupBinding<'_>) {
+        if !matches!(
+            binding.kind(),
+            MarkupBindingKind::Attribute | MarkupBindingKind::Bind
+        ) || !binding.is_unqualified_arg_exact("style")
+        {
+            return;
+        }
+
+        ctx.warn_at_with_help(
+            ctx.t("vue/no-inline-style.message"),
+            binding.range(),
+            ctx.t("vue/no-inline-style.help"),
+        );
+    }
+
+    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        element.walk_bindings(&mut |binding| Self::check_binding(ctx, &binding));
+    }
+}
+
+impl MarkupRule for NoInlineStyle {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_binding<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        _element: &MarkupElement<'a>,
+        binding: &MarkupBinding<'a>,
+    ) {
+        Self::check_binding(ctx.lint(), binding);
+    }
+}
+
 impl Rule for NoInlineStyle {
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
 
-    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        // Check for static style attribute
-        for attr in &element.props {
-            if let vize_relief::PropNode::Attribute(attr) = attr
-                && attr.name == "style"
-            {
-                ctx.warn_with_help(
-                    ctx.t("vue/no-inline-style.message"),
-                    &attr.loc,
-                    ctx.t("vue/no-inline-style.help"),
-                );
-            }
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
 
-            // Check for dynamic :style binding
-            if let vize_relief::PropNode::Directive(dir) = attr
-                && dir.name == "bind"
-                && let Some(arg) = &dir.arg
-            {
-                let arg_content = match arg {
-                    ExpressionNode::Simple(s) => s.content,
-                    _ => "",
-                };
-                if arg_content == "style" {
-                    ctx.warn_with_help(
-                        ctx.t("vue/no-inline-style.message"),
-                        &dir.loc,
-                        ctx.t("vue/no-inline-style.help"),
-                    );
-                }
-            }
-        }
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        Self::check_element(ctx, &MarkupElement::new(element));
     }
 }
 

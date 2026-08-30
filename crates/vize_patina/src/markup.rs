@@ -1165,12 +1165,16 @@ fn relief_directive_kind(node: &DirectiveNode<'_>) -> MarkupBindingKind {
 
 /// The [`MarkupBindingKind`] a JSX attribute projects to.
 ///
-/// JSX has no directive syntax, so the classification is name-driven: a
-/// React-style `onClick` is an event ([`MarkupBindingKind::On`]); an
-/// expression-valued attribute (`class={…}`) is a [`MarkupBindingKind::Bind`];
-/// a plain string attribute (`id="x"`) is a [`MarkupBindingKind::Attribute`].
+/// JSX classification is name/value-driven: `v-bind:x`, React-style `onX`,
+/// expression-valued props, then plain static attributes.
 #[inline]
 fn jsx_attribute_binding_kind(attr: &JSXAttribute<'_>) -> MarkupBindingKind {
+    if let JSXAttributeName::NamespacedName(name) = &attr.name
+        && name.namespace.name.as_str() == "v-bind"
+    {
+        return MarkupBindingKind::Bind;
+    }
+
     let name = jsx_attribute_name(&attr.name);
     if is_jsx_event_handler_name(name) {
         MarkupBindingKind::On
@@ -1230,9 +1234,7 @@ fn loc_to_range(loc: &SourceLocation) -> ByteRange {
     ByteRange::new(loc.span.start, loc.span.end)
 }
 
-// ===========================================================================
 // Scope nodes: conditional (`v-if`) and list (`v-for`).
-// ===========================================================================
 
 /// A conditional scope: a Vue `v-if` / `v-else-if` / `v-else` chain.
 ///
@@ -1352,9 +1354,7 @@ impl<'a> MarkupElement<'a> {
     }
 }
 
-// ===========================================================================
 // Rule-facing trait + driving visitor.
-// ===========================================================================
 
 /// Context handed to [`MarkupRule`] callbacks.
 ///
@@ -1576,11 +1576,11 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
             self.rule.enter_directive(self.ctx, &element, &directive);
         });
 
-        // Children. For the template backend `walk_children` already yields the
-        // projected scopes; for JSX it yields elements/text/interpolations.
+        // Children: template scopes or JSX elements/text/interpolations.
         match element.inner {
             MarkupElementInner::Relief(node) => self.visit_relief_children(&node.children),
             MarkupElementInner::JsxElement { node, offset } => {
+                jsx_roots::visit_attribute_roots(self, jsx_element_ref(node), offset);
                 self.visit_jsx_children(jsx_element_ref(node).jsx_children(), offset)
             }
             MarkupElementInner::JsxFragment { node, offset } => {
@@ -1593,13 +1593,9 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
     }
 
     fn visit_jsx_program(&mut self, program: &'a Program<'a>, offset: u32) {
-        // OXC's `Visit` borrows its walker mutably, so a thin driver adapts
-        // the program walk to this visitor: each outermost JSX element or
-        // fragment streams straight into `visit_element` in source order,
-        // with no root container allocated. The driver never descends —
-        // nested JSX is visited by our own recursion, so an `expr && <x/>`
-        // guard or a `.map(item => <li/>)` callback still yields its `<x/>` /
-        // `<li/>` here as a root we then recurse into.
+        // Stream each outermost JSX element/fragment into `visit_element` in
+        // source order, with no root container allocated. Nested JSX roots are
+        // handled by our own element/attribute/expression recursion.
         struct RootDriver<'visitor, 'rule, 'ctx, 'mc, 'a, R: ?Sized> {
             visitor: &'visitor mut MarkupDocumentVisitor<'rule, 'ctx, 'mc, 'a, R>,
             offset: u32,
@@ -1637,6 +1633,9 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
                 MarkupNode::Interpolation(range) => {
                     self.set_rule();
                     self.rule.enter_interpolation(self.ctx, range);
+                    if let JSXChild::ExpressionContainer(container) = child {
+                        jsx_roots::visit_expression_container_roots(self, container, offset);
+                    }
                 }
                 _ => {}
             }
@@ -1645,6 +1644,7 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
 }
 
 mod exact;
+mod jsx_roots;
 mod source_ranges;
 #[cfg(test)]
 mod tests;

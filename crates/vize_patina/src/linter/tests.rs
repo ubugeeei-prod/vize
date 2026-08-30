@@ -21,6 +21,7 @@ mod jsx_no_dupe_style_properties;
 mod jsx_no_duplicate_class;
 mod jsx_no_duplicate_dt;
 mod jsx_no_i_for_icon;
+mod jsx_no_inline_style;
 mod jsx_no_multi_spaces;
 mod jsx_no_redundant_roles;
 mod jsx_no_role_presentation_on_focusable;

@@ -54,7 +54,10 @@ impl<'a> MarkupBinding<'a> {
                             _ => identifier.name.as_str() == expected,
                         }
                     }
-                    JSXAttributeName::NamespacedName(_) => false,
+                    JSXAttributeName::NamespacedName(name) => {
+                        name.namespace.name.as_str() == "v-bind"
+                            && name.name.name.as_str() == expected
+                    }
                 }
             }
         }
