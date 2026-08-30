@@ -10,7 +10,7 @@ import path from "node:path";
 
 import type { ApiRoutesContext, SendJson, SendError } from "./index.js";
 import { generatePreviewModuleWithProps } from "../preview/index.js";
-import { HttpError, parseJsonBody, resolveInside } from "../security.js";
+import { HttpError, parseJsonBody, resolveInsideVueFile } from "../security.js";
 import { toPascalCase } from "../utils.js";
 
 /** POST /api/preview-with-props */
@@ -80,7 +80,7 @@ export async function handleGenerate(
       return;
     }
     const { generateArtFile: genArt } = await import("../autogen/index.js");
-    const componentPath = resolveInside(ctx.config.root, reqComponentPath, "componentPath");
+    const componentPath = resolveInsideVueFile(ctx.config.root, reqComponentPath, "componentPath");
     const result = await genArt(componentPath, autogenOptions);
     sendJson({
       generated: true,

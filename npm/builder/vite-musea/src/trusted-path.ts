@@ -99,6 +99,34 @@ export function resolveInside(parentDir: string, candidatePath: string, label = 
   return resolveInsideAny([parentDir], candidatePath, label);
 }
 
+/**
+ * Resolve a Vue source path that stays inside `parentDir` and still has a
+ * `.vue` suffix after realpath. A planted `Evil.vue` → `.env` symlink must
+ * not be readable just because the request path ends in `.vue`.
+ */
+export function resolveInsideVueFile(
+  parentDir: string,
+  candidatePath: string,
+  label = "path",
+): string {
+  if (!candidatePath.endsWith(".vue")) {
+    throw new HttpError(`${label} must be a .vue file`, 400);
+  }
+
+  const resolved = resolveInside(parentDir, candidatePath, label);
+  let real: string;
+  try {
+    real = fs.realpathSync.native(resolved);
+  } catch {
+    throw new HttpError(`${label} must be a readable .vue file`, 400);
+  }
+  if (!real.endsWith(".vue")) {
+    throw new HttpError(`${label} must be a .vue file`, 400);
+  }
+
+  return resolved;
+}
+
 export function resolveInsideAny(
   parentDirs: string[],
   candidatePath: string,

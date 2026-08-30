@@ -10,8 +10,8 @@ import {
   analyzeResolvedComponent,
   buildPalette,
   resolveArtReference,
-  resolveProjectPath,
 } from "../../musea.js";
+import { resolveProjectVueFile } from "../../vue-source-path.js";
 import type { ServerContext, ToolResult } from "./types.js";
 
 export async function handleAnalyzeComponent(
@@ -25,7 +25,7 @@ export async function handleAnalyzeComponent(
       throw new McpError(ErrorCode.InternalError, "analyzeSfc not available in native binding");
     }
 
-    const absolutePath = resolveProjectPath(ctx.projectRoot, directPath, "path");
+    const absolutePath = resolveProjectVueFile(ctx.projectRoot, directPath, "path");
     const source = await fs.promises.readFile(absolutePath, "utf-8");
     const analysis = binding.analyzeSfc(source, { filename: absolutePath });
 

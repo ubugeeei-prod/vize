@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { buildDocumentation, buildPalette } from "./musea.ts";
+import { analyzeResolvedComponent, buildDocumentation, buildPalette } from "./musea.ts";
 import type { NativeBinding, ServerContext } from "./types.ts";
 
 test("buildPalette prints fallback TypeScript through the AST printer", async () => {
@@ -180,5 +180,78 @@ test("buildDocumentation rewrites Self tags inside template fences", async () =>
     assert.doesNotMatch(documentation.markdown, /<\/Self>\n```/);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("analyzeResolvedComponent omits out-of-project component source paths", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "musea-mcp-component-"));
+  const outside = path.join(path.dirname(root), `${path.basename(root)}-secret`);
+
+  try {
+    fs.mkdirSync(outside);
+    const secretPath = path.join(outside, "Secret.vue");
+    fs.writeFileSync(secretPath, "<template><button /></template>\n");
+    const artPath = path.join(root, "Card.art.vue");
+    fs.writeFileSync(artPath, "");
+
+    const ctx: ServerContext = {
+      projectRoot: root,
+      loadNative() {
+        throw new Error("native binding should not load");
+      },
+      scanArtFiles: async () => new Map(),
+      resolveTokensPath: async () => null,
+    };
+
+    const result = await analyzeResolvedComponent(
+      ctx,
+      {
+        parseArt() {
+          throw new Error("parseArt should not be called");
+        },
+        artToCsf() {
+          throw new Error("artToCsf should not be called");
+        },
+        parseDesignTokensFromPath() {
+          return [];
+        },
+        flattenDesignTokenCategories() {
+          return [];
+        },
+        generateDesignTokensMarkdown() {
+          return "";
+        },
+      } satisfies NativeBinding,
+      {
+        info: {
+          path: artPath,
+          title: "Card",
+          component: "../" + path.basename(outside) + "/Secret.vue",
+          tags: [],
+          status: "ready",
+          variantCount: 0,
+          variantNames: [],
+        },
+        absolutePath: artPath,
+        relativePath: "Card.art.vue",
+        matchedBy: "path",
+        matchValue: "Card.art.vue",
+        score: 1,
+        reasons: [],
+        alternatives: [],
+      },
+    );
+
+    assert.equal(result.source.exists, false);
+    assert.equal(result.source.absolutePath, undefined);
+    assert.equal(result.source.path, undefined);
+    assert.match(result.source.error ?? "", /outside the project root/);
+    assert.doesNotMatch(
+      JSON.stringify(result),
+      new RegExp(outside.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+    fs.rmSync(outside, { recursive: true, force: true });
   }
 });
