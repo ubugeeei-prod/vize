@@ -151,6 +151,25 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn v_if_text_stays_inlined() {
+    assert_eq!(
+        assembled(r#"<div v-if="ok" v-example>hello</div>"#),
+        pin("\
+const { resolveDirective: _resolveDirective, withDirectives: _withDirectives, openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _directive_example = _resolveDirective(\"example\")
+
+  return (ok)
+    ? _withDirectives((_openBlock(), _createElementBlock(\"div\", { key: 0 }, \"hello\", 512 /* NEED_PATCH */)), [
+      [_directive_example]
+    ])
+    : _createCommentVNode(\"v-if\", true)
+}")
+    );
+}
+
+#[test]
 fn a_v_for_item_emits_empty_props_without_need_patch() {
     assert_eq!(
         assembled(r#"<div v-for="i in n" v-example></div>"#),

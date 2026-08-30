@@ -21,6 +21,10 @@ const BATTERY: &[(&str, &str)] = &[
         "component_static_props_with_component_slot",
         r#"<Foo class="panel"><Bar /></Foo>"#,
     ),
+    (
+        "root_static_props_with_slotted_component_child",
+        r#"<div id="root"><Foo id="x">hello</Foo></div>"#,
+    ),
 ];
 
 #[test]
