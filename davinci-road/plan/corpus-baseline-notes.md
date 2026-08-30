@@ -254,3 +254,29 @@ Evidence recorded before re-recording (TS-11: investigate, never average):
 This section's baseline (568 rows at `d96852a18` + this branch) blesses
 the post-sync behavior so the TS-11 gate stays meaningful for phase-1 PRs.
 If #4340 changes the materialization behavior, that PR re-records again.
+
+## Re-record 3 — 144-project phase-2 scope (2026-08-30)
+
+Phase 2's DOM exit gate measures the 144-project manifest. The committed
+baseline still covered the 142-project scope, so `corpus-diff --surface
+compiler` failed before it could run the fresh compiler lane:
+`manifest_project_count 142 != manifest 144`; `primevue-volt` and
+`primevue-showcase` were missing on all four surfaces. The failure was the
+intended scope proof, not a DOM drift.
+
+The refresh first made `lew-ui` use its checked-in `tsconfig.json`. Its
+empty matrix tsconfig let the typechecker report the same authored files as
+both `lib/...` and package-root-relative paths, which the matrix validator
+correctly rejected as unclassified transitive authored files. With the
+fixture tsconfig in the registry, the single-project matrix typechecker run
+is clean.
+
+Reference command:
+
+```sh
+node tools/davinci/corpus-baseline.mjs --clean-fixtures --shards 2 --timeout-ms 600000 --out .vize/davinci-baseline-144.json
+```
+
+Result: 576/576 comparisons, 144 projects x 4 surfaces, 156274 files.
+The compiler-surface proof against the refreshed artifact passed with
+144/144 comparisons and 37448 compiler files.

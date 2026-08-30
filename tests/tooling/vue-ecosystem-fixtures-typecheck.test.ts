@@ -124,3 +124,10 @@ test("PrimeVue Showcase is measured under the app tsconfig, sharing the PrimeVue
     "prepare",
   ]);
 });
+
+test("Lew UI typechecks under its fixture tsconfig", () => {
+  const registry = readRegistry();
+  const project = registry.projects.find((candidate) => candidate.id === "lew-ui");
+
+  assert.equal(project?.tsconfig, "tsconfig.json");
+});

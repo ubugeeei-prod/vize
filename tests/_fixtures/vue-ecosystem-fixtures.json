@@ -3810,6 +3810,7 @@
       "vueGlobs": [
         "**/*.vue"
       ],
+      "tsconfig": "tsconfig.json",
       "coverage": [
         "compiler",
         "linter",
