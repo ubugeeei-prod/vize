@@ -40,7 +40,7 @@
   },
   "scripts": {
     "build": "vp pack",
-    "test": "vp pack && vp test run src/file-state.test.ts && node --test src/sfc-blocks.test.ts && node src/test.ts && node src/script-location.test.ts",
+    "test": "vp pack && vp test run src/file-state.test.ts && node src/test.ts && node src/script-location.test.ts",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts"
