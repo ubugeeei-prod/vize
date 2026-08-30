@@ -10,6 +10,7 @@ export * from "./theme.ts";
 export * from "./alert.ts";
 export * from "./announcer.ts";
 export * from "./aspect-ratio.ts";
+export * from "./avatar.ts";
 export * from "./badge.ts";
 export * from "./block-ui.ts";
 export * from "./blockquote.ts";

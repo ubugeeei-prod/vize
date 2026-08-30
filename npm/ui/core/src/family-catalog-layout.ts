@@ -3,6 +3,7 @@ import {
   componentQualityGates,
   type UiFamilyCatalogEntry,
 } from "./family-catalog-types.ts";
+import { avatarLayoutFamilyCatalog } from "./family-catalog-layout-avatar.ts";
 import { listLayoutFamilyCatalog } from "./family-catalog-layout-list.ts";
 
 export const layoutFamilyCatalog = [
@@ -34,6 +35,7 @@ export const layoutFamilyCatalog = [
     maturity: "stable",
     owner: catalogOwner,
   },
+  ...avatarLayoutFamilyCatalog,
   {
     canonicalName: "blockquote",
     title: "Blockquote",

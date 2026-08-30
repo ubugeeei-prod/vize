@@ -34,6 +34,7 @@ export default defineConfig({
       alert: "src/alert.ts",
       announcer: "src/announcer.ts",
       "aspect-ratio": "src/aspect-ratio.ts",
+      avatar: "src/avatar.ts",
       badge: "src/badge.ts",
       "block-ui": "src/block-ui.ts",
       blockquote: "src/blockquote.ts",

@@ -1,3 +1,4 @@
+import { avatarRendererFixtures } from "./renderer-fixtures-avatar.ts";
 import { textRendererFixtures } from "./renderer-fixtures-text.ts";
 
 export const primitiveRendererFixtures = [
@@ -52,6 +53,7 @@ const ratio = ref(16 / 9);
 </template>
 `,
   },
+  ...avatarRendererFixtures,
   {
     filename: "BadgeConsumer.vue",
     source: String.raw`<script setup lang="ts">

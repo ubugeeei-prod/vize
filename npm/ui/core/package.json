@@ -49,6 +49,11 @@
       "import": "./dist/aspect-ratio.mjs",
       "default": "./dist/aspect-ratio.mjs"
     },
+    "./avatar": {
+      "types": "./dist/avatar.d.mts",
+      "import": "./dist/avatar.mjs",
+      "default": "./dist/avatar.mjs"
+    },
     "./badge": {
       "types": "./dist/badge.d.mts",
       "import": "./dist/badge.mjs",
