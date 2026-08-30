@@ -37,6 +37,7 @@ export default defineConfig({
       avatar: "src/avatar.ts",
       badge: "src/badge.ts",
       "block-ui": "src/block-ui.ts",
+      callout: "src/families/feedback/callout/callout.ts",
       blockquote: "src/blockquote.ts",
       breadcrumb: "src/breadcrumb.ts",
       tabs: "src/tabs.ts",
