@@ -36,6 +36,7 @@ export * from "./alert-dialog.ts";
 export * from "./button.ts";
 export * from "./families/actions/button-group/button-group.ts";
 export * from "./families/actions/copy-button/copy-button.ts";
+export * from "./families/actions/fullscreen-button/fullscreen-button.ts";
 export * from "./families/actions/print-button/print-button.ts";
 export * from "./families/actions/toolbar/toolbar.ts";
 export * from "./families/data/table/table.ts";

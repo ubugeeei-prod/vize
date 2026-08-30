@@ -144,6 +144,11 @@
       "import": "./dist/copy-button.mjs",
       "default": "./dist/copy-button.mjs"
     },
+    "./fullscreen-button": {
+      "types": "./dist/fullscreen-button.d.mts",
+      "import": "./dist/fullscreen-button.mjs",
+      "default": "./dist/fullscreen-button.mjs"
+    },
     "./print-button": {
       "types": "./dist/print-button.d.mts",
       "import": "./dist/print-button.mjs",

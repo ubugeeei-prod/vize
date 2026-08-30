@@ -16,6 +16,27 @@ function onCopy(value: string) {
 `,
   },
   {
+    filename: "FullscreenButtonConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { FullscreenButton } from "./families/actions/fullscreen-button/fullscreen-button.ts";
+import type { FullscreenButtonOperation } from "./families/actions/fullscreen-button/fullscreen-button.ts";
+
+function onFullscreen(operation: FullscreenButtonOperation, event: MouseEvent) {
+  void operation;
+  void event;
+}
+</script>
+
+<template>
+  <FullscreenButton
+    aria-label="Toggle fullscreen"
+    enter-label="Enter fullscreen"
+    @fullscreen="onFullscreen"
+  />
+</template>
+`,
+  },
+  {
     filename: "PrintButtonConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { PrintButton } from "./families/actions/print-button/print-button.ts";
