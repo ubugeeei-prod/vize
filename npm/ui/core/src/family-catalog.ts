@@ -8,6 +8,7 @@ import { interactionFamilyCatalog } from "./family-catalog-interactions.ts";
 import { layoutFamilyCatalog } from "./family-catalog-layout.ts";
 import { navigationFamilyCatalog } from "./family-catalog-navigation.ts";
 import { overlayFamilyCatalog } from "./family-catalog-overlays.ts";
+import { ratingFamilyCatalog } from "./family-catalog-rating.ts";
 import { selectionFamilyCatalog } from "./family-catalog-selection.ts";
 import { sliderFamilyCatalog } from "./family-catalog-slider.ts";
 import type { UiFamilyCatalogEntry } from "./family-catalog-types.ts";
@@ -31,6 +32,7 @@ const allFamilyCatalogEntries = [
   ...layoutFamilyCatalog,
   ...navigationFamilyCatalog,
   ...overlayFamilyCatalog,
+  ...ratingFamilyCatalog,
   ...selectionFamilyCatalog,
   ...sliderFamilyCatalog,
 ] as const satisfies readonly UiFamilyCatalogEntry[];

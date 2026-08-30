@@ -43,6 +43,7 @@ export * from "./families/overlays/popover/popover.ts";
 export * from "./families/overlays/tooltip/tooltip.ts";
 export * from "./input.ts";
 export * from "./radio-group.ts";
+export * from "./families/form/rating/rating.ts";
 export * from "./search-field.ts";
 export * from "./families/form/slider/slider.ts";
 export * from "./separator.ts";

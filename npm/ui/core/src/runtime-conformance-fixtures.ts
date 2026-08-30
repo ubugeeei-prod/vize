@@ -27,6 +27,7 @@ import { buttonGroupRuntimeFixtures } from "./families/actions/button-group/runt
 import { fieldRuntimeFixtures } from "./runtime-conformance-field-fixtures.ts";
 import { progressRuntimeFixture } from "./runtime-conformance-progress-fixtures.ts";
 import { radioGroupRuntimeFixtures } from "./runtime-conformance-radio-group-fixtures.ts";
+import { ratingRuntimeFixture } from "./families/form/rating/runtime-conformance-rating-fixtures.ts";
 import { sliderRuntimeFixture } from "./families/form/slider/runtime-conformance-slider-fixtures.ts";
 import { spinnerRuntimeFixture } from "./runtime-conformance-spinner-fixtures.ts";
 import { statusLightRuntimeFixture } from "./families/feedback/status-light/runtime-conformance-status-light-fixtures.ts";
@@ -269,6 +270,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
     },
   },
   ...radioGroupRuntimeFixtures,
+  ratingRuntimeFixture,
   sliderRuntimeFixture,
   {
     name: "search-field",

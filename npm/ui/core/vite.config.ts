@@ -59,6 +59,7 @@ export default defineConfig({
       tooltip: "src/families/overlays/tooltip/tooltip.ts",
       input: "src/input.ts",
       "radio-group": "src/radio-group.ts",
+      rating: "src/families/form/rating/rating.ts",
       "search-field": "src/search-field.ts",
       slider: "src/families/form/slider/slider.ts",
       separator: "src/separator.ts",
