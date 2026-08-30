@@ -12,6 +12,8 @@ use scan::{
     speculative_type_angle_open_kind,
 };
 
+pub use scan::is_expression_trailing_trivia;
+
 /// Maximum expression nesting depth accepted before parsing.
 ///
 /// OXC recurses for nested brackets; stack overflow (#956) and a parser timeout

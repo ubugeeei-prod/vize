@@ -15,7 +15,9 @@
 //!   counter == distinct expressions (the P1-5 counter law: each expression
 //!   parsed at most once, always).
 //! - `js_ast` is `Some` iff the node's content parses as one complete
-//!   TypeScript-dialect expression covering the whole text. Text a lone
+//!   TypeScript-dialect expression covering the whole text, allowing only
+//!   trailing whitespace and closed block comments after the parsed expression.
+//!   Text a lone
 //!   `Expression` cannot represent (v-for values such as `item of items`,
 //!   v-on multi-statement bodies such as `a++; b++`, invalid expressions)
 //!   stays `None`, and parse failures are swallowed: today every template
@@ -28,7 +30,7 @@
 
 use oxc_span::{GetSpan, SourceType};
 use vize_relief::{JsExpression, SimpleExpressionNode};
-use vize_s0::expression_guard::expression_is_safe_to_parse;
+use vize_s0::expression_guard::{expression_is_safe_to_parse, is_expression_trailing_trivia};
 use vize_s0::profiler::global_profiler;
 
 use super::Parser;
@@ -85,9 +87,9 @@ fn parse_retained<'a>(
     // `parse_expression` stops after the first complete expression without
     // demanding end-of-input, so `a++; b++` would come back as `a++`. A
     // retained AST that does not cover its `raw` would lie to consumers;
-    // only trailing whitespace may remain.
+    // only trailing whitespace and closed block comments may remain.
     let rest = raw.get(parsed.span().end as usize..)?;
-    if !rest.trim().is_empty() {
+    if !is_expression_trailing_trivia(rest) {
         return None;
     }
     Some(JsExpression {

@@ -25,6 +25,10 @@ const BATTERY: &[(&str, &str)] = &[
         "svg_same_namespace_dynamic_descendants",
         r#"<div><svg><defs><pattern :x="x"><line :x1="w"/></pattern></defs></svg></div>"#,
     ),
+    (
+        "svg_sparkline_pulse_trail_condition",
+        r#"<svg><g v-if="canRender"><template v-for="(_, i) in TRAIL_LENGTH"><circle v-if="i % 3 === 0 /* perf optimization */" :key="`sparkline_dot_${i}_${pulsePathId}`" :r="getRadius(i)"></circle></template></g></svg>"#,
+    ),
     ("mathml_static_tree", "<math><mi>x</mi></math>"),
 ];
 

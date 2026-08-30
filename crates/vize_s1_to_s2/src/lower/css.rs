@@ -5,8 +5,9 @@
 //! are the calls. The carrier is not a DOM vnode — P2-11 must skip it.
 //! Spans are file-absolute against the complete authored source.
 
+use oxc_span::GetSpan;
 use vize_s0::{Allocator, Box, SourceBlock, Span, Vec};
-use vize_s2::expr::ExprRef;
+use vize_s2::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
 use vize_s2::op::{BindingOp, ElementOp, Namespace, Op, Region, VueCssBindOp};
 
 mod scan;
@@ -34,7 +35,7 @@ fn lower_style_block_impl<'a>(allocator: &'a Allocator, css: &'a str, block_star
         let expr = authored_slice_span(css, hit.expr, block_start);
         bindings.push(BindingOp::VueCssBind(Box::new_in(
             VueCssBindOp {
-                value: ExprRef::parse_js_in(allocator, hit.expr, expr),
+                value: css_bind_expr(allocator, hit.expr, expr),
                 span: call,
             },
             &allocator,
@@ -55,6 +56,34 @@ fn lower_style_block_impl<'a>(allocator: &'a Allocator, css: &'a str, block_star
         },
         &allocator,
     ))
+}
+
+fn css_bind_expr<'a>(allocator: &'a Allocator, source: &'a str, span: Span) -> ExprRef<'a> {
+    match JsExpr::parse_in(allocator, source, span) {
+        Ok(js) if js_consumed_without_trailing_comment(js, source) => ExprRef::Js(js),
+        Ok(_) => opaque_expr(allocator, source, span, OpaqueReason::ParseRejected),
+        Err(reason) => opaque_expr(allocator, source, span, reason),
+    }
+}
+
+fn js_consumed_without_trailing_comment(js: &JsExpr<'_>, source: &str) -> bool {
+    let Some(rest) = source.get(js.ast.span().end as usize..) else {
+        return false;
+    };
+    rest.trim().is_empty()
+}
+
+fn opaque_expr<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    span: Span,
+    reason: OpaqueReason,
+) -> ExprRef<'a> {
+    ExprRef::Opaque(allocator.alloc(OpaqueExpr {
+        reason,
+        source,
+        span,
+    }))
 }
 
 fn authored_span(block_start: u32, start: usize, end: usize) -> Span {

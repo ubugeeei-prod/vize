@@ -4,7 +4,7 @@
 //!
 //! A `JsExpr` exists iff its `source` parses as **one complete
 //! TS-dialect expression covering the whole text** (only trailing
-//! whitespace may remain). The rule is the same one
+//! whitespace and closed block comments may remain). The rule is the same one
 //! `crates/vize_armature/src/parser/expression.rs` applies at template
 //! parse - a retained AST that does not cover its text would lie to every
 //! consumer - and [`JsExpr::parse_in`] is its second and last home,
@@ -27,7 +27,7 @@
 //! build path (P2-12b), where the lane *becomes* the compile path.
 
 use oxc_span::{GetSpan, SourceType};
-use vize_s0::expression_guard::expression_is_safe_to_parse;
+use vize_s0::expression_guard::{expression_is_safe_to_parse, is_expression_trailing_trivia};
 use vize_s0::{Allocator, Span};
 
 use super::opaque::OpaqueReason;
@@ -86,7 +86,7 @@ impl<'a> JsExpr<'a> {
         let Some(rest) = source.get(parsed.span().end as usize..) else {
             return Err(OpaqueReason::ParseRejected);
         };
-        if !rest.trim().is_empty() {
+        if !is_expression_trailing_trivia(rest) {
             return Err(OpaqueReason::ParseRejected);
         }
         Ok(allocator.alloc(Self {

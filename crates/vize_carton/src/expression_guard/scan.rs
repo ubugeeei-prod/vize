@@ -180,6 +180,48 @@ fn is_ecmascript_whitespace(c: char) -> bool {
     c == '\u{feff}' || (c.is_whitespace() && c != '\u{0085}')
 }
 
+/// Returns true when `content` contains no live tokens after an expression.
+///
+/// This is intentionally narrower than all ECMAScript trivia: trailing line
+/// comments are valid JS trivia, but raw expression emitters often append their
+/// own delimiters on the same generated line. Admitting a line comment here
+/// would let authored source swallow those generated tokens.
+pub fn is_expression_trailing_trivia(content: &str) -> bool {
+    let bytes = content.as_bytes();
+    let mut i = 0;
+    loop {
+        match bytes.get(i) {
+            Some(b'/') if bytes.get(i + 1) == Some(&b'*') => {
+                let Some(next) = skip_closed_block_comment(bytes, i + 2) else {
+                    return false;
+                };
+                i = next;
+            }
+            Some(&b) if b < 0x80 => {
+                if matches!(b, b' ' | b'\t' | 0x0b | 0x0c | b'\n' | b'\r') {
+                    i += 1;
+                } else {
+                    return false;
+                }
+            }
+            Some(_) => {
+                if !content.is_char_boundary(i) {
+                    return false;
+                }
+                let Some(c) = content[i..].chars().next() else {
+                    return false;
+                };
+                if is_ecmascript_whitespace(c) {
+                    i += c.len_utf8();
+                } else {
+                    return false;
+                }
+            }
+            None => return true,
+        }
+    }
+}
+
 pub fn skip_line_comment(bytes: &[u8], mut i: usize) -> usize {
     while i < bytes.len() {
         // Line comments end at any ECMAScript line terminator: LF, CR, LS
@@ -196,6 +238,16 @@ pub fn skip_line_comment(bytes: &[u8], mut i: usize) -> usize {
         }
     }
     i
+}
+
+fn skip_closed_block_comment(bytes: &[u8], mut i: usize) -> Option<usize> {
+    while i + 1 < bytes.len() {
+        if bytes[i] == b'*' && bytes[i + 1] == b'/' {
+            return Some(i + 2);
+        }
+        i += 1;
+    }
+    None
 }
 
 pub(super) fn skip_block_comment(bytes: &[u8], mut i: usize) -> usize {

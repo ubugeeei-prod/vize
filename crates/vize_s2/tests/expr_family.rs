@@ -67,3 +67,39 @@ fn every_expression_variant_is_matched_without_a_wildcard() {
         assert_eq!(reason_keyword(reason), reason.mnemonic());
     }
 }
+
+#[test]
+fn js_expression_admits_trailing_block_comment_trivia_only() {
+    let arena = Allocator::default();
+    let allocator = &arena;
+    let with_block_comment = "i % 3 === 0 /* perf optimization */";
+    let js = JsExpr::parse_in(
+        allocator,
+        with_block_comment,
+        Span::new(0, with_block_comment.len() as u32),
+    )
+    .expect("closed trailing block comments are trivia");
+    assert_eq!(js.source, with_block_comment);
+
+    let with_statement_tail = "i % 3 === 0; /* perf optimization */";
+    assert_eq!(
+        JsExpr::parse_in(
+            allocator,
+            with_statement_tail,
+            Span::new(0, with_statement_tail.len() as u32),
+        )
+        .unwrap_err(),
+        OpaqueReason::ParseRejected
+    );
+
+    let with_line_comment = "i % 3 === 0 // perf optimization";
+    assert_eq!(
+        JsExpr::parse_in(
+            allocator,
+            with_line_comment,
+            Span::new(0, with_line_comment.len() as u32),
+        )
+        .unwrap_err(),
+        OpaqueReason::ParseRejected
+    );
+}
