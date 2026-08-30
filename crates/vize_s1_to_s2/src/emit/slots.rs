@@ -326,7 +326,7 @@ fn emit_slot_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
             emit_hoisted_element(cx, element)
         }
         Op::Element(_) | Op::Component(_) | Op::If(_) | Op::For(_) | Op::Slot(_) => {
-            emit_array_child(cx, op)
+            emit_array_child(cx, op, false)
         }
     }
 }

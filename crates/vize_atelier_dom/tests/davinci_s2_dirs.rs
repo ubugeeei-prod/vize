@@ -30,6 +30,10 @@ const BATTERY: &[(&str, &str)] = &[
     ("class_bind", r#"<div :class="c" v-example></div>"#),
     ("nested", r#"<div><span v-example></span></div>"#),
     ("nested_text", r#"<div><span v-example>hello</span></div>"#),
+    (
+        "static_child",
+        r#"<div v-example><span id="">content</span></div>"#,
+    ),
     ("nested_dir", r#"<div v-outer><span v-inner></span></div>"#),
     ("vif", r#"<div v-if="ok" v-example></div>"#),
     ("vif_text", r#"<div v-if="ok" v-example>hello</div>"#),

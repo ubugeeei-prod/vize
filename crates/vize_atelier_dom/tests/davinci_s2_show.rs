@@ -31,6 +31,11 @@ const CASES: &[Case] = &[
         sites: &["513 /* TEXT, NEED_PATCH */"],
     },
     Case {
+        name: "static_child",
+        src: r#"<div v-show="visible"><span id="">content</span></div>"#,
+        sites: &["512 /* NEED_PATCH */"],
+    },
+    Case {
         name: "bind_id",
         src: r#"<div v-show="visible" :id="id">content</div>"#,
         sites: &["8 /* PROPS */, [\"id\"]"],

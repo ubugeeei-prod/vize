@@ -18,6 +18,10 @@ const BATTERY: &[(&str, &str)] = &[
         "select_dyn",
         r#"<select v-model="msg"><option :value="v">{{ v }}</option></select>"#,
     ),
+    (
+        "select_static_then_for",
+        r#"<select v-model="msg"><option value="">Select</option><option v-for="(item, index) of items" :key="index" :value="item.value">{{ item.label }}</option></select>"#,
+    ),
     ("checkbox", r#"<input type="checkbox" v-model="ok">"#),
     ("radio", r#"<input type="radio" v-model="choice">"#),
     ("file", r#"<input type="file" v-model="msg">"#),
