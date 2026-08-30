@@ -1084,7 +1084,7 @@ linter	Linter	source	crates/vize_patina/src/rules/a11y/aria_props.rs	16	old_ast	
 linter	Linter	source	crates/vize_patina/src/rules/a11y/aria_role.rs	17	old_ast	old AST/parser	old	vize_relief	legacy	3
 linter	Linter	source	crates/vize_patina/src/rules/a11y/aria_unsupported_elements.rs	14	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs	13	old_ast	old AST/parser	old	vize_relief	legacy	1
-linter	Linter	source	crates/vize_patina/src/rules/a11y/form_control_has_label.rs	14	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/rules/a11y/form_control_has_label.rs	15	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/heading_has_content.rs	13	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/helpers.rs	6	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/helpers.rs	6	old_ast	old AST/parser	old	vize_relief	legacy	1
