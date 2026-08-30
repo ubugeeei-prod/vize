@@ -3,7 +3,7 @@ import { computed, nextTick, useTemplateRef, watch, watchEffect } from "vue";
 import type { ComputedRef } from "vue";
 
 import { useControllableState } from "../../../controllable-state.ts";
-import { useDeterministicId } from "../../../deterministic-id.ts";
+import { useDeterministicId } from "../../foundations/id/deterministic-id.ts";
 import type {
   NativeSelectAriaInvalid,
   NativeSelectDirection,

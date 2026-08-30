@@ -2,7 +2,10 @@ import { computed, nextTick, watch, watchEffect } from "vue";
 import type { ComputedRef, ShallowRef } from "vue";
 
 import { useControllableState } from "../../../controllable-state.ts";
-import { deriveDeterministicId, useDeterministicId } from "../../../deterministic-id.ts";
+import {
+  deriveDeterministicId,
+  useDeterministicId,
+} from "../../foundations/id/deterministic-id.ts";
 import {
   RATING_DEFAULT_COUNT,
   RATING_DEFAULT_MIN,

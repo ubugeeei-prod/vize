@@ -5,6 +5,8 @@ import {
   type UiFamilyCatalogEntry,
 } from "./family-catalog-types.ts";
 
+const idFamilyRoot = "src/families/foundations/id/";
+
 export const focusFamilyCatalog = [
   {
     canonicalName: "dismissable-layer",
@@ -114,12 +116,16 @@ export const focusFamilyCatalog = [
     canonicalName: "id",
     title: "Deterministic ID Provider",
     packageSubpath: "./id",
-    entryFile: "src/id.ts",
-    sourceFiles: ["src/deterministic-id-provider.vue", "src/id.ts", "src/deterministic-id.ts"],
-    behaviorContract: "src/id.behavior.md",
-    tests: ["src/id.test.ts"],
-    typeTests: ["src/id.types.test-d.ts"],
-    rendererFixture: "deterministic-id-provider.vue",
+    entryFile: `${idFamilyRoot}id.ts`,
+    sourceFiles: [
+      `${idFamilyRoot}deterministic-id-provider.vue`,
+      `${idFamilyRoot}id.ts`,
+      `${idFamilyRoot}deterministic-id.ts`,
+    ],
+    behaviorContract: `${idFamilyRoot}id.behavior.md`,
+    tests: [`${idFamilyRoot}id.test.ts`],
+    typeTests: [`${idFamilyRoot}id.types.test-d.ts`],
+    rendererFixture: "families/foundations/id/deterministic-id-provider.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {
       exportName: "IdProvider",

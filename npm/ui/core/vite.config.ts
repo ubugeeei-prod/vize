@@ -172,7 +172,7 @@ export default defineConfig({
       catalog: "src/family-catalog.ts",
       command: "src/command.ts",
       history: "src/history.ts",
-      id: "src/id.ts",
+      id: "src/families/foundations/id/id.ts",
       "inert-outside": "src/families/accessibility/inert-outside/inert-outside.ts",
       "interaction-modality":
         "src/families/accessibility/interaction-modality/interaction-modality.ts",

@@ -5,21 +5,25 @@ import path from "node:path";
 import { test } from "vite-plus/test";
 
 import { foundationFamilyCatalog } from "./family-catalog-foundations.ts";
+import { focusFamilyCatalog } from "./family-catalog-focus.ts";
 
 const sourceRoot = path.resolve("src");
 const familySfcPattern =
   /^families\/[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9]+(?:-[a-z0-9]+)*\.vue$/u;
+const rootDeterministicIdImportPattern =
+  /from\s+["']\.\.\/\.\.\/\.\.\/deterministic-id(?:-provider)?\.(?:ts|vue)["']/u;
 const rehomedFoundationUtilities = ["context", "controllable-state"] as const;
 const foundationCompatibilityBarrels = [
   ["context.ts", "./families/foundations/context/context.ts"],
   ["controllable-state.ts", "./families/foundations/controllable-state/controllable-state.ts"],
+  ["deterministic-id.ts", "./families/foundations/id/deterministic-id.ts"],
+  ["id.ts", "./families/foundations/id/id.ts"],
 ] as const;
 
 const grandfatheredRootSfcFiles = [
   "collapsible-content.vue",
   "collapsible-root.vue",
   "collapsible-trigger.vue",
-  "deterministic-id-provider.vue",
   "error-summary.vue",
   "link-anchor.vue",
   "primitive-element.vue",
@@ -66,6 +70,36 @@ test("root foundation utilities stay compatibility-only barrels", () => {
   }
 });
 
+test("rehomed id family is cataloged from a family directory", () => {
+  const family = focusFamilyCatalog.find((entry) => entry.canonicalName === "id");
+  assert.ok(family);
+
+  const familyRoot = "src/families/foundations/id/";
+  assert.equal(family.entryFile, `${familyRoot}id.ts`);
+  assert.deepEqual(family.sourceFiles, [
+    `${familyRoot}deterministic-id-provider.vue`,
+    `${familyRoot}id.ts`,
+    `${familyRoot}deterministic-id.ts`,
+  ]);
+  assert.equal(family.behaviorContract, `${familyRoot}id.behavior.md`);
+  assert.deepEqual(family.tests, [`${familyRoot}id.test.ts`]);
+  assert.deepEqual(family.typeTests, [`${familyRoot}id.types.test-d.ts`]);
+  assert.equal(family.rendererFixture, "families/foundations/id/deterministic-id-provider.vue");
+});
+
+test("family sources import deterministic IDs from the foundation family", () => {
+  const offenders = collectSourceFiles(path.join(sourceRoot, "families"))
+    .map((filename) => ({
+      filename: toPosixPath(path.relative(sourceRoot, filename)),
+      source: fs.readFileSync(filename, "utf8"),
+    }))
+    .filter(({ source }) => rootDeterministicIdImportPattern.test(source))
+    .map(({ filename }) => filename)
+    .sort();
+
+  assert.deepEqual(offenders, []);
+});
+
 function rootSfcFiles(): readonly string[] {
   return fs
     .readdirSync(sourceRoot, { withFileTypes: true })
@@ -75,10 +109,14 @@ function rootSfcFiles(): readonly string[] {
 }
 
 function collectVueFiles(directory: string): readonly string[] {
+  return collectSourceFiles(directory).filter((filename) => filename.endsWith(".vue"));
+}
+
+function collectSourceFiles(directory: string): readonly string[] {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const filename = path.join(directory, entry.name);
-    if (entry.isDirectory()) return collectVueFiles(filename);
-    return entry.isFile() && entry.name.endsWith(".vue") ? [filename] : [];
+    if (entry.isDirectory()) return collectSourceFiles(filename);
+    return entry.isFile() && /\.(?:ts|vue)$/u.test(entry.name) ? [filename] : [];
   });
 }
 

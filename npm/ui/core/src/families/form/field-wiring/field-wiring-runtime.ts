@@ -1,6 +1,9 @@
 import { computed, getCurrentInstance, toValue } from "vue";
 
-import { deriveDeterministicId, useDeterministicId } from "../../../deterministic-id.ts";
+import {
+  deriveDeterministicId,
+  useDeterministicId,
+} from "../../foundations/id/deterministic-id.ts";
 import type { FieldWiringController, FieldWiringOptions } from "./field-wiring-types.ts";
 
 const invalidOptionDiagnostic = "VIZE_UI_FIELD_WIRING_OPTION";

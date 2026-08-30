@@ -2,7 +2,7 @@
 import { computed, nextTick, ref, useTemplateRef, watch, watchEffect } from "vue";
 
 import { useControllableState } from "../../../controllable-state.ts";
-import { useDeterministicId } from "../../../deterministic-id.ts";
+import { useDeterministicId } from "../../foundations/id/deterministic-id.ts";
 import type { TextareaAriaInvalid, TextareaExpose, TextareaWrap } from "./textarea-types.ts";
 
 const {

@@ -4,7 +4,10 @@ import { computed, nextTick, useTemplateRef, watch } from "vue";
 import { createCollectionRegistry } from "../../../collection.ts";
 import { useCompositeNavigation } from "../../../composite-navigation.ts";
 import { useControllableState } from "../../../controllable-state.ts";
-import { deriveDeterministicId, useDeterministicId } from "../../../deterministic-id.ts";
+import {
+  deriveDeterministicId,
+  useDeterministicId,
+} from "../../foundations/id/deterministic-id.ts";
 import { stepperContext } from "./stepper-context.ts";
 import type {
   StepperCollectionValue,

@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { defineComponent, h, type VNode } from "vue";
 
 import Button from "./families/actions/button/button.vue";
-import IdProvider from "./deterministic-id-provider.vue";
-import { useDeterministicId } from "./deterministic-id.ts";
+import IdProvider from "./families/foundations/id/deterministic-id-provider.vue";
+import { useDeterministicId } from "./families/foundations/id/deterministic-id.ts";
 import ErrorSummary from "./error-summary.vue";
 import LinkAnchor from "./link-anchor.vue";
 import { skipLinkRuntimeFixture } from "./families/navigation/skip-link/runtime-conformance-skip-link-fixtures.ts";
@@ -112,7 +112,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   ...selectionRuntimeFixtures,
   {
     name: "deterministic-id-provider",
-    sourceFile: "deterministic-id-provider.vue",
+    sourceFile: "families/foundations/id/deterministic-id-provider.vue",
     render: () =>
       h(
         IdProvider,

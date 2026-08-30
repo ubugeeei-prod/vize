@@ -6,7 +6,7 @@ import { createCollectionRegistry } from "../../../collection.ts";
 import { createCompositeNavigation } from "../../../composite-navigation.ts";
 import type { CompositeNavigationCommand } from "../../../composite-navigation.ts";
 import { useControllableState } from "../../../controllable-state.ts";
-import { useDeterministicId } from "../../../deterministic-id.ts";
+import { useDeterministicId } from "../../foundations/id/deterministic-id.ts";
 import { listboxContext } from "./listbox-context.ts";
 import type { ListboxCollectionValue } from "./listbox-context.ts";
 import type {

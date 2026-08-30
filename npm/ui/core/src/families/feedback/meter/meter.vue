@@ -2,7 +2,7 @@
 import { computed, useTemplateRef } from "vue";
 import type { ComputedRef } from "vue";
 
-import { useDeterministicId } from "../../../deterministic-id.ts";
+import { useDeterministicId } from "../../foundations/id/deterministic-id.ts";
 import { METER_DEFAULT_MAX, METER_DEFAULT_MIN, getMeterState } from "./meter-state.ts";
 import type { MeterExpose, MeterSlotState } from "./meter-types.ts";
 

@@ -2,7 +2,7 @@
 import { computed, useTemplateRef } from "vue";
 import type { ComputedRef } from "vue";
 
-import { useDeterministicId } from "../../../deterministic-id.ts";
+import { useDeterministicId } from "../../foundations/id/deterministic-id.ts";
 import { PROGRESS_DEFAULT_MAX, getProgressState } from "./progress-state.ts";
 import type { ProgressExpose, ProgressSlotState } from "./progress-types.ts";
 

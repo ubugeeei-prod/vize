@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "vite-plus/test";
 import { defineComponent, h } from "vue";
 
-import IdProvider from "./deterministic-id-provider.vue";
+import IdProvider from "./families/foundations/id/deterministic-id-provider.vue";
 import LinkAnchor from "./link-anchor.vue";
 import { mountInteraction } from "./testing/mount.ts";
 

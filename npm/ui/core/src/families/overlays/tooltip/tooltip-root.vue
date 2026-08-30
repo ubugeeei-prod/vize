@@ -3,7 +3,10 @@ import { computed, onUnmounted, shallowRef, watch } from "vue";
 import type { ComputedRef } from "vue";
 
 import { useControllableState } from "../../../controllable-state.ts";
-import { deriveDeterministicId, useDeterministicId } from "../../../deterministic-id.ts";
+import {
+  deriveDeterministicId,
+  useDeterministicId,
+} from "../../foundations/id/deterministic-id.ts";
 import { tooltipContext } from "./tooltip-context.ts";
 import type { TooltipRootExpose, TooltipSlotState, TooltipState } from "./tooltip-types.ts";
 

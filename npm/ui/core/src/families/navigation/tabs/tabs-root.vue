@@ -5,7 +5,10 @@ import type { ComputedRef } from "vue";
 import { createCollectionRegistry } from "../../../collection.ts";
 import { useCompositeNavigation } from "../../../composite-navigation.ts";
 import { useControllableState } from "../../../controllable-state.ts";
-import { deriveDeterministicId, useDeterministicId } from "../../../deterministic-id.ts";
+import {
+  deriveDeterministicId,
+  useDeterministicId,
+} from "../../foundations/id/deterministic-id.ts";
 import { tabsContext } from "./tabs-context.ts";
 import type { TabsContextValue, TabsTriggerRegistrationInput } from "./tabs-context.ts";
 import type {

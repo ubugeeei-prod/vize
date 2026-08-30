@@ -2,7 +2,10 @@
 import { computed, useTemplateRef } from "vue";
 import type { ComputedRef } from "vue";
 
-import { deriveDeterministicId, useDeterministicId } from "../../../deterministic-id.ts";
+import {
+  deriveDeterministicId,
+  useDeterministicId,
+} from "../../foundations/id/deterministic-id.ts";
 import { normalizeBannerAria } from "./banner-aria.ts";
 import type {
   BannerElement,

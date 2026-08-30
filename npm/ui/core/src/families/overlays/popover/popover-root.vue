@@ -3,7 +3,10 @@ import { computed, shallowRef, watch } from "vue";
 import type { ComputedRef } from "vue";
 
 import { useControllableState } from "../../../controllable-state.ts";
-import { deriveDeterministicId, useDeterministicId } from "../../../deterministic-id.ts";
+import {
+  deriveDeterministicId,
+  useDeterministicId,
+} from "../../foundations/id/deterministic-id.ts";
 import { popoverContext } from "./popover-context.ts";
 import type { PopoverRootExpose, PopoverSlotState, PopoverState } from "./popover-types.ts";
 

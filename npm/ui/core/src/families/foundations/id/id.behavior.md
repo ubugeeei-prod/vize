@@ -1,8 +1,10 @@
 # Deterministic ID behavior contract
 
-Normative state × input → outcome table for `deterministic-id-provider.vue` and
-`@vizejs/ui/id`. Every row is proven by the named test in `src/id.test.ts`;
-compile-only public type assertions live in `src/id.types.test-d.ts`.
+Normative state × input → outcome table for
+`src/families/foundations/id/deterministic-id-provider.vue` and `@vizejs/ui/id`.
+Every row is proven by the named test in
+`src/families/foundations/id/id.test.ts`; compile-only public type assertions
+live in `src/families/foundations/id/id.types.test-d.ts`.
 
 | #    | State                     | Input                                                  | Outcome                                                     | Proven by                                                           |
 | ---- | ------------------------- | ------------------------------------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------------- |
@@ -25,7 +27,7 @@ compile-only public type assertions live in `src/id.types.test-d.ts`.
 | ID17 | concurrent SSR            | different request seeds                                | request-local sequences never bleed across renders          | `renders byte-stable IDs for repeated and concurrent SSR requests`  |
 | ID18 | SSR followed by hydration | identical provider tree                                | client retains server IDs without mismatch diagnostics      | `hydrates provider IDs without warnings or replacement`             |
 | ID19 | nested provider insertion | sibling control allocation                             | child-scope counter cannot renumber sibling IDs             | `keeps ID and child-scope allocation sequences independent`         |
-| ID20 | public types              | invalid seed, hint, prefix, or unbranded ID assignment | TypeScript rejects closed-contract misuse                   | `src/id.types.test-d.ts`                                            |
+| ID20 | public types              | invalid seed, hint, prefix, or unbranded ID assignment | TypeScript rejects closed-contract misuse                   | `src/families/foundations/id/id.types.test-d.ts`                    |
 
 ## Assistive-technology notes
 

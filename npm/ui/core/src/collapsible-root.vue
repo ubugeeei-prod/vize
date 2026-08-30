@@ -4,7 +4,10 @@ import type { ComputedRef } from "vue";
 
 import { collapsibleContext } from "./collapsible-context.ts";
 import { useControllableState } from "./controllable-state.ts";
-import { deriveDeterministicId, useDeterministicId } from "./deterministic-id.ts";
+import {
+  deriveDeterministicId,
+  useDeterministicId,
+} from "./families/foundations/id/deterministic-id.ts";
 import type {
   CollapsibleRootExpose,
   CollapsibleSlotState,

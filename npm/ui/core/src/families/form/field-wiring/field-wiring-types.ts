@@ -1,6 +1,6 @@
 import type { ComputedRef, MaybeRefOrGetter } from "vue";
 
-import type { DeterministicId } from "../../../deterministic-id.ts";
+import type { DeterministicId } from "../../foundations/id/deterministic-id.ts";
 
 /** Options accepted by {@link useFieldWiring}. */
 export interface FieldWiringOptions {

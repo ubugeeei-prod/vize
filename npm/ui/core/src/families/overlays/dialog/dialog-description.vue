@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, useTemplateRef } from "vue";
 
-import { toDeterministicId } from "../../../deterministic-id.ts";
+import { toDeterministicId } from "../../foundations/id/deterministic-id.ts";
 import { dialogContext } from "./dialog-context.ts";
 import type { DialogDescriptionExpose } from "./dialog-types.ts";
 import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";

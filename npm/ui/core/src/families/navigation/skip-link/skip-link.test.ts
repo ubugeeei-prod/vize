@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "vite-plus/test";
 import { defineComponent, h, nextTick } from "vue";
 
-import IdProvider from "../../../deterministic-id-provider.vue";
+import IdProvider from "../../foundations/id/deterministic-id-provider.vue";
 import { mountInteraction } from "../../../testing/mount.ts";
 import SkipLink from "./skip-link.vue";
 import type { SkipLinkActivation, SkipLinkExpose, SkipLinkSlotState } from "./skip-link.ts";

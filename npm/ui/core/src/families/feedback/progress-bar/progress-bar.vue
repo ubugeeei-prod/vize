@@ -2,7 +2,10 @@
 import { computed, useTemplateRef } from "vue";
 import type { ComputedRef } from "vue";
 
-import { deriveDeterministicId, useDeterministicId } from "../../../deterministic-id.ts";
+import {
+  deriveDeterministicId,
+  useDeterministicId,
+} from "../../foundations/id/deterministic-id.ts";
 import type { PrimitiveAs } from "../../../primitive.ts";
 import {
   PROGRESS_BAR_DEFAULT_MAX,

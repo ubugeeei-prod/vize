@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, useTemplateRef } from "vue";
 
-import { useDeterministicId } from "./deterministic-id.ts";
+import { useDeterministicId } from "./families/foundations/id/deterministic-id.ts";
 import type { LinkExpose, LinkProps, LinkSlotState } from "./link-types.ts";
 
 const UNSAFE_HREF = /^(?:data|javascript|vbscript):/i;

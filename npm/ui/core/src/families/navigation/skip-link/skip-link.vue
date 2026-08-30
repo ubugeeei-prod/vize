@@ -2,7 +2,7 @@
 import { computed, ref, useTemplateRef } from "vue";
 import type { ComputedRef, Ref } from "vue";
 
-import { useDeterministicId } from "../../../deterministic-id.ts";
+import { useDeterministicId } from "../../foundations/id/deterministic-id.ts";
 import type {
   SkipLinkActivation,
   SkipLinkExpose,

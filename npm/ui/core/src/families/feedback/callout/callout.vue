@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, useSlots, useTemplateRef } from "vue";
 
-import { useDeterministicId } from "../../../deterministic-id.ts";
+import { useDeterministicId } from "../../foundations/id/deterministic-id.ts";
 import {
   normalizeCalloutIdReferenceList,
   normalizeCalloutLabel,

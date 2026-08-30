@@ -3,7 +3,7 @@ import { computed, useTemplateRef, watch } from "vue";
 import type { ComputedRef } from "vue";
 
 import { useControllableState } from "../../../controllable-state.ts";
-import { useDeterministicId } from "../../../deterministic-id.ts";
+import { useDeterministicId } from "../../foundations/id/deterministic-id.ts";
 import { radioGroupContext } from "./radio-group-context.ts";
 import type {
   RadioGroupAriaInvalid,
