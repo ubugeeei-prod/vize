@@ -59,6 +59,11 @@
       "import": "./dist/cluster.mjs",
       "default": "./dist/cluster.mjs"
     },
+    "./container": {
+      "types": "./dist/container.d.mts",
+      "import": "./dist/container.mjs",
+      "default": "./dist/container.mjs"
+    },
     "./collapsible": {
       "types": "./dist/collapsible.d.mts",
       "import": "./dist/collapsible.mjs",

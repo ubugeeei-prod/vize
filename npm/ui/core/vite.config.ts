@@ -36,6 +36,7 @@ export default defineConfig({
       "aspect-ratio": "src/aspect-ratio.ts",
       badge: "src/badge.ts",
       cluster: "src/cluster.ts",
+      container: "src/container.ts",
       collapsible: "src/collapsible.ts",
       button: "src/button.ts",
       link: "src/link.ts",

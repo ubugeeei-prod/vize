@@ -86,6 +86,25 @@ const wrap = ref(true);
 `,
   },
   {
+    filename: "ContainerConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { Container } from "./container.ts";
+
+const centered = ref(true);
+</script>
+
+<template>
+  <Container as="main" size="lg" :centered padding-inline="1rem">
+    <template #default="{ maxInlineSize, paddingInline }">
+      <h1>{{ maxInlineSize }}</h1>
+      <p>{{ paddingInline }}</p>
+    </template>
+  </Container>
+</template>
+`,
+  },
+  {
     filename: "MeterConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";
