@@ -45,7 +45,7 @@ observational guard for planning only. It does not change rollout state.
 
 | consumer                   | stage/Davinci | preferred stage names | compat code names | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
-| Compiler                   |           920 |                   436 |               484 |             140 |     371 |             939 |      492 |           486 |           597 |
+| Compiler                   |           922 |                   438 |               484 |             140 |     371 |             939 |      494 |           486 |           597 |
 | Linter                     |           331 |                   331 |                 0 |             290 |     287 |             671 |      237 |           375 |           539 |
 | Typechecker                |           879 |                   227 |               652 |             396 |     187 |             807 |      655 |           467 |           663 |
 | Typechecker content-mapper |             8 |                     8 |                 0 |               1 |       0 |               9 |        0 |             7 |            19 |
@@ -61,10 +61,10 @@ Scope: build command plus atelier compiler crates. This is a lexical inventory, 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
 | Davinci          |          21 |               4 |       17 |
-| S0               |         842 |             477 |      365 |
+| S0               |         843 |             477 |      366 |
 | S1               |           5 |               1 |        4 |
 | S2               |          15 |               1 |       14 |
-| S1->S2           |          37 |               2 |       35 |
+| S1->S2           |          38 |               2 |       36 |
 | old AST/parser   |          75 |              55 |       20 |
 | Croquis analysis |          65 |              56 |        9 |
 | raw OXC          |         371 |             343 |       28 |
