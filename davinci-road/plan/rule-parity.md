@@ -34,9 +34,9 @@ Per-rule registration surface, SFC/JSX path membership, croquis usage, and a fir
 
 - **total rules: 245**
 - by family: template-family 158, script 71, css 10, musea 6
-- by surface (a rule can have several): `css-text` 10, `markup-facade` 35, `musea-blocks` 6, `script-oxc` 65, `script-source` 6, `sfc-source` 9, `template-ast` 152, `type-aware-corsa` 5
+- by surface (a rule can have several): `css-text` 10, `markup-facade` 36, `musea-blocks` 6, `script-oxc` 65, `script-source` 6, `sfc-source` 9, `template-ast` 152, `type-aware-corsa` 5
 - path membership: SFC `lint_sfc` 239 · JSX `lint_jsx` 147 · **SFC∩JSX 147** · SFC-only 92 · JSX-only 0 · neither 6 (6 musea + 0 unregistered)
-- JSX lanes: `fallback` 112, `ir` 25, `ir-lowered` 10, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (35 = 35 `markup-facade` rules)
+- JSX lanes: `fallback` 111, `ir` 25, `ir-lowered` 11, `no-jsx-hooks` 11 — `ir` + `ir-lowered` is the markup-facade migration list (36 = 36 `markup-facade` rules)
 - classification: neutral-core-candidate **88** · vue-dialect-bound **135** · container-bound **22** (0 overridden)
 - croquis adoption: **23** rules touch vize_croquis (18 direct imports, 12 via context analysis)
 
@@ -253,7 +253,7 @@ Sorted by rule name. File paths are relative to `crates/vize_patina/src/rules/`.
 | `vue/no-v-html`                                 | template-family | `vue/no_v_html.rs`                                     | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `vue/no-v-text`                                 | template-family | `opinionated/vue/no_v_text.rs`                         | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `vue/no-v-text-v-html-on-component`             | template-family | `vue/no_v_text_v_html_on_component.rs`                 | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
-| `vue/permitted-contents`                        | template-family | `vue/permitted_contents.rs`                            | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | neutral-core-candidate |
+| `vue/permitted-contents`                        | template-family | `vue/permitted_contents.rs`                            | template-ast, markup-facade    | yes (template-visitor)           | yes (ir-lowered)            | —                                                                                                   | neutral-core-candidate |
 | `vue/prefer-props-shorthand`                    | template-family | `opinionated/vue/prefer_props_shorthand.rs`            | template-ast                   | yes (template-visitor)           | yes (fallback)              | direct 1: `naming::names_match`                                                                     | vue-dialect-bound      |
 | `vue/prefer-true-attribute-shorthand`           | template-family | `opinionated/vue/prefer_true_attribute_shorthand.rs`   | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `vue/prop-name-casing`                          | template-family | `vue/prop_name_casing.rs`                              | template-ast                   | yes (template-visitor)           | yes (fallback)              | ctx 1                                                                                               | container-bound        |

@@ -29,6 +29,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupElement, MarkupElementKind, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType};
 use vize_s0::is_html_tag;
@@ -153,12 +154,92 @@ fn nearest_non_transparent_parent<'ctx, 'a>(
     })
 }
 
+fn nearest_non_transparent_markup_parent<'a>(
+    ctx: &MarkupContext<'_, 'a>,
+) -> Option<MarkupElement<'a>> {
+    ctx.ancestor_elements()
+        .rev()
+        .find(|ancestor| !is_transparent_parent(content_model_tag(ancestor.tag())))
+}
+
 #[derive(Default)]
 pub struct PermittedContents;
+
+impl PermittedContents {
+    fn check_markup_element<'a>(ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        match element.kind() {
+            MarkupElementKind::Template | MarkupElementKind::Slot => return,
+            MarkupElementKind::Element | MarkupElementKind::Component => {}
+        }
+
+        let raw_tag = element.tag();
+        let tag = content_model_tag(raw_tag);
+        let has_intrinsic_mapping = tag != raw_tag;
+        let is_unknown_component = element.is_component() && !has_intrinsic_mapping;
+
+        if !is_unknown_component
+            && is_block_element(tag)
+            && let Some(parent) = nearest_non_transparent_markup_parent(ctx)
+        {
+            let parent_raw_tag = parent.tag();
+            let parent_tag = content_model_tag(parent_raw_tag);
+            if is_phrasing_only_parent(parent_tag) {
+                let message = ctx.lint().t_fmt(
+                    "vue/permitted-contents.block_in_inline",
+                    &[("child", raw_tag), ("parent", parent_raw_tag)],
+                );
+                ctx.lint().error_at(message, element.range());
+            }
+        }
+
+        if !is_unknown_component
+            && is_interactive_element(tag)
+            && ctx
+                .has_ancestor(|ancestor| is_interactive_element(content_model_tag(ancestor.tag())))
+        {
+            let message = ctx.lint().t_fmt(
+                "vue/permitted-contents.interactive_nesting",
+                &[("tag", raw_tag)],
+            );
+            ctx.lint().error_at(message, element.range());
+        }
+
+        if !is_unknown_component && let Some(parent) = ctx.parent_element() {
+            let parent_tag = content_model_tag(parent.tag());
+            if let Some(allowed) = required_children(parent_tag)
+                && !allowed.contains(&tag)
+            {
+                let message = ctx.lint().t_fmt(
+                    "vue/permitted-contents.invalid_child",
+                    &[("child", raw_tag), ("parent", parent.tag())],
+                );
+                ctx.lint().error_at(message, element.range());
+            }
+        }
+    }
+}
+
+impl MarkupRule for PermittedContents {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        Self::check_markup_element(ctx, element);
+    }
+}
 
 impl Rule for PermittedContents {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn jsx_needs_lowering(&self) -> bool {
+        true
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {

@@ -31,6 +31,7 @@ mod no_redundant_roles_tests;
 mod no_role_presentation_on_focusable_jsx_tests;
 mod no_role_presentation_on_focusable_tests;
 mod no_textarea_mustache_tests;
+mod permitted_contents_tests;
 mod placeholder_label_option_tests;
 mod require_datetime_tests;
 mod use_list_tests;
