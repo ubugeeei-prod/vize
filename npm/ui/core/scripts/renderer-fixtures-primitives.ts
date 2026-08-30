@@ -1,4 +1,5 @@
 import { avatarRendererFixtures } from "./renderer-fixtures-avatar.ts";
+import { spinnerRendererFixtures } from "./renderer-fixtures-spinner.ts";
 import { textRendererFixtures } from "./renderer-fixtures-text.ts";
 import { toggleGroupRendererFixtures } from "./renderer-fixtures-toggle-group.ts";
 
@@ -311,6 +312,7 @@ const loading = ref(true);
 </template>
 `,
   },
+  ...spinnerRendererFixtures,
   {
     filename: "SpacerConsumer.vue",
     source: String.raw`<script setup lang="ts">

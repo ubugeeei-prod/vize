@@ -23,6 +23,7 @@ import { emptyStateRuntimeFixture } from "./runtime-conformance-empty-state-fixt
 import { fieldRuntimeFixtures } from "./runtime-conformance-field-fixtures.ts";
 import { progressRuntimeFixture } from "./runtime-conformance-progress-fixtures.ts";
 import { radioGroupRuntimeFixtures } from "./runtime-conformance-radio-group-fixtures.ts";
+import { spinnerRuntimeFixture } from "./runtime-conformance-spinner-fixtures.ts";
 import { stepperRuntimeFixtures } from "./runtime-conformance-stepper-fixtures.ts";
 import { switchRuntimeFixture } from "./runtime-conformance-switch-fixtures.ts";
 import { tabsRuntimeFixtures } from "./runtime-conformance-tabs-fixtures.ts";
@@ -170,6 +171,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   ...listboxRuntimeFixtures,
   meterRuntimeFixture,
   ...paginationRuntimeFixtures,
+  spinnerRuntimeFixture,
   {
     name: "primitive",
     sourceFile: "primitive-element.vue",

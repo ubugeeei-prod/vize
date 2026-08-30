@@ -103,6 +103,7 @@ export default defineConfig({
       positioner: "src/positioner.ts",
       presence: "src/presence.ts",
       progress: "src/progress.ts",
+      spinner: "src/spinner.ts",
       press: "src/press.ts",
       "scroll-lock": "src/scroll-lock.ts",
       shortcut: "src/shortcut.ts",

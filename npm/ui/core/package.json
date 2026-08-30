@@ -394,6 +394,11 @@
       "import": "./dist/progress.mjs",
       "default": "./dist/progress.mjs"
     },
+    "./spinner": {
+      "types": "./dist/spinner.d.mts",
+      "import": "./dist/spinner.mjs",
+      "default": "./dist/spinner.mjs"
+    },
     "./press": {
       "types": "./dist/press.d.mts",
       "import": "./dist/press.mjs",
