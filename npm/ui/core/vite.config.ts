@@ -127,7 +127,7 @@ export default defineConfig({
       "share-button": "src/families/actions/share-button/share-button.ts",
       toolbar: "src/families/actions/toolbar/toolbar.ts",
       table: "src/families/data/table/table.ts",
-      link: "src/link.ts",
+      link: "src/families/navigation/link/link.ts",
       "skip-link": "src/families/navigation/skip-link/skip-link.ts",
       toggle: "src/families/selection/toggle/toggle.ts",
       "toggle-group": "src/families/selection/toggle-group/toggle-group.ts",

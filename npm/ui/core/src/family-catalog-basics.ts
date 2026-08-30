@@ -6,6 +6,7 @@ import {
 
 const collapsibleFamilyRoot = "src/families/disclosure/collapsible/";
 const inputFamilyRoot = "src/families/form/input/";
+const linkFamilyRoot = "src/families/navigation/link/";
 const searchFieldFamilyRoot = "src/families/form/search-field/";
 const textareaFamilyRoot = "src/families/form/textarea/";
 
@@ -48,12 +49,16 @@ export const basicFamilyCatalog = [
     canonicalName: "link",
     title: "Link",
     packageSubpath: "./link",
-    entryFile: "src/link.ts",
-    sourceFiles: ["src/link-anchor.vue", "src/link.ts", "src/link-types.ts"],
-    behaviorContract: "src/link.behavior.md",
-    tests: ["src/link.test.ts"],
-    typeTests: ["src/link.types.test-d.ts"],
-    rendererFixture: "link-anchor.vue",
+    entryFile: `${linkFamilyRoot}link.ts`,
+    sourceFiles: [
+      `${linkFamilyRoot}link-anchor.vue`,
+      `${linkFamilyRoot}link.ts`,
+      `${linkFamilyRoot}link-types.ts`,
+    ],
+    behaviorContract: `${linkFamilyRoot}link.behavior.md`,
+    tests: [`${linkFamilyRoot}link.test.ts`],
+    typeTests: [`${linkFamilyRoot}link.types.test-d.ts`],
+    rendererFixture: "families/navigation/link/link-anchor.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {
       exportName: "Link",

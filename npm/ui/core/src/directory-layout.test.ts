@@ -23,7 +23,6 @@ const foundationCompatibilityBarrels = [
 
 const grandfatheredRootSfcFiles = [
   "error-summary.vue",
-  "link-anchor.vue",
   "primitive-element.vue",
   "transition.vue",
 ] as const;
@@ -95,6 +94,23 @@ test("root collapsible entry stays a compatibility-only barrel", () => {
   const source = fs.readFileSync(path.join(sourceRoot, "collapsible.ts"), "utf8").trim();
 
   assert.equal(source, 'export * from "./families/disclosure/collapsible/collapsible.ts";');
+});
+
+test("rehomed navigation link family is cataloged from a family directory", () => {
+  const family = basicFamilyCatalog.find((entry) => entry.canonicalName === "link");
+  assert.ok(family);
+
+  const familyRoot = "src/families/navigation/link/";
+  assert.equal(family.entryFile, `${familyRoot}link.ts`);
+  assert.deepEqual(family.sourceFiles, [
+    `${familyRoot}link-anchor.vue`,
+    `${familyRoot}link.ts`,
+    `${familyRoot}link-types.ts`,
+  ]);
+  assert.equal(family.behaviorContract, `${familyRoot}link.behavior.md`);
+  assert.deepEqual(family.tests, [`${familyRoot}link.test.ts`]);
+  assert.deepEqual(family.typeTests, [`${familyRoot}link.types.test-d.ts`]);
+  assert.equal(family.rendererFixture, "families/navigation/link/link-anchor.vue");
 });
 
 test("rehomed id family is cataloged from a family directory", () => {

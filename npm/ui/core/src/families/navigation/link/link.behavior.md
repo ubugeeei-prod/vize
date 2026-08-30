@@ -1,8 +1,9 @@
 # Link behavior contract
 
 Normative state × input → outcome table for `link-anchor.vue` (`@vizejs/ui/link`).
-Every row is proven by the named mounted-DOM test in `src/link.test.ts`; a row
-without a passing test is a contract violation.
+Every row is proven by the named mounted-DOM test in
+`src/families/navigation/link/link.test.ts`; a row without a passing test is a
+contract violation.
 
 | #   | State        | Input                 | Outcome                                                                                          | Proven by                                                              |
 | --- | ------------ | --------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |

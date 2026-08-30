@@ -5,8 +5,8 @@ import { defineComponent, h, type VNode } from "vue";
 import Button from "./families/actions/button/button.vue";
 import IdProvider from "./families/foundations/id/deterministic-id-provider.vue";
 import { useDeterministicId } from "./families/foundations/id/deterministic-id.ts";
+import LinkAnchor from "./families/navigation/link/link-anchor.vue";
 import ErrorSummary from "./error-summary.vue";
-import LinkAnchor from "./link-anchor.vue";
 import { skipLinkRuntimeFixture } from "./families/navigation/skip-link/runtime-conformance-skip-link-fixtures.ts";
 import { collapsibleRuntimeFixtures } from "./runtime-conformance-collapsible-fixtures.ts";
 import { calloutRuntimeFixture } from "./families/feedback/callout/runtime-conformance-callout-fixtures.ts";
@@ -161,7 +161,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   ...fieldRuntimeFixtures,
   {
     name: "link",
-    sourceFile: "link-anchor.vue",
+    sourceFile: "families/navigation/link/link-anchor.vue",
     render: () =>
       h(
         LinkAnchor,

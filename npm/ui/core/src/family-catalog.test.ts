@@ -171,6 +171,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["inert-outside", "src/families/accessibility/inert-outside/"],
     ["interaction-modality", "src/families/accessibility/interaction-modality/"],
     ["kbd", "src/families/typography/kbd/"],
+    ["link", "src/families/navigation/link/"],
     ["list", "src/families/layout/list/"],
     ["listbox", "src/families/selection/listbox/"],
     ["live-region", "src/families/accessibility/live-region/"],
@@ -276,7 +277,7 @@ test("typography families keep root compatibility barrels", async () => {
 });
 
 test("navigation families keep root compatibility barrels", async () => {
-  await assertFamilyBarrels("navigation", ["breadcrumb", "pagination", "stepper", "tabs"]);
+  await assertFamilyBarrels("navigation", ["breadcrumb", "link", "pagination", "stepper", "tabs"]);
 });
 
 test("selection families keep root compatibility barrels", async () => {

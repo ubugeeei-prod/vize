@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import { test } from "vite-plus/test";
 import { defineComponent, h } from "vue";
 
-import IdProvider from "./families/foundations/id/deterministic-id-provider.vue";
 import LinkAnchor from "./link-anchor.vue";
-import { mountInteraction } from "./testing/mount.ts";
+import IdProvider from "../../foundations/id/deterministic-id-provider.vue";
+import { mountInteraction } from "../../../testing/mount.ts";
 
 test("renders a native link with navigation and accessibility attributes", async () => {
   const handle = mountInteraction(LinkAnchor, {
