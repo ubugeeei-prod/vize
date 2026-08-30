@@ -86,6 +86,24 @@ const tone = ref<"neutral" | "accent" | "info" | "success" | "warning" | "danger
 `,
   },
   {
+    filename: "HeadingConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { Heading } from "./heading.ts";
+
+const level = ref<1 | 2 | 3>(2);
+</script>
+
+<template>
+  <Heading :level size="xl" weight="bold" tone="accent" truncate>
+    <template #default="{ level: semanticLevel, size, tone }">
+      {{ semanticLevel }} {{ size }} {{ tone }}
+    </template>
+  </Heading>
+</template>
+`,
+  },
+  {
     filename: "TextConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

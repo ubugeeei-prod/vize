@@ -134,6 +134,11 @@
       "import": "./dist/meter.mjs",
       "default": "./dist/meter.mjs"
     },
+    "./heading": {
+      "types": "./dist/heading.d.mts",
+      "import": "./dist/heading.mjs",
+      "default": "./dist/heading.mjs"
+    },
     "./textarea": {
       "types": "./dist/textarea.d.mts",
       "import": "./dist/textarea.mjs",
