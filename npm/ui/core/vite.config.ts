@@ -53,6 +53,7 @@ export default defineConfig({
       button: "src/button.ts",
       "button-group": "src/families/actions/button-group/button-group.ts",
       link: "src/link.ts",
+      "skip-link": "src/families/navigation/skip-link/skip-link.ts",
       toggle: "src/toggle.ts",
       "toggle-group": "src/toggle-group.ts",
       popover: "src/families/overlays/popover/popover.ts",
