@@ -7,7 +7,7 @@
 use alloc::vec::Vec as StdVec;
 
 use vize_s0::String;
-use vize_s2::op::{Attribute, ElementOp, Namespace, Op, Region};
+use vize_s2::op::{Attribute, ElementOp, Op, Region};
 
 use super::EmitCx;
 use super::buf::Buf;
@@ -34,7 +34,7 @@ pub(super) fn hoist_static_element(cx: &mut EmitCx<'_>, element: &ElementOp<'_>)
 }
 
 pub(super) fn is_hoistable(element: &ElementOp<'_>) -> bool {
-    element.namespace == Namespace::Html && is_static_element_tree(element)
+    is_static_element_tree(element)
 }
 
 pub(super) fn is_static_element_tree(element: &ElementOp<'_>) -> bool {

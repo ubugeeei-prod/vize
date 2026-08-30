@@ -29,7 +29,27 @@ const BATTERY: &[(&str, &str)] = &[
         "svg_sparkline_pulse_trail_condition",
         r#"<svg><g v-if="canRender"><template v-for="(_, i) in TRAIL_LENGTH"><circle v-if="i % 3 === 0 /* perf optimization */" :key="`sparkline_dot_${i}_${pulsePathId}`" :r="getRadius(i)"></circle></template></g></svg>"#,
     ),
+    (
+        "v_if_static_svg_child",
+        r#"<div v-if="ok"><svg><path d="M0 0h1v1z"/></svg></div>"#,
+    ),
+    (
+        "v_if_static_svg_foreign_object_child",
+        r#"<div v-if="ok"><svg><foreignObject><div>label</div></foreignObject><path d="M0 0h1v1z"/></svg></div>"#,
+    ),
+    (
+        "v_show_static_svg_child",
+        r#"<div v-show="ok"><svg><path d="M0 0h1v1z"/></svg></div>"#,
+    ),
+    (
+        "component_slot_static_svg_child",
+        r#"<Foo><svg><path d="M0 0h1v1z"/></svg></Foo>"#,
+    ),
     ("mathml_static_tree", "<math><mi>x</mi></math>"),
+    (
+        "v_if_static_mathml_child",
+        r#"<div v-if="ok"><math><mi>x</mi></math></div>"#,
+    ),
 ];
 
 #[test]
