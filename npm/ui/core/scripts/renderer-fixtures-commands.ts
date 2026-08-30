@@ -1,6 +1,24 @@
 /** Command, history, shortcut, and action fixtures compiled by every supported renderer lane. */
 export const commandRendererFixtures = [
   {
+    filename: "ToolbarConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { Toolbar, ToolbarItem } from "./families/actions/toolbar/toolbar.ts";
+
+function run(value: string) {
+  void value;
+}
+</script>
+
+<template>
+  <Toolbar aria-label="Editor actions" dir="rtl" @press="run">
+    <ToolbarItem value="save">Save</ToolbarItem>
+    <ToolbarItem value="publish">Publish</ToolbarItem>
+  </Toolbar>
+</template>
+`,
+  },
+  {
     filename: "ButtonGroupConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ButtonGroup, ButtonGroupItem } from "./families/actions/button-group/button-group.ts";

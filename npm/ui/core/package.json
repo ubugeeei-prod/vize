@@ -139,6 +139,11 @@
       "import": "./dist/button-group.mjs",
       "default": "./dist/button-group.mjs"
     },
+    "./toolbar": {
+      "types": "./dist/toolbar.d.mts",
+      "import": "./dist/toolbar.mjs",
+      "default": "./dist/toolbar.mjs"
+    },
     "./table": {
       "types": "./dist/table.d.mts",
       "import": "./dist/table.mjs",

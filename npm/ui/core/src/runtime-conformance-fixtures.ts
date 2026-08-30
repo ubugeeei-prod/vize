@@ -26,6 +26,7 @@ import { blockUIRuntimeFixture } from "./runtime-conformance-block-ui-fixtures.t
 import { breadcrumbRuntimeFixtures } from "./runtime-conformance-breadcrumb-fixtures.ts";
 import { emptyStateRuntimeFixture } from "./runtime-conformance-empty-state-fixtures.ts";
 import { buttonGroupRuntimeFixtures } from "./families/actions/button-group/runtime-conformance-button-group-fixtures.ts";
+import { toolbarRuntimeFixtures } from "./families/actions/toolbar/runtime-conformance-toolbar-fixtures.ts";
 import { fieldRuntimeFixtures } from "./runtime-conformance-field-fixtures.ts";
 import { progressRuntimeFixture } from "./runtime-conformance-progress-fixtures.ts";
 import { radioGroupRuntimeFixtures } from "./runtime-conformance-radio-group-fixtures.ts";
@@ -101,6 +102,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
     },
   },
   ...buttonGroupRuntimeFixtures,
+  ...toolbarRuntimeFixtures,
   checkboxRuntimeFixture,
   {
     name: "deterministic-id-provider",

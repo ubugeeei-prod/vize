@@ -153,6 +153,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["status-light", "src/families/feedback/status-light/"],
     ["surface", "src/families/layout/surface/"],
     ["table", "src/families/data/table/"],
+    ["toolbar", "src/families/actions/toolbar/"],
     ["tooltip", "src/families/overlays/tooltip/"],
   ]);
 
