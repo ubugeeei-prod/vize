@@ -302,6 +302,8 @@ compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_recent_patch
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_recent_patch_flags.rs	12	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_show.rs	13	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_show.rs	13	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_slots.rs	14	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_slots.rs	14	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_text.rs	12	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_text.rs	12	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_teardown_without_stack_guard.rs	25	s0	S0	stage	vize_s0	preferred	1
