@@ -1,5 +1,23 @@
-/** Command, history, and shortcut fixtures compiled by every supported renderer lane. */
+/** Command, history, shortcut, and action fixtures compiled by every supported renderer lane. */
 export const commandRendererFixtures = [
+  {
+    filename: "ButtonGroupConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ButtonGroup, ButtonGroupItem } from "./families/actions/button-group/button-group.ts";
+
+function run(value: string) {
+  void value;
+}
+</script>
+
+<template>
+  <ButtonGroup aria-label="Editor actions" role="toolbar" @press="run">
+    <ButtonGroupItem value="save">Save</ButtonGroupItem>
+    <ButtonGroupItem value="publish">Publish</ButtonGroupItem>
+  </ButtonGroup>
+</template>
+`,
+  },
   {
     filename: "CommandConsumer.vue",
     source: String.raw`<script setup lang="ts">

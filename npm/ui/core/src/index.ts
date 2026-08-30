@@ -32,6 +32,7 @@ export * from "./controllable-state.ts";
 export * from "./dialog.ts";
 export * from "./alert-dialog.ts";
 export * from "./button.ts";
+export * from "./families/actions/button-group/button-group.ts";
 export * from "./families/layout/icon/icon-button.ts";
 export * from "./link.ts";
 export * from "./toggle.ts";

@@ -21,6 +21,7 @@ import { badgeRuntimeFixture } from "./runtime-conformance-badge-fixtures.ts";
 import { blockUIRuntimeFixture } from "./runtime-conformance-block-ui-fixtures.ts";
 import { breadcrumbRuntimeFixtures } from "./runtime-conformance-breadcrumb-fixtures.ts";
 import { emptyStateRuntimeFixture } from "./runtime-conformance-empty-state-fixtures.ts";
+import { buttonGroupRuntimeFixtures } from "./families/actions/button-group/runtime-conformance-button-group-fixtures.ts";
 import { fieldRuntimeFixtures } from "./runtime-conformance-field-fixtures.ts";
 import { progressRuntimeFixture } from "./runtime-conformance-progress-fixtures.ts";
 import { radioGroupRuntimeFixtures } from "./runtime-conformance-radio-group-fixtures.ts";
@@ -91,6 +92,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       assert.equal(button.getAttribute("aria-busy"), "true");
     },
   },
+  ...buttonGroupRuntimeFixtures,
   checkboxRuntimeFixture,
   {
     name: "deterministic-id-provider",

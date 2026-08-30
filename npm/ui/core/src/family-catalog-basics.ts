@@ -6,28 +6,6 @@ import {
 
 export const basicFamilyCatalog = [
   {
-    canonicalName: "button",
-    title: "Button",
-    packageSubpath: "./button",
-    entryFile: "src/button.ts",
-    sourceFiles: ["src/action-button.vue", "src/button.ts", "src/button-keyboard.ts"],
-    behaviorContract: "src/button.behavior.md",
-    tests: ["src/button.test.ts"],
-    rendererFixture: "action-button.vue",
-    qualityGates: componentQualityGates,
-    bundleBudget: {
-      exportName: "Button",
-      retainedSignature: 'data-vize-ui":(?:`button`|"button"|\'button\')',
-      maximumJavaScriptGzipBytes: 1_000,
-      maximumCssGzipBytes: 0,
-    },
-    aliases: ["action-button", "button primitive"],
-    upstreamCoverage: ["shadcn/ui Button", "Reka UI Primitive", "React Aria Button"],
-    dependencies: ["primitive", "press"],
-    maturity: "stable",
-    owner: catalogOwner,
-  },
-  {
     canonicalName: "collapsible",
     title: "Collapsible",
     packageSubpath: "./collapsible",

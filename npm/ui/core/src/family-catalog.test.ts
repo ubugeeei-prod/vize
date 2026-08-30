@@ -136,12 +136,30 @@ test("stable catalog entries have every required artifact", async () => {
 });
 
 test("new family-owned SFC primitives keep implementation and tests together", () => {
+  const buttonGroup = stableEntries.find((entry) => entry.canonicalName === "button-group");
   const statusLight = stableEntries.find((entry) => entry.canonicalName === "status-light");
+  const actionGroupRoot = "src/families/actions/button-group/";
   const familyRoot = "src/families/feedback/status-light/";
   const iconFamilies = stableEntries.filter(
     (entry) => entry.canonicalName === "icon" || entry.canonicalName === "icon-button",
   );
   const iconFamilyRoot = "src/families/layout/icon/";
+
+  assert.ok(buttonGroup, "button-group must stay catalogued");
+  assert.equal(buttonGroup.entryFile, `${actionGroupRoot}button-group.ts`);
+  assert.equal(buttonGroup.behaviorContract, `${actionGroupRoot}button-group.behavior.md`);
+  assert.ok(
+    buttonGroup.sourceFiles.every((file) => file.startsWith(actionGroupRoot)),
+    "button-group source files must stay in the actions family folder",
+  );
+  assert.ok(
+    buttonGroup.tests.every((file) => file.startsWith(actionGroupRoot)),
+    "button-group tests must stay beside the actions family source",
+  );
+  assert.ok(
+    buttonGroup.typeTests?.every((file) => file.startsWith(actionGroupRoot)),
+    "button-group type tests must stay beside the actions family source",
+  );
 
   assert.ok(statusLight, "status-light must stay catalogued");
   assert.equal(statusLight.entryFile, `${familyRoot}status-light.ts`);

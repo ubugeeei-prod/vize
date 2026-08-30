@@ -1,0 +1,63 @@
+import {
+  catalogOwner,
+  componentQualityGates,
+  type UiFamilyCatalogEntry,
+} from "./family-catalog-types.ts";
+
+export const actionFamilyCatalog = [
+  {
+    canonicalName: "button",
+    title: "Button",
+    packageSubpath: "./button",
+    entryFile: "src/button.ts",
+    sourceFiles: ["src/action-button.vue", "src/button.ts", "src/button-keyboard.ts"],
+    behaviorContract: "src/button.behavior.md",
+    tests: ["src/button.test.ts"],
+    rendererFixture: "action-button.vue",
+    qualityGates: componentQualityGates,
+    bundleBudget: {
+      exportName: "Button",
+      retainedSignature: 'data-vize-ui":(?:`button`|"button"|\'button\')',
+      maximumJavaScriptGzipBytes: 1_000,
+      maximumCssGzipBytes: 0,
+    },
+    aliases: ["action-button", "button primitive"],
+    upstreamCoverage: ["shadcn/ui Button", "Reka UI Primitive", "React Aria Button"],
+    dependencies: ["primitive", "press"],
+    maturity: "stable",
+    owner: catalogOwner,
+  },
+  {
+    canonicalName: "button-group",
+    title: "Button Group",
+    packageSubpath: "./button-group",
+    entryFile: "src/families/actions/button-group/button-group.ts",
+    sourceFiles: [
+      "src/families/actions/button-group/button-group.vue",
+      "src/families/actions/button-group/button-group-item.vue",
+      "src/families/actions/button-group/button-group.ts",
+      "src/families/actions/button-group/button-group-context.ts",
+      "src/families/actions/button-group/button-group-types.ts",
+    ],
+    behaviorContract: "src/families/actions/button-group/button-group.behavior.md",
+    tests: [
+      "src/families/actions/button-group/button-group.test.ts",
+      "src/families/actions/button-group/button-group-ssr.test.ts",
+    ],
+    typeTests: ["src/families/actions/button-group/button-group.types.test-d.ts"],
+    rendererFixture: "ButtonGroupConsumer.vue",
+    qualityGates: componentQualityGates,
+    bundleBudget: {
+      exportName: "ButtonGroup",
+      retainedSignature: "data-vize-ui[\\s\\S]{0,32}button-group",
+      allowedRetainedFamilies: ["context"],
+      maximumJavaScriptGzipBytes: 1_900,
+      maximumCssGzipBytes: 0,
+    },
+    aliases: ["button group", "button bar", "action group", "toolbar"],
+    upstreamCoverage: ["WAI-ARIA Toolbar", "React Aria Toolbar", "shadcn/ui Button"],
+    dependencies: ["context"],
+    maturity: "stable",
+    owner: catalogOwner,
+  },
+] as const satisfies readonly UiFamilyCatalogEntry[];

@@ -49,6 +49,7 @@ export default defineConfig({
       "empty-state": "src/empty-state.ts",
       collapsible: "src/collapsible.ts",
       button: "src/button.ts",
+      "button-group": "src/families/actions/button-group/button-group.ts",
       link: "src/link.ts",
       toggle: "src/toggle.ts",
       "toggle-group": "src/toggle-group.ts",

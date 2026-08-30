@@ -1,3 +1,4 @@
+import { actionFamilyCatalog } from "./family-catalog-actions.ts";
 import { basicFamilyCatalog } from "./family-catalog-basics.ts";
 import { feedbackFamilyCatalog } from "./family-catalog-feedback.ts";
 import { focusFamilyCatalog } from "./family-catalog-focus.ts";
@@ -19,6 +20,7 @@ export {
 } from "./family-catalog-types.ts";
 
 const allFamilyCatalogEntries = [
+  ...actionFamilyCatalog,
   ...basicFamilyCatalog,
   ...feedbackFamilyCatalog,
   ...foundationFamilyCatalog,
