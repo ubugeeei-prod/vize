@@ -277,9 +277,8 @@ test("P2-11 records current installments without presenting stale remainders", (
     records: recordsTaskRow(text.records, "P2-11"),
     p2_11: p2_11CurrentRecordEvidence(text.p2_11),
   };
-  for (const [label, source] of Object.entries(currentEvidence)) {
+  for (const [label, source] of Object.entries(currentEvidence))
     assertCurrentP2_11Installment(source, label);
-  }
   for (const pr of [
     4933, 5011, 5178, 5183, 5198, 5200, 5203, 5205, 5207, 5210, 5212, 5214, 5359, 5360, 4862, 5363,
     5373, 5376, 5379, 5380, 5381, 5386, 5387, 5390, 5391, 5396, 5398, 5399, 5400, 5401, 5404, 5405,
