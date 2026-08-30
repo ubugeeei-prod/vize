@@ -104,6 +104,26 @@ fn static_attrs_on_looped_slot_templates_are_elided() {
 }
 
 #[test]
+fn key_bindings_on_looped_slot_templates_are_elided() {
+    assert_eq!(
+        assembled(r#"<Foo><template v-for="i in n" #header :key="i">x</template></Foo>"#),
+        assembled(r#"<Foo><template v-for="i in n" #header>x</template></Foo>"#)
+    );
+}
+
+#[test]
+fn key_bindings_on_dynamic_forwarding_slot_templates_are_elided() {
+    assert_eq!(
+        assembled(
+            r#"<Foo><template v-for="(_, name) in $slots" :key="name" #[name]="slotData"><slot :name="name" v-bind="slotData || {}" /></template></Foo>"#
+        ),
+        assembled(
+            r#"<Foo><template v-for="(_, name) in $slots" #[name]="slotData"><slot :name="name" v-bind="slotData || {}" /></template></Foo>"#
+        )
+    );
+}
+
+#[test]
 fn inert_builtin_bindings_on_looped_slot_templates_are_elided() {
     let plain = assembled(r#"<Foo><template v-for="i in n" #header>x</template></Foo>"#);
     assert_eq!(

@@ -163,6 +163,10 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<Foo><template v-for="(v, k, i) in n" #header>x</template></Foo>"#,
     ),
     (
+        "create_slots_for_keyed_dynamic_forwarded_outlet",
+        r#"<Foo><template v-for="(_, name) in $slots" :key="name" #[name]="slotData"><slot :name="name" v-bind="slotData || {}" /></template></Foo>"#,
+    ),
+    (
         "create_slots_default_interp",
         r#"<Foo>hello {{ msg }}<template #header v-if="ok">x</template></Foo>"#,
     ),

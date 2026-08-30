@@ -1,18 +1,15 @@
 //! Slot objects (`withCtx` / `_: 1|2`) from [`SlotFacts`].
 //!
-//! Implicit default, static / dynamic named `<template>` groups, and
-//! component-root `v-slot` (bare spellings key `default`; named spellings
-//! preserve their authored slot name).
+//! Implicit default, named `<template>` groups, and component-root `v-slot`.
 //! Conditional / looped slot templates go through [`super::create_slots`].
-//! Outlets (`renderSlot`) live in [`super::outlet`]. A `v-slots` spread
-//! is the children argument when it is the only slot source, or
-//! `...expr` closing an authored slot object (no `_` flag).
+//! Outlets live in [`super::outlet`]. A `v-slots` spread is the children
+//! argument when it is the only slot source, or `...expr` closes a slot object.
 
 use alloc::vec::Vec as StdVec;
 
 use vize_s0::String;
 use vize_s2::expr::ExprRef;
-use vize_s2::op::{BindingOp, ElementOp, Op, Region, TextOp};
+use vize_s2::op::{BindingOp, DynamicName, ElementOp, Op, Region, TextOp};
 use vize_s2::scope::ScopeOrigin;
 
 use super::EmitCx;
@@ -71,7 +68,7 @@ pub(super) fn has_dynamic_names(facts: &SlotFacts) -> bool {
     facts
         .groups
         .iter()
-        .any(|group| matches!(group.name, SlotName::Dynamic { .. }))
+        .any(|g| matches!(g.name, SlotName::Dynamic { .. }))
 }
 
 pub(super) fn admit_default(children: &Region<'_>) -> Result<(), EmitError> {
@@ -83,15 +80,7 @@ fn walk_admit(region: &Region<'_>) -> Result<(), EmitError> {
         match op {
             Op::Text(_) | Op::Interpolation(_) => {}
             Op::Element(element) if is_slot_template(element) => {
-                if element.bindings.iter().any(|binding| {
-                    !matches!(
-                        binding,
-                        BindingOp::SlotContent(_)
-                            | BindingOp::VueOnce(_)
-                            | BindingOp::VueMemo(_)
-                            | BindingOp::VueCloak(_)
-                    )
-                }) {
+                if element.bindings.iter().any(|b| !is_inert_slot_binding(b)) {
                     return Err(EmitError::unsupported_at(
                         Reason::SlotDefaultShape,
                         element.span,
@@ -111,6 +100,23 @@ fn walk_admit(region: &Region<'_>) -> Result<(), EmitError> {
         }
     }
     Ok(())
+}
+
+fn is_inert_slot_binding(binding: &BindingOp<'_>) -> bool {
+    match binding {
+        BindingOp::SlotContent(_)
+        | BindingOp::VueOnce(_)
+        | BindingOp::VueMemo(_)
+        | BindingOp::VueCloak(_) => true,
+        BindingOp::Bind(bind)
+            if matches!(bind.name, Some(DynamicName::Static("key")))
+                && bind.modifiers.is_empty()
+                && matches!(bind.value, Some(ExprRef::Js(_))) =>
+        {
+            true
+        }
+        _ => false,
+    }
 }
 
 pub(super) fn emit_slots(
