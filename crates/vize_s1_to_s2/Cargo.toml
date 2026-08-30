@@ -44,6 +44,7 @@ davinci_harness = { workspace = true }
 davinci_test_support.workspace = true
 insta = { workspace = true }
 vize_atelier_sfc = { workspace = true }
+vize_atelier_dom = { workspace = true }
 vize_croquis = { workspace = true }
 
 [[bench]]
@@ -52,4 +53,8 @@ harness = false
 
 [[test]]
 name = "davinci_lowering_corpus"
+required-features = ["davinci-differential"]
+
+[[test]]
+name = "davinci_dom_corpus"
 required-features = ["davinci-differential"]
