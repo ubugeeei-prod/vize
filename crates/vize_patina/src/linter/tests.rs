@@ -25,6 +25,7 @@ mod jsx_no_inline_style;
 mod jsx_no_multi_spaces;
 mod jsx_no_redundant_roles;
 mod jsx_no_role_presentation_on_focusable;
+mod jsx_no_textarea_mustache;
 mod jsx_placeholder_label_option;
 mod jsx_require_datetime;
 mod jsx_streaming;

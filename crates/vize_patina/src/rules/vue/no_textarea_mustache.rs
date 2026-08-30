@@ -19,8 +19,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupElement, MarkupNode, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, TemplateChildNode};
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-textarea-mustache",
@@ -33,27 +34,51 @@ static META: RuleMeta = RuleMeta {
 /// Disallow mustache in textarea
 pub struct NoTextareaMustache;
 
+impl NoTextareaMustache {
+    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        // Preserve the legacy exact lowercase tag check. In JSX, capitalized
+        // `<Textarea>` remains a component and must not be treated as native.
+        if !element.is_unqualified_tag_exact("textarea") {
+            return;
+        }
+
+        element.walk_children(&mut |child| {
+            if let MarkupNode::Interpolation(range) = child {
+                ctx.error_at_with_help(
+                    ctx.t("vue/no-textarea-mustache.message"),
+                    range,
+                    ctx.t("vue/no-textarea-mustache.help"),
+                );
+            }
+        });
+    }
+}
+
+impl MarkupRule for NoTextareaMustache {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        Self::check_element(ctx.lint(), element);
+    }
+}
+
 impl Rule for NoTextareaMustache {
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
 
-    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        // Only check <textarea> elements
-        if element.tag != "textarea" {
-            return;
-        }
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
 
-        // Check for interpolation in children
-        for child in element.children.iter() {
-            if let TemplateChildNode::Interpolation(interp) = child {
-                ctx.error_with_help(
-                    ctx.t("vue/no-textarea-mustache.message"),
-                    &interp.loc,
-                    ctx.t("vue/no-textarea-mustache.help"),
-                );
-            }
-        }
+    fn jsx_needs_lowering(&self) -> bool {
+        true
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        Self::check_element(ctx, &MarkupElement::new(element));
     }
 }
 
