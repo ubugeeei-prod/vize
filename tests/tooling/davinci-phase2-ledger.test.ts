@@ -24,6 +24,11 @@ const docs = {
   tasks: new URL("../../davinci-road/plan/phase-2-tasks.md", import.meta.url),
   tasksLater: new URL("../../davinci-road/plan/phase-2-tasks-later.md", import.meta.url),
   records: new URL("../../davinci-road/plan/phase-2-records.md", import.meta.url),
+  p2_9: new URL("../../davinci-road/plan/phase-2-records/p2-9.md", import.meta.url),
+  p2_9_11: new URL(
+    "../../davinci-road/plan/phase-2-records/p2-9/installment-11.md",
+    import.meta.url,
+  ),
   p2_11: new URL("../../davinci-road/plan/phase-2-records/p2-11.md", import.meta.url),
   suites: new URL("../../davinci-road/plan/test-suites.md", import.meta.url),
   devtool: new URL("../../davinci-road/devtool.md", import.meta.url),
@@ -48,6 +53,7 @@ const completedTasks = [
   "P2-6",
   "P2-7",
   "P2-8",
+  "P2-9",
   "P2-10",
   "P2-12a",
   "P2-13",
@@ -56,7 +62,7 @@ const completedTasks = [
   "P2-18",
   "P2-19",
 ];
-const activeTasks = ["P2-9", "P2-11"];
+const activeTasks = ["P2-11"];
 const untouchedTasks = ["P2-12b", "P2-16", "P2-17", "P2-20"];
 
 function taskIndex(source: string): Map<string, boolean> {
@@ -187,6 +193,7 @@ test("every completion joins a merged PR to honest current evidence", () => {
     ["P2-6", "4509"],
     ["P2-7", "4502"],
     ["P2-8", "4544"],
+    ["P2-9", "5367"],
     ["P2-10", "4642"],
     ["P2-12a", "4452"],
     ["P2-13", "4509"],
@@ -207,6 +214,37 @@ test("every completion joins a merged PR to honest current evidence", () => {
   assert.match(p2_19, /p2-19\.md/);
   assert.match(p2_19, /not a transport implementation witness/);
   assert.doesNotMatch(p2_19, /davinci-phase2-ledger/);
+});
+
+test("P2-9 records the hydrated residual completion honestly", () => {
+  const p2_9Section = taskSection(text.tasks, "P2-9");
+  const recordsRow = requiredLine(
+    text.records,
+    /^\| P2-9\s+\| \[#5367\][^\n]+$/mu,
+    "P2-9 current evidence row",
+  );
+  for (const source of [text.roadmap, text.readme, text.phase, text.records]) {
+    assert.match(source, /17 of 22/);
+    assert.match(source, /11\.73%/);
+  }
+  assert.match(text.phase, /P2-9, P2-10/);
+  assert.match(p2_9Section, /41,580 files compiled/);
+  assert.match(p2_9Section, /admitted=801305/);
+  assert.match(p2_9Section, /legacy_total=106532/);
+  assert.match(p2_9Section, /residual \*\*11\.73%\*\*/);
+  assert.match(recordsRow, /#5367/);
+  assert.match(recordsRow, /41,580 compiled files/);
+  assert.match(recordsRow, /11\.73% residual/);
+  assert.match(text.p2_9, /Installment 11/);
+  assert.match(text.p2_9, /legacy expression subtree/);
+  assert.match(text.p2_9_11, /scope=canonical/);
+  assert.match(text.p2_9_11, /submodules=146/);
+  assert.match(text.p2_9_11, /files=41580 compiled=41580/);
+  assert.match(text.p2_9_11, /admitted=801305 legacy_total=106532/);
+  assert.match(text.p2_9_11, /admitted_pct=88\.27/);
+  assert.match(text.p2_9_11, /= 11\.73%/);
+  assert.match(text.p2_9_11, /does not\s+delete `steps\/expression\/`/);
+  assert.doesNotMatch(text.p2_9_11, /Unknown this run/);
 });
 
 test("P2-11 records current installments without presenting stale remainders", () => {
@@ -279,8 +317,8 @@ test("validator rejects a stale task count or suite range", () => {
   const tasks = taskIndex(text.phase);
   const maximum = suiteMaximum(text.suites);
   assert.throws(
-    () => assertCurrentCount(text.readme.replace("16 of 22", "15 of 22"), 16, tasks.size),
-    /stale task count: expected 16 of 22/,
+    () => assertCurrentCount(text.readme.replace("17 of 22", "16 of 22"), 17, tasks.size),
+    /stale task count: expected 17 of 22/,
   );
   assert.throws(
     () => assertSuiteRange(text.readme.replace("TS-1..52", "TS-1..51"), maximum),

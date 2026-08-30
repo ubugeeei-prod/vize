@@ -59,7 +59,7 @@ Each ID links to its contract in [phase-2-tasks.md](./phase-2-tasks.md); what a 
 - [x] [P2-6](./phase-2-tasks.md#p2-6--s2-verifier-v1) S2 verifier v1 — landed 2026-08-20; local checks only in one page-order walk (six-code catalogue S2V001–S2V006 documented in `folio-format.md`, rigor per `PassKind`), liveness through the P1-11 arena stamp with `check_live` as the recorded P2-5b seam, `VerifyObserver` debug/CI-only with the release ZST shape const-asserted, and TS-18 established: 15 invalid pages each rejected on its exact committed diagnostic ([record](./phase-2-records/p2-6.md))
 - [x] [P2-7](./phase-2-tasks.md#p2-7--s1-vue-surface-tree) S1 Vue surface tree — landed 2026-08-20; new `vize_s1` crate driven by armature's tokenizer, three-clause hole policy with the intra-tag `leading` deviation recorded, TS-19 pinned over a 42-fixture battery plus 2,148 truncation parses; the corpus-widened run is deferred to a fixture-hydrated machine ([record](./phase-2-records/p2-7.md))
 - [x] [P2-8](./phase-2-tasks.md#p2-8--s1s2-vue-lowering) S1→S2 Vue lowering — landed 2026-08-21; conversion crate `vize_s1_to_s2` (codename Ricalco; the MLIR conversion-library shape, so neither stage learns about the other), total over the whole S1 battery and every truncation of it with kept fragments on every failure, `v-for` split textually per P2-5b (`ForValue` assigned, never a JS parse of the whole value), hygiene scope tags and full provenance as `vize_s2` side tables, TS-20 established with two new fuzz targets and a 12,215-file corpus sweep at zero failures ([record](./phase-2-records/p2-8.md))
-- [ ] [P2-9](./phase-2-tasks.md#p2-9--core-transforms-as-s2-passes) Core transforms as S2 passes (marked series)
+- [x] [P2-9](./phase-2-tasks.md#p2-9--core-transforms-as-s2-passes) Core transforms as S2 passes — landed 2026-08-30; hydrated corpus residual re-measured at 11.73% over 41,580 compiled files, with zero differential divergence and the old expression lane left to P2-5b / exit-gate decisions ([record](./phase-2-records/p2-9.md))
 - [x] [P2-10](./phase-2-tasks.md#p2-10--style-v-bind-ops) Style `v-bind()` ops — landed 2026-08-23; `vue.css-bind` with file-absolute spans, ricalco admission, committed SFC folio pin; compile path / css-var names untouched ([record](./phase-2-records/p2-10.md))
 - [ ] [P2-11](./phase-2-tasks.md#p2-11--dom-backend-on-s2) DOM backend on S2 (series, in progress)
 - [x] [P2-12a](./phase-2-tasks.md#p2-12a--phase-start-baselines-and-pinned-targets) Phase-start baselines and pinned targets — landed 2026-08-19 at rev `232870a8`; DOM/SSR/Vapor ladder pinned in `[traversal]`, `[target.phase-2]` set, `walk-baseline.md` committed. One clause carried: the corpus `--check` is not evaluable by CI or a working tree ([record](./phase-2-records/p2-12a.md))
@@ -79,14 +79,13 @@ This is the current snapshot. The phase re-cut above and the per-installment
 records are historical evidence and are not silently rewritten when current
 counts or fixture availability changes.
 
-- **Complete: 16 of 22 — P2-1, P2-2, P2-3, P2-4, P2-5a, P2-5b, P2-6,
-  P2-7, P2-8, P2-10, P2-12a, P2-13, P2-14, P2-15, P2-18 and P2-19.**
+- **Complete: 17 of 22 — P2-1, P2-2, P2-3, P2-4, P2-5a, P2-5b, P2-6,
+  P2-7, P2-8, P2-9, P2-10, P2-12a, P2-13, P2-14, P2-15, P2-18 and P2-19.**
   Each completion is joined to its merged PR and current evidence in the
   [evidence index](./phase-2-records.md#current-completion-evidence-2026-08-30);
   review-only evidence is labeled there rather than presented as executable.
-- **Active and blocked: 2 of 22 — P2-9 and P2-11.** P2-9 still needs a
-  hydrated full-corpus residual remeasurement; P2-11 has 44 landed
-  installments through
+- **Active and blocked: 1 of 22 — P2-11.** P2-11 has 44 landed installments
+  through
   [#5363](https://github.com/ubugeeei-prod/vize/pull/5363), including
   `v-show` runtime directives, `v-html` raw HTML props, and `v-text`
   text-content props, plus `v-cloak` DOM cloak markers and object
