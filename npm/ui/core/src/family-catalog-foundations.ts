@@ -283,7 +283,7 @@ export const foundationFamilyCatalog = [
       maximumJavaScriptGzipBytes: 1_500,
       // Covers the packaged stylesheet: the token contract and presets share
       // dist/style.css with every other styled family.
-      maximumCssGzipBytes: 7_200,
+      maximumCssGzipBytes: 7_600,
     },
     aliases: [
       "design tokens",

@@ -93,6 +93,7 @@ export * from "./pointer-grace.ts";
 export * from "./portal.ts";
 export * from "./positioner.ts";
 export * from "./presence.ts";
+export * from "./families/feedback/progress-bar/progress-bar.ts";
 export * from "./progress.ts";
 export * from "./spinner.ts";
 export * from "./families/feedback/status-light/status-light.ts";

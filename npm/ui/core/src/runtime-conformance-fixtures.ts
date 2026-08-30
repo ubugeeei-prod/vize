@@ -32,7 +32,8 @@ import { printButtonRuntimeFixture } from "./families/actions/print-button/runti
 import { shareButtonRuntimeFixture } from "./families/actions/share-button/runtime-conformance-share-button-fixtures.ts";
 import { toolbarRuntimeFixtures } from "./families/actions/toolbar/runtime-conformance-toolbar-fixtures.ts";
 import { fieldRuntimeFixtures } from "./runtime-conformance-field-fixtures.ts";
-import { progressRuntimeFixture } from "./runtime-conformance-progress-fixtures.ts";
+import { progressBarRuntimeFixture } from "./families/feedback/progress-bar/runtime-conformance-progress-bar-fixtures.ts";
+import { progressRuntimeFixture } from "./families/feedback/progress/runtime-conformance-progress-fixtures.ts";
 import { radioGroupRuntimeFixtures } from "./runtime-conformance-radio-group-fixtures.ts";
 import { ratingRuntimeFixture } from "./families/form/rating/runtime-conformance-rating-fixtures.ts";
 import { sliderRuntimeFixture } from "./families/form/slider/runtime-conformance-slider-fixtures.ts";
@@ -326,6 +327,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   switchRuntimeFixture,
   ...toggleRuntimeFixtures,
   progressRuntimeFixture,
+  progressBarRuntimeFixture,
   {
     name: "visually-hidden",
     sourceFile: "visually-hidden.vue",

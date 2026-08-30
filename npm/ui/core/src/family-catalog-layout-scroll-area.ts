@@ -32,7 +32,7 @@ export const scrollAreaLayoutFamilyCatalog = [
       exportName: "ScrollArea",
       retainedSignature: 'data-vize-ui":(?:`scroll-area`|"scroll-area"|\'scroll-area\')',
       maximumJavaScriptGzipBytes: 2_800,
-      maximumCssGzipBytes: 7_200,
+      maximumCssGzipBytes: 7_600,
     },
     aliases: ["scroll area", "scroll viewport", "native scroll container", "overflow region"],
     upstreamCoverage: [

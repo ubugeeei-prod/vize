@@ -1,6 +1,15 @@
-export { PROGRESS_DEFAULT_MAX, getProgressState } from "./progress-state.ts";
+export {
+  PROGRESS_DEFAULT_MAX,
+  getProgressState,
+} from "./families/feedback/progress/progress-state.ts";
 
-/** Accessible, unstyled native progressbar for determinate and indeterminate work. */
-export { default as Progress } from "./progress-bar.vue";
+/** Backward-compatible native Progress primitive. */
+export { default as Progress } from "./families/feedback/progress/progress.vue";
 
-export type { ProgressExpose, ProgressSlotState, ProgressState } from "./progress-types.ts";
+export type {
+  ProgressExpose,
+  ProgressProps,
+  ProgressSlots,
+  ProgressSlotState,
+  ProgressState,
+} from "./families/feedback/progress/progress-types.ts";

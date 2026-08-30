@@ -2,15 +2,15 @@ import assert from "node:assert/strict";
 
 import { h } from "vue";
 
-import ProgressBar from "./progress-bar.vue";
-import type { RuntimeFixture } from "./runtime-conformance-fixtures.ts";
+import type { RuntimeFixture } from "../../../runtime-conformance-fixtures.ts";
+import Progress from "./progress.vue";
 
 export const progressRuntimeFixture: RuntimeFixture = {
   name: "progress",
-  sourceFile: "progress-bar.vue",
+  sourceFile: "families/feedback/progress/progress.vue",
   render: () =>
     h(
-      ProgressBar,
+      Progress,
       {
         ariaLabel: "Upload progress",
         id: "upload-progress",

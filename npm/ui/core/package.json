@@ -484,6 +484,11 @@
       "import": "./dist/progress.mjs",
       "default": "./dist/progress.mjs"
     },
+    "./progress-bar": {
+      "types": "./dist/progress-bar.d.mts",
+      "import": "./dist/progress-bar.mjs",
+      "default": "./dist/progress-bar.mjs"
+    },
     "./spinner": {
       "types": "./dist/spinner.d.mts",
       "import": "./dist/spinner.mjs",

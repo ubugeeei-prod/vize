@@ -2,7 +2,7 @@
 import { computed, useTemplateRef } from "vue";
 import type { ComputedRef } from "vue";
 
-import { useDeterministicId } from "./deterministic-id.ts";
+import { useDeterministicId } from "../../../deterministic-id.ts";
 import { PROGRESS_DEFAULT_MAX, getProgressState } from "./progress-state.ts";
 import type { ProgressExpose, ProgressSlotState } from "./progress-types.ts";
 
@@ -15,59 +15,31 @@ const {
   ariaDescribedby = undefined,
   ariaValueText = undefined,
 } = defineProps<{
-  /**
-   * Consumer-owned progressbar id. `null` and `undefined` select a deterministic fallback.
-   *
-   * @default undefined
-   */
+  /** Consumer-owned progressbar id. @default undefined */
   readonly id?: string | null;
 
-  /**
-   * Current determinate value. `null`, `undefined`, and non-finite numbers render indeterminate.
-   *
-   * @default null
-   */
+  /** Current determinate value. `null`, `undefined`, and non-finite numbers render indeterminate. @default null */
   readonly value?: number | null;
 
-  /**
-   * Positive maximum value. Non-positive and non-finite numbers fall back to 100.
-   *
-   * @default 100
-   */
-  readonly max?: number;
+  /** Positive maximum value. Non-positive and non-finite numbers fall back to 100. @default 100 */
+  readonly max?: number | null;
 
-  /**
-   * Accessible name when no visible label or `aria-labelledby` supplies one.
-   *
-   * @default undefined
-   */
+  /** Accessible name when no visible label or `aria-labelledby` supplies one. @default undefined */
   readonly ariaLabel?: string;
 
-  /**
-   * Space-separated ids that label the progressbar.
-   *
-   * @default undefined
-   */
+  /** Space-separated ids that label the progressbar. @default undefined */
   readonly ariaLabelledby?: string;
 
-  /**
-   * Space-separated ids that describe the progressbar.
-   *
-   * @default undefined
-   */
+  /** Space-separated ids that describe the progressbar. @default undefined */
   readonly ariaDescribedby?: string;
 
-  /**
-   * Human-readable value text for assistive technology.
-   *
-   * @default undefined
-   */
+  /** Human-readable value text for assistive technology. @default undefined */
   readonly ariaValueText?: string;
 }>();
 
 defineSlots<{
   /** Optional fallback contents. Receives normalized Progress state for composition. */
-  default(props: ProgressSlotState): unknown;
+  default?(props: ProgressSlotState): unknown;
 }>();
 
 const element = useTemplateRef<HTMLProgressElement>("element");

@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import { test } from "vite-plus/test";
 
 import { PROGRESS_DEFAULT_MAX, getProgressState } from "./progress.ts";
-import ProgressBar from "./progress-bar.vue";
+import Progress from "./progress.vue";
 import type { ProgressExpose, ProgressSlotState } from "./progress-types.ts";
-import { mountInteraction } from "./testing/mount.ts";
+import { mountInteraction } from "../../../testing/mount.ts";
 
 test("normalizes determinate, complete, and indeterminate state", () => {
   assert.deepEqual(getProgressState({ value: 40, max: 100 }), {
@@ -35,7 +35,7 @@ test("normalizes determinate, complete, and indeterminate state", () => {
 });
 
 test("renders a named native determinate progressbar", () => {
-  const handle = mountInteraction(ProgressBar, {
+  const handle = mountInteraction(Progress, {
     props: {
       id: "upload-progress",
       value: 40,
@@ -74,7 +74,7 @@ test("renders a named native determinate progressbar", () => {
 });
 
 test("omits the native value for indeterminate progress", () => {
-  const handle = mountInteraction(ProgressBar, {
+  const handle = mountInteraction(Progress, {
     props: { ariaLabel: "Import progress" },
     slots: {
       default: (state: ProgressSlotState) =>
@@ -97,7 +97,7 @@ test("omits the native value for indeterminate progress", () => {
 });
 
 test("clamps native attributes to the safe progress range", async () => {
-  const handle = mountInteraction(ProgressBar, {
+  const handle = mountInteraction(Progress, {
     props: {
       ariaLabel: "Sync progress",
       value: -10,
@@ -129,7 +129,7 @@ test("clamps native attributes to the safe progress range", async () => {
 });
 
 test("updates slot and exposed state from props", async () => {
-  const handle = mountInteraction(ProgressBar, {
+  const handle = mountInteraction(Progress, {
     props: {
       ariaLabel: "Build progress",
       value: 25,
@@ -167,7 +167,7 @@ test("updates slot and exposed state from props", async () => {
 });
 
 test("does not enter the tab order or create a live region by default", async () => {
-  const handle = mountInteraction(ProgressBar, {
+  const handle = mountInteraction(Progress, {
     props: { ariaLabel: "Background task", value: 5 },
   });
   const progress = handle.getByRole("progressbar", { name: "Background task" });

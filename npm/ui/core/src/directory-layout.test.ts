@@ -55,7 +55,6 @@ const grandfatheredRootSfcFiles = [
   "positioner.vue",
   "presence.vue",
   "primitive-element.vue",
-  "progress-bar.vue",
   "radio-group-item.vue",
   "radio-group.vue",
   "search-field.vue",

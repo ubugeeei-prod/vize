@@ -1,0 +1,93 @@
+/*
+ * Native ProgressBar behavior CSS.
+ *
+ * These rules provide structural parts, logical fill direction, and platform
+ * accessibility policies. Consumers own color, radius, size, and motion
+ * through low-specificity CSS custom properties.
+ */
+
+@layer vize.ui {
+  :where([data-vize-ui="progress-bar"]) {
+    box-sizing: border-box;
+    display: grid;
+    gap: var(--vize-ui-progress-bar-gap, 0.25rem);
+    inline-size: var(--vize-ui-progress-bar-inline-size, 100%);
+    min-inline-size: 0;
+    color: var(--vize-ui-progress-bar-color, CanvasText);
+  }
+
+  :where([data-vize-ui="progress-bar-track"]) {
+    box-sizing: border-box;
+    display: flex;
+    inline-size: 100%;
+    min-inline-size: 0;
+    block-size: var(--vize-ui-progress-bar-track-block-size, 0.5rem);
+    overflow: hidden;
+    border-radius: var(--vize-ui-progress-bar-track-radius, 999px);
+    background: var(
+      --vize-ui-progress-bar-track-color,
+      color-mix(in oklch, currentColor 18%, transparent)
+    );
+  }
+
+  :where([data-vize-ui="progress-bar-indicator"]) {
+    box-sizing: border-box;
+    display: block;
+    flex: 0 0 var(--vize-ui-progress-bar-percent, 0%);
+    inline-size: var(--vize-ui-progress-bar-percent, 0%);
+    min-inline-size: 0;
+    block-size: 100%;
+    border-radius: inherit;
+    background: var(--vize-ui-progress-bar-indicator-color, currentColor);
+    transition: inline-size var(--vize-ui-progress-bar-duration, 160ms) ease;
+  }
+
+  :where([data-vize-ui="progress-bar"][data-state="indeterminate"])
+    :where([data-vize-ui="progress-bar-indicator"]) {
+    flex-basis: var(--vize-ui-progress-bar-indeterminate-size, 40%);
+    inline-size: var(--vize-ui-progress-bar-indeterminate-size, 40%);
+    animation: vize-ui-progress-bar-indeterminate
+      var(--vize-ui-progress-bar-indeterminate-duration, 1.2s) ease-in-out infinite;
+  }
+
+  :where([data-vize-ui="progress-bar"][data-dir="rtl"]) {
+    --vize-ui-progress-bar-indeterminate-from: 220%;
+    --vize-ui-progress-bar-indeterminate-to: -120%;
+  }
+
+  :where([data-vize-ui="progress-bar"][data-dir="ltr"]) {
+    --vize-ui-progress-bar-indeterminate-from: -120%;
+    --vize-ui-progress-bar-indeterminate-to: 220%;
+  }
+
+  @keyframes vize-ui-progress-bar-indeterminate {
+    from {
+      transform: translateX(var(--vize-ui-progress-bar-indeterminate-from));
+    }
+
+    to {
+      transform: translateX(var(--vize-ui-progress-bar-indeterminate-to));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-vize-ui="progress-bar-indicator"]) {
+      transition-duration: 0.01ms;
+      animation-duration: 0.01ms;
+      animation-iteration-count: 1;
+    }
+  }
+
+  @media (forced-colors: active) {
+    :where([data-vize-ui="progress-bar-track"]) {
+      border: 1px solid CanvasText;
+      background: Canvas;
+      forced-color-adjust: auto;
+    }
+
+    :where([data-vize-ui="progress-bar-indicator"]) {
+      background: Highlight;
+      forced-color-adjust: auto;
+    }
+  }
+}

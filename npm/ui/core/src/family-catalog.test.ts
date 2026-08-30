@@ -153,6 +153,8 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["locale", "src/families/i18n/locale/"],
     ["fullscreen-button", "src/families/actions/fullscreen-button/"],
     ["print-button", "src/families/actions/print-button/"],
+    ["progress", "src/families/feedback/progress/"],
+    ["progress-bar", "src/families/feedback/progress-bar/"],
     ["rating", "src/families/form/rating/"],
     ["share-button", "src/families/actions/share-button/"],
     ["scroll-area", "src/families/layout/scroll-area/"],
@@ -202,4 +204,24 @@ test("typography families keep root compatibility barrels", async () => {
       `${name} must keep its historical source entry as a compatibility barrel`,
     );
   }
+});
+
+test("progress family keeps root compatibility barrel", async () => {
+  const source = await readFile(path.resolve("src/progress.ts"), "utf8");
+
+  assert.match(
+    source,
+    /from "\.\/families\/feedback\/progress\/progress-state\.ts"/,
+    "progress must keep its historical state export through the root barrel",
+  );
+  assert.match(
+    source,
+    /from "\.\/families\/feedback\/progress\/progress-types\.ts"/,
+    "progress must keep its historical type export through the root barrel",
+  );
+  assert.match(
+    source,
+    /from "\.\/families\/feedback\/progress\/progress\.vue"/,
+    "progress must keep its historical component export through the root barrel",
+  );
 });
