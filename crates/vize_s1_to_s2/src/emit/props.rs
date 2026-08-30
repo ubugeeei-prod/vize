@@ -17,6 +17,7 @@ pub(super) use super::props_bind::{
     is_dynamic_bind_name, is_emitted_key_bind, js_value, static_bind_key,
 };
 pub(super) use super::props_object::{Piece, emit_props_object, pieces};
+pub(super) use super::props_value::bind_value;
 
 pub(super) struct Patch {
     pub flag: i32,
@@ -53,7 +54,7 @@ fn admit_bindings_inner(
                 super::merge::admit_object_on(on)?;
             }
             BindingOp::Bind(bind) => {
-                js_value(bind)?;
+                bind_value(bind)?;
                 if let BindName::Static(name) = bind_name(bind)? {
                     match name {
                         "class" if class => {
@@ -202,7 +203,13 @@ pub(super) fn bind_patch(
 }
 
 fn class_bind_needs_patch(bind: &vize_s2::op::BindOp<'_>) -> bool {
-    js_value(bind).is_ok_and(|js| !is_static_class_expr(js.ast))
+    match bind_value(bind) {
+        Ok(value) => match value.js() {
+            Some(js) => !is_static_class_expr(js.ast),
+            None => true,
+        },
+        Err(_) => false,
+    }
 }
 
 fn is_static_class_expr(expr: &Expression<'_>) -> bool {

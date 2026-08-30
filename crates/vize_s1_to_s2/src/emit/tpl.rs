@@ -16,6 +16,7 @@ use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::children::{
     emit_create_text_vnode, emit_interpolation, emit_plain_text_vnode, emit_to_display_string,
+    is_empty_interpolation,
 };
 use super::hoist::{emit_hoisted_element, is_hoistable};
 use super::js::escape_js_string;
@@ -262,6 +263,11 @@ fn emit_gen_interp(
                     emit_plain_text_vnode(cx, part.text.as_str());
                 }
             }
+            Ok(())
+        }
+        ExprRef::Opaque(opaque) if is_empty_interpolation(opaque) => {
+            start_item(cx, first);
+            emit_to_display_string(cx, "");
             Ok(())
         }
         ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => Err(

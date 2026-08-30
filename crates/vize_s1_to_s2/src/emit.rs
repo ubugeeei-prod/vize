@@ -42,8 +42,7 @@
 //! including event/key modifiers and slot-outlet listener props),
 //! plus native-element **`v-once`** and **`v-memo`** cache wrappers / `v-for` memo reuse guards,
 //! and **`v-html`** / **`v-text`** content props (`innerHTML` /
-//! `textContent` + dynamic prop flags),
-//! while SFC style-block carriers (`vue.css-bind` facts) stay DOM-inert.
+//! `textContent` + dynamic prop flags).
 //! Static-name `v-bind` modifiers (`.camel`, `.prop`, `.attr`, plus the
 //! dot shorthand) and dynamic-argument `v-bind` keys / modifiers are
 //! realized into the shipped DOM prop-key shape. Vue 2 pipe filters are
@@ -83,6 +82,7 @@ mod props_class;
 mod props_object;
 mod props_object_merge;
 mod props_static;
+mod props_value;
 mod sfc_style;
 mod slots;
 mod style;

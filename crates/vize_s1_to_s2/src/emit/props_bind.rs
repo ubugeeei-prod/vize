@@ -13,6 +13,7 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::js::is_valid_js_identifier;
+use super::props_value::bind_value;
 
 /// Whether static bind keys should use their ordinary casing or the
 /// `<slot>` outlet casing rule.
@@ -146,10 +147,10 @@ pub(super) fn emit_dynamic_bind_pair(
     if !is_dynamic_bind_name(bind) {
         return Ok(false);
     }
-    let js = js_value(bind)?;
+    let value = bind_value(bind)?;
     emit_dynamic_bind_key(cx, bind)?;
     cx.buf.push(": ");
-    cx.buf.push(js.source);
+    value.emit(cx);
     Ok(true)
 }
 

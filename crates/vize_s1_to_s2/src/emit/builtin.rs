@@ -12,7 +12,7 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::helper::Helper;
 use super::outlet;
-use super::props::js_value;
+use super::props::bind_value;
 use super::slots;
 
 pub(super) fn helper(name: &str) -> Option<Helper> {
@@ -65,7 +65,7 @@ pub(super) fn emit_dynamic_tag(
     cx.buf.push(Helper::ResolveDynamicComponent.alias());
     cx.buf.push("(");
     if let Some(BindingOp::Bind(bind)) = component.bindings.iter().find(|b| is_is_bind(b)) {
-        cx.buf.push(js_value(bind)?.source);
+        bind_value(bind)?.emit(cx);
     } else if let Some(attr) = component.attributes.iter().find(|attr| attr.name == "is") {
         cx.buf.push("\"");
         if let Some(value) = attr.value {

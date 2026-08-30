@@ -77,10 +77,18 @@ pub(super) fn emit_interpolation(
                 ))?;
             emit_compound_parts(cx, &facts.parts, interp.span)
         }
+        ExprRef::Opaque(opaque) if is_empty_interpolation(opaque) => {
+            emit_to_display_string(cx, "");
+            Ok(())
+        }
         ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => Err(
             EmitError::unsupported_at(Reason::TextExpressionNotEmittable, interp.expression.span()),
         ),
     }
+}
+
+pub(super) fn is_empty_interpolation(expr: &vize_s2::expr::OpaqueExpr<'_>) -> bool {
+    expr.reason == OpaqueReason::ParseRejected && expr.source.is_empty()
 }
 
 fn emit_compound_parts(
@@ -184,6 +192,9 @@ pub(super) fn emit_slot_text_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(
                 .parts
                 .clone();
             emit_slot_compound_parts(cx, &parts, interp.span)
+        }
+        ExprRef::Opaque(opaque) if is_empty_interpolation(opaque) => {
+            emit_create_text_vnode(cx, core::slice::from_ref(op))
         }
         ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => Err(
             EmitError::unsupported_at(Reason::TextExpressionNotEmittable, interp.expression.span()),

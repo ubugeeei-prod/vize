@@ -10,7 +10,7 @@ use vize_s2::op::{BindOp, BindingOp, OnOp, SlotOp};
 use super::buf::Buf;
 use super::js::{escape_js_string, is_valid_js_identifier};
 use super::props::{
-    Piece, StaticBindKeyCasing, emit_dynamic_bind_pair, js_value, pieces, static_bind_key,
+    Piece, StaticBindKeyCasing, bind_value, emit_dynamic_bind_pair, pieces, static_bind_key,
 };
 use super::{EmitCx, EmitError};
 use super::{UnsupportedReason as Reason, merge};
@@ -104,7 +104,7 @@ fn push_spread_separator(cx: &mut EmitCx<'_>, first: &mut bool) {
 }
 
 fn emit_bind_spread_expr(cx: &mut EmitCx<'_>, bind: &BindOp<'_>) -> Result<(), EmitError> {
-    cx.buf.push(js_value(bind)?.source);
+    bind_value(bind)?.emit(cx);
     Ok(())
 }
 
@@ -162,10 +162,9 @@ fn emit_props_object(
             Piece::Bind(bind) => {
                 if !emit_dynamic_bind_pair(cx, bind)? {
                     let key = static_bind_key(bind, StaticBindKeyCasing::Camelize)?;
-                    let js = js_value(bind)?;
                     push_key(cx, key.as_str());
                     cx.buf.push(": ");
-                    cx.buf.push(js.source);
+                    bind_value(bind)?.emit(cx);
                 }
             }
             Piece::VueHtml(html) => {

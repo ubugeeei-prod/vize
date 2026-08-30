@@ -17,8 +17,8 @@ use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::on::{event_key_for, needs_hydration};
 use super::props::{
-    BindName, Patch, Piece, StaticBindKeyCasing, bind_name, emit_props_object, has_prop_modifier,
-    is_emitted_key_bind, js_value, pieces, static_bind_key,
+    BindName, Patch, Piece, StaticBindKeyCasing, bind_name, bind_value, emit_props_object,
+    has_prop_modifier, is_emitted_key_bind, pieces, static_bind_key,
 };
 
 pub(super) fn has_object_spread(bindings: &[BindingOp<'_>]) -> bool {
@@ -30,7 +30,7 @@ pub(super) fn has_object_spread(bindings: &[BindingOp<'_>]) -> bool {
 }
 
 pub(super) fn admit_object(bind: &BindOp<'_>) -> Result<(), EmitError> {
-    js_value(bind).map(|_| ())
+    bind_value(bind).map(|_| ())
 }
 
 pub(super) fn admit_object_on(on: &OnOp<'_>) -> Result<(), EmitError> {
@@ -158,7 +158,7 @@ pub(super) fn emit_spread_props(
             cx.buf.push(", ");
         }
         match arg {
-            Arg::BindSpread(bind) => cx.buf.push(js_value(bind)?.source),
+            Arg::BindSpread(bind) => bind_value(bind)?.emit(cx),
             Arg::OnSpread(on) => emit_to_handlers(cx, on)?,
             Arg::Object { if_key, pieces } => {
                 emit_props_object(
@@ -264,14 +264,14 @@ fn flush_object<'a>(args: &mut StdVec<Arg<'a>>, current: &mut StdVec<Piece<'a>>)
 }
 
 fn emit_normalize_guard(cx: &mut EmitCx<'_>, bind: &BindOp<'_>) -> Result<(), EmitError> {
-    let js = js_value(bind)?;
+    let value = bind_value(bind)?;
     cx.buf.use_normalize_props();
     cx.buf.use_guard_reactive_props();
     cx.buf.push(Buf::normalize_props_alias());
     cx.buf.push("(");
     cx.buf.push(Buf::guard_reactive_props_alias());
     cx.buf.push("(");
-    cx.buf.push(js.source);
+    value.emit(cx);
     cx.buf.push("))");
     Ok(())
 }

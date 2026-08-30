@@ -11,6 +11,7 @@ use super::error::UnsupportedReason as Reason;
 use super::js::{escape_js_string, push_ident_key};
 use super::model_key::{ModelModifiersKey, ModelName, ModelUpdateKey};
 use super::props_bind::{self, StaticBindKeyCasing};
+use super::props_value;
 use super::{on, style};
 
 pub(super) fn emit_props_object(
@@ -299,16 +300,32 @@ fn emit_bind_pair(
     }
     let raw_name = props_bind::static_bind_name(bind)?;
     let key = props_bind::static_bind_key(bind, StaticBindKeyCasing::Preserve)?;
-    let js = props_bind::js_value(bind)?;
+    let value = props_value::bind_value(bind)?;
     emit_ref_for(cx, key.as_str());
     push_ident_key(cx, key.as_str());
     cx.buf.push(": ");
     match raw_name {
-        "class" => super::props_class::emit_class_value(cx, pieces, bind, js, skip_normalize),
-        "style" => {
-            style::emit_style_value(cx, static_style_piece(pieces), bind, js, skip_normalize)
-        }
-        _ => cx.buf.push(js.source),
+        "class" => match value.js() {
+            Some(js) => super::props_class::emit_class_value(cx, pieces, bind, js, skip_normalize),
+            None => {
+                if !skip_normalize {
+                    cx.buf.use_normalize_class();
+                    cx.buf.push(super::buf::Buf::normalize_class_alias());
+                    cx.buf.push("(");
+                }
+                value.emit(cx);
+                if !skip_normalize {
+                    cx.buf.push(")");
+                }
+            }
+        },
+        "style" => match value.js() {
+            Some(js) => {
+                style::emit_style_value(cx, static_style_piece(pieces), bind, js, skip_normalize)
+            }
+            None => value.emit(cx),
+        },
+        _ => value.emit(cx),
     }
     Ok(())
 }
