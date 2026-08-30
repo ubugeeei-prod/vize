@@ -124,6 +124,24 @@ const columns = ref(3);
 `,
   },
   {
+    filename: "EmptyStateConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { EmptyState } from "./empty-state.ts";
+
+const tone = ref<"info" | "warning">("info");
+</script>
+
+<template>
+  <EmptyState as="article" density="compact" orientation="inline" :tone>
+    <template #default="{ state }">
+      <span>{{ state }}</span>
+    </template>
+  </EmptyState>
+</template>
+`,
+  },
+  {
     filename: "MeterConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

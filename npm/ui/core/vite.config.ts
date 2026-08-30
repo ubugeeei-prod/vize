@@ -38,6 +38,7 @@ export default defineConfig({
       cluster: "src/cluster.ts",
       container: "src/container.ts",
       grid: "src/grid.ts",
+      "empty-state": "src/empty-state.ts",
       collapsible: "src/collapsible.ts",
       button: "src/button.ts",
       link: "src/link.ts",

@@ -14,6 +14,7 @@ export * from "./badge.ts";
 export * from "./cluster.ts";
 export * from "./container.ts";
 export * from "./grid.ts";
+export * from "./empty-state.ts";
 export * from "./collapsible.ts";
 export * from "./checkbox.ts";
 export * from "./collection.ts";

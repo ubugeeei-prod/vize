@@ -69,6 +69,11 @@
       "import": "./dist/grid.mjs",
       "default": "./dist/grid.mjs"
     },
+    "./empty-state": {
+      "types": "./dist/empty-state.d.mts",
+      "import": "./dist/empty-state.mjs",
+      "default": "./dist/empty-state.mjs"
+    },
     "./collapsible": {
       "types": "./dist/collapsible.d.mts",
       "import": "./dist/collapsible.mjs",
