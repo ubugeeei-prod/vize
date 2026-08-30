@@ -4,7 +4,8 @@
 
 use vize_s0::{SourceRoot, Span};
 use vize_s1_to_s2::Lowered;
-use vize_s2::expr::ExprRef;
+use vize_s1_to_s2::lower::TextPart;
+use vize_s2::expr::{ExprRef, OpaqueReason};
 use vize_s2::op::{Attribute, BindingOp, DynamicName, ForBinding, Op, Region};
 use vize_s2::scope::{ScopeFacts, ScopeOrigin};
 
@@ -24,7 +25,7 @@ pub fn assert_authored_artifact(source: &str, lowered: &Lowered<'_>) {
     }
     for (_, parts) in lowered.texts.iter() {
         for part in &parts.parts {
-            assert_span(source, root, part.span, "text part");
+            assert_text_part(source, root, part);
         }
     }
     for (_, keys) in lowered.wrappers.iter() {
@@ -219,8 +220,37 @@ fn assert_expr(source: &str, root: SourceRoot<'_>, expr: ExprRef<'_>) {
     let span = expr.span();
     assert_span(source, root, span, "expression");
     let slice = exact_slice(source, span);
-    if slice.len() == expr.source().len() {
-        assert_eq!(slice, expr.source());
+    let expr_source = expr.source();
+    match expr {
+        ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound => {
+            // Compound sources are rebuilt from text parts, so exact authored
+            // slices are checked on each dynamic TextPart instead.
+        }
+        _ if slice.len() == expr_source.len() => {
+            assert_eq!(
+                slice, expr_source,
+                "expression span is not authored when source length matches"
+            );
+        }
+        _ => {}
+    }
+}
+
+fn assert_text_part(source: &str, root: SourceRoot<'_>, part: &TextPart) {
+    assert_span(source, root, part.span, "text part");
+    if part.dynamic {
+        let slice = exact_slice(source, part.span);
+        let Some(inner) = slice
+            .strip_prefix("{{")
+            .and_then(|slice| slice.strip_suffix("}}"))
+        else {
+            panic!("dynamic text part span must cover the authored interpolation token: {slice:?}");
+        };
+        assert_eq!(
+            inner.trim(),
+            part.text.as_str(),
+            "dynamic text part text must match the trimmed authored interpolation"
+        );
     }
 }
 
