@@ -90,6 +90,7 @@ mod tpl;
 mod vfor;
 mod vif;
 mod vnode;
+mod vnode_children;
 mod vtext;
 
 use alloc::vec::Vec as StdVec;
