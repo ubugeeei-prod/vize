@@ -145,6 +145,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["avatar", "src/families/layout/avatar/"],
     ["banner", "src/families/feedback/banner/"],
     ["badge", "src/families/feedback/badge/"],
+    ["breadcrumb", "src/families/navigation/breadcrumb/"],
     ["blockquote", "src/families/typography/blockquote/"],
     ["block-ui", "src/families/feedback/block-ui/"],
     ["button-group", "src/families/actions/button-group/"],
@@ -164,6 +165,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["locale", "src/families/i18n/locale/"],
     ["fullscreen-button", "src/families/actions/fullscreen-button/"],
     ["meter", "src/families/feedback/meter/"],
+    ["pagination", "src/families/navigation/pagination/"],
     ["print-button", "src/families/actions/print-button/"],
     ["progress", "src/families/feedback/progress/"],
     ["progress-bar", "src/families/feedback/progress-bar/"],
@@ -175,10 +177,12 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["skeleton", "src/families/feedback/skeleton/"],
     ["spacer", "src/families/layout/spacer/"],
     ["stack", "src/families/layout/stack/"],
+    ["stepper", "src/families/navigation/stepper/"],
     ["spinner", "src/families/feedback/spinner/"],
     ["status-light", "src/families/feedback/status-light/"],
     ["surface", "src/families/layout/surface/"],
     ["table", "src/families/data/table/"],
+    ["tabs", "src/families/navigation/tabs/"],
     ["text", "src/families/typography/text/"],
     ["toolbar", "src/families/actions/toolbar/"],
     ["tooltip", "src/families/overlays/tooltip/"],
@@ -241,6 +245,18 @@ test("typography families keep root compatibility barrels", async () => {
     assert.match(
       source,
       new RegExp(`from "\\./families/typography/${name}/${name}\\.ts"`),
+      `${name} must keep its historical source entry as a compatibility barrel`,
+    );
+  }
+});
+
+test("navigation families keep root compatibility barrels", async () => {
+  for (const name of ["breadcrumb", "pagination", "stepper", "tabs"] as const) {
+    const source = await readFile(path.resolve(`src/${name}.ts`), "utf8");
+
+    assert.match(
+      source,
+      new RegExp(`from "\\./families/navigation/${name}/${name}\\.ts"`),
       `${name} must keep its historical source entry as a compatibility barrel`,
     );
   }

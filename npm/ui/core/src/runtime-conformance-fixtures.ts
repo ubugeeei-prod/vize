@@ -16,14 +16,14 @@ import { layoutRuntimeFixtures } from "./runtime-conformance-layout-fixtures.ts"
 import { listboxRuntimeFixtures } from "./runtime-conformance-listbox-fixtures.ts";
 import { meterRuntimeFixture } from "./families/feedback/meter/runtime-conformance-meter-fixtures.ts";
 import { nativeSelectRuntimeFixture } from "./families/selection/native-select/runtime-conformance-native-select-fixtures.ts";
-import { paginationRuntimeFixtures } from "./runtime-conformance-pagination-fixtures.ts";
+import { paginationRuntimeFixtures } from "./families/navigation/pagination/runtime-conformance-pagination-fixtures.ts";
 import PrimitiveElement from "./primitive-element.vue";
 import { alertRuntimeFixture } from "./families/feedback/alert/runtime-conformance-alert-fixtures.ts";
 import { alertDialogRuntimeFixture } from "./runtime-conformance-alert-dialog-fixtures.ts";
 import { badgeRuntimeFixture } from "./families/feedback/badge/runtime-conformance-badge-fixtures.ts";
 import { bannerRuntimeFixture } from "./families/feedback/banner/runtime-conformance-banner-fixtures.ts";
 import { blockUIRuntimeFixture } from "./families/feedback/block-ui/runtime-conformance-block-ui-fixtures.ts";
-import { breadcrumbRuntimeFixtures } from "./runtime-conformance-breadcrumb-fixtures.ts";
+import { breadcrumbRuntimeFixtures } from "./families/navigation/breadcrumb/runtime-conformance-breadcrumb-fixtures.ts";
 import { emptyStateRuntimeFixture } from "./families/feedback/empty-state/runtime-conformance-empty-state-fixtures.ts";
 import { buttonGroupRuntimeFixtures } from "./families/actions/button-group/runtime-conformance-button-group-fixtures.ts";
 import { copyButtonRuntimeFixture } from "./families/actions/copy-button/runtime-conformance-copy-button-fixtures.ts";
@@ -39,9 +39,9 @@ import { ratingRuntimeFixture } from "./families/form/rating/runtime-conformance
 import { sliderRuntimeFixture } from "./families/form/slider/runtime-conformance-slider-fixtures.ts";
 import { spinnerRuntimeFixture } from "./families/feedback/spinner/runtime-conformance-spinner-fixtures.ts";
 import { statusLightRuntimeFixture } from "./families/feedback/status-light/runtime-conformance-status-light-fixtures.ts";
-import { stepperRuntimeFixtures } from "./runtime-conformance-stepper-fixtures.ts";
+import { stepperRuntimeFixtures } from "./families/navigation/stepper/runtime-conformance-stepper-fixtures.ts";
 import { switchRuntimeFixture } from "./runtime-conformance-switch-fixtures.ts";
-import { tabsRuntimeFixtures } from "./runtime-conformance-tabs-fixtures.ts";
+import { tabsRuntimeFixtures } from "./families/navigation/tabs/runtime-conformance-tabs-fixtures.ts";
 import TextInput from "./families/form/input/text-input.vue";
 import SearchField from "./families/form/search-field/search-field.vue";
 import TextareaControl from "./families/form/textarea/textarea-control.vue";
