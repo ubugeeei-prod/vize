@@ -138,6 +138,40 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn a_v_if_v_for_branch_keys_the_list_fragment() {
+    assert_eq!(
+        assembled(r#"<div v-if="ok" v-for="i in n">{{ i }}</div>"#),
+        "\
+const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode, renderList: _renderList } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (ok)
+    ? (_openBlock(true), _createElementBlock(_Fragment, { key: 0 }, _renderList(n, (i) => {
+      return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(i), 1 /* TEXT */))
+    }), 256 /* UNKEYED_FRAGMENT */))
+    : _createCommentVNode(\"v-if\", true)
+}"
+    );
+}
+
+#[test]
+fn a_keyed_v_if_v_for_keeps_the_item_key() {
+    assert_eq!(
+        assembled(r#"<div v-if="ok" v-for="i in n" :key="i">{{ i }}</div>"#),
+        "\
+const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode, renderList: _renderList } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (ok)
+    ? (_openBlock(true), _createElementBlock(_Fragment, { key: 0 }, _renderList(n, (i) => {
+      return (_openBlock(), _createElementBlock(\"div\", { key: i }, _toDisplayString(i), 1 /* TEXT */))
+    }), 128 /* KEYED_FRAGMENT */))
+    : _createCommentVNode(\"v-if\", true)
+}"
+    );
+}
+
+#[test]
 fn a_template_fragment_v_if_matches_the_shipped_snapshot() {
     assert_eq!(
         assembled(r#"<template v-if="ok"><span></span><span></span></template>"#),

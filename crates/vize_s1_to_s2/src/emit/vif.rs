@@ -140,6 +140,10 @@ fn emit_branch(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<
             cx.walk.skip(slot.bindings.len());
             super::outlet::emit_outlet(cx, slot, Some(key), true)
         }
+        [Op::For(for_op)] => {
+            let id = cx.walk.mint();
+            super::emit_for_op(cx, for_op, id, Some(key))
+        }
         _ => Err(EmitError::unsupported_at(
             Reason::IfBranchShape,
             branch.span,
