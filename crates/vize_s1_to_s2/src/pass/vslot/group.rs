@@ -4,10 +4,10 @@
 //!
 //! The two halves keep the legacy lane's two distinct predicates
 //! deliberately: **grouping** synthesizes the implicit default from
-//! `Content { implicit: true }` only (so a kept `<template v-if
-//! v-slot>` under `ui.if` does not become a default group — P2-11
-//! `createSlots` owns that child), while the **extraneous** diagnostic
-//! uses the same descending answer the legacy `has_implicit_child`
+//! the shared default-slot predicate (a component that owns its own
+//! `v-slot` is still content for the parent default slot; a structural
+//! slot-template carrier is not), while the **extraneous** diagnostic
+//! uses the narrower descending answer the legacy `has_implicit_child`
 //! computed. The structural-directive duplicate guard is vacuous here:
 //! the carrier sits under `ui.if` / `ui.for` and never reaches this
 //! grouping as a `SlotTemplate` child.
@@ -106,9 +106,15 @@ fn collect(
         }
     }
 
-    let has_content = children
-        .iter()
-        .any(|child| matches!(child.kind, ChildKind::Content { implicit: true }));
+    let has_content = children.iter().any(|child| {
+        matches!(
+            child.kind,
+            ChildKind::Content {
+                default_slot: true,
+                ..
+            }
+        )
+    });
     if own.is_empty() && has_content && !groups.iter().any(|group| group.name.text() == "default") {
         channels.provenance.push(ProvenanceRecord {
             rule: String::from(RULE_IMPLICIT_DEFAULT),
@@ -189,12 +195,15 @@ fn validate(
                 }
                 seen.push(text);
             }
-            ChildKind::Content { implicit: true } => {
+            ChildKind::Content { implicit: true, .. } => {
                 if first_implicit.is_none() {
                     first_implicit = Some(child.span);
                 }
             }
-            ChildKind::Content { implicit: false } | ChildKind::Filler => {}
+            ChildKind::Content {
+                implicit: false, ..
+            }
+            | ChildKind::Filler => {}
         }
     }
     if has_template_slots

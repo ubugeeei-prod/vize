@@ -143,6 +143,36 @@ fn the_implicit_default_group_is_synthesized_from_non_slot_content() {
 }
 
 #[test]
+fn a_slot_bearing_component_child_still_synthesizes_the_parent_default() {
+    // `collect_slots` excludes only direct `<template v-slot>` carriers
+    // from the default slot. A component that owns its own `v-slot`
+    // remains a normal VNode child of the parent component.
+    let source = r#"<Card><Child v-slot="row"><span>{{ row }}</span></Child></Card>"#;
+    with_transformed(source, |lowered, _, facts, _| {
+        assert_eq!(lowered.diagnostics, vec![]);
+        let entries = facts.slot_facts.sorted_entries();
+        assert_eq!(entries.len(), 2);
+        assert_eq!(entries[0].0, id(0));
+        assert_eq!(
+            entries[0].1.groups,
+            vec![SlotGroup {
+                name: SlotName::Static {
+                    text: "default".into(),
+                    origin: ScopeOrigin::Synthesized {
+                        rule: RULE_IMPLICIT_DEFAULT.into(),
+                    },
+                },
+                params: SlotParams::Absent,
+                carrier: SlotCarrier::Implicit,
+            }]
+        );
+        assert_eq!(entries[1].0, id(1));
+        assert_eq!(entries[1].1.groups[0].carrier, SlotCarrier::Component);
+    });
+    assert_transformed_sound(source, "slot-bearing-component-child");
+}
+
+#[test]
 fn a_slot_prop_never_captures_an_outer_authored_binding() {
     // The hygiene pin across the slot boundary: the same spelling in a
     // v-for scope outside and a slot-props scope inside stays two

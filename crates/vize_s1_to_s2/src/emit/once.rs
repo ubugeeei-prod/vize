@@ -7,7 +7,7 @@ use vize_s2::op::{BindingOp, ComponentOp, ElementOp, Op};
 use super::buf::Buf;
 use super::builtin;
 use super::directive;
-use super::hoist::{emit_hoisted_element, is_hoistable};
+use super::hoist::is_hoistable;
 use super::js::asset_ident;
 use super::vnode;
 use super::{EmitCx, EmitError};
@@ -131,6 +131,7 @@ pub(super) fn emit_hoisted_child(
     if cx.once_depth == 0 || !is_hoistable(element) {
         return Ok(false);
     }
-    emit_hoisted_element(cx, element)?;
+    let alias = super::hoist::hoist_static_element(cx, element);
+    cx.buf.push(alias.as_str());
     Ok(true)
 }

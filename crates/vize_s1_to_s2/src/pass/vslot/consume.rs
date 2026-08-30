@@ -100,10 +100,15 @@ pub(super) enum ChildKind {
     /// answer the extraneous-children diagnostic reads (the legacy
     /// `has_implicit_child`): `false` for a slot-carrying non-template
     /// element or component, `true` otherwise, and for `ui.if`/`ui.for`
-    /// the recursive any-branch answer.
+    /// the recursive any-branch answer. `default_slot` is the shared
+    /// implicit-default predicate: component children that own their
+    /// own `v-slot` still belong to the parent default slot, but a
+    /// structural slot-template carrier does not.
     Content {
         /// Whether the child counts for the extraneous diagnostic.
         implicit: bool,
+        /// Whether the child synthesizes the parent default slot group.
+        default_slot: bool,
     },
 }
 
@@ -116,9 +121,12 @@ fn region_implicit(views: &[ChildView]) -> bool {
     let mut slot_templates = 0usize;
     for view in views {
         match &view.kind {
-            ChildKind::Content { implicit: true } => return true,
+            ChildKind::Content { implicit: true, .. } => return true,
             ChildKind::SlotTemplate(_) => slot_templates += 1,
-            ChildKind::Content { implicit: false } | ChildKind::Filler => {}
+            ChildKind::Content {
+                implicit: false, ..
+            }
+            | ChildKind::Filler => {}
         }
     }
     slot_templates > 1
@@ -130,20 +138,48 @@ fn has_slot_template(views: &[ChildView]) -> bool {
         .any(|view| matches!(view.kind, ChildKind::SlotTemplate(_)))
 }
 
+fn region_default_slot(views: &[ChildView]) -> bool {
+    views.iter().any(|view| {
+        matches!(
+            view.kind,
+            ChildKind::Content {
+                default_slot: true,
+                ..
+            }
+        )
+    })
+}
+
+fn branch_from_template(wrapper: Option<&WrapperKeys>, branch_index: usize) -> bool {
+    wrapper
+        .and_then(|keys| keys.from_template.get(branch_index).copied())
+        .unwrap_or(false)
+}
+
 fn if_branch_implicit(
     wrapper: Option<&WrapperKeys>,
     branch_index: usize,
     views: &[ChildView],
 ) -> bool {
     region_implicit(views)
-        || (wrapper
-            .and_then(|keys| keys.from_template.get(branch_index).copied())
-            .unwrap_or(false)
-            && has_slot_template(views))
+        || (branch_from_template(wrapper, branch_index) && has_slot_template(views))
+}
+
+fn if_branch_default_slot(
+    wrapper: Option<&WrapperKeys>,
+    branch_index: usize,
+    views: &[ChildView],
+) -> bool {
+    region_default_slot(views)
+        || (branch_from_template(wrapper, branch_index) && has_slot_template(views))
 }
 
 fn for_region_implicit(from_template: bool, views: &[ChildView]) -> bool {
     region_implicit(views) || (from_template && has_slot_template(views))
+}
+
+fn for_region_default_slot(from_template: bool, views: &[ChildView]) -> bool {
+    region_default_slot(views) || (from_template && has_slot_template(views))
 }
 
 /// Visit one region's ops in page order, returning their views.
@@ -186,6 +222,7 @@ fn visit<'a>(walk: &mut PageWalk, channels: &mut Channels<'_>, op: &Op<'a>) -> C
                 // it is content for the implicit default.
                 ChildKind::Content {
                     implicit: slots.is_empty(),
+                    default_slot: true,
                 }
             };
             ChildView {
@@ -209,7 +246,10 @@ fn visit<'a>(walk: &mut PageWalk, channels: &mut Channels<'_>, op: &Op<'a>) -> C
             ChildView {
                 id,
                 span: component.span,
-                kind: ChildKind::Content { implicit },
+                kind: ChildKind::Content {
+                    implicit,
+                    default_slot: true,
+                },
             }
         }
         Op::Text(text) => ChildView {
@@ -218,25 +258,36 @@ fn visit<'a>(walk: &mut PageWalk, channels: &mut Channels<'_>, op: &Op<'a>) -> C
             kind: if text.content.trim().is_empty() {
                 ChildKind::Filler
             } else {
-                ChildKind::Content { implicit: true }
+                ChildKind::Content {
+                    implicit: true,
+                    default_slot: true,
+                }
             },
         },
         Op::Interpolation(interpolation) => ChildView {
             id,
             span: interpolation.span,
-            kind: ChildKind::Content { implicit: true },
+            kind: ChildKind::Content {
+                implicit: true,
+                default_slot: true,
+            },
         },
         Op::If(if_op) => {
             let wrapper = id.and_then(|id| channels.wrappers.get(id));
             let mut implicit = false;
+            let mut default_slot = false;
             for (branch_index, branch) in if_op.branches.iter().enumerate() {
                 let views = region(walk, channels, &branch.region.ops);
                 implicit |= if_branch_implicit(wrapper, branch_index, &views);
+                default_slot |= if_branch_default_slot(wrapper, branch_index, &views);
             }
             ChildView {
                 id,
                 span: if_op.span,
-                kind: ChildKind::Content { implicit },
+                kind: ChildKind::Content {
+                    implicit,
+                    default_slot,
+                },
             }
         }
         Op::For(for_op) => {
@@ -247,6 +298,7 @@ fn visit<'a>(walk: &mut PageWalk, channels: &mut Channels<'_>, op: &Op<'a>) -> C
                 span: for_op.span,
                 kind: ChildKind::Content {
                     implicit: for_region_implicit(from_template, &views),
+                    default_slot: for_region_default_slot(from_template, &views),
                 },
             }
         }
@@ -269,7 +321,10 @@ fn visit<'a>(walk: &mut PageWalk, channels: &mut Channels<'_>, op: &Op<'a>) -> C
             ChildView {
                 id,
                 span: slot.span,
-                kind: ChildKind::Content { implicit: true },
+                kind: ChildKind::Content {
+                    implicit: true,
+                    default_slot: true,
+                },
             }
         }
     }
