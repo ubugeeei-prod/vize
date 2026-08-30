@@ -31,9 +31,10 @@ const budgets = parseTomlLite(budgetsText) as {
   allocation_peak: Record<string, Record<string, number>>;
 };
 
-const COMPACT_STORAGE_STAGE_WINDOWS = new Set([
+const EXPLICIT_STAGE_WINDOWS = new Set([
   "s1_to_s2_lower_vfor_three_aliases",
   "s1_to_s2_emit_von_two_per_bucket",
+  "s1_to_s2_emit_p2_11_dom_surface",
 ]);
 
 // --- bench-id enumeration from the bench sources -------------------------
@@ -165,7 +166,7 @@ test("every budget entry carries exactly the documented fields within the tolera
       id.includes("_transform_") ||
       id.startsWith("atelier_vapor_lower_") ||
       id.startsWith("atelier_ssr_codegen_") ||
-      COMPACT_STORAGE_STAGE_WINDOWS.has(id);
+      EXPLICIT_STAGE_WINDOWS.has(id);
     const ceiling = stageWindow ? 0.1 : 0.05;
     assert.ok(
       tolerance <= ceiling,

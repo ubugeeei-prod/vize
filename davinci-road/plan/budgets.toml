@@ -189,6 +189,11 @@ davinci_pipeline_no_observer = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0
 s1_to_s2_lower_vfor_three_aliases = { wall_p50_ns = 0, allocs = 10, rss_peak_bytes = 0, wall_tolerance = 0.10 }
 s1_to_s2_emit_von_two_per_bucket = { wall_p50_ns = 0, allocs = 18, rss_peak_bytes = 0, wall_tolerance = 0.10 }
 
+# P2-11 S2 DOM emit surface probe. Setup excludes parse/lower/transform; the
+# measured window is emit-only over late DOM surfaces, so exact allocs guard
+# the output path before the production-lane switch.
+s1_to_s2_emit_p2_11_dom_surface = { wall_p50_ns = 0, allocs = 60, rss_peak_bytes = 0, wall_tolerance = 0.10 }
+
 # Patina direct-IR JSX markup probe. The measured window is the per-rule
 # `visit_with` loop over a one-root, diagnostic-free JSX module; root
 # discovery streams into the walker, so the *measured* zero is the witness

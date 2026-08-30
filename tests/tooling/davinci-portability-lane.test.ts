@@ -61,7 +61,7 @@ test("TS-24: the wasm32-wasip2 lanes ride the required clippy-and-test job", () 
   assert.doesNotMatch(job, /cargo build[^\n]*-p (?:vize_s0|vize_carton)[^\n]*wasm32-wasip2/);
   assert.match(
     job,
-    /cargo bench -p vize_s1_to_s2 --bench davinci_storage -- --quick && cargo bench -p vize_patina --bench davinci_markup -- --quick && rust-script tools\/commands\/davinci\/bench-compare\.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench patina_jsx_markup_one_root/u,
+    /cargo bench -p vize_s1_to_s2 --bench davinci_storage -- --quick && cargo bench -p vize_patina --bench davinci_markup -- --quick && rust-script tools\/commands\/davinci\/bench-compare\.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench s1_to_s2_emit_p2_11_dom_surface --bench patina_jsx_markup_one_root/u,
   );
 });
 

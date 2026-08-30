@@ -1,12 +1,12 @@
-name: Upload Davinci compact-storage bench reports
-description: Uploads compact-storage bench JSON reports for Davinci wall-budget baselines.
+name: Upload Davinci allocation bench reports
+description: Uploads allocation bench JSON reports for Davinci wall-budget baselines.
 runs:
   using: composite
   steps:
     - name: Upload reports
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        name: davinci-compact-storage-bench-reports
+        name: davinci-allocation-bench-reports
         path: bench/results/davinci/*.json
         if-no-files-found: error
         retention-days: 14
