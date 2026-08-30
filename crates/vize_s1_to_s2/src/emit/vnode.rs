@@ -1,5 +1,6 @@
 //! Static native HTML element / children emission.
 
+use vize_davinci::id::NodeId;
 use vize_s0::ensure_sufficient_stack;
 use vize_s2::op::{BindingOp, ElementOp, Op, Region};
 
@@ -16,6 +17,7 @@ use super::props::{admit_element_bindings, apply_static_ref_patch, bind_patch, e
 pub(super) fn emit_unique_element(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
+    id: Option<NodeId>,
 ) -> Result<(), EmitError> {
     if super::once::has(&element.bindings) {
         return super::once::emit_element(cx, element, None, false);
@@ -27,7 +29,7 @@ pub(super) fn emit_unique_element(
             cx.buf.push("(");
             cx.buf.push(Buf::open_block_alias());
             cx.buf.push("(), ");
-            emit_call(cx, element, true, None, true, false, false)?;
+            emit_call(cx, element, true, None, (true, id), false, false)?;
             cx.buf.push(")");
             Ok(())
         })
@@ -37,7 +39,6 @@ pub(super) fn emit_unique_element(
 fn emit_block(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
-    allow_hoist: bool,
     if_key: Option<&str>,
     for_item: bool,
 ) -> Result<(), EmitError> {
@@ -47,7 +48,7 @@ fn emit_block(
         cx.buf.push("(");
         cx.buf.push(Buf::open_block_alias());
         cx.buf.push("(), ");
-        emit_call(cx, element, true, if_key, allow_hoist, for_item, false)?;
+        emit_call(cx, element, true, if_key, (false, None), for_item, false)?;
         cx.buf.push(")");
         Ok(())
     })
@@ -56,6 +57,7 @@ fn emit_block(
 pub(super) fn emit_fragment_element(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
+    id: Option<NodeId>,
 ) -> Result<(), EmitError> {
     if super::once::has(&element.bindings) {
         return super::once::emit_element(cx, element, None, false);
@@ -66,7 +68,7 @@ pub(super) fn emit_fragment_element(
     super::memo::emit_cached(cx, &element.bindings, |cx| {
         directive::wrap_element(cx, element, |cx| {
             cx.buf.use_create_element_vnode();
-            emit_call(cx, element, false, None, true, false, false)
+            emit_call(cx, element, false, None, (true, id), false, false)
         })
     })
 }
@@ -81,14 +83,14 @@ fn emit_nested(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) -> Result<(), EmitE
     super::memo::emit_cached(cx, &element.bindings, |cx| {
         directive::wrap_element(cx, element, |cx| {
             cx.buf.use_create_element_vnode();
-            emit_call(cx, element, false, None, false, false, false)
+            emit_call(cx, element, false, None, (false, None), false, false)
         })
     })
 }
 
 fn emit_nested_block(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) -> Result<(), EmitError> {
     super::memo::emit_cached(cx, &element.bindings, |cx| {
-        emit_block(cx, element, false, None, false)
+        emit_block(cx, element, None, false)
     })
 }
 
@@ -97,7 +99,7 @@ pub(super) fn emit_if_branch_element(
     element: &ElementOp<'_>,
     key: &str,
 ) -> Result<(), EmitError> {
-    emit_block(cx, element, false, Some(key), false)
+    emit_block(cx, element, Some(key), false)
 }
 
 pub(super) fn emit_for_item_element(
@@ -113,10 +115,10 @@ pub(super) fn emit_for_item_element(
         if stable {
             return directive::wrap_element(cx, element, |cx| {
                 cx.buf.use_create_element_vnode();
-                emit_call(cx, element, false, key, false, true, false)
+                emit_call(cx, element, false, key, (false, None), true, false)
             });
         }
-        emit_block(cx, element, false, key, true)
+        emit_block(cx, element, key, true)
     })
 }
 
@@ -125,11 +127,12 @@ pub(super) fn emit_call(
     element: &ElementOp<'_>,
     block: bool,
     if_key: Option<&str>,
-    allow_hoist: bool,
+    hoist: (bool, Option<NodeId>),
     for_item: bool,
     once: bool,
 ) -> Result<(), EmitError> {
-    admit_native(element)?;
+    admit_element_bindings(&element.attributes, &element.bindings)?;
+    let (allow_hoist, id) = hoist;
     let alias = if block {
         Buf::create_element_block_alias()
     } else {
@@ -149,11 +152,12 @@ pub(super) fn emit_call(
     let force_array_children =
         once || memo_block || (directive::has_custom(&element.bindings) && allow_hoist && block);
     let has_binds = has_prop_bindings(&element.bindings);
-    let hoisted_props = if allow_hoist && if_key.is_none() {
-        super::props_static::root_hoist_props(&element.attributes, &element.bindings)?
-    } else {
-        None
-    };
+    let hoisted_props =
+        if allow_hoist && if_key.is_none() && super::props_static::root_should_hoist(cx, id) {
+            super::props_static::root_hoist_props(&element.attributes, &element.bindings)?
+        } else {
+            None
+        };
     let hoist = hoisted_props.is_some();
     let patch = bind_patch(&element.bindings, false, if_key, for_item);
     let text_flag = !once && !memo_block && children_need_text_flag(&element.children);
@@ -234,10 +238,6 @@ pub(super) fn emit_call(
     }
     cx.buf.push(")");
     Ok(())
-}
-
-fn admit_native(element: &ElementOp<'_>) -> Result<(), EmitError> {
-    admit_element_bindings(&element.attributes, &element.bindings)
 }
 
 fn has_prop_bindings(bindings: &[BindingOp<'_>]) -> bool {

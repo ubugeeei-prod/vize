@@ -1,7 +1,10 @@
 //! Inline static props for native element calls.
 
+use vize_davinci::id::NodeId;
 use vize_s0::String;
 use vize_s2::op::{Attribute, BindingOp, DynamicName};
+
+use crate::pass::StaticLevel;
 
 use super::EmitCx;
 use super::EmitError;
@@ -10,6 +13,19 @@ use super::js::{escape_js_string, is_valid_js_identifier};
 use super::props::{Piece, bind_value_is_static_patchless, pieces, static_bind_key};
 use super::props_bind::{StaticBindKey, StaticBindKeyCasing};
 use super::props_value::bind_value;
+
+pub(super) fn root_should_hoist(cx: &EmitCx<'_>, id: Option<NodeId>) -> bool {
+    let Some(fact) = id.and_then(|id| cx.facts.static_facts.get(id)) else {
+        return false;
+    };
+    if !fact.props_hoistable {
+        return false;
+    }
+    match fact.level {
+        StaticLevel::FullyStatic | StaticLevel::HasDynamicText => true,
+        StaticLevel::NotStatic => fact.foreign || fact.nested_static,
+    }
+}
 
 pub(super) fn root_hoist_props(
     attributes: &[Attribute<'_>],

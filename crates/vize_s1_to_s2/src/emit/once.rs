@@ -31,7 +31,12 @@ pub(super) fn emit_element(
             cx.buf.use_create_element_vnode();
             cx.once_depth += 1;
             let result = vnode::emit_call(
-                cx, element, /* block */ false, key, /* hoist */ false, for_item,
+                cx,
+                element,
+                /* block */ false,
+                key,
+                /* hoist */ (false, None),
+                for_item,
                 /* once */ true,
             );
             cx.once_depth -= 1;

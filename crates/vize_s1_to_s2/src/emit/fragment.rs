@@ -88,7 +88,7 @@ fn emit_unique(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
         Op::Element(element) => {
             let _id = cx.walk.mint();
             cx.walk.skip(element.bindings.len());
-            vnode::emit_unique_element(cx, element)
+            vnode::emit_unique_element(cx, element, _id)
         }
         Op::Component(component) => {
             let id = cx.walk.mint();
@@ -160,9 +160,9 @@ fn emit_units(cx: &mut EmitCx<'_>, op: &Op<'_>, first: &mut bool) -> Result<(), 
         Op::Interpolation(interp) => emit_interp(cx, interp, first),
         Op::Element(element) => {
             start_item(cx, first);
-            let _id = cx.walk.mint();
+            let id = cx.walk.mint();
             cx.walk.skip(element.bindings.len());
-            vnode::emit_fragment_element(cx, element)
+            vnode::emit_fragment_element(cx, element, id)
         }
         Op::Component(component) => {
             start_item(cx, first);
