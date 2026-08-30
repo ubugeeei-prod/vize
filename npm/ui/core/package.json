@@ -64,6 +64,11 @@
       "import": "./dist/container.mjs",
       "default": "./dist/container.mjs"
     },
+    "./grid": {
+      "types": "./dist/grid.d.mts",
+      "import": "./dist/grid.mjs",
+      "default": "./dist/grid.mjs"
+    },
     "./collapsible": {
       "types": "./dist/collapsible.d.mts",
       "import": "./dist/collapsible.mjs",

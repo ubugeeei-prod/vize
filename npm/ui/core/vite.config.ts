@@ -37,6 +37,7 @@ export default defineConfig({
       badge: "src/badge.ts",
       cluster: "src/cluster.ts",
       container: "src/container.ts",
+      grid: "src/grid.ts",
       collapsible: "src/collapsible.ts",
       button: "src/button.ts",
       link: "src/link.ts",
