@@ -6,6 +6,7 @@ import { interactionFamilyCatalog } from "./family-catalog-interactions.ts";
 import { layoutFamilyCatalog } from "./family-catalog-layout.ts";
 import { navigationFamilyCatalog } from "./family-catalog-navigation.ts";
 import { overlayFamilyCatalog } from "./family-catalog-overlays.ts";
+import { selectionFamilyCatalog } from "./family-catalog-selection.ts";
 import type { UiFamilyCatalogEntry } from "./family-catalog-types.ts";
 
 export {
@@ -25,6 +26,7 @@ const allFamilyCatalogEntries = [
   ...layoutFamilyCatalog,
   ...navigationFamilyCatalog,
   ...overlayFamilyCatalog,
+  ...selectionFamilyCatalog,
 ] as const satisfies readonly UiFamilyCatalogEntry[];
 
 // Lane modules group families thematically, so canonical order is restored

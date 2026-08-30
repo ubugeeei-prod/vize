@@ -10,6 +10,7 @@ import LinkAnchor from "./link-anchor.vue";
 import { collapsibleRuntimeFixtures } from "./runtime-conformance-collapsible-fixtures.ts";
 import { checkboxRuntimeFixture } from "./runtime-conformance-checkbox-fixtures.ts";
 import { layoutRuntimeFixtures } from "./runtime-conformance-layout-fixtures.ts";
+import { listboxRuntimeFixtures } from "./runtime-conformance-listbox-fixtures.ts";
 import { meterRuntimeFixture } from "./runtime-conformance-meter-fixtures.ts";
 import PrimitiveElement from "./primitive-element.vue";
 import { alertRuntimeFixture } from "./runtime-conformance-alert-fixtures.ts";
@@ -163,6 +164,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
       assert.equal(link.textContent, "Docs");
     },
   },
+  ...listboxRuntimeFixtures,
   meterRuntimeFixture,
   {
     name: "primitive",

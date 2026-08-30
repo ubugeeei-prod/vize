@@ -63,6 +63,7 @@ export default defineConfig({
       heading: "src/heading.ts",
       kbd: "src/kbd.ts",
       list: "src/list.ts",
+      listbox: "src/listbox.ts",
       text: "src/text.ts",
       textarea: "src/textarea.ts",
       switch: "src/switch.ts",

@@ -3,6 +3,7 @@ import { dialogRendererFixtures } from "./renderer-fixtures-dialog.ts";
 import { navigationRendererFixtures } from "./renderer-fixtures-navigation.ts";
 import { overlayRendererFixtures } from "./renderer-fixtures-overlays.ts";
 import { primitiveRendererFixtures } from "./renderer-fixtures-primitives.ts";
+import { selectionRendererFixtures } from "./renderer-fixtures-selection.ts";
 
 export const groupedRendererFixtures = [
   ...commandRendererFixtures,
@@ -10,4 +11,5 @@ export const groupedRendererFixtures = [
   ...navigationRendererFixtures,
   ...overlayRendererFixtures,
   ...primitiveRendererFixtures,
+  ...selectionRendererFixtures,
 ] as const;

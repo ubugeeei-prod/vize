@@ -194,6 +194,11 @@
       "import": "./dist/list.mjs",
       "default": "./dist/list.mjs"
     },
+    "./listbox": {
+      "types": "./dist/listbox.d.mts",
+      "import": "./dist/listbox.mjs",
+      "default": "./dist/listbox.mjs"
+    },
     "./textarea": {
       "types": "./dist/textarea.d.mts",
       "import": "./dist/textarea.mjs",

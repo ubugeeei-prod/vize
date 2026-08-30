@@ -25,6 +25,7 @@ const rendererGate = [
   await readFile(path.resolve("scripts/renderer-fixtures-navigation.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-overlays.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-primitives.ts"), "utf8"),
+  await readFile(path.resolve("scripts/renderer-fixtures-selection.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-text.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-toggle-group.ts"), "utf8"),
 ].join("\n");
