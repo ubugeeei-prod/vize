@@ -16,6 +16,7 @@ const rootDeterministicIdImportPattern =
   /from\s+["']\.\.\/\.\.\/\.\.\/deterministic-id(?:-provider)?\.(?:ts|vue)["']/u;
 const rehomedFoundationUtilities = ["context", "controllable-state"] as const;
 const foundationCompatibilityBarrels = [
+  ["command.ts", "./families/foundations/command/command.ts"],
   ["context.ts", "./families/foundations/context/context.ts"],
   ["controllable-state.ts", "./families/foundations/controllable-state/controllable-state.ts"],
   ["deterministic-id.ts", "./families/foundations/id/deterministic-id.ts"],
@@ -62,6 +63,25 @@ test("root foundation utilities stay compatibility-only barrels", () => {
 
     assert.equal(source, `export * from "${target}";`);
   }
+});
+
+test("rehomed command family is cataloged from a family directory", () => {
+  const family = foundationFamilyCatalog.find((entry) => entry.canonicalName === "command");
+  assert.ok(family);
+
+  const familyRoot = "src/families/foundations/command/";
+  assert.equal(family.entryFile, `${familyRoot}command.ts`);
+  assert.deepEqual(family.sourceFiles, [
+    `${familyRoot}command.ts`,
+    `${familyRoot}command-types.ts`,
+  ]);
+  assert.equal(family.behaviorContract, `${familyRoot}command.behavior.md`);
+  assert.deepEqual(family.tests, [
+    `${familyRoot}command.test.ts`,
+    `${familyRoot}command-ssr.test.ts`,
+  ]);
+  assert.deepEqual(family.typeTests, [`${familyRoot}command.types.test-d.ts`]);
+  assert.equal(family.rendererFixture, "CommandConsumer.vue");
 });
 
 test("rehomed disclosure families are cataloged from family directories", () => {

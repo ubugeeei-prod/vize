@@ -10,6 +10,7 @@ const fieldFamilyRoot = "src/families/form/field/";
 const fieldWiringFamilyRoot = "src/families/form/field-wiring/";
 const formFamilyRoot = "src/families/form/form/";
 const foundationFamilyRoot = "src/families/foundations/";
+const commandFamilyRoot = `${foundationFamilyRoot}command/`;
 const contextFamilyRoot = `${foundationFamilyRoot}context/`;
 const controllableStateFamilyRoot = `${foundationFamilyRoot}controllable-state/`;
 
@@ -48,11 +49,11 @@ export const foundationFamilyCatalog = [
     canonicalName: "command",
     title: "Command Router",
     packageSubpath: "./command",
-    entryFile: "src/command.ts",
-    sourceFiles: ["src/command.ts", "src/command-types.ts"],
-    behaviorContract: "src/command.behavior.md",
-    tests: ["src/command.test.ts", "src/command-ssr.test.ts"],
-    typeTests: ["src/command.types.test-d.ts"],
+    entryFile: `${commandFamilyRoot}command.ts`,
+    sourceFiles: [`${commandFamilyRoot}command.ts`, `${commandFamilyRoot}command-types.ts`],
+    behaviorContract: `${commandFamilyRoot}command.behavior.md`,
+    tests: [`${commandFamilyRoot}command.test.ts`, `${commandFamilyRoot}command-ssr.test.ts`],
+    typeTests: [`${commandFamilyRoot}command.types.test-d.ts`],
     rendererFixture: "CommandConsumer.vue",
     qualityGates: interactionQualityGates,
     bundleBudget: {

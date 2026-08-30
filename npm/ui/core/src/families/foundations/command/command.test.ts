@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { test } from "vite-plus/test";
 import { effectScope, ref } from "vue";
 
-import { createCommandRouter, useCommandRouter } from "./command.ts";
 import type { CommandDispatch, CommandExecution } from "./command.ts";
+import { createCommandRouter, useCommandRouter } from "./command.ts";
 
 test("routes a dispatch to the registered command with a frozen execution context", () => {
   const router = createCommandRouter<"save" | "open">();

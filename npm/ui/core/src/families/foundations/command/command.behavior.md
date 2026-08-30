@@ -1,8 +1,9 @@
 # Command behavior contract
 
 Normative state × input → outcome table for `@vizejs/ui/command`. Every row is
-exercised by `src/command*.test.ts`; compile-only assertions live in
-`src/command.types.test-d.ts`.
+exercised by `src/families/foundations/command/command.test.ts` or
+`src/families/foundations/command/command-ssr.test.ts`; compile-only assertions live in
+`src/families/foundations/command/command.types.test-d.ts`.
 
 | #   | State                     | Input                                 | Outcome                                                                 | Proven by             |
 | --- | ------------------------- | ------------------------------------- | ----------------------------------------------------------------------- | --------------------- |

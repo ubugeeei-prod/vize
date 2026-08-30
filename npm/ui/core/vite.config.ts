@@ -170,7 +170,7 @@ export default defineConfig({
       "field-wiring": "src/families/form/field-wiring/field-wiring.ts",
       form: "src/families/form/form/form.ts",
       catalog: "src/family-catalog.ts",
-      command: "src/command.ts",
+      command: "src/families/foundations/command/command.ts",
       history: "src/history.ts",
       id: "src/families/foundations/id/id.ts",
       "inert-outside": "src/families/accessibility/inert-outside/inert-outside.ts",
