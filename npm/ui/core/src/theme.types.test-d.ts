@@ -15,8 +15,10 @@ import type {
   ThemeElevationToken,
   ThemeFeedbackToneToken,
   ThemePresetName,
+  ThemePresetStylesheetSpecifier,
   ThemeRadiusToken,
   ThemeSpaceToken,
+  ThemeTokenStylesheetSpecifier,
   ThemeTokenPackName,
   ThemeTokenName,
   ThemeZIndexToken,
@@ -69,6 +71,11 @@ export const typeReference: string = themeTokenVar("type-size-md");
 export const densityReference: string = themeTokenVar("density");
 export const colorPack: readonly ThemeTokenName[] = themeTokensForPack("color");
 export const packName: ThemeTokenPackName = "typography";
+export const tokenStylesheet: ThemeTokenStylesheetSpecifier = "./theme.css";
+export const atelierStylesheet: ThemePresetStylesheetSpecifier<"atelier"> =
+  "./theme-preset-atelier.css";
+export const highContrastStylesheet: ThemePresetStylesheetSpecifier<"high-contrast"> =
+  "./theme-preset-high-contrast.css";
 
 type _TokenNamesAreClosed = Expect<
   Equal<
@@ -145,5 +152,10 @@ themeCascadeLayerOrder[0] = "vize.ui";
 setThemeTokens(document.createElement("div"), { "space-huge": "4rem" });
 // @ts-expect-error preset unions reject arbitrary strings.
 export const badPreset: ThemePresetName = "baroque";
+// @ts-expect-error preset stylesheet specifiers are tied to preset names.
+export const badPresetStylesheet: ThemePresetStylesheetSpecifier<"atelier"> =
+  "./theme-preset-paper.css";
+// @ts-expect-error the token stylesheet has one exact public subpath.
+export const badTokenStylesheet: ThemeTokenStylesheetSpecifier = "./style.css";
 // @ts-expect-error density unions reject arbitrary strings.
 export const badDensity: ThemeDensityScale = "cozy";

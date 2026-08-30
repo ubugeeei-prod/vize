@@ -6,6 +6,13 @@ import path from "node:path";
 import { test } from "vite-plus/test";
 
 import config, { cssBrowserFloor } from "../vite.config.ts";
+import { themePresets } from "./theme.ts";
+
+const publicCssAssets = [
+  "style.css",
+  "theme.css",
+  ...themePresets.map((name) => `theme-preset-${name}.css`),
+].sort();
 
 test("the package build declares an explicit browser floor for stylesheet lowering", () => {
   assert.ok(cssBrowserFloor.length >= 4, "the floor must name every evergreen engine");
@@ -74,8 +81,8 @@ test("scoped style semantics survive the down-compile", async () => {
 
 test("styles never arrive through runtime CSS-in-JS", async () => {
   const distFiles = await readdir(path.resolve("dist"));
-  const stylesheets = distFiles.filter((file) => file.endsWith(".css"));
-  assert.deepEqual(stylesheets, ["style.css"], "styles ship only as the opt-in stylesheet");
+  const stylesheets = distFiles.filter((file) => file.endsWith(".css")).sort();
+  assert.deepEqual(stylesheets, publicCssAssets, "styles ship only as opt-in CSS assets");
 
   for (const file of distFiles.filter((name) => name.endsWith(".mjs"))) {
     const output = await readFile(path.resolve("dist", file), "utf8");

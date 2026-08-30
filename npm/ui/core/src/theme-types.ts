@@ -97,6 +97,13 @@ export type ThemePresetName =
   | "signal"
   | "high-contrast";
 
+/** CSS-only package export that ships semantic tokens and accessibility policy. */
+export type ThemeTokenStylesheetSpecifier = "./theme.css";
+
+/** CSS-only package export for one opt-in visual preset. */
+export type ThemePresetStylesheetSpecifier<Name extends ThemePresetName = ThemePresetName> =
+  `./theme-preset-${Name}.css`;
+
 /** Density scopes accepted in the `data-vize-density` attribute. */
 export type ThemeDensityScale = "compact" | "comfortable";
 

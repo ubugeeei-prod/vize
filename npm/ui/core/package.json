@@ -530,6 +530,14 @@
       "default": "./dist/visually-hidden.mjs"
     },
     "./style.css": "./dist/style.css",
+    "./theme.css": "./dist/theme.css",
+    "./theme-preset-headless.css": "./dist/theme-preset-headless.css",
+    "./theme-preset-atelier.css": "./dist/theme-preset-atelier.css",
+    "./theme-preset-midnight.css": "./dist/theme-preset-midnight.css",
+    "./theme-preset-paper.css": "./dist/theme-preset-paper.css",
+    "./theme-preset-play.css": "./dist/theme-preset-play.css",
+    "./theme-preset-signal.css": "./dist/theme-preset-signal.css",
+    "./theme-preset-high-contrast.css": "./dist/theme-preset-high-contrast.css",
     "./media": {
       "types": "./dist/media.d.mts",
       "import": "./dist/media.mjs",

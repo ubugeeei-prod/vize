@@ -168,6 +168,30 @@ const utilityEntries = [
   },
 ];
 
+const cssOnlyEntries = [
+  {
+    name: "theme.css",
+    packageEntry: "@vizejs/ui/theme.css",
+    retainedSignature: /--vize-ui-color-canvas:Canvas/,
+    rejectedSignature: /data-vize-theme~=atelier/,
+    maximumCssGzipBytes: 1_450,
+  },
+  {
+    name: "theme-preset-atelier.css",
+    packageEntry: "@vizejs/ui/theme-preset-atelier.css",
+    retainedSignature: /data-vize-theme~=atelier/,
+    rejectedSignature: /--vize-ui-color-canvas:Canvas/,
+    maximumCssGzipBytes: 1_250,
+  },
+  {
+    name: "theme-preset-high-contrast.css",
+    packageEntry: "@vizejs/ui/theme-preset-high-contrast.css",
+    retainedSignature: /data-vize-theme~=high-contrast/,
+    rejectedSignature: /--vize-ui-color-canvas:Canvas/,
+    maximumCssGzipBytes: 900,
+  },
+];
+
 for (const {
   name,
   exportName,
@@ -196,6 +220,36 @@ for (const {
     output.javascriptGzipBytes <= maximumJavaScriptGzipBytes,
     `${name} JavaScript is ${output.javascriptGzipBytes} gzip bytes; budget is ${maximumJavaScriptGzipBytes}`,
   );
+  assert.ok(
+    output.cssGzipBytes <= maximumCssGzipBytes,
+    `${name} CSS is ${output.cssGzipBytes} gzip bytes; budget is ${maximumCssGzipBytes}`,
+  );
+}
+
+for (const {
+  name,
+  packageEntry,
+  retainedSignature,
+  rejectedSignature,
+  maximumCssGzipBytes,
+} of cssOnlyEntries) {
+  const output = await bundleConsumer(`import ${JSON.stringify(packageEntry)};`);
+  assert.equal(output.javascript.trim(), "", `${name} must not retain JavaScript runtime output`);
+  assert.match(output.css, retainedSignature, `${name} did not retain its CSS contract`);
+  assert.doesNotMatch(output.css, rejectedSignature, `${name} retained unrelated theme CSS`);
+
+  console.log(
+    JSON.stringify({
+      check: "@vizejs/ui css-only entry tree shaking",
+      entry: name,
+      javascriptBytes: output.javascriptBytes,
+      javascriptGzipBytes: output.javascriptGzipBytes,
+      cssBytes: output.cssBytes,
+      cssGzipBytes: output.cssGzipBytes,
+      maximumCssGzipBytes,
+    }),
+  );
+
   assert.ok(
     output.cssGzipBytes <= maximumCssGzipBytes,
     `${name} CSS is ${output.cssGzipBytes} gzip bytes; budget is ${maximumCssGzipBytes}`,

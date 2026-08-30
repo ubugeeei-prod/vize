@@ -1,4 +1,8 @@
+import { readFile } from "node:fs/promises";
+import { createRequire } from "node:module";
+
 import vue from "@vitejs/plugin-vue";
+import type { Plugin } from "vite";
 import { defineConfig } from "vite-plus";
 
 /**
@@ -14,6 +18,71 @@ import { defineConfig } from "vite-plus";
  * override it; `src/style-pipeline.test.ts` pins the observable output.
  */
 export const cssBrowserFloor = ["chrome111", "edge111", "firefox113", "safari16.4"];
+
+type ThemeStyleEntrypoint = {
+  readonly fileName: `${string}.css`;
+  readonly source: `src/${string}.css`;
+};
+
+type LightningCssModule = {
+  readonly browserslistToTargets: (queries: readonly string[]) => Record<string, number>;
+  readonly transform: (options: {
+    readonly filename: string;
+    readonly code: Uint8Array;
+    readonly minify: boolean;
+    readonly targets: Record<string, number>;
+  }) => { readonly code: Uint8Array };
+};
+
+const themeStyleEntrypoints = Object.freeze([
+  { fileName: "theme.css", source: "src/theme.css" },
+  { fileName: "theme-preset-headless.css", source: "src/theme-preset-headless.css" },
+  { fileName: "theme-preset-atelier.css", source: "src/theme-preset-atelier.css" },
+  { fileName: "theme-preset-midnight.css", source: "src/theme-preset-midnight.css" },
+  { fileName: "theme-preset-paper.css", source: "src/theme-preset-paper.css" },
+  { fileName: "theme-preset-play.css", source: "src/theme-preset-play.css" },
+  { fileName: "theme-preset-signal.css", source: "src/theme-preset-signal.css" },
+  { fileName: "theme-preset-high-contrast.css", source: "src/theme-preset-high-contrast.css" },
+] as const satisfies readonly ThemeStyleEntrypoint[]);
+const themeLayerPrelude = "@layer vize.tokens,vize.ui,vize.preset,vize.policy;";
+const browserTargetQueries = cssBrowserFloor.map((target) =>
+  target.replace(/^([a-z]+)(\d)/, "$1 $2"),
+);
+const require = createRequire(import.meta.url);
+const cssDecoder = new TextDecoder();
+
+function loadLightningCss(): LightningCssModule {
+  const cssRequire = createRequire(require.resolve("@tsdown/css/package.json"));
+  return cssRequire("lightningcss") as LightningCssModule;
+}
+
+function themeCssEntrypointPlugin(): Plugin {
+  return {
+    name: "vize-ui-theme-css-entrypoints",
+    async generateBundle() {
+      const { browserslistToTargets, transform } = loadLightningCss();
+      const targets = browserslistToTargets(browserTargetQueries);
+
+      await Promise.all(
+        themeStyleEntrypoints.map(async ({ fileName, source }) => {
+          const sourceCode = await readFile(new URL(source, import.meta.url));
+          const output = transform({
+            filename: source,
+            code: sourceCode,
+            minify: true,
+            targets,
+          });
+
+          this.emitFile({
+            type: "asset",
+            fileName,
+            source: `${themeLayerPrelude}${cssDecoder.decode(output.code)}`,
+          });
+        }),
+      );
+    },
+  };
+}
 
 export default defineConfig({
   plugins: [vue()],
@@ -134,7 +203,7 @@ export default defineConfig({
     },
     format: "esm",
     dts: { vue: true },
-    plugins: [vue()],
+    plugins: [vue(), themeCssEntrypointPlugin()],
     css: {
       inject: true,
       minify: true,
