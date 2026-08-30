@@ -2,6 +2,7 @@
 
 use alloc::vec::Vec as StdVec;
 
+use oxc_ast::ast::{ArrayExpressionElement, Expression, ObjectPropertyKind};
 use vize_s0::String;
 use vize_s2::op::{Attribute, BindingOp};
 
@@ -126,7 +127,8 @@ pub(super) fn bind_patch(
                 }
                 Ok(BindName::Static(raw_name)) => match raw_name {
                     "ref" => flag |= 512,
-                    "class" if !is_component => flag |= 2,
+                    "class" if !is_component && class_bind_needs_patch(bind) => flag |= 2,
+                    "class" if !is_component => {}
                     "style" if !is_component => flag |= 4,
                     "key" => {}
                     _ => {
@@ -196,6 +198,47 @@ pub(super) fn bind_patch(
     Patch {
         flag,
         dynamic_props,
+    }
+}
+
+fn class_bind_needs_patch(bind: &vize_s2::op::BindOp<'_>) -> bool {
+    js_value(bind).is_ok_and(|js| !is_static_class_expr(js.ast))
+}
+
+fn is_static_class_expr(expr: &Expression<'_>) -> bool {
+    match unwrap_expr(expr) {
+        Expression::StringLiteral(_)
+        | Expression::BooleanLiteral(_)
+        | Expression::NullLiteral(_)
+        | Expression::NumericLiteral(_)
+        | Expression::BigIntLiteral(_) => true,
+        Expression::TemplateLiteral(template) => template.expressions.is_empty(),
+        Expression::ArrayExpression(array) => array.elements.iter().all(static_class_array_element),
+        Expression::ObjectExpression(object) => object.properties.iter().all(|property| {
+            let ObjectPropertyKind::ObjectProperty(property) = property else {
+                return false;
+            };
+            !property.computed && is_static_class_expr(&property.value)
+        }),
+        _ => false,
+    }
+}
+
+fn static_class_array_element(element: &ArrayExpressionElement<'_>) -> bool {
+    element
+        .as_expression()
+        .is_some_and(|expr| is_static_class_expr(expr))
+}
+
+fn unwrap_expr<'a>(mut expr: &'a Expression<'a>) -> &'a Expression<'a> {
+    loop {
+        match expr {
+            Expression::ParenthesizedExpression(paren) => expr = &paren.expression,
+            Expression::TSAsExpression(ts_as) => expr = &ts_as.expression,
+            Expression::TSNonNullExpression(ts_non_null) => expr = &ts_non_null.expression,
+            Expression::TSSatisfiesExpression(ts_satisfies) => expr = &ts_satisfies.expression,
+            _ => return expr,
+        }
     }
 }
 
