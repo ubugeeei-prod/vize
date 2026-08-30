@@ -72,7 +72,8 @@ import { typecheckCorpusGlobs } from "./tool-matrix-command.mjs";
  * `.nuxt/imports.d.ts` and `docs/.vitepress/utils.ts`, while literal
  * `<fixture>/.nuxt/**` or `<fixture>/docs/.vitepress/**` matches them. The
  * source config's own directory and every checked-file dot ancestor are therefore
- * globbed by name.
+ * globbed by name. Installed package manager internals stay excluded even when
+ * Vize reports a dependency path under `node_modules/.pnpm`.
  */
 export function materializeBaselineProject(fixtureRoot, reportDir, project, vizeReport) {
   const sourceProject = project.typecheckPerformance?.baseline?.tsconfig ?? project.tsconfig;
@@ -264,11 +265,19 @@ function dotDirectoryIncludeRoots(fixtureRoot, vizeReport) {
     const segments = entry.file.replaceAll("\\", "/").split("/");
     for (let index = 0; index < segments.length - 1; index += 1) {
       const segment = segments[index];
-      if (!segment.startsWith(".") || segment === "." || segment === "..") continue;
+      if (!isDotDirectory(segment)) continue;
+      if (hasAncestorSegment(segments, index, "node_modules")) continue;
       roots.push(resolve(fixtureRoot, ...segments.slice(0, index + 1)));
     }
   }
   return roots;
+}
+
+function hasAncestorSegment(segments, end, expected) {
+  for (let index = 0; index < end; index += 1) {
+    if (segments[index] === expected) return true;
+  }
+  return false;
 }
 
 function discoverDotDirectoryIncludeRoots(sourceRoots) {

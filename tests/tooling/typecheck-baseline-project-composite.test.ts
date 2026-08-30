@@ -155,6 +155,57 @@ test("materialized baseline include roots follow corpusGlobs instead of sibling 
   }
 });
 
+test("materialized baseline ignores pnpm store dot roots reported from node_modules", () => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), "vize-pnpm-store-baseline-"));
+  const fixtureRoot = path.join(temp, "fixture");
+  const reportDir = path.join(temp, "report");
+  const pnpmVue = "node_modules/.pnpm/vue@3.6.0-beta.10/node_modules/vue/dist/vue.d.ts";
+  const nestedPnpmHelper =
+    "packages/web/node_modules/.pnpm/helper@1.0.0/node_modules/helper/.vitepress/helper.ts";
+  fs.mkdirSync(path.join(fixtureRoot, "apps/showcase/.nuxt"), { recursive: true });
+  fs.mkdirSync(path.dirname(path.join(fixtureRoot, pnpmVue)), { recursive: true });
+  fs.mkdirSync(path.dirname(path.join(fixtureRoot, nestedPnpmHelper)), { recursive: true });
+  fs.mkdirSync(reportDir);
+  fs.writeFileSync(path.join(fixtureRoot, "tsconfig.json"), "{}\n");
+  fs.writeFileSync(path.join(fixtureRoot, "apps/showcase/App.vue"), "<template />\n");
+  fs.writeFileSync(
+    path.join(fixtureRoot, "apps/showcase/.nuxt/imports.d.ts"),
+    "declare const nuxtImport: string;\n",
+  );
+  fs.writeFileSync(path.join(fixtureRoot, pnpmVue), "export {};\n");
+  fs.writeFileSync(path.join(fixtureRoot, nestedPnpmHelper), "export const helper = true;\n");
+  try {
+    const project = materializeBaselineProject(
+      fixtureRoot,
+      reportDir,
+      {
+        id: "fixture",
+        tsconfig: "tsconfig.json",
+        typecheckPerformance: { corpusGlobs: ["apps/showcase/**/*.vue"] },
+      },
+      {
+        fileCount: 4,
+        files: [
+          { file: "apps/showcase/App.vue" },
+          { file: "apps/showcase/.nuxt/imports.d.ts" },
+          { file: pnpmVue },
+          { file: nestedPnpmHelper },
+        ],
+      },
+    );
+    const config = JSON.parse(project.source);
+    assert.equal(config.include.includes("../apps/showcase/.nuxt/**/*.d.ts"), true);
+    assert.equal(config.include.includes("../apps/showcase/.nuxt/**/*.ts"), true);
+    assert.equal(config.include.includes("../apps/showcase/.nuxt/**/*.vue"), true);
+    assert.deepEqual(
+      config.include.filter((include: string) => include.includes("node_modules/.pnpm")),
+      [],
+    );
+  } finally {
+    fs.rmSync(temp, { recursive: true, force: true });
+  }
+});
+
 test(
   "materialized baseline keeps sibling app declarations out of package-local typecheck",
   vueTscOptions,
