@@ -74,6 +74,11 @@
       "import": "./dist/breadcrumb.mjs",
       "default": "./dist/breadcrumb.mjs"
     },
+    "./tabs": {
+      "types": "./dist/tabs.d.mts",
+      "import": "./dist/tabs.mjs",
+      "default": "./dist/tabs.mjs"
+    },
     "./card": {
       "types": "./dist/card.d.mts",
       "import": "./dist/card.mjs",

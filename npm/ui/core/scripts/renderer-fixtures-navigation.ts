@@ -26,4 +26,22 @@ import {
 </template>
 `,
   },
+  {
+    filename: "TabsConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { TabsContent, TabsList, TabsRoot, TabsTrigger } from "./tabs.ts";
+</script>
+
+<template>
+  <TabsRoot default-value="overview">
+    <TabsList aria-label="Sections">
+      <TabsTrigger value="overview">Overview</TabsTrigger>
+      <TabsTrigger value="activity">Activity</TabsTrigger>
+    </TabsList>
+    <TabsContent value="overview">Overview panel</TabsContent>
+    <TabsContent value="activity">Activity panel</TabsContent>
+  </TabsRoot>
+</template>
+`,
+  },
 ] as const;

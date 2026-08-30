@@ -22,6 +22,7 @@ import { fieldRuntimeFixtures } from "./runtime-conformance-field-fixtures.ts";
 import { progressRuntimeFixture } from "./runtime-conformance-progress-fixtures.ts";
 import { radioGroupRuntimeFixtures } from "./runtime-conformance-radio-group-fixtures.ts";
 import { switchRuntimeFixture } from "./runtime-conformance-switch-fixtures.ts";
+import { tabsRuntimeFixtures } from "./runtime-conformance-tabs-fixtures.ts";
 import SearchField from "./search-field.vue";
 import TextInput from "./text-input.vue";
 import TextareaControl from "./textarea-control.vue";
@@ -53,6 +54,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   badgeRuntimeFixture,
   blockUIRuntimeFixture,
   ...breadcrumbRuntimeFixtures,
+  ...tabsRuntimeFixtures,
   emptyStateRuntimeFixture,
   ...collapsibleRuntimeFixtures,
   ...layoutRuntimeFixtures,

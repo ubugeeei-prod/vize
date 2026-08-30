@@ -39,6 +39,7 @@ export default defineConfig({
       "block-ui": "src/block-ui.ts",
       blockquote: "src/blockquote.ts",
       breadcrumb: "src/breadcrumb.ts",
+      tabs: "src/tabs.ts",
       card: "src/card.ts",
       code: "src/code.ts",
       cluster: "src/cluster.ts",
