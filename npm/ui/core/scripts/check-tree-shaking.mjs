@@ -118,6 +118,7 @@ for (const { canonicalName: family, bundleBudget } of treeShakingEntries) {
   // style.css); unstyled families must not retain any CSS at all.
   const styledFamilySignatures = new Map([
     ["motion", /--vize-ui-motion-duration-fast/],
+    ["scroll-area", /--vize-ui-scroll-area-overflow-y/],
     ["theme", /--vize-ui-color-canvas/],
     ["visually-hidden", /clip-path:inset\(50%\)/],
   ]);

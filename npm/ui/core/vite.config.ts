@@ -65,6 +65,7 @@ export default defineConfig({
       separator: "src/separator.ts",
       spacer: "src/spacer.ts",
       stack: "src/stack.ts",
+      "scroll-area": "src/families/layout/scroll-area/scroll-area.ts",
       surface: "src/families/layout/surface/surface.ts",
       skeleton: "src/skeleton.ts",
       meter: "src/meter.ts",

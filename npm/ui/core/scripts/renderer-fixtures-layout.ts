@@ -91,6 +91,33 @@ const axis = ref<"block" | "inline">("inline");
 `,
   },
   {
+    filename: "ScrollAreaConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { ScrollArea } from "./families/layout/scroll-area/scroll-area.ts";
+
+const orientation = ref<"vertical" | "horizontal" | "both">("both");
+</script>
+
+<template>
+  <ScrollArea
+    aria-label="Activity"
+    block-size="12rem"
+    dir="rtl"
+    focusable
+    :orientation
+    overscroll-behavior="contain"
+    scrollbar-gutter="stable"
+    scrollbar-width="thin"
+  >
+    <template #default="{ dir, overflowX, overflowY }">
+      <p>{{ dir }} {{ overflowX }} {{ overflowY }}</p>
+    </template>
+  </ScrollArea>
+</template>
+`,
+  },
+  {
     filename: "SurfaceConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

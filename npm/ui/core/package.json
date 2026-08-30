@@ -204,6 +204,11 @@
       "import": "./dist/stack.mjs",
       "default": "./dist/stack.mjs"
     },
+    "./scroll-area": {
+      "types": "./dist/scroll-area.d.mts",
+      "import": "./dist/scroll-area.mjs",
+      "default": "./dist/scroll-area.mjs"
+    },
     "./surface": {
       "types": "./dist/surface.d.mts",
       "import": "./dist/surface.mjs",

@@ -6,6 +6,7 @@ import {
 import { avatarLayoutFamilyCatalog } from "./family-catalog-layout-avatar.ts";
 import { iconLayoutFamilyCatalog } from "./family-catalog-layout-icon.ts";
 import { listLayoutFamilyCatalog } from "./family-catalog-layout-list.ts";
+import { scrollAreaLayoutFamilyCatalog } from "./family-catalog-layout-scroll-area.ts";
 import { surfaceLayoutFamilyCatalog } from "./family-catalog-layout-surface.ts";
 
 export const layoutFamilyCatalog = [
@@ -188,6 +189,7 @@ export const layoutFamilyCatalog = [
     owner: catalogOwner,
   },
   ...listLayoutFamilyCatalog,
+  ...scrollAreaLayoutFamilyCatalog,
   {
     canonicalName: "separator",
     title: "Separator",

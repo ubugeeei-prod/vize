@@ -11,6 +11,7 @@ import { headingRuntimeFixture } from "./runtime-conformance-heading-fixtures.ts
 import { iconRuntimeFixtures } from "./families/layout/icon/runtime-conformance-icon-fixtures.ts";
 import { kbdRuntimeFixture } from "./runtime-conformance-kbd-fixtures.ts";
 import { listRuntimeFixture } from "./runtime-conformance-list-fixtures.ts";
+import { scrollAreaRuntimeFixture } from "./families/layout/scroll-area/runtime-conformance-scroll-area-fixtures.ts";
 import { separatorRuntimeFixture } from "./runtime-conformance-separator-fixtures.ts";
 import { skeletonRuntimeFixture } from "./runtime-conformance-skeleton-fixtures.ts";
 import { spacerRuntimeFixture } from "./runtime-conformance-spacer-fixtures.ts";
@@ -31,6 +32,7 @@ export const layoutRuntimeFixtures: readonly RuntimeFixture[] = [
   ...iconRuntimeFixtures,
   kbdRuntimeFixture,
   listRuntimeFixture,
+  scrollAreaRuntimeFixture,
   separatorRuntimeFixture,
   skeletonRuntimeFixture,
   spacerRuntimeFixture,

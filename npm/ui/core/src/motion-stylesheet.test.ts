@@ -121,9 +121,14 @@ test("ships the starting-style and scroll-driven recipes verbatim", () => {
 });
 
 test("zeroes packaged motion under reduced motion", () => {
-  const start = stylesheet.indexOf("@media (prefers-reduced-motion:reduce)");
+  const start = stylesheet.indexOf("@media (prefers-reduced-motion:reduce){:where(:root,:host)");
   assert.ok(start >= 0, "the reduced-motion policy block must ship");
-  const block = stylesheet.slice(start, stylesheet.indexOf("@media (forced-colors:active)"));
+  const end = stylesheet.indexOf("@media (forced-colors:active)", start);
+  assert.ok(
+    end > start,
+    "the reduced-motion policy block must precede the motion forced-colors block",
+  );
+  const block = stylesheet.slice(start, end);
 
   for (const token of Object.keys(motionDurations)) {
     assert.match(block, new RegExp(`--vize-ui-motion-duration-${token}:0s`));
@@ -140,7 +145,7 @@ test("zeroes packaged motion under reduced motion", () => {
 });
 
 test("stands down under forced colors", () => {
-  const start = stylesheet.indexOf("@media (forced-colors:active)");
+  const start = stylesheet.indexOf("@media (forced-colors:active){:where([data-vize-motion])");
   assert.ok(start >= 0, "the forced-colors policy block must ship");
   assert.match(
     stylesheet.slice(start),

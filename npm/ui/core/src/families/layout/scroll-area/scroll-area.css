@@ -1,0 +1,49 @@
+/*
+ * Native ScrollArea behavior CSS.
+ *
+ * The component stays headless: these rules only establish the scroll
+ * viewport, logical sizing, and accessibility policy hooks. Selectors use
+ * :where() so consumers override the contract without specificity fights.
+ */
+
+@layer vize.ui {
+  :where([data-vize-ui="scroll-area"]) {
+    box-sizing: border-box;
+    display: block;
+    inline-size: var(--vize-ui-scroll-area-inline-size, auto);
+    block-size: var(--vize-ui-scroll-area-block-size, auto);
+    max-inline-size: var(--vize-ui-scroll-area-max-inline-size, none);
+    max-block-size: var(--vize-ui-scroll-area-max-block-size, none);
+    min-inline-size: 0;
+    min-block-size: 0;
+  }
+
+  :where([data-vize-ui="scroll-area-viewport"]) {
+    box-sizing: border-box;
+    inline-size: 100%;
+    block-size: 100%;
+    max-inline-size: var(--vize-ui-scroll-area-max-inline-size, none);
+    max-block-size: var(--vize-ui-scroll-area-max-block-size, none);
+    min-inline-size: 0;
+    min-block-size: 0;
+    overflow-x: var(--vize-ui-scroll-area-overflow-x, hidden);
+    overflow-y: var(--vize-ui-scroll-area-overflow-y, auto);
+    overscroll-behavior: var(--vize-ui-scroll-area-overscroll-behavior, auto);
+    scroll-behavior: var(--vize-ui-scroll-area-scroll-behavior, auto);
+    scrollbar-gutter: var(--vize-ui-scroll-area-scrollbar-gutter, auto);
+    scrollbar-width: var(--vize-ui-scroll-area-scrollbar-width, auto);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-vize-ui="scroll-area-viewport"]) {
+      scroll-behavior: auto;
+    }
+  }
+
+  @media (forced-colors: active) {
+    :where([data-vize-ui="scroll-area-viewport"]) {
+      scrollbar-color: auto;
+      scrollbar-width: auto;
+    }
+  }
+}
