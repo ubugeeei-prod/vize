@@ -87,6 +87,24 @@ const blocked = ref(true);
 `,
   },
   {
+    filename: "BlockquoteConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { Blockquote } from "./blockquote.ts";
+
+const cite = ref("https://example.com/source");
+</script>
+
+<template>
+  <Blockquote :cite size="lg" tone="muted">
+    <template #default="{ cite: source, size, tone }">
+      {{ size }} {{ tone }} {{ source }}
+    </template>
+  </Blockquote>
+</template>
+`,
+  },
+  {
     filename: "CardConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

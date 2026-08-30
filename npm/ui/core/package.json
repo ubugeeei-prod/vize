@@ -59,6 +59,11 @@
       "import": "./dist/block-ui.mjs",
       "default": "./dist/block-ui.mjs"
     },
+    "./blockquote": {
+      "types": "./dist/blockquote.d.mts",
+      "import": "./dist/blockquote.mjs",
+      "default": "./dist/blockquote.mjs"
+    },
     "./card": {
       "types": "./dist/card.d.mts",
       "import": "./dist/card.mjs",

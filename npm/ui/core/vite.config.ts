@@ -36,6 +36,7 @@ export default defineConfig({
       "aspect-ratio": "src/aspect-ratio.ts",
       badge: "src/badge.ts",
       "block-ui": "src/block-ui.ts",
+      blockquote: "src/blockquote.ts",
       card: "src/card.ts",
       code: "src/code.ts",
       cluster: "src/cluster.ts",

@@ -1,5 +1,6 @@
 import type { RuntimeFixture } from "./runtime-conformance-fixtures.ts";
 import { aspectRatioRuntimeFixture } from "./runtime-conformance-aspect-ratio-fixtures.ts";
+import { blockquoteRuntimeFixture } from "./runtime-conformance-blockquote-fixtures.ts";
 import { cardRuntimeFixture } from "./runtime-conformance-card-fixtures.ts";
 import { clusterRuntimeFixture } from "./runtime-conformance-cluster-fixtures.ts";
 import { codeRuntimeFixture } from "./runtime-conformance-code-fixtures.ts";
@@ -15,6 +16,7 @@ import { textRuntimeFixture } from "./runtime-conformance-text-fixtures.ts";
 
 export const layoutRuntimeFixtures: readonly RuntimeFixture[] = [
   aspectRatioRuntimeFixture,
+  blockquoteRuntimeFixture,
   cardRuntimeFixture,
   clusterRuntimeFixture,
   codeRuntimeFixture,
