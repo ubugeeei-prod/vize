@@ -5,10 +5,26 @@ import path from "node:path";
 
 import { test } from "vite-plus/test";
 
-import { themeCascadeLayerOrder, themeDensityScales, themePresets, themeTokens } from "./theme.ts";
+import {
+  themeCascadeLayerOrder,
+  themeDensityScales,
+  themePresets,
+  themeTokens,
+  themeTokensForPack,
+} from "./theme.ts";
 
 const stylesheet = await readFile(path.resolve("dist/style.css"), "utf8");
+const sourcePresetStylesheets = new Map(
+  await Promise.all(
+    themePresets.map(async (name) => [
+      name,
+      await readFile(path.resolve(`src/theme-preset-${name}.css`), "utf8"),
+    ]),
+  ),
+);
 const opinionatedThemePresets = themePresets.filter((name) => name !== "headless");
+const semanticColorTokens = themeTokensForPack("color");
+const elevationTokens = themeTokensForPack("elevation");
 
 const layerStarts = new Map(
   themeCascadeLayerOrder.map((layer) => [layer, stylesheet.indexOf(`@layer ${layer}{`)]),
@@ -108,6 +124,12 @@ function shippedPresetRule(name: (typeof themePresets)[number]): string {
   return match[1];
 }
 
+function sourcePresetStylesheet(name: (typeof themePresets)[number]): string {
+  const source = sourcePresetStylesheets.get(name);
+  assert.ok(source, `src/theme-preset-${name}.css must exist`);
+  return source;
+}
+
 test("scopes published presets to their opt-in attributes", () => {
   const preset = layerBlock("vize.preset");
 
@@ -127,6 +149,36 @@ test("scopes published presets to their opt-in attributes", () => {
     /:where\(:root,:host\)/,
     "presets must never assign tokens outside their opt-in scope",
   );
+});
+
+test("keeps every opinionated preset on the complete semantic color matrix", () => {
+  for (const name of opinionatedThemePresets) {
+    const source = sourcePresetStylesheet(name);
+
+    // source-contract: preset layer ownership is authored before CSS floor lowering.
+    assert.match(source, /@layer\s+vize\.preset/);
+    // source-contract: preset scoping is authored before CSS floor lowering.
+    assert.match(source, new RegExp(`data-vize-theme~="${name}"`));
+    // source-contract: color-scheme pairing is authored before CSS floor lowering.
+    assert.match(source, /color-scheme:\s*light dark;/);
+
+    for (const token of semanticColorTokens) {
+      assert.match(
+        source,
+        new RegExp(`--vize-ui-${token}:\\s*light-dark\\(`),
+        `${name} must ship scheme-aware ${token}`,
+      );
+    }
+
+    for (const token of elevationTokens) {
+      // source-contract: elevation completeness is authored source policy.
+      assert.match(source, new RegExp(`--vize-ui-${token}:`), `${name} must assign ${token}`);
+    }
+  }
+
+  const headless = sourcePresetStylesheet("headless");
+  assert.match(headless, /color-scheme:\s*light dark;/);
+  assert.doesNotMatch(headless, /--vize-ui-/, "headless must remain a no-token preset");
 });
 
 test("lowers preset color schemes to the declared floor", () => {
@@ -157,6 +209,24 @@ test("lowers preset color schemes to the declared floor", () => {
     /--vize-ui-color-border:var\(--lightningcss-light,oklch\(88\.5% \.003 255\)\)/,
   );
   assert.match(preset, /--vize-ui-color-text-muted:var\(--lightningcss-light,oklab\(/);
+});
+
+test("keeps the forced-colors policy above the complete visual token surface", () => {
+  const policy = layerBlock("vize.policy");
+  const presetLayerIndex = layerStarts.get("vize.preset");
+  const policyLayerIndex = layerStarts.get("vize.policy");
+
+  assert.ok(
+    presetLayerIndex !== undefined &&
+      policyLayerIndex !== undefined &&
+      presetLayerIndex < policyLayerIndex,
+    "forced-colors policy must ship after every preset",
+  );
+
+  for (const token of [...semanticColorTokens, ...elevationTokens]) {
+    assert.match(policy, new RegExp(`--vize-ui-${token}:`), `policy must cover ${token}`);
+  }
+  assert.match(policy, /--vize-ui-focus-ring-color:Highlight[;}]/);
 });
 
 test("stands down to system colors under forced colors", () => {
