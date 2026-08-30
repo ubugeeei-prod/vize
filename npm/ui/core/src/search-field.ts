@@ -1,2 +1,1 @@
-export { default as SearchField } from "./search-field.vue";
-export type * from "./search-field-types.ts";
+export * from "./families/form/search-field/search-field.ts";

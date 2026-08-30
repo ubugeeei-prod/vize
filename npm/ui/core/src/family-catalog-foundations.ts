@@ -6,6 +6,10 @@ import {
   type UiFamilyCatalogEntry,
 } from "./family-catalog-types.ts";
 
+const fieldFamilyRoot = "src/families/form/field/";
+const fieldWiringFamilyRoot = "src/families/form/field-wiring/";
+const formFamilyRoot = "src/families/form/form/";
+
 export const foundationFamilyCatalog = [
   {
     canonicalName: "collection",
@@ -170,19 +174,19 @@ export const foundationFamilyCatalog = [
     canonicalName: "field",
     title: "Field",
     packageSubpath: "./field",
-    entryFile: "src/field.ts",
+    entryFile: `${fieldFamilyRoot}field.ts`,
     sourceFiles: [
-      "src/field.vue",
-      "src/field-description.vue",
-      "src/field-error-message.vue",
-      "src/field-label.vue",
-      "src/field.ts",
-      "src/field-context.ts",
-      "src/field-types.ts",
+      `${fieldFamilyRoot}field.vue`,
+      `${fieldFamilyRoot}field-description.vue`,
+      `${fieldFamilyRoot}field-error-message.vue`,
+      `${fieldFamilyRoot}field-label.vue`,
+      `${fieldFamilyRoot}field.ts`,
+      `${fieldFamilyRoot}field-context.ts`,
+      `${fieldFamilyRoot}field-types.ts`,
     ],
-    behaviorContract: "src/field.behavior.md",
-    tests: ["src/field.test.ts", "src/field-ssr.test.ts"],
-    typeTests: ["src/field.types.test-d.ts"],
+    behaviorContract: `${fieldFamilyRoot}field.behavior.md`,
+    tests: [`${fieldFamilyRoot}field.test.ts`, `${fieldFamilyRoot}field-ssr.test.ts`],
+    typeTests: [`${fieldFamilyRoot}field.types.test-d.ts`],
     rendererFixture: "FieldConsumer.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {
@@ -202,15 +206,18 @@ export const foundationFamilyCatalog = [
     canonicalName: "field-wiring",
     title: "Field Wiring",
     packageSubpath: "./field-wiring",
-    entryFile: "src/field-wiring.ts",
+    entryFile: `${fieldWiringFamilyRoot}field-wiring.ts`,
     sourceFiles: [
-      "src/field-wiring.ts",
-      "src/field-wiring-runtime.ts",
-      "src/field-wiring-types.ts",
+      `${fieldWiringFamilyRoot}field-wiring.ts`,
+      `${fieldWiringFamilyRoot}field-wiring-runtime.ts`,
+      `${fieldWiringFamilyRoot}field-wiring-types.ts`,
     ],
-    behaviorContract: "src/field-wiring.behavior.md",
-    tests: ["src/field-wiring.test.ts", "src/field-wiring-ssr.test.ts"],
-    typeTests: ["src/field-wiring.types.test-d.ts"],
+    behaviorContract: `${fieldWiringFamilyRoot}field-wiring.behavior.md`,
+    tests: [
+      `${fieldWiringFamilyRoot}field-wiring.test.ts`,
+      `${fieldWiringFamilyRoot}field-wiring-ssr.test.ts`,
+    ],
+    typeTests: [`${fieldWiringFamilyRoot}field-wiring.types.test-d.ts`],
     rendererFixture: "FieldWiringConsumer.vue",
     qualityGates: interactionQualityGates,
     bundleBudget: {
@@ -229,11 +236,15 @@ export const foundationFamilyCatalog = [
     canonicalName: "form",
     title: "Standard Schema Forms",
     packageSubpath: "./form",
-    entryFile: "src/form.ts",
-    sourceFiles: ["src/form.ts", "src/form-runtime.ts", "src/form-types.ts"],
-    behaviorContract: "src/form.behavior.md",
-    tests: ["src/form.test.ts"],
-    typeTests: ["src/form.types.test-d.ts"],
+    entryFile: `${formFamilyRoot}form.ts`,
+    sourceFiles: [
+      `${formFamilyRoot}form.ts`,
+      `${formFamilyRoot}form-runtime.ts`,
+      `${formFamilyRoot}form-types.ts`,
+    ],
+    behaviorContract: `${formFamilyRoot}form.behavior.md`,
+    tests: [`${formFamilyRoot}form.test.ts`],
+    typeTests: [`${formFamilyRoot}form.types.test-d.ts`],
     qualityGates: stableQualityGates,
     bundleBudget: {
       exportName: "validateStandardSchema",

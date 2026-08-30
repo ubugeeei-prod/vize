@@ -4,6 +4,10 @@ import {
   type UiFamilyCatalogEntry,
 } from "./family-catalog-types.ts";
 
+const inputFamilyRoot = "src/families/form/input/";
+const searchFieldFamilyRoot = "src/families/form/search-field/";
+const textareaFamilyRoot = "src/families/form/textarea/";
+
 export const basicFamilyCatalog = [
   {
     canonicalName: "collapsible",
@@ -122,12 +126,16 @@ export const basicFamilyCatalog = [
     canonicalName: "input",
     title: "Input",
     packageSubpath: "./input",
-    entryFile: "src/input.ts",
-    sourceFiles: ["src/text-input.vue", "src/input.ts", "src/input-types.ts"],
-    behaviorContract: "src/input.behavior.md",
-    tests: ["src/input.test.ts"],
-    typeTests: ["src/input.types.test-d.ts"],
-    rendererFixture: "text-input.vue",
+    entryFile: `${inputFamilyRoot}input.ts`,
+    sourceFiles: [
+      `${inputFamilyRoot}text-input.vue`,
+      `${inputFamilyRoot}input.ts`,
+      `${inputFamilyRoot}input-types.ts`,
+    ],
+    behaviorContract: `${inputFamilyRoot}input.behavior.md`,
+    tests: [`${inputFamilyRoot}input.test.ts`],
+    typeTests: [`${inputFamilyRoot}input.types.test-d.ts`],
+    rendererFixture: "families/form/input/text-input.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {
       exportName: "Input",
@@ -146,12 +154,16 @@ export const basicFamilyCatalog = [
     canonicalName: "search-field",
     title: "Search Field",
     packageSubpath: "./search-field",
-    entryFile: "src/search-field.ts",
-    sourceFiles: ["src/search-field.vue", "src/search-field.ts", "src/search-field-types.ts"],
-    behaviorContract: "src/search-field.behavior.md",
-    tests: ["src/search-field.test.ts"],
-    typeTests: ["src/search-field.types.test-d.ts"],
-    rendererFixture: "search-field.vue",
+    entryFile: `${searchFieldFamilyRoot}search-field.ts`,
+    sourceFiles: [
+      `${searchFieldFamilyRoot}search-field.vue`,
+      `${searchFieldFamilyRoot}search-field.ts`,
+      `${searchFieldFamilyRoot}search-field-types.ts`,
+    ],
+    behaviorContract: `${searchFieldFamilyRoot}search-field.behavior.md`,
+    tests: [`${searchFieldFamilyRoot}search-field.test.ts`],
+    typeTests: [`${searchFieldFamilyRoot}search-field.types.test-d.ts`],
+    rendererFixture: "families/form/search-field/search-field.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {
       exportName: "SearchField",
@@ -205,12 +217,16 @@ export const basicFamilyCatalog = [
     canonicalName: "textarea",
     title: "Textarea",
     packageSubpath: "./textarea",
-    entryFile: "src/textarea.ts",
-    sourceFiles: ["src/textarea-control.vue", "src/textarea.ts", "src/textarea-types.ts"],
-    behaviorContract: "src/textarea.behavior.md",
-    tests: ["src/textarea.test.ts"],
-    typeTests: ["src/textarea.types.test-d.ts"],
-    rendererFixture: "textarea-control.vue",
+    entryFile: `${textareaFamilyRoot}textarea.ts`,
+    sourceFiles: [
+      `${textareaFamilyRoot}textarea-control.vue`,
+      `${textareaFamilyRoot}textarea.ts`,
+      `${textareaFamilyRoot}textarea-types.ts`,
+    ],
+    behaviorContract: `${textareaFamilyRoot}textarea.behavior.md`,
+    tests: [`${textareaFamilyRoot}textarea.test.ts`],
+    typeTests: [`${textareaFamilyRoot}textarea.types.test-d.ts`],
+    rendererFixture: "families/form/textarea/textarea-control.vue",
     qualityGates: componentQualityGates,
     bundleBudget: {
       exportName: "Textarea",

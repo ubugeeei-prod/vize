@@ -31,7 +31,7 @@ import { fullscreenButtonRuntimeFixture } from "./families/actions/fullscreen-bu
 import { printButtonRuntimeFixture } from "./families/actions/print-button/runtime-conformance-print-button-fixtures.ts";
 import { shareButtonRuntimeFixture } from "./families/actions/share-button/runtime-conformance-share-button-fixtures.ts";
 import { toolbarRuntimeFixtures } from "./families/actions/toolbar/runtime-conformance-toolbar-fixtures.ts";
-import { fieldRuntimeFixtures } from "./runtime-conformance-field-fixtures.ts";
+import { fieldRuntimeFixtures } from "./families/form/field/runtime-conformance-field-fixtures.ts";
 import { progressBarRuntimeFixture } from "./families/feedback/progress-bar/runtime-conformance-progress-bar-fixtures.ts";
 import { progressRuntimeFixture } from "./families/feedback/progress/runtime-conformance-progress-fixtures.ts";
 import { radioGroupRuntimeFixtures } from "./runtime-conformance-radio-group-fixtures.ts";
@@ -42,9 +42,9 @@ import { statusLightRuntimeFixture } from "./families/feedback/status-light/runt
 import { stepperRuntimeFixtures } from "./runtime-conformance-stepper-fixtures.ts";
 import { switchRuntimeFixture } from "./runtime-conformance-switch-fixtures.ts";
 import { tabsRuntimeFixtures } from "./runtime-conformance-tabs-fixtures.ts";
-import SearchField from "./search-field.vue";
-import TextInput from "./text-input.vue";
-import TextareaControl from "./textarea-control.vue";
+import TextInput from "./families/form/input/text-input.vue";
+import SearchField from "./families/form/search-field/search-field.vue";
+import TextareaControl from "./families/form/textarea/textarea-control.vue";
 import { toggleRuntimeFixtures } from "./runtime-conformance-toggle-fixtures.ts";
 import { typographyRuntimeFixtures } from "./runtime-conformance-typography-fixtures.ts";
 import VisuallyHidden from "./visually-hidden.vue";
@@ -225,7 +225,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "input",
-    sourceFile: "text-input.vue",
+    sourceFile: "families/form/input/text-input.vue",
     render: () =>
       h(TextInput, {
         ariaLabel: "Email",
@@ -257,7 +257,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   },
   {
     name: "textarea",
-    sourceFile: "textarea-control.vue",
+    sourceFile: "families/form/textarea/textarea-control.vue",
     render: () =>
       h(TextareaControl, {
         ariaLabel: "Bio",
@@ -291,7 +291,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   sliderRuntimeFixture,
   {
     name: "search-field",
-    sourceFile: "search-field.vue",
+    sourceFile: "families/form/search-field/search-field.vue",
     render: () =>
       h(SearchField, {
         ariaLabel: "Search",

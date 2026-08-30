@@ -1,7 +1,7 @@
 // field-wiring stays first: it reaches the shared deterministic-id module
 // without any SFC, keeping module order identical between the root bundle and
 // the id/error-summary subpath bundles for the byte-equality packaging gate.
-export * from "./field-wiring.ts";
+export * from "./families/form/field-wiring/field-wiring.ts";
 // theme stays second: packaged CSS concatenates in index module order, and
 // the cascade-layer order statement in src/theme.css must lead dist/style.css
 // so the layer contract is established before any layered rule;
@@ -48,10 +48,10 @@ export * from "./toggle.ts";
 export * from "./toggle-group.ts";
 export * from "./families/overlays/popover/popover.ts";
 export * from "./families/overlays/tooltip/tooltip.ts";
-export * from "./input.ts";
+export * from "./families/form/input/input.ts";
 export * from "./radio-group.ts";
 export * from "./families/form/rating/rating.ts";
-export * from "./search-field.ts";
+export * from "./families/form/search-field/search-field.ts";
 export * from "./families/form/slider/slider.ts";
 export * from "./separator.ts";
 export * from "./spacer.ts";
@@ -67,14 +67,14 @@ export * from "./list.ts";
 export * from "./listbox.ts";
 export * from "./pagination.ts";
 export * from "./text.ts";
-export * from "./textarea.ts";
+export * from "./families/form/textarea/textarea.ts";
 export * from "./switch.ts";
 export * from "./command.ts";
 export * from "./dismissable-layer.ts";
 export * from "./drag-and-drop.ts";
 export * from "./error-summary.ts";
 export * from "./families/layout/icon/icon.ts";
-export * from "./field.ts";
+export * from "./families/form/field/field.ts";
 export * from "./id.ts";
 export * from "./inert-outside.ts";
 export * from "./interaction-modality.ts";
@@ -107,4 +107,4 @@ export * from "./typeahead.ts";
 export * from "./virtualizer.ts";
 export * from "./primitive.ts";
 export * from "./visually-hidden.ts";
-export * from "./form.ts";
+export * from "./families/form/form/form.ts";
