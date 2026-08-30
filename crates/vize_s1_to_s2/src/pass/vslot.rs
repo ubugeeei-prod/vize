@@ -271,10 +271,14 @@ pub fn run(lowered: &mut Lowered<'_>) -> SideTable<SlotFacts> {
         diagnostics,
         provenance,
         scopes,
+        wrappers,
+        for_wrappers,
         ..
     } = lowered;
     let mut channels = consume::Channels {
         scopes,
+        wrappers,
+        for_wrappers,
         diagnostics,
         provenance,
         seen_tags: StdVec::new(),

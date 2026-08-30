@@ -21,6 +21,7 @@ use vize_s2::op::Op;
 
 /// The page-order id state of one pass run: a mirror of `Cx::mint_op`'s
 /// numbering, saturation included.
+#[derive(Clone)]
 pub(crate) struct PageWalk {
     next: u32,
     exhausted: bool,

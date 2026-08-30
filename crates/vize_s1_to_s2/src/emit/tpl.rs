@@ -98,7 +98,7 @@ fn unwrap_if(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<()
 }
 
 pub(super) fn should_unwrap_for(ops: &[Op<'_>]) -> bool {
-    matches!(ops, [Op::Element(_)])
+    matches!(ops, [Op::Element(element)] if !super::slots::is_slot_template(element))
 }
 
 pub(super) fn emit_for_template_item(

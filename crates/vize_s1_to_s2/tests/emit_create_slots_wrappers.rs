@@ -26,6 +26,28 @@ fn pin(visual: &str) -> String {
 }
 
 #[test]
+fn unwrapped_if_with_one_nested_slot_stays_default() {
+    assert_eq!(
+        assembled(r#"<Foo><template v-if="ok"><template #header>y</template></template></Foo>"#),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode, withCtx: _withCtx } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, null, {
+    default: _withCtx(() => [
+      (ok)
+        ? (_openBlock(), _createElementBlock(\"template\", { key: 0 }, \"y\"))
+        : _createCommentVNode(\"v-if\", true)
+    ]),
+    _: 1 /* STABLE */
+  }))
+}")
+    );
+}
+
+#[test]
 fn unwrapped_if_with_two_nested_slots_keeps_both_vnodes() {
     assert_eq!(
         assembled(
@@ -45,6 +67,30 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           _createTextVNode(\"f\")
         ], 64 /* STABLE_FRAGMENT */))
         : _createCommentVNode(\"v-if\", true)
+    ]),
+    _: 1 /* STABLE */
+  }))
+}")
+    );
+}
+
+#[test]
+fn unwrapped_for_with_one_nested_slot_stays_default() {
+    assert_eq!(
+        assembled(r#"<Foo><template v-for="i in n"><template #header>y</template></template></Foo>"#),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createTextVNode: _createTextVNode, renderList: _renderList, withCtx: _withCtx } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, null, {
+    default: _withCtx(() => [
+      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(n, (i) => {
+        return (_openBlock(), _createElementBlock(_Fragment, null, [
+          _createTextVNode(\"y\")
+        ], 64 /* STABLE_FRAGMENT */))
+      }), 256 /* UNKEYED_FRAGMENT */))
     ]),
     _: 1 /* STABLE */
   }))

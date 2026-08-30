@@ -22,11 +22,14 @@ use vize_s2::scope::{ScopeFacts, ScopeTag};
 use super::super::walk::PageWalk;
 use super::spell::spelling;
 use super::{MISPLACED_MESSAGE, SlotFacts, SlotName, SlotParams, group};
+use crate::lower::{ForWrapper, WrapperKeys};
 
 /// The pass's channels: the read-only scope table, the unified output
 /// channels, and the pass state.
 pub(super) struct Channels<'l> {
     pub scopes: &'l SideTable<ScopeFacts>,
+    pub wrappers: &'l SideTable<WrapperKeys>,
+    pub for_wrappers: &'l SideTable<ForWrapper>,
     pub diagnostics: &'l mut StdVec<Diagnostic>,
     pub provenance: &'l mut StdVec<ProvenanceRecord>,
     /// Every consumed slot-scope tag, for the freshness law.
@@ -105,10 +108,10 @@ pub(super) enum ChildKind {
 }
 
 /// Whether any view in a region carries implicit content (the legacy
-/// `any_implicit_child`), plus unwrapped wrappers that hold more than
-/// one `#slot` template. A single nested slot template stays a
-/// `createSlots` carrier; two or more flatten onto the default slot,
-/// so the parent must synthesize that group or emit drops them.
+/// `any_implicit_child`), plus unwrapped wrappers that hold nested
+/// `#slot` templates. Kept `#slot v-if` / `#slot v-for` carriers stay
+/// explicit `createSlots` inputs; unwrapped template wrappers flatten
+/// onto the default slot, even when they contain only one slot template.
 fn region_implicit(views: &[ChildView]) -> bool {
     let mut slot_templates = 0usize;
     for view in views {
@@ -119,6 +122,28 @@ fn region_implicit(views: &[ChildView]) -> bool {
         }
     }
     slot_templates > 1
+}
+
+fn has_slot_template(views: &[ChildView]) -> bool {
+    views
+        .iter()
+        .any(|view| matches!(view.kind, ChildKind::SlotTemplate(_)))
+}
+
+fn if_branch_implicit(
+    wrapper: Option<&WrapperKeys>,
+    branch_index: usize,
+    views: &[ChildView],
+) -> bool {
+    region_implicit(views)
+        || (wrapper
+            .and_then(|keys| keys.from_template.get(branch_index).copied())
+            .unwrap_or(false)
+            && has_slot_template(views))
+}
+
+fn for_region_implicit(from_template: bool, views: &[ChildView]) -> bool {
+    region_implicit(views) || (from_template && has_slot_template(views))
 }
 
 /// Visit one region's ops in page order, returning their views.
@@ -202,10 +227,11 @@ fn visit<'a>(walk: &mut PageWalk, channels: &mut Channels<'_>, op: &Op<'a>) -> C
             kind: ChildKind::Content { implicit: true },
         },
         Op::If(if_op) => {
+            let wrapper = id.and_then(|id| channels.wrappers.get(id));
             let mut implicit = false;
-            for branch in if_op.branches.iter() {
+            for (branch_index, branch) in if_op.branches.iter().enumerate() {
                 let views = region(walk, channels, &branch.region.ops);
-                implicit |= region_implicit(&views);
+                implicit |= if_branch_implicit(wrapper, branch_index, &views);
             }
             ChildView {
                 id,
@@ -215,11 +241,12 @@ fn visit<'a>(walk: &mut PageWalk, channels: &mut Channels<'_>, op: &Op<'a>) -> C
         }
         Op::For(for_op) => {
             let views = region(walk, channels, &for_op.region.ops);
+            let from_template = id.and_then(|id| channels.for_wrappers.get(id)).is_some();
             ChildView {
                 id,
                 span: for_op.span,
                 kind: ChildKind::Content {
-                    implicit: region_implicit(&views),
+                    implicit: for_region_implicit(from_template, &views),
                 },
             }
         }

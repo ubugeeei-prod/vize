@@ -162,9 +162,9 @@ fn emit_call(
     for_item: bool,
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
-    admit(component)?;
+    admit(cx, component)?;
     let facts = id.and_then(|id| cx.facts.slot_facts.get(id));
-    let create = create_slots::needs_create_slots(&component.children);
+    let create = create_slots::needs_create_slots(cx, &component.children);
     let spread = slots::slots_spread(&component.bindings)?;
     let array = builtin::array_children(component.name);
     if array && (create || spread.is_some()) {
@@ -317,8 +317,8 @@ fn emit_call(
     Ok(())
 }
 
-fn admit(component: &ComponentOp<'_>) -> Result<(), EmitError> {
-    if create_slots::needs_create_slots(&component.children)
+fn admit(cx: &EmitCx<'_>, component: &ComponentOp<'_>) -> Result<(), EmitError> {
+    if create_slots::needs_create_slots(cx, &component.children)
         || slots::has_implicit_default(&component.children)
     {
         slots::admit_default(&component.children)?;

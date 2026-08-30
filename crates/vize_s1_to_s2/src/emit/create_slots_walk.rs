@@ -1,9 +1,11 @@
 //! Walk helpers for `createSlots` entry collection.
 
+use vize_davinci::id::NodeId;
 use vize_s2::op::{BindingOp, ElementOp, ForOp, IfBranch, IfOp, Op, Region, SlotContentOp};
 
 use super::EmitCx;
 use super::slots::is_whitespace_text;
+use crate::pass::walk::PageWalk;
 
 pub(super) fn slot_content<'a>(element: &'a ElementOp<'a>) -> Option<&'a SlotContentOp<'a>> {
     element.bindings.iter().find_map(|binding| match binding {
@@ -33,20 +35,63 @@ pub(super) fn first_slot_template<'a>(
     })
 }
 
-pub(super) fn is_slot_if(if_op: &IfOp<'_>) -> bool {
-    if_op.branches.iter().any(is_slot_if_branch)
+pub(super) fn is_slot_if(cx: &EmitCx<'_>, id: Option<NodeId>, if_op: &IfOp<'_>) -> bool {
+    if_op
+        .branches
+        .iter()
+        .enumerate()
+        .any(|(branch_index, branch)| is_slot_if_branch(cx, id, branch_index, branch))
 }
 
-pub(super) fn is_slot_for(for_op: &ForOp<'_>) -> bool {
-    is_slot_template_carrier(&for_op.region)
+pub(super) fn is_slot_for(cx: &EmitCx<'_>, id: Option<NodeId>, for_op: &ForOp<'_>) -> bool {
+    id.and_then(|id| cx.for_wrappers.get(id)).is_none() && is_slot_template_carrier(&for_op.region)
+}
+
+pub(super) fn advance_after_op(walk: &mut PageWalk, op: &Op<'_>) {
+    match op {
+        Op::Element(element) => {
+            walk.skip(element.bindings.len());
+            advance_after_ops(walk, &element.children.ops);
+        }
+        Op::Component(component) => {
+            walk.skip(component.bindings.len());
+            advance_after_ops(walk, &component.children.ops);
+        }
+        Op::If(if_op) => {
+            for branch in if_op.branches.iter() {
+                advance_after_ops(walk, &branch.region.ops);
+            }
+        }
+        Op::For(for_op) => advance_after_ops(walk, &for_op.region.ops),
+        Op::Slot(slot) => {
+            walk.skip(slot.bindings.len());
+            advance_after_ops(walk, &slot.fallback.ops);
+        }
+        Op::Text(_) | Op::Interpolation(_) => {}
+    }
+}
+
+fn advance_after_ops(walk: &mut PageWalk, ops: &[Op<'_>]) {
+    for op in ops {
+        let _id = walk.mint();
+        advance_after_op(walk, op);
+    }
 }
 
 /// `createSlots` owns `v-if` / `v-for` *on* a slot template. An unwrapped
 /// `<template v-if>` / `<template v-for>` that merely *contains* nested
 /// `#slot` children must stay on the default-slot path — otherwise
 /// `skip_ops` keeps only `first_slot_template` and drops the rest.
-fn is_slot_if_branch(branch: &IfBranch<'_>) -> bool {
-    is_slot_template_carrier(&branch.region)
+fn is_slot_if_branch(
+    cx: &EmitCx<'_>,
+    id: Option<NodeId>,
+    branch_index: usize,
+    branch: &IfBranch<'_>,
+) -> bool {
+    !id.and_then(|id| cx.wrappers.get(id))
+        .and_then(|keys| keys.from_template.get(branch_index).copied())
+        .unwrap_or(false)
+        && is_slot_template_carrier(&branch.region)
 }
 
 fn is_slot_template_carrier(region: &Region<'_>) -> bool {

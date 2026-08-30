@@ -11,17 +11,23 @@ use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
 use super::create_slots_walk::{
-    first_slot_template, is_slot_for, is_slot_if, skip_ops, slot_template_content,
+    advance_after_op, first_slot_template, is_slot_for, is_slot_if, skip_ops, slot_template_content,
 };
 use super::js::escape_js_string;
 use super::slots::{capture, capture_child, emit_template_pieces, is_whitespace_text};
 use super::vfor;
 
-pub(super) fn needs_create_slots(children: &Region<'_>) -> bool {
-    children.ops.iter().any(|op| match op {
-        Op::If(if_op) => is_slot_if(if_op),
-        Op::For(for_op) => is_slot_for(for_op),
-        _ => false,
+pub(super) fn needs_create_slots(cx: &EmitCx<'_>, children: &Region<'_>) -> bool {
+    let mut walk = cx.walk.clone();
+    children.ops.iter().any(|op| {
+        let id = walk.mint();
+        let needs = match op {
+            Op::If(if_op) => is_slot_if(cx, id, if_op),
+            Op::For(for_op) => is_slot_for(cx, id, for_op),
+            _ => false,
+        };
+        advance_after_op(&mut walk, op);
+        needs
     })
 }
 
@@ -69,10 +75,10 @@ fn collect(
             continue;
         }
         match op {
-            Op::If(if_op) if is_slot_if(if_op) => {
+            Op::If(if_op) if is_slot_if(cx, peek_id(cx), if_op) => {
                 entries.push(capture(cx, |cx| emit_if_entry(cx, if_op))?);
             }
-            Op::For(for_op) if is_slot_for(for_op) => {
+            Op::For(for_op) if is_slot_for(cx, peek_id(cx), for_op) => {
                 let Some((idx, element, content)) = first_slot_template(&for_op.region) else {
                     return Err(EmitError::unsupported_at(
                         super::UnsupportedReason::CreateSlotsMissingSlotTemplate,
@@ -98,6 +104,11 @@ fn collect(
         }
     }
     Ok((defaults, entries))
+}
+
+fn peek_id(cx: &EmitCx<'_>) -> Option<vize_davinci::id::NodeId> {
+    let mut walk = cx.walk.clone();
+    walk.mint()
 }
 
 fn collect_default(
