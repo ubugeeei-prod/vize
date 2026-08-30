@@ -49,10 +49,7 @@ use oxc_ast::ast::{
     JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild, JSXElement,
     JSXElementName, JSXExpression, JSXFragment, JSXText, Program,
 };
-use oxc_ast_visit::{
-    Visit,
-    walk::{walk_jsx_element, walk_jsx_fragment, walk_program},
-};
+use oxc_ast_visit::{Visit, walk::walk_program};
 use oxc_span::Span;
 use std::marker::PhantomData;
 use vize_croquis::Croquis;
@@ -60,7 +57,7 @@ use vize_relief::{
     AttributeNode, DirectiveNode, ElementNode, ElementType, ExpressionNode, ForNode, IfNode,
     PropNode, RootNode, SourceLocation, TemplateChildNode, TextNode,
 };
-use vize_s0::{String, profile};
+use vize_s0::{SmallVec, String, profile};
 
 /// High-level classification for a markup element.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -161,7 +158,7 @@ impl<'a> MarkupDocument<'a> {
         match self.inner {
             MarkupDocumentInner::Relief(root) => walk_relief_children(&root.children, enter, exit),
             MarkupDocumentInner::Jsx { program, offset } => {
-                walk_jsx_program(program, offset, enter, exit)
+                jsx_roots::walk_jsx_program(program, offset, enter, exit)
             }
         }
     }
@@ -275,12 +272,12 @@ impl<'a> MarkupElement<'a> {
                 }
             }
             MarkupElementInner::JsxElement { node, offset } => {
-                for child in jsx_element_ref(node).jsx_children() {
+                for child in &jsx_element_ref(node).children {
                     visitor(MarkupNode::from_jsx_child(child, offset));
                 }
             }
             MarkupElementInner::JsxFragment { node, offset } => {
-                for child in jsx_fragment_ref(node).jsx_children() {
+                for child in &jsx_fragment_ref(node).children {
                     visitor(MarkupNode::from_jsx_child(child, offset));
                 }
             }
@@ -1007,46 +1004,6 @@ fn walk_relief_children<'a>(
     }
 }
 
-fn walk_jsx_program<'a>(
-    program: &'a Program<'a>,
-    offset: u32,
-    enter: &mut impl FnMut(MarkupElement<'a>),
-    exit: &mut impl FnMut(MarkupElement<'a>),
-) {
-    struct JsxMarkupWalker<'enter, 'exit, FEnter, FExit> {
-        offset: u32,
-        enter: &'enter mut FEnter,
-        exit: &'exit mut FExit,
-    }
-
-    impl<'ast, FEnter, FExit> Visit<'ast> for JsxMarkupWalker<'_, '_, FEnter, FExit>
-    where
-        FEnter: FnMut(MarkupElement<'ast>),
-        FExit: FnMut(MarkupElement<'ast>),
-    {
-        fn visit_jsx_element(&mut self, it: &JSXElement<'ast>) {
-            let element = MarkupElement::from_jsx_element(it as *const _, self.offset);
-            (self.enter)(element);
-            walk_jsx_element(self, it);
-            (self.exit)(element);
-        }
-
-        fn visit_jsx_fragment(&mut self, it: &JSXFragment<'ast>) {
-            let element = MarkupElement::from_jsx_fragment(it as *const _, self.offset);
-            (self.enter)(element);
-            walk_jsx_fragment(self, it);
-            (self.exit)(element);
-        }
-    }
-
-    let mut walker = JsxMarkupWalker {
-        offset,
-        enter,
-        exit,
-    };
-    walk_program(&mut walker, program);
-}
-
 fn element_children_relief<'a>(element: MarkupElement<'a>) -> &'a [TemplateChildNode<'a>] {
     match element.inner {
         MarkupElementInner::Relief(node) => &node.children,
@@ -1087,22 +1044,6 @@ fn jsx_text_ref<'a>(node: *const JSXText<'a>) -> &'a JSXText<'a> {
     // OXC allocator for the current program. The markup adapter only exposes
     // shared reads, and all adapters are dropped before the program is dropped.
     unsafe { &*node }
-}
-
-trait JsxChildContainer<'a> {
-    fn jsx_children(&self) -> &oxc_allocator::Vec<'a, JSXChild<'a>>;
-}
-
-impl<'a> JsxChildContainer<'a> for JSXElement<'a> {
-    fn jsx_children(&self) -> &oxc_allocator::Vec<'a, JSXChild<'a>> {
-        &self.children
-    }
-}
-
-impl<'a> JsxChildContainer<'a> for JSXFragment<'a> {
-    fn jsx_children(&self) -> &oxc_allocator::Vec<'a, JSXChild<'a>> {
-        &self.children
-    }
 }
 
 #[inline]
@@ -1368,6 +1309,7 @@ pub struct MarkupContext<'ctx, 'a> {
     syntax: TemplateSyntax,
     is_template: bool,
     analysis: Option<&'a Croquis>,
+    element_stack: SmallVec<[MarkupElement<'a>; 32]>,
 }
 
 impl<'ctx, 'a> MarkupContext<'ctx, 'a> {
@@ -1382,6 +1324,7 @@ impl<'ctx, 'a> MarkupContext<'ctx, 'a> {
             syntax: document.syntax(),
             is_template: document.is_template(),
             analysis: document.analysis(),
+            element_stack: SmallVec::new(),
             lint,
         }
     }
@@ -1416,6 +1359,47 @@ impl<'ctx, 'a> MarkupContext<'ctx, 'a> {
     #[inline]
     pub fn analysis(&self) -> Option<&'a Croquis> {
         self.analysis
+    }
+
+    /// Current element being visited.
+    ///
+    /// The current element is pushed before [`MarkupRule::enter_element`] and
+    /// popped after [`MarkupRule::exit_element`], matching the legacy template
+    /// visitor's [`LintContext`] element-stack timing.
+    #[inline]
+    pub fn current_element(&self) -> Option<MarkupElement<'a>> {
+        self.element_stack.last().copied()
+    }
+
+    /// Parent element of the current markup element, if any.
+    #[inline]
+    pub fn parent_element(&self) -> Option<MarkupElement<'a>> {
+        self.element_stack
+            .get(self.element_stack.len().checked_sub(2)?)
+            .copied()
+    }
+
+    /// Ancestor elements of the current markup element, root first.
+    #[inline]
+    pub fn ancestor_elements(&self) -> impl DoubleEndedIterator<Item = MarkupElement<'a>> + '_ {
+        let ancestor_len = self.element_stack.len().saturating_sub(1);
+        self.element_stack[..ancestor_len].iter().copied()
+    }
+
+    /// Check whether any ancestor of the current element matches `predicate`.
+    #[inline]
+    pub fn has_ancestor(&self, predicate: impl FnMut(MarkupElement<'a>) -> bool) -> bool {
+        self.ancestor_elements().any(predicate)
+    }
+
+    #[inline]
+    fn push_element(&mut self, element: MarkupElement<'a>) {
+        self.element_stack.push(element);
+    }
+
+    #[inline]
+    fn pop_element(&mut self) -> Option<MarkupElement<'a>> {
+        self.element_stack.pop()
     }
 }
 
@@ -1564,6 +1548,8 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
     }
 
     fn visit_element(&mut self, element: MarkupElement<'a>) {
+        self.ctx.push_element(element);
+
         self.set_rule();
         self.rule.enter_element(self.ctx, &element);
 
@@ -1581,15 +1567,21 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
             MarkupElementInner::Relief(node) => self.visit_relief_children(&node.children),
             MarkupElementInner::JsxElement { node, offset } => {
                 jsx_roots::visit_attribute_roots(self, jsx_element_ref(node), offset);
-                self.visit_jsx_children(jsx_element_ref(node).jsx_children(), offset)
+                self.visit_jsx_children(&jsx_element_ref(node).children, offset)
             }
             MarkupElementInner::JsxFragment { node, offset } => {
-                self.visit_jsx_children(jsx_fragment_ref(node).jsx_children(), offset)
+                self.visit_jsx_children(&jsx_fragment_ref(node).children, offset)
             }
         }
 
         self.set_rule();
         self.rule.exit_element(self.ctx, &element);
+
+        let popped = self.ctx.pop_element();
+        debug_assert!(
+            popped.is_some(),
+            "markup visitor must pop the element it just visited"
+        );
     }
 
     fn visit_jsx_program(&mut self, program: &'a Program<'a>, offset: u32) {

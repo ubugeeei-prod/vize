@@ -986,7 +986,6 @@ linter	Linter	test/dev	crates/vize_patina/src/linter/tests/recovered_parse_analy
 linter	Linter	source	crates/vize_patina/src/markup.rs	48	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/markup.rs	48	old_ast	old AST/parser	old	vize_relief	legacy	2
 linter	Linter	source	crates/vize_patina/src/markup.rs	48	croquis	Croquis analysis	old	vize_croquis	legacy	1
-linter	Linter	source	crates/vize_patina/src/markup.rs	48	raw_oxc	raw OXC	raw	oxc_allocator	raw	3
 linter	Linter	source	crates/vize_patina/src/markup.rs	48	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/markup.rs	48	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 linter	Linter	source	crates/vize_patina/src/markup/exact.rs	6	old_ast	old AST/parser	old	vize_relief	legacy	1
@@ -994,9 +993,12 @@ linter	Linter	source	crates/vize_patina/src/markup/exact.rs	6	raw_oxc	raw OXC	ra
 linter	Linter	source	crates/vize_patina/src/markup/jsx_roots.rs	2	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/markup/jsx_roots.rs	2	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 linter	Linter	source	crates/vize_patina/src/markup/source_ranges.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-linter	Linter	test/dev	crates/vize_patina/src/markup/tests.rs	45	s0	S0	stage	vize_s0	preferred	1
-linter	Linter	test/dev	crates/vize_patina/src/markup/tests.rs	45	old_ast	old AST/parser	old	vize_armature	legacy	3
-linter	Linter	test/dev	crates/vize_patina/src/markup/tests.rs	45	raw_oxc	raw OXC	raw	oxc_allocator	raw	6
+linter	Linter	test/dev	crates/vize_patina/src/markup/tests.rs	46	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/markup/tests.rs	46	old_ast	old AST/parser	old	vize_armature	legacy	3
+linter	Linter	test/dev	crates/vize_patina/src/markup/tests.rs	46	raw_oxc	raw OXC	raw	oxc_allocator	raw	6
+linter	Linter	test/dev	crates/vize_patina/src/markup/tests/ancestry_tests.rs	10	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/markup/tests/ancestry_tests.rs	10	old_ast	old AST/parser	old	vize_armature	legacy	1
+linter	Linter	test/dev	crates/vize_patina/src/markup/tests/ancestry_tests.rs	10	raw_oxc	raw OXC	raw	oxc_allocator	raw	3
 linter	Linter	test/dev	crates/vize_patina/src/markup/tests/deprecated_attr_tests.rs	6	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/markup/tests/deprecated_attr_tests.rs	6	old_ast	old AST/parser	old	vize_armature	legacy	1
 linter	Linter	test/dev	crates/vize_patina/src/markup/tests/deprecated_attr_tests.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	3

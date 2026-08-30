@@ -1,11 +1,14 @@
 use super::{MarkupDocumentVisitor, MarkupElement, MarkupRule};
 use oxc_ast::ast::{
     Expression, JSXAttributeItem, JSXAttributeValue, JSXElement, JSXExpressionContainer,
-    JSXFragment,
+    JSXFragment, Program,
 };
 use oxc_ast_visit::{
     Visit,
-    walk::{walk_expression, walk_jsx_expression_container},
+    walk::{
+        walk_expression, walk_jsx_element, walk_jsx_expression_container, walk_jsx_fragment,
+        walk_program,
+    },
 };
 use std::marker::PhantomData;
 
@@ -38,6 +41,46 @@ where
             self.offset,
         ));
     }
+}
+
+pub(super) fn walk_jsx_program<'a>(
+    program: &'a Program<'a>,
+    offset: u32,
+    enter: &mut impl FnMut(MarkupElement<'a>),
+    exit: &mut impl FnMut(MarkupElement<'a>),
+) {
+    struct JsxMarkupWalker<'enter, 'exit, FEnter, FExit> {
+        offset: u32,
+        enter: &'enter mut FEnter,
+        exit: &'exit mut FExit,
+    }
+
+    impl<'ast, FEnter, FExit> Visit<'ast> for JsxMarkupWalker<'_, '_, FEnter, FExit>
+    where
+        FEnter: FnMut(MarkupElement<'ast>),
+        FExit: FnMut(MarkupElement<'ast>),
+    {
+        fn visit_jsx_element(&mut self, it: &JSXElement<'ast>) {
+            let element = MarkupElement::from_jsx_element(it as *const _, self.offset);
+            (self.enter)(element);
+            walk_jsx_element(self, it);
+            (self.exit)(element);
+        }
+
+        fn visit_jsx_fragment(&mut self, it: &JSXFragment<'ast>) {
+            let element = MarkupElement::from_jsx_fragment(it as *const _, self.offset);
+            (self.enter)(element);
+            walk_jsx_fragment(self, it);
+            (self.exit)(element);
+        }
+    }
+
+    let mut walker = JsxMarkupWalker {
+        offset,
+        enter,
+        exit,
+    };
+    walk_program(&mut walker, program);
 }
 
 pub(super) fn visit_expression_container_roots<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized>(
