@@ -8,6 +8,7 @@ mod directives;
 mod jsx;
 mod jsx_deprecated_attr;
 mod jsx_fallback;
+mod jsx_heading_has_content;
 mod jsx_heading_levels;
 mod jsx_iframe_has_title;
 mod jsx_interactive_supports_focus;

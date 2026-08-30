@@ -8,9 +8,11 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{
+    MarkupBindingKind, MarkupContext, MarkupElement, MarkupElementKind, MarkupNode, MarkupRule,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use crate::rules::a11y::helpers::is_slot_element;
-use vize_relief::{ElementNode, ExpressionNode, PropNode, TemplateChildNode};
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/heading-has-content",
@@ -25,47 +27,110 @@ static META: RuleMeta = RuleMeta {
 pub struct HeadingHasContent;
 
 impl HeadingHasContent {
-    fn is_heading(tag: &str) -> bool {
-        matches!(tag, "h1" | "h2" | "h3" | "h4" | "h5" | "h6")
+    fn is_heading(element: &MarkupElement<'_>) -> bool {
+        ["h1", "h2", "h3", "h4", "h5", "h6"]
+            .iter()
+            .any(|tag| element.is_unqualified_tag_exact(tag))
     }
 
-    fn has_accessible_content(element: &ElementNode) -> bool {
-        // Check for aria-label or aria-labelledby
-        for prop in &element.props {
-            if let PropNode::Attribute(attr) = prop
-                && (attr.name == "aria-label" || attr.name == "aria-labelledby")
-            {
-                return true;
+    fn has_accessible_name(element: &MarkupElement<'_>) -> bool {
+        let mut found = false;
+        element.walk_bindings(&mut |binding| {
+            if found {
+                return;
             }
-            if let PropNode::Directive(dir) = prop
-                && dir.name == "bind"
-                && let Some(ExpressionNode::Simple(arg)) = &dir.arg
-                && (arg.content == "aria-label" || arg.content == "aria-labelledby")
+
+            if matches!(
+                binding.kind(),
+                MarkupBindingKind::Attribute | MarkupBindingKind::Bind
+            ) && (binding.is_unqualified_arg_exact("aria-label")
+                || binding.is_unqualified_arg_exact("aria-labelledby"))
             {
-                return true;
+                found = true;
             }
+        });
+        found
+    }
+
+    fn is_hidden_from_accessibility_tree(element: &MarkupElement<'_>) -> bool {
+        let mut hidden = false;
+        element.walk_bindings(&mut |binding| {
+            if hidden {
+                return;
+            }
+
+            if binding.kind() == MarkupBindingKind::Attribute
+                && binding.is_unqualified_arg_exact("aria-hidden")
+                && binding.static_value() == Some("true")
+            {
+                hidden = true;
+            }
+        });
+        hidden
+    }
+
+    fn has_accessible_content(element: &MarkupElement<'_>) -> bool {
+        if Self::has_accessible_name(element) {
+            return true;
         }
 
-        // Check for content in children
-        for child in &element.children {
-            match child {
-                TemplateChildNode::Text(text) if !text.content.trim().is_empty() => {
-                    return true;
-                }
-                TemplateChildNode::Interpolation(_) => {
-                    return true;
-                }
-                TemplateChildNode::Element(el) if is_slot_element(el) => {
-                    return true;
-                }
-                TemplateChildNode::Element(el) if Self::has_accessible_content(el) => {
-                    return true;
-                }
-                _ => {}
+        let mut has_content = false;
+        element.walk_children(&mut |child| match child {
+            MarkupNode::Text(text) if text.is_significant() => {
+                has_content = true;
             }
+            MarkupNode::Interpolation(_) => {
+                has_content = true;
+            }
+            MarkupNode::Element(child_element)
+                if child_element.kind() == MarkupElementKind::Slot
+                    || child_element.is_unqualified_tag_exact("slot") =>
+            {
+                has_content = true;
+            }
+            MarkupNode::Element(child_element) if Self::has_accessible_content(&child_element) => {
+                has_content = true;
+            }
+            MarkupNode::Text(_)
+            | MarkupNode::Element(_)
+            | MarkupNode::Comment(_)
+            | MarkupNode::If(_)
+            | MarkupNode::For(_)
+            | MarkupNode::Other(_) => {}
+        });
+
+        has_content
+    }
+
+    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        if !Self::is_heading(element) || Self::is_hidden_from_accessibility_tree(element) {
+            return;
         }
 
-        false
+        if !Self::has_accessible_content(element) {
+            ctx.warn_at_with_help(
+                ctx.t_fmt(
+                    "a11y/heading-has-content.message",
+                    &[("tag", element.tag())],
+                ),
+                element.range(),
+                ctx.t("a11y/heading-has-content.help"),
+            );
+        }
+    }
+}
+
+impl MarkupRule for HeadingHasContent {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if ctx.is_jsx_attribute_value() {
+            return;
+        }
+
+        Self::check_element(ctx.lint(), element);
     }
 }
 
@@ -74,29 +139,12 @@ impl Rule for HeadingHasContent {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if !Self::is_heading(element.tag) {
-            return;
-        }
-
-        // Check for aria-hidden="true" (skip check if hidden)
-        for prop in &element.props {
-            if let PropNode::Attribute(attr) = prop
-                && attr.name == "aria-hidden"
-                && let Some(val) = &attr.value
-                && val.content == "true"
-            {
-                return;
-            }
-        }
-
-        if !Self::has_accessible_content(element) {
-            ctx.warn_with_help(
-                ctx.t_fmt("a11y/heading-has-content.message", &[("tag", element.tag)]),
-                &element.loc,
-                ctx.t("a11y/heading-has-content.help"),
-            );
-        }
+        Self::check_element(ctx, &MarkupElement::new(element));
     }
 }
 

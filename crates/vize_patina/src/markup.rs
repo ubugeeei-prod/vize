@@ -47,7 +47,7 @@ use crate::context::LintContext;
 use crate::ir::{ByteRange, TemplateSyntax};
 use oxc_ast::ast::{
     JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild, JSXElement,
-    JSXElementName, JSXExpression, JSXFragment, JSXText, Program,
+    JSXElementName, JSXFragment, JSXText, Program,
 };
 use oxc_ast_visit::{Visit, walk::walk_program};
 use oxc_span::Span;
@@ -156,7 +156,9 @@ impl<'a> MarkupDocument<'a> {
         exit: &mut impl FnMut(MarkupElement<'a>),
     ) {
         match self.inner {
-            MarkupDocumentInner::Relief(root) => walk_relief_children(&root.children, enter, exit),
+            MarkupDocumentInner::Relief(root) => {
+                relief_children::walk_relief_children(&root.children, enter, exit);
+            }
             MarkupDocumentInner::Jsx { program, offset } => {
                 jsx_roots::walk_jsx_program(program, offset, enter, exit)
             }
@@ -876,6 +878,10 @@ enum MarkupTextInner<'a> {
         node: *const JSXText<'a>,
         offset: u32,
     },
+    Static {
+        content: &'a str,
+        range: ByteRange,
+    },
 }
 
 ///<'a> Text node view.
@@ -900,11 +906,19 @@ impl<'a> MarkupText<'a> {
         }
     }
 
+    pub(super) const fn from_static(content: &'a str, range: ByteRange) -> Self {
+        Self {
+            inner: MarkupTextInner::Static { content, range },
+            _marker: PhantomData,
+        }
+    }
+
     /// Raw text content.
     pub fn content(&self) -> &'a str {
         match self.inner {
             MarkupTextInner::Relief(node) => node.content,
             MarkupTextInner::Jsx { node, .. } => jsx_text_ref(node).value.as_str(),
+            MarkupTextInner::Static { content, .. } => content,
         }
     }
 
@@ -913,6 +927,7 @@ impl<'a> MarkupText<'a> {
         match self.inner {
             MarkupTextInner::Relief(node) => loc_to_range(&node.loc),
             MarkupTextInner::Jsx { node, offset } => span_to_range(jsx_text_ref(node).span, offset),
+            MarkupTextInner::Static { range, .. } => range,
         }
     }
 
@@ -954,60 +969,6 @@ impl<'a> MarkupNode<'a> {
             TemplateChildNode::For(for_node) => Self::For(loc_to_range(&for_node.loc)),
             other => Self::Other(loc_to_range(other.loc())),
         }
-    }
-
-    fn from_jsx_child(child: &'a JSXChild<'a>, offset: u32) -> Self {
-        match child {
-            JSXChild::Text(text) => Self::Text(MarkupText::from_jsx(&**text as *const _, offset)),
-            JSXChild::Element(element) => Self::Element(MarkupElement::from_jsx_element(
-                &**element as *const _,
-                offset,
-            )),
-            JSXChild::Fragment(fragment) => Self::Element(MarkupElement::from_jsx_fragment(
-                &**fragment as *const _,
-                offset,
-            )),
-            JSXChild::ExpressionContainer(container) => match &container.expression {
-                JSXExpression::EmptyExpression(_) => {
-                    Self::Comment(span_to_range(container.span, offset))
-                }
-                _ => Self::Interpolation(span_to_range(container.span, offset)),
-            },
-            JSXChild::Spread(spread) => Self::Interpolation(span_to_range(spread.span, offset)),
-        }
-    }
-}
-
-fn walk_relief_children<'a>(
-    children: &'a [TemplateChildNode<'a>],
-    enter: &mut impl FnMut(MarkupElement<'a>),
-    exit: &mut impl FnMut(MarkupElement<'a>),
-) {
-    for child in children {
-        match child {
-            TemplateChildNode::Element(element) => {
-                let element = MarkupElement::new(element);
-                enter(element);
-                walk_relief_children(element_children_relief(element), enter, exit);
-                exit(element);
-            }
-            TemplateChildNode::If(if_node) => {
-                for branch in if_node.branches.iter() {
-                    walk_relief_children(&branch.children, enter, exit);
-                }
-            }
-            TemplateChildNode::For(for_node) => {
-                walk_relief_children(&for_node.children, enter, exit);
-            }
-            _ => {}
-        }
-    }
-}
-
-fn element_children_relief<'a>(element: MarkupElement<'a>) -> &'a [TemplateChildNode<'a>] {
-    match element.inner {
-        MarkupElementInner::Relief(node) => &node.children,
-        _ => &[],
     }
 }
 
@@ -1310,6 +1271,7 @@ pub struct MarkupContext<'ctx, 'a> {
     is_template: bool,
     analysis: Option<&'a Croquis>,
     element_stack: SmallVec<[MarkupElement<'a>; 32]>,
+    jsx_attribute_value_depth: u32,
 }
 
 impl<'ctx, 'a> MarkupContext<'ctx, 'a> {
@@ -1325,6 +1287,7 @@ impl<'ctx, 'a> MarkupContext<'ctx, 'a> {
             is_template: document.is_template(),
             analysis: document.analysis(),
             element_stack: SmallVec::new(),
+            jsx_attribute_value_depth: 0,
             lint,
         }
     }
@@ -1392,6 +1355,18 @@ impl<'ctx, 'a> MarkupContext<'ctx, 'a> {
         self.ancestor_elements().any(predicate)
     }
 
+    /// Whether the current JSX element was reached through an attribute value.
+    ///
+    /// The legacy JSX fallback only lowered render roots and their children. It
+    /// did not lint JSX passed as props such as `<Comp render={<h1 />} />`.
+    /// Rules that are migrating from the fallback can use this to preserve that
+    /// visible boundary while the facade still exposes attribute-value roots for
+    /// rules that intentionally inspect them.
+    #[inline]
+    pub const fn is_jsx_attribute_value(&self) -> bool {
+        self.jsx_attribute_value_depth > 0
+    }
+
     #[inline]
     fn push_element(&mut self, element: MarkupElement<'a>) {
         self.element_stack.push(element);
@@ -1400,6 +1375,16 @@ impl<'ctx, 'a> MarkupContext<'ctx, 'a> {
     #[inline]
     fn pop_element(&mut self) -> Option<MarkupElement<'a>> {
         self.element_stack.pop()
+    }
+
+    #[inline]
+    fn push_jsx_attribute_value(&mut self) {
+        self.jsx_attribute_value_depth += 1;
+    }
+
+    #[inline]
+    fn pop_jsx_attribute_value(&mut self) {
+        self.jsx_attribute_value_depth = self.jsx_attribute_value_depth.saturating_sub(1);
     }
 }
 
@@ -1566,7 +1551,9 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
         match element.inner {
             MarkupElementInner::Relief(node) => self.visit_relief_children(&node.children),
             MarkupElementInner::JsxElement { node, offset } => {
+                self.ctx.push_jsx_attribute_value();
                 jsx_roots::visit_attribute_roots(self, jsx_element_ref(node), offset);
+                self.ctx.pop_jsx_attribute_value();
                 self.visit_jsx_children(&jsx_element_ref(node).children, offset)
             }
             MarkupElementInner::JsxFragment { node, offset } => {
@@ -1629,6 +1616,11 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
                         jsx_roots::visit_expression_container_roots(self, container, offset);
                     }
                 }
+                MarkupNode::If(_) | MarkupNode::For(_) => {
+                    if let JSXChild::ExpressionContainer(container) = child {
+                        jsx_roots::visit_expression_container_roots(self, container, offset);
+                    }
+                }
                 _ => {}
             }
         }
@@ -1636,7 +1628,9 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
 }
 
 mod exact;
+mod jsx_child;
 mod jsx_roots;
+mod relief_children;
 mod source_ranges;
 #[cfg(test)]
 mod tests;
