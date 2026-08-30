@@ -40,6 +40,7 @@ export default defineConfig({
       blockquote: "src/blockquote.ts",
       breadcrumb: "src/breadcrumb.ts",
       tabs: "src/tabs.ts",
+      stepper: "src/stepper.ts",
       card: "src/card.ts",
       code: "src/code.ts",
       cluster: "src/cluster.ts",

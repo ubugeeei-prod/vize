@@ -44,4 +44,26 @@ import { TabsContent, TabsList, TabsRoot, TabsTrigger } from "./tabs.ts";
 </template>
 `,
   },
+  {
+    filename: "StepperConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { StepperContent, StepperItem, StepperList, StepperRoot, StepperTrigger } from "./stepper.ts";
+</script>
+
+<template>
+  <StepperRoot default-value="shipping">
+    <StepperList aria-label="Checkout">
+      <StepperItem completed value="shipping">
+        <StepperTrigger>Shipping</StepperTrigger>
+      </StepperItem>
+      <StepperItem value="billing">
+        <StepperTrigger>Billing</StepperTrigger>
+      </StepperItem>
+    </StepperList>
+    <StepperContent value="shipping">Shipping panel</StepperContent>
+    <StepperContent value="billing">Billing panel</StepperContent>
+  </StepperRoot>
+</template>
+`,
+  },
 ] as const;

@@ -79,6 +79,11 @@
       "import": "./dist/tabs.mjs",
       "default": "./dist/tabs.mjs"
     },
+    "./stepper": {
+      "types": "./dist/stepper.d.mts",
+      "import": "./dist/stepper.mjs",
+      "default": "./dist/stepper.mjs"
+    },
     "./card": {
       "types": "./dist/card.d.mts",
       "import": "./dist/card.mjs",

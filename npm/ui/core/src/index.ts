@@ -16,6 +16,7 @@ export * from "./block-ui.ts";
 export * from "./blockquote.ts";
 export * from "./breadcrumb.ts";
 export * from "./tabs.ts";
+export * from "./stepper.ts";
 export * from "./card.ts";
 export * from "./code.ts";
 export * from "./cluster.ts";
