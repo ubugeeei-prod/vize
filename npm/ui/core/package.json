@@ -189,6 +189,11 @@
       "import": "./dist/meter.mjs",
       "default": "./dist/meter.mjs"
     },
+    "./native-select": {
+      "types": "./dist/native-select.d.mts",
+      "import": "./dist/native-select.mjs",
+      "default": "./dist/native-select.mjs"
+    },
     "./heading": {
       "types": "./dist/heading.d.mts",
       "import": "./dist/heading.mjs",

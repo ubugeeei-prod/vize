@@ -4,6 +4,8 @@ import {
   type UiFamilyCatalogEntry,
 } from "./family-catalog-types.ts";
 
+const nativeSelectFamilyRoot = "src/families/selection/native-select/";
+
 export const selectionFamilyCatalog = [
   {
     canonicalName: "listbox",
@@ -51,6 +53,43 @@ export const selectionFamilyCatalog = [
       "id",
       "typeahead",
     ],
+    maturity: "stable",
+    owner: catalogOwner,
+  },
+  {
+    canonicalName: "native-select",
+    title: "Native Select",
+    packageSubpath: "./native-select",
+    entryFile: `${nativeSelectFamilyRoot}native-select.ts`,
+    sourceFiles: [
+      `${nativeSelectFamilyRoot}native-select.vue`,
+      `${nativeSelectFamilyRoot}native-select.ts`,
+      `${nativeSelectFamilyRoot}native-select-types.ts`,
+      `${nativeSelectFamilyRoot}native-select-value.ts`,
+    ],
+    behaviorContract: `${nativeSelectFamilyRoot}native-select.behavior.md`,
+    tests: [
+      `${nativeSelectFamilyRoot}native-select.test.ts`,
+      `${nativeSelectFamilyRoot}native-select-ssr.test.ts`,
+    ],
+    typeTests: [`${nativeSelectFamilyRoot}native-select.types.test-d.ts`],
+    rendererFixture: "families/selection/native-select/native-select.vue",
+    qualityGates: componentQualityGates,
+    bundleBudget: {
+      exportName: "NativeSelect",
+      retainedSignature: "data-vize-ui[\\s\\S]{0,40}native-select",
+      allowedRetainedFamilies: ["controllable-state"],
+      maximumJavaScriptGzipBytes: 4_800,
+      maximumCssGzipBytes: 0,
+    },
+    aliases: ["native select", "select", "form select", "html select"],
+    upstreamCoverage: [
+      "HTML select element",
+      "React Aria Select native escape hatch",
+      "Radix Select native form fallback",
+      "Reka UI Select hidden native select interop",
+    ],
+    dependencies: ["controllable-state", "id"],
     maturity: "stable",
     owner: catalogOwner,
   },

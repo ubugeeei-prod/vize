@@ -46,6 +46,7 @@ export * from "./spacer.ts";
 export * from "./stack.ts";
 export * from "./skeleton.ts";
 export * from "./meter.ts";
+export * from "./families/selection/native-select/native-select.ts";
 export * from "./heading.ts";
 export * from "./kbd.ts";
 export * from "./list.ts";

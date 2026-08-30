@@ -62,6 +62,7 @@ export default defineConfig({
       stack: "src/stack.ts",
       skeleton: "src/skeleton.ts",
       meter: "src/meter.ts",
+      "native-select": "src/families/selection/native-select/native-select.ts",
       heading: "src/heading.ts",
       kbd: "src/kbd.ts",
       list: "src/list.ts",

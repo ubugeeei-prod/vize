@@ -16,7 +16,6 @@ import type { Component } from "vue";
 export interface RecordedEmit {
   /** Emit name exactly as declared, for example `press` or `update:modelValue`. */
   readonly event: string;
-
   /** Emit arguments in declaration order. */
   readonly payload: readonly unknown[];
 }
@@ -34,7 +33,6 @@ export type PressKey =
 export interface PressResult {
   /** Whether a listener canceled the keydown, as scroll suppression for Space must. */
   readonly keydownPrevented: boolean;
-
   /** Whether a listener canceled the keyup. */
   readonly keyupPrevented: boolean;
 
@@ -236,6 +234,8 @@ function computeRole(element: HTMLElement): string | null {
     if (element.type === "range") return "slider";
     return element.type === "search" ? "searchbox" : "textbox";
   }
+  if (element instanceof HTMLSelectElement)
+    return element.multiple || element.size > 1 ? "listbox" : "combobox";
   if (element instanceof HTMLTextAreaElement) return "textbox";
   return null;
 }
