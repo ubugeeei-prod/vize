@@ -8,7 +8,7 @@ import {
   rect,
   removeLiveRegions,
 } from "./drag-and-drop-test-utils.ts";
-import { mouse, touchEvent } from "./move-test-utils.ts";
+import { mouse, touchEvent } from "./families/interaction/move/move-test-utils.ts";
 
 test("legacy touch contacts drag, hit test, and drop through document listeners", () => {
   const harness = mountDragAndDrop();

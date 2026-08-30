@@ -1,7 +1,7 @@
 import type { ShallowRef } from "vue";
 
 import { indicatorFor, readBoolean } from "./drag-and-drop-internal.ts";
-import { eventElement } from "./press-event.ts";
+import { eventElement } from "./families/interaction/press/press-event.ts";
 import {
   createSortableEvent,
   edgeForPosition,

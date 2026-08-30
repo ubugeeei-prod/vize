@@ -19,8 +19,16 @@ import { installDragListeners } from "./drag-and-drop-listeners.ts";
 import type { DragListenerSource } from "./drag-and-drop-listeners.ts";
 import { createSessionCore } from "./drag-and-drop-session.ts";
 import type { MeasuredTarget, SourceRecord, TargetRecord } from "./drag-and-drop-session.ts";
-import { capture, pointerTypeOf, surfaceErrors } from "./move-internal.ts";
-import { disableTextSelection, eventElement, isPrimaryPointer } from "./press-event.ts";
+import {
+  capture,
+  pointerTypeOf,
+  surfaceErrors,
+} from "./families/interaction/move/move-internal.ts";
+import {
+  disableTextSelection,
+  eventElement,
+  isPrimaryPointer,
+} from "./families/interaction/press/press-event.ts";
 import type {
   DragAndDropController,
   DragAndDropOptions,

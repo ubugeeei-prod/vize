@@ -20,7 +20,7 @@ import {
 } from "./drag-and-drop-internal.ts";
 import type { Point } from "./drag-and-drop-internal.ts";
 import type { DragListenerSource } from "./drag-and-drop-listeners.ts";
-import { capture, surfaceErrors } from "./move-internal.ts";
+import { capture, surfaceErrors } from "./families/interaction/move/move-internal.ts";
 import type {
   DragAnnouncementContext,
   DragPayload,

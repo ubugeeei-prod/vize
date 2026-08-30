@@ -10,7 +10,7 @@ import {
   rect,
   removeLiveRegions,
 } from "./drag-and-drop-test-utils.ts";
-import { pointer } from "./move-test-utils.ts";
+import { pointer } from "./families/interaction/move/move-test-utils.ts";
 import { createSortable, useSortable } from "./sortable.ts";
 import type { SortableEvent, SortableItemRegistration, SortableOptions } from "./sortable.ts";
 

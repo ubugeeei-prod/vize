@@ -1,8 +1,9 @@
 # Press behavior contract
 
 Normative state × input → outcome table for `@vizejs/ui/press`. Every row is
-exercised by `src/press*.test.ts`; compile-only API assertions live in
-`src/press.types.test-d.ts`.
+exercised by `src/families/interaction/press/press*.test.ts`;
+compile-only API assertions live in
+`src/families/interaction/press/press.types.test-d.ts`.
 
 | #   | State                         | Input                                  | Outcome                                                                  | Proven by                                                      |
 | --- | ----------------------------- | -------------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------- |
@@ -33,7 +34,7 @@ exercised by `src/press*.test.ts`; compile-only API assertions live in
 | P25 | disposed                      | late renderer event / explicit cancel  | bound handlers are inert; imperative mutation throws a stable diagnostic | disposal lifecycle tests                                       |
 | P26 | concurrent SSR requests       | identical component trees              | byte-identical markup contains no serialized handler or global DOM read  | `renders byte-identical SSR output…`                           |
 | P27 | SSR followed by hydration     | coordinate-free client activation      | root identity is retained; no diagnostics; callback updates render       | `hydrates without diagnostics…`                                |
-| P28 | public TypeScript API         | mutation or invalid closed-union use   | compilation rejects the misuse                                           | `src/press.types.test-d.ts`                                    |
+| P28 | public TypeScript API         | mutation or invalid closed-union use   | compilation rejects the misuse                                           | `src/families/interaction/press/press.types.test-d.ts`         |
 | P29 | template consumer             | native DOM / SSR / Vapor compilation   | handler spread and reactive state compile with no warning or fallback    | `scripts/check-renderers.ts` press fixture                     |
 
 ## Accessibility and native behavior

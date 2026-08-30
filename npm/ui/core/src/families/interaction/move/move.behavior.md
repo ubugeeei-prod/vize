@@ -1,8 +1,9 @@
 # Move behavior contract
 
 Normative state × input → outcome table for `@vizejs/ui/move`. Every row is
-exercised by `src/move*.test.ts`; compile-only assertions live in
-`src/move.types.test-d.ts`.
+exercised by `src/families/interaction/move/move*.test.ts`;
+compile-only assertions live in
+`src/families/interaction/move/move.types.test-d.ts`.
 
 | #   | State                     | Input                                                          | Outcome                                                            | Proven by              |
 | --- | ------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------ | ---------------------- |

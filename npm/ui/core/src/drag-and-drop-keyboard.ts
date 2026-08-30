@@ -3,8 +3,8 @@ import { toValue } from "vue";
 import type { DragAndDropOptions } from "./drag-and-drop-controller-types.ts";
 import { createDragEvent, readBoolean } from "./drag-and-drop-internal.ts";
 import type { SessionCore } from "./drag-and-drop-session.ts";
-import { capture, surfaceErrors } from "./move-internal.ts";
-import { eventElement } from "./press-event.ts";
+import { capture, surfaceErrors } from "./families/interaction/move/move-internal.ts";
+import { eventElement } from "./families/interaction/press/press-event.ts";
 
 type KeyboardAction = "drop" | "first" | "last" | "next" | "previous";
 

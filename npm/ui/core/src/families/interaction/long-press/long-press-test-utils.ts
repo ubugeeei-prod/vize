@@ -5,7 +5,7 @@ import type {
   LongPressProps,
 } from "./long-press.ts";
 import { createLongPress } from "./long-press.ts";
-import type { PressEvent } from "./press.ts";
+import type { PressEvent } from "../press/press.ts";
 
 const eventNames: Readonly<Record<keyof Omit<LongPressProps, `aria-${string}`>, string>> = {
   onClick: "click",

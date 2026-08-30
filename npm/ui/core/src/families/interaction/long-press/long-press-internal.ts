@@ -1,13 +1,13 @@
 import { toValue } from "vue";
 
-import { createPressEvent } from "./press-event.ts";
+import { createPressEvent } from "../press/press-event.ts";
 import type {
   LongPressEvent,
   LongPressEventType,
   LongPressOptions,
   LongPressPointerType,
 } from "./long-press-types.ts";
-import type { PressEvent } from "./press-types.ts";
+import type { PressEvent } from "../press/press-types.ts";
 
 const defaultThreshold = 500;
 const invalidOptionDiagnostic = "VIZE_UI_LONG_PRESS_OPTION";

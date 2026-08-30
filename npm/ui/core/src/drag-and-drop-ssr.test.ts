@@ -5,7 +5,7 @@ import { createSSRApp, defineComponent, h, nextTick, ref } from "vue";
 import { renderToString } from "vue/server-renderer";
 
 import { useDragAndDrop } from "./drag-and-drop.ts";
-import { pointer } from "./move-test-utils.ts";
+import { pointer } from "./families/interaction/move/move-test-utils.ts";
 
 const SsrProbe = defineComponent({
   name: "DragAndDropSsrProbe",

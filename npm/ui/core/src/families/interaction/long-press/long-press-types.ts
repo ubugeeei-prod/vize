@@ -1,6 +1,6 @@
 import type { MaybeRefOrGetter, ShallowRef } from "vue";
 
-import type { PressEvent, PressPointerType, PressProps } from "./press-types.ts";
+import type { PressEvent, PressPointerType, PressProps } from "../press/press-types.ts";
 
 /** Pointing-device families eligible to start a long press. */
 export type LongPressPointerType = Extract<PressPointerType, "mouse" | "pen" | "pointer" | "touch">;

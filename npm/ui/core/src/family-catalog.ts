@@ -5,7 +5,8 @@ import { feedbackFamilyCatalog } from "./family-catalog-feedback.ts";
 import { focusFamilyCatalog } from "./family-catalog-focus.ts";
 import { foundationFamilyCatalog } from "./family-catalog-foundations.ts";
 import { i18nFamilyCatalog } from "./family-catalog-i18n.ts";
-import { interactionFamilyCatalog } from "./family-catalog-interactions.ts";
+import { interactionGestureFamilyCatalog } from "./families/interaction/catalog/gestures.ts";
+import { interactionSupportFamilyCatalog } from "./families/interaction/catalog/support.ts";
 import { layoutFamilyCatalog } from "./family-catalog-layout.ts";
 import { navigationFamilyCatalog } from "./family-catalog-navigation.ts";
 import { overlayFamilyCatalog } from "./family-catalog-overlays.ts";
@@ -31,7 +32,8 @@ const allFamilyCatalogEntries = [
   ...foundationFamilyCatalog,
   ...focusFamilyCatalog,
   ...i18nFamilyCatalog,
-  ...interactionFamilyCatalog,
+  ...interactionGestureFamilyCatalog,
+  ...interactionSupportFamilyCatalog,
   ...layoutFamilyCatalog,
   ...navigationFamilyCatalog,
   ...overlayFamilyCatalog,

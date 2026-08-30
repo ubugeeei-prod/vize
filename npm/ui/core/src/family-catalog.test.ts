@@ -160,19 +160,24 @@ test("new family-owned SFC primitives keep implementation and tests together", (
     ["empty-state", "src/families/feedback/empty-state/"],
     ["grid", "src/families/layout/grid/"],
     ["heading", "src/families/typography/heading/"],
+    ["hover", "src/families/interaction/hover/"],
     ["icon", "src/families/layout/icon/"],
     ["icon-button", "src/families/layout/icon/"],
     ["kbd", "src/families/typography/kbd/"],
     ["list", "src/families/layout/list/"],
     ["listbox", "src/families/selection/listbox/"],
     ["locale", "src/families/i18n/locale/"],
+    ["long-press", "src/families/interaction/long-press/"],
     ["fullscreen-button", "src/families/actions/fullscreen-button/"],
     ["meter", "src/families/feedback/meter/"],
+    ["move", "src/families/interaction/move/"],
     ["native-select", "src/families/selection/native-select/"],
     ["pagination", "src/families/navigation/pagination/"],
+    ["pointer-grace", "src/families/interaction/pointer-grace/"],
     ["portal", "src/families/overlays/portal/"],
     ["positioner", "src/families/overlays/positioner/"],
     ["popover", "src/families/overlays/popover/"],
+    ["press", "src/families/interaction/press/"],
     ["presence", "src/families/overlays/presence/"],
     ["print-button", "src/families/actions/print-button/"],
     ["progress", "src/families/feedback/progress/"],
@@ -228,7 +233,7 @@ test("new family-owned SFC primitives keep implementation and tests together", (
 });
 
 test("layout families keep root compatibility barrels", async () => {
-  for (const name of [
+  await assertFamilyBarrels("layout", [
     "aspect-ratio",
     "avatar",
     "card",
@@ -239,70 +244,40 @@ test("layout families keep root compatibility barrels", async () => {
     "separator",
     "spacer",
     "stack",
-  ] as const) {
-    const source = await readFile(path.resolve(`src/${name}.ts`), "utf8");
-
-    assert.match(
-      source,
-      new RegExp(`from "\\./families/layout/${name}/${name}\\.ts"`),
-      `${name} must keep its historical source entry as a compatibility barrel`,
-    );
-  }
+  ]);
 });
 
 test("typography families keep root compatibility barrels", async () => {
-  for (const name of ["blockquote", "code", "heading", "kbd", "text"] as const) {
-    const source = await readFile(path.resolve(`src/${name}.ts`), "utf8");
-
-    assert.match(
-      source,
-      new RegExp(`from "\\./families/typography/${name}/${name}\\.ts"`),
-      `${name} must keep its historical source entry as a compatibility barrel`,
-    );
-  }
+  await assertFamilyBarrels("typography", ["blockquote", "code", "heading", "kbd", "text"]);
 });
 
 test("navigation families keep root compatibility barrels", async () => {
-  for (const name of ["breadcrumb", "pagination", "stepper", "tabs"] as const) {
-    const source = await readFile(path.resolve(`src/${name}.ts`), "utf8");
-
-    assert.match(
-      source,
-      new RegExp(`from "\\./families/navigation/${name}/${name}\\.ts"`),
-      `${name} must keep its historical source entry as a compatibility barrel`,
-    );
-  }
+  await assertFamilyBarrels("navigation", ["breadcrumb", "pagination", "stepper", "tabs"]);
 });
 
 test("selection families keep root compatibility barrels", async () => {
-  for (const name of [
+  await assertFamilyBarrels("selection", [
     "checkbox",
     "listbox",
     "radio-group",
     "switch",
     "toggle",
     "toggle-group",
-  ] as const) {
-    const source = await readFile(path.resolve(`src/${name}.ts`), "utf8");
-
-    assert.match(
-      source,
-      new RegExp(`from "\\./families/selection/${name}/${name}\\.ts"`),
-      `${name} must keep its historical source entry as a compatibility barrel`,
-    );
-  }
+  ]);
 });
 
 test("overlay infrastructure families keep root compatibility barrels", async () => {
-  for (const name of ["alert-dialog", "portal", "positioner", "presence"] as const) {
-    const source = await readFile(path.resolve(`src/${name}.ts`), "utf8");
+  await assertFamilyBarrels("overlays", ["alert-dialog", "portal", "positioner", "presence"]);
+});
 
-    assert.match(
-      source,
-      new RegExp(`from "\\./families/overlays/${name}/${name}\\.ts"`),
-      `${name} must keep its historical source entry as a compatibility barrel`,
-    );
-  }
+test("interaction families keep root compatibility barrels", async () => {
+  await assertFamilyBarrels("interaction", [
+    "hover",
+    "long-press",
+    "move",
+    "pointer-grace",
+    "press",
+  ]);
 });
 
 test("progress family keeps root compatibility barrel", async () => {
@@ -326,7 +301,7 @@ test("progress family keeps root compatibility barrel", async () => {
 });
 
 test("feedback families keep root compatibility barrels", async () => {
-  for (const name of [
+  await assertFamilyBarrels("feedback", [
     "alert",
     "badge",
     "block-ui",
@@ -334,13 +309,17 @@ test("feedback families keep root compatibility barrels", async () => {
     "meter",
     "skeleton",
     "spinner",
-  ] as const) {
+  ]);
+});
+
+async function assertFamilyBarrels(area: string, names: readonly string[]): Promise<void> {
+  for (const name of names) {
     const source = await readFile(path.resolve(`src/${name}.ts`), "utf8");
 
     assert.match(
       source,
-      new RegExp(`from "\\./families/feedback/${name}/${name}\\.ts"`),
+      new RegExp(`from "\\./families/${area}/${name}/${name}\\.ts"`),
       `${name} must keep its historical source entry as a compatibility barrel`,
     );
   }
-});
+}

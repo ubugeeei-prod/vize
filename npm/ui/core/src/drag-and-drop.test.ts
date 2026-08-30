@@ -10,7 +10,7 @@ import {
   rect,
   removeLiveRegions,
 } from "./drag-and-drop-test-utils.ts";
-import { pointer } from "./move-test-utils.ts";
+import { pointer } from "./families/interaction/move/move-test-utils.ts";
 
 function drag(host: Element, x: number, y: number): void {
   host.dispatchEvent(pointer("pointerdown", x, y));
