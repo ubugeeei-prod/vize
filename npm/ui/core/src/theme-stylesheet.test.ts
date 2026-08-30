@@ -24,6 +24,18 @@ const sourcePresetStylesheets = new Map(
 );
 const opinionatedThemePresets = themePresets.filter((name) => name !== "headless");
 const semanticColorTokens = themeTokensForPack("color");
+const feedbackToneTokens = [
+  "color-neutral",
+  "color-neutral-contrast",
+  "color-info",
+  "color-info-contrast",
+  "color-success",
+  "color-success-contrast",
+  "color-warning",
+  "color-warning-contrast",
+  "color-danger",
+  "color-danger-contrast",
+] as const;
 const elevationTokens = themeTokensForPack("elevation");
 
 const layerStarts = new Map(
@@ -85,6 +97,9 @@ test("keeps the headless default free of visual opinion", () => {
 
   assert.match(tokens, /--vize-ui-color-canvas:Canvas[;}]/);
   assert.match(tokens, /--vize-ui-color-text:CanvasText[;}]/);
+  assert.match(tokens, /--vize-ui-color-info:LinkText[;}]/);
+  assert.match(tokens, /--vize-ui-color-success:CanvasText[;}]/);
+  assert.match(tokens, /--vize-ui-color-warning:CanvasText[;}]/);
   assert.match(tokens, /--vize-ui-elevation-raised:none[;}]/);
   assert.doesNotMatch(tokens, /oklch\(/, "headless defaults must stay on the system palette");
   assert.match(headlessPreset, /color-scheme:light dark/);
@@ -93,6 +108,23 @@ test("keeps the headless default free of visual opinion", () => {
     /--vize-ui-/,
     "the explicit headless preset must not add visual token opinion",
   );
+});
+
+test("ships semantic feedback tone tokens through every theme surface", () => {
+  const defaults = layerBlock("vize.tokens");
+
+  for (const token of feedbackToneTokens) {
+    assert.ok(semanticColorTokens.includes(token), `${token} must belong to the color pack`);
+    assert.match(defaults, new RegExp(`--vize-ui-${token}:`), `${token} must have a default`);
+    assert.equal(normalizeCss(shippedToken(token)), normalizeCss(themeTokens[token]), token);
+  }
+
+  for (const name of opinionatedThemePresets) {
+    const rule = shippedPresetRule(name);
+    for (const token of feedbackToneTokens) {
+      assert.match(rule, new RegExp(`--vize-ui-${token}:`), `${name} must ship ${token}`);
+    }
+  }
 });
 
 test("ships density scopes that retune the shared factor", () => {
@@ -239,7 +271,12 @@ test("stands down to system colors under forced colors", () => {
   assert.match(policy, /--vize-ui-color-accent:Highlight[;}]/);
   assert.match(policy, /--vize-ui-color-accent-contrast:HighlightText[;}]/);
   assert.match(policy, /--vize-ui-color-border:ButtonBorder[;}]/);
+  assert.match(policy, /--vize-ui-color-info:Highlight[;}]/);
+  assert.match(policy, /--vize-ui-color-info-contrast:HighlightText[;}]/);
+  assert.match(policy, /--vize-ui-color-success:CanvasText[;}]/);
+  assert.match(policy, /--vize-ui-color-warning:CanvasText[;}]/);
   assert.match(policy, /--vize-ui-elevation-floating:none[;}]/);
+  assert.match(policy, /--vize-ui-color-danger-contrast:Canvas[;}]/);
   assert.match(policy, /--vize-ui-focus-ring-color:Highlight[;}]/);
   assert.match(
     layerBlock("vize.preset"),

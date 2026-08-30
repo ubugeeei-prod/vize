@@ -36,6 +36,7 @@ export type {
   ThemeColorToken,
   ThemeDensityScale,
   ThemeElevationToken,
+  ThemeFeedbackToneToken,
   ThemeFocusToken,
   ThemeOpacityToken,
   ThemePresetName,

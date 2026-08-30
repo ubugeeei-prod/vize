@@ -16,7 +16,16 @@
     --vize-ui-color-accent: light-dark(oklch(0.42 0.22 264), oklch(0.84 0.16 90));
     --vize-ui-color-accent-contrast: light-dark(oklch(1 0 0), oklch(0 0 0));
     --vize-ui-color-border: light-dark(oklch(0 0 0), oklch(1 0 0));
+    --vize-ui-color-neutral: light-dark(oklch(0.22 0 0), oklch(0.9 0 0));
+    --vize-ui-color-neutral-contrast: light-dark(oklch(1 0 0), oklch(0 0 0));
+    --vize-ui-color-info: light-dark(oklch(0.36 0.2 255), oklch(0.88 0.16 250));
+    --vize-ui-color-info-contrast: light-dark(oklch(1 0 0), oklch(0 0 0));
+    --vize-ui-color-success: light-dark(oklch(0.36 0.17 150), oklch(0.86 0.15 150));
+    --vize-ui-color-success-contrast: light-dark(oklch(1 0 0), oklch(0 0 0));
+    --vize-ui-color-warning: light-dark(oklch(0.46 0.17 84), oklch(0.92 0.18 90));
+    --vize-ui-color-warning-contrast: light-dark(oklch(0 0 0), oklch(0 0 0));
     --vize-ui-color-danger: light-dark(oklch(0.43 0.22 29), oklch(0.82 0.18 35));
+    --vize-ui-color-danger-contrast: light-dark(oklch(1 0 0), oklch(0 0 0));
 
     --vize-ui-border-width-thin: 2px;
     --vize-ui-border-width-thick: 3px;

@@ -283,11 +283,12 @@ export const foundationFamilyCatalog = [
       maximumJavaScriptGzipBytes: 1_500,
       // Covers the packaged stylesheet: the token contract and presets share
       // dist/style.css with every other styled family.
-      maximumCssGzipBytes: 4_900,
+      maximumCssGzipBytes: 6_900,
     },
     aliases: [
       "design tokens",
       "semantic tokens",
+      "feedback tones",
       "cascade layers",
       "presets",
       "headless",
@@ -301,6 +302,7 @@ export const foundationFamilyCatalog = [
     upstreamCoverage: [
       "CSS cascade layers",
       "CSS custom properties",
+      "semantic feedback tones",
       "light-dark() color scheme",
       "forced-colors adaptations",
     ],

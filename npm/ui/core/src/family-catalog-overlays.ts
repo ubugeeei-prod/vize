@@ -119,7 +119,7 @@ export const overlayFamilyCatalog = [
       maximumJavaScriptGzipBytes: 1_500,
       // Covers the packaged stylesheet: motion tokens and recipes share
       // dist/style.css with every other styled family.
-      maximumCssGzipBytes: 4_900,
+      maximumCssGzipBytes: 6_900,
     },
     aliases: ["motion tokens", "easing", "view transitions", "starting style", "reduced motion"],
     upstreamCoverage: [

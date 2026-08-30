@@ -31,8 +31,9 @@ in `src/theme.types.test-d.ts`.
 | T14 | any                 | `themeTokensForPack(pack)`                                                                                   | every token belongs to exactly one independent pack, with no runtime-maintained duplicate token graph       | `publishes independent token packs without gaps or overlap`              |
 | T15 | any                 | `themeScopeAttributes()` / `applyThemeScope()`                                                               | nested theme scopes validate, deduplicate, apply, and restore preset and density attributes                 | `normalizes nested theme scope attributes...`                            |
 | T16 | browser boot        | `createThemeBootstrapScript()` before paint                                                                  | persisted preset and density choices apply to `<html>`; blocked storage and invalid values fall back safely | `creates a storage-backed no-flash theme bootstrap script`               |
-| T17 | source presets      | every opinionated preset source                                                                              | each preset owns the complete scheme-aware semantic color matrix plus elevation roles                       | `keeps every opinionated preset on the complete semantic color matrix`   |
+| T17 | source presets      | every opinionated preset source                                                                              | each preset owns the complete scheme-aware semantic color and feedback tone matrix plus elevation roles     | `keeps every opinionated preset on the complete semantic color matrix`   |
 | T18 | packaged stylesheet | `forced-colors: active`                                                                                      | the policy layer ships after presets and covers every visual color/elevation token                          | `keeps the forced-colors policy above the complete visual token surface` |
+| T19 | packaged stylesheet | feedback tone token names                                                                                    | `neutral`, `info`, `success`, `warning`, `danger`, and their contrast roles ship through defaults/presets   | `ships semantic feedback tone tokens through every theme surface`        |
 
 ## Cascade-layer order and specificity budget
 
@@ -56,6 +57,12 @@ in `src/theme.types.test-d.ts`.
   components. `--vize-ui-focus-ring-color` resolves through
   `--vize-ui-color-accent`, and space/size tokens resolve through
   `--vize-ui-density`, so one override retunes a whole phase.
+- Feedback tones are color tokens: `--vize-ui-color-neutral`,
+  `--vize-ui-color-info`, `--vize-ui-color-success`,
+  `--vize-ui-color-warning`, `--vize-ui-color-danger`, and each
+  `*-contrast` pairing. Headless defaults stay system-palette aligned, while
+  presets make the tones visually distinct for badge, alert, status, and
+  future feedback chrome.
 - `data-vize-theme` holds space-separated preset names and is inert without
   the shipped preset CSS; `headless` is an explicit no-visual-opinion preset
   for persisted theme choice, `atelier` is the Vize brand default, `midnight`

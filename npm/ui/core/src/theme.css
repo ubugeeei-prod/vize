@@ -32,7 +32,16 @@
     --vize-ui-color-accent: LinkText;
     --vize-ui-color-accent-contrast: Canvas;
     --vize-ui-color-border: GrayText;
+    --vize-ui-color-neutral: CanvasText;
+    --vize-ui-color-neutral-contrast: Canvas;
+    --vize-ui-color-info: LinkText;
+    --vize-ui-color-info-contrast: Canvas;
+    --vize-ui-color-success: CanvasText;
+    --vize-ui-color-success-contrast: Canvas;
+    --vize-ui-color-warning: CanvasText;
+    --vize-ui-color-warning-contrast: Canvas;
     --vize-ui-color-danger: #d92d20;
+    --vize-ui-color-danger-contrast: Canvas;
 
     /* Typography: families, size scale, line heights, and weights. */
     --vize-ui-type-family-sans: system-ui, sans-serif;
@@ -134,7 +143,16 @@
       --vize-ui-color-accent: Highlight;
       --vize-ui-color-accent-contrast: HighlightText;
       --vize-ui-color-border: ButtonBorder;
+      --vize-ui-color-neutral: CanvasText;
+      --vize-ui-color-neutral-contrast: Canvas;
+      --vize-ui-color-info: Highlight;
+      --vize-ui-color-info-contrast: HighlightText;
+      --vize-ui-color-success: CanvasText;
+      --vize-ui-color-success-contrast: Canvas;
+      --vize-ui-color-warning: CanvasText;
+      --vize-ui-color-warning-contrast: Canvas;
       --vize-ui-color-danger: CanvasText;
+      --vize-ui-color-danger-contrast: Canvas;
       --vize-ui-elevation-raised: none;
       --vize-ui-elevation-overlay: none;
       --vize-ui-elevation-floating: none;

@@ -13,6 +13,7 @@ import type {
   ThemeColorToken,
   ThemeDensityScale,
   ThemeElevationToken,
+  ThemeFeedbackToneToken,
   ThemePresetName,
   ThemeRadiusToken,
   ThemeSpaceToken,
@@ -35,7 +36,28 @@ export const colors: readonly ThemeColorToken[] = [
   "accent",
   "accent-contrast",
   "border",
+  "neutral",
+  "neutral-contrast",
+  "info",
+  "info-contrast",
+  "success",
+  "success-contrast",
+  "warning",
+  "warning-contrast",
   "danger",
+  "danger-contrast",
+];
+export const feedbackTones: readonly ThemeFeedbackToneToken[] = [
+  "neutral",
+  "neutral-contrast",
+  "info",
+  "info-contrast",
+  "success",
+  "success-contrast",
+  "warning",
+  "warning-contrast",
+  "danger",
+  "danger-contrast",
 ];
 export const space: readonly ThemeSpaceToken[] = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl"];
 export const radii: readonly ThemeRadiusToken[] = ["sm", "md", "lg", "full"];
@@ -52,6 +74,21 @@ type _TokenNamesAreClosed = Expect<
   Equal<
     Extract<ThemeTokenName, "color-canvas" | "space-2xl" | "density">,
     "color-canvas" | "space-2xl" | "density"
+  >
+>;
+type _FeedbackToneTokensAreClosed = Expect<
+  Equal<
+    ThemeFeedbackToneToken,
+    | "neutral"
+    | "neutral-contrast"
+    | "info"
+    | "info-contrast"
+    | "success"
+    | "success-contrast"
+    | "warning"
+    | "warning-contrast"
+    | "danger"
+    | "danger-contrast"
   >
 >;
 type _PresetNamesAreClosed = Expect<
@@ -86,6 +123,7 @@ type _LayerOrderIsLiteral = Expect<
 
 export const restore: () => void = setThemeTokens(document.createElement("div"), {
   "color-accent": "oklch(0.6 0.2 300)",
+  "color-success": "oklch(0.58 0.16 150)",
   "focus-ring-width": "3px",
 });
 
@@ -99,6 +137,8 @@ themeDensityScales.compact = "0.5";
 themeTokenPackNames[0] = "focus";
 // @ts-expect-error token pack names are closed.
 themeTokensForPack("paint");
+// @ts-expect-error feedback tone token names are closed.
+export const badFeedbackTone: ThemeFeedbackToneToken = "critical";
 // @ts-expect-error the layer order is readonly.
 themeCascadeLayerOrder[0] = "vize.ui";
 // @ts-expect-error overrides only accept known token names.

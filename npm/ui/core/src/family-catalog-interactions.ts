@@ -339,7 +339,7 @@ export const interactionFamilyCatalog = [
       retainedSignature: "visually-hidden",
       maximumJavaScriptGzipBytes: 400,
       // Covers the shared packaged stylesheet and motion tokens shipped with styled families.
-      maximumCssGzipBytes: 4_900,
+      maximumCssGzipBytes: 6_900,
     },
     aliases: ["screen reader only", "sr-only", "visually hidden"],
     upstreamCoverage: ["React Aria VisuallyHidden", "Radix VisuallyHidden"],

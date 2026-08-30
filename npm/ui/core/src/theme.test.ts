@@ -23,20 +23,24 @@ test("applies and restores token overrides on a real element", () => {
 
   const restore = setThemeTokens(element, {
     "color-accent": "oklch(0.6 0.2 300)",
+    "color-success": "oklch(0.58 0.16 150)",
     "radius-md": "0.75rem",
     density: "0.9",
   });
   assert.equal(element.style.getPropertyValue("--vize-ui-color-accent"), "oklch(0.6 0.2 300)");
+  assert.equal(element.style.getPropertyValue("--vize-ui-color-success"), "oklch(0.58 0.16 150)");
   assert.equal(element.style.getPropertyValue("--vize-ui-radius-md"), "0.75rem");
   assert.equal(element.style.getPropertyValue("--vize-ui-density"), "0.9");
 
   restore();
   assert.equal(element.style.getPropertyValue("--vize-ui-color-accent"), "rebeccapurple");
+  assert.equal(element.style.getPropertyValue("--vize-ui-color-success"), "");
   assert.equal(element.style.getPropertyValue("--vize-ui-radius-md"), "");
   assert.equal(element.style.getPropertyValue("--vize-ui-density"), "");
   element.remove();
 
   assert.equal(themeTokenProperty("color-canvas"), "--vize-ui-color-canvas");
+  assert.equal(themeTokenProperty("color-warning-contrast"), "--vize-ui-color-warning-contrast");
   assert.equal(themeTokenProperty("density"), "--vize-ui-density");
   assert.equal(themeTokenVar("focus-ring-color"), "var(--vize-ui-focus-ring-color)");
 });
@@ -133,7 +137,16 @@ test("publishes independent token packs without gaps or overlap", () => {
     "color-accent",
     "color-accent-contrast",
     "color-border",
+    "color-neutral",
+    "color-neutral-contrast",
+    "color-info",
+    "color-info-contrast",
+    "color-success",
+    "color-success-contrast",
+    "color-warning",
+    "color-warning-contrast",
     "color-danger",
+    "color-danger-contrast",
   ]);
   assert.deepEqual(themeTokensForPack("density"), ["density"]);
   assert.throws(

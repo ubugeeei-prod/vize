@@ -21,7 +21,16 @@
       oklch(from oklch(0.973 0.032 330) calc(l - 0.11) c h),
       oklch(0.39 0.046 303)
     );
+    --vize-ui-color-neutral: light-dark(oklch(0.47 0.04 286), oklch(0.82 0.035 84));
+    --vize-ui-color-neutral-contrast: light-dark(oklch(1 0.015 88), oklch(0.17 0.035 296));
+    --vize-ui-color-info: light-dark(oklch(0.55 0.16 235), oklch(0.8 0.14 232));
+    --vize-ui-color-info-contrast: light-dark(oklch(1 0 0), oklch(0.14 0.04 235));
+    --vize-ui-color-success: light-dark(oklch(0.52 0.15 148), oklch(0.78 0.14 150));
+    --vize-ui-color-success-contrast: light-dark(oklch(1 0 0), oklch(0.14 0.04 150));
+    --vize-ui-color-warning: light-dark(oklch(0.68 0.17 82), oklch(0.88 0.15 86));
+    --vize-ui-color-warning-contrast: light-dark(oklch(0.18 0.04 82), oklch(0.18 0.04 86));
     --vize-ui-color-danger: light-dark(oklch(0.55 0.2 28), oklch(0.76 0.16 32));
+    --vize-ui-color-danger-contrast: light-dark(oklch(1 0 0), oklch(0.16 0.04 32));
 
     --vize-ui-type-leading-normal: 1.55;
     --vize-ui-radius-md: 0.75rem;

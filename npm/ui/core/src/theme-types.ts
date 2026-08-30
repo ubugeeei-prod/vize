@@ -1,3 +1,16 @@
+/** Feedback semantic tone roles and their readable foreground pairings. */
+export type ThemeFeedbackToneToken =
+  | "neutral"
+  | "neutral-contrast"
+  | "info"
+  | "info-contrast"
+  | "success"
+  | "success-contrast"
+  | "warning"
+  | "warning-contrast"
+  | "danger"
+  | "danger-contrast";
+
 /** Semantic color roles. */
 export type ThemeColorToken =
   | "canvas"
@@ -7,7 +20,7 @@ export type ThemeColorToken =
   | "accent"
   | "accent-contrast"
   | "border"
-  | "danger";
+  | ThemeFeedbackToneToken;
 
 /** Typography tokens: families, the size scale, line heights, and weights. */
 export type ThemeTypeToken =
