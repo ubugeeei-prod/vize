@@ -164,6 +164,24 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn a_kebab_component_model_camelizes_the_update_listener() {
+    assert_eq!(
+        assembled(r#"<Foo v-model:auto-send="autoSendEnabled" />"#),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, {
+    \"auto-send\": autoSendEnabled,
+    \"onUpdate:autoSend\": $event => ((autoSendEnabled) = $event)
+  }, null, 8 /* PROPS */, [\"auto-send\", \"onUpdate:autoSend\"]))
+}")
+    );
+}
+
+#[test]
 fn a_dynamic_component_model_uses_computed_props() {
     assert_eq!(
         assembled(r#"<Foo v-model:[field]="msg" />"#),

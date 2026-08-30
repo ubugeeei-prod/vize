@@ -2,7 +2,7 @@
 
 use alloc::vec::Vec as StdVec;
 use vize_s0::Span;
-use vize_s2::expr::ExprRef;
+use vize_s2::expr::{ExprRef, OpaqueReason};
 use vize_s2::op::{Attribute, BindOp, BindingOp, DynamicName, OnOp, VueHtmlOp, VueTextOp};
 
 use super::EmitCx;
@@ -246,7 +246,8 @@ fn pieces_have_named(pieces: &[Piece<'_>], name: &str) -> bool {
 fn pieces_have_inline_on(pieces: &[Piece<'_>]) -> bool {
     pieces.iter().any(|piece| match piece {
         Piece::On(event) => on::forces_inline_on(event)
-            || matches!(event.handler, Some(ExprRef::Js(js)) if on::is_inline_handler_source(js.source)),
+            || matches!(event.handler, Some(ExprRef::Js(js)) if on::is_inline_handler_source(js.source))
+            || matches!(event.handler, Some(ExprRef::Opaque(opaque)) if opaque.reason == OpaqueReason::MultiStatement),
         Piece::ModelUpdate { .. } => true,
         _ => false,
     })

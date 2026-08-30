@@ -13,6 +13,8 @@
 //! `Compound` have no P2-8 producer, see the record) are assigned by
 //! [`opaque_at`], the only constructor that names a reason directly.
 
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use vize_s0::{Span, String, cstr};
 use vize_s2::expr::{ExprRef, OpaqueExpr, OpaqueReason, VueFilterExpr};
 
@@ -30,6 +32,31 @@ pub(crate) fn trimmed<'a>(cx: &Cx<'a>, text: &'a str) -> (&'a str, Span) {
 pub(crate) fn expr_at<'a>(cx: &Cx<'a>, text: &'a str) -> ExprRef<'a> {
     let (slice, span) = trimmed(cx, text);
     ExprRef::parse_js_in(cx.allocator, slice, span)
+}
+
+/// `v-on` handler admission: a lone expression keeps the retained JS
+/// payload, while a valid statement body that cannot be represented by one
+/// expression is classified explicitly as `Opaque(MultiStatement)`.
+pub(crate) fn handler_expr_at<'a>(cx: &Cx<'a>, text: &'a str) -> ExprRef<'a> {
+    let expr = expr_at(cx, text);
+    let ExprRef::Opaque(opaque) = expr else {
+        return expr;
+    };
+    if opaque.reason != OpaqueReason::ParseRejected || !parses_as_program(cx, opaque.source) {
+        return expr;
+    }
+    opaque_at(cx, OpaqueReason::MultiStatement, opaque.source, opaque.span)
+}
+
+fn parses_as_program(cx: &Cx<'_>, source: &str) -> bool {
+    Parser::new(
+        cx.allocator.as_oxc(),
+        source,
+        SourceType::ts().with_module(true),
+    )
+    .parse()
+    .diagnostics
+    .is_empty()
 }
 
 /// Interpolation / `v-bind` value admission: Vue 2 pipe filters first

@@ -34,15 +34,17 @@ pub(super) fn hoist_static_element(cx: &mut EmitCx<'_>, element: &ElementOp<'_>)
 }
 
 pub(super) fn is_hoistable(element: &ElementOp<'_>) -> bool {
-    element.namespace == Namespace::Html
-        && element.bindings.is_empty()
-        && element.children.ops.iter().all(is_hoistable_child)
+    element.namespace == Namespace::Html && is_static_element_tree(element)
 }
 
-fn is_hoistable_child(op: &Op<'_>) -> bool {
+pub(super) fn is_static_element_tree(element: &ElementOp<'_>) -> bool {
+    element.bindings.is_empty() && element.children.ops.iter().all(is_static_tree_child)
+}
+
+fn is_static_tree_child(op: &Op<'_>) -> bool {
     match op {
         Op::Text(_) => true,
-        Op::Element(element) => is_hoistable(element),
+        Op::Element(element) => is_static_element_tree(element),
         _ => false,
     }
 }

@@ -27,7 +27,7 @@ use vize_s2::op::{BindOp, BindingOp, DynamicName, OnOp, VueSyncOp};
 use super::cx::{Cx, attr_slice, attr_span};
 use super::directive::{Arg, Directive};
 use super::element::attr_value_text;
-use super::expr::{desc, expr_at, filter_expr_at};
+use super::expr::{desc, expr_at, filter_expr_at, handler_expr_at};
 
 /// The provenance rule of the same-name expansion.
 pub(crate) const RULE_SAME_NAME: &str = "normalize.bind.same-name";
@@ -176,7 +176,7 @@ pub(crate) fn lower_on<'a>(
     }
     let handler = attr_value_text(element, index)
         .filter(|text| !text.trim().is_empty())
-        .map(|text| expr_at(cx, text));
+        .map(|text| handler_expr_at(cx, text));
     cx.record(
         "lower.on",
         node,

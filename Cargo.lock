@@ -4028,6 +4028,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "vize_s1"
+version = "0.387.0"
+dependencies = [
+ "davinci_test_support",
+ "vize_armature",
+ "vize_carton",
+ "vize_relief",
+]
+
+[[package]]
 name = "vize_s1_to_s2"
 version = "0.387.0"
 dependencies = [
@@ -4037,22 +4047,14 @@ dependencies = [
  "insta",
  "oxc_ast",
  "oxc_ast_visit",
+ "oxc_parser",
+ "oxc_span",
  "vize_atelier_sfc",
  "vize_carton",
  "vize_croquis",
  "vize_davinci",
  "vize_s1",
  "vize_s2",
-]
-
-[[package]]
-name = "vize_s1"
-version = "0.387.0"
-dependencies = [
- "davinci_test_support",
- "vize_armature",
- "vize_carton",
- "vize_relief",
 ]
 
 [[package]]

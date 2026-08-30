@@ -1,6 +1,6 @@
 //! Object key spelling for component `ui.model` product props.
 
-use vize_s0::String;
+use vize_s0::{String, camelize};
 use vize_s2::expr::JsExpr;
 
 use super::EmitCx;
@@ -67,7 +67,7 @@ pub(super) fn modifiers_key(name: ModelName<'_>) -> ModelModifiersKey<'_> {
 
 pub(super) fn static_update_key(prop: &str) -> String {
     let mut key = String::from("onUpdate:");
-    key.push_str(prop);
+    key.push_str(camelize(prop).as_str());
     key
 }
 

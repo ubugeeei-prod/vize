@@ -5,7 +5,7 @@
 
 use oxc_ast::ast::{ChainElement, Expression};
 use vize_s0::{SmallVec, String, camelize, capitalize};
-use vize_s2::expr::{ExprRef, JsExpr};
+use vize_s2::expr::{ExprRef, JsExpr, OpaqueReason};
 use vize_s2::op::{DynamicName, OnOp};
 
 use super::EmitCx;
@@ -42,6 +42,7 @@ pub(super) fn admit_on(on: &OnOp<'_>) -> Result<(), EmitError> {
     classify(on)?;
     match on.handler {
         None | Some(ExprRef::Js(_)) => Ok(()),
+        Some(ExprRef::Opaque(opaque)) if opaque.reason == OpaqueReason::MultiStatement => Ok(()),
         Some(expr) => Err(EmitError::unsupported_at(
             Reason::OnHandlerNotJs,
             expr.span(),
@@ -167,6 +168,11 @@ pub(super) fn emit_wrapped_handler(
     }
     match on.handler {
         Some(ExprRef::Js(js)) => emit_handler(cx, js),
+        Some(ExprRef::Opaque(opaque)) if opaque.reason == OpaqueReason::MultiStatement => {
+            cx.buf.push("$event => {");
+            cx.buf.push(opaque.source);
+            cx.buf.push("}");
+        }
         None => cx.buf.push("() => {}"),
         Some(expr) => {
             return Err(EmitError::unsupported_at(

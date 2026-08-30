@@ -12,7 +12,7 @@ use alloc::vec::Vec as StdVec;
 
 use vize_s0::String;
 use vize_s2::expr::ExprRef;
-use vize_s2::op::{BindingOp, ElementOp, Namespace, Op, Region, TextOp};
+use vize_s2::op::{BindingOp, ElementOp, Op, Region, TextOp};
 use vize_s2::scope::ScopeOrigin;
 
 use super::EmitCx;
@@ -20,7 +20,7 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::children::{emit_create_text_vnode, emit_slot_text_child};
-use super::hoist::{emit_hoisted_element, is_hoistable};
+use super::hoist::{emit_hoisted_element, is_static_element_tree};
 use super::js::{escape_js_string, is_valid_js_identifier};
 use super::vnode::emit_array_child;
 use crate::pass::{SlotCarrier, SlotFacts, SlotName, SlotParams};
@@ -99,15 +99,7 @@ fn walk_admit(region: &Region<'_>) -> Result<(), EmitError> {
                 }
                 walk_admit(&element.children)?;
             }
-            Op::Element(element) => {
-                if element.namespace != Namespace::Html {
-                    return Err(EmitError::unsupported_at(
-                        Reason::SlotDefaultShape,
-                        element.span,
-                    ));
-                }
-                walk_admit(&element.children)?;
-            }
+            Op::Element(element) => walk_admit(&element.children)?,
             Op::Component(component) => walk_admit(&component.children)?,
             Op::If(if_op) => {
                 for branch in if_op.branches.iter() {
@@ -324,7 +316,9 @@ pub(super) fn capture(
 fn emit_slot_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
     match op {
         Op::Text(_) | Op::Interpolation(_) => emit_slot_text_child(cx, op),
-        Op::Element(element) if is_hoistable(element) => emit_hoisted_element(cx, element),
+        Op::Element(element) if is_static_element_tree(element) => {
+            emit_hoisted_element(cx, element)
+        }
         Op::Element(_) | Op::Component(_) | Op::If(_) | Op::For(_) | Op::Slot(_) => {
             emit_array_child(cx, op)
         }

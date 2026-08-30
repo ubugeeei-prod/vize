@@ -4,7 +4,7 @@ use alloc::vec::Vec as StdVec;
 
 use oxc_ast::ast::{BindingIdentifier, Expression, IdentifierReference};
 use oxc_ast_visit::Visit;
-use vize_s2::expr::{ExprRef, JsExpr};
+use vize_s2::expr::{ExprRef, JsExpr, OpaqueReason};
 use vize_s2::op::{DynamicName, OnOp};
 
 use super::buf::Buf;
@@ -19,6 +19,7 @@ pub(super) fn admit(on: &OnOp<'_>) -> Result<(), EmitError> {
     dynamic_name(on)?;
     match on.handler {
         None | Some(ExprRef::Js(_)) => Ok(()),
+        Some(ExprRef::Opaque(opaque)) if opaque.reason == OpaqueReason::MultiStatement => Ok(()),
         Some(expr) => Err(EmitError::unsupported_at(
             Reason::OnHandlerNotJs,
             expr.span(),

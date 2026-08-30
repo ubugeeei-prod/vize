@@ -16,6 +16,10 @@ const BATTERY: &[(&str, &str)] = &[
     ("upd_Foo", r#"<div @update:Foo="h"></div>"#),
     ("custom_el", r#"<div @customEvent="h"></div>"#),
     ("custom_comp", r#"<Foo @customEvent="h" />"#),
+    (
+        "multi_statement",
+        r#"<div @click="open = false; save();"></div>"#,
+    ),
     ("vue_mounted", r#"<div @vue:mounted="h"></div>"#),
     ("vue_comp", r#"<Foo @vue:mounted="h" />"#),
     ("vnode_hook", r#"<div @vnode-before-mount="h"></div>"#),

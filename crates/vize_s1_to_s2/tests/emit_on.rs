@@ -67,6 +67,21 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn a_multi_statement_click_wraps_as_a_block_body() {
+    assert_eq!(
+        assembled(r#"<div @click="open = false; save();"></div>"#),
+        "\
+const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    onClick: $event => {open = false; save();}
+  }, null, 8 /* PROPS */, [\"onClick\"]))
+}"
+    );
+}
+
+#[test]
 fn a_click_stop_wraps_with_modifiers() {
     assert_eq!(
         assembled(r#"<div @click.stop="handler"></div>"#),
