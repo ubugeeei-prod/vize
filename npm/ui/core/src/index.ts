@@ -11,6 +11,7 @@ export * from "./alert.ts";
 export * from "./announcer.ts";
 export * from "./aspect-ratio.ts";
 export * from "./badge.ts";
+export * from "./cluster.ts";
 export * from "./collapsible.ts";
 export * from "./checkbox.ts";
 export * from "./collection.ts";

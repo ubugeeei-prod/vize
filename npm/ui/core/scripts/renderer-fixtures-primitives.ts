@@ -67,6 +67,25 @@ const count = ref(12);
 `,
   },
   {
+    filename: "ClusterConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { Cluster } from "./cluster.ts";
+
+const wrap = ref(true);
+</script>
+
+<template>
+  <Cluster as="nav" gap="0.75rem" align="center" justify="space-between" :wrap>
+    <template #default="{ direction, wrapMode }">
+      <span>{{ direction }} {{ wrapMode }}</span>
+      <button type="button">Apply</button>
+    </template>
+  </Cluster>
+</template>
+`,
+  },
+  {
     filename: "MeterConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

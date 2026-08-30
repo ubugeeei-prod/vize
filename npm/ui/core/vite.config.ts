@@ -35,6 +35,7 @@ export default defineConfig({
       announcer: "src/announcer.ts",
       "aspect-ratio": "src/aspect-ratio.ts",
       badge: "src/badge.ts",
+      cluster: "src/cluster.ts",
       collapsible: "src/collapsible.ts",
       button: "src/button.ts",
       link: "src/link.ts",

@@ -54,6 +54,11 @@
       "import": "./dist/badge.mjs",
       "default": "./dist/badge.mjs"
     },
+    "./cluster": {
+      "types": "./dist/cluster.d.mts",
+      "import": "./dist/cluster.mjs",
+      "default": "./dist/cluster.mjs"
+    },
     "./collapsible": {
       "types": "./dist/collapsible.d.mts",
       "import": "./dist/collapsible.mjs",
