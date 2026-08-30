@@ -81,9 +81,7 @@ pub(super) fn emit_interpolation(
             emit_to_display_string(cx, "");
             Ok(())
         }
-        ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => Err(
-            EmitError::unsupported_at(Reason::TextExpressionNotEmittable, interp.expression.span()),
-        ),
+        _ => emit_raw_interpolation_or_refuse(cx, interp.expression),
     }
 }
 
@@ -196,9 +194,131 @@ pub(super) fn emit_slot_text_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(
         ExprRef::Opaque(opaque) if is_empty_interpolation(opaque) => {
             emit_create_text_vnode(cx, core::slice::from_ref(op))
         }
-        ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => Err(
-            EmitError::unsupported_at(Reason::TextExpressionNotEmittable, interp.expression.span()),
-        ),
+        _ => {
+            if let Some(source) =
+                super::js::parse_rejected_original_raw_js(&interp.expression, false)
+            {
+                emit_slot_raw_interpolation(cx, source)
+            } else {
+                Err(EmitError::unsupported_at(
+                    Reason::TextExpressionNotEmittable,
+                    interp.expression.span(),
+                ))
+            }
+        }
+    }
+}
+
+pub(super) fn emit_slot_text_run(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError> {
+    if ops.is_empty() {
+        return Err(EmitError::unsupported(Reason::EmptyTextRun));
+    }
+    let has_interp = ops.iter().any(|op| matches!(op, Op::Interpolation(_)));
+    let is_single_space =
+        !has_interp && ops.len() == 1 && matches!(&ops[0], Op::Text(text) if text.content == " ");
+    cx.buf.use_create_text();
+    cx.buf.push(Buf::create_text_alias());
+    if is_single_space {
+        let _id = cx.walk.mint();
+        cx.buf.push("()");
+        return Ok(());
+    }
+    cx.buf.push("(");
+    emit_slot_text_like(cx, ops)?;
+    if has_interp {
+        cx.buf.push(", 1 /* TEXT */");
+    }
+    cx.buf.push(")");
+    Ok(())
+}
+
+fn emit_slot_text_like(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError> {
+    for (i, op) in ops.iter().enumerate() {
+        let id = cx.walk.mint();
+        if i > 0 {
+            cx.buf.push(" + ");
+        }
+        match op {
+            Op::Text(text) => emit_quoted_text(cx, text.content),
+            Op::Interpolation(interp) => emit_slot_interpolation(cx, interp, id)?,
+            Op::Element(_) | Op::Component(_) | Op::If(_) | Op::For(_) | Op::Slot(_) => {
+                return Err(EmitError::unsupported_op(
+                    Reason::TextRunContainsNonText,
+                    op,
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
+fn emit_slot_interpolation(
+    cx: &mut EmitCx<'_>,
+    interp: &InterpolationOp<'_>,
+    id: Option<NodeId>,
+) -> Result<(), EmitError> {
+    match interp.expression {
+        ExprRef::Js(js) => {
+            emit_to_display_string(cx, js.source);
+            Ok(())
+        }
+        ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound => {
+            let id = id.ok_or(EmitError::unsupported_at(
+                Reason::WalkIdOverflow,
+                interp.span,
+            ))?;
+            let facts = cx
+                .facts
+                .text_facts
+                .get(id)
+                .ok_or(EmitError::unsupported_at_node(
+                    Reason::MissingTextFacts,
+                    interp.span,
+                    id,
+                ))?;
+            emit_compound_parts(cx, &facts.parts, interp.span)
+        }
+        ExprRef::Opaque(opaque) if is_empty_interpolation(opaque) => {
+            emit_to_display_string(cx, "");
+            Ok(())
+        }
+        _ => {
+            if let Some(source) =
+                super::js::parse_rejected_original_raw_js(&interp.expression, false)
+            {
+                emit_to_display_string(cx, source);
+                Ok(())
+            } else {
+                Err(EmitError::unsupported_at(
+                    Reason::TextExpressionNotEmittable,
+                    interp.expression.span(),
+                ))
+            }
+        }
+    }
+}
+
+fn emit_slot_raw_interpolation(cx: &mut EmitCx<'_>, source: &str) -> Result<(), EmitError> {
+    cx.buf.use_create_text();
+    cx.buf.push(Buf::create_text_alias());
+    cx.buf.push("(");
+    emit_to_display_string(cx, source);
+    cx.buf.push(", 1 /* TEXT */)");
+    Ok(())
+}
+
+pub(super) fn emit_raw_interpolation_or_refuse(
+    cx: &mut EmitCx<'_>,
+    expression: ExprRef<'_>,
+) -> Result<(), EmitError> {
+    if let Some(raw) = super::js::parse_rejected_raw_js(&expression, false) {
+        emit_to_display_string(cx, raw.as_str());
+        Ok(())
+    } else {
+        Err(EmitError::unsupported_at(
+            Reason::TextExpressionNotEmittable,
+            expression.span(),
+        ))
     }
 }
 

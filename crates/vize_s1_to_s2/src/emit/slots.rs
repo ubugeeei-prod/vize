@@ -16,7 +16,7 @@ use super::EmitCx;
 use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
-use super::children::{emit_create_text_vnode, emit_slot_text_child};
+use super::children::{emit_slot_text_child, emit_slot_text_run};
 use super::hoist::{emit_hoisted_element, is_static_element_tree};
 use super::js::{escape_js_string, is_valid_js_identifier};
 use super::vnode::emit_array_child;
@@ -256,7 +256,7 @@ pub(super) fn emit_template_pieces(
             .all(|op| matches!(op, Op::Text(_) | Op::Interpolation(_)))
     {
         bucket.push(capture(cx, |cx| {
-            emit_create_text_vnode(cx, children.ops.as_slice())
+            emit_slot_text_run(cx, children.ops.as_slice())
         })?);
         return Ok(());
     }

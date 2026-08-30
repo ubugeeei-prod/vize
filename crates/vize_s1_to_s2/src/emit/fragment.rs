@@ -12,8 +12,8 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::children::{
-    emit_create_text_vnode, emit_interpolation, emit_plain_text_vnode, emit_to_display_string,
-    is_empty_interpolation,
+    emit_create_text_vnode, emit_interpolation, emit_plain_text_vnode,
+    emit_raw_interpolation_or_refuse, emit_to_display_string, is_empty_interpolation,
 };
 use super::helper::Helper;
 use super::sfc_style;
@@ -231,9 +231,10 @@ fn emit_interp(
             emit_to_display_string(cx, "");
             Ok(())
         }
-        ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => Err(
-            EmitError::unsupported_at(Reason::TextExpressionNotEmittable, interp.expression.span()),
-        ),
+        _ => {
+            start_item(cx, first);
+            emit_raw_interpolation_or_refuse(cx, interp.expression)
+        }
     }
 }
 

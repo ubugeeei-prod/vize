@@ -55,12 +55,6 @@ const SOURCE_CASES: &[Case] = &[
         Reason::BindValueNotJs,
     ),
     case(
-        "line_comment_bind_value",
-        r#"<div :id="ok // comment"></div>"#,
-        VUE3,
-        Reason::BindValueNotJs,
-    ),
-    case(
         "bad_custom_directive",
         r#"<div v-pin="a."></div>"#,
         VUE3,
@@ -205,7 +199,7 @@ fn committed_fixture_refusal_census_is_pinned() {
             ("array_builtin_cannot_use_slot_object", 1),
             ("bare_style_attr_with_dynamic_style", 1),
             ("bind_name_not_js", 1),
-            ("bind_value_not_js", 2),
+            ("bind_value_not_js", 1),
             ("custom_directive_expr_not_js", 1),
             ("duplicate_class_binding", 1),
             ("duplicate_style_binding", 1),

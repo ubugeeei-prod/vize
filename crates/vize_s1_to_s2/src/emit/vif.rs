@@ -92,10 +92,17 @@ fn emit_condition(cx: &mut EmitCx<'_>, condition: &ExprRef<'_>) -> Result<(), Em
             cx.buf.push(js.source);
             Ok(())
         }
-        _ => Err(EmitError::unsupported_at(
-            Reason::IfConditionNotJs,
-            condition.span(),
-        )),
+        _ => {
+            if let Some(raw) = super::js::parse_rejected_raw_js(condition, false) {
+                cx.buf.push(raw.as_str());
+                Ok(())
+            } else {
+                Err(EmitError::unsupported_at(
+                    Reason::IfConditionNotJs,
+                    condition.span(),
+                ))
+            }
+        }
     }
 }
 

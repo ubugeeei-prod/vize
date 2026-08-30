@@ -1,8 +1,12 @@
-//! The shipped codegen's JS-string escape, copied because this crate
-//! cannot depend on `vize_atelier_core` (published, `std`; ricalco stays
-//! `no_std + alloc`). Byte-identical output is the P2-11 bar.
+//! JS-string escaping and raw expression helpers copied because this crate
+//! cannot depend on `vize_atelier_core`; byte-identical output is the P2-11 bar.
 
-use vize_s0::{String, ToCompactString};
+use vize_s0::expression_guard::scan::{
+    keyword_allows_regex_after, skip_identifier, skip_line_comment, skip_number, skip_quoted,
+    skip_regex,
+};
+use vize_s0::{Allocator, Span, String, ToCompactString};
+use vize_s2::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
 
 fn decode_html_entities(s: &str) -> String {
     if !s.contains('&') {
@@ -82,6 +86,179 @@ pub(super) fn is_valid_js_identifier(s: &str) -> bool {
     chars.all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$')
 }
 
+pub(super) enum RawJs<'a> {
+    Borrowed(&'a str),
+    Owned(String),
+}
+
+impl RawJs<'_> {
+    pub(super) fn as_str(&self) -> &str {
+        match self {
+            Self::Borrowed(source) => source,
+            Self::Owned(source) => source.as_str(),
+        }
+    }
+}
+
+pub(super) fn parse_rejected_raw_js<'a>(
+    expr: &ExprRef<'a>,
+    allow_identifier: bool,
+) -> Option<RawJs<'a>> {
+    let opaque = parse_rejected_opaque(expr)?;
+    if allow_identifier && is_valid_js_identifier(opaque.source) {
+        return Some(RawJs::Borrowed(opaque.source));
+    }
+    if trailing_block_comment_value_is_js(opaque.source, opaque.span) {
+        return Some(RawJs::Borrowed(opaque.source));
+    }
+    line_comment_value_as_js(opaque)
+}
+
+pub(super) fn parse_rejected_original_raw_js<'a>(
+    expr: &ExprRef<'a>,
+    allow_identifier: bool,
+) -> Option<&'a str> {
+    let opaque = parse_rejected_opaque(expr)?;
+    if allow_identifier && is_valid_js_identifier(opaque.source) {
+        return Some(opaque.source);
+    }
+    if trailing_block_comment_value_is_js(opaque.source, opaque.span)
+        || line_comment_value_as_js(opaque).is_some()
+    {
+        return Some(opaque.source);
+    }
+    None
+}
+
+fn parse_rejected_opaque<'a>(expr: &ExprRef<'a>) -> Option<&'a OpaqueExpr<'a>> {
+    let ExprRef::Opaque(opaque) = expr else {
+        return None;
+    };
+    (opaque.reason == OpaqueReason::ParseRejected).then_some(opaque)
+}
+
+fn source_is_js(source: &str, span_start: u32) -> bool {
+    let allocator = Allocator::new();
+    JsExpr::parse_in(
+        &allocator,
+        source,
+        Span::new(span_start, span_start + source.len() as u32),
+    )
+    .is_ok()
+}
+
+fn trailing_block_comment_value_is_js(source: &str, span: Span) -> bool {
+    strip_trailing_block_comments(source)
+        .map(|stripped| source_is_js(stripped, span.start))
+        .unwrap_or(false)
+}
+
+fn strip_trailing_block_comments(mut source: &str) -> Option<&str> {
+    let original = source;
+    loop {
+        source = source.trim_end();
+        if let Some(end) = source.strip_suffix("*/")
+            && let Some(start) = end.rfind("/*")
+        {
+            source = &end[..start];
+            continue;
+        }
+        break;
+    }
+    let stripped = source.trim_end();
+    (stripped.len() < original.len() && !stripped.trim().is_empty()).then_some(stripped)
+}
+
+fn line_comment_value_as_js<'a>(opaque: &OpaqueExpr<'a>) -> Option<RawJs<'a>> {
+    if !opaque.source.contains("//") {
+        return None;
+    }
+    let converted = convert_line_comments_to_block(opaque.source);
+    if converted == opaque.source || !source_is_js(converted.as_str(), opaque.span.start) {
+        return None;
+    }
+    Some(RawJs::Owned(converted))
+}
+
+fn convert_line_comments_to_block(content: &str) -> String {
+    let bytes = content.as_bytes();
+    let mut result = String::with_capacity(content.len());
+    let mut can_start_regex = true;
+    let mut i = 0;
+    while i < bytes.len() {
+        match bytes[i] {
+            b'\'' | b'"' | b'`' => {
+                let end = skip_quoted(bytes, i + 1, bytes[i]).min(bytes.len());
+                result.push_str(&content[i..end]);
+                i = end;
+                can_start_regex = false;
+            }
+            b'/' if bytes.get(i + 1) == Some(&b'/') => {
+                let start = i + 2;
+                let end = skip_line_comment(bytes, start);
+                result.push_str("/* ");
+                result.push_str(content[start..end].trim_end().replace("*/", "* /").as_str());
+                result.push_str(" */");
+                i = end;
+            }
+            b'/' if bytes.get(i + 1) == Some(&b'*') => {
+                let mut end = i + 2;
+                while end + 1 < bytes.len() && !(bytes[end] == b'*' && bytes[end + 1] == b'/') {
+                    end += 1;
+                }
+                let end = if end + 1 < bytes.len() {
+                    end + 2
+                } else {
+                    bytes.len()
+                };
+                result.push_str(&content[i..end]);
+                i = end;
+            }
+            b'/' if can_start_regex => {
+                if let Some(end) = skip_regex(bytes, i + 1) {
+                    result.push_str(&content[i..end]);
+                    i = end;
+                    can_start_regex = false;
+                } else {
+                    result.push('/');
+                    i += 1;
+                }
+            }
+            b'a'..=b'z' | b'A'..=b'Z' | b'_' | b'$' => {
+                let end = skip_identifier(bytes, i + 1);
+                result.push_str(&content[i..end]);
+                can_start_regex = keyword_allows_regex_after(&bytes[i..end]);
+                i = end;
+            }
+            b'0'..=b'9' => {
+                let end = skip_number(bytes, i + 1);
+                result.push_str(&content[i..end]);
+                i = end;
+                can_start_regex = false;
+            }
+            b')' | b']' | b'}' => {
+                result.push(bytes[i] as char);
+                i += 1;
+                can_start_regex = false;
+            }
+            b'+' | b'-' if bytes.get(i + 1) == Some(&bytes[i]) => {
+                result.push_str(&content[i..i + 2]);
+                i += 2;
+                can_start_regex = false;
+            }
+            _ => {
+                let ch = content[i..].chars().next().unwrap_or('\u{FFFD}');
+                result.push(ch);
+                i += ch.len_utf8();
+                if !ch.is_ascii_whitespace() {
+                    can_start_regex = true;
+                }
+            }
+        }
+    }
+    result
+}
+
 /// Escape `s` for a JavaScript double-quoted string literal, matching
 /// `vize_atelier_core::codegen::helpers::escape_js_string`.
 pub(super) fn escape_js_string(s: &str) -> String {
@@ -132,5 +309,42 @@ pub(super) fn push_ident_key(cx: &mut super::EmitCx<'_>, name: &str) {
         cx.buf.push("\"");
     } else {
         cx.buf.push(name);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use vize_s0::Span;
+    use vize_s2::expr::{ExprRef, OpaqueExpr, OpaqueReason};
+
+    use super::{convert_line_comments_to_block, parse_rejected_raw_js};
+
+    fn rejected<'a>(allocator: &'a vize_s0::Allocator, source: &'a str) -> ExprRef<'a> {
+        ExprRef::Opaque(allocator.alloc(OpaqueExpr {
+            reason: OpaqueReason::ParseRejected,
+            source,
+            span: Span::new(0, source.len() as u32),
+        }))
+    }
+
+    #[test]
+    fn rewrites_line_comments_only_when_rewritten_source_is_js() {
+        let allocator = vize_s0::Allocator::new();
+        let raw = parse_rejected_raw_js(&rejected(&allocator, "ok // comment"), false)
+            .expect("line comment can be rewritten");
+        assert_eq!(raw.as_str(), "ok /*  comment */");
+        assert!(parse_rejected_raw_js(&rejected(&allocator, "ok. // comment"), false).is_none());
+    }
+
+    #[test]
+    fn preserves_regex_strings_and_blocks_while_rewriting_line_comments() {
+        assert_eq!(
+            convert_line_comments_to_block("url.replace(/https?:\\/\\/[^/]+\\//, '//')"),
+            "url.replace(/https?:\\/\\/[^/]+\\//, '//')"
+        );
+        assert_eq!(
+            convert_line_comments_to_block("x /* // */ + y // */"),
+            "x /* // */ + y /*  * / */"
+        );
     }
 }

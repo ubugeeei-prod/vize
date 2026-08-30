@@ -11,8 +11,8 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::children::{
-    emit_create_text_vnode, emit_interpolation, emit_plain_text_vnode, emit_to_display_string,
-    is_empty_interpolation,
+    emit_create_text_vnode, emit_interpolation, emit_plain_text_vnode,
+    emit_raw_interpolation_or_refuse, emit_to_display_string, is_empty_interpolation,
 };
 use super::hoist::{emit_hoisted_element, is_hoistable};
 use super::js::escape_js_string;
@@ -220,9 +220,10 @@ fn emit_fallback_interp(
             emit_to_display_string(cx, "");
             Ok(())
         }
-        ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => Err(
-            EmitError::unsupported_at(Reason::TextExpressionNotEmittable, interp.expression.span()),
-        ),
+        _ => {
+            start_fallback_item(cx, compact, first);
+            emit_raw_interpolation_or_refuse(cx, interp.expression)
+        }
     }
 }
 
