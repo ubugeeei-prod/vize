@@ -59,6 +59,11 @@
       "import": "./dist/badge.mjs",
       "default": "./dist/badge.mjs"
     },
+    "./banner": {
+      "types": "./dist/banner.d.mts",
+      "import": "./dist/banner.mjs",
+      "default": "./dist/banner.mjs"
+    },
     "./block-ui": {
       "types": "./dist/block-ui.d.mts",
       "import": "./dist/block-ui.mjs",

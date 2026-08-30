@@ -1,5 +1,29 @@
 import { statusLightRendererFixtures } from "./renderer-fixtures-status-light.ts";
 
+const bannerRendererFixtures = [
+  {
+    filename: "BannerConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { Banner } from "./families/feedback/banner/banner.ts";
+
+const open = ref(true);
+</script>
+
+<template>
+  <Banner v-model:open="open" dismissible role="status" tone="info">
+    <template #title="{ live, state }">
+      Deploy {{ state }} {{ live }}
+    </template>
+    <template #actions="{ dismiss }">
+      <button type="button" @click="dismiss()">Dismiss</button>
+    </template>
+  </Banner>
+</template>
+`,
+  },
+] as const;
+
 const calloutRendererFixtures = [
   {
     filename: "CalloutConsumer.vue",
@@ -34,6 +58,7 @@ const role = ref<"note" | "status">("status");
 ] as const;
 
 export const feedbackRendererFixtures = [
+  ...bannerRendererFixtures,
   ...calloutRendererFixtures,
   ...statusLightRendererFixtures,
 ] as const;

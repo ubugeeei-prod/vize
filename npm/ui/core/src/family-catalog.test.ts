@@ -138,90 +138,39 @@ test("stable catalog entries have every required artifact", async () => {
 });
 
 test("new family-owned SFC primitives keep implementation and tests together", () => {
-  const buttonGroup = stableEntries.find((entry) => entry.canonicalName === "button-group");
-  const statusLight = stableEntries.find((entry) => entry.canonicalName === "status-light");
-  const actionGroupRoot = "src/families/actions/button-group/";
-  const familyRoot = "src/families/feedback/status-light/";
-  const iconFamilies = stableEntries.filter(
-    (entry) => entry.canonicalName === "icon" || entry.canonicalName === "icon-button",
-  );
-  const iconFamilyRoot = "src/families/layout/icon/";
-  const surface = stableEntries.find((entry) => entry.canonicalName === "surface");
-  const surfaceFamilyRoot = "src/families/layout/surface/";
+  const familyRoots = new Map([
+    ["banner", "src/families/feedback/banner/"],
+    ["button-group", "src/families/actions/button-group/"],
+    ["callout", "src/families/feedback/callout/"],
+    ["icon", "src/families/layout/icon/"],
+    ["icon-button", "src/families/layout/icon/"],
+    ["status-light", "src/families/feedback/status-light/"],
+    ["surface", "src/families/layout/surface/"],
+  ]);
 
-  assert.ok(buttonGroup, "button-group must stay catalogued");
-  assert.equal(buttonGroup.entryFile, `${actionGroupRoot}button-group.ts`);
-  assert.equal(buttonGroup.behaviorContract, `${actionGroupRoot}button-group.behavior.md`);
-  assert.ok(
-    buttonGroup.sourceFiles.every((file) => file.startsWith(actionGroupRoot)),
-    "button-group source files must stay in the actions family folder",
-  );
-  assert.ok(
-    buttonGroup.tests.every((file) => file.startsWith(actionGroupRoot)),
-    "button-group tests must stay beside the actions family source",
-  );
-  assert.ok(
-    buttonGroup.typeTests?.every((file) => file.startsWith(actionGroupRoot)),
-    "button-group type tests must stay beside the actions family source",
-  );
+  for (const [canonicalName, familyRoot] of familyRoots) {
+    const entry = stableEntries.find((candidate) => candidate.canonicalName === canonicalName);
 
-  assert.ok(statusLight, "status-light must stay catalogued");
-  assert.equal(statusLight.entryFile, `${familyRoot}status-light.ts`);
-  assert.equal(statusLight.behaviorContract, `${familyRoot}status-light.behavior.md`);
-  assert.ok(
-    statusLight.sourceFiles.every((file) => file.startsWith(familyRoot)),
-    "status-light source files must stay in the feedback family folder",
-  );
-  assert.ok(
-    statusLight.tests.every((file) => file.startsWith(familyRoot)),
-    "status-light tests must stay beside the feedback family source",
-  );
-  assert.ok(
-    statusLight.typeTests?.every((file) => file.startsWith(familyRoot)),
-    "status-light type tests must stay beside the feedback family source",
-  );
-
-  assert.deepEqual(
-    iconFamilies.map((entry) => entry.canonicalName),
-    ["icon", "icon-button"],
-    "icon families must stay catalogued",
-  );
-  for (const entry of iconFamilies) {
+    assert.ok(entry, `${canonicalName} must stay catalogued`);
     assert.ok(
-      entry.entryFile.startsWith(iconFamilyRoot),
-      `${entry.canonicalName} entry must stay in the layout icon family folder`,
+      entry.entryFile.startsWith(familyRoot),
+      `${canonicalName} entry must stay in its family folder`,
     );
     assert.ok(
-      entry.behaviorContract.startsWith(iconFamilyRoot),
-      `${entry.canonicalName} behavior contract must stay in the layout icon family folder`,
+      entry.behaviorContract.startsWith(familyRoot),
+      `${canonicalName} behavior contract must stay in its family folder`,
     );
     assert.ok(
-      entry.sourceFiles.every((file) => file.startsWith(iconFamilyRoot)),
-      `${entry.canonicalName} source files must stay beside the layout icon source`,
+      entry.sourceFiles.every((file) => file.startsWith(familyRoot)),
+      `${canonicalName} source files must stay beside the family source`,
     );
     assert.ok(
-      entry.tests.every((file) => file.startsWith(iconFamilyRoot)),
-      `${entry.canonicalName} tests must stay beside the layout icon source`,
+      entry.tests.every((file) => file.startsWith(familyRoot)),
+      `${canonicalName} tests must stay beside the family source`,
     );
     assert.ok(
-      entry.typeTests?.every((file) => file.startsWith(iconFamilyRoot)),
-      `${entry.canonicalName} type tests must stay beside the layout icon source`,
+      entry.typeTests?.every((file) => file.startsWith(familyRoot)),
+      `${canonicalName} type tests must stay beside the family source`,
     );
   }
-
-  assert.ok(surface, "surface must stay catalogued");
-  assert.equal(surface.entryFile, `${surfaceFamilyRoot}surface.ts`);
-  assert.equal(surface.behaviorContract, `${surfaceFamilyRoot}surface.behavior.md`);
-  assert.ok(
-    surface.sourceFiles.every((file) => file.startsWith(surfaceFamilyRoot)),
-    "surface source files must stay beside the layout surface source",
-  );
-  assert.ok(
-    surface.tests.every((file) => file.startsWith(surfaceFamilyRoot)),
-    "surface tests must stay beside the layout surface source",
-  );
-  assert.ok(
-    surface.typeTests?.every((file) => file.startsWith(surfaceFamilyRoot)),
-    "surface type tests must stay beside the layout surface source",
-  );
 });

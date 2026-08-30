@@ -12,6 +12,7 @@ export * from "./announcer.ts";
 export * from "./aspect-ratio.ts";
 export * from "./avatar.ts";
 export * from "./badge.ts";
+export * from "./families/feedback/banner/banner.ts";
 export * from "./block-ui.ts";
 export * from "./families/feedback/callout/callout.ts";
 export * from "./blockquote.ts";

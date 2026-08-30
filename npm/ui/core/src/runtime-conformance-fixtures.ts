@@ -19,6 +19,7 @@ import PrimitiveElement from "./primitive-element.vue";
 import { alertRuntimeFixture } from "./runtime-conformance-alert-fixtures.ts";
 import { alertDialogRuntimeFixture } from "./runtime-conformance-alert-dialog-fixtures.ts";
 import { badgeRuntimeFixture } from "./runtime-conformance-badge-fixtures.ts";
+import { bannerRuntimeFixture } from "./families/feedback/banner/runtime-conformance-banner-fixtures.ts";
 import { blockUIRuntimeFixture } from "./runtime-conformance-block-ui-fixtures.ts";
 import { breadcrumbRuntimeFixtures } from "./runtime-conformance-breadcrumb-fixtures.ts";
 import { emptyStateRuntimeFixture } from "./runtime-conformance-empty-state-fixtures.ts";
@@ -61,6 +62,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   alertRuntimeFixture,
   alertDialogRuntimeFixture,
   badgeRuntimeFixture,
+  bannerRuntimeFixture,
   blockUIRuntimeFixture,
   calloutRuntimeFixture,
   ...breadcrumbRuntimeFixtures,
