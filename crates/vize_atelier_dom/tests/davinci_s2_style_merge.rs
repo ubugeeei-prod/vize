@@ -24,6 +24,22 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<div style="color: red" :style="{ fontSize: x }"></div>"#,
     ),
     (
+        "bare_object_literal",
+        r#"<div :style="{ color: textColor }"></div>"#,
+    ),
+    (
+        "bare_object_static_value",
+        r#"<div :style="{ color: 'red' }"></div>"#,
+    ),
+    (
+        "bare_object_spread",
+        r#"<div :style="{ ...styles }"></div>"#,
+    ),
+    (
+        "bare_object_computed_key",
+        r#"<div :style="{ [prop]: 'red' }"></div>"#,
+    ),
+    (
         "css_function_semicolon",
         r#"<div style="background: url(a;b); color: red" :style="s"></div>"#,
     ),

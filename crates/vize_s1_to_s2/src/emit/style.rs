@@ -1,6 +1,5 @@
 //! Static style-attribute serialization used by dynamic `:style` merges.
 
-use oxc_ast::ast::Expression;
 use vize_s2::expr::JsExpr;
 use vize_s2::op::{Attribute, BindOp};
 
@@ -15,9 +14,7 @@ pub(super) fn emit_style_value(
     js: &JsExpr<'_>,
     skip_normalize: bool,
 ) {
-    let bare_object_literal =
-        static_style.is_none() && matches!(js.ast, Expression::ObjectExpression(_));
-    let wrap = !skip_normalize && !bare_object_literal;
+    let wrap = !skip_normalize;
     if wrap {
         cx.buf.use_normalize_style();
         cx.buf.push(Buf::normalize_style_alias());
