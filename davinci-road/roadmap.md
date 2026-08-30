@@ -113,13 +113,13 @@ holds or improves — this phase should be a measurable win, not a wash.
   timing, remark emission) land with the pass manager itself, so the DevTool's
   data feed exists from the first S2 build.
 
-**Current execution ledger (2026-08-29):** [16 of 22 tasks are complete](./plan/phase-2.md#current-execution-ledger-2026-08-29).
+**Current execution ledger (2026-08-30):** [16 of 22 tasks are complete](./plan/phase-2.md#current-execution-ledger-2026-08-30).
 P2-9 and P2-11 are active blocked series; P2-12b, P2-16, P2-17 and P2-20
-are untouched because their dependency gates remain open. P2-11 has 40 landed
-installments through [#5214](https://github.com/ubugeeei-prod/vize/pull/5214).
-The latest increment pins the publish graph firewall: unpublished stage
-crates stay out of publishable release graphs while S2 DOM witnesses keep using
-stripped dev-dependencies.
+are untouched because their dependency gates remain open. P2-11 has 44 landed
+installments through [#5363](https://github.com/ubugeeei-prod/vize/pull/5363).
+The latest increments pin dynamic directive argument prefixing and single
+nested slot wrapper defaults, after the 144-row DOM comparison-count contract
+and S2 DOM emit allocation gate; the production-lane switch is still open.
 The executable fixture inventory is 146 gitlinks / 142 ecosystem projects;
 fixture checkout hydration is deliberately not a project-count source.
 

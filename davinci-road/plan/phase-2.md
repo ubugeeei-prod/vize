@@ -73,7 +73,7 @@ Each ID links to its contract in [phase-2-tasks.md](./phase-2-tasks.md); what a 
 - [x] [P2-19](./phase-2-tasks-later.md#p2-19--devtool-protocol-spike) DevTool protocol spike — landed 2026-08-21; decided **document over JSON-RPC**: the P2-18 feed document stays the unit on every surface — C-7's local server speaks content-mapper-style JSON-RPC whose `initialize` negotiates the feed `schema_version` before any payload is serialized (the only candidate that negotiates rather than refusing after the producer wrote everything), served files stay the at-rest form, the wasm playground keeps the P2-18 embedding, JSON-lines rejected (every named consumer reassembles the document anyway); spike deleted deliberately, measurements and reproduction recipe in the record ([record](./phase-2-records/p2-19.md))
 - [ ] [P2-20](./phase-2-tasks-later.md#p2-20--phase-exit) Phase exit
 
-## Current execution ledger (2026-08-29)
+## Current execution ledger (2026-08-30)
 
 This is the current snapshot. The phase re-cut above and the per-installment
 records are historical evidence and are not silently rewritten when current
@@ -82,12 +82,12 @@ counts or fixture availability changes.
 - **Complete: 16 of 22 — P2-1, P2-2, P2-3, P2-4, P2-5a, P2-5b, P2-6,
   P2-7, P2-8, P2-10, P2-12a, P2-13, P2-14, P2-15, P2-18 and P2-19.**
   Each completion is joined to its merged PR and current evidence in the
-  [evidence index](./phase-2-records.md#current-completion-evidence-2026-08-29);
+  [evidence index](./phase-2-records.md#current-completion-evidence-2026-08-30);
   review-only evidence is labeled there rather than presented as executable.
 - **Active and blocked: 2 of 22 — P2-9 and P2-11.** P2-9 still needs a
-  hydrated full-corpus residual remeasurement; P2-11 has 40 landed
+  hydrated full-corpus residual remeasurement; P2-11 has 44 landed
   installments through
-  [#5214](https://github.com/ubugeeei-prod/vize/pull/5214), including
+  [#5363](https://github.com/ubugeeei-prod/vize/pull/5363), including
   `v-show` runtime directives, `v-html` raw HTML props, and `v-text`
   text-content props, plus `v-cloak` DOM cloak markers and object
   `v-bind` / `v-on` modifiers, but the
@@ -96,11 +96,12 @@ counts or fixture availability changes.
   patch-flag shapes now have an explicit per-node S2-vs-shipped witness,
   and the publish graph firewall now rejects accidental release-graph edges
   from published crates into unpublished Davinci stage crates. The
-  full-corpus exact comparison count remains open and must record
-  144 DOM-output comparisons over the current project-row manifest, not the
-  142 ecosystem fixture paths. The remaining patch-flag equivalence program
-  and DOM allocation budget also remain open. The old DOM lane is still the
-  shipped compiler path.
+  comparison-count contract is pinned at 144 DOM-output comparisons over the
+  current project-row manifest, and the S2 DOM emit allocation probe is gated
+  at 60 allocs. Dynamic directive argument prefixing and single nested slot
+  wrapper defaults now have S2-vs-shipped witnesses. The hydrated
+  zero-divergence corpus run and remaining patch-flag equivalence program
+  remain open. The old DOM lane is still the shipped compiler path.
 - **Untouched and dependency-blocked: 4 of 22 — P2-12b, P2-16, P2-17 and
   P2-20.** P2-12b depends on P2-12a, P2-11 and P2-3; P2-16 depends on P2-11;
   P2-17 depends on P2-11, P2-12b and P2-13; P2-20 depends on all of P2-1

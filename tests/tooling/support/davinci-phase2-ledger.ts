@@ -1,4 +1,12 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+
+function p2_11Installment(number: number): URL {
+  return new URL(
+    `../../../davinci-road/plan/phase-2-records/p2-11/installment-${number}.md`,
+    import.meta.url,
+  );
+}
 
 export function recordsTaskRow(source: string, id: string): string {
   const escaped = id.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
@@ -26,14 +34,14 @@ export function assertCurrentP2_11Installment(source: string, label: string): vo
   const record = currentP2_11InstallmentRecord(source, label);
   assert.ok(
     [
-      /40 (?:landed\s+)?installments/iu,
-      /through installment 40/iu,
-      /installment 40/iu,
-      /^\| 40\s+\|/imu,
+      /44 (?:landed\s+)?installments/iu,
+      /through installment 44/iu,
+      /installment 44/iu,
+      /^\| 44\s+\|/imu,
     ].some((marker) => marker.test(record)),
-    `${label} current record must cite installment 40`,
+    `${label} current record must cite installment 44`,
   );
-  assert.match(record, /#5214/u, `${label} current record must cite #5214`);
+  assert.match(record, /#5363/u, `${label} current record must cite #5363`);
   assert.doesNotMatch(record, /\bpending\b/iu, `${label} current record must not be pending`);
 }
 
@@ -58,7 +66,7 @@ function currentP2_11InstallmentRecord(source: string, label: string): string {
     case "records":
       return requiredLine(source, /^\| \[P2-11\][^\n]+$/mu, "P2-11 records index row");
     case "p2_11":
-      return requiredLine(source, /^\| 40\s+\|[^\n]+$/mu, "P2-11 installment 40 row");
+      return requiredLine(source, /^\| 44\s+\|[^\n]+$/mu, "P2-11 installment 44 row");
     default:
       throw new Error(`unknown P2-11 current evidence label: ${label}`);
   }
@@ -133,6 +141,26 @@ export function p2_11CurrentRecordEvidence(source: string): string {
       /^\| 40\s+\|[^\n]+#5214[^\n]+be344e787[^\n]+$/mu,
       "P2-11 installment 40 row",
     ),
+    requiredLine(
+      source,
+      /^\| 41\s+\|[^\n]+#5359[^\n]+5b5ac0924[^\n]+$/mu,
+      "P2-11 installment 41 row",
+    ),
+    requiredLine(
+      source,
+      /^\| 42\s+\|[^\n]+#5360[^\n]+f659b7e4e[^\n]+$/mu,
+      "P2-11 installment 42 row",
+    ),
+    requiredLine(
+      source,
+      /^\| 43\s+\|[^\n]+#4862[^\n]+fdaa8d165[^\n]+$/mu,
+      "P2-11 installment 43 row",
+    ),
+    requiredLine(
+      source,
+      /^\| 44\s+\|[^\n]+#5363[^\n]+1a717a959[^\n]+$/mu,
+      "P2-11 installment 44 row",
+    ),
     requiredSection(
       source,
       /^## Current named remainder/mu,
@@ -140,4 +168,57 @@ export function p2_11CurrentRecordEvidence(source: string): string {
       "P2-11 current named remainder",
     ),
   ].join("\n");
+}
+
+export function assertP2_11InstallmentFiles(): void {
+  const installments = new Map(
+    [
+      20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42,
+      43, 44,
+    ].map((number) => [number, fs.readFileSync(p2_11Installment(number), "utf8")]),
+  );
+  for (const [number, pattern] of [
+    [20, /14-fixture S2-vs-shipped byte-for-byte battery/],
+    [20, /does not tick P2-11/],
+    [21, /Vue 2 pipe filters/],
+    [22, /Vue 2 filter helper order/],
+    [23, /Slot outlet same-name names/],
+    [24, /Patch-flag matrix expansion/],
+    [25, /Dynamic component patch flags/],
+    [26, /Model listener patch order/],
+    [27, /Dynamic component model arguments/],
+    [28, /SFC style carriers are DOM-inert/],
+    [29, /Bare Template Default Slots/],
+    [30, /Inert Slot-Template Bindings/],
+    [31, /Inline Slot-Template Carriers/],
+    [31, /f5aa60553/],
+    [32, /V-show Runtime Directives/],
+    [32, /2be66b0f0/],
+    [33, /V-html Raw HTML Props/],
+    [33, /13cff4d99/],
+    [34, /V-text Text-Content Props/],
+    [34, /11750115a/],
+    [35, /V-cloak DOM Cloak Markers/],
+    [35, /02c4eb1a7/],
+    [36, /Slot Outlet V-on Props/],
+    [36, /cf7fc9a22/],
+    [37, /Object V-bind Modifiers/],
+    [37, /4e577b62/],
+    [38, /Object V-on Modifiers/],
+    [38, /f3959e7e3/],
+    [39, /Recent Patch-Flag Witness/],
+    [39, /22674520f/],
+    [40, /publish graph firewall/i],
+    [40, /be344e787/],
+    [41, /Corpus Comparison Count/],
+    [41, /5b5ac0924/],
+    [42, /S2 DOM Emit Allocations/],
+    [42, /f659b7e4e/],
+    [43, /Dynamic Directive Argument Prefixing/],
+    [43, /fdaa8d165/],
+    [44, /Single Nested Slot Wrapper Defaults/],
+    [44, /1a717a959/],
+  ] as const) {
+    assert.match(installments.get(number)!, pattern);
+  }
 }

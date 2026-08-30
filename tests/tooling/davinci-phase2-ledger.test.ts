@@ -10,18 +10,12 @@ import {
 } from "../../tools/fixtures/fixture-compatibility-ledger.mjs";
 import {
   assertCurrentP2_11Installment,
+  assertP2_11InstallmentFiles,
   p2_11CurrentRecordEvidence,
   recordsTaskRow,
   requiredLine,
   requiredSection,
 } from "./support/davinci-phase2-ledger.ts";
-
-function p2_11Installment(number: number): URL {
-  return new URL(
-    `../../davinci-road/plan/phase-2-records/p2-11/installment-${number}.md`,
-    import.meta.url,
-  );
-}
 
 const docs = {
   roadmap: new URL("../../davinci-road/roadmap.md", import.meta.url),
@@ -43,12 +37,6 @@ function read(url: URL): string {
 const text = Object.fromEntries(Object.entries(docs).map(([name, url]) => [name, read(url)])) as {
   [K in keyof typeof docs]: string;
 };
-const p2_11InstallmentNumbers = [
-  20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
-] as const;
-const p2_11Installments = new Map(
-  p2_11InstallmentNumbers.map((number) => [number, read(p2_11Installment(number))]),
-);
 
 const completedTasks = [
   "P2-1",
@@ -242,46 +230,19 @@ test("P2-11 records current installments without presenting stale remainders", (
   for (const [label, source] of Object.entries(currentEvidence)) {
     assertCurrentP2_11Installment(source, label);
   }
-  for (const pr of [4933, 5011, 5178, 5183, 5198, 5200, 5203, 5205, 5207, 5210, 5212, 5214]) {
+  for (const pr of [
+    4933, 5011, 5178, 5183, 5198, 5200, 5203, 5205, 5207, 5210, 5212, 5214, 5359, 5360, 4862, 5363,
+  ]) {
     assert.match(text.p2_11, new RegExp(`#${pr}`, "u"));
   }
   for (const pr of [4919, 4921, 4924, 4927, 4929])
     assert.match(text.p2_11, new RegExp(`#${pr}`, "u"));
-  assert.match(text.p2_11, /Current named remainder \(after #5214\)/);
+  assert.match(text.p2_11, /Current named remainder \(after #5363\)/);
+  assert.doesNotMatch(text.p2_11, /comparison-count blocker/u);
+  assert.doesNotMatch(text.p2_11, /DOM allocation budget (?:also )?(?:remains|remain|open)/u);
   assert.doesNotMatch(text.p2_11, /dynamic-argument bind names \/ modifiers/);
   assert.doesNotMatch(text.p2_11, /\*\*malformed slot fact gaps\*\*/);
-  assert.match(p2_11Installments.get(20)!, /14-fixture S2-vs-shipped byte-for-byte battery/);
-  assert.match(p2_11Installments.get(20)!, /does not tick P2-11/);
-  assert.match(p2_11Installments.get(21)!, /Vue 2 pipe filters/);
-  assert.match(p2_11Installments.get(22)!, /Vue 2 filter helper order/);
-  assert.match(p2_11Installments.get(23)!, /Slot outlet same-name names/);
-  assert.match(p2_11Installments.get(24)!, /Patch-flag matrix expansion/);
-  assert.match(p2_11Installments.get(25)!, /Dynamic component patch flags/);
-  assert.match(p2_11Installments.get(26)!, /Model listener patch order/);
-  assert.match(p2_11Installments.get(27)!, /Dynamic component model arguments/);
-  assert.match(p2_11Installments.get(28)!, /SFC style carriers are DOM-inert/);
-  assert.match(p2_11Installments.get(29)!, /Bare Template Default Slots/);
-  assert.match(p2_11Installments.get(30)!, /Inert Slot-Template Bindings/);
-  assert.match(p2_11Installments.get(31)!, /Inline Slot-Template Carriers/);
-  assert.match(p2_11Installments.get(31)!, /f5aa60553/);
-  assert.match(p2_11Installments.get(32)!, /V-show Runtime Directives/);
-  assert.match(p2_11Installments.get(32)!, /2be66b0f0/);
-  assert.match(p2_11Installments.get(33)!, /V-html Raw HTML Props/);
-  assert.match(p2_11Installments.get(33)!, /13cff4d99/);
-  assert.match(p2_11Installments.get(34)!, /V-text Text-Content Props/);
-  assert.match(p2_11Installments.get(34)!, /11750115a/);
-  assert.match(p2_11Installments.get(35)!, /V-cloak DOM Cloak Markers/);
-  assert.match(p2_11Installments.get(35)!, /02c4eb1a7/);
-  assert.match(p2_11Installments.get(36)!, /Slot Outlet V-on Props/);
-  assert.match(p2_11Installments.get(36)!, /cf7fc9a22/);
-  assert.match(p2_11Installments.get(37)!, /Object V-bind Modifiers/);
-  assert.match(p2_11Installments.get(37)!, /4e577b62/);
-  assert.match(p2_11Installments.get(38)!, /Object V-on Modifiers/);
-  assert.match(p2_11Installments.get(38)!, /f3959e7e3/);
-  assert.match(p2_11Installments.get(39)!, /Recent Patch-Flag Witness/);
-  assert.match(p2_11Installments.get(39)!, /22674520f/);
-  assert.match(p2_11Installments.get(40)!, /publish graph firewall/i);
-  assert.match(p2_11Installments.get(40)!, /be344e787/);
+  assertP2_11InstallmentFiles();
 });
 
 test("suite registry debt and the TS-52 transport decision stay resolved", () => {

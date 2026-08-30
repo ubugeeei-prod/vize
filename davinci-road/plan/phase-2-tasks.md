@@ -211,8 +211,8 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 
 **Deliverable:** `vize_atelier_dom` lowering S2 → codegen structure directly — the first strangler target, on the surface that holds the hard byte-parity bar.
 
-**Current series evidence (2026-08-29):** 40 installments have landed through
-[#5214](https://github.com/ubugeeei-prod/vize/pull/5214). Dynamic-argument
+**Current series evidence (2026-08-30):** 44 installments have landed through
+[#5363](https://github.com/ubugeeei-prod/vize/pull/5363). Dynamic-argument
 `v-bind` keys, `.camel` / `.prop` / `.attr` modifiers, Vue 2 pipe filters,
 filter helper order, slot outlet same-name names, and the expanded patch-flag
 matrix, including dynamic components, named component `v-model`, and component
@@ -242,11 +242,17 @@ Installment 39 adds explicit per-node patch-flag witnesses for the late
 directive and object-spread increments. Installment 40 pins the publish graph
 firewall: unpublished Davinci stage crates stay out of publishable release
 graphs, and S2 DOM witnesses in published crates must remain stripped
-dev-dependencies. The task remains blocked on a hydrated full-corpus run with an
-exact comparison count: 144 DOM-output comparisons, one per project row in the
-current manifest, not the 142 ecosystem fixture paths. The remaining patch-flag
-equivalence program and DOM allocation budget also remain blockers; the old lane
-remains the production path. See the [series record](./phase-2-records/p2-11.md).
+dev-dependencies. Installment 41 pins the hydrated corpus count contract at
+144 DOM-output comparisons, one per project row in the current manifest, not
+the 142 ecosystem fixture paths. Installment 42 gates the S2 DOM emit surface
+probe at 60 allocs in the CI allocation gate. Installment 43 pins compound
+dynamic directive argument prefixing for `v-bind` and `v-on` keys, preserving
+local alias exceptions. Installment 44 keeps unwrapped single nested slot
+templates on the default-slot path with wrapper-aware `createSlots` detection.
+The task remains blocked on the hydrated zero-divergence corpus run and
+remaining patch-flag equivalence program; the old lane remains the production
+path. See the
+[series record](./phase-2-records/p2-11.md).
 
 **Steps:**
 

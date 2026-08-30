@@ -248,6 +248,15 @@ test("compact-storage probes stay wall-report-only with exact alloc gates", () =
   }
 });
 
+test("P2-11 S2 DOM emit probe gates exact allocations", () => {
+  const id = "s1_to_s2_emit_p2_11_dom_surface";
+  const reportPath = path.join(repoRoot, "bench", "results", "davinci", "baseline", `${id}.json`);
+  assert.equal(fs.existsSync(reportPath), false);
+  assert.equal(budgets.bench[id]?.wall_p50_ns, 0);
+  assert.equal(budgets.bench[id]?.wall_tolerance, 0.1);
+  assert.equal(budgets.bench[id]?.allocs, 60);
+});
+
 test("toml-lite parses inline tables and rejects malformed ones", () => {
   assert.deepEqual(parseTomlLite("[bench]\na = { x = 1, y = 0.5 }\n"), {
     bench: { a: { x: 1, y: 0.5 } },
