@@ -46,7 +46,7 @@ interface OxlintJsonDiagnostic {
  * Loads `createVizeLintConfig` from the built bundle rather than from source.
  *
  * The bundle is what Oxlint loads through `jsPlugins`, so both halves of the
- * assertion have to come from the same artifact. `npm/oxint`'s `test` script runs
+ * assertion have to come from the same artifact. `npm/oxlint`'s `test` script runs
  * `vp pack` first, matching `test.ts`, `nuxt-preset.test.ts`, and
  * `type-aware.test.ts`.
  */
@@ -142,7 +142,7 @@ export function lintWorkspaceFixture(fixture: {
  * the missing binding rather than to a missing peer.
  */
 export function runIsolatedPluginLoadProbe(): { outcome: string; reason: string } {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxint-no-binding-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-no-binding-"));
 
   try {
     fs.cpSync(path.join(packageDir, "dist"), path.join(root, "dist"), { recursive: true });
@@ -181,7 +181,7 @@ function createLoadProbeSource(): string {
 }
 
 function createLintWorkspace(): string {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxint-vite-plus-lint-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-vite-plus-lint-"));
   const nodeModules = path.join(root, "node_modules");
   fs.mkdirSync(nodeModules, { recursive: true });
   fs.symlinkSync(packageDir, path.join(nodeModules, "oxlint-plugin-vize"), "junction");
@@ -189,7 +189,7 @@ function createLintWorkspace(): string {
 }
 
 function createTypecheckWorkspace(): string {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxint-vite-plus-types-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-vite-plus-types-"));
   const nodeModules = path.join(root, "node_modules");
   fs.mkdirSync(nodeModules, { recursive: true });
   fs.symlinkSync(packageDir, path.join(nodeModules, "oxlint-plugin-vize"), "junction");

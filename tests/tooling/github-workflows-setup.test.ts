@@ -249,7 +249,7 @@ test("pkg.pr.new workflow publishes built npm packages from the lockfile", () =>
   for (const packagePath of [
     "./npm/cli",
     "./npm/builder/vite",
-    "./npm/oxint",
+    "./npm/oxlint",
     "./npm/builder/unplugin",
     "./npm/fresco",
     "./npm/mcp-musea",

@@ -253,7 +253,7 @@ Run this from the repository root:
 ```bash
 vp install
 vp run --filter './npm/native' build
-vp run --filter './npm/oxint' build
+vp run --filter './npm/oxlint' build
 ```
 
 ### Run

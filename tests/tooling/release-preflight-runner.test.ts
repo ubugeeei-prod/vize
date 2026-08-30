@@ -152,7 +152,7 @@ test("release metadata inventory discovers every non-private npm and editor pack
       "npm/marquette/package.json",
       "npm/mcp-musea/package.json",
       "npm/native/package.json",
-      "npm/oxint/package.json",
+      "npm/oxlint/package.json",
       "npm/ui/core/package.json",
       "npm/wasm/package.json",
     ],

@@ -104,7 +104,7 @@ test("release workflow smoke installs npm tarballs before publishing", () => {
     "npm/fresco-native",
     "npm/cli",
     "npm/builder/vite",
-    "npm/oxint",
+    "npm/oxlint",
     "npm/builder/unplugin",
     "npm/fresco",
     "npm/mcp-musea",

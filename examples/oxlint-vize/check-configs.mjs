@@ -9,10 +9,9 @@
  * must resolve to the ESM entry that the Vize Oxlint plugin package actually
  * declares.
  *
- * That is the exact breakage this check exists for: `npm/lint-oxlint` was
- * renamed to `npm/oxint` by #2056 without updating these configs, so every
- * plugin-loading script in the example failed with "Cannot find module" and
- * nothing in CI noticed.
+ * That is the exact breakage this check exists for: a package-directory rename
+ * once landed without updating these configs, so every plugin-loading script in
+ * the example failed with "Cannot find module" and nothing in CI noticed.
  */
 import assert from "node:assert/strict";
 import fs from "node:fs";

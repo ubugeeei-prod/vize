@@ -17,7 +17,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/ubugeeei-prod/vize",
-    "directory": "npm/oxint"
+    "directory": "npm/oxlint"
   },
   "bin": {
     "oxlint-vize": "bin/oxlint-vize"

@@ -175,7 +175,7 @@ test("workspace-ignored editor extensions are correctly excluded from the portab
 test("CLI bin entry files use the portable env-node shebang", () => {
   const binPackages = [
     { dir: "cli", binName: "vize" },
-    { dir: "oxint", binName: "oxlint-vize" },
+    { dir: "oxlint", binName: "oxlint-vize" },
   ] as const;
 
   const checked: string[] = [];

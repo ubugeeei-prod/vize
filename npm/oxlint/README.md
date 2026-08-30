@@ -34,7 +34,7 @@ The bridge is optimized around Oxlint's per-rule execution model:
 ```bash
 vp install
 vp run --filter './npm/native' build
-vp run --filter './npm/oxint' build
+vp run --filter './npm/oxlint' build
 ```
 
 Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then add it with:

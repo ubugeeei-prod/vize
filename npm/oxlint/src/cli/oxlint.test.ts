@@ -29,7 +29,7 @@ process.exit(0);
 const REAL_LOOKING_OXLINT = 'console.log("Version: 1.78.0");\nprocess.exit(0);\n';
 
 function withTempWorkspace<T>(run: (root: string) => T): T {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxint-oxlint-shim-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-oxlint-shim-"));
   try {
     return run(root);
   } finally {

@@ -76,7 +76,7 @@ reexportar os módulos internos que o contribuinte deve tocar.
 | `@vizejs/nuxt`              | `npm/framework/nuxt/src/index.ts`                                    | Opções de plugins Vite e integração de componentes |
 | `@vizejs/wasm`              | gerado pacotes por volta de `vize_vitrine` exportações WASM          | `crates/vize_vitrine/src/wasm`                     |
 | `@vizejs/vite-plugin-musea` | `npm/builder/vite-musea/src/index.ts` e código de pacote relacionado | `vize_musea` APIs expostas por meio de bindings    |
-| `oxlint-plugin-vize`        | `npm/oxint/src/index.ts`                                             | `vize_patina` diagnóstico por meio de fixações     |
+| `oxlint-plugin-vize`        | `npm/oxlint/src/index.ts`                                             | `vize_patina` diagnóstico por meio de fixações     |
 
 Use testes de pacote para fiação de integração, mas mantenha a semântica da linguagem nos testes Rust. A camada
 pacote deve provar principalmente que opções, módulos virtuais, HMR e chamadas nativas estão conectadas.

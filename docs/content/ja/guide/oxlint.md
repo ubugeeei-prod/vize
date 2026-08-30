@@ -131,5 +131,5 @@ vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 nix develop
 vp install --frozen-lockfile
 vp run --filter './npm/native' build
-vp run --filter './npm/oxint' build
+vp run --filter './npm/oxlint' build
 ```

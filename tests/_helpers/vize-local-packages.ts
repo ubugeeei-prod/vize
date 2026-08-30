@@ -58,7 +58,7 @@ export const VIZE_LOCAL_PACKAGES = [
   {
     packageName: "oxlint-plugin-vize",
     filter: "oxlint-plugin-vize",
-    dir: path.join(NPM_DIR, "oxint"),
+    dir: path.join(NPM_DIR, "oxlint"),
     outputs: ["dist/index.mjs"],
     buildInFixtureSetup: true,
     linkIntoFixture: true,

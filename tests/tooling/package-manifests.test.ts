@@ -295,7 +295,7 @@ test("native package catalog pins and generated loader version checks stay align
   assert.match(nativeTargetsLoader, /execFileSync\("ldd", \["--version"\]/);
   assert.doesNotMatch(nativeTargetsLoader, /execSync\(/);
 
-  const oxlintNativeLoader = fs.readFileSync(path.join(root, "npm/oxint/src/native.ts"), "utf-8");
+  const oxlintNativeLoader = fs.readFileSync(path.join(root, "npm/oxlint/src/native.ts"), "utf-8");
   assert.match(oxlintNativeLoader, /spawnSync\("ldd", \["--version"\]/);
   assert.doesNotMatch(oxlintNativeLoader, /execSync\(/);
 });
@@ -553,7 +553,7 @@ test("workspace TypeScript package builds use vp pack", () => {
     ["npm/mcp-musea", "vp pack", "vp pack --watch"],
     ["npm/framework/musea-nuxt", "vp pack", "vp pack --watch"],
     ["npm/framework/nuxt", "vp pack", "vp pack --watch"],
-    ["npm/oxint", "vp pack", undefined],
+    ["npm/oxlint", "vp pack", undefined],
     ["npm/builder/rspack", "vp pack", "vp pack --watch"],
     ["npm/builder/unplugin", "vp pack", "vp pack --watch"],
     ["npm/builder/vite", "vp pack", "vp pack --watch"],
@@ -574,7 +574,7 @@ test("workspace TypeScript package builds use vp pack", () => {
   }
 
   const oxlintPackage = JSON.parse(
-    fs.readFileSync(path.join(root, "npm/oxint/package.json"), "utf-8"),
+    fs.readFileSync(path.join(root, "npm/oxlint/package.json"), "utf-8"),
   ) as {
     engines?: Record<string, string>;
     scripts?: Record<string, string>;

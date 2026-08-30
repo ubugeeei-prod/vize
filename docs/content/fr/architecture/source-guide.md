@@ -76,7 +76,7 @@ réexporter les modules internes qu’un contributeur est censé toucher.
 | `@vizejs/nuxt`              | `npm/framework/nuxt/src/index.ts`                                | Options de plugins Vite et intégration des composants |
 | `@vizejs/wasm`              | généré des paquets autour `vize_vitrine` exportations WASM       | `crates/vize_vitrine/src/wasm`                        |
 | `@vizejs/vite-plugin-musea` | `npm/builder/vite-musea/src/index.ts` et code de package associé | `vize_musea` API exposées via des liaisons            |
-| `oxlint-plugin-vize`        | `npm/oxint/src/index.ts`                                         | `vize_patina` diagnostic par liaisons                 |
+| `oxlint-plugin-vize`        | `npm/oxlint/src/index.ts`                                         | `vize_patina` diagnostic par liaisons                 |
 
 Utilisez les tests de paquet pour le câblage d’intégration, mais gardez la sémantique du langage dans les tests Rust. La couche package
 devrait surtout prouver que les options, modules virtuels, HMR et appels natifs sont connectés.

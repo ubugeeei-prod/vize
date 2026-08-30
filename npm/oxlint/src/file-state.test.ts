@@ -26,7 +26,7 @@ function createContext(filename: string, extractedScript: string): Context {
 
 it("standalone scripts preserve native source locations", () => {
   clearFileStateCache();
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxint-file-state-script-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-file-state-script-"));
   const filename = path.join(root, "nuxt.config.ts");
   const source = "export default { test: true };\n";
 
@@ -44,7 +44,7 @@ it("standalone scripts preserve native source locations", () => {
 
 it("unchanged source reuses revision-safe file work", () => {
   clearFileStateCache();
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxint-file-state-reuse-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-file-state-reuse-"));
   const filename = path.join(root, "App.vue");
 
   try {
@@ -66,7 +66,7 @@ it("unchanged source reuses revision-safe file work", () => {
 
 it("same filename with changed source starts a fresh reporting revision", () => {
   clearFileStateCache();
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxint-file-state-revision-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-file-state-revision-"));
   const filename = path.join(root, "App.vue");
   const context = createContext(filename, "const component = {};\n");
 
@@ -107,7 +107,7 @@ it("same filename with changed source starts a fresh reporting revision", () => 
 
 it("diagnostics follow the latest physical revision under one filename", () => {
   clearFileStateCache();
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxint-file-state-diagnostics-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-file-state-diagnostics-"));
   const filename = path.join(root, "App.vue");
   const context = createContext(filename, "const items = [];");
   const ruleName = "vue/require-v-for-key";
@@ -135,7 +135,7 @@ it("diagnostics follow the latest physical revision under one filename", () => {
 
 it("changed extracted script refreshes only revision-local mapping work", () => {
   clearFileStateCache();
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxint-file-state-extracted-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-file-state-extracted-"));
   const filename = path.join(root, "App.vue");
 
   try {
@@ -158,7 +158,7 @@ it("changed extracted script refreshes only revision-local mapping work", () => 
 
 it("long-lived file-state cache stays bounded and evicts the LRU entry", () => {
   clearFileStateCache();
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxint-file-state-lru-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-file-state-lru-"));
   const { capacity } = getFileStateCacheStats();
   const contexts: Context[] = [];
   const states = [];

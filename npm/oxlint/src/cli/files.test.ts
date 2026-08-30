@@ -7,7 +7,7 @@ import test from "node:test";
 import { collectVueLikeFilesFromTargets } from "./files.ts";
 
 void test("collectVueLikeFilesFromTargets returns deduplicated absolute paths in stable order", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxint-files-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-files-"));
   try {
     fs.mkdirSync(path.join(root, "src"));
     const alpha = path.join(root, "src", "Alpha.vue");
@@ -25,7 +25,7 @@ void test("collectVueLikeFilesFromTargets returns deduplicated absolute paths in
 });
 
 void test("collectVueLikeFilesFromTargets includes standalone HTML inputs", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxint-files-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-files-"));
   try {
     fs.mkdirSync(path.join(root, "src"));
     const html = path.join(root, "src", "index.html");
@@ -42,7 +42,7 @@ void test("collectVueLikeFilesFromTargets includes standalone HTML inputs", () =
 });
 
 void test("collectVueLikeFilesFromTargets ignores supported-extension directories", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxint-files-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-files-"));
   try {
     const sourceDir = path.join(root, "src");
     const componentDir = path.join(sourceDir, "Directory.vue");

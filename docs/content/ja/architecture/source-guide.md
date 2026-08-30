@@ -76,7 +76,7 @@ graph LR
 | `@vizejs/nuxt`              | `npm/framework/nuxt/src/index.ts`                                 | Vite プラグイン オプションとコンポーネントの統合  |
 | `@vizejs/wasm`              | `vize_vitrine` WASM エクスポートに関する生成されたパッケージ      | `crates/vize_vitrine/src/wasm`                    |
 | `@vizejs/vite-plugin-musea` | `npm/builder/vite-musea/src/index.ts` および関連パッケージ コード | `vize_musea` バインディングを通じて公開される API |
-| `oxlint-plugin-vize`        | `npm/oxint/src/index.ts`                                          | バインディングによる `vize_patina` 診断           |
+| `oxlint-plugin-vize`        | `npm/oxlint/src/index.ts`                                          | バインディングによる `vize_patina` 診断           |
 
 統合配線にはパッケージ テストを使用しますが、言語セマンティクスは Rust テストに保持します。パッケージ
 レイヤーは主に、オプション、仮想モジュール、HMR、およびネイティブ呼び出しが接続されていることを証明する必要があります。

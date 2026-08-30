@@ -19,7 +19,7 @@ const releasePackageJsonPaths = [
   "npm/marquette/package.json",
   "npm/mcp-musea/package.json",
   "npm/native/package.json",
-  "npm/oxint/package.json",
+  "npm/oxlint/package.json",
   "npm/wasm/package.json",
 ];
 

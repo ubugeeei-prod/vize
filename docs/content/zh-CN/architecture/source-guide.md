@@ -76,7 +76,7 @@ graph LR
 | `@vizejs/nuxt` | `npm/framework/nuxt/src/index.ts` | Vite 插件选项和组件集成 |
 | `@vizejs/wasm` |围绕 `vize_vitrine` WASM 导出生成的包 | `crates/vize_vitrine/src/wasm` |
 | `@vizejs/vite-plugin-musea` | `npm/builder/vite-musea/src/index.ts` 及相关封装代码 | `vize_musea` 通过绑定公开的 API |
-| `oxlint-plugin-vize` | `npm/oxint/src/index.ts` | `vize_patina` 通过绑定进行诊断 |
+| `oxlint-plugin-vize` | `npm/oxlint/src/index.ts` | `vize_patina` 通过绑定进行诊断 |
 
 使用包测试进行集成连接，但在 Rust 测试中保留语言语义。套餐
 层应该主要证明选项、虚拟模块、HMR 和本机调用是连接的。

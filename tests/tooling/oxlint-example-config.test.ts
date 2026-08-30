@@ -9,7 +9,7 @@ import { checkedPackagesViaVpRun } from "../../tools/vite-plus/task-inputs.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const exampleDir = path.join(root, "examples/oxlint-vize");
-const pluginDir = path.join(root, "npm/oxint");
+const pluginDir = path.join(root, "npm/oxlint");
 
 interface Manifest {
   exports?: Record<string, { import?: string } | string>;
@@ -69,8 +69,8 @@ test("oxlint example README documents the plugin path its configs actually use",
     }
   }
 
-  assert.deepEqual(documented, ["../../npm/oxint/dist/index.mjs"]);
-  assert.deepEqual([...used].sort(), ["../../npm/oxint/dist/index.mjs"]);
+  assert.deepEqual(documented, ["../../npm/oxlint/dist/index.mjs"]);
+  assert.deepEqual([...used].sort(), ["../../npm/oxlint/dist/index.mjs"]);
 });
 
 test("oxlint example ships a package check that does not depend on lint's exit code", () => {

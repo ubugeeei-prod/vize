@@ -168,7 +168,7 @@ test("release workflow publishes npm packages from package-specific artifacts", 
   const downloadTargets = [
     ["release-npm-wasm", "release-package-vize-wasm", "npm/wasm"],
     ["release-npm-vite-plugin", "release-package-vite-plugin-vize", "npm/builder/vite"],
-    ["release-npm-oxlint-plugin", "release-package-oxlint-plugin-vize", "npm/oxint"],
+    ["release-npm-oxlint-plugin", "release-package-oxlint-plugin-vize", "npm/oxlint"],
     ["release-npm-unplugin", "release-package-unplugin-vize", "npm/builder/unplugin"],
     ["release-npm-fresco", "release-package-fresco", "npm/fresco"],
     ["release-npm-musea-mcp-server", "release-package-musea-mcp-server", "npm/mcp-musea"],

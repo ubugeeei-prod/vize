@@ -13,7 +13,7 @@ import type { PackagePath, TaskInput } from "./task-helpers.ts";
 export const checkedPackages = [
   "./npm/cli",
   "./npm/builder/vite",
-  "./npm/oxint",
+  "./npm/oxlint",
   "./npm/builder/vite-musea",
   "./npm/builder/unplugin",
   "./npm/builder/rspack",
@@ -51,7 +51,7 @@ export const checkedPackagesViaVpRun = checkedPackages.filter(
 export const packedPackages = [
   "./npm/cli",
   "./npm/builder/vite",
-  "./npm/oxint",
+  "./npm/oxlint",
   "./npm/builder/vite-musea",
   "./npm/builder/unplugin",
   "./npm/builder/rspack",
@@ -68,7 +68,7 @@ export const packedPackages = [
 export const testedPackages = [
   "./npm/cli",
   "./npm/builder/vite",
-  "./npm/oxint",
+  "./npm/oxlint",
   "./npm/builder/vite-musea",
   "./npm/builder/unplugin",
   "./npm/builder/rspack",
