@@ -318,6 +318,9 @@ pub(super) fn capture(
 }
 
 fn emit_slot_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
+    if super::slot_root::emit_transition_child(cx, op)? {
+        return Ok(());
+    }
     match op {
         Op::Text(_) | Op::Interpolation(_) => emit_slot_text_child(cx, op),
         Op::Element(element) if is_static_element_tree(element) => {

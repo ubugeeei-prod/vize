@@ -90,6 +90,13 @@ pub(super) fn always_dynamic_slots(name: &str) -> bool {
     matches!(name, "KeepAlive" | "keep-alive")
 }
 
+pub(super) fn transition_slot_root(name: &str) -> bool {
+    matches!(
+        name,
+        "BaseTransition" | "base-transition" | "Transition" | "transition"
+    )
+}
+
 /// `has_only_static_nested_children` over meaningful kids: unused
 /// static-props hoist for Teleport + static attrs + text/native kids,
 /// not for KeepAlive wrapping a component.

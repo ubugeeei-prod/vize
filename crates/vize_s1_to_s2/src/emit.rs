@@ -77,6 +77,7 @@ mod props_object_merge;
 mod props_static;
 mod props_value;
 mod sfc_style;
+mod slot_root;
 mod slots;
 mod static_cache;
 mod style;
@@ -212,6 +213,8 @@ struct EmitCx<'facts> {
     /// Legacy `hoist_static_vnodes` recursion state. Directive/component/branch
     /// roots stay inline, but descendants may still become hoisted static VNodes.
     hoist_static_vnodes: bool,
+    /// Transition/BaseTransition slots keep keyed native roots as block VNodes.
+    transition_slot_root: bool,
     /// The shipped lane caches static child vnodes only after transform
     /// produced at least one root hoist.
     static_cache: bool,
@@ -271,6 +274,7 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
         skip_memo: false,
         slot_param_depth: 0,
         hoist_static_vnodes: false,
+        transition_slot_root: false,
         static_cache,
         parent_ns: Namespace::Html,
     };

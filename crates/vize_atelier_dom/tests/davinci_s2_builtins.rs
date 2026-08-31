@@ -82,6 +82,10 @@ const BATTERY: &[(&str, &str)] = &[
         "transition_vif",
         r#"<Transition v-if="ok"><div></div></Transition>"#,
     ),
+    (
+        "transition_article_dynamic_key",
+        r#"<Transition :name="transitionName" mode="out-in"><article :key="path" class="docs-article"><h1>{{ pageTitle }}</h1><Content /></article></Transition>"#,
+    ),
     ("teleport_ws", r##"<Teleport to="#app">  </Teleport>"##),
     ("keepalive_ws", "<KeepAlive>  </KeepAlive>"),
 ];

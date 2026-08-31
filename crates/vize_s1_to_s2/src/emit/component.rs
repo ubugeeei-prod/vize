@@ -150,6 +150,7 @@ fn emit_call(
     let has_array = array && slots::has_implicit_default(&component.children);
     let has_slots = !array && (facts.is_some() || create || spread.is_some());
     let dynamic_names = create || facts.is_some_and(slots::has_dynamic_names) || spread.is_some();
+    let transition_slot_root = builtin::transition_slot_root(component.name);
     let alias = if block {
         Buf::create_block_alias()
     } else {
@@ -287,7 +288,11 @@ fn emit_call(
     } else if let Some(facts) = facts {
         cx.buf.push(", ");
         cx.with_static_vnode_hoist(true, |cx| {
-            slots::emit_slots(cx, &component.children, facts, spread.as_ref())
+            let previous = cx.transition_slot_root;
+            cx.transition_slot_root = previous || transition_slot_root;
+            let result = slots::emit_slots(cx, &component.children, facts, spread.as_ref());
+            cx.transition_slot_root = previous;
+            result
         })?;
     } else if let Some(spread) = spread {
         cx.buf.push(", ");
