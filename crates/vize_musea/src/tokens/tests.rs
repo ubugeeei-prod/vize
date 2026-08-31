@@ -1,6 +1,6 @@
 use super::{
-    build_token_map, generate_tokens_markdown, parse_tokens_from_json, parse_tokens_from_path,
-    resolve_token_categories, validate_reference, TokenCategory,
+    TokenCategory, build_token_map, generate_tokens_markdown, parse_tokens_from_json,
+    parse_tokens_from_path, resolve_token_categories, validate_reference,
 };
 
 #[test]

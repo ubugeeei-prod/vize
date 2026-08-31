@@ -20,4 +20,13 @@ test("generate_variants only reads Vue component sources", () => {
     /resolveProjectVueFile\(ctx\.projectRoot, componentRelPath, "componentPath"\)/,
     "generate_variants must resolve through the .vue realpath gate before reading",
   );
+
+  const vueGateIndex = block.indexOf(
+    'resolveProjectVueFile(ctx.projectRoot, componentRelPath, "componentPath")',
+  );
+  const analyzeBindingIndex = block.indexOf("if (!binding.analyzeSfc)");
+  assert.ok(
+    vueGateIndex !== -1 && vueGateIndex < analyzeBindingIndex,
+    "generate_variants must reject non-.vue paths before checking native analysis hooks",
+  );
 });
