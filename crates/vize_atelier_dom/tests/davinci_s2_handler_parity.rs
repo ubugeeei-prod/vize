@@ -18,6 +18,14 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<button @contextmenu="event => openContextMenu(event, image)">open</button>"#,
     ),
     (
+        "native_no_param_arrow_handler_stays_direct",
+        r#"<button @click="() => toggleDark()">toggle</button>"#,
+    ),
+    (
+        "native_null_handler_stays_direct",
+        r#"<Select @change="null" />"#,
+    ),
+    (
         "multiline_component_update_handler_keeps_authored_padding",
         r#"<AppCheck @update:model-value="
   value => {

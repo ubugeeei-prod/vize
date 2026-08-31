@@ -66,7 +66,7 @@ fn emit_handler(cx: &mut EmitCx<'_>, on: &OnOp<'_>, js: &JsExpr<'_>, is_plain_el
         emit_raw_handler(cx, on, js);
         return;
     }
-    if is_raw_function_handler(js.ast, is_plain_element)
+    if is_raw_handler_expression(js.ast, js.source, is_plain_element)
         && !super::super::on_typed::is_typed_arrow(js.ast)
     {
         super::super::js::push_js_expr(cx, js);
@@ -145,14 +145,23 @@ fn is_handler_reference(expr: &Expression<'_>) -> bool {
     }
 }
 
-fn is_raw_function_handler(expr: &Expression<'_>, is_plain_element: bool) -> bool {
+fn is_raw_handler_expression(expr: &Expression<'_>, source: &str, is_plain_element: bool) -> bool {
+    if matches!(expr, Expression::NullLiteral(_)) {
+        return true;
+    }
     if matches!(expr, Expression::FunctionExpression(_)) {
         return true;
     }
     match expr {
         Expression::ArrowFunctionExpression(arrow) => {
-            !is_plain_element || !arrow.params.items.is_empty()
+            !is_plain_element
+                || !arrow.params.items.is_empty()
+                || (arrow.expression && !source_uses_ts_expression_syntax(source))
         }
         _ => false,
     }
+}
+
+fn source_uses_ts_expression_syntax(source: &str) -> bool {
+    source.contains(" as ") || source.contains(" satisfies ")
 }
