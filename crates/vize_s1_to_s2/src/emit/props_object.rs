@@ -27,14 +27,21 @@ pub(super) fn emit_props_object(
     let skip_class = pieces_have_named(pieces, "class") && !split_once_static_class;
     let skip_style = pieces_have_named(pieces, "style");
     let skip_key = if_key.is_some() || cx.suppress_template_for_child_key;
+    let keep_template_if_static_key = if_key.is_some() && cx.template_if_branch_root;
     if suppress_once_cache_dynamic {
         reserve_skipped_once_helpers(cx, pieces)?;
     }
     let visible: StdVec<&Piece<'_>> = pieces
         .iter()
         .filter(|piece| {
-            !skip_emitted_key(piece, if_key, skip_class, skip_style, skip_key)
-                && !(suppress_once_cache_dynamic && skip_once_cache_piece(piece))
+            !skip_emitted_key(
+                piece,
+                if_key,
+                skip_class,
+                skip_style,
+                skip_key,
+                keep_template_if_static_key,
+            ) && !(suppress_once_cache_dynamic && skip_once_cache_piece(piece))
         })
         .collect();
     if let Some(key) = if_key
@@ -234,12 +241,13 @@ fn skip_emitted_key(
     skip_class: bool,
     skip_style: bool,
     skip_key: bool,
+    keep_template_if_static_key: bool,
 ) -> bool {
     match piece {
         Piece::Attr(attr) => {
             (skip_class && attr.name == "class")
                 || (skip_style && attr.name == "style" && attr.value.is_some())
-                || (skip_key && attr.name == "key")
+                || (skip_key && attr.name == "key" && !keep_template_if_static_key)
         }
         Piece::Bind(bind) if skip_key && super::props_bind::is_key_bind_name(bind) => true,
         _ => false,
