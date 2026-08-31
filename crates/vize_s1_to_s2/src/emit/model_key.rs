@@ -114,7 +114,17 @@ fn emit_modifiers_key(cx: &mut EmitCx<'_>, key: &ModelModifiersKey<'_>) {
 }
 
 pub(super) fn emit_assignment(cx: &mut EmitCx<'_>, source: &str) {
+    if is_ts_as_assignment_target(source) {
+        cx.buf.push("$event => ($event => ($event => ((");
+        cx.buf.push(source);
+        cx.buf.push(") = $event)))");
+        return;
+    }
     cx.buf.push("$event => ((");
     cx.buf.push(source);
     cx.buf.push(") = $event)");
+}
+
+fn is_ts_as_assignment_target(source: &str) -> bool {
+    source.contains(" as ")
 }

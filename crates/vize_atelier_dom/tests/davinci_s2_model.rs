@@ -37,6 +37,7 @@ const BATTERY: &[(&str, &str)] = &[
     ("model_then_id", r#"<input v-model="msg" id="x">"#),
     ("class_bind", r#"<input :class="c" v-model="msg">"#),
     ("style_bind", r#"<input :style="s" v-model="msg">"#),
+    ("input_ts_cast", r#"<input v-model="voice as any">"#),
     ("spread_then", r#"<input v-bind="obj" v-model="msg">"#),
     ("then_spread", r#"<input v-model="msg" v-bind="obj">"#),
     ("vif", r#"<input v-if="ok" v-model="msg">"#),
@@ -48,6 +49,10 @@ const BATTERY: &[(&str, &str)] = &[
     ("fragment", r#"<input v-model="a"><input v-model="b">"#),
     ("comp", r#"<Foo v-model="msg" />"#),
     ("comp_arg", r#"<Foo v-model:title="pageTitle" />"#),
+    (
+        "comp_arg_ts_cast",
+        r#"<Foo v-model:voice="voice as any" />"#,
+    ),
     (
         "comp_kebab_arg",
         r#"<Foo v-model:auto-send="autoSendEnabled" />"#,
