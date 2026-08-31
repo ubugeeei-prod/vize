@@ -200,14 +200,15 @@ fn emit_call(
     } else {
         props_static::component_hoist_props(&component.attributes, &component.bindings)?
     };
-    if for_item && !has_custom && cx.slot_param_depth == 0 {
-        if let Some(props) = hoistable_static_props.as_ref()
-            && props.non_key
-            && (props_static::should_hoist(cx, id, props_static::PropHoistPosition::ForItem)
-                || (props.dynamic_values && !has_slots && !has_array))
-        {
-            cx.buf.push_hoist(props.source.clone());
-        }
+    if for_item
+        && !has_custom
+        && cx.slot_param_depth == 0
+        && let Some(props) = hoistable_static_props.as_ref()
+        && props.non_key
+        && (props_static::should_hoist(cx, id, props_static::PropHoistPosition::ForItem)
+            || (props.dynamic_values && !has_slots && !has_array))
+    {
+        cx.buf.push_hoist(props.source.clone());
     }
     let can_hoist_static_props = !has_custom
         && !for_item

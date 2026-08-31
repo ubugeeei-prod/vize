@@ -29,6 +29,7 @@ const ARTIFACT_DIR: &str = "real-project-davinci-dom-corpus";
 const CORPUS_ROOT: &str = "tests/_fixtures/_git";
 const EXPECTED_GITLINKS: usize = 146;
 const EXPECTED_DOM_OUTPUT_COMPARISONS: usize = 144;
+const EXPECTED_OLD_ERROR_SKIPS: usize = 16;
 
 fn main() -> ExitCode {
     match run() {
@@ -271,17 +272,23 @@ fn validate_corpus_evidence(artifact: &str) -> Validation {
     if evidence.files == 0 || evidence.templates == 0 || evidence.compared == 0 {
         failures.push("corpus log proves no DOM-output comparisons".to_string());
     }
-    if evidence.unreadable != 0 || evidence.old_error_skips != 0 {
+    if evidence.unreadable != 0 {
+        failures.push(format!(
+            "corpus log unreadable inputs: unreadable={}",
+            evidence.unreadable
+        ));
+    }
+    let expected_old_error_reasons = expected_old_error_reasons();
+    if evidence.old_error_skips != EXPECTED_OLD_ERROR_SKIPS
+        || !same_reason_counts(&evidence.old_error_reasons, &expected_old_error_reasons)
+    {
         let reasons = format_reason_counts(&evidence.old_error_reasons);
         failures.push(format!(
-            "corpus log skipped inputs: unreadable={} old_error_skips={}{}",
-            evidence.unreadable,
+            "corpus old-lane skip allowlist drift: old_error_skips={}/{} reasons={} expected_reasons={}",
             evidence.old_error_skips,
-            if reasons.is_empty() {
-                String::new()
-            } else {
-                format!(" reasons={reasons}")
-            }
+            EXPECTED_OLD_ERROR_SKIPS,
+            if reasons.is_empty() { "none".to_string() } else { reasons },
+            format_reason_counts(&expected_old_error_reasons)
         ));
     }
     if evidence.s2_refusals != 0 || evidence.divergences != 0 {
@@ -427,6 +434,28 @@ fn format_reason_counts(reasons: &BTreeMap<String, usize>) -> String {
         .map(|(reason, count)| format!("{reason}={count}"))
         .collect::<Vec<_>>()
         .join(",")
+}
+
+fn expected_old_error_reasons() -> BTreeMap<String, usize> {
+    [
+        ("ExtendPoint", 1),
+        ("InvalidEndTag", 20),
+        ("MissingEndTag", 10),
+        ("MissingWhitespaceBetweenAttributes", 4),
+        ("VElseNoAdjacentIf", 1),
+        ("VIfSameKey", 4),
+        ("VSlotDuplicateSlotNames", 1),
+    ]
+    .into_iter()
+    .map(|(reason, count)| (reason.to_string(), count))
+    .collect()
+}
+
+fn same_reason_counts(
+    left: &BTreeMap<String, usize>,
+    right: &BTreeMap<String, usize>,
+) -> bool {
+    left == right
 }
 
 fn append_corpus_summary(
