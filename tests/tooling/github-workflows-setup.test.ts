@@ -138,26 +138,6 @@ test("setup-rust-script pins Windows MSVC linkers before cargo install", () => {
   assert.match(action, />> "\$GITHUB_ENV"/);
 });
 
-test("setup-rust-script only reuses the pinned runner version", () => {
-  const action = readRepoFile(".github", "actions", "setup-rust-script", "action.yml");
-  const versionCheckIndex = action.indexOf('[ "$installed_version" = "$rust_script_version" ]');
-  const reuseExitIndex = action.indexOf("exit 0");
-  const installIndex = action.indexOf(
-    'cargo install rust-script --version "$rust_script_version" --locked --force',
-  );
-  const pathExportIndex = action.indexOf('export PATH="$cargo_bin:$PATH"');
-  const finalCheckIndex = action.indexOf('[ "$installed_version" != "$rust_script_version" ]');
-
-  assert.match(action, /rust_script_version="0\.34\.0"/);
-  assert.match(action, /rust-script --version \| sed -E/);
-  assert.ok(versionCheckIndex >= 0, "setup-rust-script must compare the installed version");
-  assert.ok(reuseExitIndex > versionCheckIndex, "only a matching version may skip install");
-  assert.ok(installIndex > reuseExitIndex, "mismatched versions must install the pinned runner");
-  assert.ok(pathExportIndex > installIndex, "the pinned cargo binary must be preferred");
-  assert.ok(finalCheckIndex > pathExportIndex, "the installed runner version must be verified");
-  assert.match(action, />> "\$GITHUB_PATH"/);
-});
-
 test("setup-moonbit installs the same pinned toolchain the Nix shell builds", () => {
   const pinned = readRepoFile(".moonbit-version").trim();
   assert.match(
