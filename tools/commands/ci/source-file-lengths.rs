@@ -181,6 +181,7 @@ fn collect_current_files(paths: Vec<String>) -> Vec<SourceFile> {
     let mut files = paths
         .into_iter()
         .filter(|path| is_source_path(path) && !is_excluded_path(path))
+        .filter(|path| is_regular_file(path))
         .filter_map(|path| {
             fs::read_to_string(&path).ok().map(|content| SourceFile {
                 path,
@@ -190,6 +191,12 @@ fn collect_current_files(paths: Vec<String>) -> Vec<SourceFile> {
         .collect::<Vec<_>>();
     files.sort_by(|a, b| b.lines.cmp(&a.lines).then_with(|| a.path.cmp(&b.path)));
     files
+}
+
+fn is_regular_file(path: &str) -> bool {
+    fs::symlink_metadata(path)
+        .map(|metadata| metadata.file_type().is_file())
+        .unwrap_or(false)
 }
 
 fn tracked_paths() -> Result<Vec<String>, ()> {

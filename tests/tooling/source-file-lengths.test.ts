@@ -228,6 +228,40 @@ test("source length script ignores package manifests", () => {
   assert.match(result.stdout, /No new or grown files exceed 350 lines/);
 });
 
+test(
+  "source length script skips tracked symlink source paths",
+  { skip: process.platform === "win32" },
+  () => {
+    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-source-lengths-symlink-"));
+    const targetPath = path.join(cwd, "target.ts");
+    const linkPath = path.join(cwd, "link.ts");
+    runGit(cwd, ["init", "-q"]);
+    writeLines(path.join(cwd, "README.md"), 1);
+    runGit(cwd, ["add", "README.md"]);
+    runGit(cwd, [
+      "-c",
+      "user.name=Vize",
+      "-c",
+      "user.email=vize@example.com",
+      "commit",
+      "-qm",
+      "base",
+    ]);
+    const baseRef = runGit(cwd, ["rev-parse", "HEAD"]);
+
+    writeLines(targetPath, 351);
+    fs.symlinkSync(targetPath, linkPath);
+    runGit(cwd, ["add", "link.ts"]);
+    const result = runSourceLengthScript(
+      ["--check", "--base-ref", baseRef, "--max-lines", "350", "--limit", "5"],
+      cwd,
+    );
+
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.match(result.stdout, /No new or grown files exceed 350 lines/);
+  },
+);
+
 test("source length script compares renamed over-limit files to their base path", () => {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-source-lengths-rename-"));
   const filePath = path.join(cwd, "large.ts");
