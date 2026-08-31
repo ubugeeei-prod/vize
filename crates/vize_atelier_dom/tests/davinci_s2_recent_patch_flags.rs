@@ -79,6 +79,16 @@ const CASES: &[Case] = &[
         src: r#"<Foo v-on.once.capture="handlers" />"#,
         sites: &["16 /* FULL_PROPS */"],
     },
+    Case {
+        name: "component_object_bind_dynamic_style",
+        src: r#"<Foo v-bind="obj" :style="style" />"#,
+        sites: &["16 /* FULL_PROPS */, [\"style\"]"],
+    },
+    Case {
+        name: "component_object_bind_dynamic_class",
+        src: r#"<Foo v-bind="obj" :class="klass" />"#,
+        sites: &["16 /* FULL_PROPS */, [\"class\"]"],
+    },
 ];
 
 #[test]

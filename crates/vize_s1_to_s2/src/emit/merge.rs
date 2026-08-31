@@ -72,7 +72,8 @@ pub(super) fn object_patch(
                         flag |= 512;
                         continue;
                     }
-                    if matches!(raw_name, "class" | "style" | "key")
+                    if raw_name == "key"
+                        || (!is_component && matches!(raw_name, "class" | "style"))
                         || bind_value_is_static_patchless(bind)
                     {
                         continue;
