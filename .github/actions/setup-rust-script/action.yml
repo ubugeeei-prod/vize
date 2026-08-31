@@ -17,9 +17,22 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
+        rust_script_version="0.34.0"
         if command -v rust-script >/dev/null 2>&1; then
-          rust-script --version
-          exit 0
+          installed_version="$(rust-script --version | sed -E 's/^rust-script[[:space:]]+([^[:space:]]+).*/\1/')"
+          if [ "$installed_version" = "$rust_script_version" ]; then
+            rust-script --version
+            exit 0
+          fi
+          echo "Found rust-script ${installed_version}; installing ${rust_script_version}" >&2
         fi
-        cargo install rust-script --version 0.34.0 --locked
+        cargo_bin="${CARGO_HOME:-$HOME/.cargo}/bin"
+        cargo install rust-script --version "$rust_script_version" --locked --force
+        export PATH="$cargo_bin:$PATH"
+        echo "$cargo_bin" >> "$GITHUB_PATH"
+        installed_version="$(rust-script --version | sed -E 's/^rust-script[[:space:]]+([^[:space:]]+).*/\1/')"
+        if [ "$installed_version" != "$rust_script_version" ]; then
+          echo "::error::expected rust-script ${rust_script_version}, got $(rust-script --version)" >&2
+          exit 1
+        fi
         rust-script --version
