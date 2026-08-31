@@ -6,6 +6,7 @@
 #![allow(dead_code)]
 
 mod authored;
+mod folio_spans;
 
 use vize_davinci::diagnostic::Diagnostic;
 use vize_davinci::folio::{Folio, FolioMode};
@@ -19,6 +20,7 @@ use vize_s2::scope::ScopeFacts;
 use vize_s2::verify::{Rigor, Violation, verify, verify_table};
 
 pub use authored::assert_authored_artifact;
+pub use folio_spans::assert_folio_spans_resolve;
 
 /// The owned snapshot of one lowering, for exact-equality pins.
 #[derive(Debug)]
@@ -120,6 +122,7 @@ pub fn assert_transformed_sound(source: &str, context: &str) {
 pub fn assert_transformed_sound_caps(source: &str, caps: LegacyCaps, context: &str) {
     with_transformed_caps(source, caps, |lowered, folio, facts, _budget| {
         assert_authored_artifact(source, lowered);
+        assert_folio_spans_resolve(source, folio, context);
         assert_eq!(
             u64::from(lowered.op_count),
             folio.op_count(),
@@ -199,6 +202,7 @@ pub fn assert_sound(source: &str, context: &str) {
 pub fn assert_sound_caps(source: &str, caps: LegacyCaps, context: &str) {
     with_lowered_caps(source, caps, |lowered, folio| {
         assert_authored_artifact(source, lowered);
+        assert_folio_spans_resolve(source, folio, context);
         assert_eq!(
             u64::from(lowered.op_count),
             folio.op_count(),

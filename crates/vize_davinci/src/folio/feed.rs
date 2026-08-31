@@ -37,6 +37,15 @@ use crate::folio::dump::FolioDump;
 /// the committed schema's `const` together.
 pub const SPOLVERO_FEED_SCHEMA_VERSION: u32 = 1;
 
+/// A consumer-side schema negotiation failure.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct SpolveroFeedSchemaMismatch {
+    /// The feed schema this crate knows how to consume.
+    pub expected: u32,
+    /// The feed schema presented by the payload.
+    pub found: u32,
+}
+
 /// One page of the feed.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SpolveroPage {
@@ -68,6 +77,18 @@ pub struct SpolveroFeed {
 }
 
 impl SpolveroFeed {
+    /// Negotiate the feed schema before reading any shape-dependent field.
+    pub fn negotiate_schema_version(schema_version: u32) -> Result<(), SpolveroFeedSchemaMismatch> {
+        if schema_version == SPOLVERO_FEED_SCHEMA_VERSION {
+            Ok(())
+        } else {
+            Err(SpolveroFeedSchemaMismatch {
+                expected: SPOLVERO_FEED_SCHEMA_VERSION,
+                found: schema_version,
+            })
+        }
+    }
+
     /// An empty feed for `command`.
     #[must_use]
     pub fn new(command: &str) -> Self {

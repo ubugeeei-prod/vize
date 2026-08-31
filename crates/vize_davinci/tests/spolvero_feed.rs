@@ -11,7 +11,7 @@ use std::process::{Command, Output, Stdio};
 
 use davinci_test_support::schema as schema_check;
 use vize_davinci::folio::dump::FolioDump;
-use vize_davinci::folio::feed::SpolveroFeed;
+use vize_davinci::folio::feed::{SpolveroFeed, SpolveroFeedSchemaMismatch};
 use vize_davinci::pass::{Fusability, PassDesc, PassEvent, PassKind, Pipeline, Preserved};
 
 /// A canonical `[budget-observer]` page - the smallest committed-format
@@ -55,6 +55,25 @@ fn temp_dir(name: &str) -> PathBuf {
 fn read_feed(dir: &Path) -> serde_json::Value {
     let text = std::fs::read_to_string(dir.join("spolvero.json")).expect("feed reads");
     serde_json::from_str(&text).expect("feed is valid JSON")
+}
+
+fn negotiate_feed_schema(feed: &serde_json::Value) -> Result<(), SchemaGateError> {
+    let version = feed
+        .get("schema_version")
+        .ok_or(SchemaGateError::MissingVersion)?
+        .as_u64()
+        .ok_or(SchemaGateError::NonNumericVersion)?;
+    let Ok(version) = u32::try_from(version) else {
+        return Err(SchemaGateError::NonNumericVersion);
+    };
+    SpolveroFeed::negotiate_schema_version(version).map_err(SchemaGateError::VersionMismatch)
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum SchemaGateError {
+    MissingVersion,
+    NonNumericVersion,
+    VersionMismatch(SpolveroFeedSchemaMismatch),
 }
 
 /// Load the committed schema relative to this crate's manifest.
@@ -196,5 +215,40 @@ fn the_schema_refuses_version_and_shape_mismatches_loudly() {
         error.message().as_str(),
         "schema violation at `$.pages[0].stage`: string does not match pattern \
          `^[a-z][a-z0-9-]*$`"
+    );
+}
+
+#[test]
+fn consumers_negotiate_schema_version_before_reading_pages() {
+    let mut feed = serde_json::json!({
+        "schema_version": 1,
+        "command": "davinci-opt",
+        "pages": "not read until the version is accepted",
+    });
+    assert_eq!(negotiate_feed_schema(&feed), Ok(()));
+
+    feed.as_object_mut()
+        .expect("feed is an object")
+        .remove("schema_version");
+    assert_eq!(
+        negotiate_feed_schema(&feed),
+        Err(SchemaGateError::MissingVersion)
+    );
+
+    feed["schema_version"] = serde_json::Value::from("1");
+    assert_eq!(
+        negotiate_feed_schema(&feed),
+        Err(SchemaGateError::NonNumericVersion)
+    );
+
+    feed["schema_version"] = serde_json::Value::from(2);
+    assert_eq!(
+        negotiate_feed_schema(&feed),
+        Err(SchemaGateError::VersionMismatch(
+            SpolveroFeedSchemaMismatch {
+                expected: 1,
+                found: 2,
+            }
+        ))
     );
 }
