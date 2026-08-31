@@ -53,6 +53,10 @@ const BATTERY: &[(&str, &str)] = &[
   </template>
 </div>"#,
     ),
+    (
+        "component_static_class_array_props_stay_inline",
+        r#"<section><Menu><Content align="end" side="top" :side-offset="8" :class="['z-50', 'bg-white']"><Item /></Content></Menu><button><div class="i-stop"></div></button><button><div class="i-trash"></div></button></section>"#,
+    ),
 ];
 
 #[test]

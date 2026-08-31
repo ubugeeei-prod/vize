@@ -216,13 +216,13 @@ jobs:
       - name: Generate benchmark input
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
         working-directory: head
-        run: node bench/generate.mjs "$VIZE_BENCH_FILE_COUNT"
+        run: node tools/benchmarks/scripts/generate.mjs "$VIZE_BENCH_FILE_COUNT"
 
       - name: Compare base and head
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
         run: |
-          node head/bench/compare-pr.mjs \
-            --input "$GITHUB_WORKSPACE/head/bench/__in__" \
+          node head/tools/benchmarks/scripts/compare-pr.mjs \
+            --input "$GITHUB_WORKSPACE/head/tools/benchmarks/scripts/__in__" \
             --base-bin "$GITHUB_WORKSPACE/base/target/ci-opt/vize" \
             --head-bin "$GITHUB_WORKSPACE/head/target/ci-opt/vize" \
             --base-label "$BENCHMARK_BASE_SHA" \
@@ -281,7 +281,7 @@ jobs:
         env:
           PR_LABELS_JSON: ${{ github.event_name == 'pull_request' && toJSON(github.event.pull_request.labels.*.name) || '[]' }}
         run: >-
-          node head/bench/enforce-pr-budget.mjs
+          node head/tools/benchmarks/scripts/enforce-pr-budget.mjs
           --json benchmark-results.json
           --labels-json "$PR_LABELS_JSON"
 
@@ -314,4 +314,4 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           BENCHMARK_COMMENT_KEY: ${{ github.event.pull_request.head.sha }}
-        run: node bench/comment-pr.mjs --body benchmark-summary.md --comment-key "$BENCHMARK_COMMENT_KEY"
+        run: node tools/benchmarks/scripts/comment-pr.mjs --body benchmark-summary.md --comment-key "$BENCHMARK_COMMENT_KEY"

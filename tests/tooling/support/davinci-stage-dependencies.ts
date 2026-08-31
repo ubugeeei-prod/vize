@@ -8,14 +8,17 @@ export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)
 
 export type Dependency = {
   name: string;
+  features: string[];
   rename: string | null;
   kind: "dev" | "build" | null;
+  optional: boolean;
   req: string;
 };
 
 export type Package = {
   name: string;
   dependencies: Dependency[];
+  features: Record<string, string[]>;
   manifest_path: string;
   publish: string[] | null;
 };

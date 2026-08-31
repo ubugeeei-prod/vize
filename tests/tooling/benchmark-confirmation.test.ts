@@ -1,9 +1,15 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { createBenchmarkBudget, renderMarkdown } from "../../bench/compare-pr.mjs";
-import { confirmRegressions, summarizeBenchmarkRuns } from "../../bench/compare-pr-results.mjs";
-import { enforceBenchmarkBudget } from "../../bench/enforce-pr-budget.mjs";
+import {
+  createBenchmarkBudget,
+  renderMarkdown,
+} from "../../tools/benchmarks/scripts/compare-pr.mjs";
+import {
+  confirmRegressions,
+  summarizeBenchmarkRuns,
+} from "../../tools/benchmarks/scripts/compare-pr-results.mjs";
+import { enforceBenchmarkBudget } from "../../tools/benchmarks/scripts/enforce-pr-budget.mjs";
 
 test("a transient breach is judged over the initial and confirmation pairs together", () => {
   const initial = summarizeBenchmarkRuns({

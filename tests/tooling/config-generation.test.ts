@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { generationAndCliTasks } from "../../config/vite-plus/tasks/generation-cli.ts";
+import { generationAndCliTasks } from "../../tools/config/vite-plus/tasks/generation-cli.ts";
 import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
 
 const root = repoRoot;

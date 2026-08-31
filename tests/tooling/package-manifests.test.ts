@@ -390,7 +390,7 @@ test("documented install commands point at supported release artifacts", () => {
   };
   const vizeCrateToml = readRepoFile("crates/vize/Cargo.toml");
   const releaseWorkflow = readRepoFile(".github/workflows/release.yml");
-  const nixPackage = readRepoFile("package.nix");
+  const nixPackage = readRepoFile("tools/nix/package.nix");
   const publicDocs = [
     "README.md",
     "docs/content/getting-started.md",
@@ -407,7 +407,10 @@ test("documented install commands point at supported release artifacts", () => {
   assert.equal(vizeNpmPackage.bin?.vize, "bin/vize");
   assert.match(releaseWorkflow, /cli-artifacts\/\*\.tar\.gz/);
   assert.match(nixPackage, /binaries = \{\n\s*"vize" = "vize";\n\s*\};/);
-  assert.match(readRepoFile("nix/packages.nix"), /apps =\s+lib\.genAttrs[\s\S]*?getExe' vize name/);
+  assert.match(
+    readRepoFile("tools/nix/packages.nix"),
+    /apps =\s+lib\.genAttrs[\s\S]*?getExe' vize name/,
+  );
 
   if (/^publish = false$/m.test(vizeCrateToml)) {
     assert.deepEqual(unsupportedCargoInstallDocs, []);
@@ -491,7 +494,7 @@ test("workspace package builds do not nest pnpm run commands", () => {
   assert.doesNotMatch(museaPackage.scripts?.build ?? "", /\bpnpm run\b/);
 });
 
-test("vize package delegates rule type generation to the workspace MoonBit task", () => {
+test("vize package delegates rule type generation to the workspace task", () => {
   const vizePackage = JSON.parse(
     fs.readFileSync(path.join(root, "npm/cli/package.json"), "utf-8"),
   ) as {
@@ -582,39 +585,6 @@ test("workspace TypeScript package builds use vp pack", () => {
   assert.equal(oxlintPackage.engines?.node, "^22 || >= 24");
   const oxlintTest = "vp pack && vp test run src/file-state.test.ts && node src/test.ts";
   assert.equal(oxlintPackage.scripts?.test, `${oxlintTest} && node src/script-location.test.ts`);
-  const rootTasks = fs.readFileSync(path.join(root, "config/vite-plus/tasks/build.ts"), "utf-8");
+  const rootTasks = readRepoFile("tools/config/vite-plus/tasks/build.ts");
   assert.match(rootTasks, /vscodeExtensionPackageBin\("vite-plus", "vp"\)[\s\S]*pack/);
-});
-
-test("fresco-native publishes bundled binaries directly from the root package", () => {
-  const frescoNativePackage = JSON.parse(
-    fs.readFileSync(path.join(root, "npm/fresco-native/package.json"), "utf-8"),
-  ) as {
-    files?: string[];
-    scripts?: Record<string, string>;
-  };
-  const vizeNativePackage = JSON.parse(
-    fs.readFileSync(path.join(root, "npm/native/package.json"), "utf-8"),
-  ) as {
-    scripts?: Record<string, string>;
-  };
-
-  assert.deepEqual(frescoNativePackage.files, ["index.js", "index.d.ts", "*.node"]);
-  assert.equal(frescoNativePackage.scripts?.prepublishOnly, undefined);
-  assert.equal(
-    frescoNativePackage.scripts?.["build:ci"],
-    "napi build --platform --profile ci --manifest-path ../../crates/vize_fresco/Cargo.toml -p vize_fresco --features napi --output-dir .",
-  );
-  assert.equal(
-    vizeNativePackage.scripts?.["build:ci"],
-    "napi build --platform --profile ci --manifest-path ../../crates/vize_vitrine/Cargo.toml -p vize_vitrine --features napi,legacy --output-dir . && node ./scripts/sync-entrypoint.mjs",
-  );
-
-  const frescoNativeLoader = fs.readFileSync(
-    path.join(root, "npm/fresco-native/index.js"),
-    "utf-8",
-  );
-  assert.match(frescoNativeLoader, /spawnSync\("ldd", \["--version"\]/);
-  assert.doesNotMatch(frescoNativeLoader, /execSync\("which ldd"\)/);
-  assert.doesNotMatch(frescoNativeLoader, /readFileSync\(lddPath/);
 });

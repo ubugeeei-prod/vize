@@ -21,7 +21,7 @@ Vize 将大多数产品行为保留在 Rust 工作区中，JavaScript 包充当
 | `npm/`    | 用于 Vite、Nuxt、编辑器扩展、Musea 集成和已发布的包包装器的 JavaScript 包      |
 | `docs/`   | 用户文档、架构说明、发行说明和文档站点主题                                     |
 | `tests/`  | 跨包装置、实际项目、工具测试和快照治理                                         |
-| `bench/`  | 性能比较脚本和 PR 基准预算执行                                                 |
+| `tools/benchmarks/scripts/`  | 性能比较脚本和 PR 基准预算执行                                                 |
 | `tools/`  | 不属于已发货产品的存储库自动化                                                 |
 
 当更改跨越目录时，所有者通常是创建用户可见的层
@@ -117,7 +117,7 @@ vp run --workspace-root source:lengths
 正常包路径（`moon run --target native tools/moon/cmd/<name> -- <args>`），分享工具链
 已经构建了编译器，并被 `tests/tooling/*.test.ts` 套件覆盖
 它们通过 `moon run` 并断言完整的预期输出。根任务使用 `moonScript` 调用它们
-`config/vite-plus/task-commands.ts` 中的助手，因此每个消费者都保持稳定的任务名称而不是
+`tools/config/vite-plus/task-commands.ts` 中的助手，因此每个消费者都保持稳定的任务名称而不是
 内联命令。
 
 好的 MoonBit 候选者是小、纯粹且依赖轻：参数解析、JSON 或文本

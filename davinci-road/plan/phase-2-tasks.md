@@ -212,16 +212,21 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 
 **Deliverable:** `vize_atelier_dom` lowering S2 → codegen structure directly — the first strangler target, on the surface that holds the hard byte-parity bar.
 
-**Current series evidence (2026-08-30):** 60 installments have landed through
-[#5405](https://github.com/ubugeeei-prod/vize/pull/5405). The S2 DOM lane now
+**Current series evidence (2026-08-31):** 67 installments have landed through
+[#5543](https://github.com/ubugeeei-prod/vize/pull/5543). The S2 DOM lane now
 covers the late directive/object-spread set, event/model/slot residuals,
 structural `v-if`/`v-for` cases, expression-edge admission, keyed slot
 forwarding, component `v-once` wrappers, slot text fact alignment, and the
 corpus-runnable plus CI DOM lanes. The per-node patch-site witness program now
 covers the late directive/object-spread, `v-memo`, `v-once`, slot outlet and
-`createSlots` cases, while the 144 DOM-output comparisons contract remains
-pinned. The task remains blocked on the hydrated zero-divergence corpus evidence
-and production-lane switch; the old lane remains the production path. See the
+`createSlots` cases. Nested interactive recovery identity, raw
+handler-expression parity, dynamic-component directive patch flags,
+template-wrapper component props and component class binds have reduced
+real-project witnesses, while the 144 DOM-output comparisons contract remains
+pinned. The task remains
+blocked on the
+hydrated zero-divergence corpus evidence and production-lane switch; the old
+lane remains the production path. See the
 [series record](./phase-2-records/p2-11.md).
 
 **Steps:**
@@ -244,7 +249,7 @@ and production-lane switch; the old lane remains the production path. See the
 
 **Steps:**
 
-- [x] Record the **pre-S2 walk count** per ladder fixture per backend with a temporary counter hook on today's still-live pipeline — the exact P0-3 pattern (`vize_atelier_core::expr_parse_probe`, 18 sites, baseline committed to a plan doc). Ladder: `benchmarks/davinci_harness/fixtures/{small,medium,large,stress-deep,stress-wide,stress-interp}.vue` _(`crates/vize_atelier_core/src/walk_probe.rs`, 19 sites)_
+- [x] Record the **pre-S2 walk count** per ladder fixture per backend with a temporary counter hook on today's still-live pipeline — the exact P0-3 pattern (`vize_atelier_core::expr_parse_probe`, 18 sites, baseline committed to a plan doc). Ladder: `tools/benchmarks/crates/davinci_harness/fixtures/{small,medium,large,stress-deep,stress-wide,stress-interp}.vue` _(`crates/vize_atelier_core/src/walk_probe.rs`, 19 sites)_
 - [x] Commit `davinci-road/plan/walk-baseline.md` with the counts, the exact reproducing command, and the two-run determinism proof (the P0-2/P0-5 convention)
 - [x] Fill `budgets.toml [traversal]` (today: `# Populated by P2-12`) with the per-fixture ceilings. State the machine-independence reasoning explicitly, the way the `allocs` field docs were rewritten at P1-13: **walk counts, like alloc counts, are deterministic and machine-independent**, so `[traversal]` gates exactly from day one and does not wait for the Blacksmith reference runner _(18 entries, `<backend>_<fixture> = { walks, visits }`)_
 - [x] Extend `tests/tooling/davinci-budgets.test.ts` to reconcile `[traversal]` against the probe ids **in both directions** — today it validates only the `[bench]` registry — so a fixture without a ceiling, or a ceiling without a fixture, fails _(landed as its own suite, `tests/tooling/davinci-traversal-budgets.test.ts`, so neither file passes the 350-line source budget; all three gates proven by injected failures)_

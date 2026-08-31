@@ -12,9 +12,9 @@
 //! edition = "2024"
 //! ```
 
-#[path = "../../../rust/common.rs"]
+#[path = "../../../support/common.rs"]
 mod common;
-#[path = "../../../rust/npm_bootstrap.rs"]
+#[path = "../../../support/release/npm_bootstrap.rs"]
 mod npm_bootstrap;
 
 use std::{env, path::Path, process::ExitCode};

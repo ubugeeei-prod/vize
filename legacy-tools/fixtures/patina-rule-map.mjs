@@ -35,17 +35,19 @@ const intentionalDivergenceOverrides = new Map([
 ]);
 
 function loadUpstream() {
-  const requireFromBench = createRequire(path.join(repoRoot, "bench", "package.json"));
+  const requireFromBench = createRequire(
+    path.join(repoRoot, "tools", "benchmarks", "scripts", "package.json"),
+  );
   const plugin = requireFromBench(upstreamPackage);
   const manifest = requireFromBench(`${upstreamPackage}/package.json`);
   const benchManifest = JSON.parse(
-    fs.readFileSync(path.join(repoRoot, "bench", "package.json"), "utf8"),
+    fs.readFileSync(path.join(repoRoot, "tools", "benchmarks", "scripts", "package.json"), "utf8"),
   );
 
   assert.equal(
     benchManifest.devDependencies?.[upstreamPackage],
     manifest.version,
-    `${upstreamPackage} must stay exactly pinned in bench/package.json`,
+    `${upstreamPackage} must stay exactly pinned in tools/benchmarks/scripts/package.json`,
   );
 
   return {

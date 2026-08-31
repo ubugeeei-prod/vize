@@ -6,12 +6,12 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { buildTasks } from "../../config/vite-plus/tasks/build.ts";
-import { checkTasks } from "../../config/vite-plus/tasks/check.ts";
-import { testAndBenchmarkTasks } from "../../config/vite-plus/tasks/test-benchmark.ts";
-import { inTestbox, testboxTasks } from "../../config/vite-plus/tasks/testbox.ts";
-import { shellQuote } from "../../config/vite-plus/task-helpers.ts";
-import { testedPackages } from "../../config/vite-plus/task-inputs.ts";
+import { buildTasks } from "../../tools/config/vite-plus/tasks/build.ts";
+import { checkTasks } from "../../tools/config/vite-plus/tasks/check.ts";
+import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
+import { inTestbox, testboxTasks } from "../../tools/config/vite-plus/tasks/testbox.ts";
+import { shellQuote } from "../../tools/config/vite-plus/task-helpers.ts";
+import { testedPackages } from "../../tools/config/vite-plus/task-inputs.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const pushCurrentBranchCommand = 'git push --set-upstream origin "$(git branch --show-current)"';
@@ -92,17 +92,17 @@ test("branch coverage reports every metric before enforcing thresholds", () => {
   const command = taskShape(testAndBenchmarkTasks["coverage:source:branch"]).command;
   const cleanIndex = command.indexOf("cargo clean --target-dir target/llvm-cov-target");
   const reportIndex = command.indexOf("cargo +nightly llvm-cov -p vize_carton");
-  const enforcementIndex = command.indexOf("enforce_rust_source_coverage");
+  const enforcementIndex = command.indexOf("tools/commands/ci/source-coverage.rs");
 
   assert.ok(cleanIndex >= 0);
   assert.match(command, /cargo \+nightly llvm-cov/);
   assert.match(command, /--branch(?:\s|$)/);
   assert.doesNotMatch(command, /--fail-under-/);
-  assert.match(command, /enforce_rust_source_coverage/);
-  assert.match(command, /--min-lines 55/);
-  assert.match(command, /--min-functions 70/);
-  assert.match(command, /--min-regions 55/);
-  assert.match(command, /--min-branches 40/);
+  assert.match(command, /tools\/commands\/ci\/source-coverage\.rs/);
+  assert.match(command, /(?:^|\s)['"]?--min-lines['"]?\s+['"]?55['"]?(?:\s|$)/);
+  assert.match(command, /(?:^|\s)['"]?--min-functions['"]?\s+['"]?70['"]?(?:\s|$)/);
+  assert.match(command, /(?:^|\s)['"]?--min-regions['"]?\s+['"]?55['"]?(?:\s|$)/);
+  assert.match(command, /(?:^|\s)['"]?--min-branches['"]?\s+['"]?40['"]?(?:\s|$)/);
   assert.ok(cleanIndex < reportIndex);
   assert.ok(reportIndex < enforcementIndex);
 });
@@ -235,9 +235,9 @@ test("Testbox warmup distinguishes origin failures from an unpushed branch", () 
 });
 
 test("the Nix shell exposes local and opt-in Testbox task aliases", () => {
-  const vpModule = fs.readFileSync(path.join(root, "nix/vp.nix"), "utf8");
-  const devShellModule = fs.readFileSync(path.join(root, "nix/dev-shell.nix"), "utf8");
-  const blacksmithModule = fs.readFileSync(path.join(root, "nix/blacksmith.nix"), "utf8");
+  const vpModule = fs.readFileSync(path.join(root, "tools/nix/vp.nix"), "utf8");
+  const devShellModule = fs.readFileSync(path.join(root, "tools/nix/dev-shell.nix"), "utf8");
+  const blacksmithModule = fs.readFileSync(path.join(root, "tools/nix/blacksmith.nix"), "utf8");
   const defaultShell = devShellModule.match(
     /devShell = pkgs\.mkShell \{([\s\S]*?)\n\s*\};\n\s*testboxDevShell/,
   )?.[1];

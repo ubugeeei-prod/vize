@@ -10,9 +10,9 @@
 
 use std::{env, path::PathBuf, process::ExitCode};
 
-#[path = "../../../rust/common.rs"]
+#[path = "../../../support/common.rs"]
 mod common;
-#[path = "../../../rust/editor_e2e.rs"]
+#[path = "../../../support/editors/e2e.rs"]
 mod editor_e2e;
 
 const USAGE: &str = "Usage: rust-script tools/commands/editors/e2e/real-vue-workspace.rs <prepare|server-path|corsa-path|vue-path> [workspace]\n\nprepare <workspace> materializes the shared real-vue editor fixture.";

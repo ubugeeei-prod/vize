@@ -36,7 +36,6 @@ pub(super) fn emit_props_object(
         .filter(|piece| {
             !skip_emitted_key(
                 piece,
-                if_key,
                 skip_class,
                 skip_style,
                 skip_key,
@@ -237,7 +236,6 @@ impl Piece<'_> {
 
 fn skip_emitted_key(
     piece: &Piece<'_>,
-    _if_key: Option<&str>,
     skip_class: bool,
     skip_style: bool,
     skip_key: bool,

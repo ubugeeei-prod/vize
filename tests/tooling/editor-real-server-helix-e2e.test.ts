@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { testAndBenchmarkTasks } from "../../config/vite-plus/tasks/test-benchmark.ts";
+import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 function taskCommand(name: string): string {
@@ -54,7 +54,7 @@ test("the official Helix health guard checks both packaged language entries exac
 
 test("the Helix scenario pins complete responses for every advertised feature", () => {
   const scenario = readRepoFile("tools", "commands", "editors", "helix", "run-real-server.rs");
-  const contract = readRepoFile("tools", "rust", "lsp_smoke.rs");
+  const contract = readRepoFile("tools", "support", "editors", "lsp_smoke.rs");
 
   for (const method of [
     "textDocument/completion",

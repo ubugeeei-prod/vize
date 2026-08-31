@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { buildComment } from "../../bench/comment-test-report.mjs";
+import { buildComment } from "../../tools/benchmarks/scripts/comment-test-report.mjs";
 import { readRepoFile, root, workflowJobBody } from "./support/github-workflows.ts";
 
 test("PR CI jobs cap runtime with explicit timeouts", () => {
@@ -143,7 +143,7 @@ test("check workflow comments a detailed PR test report for each head push", () 
 
   assert.match(
     reportJob,
-    /node bench\/test-inventory\.mjs --json test-inventory\.json --markdown "\$GITHUB_STEP_SUMMARY"/,
+    /node tools\/benchmarks\/scripts\/test-inventory\.mjs --json test-inventory\.json --markdown "\$GITHUB_STEP_SUMMARY"/,
   );
   assert.match(reportJob, /name:\s*test-inventory/);
 
@@ -165,7 +165,7 @@ test("check workflow comments a detailed PR test report for each head push", () 
   );
   assert.match(
     commentJob,
-    /node bench\/comment-test-report\.mjs --inventory test-inventory\.json --summary "\$GITHUB_STEP_SUMMARY"/,
+    /node tools\/benchmarks\/scripts\/comment-test-report\.mjs --inventory test-inventory\.json --summary "\$GITHUB_STEP_SUMMARY"/,
   );
 });
 
@@ -189,12 +189,11 @@ test("check workflow runs the editor extension host smoke against a real vize se
 test("test inventory script counts JS, Rust, e2e, VRT, and fixture cases", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-test-inventory-"));
   const inventoryPath = path.join(tempDir, "inventory.json");
+  const inventoryScript = "tools/benchmarks/scripts/test-inventory.mjs";
+  const inventoryArgs = [inventoryScript, "--json", inventoryPath];
 
   try {
-    execFileSync(process.execPath, ["bench/test-inventory.mjs", "--json", inventoryPath], {
-      cwd: root,
-      stdio: "pipe",
-    });
+    execFileSync(process.execPath, inventoryArgs, { cwd: root, stdio: "pipe" });
 
     const inventory = JSON.parse(fs.readFileSync(inventoryPath, "utf8")) as {
       totalCases: number;
@@ -290,7 +289,7 @@ test("check workflow blocks on Rust source and branch coverage budgets", () => {
   assert.equal(jobs["source-coverage"].env?.VIZE_NUXT_CONFIG_ITERATIONS, "100");
   assert.match(sourceJob, /tool:\s*cargo-llvm-cov/);
   assert.match(sourceJob, /vp install --frozen-lockfile --prefer-offline/);
-  assert.match(sourceJob, /vp run --workspace-root coverage:source/);
+  assert.match(sourceJob, /setup-rust-script[\s\S]*coverage:source/);
   assert.match(sourceJob, /Verify source coverage summary/);
   assert.match(sourceJob, /test -s target\/llvm-cov\/source-summary\.json/);
   assert.match(sourceJob, /source-summary\.json/);
@@ -300,7 +299,7 @@ test("check workflow blocks on Rust source and branch coverage budgets", () => {
   assert.match(branchJob, /toolchain:\s*nightly/);
   assert.match(branchJob, /tool:\s*cargo-llvm-cov/);
   assert.match(branchJob, /vp install --frozen-lockfile --prefer-offline/);
-  assert.match(branchJob, /vp run --workspace-root coverage:source:branch/);
+  assert.match(branchJob, /setup-rust-script[\s\S]*coverage:source:branch/);
   assert.match(branchJob, /Verify branch coverage summary/);
   assert.match(branchJob, /test -s target\/llvm-cov\/source-branch-summary\.json/);
   assert.match(branchJob, /source-branch-summary\.json/);
@@ -324,17 +323,18 @@ test("check workflow builds local native bindings before JS checks", () => {
   const checkJsJob = workflowJobBody(workflow, "check-js");
   const buildJob = workflowJobBody(workflow, "build-js-packages");
   const playgroundJob = workflowJobBody(workflow, "playground-test");
-
   assert.match(checkJsJob, /vp run --workspace-root check:ci/);
   assert.doesNotMatch(checkJsJob, /cargo build/);
   assert.match(checkJsJob, /setup-js-check-runtime/);
   assert.doesNotMatch(checkJsJob, /build:packages/);
-
   assert.match(buildJob, /vp run --filter '\.\/npm\/native' build:ci/);
   assert.match(buildJob, /vp run --filter '\.\/npm\/ui' check/);
-  assert.match(buildJob, /vp run --workspace-root build:packages/);
+  assert.ok(
+    buildJob.indexOf("uses: ./.github/actions/setup-rust-script") <
+      buildJob.indexOf("run: vp run --workspace-root build:packages"),
+    "build-js-packages must install rust-script before build:packages",
+  );
   assert.match(buildJob, /name:\s*shared-js-build/);
-
   assert.match(playgroundJob, /needs:\n\s+- build-js-packages\b/);
   assert.match(playgroundJob, /name:\s*shared-js-build/);
   assert.doesNotMatch(playgroundJob, /name: Build npm packages/);

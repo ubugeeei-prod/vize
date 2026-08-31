@@ -299,6 +299,8 @@ test("new fixture licenses and read-only policy stay explicit", () => {
 
 test("every registry entry declares the requested tool coverage and diff mode", () => {
   const registry = readRegistry();
+  const requiredSurfaces = "compiler,linter,typechecker,formatter,syntax-highlighter,lsp";
+  assert.equal(registry.requiredToolCoverage.join(","), requiredSurfaces);
   const requiredCoverage = [...registry.requiredToolCoverage].sort();
 
   for (const project of registry.projects) {

@@ -10,9 +10,9 @@
 
 use std::process::ExitCode;
 
-#[path = "../../../rust/common.rs"]
+#[path = "../../../support/common.rs"]
 mod common;
-#[path = "../../../rust/lsp_smoke.rs"]
+#[path = "../../../support/editors/lsp_smoke.rs"]
 mod lsp_smoke;
 
 fn main() -> ExitCode {

@@ -112,6 +112,7 @@ pub(super) struct ComponentHoistProps {
     pub(super) source: String,
     pub(super) dynamic_values: bool,
     pub(super) non_key: bool,
+    pub(super) valued_prop: bool,
 }
 
 pub(super) fn component_hoist_props(
@@ -123,6 +124,7 @@ pub(super) fn component_hoist_props(
     let mut emitted = 0usize;
     let mut dynamic_values = false;
     let mut non_key = false;
+    let mut valued_prop = false;
     for (index, piece) in pieces.iter().enumerate() {
         let mut prop = String::default();
         let Some((key, dynamic_value)) = component_hoist_prop(&mut prop, piece)? else {
@@ -133,6 +135,11 @@ pub(super) fn component_hoist_props(
         }
         dynamic_values |= dynamic_value;
         non_key |= key.as_str() != "key";
+        valued_prop |= match piece {
+            Piece::Attr(attr) => attr.value.is_some(),
+            Piece::Bind(_) => true,
+            _ => false,
+        };
         if emitted > 0 {
             out.push_str(", ");
         }
@@ -147,6 +154,7 @@ pub(super) fn component_hoist_props(
         source: out,
         dynamic_values,
         non_key,
+        valued_prop,
     }))
 }
 

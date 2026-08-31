@@ -95,7 +95,7 @@ Local audit evidence from May 18, 2026:
   release gate.
 - `cargo +nightly llvm-cov -p vize_carton -p vize_armature -p vize_atelier_core --branch`
   reports core Rust branch coverage at `44.34%`, above the `40%` release gate.
-- `node bench/test-inventory.mjs --json ...` reports `4,480` tracked cases across `607` files.
+- `node tools/benchmarks/scripts/test-inventory.mjs --json ...` reports `4,480` tracked cases across `607` files.
 
 These results are strong alpha evidence, but they are not enough to call the whole repository
 production ready. The formerly missing release-blocking checks are tracked by these fix requests and now

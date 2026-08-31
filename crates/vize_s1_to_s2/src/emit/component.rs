@@ -199,6 +199,7 @@ fn emit_call(
             source: compact_props_object(hoist_attrs.iter().copied()),
             dynamic_values: false,
             non_key: hoist_attrs.iter().any(|attr| attr.name != "key"),
+            valued_prop: hoist_attrs.iter().any(|attr| attr.value.is_some()),
         })
     } else {
         props_static::component_hoist_props(&component.attributes, &component.bindings)?
@@ -212,6 +213,8 @@ fn emit_call(
     {
         cx.buf.push_hoist(props.source.clone());
     }
+    let static_props_hoist_context =
+        cx.hoist_static_vnodes || cx.slot_param_depth > 0 || cx.in_v_for;
     let can_hoist_static_props = !has_custom
         && !for_item
         && if_key.is_none()
@@ -221,8 +224,14 @@ fn emit_call(
                 || id.is_some_and(|id| {
                     cx.template_for_item_root_id == Some(id)
                         && props_static::props_hoistable(cx, Some(id))
+                        && !directive::has_runtime(&component.bindings)
                 })
+                || (!props.dynamic_values
+                    && props.valued_prop
+                    && static_props_hoist_context
+                    && !has_slots)
                 || (props.dynamic_values
+                    && cx.slot_param_depth == 0
                     && !cx.in_v_for
                     && (!has_slots || slots::has_text_only_implicit_default(&component.children)))
         });

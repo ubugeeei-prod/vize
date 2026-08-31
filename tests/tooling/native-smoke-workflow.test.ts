@@ -18,19 +18,17 @@ function workflowJobBody(workflow: string, jobName: string): string {
   return remaining.slice(0, nextJobMatch ? nextJobMatch.index + 1 : undefined);
 }
 
-test("native smoke skips MoonBit setup on Darwin x64 where the installer is unsupported", () => {
+test("native smoke keeps MoonBit out of the npm fresh install path", () => {
   const workflow = readRepoFile(".github", "workflows", "native-smoke.yml");
   const hostJob = workflowJobBody(workflow, "host-native-smoke");
   const freshJob = workflowJobBody(workflow, "fresh-install-smoke");
 
   assert.match(hostJob, /target:\s*darwin-x64/);
-  assert.match(freshJob, /target:\s*darwin-x64/);
   assert.match(
     hostJob,
     /uses:\s*\.\/\.github\/actions\/setup-moonbit\s*\n\s*if:\s*matrix\.target != 'darwin-x64'/,
   );
-  assert.match(
-    freshJob,
-    /uses:\s*\.\/\.github\/actions\/setup-moonbit\s*\n\s*if:\s*matrix\.platform\.target != 'darwin-x64'/,
-  );
+  assert.match(freshJob, /target:\s*darwin-x64/);
+  assert.doesNotMatch(freshJob, /setup-moonbit/);
+  assert.match(freshJob, /vp run --filter '\.\/npm\/cli' build/);
 });

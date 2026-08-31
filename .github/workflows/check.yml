@@ -1,5 +1,4 @@
 name: Check
-
 on:
   push:
     branches: [main, davinci]
@@ -298,6 +297,7 @@ jobs:
         with:
           key: build-js-packages
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Verify declarations, build native package, and check UI package
@@ -433,7 +433,7 @@ jobs:
           wild-version: "0.9.0"
 
       - uses: ./.github/actions/setup-moonbit
-
+      - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: coverage-source
@@ -491,7 +491,7 @@ jobs:
           wild-version: "0.9.0"
 
       - uses: ./.github/actions/setup-moonbit
-
+      - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: coverage-branch
@@ -649,7 +649,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
       - uses: ./.github/actions/setup-rust-script
       - name: Collect test inventory
-        run: node bench/test-inventory.mjs --json test-inventory.json --markdown "$GITHUB_STEP_SUMMARY"
+        run: node tools/benchmarks/scripts/test-inventory.mjs --json test-inventory.json --markdown "$GITHUB_STEP_SUMMARY"
       - name: Upload test inventory
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -693,4 +693,4 @@ jobs:
           TEST_REPORT_RUN_ATTEMPT: ${{ github.run_attempt }}
           TEST_REPORT_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           TEST_REPORT_WORKFLOW_NAME: ${{ github.workflow }}
-        run: node bench/comment-test-report.mjs --inventory test-inventory.json --summary "$GITHUB_STEP_SUMMARY"
+        run: node tools/benchmarks/scripts/comment-test-report.mjs --inventory test-inventory.json --summary "$GITHUB_STEP_SUMMARY"

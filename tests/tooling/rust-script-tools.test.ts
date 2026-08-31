@@ -7,10 +7,10 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 test("tool command surface is Rust Script first", () => {
-  const source = readRepoFile("tools/rust/verify-layout.rs");
+  const source = readRepoFile("tools/commands/ci/verify-tool-layout.rs");
   assert.match(source, /rust-script tools: verified/);
-  assert.match(source, /legacy_command\.rs must not come back/);
-  assert.match(source, /tool_host\.rs must not come back/);
+  assert.match(source, /legacy command runner source must not come back/);
+  assert.match(source, /tool host runner source must not come back/);
   assert.match(source, /collect_javascript_tools/);
   assert.match(source, /must be ported to Rust Script/);
 
@@ -35,7 +35,9 @@ test("tool tree does not carry JavaScript command sources", () => {
     .filter((file) => {
       const relative = normalize(path.relative(root, file));
       if (relative.startsWith("tools/commands/")) return false;
-      if (relative.startsWith("tools/rust/")) return false;
+      if (relative.startsWith("tools/benchmarks/scripts/")) return false;
+      if (relative.startsWith("tools/config/vite-plus/")) return false;
+      if (relative.startsWith("tools/support/")) return false;
       if (relative.startsWith("tools/moon/.mooncakes/")) return false;
       return /\.(?:mjs|js|ts)$/.test(relative);
     })
@@ -43,8 +45,9 @@ test("tool tree does not carry JavaScript command sources", () => {
     .sort();
 
   assert.deepEqual(javascriptTools, []);
-  assert.equal(fs.existsSync(path.join(root, "tools", "rust", "legacy_command.rs")), false);
-  assert.equal(fs.existsSync(path.join(root, "tools", "rust", "tool_host.rs")), false);
+  assert.equal(fs.existsSync(path.join(root, "tools", "rust")), false);
+  assert.equal(fs.existsSync(path.join(root, "tools", "support", "legacy_command.rs")), false);
+  assert.equal(fs.existsSync(path.join(root, "tools", "support", "tool_host.rs")), false);
 });
 
 function collectFiles(dir: string): string[] {

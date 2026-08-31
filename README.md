@@ -141,7 +141,7 @@ same size for every row — it is given per row below, and only SFC compile, Lin
 | Nuxt build  |    500 | Nuxt compiler      |    6.83s |   6.59s |           **1.0×** |
 
 Every row is taken from one committed snapshot,
-`bench/results/tool-benchmark-latest.json`
+`tools/benchmarks/results/tool-benchmark-latest.json`
 ([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) — the same
 artifact the published [Blacksmith benchmark snapshot](https://vizejs.dev/architecture/performance-blacksmith)
 renders — and `tests/tooling/readme-benchmark-rows.test.ts` pins them to it so the two cannot drift

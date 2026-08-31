@@ -106,20 +106,20 @@ jobs:
               - '!.github/workflows/pkg-pr-new.yml'
               - '!.github/workflows/release*.yml'
               - '!.github/workflows/title-policy.yml'
-              - '!bench/check-gate.mjs'
-              - '!bench/check-gate-env.mjs'
-              - '!bench/check-gate-plants.mjs'
-              - '!bench/check-gate-report.mjs'
+              - '!tools/benchmarks/scripts/check-gate.mjs'
+              - '!tools/benchmarks/scripts/check-gate-env.mjs'
+              - '!tools/benchmarks/scripts/check-gate-plants.mjs'
+              - '!tools/benchmarks/scripts/check-gate-report.mjs'
               - '!editors/**'
               - '!tests/**'
               - '!tools/commands/ci/github/**'
-              - '!tools/moon/cmd/check_warning_budget/**'
-              - '!tools/moon/cmd/enforce_rust_source_coverage/**'
               - '!tools/moon/cmd/github/**'
-              - '!tools/moon/cmd/npm_tag/**'
               - '!tools/moon/cmd/publish*/**'
               - '!tools/moon/cmd/release/**'
-              - '!tools/moon/cmd/source_file_lengths/**'
+              - '!tools/commands/ci/source-coverage.rs'
+              - '!tools/commands/ci/source-file-lengths.rs'
+              - '!tools/commands/ci/check-warning-budget.rs'
+              - '!tools/commands/release/npm/tag.rs'
 
   tool-benchmark:
     name: tool-benchmark
@@ -154,6 +154,8 @@ jobs:
 
       - uses: ./.github/actions/setup-moonbit
 
+      - uses: ./.github/actions/setup-rust-script
+
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
 
@@ -170,13 +172,13 @@ jobs:
         run: vp run --workspace-root build:nuxt-stack
 
       - name: Generate benchmark input
-        run: node bench/generate.mjs "$VIZE_TOOL_BENCH_FILE_COUNT"
+        run: node tools/benchmarks/scripts/generate.mjs "$VIZE_TOOL_BENCH_FILE_COUNT"
 
       - name: Compare Vize with existing tools
         run: |
           # Restore benchmark metadata label with:
-          node bench/compare-tools.mjs \
-            --input bench/__in__ \
+          node tools/benchmarks/scripts/compare-tools.mjs \
+            --input tools/benchmarks/scripts/__in__ \
             --vize-bin target/release/vize \
             --runs "$VIZE_TOOL_BENCH_RUNS" \
             --warmups "$VIZE_TOOL_BENCH_WARMUPS" \
@@ -237,7 +239,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           BENCHMARK_COMMENT_KEY: tool-${{ github.event.pull_request.head.sha }}
-        run: node bench/comment-pr.mjs --body tool-benchmark-summary.md --comment-key "$BENCHMARK_COMMENT_KEY"
+        run: node tools/benchmarks/scripts/comment-pr.mjs --body tool-benchmark-summary.md --comment-key "$BENCHMARK_COMMENT_KEY"
 
   tool-benchmark-commit:
     name: tool-benchmark-commit
@@ -273,13 +275,13 @@ jobs:
 
       - name: Commit benchmark snapshot
         run: |
-          mkdir -p docs/content/architecture bench/results
+          mkdir -p docs/content/architecture tools/benchmarks/results
           cp tool-benchmark-artifact/performance-blacksmith.md docs/content/architecture/performance-blacksmith.md
-          cp tool-benchmark-artifact/tool-benchmark-results.json bench/results/tool-benchmark-latest.json
-          vp check --fix docs/content/architecture/performance-blacksmith.md bench/results/tool-benchmark-latest.json
+          cp tool-benchmark-artifact/tool-benchmark-results.json tools/benchmarks/results/tool-benchmark-latest.json
+          vp check --fix docs/content/architecture/performance-blacksmith.md tools/benchmarks/results/tool-benchmark-latest.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/content/architecture/performance-blacksmith.md bench/results/tool-benchmark-latest.json
+          git add docs/content/architecture/performance-blacksmith.md tools/benchmarks/results/tool-benchmark-latest.json
           if git diff --cached --quiet; then
             echo "No benchmark snapshot changes to commit."
           else

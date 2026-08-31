@@ -27,15 +27,15 @@
 
 ## P0-1 — Bench harness with memory metrics
 
-**Deliverable:** `benchmarks/davinci_harness/` — a workspace crate wrapping
+**Deliverable:** `tools/benchmarks/crates/davinci_harness/` — a workspace crate wrapping
 criterion with allocation and RSS metrics, used by every later bench.
 
 **Steps:**
 
-- [x] Create `benchmarks/davinci_harness/` (add to `[workspace] members` in root `Cargo.toml`); `publish = false`, stability `experimental`
+- [x] Create `tools/benchmarks/crates/davinci_harness/` (add to `[workspace] members` in root `Cargo.toml`); `publish = false`, stability `experimental`
 - [x] `src/alloc.rs`: `CountingAllocator` (wraps the global allocator; counts `alloc` calls + running/peak bytes; `#[global_allocator]` opt-in via `davinci_harness::main!` macro; default inner allocator is mimalloc, matching the shipped `vize` binary)
 - [x] `src/rss.rs`: peak-RSS sampling (`ru_maxrss` via `libc::getrusage` on macOS/Linux; stub returning `None` elsewhere). Platform semantics documented and normalized: `ru_maxrss` is KB on Linux, bytes on macOS, and is a **process-wide peak** — report baseline-subtracted deltas per bench process, never raw values
-- [x] `src/report.rs`: JSON exporter — schema `{bench_id, fixture, platform, wall_ns: {p50,p95}, allocs, alloc_bytes_peak, rss_peak_bytes, harness_version}` written to `bench/results/davinci/<bench_id>.json`; exact peak-byte gates select an explicit per-platform budget and fail closed for unknown platforms
+- [x] `src/report.rs`: JSON exporter — schema `{bench_id, fixture, platform, wall_ns: {p50,p95}, allocs, alloc_bytes_peak, rss_peak_bytes, harness_version}` written to `tools/benchmarks/results/davinci/<bench_id>.json`; exact peak-byte gates select an explicit per-platform budget and fail closed for unknown platforms
 - [x] `schema/davinci-bench.schema.json` committed; exporter validates against it in debug (strict subset validator: unimplemented schema keywords are errors, not skipped checks)
 - [x] One sample bench (`benches/selfcheck.rs`) exercising all metrics
 - [x] Wire a `vp` task: `bench:davinci` at workspace root
@@ -53,14 +53,14 @@ criterion with allocation and RSS metrics, used by every later bench.
 
 **Steps:**
 
-- [x] Fixture ladder at `benchmarks/davinci_harness/fixtures/`: `small.vue` (~30 lines), `medium.vue` (~200 lines, real corpus extract), `large.vue` (~1k lines, corpus extract), `stress-deep.vue` (64-deep nesting), `stress-wide.vue` (200 attributes), `stress-interp.vue` (500 interpolations) — each with a `PROVENANCE.md` naming source project + commit (extracts come from MIT-licensed corpus projects only; identity pinned by exact-length tests in `davinci_harness::fixtures`)
+- [x] Fixture ladder at `tools/benchmarks/crates/davinci_harness/fixtures/`: `small.vue` (~30 lines), `medium.vue` (~200 lines, real corpus extract), `large.vue` (~1k lines, corpus extract), `stress-deep.vue` (64-deep nesting), `stress-wide.vue` (200 attributes), `stress-interp.vue` (500 interpolations) — each with a `PROVENANCE.md` naming source project + commit (extracts come from MIT-licensed corpus projects only; identity pinned by exact-length tests in `davinci_harness::fixtures`)
 - [x] `crates/vize_armature/benches/davinci.rs`: `tokenize` and `parse` cases per fixture (add `[[bench]]` + `davinci_harness` dev-dep to `crates/vize_armature/Cargo.toml`)
 - [x] `crates/vize_croquis/benches/davinci.rs`: `analyze_sfc_descriptor` with `SfcCroquisOptions::full()` and `::for_compile()` per fixture (the entry point lives in `vize_atelier_sfc::croquis`; the bench takes a dev-only dependency cycle on `vize_atelier_sfc`, which cargo permits)
 - [x] Confirm `clippy.toml` bans hold in bench code (use `vize_carton` types)
 
 **Acceptance:**
 
-- `cargo bench -p vize_armature -p vize_croquis` produces per-case JSON in `bench/results/davinci/`
+- `cargo bench -p vize_armature -p vize_croquis` produces per-case JSON in `tools/benchmarks/results/davinci/`
 - Two consecutive runs differ < 5% wall on the same machine (measured, recorded in the PR body)
 
 **Deps:** P0-1.
@@ -95,7 +95,7 @@ detection.
 **Steps:**
 
 - [x] `davinci-road/plan/budgets.toml`: per-bench budgets `{wall_p50_ns, allocs, rss_peak_bytes}` + global `traversal_count` placeholder (filled in P2) + mutation-score section (filled by P0-12) _(landed with a `wall_tolerance` field per entry — 0.05 whole-routine, 0.10 for `_transform_` stage windows — and every entry seeded at 0, meaning "reference-runner baseline not yet recorded"; bench-compare treats 0-seeded entries as report-only, and `tests/tooling/davinci-budgets.test.ts` reconciles the registry against the bench sources exactly, both directions)_
-- [ ] Baseline JSONs recorded on the Blacksmith reference runner, committed under `bench/results/davinci/baseline/` _(pending: reference-runner recording once Blacksmith lanes drain; wiring lands with the recorded baselines)_
+- [ ] Baseline JSONs recorded on the Blacksmith reference runner, committed under `tools/benchmarks/results/davinci/baseline/` _(pending: reference-runner recording once Blacksmith lanes drain; wiring lands with the recorded baselines)_
 - [x] Compare script `tools/commands/davinci/bench-compare.rs`: baseline vs current, applying `budgets.toml` thresholds; exit non-zero on breach; `--update-baseline` flag gated behind an env var so refresh is always deliberate _(wall p50 gated per-bench-tolerance vs the baseline report, allocs gated exactly, RSS report-only; registry drift fails both directions — "bench disappeared" / "unregistered bench"; refresh requires `DAVINCI_BASELINE_REFRESH=1`; exact-stdout oracles over committed fixture pairs in `tests/_fixtures/davinci-bench-compare/`)_
 - [ ] CI job (extend the existing bench workflow lane) running P0-2/3 benches + compare on PRs touching `crates/**` _(pending: reference-runner recording once Blacksmith lanes drain; wiring lands with the recorded baselines)_
 - [x] Ratchet rule enforced in review tooling: a PR that raises any number in `budgets.toml` must reference a charter decision in its description (checked by a `tests/tooling/davinci-budgets.test.ts` that parses git blame provenance — or, simpler, a CI message requiring the string `budget-loosen:` in the commit body) _(implemented as the documented-in-file variant, not git-blame provenance: `budgets.toml` carries the exact `# ratchet: numbers may only tighten; loosening requires budget-loosen: <charter ref> in the commit body` header, and the budgets test asserts the header plus the tolerance ceilings)_
@@ -214,7 +214,7 @@ detection.
 
 - [x] Extend the span key in `crates/vize_carton/src/profiler.rs`: today's dotted string (`"atelier.dom.template.parse"`) gains optional structured fields `{stage, pass, file_id, block, span}` — additive, existing `profile!` call sites unchanged — done: `SpanAttribution` (all fields optional, `Copy`, `const` builders over static strs and integer ids — zero allocation on the hot path) plus a new `profile!(name, attr: …, block)` macro arm and `global_span_attributed`/`record_attributed`; attributed samples land in a separate sharded `key × attribution` store, so every pre-attribution call site, key, and consumer (`get`/`all`/`summary`) is behavior-identical
 - [x] Existing allocation-tracking option surfaces per-span alloc counts in the export — done: span guards delta new monotone thread-local allocation counters (`profiler/allocation.rs`), with parent/child attribution mirroring the self/child duration accounting; aggregated as `Metrics::{alloc_calls, alloc_bytes, self_alloc_calls, self_alloc_bytes}` and exported per span; exact counts proven under an installed `ProfilingAllocator` in `crates/vize_carton/tests/davinci_profile_export.rs`
-- [x] Export: `--profile-json <path>` on the CLI (`crates/vize/src/commands/` shared arg), schema `davinci-road/plan/profile-export.schema.json`, size-budgeted per `vize_doctor::ai_context` conventions (`crates/vize_doctor/src/ai_context/`) — done: shared `ProfileExportArgs` (`crates/vize/src/commands/profile_export.rs`) flattened into build, lint, and check (direct + socket runners), compile path wired end-to-end; deterministic ranking, 512-span/256-counter default budget with explicit `truncation` accounting (never silent); schema validated in-repo by a strict subset validator following `benchmarks/davinci_harness/src/report.rs` (chosen over a node-side CLI-spawn test to avoid a full `vize` binary build during the concurrent baseline sweep)
+- [x] Export: `--profile-json <path>` on the CLI (`crates/vize/src/commands/` shared arg), schema `davinci-road/plan/profile-export.schema.json`, size-budgeted per `vize_doctor::ai_context` conventions (`crates/vize_doctor/src/ai_context/`) — done: shared `ProfileExportArgs` (`crates/vize/src/commands/profile_export.rs`) flattened into build, lint, and check (direct + socket runners), compile path wired end-to-end; deterministic ranking, 512-span/256-counter default budget with explicit `truncation` accounting (never silent); schema validated in-repo by a strict subset validator following `tools/benchmarks/crates/davinci_harness/src/report.rs` (chosen over a node-side CLI-spawn test to avoid a full `vize` binary build during the concurrent baseline sweep)
 - [ ] Zero-overhead check: profiling disabled ⇒ P0-2 benches within noise of pre-change baselines (pending: quiet-machine bench run — P0-4 gate covers it once reference baselines exist; code-level: both `profile!` arms keep the disabled path at the pre-existing single relaxed atomic load — `Profiler::is_enabled` in `profiler/core.rs` — and per-span alloc counting sits behind the existing `ALLOCATION_TRACKING_ENABLED` relaxed-load short circuit in `profiler/allocation.rs`)
 
 **Acceptance:** export validates against schema on a corpus-project compile; overhead check green; schema documented for Spolvero (C-4) and the AI loop (C-10).

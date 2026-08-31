@@ -10,7 +10,7 @@ import {
   resolveBackend,
   resolveFirstExisting,
   UNRECORDED_PROVENANCE_LINE,
-} from "../../bench/benchmark-provenance.mjs";
+} from "../../tools/benchmarks/scripts/benchmark-provenance.mjs";
 
 function withTempDir<T>(run: (dir: string) => T): T {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-bench-provenance-"));
@@ -128,7 +128,7 @@ test("a ready artifact renders every version and names the measured backend", ()
     [
       "Versions: vize `vize 0.303.0` · tsgo `7.0.0-dev.20260602.1` · vue-tsc `3.2.0` (typescript `5.9.0`) · verter-tsc `verter-tsc 0.0.1-beta.3` · Golar `golar 0.1.10` · vue `3.6.0` · eslint `9.0.0` · prettier `3.4.0` · node `v24.0.0`",
       `Binaries (sha256): vize \`${READY_BINARIES.vize}\` tsgo \`${READY_BINARIES.tsgo}\` vueTsc \`${READY_BINARIES.vueTsc}\` verterTsc \`${READY_BINARIES.verterTsc}\` golar \`${READY_BINARIES.golar}\` eslint n/a prettier n/a`,
-      "Backend: native TypeScript engine ready at `/repo/node_modules/.bin/tsgo`. Planted-diagnostic gating for the type-check rows lives in bench/check-gate.mjs (.github/workflows/check-bench.yml).",
+      "Backend: native TypeScript engine ready at `/repo/node_modules/.bin/tsgo`. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/check-bench.yml).",
     ],
   );
 });

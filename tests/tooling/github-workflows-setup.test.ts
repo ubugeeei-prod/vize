@@ -146,9 +146,9 @@ test("setup-moonbit installs the same pinned toolchain the Nix shell builds", ()
     "`.moonbit-version` must hold one exact MoonBit release",
   );
 
-  // `nix/moonbit.nix` must derive the toolchain from the shared file rather
+  // `tools/nix/moonbit.nix` must derive the toolchain from the shared file rather
   // than repeating it, so a bump cannot land on only one of the two consumers.
-  const moonbitModule = readRepoFile("nix", "moonbit.nix");
+  const moonbitModule = readRepoFile("tools", "nix", "moonbit.nix");
   assert.match(moonbitModule, /moonbitVersion = builtins\.replaceStrings[\s\S]*?moonbit-version/);
   assert.doesNotMatch(moonbitModule, /moonbitVersion = "/);
 
@@ -255,6 +255,18 @@ test("pkg.pr.new workflow publishes built npm packages from the lockfile", () =>
 
   assert.match(job, /runs-on:\s*blacksmith-32vcpu-ubuntu-2404/);
   assert.match(job, /timeout-minutes:\s*30/);
+  const rustScriptInstallIndex = job.indexOf("name: Install rust-script");
+  const buildIndex = job.indexOf("run: vp run --workspace-root build:packages");
+  assert.ok(rustScriptInstallIndex >= 0, "pkg.pr.new workflow must install rust-script");
+  assert.ok(buildIndex >= 0, "pkg.pr.new workflow must build packages");
+  assert.ok(
+    rustScriptInstallIndex < buildIndex,
+    "rust-script must be installed before package builds",
+  );
+  assert.match(job, /rustup toolchain install 1\.98\.0 --profile minimal --no-self-update/);
+  assert.match(job, /rustup default 1\.98\.0/);
+  assert.match(job, /grep -Eq '\(\^\|\[\[:space:\]\]\)0\\\.34\\\.0\(\[\[:space:\]\]\|\$\)'/);
+  assert.match(job, /cargo install rust-script --version 0\.34\.0 --locked/);
   assert.match(job, /vp run --workspace-root build:packages/);
   assert.match(job, /vp exec pkg-pr-new publish --pnpm --packageManager=pnpm --comment=update/);
   assert.doesNotMatch(job, /\b(?:npx|bunx)\b|pnpm dlx|yarn dlx/);

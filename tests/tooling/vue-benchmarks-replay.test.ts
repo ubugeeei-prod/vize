@@ -10,7 +10,7 @@ import {
   diffExpectations,
   scoreCase,
   UPSTREAM,
-} from "../../bench/vue-benchmarks-replay.mjs";
+} from "../../tools/benchmarks/scripts/vue-benchmarks-replay.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -90,7 +90,10 @@ test("replay expectation tables stay pinned to the upstream corpus", () => {
   ]);
 
   const tables = ["main", "release"].map((lane) => {
-    const tablePath = path.join(root, `bench/vue-benchmarks-replay-expect-${lane}.json`);
+    const tablePath = path.join(
+      root,
+      `tools/benchmarks/scripts/vue-benchmarks-replay-expect-${lane}.json`,
+    );
     return {
       lane,
       table: JSON.parse(fs.readFileSync(tablePath, "utf8")) as Record<string, string>,

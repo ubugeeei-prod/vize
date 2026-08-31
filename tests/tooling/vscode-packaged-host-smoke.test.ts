@@ -15,7 +15,7 @@ import {
 } from "../../editors/vscode/test/packaged-host-contract.mjs";
 import { readPinnedCreateVueHostResult } from "../../editors/vscode/test/pinned-create-vue-host-result.mjs";
 import { prepareRealVueWorkspace } from "../../legacy-tools/editor-e2e/real-vue-workspace.mjs";
-import { testAndBenchmarkTasks } from "../../config/vite-plus/tasks/test-benchmark.ts";
+import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
 test("packaged VS Code host smoke installs the VSIX before launching its tests", () => {

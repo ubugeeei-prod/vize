@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { testAndBenchmarkTasks } from "../../config/vite-plus/tasks/test-benchmark.ts";
+import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
 // Guardrails for the #3457 real-server editor scenarios. A scenario nobody

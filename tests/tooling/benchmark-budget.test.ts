@@ -4,12 +4,15 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { laneEnvironment, makeTasks } from "../../bench/compare-pr-lanes.mjs";
-import { createBenchmarkBudget, renderMarkdown } from "../../bench/compare-pr.mjs";
+import { laneEnvironment, makeTasks } from "../../tools/benchmarks/scripts/compare-pr-lanes.mjs";
+import {
+  createBenchmarkBudget,
+  renderMarkdown,
+} from "../../tools/benchmarks/scripts/compare-pr.mjs";
 import {
   DEFAULT_SKIP_OVERRIDE_LABEL,
   enforceBenchmarkBudget,
-} from "../../bench/enforce-pr-budget.mjs";
+} from "../../tools/benchmarks/scripts/enforce-pr-budget.mjs";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 const stableResult = {
@@ -182,7 +185,7 @@ test("lane environment pins Rayon per lane and unpins it for the max lanes", () 
   });
 
   // `max` deletes the variable rather than writing a core count, so Rayon
-  // sizes its own pool exactly as it does under `bench/compare-tools.mjs`.
+  // sizes its own pool exactly as it does under `tools/benchmarks/scripts/compare-tools.mjs`.
   assert.deepEqual(laneEnvironment("max", base), { PATH: "/usr/bin" });
 
   // The caller's environment is never mutated in place.

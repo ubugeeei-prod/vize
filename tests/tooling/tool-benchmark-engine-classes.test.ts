@@ -1,9 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { buildFairnessNotes } from "../../bench/benchmark-notes.mjs";
-import { createSurface, rankWithinEngineClasses } from "../../bench/compare-tools-report.mjs";
-import { renderMarkdown } from "../../bench/compare-tools.mjs";
+import { buildFairnessNotes } from "../../tools/benchmarks/scripts/benchmark-notes.mjs";
+import {
+  createSurface,
+  rankWithinEngineClasses,
+} from "../../tools/benchmarks/scripts/compare-tools-report.mjs";
+import { renderMarkdown } from "../../tools/benchmarks/scripts/compare-tools.mjs";
 
 const CHECK_VARIANTS = [
   { id: "vue-tsc", label: "vue-tsc", medianMs: 8000, throughput: "62.5 files/s", runs: [8000] },
@@ -281,7 +284,7 @@ test("the type-check summary ranks engine classes and rates the in-class one", (
     "Input: 500 generated SFC files (976.6 KB). Median of 1 measured run(s) after 1 warmup run(s).",
     "Versions: vize `vize 0.303.0` · tsgo `7.0.0-dev` · vue-tsc `3.2.0` (typescript `5.9.0`) · verter-tsc `verter-tsc 0.0.1-beta.3` · Golar `golar 0.1.10` · vue `3.6.0` · eslint `9.0.0` · prettier `3.4.0` · node `v24.0.0`",
     `Binaries (sha256): vize \`${"d".repeat(64)}\` tsgo \`${"e".repeat(64)}\` vueTsc n/a verterTsc \`${"f".repeat(64)}\` golar \`${"g".repeat(64)}\``,
-    "Backend: native TypeScript engine ready at `/repo/node_modules/.bin/tsgo`. Planted-diagnostic gating for the type-check rows lives in bench/check-gate.mjs (.github/workflows/check-bench.yml).",
+    "Backend: native TypeScript engine ready at `/repo/node_modules/.bin/tsgo`. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/check-bench.yml).",
     "",
     "| Surface | Files | Existing tool | Existing median | Vize 1T | Vize max | Speedup |",
     "| --- | ---: | --- | ---: | ---: | ---: | ---: |",
@@ -335,7 +338,7 @@ test("the fairness notes name the incumbent the published ratio is measured agai
   assert.deepEqual(
     buildFairnessNotes(500).filter((note) => note.startsWith("Type-check rows")),
     [
-      "Type-check rows span two TypeScript engines: vue-tsc runs the JavaScript compiler while Vize check runs native tsgo (Corsa). Their ratio is never published — it would credit TypeScript's Go rewrite to the Vue layer. The published type-check speedup is measured against verter-tsc instead, the incumbent Vue type checker that drives the same native tsgo binary, so it is the Vue layer alone; vue-tsc stays in the table as a same-run reference timing ranked inside its own engine class, and a run where no same-engine incumbent resolves publishes no ratio at all. bench/check-gate.mjs publishes the same per-engine-class split with planted-diagnostic gating.",
+      "Type-check rows span two TypeScript engines: vue-tsc runs the JavaScript compiler while Vize check runs native tsgo (Corsa). Their ratio is never published — it would credit TypeScript's Go rewrite to the Vue layer. The published type-check speedup is measured against verter-tsc instead, the incumbent Vue type checker that drives the same native tsgo binary, so it is the Vue layer alone; vue-tsc stays in the table as a same-run reference timing ranked inside its own engine class, and a run where no same-engine incumbent resolves publishes no ratio at all. tools/benchmarks/scripts/check-gate.mjs publishes the same per-engine-class split with planted-diagnostic gating.",
     ],
   );
 });

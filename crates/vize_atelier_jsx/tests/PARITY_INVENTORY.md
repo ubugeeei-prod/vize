@@ -178,7 +178,7 @@ is a maintainer infra decision, tracked alongside #1501's benchmark-CI lane.
 The JSX/TSX cost surface is benchmarked along **four** dimensions so a timing
 regression points at the stage that caused it, not just "JSX got slower". All
 four are A/B-compared (base vs head) in the `criterion-ab` GitHub Actions lane
-(`.github/workflows/criterion-bench.yml`, via `bench/criterion-ab.mjs`), which
+(`.github/workflows/criterion-bench.yml`, via `tools/benchmarks/scripts/criterion-ab.mjs`), which
 runs both the `vize_atelier_jsx` `jsx_compile` and the `vize_patina`
 `markup_ir_bench` targets:
 
@@ -193,4 +193,4 @@ runs both the `vize_atelier_jsx` `jsx_compile` and the `vize_patina`
 on shared runners). The documented JSX regression threshold is **10%**: setting
 `CRITERION_AB_THRESHOLD: 10` in the workflow flips the lane into a hard gate that
 fails on a +10% median regression on any of the ids above — see the `--threshold`
-documentation in `bench/criterion-ab.mjs`.
+documentation in `tools/benchmarks/scripts/criterion-ab.mjs`.

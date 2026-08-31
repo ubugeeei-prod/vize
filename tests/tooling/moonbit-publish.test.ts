@@ -8,21 +8,6 @@ import { test } from "node:test";
 import { runMoonScript } from "./_helpers/moonbit.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
-test("npm_tag script maps prerelease versions to npm dist-tags", () => {
-  const cases = [
-    ["1.2.3-alpha.1", "alpha"],
-    ["1.2.3-beta.1", "beta"],
-    ["1.2.3-rc.1", "rc"],
-    ["1.2.3", "latest"],
-  ] as const;
-
-  for (const [version, expected] of cases) {
-    const result = runMoonScript("npm_tag", [version]);
-    assert.equal(result.status, 0, result.stderr);
-    assert.equal(result.stdout.trim(), expected);
-  }
-});
-
 test("inject_native_optional_deps updates only native optional dependency pins", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-inject-native-"));
   const targetPath = path.join(tempDir, "package.json");

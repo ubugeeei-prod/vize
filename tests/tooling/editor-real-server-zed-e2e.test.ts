@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { testAndBenchmarkTasks } from "../../config/vite-plus/tasks/test-benchmark.ts";
+import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 function taskCommand(name: string): string {
@@ -44,7 +44,7 @@ test("CI validates Zed with the pinned official extension CLI before the real-se
 
 test("the Zed real-server scenario pins complete extension-contract responses", () => {
   const scenario = readRepoFile("tools", "commands", "editors", "zed", "run-real-server.rs");
-  const contract = readRepoFile("tools", "rust", "lsp_smoke.rs");
+  const contract = readRepoFile("tools", "support", "editors", "lsp_smoke.rs");
 
   for (const method of [
     "textDocument/completion",

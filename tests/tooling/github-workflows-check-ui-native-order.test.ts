@@ -4,7 +4,7 @@ import { test } from "node:test";
 import {
   checkedPackagesBeforeNativeBuild,
   checkedPackagesViaVpRun,
-} from "../../config/vite-plus/task-inputs.ts";
+} from "../../tools/config/vite-plus/task-inputs.ts";
 
 test("native-dependent UI checks run after native CI build", () => {
   assert.equal(checkedPackagesViaVpRun.includes("./npm/ui"), true);

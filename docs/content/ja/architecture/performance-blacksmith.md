@@ -45,8 +45,8 @@ title: Blacksmith ベンチマークのスナップショット
 
 ```sh
 gh workflow run tool-benchmark.yml --ref <branch> -f file_count=15000 -f check_file_count=500 -f vite_file_count=1000 -f nuxt_file_count=500 -f large_blocks=900 -f runs=5 -f warmups=1 -f commit_results=true
-node bench/generate.mjs 15000
-node bench/compare-tools.mjs --input bench/__in__ --vize-bin target/release/vize --runs 5 --warmups 1 --check-file-count 500 --vite-file-count 1000 --nuxt-file-count 500 --large-blocks 900 --runner-label "blacksmith-32vcpu-ubuntu-2404" --out tool-benchmark-summary.md --json tool-benchmark-results.json --doc performance-blacksmith.md
+node tools/benchmarks/scripts/generate.mjs 15000
+node tools/benchmarks/scripts/compare-tools.mjs --input tools/benchmarks/scripts/__in__ --vize-bin target/release/vize --runs 5 --warmups 1 --check-file-count 500 --vite-file-count 1000 --nuxt-file-count 500 --large-blocks 900 --runner-label "blacksmith-32vcpu-ubuntu-2404" --out tool-benchmark-summary.md --json tool-benchmark-results.json --doc performance-blacksmith.md
 ```
 
 <details>
