@@ -15,7 +15,7 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::helper::Helper;
-use super::js::asset_ident;
+use super::js::{RawJs, asset_ident, expr_source};
 use super::slots;
 
 pub(super) fn is_custom(binding: &BindingOp<'_>) -> bool {
@@ -161,9 +161,9 @@ fn emit_entry(cx: &mut EmitCx<'_>, directive: &VueDirectiveOp<'_>) -> Result<(),
         Some(expr) => Some(js_expr(expr)?),
         None => None,
     };
-    if let Some(source) = value {
+    if let Some(source) = &value {
         cx.buf.push(", ");
-        cx.buf.push(source);
+        cx.buf.push(source.as_str());
     }
     if let Some(argument) = directive.argument {
         if value.is_none() {
@@ -197,7 +197,8 @@ fn emit_show_entry(cx: &mut EmitCx<'_>, show: &VueShowOp<'_>) -> Result<(), Emit
     cx.buf.push("  [");
     cx.buf.push(Buf::v_show_alias());
     cx.buf.push(", ");
-    cx.buf.push(show_value(show)?);
+    let source = show_value(show)?;
+    cx.buf.push(source.as_str());
     cx.buf.push("]");
     Ok(())
 }
@@ -211,7 +212,8 @@ fn emit_argument(cx: &mut EmitCx<'_>, argument: DynamicName<'_>) -> Result<(), E
             Ok(())
         }
         DynamicName::Dynamic(expr) => {
-            cx.buf.push(js_expr(expr)?);
+            let source = js_expr(expr)?;
+            cx.buf.push(source.as_str());
             Ok(())
         }
     }
@@ -278,22 +280,12 @@ fn custom_name<'a>(binding: &'a BindingOp<'a>) -> Option<&'a str> {
     }
 }
 
-fn js_expr(expr: ExprRef<'_>) -> Result<&str, EmitError> {
-    match expr {
-        ExprRef::Js(js) => Ok(js.source),
-        _ => Err(EmitError::unsupported_at(
-            Reason::CustomDirectiveExprNotJs,
-            expr.span(),
-        )),
-    }
+fn js_expr<'a>(expr: ExprRef<'a>) -> Result<RawJs<'a>, EmitError> {
+    expr_source(&expr, false)
+        .ok_or_else(|| EmitError::unsupported_at(Reason::CustomDirectiveExprNotJs, expr.span()))
 }
 
-fn show_value<'a>(show: &'a VueShowOp<'a>) -> Result<&'a str, EmitError> {
-    match show.value {
-        ExprRef::Js(js) => Ok(js.source),
-        expr => Err(EmitError::unsupported_at(
-            Reason::ShowExpressionNotJs,
-            expr.span(),
-        )),
-    }
+fn show_value<'a>(show: &'a VueShowOp<'a>) -> Result<RawJs<'a>, EmitError> {
+    expr_source(&show.value, false)
+        .ok_or_else(|| EmitError::unsupported_at(Reason::ShowExpressionNotJs, show.value.span()))
 }

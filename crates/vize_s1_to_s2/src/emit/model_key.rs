@@ -85,7 +85,7 @@ fn emit_model_name(cx: &mut EmitCx<'_>, name: ModelName<'_>) {
         ModelName::Static(name) => push_ident_key(cx, name),
         ModelName::Dynamic(js) => {
             cx.buf.push("[");
-            cx.buf.push(js.source);
+            super::js::push_js_expr(cx, js);
             cx.buf.push("]");
         }
     }
@@ -96,7 +96,7 @@ fn emit_update_key(cx: &mut EmitCx<'_>, key: &ModelUpdateKey<'_>) {
         ModelUpdateKey::Static(key) => push_ident_key(cx, key.as_str()),
         ModelUpdateKey::Dynamic(js) => {
             cx.buf.push("[\"onUpdate:\" + ");
-            cx.buf.push(js.source);
+            super::js::push_js_expr(cx, js);
             cx.buf.push("]");
         }
     }
@@ -107,7 +107,7 @@ fn emit_modifiers_key(cx: &mut EmitCx<'_>, key: &ModelModifiersKey<'_>) {
         ModelModifiersKey::Static(key) => push_ident_key(cx, key.as_str()),
         ModelModifiersKey::Dynamic(js) => {
             cx.buf.push("[");
-            cx.buf.push(js.source);
+            super::js::push_js_expr(cx, js);
             cx.buf.push(" + \"Modifiers\"]");
         }
     }

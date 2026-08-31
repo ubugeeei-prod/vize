@@ -13,7 +13,7 @@ use super::buf::Buf;
 use super::create_slots_walk::{
     advance_after_op, first_slot_template, is_slot_for, is_slot_if, skip_ops, slot_template_content,
 };
-use super::js::escape_js_string;
+use super::js::{RawJs, escape_js_string, expr_source};
 use super::slots::{capture, capture_child, emit_template_pieces, is_whitespace_text};
 use super::vfor;
 
@@ -34,7 +34,7 @@ pub(super) fn needs_create_slots(cx: &EmitCx<'_>, children: &Region<'_>) -> bool
 pub(super) fn emit_create_slots(
     cx: &mut EmitCx<'_>,
     children: &Region<'_>,
-    spread: Option<&str>,
+    spread: Option<&RawJs<'_>>,
 ) -> Result<(), EmitError> {
     cx.buf.use_create_slots();
     cx.buf.use_with_ctx();
@@ -122,7 +122,7 @@ fn collect_default(
     Ok(())
 }
 
-fn emit_base(cx: &mut EmitCx<'_>, defaults: &[String], spread: Option<&str>) {
+fn emit_base(cx: &mut EmitCx<'_>, defaults: &[String], spread: Option<&RawJs<'_>>) {
     if defaults.is_empty() && spread.is_none() {
         cx.buf.push("{ _: 2 /* DYNAMIC */ }");
         return;
@@ -149,7 +149,7 @@ fn emit_base(cx: &mut EmitCx<'_>, defaults: &[String], spread: Option<&str>) {
     if let Some(spread) = spread {
         cx.buf.newline();
         cx.buf.push("...");
-        cx.buf.push(spread);
+        cx.buf.push(spread.as_str());
         cx.buf.push(",");
     }
     cx.buf.newline();
@@ -168,7 +168,8 @@ fn emit_if_entry(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>) -> Result<(), EmitError>
         }
         if let Some(condition) = &branch.condition {
             cx.buf.push("(");
-            cx.buf.push(vfor::js_source(condition)?);
+            let condition = vfor::js_source(condition)?;
+            cx.buf.push(condition.as_str());
             cx.buf.push(")");
             cx.buf.indent();
             cx.buf.newline();
@@ -207,7 +208,8 @@ fn emit_for_entry(
     slot_element: &ElementOp<'_>,
     slot_content: &SlotContentOp<'_>,
 ) -> Result<(), EmitError> {
-    let source = vfor::js_source(&for_op.binding.source)?;
+    let source_raw = vfor::js_source(&for_op.binding.source)?;
+    let source = source_raw.as_str();
     let value = vfor::value_alias(&for_op.binding.value)?;
     let key = vfor::optional_ident(&for_op.binding.key)?;
     let index = vfor::optional_ident(&for_op.binding.index)?;
@@ -294,7 +296,13 @@ fn emit_slot_object(
 fn emit_entry_name(cx: &mut EmitCx<'_>, content: &SlotContentOp<'_>) {
     cx.buf.push("name: ");
     match &content.name {
-        Some(DynamicName::Dynamic(expr)) => cx.buf.push(expr.source()),
+        Some(DynamicName::Dynamic(expr)) => {
+            if let Some(source) = expr_source(expr, false) {
+                cx.buf.push(source.as_str());
+            } else {
+                cx.buf.push(expr.source());
+            }
+        }
         Some(DynamicName::Static(base)) => {
             cx.buf.push("\"");
             cx.buf

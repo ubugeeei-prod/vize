@@ -10,7 +10,7 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::helper::Helper;
-use super::js::escape_js_string;
+use super::js::{RawJs, escape_js_string, expr_source, js_expr_source};
 
 pub(super) fn emit_for(
     cx: &mut EmitCx<'_>,
@@ -18,7 +18,8 @@ pub(super) fn emit_for(
     id: Option<NodeId>,
     fragment_key: Option<&str>,
 ) -> Result<(), EmitError> {
-    let source = js_source(&for_op.binding.source)?;
+    let source_raw = js_source(&for_op.binding.source)?;
+    let source = source_raw.as_str();
     let value = value_alias(&for_op.binding.value)?;
     let key_alias = optional_ident(&for_op.binding.key)?;
     let index_alias = optional_ident(&for_op.binding.index)?;
@@ -161,7 +162,7 @@ fn emit_memo_body(
     let key = memo_item_key_js(&for_op.region.ops)?;
     cx.buf.use_helper(Helper::WithMemo);
     cx.buf.push("const _memo = (");
-    cx.buf.push(deps);
+    cx.buf.push(deps.as_str());
     cx.buf.push(")");
     cx.buf.newline();
     cx.buf.use_helper(Helper::IsMemoSame);
@@ -230,14 +231,9 @@ fn memo_item_key_js(ops: &[Op<'_>]) -> Result<Option<String>, EmitError> {
     }
 }
 
-pub(super) fn js_source<'a>(expr: &'a ExprRef<'a>) -> Result<&'a str, EmitError> {
-    match expr {
-        ExprRef::Js(js) => Ok(js.source),
-        _ => Err(EmitError::unsupported_at(
-            Reason::ForSourceNotJs,
-            expr.span(),
-        )),
-    }
+pub(super) fn js_source<'a>(expr: &'a ExprRef<'a>) -> Result<RawJs<'a>, EmitError> {
+    expr_source(expr, false)
+        .ok_or_else(|| EmitError::unsupported_at(Reason::ForSourceNotJs, expr.span()))
 }
 
 pub(super) fn value_alias<'a>(expr: &'a ExprRef<'a>) -> Result<&'a str, EmitError> {
@@ -276,7 +272,8 @@ fn item_key_js(
         if let BindingOp::Bind(bind) = binding
             && super::props_bind::is_key_bind_name(bind)
         {
-            return Ok(Some(String::from(super::props::js_value(bind)?.source)));
+            let source = js_expr_source(super::props::js_value(bind)?);
+            return Ok(Some(String::from(source.as_str())));
         }
     }
     for attr in attributes {

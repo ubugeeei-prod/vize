@@ -3,7 +3,7 @@
 use alloc::vec::Vec as StdVec;
 use vize_s0::Span;
 use vize_s2::expr::{ExprRef, OpaqueReason};
-use vize_s2::op::{Attribute, BindOp, BindingOp, DynamicName, OnOp, VueHtmlOp, VueTextOp};
+use vize_s2::op::{Attribute, BindOp, BindingOp, DynamicName, ModelOp, OnOp, VueHtmlOp, VueTextOp};
 
 use super::EmitCx;
 use super::EmitError;
@@ -109,11 +109,13 @@ pub(super) fn emit_props_object(
             Piece::On(event) => on::emit_on_pair(cx, event, is_plain_element)?,
             Piece::VueHtml(html) => super::html::emit_pair(cx, html)?,
             Piece::VueText(text) => super::vtext::emit_pair(cx, text)?,
-            Piece::ModelValue { name, source, .. } => {
-                super::model_key::emit_value(cx, *name, source)
+            Piece::ModelValue { name, model, .. } => {
+                let source = super::model::js_source(model)?;
+                super::model_key::emit_value(cx, *name, source.as_str())
             }
-            Piece::ModelUpdate { key, source, .. } => {
-                super::model_key::emit_update(cx, key, source)
+            Piece::ModelUpdate { key, model, .. } => {
+                let source = super::model::js_source(model)?;
+                super::model_key::emit_update(cx, key, source.as_str())
             }
             Piece::ModelModifiers {
                 name, modifiers, ..
@@ -139,12 +141,12 @@ pub(super) enum Piece<'a> {
     VueText(&'a VueTextOp<'a>),
     ModelValue {
         name: ModelName<'a>,
-        source: &'a str,
+        model: &'a ModelOp<'a>,
         span: Span,
     },
     ModelUpdate {
         key: ModelUpdateKey<'a>,
-        source: &'a str,
+        model: &'a ModelOp<'a>,
         span: Span,
     },
     ModelModifiers {

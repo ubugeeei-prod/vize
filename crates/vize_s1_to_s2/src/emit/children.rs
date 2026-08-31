@@ -1,11 +1,8 @@
-//! Text and interpolation children. Compounds compile from [`TextFacts`],
-//! never from the opaque rebuilt source (pessimal law 5).
-//!
-//! [`TextFacts`]: crate::pass::TextFacts
+//! Text and interpolation children.
 
 use vize_davinci::id::NodeId;
 use vize_s0::Span;
-use vize_s2::expr::{ExprRef, OpaqueReason};
+use vize_s2::expr::{ExprRef, JsExpr, OpaqueReason};
 use vize_s2::op::{InterpolationOp, Op, Region};
 
 use super::EmitCx;
@@ -58,7 +55,7 @@ pub(super) fn emit_interpolation(
 ) -> Result<(), EmitError> {
     match interp.expression {
         ExprRef::Js(js) => {
-            emit_to_display_string(cx, js.source);
+            emit_js_to_display_string(cx, js);
             Ok(())
         }
         ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound => {
@@ -124,6 +121,10 @@ pub(super) fn emit_to_display_string(cx: &mut EmitCx<'_>, source: &str) {
     cx.buf.push(")");
 }
 
+pub(super) fn emit_js_to_display_string(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {
+    emit_to_display_string(cx, super::js::js_expr_source(js).as_str());
+}
+
 /// Static `_createTextVNode("…")` with no walk mint (compound fallback
 /// parts already minted their interpolation op).
 pub(super) fn emit_plain_text_vnode(cx: &mut EmitCx<'_>, content: &str) {
@@ -163,16 +164,13 @@ pub(super) fn emit_create_text_vnode(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Res
     Ok(())
 }
 
-/// Slot default children: each S2 text/interp op is one or more
-/// `_createTextVNode`s. A compound interpolation expands to one vnode
-/// per [`TextPart`] so the object matches Vue's separate text + interp
-/// children, not the element-children ` + ` concat.
+/// Slot default children emit one or more `_createTextVNode`s.
 pub(super) fn emit_slot_text_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
     let Op::Interpolation(interp) = op else {
         return emit_create_text_vnode(cx, core::slice::from_ref(op));
     };
     match interp.expression {
-        ExprRef::Js(_) => emit_create_text_vnode(cx, core::slice::from_ref(op)),
+        ExprRef::Js(js) => emit_slot_raw_interpolation(cx, js.source),
         ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound => {
             let id = cx.walk.mint().ok_or(EmitError::unsupported_at(
                 Reason::WalkIdOverflow,
@@ -299,6 +297,7 @@ fn emit_slot_interpolation(
 }
 
 fn emit_slot_raw_interpolation(cx: &mut EmitCx<'_>, source: &str) -> Result<(), EmitError> {
+    let _id = cx.walk.mint();
     cx.buf.use_create_text();
     cx.buf.push(Buf::create_text_alias());
     cx.buf.push("(");

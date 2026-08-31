@@ -9,7 +9,7 @@ use crate::pass::StaticLevel;
 use super::EmitCx;
 use super::EmitError;
 use super::hoist::{push_attr_pair, unique_attrs};
-use super::js::{escape_js_string, is_valid_js_identifier};
+use super::js::{escape_js_string, is_valid_js_identifier, js_expr_source};
 use super::props::{Piece, bind_value_is_static_patchless, pieces, static_bind_key};
 use super::props_bind::{StaticBindKey, StaticBindKeyCasing};
 use super::props_value::bind_value;
@@ -123,7 +123,8 @@ fn static_hoist_prop<'a>(
             push_key(out, key.as_str());
             out.push_str(": ");
             if let Some(js) = bind_value(bind)?.js() {
-                out.push_str(js.source);
+                let source = js_expr_source(js);
+                out.push_str(source.as_str());
             }
         }
         _ => return Ok(None),

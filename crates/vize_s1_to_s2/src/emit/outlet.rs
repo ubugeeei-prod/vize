@@ -95,14 +95,17 @@ fn emit_name(cx: &mut EmitCx<'_>, slot: &SlotOp<'_>) -> Result<(), EmitError> {
             cx.buf.push("\"");
             Ok(())
         }
-        DynamicName::Dynamic(ExprRef::Js(js)) => {
-            cx.buf.push(js.source);
-            Ok(())
+        DynamicName::Dynamic(expr) => {
+            if let Some(source) = super::js::expr_source(expr, false) {
+                cx.buf.push(source.as_str());
+                Ok(())
+            } else {
+                Err(EmitError::unsupported_at(
+                    Reason::SlotOutletNameNotJs,
+                    expr.span(),
+                ))
+            }
         }
-        DynamicName::Dynamic(expr) => Err(EmitError::unsupported_at(
-            Reason::SlotOutletNameNotJs,
-            expr.span(),
-        )),
     }
 }
 

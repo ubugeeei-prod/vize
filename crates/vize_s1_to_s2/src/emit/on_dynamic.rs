@@ -8,7 +8,7 @@ use vize_s2::expr::{ExprRef, JsExpr, OpaqueReason};
 use vize_s2::op::{DynamicName, OnOp};
 
 use super::buf::Buf;
-use super::js::is_valid_js_identifier;
+use super::js::{is_valid_js_identifier, js_expr_source};
 use super::{EmitCx, EmitError, UnsupportedReason as Reason};
 
 pub(super) fn is_dynamic_on_name(on: &OnOp<'_>) -> bool {
@@ -20,6 +20,7 @@ pub(super) fn admit(on: &OnOp<'_>) -> Result<(), EmitError> {
     match on.handler {
         None | Some(ExprRef::Js(_)) => Ok(()),
         Some(ExprRef::Opaque(opaque)) if opaque.reason == OpaqueReason::MultiStatement => Ok(()),
+        Some(expr) if super::js::parse_rejected_raw_js(&expr, false).is_some() => Ok(()),
         Some(expr) => Err(EmitError::unsupported_at(
             Reason::OnHandlerNotJs,
             expr.span(),
@@ -66,25 +67,26 @@ pub(super) fn emit_key_source(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {
         emit_template_literal_key_source(cx, js);
         return;
     }
-    let source = js.source;
-    if let Some(local) = source.strip_prefix("_ctx.")
+    let source = js_expr_source(js);
+    let original = js.source;
+    if let Some(local) = original.strip_prefix("_ctx.")
         && cx.is_scope_name(local)
     {
         cx.buf.push(local);
         return;
     }
-    if cx.is_scope_name(source)
-        || source.contains('.')
-        || source.starts_with('_')
-        || source.starts_with('$')
+    if cx.is_scope_name(original)
+        || original.contains('.')
+        || original.starts_with('_')
+        || original.starts_with('$')
     {
-        cx.buf.push(source);
+        cx.buf.push(source.as_str());
         return;
     }
-    if is_valid_js_identifier(source) {
+    if is_valid_js_identifier(original) {
         cx.buf.push("_ctx.");
     }
-    cx.buf.push(source);
+    cx.buf.push(source.as_str());
 }
 
 fn emit_template_literal_key_source(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {

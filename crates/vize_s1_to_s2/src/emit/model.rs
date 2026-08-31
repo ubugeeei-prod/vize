@@ -13,6 +13,7 @@ use super::EmitCx;
 use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::helper::Helper;
+use super::js::{RawJs, expr_source};
 use super::model_key::{self, ModelName};
 use super::props::Piece;
 
@@ -28,18 +29,18 @@ pub(super) fn expand<'a>(
     model: &'a ModelOp<'a>,
     out: &mut StdVec<Piece<'a>>,
 ) -> Result<(), EmitError> {
-    let source = js_source(model)?;
+    js_source(model)?;
     let span = model.span;
     if is_component(model) {
         let prop = argument(model)?.unwrap_or(ModelName::Static("modelValue"));
         out.push(Piece::ModelValue {
             name: prop,
-            source,
+            model,
             span,
         });
         out.push(Piece::ModelUpdate {
             key: model_key::update_key_for(prop),
-            source,
+            model,
             span,
         });
         let modifiers = component_modifiers(model);
@@ -53,7 +54,7 @@ pub(super) fn expand<'a>(
     } else {
         out.push(Piece::ModelUpdate {
             key: model_key::update_key_for(ModelName::Static("modelValue")),
-            source,
+            model,
             span,
         });
     }
@@ -114,15 +115,20 @@ pub(super) fn emit_native_entry(
         cx.buf.push("  [");
         cx.buf.push(helper.alias());
         cx.buf.push(", ");
-        cx.buf.push(source);
+        cx.buf.push(source.as_str());
         cx.buf.push("]");
     } else {
-        emit_modified_entry(cx, helper, source, &modifiers);
+        emit_modified_entry(cx, helper, &source, &modifiers);
     }
     Ok(())
 }
 
-fn emit_modified_entry(cx: &mut EmitCx<'_>, helper: Helper, source: &str, modifiers: &[&str]) {
+fn emit_modified_entry(
+    cx: &mut EmitCx<'_>,
+    helper: Helper,
+    source: &RawJs<'_>,
+    modifiers: &[&str],
+) {
     cx.buf.push("  [");
     cx.buf.newline();
     cx.buf.push("    ");
@@ -130,7 +136,7 @@ fn emit_modified_entry(cx: &mut EmitCx<'_>, helper: Helper, source: &str, modifi
     cx.buf.push(",");
     cx.buf.newline();
     cx.buf.push("    ");
-    cx.buf.push(source);
+    cx.buf.push(source.as_str());
     cx.buf.push(",");
     cx.buf.newline();
     cx.buf.push("    void 0,");
@@ -178,14 +184,10 @@ fn static_type<'a>(element: &'a ElementOp<'a>) -> Option<&'a str> {
         .and_then(|attribute| attribute.value)
 }
 
-fn js_source<'a>(model: &'a ModelOp<'a>) -> Result<&'a str, EmitError> {
-    match model.contract.read {
-        ExprRef::Js(js) => Ok(js.source),
-        expr => Err(EmitError::unsupported_at(
-            Reason::ModelExpressionNotJs,
-            expr.span(),
-        )),
-    }
+pub(super) fn js_source<'a>(model: &'a ModelOp<'a>) -> Result<RawJs<'a>, EmitError> {
+    expr_source(&model.contract.read, false).ok_or_else(|| {
+        EmitError::unsupported_at(Reason::ModelExpressionNotJs, model.contract.read.span())
+    })
 }
 
 fn is_component(model: &ModelOp<'_>) -> bool {

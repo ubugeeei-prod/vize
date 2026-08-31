@@ -15,7 +15,7 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::children::{
-    emit_create_text_vnode, emit_interpolation, emit_plain_text_vnode,
+    emit_create_text_vnode, emit_interpolation, emit_js_to_display_string, emit_plain_text_vnode,
     emit_raw_interpolation_or_refuse, emit_to_display_string, is_empty_interpolation,
 };
 use super::hoist::{emit_hoisted_element, is_hoistable};
@@ -236,7 +236,7 @@ fn emit_gen_interp(
     match interp.expression {
         ExprRef::Js(js) => {
             start_item(cx, first);
-            emit_to_display_string(cx, js.source);
+            emit_js_to_display_string(cx, js);
             Ok(())
         }
         ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound => {

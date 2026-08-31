@@ -18,7 +18,7 @@ use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::children::{emit_slot_text_child, emit_slot_text_run};
 use super::hoist::{emit_hoisted_element, is_static_element_tree};
-use super::js::{escape_js_string, is_valid_js_identifier};
+use super::js::{RawJs, escape_js_string, expr_source, is_valid_js_identifier};
 use super::vnode::emit_array_child;
 use crate::pass::{SlotCarrier, SlotFacts, SlotName, SlotParams};
 
@@ -27,7 +27,7 @@ use crate::pass::{SlotCarrier, SlotFacts, SlotName, SlotParams};
 /// construct and stays unsupported.
 pub(super) fn slots_spread<'a>(
     bindings: &'a [BindingOp<'a>],
-) -> Result<Option<&'a str>, EmitError> {
+) -> Result<Option<RawJs<'a>>, EmitError> {
     for binding in bindings.iter() {
         let BindingOp::VueDirective(directive) = binding else {
             continue;
@@ -42,11 +42,9 @@ pub(super) fn slots_spread<'a>(
             ));
         }
         return match directive.value {
-            Some(ExprRef::Js(js)) => Ok(Some(js.source)),
-            Some(expr) => Err(EmitError::unsupported_at(
-                Reason::SlotsSpreadValueNotJs,
-                expr.span(),
-            )),
+            Some(expr) => expr_source(&expr, false).map(Some).ok_or_else(|| {
+                EmitError::unsupported_at(Reason::SlotsSpreadValueNotJs, expr.span())
+            }),
             None => Err(EmitError::unsupported_at(
                 Reason::SlotsSpreadValueNotJs,
                 directive.span,
@@ -123,7 +121,7 @@ pub(super) fn emit_slots(
     cx: &mut EmitCx<'_>,
     children: &Region<'_>,
     facts: &SlotFacts,
-    spread: Option<&str>,
+    spread: Option<&RawJs<'_>>,
 ) -> Result<(), EmitError> {
     if let Some(group) = facts.groups.iter().find(|group| group.name.text() == "_") {
         if let SlotName::Static {
@@ -167,7 +165,7 @@ pub(super) fn emit_slots(
     cx.buf.newline();
     if let Some(spread) = spread {
         cx.buf.push("...");
-        cx.buf.push(spread);
+        cx.buf.push(spread.as_str());
     } else {
         let forwarded = super::outlet::has_forwarded_outlet(children);
         if forwarded && cx.slot_param_depth == 0 && !cx.in_v_for && !has_dynamic_names(facts) {

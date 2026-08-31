@@ -56,6 +56,7 @@ mod helper;
 mod hoist;
 mod html;
 pub(crate) mod js;
+mod js_comment;
 mod memo;
 mod merge;
 mod model;

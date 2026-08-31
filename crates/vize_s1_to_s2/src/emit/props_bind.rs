@@ -12,7 +12,7 @@ use super::EmitCx;
 use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
-use super::js::is_valid_js_identifier;
+use super::js::{is_valid_js_identifier, js_expr_source};
 use super::props_value::bind_value;
 
 /// Whether static bind keys should use their ordinary casing or the
@@ -159,11 +159,12 @@ fn emit_dynamic_key_source(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {
         emit_template_literal_key_source(cx, js);
         return;
     }
-    let source = js.source;
-    if is_valid_js_identifier(source) && !cx.is_scope_name(source) {
+    let source = js_expr_source(js);
+    let original = js.source;
+    if is_valid_js_identifier(original) && !cx.is_scope_name(original) {
         cx.buf.push("_ctx.");
     }
-    cx.buf.push(source);
+    cx.buf.push(source.as_str());
 }
 
 fn emit_template_literal_key_source(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {

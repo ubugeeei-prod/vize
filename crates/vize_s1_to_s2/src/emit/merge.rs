@@ -15,7 +15,6 @@ use super::EmitCx;
 use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
-use super::js::js_expr_source;
 use super::on::{event_key_for, needs_hydration};
 use super::props::{
     BindName, Patch, Piece, StaticBindKeyCasing, bind_name, bind_value, emit_props_object,
@@ -37,6 +36,7 @@ pub(super) fn admit_object(bind: &BindOp<'_>) -> Result<(), EmitError> {
 pub(super) fn admit_object_on(on: &OnOp<'_>) -> Result<(), EmitError> {
     match on.handler {
         Some(ExprRef::Js(_)) => Ok(()),
+        Some(expr) if super::js::expr_source(&expr, false).is_some() => Ok(()),
         Some(expr) => Err(EmitError::unsupported_at(
             Reason::ObjectOnHandlerNotJs,
             expr.span(),
@@ -279,14 +279,9 @@ fn emit_normalize_guard(cx: &mut EmitCx<'_>, bind: &BindOp<'_>) -> Result<(), Em
 }
 
 fn emit_to_handlers(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitError> {
-    let js = match on.handler {
-        Some(ExprRef::Js(js)) => js,
-        Some(expr) => {
-            return Err(EmitError::unsupported_at(
-                Reason::ObjectOnHandlerNotJs,
-                expr.span(),
-            ));
-        }
+    let source = match on.handler {
+        Some(expr) => super::js::expr_source(&expr, false)
+            .ok_or_else(|| EmitError::unsupported_at(Reason::ObjectOnHandlerNotJs, expr.span()))?,
         None => {
             return Err(EmitError::unsupported_at(
                 Reason::ObjectOnHandlerNotJs,
@@ -297,7 +292,7 @@ fn emit_to_handlers(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitError>
     cx.buf.use_to_handlers();
     cx.buf.push(Buf::to_handlers_alias());
     cx.buf.push("(");
-    cx.buf.push(js_expr_source(js).as_str());
+    cx.buf.push(source.as_str());
     cx.buf.push(", true)");
     Ok(())
 }

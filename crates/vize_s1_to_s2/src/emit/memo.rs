@@ -1,10 +1,10 @@
 //! `vue.memo` (`v-memo`) realization.
 
 use vize_s0::ToCompactString;
-use vize_s2::expr::ExprRef;
 use vize_s2::op::{BindingOp, VueMemoOp};
 
 use super::helper::Helper;
+use super::js::{RawJs, expr_source};
 use super::{EmitCx, EmitError, UnsupportedReason as Reason};
 
 pub(super) fn has(bindings: &[BindingOp<'_>]) -> bool {
@@ -19,14 +19,9 @@ pub(super) fn admit(memo: &VueMemoOp<'_>) -> Result<(), EmitError> {
     js_value(memo).map(|_| ())
 }
 
-pub(super) fn js_value<'a>(memo: &'a VueMemoOp<'a>) -> Result<&'a str, EmitError> {
-    match memo.value {
-        ExprRef::Js(js) => Ok(js.source),
-        _ => Err(EmitError::unsupported_at(
-            Reason::MemoExpressionNotJs,
-            memo.value.span(),
-        )),
-    }
+pub(super) fn js_value<'a>(memo: &'a VueMemoOp<'a>) -> Result<RawJs<'a>, EmitError> {
+    expr_source(&memo.value, false)
+        .ok_or_else(|| EmitError::unsupported_at(Reason::MemoExpressionNotJs, memo.value.span()))
 }
 
 pub(super) fn next_cache_index(cx: &mut EmitCx<'_>) -> vize_s0::String {
@@ -60,7 +55,7 @@ pub(super) fn emit_cached_with_key(
     cx.buf.use_helper(Helper::WithMemo);
     cx.buf.push(Helper::WithMemo.alias());
     cx.buf.push("(");
-    cx.buf.push(deps);
+    cx.buf.push(deps.as_str());
     cx.buf.push(", () => ");
     emit(cx)?;
     cx.buf.push(", _cache, ");

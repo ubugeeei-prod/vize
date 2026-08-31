@@ -89,7 +89,7 @@ fn next_if_key(cx: &mut EmitCx<'_>) -> u32 {
 fn emit_condition(cx: &mut EmitCx<'_>, condition: &ExprRef<'_>) -> Result<(), EmitError> {
     match condition {
         ExprRef::Js(js) => {
-            cx.buf.push(js.source);
+            super::js::push_js_expr(cx, js);
             Ok(())
         }
         _ => {

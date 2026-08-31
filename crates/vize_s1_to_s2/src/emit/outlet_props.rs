@@ -4,11 +4,10 @@
 //! first object `v-bind`, then first object `v-on`, then entry props.
 
 use vize_s0::camelize;
-use vize_s2::expr::ExprRef;
 use vize_s2::op::{BindOp, BindingOp, OnOp, SlotOp};
 
 use super::buf::Buf;
-use super::js::{escape_js_string, is_valid_js_identifier, js_expr_source};
+use super::js::{escape_js_string, is_valid_js_identifier};
 use super::props::{
     Piece, StaticBindKeyCasing, bind_value, emit_dynamic_bind_pair, pieces, static_bind_key,
 };
@@ -109,14 +108,9 @@ fn emit_bind_spread_expr(cx: &mut EmitCx<'_>, bind: &BindOp<'_>) -> Result<(), E
 }
 
 fn emit_on_spread_expr(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitError> {
-    let js = match on.handler {
-        Some(ExprRef::Js(js)) => js,
-        Some(expr) => {
-            return Err(EmitError::unsupported_at(
-                Reason::ObjectOnHandlerNotJs,
-                expr.span(),
-            ));
-        }
+    let source = match on.handler {
+        Some(expr) => super::js::expr_source(&expr, false)
+            .ok_or_else(|| EmitError::unsupported_at(Reason::ObjectOnHandlerNotJs, expr.span()))?,
         None => {
             return Err(EmitError::unsupported_at(
                 Reason::ObjectOnHandlerNotJs,
@@ -127,7 +121,7 @@ fn emit_on_spread_expr(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitErr
     cx.buf.use_to_handlers();
     cx.buf.push(Buf::to_handlers_alias());
     cx.buf.push("(");
-    cx.buf.push(js_expr_source(js).as_str());
+    cx.buf.push(source.as_str());
     cx.buf.push(", true)");
     Ok(())
 }

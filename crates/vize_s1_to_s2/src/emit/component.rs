@@ -273,16 +273,16 @@ fn emit_call(
     } else if create {
         cx.buf.push(", ");
         cx.with_static_vnode_hoist(true, |cx| {
-            create_slots::emit_create_slots(cx, &component.children, spread)
+            create_slots::emit_create_slots(cx, &component.children, spread.as_ref())
         })?;
     } else if let Some(facts) = facts {
         cx.buf.push(", ");
         cx.with_static_vnode_hoist(true, |cx| {
-            slots::emit_slots(cx, &component.children, facts, spread)
+            slots::emit_slots(cx, &component.children, facts, spread.as_ref())
         })?;
     } else if let Some(spread) = spread {
         cx.buf.push(", ");
-        cx.buf.push(spread);
+        cx.buf.push(spread.as_str());
     } else if emit_flag {
         cx.buf.push(", null");
     }

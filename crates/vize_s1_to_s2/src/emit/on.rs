@@ -205,14 +205,14 @@ pub(super) fn emit_handler(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {
     if is_handler_reference(js.ast)
         || (is_function(js.ast) && !super::on_typed::is_typed_arrow(js.ast))
     {
-        cx.buf.push(js.source);
+        super::js::push_js_expr(cx, js);
         return;
     }
     if js.source.contains(';') {
         super::on_body::emit(cx, js.source);
     } else {
         cx.buf.push("$event => (");
-        cx.buf.push(js.source);
+        super::js::push_js_expr(cx, js);
         cx.buf.push(")");
     }
 }
