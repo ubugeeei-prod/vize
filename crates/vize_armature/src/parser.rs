@@ -16,6 +16,8 @@ mod entry;
 #[cfg(test)]
 mod experimental_tests;
 mod expression;
+#[cfg(test)]
+mod interactive_recovery_tests;
 mod pending_text;
 mod whitespace;
 
@@ -62,6 +64,10 @@ pub struct Parser<'a> {
     /// onto `stack`, so without this their end tags would find nothing to close
     /// and be reported as `InvalidEndTag` even though the source is correct.
     flattened_tags: Vec<'a, &'a str>,
+    /// Tags closed by HTML tree construction before their authored end tag was
+    /// reached. Their later end tags are redundant recovery fallout, not a new
+    /// parser failure.
+    implicitly_closed_tags: Vec<'a, &'a str>,
     /// Root node
     root: Option<RootNode<'a>>,
     /// Current element being parsed

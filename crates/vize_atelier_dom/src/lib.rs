@@ -16,6 +16,8 @@
 mod compile;
 #[cfg(test)]
 mod experimental_tests;
+#[cfg(test)]
+mod interactive_recovery_tests;
 mod namespace;
 pub mod options;
 pub mod steps;
