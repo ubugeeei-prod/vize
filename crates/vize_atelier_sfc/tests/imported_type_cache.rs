@@ -5,14 +5,14 @@ use vize_atelier_sfc::{
     SfcCompileOptions, SfcCompileResult, SfcParseOptions, begin_type_resolution_batch, compile_sfc,
     parse_sfc,
 };
-use vize_carton::ToCompactString;
+use vize_s0::ToCompactString;
 
 fn temp_project_dir() -> PathBuf {
     let nonce = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
         .as_nanos();
-    let name = vize_carton::cstr!(
+    let name = vize_s0::cstr!(
         "vize-sfc-imported-type-cache-{}-{nonce}",
         std::process::id()
     );

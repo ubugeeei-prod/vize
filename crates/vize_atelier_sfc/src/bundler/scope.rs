@@ -1,7 +1,7 @@
 use std::path::{Component, Path};
 
 use sha2::{Digest, Sha256};
-use vize_carton::String;
+use vize_s0::String;
 
 pub fn generate_bundler_scope_id(
     filename: &str,

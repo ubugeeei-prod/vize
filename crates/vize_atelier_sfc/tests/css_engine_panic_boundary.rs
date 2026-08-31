@@ -73,7 +73,7 @@ fn parse_css_ast_rejects_the_percentage_math_panic_matrix() {
         assert_eq!(result.errors, [GUARD_ERROR], "source {source:?}");
         assert_eq!(
             result.warnings,
-            Vec::<vize_carton::String>::new(),
+            Vec::<vize_s0::String>::new(),
             "source {source:?}"
         );
     }
@@ -169,7 +169,7 @@ fn parse_css_ast_survives_non_finite_hue() {
         } else {
             assert_eq!(
                 result.errors,
-                Vec::<vize_carton::String>::new(),
+                Vec::<vize_s0::String>::new(),
                 "source {source:?}"
             );
         }
@@ -230,7 +230,7 @@ fn parse_css_ast_keeps_accepting_resolvable_math_functions() {
         assert!(result.ast.is_some(), "expected clean parse for {source:?}");
         assert_eq!(
             result.errors,
-            Vec::<vize_carton::String>::new(),
+            Vec::<vize_s0::String>::new(),
             "source {source:?}"
         );
     }
@@ -259,7 +259,7 @@ fn parse_css_ast_survives_the_hue_assert_artifact() {
         assert!(
             !result
                 .errors
-                .contains(&vize_carton::String::from(PARSE_BOUNDARY_ERROR))
+                .contains(&vize_s0::String::from(PARSE_BOUNDARY_ERROR))
         );
     }
 
@@ -268,8 +268,5 @@ fn parse_css_ast_survives_the_hue_assert_artifact() {
     let negative_hue = "a{color:hsla(-842 5 2 / 1)}";
     let negative_hue_result = parse_css_ast(negative_hue, &CssCompileOptions::default());
     assert!(negative_hue_result.ast.is_some());
-    assert_eq!(
-        negative_hue_result.errors,
-        Vec::<vize_carton::String>::new()
-    );
+    assert_eq!(negative_hue_result.errors, Vec::<vize_s0::String>::new());
 }

@@ -7,7 +7,7 @@
 //! `Missing required prop: "name"` followed by an SSR 500.
 
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
-use vize_carton::String;
+use vize_s0::String;
 
 const NUXT_UI_ICON_SFC: &str = r#"<script setup lang="ts">
 const props = defineProps<{ name: string }>()

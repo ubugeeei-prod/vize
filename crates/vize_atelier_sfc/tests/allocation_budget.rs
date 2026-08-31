@@ -27,7 +27,7 @@
 use std::alloc::System;
 
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
-use vize_carton::profiler::{
+use vize_s0::profiler::{
     ProfilingAllocator, allocation_snapshot, reset_allocation_counters,
     set_allocation_tracking_enabled,
 };

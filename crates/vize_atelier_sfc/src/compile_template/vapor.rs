@@ -5,7 +5,7 @@ use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomEleme
 use vize_atelier_vapor::{
     VaporCompilerOptions, compile_vapor_with_custom_elements_template_syntax_and_diagnostics,
 };
-use vize_carton::{Allocator, String, ToCompactString};
+use vize_s0::{Allocator, String, ToCompactString};
 
 use crate::{
     compile_template::{
@@ -124,16 +124,13 @@ pub(super) fn add_scope_id_to_template(template_line: &str, scope_id: &str) -> S
 
 fn rewrite_vapor_import(line: &str, runtime_module_name: &str) -> String {
     let (source, replacement) = if line.contains("'vue/vapor'") {
-        ("'vue/vapor'", vize_carton::cstr!("'{runtime_module_name}'"))
+        ("'vue/vapor'", vize_s0::cstr!("'{runtime_module_name}'"))
     } else if line.contains("\"vue/vapor\"") {
-        (
-            "\"vue/vapor\"",
-            vize_carton::cstr!("\"{runtime_module_name}\""),
-        )
+        ("\"vue/vapor\"", vize_s0::cstr!("\"{runtime_module_name}\""))
     } else if line.contains("'vue'") {
-        ("'vue'", vize_carton::cstr!("'{runtime_module_name}'"))
+        ("'vue'", vize_s0::cstr!("'{runtime_module_name}'"))
     } else if line.contains("\"vue\"") {
-        ("\"vue\"", vize_carton::cstr!("\"{runtime_module_name}\""))
+        ("\"vue\"", vize_s0::cstr!("\"{runtime_module_name}\""))
     } else {
         return line.to_compact_string();
     };

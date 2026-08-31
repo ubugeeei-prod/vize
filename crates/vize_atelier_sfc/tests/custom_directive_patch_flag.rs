@@ -2,7 +2,7 @@
 
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 
-fn compile(source: &str) -> vize_carton::String {
+fn compile(source: &str) -> vize_s0::String {
     let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse SFC");
     compile_sfc(&descriptor, SfcCompileOptions::default())
         .expect("compile SFC")

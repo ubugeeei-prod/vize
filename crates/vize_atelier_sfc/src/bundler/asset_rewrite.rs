@@ -15,7 +15,7 @@ use replacements::{
     AssetReferenceReplacement, apply_asset_replacements, asset_expression, join_expression_parts,
     push_string_part,
 };
-use vize_carton::{SmallVec, String};
+use vize_s0::{SmallVec, String};
 
 use super::assets::TemplateAssetUrl;
 

@@ -3,7 +3,7 @@
 //! This module handles compilation of `<template>` blocks,
 //! supporting both DOM mode and Vapor mode.
 
-use vize_carton::{String, ToCompactString, profile};
+use vize_s0::{String, ToCompactString, profile};
 mod extraction;
 mod string_tracking;
 mod vapor;
@@ -18,7 +18,7 @@ pub(crate) use vapor::compile_template_block_vapor;
 
 use vize_atelier_core::CodegenOptions;
 use vize_atelier_core::TemplateSyntaxMode;
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 use vize_atelier_core::CompilerErrorWithSource;
 

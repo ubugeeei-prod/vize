@@ -4,7 +4,7 @@
 //! block comments, and `${...}` expressions when counting braces and
 //! parentheses in JavaScript/TypeScript code.
 
-use vize_carton::String;
+use vize_s0::String;
 
 /// State for tracking string/template literal/comment context across multiple lines.
 /// Required because template literals (backtick strings) and block comments can span

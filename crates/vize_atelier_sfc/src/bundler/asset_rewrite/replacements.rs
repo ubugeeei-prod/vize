@@ -1,4 +1,4 @@
-use vize_carton::{SmallVec, String};
+use vize_s0::{SmallVec, String};
 
 use crate::bundler::assets::TemplateAssetUrl;
 use crate::vite_plugin::js_string::push_js_string_literal;

@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use vize_carton::String;
+use vize_s0::String;
 
 use crate::{SfcCustomBlock, SfcParseOptions, SfcStyleBlock, parse_sfc};
 
@@ -140,9 +140,7 @@ fn custom_block_to_bundler((index, block): (usize, &SfcCustomBlock<'_>)) -> Bund
     }
 }
 
-fn block_attrs(
-    attrs: &vize_carton::FxHashMap<Cow<'_, str>, Cow<'_, str>>,
-) -> Vec<SfcBlockAttribute> {
+fn block_attrs(attrs: &vize_s0::FxHashMap<Cow<'_, str>, Cow<'_, str>>) -> Vec<SfcBlockAttribute> {
     attrs
         .iter()
         .map(|(name, value)| SfcBlockAttribute {

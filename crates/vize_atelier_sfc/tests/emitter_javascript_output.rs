@@ -16,7 +16,7 @@ use vize_atelier_sfc::{
 /// Compile an SFC exactly the way the Vite plugin does: `is_ts` is left at its
 /// default `false`, which is what makes the script pipeline strip TypeScript
 /// itself instead of deferring it to the bundler.
-fn compile_like_the_vite_plugin(source: &str) -> vize_carton::String {
+fn compile_like_the_vite_plugin(source: &str) -> vize_s0::String {
     let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("SFC should parse");
     compile_sfc(&descriptor, SfcCompileOptions::default())
         .expect("SFC should compile")
@@ -165,7 +165,7 @@ function greet(who: string): string {
 
 #[test]
 fn ensure_javascript_output_passes_javascript_through_untouched() {
-    let js: vize_carton::String = "import { ref } from \"vue\";\nexport default { ref };".into();
+    let js: vize_s0::String = "import { ref } from \"vue\";\nexport default { ref };".into();
     let out = ensure_javascript_output(js.clone());
     assert_eq!(
         out, js,
@@ -181,7 +181,7 @@ fn ensure_javascript_output_passes_javascript_through_untouched() {
 /// ran a semantic check at all.
 #[test]
 fn semantic_diagnostics_do_not_abort_the_emitter_strip() {
-    let redeclared: vize_carton::String =
+    let redeclared: vize_s0::String =
         "let a: number = 1;\nlet a: number = 2;\nexport { a };".into();
 
     assert!(

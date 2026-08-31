@@ -368,7 +368,7 @@ fn test_slice_template_parts_matches_line_scanner() {
             attrs: Default::default(),
         };
         let bindings = BindingMetadata::default();
-        let template_allocator = vize_carton::Allocator::new();
+        let template_allocator = vize_s0::Allocator::new();
         let result = compile_template_block(
             &template_allocator,
             &template,

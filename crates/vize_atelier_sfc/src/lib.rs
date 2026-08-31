@@ -41,6 +41,8 @@
 )]
 #![cfg_attr(test, allow(clippy::disallowed_methods, clippy::needless_borrow))]
 
+extern crate vize_s0 as vize_carton;
+
 // Core modules - following Vue.js compiler-sfc structure
 pub mod bundler;
 pub mod compile;

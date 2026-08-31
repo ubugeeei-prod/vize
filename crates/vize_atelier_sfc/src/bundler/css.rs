@@ -1,4 +1,4 @@
-use vize_carton::{SmallVec, String};
+use vize_s0::{SmallVec, String};
 
 pub fn strip_css_comments_for_scoped(css: &str) -> String {
     if !css.contains("/*") {

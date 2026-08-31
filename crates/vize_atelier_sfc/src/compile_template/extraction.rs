@@ -1,6 +1,6 @@
 //! Extraction of imports, hoisted consts, and render functions from compiled template code.
 
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 use super::TemplateCodeSections;
 use super::string_tracking::{

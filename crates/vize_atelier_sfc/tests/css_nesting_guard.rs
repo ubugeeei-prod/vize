@@ -8,7 +8,7 @@
 #![cfg(feature = "native")]
 
 use vize_atelier_sfc::{CssCompileOptions, compile_css, parse_css_ast};
-use vize_carton::String;
+use vize_s0::String;
 
 /// One repetition of the dominant pattern in the fuzz reproducer; each
 /// repetition opens six brackets that are never closed.
@@ -33,7 +33,7 @@ fn parse_css_ast_rejects_the_fuzz_timeout_shape_without_backtracking() {
     let result = parse_css_ast(&reproducer(32), &CssCompileOptions::default());
     assert!(result.ast.is_none());
     assert_eq!(result.errors, [NESTING_DEPTH_ERROR]);
-    assert_eq!(result.warnings, Vec::<vize_carton::String>::new());
+    assert_eq!(result.warnings, Vec::<vize_s0::String>::new());
 
     // The smallest reproducer shape past the boundary is rejected the same way.
     let result = parse_css_ast(&reproducer(6), &CssCompileOptions::default());
@@ -57,7 +57,7 @@ fn parse_css_ast_keeps_accepting_the_documented_depth_boundary() {
     // `.a {` plus 31 function tokens sits exactly on the depth-32 boundary.
     let allowed = parse_css_ast(&nested(31), &CssCompileOptions::default());
     assert!(allowed.ast.is_some());
-    assert_eq!(allowed.errors, Vec::<vize_carton::String>::new());
+    assert_eq!(allowed.errors, Vec::<vize_s0::String>::new());
 
     let rejected = parse_css_ast(&nested(32), &CssCompileOptions::default());
     assert!(rejected.ast.is_none());
@@ -70,9 +70,9 @@ fn compile_css_rejects_over_deep_sources_and_passes_them_through() {
     let result = compile_css(&css, &CssCompileOptions::default());
     assert_eq!(result.code, css);
     assert!(result.map.is_none());
-    assert_eq!(result.css_vars, Vec::<vize_carton::String>::new());
+    assert_eq!(result.css_vars, Vec::<vize_s0::String>::new());
     assert_eq!(result.errors, [NESTING_DEPTH_ERROR]);
-    assert_eq!(result.warnings, Vec::<vize_carton::String>::new());
+    assert_eq!(result.warnings, Vec::<vize_s0::String>::new());
     assert!(result.exports.is_none());
 }
 
@@ -80,6 +80,6 @@ fn compile_css_rejects_over_deep_sources_and_passes_them_through() {
 fn compile_css_still_compiles_realistic_nesting() {
     let css = ".a { .b { .c { width: calc(1px + min(2px, max(3px, 4px))); } } }";
     let result = compile_css(css, &CssCompileOptions::default());
-    assert_eq!(result.errors, Vec::<vize_carton::String>::new());
+    assert_eq!(result.errors, Vec::<vize_s0::String>::new());
     assert!(!result.code.is_empty());
 }

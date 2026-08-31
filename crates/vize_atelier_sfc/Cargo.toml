@@ -22,7 +22,7 @@ davinci-differential = [
 ]
 
 [dependencies]
-vize_carton = { workspace = true }
+vize_s0.workspace = true
 vize_croquis = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_atelier_dom = { workspace = true }

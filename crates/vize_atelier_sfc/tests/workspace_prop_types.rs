@@ -3,14 +3,14 @@
 use std::path::PathBuf;
 
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
-use vize_carton::ToCompactString;
+use vize_s0::ToCompactString;
 
 fn temp_project_dir() -> PathBuf {
     let nonce = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
         .as_nanos();
-    let name = vize_carton::cstr!("vize-sfc-workspace-props-{}-{nonce}", std::process::id());
+    let name = vize_s0::cstr!("vize-sfc-workspace-props-{}-{nonce}", std::process::id());
     std::env::temp_dir().join(name.as_str())
 }
 
