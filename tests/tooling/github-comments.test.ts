@@ -4,11 +4,11 @@ import { test } from "node:test";
 import {
   isManagedComment as isBenchmarkManagedComment,
   markerForKey as benchmarkMarkerForKey,
-} from "../../bench/comment-pr.mjs";
+} from "../../tools/benchmarks/scripts/comment-pr.mjs";
 import {
   isManagedComment as isTestReportManagedComment,
   markerForKey as testReportMarkerForKey,
-} from "../../bench/comment-test-report.mjs";
+} from "../../tools/benchmarks/scripts/comment-test-report.mjs";
 
 function comment(body: string, login = "github-actions[bot]") {
   return {

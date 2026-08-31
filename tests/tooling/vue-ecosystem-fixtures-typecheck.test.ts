@@ -68,7 +68,10 @@ test("typecheck baselines have complete budgets and bounded release coverage", (
 
 test("large typechecker fixtures have performance safeguards and bench wiring", () => {
   const registry = readRegistry();
-  const benchCheck = fs.readFileSync(path.join(root, "bench", "check.ts"), "utf8");
+  const benchCheck = fs.readFileSync(
+    path.join(root, "tools", "benchmarks", "scripts", "check.ts"),
+    "utf8",
+  );
 
   for (const id of requiredTypecheckProjects) {
     const project = registry.projects.find((candidate) => candidate.id === id);
@@ -78,7 +81,11 @@ test("large typechecker fixtures have performance safeguards and bench wiring", 
     assert.ok((project?.typecheckPerformance?.hangTimeoutMs ?? Infinity) <= 300_000);
     assert.ok((project?.typecheckPerformance?.maxFalsePositiveRatio ?? Infinity) <= 0.02);
     assert.ok((project?.typecheckPerformance?.maxFalseNegativeRatio ?? Infinity) <= 0.02);
-    assert.match(benchCheck, new RegExp(`name:\\s*"${id}"`), `${id} should be in bench/check.ts`);
+    assert.match(
+      benchCheck,
+      new RegExp(`name:\\s*"${id}"`),
+      `${id} should be in tools/benchmarks/scripts/check.ts`,
+    );
   }
   const baseline = registry.projects.find((project) => project.id === "elk")?.typecheckPerformance
     ?.baseline;

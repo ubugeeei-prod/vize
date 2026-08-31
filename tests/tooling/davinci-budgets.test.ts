@@ -49,7 +49,7 @@ const EXPLICIT_STAGE_WINDOWS = new Set([
 
 function ladderNames(): string[] {
   const fixturesRs = fs.readFileSync(
-    path.join(repoRoot, "benchmarks", "davinci_harness", "src", "fixtures.rs"),
+    path.join(repoRoot, "tools", "benchmarks", "crates", "davinci_harness", "src", "fixtures.rs"),
     "utf8",
   );
   const start = fixturesRs.indexOf("pub const LADDER");
@@ -63,7 +63,7 @@ function ladderNames(): string[] {
 
 function benchSources(): { file: string; text: string }[] {
   const sources: { file: string; text: string }[] = [];
-  for (const root of ["crates", "benchmarks"]) {
+  for (const root of ["crates", path.join("tools", "benchmarks", "crates")]) {
     for (const pkg of fs.readdirSync(path.join(repoRoot, root))) {
       const benchesDir = path.join(repoRoot, root, pkg, "benches");
       if (!fs.existsSync(benchesDir)) continue;
@@ -235,7 +235,15 @@ test("compact-storage probes stay wall-report-only with exact alloc gates", () =
     s1_to_s2_emit_von_two_per_bucket: { allocs: 18, allocBytesPeakLinux: 648 },
   };
   for (const [id, row] of Object.entries(expected)) {
-    const reportPath = path.join(repoRoot, "bench", "results", "davinci", "baseline", `${id}.json`);
+    const reportPath = path.join(
+      repoRoot,
+      "tools",
+      "benchmarks",
+      "results",
+      "davinci",
+      "baseline",
+      `${id}.json`,
+    );
     assert.equal(
       fs.existsSync(reportPath),
       false,
@@ -250,7 +258,15 @@ test("compact-storage probes stay wall-report-only with exact alloc gates", () =
 
 test("P2-11 S2 DOM emit probe gates exact allocations", () => {
   const id = "s1_to_s2_emit_p2_11_dom_surface";
-  const reportPath = path.join(repoRoot, "bench", "results", "davinci", "baseline", `${id}.json`);
+  const reportPath = path.join(
+    repoRoot,
+    "tools",
+    "benchmarks",
+    "results",
+    "davinci",
+    "baseline",
+    `${id}.json`,
+  );
   assert.equal(fs.existsSync(reportPath), false);
   assert.equal(budgets.bench[id]?.wall_p50_ns, 0);
   assert.equal(budgets.bench[id]?.wall_tolerance, 0.1);

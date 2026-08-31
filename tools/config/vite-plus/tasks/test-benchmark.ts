@@ -205,7 +205,7 @@ export const testAndBenchmarkTasks = defineTasks({
   // build:nuxt-stack, and says so when they are missing.
   "bench:musea": noCacheTask(moonScript("bench", "musea")),
   "bench:compare-tools": noCacheTask(
-    "node bench/compare-tools.mjs --input bench/__in__ --out target/tool-benchmark-summary.md --json target/tool-benchmark-results.json --doc target/performance-blacksmith.md",
+    "node tools/benchmarks/scripts/compare-tools.mjs --input tools/benchmarks/scripts/__in__ --out target/tool-benchmark-summary.md --json target/tool-benchmark-results.json --doc target/performance-blacksmith.md",
   ),
   "bench:all": noCacheTask(
     runTasks("bench", "bench:lint", "bench:fmt", "bench:check", "bench:vite", "bench:musea"),

@@ -2,7 +2,7 @@
 target/
 
 # Davinci bench harness run output (committed baselines live under baseline/)
-bench/results/davinci/*.json
+tools/benchmarks/results/davinci/*.json
 
 # Node.js
 node_modules/
@@ -47,9 +47,9 @@ vim-vize-extension.tar.gz
 zed-vize-extension.tar.gz
 
 # Benchmark input/output files
-bench/__in__/
-bench/__out__/
-bench/__scale__/
+tools/benchmarks/scripts/__in__/
+tools/benchmarks/scripts/__out__/
+tools/benchmarks/scripts/__scale__/
 dialect-guard-out/
 
 # Logs

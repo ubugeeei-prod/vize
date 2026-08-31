@@ -28,8 +28,8 @@ members = [
   "crates/vize_fresco",
   "crates/vize_marquette",
   "crates/vize_doctor",
-  "benchmarks/davinci_harness",
-  "benchmarks/vize",
+  "tools/benchmarks/crates/davinci_harness",
+  "tools/benchmarks/crates/vize",
   "tests/davinci_test_support",
   "tests/vize_test_runner",
 ]
@@ -62,7 +62,7 @@ vize_marquette = { path = "crates/vize_marquette", version = "=0.388.0" }
 vize_doctor = { path = "crates/vize_doctor", version = "=0.388.0" }
 
 # Workspace-only internal crates (always use the local path)
-davinci_harness = { path = "benchmarks/davinci_harness" }
+davinci_harness = { path = "tools/benchmarks/crates/davinci_harness" }
 davinci_test_support = { path = "tests/davinci_test_support" }
 vize_vitrine = { path = "crates/vize_vitrine", default-features = false }
 vize_glyph = { path = "crates/vize_glyph" }

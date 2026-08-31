@@ -15,7 +15,7 @@ triggerPaths:
   - "/pnpm-workspace.yaml"
   - "/Cargo.toml"
   - "/Cargo.lock"
-  - "/bench/package.json"
+  - "/tools/benchmarks/scripts/package.json"
   - "/docs/package.json"
   - "/docs/pnpm-lock.yaml"
   - "/npm/**/package.json"

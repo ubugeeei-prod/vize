@@ -52,11 +52,11 @@ fn validate_rule_map(rule_map: &Value, root: &std::path::Path) -> Result<(), Str
     if rule_map.get("schemaVersion").and_then(Value::as_u64) != Some(1) {
         return Err("rule map schemaVersion must be 1".to_string());
     }
-    let bench_manifest = common::read_json(root.join("bench/package.json"))?;
+    let bench_manifest = common::read_json(root.join("tools/benchmarks/scripts/package.json"))?;
     let pinned_version = bench_manifest
         .pointer("/devDependencies/eslint-plugin-vue")
         .and_then(Value::as_str)
-        .ok_or_else(|| "bench/package.json must pin eslint-plugin-vue".to_string())?;
+        .ok_or_else(|| "tools/benchmarks/scripts/package.json must pin eslint-plugin-vue".to_string())?;
     let upstream = rule_map
         .get("upstream")
         .ok_or_else(|| "rule map must contain upstream".to_string())?;
