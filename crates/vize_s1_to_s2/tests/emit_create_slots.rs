@@ -248,6 +248,13 @@ fn non_slot_if_siblings_stay_in_create_slots_dynamic_entries_as_undefined() {
 }
 
 #[test]
+fn non_slot_for_slot_outlet_siblings_leave_empty_create_slots_entries() {
+    assert_shipped_parity(
+        r#"<Foo><template v-for="slotKey in keys"><slot :name="slotKey" /></template><template v-for="(component, slot) in schemaSlots" #[slot]="slotProps"><slot :name="slot" v-bind="slotProps"><component :is="component" /></slot></template></Foo>"#,
+    );
+}
+
+#[test]
 fn create_slots_default_branch_keys_are_allocated_before_named_entries() {
     assert_shipped_parity(
         r#"<Foo><template #body><Bar v-if="bodyA" /><Baz v-if="bodyB" /></template><Qux v-if="mainA" /><Quux v-else-if="mainB" /><template v-if="footer" #footer><Footer /></template></Foo>"#,

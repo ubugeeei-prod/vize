@@ -99,16 +99,34 @@ fn collect(
                     cx.walk = walk_after;
                 }
             }
-            Op::For(for_op) if is_slot_for(cx, peek_id(cx), for_op) => {
-                let Some((idx, element, content)) = first_slot_template(&for_op.region) else {
-                    return Err(EmitError::unsupported_at(
-                        super::UnsupportedReason::CreateSlotsMissingSlotTemplate,
-                        for_op.span,
-                    ));
-                };
-                entries.push(with_branch_key(cx, &mut entry_branch_key, |cx| {
-                    capture(cx, |cx| emit_for_entry(cx, for_op, idx, element, content))
-                })?);
+            Op::For(for_op) => {
+                let id = peek_id(cx);
+                if is_slot_for(cx, id, for_op) {
+                    let Some((idx, element, content)) = first_slot_template(&for_op.region) else {
+                        return Err(EmitError::unsupported_at(
+                            super::UnsupportedReason::CreateSlotsMissingSlotTemplate,
+                            for_op.span,
+                        ));
+                    };
+                    entries.push(with_branch_key(cx, &mut entry_branch_key, |cx| {
+                        capture(cx, |cx| emit_for_entry(cx, for_op, idx, element, content))
+                    })?);
+                } else if is_template_for_slot_outlet_entry(cx, id, for_op) {
+                    let walk_before = cx.walk.clone();
+                    with_branch_key(cx, &mut default_branch_key, |cx| {
+                        collect_default(cx, &mut defaults, op)
+                    })?;
+                    let walk_after_default = cx.walk.clone();
+                    cx.walk = walk_before;
+                    entries.push(with_branch_key(cx, &mut entry_branch_key, |cx| {
+                        capture(cx, |cx| emit_empty_for_slot_outlet_entry(cx, for_op))
+                    })?);
+                    cx.walk = walk_after_default;
+                } else {
+                    with_branch_key(cx, &mut default_branch_key, |cx| {
+                        collect_default(cx, &mut defaults, op)
+                    })?;
+                }
             }
             Op::Element(element) => {
                 if let Some(content) = slot_template_content(element) {
@@ -130,6 +148,15 @@ fn collect(
     }
     cx.if_branch_key = entry_branch_key;
     Ok((defaults, entries))
+}
+
+fn is_template_for_slot_outlet_entry(
+    cx: &EmitCx<'_>,
+    id: Option<vize_davinci::id::NodeId>,
+    for_op: &ForOp<'_>,
+) -> bool {
+    id.and_then(|id| cx.for_wrappers.get(id)).is_some()
+        && matches!(for_op.region.ops.as_slice(), [Op::Slot(_)])
 }
 
 fn peek_id(cx: &EmitCx<'_>) -> Option<vize_davinci::id::NodeId> {
@@ -377,6 +404,44 @@ fn emit_for_entry(
     skip_ops(cx, &for_op.region.ops[slot_idx + 1..]);
     cx.in_v_for = prev;
     body?;
+    cx.buf.deindent();
+    cx.buf.newline();
+    cx.buf.push("})");
+    Ok(())
+}
+
+fn emit_empty_for_slot_outlet_entry(
+    cx: &mut EmitCx<'_>,
+    for_op: &ForOp<'_>,
+) -> Result<(), EmitError> {
+    let source_raw = vfor::js_source(&for_op.binding.source)?;
+    let source = source_raw.as_str();
+    let value = vfor::value_alias(&for_op.binding.value)?;
+    let key = vfor::optional_ident(&for_op.binding.key)?;
+    let index = vfor::optional_ident(&for_op.binding.index)?;
+    let _id = cx.walk.mint();
+    cx.buf.use_render_list();
+    cx.buf.push(Buf::render_list_alias());
+    cx.buf.push("(");
+    cx.buf.push(source);
+    cx.buf.push(", (");
+    cx.buf.push(value);
+    if let Some(alias) = key {
+        cx.buf.push(", ");
+        cx.buf.push(alias);
+    }
+    if let Some(alias) = index {
+        cx.buf.push(", ");
+        cx.buf.push(alias);
+    }
+    cx.buf.push(") => {");
+    cx.buf.indent();
+    cx.buf.newline();
+    cx.buf.push("return ");
+    let prev = cx.in_v_for;
+    cx.in_v_for = true;
+    skip_ops(cx, &for_op.region.ops);
+    cx.in_v_for = prev;
     cx.buf.deindent();
     cx.buf.newline();
     cx.buf.push("})");
