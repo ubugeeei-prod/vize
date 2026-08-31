@@ -226,8 +226,12 @@ fn emit_call(
                     && !cx.in_v_for
                     && (!has_slots || slots::has_text_only_implicit_default(&component.children)))
         });
+    let foreign_static_props = id
+        .and_then(|id| cx.facts.static_facts.get(id))
+        .is_some_and(|fact| fact.foreign && fact.props_hoistable);
     let hoisted_static_props = if can_hoist_static_props
-        && ((!array && (facts.is_some() || create)) || (array && static_nested))
+        && ((!array && (facts.is_some() || create || foreign_static_props))
+            || (array && static_nested))
     {
         Some(
             cx.buf.push_hoist(

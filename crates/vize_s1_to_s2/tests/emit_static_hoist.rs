@@ -165,6 +165,12 @@ fn component_patchless_bind_props_use_legacy_hoist() {
 }
 
 #[test]
+fn foreign_namespace_component_props_hoist_without_static_children() {
+    assert_shipped_parity(r#"<svg><Foo id="x" /></svg>"#);
+    assert_shipped_parity(r#"<svg><motion.path fill="transparent" stroke="red" /></svg>"#);
+}
+
+#[test]
 fn static_option_with_undefined_value_hoists_like_legacy_global_constant() {
     assert_shipped_parity(
         r#"<select v-model="locale"><option :value="undefined"></option><option :value="'de-DE'">de-DE</option></select>"#,
