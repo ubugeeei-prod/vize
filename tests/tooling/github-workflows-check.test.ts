@@ -319,7 +319,7 @@ test("check workflow only installs Playwright browsers on cache misses", () => {
   );
 });
 
-test("check workflow keeps JS checks separate from native and packaging work", () => {
+test("check workflow builds local native bindings before JS checks", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const checkJsJob = workflowJobBody(workflow, "check-js");
   const buildJob = workflowJobBody(workflow, "build-js-packages");
@@ -327,7 +327,7 @@ test("check workflow keeps JS checks separate from native and packaging work", (
 
   assert.match(checkJsJob, /vp run --workspace-root check:ci/);
   assert.doesNotMatch(checkJsJob, /cargo build/);
-  assert.match(checkJsJob, /setup-moonbit/);
+  assert.match(checkJsJob, /setup-js-check-runtime/);
   assert.doesNotMatch(checkJsJob, /build:packages/);
 
   assert.match(buildJob, /vp run --filter '\.\/npm\/native' build:ci/);
