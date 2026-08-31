@@ -1,18 +1,14 @@
-//! Object-literal emission for static attrs plus bind / on / model pieces.
-
 use alloc::vec::Vec as StdVec;
 use vize_s0::Span;
 use vize_s2::expr::{ExprRef, OpaqueReason};
 use vize_s2::op::{Attribute, BindOp, BindingOp, DynamicName, ModelOp, OnOp, VueHtmlOp, VueTextOp};
 
-use super::EmitCx;
-use super::EmitError;
 use super::error::UnsupportedReason as Reason;
 use super::js::{escape_js_string, push_ident_key};
 use super::model_key::{ModelModifiersKey, ModelName, ModelUpdateKey};
 use super::props_bind::{self, StaticBindKeyCasing};
-use super::props_value;
-use super::{on, style};
+use super::{EmitCx, EmitError};
+use super::{on, props_value, style};
 
 pub(super) fn emit_props_object(
     cx: &mut EmitCx<'_>,
@@ -105,7 +101,9 @@ pub(super) fn emit_props_object(
         }
         match piece {
             Piece::Attr(attr) => emit_static_pair(cx, attr),
-            Piece::Bind(bind) => emit_bind_pair(cx, pieces, bind, skip_normalize)?,
+            Piece::Bind(bind) => {
+                emit_bind_pair(cx, pieces, bind, skip_normalize, is_plain_element)?
+            }
             Piece::On(event) => on::emit_on_pair(cx, event, is_plain_element)?,
             Piece::VueHtml(html) => super::html::emit_pair(cx, html)?,
             Piece::VueText(text) => super::vtext::emit_pair(cx, text)?,
@@ -297,6 +295,7 @@ fn emit_bind_pair(
     pieces: &[Piece<'_>],
     bind: &BindOp<'_>,
     skip_normalize: bool,
+    is_plain_element: bool,
 ) -> Result<(), EmitError> {
     if props_bind::emit_dynamic_bind_pair(cx, bind)? {
         return Ok(());
@@ -304,6 +303,10 @@ fn emit_bind_pair(
     let raw_name = props_bind::static_bind_name(bind)?;
     let key = props_bind::static_bind_key(bind, StaticBindKeyCasing::Preserve)?;
     let value = props_value::bind_value(bind)?;
+    let skip_normalize = skip_normalize
+        || (!is_plain_element
+            && raw_name == "style"
+            && super::props::bind_value_is_static_patchless(bind));
     emit_ref_for(cx, key.as_str());
     push_ident_key(cx, key.as_str());
     cx.buf.push(": ");

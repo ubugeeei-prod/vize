@@ -40,6 +40,10 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<div :style="{ [prop]: 'red' }"></div>"#,
     ),
     (
+        "component_object_literal",
+        r#"<WindowRoot :style="{ left: '50%', top: '72px' }" />"#,
+    ),
+    (
         "css_function_semicolon",
         r#"<div style="background: url(a;b); color: red" :style="s"></div>"#,
     ),
