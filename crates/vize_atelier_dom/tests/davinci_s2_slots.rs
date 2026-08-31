@@ -146,6 +146,29 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<Foo><template #header v-if="ok"><span></span></template></Foo>"#,
     ),
     (
+        "create_slots_keeps_non_slot_if_placeholder_before_named_template",
+        r#"<Foo><Icon v-if="showIcon" /><span v-else>{{ label }}</span><template v-if="$slots.menu" #menu><slot name="menu" /></template><template #append><slot name="append" /></template></Foo>"#,
+    ),
+    (
+        "create_slots_keeps_non_slot_if_placeholder_before_scoped_forwarder",
+        r#"<Foo><div v-if="$slots.viewer"><slot name="viewer" /></div><template v-if="$slots.progress" #progress="progress"><slot name="progress" v-bind="progress" /></template><template #toolbar="toolbar"><slot name="toolbar" v-bind="toolbar" /></template></Foo>"#,
+    ),
+    (
+        "nested_slot_forwarder_prefers_render_slot_before_create_vnode",
+        r#"<Foo><template #aside><Copy><template v-if="$slots.copy" #copy><slot name="copy" /></template><template #backdrop><Backdrop /></template></Copy></template></Foo>"#,
+    ),
+    (
+        "create_slots_condition_padding",
+        r#"<Foo><template #header v-if="
+  ok &&
+  ready
+">x</template></Foo>"#,
+    ),
+    (
+        "create_slots_scoped_param_padding",
+        r#"<Foo><template #header="slotProps " v-if="ok"><slot v-bind="slotProps" /></template></Foo>"#,
+    ),
+    (
         "create_slots_scoped",
         r#"<Foo><template #header="p" v-if="ok">x</template></Foo>"#,
     ),
@@ -240,6 +263,34 @@ const BATTERY: &[(&str, &str)] = &[
     (
         "unwrapped_for_two_nested_slots_keeps_both",
         r#"<Foo><template v-for="i in n"><template #header>h</template><template #footer>f</template></template></Foo>"#,
+    ),
+    (
+        "component_slot_params_preserve_authored_padding",
+        r#"<Foo v-slot="slotProps "><slot v-bind="slotProps" /></Foo>"#,
+    ),
+    (
+        "slotted_component_legacy_patchless_concat_prop",
+        r#"<Foo><Bar :foo="'a' + i + 'b'"><Baz /></Bar></Foo>"#,
+    ),
+    (
+        "slotted_for_component_legacy_patchless_concat_prop",
+        r#"<Foo><Bar v-for="(item, index) in items" :key="item.key" :label="'Label' + index" :prop="'items.' + index + '.value'" :rules="{ required: true }"><Baz /></Bar></Foo>"#,
+    ),
+    (
+        "render_slot_if_authored_key_dedupes_props",
+        r#"<template v-for="(item, index) in items"><slot v-if="index < items.length - 1" name="separator" :key="'separator-' + index" /></template>"#,
+    ),
+    (
+        "transition_forwarded_slot_hoists_static_props",
+        r#"<Transition name="fade"><slot /></Transition>"#,
+    ),
+    (
+        "transition_group_slot_hoists_static_props",
+        r#"<TransitionGroup name="fade"><div v-for="item in items" :key="item.id">{{ item.label }}</div></TransitionGroup>"#,
+    ),
+    (
+        "component_dynamic_static_props_with_complex_slot_stays_inline",
+        r#"<Foo :value-on-clear="null" :empty-values="[undefined, null]"><div><Bar /></div></Foo>"#,
     ),
     (
         "dynamic_slot_name_hole",

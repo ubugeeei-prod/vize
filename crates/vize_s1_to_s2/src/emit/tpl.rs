@@ -80,12 +80,20 @@ fn unwrap_if(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<()
             let bindings = &element.bindings;
             cx.walk.skip(bindings.len());
             register_unwrapped_if_child_props_hoist(cx, attributes, bindings, id)?;
-            super::emit_if_branch_call(cx, element, key)
+            let previous = cx.template_if_branch_root;
+            cx.template_if_branch_root = true;
+            let result = super::emit_if_branch_call(cx, element, key);
+            cx.template_if_branch_root = previous;
+            result
         }
         [Op::Component(component)] => {
             let id = cx.walk.mint();
             cx.walk.skip(component.bindings.len());
-            super::component::emit_if_branch(cx, component, key, id)
+            let previous = cx.template_if_branch_root;
+            cx.template_if_branch_root = true;
+            let result = super::component::emit_if_branch(cx, component, key, id);
+            cx.template_if_branch_root = previous;
+            result
         }
         [Op::Slot(slot)] => {
             let _id = cx.walk.mint();
@@ -137,7 +145,18 @@ pub(super) fn emit_for_template_item(
         };
         let id = cx.walk.mint();
         cx.walk.skip(element.bindings.len());
-        return super::emit_for_item_call(cx, element, id, stable, key);
+        let previous = cx.suppress_template_for_child_key;
+        cx.suppress_template_for_child_key = true;
+        let result = super::emit_for_item_call(cx, element, id, stable, key);
+        cx.suppress_template_for_child_key = previous;
+        return result;
+    }
+    if matches!(ops, [Op::Component(_)]) {
+        let previous = cx.template_for_item_single_root;
+        cx.template_for_item_single_root = true;
+        let result = emit_inner_fragment(cx, ops, key, ChildMode::GenerateNode);
+        cx.template_for_item_single_root = previous;
+        return result;
     }
     emit_inner_fragment(cx, ops, key, ChildMode::GenerateNode)
 }

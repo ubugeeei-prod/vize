@@ -38,7 +38,17 @@ pub(in crate::emit) fn emit_array_child(
             }
             Op::Component(component) => {
                 cx.walk.skip(component.bindings.len());
-                super::super::component::emit_nested(cx, component, id)
+                if cx.template_for_item_single_root {
+                    let previous_root = cx.template_for_item_root_id;
+                    cx.template_for_item_single_root = false;
+                    cx.template_for_item_root_id = id;
+                    let result = super::super::component::emit_nested(cx, component, id);
+                    cx.template_for_item_root_id = previous_root;
+                    cx.template_for_item_single_root = true;
+                    result
+                } else {
+                    super::super::component::emit_nested(cx, component, id)
+                }
             }
             Op::If(if_op) => super::super::emit_if_op(cx, if_op, id),
             Op::For(for_op) => super::super::emit_for_op(cx, for_op, id, None),

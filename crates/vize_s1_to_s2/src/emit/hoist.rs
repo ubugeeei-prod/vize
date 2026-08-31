@@ -164,7 +164,7 @@ fn hoist_element_rhs(element: &ElementOp<'_>, pure: bool) -> String {
     out.push_str(element.tag);
     out.push('"');
     let kids = renderable_children(&element.children);
-    let props = static_vnode_props(element);
+    let props = static_vnode_props(element, true);
     if props.is_some() || !kids.is_empty() {
         out.push_str(", ");
         if let Some(props) = props {
@@ -201,7 +201,7 @@ fn append_cached_element_rhs(
     out.push_str(", ");
     if element.bindings.is_empty() && !element.attributes.is_empty() {
         cached_props::push_object(out, element.attributes.iter(), line_indent);
-    } else if let Some(props) = static_vnode_props(element) {
+    } else if let Some(props) = cached_static_vnode_props(element, line_indent) {
         out.push_str(props.as_str());
     } else {
         out.push_str("null");
@@ -219,10 +219,26 @@ fn append_cached_element_rhs(
     out.push(')');
 }
 
-fn static_vnode_props(element: &ElementOp<'_>) -> Option<String> {
-    super::props_static::root_hoist_props(&element.attributes, &element.bindings)
-        .ok()
-        .flatten()
+fn static_vnode_props(element: &ElementOp<'_>, include_bindings: bool) -> Option<String> {
+    if include_bindings {
+        return super::props_static::root_hoist_props(&element.attributes, &element.bindings)
+            .ok()
+            .flatten();
+    }
+    if element.attributes.is_empty() {
+        return None;
+    }
+    Some(compact_props_object(element.attributes.iter()))
+}
+
+fn cached_static_vnode_props(element: &ElementOp<'_>, line_indent: usize) -> Option<String> {
+    super::props_static::cached_root_hoist_props(
+        &element.attributes,
+        &element.bindings,
+        line_indent,
+    )
+    .ok()
+    .flatten()
 }
 
 fn append_hoist_kids(out: &mut String, kids: &[&Op<'_>]) {
@@ -251,12 +267,37 @@ fn append_hoist_kids(out: &mut String, kids: &[&Op<'_>]) {
                 out.push(')');
             }
             Op::Element(element) => {
-                out.push_str(hoist_element_rhs(element, false).as_str());
+                out.push_str(hoist_descendant_element_rhs(element).as_str());
             }
             _ => {}
         }
     }
     out.push(']');
+}
+
+fn hoist_descendant_element_rhs(element: &ElementOp<'_>) -> String {
+    let mut out = String::default();
+    out.push_str(Buf::create_element_vnode_alias());
+    out.push('(');
+    out.push('"');
+    out.push_str(element.tag);
+    out.push('"');
+    let kids = renderable_children(&element.children);
+    let props = static_vnode_props(element, false);
+    if props.is_some() || !kids.is_empty() {
+        out.push_str(", ");
+        if let Some(props) = props {
+            out.push_str(props.as_str());
+        } else {
+            out.push_str("null");
+        }
+    }
+    if !kids.is_empty() {
+        out.push_str(", ");
+        append_hoist_kids(&mut out, &kids);
+    }
+    out.push(')');
+    out
 }
 
 fn append_cached_kids(out: &mut String, kids: &[&Op<'_>], line_indent: usize) {

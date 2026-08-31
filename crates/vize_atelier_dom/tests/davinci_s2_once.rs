@@ -30,6 +30,16 @@ const CASES: &[Case] = &[
         sites: &["1 /* TEXT */"],
     },
     Case {
+        name: "static_attr_interpolation",
+        src: r#"<div v-once class="dialog-header title">{{ $t('earnedAchievement') }}</div>"#,
+        sites: &["1 /* TEXT */"],
+    },
+    Case {
+        name: "compound_static_tail_splits_inside_cache_initializer",
+        src: r##"<strong v-once>{{ $t("createdBy") }}:</strong>"##,
+        sites: &["1 /* TEXT */"],
+    },
+    Case {
         name: "dynamic_class",
         src: r#"<div v-once :class="cls">content</div>"#,
         sites: &["2 /* CLASS */"],
@@ -48,6 +58,36 @@ const CASES: &[Case] = &[
         name: "nested_dynamic",
         src: r#"<div v-once><span :class="cls">{{ msg }}</span></div>"#,
         sites: &["3 /* TEXT, CLASS */"],
+    },
+    Case {
+        name: "html_binding_is_omitted_from_cache_initializer",
+        src: r##"<div v-once class="opt-out-description" v-html="$t('optOutOfClassesText', optOutLinks)"></div>"##,
+        sites: &[],
+    },
+    Case {
+        name: "event_and_html_bindings_are_omitted_from_cache_initializer",
+        src: r###"<span v-once class="close-icon svg-icon inline icon-10" @click="close()" v-html="icons.close"></span>"###,
+        sites: &[],
+    },
+    Case {
+        name: "static_dynamic_class_and_html_omits_empty_patch_child",
+        src: r#"<span v-once class="svg-icon inline icon-16 mr-1" :class="{ 'w-0': currencyClass === 'unlock'}" v-html="icons[currencyClass]"></span>"#,
+        sites: &["2 /* CLASS */"],
+    },
+    Case {
+        name: "html_only_cache_initializer_keeps_empty_multiline_props",
+        src: r#"<div v-once v-html="raw"></div>"#,
+        sites: &[],
+    },
+    Case {
+        name: "event_binding_is_omitted_from_cache_initializer",
+        src: r###"<button v-once class="btn" @click="closeWithAction()">{{ $t("viewAchievements") }}</button>"###,
+        sites: &["1 /* TEXT */"],
+    },
+    Case {
+        name: "nested_html_inside_once_parent_still_emits_html_prop",
+        src: r###"<div v-once><span v-html="icons.sparkles"></span><span class="text">{{ $t("yourRewards") }}</span></div>"###,
+        sites: &["8 /* PROPS */, [\"innerHTML\"]", "1 /* TEXT */"],
     },
     Case {
         name: "v_if_branch",

@@ -162,6 +162,140 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn bounded_string_class_concats_drop_the_legacy_class_patch_flag() {
+    assert_eq!(
+        assembled(r#"<div :class="'is-' + state + '-active'"></div>"#),
+        "\
+const { normalizeClass: _normalizeClass, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    class: _normalizeClass('is-' + state + '-active')
+  }))
+}"
+    );
+}
+
+#[test]
+fn bounded_string_style_concats_drop_the_legacy_style_patch_flag() {
+    assert_eq!(
+        assembled(r#"<div :style="'width:' + size + 'px'"></div>"#),
+        "\
+const { normalizeStyle: _normalizeStyle, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    style: _normalizeStyle('width:' + size + 'px')
+  }))
+}"
+    );
+}
+
+#[test]
+fn unparenthesized_in_conditionals_drop_legacy_class_and_style_patch_flags() {
+    assert_eq!(
+        assembled(r#"<div :class="'session' in row && row.session ? 'locked' : ''"></div>"#),
+        "\
+const { normalizeClass: _normalizeClass, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    class: _normalizeClass('session' in row && row.session ? 'locked' : '')
+  }))
+}"
+    );
+    assert_eq!(
+        assembled(r#"<div :style="'visible' in state ? 'display:block' : 'display:none'"></div>"#),
+        "\
+const { normalizeStyle: _normalizeStyle, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    style: _normalizeStyle('visible' in state ? 'display:block' : 'display:none')
+  }))
+}"
+    );
+}
+
+#[test]
+fn parenthesized_legacy_patchless_neighbors_keep_class_and_style_flags() {
+    assert_eq!(
+        assembled(
+            r#"<div :class="('is-' + state + '-active')" :style="('width:' + size + 'px')"></div>"#,
+        ),
+        "\
+const { normalizeClass: _normalizeClass, normalizeStyle: _normalizeStyle, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    class: _normalizeClass(('is-' + state + '-active')),
+    style: _normalizeStyle(('width:' + size + 'px'))
+  }, null, 6 /* CLASS, STYLE */))
+}"
+    );
+}
+
+#[test]
+fn class_plus_this_style_objects_skip_the_legacy_style_normalizer() {
+    assert_eq!(
+        assembled(r#"<div :class="c" :style="{ height: this.h }"></div>"#),
+        "\
+const { normalizeClass: _normalizeClass, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    class: _normalizeClass(c),
+    style: { height: this.h }
+  }, null, 6 /* CLASS, STYLE */))
+}"
+    );
+}
+
+#[test]
+fn dynamic_style_objects_keep_the_legacy_style_normalizer() {
+    assert_eq!(
+        assembled(r#"<div :style="{ height: this.h, width: w }"></div>"#),
+        "\
+const { normalizeStyle: _normalizeStyle, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    style: _normalizeStyle({ height: this.h, width: w })
+  }, null, 4 /* STYLE */))
+}"
+    );
+}
+
+#[test]
+fn full_props_patch_flags_drop_class_and_style_bits() {
+    assert_eq!(
+        assembled(r#"<div :[foo]="bar" :class="c" :style="s"></div>"#),
+        "\
+const { normalizeProps: _normalizeProps, normalizeClass: _normalizeClass, normalizeStyle: _normalizeStyle, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", _normalizeProps({
+    [_ctx.foo || \"\"]: bar,
+    class: _normalizeClass(c),
+    style: _normalizeStyle(s)
+  }), null, 16 /* FULL_PROPS */))
+}"
+    );
+    assert_eq!(
+        assembled(r#"<div :class="c" @[name]="handler"></div>"#),
+        "\
+const { normalizeClass: _normalizeClass, toHandlerKey: _toHandlerKey, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", {
+    class: _normalizeClass(c),
+    [_toHandlerKey(_ctx.name)]: handler
+  }, null, 16 /* FULL_PROPS */))
+}"
+    );
+}
+
+#[test]
 fn a_bound_id_matches_the_shipped_snapshot() {
     assert_eq!(
         assembled(r#"<div :id="foo"></div>"#),
@@ -175,6 +309,27 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn ts_wrapped_static_binds_keep_the_legacy_props_patch_flag() {
+    assert_eq!(
+        assembled(r#"<div :id="'x' as const"></div><Foo :id="'x' as const" />"#),
+        concat!(
+            "\
+const { resolveComponent: _resolveComponent, createElementVNode: _createElementVNode, createVNode: _createVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+",
+            "  \n",
+            "  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _createElementVNode(\"div\", { id: 'x' as const }, null, 8 /* PROPS */, [\"id\"]),
+    _createVNode(_component_Foo, { id: 'x' as const }, null, 8 /* PROPS */, [\"id\"])
+  ], 64 /* STABLE_FRAGMENT */))
+}"
+        )
+    );
+}
+
+#[test]
 fn simple_interpolation_matches_the_shipped_snapshot() {
     assert_eq!(
         assembled("{{ msg }}"),
@@ -183,6 +338,69 @@ const { toDisplayString: _toDisplayString } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return _toDisplayString(msg)
+}"
+    );
+}
+
+#[test]
+fn root_fragment_compound_text_drops_dynamic_gap_like_the_shipped_snapshot() {
+    assert_eq!(
+        assembled("x {{ a }} {{ b }}"),
+        "\
+const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createTextVNode: _createTextVNode } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _createTextVNode(\"x \"),
+    _toDisplayString(a),
+    _toDisplayString(b)
+  ], 64 /* STABLE_FRAGMENT */))
+}"
+    );
+    assert_eq!(
+        assembled("{{ a }} {{ b }}"),
+        "\
+const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _toDisplayString(a),
+    _toDisplayString(b)
+  ], 64 /* STABLE_FRAGMENT */))
+}"
+    );
+}
+
+#[test]
+fn comment_bounded_dynamic_whitespace_matches_the_shipped_snapshot() {
+    assert_eq!(
+        assembled("<div>{{ a }} <!--c--></div>"),
+        "\
+const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(a), 1 /* TEXT */))
+}"
+    );
+    assert_eq!(
+        assembled("<div><!--c--> {{ a }} <!--d--></div>"),
+        "\
+const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(a), 1 /* TEXT */))
+}"
+    );
+    assert_eq!(
+        assembled("<div>{{ a }} <!--c--><span></span></div>"),
+        "\
+const { toDisplayString: _toDisplayString, createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, createTextVNode: _createTextVNode } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(\"div\", null, [
+    _createTextVNode(_toDisplayString(a) + \" \", 1 /* TEXT */),
+    _createElementVNode(\"span\")
+  ]))
 }"
     );
 }

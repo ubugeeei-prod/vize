@@ -29,6 +29,8 @@ pub(super) fn emit_element(
     emit_cached(cx, |cx| {
         directive::wrap_element(cx, element, |cx| {
             cx.buf.use_create_element_vnode();
+            let previous_once_element_depth = cx.once_element_depth;
+            cx.once_element_depth = 0;
             cx.once_depth += 1;
             let result = vnode::emit_call(
                 cx,
@@ -40,6 +42,7 @@ pub(super) fn emit_element(
                 /* once */ true,
             );
             cx.once_depth -= 1;
+            cx.once_element_depth = previous_once_element_depth;
             result
         })
     })

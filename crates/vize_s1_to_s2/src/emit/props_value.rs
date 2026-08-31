@@ -4,6 +4,7 @@ use vize_s0::Span;
 use vize_s2::expr::{ExprRef, JsExpr};
 use vize_s2::op::BindOp;
 
+use super::entity::decode_html_entities;
 use super::js::{RawJs, js_expr_source};
 use super::props_bind;
 use super::{EmitCx, EmitError};
@@ -16,7 +17,7 @@ pub(super) enum BindValue<'a> {
 impl BindValue<'_> {
     pub(super) fn emit(&self, cx: &mut EmitCx<'_>) {
         match self {
-            Self::Js(js) => cx.buf.push(js_expr_source(js).as_str()),
+            Self::Js(js) => cx.buf.push(bind_js_source(js).as_str()),
             Self::RawJs(source) => cx.buf.push(source.as_str()),
         }
     }
@@ -26,16 +27,21 @@ impl BindValue<'_> {
             self.emit(cx);
             return;
         };
-        let source = js_expr_source(js);
+        let raw_source = js_expr_source(js);
+        let decoded = raw_source
+            .as_str()
+            .contains('&')
+            .then(|| decode_html_entities(raw_source.as_str()));
+        let source = decoded.as_deref().unwrap_or_else(|| raw_source.as_str());
         let source_root = cx.source;
         if let Some((leading, trailing)) =
-            authored_value_padding(source_root, bind, source.as_str(), js.span)
+            authored_value_padding(source_root, bind, raw_source.as_str(), js.span)
         {
             cx.buf.push(leading);
-            cx.buf.push(source.as_str());
+            cx.buf.push(source);
             cx.buf.push(trailing);
         } else {
-            cx.buf.push(source.as_str());
+            cx.buf.push(source);
         }
     }
 
@@ -44,6 +50,15 @@ impl BindValue<'_> {
             Self::Js(js) => Some(js),
             Self::RawJs(_) => None,
         }
+    }
+}
+
+pub(super) fn bind_js_source<'a>(js: &JsExpr<'a>) -> RawJs<'a> {
+    let source = js_expr_source(js);
+    if source.as_str().contains('&') {
+        RawJs::Owned(decode_html_entities(source.as_str()))
+    } else {
+        source
     }
 }
 
@@ -61,7 +76,7 @@ pub(super) fn bind_value<'a>(bind: &'a BindOp<'a>) -> Result<BindValue<'a>, Emit
     }
 }
 
-fn authored_value_padding<'a>(
+pub(super) fn authored_value_padding<'a>(
     source: &'a str,
     bind: &BindOp<'_>,
     value: &str,
@@ -77,7 +92,7 @@ fn authored_value_padding<'a>(
         || attr_end > source.len()
         || source.get(value_start..value_end)? != value
     {
-        return None;
+        return authored_quoted_value_padding(source, attr_start, attr_end);
     }
     let before = source.get(attr_start..value_start)?;
     let quote_pos = before
@@ -99,4 +114,42 @@ fn authored_value_padding<'a>(
     (leading.bytes().all(|byte| byte.is_ascii_whitespace())
         && trailing.bytes().all(|byte| byte.is_ascii_whitespace()))
     .then_some((leading, trailing))
+}
+
+fn authored_quoted_value_padding(
+    source: &str,
+    attr_start: usize,
+    attr_end: usize,
+) -> Option<(&str, &str)> {
+    if attr_start > attr_end || attr_end > source.len() {
+        return None;
+    }
+    let attr = source.get(attr_start..attr_end)?;
+    let quote_pos = attr
+        .as_bytes()
+        .iter()
+        .position(|byte| matches!(*byte, b'\'' | b'"'))?;
+    let quote = attr.as_bytes()[quote_pos];
+    let inner_start = quote_pos + 1;
+    let close_rel = attr
+        .get(inner_start..)?
+        .as_bytes()
+        .iter()
+        .position(|byte| *byte == quote)?;
+    let inner_end = inner_start + close_rel;
+    let inner = attr.get(inner_start..inner_end)?;
+    let leading_len = inner
+        .bytes()
+        .position(|byte| !byte.is_ascii_whitespace())
+        .unwrap_or(inner.len());
+    let trailing_start = inner
+        .bytes()
+        .rposition(|byte| !byte.is_ascii_whitespace())
+        .map_or(inner.len(), |index| index + 1);
+    let leading = inner.get(..leading_len)?;
+    let trailing = inner.get(trailing_start..)?;
+    if leading.is_empty() && trailing.is_empty() {
+        return None;
+    }
+    Some((leading, trailing))
 }

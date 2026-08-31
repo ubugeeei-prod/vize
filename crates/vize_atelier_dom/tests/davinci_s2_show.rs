@@ -46,6 +46,14 @@ const CASES: &[Case] = &[
         sites: &["512 /* NEED_PATCH */"],
     },
     Case {
+        name: "multiline_expr",
+        src: r#"<div v-show="
+  visible ||
+  forced
+">content</div>"#,
+        sites: &["512 /* NEED_PATCH */"],
+    },
+    Case {
         name: "v_for",
         src: r#"<div v-for="item in items" v-show="item.visible">{{ item.label }}</div>"#,
         sites: &["1 /* TEXT */", "256 /* UNKEYED_FRAGMENT */"],

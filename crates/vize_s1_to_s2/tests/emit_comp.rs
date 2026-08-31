@@ -10,6 +10,7 @@
 mod support;
 
 use support::with_transformed;
+use vize_s0::Allocator;
 use vize_s1_to_s2::emit_dom;
 
 fn assembled(source: &str) -> String {
@@ -24,6 +25,21 @@ fn assembled(source: &str) -> String {
 /// Vue's extra `newline()` after `genAssets` leaves indent on the blank line.
 fn pin(visual: &str) -> String {
     visual.replace(")\n\n  return", ")\n  \n  return")
+}
+
+fn shipped(source: &str) -> String {
+    let allocator = Allocator::new();
+    let (_, errors, old) = vize_atelier_dom::compile_template(&allocator, source);
+    let blocking: Vec<_> = errors
+        .iter()
+        .filter(|error| !error.is_compatibility_notice())
+        .collect();
+    assert!(blocking.is_empty(), "{source:?}: {blocking:?}");
+    format!("{}\n{}", old.preamble, old.code)
+}
+
+fn assert_shipped_parity(source: &str) {
+    assert_eq!(assembled(source), shipped(source), "{source}");
 }
 
 #[test]
@@ -140,6 +156,26 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn a_component_v_if_branch_key_suppresses_authored_key_bind() {
+    assert_eq!(
+        assembled(r#"<template v-if="ok"><Foo :key="renderKey" :title="title" /></template>"#),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock, createCommentVNode: _createCommentVNode } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (ok)
+    ? (_openBlock(), _createBlock(_component_Foo, {
+      key: 0,
+      title: title
+    }, null, 8 /* PROPS */, [\"title\"]))
+    : _createCommentVNode(\"v-if\", true)
+}")
+    );
+}
+
+#[test]
 fn duplicate_nested_components_resolve_once() {
     assert_eq!(
         assembled("<div><Foo /><Foo /></div>"),
@@ -193,6 +229,32 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     _: 1 /* STABLE */
   }))
 }")
+    );
+}
+
+#[test]
+fn static_ref_on_dynamic_slots_sets_need_patch() {
+    assert_shipped_parity(
+        r#"<Foo ref="date-picker"><template v-for="slotName in slotList" #[slotName]="args" :key="slotName"><slot :name="slotName as keyof RootSlots" v-bind="args" /></template></Foo>"#,
+    );
+}
+
+#[test]
+fn implicit_default_text_runs_keep_legacy_split_vnodes() {
+    assert_shipped_parity(r#"<Foo>{{ a }}-{{ b }}</Foo>"#);
+}
+
+#[test]
+fn component_root_v_slot_merges_text_runs_like_template_slots() {
+    assert_shipped_parity(
+        r#"<Foo #="{ year, month, date }">{{ year }}-{{ month }}-{{ date }}</Foo>"#,
+    );
+}
+
+#[test]
+fn v_for_component_root_v_slot_key_uses_legacy_multiline_props() {
+    assert_shipped_parity(
+        r#"<Foo><Bar v-for="n in 5" :key="n" v-slot="{ isSelected, toggle }"><Baz :color="isSelected ? 'primary' : undefined" class="ma-2" /></Bar></Foo>"#,
     );
 }
 
@@ -272,6 +334,15 @@ const { resolveDynamicComponent: _resolveDynamicComponent, openBlock: _openBlock
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createBlock(_resolveDynamicComponent(x)))
 }")
+    );
+}
+
+#[test]
+fn a_dynamic_is_keeps_authored_trailing_padding() {
+    assert_shipped_parity(
+        r#"<component :is="ok
+  ? Foo
+  : Bar " />"#,
     );
 }
 

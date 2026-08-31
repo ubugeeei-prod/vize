@@ -37,8 +37,8 @@ pub(crate) struct Cx<'a> {
     next_op: u32,
     exhausted: bool,
     next_scope: u32,
-    /// How many `<pre>`/rawtext ancestors the walk is inside; condensing
-    /// is suppressed for their whole subtrees (`lower::text`).
+    /// How many `<pre>` ancestors the walk is inside; condensing is
+    /// suppressed for those subtrees (`lower::text`).
     condense_depth: u32,
     pub diagnostics: Vec<Diagnostic>,
     pub provenance: Vec<ProvenanceRecord>,
@@ -78,8 +78,7 @@ impl<'a> Cx<'a> {
         self.condense_depth > 0
     }
 
-    /// Enter/leave a condense-suppressing element (`<pre>` and the
-    /// rawtext set) around its children.
+    /// Enter/leave a condense-suppressing `<pre>` around its children.
     pub(crate) fn push_condense_suppression(&mut self) {
         self.condense_depth = self.condense_depth.saturating_add(1);
     }

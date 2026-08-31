@@ -105,6 +105,50 @@ const BATTERY: &[(&str, &str)] = &[
         "earlier_root_component_template_slot_before_later_root_slot_outlet",
         r#"<Section><FieldRange><template #label><div>{{ label }}</div></template></FieldRange></Section><Section><label><div><slot name="label">{{ fallback }}</slot></div><SelectTab /></label></Section>"#,
     ),
+    (
+        "explicit_slot_template_nested_slot_prefers_render_slot_helper",
+        r#"<Carousel><template #slides><SwiperSlide v-for="item in items"><div :class="cls"></div><p class="x"><slot name="referenceText" /></p></SwiperSlide></template></Carousel>"#,
+    ),
+    (
+        "component_v_slot_direct_slot_prefers_render_slot_helper",
+        r#"<MenuItem v-slot="{ active }" v-bind="$attrs"><a :class="[active ? 'on' : 'off']"><slot :active="active" /></a></MenuItem>"#,
+    ),
+    (
+        "component_v_slot_nested_slot_prefers_render_slot_helper",
+        r#"<Listbox v-slot="{ open }"><ScalarFloating><ListboxButton><slot :open="open" /></ListboxButton><template #floating="{ width }"><div v-if="open" :style="{ width }"><Item v-for="option in options" :key="option.id" /></div></template></ScalarFloating></Listbox>"#,
+    ),
+    (
+        "component_v_slot_carrier_before_later_slot_outlet_prefers_render_slot",
+        r#"<DefineMonthTemplate v-slot="{ date }"><div>{{ date }}</div></DefineMonthTemplate><CalendarRoot v-slot="{ grid }"><CalendarPrevButton><slot name="calendar-prev-icon" /></CalendarPrevButton></CalendarRoot>"#,
+    ),
+    (
+        "dynamic_bind_key_prefers_normalize_props_before_class",
+        r#"<component :is="self ? 'MkA' : 'a'" :[attr]="maybeRelativeUrl" :class="$style.root"><slot /></component>"#,
+    ),
+    (
+        "implicit_slot_outlet_before_named_slot_vnode_prefers_render_slot_helper",
+        r#"<CommonTooltip><VDropdown><slot /><template #popper><div ref="el"></div></template></VDropdown></CommonTooltip>"#,
+    ),
+    (
+        "dynamic_component_before_directive_component_does_not_prefer_resolve_component",
+        r#"<div><component :is="icon" /><Foo v-tippy="tip" /></div>"#,
+    ),
+    (
+        "conditional_named_slot_direct_v_for_prefers_render_list_before_create_slots",
+        r#"<ChatPrompt><template v-if="attachments.length" #header><Button v-for="(file, index) in attachments" :key="index" :label="file.name" /></template><template #body><Editor /></template></ChatPrompt>"#,
+    ),
+    (
+        "source_order_default_before_named_slot_keeps_helper_order",
+        r#"<Page><Button><template #right><Icon v-if="ok" /></template>{{ label }}</Button><template #notice><Icon /> {{ notice }}</template></Page>"#,
+    ),
+    (
+        "source_order_default_if_before_late_named_slot_keeps_helper_order",
+        r#"<PublicView><form><Notice v-if="done">{{ ok }}</Notice><Notice v-if="error">{{ error }}</Notice></form><template #notice><Icon /> {{ msg }}</template></PublicView>"#,
+    ),
+    (
+        "footer_transition_prefers_builtin_before_default_transition_group",
+        r#"<PageWithHeader><div><TransitionGroup><template v-for="item in timeline" :key="item.id"><Message :message="item" /></template></TransitionGroup></div><template #footer><Transition name="fade"><div v-show="showIndicator"></div></Transition></template></PageWithHeader>"#,
+    ),
 ];
 
 #[test]

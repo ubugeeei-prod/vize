@@ -64,7 +64,7 @@ fn child_crosses_direct(
     if element.namespace != ns {
         return !(direct_static_children_hoisted && super::hoist::is_hoistable(element));
     }
-    child_namespace_crosses(element)
+    false
 }
 
 fn children_cross_boundary(ns: Namespace, children: &Region<'_>) -> bool {
@@ -73,7 +73,7 @@ fn children_cross_boundary(ns: Namespace, children: &Region<'_>) -> bool {
 
 fn child_crosses(ns: Namespace, child: &Op<'_>) -> bool {
     match child {
-        Op::Element(element) => element.namespace != ns || child_namespace_crosses(element),
+        Op::Element(element) => element.namespace != ns,
         Op::If(if_op) => if_op
             .branches
             .iter()
@@ -89,7 +89,7 @@ fn child_namespace_crosses(element: &ElementOp<'_>) -> bool {
             .children
             .ops
             .iter()
-            .any(|op| !matches!(op, Op::Text(_) | Op::Interpolation(_)))
+            .any(|op| matches!(op, Op::Element(_) | Op::If(_) | Op::For(_)))
 }
 
 pub(super) fn with_child<T>(

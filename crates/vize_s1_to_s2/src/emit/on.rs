@@ -156,6 +156,23 @@ pub(super) fn emit_on_value(
     emit_wrapped_handler(cx, on, &classified, is_plain_element)
 }
 
+pub(super) fn reserve_skipped_once_helpers(
+    cx: &mut EmitCx<'_>,
+    on: &OnOp<'_>,
+) -> Result<(), EmitError> {
+    if super::on_dynamic::is_dynamic_on_name(on) {
+        return Ok(());
+    }
+    let classified = classify(on)?;
+    if !classified.keys.is_empty() {
+        cx.buf.use_with_keys();
+    }
+    if !classified.event.is_empty() {
+        cx.buf.use_with_modifiers();
+    }
+    Ok(())
+}
+
 fn classify<'a>(on: &'a OnOp<'a>) -> Result<Classified<'a>, EmitError> {
     let name = static_on_name(on)?;
     Ok(classify_modifiers(name, on.modifiers.iter().copied()))

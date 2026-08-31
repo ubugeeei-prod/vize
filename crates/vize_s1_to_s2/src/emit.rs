@@ -159,8 +159,21 @@ struct EmitCx<'facts> {
     once_cache_index: u32,
     /// Static children nested inside `v-once` follow shipped one-shot hoists.
     once_depth: u32,
+    /// Element child-list depth inside the current `v-once` owner.
+    once_element_depth: u32,
     /// Slot objects inside `v-for` carry `_: 2 /* DYNAMIC */`.
     in_v_for: bool,
+    /// The next array child is the single component child of a lowered
+    /// `<template v-for>` item; its root props inherit the old item-root hoist.
+    template_for_item_single_root: bool,
+    /// Page-order id for the component currently claiming
+    /// `template_for_item_single_root`.
+    template_for_item_root_id: Option<NodeId>,
+    /// The current branch root was unwrapped from `<template v-if>`.
+    template_if_branch_root: bool,
+    /// A native root unwrapped from `<template v-for>` drops an authored
+    /// child key unless the key was authored on the template wrapper.
+    suppress_template_for_child_key: bool,
     /// `v-for + v-memo` uses Vue's special `_cached` callback shape, so
     /// the item emitter must skip the ordinary `_withMemo` wrapper.
     skip_memo: bool,
@@ -215,7 +228,7 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
     {
         return Err(EmitError::Diagnostics);
     }
-    let static_cache = static_cache::enabled(&lowered.root, facts);
+    let static_cache = static_cache::enabled(&lowered.root, facts, &lowered.wrappers);
     let mut cx = EmitCx {
         buf: Buf::new(),
         source: lowered.source,
@@ -228,7 +241,12 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
         if_branch_key: 0,
         once_cache_index: 0,
         once_depth: 0,
+        once_element_depth: 0,
         in_v_for: false,
+        template_for_item_single_root: false,
+        template_for_item_root_id: None,
+        template_if_branch_root: false,
+        suppress_template_for_child_key: false,
         skip_memo: false,
         slot_param_depth: 0,
         hoist_static_vnodes: false,
@@ -241,7 +259,13 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
         cx.buf.prefer(Helper::ResolveFilter);
     }
     let mut helper_walk = PageWalk::new();
-    helper_preference::prefer_helpers(&mut cx.buf, facts, &mut helper_walk, &lowered.root);
+    helper_preference::prefer_helpers(
+        &mut cx.buf,
+        facts,
+        &lowered.for_wrappers,
+        &mut helper_walk,
+        &lowered.root,
+    );
     fragment::prefer_root_fragment(&mut cx.buf, &lowered.root);
     cx.buf
         .push("function render(_ctx, _cache, $props, $setup, $data, $options) {");

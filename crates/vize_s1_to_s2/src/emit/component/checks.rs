@@ -8,7 +8,7 @@ pub(super) fn admit(cx: &EmitCx<'_>, component: &ComponentOp<'_>) -> Result<(), 
     {
         slots::admit_default(&component.children)?;
     }
-    super::super::props::admit_bindings(&component.attributes, &component.bindings)
+    super::super::props::admit_element_bindings(&component.attributes, &component.bindings)
 }
 
 pub(super) fn has_dynamic_key_binding(component: &ComponentOp<'_>) -> bool {

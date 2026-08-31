@@ -1,13 +1,14 @@
 //! Static style-attribute serialization used by dynamic `:style` merges.
 
-use oxc_ast::ast::{ArrayExpressionElement, Expression, ObjectPropertyKind};
+use oxc_ast::ast::{ArrayExpressionElement, Expression, IdentifierReference, ObjectPropertyKind};
+use oxc_ast_visit::Visit;
 use vize_s2::expr::JsExpr;
 use vize_s2::op::{Attribute, BindOp};
 
 use super::EmitCx;
 use super::buf::Buf;
 use super::js::{escape_js_string, js_expr_source};
-use super::props_value::BindValue;
+use super::props_value::{BindValue, authored_value_padding};
 
 pub(super) fn bind_skips_normalize(
     raw_name: &str,
@@ -18,14 +19,62 @@ pub(super) fn bind_skips_normalize(
     if raw_name != "style" {
         return false;
     }
+    let static_value = static_bind_value(value) || legacy_static_style_object(value);
     if !is_plain_element {
-        return static_bind_value(value);
+        return static_value;
     }
-    !has_static_style && static_bind_value(value)
+    !has_static_style && static_value
 }
 
 fn static_bind_value(value: &BindValue<'_>) -> bool {
     value.js().is_some_and(|js| static_expression(js.ast))
+}
+
+pub(super) fn legacy_static_style_object(value: &BindValue<'_>) -> bool {
+    value
+        .js()
+        .is_some_and(|js| legacy_static_style_object_expr(js.ast, js.source))
+}
+
+fn legacy_static_style_object_expr(expr: &Expression<'_>, source: &str) -> bool {
+    let Expression::ObjectExpression(object) = unwrap_static_expression(expr) else {
+        return false;
+    };
+    object.properties.iter().all(|property| {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            return false;
+        };
+        !property.computed && legacy_static_style_value(&property.value, source)
+    })
+}
+
+fn legacy_static_style_value(expr: &Expression<'_>, source: &str) -> bool {
+    static_expression(expr) || legacy_global_constant_expr(expr, source)
+}
+
+fn legacy_global_constant_expr(expr: &Expression<'_>, source: &str) -> bool {
+    if source.contains("_ctx.")
+        || source.contains("$setup.")
+        || source.contains("__props.")
+        || source.contains("$props.")
+    {
+        return false;
+    }
+    let mut walk = LegacyGlobalConstWalk { dynamic: false };
+    walk.visit_expression(expr);
+    !walk.dynamic
+}
+
+struct LegacyGlobalConstWalk {
+    dynamic: bool,
+}
+
+impl<'a> Visit<'a> for LegacyGlobalConstWalk {
+    fn visit_identifier_reference(&mut self, ident: &IdentifierReference<'a>) {
+        if !super::props_bind::is_global_key_name(ident.name.as_str()) {
+            self.dynamic = true;
+        }
+    }
 }
 
 fn static_expression(expr: &Expression<'_>) -> bool {
@@ -96,7 +145,16 @@ pub(super) fn emit_style_value(
         }
         cx.buf.push("]");
     } else {
-        cx.buf.push(js_expr_source(js).as_str());
+        let source = js_expr_source(js);
+        if let Some((leading, trailing)) =
+            authored_value_padding(cx.source, bind, source.as_str(), js.span)
+        {
+            cx.buf.push(leading);
+            cx.buf.push(source.as_str());
+            cx.buf.push(trailing);
+        } else {
+            cx.buf.push(source.as_str());
+        }
     }
     if wrap {
         cx.buf.push(")");

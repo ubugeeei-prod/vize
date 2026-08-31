@@ -4,13 +4,14 @@
 //! first object `v-bind`, then first object `v-on`, then entry props.
 
 use vize_s0::camelize;
-use vize_s2::op::{BindOp, BindingOp, OnOp, SlotOp};
+use vize_s2::op::{BindOp, BindingOp, DynamicName, OnOp, SlotOp};
 
 use super::buf::Buf;
 use super::js::{escape_js_string, is_valid_js_identifier};
 use super::props::{
     Piece, StaticBindKeyCasing, bind_value, emit_dynamic_bind_pair, pieces, static_bind_key,
 };
+use super::props_bind::is_emitted_key_bind;
 use super::{EmitCx, EmitError};
 use super::{UnsupportedReason as Reason, merge};
 
@@ -103,7 +104,7 @@ fn push_spread_separator(cx: &mut EmitCx<'_>, first: &mut bool) {
 }
 
 fn emit_bind_spread_expr(cx: &mut EmitCx<'_>, bind: &BindOp<'_>) -> Result<(), EmitError> {
-    bind_value(bind)?.emit(cx);
+    bind_value(bind)?.emit_authored(cx, bind);
     Ok(())
 }
 
@@ -140,7 +141,7 @@ fn emit_props_object(
         first = false;
     }
     for piece in list.iter() {
-        if is_object_spread_piece(piece) {
+        if is_object_spread_piece(piece) || is_redundant_key_piece(piece, key) {
             continue;
         }
         push_prop_separator(cx, &mut first);
@@ -155,10 +156,19 @@ fn emit_props_object(
             }
             Piece::Bind(bind) => {
                 if !emit_dynamic_bind_pair(cx, bind)? {
+                    let value = bind_value(bind)?;
                     let key = static_bind_key(bind, StaticBindKeyCasing::Camelize)?;
                     push_key(cx, key.as_str());
                     cx.buf.push(": ");
-                    bind_value(bind)?.emit(cx);
+                    if matches!(bind.name, Some(DynamicName::Static("class"))) {
+                        cx.buf.use_normalize_class();
+                        cx.buf.push(Buf::normalize_class_alias());
+                        cx.buf.push("(");
+                        value.emit_authored(cx, bind);
+                        cx.buf.push(")");
+                    } else {
+                        value.emit_authored(cx, bind);
+                    }
                 }
             }
             Piece::VueHtml(html) => {
@@ -183,6 +193,10 @@ fn emit_props_object(
     }
     cx.buf.push("}");
     Ok(())
+}
+
+fn is_redundant_key_piece(piece: &Piece<'_>, key: Option<&str>) -> bool {
+    matches!(piece, Piece::Bind(bind) if is_emitted_key_bind(bind, key))
 }
 
 fn is_object_spread_piece(piece: &Piece<'_>) -> bool {

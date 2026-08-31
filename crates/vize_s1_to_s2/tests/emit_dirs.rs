@@ -9,6 +9,7 @@
 mod support;
 
 use support::with_transformed;
+use vize_s0::Allocator;
 use vize_s1_to_s2::emit_dom;
 
 fn assembled(source: &str) -> String {
@@ -23,6 +24,21 @@ fn assembled(source: &str) -> String {
 /// Vue's extra `newline()` after `genAssets` leaves indent on the blank line.
 fn pin(visual: &str) -> String {
     visual.replace(")\n\n  return", ")\n  \n  return")
+}
+
+fn shipped(source: &str) -> String {
+    let allocator = Allocator::new();
+    let (_, errors, old) = vize_atelier_dom::compile_template(&allocator, source);
+    let blocking: Vec<_> = errors
+        .iter()
+        .filter(|error| !error.is_compatibility_notice())
+        .collect();
+    assert!(blocking.is_empty(), "{source:?}: {blocking:?}");
+    format!("{}\n{}", old.preamble, old.code)
+}
+
+fn assert_shipped_parity(source: &str) {
+    assert_eq!(assembled(source), shipped(source), "{source}");
 }
 
 #[test]
@@ -244,6 +260,36 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     [_directive_example]
   ])
 }")
+    );
+}
+
+#[test]
+fn dynamic_component_directive_keeps_need_patch_after_is_is_removed() {
+    assert_eq!(
+        assembled(r#"<component :is="current" v-example class="icon" />"#),
+        pin("\
+const { resolveDirective: _resolveDirective, resolveDynamicComponent: _resolveDynamicComponent, withDirectives: _withDirectives, openBlock: _openBlock, createBlock: _createBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _directive_example = _resolveDirective(\"example\")
+
+  return _withDirectives((_openBlock(), _createBlock(_resolveDynamicComponent(current), { class: \"icon\" }, null, 512 /* NEED_PATCH */)), [
+    [_directive_example]
+  ])
+}")
+    );
+}
+
+#[test]
+fn custom_directive_value_keeps_authored_padding() {
+    assert_shipped_parity(
+        r#"<button
+  v-tooltip="
+    isRecording
+      ? 'Cancel'
+      : 'Record'
+  "
+/>"#,
     );
 }
 

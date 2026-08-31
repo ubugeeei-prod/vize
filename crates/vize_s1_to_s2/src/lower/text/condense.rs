@@ -12,24 +12,10 @@ use vize_s1::SurfaceChild;
 
 use super::super::cx::Cx;
 
-/// Elements whose content is raw text, not template markup — exempt from
-/// condensing (the metamorphic suite's list, `tests/metamorphic/sites.rs`).
-pub(crate) const RAWTEXT_TAGS: [&str; 9] = [
-    "script",
-    "style",
-    "textarea",
-    "title",
-    "iframe",
-    "noscript",
-    "xmp",
-    "listing",
-    "plaintext",
-];
-
 /// Whether `tag` suppresses condensing for its whole subtree: the
-/// shipped `is_pre_tag` (`tag == "pre"`) plus the rawtext set.
+/// shipped `is_pre_tag` (`tag == "pre"`).
 pub(crate) fn suppresses_condense(tag: &str) -> bool {
-    tag == "pre" || RAWTEXT_TAGS.contains(&tag)
+    tag == "pre"
 }
 
 /// Vue's whitespace alphabet for the condense strategy — exactly
@@ -242,11 +228,25 @@ pub(crate) fn plan_whitespace<'a>(
 
     for group in &groups[first_group..last_group] {
         if group.ws_only {
+            if comment_separated_element_gap_with_newline(children, group, lo, hi) {
+                for slot in &mut plan[group.start..group.end] {
+                    *slot = TextAction::Drop;
+                }
+                continue;
+            }
             // Group neighbours are the nearest non-text children (on
             // parser output exactly `whitespace.rs:107-113`).
             let prev_is_text = group.start > lo && text_like(&children[group.start - 1]);
             let next_is_text = group.end < hi && text_like(&children[group.end]);
-            if !prev_is_text && !next_is_text && group.has_newline {
+            let prev_comment_edge =
+                group.start > lo && comments_reach_left_boundary(children, group.start - 1, lo);
+            let next_comment_edge =
+                group.end < hi && comments_reach_right_boundary(children, group.end, hi);
+            if trailing_comment_padding(children, group.start, lo)
+                || (!prev_is_text && !next_is_text && group.has_newline)
+                || (prev_is_text && next_comment_edge)
+                || (next_is_text && prev_comment_edge)
+            {
                 for slot in &mut plan[group.start..group.end] {
                     *slot = TextAction::Drop;
                 }
@@ -271,6 +271,99 @@ pub(crate) fn plan_whitespace<'a>(
         }
     }
     plan
+}
+
+fn trailing_comment_padding(children: &[SurfaceChild<'_>], group_start: usize, lo: usize) -> bool {
+    if group_start <= lo {
+        return false;
+    }
+    let mut index = group_start - 1;
+    if !matches!(children.get(index), Some(SurfaceChild::Comment(_))) {
+        return false;
+    }
+    while index > lo && matches!(children.get(index - 1), Some(SurfaceChild::Comment(_))) {
+        index -= 1;
+    }
+    if index <= lo {
+        return false;
+    }
+    let left = index - 1;
+    if !matches!(
+        children.get(left),
+        Some(SurfaceChild::Text(token)) if token.text.chars().all(is_vue_ws)
+    ) {
+        return false;
+    }
+    left > lo && text_like(&children[left - 1])
+}
+
+fn comment_separated_element_gap_with_newline(
+    children: &[SurfaceChild<'_>],
+    group: &TextGroup,
+    lo: usize,
+    hi: usize,
+) -> bool {
+    if group.has_newline || group.end >= hi {
+        return false;
+    }
+    let mut index = group.end;
+    let mut saw_comment = false;
+    while index < hi && matches!(children.get(index), Some(SurfaceChild::Comment(_))) {
+        saw_comment = true;
+        index += 1;
+    }
+    if !saw_comment {
+        return false;
+    }
+    let mut has_newline = false;
+    let mut saw_whitespace = false;
+    while index < hi {
+        match children.get(index) {
+            Some(SurfaceChild::Text(token)) if token.text.chars().all(is_vue_ws) => {
+                saw_whitespace = true;
+                has_newline |= token.text.contains('\n') || token.text.contains('\r');
+                index += 1;
+            }
+            Some(SurfaceChild::Comment(_)) => index += 1,
+            _ => break,
+        }
+    }
+    if !saw_whitespace || !has_newline {
+        return false;
+    }
+    let prev_is_text = group.start > lo && text_like(&children[group.start - 1]);
+    let next_is_text = index < hi && text_like(&children[index]);
+    !prev_is_text && !next_is_text
+}
+
+fn comments_reach_left_boundary(
+    children: &[SurfaceChild<'_>],
+    mut index: usize,
+    lo: usize,
+) -> bool {
+    loop {
+        if !matches!(children.get(index), Some(SurfaceChild::Comment(_))) {
+            return false;
+        }
+        if index == lo {
+            return true;
+        }
+        index -= 1;
+    }
+}
+
+fn comments_reach_right_boundary(
+    children: &[SurfaceChild<'_>],
+    mut index: usize,
+    hi: usize,
+) -> bool {
+    while index < hi {
+        if !matches!(children.get(index), Some(SurfaceChild::Comment(_))) {
+            return false;
+        }
+        index += 1;
+    }
+    true
 }
 
 /// Whether `child` may extend a merge run starting at `end`: a text or

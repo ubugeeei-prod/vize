@@ -10,6 +10,7 @@
 mod support;
 
 use support::with_transformed;
+use vize_s0::Allocator;
 use vize_s1_to_s2::emit_dom;
 
 fn assembled(source: &str) -> String {
@@ -21,9 +22,38 @@ fn assembled(source: &str) -> String {
     })
 }
 
+fn shipped(source: &str) -> String {
+    let allocator = Allocator::new();
+    let (_, errors, old) = vize_atelier_dom::compile_template(&allocator, source);
+    let blocking: Vec<_> = errors
+        .iter()
+        .filter(|error| !error.is_compatibility_notice())
+        .collect();
+    assert!(blocking.is_empty(), "{source:?}: {blocking:?}");
+    format!("{}\n{}", old.preamble, old.code)
+}
+
+fn assert_shipped_parity(source: &str) {
+    assert_eq!(assembled(source), shipped(source), "{source}");
+}
+
 /// Vue's extra `newline()` after `genAssets` leaves indent on the blank line.
 fn pin(visual: &str) -> String {
     visual.replace(")\n\n  return", ")\n  \n  return")
+}
+
+#[test]
+fn conditional_component_siblings_preserve_authored_space_in_default_slot() {
+    assert_shipped_parity(
+        r#"<Button><IconCheck v-if="copied" /> <IconCopy v-else /> Copy Page</Button>"#,
+    );
+}
+
+#[test]
+fn conditional_component_slot_child_hoists_static_props() {
+    assert_shipped_parity(
+        r#"<Foo><template #default="{ item }"><template v-if="ok"><i18n-t keypath="x"><span /></i18n-t></template><i18n-t v-else keypath="y"><span /></i18n-t></template></Foo>"#,
+    );
 }
 
 #[test]

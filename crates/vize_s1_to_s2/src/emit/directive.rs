@@ -68,6 +68,9 @@ pub(super) fn wrap_element(
 ) -> Result<(), EmitError> {
     let runtime = runtime_directives(&element.bindings);
     let model = super::model::first_runtime_model(element);
+    if cx.suppress_template_for_child_key && (!runtime.is_empty() || model.is_some()) {
+        return emit(cx);
+    }
     if runtime.is_empty() && model.is_none() {
         return emit(cx);
     }
@@ -153,12 +156,20 @@ fn emit_entry(cx: &mut EmitCx<'_>, directive: &VueDirectiveOp<'_>) -> Result<(),
     cx.buf
         .push(asset_ident("directive", directive.name).as_str());
     let value = match directive.value {
-        Some(expr) => Some(js_expr(expr)?),
+        Some(expr) => Some((expr.span(), js_expr(expr)?)),
         None => None,
     };
-    if let Some(source) = &value {
+    if let Some((span, source)) = &value {
         cx.buf.push(", ");
-        cx.buf.push(source.as_str());
+        if let Some((leading, trailing)) =
+            authored_value_padding(cx.source, directive.span, source.as_str(), *span)
+        {
+            cx.buf.push(leading);
+            cx.buf.push(source.as_str());
+            cx.buf.push(trailing);
+        } else {
+            cx.buf.push(source.as_str());
+        }
     }
     if let Some(argument) = directive.argument {
         if value.is_none() {
@@ -187,13 +198,61 @@ fn emit_entry(cx: &mut EmitCx<'_>, directive: &VueDirectiveOp<'_>) -> Result<(),
     Ok(())
 }
 
+fn authored_value_padding<'a>(
+    source: &'a str,
+    owner_span: vize_s0::Span,
+    value: &str,
+    value_span: vize_s0::Span,
+) -> Option<(&'a str, &'a str)> {
+    let attr_start = usize::try_from(owner_span.start).ok()?;
+    let attr_end = usize::try_from(owner_span.end).ok()?;
+    let value_start = usize::try_from(value_span.start).ok()?;
+    let value_end = usize::try_from(value_span.end).ok()?;
+    if attr_start > value_start
+        || value_start > value_end
+        || value_end > attr_end
+        || attr_end > source.len()
+        || source.get(value_start..value_end)? != value
+    {
+        return None;
+    }
+    let before = source.get(attr_start..value_start)?;
+    let quote_pos = before
+        .as_bytes()
+        .iter()
+        .rposition(|byte| matches!(*byte, b'\'' | b'"'))?;
+    let quote = before.as_bytes()[quote_pos];
+    let leading = before.get(quote_pos + 1..)?;
+    let after = source.get(value_end..attr_end)?;
+    let trailing_end = after
+        .as_bytes()
+        .iter()
+        .position(|byte| *byte == quote)
+        .unwrap_or(after.len());
+    let trailing = after.get(..trailing_end)?;
+    if leading.is_empty() && trailing.is_empty() {
+        return None;
+    }
+    (leading.bytes().all(|byte| byte.is_ascii_whitespace())
+        && trailing.bytes().all(|byte| byte.is_ascii_whitespace()))
+    .then_some((leading, trailing))
+}
+
 fn emit_show_entry(cx: &mut EmitCx<'_>, show: &VueShowOp<'_>) -> Result<(), EmitError> {
     cx.buf.use_v_show();
     cx.buf.push("  [");
     cx.buf.push(Buf::v_show_alias());
     cx.buf.push(", ");
     let source = show_value(show)?;
-    cx.buf.push(source.as_str());
+    if let Some((leading, trailing)) =
+        authored_value_padding(cx.source, show.span, source.as_str(), show.value.span())
+    {
+        cx.buf.push(leading);
+        cx.buf.push(source.as_str());
+        cx.buf.push(trailing);
+    } else {
+        cx.buf.push(source.as_str());
+    }
     cx.buf.push("]");
     Ok(())
 }

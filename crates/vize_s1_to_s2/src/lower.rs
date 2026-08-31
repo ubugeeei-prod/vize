@@ -50,6 +50,7 @@ mod show;
 mod slot;
 mod structural;
 mod sugar;
+mod table;
 mod text;
 mod vfor;
 mod vtext;
@@ -66,6 +67,7 @@ pub use structural::{ForWrapper, WrapperKey, WrapperKeys};
 // The one-rebuild rule (the same discipline): the text pass re-derives a
 // compound's source with exactly the spelling the lowering minted.
 pub use text::{TextPart, TextParts, rebuild_source};
+pub(crate) use text::{legacy_slot_filler_needs_props_placeholder, legacy_slot_filler_text};
 
 /// The S2 artifact one lowering produces: the op tree plus the three
 /// fact channels, all live even when diagnostics are present (the

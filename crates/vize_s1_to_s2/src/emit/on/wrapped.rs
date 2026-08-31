@@ -25,7 +25,8 @@ pub(in crate::emit) fn emit_wrapped_handler(
     match on.handler {
         Some(ExprRef::Js(js)) => emit_handler(cx, on, js, is_plain_element),
         Some(ExprRef::Opaque(opaque)) if opaque.reason == OpaqueReason::MultiStatement => {
-            super::super::on_body::emit(cx, opaque.source);
+            let padding = authored_handler_padding(cx.source, on, opaque.source, opaque.span);
+            super::super::on_body::emit(cx, opaque.source, padding);
         }
         None => cx.buf.push("() => {}"),
         Some(expr) => {
@@ -62,21 +63,33 @@ fn emit_mod_array(cx: &mut EmitCx<'_>, mods: &[&str]) {
 }
 
 fn emit_handler(cx: &mut EmitCx<'_>, on: &OnOp<'_>, js: &JsExpr<'_>, is_plain_element: bool) {
-    if is_handler_reference(js.ast) || super::super::on_body::preserves_raw_function_handler(js) {
+    if is_handler_reference(js.ast)
+        || (super::super::on_body::preserves_raw_function_handler(js)
+            && !super::super::on_typed::uses_ts_only_syntax(js.ast))
+    {
         emit_raw_handler(cx, on, js);
         return;
     }
-    if is_raw_handler_expression(js.ast, js.source, is_plain_element)
-        && !super::super::on_typed::is_typed_arrow(js.ast)
+    if super::super::on_typed::legacy_raw_non_null_call(js.ast) {
+        emit_raw_handler_expr(cx, on, js);
+        return;
+    }
+    if super::super::on_typed::legacy_raw_non_null_assignment(js.ast) {
+        emit_raw_handler_expr(cx, on, js);
+        return;
+    }
+    if is_raw_handler_expression(js.ast, is_plain_element)
+        && !super::super::on_typed::uses_ts_only_syntax(js.ast)
     {
-        super::super::js::push_js_expr(cx, js);
+        emit_raw_handler_expr(cx, on, js);
         return;
     }
     if js.source.contains(';') {
-        super::super::on_body::emit(cx, js.source);
+        let padding = authored_handler_padding(cx.source, on, js.source, js.span);
+        super::super::on_body::emit(cx, js.source, padding);
     } else {
         cx.buf.push("$event => (");
-        super::super::js::push_js_expr(cx, js);
+        emit_authored_handler_expr(cx, on, js);
         cx.buf.push(")");
     }
 }
@@ -88,6 +101,44 @@ fn emit_raw_handler(cx: &mut EmitCx<'_>, on: &OnOp<'_>, js: &JsExpr<'_>) {
         cx.buf.push(trailing);
     } else {
         cx.buf.push(js.source);
+    }
+}
+
+fn emit_raw_handler_expr(cx: &mut EmitCx<'_>, on: &OnOp<'_>, js: &JsExpr<'_>) {
+    let source = super::super::js::js_expr_source(js);
+    if let Some((leading, trailing)) =
+        authored_handler_padding(cx.source, on, source.as_str(), js.span)
+    {
+        cx.buf.push(leading);
+        cx.buf.push(source.as_str());
+        cx.buf.push(trailing);
+    } else {
+        cx.buf.push(source.as_str());
+    }
+}
+
+fn emit_authored_handler_expr(cx: &mut EmitCx<'_>, on: &OnOp<'_>, js: &JsExpr<'_>) {
+    let source = handler_expr_source(js);
+    if let Some((leading, trailing)) =
+        authored_handler_padding(cx.source, on, source.as_str(), js.span)
+    {
+        cx.buf.push(leading);
+        cx.buf.push(source.as_str());
+        cx.buf.push(trailing);
+    } else {
+        cx.buf.push(source.as_str());
+    }
+}
+
+fn handler_expr_source<'a>(js: &JsExpr<'a>) -> super::super::js::RawJs<'a> {
+    match js.ast {
+        Expression::ArrowFunctionExpression(arrow) if !arrow.expression => {
+            super::super::js::RawJs::Borrowed(js.source)
+        }
+        Expression::FunctionExpression(function) if function.body.is_some() => {
+            super::super::js::RawJs::Borrowed(js.source)
+        }
+        _ => super::super::js::js_expr_source(js),
     }
 }
 
@@ -145,7 +196,7 @@ fn is_handler_reference(expr: &Expression<'_>) -> bool {
     }
 }
 
-fn is_raw_handler_expression(expr: &Expression<'_>, source: &str, is_plain_element: bool) -> bool {
+fn is_raw_handler_expression(expr: &Expression<'_>, is_plain_element: bool) -> bool {
     if matches!(expr, Expression::NullLiteral(_)) {
         return true;
     }
@@ -155,13 +206,9 @@ fn is_raw_handler_expression(expr: &Expression<'_>, source: &str, is_plain_eleme
     match expr {
         Expression::ArrowFunctionExpression(arrow) => {
             !is_plain_element
-                || !arrow.params.items.is_empty()
-                || (arrow.expression && !source_uses_ts_expression_syntax(source))
+                || (!super::super::on_typed::uses_ts_only_syntax(expr)
+                    && (!arrow.params.items.is_empty() || arrow.expression))
         }
         _ => false,
     }
-}
-
-fn source_uses_ts_expression_syntax(source: &str) -> bool {
-    source.contains(" as ") || source.contains(" satisfies ")
 }

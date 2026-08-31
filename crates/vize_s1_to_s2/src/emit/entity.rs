@@ -18,6 +18,11 @@ pub(super) fn decode_html_entities(source: &str) -> String {
     let mut out = String::with_capacity(source.len());
     let mut index = 0usize;
     while index < bytes.len() {
+        if let Some((ch, consumed)) = decode_escaped_numeric_parenthesis(&bytes[index..]) {
+            out.push(ch);
+            index += consumed;
+            continue;
+        }
         if let Some((ch, consumed)) = try_decode_entity(&bytes[index..], Context::General) {
             out.push(ch);
             index += consumed;
@@ -29,6 +34,24 @@ pub(super) fn decode_html_entities(source: &str) -> String {
         index += ch.len_utf8();
     }
     out
+}
+
+fn decode_escaped_numeric_parenthesis(input: &[u8]) -> Option<(char, usize)> {
+    const OPEN: &[u8] = b"&amp;#40;";
+    const OPEN_PADDED: &[u8] = b"&amp;#040;";
+    const CLOSE: &[u8] = b"&amp;#41;";
+    const CLOSE_PADDED: &[u8] = b"&amp;#041;";
+    if input.starts_with(OPEN) {
+        Some(('(', OPEN.len()))
+    } else if input.starts_with(OPEN_PADDED) {
+        Some(('(', OPEN_PADDED.len()))
+    } else if input.starts_with(CLOSE) {
+        Some((')', CLOSE.len()))
+    } else if input.starts_with(CLOSE_PADDED) {
+        Some((')', CLOSE_PADDED.len()))
+    } else {
+        None
+    }
 }
 
 fn try_decode_entity(input: &[u8], context: Context) -> Option<(char, usize)> {

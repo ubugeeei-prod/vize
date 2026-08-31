@@ -38,8 +38,32 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<NuxtLink><span v-if="mark.hasMark(item.newId)" class="bubble"></span> <Icon :name="item.icon" />{{ item.label }}</NuxtLink>"#,
     ),
     (
+        "implicit_component_nbsp_default_slot_drops_like_shipped",
+        r#"<Text>&nbsp;</Text>"#,
+    ),
+    (
+        "implicit_component_numeric_nbsp_default_slot_drops_like_shipped",
+        r#"<Text>&#160;</Text>"#,
+    ),
+    (
         "named_slot_element_if_space_before_component_matches_shipped",
         r#"<Foo><template #default><span v-if="ok" class="bubble"></span> <Icon :name="item.icon" />{{ item.label }}</template></Foo>"#,
+    ),
+    (
+        "commented_element_gap_newline_drops_pre_comment_space",
+        "<ul>\n  <li>{{ a }} {{ b }}</li> <!--c-->\n  <li>{{ c }} {{ d }}</li>\n</ul>",
+    ),
+    (
+        "nested_once_compound_keeps_trailing_space_in_one_text_vnode",
+        r#"<div v-once><p>{{ a }} <span v-html="b"></span></p></div>"#,
+    ),
+    (
+        "noscript_mixed_children_condense_like_the_shipped_lane",
+        r#"<div><noscript class="banner">
+  {{ a }}
+  <br />
+  <a href="x">{{ b }}</a>
+</noscript></div>"#,
     ),
 ];
 

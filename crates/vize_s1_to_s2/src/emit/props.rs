@@ -2,7 +2,9 @@
 
 use alloc::vec::Vec as StdVec;
 
-use oxc_ast::ast::{Argument, ArrayExpressionElement, Expression, ObjectPropertyKind};
+use oxc_ast::ast::{
+    Argument, ArrayExpressionElement, BinaryOperator, Expression, ObjectPropertyKind,
+};
 use vize_s0::String;
 use vize_s2::op::{Attribute, BindingOp};
 
@@ -22,13 +24,6 @@ pub(super) use super::props_value::bind_value;
 pub(super) struct Patch {
     pub flag: i32,
     pub dynamic_props: StdVec<String>,
-}
-
-pub(super) fn admit_bindings(
-    attributes: &[Attribute<'_>],
-    bindings: &[BindingOp<'_>],
-) -> Result<(), EmitError> {
-    admit_bindings_inner(attributes, bindings, false)
 }
 
 pub(super) fn admit_element_bindings(
@@ -128,9 +123,13 @@ pub(super) fn bind_patch(
                 }
                 Ok(BindName::Static(raw_name)) => match raw_name {
                     "ref" => flag |= 512,
-                    "class" if bind_value_is_static_patchless(bind) => {}
+                    "class"
+                        if bind_value_is_static_patchless(bind)
+                            || bind_value_uses_legacy_patchless_runtime_expr(bind) => {}
                     "class" if !is_component => flag |= 2,
-                    "style" if bind_value_is_static_patchless(bind) => {}
+                    "style"
+                        if bind_value_is_static_patchless(bind)
+                            || bind_value_uses_legacy_patchless_runtime_expr(bind) => {}
                     "style" if !is_component => flag |= 4,
                     "key" => {}
                     key if key.ends_with("Modifiers") || bind_value_is_static_patchless(bind) => {}
@@ -196,7 +195,7 @@ pub(super) fn bind_patch(
         flag |= 512;
     }
     if flag & 16 != 0 {
-        flag &= !8;
+        flag &= !(2 | 4 | 8);
     }
     Patch {
         flag,
@@ -204,10 +203,93 @@ pub(super) fn bind_patch(
     }
 }
 
+pub(super) fn prune_legacy_patchless_dynamic_props(
+    bindings: &[BindingOp<'_>],
+    dynamic_props: &mut StdVec<String>,
+) {
+    for binding in bindings.iter() {
+        let BindingOp::Bind(bind) = binding else {
+            continue;
+        };
+        if has_prop_modifier(bind) || !bind_value_uses_legacy_patchless_runtime_expr(bind) {
+            continue;
+        }
+        let Ok(BindName::Static(_)) = bind_name(bind) else {
+            continue;
+        };
+        let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve) else {
+            continue;
+        };
+        dynamic_props.retain(|name| name.as_str() != key.as_str());
+    }
+}
+
 pub(super) fn bind_value_is_static_patchless(bind: &vize_s2::op::BindOp<'_>) -> bool {
     match bind_value(bind) {
         Ok(value) => value.js().is_some_and(|js| is_static_bound_expr(js.ast)),
         Err(_) => false,
+    }
+}
+
+fn bind_value_uses_legacy_patchless_runtime_expr(bind: &vize_s2::op::BindOp<'_>) -> bool {
+    match bind_value(bind) {
+        Ok(value) => value
+            .js()
+            .is_some_and(|js| is_legacy_patchless_runtime_expr(js.ast)),
+        Err(_) => false,
+    }
+}
+
+fn is_legacy_patchless_runtime_expr(expr: &Expression<'_>) -> bool {
+    is_legacy_bounded_string_concat(expr) || is_legacy_in_conditional(expr)
+}
+
+fn is_legacy_bounded_string_concat(expr: &Expression<'_>) -> bool {
+    let Expression::BinaryExpression(binary) = expr else {
+        return false;
+    };
+    binary.operator == BinaryOperator::Addition
+        && concat_left_edge_is_string(&binary.left)
+        && concat_right_edge_is_string(&binary.right)
+}
+
+fn concat_left_edge_is_string(expr: &Expression<'_>) -> bool {
+    match expr {
+        Expression::StringLiteral(_) => true,
+        Expression::BinaryExpression(binary) if binary.operator == BinaryOperator::Addition => {
+            concat_left_edge_is_string(&binary.left)
+        }
+        _ => false,
+    }
+}
+
+fn concat_right_edge_is_string(expr: &Expression<'_>) -> bool {
+    match expr {
+        Expression::StringLiteral(_) => true,
+        Expression::BinaryExpression(binary) if binary.operator == BinaryOperator::Addition => {
+            concat_right_edge_is_string(&binary.right)
+        }
+        _ => false,
+    }
+}
+
+fn is_legacy_in_conditional(expr: &Expression<'_>) -> bool {
+    let Expression::ConditionalExpression(conditional) = expr else {
+        return false;
+    };
+    legacy_test_starts_with_in(&conditional.test)
+}
+
+fn legacy_test_starts_with_in(expr: &Expression<'_>) -> bool {
+    match expr {
+        Expression::BinaryExpression(binary) => binary.operator == BinaryOperator::In,
+        Expression::LogicalExpression(logical) => {
+            matches!(
+                &logical.left,
+                Expression::BinaryExpression(binary) if binary.operator == BinaryOperator::In
+            )
+        }
+        _ => false,
     }
 }
 
@@ -260,9 +342,6 @@ fn unwrap_expr<'a>(mut expr: &'a Expression<'a>) -> &'a Expression<'a> {
     loop {
         match expr {
             Expression::ParenthesizedExpression(paren) => expr = &paren.expression,
-            Expression::TSAsExpression(ts_as) => expr = &ts_as.expression,
-            Expression::TSNonNullExpression(ts_non_null) => expr = &ts_non_null.expression,
-            Expression::TSSatisfiesExpression(ts_satisfies) => expr = &ts_satisfies.expression,
             _ => return expr,
         }
     }
@@ -276,6 +355,9 @@ pub(super) fn emit_bind_props(
     skip_is: bool,
     for_item: bool,
     is_plain_element: bool,
+    once_layout: bool,
+    once_cache_initializer: bool,
+    force_multiline: bool,
 ) -> Result<(), EmitError> {
     if super::merge::has_object_spread(bindings) {
         return super::merge::emit_spread_props(
@@ -300,9 +382,11 @@ pub(super) fn emit_bind_props(
         &pieces,
         if_key,
         false,
-        for_item && super::directive::has_custom(bindings),
+        for_item && (super::directive::has_custom(bindings) || once_layout || force_multiline),
         is_plain_element,
         for_item,
+        once_cache_initializer,
+        once_layout || force_multiline,
     )?;
     if normalize {
         cx.buf.push(")");
@@ -312,7 +396,7 @@ pub(super) fn emit_bind_props(
 
 pub(super) fn apply_static_ref_patch(attributes: &[Attribute<'_>], flag: &mut i32) {
     let has_static_ref = attributes.iter().any(|attr| attr.name == "ref");
-    if has_static_ref && *flag & (2 | 4 | 8 | 16 | 32 | 1024) == 0 {
+    if has_static_ref && *flag & (2 | 4 | 8 | 16 | 32) == 0 {
         *flag |= 512;
     }
 }

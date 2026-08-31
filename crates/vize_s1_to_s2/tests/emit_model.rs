@@ -146,6 +146,90 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn component_model_assignment_keeps_authored_multiline_expression_padding() {
+    assert_eq!(
+        assembled(
+            r#"<Foo v-model="
+  form.value
+" />"#
+        ),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, {
+    modelValue: form.value,
+    \"onUpdate:modelValue\": $event => ((
+  form.value
+) = $event)
+  }, null, 8 /* PROPS */, [\"modelValue\", \"onUpdate:modelValue\"]))
+}")
+    );
+}
+
+#[test]
+fn conditional_component_model_uses_the_legacy_nested_assignment_callback() {
+    assert_eq!(
+        assembled(r#"<Foo v-model="multiple ? presentText : inputValue" />"#),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, {
+    modelValue: multiple ? presentText : inputValue,
+    \"onUpdate:modelValue\": $event => ($event => ($event => ((multiple ? presentText : inputValue) = $event)))
+  }, null, 8 /* PROPS */, [\"modelValue\", \"onUpdate:modelValue\"]))
+}")
+    );
+}
+
+#[test]
+fn typed_arrow_component_model_uses_the_legacy_nested_assignment_callback() {
+    assert_eq!(
+        assembled(r#"<Foo v-model="options[options.findIndex((e: any) => e.id === activeId)]" />"#),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, {
+    modelValue: options[options.findIndex((e: any) => e.id === activeId)],
+    \"onUpdate:modelValue\": $event => ($event => ($event => ((options[options.findIndex((e: any) => e.id === activeId)]) = $event)))
+  }, null, 8 /* PROPS */, [\"modelValue\", \"onUpdate:modelValue\"]))
+}")
+    );
+}
+
+#[test]
+fn typed_arrow_component_model_keeps_nested_assignment_padding() {
+    assert_eq!(
+        assembled(
+            r#"<Foo v-model="
+  options[options.findIndex((e: any) => e.id === activeId)]
+" />"#,
+        ),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, {
+    modelValue: options[options.findIndex((e: any) => e.id === activeId)],
+    \"onUpdate:modelValue\": $event => ($event => ($event => ((
+  options[options.findIndex((e: any) => e.id === activeId)]
+) = $event)))
+  }, null, 8 /* PROPS */, [\"modelValue\", \"onUpdate:modelValue\"]))
+}")
+    );
+}
+
+#[test]
 fn a_named_component_model_uses_the_argument() {
     assert_eq!(
         assembled(r#"<Foo v-model:title="pageTitle" />"#),

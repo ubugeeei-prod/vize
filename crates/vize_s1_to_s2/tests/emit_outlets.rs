@@ -9,6 +9,7 @@
 mod support;
 
 use support::with_transformed;
+use vize_s0::Allocator;
 use vize_s1_to_s2::emit_dom;
 
 fn assembled(source: &str) -> String {
@@ -22,6 +23,21 @@ fn assembled(source: &str) -> String {
 
 fn pin(visual: &str) -> String {
     visual.replace(")\n\n  return", ")\n  \n  return")
+}
+
+fn shipped(source: &str) -> String {
+    let allocator = Allocator::new();
+    let (_, errors, old) = vize_atelier_dom::compile_template(&allocator, source);
+    let blocking: Vec<_> = errors
+        .iter()
+        .filter(|error| !error.is_compatibility_notice())
+        .collect();
+    assert!(blocking.is_empty(), "{source:?}: {blocking:?}");
+    format!("{}\n{}", old.preamble, old.code)
+}
+
+fn assert_shipped_parity(source: &str) {
+    assert_eq!(assembled(source), shipped(source), "{source}");
 }
 
 #[test]
@@ -152,5 +168,17 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     ? _renderSlot(_ctx.$slots, \"default\", { key: 0 })
     : _createCommentVNode(\"v-if\", true)
 }"
+    );
+}
+
+#[test]
+fn dynamic_class_slot_prop_normalizes_like_the_shipped_lane() {
+    assert_shipped_parity(r#"<slot name="sidebar" :class="ppNs.e('sidebar')" />"#);
+}
+
+#[test]
+fn branch_keys_in_named_slots_follow_the_slot_output_order() {
+    assert_shipped_parity(
+        r#"<Foo><Bar v-if="icon"></Bar><template #actions><Baz v-if="mode === 'switch'"></Baz><Qux v-else-if="mode === 'button'"></Qux><div v-else></div></template></Foo>"#,
     );
 }

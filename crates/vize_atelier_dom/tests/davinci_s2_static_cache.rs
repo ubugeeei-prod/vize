@@ -34,6 +34,10 @@ const BATTERY: &[(&str, &str)] = &[
         "airi_loading_modules_formats_static_slot_child_props_inside_for",
         r#"<ul><li v-for="[moduleName, module] in resources" :key="moduleName"><WindowRouterLink :to="`/settings/modules/${moduleName}`" label="settings"><div flex items-center gap-1><div flex items-center gap-1><span>{{ moduleName }}</span></div></div></WindowRouterLink></li></ul>"#,
     ),
+    (
+        "svg_static_bind_child_cache_formats_props_like_the_shipped_snapshot",
+        r#"<svg viewBox="0 0 400 400"><circle :r="150" cx="200" cy="200" :stroke="'darkgrey'" :stroke-width="40" fill="none" /><circle :stroke-dasharray="progress" /></svg>"#,
+    ),
 ];
 
 #[test]

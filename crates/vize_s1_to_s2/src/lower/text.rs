@@ -32,11 +32,8 @@
 //! whitespace-only run between two non-text-like neighbours with a
 //! newline removed, condensed to one space otherwise; interior runs of
 //! the Vue alphabet `[ \t\n\f\r]` in mixed text collapsed to one space.
-//! Exemptions follow the shipped DOM configuration and the S2 artifact's
-//! own soundness: `<pre>` subtrees (`is_pre_tag`,
-//! `crates/vize_atelier_dom/src/compile/stage_options.rs`) and rawtext
-//! content elements ([`RAWTEXT_TAGS`] — a `<script>`'s bytes are another
-//! language, and collapsing them would change JS semantics via ASI).
+//! Exemptions follow the shipped DOM configuration: `<pre>` subtrees
+//! (`is_pre_tag`, `crates/vize_atelier_dom/src/compile/stage_options.rs`).
 //!
 //! # Merging, and the first `Compound` producer
 //!
@@ -134,6 +131,90 @@ pub fn rebuild_source(parts: &[TextPart]) -> String {
         }
     }
     out
+}
+
+pub(crate) fn legacy_slot_filler_text(text: &str) -> bool {
+    if text.trim().is_empty() {
+        return true;
+    }
+    if !text.contains('&') {
+        return false;
+    }
+
+    let mut index = 0usize;
+    while index < text.len() {
+        let tail = &text[index..];
+        let ch = tail.chars().next().expect("index is in-bounds");
+        if ch.is_whitespace() {
+            index += ch.len_utf8();
+            continue;
+        }
+        if let Some(consumed) = nbsp_entity_len(tail) {
+            index += consumed;
+            continue;
+        }
+        return false;
+    }
+    true
+}
+
+pub(crate) fn legacy_slot_filler_needs_props_placeholder(text: &str) -> bool {
+    legacy_slot_filler_text(text)
+        && text
+            .chars()
+            .any(|ch| ch == '&' || !ch.is_ascii_whitespace())
+}
+
+fn nbsp_entity_len(text: &str) -> Option<usize> {
+    if text.starts_with("&nbsp;") {
+        return Some("&nbsp;".len());
+    }
+    if let Some(rest) = text.strip_prefix("&nbsp")
+        && (rest.is_empty()
+            || rest.starts_with('&')
+            || rest.chars().next().is_some_and(char::is_whitespace))
+    {
+        return Some("&nbsp".len());
+    }
+    numeric_nbsp_entity_len(text)
+}
+
+fn numeric_nbsp_entity_len(text: &str) -> Option<usize> {
+    let bytes = text.as_bytes();
+    if !bytes.starts_with(b"&#") {
+        return None;
+    }
+
+    let mut index = 2usize;
+    let radix = if matches!(bytes.get(index), Some(b'x' | b'X')) {
+        index += 1;
+        16
+    } else {
+        10
+    };
+    let start = index;
+    while let Some(byte) = bytes.get(index) {
+        let digit = if radix == 16 {
+            byte.is_ascii_hexdigit()
+        } else {
+            byte.is_ascii_digit()
+        };
+        if !digit {
+            break;
+        }
+        index += 1;
+    }
+    if index == start {
+        return None;
+    }
+    let digits = core::str::from_utf8(&bytes[start..index]).ok()?;
+    if u32::from_str_radix(digits, radix).ok()? != 0xa0 {
+        return None;
+    }
+    if bytes.get(index) == Some(&b';') {
+        index += 1;
+    }
+    Some(index)
 }
 
 /// Fold a consumed dropped-member gap into the preceding part's

@@ -216,7 +216,10 @@ fn emit_interp(
                 ))?
                 .parts
                 .clone();
-            for part in parts.iter() {
+            for (index, part) in parts.iter().enumerate() {
+                if is_root_fragment_whitespace_gap(&parts, index) {
+                    continue;
+                }
                 start_item(cx, first);
                 if part.dynamic {
                     emit_to_display_string(cx, part.text.as_str());
@@ -236,6 +239,17 @@ fn emit_interp(
             emit_raw_interpolation_or_refuse(cx, interp.expression)
         }
     }
+}
+
+fn is_root_fragment_whitespace_gap(parts: &[crate::lower::TextPart], index: usize) -> bool {
+    let Some(part) = parts.get(index) else {
+        return false;
+    };
+    !part.dynamic
+        && part.text.chars().all(char::is_whitespace)
+        && (index == 0
+            || index + 1 == parts.len()
+            || (parts[index - 1].dynamic && parts[index + 1].dynamic))
 }
 
 fn is_compound(op: &Op<'_>) -> bool {

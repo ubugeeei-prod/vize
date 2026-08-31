@@ -85,6 +85,26 @@ const BATTERY: &[(&str, &str)] = &[
         "vfor_unwrap_dyn",
         r#"<template v-for="item in list"><span>{{ item }}</span></template>"#,
     ),
+    (
+        "vfor_unwrap_custom_directive_root",
+        r#"<template v-for="item in blocks"><div :key="item.id" v-masonry-tile :class="item.class" class="grid"><span></span></div></template>"#,
+    ),
+    (
+        "vfor_unwrap_v_show_root",
+        r#"<template v-for="[fullPath, Comp] in compList" :key="fullPath"><div v-show="fullPath === currRoute.fullPath" class="size-full"><slot :fullPath="fullPath" :Comp="Comp" /></div></template>"#,
+    ),
+    (
+        "vfor_unwrap_native_model_root",
+        r#"<template v-for="item in items"><input v-model="item.name" :key="item.id" /></template>"#,
+    ),
+    (
+        "vfor_nested_if_keeps_v_show_root",
+        r#"<template v-for="item in items"><div v-if="item.ok" v-show="item.ok" :key="item.id"></div></template>"#,
+    ),
+    (
+        "vfor_unwrap_child_keeps_runtime_directives",
+        r#"<template v-for="item in items"><div><span v-show="item.ok"></span><span v-ripple></span></div></template>"#,
+    ),
 ];
 
 #[test]

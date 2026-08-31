@@ -223,10 +223,11 @@ fn whitespace_condenses_by_the_armature_rules() {
 }
 
 #[test]
-fn pre_and_rawtext_subtrees_keep_their_bytes() {
-    // `<pre>` (the shipped `is_pre_tag`) and rawtext content are exempt
-    // from condensing; merging still applies inside `<pre>` (the legacy
-    // codegen grouping never checked pre), with the parts uncondensed.
+fn pre_subtrees_keep_their_bytes_and_rawtext_condenses() {
+    // `<pre>` (the shipped `is_pre_tag`) is exempt from condensing;
+    // rawtext content still follows the shipped DOM lane's condense
+    // strategy. Merging still applies inside `<pre>` (the legacy codegen
+    // grouping never checked pre), with the parts uncondensed.
     let source = "<pre>  a   {{ x }}  b </pre><textarea> c   d </textarea>";
     with_transformed(source, |_, folio, facts, _| {
         let FolioOp::Element(pre) = &folio.ops[0] else {
@@ -242,13 +243,33 @@ fn pre_and_rawtext_subtrees_keep_their_bytes() {
         let FolioOp::Element(textarea) = &folio.ops[1] else {
             panic!("no textarea element: {:?}", folio.ops);
         };
-        assert!(
-            matches!(&textarea.children[..], [FolioOp::Text(text)] if text.content == " c   d "),
-            "rawtext bytes kept: {:?}",
-            textarea.children
-        );
+        assert!(matches!(&textarea.children[..], [FolioOp::Text(text)] if text.content == " c d "));
     });
     assert_transformed_sound(source, "pre-rawtext");
+}
+
+#[test]
+fn rawtext_whitespace_only_subtrees_drop_like_the_shipped_dom_lane() {
+    let source = "<textarea>\n</textarea><iframe>\n</iframe><noscript>\n</noscript><pre>\n</pre>";
+    with_transformed(source, |_, folio, _, _| {
+        for (index, tag) in ["textarea", "iframe", "noscript"].into_iter().enumerate() {
+            let FolioOp::Element(element) = &folio.ops[index] else {
+                panic!("no {tag} element: {:?}", folio.ops);
+            };
+            assert_eq!(element.tag, tag);
+            assert!(
+                element.children.is_empty(),
+                "{tag} whitespace-only rawtext should lower as empty children: {:?}",
+                element.children
+            );
+        }
+        let FolioOp::Element(pre) = &folio.ops[3] else {
+            panic!("no pre element: {:?}", folio.ops);
+        };
+        assert_eq!(pre.tag, "pre");
+        assert!(matches!(&pre.children[..], [FolioOp::Text(text)] if text.content == "\n"));
+    });
+    assert_transformed_sound(source, "rawtext-empty-whitespace");
 }
 
 #[test]
@@ -264,6 +285,18 @@ fn entities_stay_undecoded_the_s1_scope() {
         assert_eq!(entry[0].1.parts[0].text.as_str(), "a &amp; b ");
     });
     assert_transformed_sound(source, "entities");
+}
+
+#[test]
+fn nbsp_only_implicit_component_children_are_slot_fillers() {
+    let source = "<Text>&nbsp;</Text><Text>&#160;</Text>";
+    with_transformed(source, |_, _, facts, _| {
+        assert!(
+            facts.slot_facts.is_empty(),
+            "NBSP-only implicit component children should not synthesize default slot facts"
+        );
+    });
+    assert_transformed_sound(source, "nbsp-slot-fillers");
 }
 
 #[test]

@@ -151,3 +151,165 @@ fn component_slot_dynamic_static_name_props_use_legacy_hoist() {
         r#"<NodeResourceInline v-for="diagram in diagrams" :key="diagram.id" :node="diagram" class="line-item" />"#,
     );
 }
+
+#[test]
+fn component_patchless_bind_props_use_legacy_hoist() {
+    assert_shipped_parity(r#"<a-radio-button :value="'month'">Month</a-radio-button>"#);
+    assert_shipped_parity(r#"<a-col :xs="24" :sm="12" :lg="8" :xl="6">{{ title }}</a-col>"#);
+    assert_shipped_parity(
+        r#"<a-calendar><template #headerRender="{ type }"><a-radio-group :value="type"><a-radio-button value="month">Month</a-radio-button><a-radio-button value="year">Year</a-radio-button></a-radio-group></template></a-calendar>"#,
+    );
+    assert_shipped_parity(
+        r#"<template v-for="component in group.children" :key="component.title"><a-col :xs="24" :sm="12" :lg="8" :xl="6"><component :is="component.target ? 'a' : 'router-link'">{{ component.title }}</component></a-col></template>"#,
+    );
+}
+
+#[test]
+fn static_option_with_undefined_value_hoists_like_legacy_global_constant() {
+    assert_shipped_parity(
+        r#"<select v-model="locale"><option :value="undefined"></option><option :value="'de-DE'">de-DE</option></select>"#,
+    );
+}
+
+#[test]
+fn template_for_component_root_skips_non_hoistable_static_props() {
+    assert_shipped_parity(
+        r#"<template v-for="group in groups" :key="group.id"><ComboboxGroup :class="['overflow-x-hidden']"><span></span></ComboboxGroup></template>"#,
+    );
+    assert_shipped_parity(
+        r#"<template v-for="i in 10" :key="i"><a-col v-show="open" :span="8"><a-input /></a-col></template>"#,
+    );
+}
+
+#[test]
+fn component_static_key_with_dynamic_event_keeps_legacy_hoist() {
+    assert_shipped_parity(r#"<a-menu-item key="1" @click="open">Open</a-menu-item>"#);
+    assert_shipped_parity(
+        r#"<a-tree><template #title="{ key: treeKey, title }"><a-dropdown><template #overlay><a-menu @click="({ key: menuKey }) => onContextMenuClick(treeKey, menuKey)"><a-menu-item key="1">1st menu item</a-menu-item><a-menu-item key="2">2nd menu item</a-menu-item></a-menu></template></a-dropdown></template></a-tree>"#,
+    );
+}
+
+#[test]
+fn static_cache_uses_component_prop_hoists_for_plain_breaks() {
+    assert_shipped_parity(
+        r#"<div><a-radio-button :value="'month'">Month</a-radio-button><a-switch v-model:checked="showLine" /><br><br></div>"#,
+    );
+    assert_shipped_parity(
+        r#"<div><div style="margin-bottom: 16px">showLine:<a-switch v-model:checked="showLine" /><br><br>showIcon:<a-switch v-model:checked="showIcon" /></div></div>"#,
+    );
+    assert_shipped_parity(
+        r#"<div>
+    <div style="margin-bottom: 16px">
+      showLine:
+      <a-switch v-model:checked="showLine" />
+      <br />
+      <br />
+      showIcon:
+      <a-switch v-model:checked="showIcon" />
+    </div>
+  </div>"#,
+    );
+    assert_shipped_parity(
+        r#"
+  <div>
+    <div style="margin-bottom: 16px">
+      showLine:
+      <a-switch v-model:checked="showLine" />
+      <br />
+      <br />
+      showIcon:
+      <a-switch v-model:checked="showIcon" />
+    </div>
+  </div>
+"#,
+    );
+    assert_shipped_parity(
+        r#"
+  <div>
+    <div style="margin-bottom: 16px">
+      showLine:
+      <a-switch v-model:checked="showLine" />
+      <br />
+      <br />
+      showIcon:
+      <a-switch v-model:checked="showIcon" />
+    </div>
+    <a-tree>
+      <template #title="{ dataRef }">
+        <template v-if="dataRef.key === '0-0-0-1'">
+          <div>multiple line title</div>
+          <div>multiple line title</div>
+        </template>
+        <template v-else>{{ dataRef.title }}</template>
+      </template>
+    </a-tree>
+  </div>
+"#,
+    );
+}
+
+#[test]
+fn pure_static_vnode_hoist_drops_descendant_patchless_binds() {
+    assert_shipped_parity(
+        r#"<Foo><button :style="{ transform: 'none' }"><span class="x" :style="{ color: 'red' }"></span></button></Foo>"#,
+    );
+    assert_shipped_parity(
+        r#"<Foo><button :style="{ transform: 'none' }"><span class="x" :id="'y'"></span></button></Foo>"#,
+    );
+}
+
+#[test]
+fn branch_roots_with_mixed_text_still_hoist_static_children() {
+    assert_shipped_parity(
+        r#"<li :data-status="status"><div><span v-if="pending"><span class="animate-spin"></span>{{ label }}</span></div></li>"#,
+    );
+    assert_shipped_parity(
+        r#"<div><div v-if="current">{{ current }}</div><div v-else-if="listening"><div class="animate-pulse"></div>{{ label }}</div></div>"#,
+    );
+}
+
+#[test]
+fn template_if_static_branch_hoist_enables_static_sibling_cache() {
+    assert_shipped_parity(r#"<div><template v-if="ok"><span></span></template><p>x</p></div>"#);
+    assert_shipped_parity(
+        r#"<section><h2>Nasa Picture of the day</h2><template v-if="ok"><div class="spinner"></div></template></section>"#,
+    );
+    assert_shipped_parity(r#"<div><span v-if="ok"></span><p>x</p></div>"#);
+}
+
+#[test]
+fn nested_element_if_inside_template_if_still_hoists_static_branch_children() {
+    assert_shipped_parity(
+        r#"<div><template v-if="hide"><div><b v-if="s"><i class="a"></i> {{ one }}</b><b v-else><i class="b"></i> {{ two }}</b></div></template></div>"#,
+    );
+}
+
+#[test]
+fn template_if_branch_roots_with_mixed_text_keep_static_children_inline() {
+    assert_shipped_parity(
+        r#"<template v-if="item.options"><span>{{ item.value }}<a href="/">more</a></span></template><template v-else><a href="/all">all</a></template>"#,
+    );
+}
+
+#[test]
+fn component_slot_mixed_text_parent_keeps_nested_static_child_inline() {
+    assert_shipped_parity(
+        r#"<Main><Section><h1 :id="id" class="bv-no-focus-ring"><span class="bd-content-title">{{ groupTitle }} <span class="small text-muted">- table of contents</span></span></h1></Section></Main>"#,
+    );
+    assert_shipped_parity(
+        r#"<Main><Section><h1 :id="id" class="bv-no-focus-ring"><span class="bd-content-title">{{ groupTitle }} <span class="small text-muted">- table of contents</span></span></h1></Section><Section><b-list-group-item v-for="page in pages" :key="page.slug" active-class=""><strong class="text-primary">{{ page.title }}</strong></b-list-group-item></Section></Main>"#,
+    );
+    assert_shipped_parity(
+        r#"<Main><Section tag="header"><h1 :id="id" class="bv-no-focus-ring" tabindex="-1"><span class="bd-content-title">{{ groupTitle }} <span class="small text-muted">- table of contents</span></span></h1><p v-if="groupDescription" class="bd-lead">{{ groupDescription }}</p></Section><Section><b-list-group tag="nav" :aria-label="`${groupTitle} section navigation`" class="mb-5"><b-list-group-item v-for="page in pages" :key="page.slug" :to="`/docs/${slug}/${page.slug}`" active-class=""><strong class="text-primary">{{ page.title }}</strong> - <b-badge v-if="page.new" variant="success">NEW</b-badge><span class="text-muted">{{ page.description }}</span><b-badge v-if="page.version" variant="secondary">v{{ page.version }}</b-badge></b-list-group-item></b-list-group></Section></Main>"#,
+    );
+}
+
+#[test]
+fn v_for_item_v_once_stays_in_the_legacy_plain_item_path() {
+    assert_shipped_parity(
+        r#"<Foo v-for="item in list" v-once :key="item.id" :name="item.name" />"#,
+    );
+    assert_shipped_parity(
+        r#"<span v-for="item in list" v-once :key="item.id">{{ item.name }}</span>"#,
+    );
+}

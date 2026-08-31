@@ -7,7 +7,7 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_s0::String;
+use vize_s0::{Span, String};
 use vize_s2::expr::ExprRef;
 use vize_s2::op::{Attribute, BindOp, BindingOp, OnOp};
 
@@ -140,7 +140,13 @@ pub(super) fn emit_spread_props(
     for_item: bool,
     is_plain_element: bool,
 ) -> Result<(), EmitError> {
-    let args = merge_args(attributes, bindings, if_key, skip_is)?;
+    let args = merge_args(
+        attributes,
+        bindings,
+        if_key,
+        skip_is,
+        cx.suppress_template_for_child_key,
+    )?;
     if let Some(lone) = lone_kind_spread(&args) {
         return match lone {
             Arg::BindSpread(bind) => emit_normalize_guard(cx, bind),
@@ -148,7 +154,7 @@ pub(super) fn emit_spread_props(
             Arg::Object { .. } => Err(EmitError::unsupported(Reason::LoneObjectArgument)),
         };
     }
-    let normalize_keyed_bind_spread = key_and_bind_spread(&args);
+    let normalize_keyed_bind_spread = !for_item && key_and_bind_spread(&args);
     if normalize_keyed_bind_spread {
         cx.buf.use_normalize_props();
         cx.buf.use_guard_reactive_props();
@@ -163,9 +169,10 @@ pub(super) fn emit_spread_props(
             cx.buf.push(", ");
         }
         match arg {
-            Arg::BindSpread(bind) => bind_value(bind)?.emit(cx),
+            Arg::BindSpread(bind) => bind_value(bind)?.emit_authored(cx, bind),
             Arg::OnSpread(on) => emit_to_handlers(cx, on)?,
-            Arg::Object { if_key, pieces } => {
+            Arg::Object { if_key, pieces, .. } => {
+                let force_multiline = force_multiline_object_arg(&args, i, pieces, for_item);
                 emit_props_object(
                     cx,
                     pieces,
@@ -174,6 +181,8 @@ pub(super) fn emit_spread_props(
                     for_item,
                     is_plain_element,
                     for_item,
+                    false,
+                    force_multiline,
                 )?;
             }
         }
@@ -207,6 +216,7 @@ fn key_and_bind_spread(args: &[Arg<'_>]) -> bool {
             Arg::Object {
                 if_key: Some(_),
                 pieces,
+                ..
             },
             Arg::BindSpread(_),
         ] if pieces.is_empty()
@@ -217,9 +227,109 @@ enum Arg<'a> {
     Object {
         if_key: Option<&'a str>,
         pieces: StdVec<Piece<'a>>,
+        suppressed_authored_key: bool,
     },
     BindSpread(&'a BindOp<'a>),
     OnSpread(&'a OnOp<'a>),
+}
+
+impl Arg<'_> {
+    fn is_spread(&self) -> bool {
+        matches!(self, Self::BindSpread(_) | Self::OnSpread(_))
+    }
+}
+
+fn force_multiline_object_arg(
+    args: &[Arg<'_>],
+    index: usize,
+    pieces: &[Piece<'_>],
+    for_item: bool,
+) -> bool {
+    let after_spread = args[..index].iter().any(Arg::is_spread);
+    if !after_spread || pieces.is_empty() {
+        return pieces.len() == 1
+            && for_item
+            && args[index + 1..].iter().any(Arg::is_spread)
+            && has_object_with_props(&args[index + 1..]);
+    }
+    let has_later_spread = args[index + 1..].iter().any(Arg::is_spread);
+    if has_later_spread && single_static_attr_before_object_on(args, index, pieces, for_item) {
+        return false;
+    }
+    if for_item || has_later_spread {
+        return true;
+    }
+    if pieces.len() == 1 && has_branch_object_with_props_before_spread(&args[..index]) {
+        return true;
+    }
+    if pieces.len() == 1 && has_unsuppressed_key_only_branch_before_spread(&args[..index]) {
+        return true;
+    }
+    let has_branch_key = args.iter().any(|arg| {
+        matches!(
+            arg,
+            Arg::Object {
+                if_key: Some(_),
+                ..
+            }
+        )
+    });
+    pieces.iter().any(|piece| match piece {
+        Piece::On(_) => has_branch_key,
+        Piece::Attr(attr) if matches!(attr.name, "class" | "style") => has_branch_key,
+        _ => false,
+    })
+}
+
+fn has_branch_object_with_props_before_spread(args: &[Arg<'_>]) -> bool {
+    args.iter().any(|arg| {
+        matches!(
+            arg,
+            Arg::Object {
+                if_key: Some(_),
+                pieces,
+                ..
+            } if !pieces.is_empty()
+        )
+    })
+}
+
+fn has_unsuppressed_key_only_branch_before_spread(args: &[Arg<'_>]) -> bool {
+    args.iter().any(|arg| {
+        matches!(
+            arg,
+            Arg::Object {
+                if_key: Some(_),
+                pieces,
+                suppressed_authored_key: false,
+            } if pieces.is_empty()
+        )
+    })
+}
+
+fn has_object_with_props(args: &[Arg<'_>]) -> bool {
+    args.iter().any(|arg| {
+        matches!(
+            arg,
+            Arg::Object {
+                pieces,
+                ..
+            } if !pieces.is_empty()
+        )
+    })
+}
+
+fn single_static_attr_before_object_on(
+    args: &[Arg<'_>],
+    index: usize,
+    pieces: &[Piece<'_>],
+    for_item: bool,
+) -> bool {
+    !for_item
+        && matches!(pieces, [Piece::Attr(_)])
+        && args[index + 1..]
+            .iter()
+            .all(|arg| matches!(arg, Arg::OnSpread(_)))
 }
 
 fn merge_args<'a>(
@@ -227,10 +337,16 @@ fn merge_args<'a>(
     bindings: &'a [BindingOp<'a>],
     if_key: Option<&'a str>,
     skip_is: bool,
+    suppress_key: bool,
 ) -> Result<StdVec<Arg<'a>>, EmitError> {
     let mut args = StdVec::new();
     let mut current = StdVec::new();
+    let mut suppressed_authored_key = false;
     for piece in pieces(attributes, bindings, skip_is)? {
+        if (if_key.is_some() || suppress_key) && piece_is_key(&piece) {
+            suppressed_authored_key = true;
+            continue;
+        }
         match piece {
             Piece::Bind(bind) if bind.name.is_none() => {
                 flush_object(&mut args, &mut current);
@@ -246,17 +362,33 @@ fn merge_args<'a>(
     flush_object(&mut args, &mut current);
     if if_key.is_some() {
         match args.first_mut() {
-            Some(Arg::Object { if_key: slot, .. }) => *slot = if_key,
+            Some(Arg::Object {
+                if_key: slot,
+                suppressed_authored_key: suppressed,
+                ..
+            }) => {
+                *slot = if_key;
+                *suppressed = suppressed_authored_key;
+            }
             _ => args.insert(
                 0,
                 Arg::Object {
                     if_key,
                     pieces: StdVec::new(),
+                    suppressed_authored_key,
                 },
             ),
         }
     }
     Ok(args)
+}
+
+fn piece_is_key(piece: &Piece<'_>) -> bool {
+    match piece {
+        Piece::Attr(attr) => attr.name == "key",
+        Piece::Bind(bind) => super::props_bind::is_key_bind_name(bind),
+        _ => false,
+    }
 }
 
 fn flush_object<'a>(args: &mut StdVec<Arg<'a>>, current: &mut StdVec<Piece<'a>>) {
@@ -266,6 +398,7 @@ fn flush_object<'a>(args: &mut StdVec<Arg<'a>>, current: &mut StdVec<Piece<'a>>)
     args.push(Arg::Object {
         if_key: None,
         pieces: core::mem::take(current),
+        suppressed_authored_key: false,
     });
 }
 
@@ -277,7 +410,7 @@ fn emit_normalize_guard(cx: &mut EmitCx<'_>, bind: &BindOp<'_>) -> Result<(), Em
     cx.buf.push("(");
     cx.buf.push(Buf::guard_reactive_props_alias());
     cx.buf.push("(");
-    value.emit(cx);
+    value.emit_authored(cx, bind);
     cx.buf.push("))");
     Ok(())
 }
@@ -296,7 +429,58 @@ fn emit_to_handlers(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitError>
     cx.buf.use_to_handlers();
     cx.buf.push(Buf::to_handlers_alias());
     cx.buf.push("(");
-    cx.buf.push(source.as_str());
+    if let Some((leading, trailing)) = authored_object_on_padding(
+        cx.source,
+        on.span,
+        source.as_str(),
+        on.handler.map(|expr| expr.span()).unwrap_or(on.span),
+    ) {
+        cx.buf.push(leading);
+        cx.buf.push(source.as_str());
+        cx.buf.push(trailing);
+    } else {
+        cx.buf.push(source.as_str());
+    }
     cx.buf.push(", true)");
     Ok(())
+}
+
+fn authored_object_on_padding<'a>(
+    source: &'a str,
+    on_span: Span,
+    value: &str,
+    value_span: Span,
+) -> Option<(&'a str, &'a str)> {
+    let attr_start = usize::try_from(on_span.start).ok()?;
+    let attr_end = usize::try_from(on_span.end).ok()?;
+    let value_start = usize::try_from(value_span.start).ok()?;
+    let value_end = usize::try_from(value_span.end).ok()?;
+    if attr_start > value_start
+        || value_start > value_end
+        || value_end > attr_end
+        || attr_end > source.len()
+        || source.get(value_start..value_end)? != value
+    {
+        return None;
+    }
+    let before = source.get(attr_start..value_start)?;
+    let quote_pos = before
+        .as_bytes()
+        .iter()
+        .rposition(|byte| matches!(*byte, b'\'' | b'"'))?;
+    let quote = before.as_bytes()[quote_pos];
+    let leading = before.get(quote_pos + 1..)?;
+    let after = source.get(value_end..attr_end)?;
+    let trailing_end = after
+        .as_bytes()
+        .iter()
+        .position(|byte| *byte == quote)
+        .unwrap_or(after.len());
+    let trailing = after.get(..trailing_end)?;
+    if leading.is_empty() && trailing.is_empty() {
+        return None;
+    }
+    (leading.bytes().all(|byte| byte.is_ascii_whitespace())
+        && trailing.bytes().all(|byte| byte.is_ascii_whitespace()))
+    .then_some((leading, trailing))
 }

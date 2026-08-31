@@ -1,7 +1,7 @@
 //! Native HTML `ui.if` (`v-if` / `v-else-if` / `v-else`) emission.
 
 use vize_davinci::id::NodeId;
-use vize_s0::{String, ToCompactString};
+use vize_s0::{Span, String, ToCompactString};
 use vize_s2::expr::ExprRef;
 use vize_s2::op::{IfBranch, IfOp, Op};
 
@@ -31,7 +31,7 @@ pub(super) fn emit_if(
         if let Some(condition) = &branch.condition {
             if i == 0 {
                 cx.buf.push("(");
-                emit_condition(cx, condition)?;
+                emit_condition(cx, condition, branch.span)?;
                 cx.buf.push(")");
                 cx.buf.indent();
                 cx.buf.newline();
@@ -39,7 +39,7 @@ pub(super) fn emit_if(
             } else {
                 cx.buf.newline();
                 cx.buf.push(": (");
-                emit_condition(cx, condition)?;
+                emit_condition(cx, condition, branch.span)?;
                 cx.buf.push(")");
                 cx.buf.indent();
                 cx.buf.newline();
@@ -86,15 +86,39 @@ fn next_if_key(cx: &mut EmitCx<'_>) -> u32 {
     key
 }
 
-fn emit_condition(cx: &mut EmitCx<'_>, condition: &ExprRef<'_>) -> Result<(), EmitError> {
+fn emit_condition(
+    cx: &mut EmitCx<'_>,
+    condition: &ExprRef<'_>,
+    branch_span: Span,
+) -> Result<(), EmitError> {
     match condition {
         ExprRef::Js(js) => {
-            super::js::push_js_expr(cx, js);
+            let source = super::js::js_expr_source(js);
+            if let Some((leading, trailing)) =
+                authored_condition_padding(cx.source, branch_span, source.as_str(), js.span)
+            {
+                cx.buf.push(leading);
+                cx.buf.push(source.as_str());
+                cx.buf.push(trailing);
+            } else {
+                cx.buf.push(source.as_str());
+            }
             Ok(())
         }
         _ => {
             if let Some(raw) = super::js::parse_rejected_raw_js(condition, false) {
-                cx.buf.push(raw.as_str());
+                if let Some((leading, trailing)) = authored_condition_padding(
+                    cx.source,
+                    branch_span,
+                    raw.as_str(),
+                    condition.span(),
+                ) {
+                    cx.buf.push(leading);
+                    cx.buf.push(raw.as_str());
+                    cx.buf.push(trailing);
+                } else {
+                    cx.buf.push(raw.as_str());
+                }
                 Ok(())
             } else {
                 Err(EmitError::unsupported_at(
@@ -104,6 +128,46 @@ fn emit_condition(cx: &mut EmitCx<'_>, condition: &ExprRef<'_>) -> Result<(), Em
             }
         }
     }
+}
+
+fn authored_condition_padding<'a>(
+    source: &'a str,
+    owner_span: Span,
+    value: &str,
+    value_span: Span,
+) -> Option<(&'a str, &'a str)> {
+    let attr_start = usize::try_from(owner_span.start).ok()?;
+    let attr_end = usize::try_from(owner_span.end).ok()?;
+    let value_start = usize::try_from(value_span.start).ok()?;
+    let value_end = usize::try_from(value_span.end).ok()?;
+    if attr_start > value_start
+        || value_start > value_end
+        || value_end > attr_end
+        || attr_end > source.len()
+        || source.get(value_start..value_end)? != value
+    {
+        return None;
+    }
+    let before = source.get(attr_start..value_start)?;
+    let quote_pos = before
+        .as_bytes()
+        .iter()
+        .rposition(|byte| matches!(*byte, b'\'' | b'"'))?;
+    let quote = before.as_bytes()[quote_pos];
+    let leading = before.get(quote_pos + 1..)?;
+    let after = source.get(value_end..attr_end)?;
+    let trailing_end = after
+        .as_bytes()
+        .iter()
+        .position(|byte| *byte == quote)
+        .unwrap_or(after.len());
+    let trailing = after.get(..trailing_end)?;
+    if leading.is_empty() && trailing.is_empty() {
+        return None;
+    }
+    (leading.bytes().all(|byte| byte.is_ascii_whitespace())
+        && trailing.bytes().all(|byte| byte.is_ascii_whitespace()))
+    .then_some((leading, trailing))
 }
 
 fn branch_key_js(

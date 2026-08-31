@@ -5,11 +5,20 @@ use vize_s2::expr::JsExpr;
 
 use super::EmitCx;
 
-pub(super) fn emit(cx: &mut EmitCx<'_>, source: &str) {
+pub(super) fn emit(cx: &mut EmitCx<'_>, source: &str, padding: Option<(&str, &str)>) {
     cx.buf.push("$event => {");
+    if let Some((leading, _)) = padding {
+        cx.buf.push(leading);
+    }
     cx.buf.push(source);
-    if ends_in_line_comment(source) {
+    let trailing_has_newline = padding
+        .map(|(_, trailing)| trailing.bytes().any(|byte| matches!(byte, b'\n' | b'\r')))
+        .unwrap_or(false);
+    if ends_in_line_comment(source) && !trailing_has_newline {
         cx.buf.newline();
+    }
+    if let Some((_, trailing)) = padding {
+        cx.buf.push(trailing);
     }
     cx.buf.push("}");
 }

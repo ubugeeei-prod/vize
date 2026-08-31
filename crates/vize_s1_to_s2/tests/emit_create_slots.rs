@@ -9,6 +9,7 @@
 mod support;
 
 use support::with_transformed;
+use vize_s0::Allocator;
 use vize_s1_to_s2::emit_dom;
 
 fn assembled(source: &str) -> String {
@@ -18,6 +19,21 @@ fn assembled(source: &str) -> String {
             .assembled()
             .to_string()
     })
+}
+
+fn shipped(source: &str) -> String {
+    let allocator = Allocator::new();
+    let (_, errors, old) = vize_atelier_dom::compile_template(&allocator, source);
+    let blocking: Vec<_> = errors
+        .iter()
+        .filter(|error| !error.is_compatibility_notice())
+        .collect();
+    assert!(blocking.is_empty(), "{source:?}: {blocking:?}");
+    format!("{}\n{}", old.preamble, old.code)
+}
+
+fn assert_shipped_parity(source: &str) {
+    assert_eq!(assembled(source), shipped(source), "{source}");
 }
 
 /// Vue's extra `newline()` after `genAssets` leaves indent on the blank line.
@@ -47,6 +63,31 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     : undefined
   ]), 1024 /* DYNAMIC_SLOTS */))
 }")
+    );
+}
+
+#[test]
+fn conditional_slot_template_preserves_authored_condition_padding() {
+    assert_shipped_parity(
+        r#"<Foo><template #header v-if="
+  ok &&
+  ready
+">x</template></Foo>"#,
+    );
+}
+
+#[test]
+fn conditional_scoped_slot_template_preserves_authored_param_padding() {
+    assert_shipped_parity(
+        r#"<Foo><template #header="slotProps " v-if="ok"><slot v-bind="slotProps" /></template></Foo>"#,
+    );
+}
+
+#[test]
+fn slotted_component_legacy_patchless_concat_props_leave_dynamic_prop_list() {
+    assert_shipped_parity(r#"<Foo><Bar :foo="'a' + i + 'b'"><Baz /></Bar></Foo>"#);
+    assert_shipped_parity(
+        r#"<Foo><Bar v-for="(item, index) in items" :key="item.key" :label="'Label' + index" :prop="'items.' + index + '.value'" :rules="{ required: true }"><Baz /></Bar></Foo>"#,
     );
 }
 
@@ -196,6 +237,33 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     : undefined
   ]), 1024 /* DYNAMIC_SLOTS */))
 }")
+    );
+}
+
+#[test]
+fn non_slot_if_siblings_stay_in_create_slots_dynamic_entries_as_undefined() {
+    assert_shipped_parity(
+        r#"<Foo><Bar v-if="bar" /><Baz v-if="baz" /><template v-for="(_, name) in slots" #[name]="slotData"><slot :name="name" v-bind="slotData" /></template></Foo>"#,
+    );
+}
+
+#[test]
+fn create_slots_default_branch_keys_are_allocated_before_named_entries() {
+    assert_shipped_parity(
+        r#"<Foo><template #body><Bar v-if="bodyA" /><Baz v-if="bodyB" /></template><Qux v-if="mainA" /><Quux v-else-if="mainB" /><template v-if="footer" #footer><Footer /></template></Foo>"#,
+    );
+}
+
+#[test]
+fn dynamic_slot_template_branch_keys_do_not_leak_to_parent_slots() {
+    assert_shipped_parity(
+        r#"<Comp><template #a><Inner><template v-if="x" #input><div /></template></Inner></template><div v-if="y" /></Comp>"#,
+    );
+    assert_shipped_parity(
+        r#"<Comp><template #a><Inner><template #input><div v-if="x" /></template></Inner></template><div v-if="y" /></Comp>"#,
+    );
+    assert_shipped_parity(
+        r#"<Comp><template #a><Inner><div v-if="x" /></Inner></template><div v-if="y" /></Comp>"#,
     );
 }
 

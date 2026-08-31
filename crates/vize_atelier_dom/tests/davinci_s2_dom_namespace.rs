@@ -18,6 +18,14 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<svg><foreignObject><div>hi</div></foreignObject><rect x="1" y="1"/></svg>"#,
     ),
     (
+        "svg_parent_g_keeps_plain_vnode_when_child_handles_foreign_boundary",
+        r#"<svg><g><foreignObject><div>hi</div></foreignObject></g></svg>"#,
+    ),
+    (
+        "svg_foreign_object_with_only_slot_child_stays_plain_vnode",
+        r#"<svg><foreignObject><slot /></foreignObject><rect /></svg>"#,
+    ),
+    (
         "nested_svg_dynamic_prop_boundary",
         r#"<div><svg xmlns="http://www.w3.org/2000/svg" :width="w" /></div>"#,
     ),

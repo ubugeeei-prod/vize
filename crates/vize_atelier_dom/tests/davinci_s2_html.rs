@@ -35,6 +35,20 @@ const CASES: &[Case] = &[
         sites: &["9 /* TEXT, PROPS */, [\"innerHTML\"]"],
     },
     Case {
+        name: "multiline_value_keeps_authored_padding",
+        src: r#"<div v-html="
+  formatHtml(
+    value,
+  )
+"></div>"#,
+        sites: &["8 /* PROPS */, [\"innerHTML\"]"],
+    },
+    Case {
+        name: "value_decodes_attribute_entities",
+        src: r#"<em class="weui-form-preview__value" v-html="headerValue || '&nbsp;'"></em>"#,
+        sites: &["8 /* PROPS */, [\"innerHTML\"]"],
+    },
+    Case {
         name: "value_less_bare",
         src: r#"<div v-html></div>"#,
         sites: &["8 /* PROPS */, [\"innerHTML\"]"],
@@ -125,4 +139,22 @@ fn s2_v_html_patch_flags_match_the_shipped_dom_lane_per_node() {
         "v-html patch flag mismatches:\n{}",
         mismatches.join("\n")
     );
+}
+
+#[test]
+fn s2_pug_example_text_decodes_double_escaped_parentheses_like_shipped_lane() {
+    support::assert_s2_matches_shipped(&[
+        (
+            "pug_example_text_double_escaped_parens",
+            r#"example
+  template(#pug).
+    w-button(@click="accordion = Array&amp;#40;3&amp;#41;.fill&amp;#40;true&amp;#41;" sm) Expand all"#,
+        ),
+        (
+            "pug_example_text_zero_padded_double_escaped_close_paren",
+            r#"example
+  template(#html).
+    &lt;w-button @click="overlayColor = 'rgba(35, 71, 129, 0.5&amp;#041;'"&gt;Color&lt;/w-button&gt;"#,
+        ),
+    ]);
 }

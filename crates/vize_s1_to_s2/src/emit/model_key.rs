@@ -1,9 +1,9 @@
 //! Object key spelling for component `ui.model` product props.
 
 use oxc_ast::ast as js;
-use oxc_ast_visit::Visit;
-use vize_s0::{String, camelize};
+use vize_s0::{Span, String, camelize};
 use vize_s2::expr::{ExprRef, JsExpr};
+use vize_s2::op::ModelOp;
 
 use super::EmitCx;
 use super::js::push_ident_key;
@@ -33,12 +33,12 @@ pub(super) fn emit_value(cx: &mut EmitCx<'_>, name: ModelName<'_>, source: &str)
 pub(super) fn emit_update(
     cx: &mut EmitCx<'_>,
     key: &ModelUpdateKey<'_>,
-    read: &ExprRef<'_>,
+    model: &ModelOp<'_>,
     source: &str,
 ) {
     emit_update_key(cx, key);
     cx.buf.push(": ");
-    emit_assignment(cx, read, source);
+    emit_assignment(cx, model, source);
 }
 
 pub(super) fn emit_modifiers(
@@ -120,49 +120,85 @@ fn emit_modifiers_key(cx: &mut EmitCx<'_>, key: &ModelModifiersKey<'_>) {
     }
 }
 
-pub(super) fn emit_assignment(cx: &mut EmitCx<'_>, read: &ExprRef<'_>, source: &str) {
-    if contains_ts_only_syntax(read) {
+pub(super) fn emit_assignment(cx: &mut EmitCx<'_>, model: &ModelOp<'_>, source: &str) {
+    if requires_legacy_nested_assignment(&model.contract.read) {
         cx.buf.push("$event => ($event => ($event => ((");
-        cx.buf.push(source);
+        if let Some((leading, trailing)) =
+            authored_model_padding(cx.source, model.span, source, model.contract.read.span())
+        {
+            cx.buf.push(leading);
+            cx.buf.push(source);
+            cx.buf.push(trailing);
+        } else {
+            cx.buf.push(source);
+        }
         cx.buf.push(") = $event)))");
         return;
     }
     cx.buf.push("$event => ((");
-    cx.buf.push(source);
+    if let Some((leading, trailing)) =
+        authored_model_padding(cx.source, model.span, source, model.contract.read.span())
+    {
+        cx.buf.push(leading);
+        cx.buf.push(source);
+        cx.buf.push(trailing);
+    } else {
+        cx.buf.push(source);
+    }
     cx.buf.push(") = $event)");
 }
 
-fn contains_ts_only_syntax(read: &ExprRef<'_>) -> bool {
+fn authored_model_padding<'a>(
+    source: &'a str,
+    model_span: Span,
+    value: &str,
+    value_span: Span,
+) -> Option<(&'a str, &'a str)> {
+    let attr_start = usize::try_from(model_span.start).ok()?;
+    let attr_end = usize::try_from(model_span.end).ok()?;
+    let value_start = usize::try_from(value_span.start).ok()?;
+    let value_end = usize::try_from(value_span.end).ok()?;
+    if attr_start > value_start
+        || value_start > value_end
+        || value_end > attr_end
+        || attr_end > source.len()
+        || source.get(value_start..value_end)? != value
+    {
+        return None;
+    }
+    let before = source.get(attr_start..value_start)?;
+    let quote_pos = before
+        .as_bytes()
+        .iter()
+        .rposition(|byte| matches!(*byte, b'\'' | b'"'))?;
+    let quote = before.as_bytes()[quote_pos];
+    let leading = before.get(quote_pos + 1..)?;
+    let after = source.get(value_end..attr_end)?;
+    let trailing_end = after
+        .as_bytes()
+        .iter()
+        .position(|byte| *byte == quote)
+        .unwrap_or(after.len());
+    let trailing = after.get(..trailing_end)?;
+    if leading.is_empty() && trailing.is_empty() {
+        return None;
+    }
+    (leading.bytes().all(|byte| byte.is_ascii_whitespace())
+        && trailing.bytes().all(|byte| byte.is_ascii_whitespace()))
+    .then_some((leading, trailing))
+}
+
+fn requires_legacy_nested_assignment(read: &ExprRef<'_>) -> bool {
     let ExprRef::Js(js) = read else {
         return false;
     };
-    let mut scan = TsOnlySyntaxScan { seen: false };
-    scan.visit_expression(js.ast);
-    scan.seen
-}
-
-struct TsOnlySyntaxScan {
-    seen: bool,
-}
-
-impl<'a> Visit<'a> for TsOnlySyntaxScan {
-    fn visit_ts_as_expression(&mut self, _expr: &js::TSAsExpression<'a>) {
-        self.seen = true;
+    if matches!(
+        js.ast,
+        js::Expression::BinaryExpression(_)
+            | js::Expression::ConditionalExpression(_)
+            | js::Expression::LogicalExpression(_)
+    ) {
+        return true;
     }
-
-    fn visit_ts_satisfies_expression(&mut self, _expr: &js::TSSatisfiesExpression<'a>) {
-        self.seen = true;
-    }
-
-    fn visit_ts_type_assertion(&mut self, _expr: &js::TSTypeAssertion<'a>) {
-        self.seen = true;
-    }
-
-    fn visit_ts_non_null_expression(&mut self, _expr: &js::TSNonNullExpression<'a>) {
-        self.seen = true;
-    }
-
-    fn visit_ts_instantiation_expression(&mut self, _expr: &js::TSInstantiationExpression<'a>) {
-        self.seen = true;
-    }
+    super::on_typed::uses_ts_only_syntax(js.ast)
 }

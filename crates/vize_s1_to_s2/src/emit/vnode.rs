@@ -4,7 +4,7 @@ mod array_child;
 
 pub(super) use array_child::emit_array_child;
 use vize_davinci::id::NodeId;
-use vize_s2::op::{BindingOp, ElementOp};
+use vize_s2::op::{BindingOp, ElementOp, Op};
 
 use super::buf::Buf;
 use super::children::children_need_text_flag;
@@ -166,6 +166,7 @@ pub(super) fn emit_call(
 ) -> Result<(), EmitError> {
     admit_element_bindings(&element.attributes, &element.bindings)?;
     let (allow_hoist, id, prop_hoist) = hoist;
+    let once_layout = once || super::once::has(&element.bindings);
     let alias = if block {
         Buf::create_element_block_alias()
     } else {
@@ -195,7 +196,8 @@ pub(super) fn emit_call(
         && !force_array_children
         && !for_item
         && !cx.in_v_for
-        && cx.slot_param_depth == 0;
+        && cx.slot_param_depth == 0
+        && !template_if_branch_root_has_direct_interpolation(cx, element, if_key);
     let has_binds = has_prop_bindings(&element.bindings);
     let hoisted_props =
         if allow_hoist && if_key.is_none() && super::props_static::should_hoist(cx, id, prop_hoist)
@@ -223,6 +225,7 @@ pub(super) fn emit_call(
     }
     let omit_text_only = hoist && block && flag == 1;
     let emit_flag = flag != 0 && !omit_text_only;
+    let omit_empty_once_patch_child = once && !has_children && flag & !(2 | 4) == 0;
     let empty_runtime_for = for_item
         && (directive::has_runtime(&element.bindings) || has_cloak(&element.bindings))
         && !has_binds
@@ -244,10 +247,13 @@ pub(super) fn emit_call(
             false,
             for_item,
             true,
+            once_layout,
+            once,
+            false,
         )?;
     } else if !element.attributes.is_empty() {
         cx.buf.push(", ");
-        super::props_static::emit_inline(cx, element.attributes.iter());
+        super::props_static::emit_inline(cx, element.attributes.iter(), once_layout);
     } else if empty_runtime_for {
         cx.buf.push(", { }");
     } else if has_children || emit_flag {
@@ -255,16 +261,30 @@ pub(super) fn emit_call(
     }
     if has_children {
         cx.buf.push(", ");
-        namespace::with_child(cx, element, |cx| {
-            emit_children(
-                cx,
-                &element.children,
-                force_array_children,
-                hoist_static_children,
-                cache_static_children,
-            )
+        let template_if_branch_root = cx.template_if_branch_root;
+        cx.with_once_element(|cx| {
+            namespace::with_child(cx, element, |cx| {
+                let previous_template_if_branch_root = cx.template_if_branch_root;
+                let previous_suppress_template_for_child_key = cx.suppress_template_for_child_key;
+                if template_if_branch_root {
+                    cx.template_if_branch_root = false;
+                }
+                if previous_suppress_template_for_child_key {
+                    cx.suppress_template_for_child_key = false;
+                }
+                let result = emit_children(
+                    cx,
+                    &element.children,
+                    force_array_children,
+                    hoist_static_children,
+                    cache_static_children,
+                );
+                cx.template_if_branch_root = previous_template_if_branch_root;
+                cx.suppress_template_for_child_key = previous_suppress_template_for_child_key;
+                result
+            })
         })?;
-    } else if emit_flag {
+    } else if emit_flag && !omit_empty_once_patch_child {
         cx.buf.push(", null");
     }
     if emit_flag {
@@ -304,6 +324,21 @@ fn has_cloak(bindings: &[BindingOp<'_>]) -> bool {
     bindings
         .iter()
         .any(|binding| matches!(binding, BindingOp::VueCloak(_)))
+}
+
+fn template_if_branch_root_has_direct_interpolation(
+    cx: &EmitCx<'_>,
+    element: &ElementOp<'_>,
+    if_key: Option<&str>,
+) -> bool {
+    if if_key.is_none() || !cx.template_if_branch_root {
+        return false;
+    }
+    element
+        .children
+        .ops
+        .iter()
+        .any(|op| matches!(op, Op::Interpolation(_)))
 }
 
 fn has_dynamic_key_binding(element: &ElementOp<'_>) -> bool {

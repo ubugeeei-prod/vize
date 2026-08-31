@@ -18,13 +18,24 @@ pub(super) fn emit_props_object(
     empty_key_multiline: bool,
     is_plain_element: bool,
     for_item: bool,
+    suppress_once_cache_dynamic: bool,
+    force_multiline: bool,
 ) -> Result<(), EmitError> {
-    let skip_class = pieces_have_named(pieces, "class");
+    let split_once_static_class = cx.once_depth > 0
+        && pieces_have_static_attr(pieces, "class")
+        && pieces_have_named(pieces, "class");
+    let skip_class = pieces_have_named(pieces, "class") && !split_once_static_class;
     let skip_style = pieces_have_named(pieces, "style");
-    let skip_key = if_key.is_some();
+    let skip_key = if_key.is_some() || cx.suppress_template_for_child_key;
+    if suppress_once_cache_dynamic {
+        reserve_skipped_once_helpers(cx, pieces)?;
+    }
     let visible: StdVec<&Piece<'_>> = pieces
         .iter()
-        .filter(|piece| !skip_emitted_key(piece, if_key, skip_class, skip_style, skip_key))
+        .filter(|piece| {
+            !skip_emitted_key(piece, if_key, skip_class, skip_style, skip_key)
+                && !(suppress_once_cache_dynamic && skip_once_cache_piece(piece))
+        })
         .collect();
     if let Some(key) = if_key
         && visible.is_empty()
@@ -47,14 +58,18 @@ pub(super) fn emit_props_object(
     }
     let extra = usize::from(if_key.is_some());
     let compact_multiline = if_key.is_none() && pieces_are_dynamic_model_products(&visible);
+    let v_for_merge_arg_multiline = skip_normalize && for_item && visible.len() + extra > 1;
     let multiline = !compact_multiline
-        && ((if_key.is_some() && !visible.is_empty())
-            || pieces_have_inline_on(pieces)
+        && (force_multiline
+            || (if_key.is_some() && !visible.is_empty())
+            || v_for_merge_arg_multiline
+            || (!for_item && pieces_have_inline_on(pieces))
             || (!for_item
                 && (visible.len() + extra > 1
                     || pieces_have_named(pieces, "class")
                     || pieces_have_named(pieces, "style")
                     || pieces_have_vue_text(pieces))));
+    let event_key_plain_element = is_plain_element && if_key.is_none();
     if multiline {
         cx.buf.push("{");
         cx.buf.indent();
@@ -72,8 +87,8 @@ pub(super) fn emit_props_object(
     }
     let mut emitted_merged = StdVec::new();
     for piece in visible.iter() {
-        if let Some(key) = super::props_object_merge::event_key(piece, is_plain_element)
-            && super::props_object_merge::count(&visible, key.as_str(), is_plain_element) > 1
+        if let Some(key) = super::props_object_merge::event_key(piece, event_key_plain_element)
+            && super::props_object_merge::count(&visible, key.as_str(), event_key_plain_element) > 1
         {
             if emitted_merged.contains(&key) {
                 continue;
@@ -86,7 +101,12 @@ pub(super) fn emit_props_object(
             } else if i > 0 {
                 cx.buf.push(" ");
             }
-            super::props_object_merge::emit_handlers(cx, &visible, key.as_str(), is_plain_element)?;
+            super::props_object_merge::emit_handlers(
+                cx,
+                &visible,
+                key.as_str(),
+                event_key_plain_element,
+            )?;
             emitted_merged.push(key);
             i += 1;
             continue;
@@ -104,7 +124,7 @@ pub(super) fn emit_props_object(
             Piece::Bind(bind) => {
                 emit_bind_pair(cx, pieces, bind, skip_normalize, is_plain_element)?
             }
-            Piece::On(event) => on::emit_on_pair(cx, event, is_plain_element)?,
+            Piece::On(event) => on::emit_on_pair(cx, event, event_key_plain_element)?,
             Piece::VueHtml(html) => super::html::emit_pair(cx, html)?,
             Piece::VueText(text) => super::vtext::emit_pair(cx, text)?,
             Piece::ModelValue { name, model, .. } => {
@@ -113,7 +133,7 @@ pub(super) fn emit_props_object(
             }
             Piece::ModelUpdate { key, model, .. } => {
                 let source = super::model::js_source(model)?;
-                super::model_key::emit_update(cx, key, &model.contract.read, source.as_str())
+                super::model_key::emit_update(cx, key, model, source.as_str())
             }
             Piece::ModelModifiers {
                 name, modifiers, ..
@@ -210,7 +230,7 @@ impl Piece<'_> {
 
 fn skip_emitted_key(
     piece: &Piece<'_>,
-    if_key: Option<&str>,
+    _if_key: Option<&str>,
     skip_class: bool,
     skip_style: bool,
     skip_key: bool,
@@ -221,11 +241,25 @@ fn skip_emitted_key(
                 || (skip_style && attr.name == "style" && attr.value.is_some())
                 || (skip_key && attr.name == "key")
         }
-        Piece::Bind(bind) if skip_key && super::props_bind::is_emitted_key_bind(bind, if_key) => {
-            true
-        }
+        Piece::Bind(bind) if skip_key && super::props_bind::is_key_bind_name(bind) => true,
         _ => false,
     }
+}
+
+fn skip_once_cache_piece(piece: &Piece<'_>) -> bool {
+    matches!(piece, Piece::On(_) | Piece::VueHtml(_))
+}
+
+fn reserve_skipped_once_helpers(
+    cx: &mut EmitCx<'_>,
+    pieces: &[Piece<'_>],
+) -> Result<(), EmitError> {
+    for piece in pieces {
+        if let Piece::On(on) = piece {
+            on::reserve_skipped_once_helpers(cx, on)?;
+        }
+    }
+    Ok(())
 }
 
 fn pieces_have_named(pieces: &[Piece<'_>], name: &str) -> bool {
@@ -243,6 +277,12 @@ fn pieces_have_named(pieces: &[Piece<'_>], name: &str) -> bool {
         Piece::VueText(_) => name == "textContent",
         _ => false,
     })
+}
+
+fn pieces_have_static_attr(pieces: &[Piece<'_>], name: &str) -> bool {
+    pieces
+        .iter()
+        .any(|piece| matches!(piece, Piece::Attr(attr) if attr.name == name))
 }
 
 fn pieces_have_inline_on(pieces: &[Piece<'_>]) -> bool {
@@ -311,6 +351,9 @@ fn emit_bind_pair(
     cx.buf.push(": ");
     match raw_name {
         "class" => match value.js() {
+            Some(_) if skip_normalize && !pieces_have_static_attr(pieces, "class") => {
+                value.emit_authored(cx, bind);
+            }
             Some(js) => super::props_class::emit_class_value(cx, pieces, bind, js, skip_normalize),
             None => {
                 if !skip_normalize {
@@ -325,6 +368,9 @@ fn emit_bind_pair(
             }
         },
         "style" => match value.js() {
+            Some(_) if skip_normalize && static_style.is_none() => {
+                value.emit_authored(cx, bind);
+            }
             Some(js) => style::emit_style_value(cx, static_style, bind, js, skip_normalize),
             None => value.emit(cx),
         },

@@ -9,6 +9,7 @@
 mod support;
 
 use support::with_transformed;
+use vize_s0::Allocator;
 use vize_s1_to_s2::emit_dom;
 
 fn assembled(source: &str) -> String {
@@ -23,6 +24,21 @@ fn assembled(source: &str) -> String {
 /// Vue's extra `newline()` after `genAssets` leaves indent on the blank line.
 fn pin(visual: &str) -> String {
     visual.replace(")\n\n  return", ")\n  \n  return")
+}
+
+fn shipped(source: &str) -> String {
+    let allocator = Allocator::new();
+    let (_, errors, old) = vize_atelier_dom::compile_template(&allocator, source);
+    let blocking: Vec<_> = errors
+        .iter()
+        .filter(|error| !error.is_compatibility_notice())
+        .collect();
+    assert!(blocking.is_empty(), "{source:?}: {blocking:?}");
+    format!("{}\n{}", old.preamble, old.code)
+}
+
+fn assert_shipped_parity(source: &str) {
+    assert_eq!(assembled(source), shipped(source), "{source}");
 }
 
 #[test]
@@ -182,5 +198,35 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     ], 64 /* STABLE_FRAGMENT */))
   }), 256 /* UNKEYED_FRAGMENT */))
 }"
+    );
+}
+
+#[test]
+fn a_template_v_for_child_key_does_not_emit_on_the_unwrapped_root() {
+    assert_shipped_parity(
+        r#"<template v-for="(point, i) in points"><rect :key="i" :fill="color"><animate v-if="ok" /></rect></template>"#,
+    );
+}
+
+#[test]
+fn template_v_for_unwrapped_root_drops_runtime_directive_wrappers() {
+    assert_shipped_parity(
+        r#"<template v-for="item in blocks"><div :key="item.id" v-masonry-tile :class="item.class" class="grid"><span></span></div></template>"#,
+    );
+    assert_shipped_parity(
+        r#"<template v-for="[fullPath, Comp] in compList" :key="fullPath"><div v-show="fullPath === currRoute.fullPath" class="size-full"><slot :fullPath="fullPath" :Comp="Comp" /></div></template>"#,
+    );
+    assert_shipped_parity(
+        r#"<template v-for="item in items"><input v-model="item.name" :key="item.id" /></template>"#,
+    );
+}
+
+#[test]
+fn template_v_for_nested_if_root_keeps_runtime_directive_wrappers() {
+    assert_shipped_parity(
+        r#"<template v-for="item in items"><div v-if="item.ok" v-show="item.ok" :key="item.id"></div></template>"#,
+    );
+    assert_shipped_parity(
+        r#"<template v-for="item in items"><div><span v-show="item.ok"></span><span v-ripple></span></div></template>"#,
     );
 }

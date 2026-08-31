@@ -14,9 +14,6 @@ pub(super) fn emit_element(
     stable: bool,
     key: Option<&str>,
 ) -> Result<(), EmitError> {
-    if super::once::has(&element.bindings) {
-        return super::once::emit_element(cx, element, key, true);
-    }
     register_props_hoist(cx, element, id)?;
     super::memo::emit_cached(cx, &element.bindings, |cx| {
         if stable {

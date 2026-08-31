@@ -148,6 +148,9 @@ pub(super) fn emit_create_text_vnode(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Res
     if ops.is_empty() {
         return Err(EmitError::unsupported(Reason::EmptyTextRun));
     }
+    if emit_once_compound_text_vnodes(cx, ops)? {
+        return Ok(());
+    }
     let has_interp = ops.iter().any(|op| matches!(op, Op::Interpolation(_)));
     let is_single_space =
         !has_interp && ops.len() == 1 && matches!(&ops[0], Op::Text(text) if text.content == " ");
@@ -165,6 +168,53 @@ pub(super) fn emit_create_text_vnode(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Res
     }
     cx.buf.push(")");
     Ok(())
+}
+
+fn emit_once_compound_text_vnodes(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<bool, EmitError> {
+    if cx.once_depth == 0 || cx.once_element_depth != 1 || ops.len() != 1 {
+        return Ok(false);
+    }
+    let Op::Interpolation(interp) = &ops[0] else {
+        return Ok(false);
+    };
+    if !matches!(
+        interp.expression,
+        ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound
+    ) {
+        return Ok(false);
+    }
+    let id = cx.walk.mint().ok_or(EmitError::unsupported_at(
+        Reason::WalkIdOverflow,
+        interp.span,
+    ))?;
+    let parts = cx
+        .facts
+        .text_facts
+        .get(id)
+        .ok_or(EmitError::unsupported_at_node(
+            Reason::MissingTextFacts,
+            interp.span,
+            id,
+        ))?
+        .parts
+        .clone();
+    for (index, part) in parts.iter().enumerate() {
+        if index > 0 {
+            cx.buf.push(",");
+            cx.buf.newline();
+        }
+        cx.buf.use_create_text();
+        cx.buf.push(Buf::create_text_alias());
+        cx.buf.push("(");
+        if part.dynamic {
+            emit_to_display_string(cx, part.text.as_str());
+            cx.buf.push(", 1 /* TEXT */");
+        } else {
+            emit_quoted_text(cx, part.text.as_str());
+        }
+        cx.buf.push(")");
+    }
+    Ok(true)
 }
 
 /// Slot default children emit one or more `_createTextVNode`s.

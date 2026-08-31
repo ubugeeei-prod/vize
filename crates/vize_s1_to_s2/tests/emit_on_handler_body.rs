@@ -21,6 +21,21 @@ fn assembled(source: &str) -> String {
     })
 }
 
+fn shipped(source: &str) -> String {
+    let allocator = Allocator::new();
+    let (_, errors, old) = vize_atelier_dom::compile_template(&allocator, source);
+    let blocking: Vec<_> = errors
+        .iter()
+        .filter(|error| !error.is_compatibility_notice())
+        .collect();
+    assert!(blocking.is_empty(), "{source:?}: {blocking:?}");
+    format!("{}\n{}", old.preamble, old.code)
+}
+
+fn assert_shipped_parity(source: &str) {
+    assert_eq!(assembled(source), shipped(source), "{source}");
+}
+
 fn refused_reason(source: &str) -> Option<Reason> {
     let allocator = Allocator::new();
     emit_dom_source(&allocator, source)
@@ -60,6 +75,22 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn multiline_statement_handler_keeps_authored_padding() {
+    assert_shipped_parity(
+        r#"<button @click="
+          state.showModal = false;
+          updateDescription();
+        "></button>"#,
+    );
+    assert_shipped_parity(
+        r#"<button @click.stop.prevent="
+          state.hide = !state.hide;
+          clearConnectedPort();
+        "></button>"#,
+    );
+}
+
+#[test]
 fn module_only_handler_forms_stay_unsupported() {
     for source in [
         r#"<div @click="import thing from 'pkg'"></div>"#,
@@ -83,4 +114,24 @@ fn duplicate_lexical_handler_declarations_stay_unsupported() {
         refused_reason(r#"<div @click="let value; let value"></div>"#),
         Some(Reason::OnHandlerNotJs)
     );
+}
+
+#[test]
+fn ts_non_null_call_handlers_keep_legacy_raw_shape() {
+    assert_shipped_parity(r#"<button @click="payload!.click()"></button>"#);
+    assert_shipped_parity(r#"<div @keyup.d="documentation!.$el.click()"></div>"#);
+    assert_shipped_parity(r#"<div @contextmenu.prevent="options!.tippy?.show()"></div>"#);
+}
+
+#[test]
+fn ts_non_null_assignment_handlers_keep_legacy_raw_shape() {
+    assert_shipped_parity(
+        r#"<button @click="draft.params.poll!.expiresIn = expiresInOption.seconds"></button>"#,
+    );
+}
+
+#[test]
+fn branch_root_uppercase_native_events_keep_legacy_key_spelling() {
+    assert_shipped_parity(r#"<div v-if="ok" @mouseMoved="mouseMoved($event)"></div>"#);
+    assert_shipped_parity(r#"<div v-if="ok" @customEvent="h"></div>"#);
 }

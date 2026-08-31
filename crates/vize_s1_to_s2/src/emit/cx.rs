@@ -50,4 +50,17 @@ impl EmitCx<'_> {
         self.hoist_static_vnodes = previous;
         result
     }
+
+    pub(super) fn with_once_element<T>(
+        &mut self,
+        write: impl FnOnce(&mut Self) -> Result<T, EmitError>,
+    ) -> Result<T, EmitError> {
+        let previous = self.once_element_depth;
+        if self.once_depth > 0 {
+            self.once_element_depth = self.once_element_depth.saturating_add(1);
+        }
+        let result = write(self);
+        self.once_element_depth = previous;
+        result
+    }
 }

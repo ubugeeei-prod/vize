@@ -65,7 +65,7 @@ pub(super) fn emit_dynamic_tag(
     cx.buf.push(Helper::ResolveDynamicComponent.alias());
     cx.buf.push("(");
     if let Some(BindingOp::Bind(bind)) = component.bindings.iter().find(|b| is_is_bind(b)) {
-        bind_value(bind)?.emit(cx);
+        bind_value(bind)?.emit_authored(cx, bind);
     } else if let Some(attr) = component.attributes.iter().find(|attr| attr.name == "is") {
         cx.buf.push("\"");
         if let Some(value) = attr.value {

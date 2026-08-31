@@ -52,6 +52,10 @@ const BATTERY: &[(&str, &str)] = &[
         "root_dynamic_element_before_for_element",
         r#"<feImage :href="parts.top" /><feComposite v-for="part in parts" :key="part" :in="part" />"#,
     ),
+    (
+        "component_interp_component_drops_root_edge_whitespace",
+        "<Foo />\n{{ msg }}\n<Bar />",
+    ),
     ("slot_then_div", "<slot></slot><div></div>"),
     (
         "teleport_then_div",

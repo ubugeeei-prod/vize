@@ -29,6 +29,10 @@ const BATTERY: &[(&str, &str)] = &[
         "component_slot_root_compound_text",
         r#"<VbCard><va-hover #default="{ hover }"><div>slot - {{ hover }}</div></va-hover></VbCard>"#,
     ),
+    (
+        "comment_padding_between_interpolations_condenses_once",
+        "<p>{{ a }}\n<!--c-->\n{{ b }}</p>",
+    ),
 ];
 
 #[test]

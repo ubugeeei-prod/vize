@@ -2,6 +2,7 @@
 
 mod legacy_constant;
 
+use alloc::vec::Vec as StdVec;
 use legacy_constant::legacy_global_constant_expr;
 use vize_davinci::id::NodeId;
 use vize_s0::String;
@@ -15,7 +16,7 @@ use super::hoist::{push_attr_pair, unique_attrs};
 use super::js::{escape_js_string, is_valid_js_identifier, js_expr_source};
 use super::props::{Piece, bind_value_is_static_patchless, pieces, static_bind_key};
 use super::props_bind::{StaticBindKey, StaticBindKeyCasing};
-use super::props_value::bind_value;
+use super::props_value::{BindValue, bind_value};
 
 #[derive(Clone, Copy)]
 pub(super) enum PropHoistPosition {
@@ -47,16 +48,36 @@ pub(super) fn should_hoist(
     }
 }
 
+pub(super) fn props_hoistable(cx: &EmitCx<'_>, id: Option<NodeId>) -> bool {
+    id.and_then(|id| cx.facts.static_facts.get(id))
+        .is_some_and(|fact| fact.props_hoistable)
+}
+
 pub(super) fn root_hoist_props(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
+) -> Result<Option<String>, EmitError> {
+    root_hoist_props_with_layout(attributes, bindings, None)
+}
+
+pub(super) fn cached_root_hoist_props(
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+    line_indent: usize,
+) -> Result<Option<String>, EmitError> {
+    root_hoist_props_with_layout(attributes, bindings, Some(line_indent))
+}
+
+fn root_hoist_props_with_layout(
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+    multiline_indent: Option<usize>,
 ) -> Result<Option<String>, EmitError> {
     if !can_root_hoist_props(attributes, bindings) {
         return Ok(None);
     }
 
-    let mut out = String::from("{ ");
-    let mut emitted = 0usize;
+    let mut props = StdVec::new();
     let pieces = pieces(attributes, bindings, false)?;
     for (index, piece) in pieces.iter().enumerate() {
         let mut prop = String::default();
@@ -66,14 +87,22 @@ pub(super) fn root_hoist_props(
         if has_prior_hoist_key(&pieces[..index], key.as_str())? {
             continue;
         }
-        if emitted > 0 {
+        props.push(prop);
+    }
+    if props.is_empty() {
+        return Ok(None);
+    }
+    if let Some(line_indent) = multiline_indent
+        && props.len() > 1
+    {
+        return Ok(Some(multiline_props_object(&props, line_indent)));
+    }
+    let mut out = String::from("{ ");
+    for (index, prop) in props.iter().enumerate() {
+        if index > 0 {
             out.push_str(", ");
         }
         out.push_str(prop.as_str());
-        emitted += 1;
-    }
-    if emitted == 0 {
-        return Ok(None);
     }
     out.push_str(" }");
     Ok(Some(out))
@@ -149,7 +178,7 @@ fn root_binding_can_hoist(binding: &BindingOp<'_>) -> bool {
         return false;
     }
 
-    if !bind_value_is_static_patchless(bind) {
+    if !bind_value_is_legacy_static_prop(bind) {
         return false;
     }
 
@@ -198,10 +227,7 @@ fn component_hoist_prop<'a>(
                 return Ok(None);
             };
             let dynamic_value = !bind_value_is_static_patchless(bind);
-            if key.as_str() == "ref" {
-                return Ok(None);
-            }
-            if key.as_str() == "class" && dynamic_value {
+            if matches!(key.as_str(), "ref" | "class") {
                 return Ok(None);
             }
             let value = bind_value(bind)?;
@@ -242,7 +268,7 @@ fn has_prior_component_hoist_key(pieces: &[Piece<'_>], key: &str) -> Result<bool
 fn hoist_key<'a>(piece: &Piece<'a>) -> Result<Option<HoistKey<'a>>, EmitError> {
     match piece {
         Piece::Attr(attr) if attr.name != "ref" => Ok(Some(HoistKey::Borrowed(attr.name))),
-        Piece::Bind(bind) if bind_value_is_static_patchless(bind) => {
+        Piece::Bind(bind) if bind_value_is_legacy_static_prop(bind) => {
             let key = static_bind_key(bind, StaticBindKeyCasing::Preserve)?;
             if matches!(key.as_str(), "ref" | "class") {
                 return Ok(None);
@@ -271,6 +297,25 @@ fn component_hoist_key<'a>(piece: &Piece<'a>) -> Result<Option<HoistKey<'a>>, Em
     }
 }
 
+fn bind_value_is_legacy_static_prop(bind: &vize_s2::op::BindOp<'_>) -> bool {
+    let Ok(value) = bind_value(bind) else {
+        return false;
+    };
+    let Some(js) = value.js() else {
+        return false;
+    };
+    bind_value_is_static_patchless(bind)
+        || js.source.trim() == "undefined"
+        || legacy_static_style_prop(bind, &value)
+}
+
+fn legacy_static_style_prop(bind: &vize_s2::op::BindOp<'_>, value: &BindValue<'_>) -> bool {
+    let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve) else {
+        return false;
+    };
+    key.as_str() == "style" && super::style::legacy_static_style_object(value)
+}
+
 enum HoistKey<'a> {
     Borrowed(&'a str),
     StaticBind(StaticBindKey<'a>),
@@ -295,12 +340,33 @@ fn push_key(out: &mut String, key: &str) {
     out.push_str(key);
 }
 
+fn multiline_props_object(props: &[String], line_indent: usize) -> String {
+    let mut out = String::from("{");
+    for (index, prop) in props.iter().enumerate() {
+        if index > 0 {
+            out.push(',');
+        }
+        out.push('\n');
+        push_spaces(&mut out, line_indent + 2);
+        out.push_str(prop.as_str());
+    }
+    out.push('\n');
+    push_spaces(&mut out, line_indent);
+    out.push('}');
+    out
+}
+
+fn push_spaces(out: &mut String, width: usize) {
+    out.extend(core::iter::repeat_n(' ', width));
+}
+
 pub(super) fn emit_inline<'a>(
     cx: &mut EmitCx<'_>,
     attributes: impl Iterator<Item = &'a Attribute<'a>>,
+    force_multiline: bool,
 ) {
     let unique = unique_attrs(attributes);
-    let multiline = unique.len() > 1;
+    let multiline = unique.len() > 1 || force_multiline;
     if multiline {
         cx.buf.push("{");
         cx.buf.indent();

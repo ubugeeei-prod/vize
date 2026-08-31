@@ -4,7 +4,8 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_s0::{String, ToCompactString};
+use vize_s0::{Span, String, ToCompactString};
+use vize_s2::expr::ExprRef;
 use vize_s2::op::{DynamicName, ElementOp, ForOp, IfOp, Op, Region, SlotContentOp};
 
 use super::EmitCx;
@@ -65,6 +66,10 @@ fn collect(
 ) -> Result<(StdVec<String>, StdVec<String>), EmitError> {
     let mut defaults = StdVec::new();
     let mut entries = StdVec::new();
+    let first_branch_key = cx.if_branch_key;
+    let mut default_branch_key = first_branch_key;
+    let mut entry_branch_key =
+        first_branch_key.saturating_add(default_branch_key_count(cx, children));
     let skip_ws = children
         .ops
         .iter()
@@ -75,8 +80,24 @@ fn collect(
             continue;
         }
         match op {
-            Op::If(if_op) if is_slot_if(cx, peek_id(cx), if_op) => {
-                entries.push(capture(cx, |cx| emit_if_entry(cx, if_op))?);
+            Op::If(if_op) => {
+                let is_slot = is_slot_if(cx, peek_id(cx), if_op);
+                let walk_before = cx.walk.clone();
+                let walk_after_default = if !is_slot {
+                    with_branch_key(cx, &mut default_branch_key, |cx| {
+                        collect_default(cx, &mut defaults, op)
+                    })?;
+                    Some(cx.walk.clone())
+                } else {
+                    None
+                };
+                cx.walk = walk_before;
+                entries.push(with_branch_key(cx, &mut entry_branch_key, |cx| {
+                    capture(cx, |cx| emit_if_entry(cx, if_op))
+                })?);
+                if let Some(walk_after) = walk_after_default {
+                    cx.walk = walk_after;
+                }
             }
             Op::For(for_op) if is_slot_for(cx, peek_id(cx), for_op) => {
                 let Some((idx, element, content)) = first_slot_template(&for_op.region) else {
@@ -85,30 +106,90 @@ fn collect(
                         for_op.span,
                     ));
                 };
-                entries.push(capture(cx, |cx| {
-                    emit_for_entry(cx, for_op, idx, element, content)
+                entries.push(with_branch_key(cx, &mut entry_branch_key, |cx| {
+                    capture(cx, |cx| emit_for_entry(cx, for_op, idx, element, content))
                 })?);
             }
             Op::Element(element) => {
                 if let Some(content) = slot_template_content(element) {
-                    entries.push(capture(cx, |cx| {
-                        emit_slot_object(cx, element, content, None)
+                    entries.push(with_branch_key(cx, &mut entry_branch_key, |cx| {
+                        capture(cx, |cx| emit_slot_object(cx, element, content, None))
                     })?);
                 } else {
-                    collect_default(cx, &mut defaults, op)?;
+                    with_branch_key(cx, &mut default_branch_key, |cx| {
+                        collect_default(cx, &mut defaults, op)
+                    })?;
                 }
             }
             _ => {
-                collect_default(cx, &mut defaults, op)?;
+                with_branch_key(cx, &mut default_branch_key, |cx| {
+                    collect_default(cx, &mut defaults, op)
+                })?;
             }
         }
     }
+    cx.if_branch_key = entry_branch_key;
     Ok((defaults, entries))
 }
 
 fn peek_id(cx: &EmitCx<'_>) -> Option<vize_davinci::id::NodeId> {
     let mut walk = cx.walk.clone();
     walk.mint()
+}
+
+fn with_branch_key<T>(
+    cx: &mut EmitCx<'_>,
+    next_key: &mut u32,
+    write: impl FnOnce(&mut EmitCx<'_>) -> Result<T, EmitError>,
+) -> Result<T, EmitError> {
+    let saved = cx.if_branch_key;
+    cx.if_branch_key = *next_key;
+    let result = write(cx);
+    *next_key = cx.if_branch_key;
+    cx.if_branch_key = saved;
+    result
+}
+
+fn default_branch_key_count(cx: &EmitCx<'_>, children: &Region<'_>) -> u32 {
+    let mut walk = cx.walk.clone();
+    let skip_ws = children
+        .ops
+        .iter()
+        .any(|op| !matches!(op, Op::Text(_) | Op::Interpolation(_)));
+    children.ops.iter().fold(0u32, |count, op| {
+        let Some(id) = walk.mint() else {
+            return count;
+        };
+        let is_entry = match op {
+            Op::If(if_op) => is_slot_if(cx, Some(id), if_op),
+            Op::For(for_op) => is_slot_for(cx, Some(id), for_op),
+            Op::Element(element) => slot_template_content(element).is_some(),
+            _ => false,
+        };
+        advance_after_op(&mut walk, op);
+        if (skip_ws && is_whitespace_text(op)) || is_entry {
+            count
+        } else {
+            count.saturating_add(op_branch_key_count(op))
+        }
+    })
+}
+
+fn region_branch_key_count(region: &Region<'_>) -> u32 {
+    region.ops.iter().fold(0u32, |count, op| {
+        count.saturating_add(op_branch_key_count(op))
+    })
+}
+
+fn op_branch_key_count(op: &Op<'_>) -> u32 {
+    match op {
+        Op::Element(element) => region_branch_key_count(&element.children),
+        Op::Component(component) => region_branch_key_count(&component.children),
+        Op::If(if_op) => u32::try_from(if_op.branches.len()).unwrap_or(u32::MAX),
+        Op::For(for_op) => region_branch_key_count(&for_op.region),
+        Op::Slot(slot) => region_branch_key_count(&slot.fallback),
+        Op::Text(_) | Op::Interpolation(_) => 0,
+    }
 }
 
 fn collect_default(
@@ -168,8 +249,7 @@ fn emit_if_entry(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>) -> Result<(), EmitError>
         }
         if let Some(condition) = &branch.condition {
             cx.buf.push("(");
-            let condition = vfor::js_source(condition)?;
-            cx.buf.push(condition.as_str());
+            emit_condition(cx, condition, branch.span)?;
             cx.buf.push(")");
             cx.buf.indent();
             cx.buf.newline();
@@ -199,6 +279,64 @@ fn emit_if_entry(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>) -> Result<(), EmitError>
         cx.buf.push(": undefined");
     }
     Ok(())
+}
+
+fn emit_condition(
+    cx: &mut EmitCx<'_>,
+    condition: &ExprRef<'_>,
+    branch_span: Span,
+) -> Result<(), EmitError> {
+    let source = vfor::js_source(condition)?;
+    if let Some((leading, trailing)) =
+        authored_expr_padding(cx.source, branch_span, source.as_str(), condition.span())
+    {
+        cx.buf.push(leading);
+        cx.buf.push(source.as_str());
+        cx.buf.push(trailing);
+    } else {
+        cx.buf.push(source.as_str());
+    }
+    Ok(())
+}
+
+fn authored_expr_padding<'a>(
+    source: &'a str,
+    owner_span: Span,
+    value: &str,
+    value_span: Span,
+) -> Option<(&'a str, &'a str)> {
+    let attr_start = usize::try_from(owner_span.start).ok()?;
+    let attr_end = usize::try_from(owner_span.end).ok()?;
+    let value_start = usize::try_from(value_span.start).ok()?;
+    let value_end = usize::try_from(value_span.end).ok()?;
+    if attr_start > value_start
+        || value_start > value_end
+        || value_end > attr_end
+        || attr_end > source.len()
+        || source.get(value_start..value_end)? != value
+    {
+        return None;
+    }
+    let before = source.get(attr_start..value_start)?;
+    let quote_pos = before
+        .as_bytes()
+        .iter()
+        .rposition(|byte| matches!(*byte, b'\'' | b'"'))?;
+    let quote = before.as_bytes()[quote_pos];
+    let leading = before.get(quote_pos + 1..)?;
+    let after = source.get(value_end..attr_end)?;
+    let trailing_end = after
+        .as_bytes()
+        .iter()
+        .position(|byte| *byte == quote)
+        .unwrap_or(after.len());
+    let trailing = after.get(..trailing_end)?;
+    if leading.is_empty() && trailing.is_empty() {
+        return None;
+    }
+    (leading.bytes().all(|byte| byte.is_ascii_whitespace())
+        && trailing.bytes().all(|byte| byte.is_ascii_whitespace()))
+    .then_some((leading, trailing))
 }
 
 fn emit_for_entry(
@@ -322,7 +460,15 @@ fn emit_params(cx: &mut EmitCx<'_>, content: &SlotContentOp<'_>) {
     match &content.params {
         Some(expr) if !expr.source().is_empty() => {
             cx.buf.push("(");
-            cx.buf.push(expr.source());
+            if let Some((leading, trailing)) =
+                authored_expr_padding(cx.source, content.span, expr.source(), expr.span())
+            {
+                cx.buf.push(leading);
+                cx.buf.push(expr.source());
+                cx.buf.push(trailing);
+            } else {
+                cx.buf.push(expr.source());
+            }
             cx.buf.push(")");
         }
         _ => cx.buf.push("()"),

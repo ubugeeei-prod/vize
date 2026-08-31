@@ -255,7 +255,7 @@ fn visit<'a>(walk: &mut PageWalk, channels: &mut Channels<'_>, op: &Op<'a>) -> C
         Op::Text(text) => ChildView {
             id,
             span: text.span,
-            kind: if text.content.trim().is_empty() {
+            kind: if crate::lower::legacy_slot_filler_text(text.content) {
                 ChildKind::Filler
             } else {
                 ChildKind::Content {

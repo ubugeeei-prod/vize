@@ -56,6 +56,21 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn a_v_if_condition_keeps_authored_padding() {
+    assert_eq!(
+        assembled(r#"<button v-if=" !note.isArchived"></button>"#),
+        "\
+const { openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return ( !note.isArchived)
+    ? (_openBlock(), _createElementBlock(\"button\", { key: 0 }))
+    : _createCommentVNode(\"v-if\", true)
+}"
+    );
+}
+
+#[test]
 fn a_static_branch_key_is_quoted() {
     assert_eq!(
         assembled(r#"<div v-if="ok" key="k"></div>"#),
