@@ -4,6 +4,7 @@ import {
   checkedPackages,
   checkedPackagesViaVpRun,
   directCheckPackages,
+  nativeBuiltCheckPackages,
 } from "../task-inputs.ts";
 import {
   defineTasks,
@@ -22,9 +23,16 @@ import {
 } from "../task-helpers.ts";
 import { inTestbox } from "./testbox.ts";
 
-const ciPackageCheckCommand = runInPackages("check", checkedPackagesBeforeNativeBuild, {
-  concurrencyLimit: 1,
-});
+const ciPackageCheckCommand = [
+  runInPackages("check", checkedPackagesBeforeNativeBuild, {
+    concurrencyLimit: 1,
+  }),
+  // This runs before release tags publish @vizejs/native platform packages.
+  // Keep native-backed SFC linting in build-js-packages after a local native build.
+  runInPackages("check:static", nativeBuiltCheckPackages, {
+    concurrencyLimit: 1,
+  }),
+].join(" && ");
 const localLintCommand = runTask("check");
 const directPackageCheckCommand = runPackageScriptDirectly("check", directCheckPackages);
 const rustClippyCommand = "cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports";

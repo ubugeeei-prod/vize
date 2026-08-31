@@ -124,6 +124,20 @@ test("setup-moonbit defines explicit Windows and Unix execution paths", () => {
   assert.match(action, /shell: bash/);
 });
 
+test("setup-rust-script pins Windows MSVC linkers before cargo install", () => {
+  const action = readRepoFile(".github", "actions", "setup-rust-script", "action.yml");
+  const linkerIndex = action.indexOf("Configure Windows Rust linker");
+  const installIndex = action.indexOf("Install rust-script");
+
+  assert.ok(linkerIndex >= 0, "setup-rust-script must configure Windows linkers");
+  assert.ok(installIndex >= 0, "setup-rust-script must install rust-script");
+  assert.ok(linkerIndex < installIndex, "Windows linker config must run before cargo install");
+  assert.match(action, /if: runner\.os == 'Windows'/);
+  assert.match(action, /CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=rust-lld/);
+  assert.match(action, /CARGO_TARGET_AARCH64_PC_WINDOWS_MSVC_LINKER=rust-lld/);
+  assert.match(action, />> "\$GITHUB_ENV"/);
+});
+
 test("setup-moonbit installs the same pinned toolchain the Nix shell builds", () => {
   const pinned = readRepoFile(".moonbit-version").trim();
   assert.match(

@@ -13,8 +13,8 @@ test("package check keeps the UI source corpus on the toolchain gate", async () 
     manifest.scripts["lint:sfc"],
     "vp exec node scripts/lint-sfc.ts src && vp exec node scripts/check-renderers.ts src",
   );
-  assert.match(manifest.scripts.check, /^pnpm lint:sfc && /);
-  assert.match(manifest.scripts.check, /vue-tsc --noEmit -p tsconfig\.typecheck\.json/);
+  assert.equal(manifest.scripts.check, "pnpm lint:sfc && pnpm check:static");
+  assert.match(manifest.scripts["check:static"], /vue-tsc --noEmit -p tsconfig\.typecheck\.json/);
 });
 
 test("renderer conformance script owns the DOM, SSR, and Vapor lanes", async () => {
