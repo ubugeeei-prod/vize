@@ -7,14 +7,14 @@
 use std::{
     env,
     io::{self, Write},
-    process::{Command, ExitCode},
+    process::{self, Command},
 };
 
 const WARNING_BUDGET_ERROR: &str = "JS/TS warning budget is 0 for v1 alpha CI";
 const WARNING_MARKER: &str = "warn: Lint warnings found";
 
-fn main() -> ExitCode {
-    ExitCode::from(run() as u8)
+fn main() {
+    process::exit(run());
 }
 
 fn run() -> i32 {

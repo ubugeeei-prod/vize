@@ -62,3 +62,13 @@ process.exit(7);`,
   assert.match(result.stderr, /Found 0 errors and 2 warnings/);
   assert.doesNotMatch(result.stderr, /JS\/TS warning budget is 0/);
 });
+
+test(
+  "warning budget preserves wide Windows child exit codes",
+  { skip: process.platform !== "win32" },
+  () => {
+    const result = runWarningBudget("process.exit(256);");
+
+    assert.equal(result.status, 256, `${result.stderr}\n${result.stdout}`.trim());
+  },
+);
