@@ -21,7 +21,7 @@ couches de distribution et d’intégration.
 | `npm/`    | Packages JavaScript pour Vite, Nuxt, extensions d’éditeurs, intégrations Musea, et wrappers de paquets publiés                            |
 | `docs/`   | Documentation utilisateur, notes d’architecture, notes de version et thème du site docs                                                   |
 | `tests/`  | Fixtures inter-packages, projets réels, tests d’outillages et gouvernance instantanée                                                     |
-| `bench/`  | Scripts de comparaison de performance et application budgétaire des benchmarks de RP                                                      |
+| `tools/benchmarks/scripts/`  | Scripts de comparaison de performance et application budgétaire des benchmarks de RP                                                      |
 | `tools/`  | Automatisation de dépôt qui ne fait pas partie du produit expédié                                                                         |
 
 Lorsqu’un changement traverse les répertoires, le propriétaire est généralement la couche qui crée le comportement

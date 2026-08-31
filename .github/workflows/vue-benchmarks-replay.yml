@@ -2,7 +2,7 @@ name: Vue Benchmarks Replay
 
 # Periodic replay of the upstream pikax/vue-benchmarks typecheck confirmation
 # corpus (#3283) against current main and the latest released vize. Outcomes
-# are pinned in bench/vue-benchmarks-replay-expect-{main,release}.json; any
+# are pinned in tools/benchmarks/scripts/vue-benchmarks-replay-expect-{main,release}.json; any
 # drift fails the lane. A release that fixes a known upstream failure turns
 # that entry into a stale suppression, so the release table must be refreshed
 # with the fix recorded as a required pass — external reports cannot stay
@@ -16,9 +16,9 @@ on:
     branches: [main]
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
-      - bench/vue-benchmarks-replay.mjs
-      - bench/vue-benchmarks-replay-expect-main.json
-      - bench/vue-benchmarks-replay-expect-release.json
+      - tools/benchmarks/scripts/vue-benchmarks-replay.mjs
+      - tools/benchmarks/scripts/vue-benchmarks-replay-expect-main.json
+      - tools/benchmarks/scripts/vue-benchmarks-replay-expect-release.json
       - .github/workflows/vue-benchmarks-replay.yml
 
 concurrency:
@@ -66,9 +66,9 @@ jobs:
 
       - name: Replay the upstream corpus against current main
         run: |
-          node bench/vue-benchmarks-replay.mjs \
+          node tools/benchmarks/scripts/vue-benchmarks-replay.mjs \
             --vize-bin target/ci/vize \
-            --expect bench/vue-benchmarks-replay-expect-main.json \
+            --expect tools/benchmarks/scripts/vue-benchmarks-replay-expect-main.json \
             --json replay-main-results.json
 
       - name: Upload replay results
@@ -105,9 +105,9 @@ jobs:
 
       - name: Replay the upstream corpus against the latest release
         run: |
-          node bench/vue-benchmarks-replay.mjs \
+          node tools/benchmarks/scripts/vue-benchmarks-replay.mjs \
             --vize-bin "$RUNNER_TEMP/vize-release/node_modules/.bin/vize" \
-            --expect bench/vue-benchmarks-replay-expect-release.json \
+            --expect tools/benchmarks/scripts/vue-benchmarks-replay-expect-release.json \
             --json replay-release-results.json
 
       - name: Upload replay results

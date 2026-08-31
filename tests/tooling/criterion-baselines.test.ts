@@ -5,7 +5,7 @@ import {
   criterionBenchRunOptions,
   criterionSideTargetDirs,
   resolveSuiteSelection,
-} from "../../bench/criterion-ab.mjs";
+} from "../../tools/benchmarks/scripts/criterion-ab.mjs";
 import {
   compareBaselineExports,
   criterionEnvironment,
@@ -14,8 +14,8 @@ import {
   evaluateAbsoluteBudgets,
   parseCritcmpExport,
   validateComparisonTable,
-} from "../../bench/criterion-baselines.mjs";
-import { renderSummary } from "../../bench/criterion-summary.mjs";
+} from "../../tools/benchmarks/scripts/criterion-baselines.mjs";
+import { renderSummary } from "../../tools/benchmarks/scripts/criterion-summary.mjs";
 
 test("Criterion driver snapshots both baselines before comparing them", () => {
   assert.deepEqual(criterionSideTargetDirs("/work/head/target"), {

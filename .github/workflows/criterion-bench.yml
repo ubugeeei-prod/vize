@@ -6,16 +6,16 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - "crates/**"
-      - "benchmarks/**"
+      - "tools/benchmarks/crates/**"
       - ".cargo/**"
       - "Cargo.lock"
       - "Cargo.toml"
-      - "bench/criterion-ab.mjs"
-      - "bench/criterion-baselines.mjs"
-      - "bench/criterion-impact.mjs"
-      - "bench/criterion-summary.mjs"
-      - "bench/dialect-guard.mjs"
-      - "bench/generate.mjs"
+      - "tools/benchmarks/scripts/criterion-ab.mjs"
+      - "tools/benchmarks/scripts/criterion-baselines.mjs"
+      - "tools/benchmarks/scripts/criterion-impact.mjs"
+      - "tools/benchmarks/scripts/criterion-summary.mjs"
+      - "tools/benchmarks/scripts/dialect-guard.mjs"
+      - "tools/benchmarks/scripts/generate.mjs"
       - "rust-toolchain.toml"
       - ".github/workflows/criterion-bench.yml"
 
@@ -36,7 +36,7 @@ env:
   # lowering (jsx_lower), Croquis analysis (jsx_croquis_analyze), Patina rule
   # traversal (jsx_lint, from vize_patina/markup_ir_bench), and VDOM/Vapor
   # codegen — so a regression in any of them shows up in the critcmp table. The
-  # documented JSX regression threshold is 10% (see bench/criterion-ab.mjs):
+  # documented JSX regression threshold is 10% (see tools/benchmarks/scripts/criterion-ab.mjs):
   # setting CRITERION_AB_THRESHOLD: 10 here flips this lane from report-only into
   # a hard gate that fails on a +10% median regression, no code change needed.
   CRITERION_AB_THRESHOLD: ""
@@ -85,7 +85,7 @@ jobs:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          node head/bench/criterion-impact.mjs \
+          node head/tools/benchmarks/scripts/criterion-impact.mjs \
             --repo-dir "$GITHUB_WORKSPACE/head" \
             --base-sha "$PR_BASE_SHA" \
             --head-sha "$PR_HEAD_SHA" \
@@ -123,7 +123,7 @@ jobs:
       # not share one Cargo target graph.
       - name: Run criterion A/B
         run: |
-          node head/bench/criterion-ab.mjs \
+          node head/tools/benchmarks/scripts/criterion-ab.mjs \
             --base-dir "$GITHUB_WORKSPACE/base" \
             --head-dir "$GITHUB_WORKSPACE/head" \
             --target-dir "$GITHUB_WORKSPACE/head/target" \
@@ -179,12 +179,12 @@ jobs:
         run: cargo build --profile ci-opt -p vize --features legacy --target-dir target/on
 
       - name: Generate Vue 3 corpus
-        run: node bench/generate.mjs "$DIALECT_GUARD_FILE_COUNT"
+        run: node tools/benchmarks/scripts/generate.mjs "$DIALECT_GUARD_FILE_COUNT"
 
       - name: Compare legacy OFF vs ON
         run: |
-          node bench/dialect-guard.mjs \
-            --input bench/__in__ \
+          node tools/benchmarks/scripts/dialect-guard.mjs \
+            --input tools/benchmarks/scripts/__in__ \
             --off-bin target/off/ci-opt/vize \
             --on-bin target/on/ci-opt/vize \
             --out-dir "$GITHUB_WORKSPACE/dialect-guard-out" \
