@@ -1,9 +1,0 @@
-/** Accessible, unstyled alert and status live-region container. */
-export type {
-  AlertExpose,
-  AlertRole,
-  AlertSlotState,
-  AlertState,
-  AlertVariant,
-} from "./families/feedback/alert/alert.ts";
-export { Alert } from "./families/feedback/alert/alert.ts";

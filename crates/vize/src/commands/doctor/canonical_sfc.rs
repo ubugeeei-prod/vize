@@ -21,7 +21,7 @@ struct ContractProblem {
     location: SourceLocation,
 }
 
-/// Checks the same explicit-section invariant as the `@vizejs/ui-tooling`
+/// Checks the same explicit-section invariant as the UI source-quality
 /// `explicit-sfc` authoring gate without rescanning SFC source text.
 ///
 /// The caller must opt a source into the public component contract. Ordinary

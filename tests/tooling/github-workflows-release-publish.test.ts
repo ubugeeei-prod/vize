@@ -188,7 +188,7 @@ test("release workflow publishes npm packages from package-specific artifacts", 
     ["release-npm-cli", "release-package-vize", "npm/cli"],
     ["release-npm-marquette", "release-package-marquette", "npm/marquette"],
     ["release-npm-composable", "release-package-composable", "npm/compose/core"],
-    ["release-npm-ui", "release-package-ui", "npm/ui/core"],
+    ["release-npm-ui", "release-package-ui", "npm/ui"],
   ] as const;
 
   for (const [jobName, artifactName, downloadPath] of downloadTargets) {

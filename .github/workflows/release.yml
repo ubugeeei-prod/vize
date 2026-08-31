@@ -213,9 +213,9 @@ jobs:
         with: { node-version-file: ".node-version", cache: true, run-install: false }
       - uses: ./.github/actions/setup-moonbit
       - name: Install package build dependencies
-        run: moon run --target native tools/moon/cmd/github/vp_install -- --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/oxlint...' --filter './npm/builder/unplugin...' --filter './npm/fresco...' --filter './npm/mcp-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/rspack...' --filter './npm/framework/musea-nuxt...' --filter './npm/framework/nuxt-lint-config...' --filter './npm/framework/nuxt...' --filter './npm/marquette...' --filter './npm/compose/core...' --filter './npm/ui/core...'
+        run: moon run --target native tools/moon/cmd/github/vp_install -- --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/oxlint...' --filter './npm/builder/unplugin...' --filter './npm/fresco...' --filter './npm/mcp-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/rspack...' --filter './npm/framework/musea-nuxt...' --filter './npm/framework/nuxt-lint-config...' --filter './npm/framework/nuxt...' --filter './npm/marquette...' --filter './npm/compose/core...' --filter './npm/ui...'
       - name: Build release npm packages
-        run: moon run --target native tools/moon/cmd/github/run_many -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build -- vp run --filter './npm/oxlint' build -- vp run --filter './npm/builder/unplugin' build -- vp run --filter './npm/fresco' build -- vp run --filter './npm/mcp-musea' build -- vp run --filter './npm/builder/vite-musea' build -- vp run --filter './npm/builder/vite-musea' build:gallery -- vp run --filter './npm/builder/rspack' build -- vp run --filter './npm/framework/musea-nuxt' build -- vp run --filter './npm/framework/nuxt-lint-config' build -- vp run --filter './npm/framework/nuxt' build -- vp run --filter './npm/marquette' build -- vp run --filter './npm/compose/core' build -- vp run --filter './npm/ui/core' build
+        run: moon run --target native tools/moon/cmd/github/run_many -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build -- vp run --filter './npm/oxlint' build -- vp run --filter './npm/builder/unplugin' build -- vp run --filter './npm/fresco' build -- vp run --filter './npm/mcp-musea' build -- vp run --filter './npm/builder/vite-musea' build -- vp run --filter './npm/builder/vite-musea' build:gallery -- vp run --filter './npm/builder/rspack' build -- vp run --filter './npm/framework/musea-nuxt' build -- vp run --filter './npm/framework/nuxt-lint-config' build -- vp run --filter './npm/framework/nuxt' build -- vp run --filter './npm/marquette' build -- vp run --filter './npm/compose/core' build -- vp run --filter './npm/ui' build
       - name: Upload vize CLI package artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -333,15 +333,10 @@ jobs:
             if-no-files-found: error,
             compression-level: 0,
           }
-      - name: Upload ui core package artifact
+      - name: Upload ui package artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          {
-            name: release-package-ui,
-            path: npm/ui/core,
-            if-no-files-found: error,
-            compression-level: 0,
-          }
+          { name: release-package-ui, path: npm/ui, if-no-files-found: error, compression-level: 0 }
   build-wasm-package:
     if: github.event_name == 'push'
     name: Build @vizejs/wasm package
@@ -523,9 +518,9 @@ jobs:
       - name: Download compose core package artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-composable, path: npm/compose/core }
-      - name: Download ui core package artifact
+      - name: Download ui package artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-ui, path: npm/ui/core }
+        with: { name: release-package-ui, path: npm/ui }
       - name: Download vize native artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { pattern: bindings-*, path: npm/native/artifacts }
@@ -564,7 +559,7 @@ jobs:
             npm/framework/nuxt \
             npm/marquette \
             npm/compose/core \
-            npm/ui/core
+            npm/ui
   release-preflight:
     if: github.event_name == 'push'
     permissions: { actions: write, contents: read, issues: read }
@@ -798,9 +793,9 @@ jobs:
       - uses: ./.github/actions/setup-moonbit
       - name: Download prebuilt package
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-ui, path: npm/ui/core }
+        with: { name: release-package-ui, path: npm/ui }
       - name: Publish @vizejs/ui
-        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/ui/core --provenance
+        run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/ui --provenance
 
   release-npm-unplugin:
     name: Release @vizejs/unplugin to npm

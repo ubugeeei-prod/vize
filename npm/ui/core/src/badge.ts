@@ -1,9 +1,0 @@
-/** Headless inline label primitive for status, count, tag, and chip composition. */
-export type {
-  BadgeElement,
-  BadgeExpose,
-  BadgeSlotState,
-  BadgeTone,
-  BadgeVariant,
-} from "./families/feedback/badge/badge.ts";
-export { Badge } from "./families/feedback/badge/badge.ts";

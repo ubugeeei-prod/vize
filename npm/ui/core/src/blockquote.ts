@@ -1,9 +1,0 @@
-/** Headless blockquote typography primitive for consumer-owned quotation styling. */
-export { Blockquote } from "./families/typography/blockquote/blockquote.ts";
-export type {
-  BlockquoteElement,
-  BlockquoteExpose,
-  BlockquoteSize,
-  BlockquoteSlotState,
-  BlockquoteTone,
-} from "./families/typography/blockquote/blockquote.ts";
