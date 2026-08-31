@@ -4,7 +4,9 @@ import path from "node:path";
 import { test } from "node:test";
 
 const repoRoot = path.resolve(import.meta.dirname, "../..");
-const requireFromBench = createRequire(path.join(repoRoot, "bench", "package.json"));
+const requireFromBench = createRequire(
+  path.join(repoRoot, "tools", "benchmarks", "scripts", "package.json"),
+);
 const { ESLint } = requireFromBench("eslint") as typeof import("eslint");
 const pluginVue = requireFromBench("eslint-plugin-vue");
 const vueParser = requireFromBench("vue-eslint-parser");

@@ -10,7 +10,7 @@ import {
   fileSha256,
   hashInPlace,
   pinExecutable,
-} from "../../bench/benchmark-binary.mjs";
+} from "../../tools/benchmarks/scripts/benchmark-binary.mjs";
 
 function withTempDir<T>(run: (dir: string) => T): T {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-bench-binary-"));

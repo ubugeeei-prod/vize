@@ -7,9 +7,9 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 // @ts-expect-error plain-JS bench module without type declarations
-import { generateCorpus } from "../../bench/generate.mjs";
+import { generateCorpus } from "../../tools/benchmarks/scripts/generate.mjs";
 // @ts-expect-error plain-JS bench module without type declarations
-import { evaluateBudget } from "../../bench/check-gate-report.mjs";
+import { evaluateBudget } from "../../tools/benchmarks/scripts/check-gate-report.mjs";
 import { resolveVizeCommand } from "../_helpers/realworld-typecheck.ts";
 import {
   requireTypecheckDependency,
@@ -17,7 +17,7 @@ import {
 } from "./support/typecheck-dependency.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const gateScript = path.join(root, "bench/check-gate.mjs");
+const gateScript = path.join(root, "tools/benchmarks/scripts/check-gate.mjs");
 const outputRoot = path.join(root, "target/vize-tests/check-bench-gate");
 
 type GateRun = {
@@ -48,7 +48,7 @@ function sha256Of(filePath: string): string {
 
 function readVueVersion(): string {
   const candidates = [
-    path.join(root, "bench/node_modules/vue/package.json"),
+    path.join(root, "tools/benchmarks/scripts/node_modules/vue/package.json"),
     path.join(root, "node_modules/vue/package.json"),
     path.join(root, "tests/node_modules/vue/package.json"),
   ];

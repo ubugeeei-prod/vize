@@ -31,7 +31,9 @@ const optionGroups = ["features", "script", "style", "template"] as const;
 /** Plugin object keys that are not Rollup/Vite hooks. */
 const nonHookPluginKeys = new Set(["api", "name"]);
 
-const requireFromBench = createRequire(path.join(repoRoot, "bench", "package.json"));
+const requireFromBench = createRequire(
+  path.join(repoRoot, "tools", "benchmarks", "scripts", "package.json"),
+);
 
 /** Instantiate the pinned upstream plugin for behavioral parity probes. */
 export function createUpstreamPlugin(
@@ -77,7 +79,13 @@ function installedVersion(): string {
 function createOptionsProgram(): { checker: ts.TypeChecker; source: ts.SourceFile } {
   // `bench` owns the `@vitejs/plugin-vue` devDependency, so resolve the probe
   // module from there.
-  const probePath = path.join(repoRoot, "bench", "__vize_plugin_vue_option_probe__.ts");
+  const probePath = path.join(
+    repoRoot,
+    "tools",
+    "benchmarks",
+    "scripts",
+    "__vize_plugin_vue_option_probe__.ts",
+  );
   const probeSource = `import type { Options } from "${upstreamPackage}";\nexport declare const probe: Options;\n`;
   const host = ts.createCompilerHost({}, true);
   const isProbe = (fileName: string) => path.resolve(fileName) === probePath;

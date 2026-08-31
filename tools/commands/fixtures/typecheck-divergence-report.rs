@@ -26,7 +26,7 @@ use std::{
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
 
-#[path = "../../rust/common.rs"]
+#[path = "../../support/common.rs"]
 mod common;
 
 #[derive(Debug)]

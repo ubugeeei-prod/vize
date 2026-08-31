@@ -11,10 +11,12 @@ import {
   acquireMuseaWorkspaceLock,
   museaWorkspaceLockPath,
   withMuseaWorkspaceLock,
-} from "../../bench/musea-lock.mjs";
+} from "../../tools/benchmarks/scripts/musea-lock.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const measureModule = pathToFileURL(path.join(root, "bench", "musea.mjs")).href;
+const measureModule = pathToFileURL(
+  path.join(root, "tools", "benchmarks", "scripts", "musea.mjs"),
+).href;
 
 async function withTempRoot(fn: (directory: string) => Promise<void>): Promise<void> {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-bench-musea-lock-"));

@@ -7,7 +7,7 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 /**
  * The `eslint-plugin-vue` half of a lint divergence run.
  *
- * The plugin, ESLint, and both parsers are pinned in `bench/package.json` — the
+ * The plugin, ESLint, and both parsers are pinned in `tools/benchmarks/scripts/package.json` — the
  * same pin `tools/fixtures/patina-rule-map.mjs` validates the rule map against —
  * so the baseline can never drift from the map that routes its findings.
  *
@@ -21,7 +21,9 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
  * at one span.
  */
 export function resolveBaselineRuntime() {
-  const requireFromBench = createRequire(join(repoRoot, "bench", "package.json"));
+  const requireFromBench = createRequire(
+    join(repoRoot, "tools", "benchmarks", "scripts", "package.json"),
+  );
   const manifest = requireFromBench("eslint-plugin-vue/package.json");
   return {
     ESLint: requireFromBench("eslint").ESLint,

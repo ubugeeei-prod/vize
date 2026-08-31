@@ -114,7 +114,7 @@ export const testAndBenchmarkTasks = defineTasks({
   // dev profile (~1m20s). Building once in the CI profile saves both legs.
   "test:js": noCacheTask(`${runTask("build:native:test")} && ${jsPackageTestCommand}`),
   "test:scripts": noCacheTask(
-    `${runTask("build:native:test")} && rust-script tools/rust/verify-layout.rs && VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 tests/tooling/*.test.ts tests/tooling/*.test.mjs`,
+    `${runTask("build:native:test")} && rust-script tools/commands/ci/verify-tool-layout.rs && VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 tests/tooling/*.test.ts tests/tooling/*.test.mjs`,
   ),
   "test:vscode-extension:vsix": noCacheTask(
     runInVscodeExtension(packageVscodeExtension, assertVscodePackage),
@@ -205,7 +205,7 @@ export const testAndBenchmarkTasks = defineTasks({
   // build:nuxt-stack, and says so when they are missing.
   "bench:musea": noCacheTask(moonScript("bench", "musea")),
   "bench:compare-tools": noCacheTask(
-    "node bench/compare-tools.mjs --input bench/__in__ --out target/tool-benchmark-summary.md --json target/tool-benchmark-results.json --doc target/performance-blacksmith.md",
+    "node tools/benchmarks/scripts/compare-tools.mjs --input tools/benchmarks/scripts/__in__ --out target/tool-benchmark-summary.md --json target/tool-benchmark-results.json --doc target/performance-blacksmith.md",
   ),
   "bench:all": noCacheTask(
     runTasks("bench", "bench:lint", "bench:fmt", "bench:check", "bench:vite", "bench:musea"),

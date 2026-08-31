@@ -10,7 +10,7 @@ import {
   clearPrecompileCache,
   precompileCacheDir,
   readPrecompileCacheEntries,
-} from "../../bench/vite-precompile-cache.mjs";
+} from "../../tools/benchmarks/scripts/vite-precompile-cache.mjs";
 
 function withTempRoot(fn: (root: string) => void): void {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-bench-vite-cache-"));
@@ -63,7 +63,7 @@ test("clearing removes every manifest and leaves the rest of node_modules alone"
   });
 });
 
-// Regression guard for the defect this module exists to prevent: `bench/vite.ts`
+// Regression guard for the defect this module exists to prevent: `tools/benchmarks/scripts/vite.ts`
 // ran a warmup build and then the measured build in the same working directory,
 // so after the persistent pre-compile cache landed (#3372) the measured Vize
 // build restored all of its modules from the warmup's manifest while

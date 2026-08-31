@@ -30,8 +30,11 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
   assert.match(benchmarkJob, /vp run --workspace-root build:native/);
   assert.match(benchmarkJob, /vp run --workspace-root build:vite-plugin/);
   assert.match(benchmarkJob, /vp run --workspace-root build:nuxt-stack/);
-  assert.match(benchmarkJob, /node bench\/generate\.mjs "\$VIZE_TOOL_BENCH_FILE_COUNT"/);
-  assert.match(benchmarkJob, /node bench\/compare-tools\.mjs/);
+  assert.match(
+    benchmarkJob,
+    /node tools\/benchmarks\/scripts\/generate\.mjs "\$VIZE_TOOL_BENCH_FILE_COUNT"/,
+  );
+  assert.match(benchmarkJob, /node tools\/benchmarks\/scripts\/compare-tools\.mjs/);
   assert.match(benchmarkJob, /--nuxt-file-count "\$VIZE_TOOL_BENCH_NUXT_FILE_COUNT"/);
   assert.match(benchmarkJob, /--musea-file-count "\$VIZE_TOOL_BENCH_MUSEA_FILE_COUNT"/);
   assert.match(benchmarkJob, /--large-blocks "\$VIZE_TOOL_BENCH_LARGE_BLOCKS"/);
@@ -62,7 +65,7 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
   );
   assert.match(
     commentJob,
-    /node bench\/comment-pr\.mjs --body tool-benchmark-summary\.md --comment-key "\$BENCHMARK_COMMENT_KEY"/,
+    /node tools\/benchmarks\/scripts\/comment-pr\.mjs --body tool-benchmark-summary\.md --comment-key "\$BENCHMARK_COMMENT_KEY"/,
   );
 
   // The snapshot commit job only fires on manual non-main branches; scheduled
@@ -73,7 +76,7 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
   );
   assert.match(commitJob, /contents:\s*write/);
   assert.match(commitJob, /docs\/content\/architecture\/performance-blacksmith\.md/);
-  assert.match(commitJob, /bench\/results\/tool-benchmark-latest\.json/);
+  assert.match(commitJob, /tools\/benchmarks\/results\/tool-benchmark-latest\.json/);
   assert.match(commitJob, /git commit -m "docs: update blacksmith benchmark snapshot"/);
   assert.match(commitJob, /git push origin HEAD:\$\{\{\s*github\.ref_name\s*\}\}/);
   assert.doesNotMatch(commitJob, /codex/i);
@@ -83,7 +86,7 @@ test("tool benchmark workflow publishes scheduled artifacts without pushing to p
   const workflow = readRepoFile(".github", "workflows", "tool-benchmark.yml");
 
   // A weekly cron keeps benchmark artifacts fresh without directly refreshing
-  // bench/results/tool-benchmark-latest.json from the protected main branch.
+  // tools/benchmarks/results/tool-benchmark-latest.json from the protected main branch.
   assert.match(workflow, /\n  schedule:\n/);
   assert.match(workflow, /- cron:\s*"41 5 \* \* 1"/);
 });
