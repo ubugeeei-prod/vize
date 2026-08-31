@@ -103,7 +103,7 @@ Run the inventory locally with:
 vp run --workspace-root source:lengths
 ```
 
-The `test:scripts` GitHub Actions job runs the same MoonBit tool in check mode against the pull
+The `test:scripts` GitHub Actions job runs the same Rust Script tool in check mode against the pull
 request base commit. Generated files, snapshots, fixtures, lockfiles, vendor output, coverage output,
 and build directories are excluded from the source inventory. When an existing exception needs work,
 prefer splitting by ownership boundary first: helpers, fixtures, snapshots, and command handlers
@@ -111,22 +111,21 @@ usually make better extraction targets than shared data structures.
 
 ## Tooling Scripts
 
-Repository automation prefers MoonBit command packages under `tools/moon/cmd/`. They run through the
-normal package path (`moon run --target native tools/moon/cmd/<name> -- <args>`), share the toolchain
-that already builds the compiler, and are covered by `tests/tooling/*.test.ts` suites that exercise
-them via `moon run` and assert full expected output. Root tasks invoke them with the `moonScript`
-helper in `tools/config/vite-plus/task-commands.ts`, so each consumer stays a stable task name rather than
-an inline command.
+Repository automation prefers Rust Script commands under `tools/commands/`, with shared support code
+under `tools/support/` by use case. Root tasks invoke them with the `rustTool` helper in
+`tools/config/vite-plus/task-commands.ts`, so each consumer stays a stable task name rather than an
+inline command.
 
-Good MoonBit candidates are small, pure, and dependency-light: argument parsing, JSON or text
-transforms, inventories, and pass/fail checks whose correctness can be proved with a `moon run` test.
+Good Rust Script candidates are small, pure, and dependency-light: argument parsing, JSON or text
+transforms, inventories, and pass/fail checks whose correctness can be proved with a direct
+`rust-script` test.
 
-Keep a script in Node (`.mjs`) when MoonBit would add friction rather than remove it:
+Keep a script in Node (`.mjs`) when Rust Script would add friction rather than remove it:
 
-- It is imported as a module by other JavaScript or by a `node --test` suite (for example
-  `tools/commands/ci/github/release-platforms.rs`), so rewriting it would split one source across two languages.
+- It is imported as a module by other JavaScript or by a `node --test` suite, so rewriting it
+  would split one source across two languages.
 - It depends on the npm ecosystem (globbing libraries, package tooling, GitHub Action SDKs) or on
-  Node-only APIs that have no MoonBit equivalent.
+  Node-only APIs that have no direct Rust equivalent.
 - It is large or exploratory enough that its behavior is not yet pinned by a full-output test; do not
   migrate anything that could break CI without such a test.
 

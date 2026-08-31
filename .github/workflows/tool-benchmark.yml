@@ -119,7 +119,7 @@ jobs:
               - '!tools/moon/cmd/npm_tag/**'
               - '!tools/moon/cmd/publish*/**'
               - '!tools/moon/cmd/release/**'
-              - '!tools/moon/cmd/source_file_lengths/**'
+              - '!tools/commands/ci/source-file-lengths.rs'
 
   tool-benchmark:
     name: tool-benchmark

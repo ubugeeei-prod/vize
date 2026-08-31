@@ -5,7 +5,9 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
+import { repoRoot } from "./_helpers/moonbit.ts";
+
+const command = path.join(repoRoot, "tools/commands/ci/source-file-lengths.rs");
 
 function runGit(cwd: string, args: string[]): string {
   const result = spawnSync("git", args, { cwd, encoding: "utf8" });
@@ -16,6 +18,10 @@ function runGit(cwd: string, args: string[]): string {
 function writeLines(filePath: string, count: number): void {
   const lines = Array.from({ length: count }, (_, index) => `line ${index + 1}`);
   fs.writeFileSync(filePath, `${lines.join("\n")}\n`);
+}
+
+function runSourceLengthScript(args: string[] = [], cwd = repoRoot) {
+  return spawnSync("rust-script", [command, ...args], { cwd, encoding: "utf8" });
 }
 
 function resolveBaseRef(cwd = repoRoot, env: NodeJS.ProcessEnv = process.env): string | undefined {
@@ -57,7 +63,7 @@ test("source length script checks the current checkout", () => {
     args.push("--base-ref", baseRef);
   }
 
-  const result = runMoonScript("source_file_lengths", args);
+  const result = runSourceLengthScript(args);
 
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
   assert.match(result.stdout, /Source files scanned: \d+/);
@@ -155,10 +161,9 @@ test("source length script rejects grown over-limit files", () => {
   const baseRef = runGit(cwd, ["rev-parse", "HEAD"]);
 
   writeLines(filePath, 352);
-  const result = runMoonScript(
-    "source_file_lengths",
+  const result = runSourceLengthScript(
     ["--check", "--base-ref", baseRef, "--max-lines", "350", "--limit", "5"],
-    { cwd },
+    cwd,
   );
 
   assert.equal(result.status, 1, result.stdout);
@@ -183,10 +188,9 @@ test("source length script accepts unchanged over-limit files", () => {
   ]);
   const baseRef = runGit(cwd, ["rev-parse", "HEAD"]);
 
-  const result = runMoonScript(
-    "source_file_lengths",
+  const result = runSourceLengthScript(
     ["--check", "--base-ref", baseRef, "--max-lines", "350", "--limit", "5"],
-    { cwd },
+    cwd,
   );
 
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
@@ -215,10 +219,9 @@ test("source length script ignores package manifests", () => {
 
   writeLines(packagePath, 352);
   writeLines(nestedPackagePath, 352);
-  const result = runMoonScript(
-    "source_file_lengths",
+  const result = runSourceLengthScript(
     ["--check", "--base-ref", baseRef, "--max-lines", "350", "--limit", "5"],
-    { cwd },
+    cwd,
   );
 
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
@@ -245,10 +248,9 @@ test("source length script compares renamed over-limit files to their base path"
 
   fs.renameSync(filePath, renamedPath);
   runGit(cwd, ["add", "-A"]);
-  const result = runMoonScript(
-    "source_file_lengths",
+  const result = runSourceLengthScript(
     ["--check", "--base-ref", baseRef, "--max-lines", "350", "--limit", "5"],
-    { cwd },
+    cwd,
   );
 
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());

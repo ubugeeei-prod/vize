@@ -69,7 +69,7 @@ test("Tool Benchmark ignores only known non-runtime pull request paths", () => {
     "!tools/moon/cmd/npm_tag/**",
     "!tools/moon/cmd/publish*/**",
     "!tools/moon/cmd/release/**",
-    "!tools/moon/cmd/source_file_lengths/**",
+    "!tools/commands/ci/source-file-lengths.rs",
   ];
   assert.deepEqual([...(filters.runtime ?? [])].sort(), expectedRuntimePatterns.toSorted());
   assert.match(impact.if ?? "", /github\.event_name == 'pull_request'/);

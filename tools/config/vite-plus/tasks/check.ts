@@ -15,6 +15,7 @@ import {
   runInPackages,
   runInVscodeExtension,
   runPackageScriptDirectly,
+  rustTool,
   runTask,
   runTasks,
   task,
@@ -70,7 +71,7 @@ export const checkTasks = defineTasks({
   "check:ci:vize-apps": noCacheTask(ciVizeAppCheckCommand),
   // v1 alpha release branches keep a zero-warning budget for repo-wide JS/TS checks.
   "check:repo": noCacheTask(strictRepoCheckCommand),
-  "source:lengths": noCacheTask(moonScript("source_file_lengths")),
+  "source:lengths": noCacheTask(rustTool("ci/source-file-lengths")),
   // Every package that exposes a `check` task takes part, including the oxlint
   // example. Its `lint` script is the one that intentionally exits non-zero, and
   // the aggregate never runs `lint`, so there is nothing here to exempt.
