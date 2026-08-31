@@ -16,7 +16,7 @@ const ordinaryModuleRoots = [
   "crates/vize_patina",
   "crates/vize_s1_to_s2",
   "crates/vize_s1",
-  "benchmarks/davinci_harness",
+  "tools/benchmarks/crates/davinci_harness",
   "tests/davinci_test_support",
 ];
 

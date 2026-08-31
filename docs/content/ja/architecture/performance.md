@@ -15,7 +15,7 @@ Vize は、Rust のゼロコスト抽象化とネイティブ マルチスレッ
 このページには 2 つの測定環境が登場します。以下のすべての数値は、どちらで測定されたものかを明示しています。
 
 **リファレンスランナー。** ツール間の比較は Tool Benchmark ワークフローで測定され、
-`bench/results/tool-benchmark-latest.json` にコミットされます。この成果物が引用可能な出典であり、
+`tools/benchmarks/results/tool-benchmark-latest.json` にコミットされます。この成果物が引用可能な出典であり、
 [Blacksmith ベンチマーク スナップショット](./performance-blacksmith) がその全体を公開しています。
 
 |                      |                                                     |
@@ -26,7 +26,7 @@ Vize は、Rust のゼロコスト抽象化とネイティブ マルチスレッ
 | **バージョン**       | vize 0.303.0 · vue 3.6.0-beta.10 · Node v24.14.0    |
 
 **ローカルワークステーション。** 以下のリンター、フォーマッタ、型チェッカーの表は、ローカルベンチ
-(`bench/lint.ts`、`bench/fmt.ts`、`bench/check.ts`) から手作業で維持されており、この環境で測定された
+(`tools/benchmarks/scripts/lint.ts`、`tools/benchmarks/scripts/fmt.ts`、`tools/benchmarks/scripts/check.ts`) から手作業で維持されており、この環境で測定された
 ものです。リファレンスランナーではまだ再現できないため、参考値として読んでください。
 
 |             |                                          |
@@ -47,7 +47,7 @@ Vize は、Rust のゼロコスト抽象化とネイティブ マルチスレッ
 | **全コア (32 vCPU)**       | 6.08s             | 329.2ms | **18.5x** |
 | **compiler-sfc 1T 対 max** | 17.15s            | 329.2ms | **52.1x** |
 
-出典: コミット済みスナップショット `bench/results/tool-benchmark-latest.json` の `compile` サーフェス
+出典: コミット済みスナップショット `tools/benchmarks/results/tool-benchmark-latest.json` の `compile` サーフェス
 ([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) — `README.md` と
 [Blacksmith ベンチマーク スナップショット](./performance-blacksmith) が公開しているものと同じ成果物です。
 
@@ -139,9 +139,9 @@ Vite プラグイン (`@vizejs/vite-plugin`) はファイル単位でキャッ�
 
 ## 実測: アリーナと式の作業
 
-上記のコンパイラ内部の作業は、クレートごとのマイクロベンチ ハーネス (`cargo bench --bench davinci`) によって、固定された 6 つのフィクスチャのラダー `benchmarks/davinci_harness/fixtures/{small,medium,large,stress-deep,stress-wide,stress-interp}.vue` 上で測定されます。
+上記のコンパイラ内部の作業は、クレートごとのマイクロベンチ ハーネス (`cargo bench --bench davinci`) によって、固定された 6 つのフィクスチャのラダー `tools/benchmarks/crates/davinci_harness/fixtures/{small,medium,large,stress-deep,stress-wide,stress-interp}.vue` 上で測定されます。
 
-**これらの数値の読み方。** 割り当て回数は決定的でマシンに依存しないため、正確な事実であり、リグレッションのラチェットとして使われます。実行時間は共有の開発マシン上で `--quick` サンプリングにより測定されたもので、**方向性を示すだけ**です。リファレンスランナー (Blacksmith) での記録は保留中であり、そのため `davinci-road/plan/budgets.toml` の `wall_p50_ns` と `allocs` はすべて `0` (「未記録、参考のみ」の意味) のままです。実行ごとの結果ファイルは `bench/results/davinci/` に出力されますが、これはローカルの成果物であり、コミットされたベースラインではありません。
+**これらの数値の読み方。** 割り当て回数は決定的でマシンに依存しないため、正確な事実であり、リグレッションのラチェットとして使われます。実行時間は共有の開発マシン上で `--quick` サンプリングにより測定されたもので、**方向性を示すだけ**です。リファレンスランナー (Blacksmith) での記録は保留中であり、そのため `davinci-road/plan/budgets.toml` の `wall_p50_ns` と `allocs` はすべて `0` (「未記録、参考のみ」の意味) のままです。実行ごとの結果ファイルは `tools/benchmarks/results/davinci/` に出力されますが、これはローカルの成果物であり、コミットされたベースラインではありません。
 
 コンパイル 1 回あたりの割り当て呼び出し回数、文字列とアリーナの作業の前後 (正確値、同一フィクスチャ):
 
@@ -215,7 +215,7 @@ OXC 式は安全でないテンプレートとフローティング Promise チ�
 
 > **注意:**Vize canon はまだ開発初期段階にあり、Corsa を利用した診断パスは vue-tsc の忠実度にまだ追いついていません。これらの測定値は、プロジェクト セッション フォールバックを備えた現在の CLI ファースト ネイティブ実装を反映しており、診断カバレッジとパリティが向上するにつれて変化します。
 
-この簡単なベンチマークを再現するには、`cargo build --release -p vize` の後に `node bench/check.ts 500` を実行します。
+この簡単なベンチマークを再現するには、`cargo build --release -p vize` の後に `node tools/benchmarks/scripts/check.ts 500` を実行します。
 
 ### タイプチェッカープロファイル
 
@@ -238,7 +238,7 @@ Rust 側の `virtual project` フェーズ — ファイルごとの SFC 解析�
 
 ### 診断を多用する e2e フィクスチャ
 
-`bench/check.ts` は、フィクスチャが存在する場合、`tests/_fixtures/_git/npmx.dev` アプリも測定します。これにより、実際のアプリケーション フィクスチャ上の診断マッピング パスが取得されます。
+`tools/benchmarks/scripts/check.ts` は、フィクスチャが存在する場合、`tests/_fixtures/_git/npmx.dev` アプリも測定します。これにより、実際のアプリケーション フィクスチャ上の診断マッピング パスが取得されます。
 
 | 治具            | ソース SFC ファイル | 仮想ファイル | 診断  | Vize Canon |
 | --------------- | ------------------- | ------------ | ----- | ------------ |
@@ -256,6 +256,6 @@ Rust 側の `virtual project` フェーズ — ファイルごとの SFC 解析�
 
 > 注: `@vizejs/vite-plugin` は Vue SFC コンパイル手順のみを置き換えます。パフォーマンスの違いは完全にその部分から生じます。依存関係の解決、モジュール グラフの構築、バンドル (ロールダウン)、およびその他すべての Vite 内部は `@vitejs/plugin-vue` と同一です。純粋なコンパイルのパフォーマンスについては、上記の [コンパイラ ベンチマーク](#benchmark-15000-sfc-files) を参照してください。 `@vizejs/vite-plugin` は、ネイティブ マルチスレッド コンパイルを使用して `.vue` ファイルを積極的にプリコンパイルします。これにより、より高速な HMR も可能になります。
 
-この行はコミット済みスナップショット `bench/results/tool-benchmark-latest.json` の `vite` サーフェス ([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) です。`README.md` と [Blacksmith ベンチマーク スナップショット](/architecture/performance-blacksmith) が公開しているものと同じ成果物であり、`tests/tooling/docs-vite-benchmark-row.test.ts` が全ロケールでこの成果物に固定しています。
+この行はコミット済みスナップショット `tools/benchmarks/results/tool-benchmark-latest.json` の `vite` サーフェス ([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) です。`README.md` と [Blacksmith ベンチマーク スナップショット](/architecture/performance-blacksmith) が公開しているものと同じ成果物であり、`tests/tooling/docs-vite-benchmark-row.test.ts` が全ロケールでこの成果物に固定しています。
 
-それまでここに掲載していた `957ms` / `479ms` / `2.0x` は、#3392 以前の `bench/vite.ts` によるものでした。このハーネスは、ウォームアップが残した永続プリコンパイル キャッシュ付きの Vize と、ゼロからコンパイルする `@vitejs/plugin-vue` を比較していました。現在このハーネスは実行マシン上でコールドとウォームを別々に報告するため、その出力はローカルな診断値であり、公開できる速度比ではありません。`vp run --workspace-root bench:vite` は変更前後の自己比較に使ってください。
+それまでここに掲載していた `957ms` / `479ms` / `2.0x` は、#3392 以前の `tools/benchmarks/scripts/vite.ts` によるものでした。このハーネスは、ウォームアップが残した永続プリコンパイル キャッシュ付きの Vize と、ゼロからコンパイルする `@vitejs/plugin-vue` を比較していました。現在このハーネスは実行マシン上でコールドとウォームを別々に報告するため、その出力はローカルな診断値であり、公開できる速度比ではありません。`vp run --workspace-root bench:vite` は変更前後の自己比較に使ってください。

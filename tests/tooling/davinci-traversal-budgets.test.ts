@@ -40,7 +40,7 @@ const budgets = parseTomlLite(budgetsText) as {
 // restated, so a fixture added there without a ceiling fails here.
 function ladderNames(): string[] {
   const fixturesRs = fs.readFileSync(
-    path.join(repoRoot, "benchmarks", "davinci_harness", "src", "fixtures.rs"),
+    path.join(repoRoot, "tools", "benchmarks", "crates", "davinci_harness", "src", "fixtures.rs"),
     "utf8",
   );
   const start = fixturesRs.indexOf("pub const LADDER");

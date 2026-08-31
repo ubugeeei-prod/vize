@@ -16,7 +16,7 @@ packages:
   - "examples/jsx-tsx"
   - "docs"
   - "tests"
-  - "bench"
+  - "tools/benchmarks/scripts"
 
 minimumReleaseAgeExclude:
   - "hono@4.12.34"

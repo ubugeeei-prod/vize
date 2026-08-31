@@ -300,7 +300,7 @@ const retained = results.map((result) => ({
 process.stdout.write(JSON.stringify({ version: manifest.version, results: retained, droppedConfigMessageCount }));
 "#;
     let input = json!({
-        "benchPackageJson": root.join("bench/package.json"),
+        "benchPackageJson": root.join("tools/benchmarks/scripts/package.json"),
         "cwd": cwd,
         "files": files,
         "rules": rules,

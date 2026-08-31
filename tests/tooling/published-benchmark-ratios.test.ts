@@ -4,10 +4,10 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { CROSS_ENGINE_CELL, ENGINE_CLASSES_BY_SURFACE } from "../../bench/compare-tools-report.mjs";
+import { CROSS_ENGINE_CELL, ENGINE_CLASSES_BY_SURFACE } from "../../tools/benchmarks/scripts/compare-tools-report.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const resultsPath = path.join(root, "bench/results/tool-benchmark-latest.json");
+const resultsPath = path.join(root, "tools/benchmarks/results/tool-benchmark-latest.json");
 
 type Surface = {
   id: string;
@@ -116,8 +116,8 @@ test("every published table states the type-check ratio the snapshot states", ()
 
 /**
  * `docs/content/architecture/performance.md` and its translations are NOT
- * rendered from `bench/results/tool-benchmark-latest.json` — they are
- * hand-maintained from a separate local bench (`bench/check.ts`). That is why
+ * rendered from `tools/benchmarks/results/tool-benchmark-latest.json` — they are
+ * hand-maintained from a separate local bench (`tools/benchmarks/scripts/check.ts`). That is why
  * #3431's retraction did not reach them and they were left as the only surface
  * in the repo still publishing `8.6x` / `8.9x` for the same cross-engine
  * comparison README and the snapshot had already withdrawn. Each entry is a

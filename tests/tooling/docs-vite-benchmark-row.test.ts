@@ -1,12 +1,12 @@
 /**
  * `docs/content/architecture/performance.md` published a third, independent Vite
- * figure -- `957ms / 479ms / 2.0x` -- sourced from `bench/vite.ts`. #3392 showed
+ * figure -- `957ms / 479ms / 2.0x` -- sourced from `tools/benchmarks/scripts/vite.ts`. #3392 showed
  * that harness timed Vize with a warm persistent pre-compile cache inherited from
  * its own warmup while `@vitejs/plugin-vue` compiled from scratch, so the ratio was
  * not apples-to-apples; #3392 also split the harness output into separate cold and
  * warm rows, so the single quoted figure stopped being reproducible even in form.
  * README.md and `performance-blacksmith.md` had already been reconciled against
- * `bench/results/tool-benchmark-latest.json` (#3422, #3431) and pinned by
+ * `tools/benchmarks/results/tool-benchmark-latest.json` (#3422, #3431) and pinned by
  * `readme-benchmark-rows.test.ts`; this surface, and its four localized copies,
  * were missed.
  *
@@ -37,7 +37,7 @@ type Surface = { id: string; files: number; primarySpeedup: number; variants: Va
 
 function viteSurface(): Surface {
   const surfaces = JSON.parse(
-    fs.readFileSync(path.join(repoRoot, "bench/results/tool-benchmark-latest.json"), "utf8"),
+    fs.readFileSync(path.join(repoRoot, "tools/benchmarks/results/tool-benchmark-latest.json"), "utf8"),
   ).surfaces as Surface[];
   const surface = surfaces.find((candidate) => candidate.id === "vite");
   assert.ok(surface, "snapshot is missing the vite surface");
@@ -105,7 +105,7 @@ test("every locale's performance page publishes the snapshot's Vite row", () => 
   );
 });
 
-test("no locale's performance page still quotes the pre-#3392 bench/vite.ts figure", () => {
+test("no locale's performance page still quotes the pre-#3392 tools/benchmarks/scripts/vite.ts figure", () => {
   // `957ms`/`479ms` were the harness's numbers, not the artifact's. They may only
   // appear inside the paragraph that explains why they were retracted, which
   // quotes them in backticks; a bare occurrence means a table row came back.

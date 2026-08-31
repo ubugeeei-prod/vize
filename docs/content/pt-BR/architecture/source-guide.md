@@ -21,7 +21,7 @@ distribuição e integração.
 | `npm/`    | Pacotes JavaScript para Vite, Nuxt, extensões de editores, integrações com Musea e wrappers de pacotes publicados               |
 | `docs/`   | Documentação para usuários, notas de arquitetura, notas de atualização e o tema do site docs                                    |
 | `tests/`  | Fixtures cross-package, projetos do mundo real, testes de ferramentas e governança snapshot                                     |
-| `bench/`  | Scripts de comparação de desempenho e fiscalização de benchmarks de PR                                                          |
+| `tools/benchmarks/scripts/`  | Scripts de comparação de desempenho e fiscalização de benchmarks de PR                                                          |
 | `tools/`  | Automação de repositórios que não faz parte do produto enviado                                                                  |
 
 Quando uma mudança cruza diretórios, o proprietário geralmente é a camada que cria o comportamento
