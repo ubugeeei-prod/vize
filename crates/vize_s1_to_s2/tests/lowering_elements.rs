@@ -40,6 +40,20 @@ fn the_svg_namespace_is_entered_by_tag_and_inherited() {
 }
 
 #[test]
+fn a_bare_svg_tag_enters_the_svg_namespace() {
+    let art = artifact("<feImage />");
+    assert_eq!(
+        art.folio,
+        "[disegno]\n\
+         ops=1\n\
+         \n\
+         [disegno.ops]\n\
+         ui.element feImage ns=svg @0:11\n\
+         \n"
+    );
+}
+
+#[test]
 fn v_model_lowers_to_the_contract_with_synthesized_attributes() {
     // Read and write share one authored payload; element kind and the
     // dialect modifiers ride as attributes carrying the binding's span,

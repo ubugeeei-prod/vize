@@ -48,6 +48,10 @@ const BATTERY: &[(&str, &str)] = &[
         "div_then_vfor",
         r#"<div></div><p v-for="i in n">{{ i }}</p>"#,
     ),
+    (
+        "root_dynamic_element_before_for_element",
+        r#"<feImage :href="parts.top" /><feComposite v-for="part in parts" :key="part" :in="part" />"#,
+    ),
     ("slot_then_div", "<slot></slot><div></div>"),
     (
         "teleport_then_div",

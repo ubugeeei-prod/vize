@@ -3,16 +3,15 @@
 //!
 //! # Namespace, v1 scope (recorded in the P2-8 record)
 //!
-//! The namespace rule is tag inheritance: `<svg>` opens the SVG
-//! namespace, `<math>` opens MathML, and the SVG/MathML HTML integration
-//! points (`foreignObject`/`desc`/`title`; `mi`/`mo`/`mn`/`ms`/`mtext`)
-//! return their **children** to HTML. This approximates the HTML
-//! tree-construction namespace algorithm the way the shipped
-//! compiler-dom logic does; the full in-DOM rules are not replicated.
+//! The namespace rule is tag inheritance: SVG/MathML tags open their
+//! namespace, and the SVG/MathML HTML integration points
+//! (`foreignObject`/`desc`/`title`; `mi`/`mo`/`mn`/`ms`/`mtext`) return
+//! their **children** to HTML. This approximates the HTML tree-construction
+//! namespace algorithm the way the shipped compiler-dom logic does.
 
 use alloc::vec::Vec as StdVec;
 
-use vize_s0::{Box, Vec, cstr, is_native_tag};
+use vize_s0::{Box, Vec, cstr, is_math_ml_tag, is_native_tag, is_svg_tag};
 use vize_s1::Element;
 
 use vize_s2::op::{Attribute, BindingOp, ComponentOp, ElementOp, Namespace, Op, Region};
@@ -97,10 +96,12 @@ pub(crate) fn attr_value_text<'a>(element: &Element<'a>, index: usize) -> Option
 
 /// An element's own namespace, entered by tag.
 fn enter_ns(parent: Namespace, tag: &str) -> Namespace {
-    match tag {
-        "svg" => Namespace::Svg,
-        "math" => Namespace::MathMl,
-        _ => parent,
+    if is_svg_tag(tag) {
+        Namespace::Svg
+    } else if is_math_ml_tag(tag) {
+        Namespace::MathMl
+    } else {
+        parent
     }
 }
 
