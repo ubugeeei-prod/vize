@@ -40,7 +40,7 @@ on:
       - "crates/vize_s1/**"
       - "tests/fuzz/**"
       - "tools/commands/ci/fuzz/**"
-      - "tools/rust/**"
+      - "tools/support/**"
       - ".github/workflows/fuzz.yml"
 
 run-name: Fuzz ${{ github.event_name == 'workflow_dispatch' && (inputs.mode == 'replay' && 'replay' || format('{0}s', inputs.max-total-time)) || github.event_name }} @ ${{ github.sha }}

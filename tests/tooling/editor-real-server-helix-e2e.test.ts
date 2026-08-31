@@ -54,7 +54,7 @@ test("the official Helix health guard checks both packaged language entries exac
 
 test("the Helix scenario pins complete responses for every advertised feature", () => {
   const scenario = readRepoFile("tools", "commands", "editors", "helix", "run-real-server.rs");
-  const contract = readRepoFile("tools", "rust", "lsp_smoke.rs");
+  const contract = readRepoFile("tools", "support", "editors", "lsp_smoke.rs");
 
   for (const method of [
     "textDocument/completion",

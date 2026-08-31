@@ -18,9 +18,9 @@ use std::{
     time::{Instant, SystemTime, UNIX_EPOCH},
 };
 
-#[path = "../../rust/common.rs"]
+#[path = "../../support/common.rs"]
 mod common;
-#[path = "../../rust/davinci_corpus.rs"]
+#[path = "../../support/davinci/corpus.rs"]
 mod davinci_corpus;
 
 #[derive(Debug)]

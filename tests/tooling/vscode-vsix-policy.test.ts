@@ -19,7 +19,7 @@ test("VSIX package policy excludes workspace manifests from shipped files", () =
 });
 
 test("VSIX archive reader escapes unzip member globs", () => {
-  const reader = readText("tools/rust/editor_archive.rs");
+  const reader = readText("tools/support/editors/archive.rs");
   const smoke = readText("tools/commands/editors/vscode/assert-vsix-package.rs");
 
   assert.match(reader, /\.arg\(unzip_member_pattern\(name\)\)/);
