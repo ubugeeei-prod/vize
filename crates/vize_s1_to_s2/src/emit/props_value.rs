@@ -3,7 +3,7 @@
 use vize_s2::expr::{ExprRef, JsExpr};
 use vize_s2::op::BindOp;
 
-use super::js::RawJs;
+use super::js::{RawJs, js_expr_source};
 use super::props_bind;
 use super::{EmitCx, EmitError};
 
@@ -15,7 +15,7 @@ pub(super) enum BindValue<'a> {
 impl BindValue<'_> {
     pub(super) fn emit(&self, cx: &mut EmitCx<'_>) {
         match self {
-            Self::Js(js) => cx.buf.push(js.source),
+            Self::Js(js) => cx.buf.push(js_expr_source(js).as_str()),
             Self::RawJs(source) => cx.buf.push(source.as_str()),
         }
     }

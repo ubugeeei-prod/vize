@@ -15,6 +15,7 @@ use super::EmitCx;
 use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
+use super::js::js_expr_source;
 use super::on::{event_key_for, needs_hydration};
 use super::props::{
     BindName, Patch, Piece, StaticBindKeyCasing, bind_name, bind_value, emit_props_object,
@@ -296,7 +297,7 @@ fn emit_to_handlers(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitError>
     cx.buf.use_to_handlers();
     cx.buf.push(Buf::to_handlers_alias());
     cx.buf.push("(");
-    cx.buf.push(js.source);
+    cx.buf.push(js_expr_source(js).as_str());
     cx.buf.push(", true)");
     Ok(())
 }

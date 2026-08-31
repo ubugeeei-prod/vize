@@ -100,6 +100,11 @@ impl RawJs<'_> {
     }
 }
 
+pub(super) fn js_expr_source<'a>(js: &JsExpr<'a>) -> RawJs<'a> {
+    line_comment_source_as_block(js.source, js.span.start)
+        .unwrap_or_else(|| RawJs::Borrowed(js.source))
+}
+
 pub(super) fn parse_rejected_raw_js<'a>(
     expr: &ExprRef<'a>,
     allow_identifier: bool,
@@ -111,7 +116,7 @@ pub(super) fn parse_rejected_raw_js<'a>(
     if trailing_block_comment_value_is_js(opaque.source, opaque.span) {
         return Some(RawJs::Borrowed(opaque.source));
     }
-    line_comment_value_as_js(opaque)
+    line_comment_source_as_block(opaque.source, opaque.span.start)
 }
 
 pub(super) fn parse_rejected_original_raw_js<'a>(
@@ -170,11 +175,15 @@ fn strip_trailing_block_comments(mut source: &str) -> Option<&str> {
 }
 
 fn line_comment_value_as_js<'a>(opaque: &OpaqueExpr<'a>) -> Option<RawJs<'a>> {
-    if !opaque.source.contains("//") {
+    line_comment_source_as_block(opaque.source, opaque.span.start)
+}
+
+fn line_comment_source_as_block<'a>(source: &'a str, span_start: u32) -> Option<RawJs<'a>> {
+    if !source.contains("//") {
         return None;
     }
-    let converted = convert_line_comments_to_block(opaque.source);
-    if converted == opaque.source || !source_is_js(converted.as_str(), opaque.span.start) {
+    let converted = convert_line_comments_to_block(source);
+    if converted == source || !source_is_js(converted.as_str(), span_start) {
         return None;
     }
     Some(RawJs::Owned(converted))
@@ -313,38 +322,4 @@ pub(super) fn push_ident_key(cx: &mut super::EmitCx<'_>, name: &str) {
 }
 
 #[cfg(test)]
-mod tests {
-    use vize_s0::Span;
-    use vize_s2::expr::{ExprRef, OpaqueExpr, OpaqueReason};
-
-    use super::{convert_line_comments_to_block, parse_rejected_raw_js};
-
-    fn rejected<'a>(allocator: &'a vize_s0::Allocator, source: &'a str) -> ExprRef<'a> {
-        ExprRef::Opaque(allocator.alloc(OpaqueExpr {
-            reason: OpaqueReason::ParseRejected,
-            source,
-            span: Span::new(0, source.len() as u32),
-        }))
-    }
-
-    #[test]
-    fn rewrites_line_comments_only_when_rewritten_source_is_js() {
-        let allocator = vize_s0::Allocator::new();
-        let raw = parse_rejected_raw_js(&rejected(&allocator, "ok // comment"), false)
-            .expect("line comment can be rewritten");
-        assert_eq!(raw.as_str(), "ok /*  comment */");
-        assert!(parse_rejected_raw_js(&rejected(&allocator, "ok. // comment"), false).is_none());
-    }
-
-    #[test]
-    fn preserves_regex_strings_and_blocks_while_rewriting_line_comments() {
-        assert_eq!(
-            convert_line_comments_to_block("url.replace(/https?:\\/\\/[^/]+\\//, '//')"),
-            "url.replace(/https?:\\/\\/[^/]+\\//, '//')"
-        );
-        assert_eq!(
-            convert_line_comments_to_block("x /* // */ + y // */"),
-            "x /* // */ + y /*  * / */"
-        );
-    }
-}
+mod tests;

@@ -8,7 +8,7 @@ use vize_s2::expr::ExprRef;
 use vize_s2::op::{BindOp, BindingOp, OnOp, SlotOp};
 
 use super::buf::Buf;
-use super::js::{escape_js_string, is_valid_js_identifier};
+use super::js::{escape_js_string, is_valid_js_identifier, js_expr_source};
 use super::props::{
     Piece, StaticBindKeyCasing, bind_value, emit_dynamic_bind_pair, pieces, static_bind_key,
 };
@@ -127,7 +127,7 @@ fn emit_on_spread_expr(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitErr
     cx.buf.use_to_handlers();
     cx.buf.push(Buf::to_handlers_alias());
     cx.buf.push("(");
-    cx.buf.push(js.source);
+    cx.buf.push(js_expr_source(js).as_str());
     cx.buf.push(", true)");
     Ok(())
 }

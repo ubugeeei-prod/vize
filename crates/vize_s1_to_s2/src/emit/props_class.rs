@@ -4,7 +4,7 @@ use vize_s2::expr::JsExpr;
 use vize_s2::op::BindOp;
 
 use super::EmitCx;
-use super::js::escape_js_string;
+use super::js::{escape_js_string, js_expr_source};
 use super::props_object::Piece;
 
 pub(super) fn emit_class_value(
@@ -27,9 +27,9 @@ pub(super) fn emit_class_value(
             cx.buf
                 .push(escape_js_string(static_class.value.unwrap_or("")).as_str());
             cx.buf.push("\", ");
-            cx.buf.push(js.source);
+            cx.buf.push(js_expr_source(js).as_str());
         } else {
-            cx.buf.push(js.source);
+            cx.buf.push(js_expr_source(js).as_str());
             cx.buf.push(", \"");
             cx.buf
                 .push(escape_js_string(static_class.value.unwrap_or("")).as_str());
@@ -37,7 +37,7 @@ pub(super) fn emit_class_value(
         }
         cx.buf.push("]");
     } else {
-        cx.buf.push(js.source);
+        cx.buf.push(js_expr_source(js).as_str());
     }
     if !skip_normalize {
         cx.buf.push(")");

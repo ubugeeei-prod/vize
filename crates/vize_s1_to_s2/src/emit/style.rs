@@ -5,7 +5,7 @@ use vize_s2::op::{Attribute, BindOp};
 
 use super::EmitCx;
 use super::buf::Buf;
-use super::js::escape_js_string;
+use super::js::{escape_js_string, js_expr_source};
 
 pub(super) fn emit_style_value(
     cx: &mut EmitCx<'_>,
@@ -26,15 +26,15 @@ pub(super) fn emit_style_value(
         if before {
             emit_static_style_object(cx, value);
             cx.buf.push(", ");
-            cx.buf.push(js.source);
+            cx.buf.push(js_expr_source(js).as_str());
         } else {
-            cx.buf.push(js.source);
+            cx.buf.push(js_expr_source(js).as_str());
             cx.buf.push(", ");
             emit_static_style_object(cx, value);
         }
         cx.buf.push("]");
     } else {
-        cx.buf.push(js.source);
+        cx.buf.push(js_expr_source(js).as_str());
     }
     if wrap {
         cx.buf.push(")");
