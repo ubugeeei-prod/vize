@@ -46,6 +46,7 @@ mod component;
 mod create_slots;
 mod create_slots_walk;
 mod directive;
+mod entity;
 mod error;
 mod filter;
 mod flag;

@@ -4044,6 +4044,7 @@ dependencies = [
  "criterion",
  "davinci_harness",
  "davinci_test_support",
+ "htmlize",
  "insta",
  "oxc_ast",
  "oxc_ast_visit",

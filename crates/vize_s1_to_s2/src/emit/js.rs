@@ -8,59 +8,7 @@ use vize_s0::expression_guard::scan::{
 use vize_s0::{Allocator, Span, String, ToCompactString};
 use vize_s2::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
 
-fn decode_html_entities(s: &str) -> String {
-    if !s.contains('&') {
-        return String::from(s);
-    }
-    let mut result = String::with_capacity(s.len());
-    let mut chars = s.chars().peekable();
-    while let Some(c) = chars.next() {
-        if c == '&' && chars.peek() == Some(&'#') {
-            chars.next();
-            let is_hex = chars.peek() == Some(&'x') || chars.peek() == Some(&'X');
-            if is_hex {
-                chars.next();
-            }
-            let mut num_str = String::default();
-            while let Some(&ch) = chars.peek() {
-                if ch == ';' {
-                    chars.next();
-                    break;
-                }
-                let is_valid_char =
-                    (is_hex && ch.is_ascii_hexdigit()) || (!is_hex && ch.is_ascii_digit());
-                if is_valid_char {
-                    num_str.push(ch);
-                    chars.next();
-                } else {
-                    break;
-                }
-            }
-            if !num_str.is_empty() {
-                let codepoint = if is_hex {
-                    u32::from_str_radix(num_str.as_str(), 16).ok()
-                } else {
-                    num_str.as_str().parse::<u32>().ok()
-                };
-                if let Some(cp) = codepoint
-                    && let Some(decoded_char) = char::from_u32(cp)
-                {
-                    result.push(decoded_char);
-                    continue;
-                }
-            }
-            result.push('&');
-            result.push('#');
-            if is_hex {
-                result.push('x');
-            }
-            result.push_str(num_str.as_str());
-        } else {
-            result.push(c);
-        }
-    }
-    result
-}
+use super::entity::decode_html_entities;
 
 #[inline]
 fn byte_may_need_js_escaping(b: u8) -> bool {

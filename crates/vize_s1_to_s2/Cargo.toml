@@ -28,6 +28,7 @@ metadata.vize.stability = "experimental"
 davinci-differential = []
 
 [dependencies]
+htmlize = { workspace = true }
 oxc_ast = { workspace = true }
 oxc_ast_visit = { workspace = true }
 oxc_parser = { workspace = true }
