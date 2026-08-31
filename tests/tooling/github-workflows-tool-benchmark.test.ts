@@ -27,6 +27,16 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
   assert.doesNotMatch(benchmarkJob, /contents:\s*write/);
   assert.doesNotMatch(benchmarkJob, /issues:\s*write/);
   assert.match(benchmarkJob, /uses:\s*\.\/\.github\/actions\/setup-moonbit/);
+  const rustScriptSetupIndex = benchmarkJob.indexOf("uses: ./.github/actions/setup-rust-script");
+  const vitePluginBuildIndex = benchmarkJob.indexOf(
+    "run: vp run --workspace-root build:vite-plugin",
+  );
+  assert.ok(rustScriptSetupIndex >= 0, "tool benchmark must install rust-script");
+  assert.ok(vitePluginBuildIndex >= 0, "tool benchmark must build the Vite plugin");
+  assert.ok(
+    rustScriptSetupIndex < vitePluginBuildIndex,
+    "tool benchmark must install rust-script before build:vite-plugin",
+  );
   assert.match(benchmarkJob, /vp run --workspace-root build:native/);
   assert.match(benchmarkJob, /vp run --workspace-root build:vite-plugin/);
   assert.match(benchmarkJob, /vp run --workspace-root build:nuxt-stack/);

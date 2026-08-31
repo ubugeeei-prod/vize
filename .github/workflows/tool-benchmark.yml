@@ -154,6 +154,8 @@ jobs:
 
       - uses: ./.github/actions/setup-moonbit
 
+      - uses: ./.github/actions/setup-rust-script
+
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
 
