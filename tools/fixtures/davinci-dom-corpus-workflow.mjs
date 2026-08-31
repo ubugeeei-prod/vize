@@ -31,6 +31,11 @@ function run(command, args, options = {}) {
   return result.stdout ?? "";
 }
 
+function errorMessage(error) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.replace(/\s+/g, " ").trim();
+}
+
 export function parseFixtureGitlinks(indexOutput) {
   return indexOutput
     .split(/\r?\n/)
@@ -41,8 +46,8 @@ export function parseFixtureGitlinks(indexOutput) {
     .sort((left, right) => left.localeCompare(right));
 }
 
-function selectedGitlinks() {
-  return parseFixtureGitlinks(run("git", ["ls-files", "--stage", "--", corpusRoot]));
+function selectedGitlinks(runCommand) {
+  return parseFixtureGitlinks(runCommand("git", ["ls-files", "--stage", "--", corpusRoot]));
 }
 
 export function verdictFor(outcome, mode) {
@@ -148,30 +153,69 @@ export function validateCorpusEvidence(artifact = artifactDir) {
   };
 }
 
-export function hydrateCorpus() {
-  mkdirSync(artifactDir, { recursive: true });
-  const fixturePaths = selectedGitlinks();
+function hydrateFixtureSerially(fixturePath, runCommand) {
+  try {
+    runCommand("git", [
+      "submodule",
+      "update",
+      "--init",
+      "--checkout",
+      "--depth",
+      "1",
+      "--jobs",
+      "1",
+      "--",
+      fixturePath,
+    ]);
+  } catch (error) {
+    console.warn(
+      `::warning title=Davinci corpus hydrate full fallback::${fixturePath}: ${errorMessage(
+        error,
+      )}`,
+    );
+    runCommand("git", [
+      "submodule",
+      "update",
+      "--init",
+      "--checkout",
+      "--force",
+      "--",
+      fixturePath,
+    ]);
+  }
+}
+
+export function hydrateCorpus({ artifact = artifactDir, runCommand = run } = {}) {
+  mkdirSync(artifact, { recursive: true });
+  const fixturePaths = selectedGitlinks(runCommand);
   if (fixturePaths.length !== expectedGitlinks) {
     console.error(
       `::error title=Unexpected fixture gitlinks::expected ${expectedGitlinks}, got ${fixturePaths.length}`,
     );
     return 1;
   }
-  writeFileSync(`${artifactDir}/selected-gitlinks.txt`, `${fixturePaths.join("\n")}\n`);
-  run("git", [
-    "submodule",
-    "update",
-    "--init",
-    "--checkout",
-    "--depth",
-    "1",
-    "--jobs",
-    "8",
-    "--",
-    ...fixturePaths,
-  ]);
-  const status = run("git", ["submodule", "status", "--", corpusRoot]);
-  writeFileSync(`${artifactDir}/submodule-status.txt`, status);
+  writeFileSync(`${artifact}/selected-gitlinks.txt`, `${fixturePaths.join("\n")}\n`);
+  try {
+    runCommand("git", [
+      "submodule",
+      "update",
+      "--init",
+      "--checkout",
+      "--depth",
+      "1",
+      "--jobs",
+      "8",
+      "--",
+      ...fixturePaths,
+    ]);
+  } catch (error) {
+    console.warn(`::warning title=Davinci corpus hydrate serial fallback::${errorMessage(error)}`);
+    for (const fixturePath of fixturePaths) {
+      hydrateFixtureSerially(fixturePath, runCommand);
+    }
+  }
+  const status = runCommand("git", ["submodule", "status", "--", corpusRoot]);
+  writeFileSync(`${artifact}/submodule-status.txt`, status);
   return 0;
 }
 

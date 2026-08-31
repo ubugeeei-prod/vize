@@ -9,6 +9,7 @@ import {
   corpusEvidenceLines,
   expectedDomOutputComparisons,
   expectedGitlinks,
+  hydrateCorpus,
   parseCorpusEvidence,
   parseFixtureGitlinks,
   validateCorpusEvidence,
@@ -46,6 +47,7 @@ test("real-project workflow carries a full-canonical S2 DOM corpus job", () => {
     /artifactDir = "real-project-davinci-dom-corpus"/,
     /selected-gitlinks\.txt/,
     /"submodule",\s+"update",\s+"--init",\s+"--checkout",\s+"--depth",\s+"1",\s+"--jobs",\s+"8"/,
+    /"submodule",\s+"update",\s+"--init",\s+"--checkout",\s+"--force"/,
     /"submodule", "status", "--", corpusRoot/,
   ]) {
     assert.match(helperSource, pattern);
@@ -114,6 +116,64 @@ test("S2 DOM corpus workflow gitlink constant matches the checkout index", () =>
   );
 
   assert.equal(indexed.length, expectedGitlinks);
+});
+
+test("S2 DOM corpus hydrate falls back from bulk shallow failures", () => {
+  const artifact = mkdtempSync(join(tmpdir(), "vize-dom-corpus-"));
+  const fixturePaths = Array.from(
+    { length: expectedGitlinks },
+    (_, index) => `tests/_fixtures/_git/project-${index}`,
+  );
+  const calls = [];
+  const jobCount = (args) => {
+    const index = args.indexOf("--jobs");
+    return index === -1 ? undefined : args[index + 1];
+  };
+  const runCommand = (command, args) => {
+    calls.push([command, args]);
+    if (args[0] === "ls-files") {
+      return fixturePaths
+        .map((fixturePath, index) => `160000 ${String(index).padStart(40, "0")} 0\t${fixturePath}`)
+        .join("\n");
+    }
+    if (args[0] === "submodule" && args[1] === "update" && args.includes("--jobs")) {
+      if (args.includes("8")) throw new Error("bulk shallow failed");
+      if (args.includes("tests/_fixtures/_git/project-7")) {
+        throw new Error("single shallow failed");
+      }
+      return "";
+    }
+    if (args[0] === "submodule" && args[1] === "update" && args.includes("--force")) {
+      return "";
+    }
+    if (args[0] === "submodule" && args[1] === "status") {
+      return fixturePaths
+        .map((fixturePath, index) => ` ${String(index).padStart(40, "0")} ${fixturePath}`)
+        .join("\n");
+    }
+    throw new Error(`unexpected command: ${command} ${args.join(" ")}`);
+  };
+  try {
+    assert.equal(hydrateCorpus({ artifact, runCommand }), 0);
+    assert.ok(calls.some(([, args]) => jobCount(args) === "8"));
+    assert.equal(calls.filter(([, args]) => jobCount(args) === "1").length, expectedGitlinks);
+    assert.deepEqual(
+      calls.filter(([, args]) => args.includes("--force")).map(([, args]) => args.at(-1)),
+      ["tests/_fixtures/_git/project-7"],
+    );
+    assert.equal(
+      readFileSync(join(artifact, "selected-gitlinks.txt"), "utf8").split(/\r?\n/).filter(Boolean)
+        .length,
+      expectedGitlinks,
+    );
+    assert.equal(
+      readFileSync(join(artifact, "submodule-status.txt"), "utf8").split(/\r?\n/).filter(Boolean)
+        .length,
+      expectedGitlinks,
+    );
+  } finally {
+    rmSync(artifact, { recursive: true, force: true });
+  }
 });
 
 test("S2 DOM corpus workflow validates closure evidence artifacts", () => {
