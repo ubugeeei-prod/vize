@@ -134,6 +134,9 @@ fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>, source: &str) -> Op
                     }
                     continue;
                 }
+                if !is_payload_prop_name(attr.name) {
+                    continue;
+                }
                 props.push(PassedProp {
                     name: attr.name.into(),
                     name_is_dynamic: false,
@@ -157,7 +160,7 @@ fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>, source: &str) -> Op
                         record_expression_scope(summary, directive.exp.as_ref(), &mut scope);
                         continue;
                     }
-                    if prop_name_is_dynamic {
+                    if prop_name_is_dynamic || !is_payload_prop_name(prop_name.as_str()) {
                         continue;
                     }
                     record_expression_scope(summary, directive.exp.as_ref(), &mut scope);
@@ -229,6 +232,10 @@ fn template_expression(summary: &Croquis, start: u32, end: u32) -> Option<&Templ
     summary.template_expressions.iter().find(|expr| {
         expr.kind == TemplateExpressionKind::VBind && expr.start == start && expr.end == end
     })
+}
+
+fn is_payload_prop_name(name: &str) -> bool {
+    name != "key" && name != "ref"
 }
 
 fn expression_content<'a>(exp: &'a ExpressionNode<'_>, source: &'a str) -> &'a str {

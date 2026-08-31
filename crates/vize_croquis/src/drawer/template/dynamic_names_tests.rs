@@ -177,6 +177,8 @@ fn literal_template_slot_names_are_static() {
         "<Child>",
         "<template #[`item.name`]=\"{ item }\">{{ item.name }}</template>",
         "<template #[`item.${suffix}`]=\"{ row }\">{{ row }}</template>",
+        "<template #[`item.\\${name}`]=\"{ escaped }\">{{ escaped }}</template>",
+        "<template #[`item.\\`name\\``]=\"{ quoted }\">{{ quoted }}</template>",
         "</Child>",
     );
     let allocator = Allocator::new();
@@ -193,6 +195,10 @@ fn literal_template_slot_names_are_static() {
     assert_eq!(usage[0]["slots"][0]["nameIsDynamic"], false);
     assert_eq!(usage[0]["slots"][1]["name"], "`item.${suffix}`");
     assert_eq!(usage[0]["slots"][1]["nameIsDynamic"], true);
+    assert_eq!(usage[0]["slots"][2]["name"], "item.${name}");
+    assert_eq!(usage[0]["slots"][2]["nameIsDynamic"], false);
+    assert_eq!(usage[0]["slots"][3]["name"], "item.`name`");
+    assert_eq!(usage[0]["slots"][3]["nameIsDynamic"], false);
 
     let arguments = croquis
         .template_expressions
