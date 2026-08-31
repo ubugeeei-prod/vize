@@ -8,6 +8,8 @@
 //! closed unless its gitlink inventory reconciles (see
 //! `davinci_test_support::corpus`).
 
+#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+
 use std::{collections::BTreeMap, fs};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
@@ -26,6 +28,10 @@ const BATTERY: &[(&str, &str)] = &[
     (
         "slot_template",
         r#"<template><Foo><template #default="{ item }"><span>{{ item }}</span></template></Foo></template>"#,
+    ),
+    (
+        "self_closing_non_void_html",
+        r#"<template><div /><span class="x" /></template>"#,
     ),
 ];
 
@@ -133,12 +139,16 @@ fn compare_sfc_template(name: &str, source: &str, report: &mut Report) {
 
     let old_allocator = Allocator::new();
     let (_, errors, old) = vize_atelier_dom::compile_template(&old_allocator, &template.content);
-    if !errors.is_empty() {
+    let blocking_errors: Vec<_> = errors
+        .iter()
+        .filter(|error| !error.is_compatibility_notice())
+        .collect();
+    if !blocking_errors.is_empty() {
         report.old_error_skips += 1;
         if report.old_error_samples.len() < 20 {
             report.old_error_samples.push(format!(
-                "{name}: {} old-lane errors: {errors:?}",
-                errors.len()
+                "{name}: {} old-lane blocking errors: {blocking_errors:?}",
+                blocking_errors.len()
             ));
         }
         return;
