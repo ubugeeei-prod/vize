@@ -59,6 +59,23 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn a_nested_keyed_component_uses_create_block() {
+    assert_eq!(
+        assembled(r#"<div><Foo :key="renderKey" /></div>"#),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createElementBlock: _createElementBlock, createBlock: _createBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createElementBlock(\"div\", null, [
+    (_openBlock(), _createBlock(_component_Foo, { key: renderKey }))
+  ]))
+}")
+    );
+}
+
+#[test]
 fn a_kebab_name_underscores_the_asset_id() {
     assert_eq!(
         assembled("<foo-bar />"),
