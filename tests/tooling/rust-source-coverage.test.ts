@@ -1,11 +1,19 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
-import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
-
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const scratchRoot = path.join(repoRoot, "target", "vize-tests", "tooling-tests");
+const sourceCoverageScriptPath = path.join(
+  repoRoot,
+  "tools",
+  "commands",
+  "ci",
+  "source-coverage.rs",
+);
 
 function createReport(totals: unknown): string {
   fs.mkdirSync(scratchRoot, { recursive: true });
@@ -15,6 +23,14 @@ function createReport(totals: unknown): string {
   return reportPath;
 }
 
+function runSourceCoverage(args: readonly string[], env: NodeJS.ProcessEnv = process.env) {
+  return spawnSync("rust-script", [sourceCoverageScriptPath, ...args], {
+    cwd: repoRoot,
+    encoding: "utf8",
+    env,
+  });
+}
+
 test("rust source coverage script passes when every metric clears its minimum", () => {
   const reportPath = createReport({
     lines: { count: 1000, covered: 850, percent: 85 },
@@ -22,7 +38,7 @@ test("rust source coverage script passes when every metric clears its minimum", 
     regions: { count: 500, covered: 333, percent: 66.66666666666667 },
   });
 
-  const result = runMoonScript("enforce_rust_source_coverage", [
+  const result = runSourceCoverage([
     "--json",
     reportPath,
     "--min-lines",
@@ -55,7 +71,7 @@ test("rust source coverage script fails and lists every metric below its minimum
     regions: { count: 500, covered: 300, percent: 60 },
   });
 
-  const result = runMoonScript("enforce_rust_source_coverage", [
+  const result = runSourceCoverage([
     "--json",
     reportPath,
     "--min-lines",
@@ -91,7 +107,7 @@ test("rust source coverage script appends its table to the requested summary fil
   const summaryPath = `${reportPath}.summary.md`;
   fs.writeFileSync(summaryPath, "# Job Summary\n");
 
-  const result = runMoonScript("enforce_rust_source_coverage", [
+  const result = runSourceCoverage([
     "--json",
     reportPath,
     "--markdown",
@@ -119,13 +135,23 @@ test("rust source coverage script rejects reports without cargo llvm-cov totals"
   const reportPath = path.join(root, "summary.json");
   fs.writeFileSync(reportPath, `${JSON.stringify({ data: [] })}\n`);
 
-  const result = runMoonScript("enforce_rust_source_coverage", [
-    "--json",
-    reportPath,
-    "--min-lines",
-    "70",
-  ]);
+  const result = runSourceCoverage(["--json", reportPath, "--min-lines", "70"]);
 
   assert.equal(result.status, 1, `${result.stderr}\n${result.stdout}`.trim());
   assert.equal(result.stdout, `${reportPath} is not a cargo llvm-cov summary JSON report\n`);
+});
+
+test("rust source coverage script defaults markdown output to GITHUB_STEP_SUMMARY", () => {
+  const reportPath = createReport({
+    lines: { count: 2, covered: 2, percent: 100 },
+  });
+  const summaryPath = `${reportPath}.github-summary.md`;
+
+  const result = runSourceCoverage(["--json", reportPath, "--min-lines", "70"], {
+    ...process.env,
+    GITHUB_STEP_SUMMARY: summaryPath,
+  });
+
+  assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+  assert.match(fs.readFileSync(summaryPath, "utf8"), /Lines \| 2 \| 2 \| 100\.00%/);
 });
