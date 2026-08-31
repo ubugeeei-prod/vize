@@ -6,11 +6,7 @@
 
 import fs from "node:fs";
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
-import {
-  analyzeResolvedComponent,
-  buildPalette,
-  resolveArtReference,
-} from "../../musea.js";
+import { analyzeResolvedComponent, buildPalette, resolveArtReference } from "../../musea.js";
 import { resolveProjectVueFile } from "../../vue-source-path.js";
 import type { ServerContext, ToolResult } from "./types.js";
 

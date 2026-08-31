@@ -31,6 +31,9 @@ export async function handleGenerateVariants(
   if (!componentRelPath) {
     throw new McpError(ErrorCode.InvalidParams, "componentPath is required");
   }
+
+  const absolutePath = resolveProjectVueFile(ctx.projectRoot, componentRelPath, "componentPath");
+
   if (!binding.analyzeSfc) {
     throw new McpError(ErrorCode.InternalError, "analyzeSfc not available in native binding");
   }
@@ -38,7 +41,6 @@ export async function handleGenerateVariants(
     throw new McpError(ErrorCode.InternalError, "generateVariants not available in native binding");
   }
 
-  const absolutePath = resolveProjectVueFile(ctx.projectRoot, componentRelPath, "componentPath");
   const source = await fs.promises.readFile(absolutePath, "utf-8");
 
   const analysis = binding.analyzeSfc(source, { filename: absolutePath });
