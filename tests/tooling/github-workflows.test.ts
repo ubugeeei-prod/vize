@@ -28,6 +28,7 @@ test("GitHub workflows opt JavaScript actions into Node 24", () => {
     "release.yml",
     "title-policy.yml",
     "tool-benchmark.yml",
+    "zizmor.yml",
   ]) {
     const workflow = readRepoFile(".github", "workflows", workflowName);
     assert.match(workflow, /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24:\s*true/);

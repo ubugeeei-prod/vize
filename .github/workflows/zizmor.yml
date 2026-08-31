@@ -1,0 +1,49 @@
+name: Zizmor
+
+on:
+  push:
+    branches: [main, davinci]
+    paths:
+      - ".github/**"
+  pull_request:
+    branches: [main, davinci]
+    paths:
+      - ".github/**"
+  schedule:
+    # Weekly workflow-security audit, offset from the heavier daily gates.
+    - cron: "17 2 * * 2"
+  workflow_dispatch:
+
+concurrency:
+  group: zizmor-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+permissions: {}
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  zizmor:
+    name: Run zizmor
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@70fb788f84895a7701f5643d103d587e460b5c99 # v0.6.3
+        with:
+          advanced-security: true
+          inputs: ".github"
+          min-confidence: high
+          min-severity: high
+          online-audits: true
+          version: "1.30.0"
