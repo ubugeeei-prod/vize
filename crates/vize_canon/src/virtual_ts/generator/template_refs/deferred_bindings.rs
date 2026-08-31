@@ -38,8 +38,8 @@ use oxc_parser::{Parser, ParserReturn};
 use oxc_span::SourceType;
 use std::ops::Range;
 
-use vize_carton::{FxHashMap, FxHashSet, String, cstr};
 use vize_croquis::{BindingType, Croquis};
+use vize_s0::{FxHashMap, FxHashSet, String, cstr};
 
 use crate::virtual_ts::{VizeSemanticLink, VizeSemanticLinkKind};
 

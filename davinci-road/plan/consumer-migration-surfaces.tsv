@@ -2105,13 +2105,13 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/setu
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/spans.rs	5	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/spans.rs	5	old_ast	old AST/parser	old	vize_relief	legacy	2
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/spans.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	2
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/template_refs.rs	6	s0	S0	stage	vize_carton	compat	2
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/template_refs.rs	6	s0	S0	stage	vize_s0	preferred	2
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/template_refs.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/template_refs/auto_imports.rs	22	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/template_refs/auto_imports.rs	22	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/template_refs/auto_imports.rs	22	croquis	Croquis analysis	old	vize_croquis	legacy	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/template_refs/auto_imports.rs	97	s0	S0	stage	vize_carton	compat	2
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/template_refs/auto_imports.rs	97	s0	S0	stage	vize_s0	preferred	2
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/template_refs/auto_imports.rs	97	croquis	Croquis analysis	old	vize_croquis	legacy	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/template_refs/deferred_bindings.rs	35	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/template_refs/deferred_bindings.rs	35	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/template_refs/deferred_bindings.rs	35	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/template_refs/deferred_bindings.rs	35	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/template_refs/deferred_bindings.rs	35	raw_oxc	raw OXC	raw	oxc_ast	raw	1

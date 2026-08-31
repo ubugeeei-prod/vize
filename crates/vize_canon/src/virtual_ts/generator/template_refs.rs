@@ -3,9 +3,9 @@ mod deferred_bindings;
 
 use std::ops::Range;
 
-use vize_carton::config::VueVersion;
-use vize_carton::{FxHashMap, FxHashSet, String, append, cstr};
 use vize_croquis::{BindingType, Croquis};
+use vize_s0::config::VueVersion;
+use vize_s0::{FxHashMap, FxHashSet, String, append, cstr};
 
 use super::super::types::{VirtualTsGenerationOptions, VirtualTsOptions};
 use super::anchors::emit_props_shadow_anchor;
