@@ -9,7 +9,7 @@ import { defineTasks, noCacheTask, shellQuote } from "../task-helpers.ts";
  * stay local; their `*:testbox` variants run the same graph in the CI image.
  *
  * The CLI ships only from the dedicated Testbox shell (`nix develop
- * .#testbox`; see the `blacksmith` derivation in nix/blacksmith.nix).
+ * .#testbox`; see the `blacksmith` derivation in tools/nix/blacksmith.nix).
  * `blacksmith testbox run` requires an explicit `--id` on every call and has
  * no concept of a "current" box, so the id is threaded through
  * `BLACKSMITH_TESTBOX_ID`.

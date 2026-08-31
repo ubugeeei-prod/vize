@@ -3,6 +3,6 @@
   pkgs,
   root ? ./.,
 }:
-pkgs.callPackage ./package.nix {
+pkgs.callPackage ./tools/nix/package.nix {
   inherit craneLib root;
 }
