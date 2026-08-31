@@ -17,12 +17,7 @@ test("generate_variants only reads Vue component sources", () => {
   assert.notEqual(end, -1, "generate_csf handler must follow generate_variants");
   assert.match(
     block,
-    /if \(!componentRelPath\.endsWith\("\.vue"\)\)/,
-    "generate_variants must reject non-vue paths before reading the file",
-  );
-  assert.match(
-    block,
-    /componentPath must be a \.vue file/,
-    "the rejection must name the .vue requirement",
+    /resolveProjectVueFile\(ctx\.projectRoot, componentRelPath, "componentPath"\)/,
+    "generate_variants must resolve through the .vue realpath gate before reading",
   );
 });

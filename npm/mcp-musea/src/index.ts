@@ -23,7 +23,8 @@ import { loadNative } from "./native.js";
 import { findArtFiles } from "./scanner.js";
 import { toolDefinitions, handleToolCall } from "./tools.js";
 import { listResources, readResource } from "./resources.js";
-import { isProjectPath, resolveProjectPath } from "./musea.js";
+import { isProjectPath } from "./musea.js";
+import { resolveConfiguredTokensPath } from "./tokens-path.js";
 
 export function createMuseaServer(config: {
   projectRoot: string;
@@ -83,19 +84,7 @@ export function createMuseaServer(config: {
   }
 
   async function resolveTokensPath(): Promise<string | null> {
-    if (tokensPath) return resolveProjectPath(projectRoot, tokensPath, "tokensPath");
-
-    const candidates = ["tokens", "design-tokens", "style-dictionary"];
-    for (const dir of candidates) {
-      const candidate = path.join(projectRoot, dir);
-      try {
-        const stat = await fs.promises.stat(candidate);
-        if (stat.isDirectory() || stat.isFile()) return candidate;
-      } catch {
-        // not found
-      }
-    }
-    return null;
+    return resolveConfiguredTokensPath(projectRoot, tokensPath);
   }
 
   const ctx: ServerContext = { projectRoot, loadNative, scanArtFiles, resolveTokensPath };
