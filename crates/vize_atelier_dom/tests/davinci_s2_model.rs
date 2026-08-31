@@ -38,6 +38,12 @@ const BATTERY: &[(&str, &str)] = &[
     ("class_bind", r#"<input :class="c" v-model="msg">"#),
     ("style_bind", r#"<input :style="s" v-model="msg">"#),
     ("input_ts_cast", r#"<input v-model="voice as any">"#),
+    (
+        "input_ts_cast_comment",
+        r#"<input v-model="voice/*x*/as any">"#,
+    ),
+    ("input_ts_non_null", r#"<input v-model="voice!">"#),
+    ("input_string_as", r#"<input v-model="form[' as ']">"#),
     ("spread_then", r#"<input v-bind="obj" v-model="msg">"#),
     ("then_spread", r#"<input v-model="msg" v-bind="obj">"#),
     ("vif", r#"<input v-if="ok" v-model="msg">"#),
@@ -53,6 +59,7 @@ const BATTERY: &[(&str, &str)] = &[
         "comp_arg_ts_cast",
         r#"<Foo v-model:voice="voice as any" />"#,
     ),
+    ("comp_arg_ts_non_null", r#"<Foo v-model:voice="voice!" />"#),
     (
         "comp_kebab_arg",
         r#"<Foo v-model:auto-send="autoSendEnabled" />"#,

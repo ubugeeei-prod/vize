@@ -113,7 +113,7 @@ pub(super) fn emit_props_object(
             }
             Piece::ModelUpdate { key, model, .. } => {
                 let source = super::model::js_source(model)?;
-                super::model_key::emit_update(cx, key, source.as_str())
+                super::model_key::emit_update(cx, key, &model.contract.read, source.as_str())
             }
             Piece::ModelModifiers {
                 name, modifiers, ..

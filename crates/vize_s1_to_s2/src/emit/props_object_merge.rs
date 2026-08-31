@@ -46,7 +46,7 @@ pub(super) fn emit_handlers(
             Piece::On(event) => on::emit_on_value(cx, event)?,
             Piece::ModelUpdate { model, .. } => {
                 let source = super::model::js_source(model)?;
-                super::model_key::emit_assignment(cx, source.as_str());
+                super::model_key::emit_assignment(cx, &model.contract.read, source.as_str());
             }
             _ => {}
         }
