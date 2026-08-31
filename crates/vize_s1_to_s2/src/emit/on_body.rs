@@ -1,5 +1,8 @@
 //! Block-body event handlers (`$event => { ... }`).
 
+use oxc_ast::ast::Expression;
+use vize_s2::expr::JsExpr;
+
 use super::EmitCx;
 
 pub(super) fn emit(cx: &mut EmitCx<'_>, source: &str) {
@@ -11,7 +14,16 @@ pub(super) fn emit(cx: &mut EmitCx<'_>, source: &str) {
     cx.buf.push("}");
 }
 
-fn ends_in_line_comment(source: &str) -> bool {
+pub(super) fn preserves_raw_function_handler(js: &JsExpr<'_>) -> bool {
+    let is_block_function = match js.ast {
+        Expression::ArrowFunctionExpression(arrow) => !arrow.expression,
+        Expression::FunctionExpression(function) => function.body.is_some(),
+        _ => false,
+    };
+    is_block_function && !ends_in_line_comment(js.source)
+}
+
+pub(super) fn ends_in_line_comment(source: &str) -> bool {
     let bytes = source.as_bytes();
     let mut index = 0usize;
     let mut state = ScanState::Code;

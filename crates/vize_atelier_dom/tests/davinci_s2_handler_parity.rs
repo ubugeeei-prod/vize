@@ -21,6 +21,19 @@ const BATTERY: &[(&str, &str)] = &[
         "typed_arrow_component_handler_with_static_props",
         r#"<FieldKeyValues label="Headers" @remove="(index: number) => removeKeyValue(index, headers)" />"#,
     ),
+    (
+        "block_arrow_handler_preserves_line_comment",
+        r#"<button @click="() => {
+if (active) {
+  // keep active click note
+  next();
+}
+else {
+  // keep inactive click note
+  select();
+}
+}"></button>"#,
+    ),
 ];
 
 #[test]
