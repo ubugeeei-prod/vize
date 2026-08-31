@@ -1,6 +1,6 @@
 use crate::types::{SfcCompileOptions, SfcCompileResult, SfcError, SfcMacroArtifact};
 use vize_atelier_core::CodegenOptions;
-use vize_carton::String;
+use vize_s0::String;
 
 use super::output_module::{append_css_modules_assignment, finalize_output_mode};
 use super::styles::CompiledStyles;
