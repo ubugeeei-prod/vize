@@ -4,9 +4,9 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { readDeclaredPackagePaths } from "../../tools/fixtures/typecheck-baseline-isolation.mjs";
-import { isolateUniqueLocalTypePackages } from "../../tools/fixtures/typecheck-baseline-isolation-unique.mjs";
-import { pluginPackageNamesFromConfigs } from "../../tools/fixtures/typecheck-baseline-isolation-plugins.mjs";
+import { readDeclaredPackagePaths } from "../../legacy-tools/fixtures/typecheck-baseline-isolation.mjs";
+import { isolateUniqueLocalTypePackages } from "../../legacy-tools/fixtures/typecheck-baseline-isolation-unique.mjs";
+import { pluginPackageNamesFromConfigs } from "../../legacy-tools/fixtures/typecheck-baseline-isolation-plugins.mjs";
 
 /**
  * Language-service plugins resolve by climbing `node_modules` (#4461). Unique

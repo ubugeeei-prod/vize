@@ -9,7 +9,7 @@
 // parser does not actually guarantee.
 //
 // The corpus is seeded from `tests/fixtures/**/*.vue` and `playground/**/*.vue`
-// by `tools/fuzz/seed_corpus.mjs` so libFuzzer starts with a coverage map that
+// by `tools/commands/ci/fuzz/seed_corpus.rs` so libFuzzer starts with a coverage map that
 // reflects realistic SFC shapes (template + script + style + custom blocks).
 use libfuzzer_sys::fuzz_target;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};

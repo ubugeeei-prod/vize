@@ -8,7 +8,7 @@ import { runVSCodeCommand } from "@vscode/test-electron";
 import {
   prepareRealVueWorkspace,
   resolveRealServerPath,
-} from "../../../tools/editor-e2e/real-vue-workspace.mjs";
+} from "../../../legacy-tools/editor-e2e/real-vue-workspace.mjs";
 import {
   createVueTypecheckAppPath,
   materializeCreateVueTypecheckSource,

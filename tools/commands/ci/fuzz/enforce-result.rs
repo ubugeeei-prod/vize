@@ -45,9 +45,5 @@ fn main() -> ExitCode {
 }
 
 fn empty_label(value: &str) -> &str {
-    if value.is_empty() {
-        "empty"
-    } else {
-        value
-    }
+    if value.is_empty() { "empty" } else { value }
 }

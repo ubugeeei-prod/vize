@@ -5,7 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { checkedPackagesViaVpRun } from "../../tools/vite-plus/task-inputs.ts";
+import { checkedPackagesViaVpRun } from "../../config/vite-plus/task-inputs.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const exampleDir = path.join(root, "examples/oxlint-vize");

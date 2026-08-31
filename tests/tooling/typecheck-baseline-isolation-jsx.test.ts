@@ -4,9 +4,9 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { readDeclaredPackagePaths } from "../../tools/fixtures/typecheck-baseline-isolation.mjs";
-import { isolateUniqueLocalTypePackages } from "../../tools/fixtures/typecheck-baseline-isolation-unique.mjs";
-import { jsxImportSourcePackageName } from "../../tools/fixtures/typecheck-baseline-isolation-jsx.mjs";
+import { readDeclaredPackagePaths } from "../../legacy-tools/fixtures/typecheck-baseline-isolation.mjs";
+import { isolateUniqueLocalTypePackages } from "../../legacy-tools/fixtures/typecheck-baseline-isolation-unique.mjs";
+import { jsxImportSourcePackageName } from "../../legacy-tools/fixtures/typecheck-baseline-isolation-jsx.mjs";
 
 /**
  * `compilerOptions.jsxImportSource` resolves `<name>/jsx-runtime` by climbing

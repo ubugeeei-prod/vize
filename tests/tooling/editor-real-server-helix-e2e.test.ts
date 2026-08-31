@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { testAndBenchmarkTasks } from "../../tools/vite-plus/tasks/test-benchmark.ts";
+import { testAndBenchmarkTasks } from "../../config/vite-plus/tasks/test-benchmark.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 function taskCommand(name: string): string {
@@ -43,17 +43,18 @@ test("CI checks the package with a pinned official Helix before the server scena
 });
 
 test("the official Helix health guard checks both packaged language entries exactly", () => {
-  const health = readRepoFile("tools", "helix-vize", "assert-helix-health.mjs");
+  const health = readRepoFile("tools", "commands", "editors", "helix", "assert-helix-health.rs");
 
   assert.match(health, /\["--health", language\]/);
-  assert.match(health, /for \(const language of \["vue", "art-vue"\]\)/);
-  assert.match(health, /assert\.deepEqual\(\s*configuredServers,\s*\[expectedServer\]/);
-  assert.match(health, /assert\.equal\(result\.status, 0/);
-  assert.doesNotMatch(health, /\.includes\(|\.contains\(/);
+  assert.match(health, /for language in \["vue", "art-vue"\]/);
+  assert.match(health, /configured != vec!\[expected_server\.clone\(\)\]/);
+  assert.match(health, /if !output\.status\.success\(\)/);
+  assert.doesNotMatch(health, /configured\.contains\(/);
 });
 
 test("the Helix scenario pins complete responses for every advertised feature", () => {
-  const scenario = readRepoFile("tools", "helix-vize", "run-real-server.mjs");
+  const scenario = readRepoFile("tools", "commands", "editors", "helix", "run-real-server.rs");
+  const contract = readRepoFile("tools", "rust", "lsp_smoke.rs");
 
   for (const method of [
     "textDocument/completion",
@@ -62,21 +63,23 @@ test("the Helix scenario pins complete responses for every advertised feature", 
     "textDocument/semanticTokens/full",
     "textDocument/rename",
   ]) {
-    assert.match(scenario, new RegExp(method.replace("/", "\\/")));
+    assert.match(contract, new RegExp(method.replace("/", "\\/")));
   }
 
-  assert.match(scenario, /assert\.deepEqual\(diagnostics\.diagnostics, expectedDiagnostics\)/);
-  assert.match(scenario, /assert\.deepEqual\(completion, expectedCompletion\)/);
-  assert.match(scenario, /assert\.deepEqual\(hover, expectedHover\)/);
-  assert.match(scenario, /assert\.deepEqual\(codeActions, expectedCodeActions\(uri\)\)/);
-  assert.match(scenario, /assert\.deepEqual\(semanticTokens, expectedSemanticTokens\)/);
-  assert.match(scenario, /assert\.deepEqual\(rename, expectedRename\(uri\)\)/);
+  assert.match(contract, /assert_json_eq\([\s\S]*expected_diagnostics\(\)/);
+  assert.match(contract, /assert_json_eq\(&completion, expected_completion\(\)/);
+  assert.match(contract, /assert_json_eq\(&hover, expected_hover\(\)/);
+  assert.match(contract, /assert_json_eq\(&code_actions, expected_code_actions\(&uri\)/);
+  assert.match(contract, /assert_json_eq\([\s\S]*"semantic tokens"/);
+  assert.match(contract, /assert_json_eq\(&rename, expected_rename\(&uri\)/);
+  assert.match(scenario, /run_editor_contract\(&repo, "helix", false\)/);
   assert.doesNotMatch(scenario, /textDocument\/formatting/);
-  assert.doesNotMatch(scenario, /\.includes\(|\.contains\(/);
+  assert.doesNotMatch(contract, /\.includes\(|\.contains\(/);
 
   // This is the exact config Helix sends. Formatting is intentionally absent,
   // so the scenario verifies only the capabilities the package advertises.
-  assert.match(scenario, /toml\.parse\(fs\.readFileSync\(helixConfigPath, "utf8"\)\)/);
-  assert.match(scenario, /assert\.deepEqual\(helixServer\.config, helixRecommendedOptions\)/);
-  assert.match(scenario, /assert\.equal\(capabilities\.documentFormattingProvider, undefined\)/);
+  assert.match(scenario, /common::read_text\(repo\.join\("editors\/helix\/languages\.toml"\)\)/);
+  assert.match(scenario, /"editor = true"/);
+  assert.match(scenario, /"typecheck = true"/);
+  assert.match(contract, /document_formatting_provider\.is_some_and/);
 });

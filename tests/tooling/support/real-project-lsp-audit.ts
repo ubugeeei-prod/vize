@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { collectVueInputPaths } from "../../../tools/fixtures/tool-matrix-inputs.mjs";
+import { collectVueInputPaths } from "../../../legacy-tools/fixtures/tool-matrix-inputs.mjs";
 import { isDiagnosticsForUri, offsetToPosition } from "./lsp/assertions.ts";
 import type {
   LspDiagnostic,

@@ -6,14 +6,14 @@
 # change until signed off.
 #
 # Consumers:
-#   tools/davinci/matrix-gen.mjs      — generates fixture stubs from this file
-#   tools/davinci/corpus-coverage.mjs — (P0-6) reports real-project counts
+#   tools/commands/davinci/matrix-gen.rs      — generates fixture stubs from this file
+#   tools/commands/davinci/corpus-coverage.rs — (P0-6) reports real-project counts
 #                                       against the same ids
 #
 # Every generated matrix fixture combines one value per dimension. A new
 # surface construct means a new entry here first — a construct without a
 # taxonomy row cannot merge. File format is the TOML subset implemented by
-# tools/davinci/toml-lite.mjs (quoted strings, arrays of tables).
+# tools/commands/davinci/matrix-gen.rs (quoted strings, arrays of tables).
 
 [taxonomy]
 version = 1

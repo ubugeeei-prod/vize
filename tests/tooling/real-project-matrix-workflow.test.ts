@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { requiredRealProjectMatrixShardCount } from "../../tools/github/release-preflight-matrix-evidence.mjs";
+import { requiredRealProjectMatrixShardCount } from "../../legacy-tools/github/release-preflight-matrix-evidence.mjs";
 import {
   findStep,
   readRealProjectMatrixWorkflow,
@@ -270,7 +270,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.equal(divergence.env?.BUDGET_MODE, "${{ inputs.typecheck_divergence_mode || 'enforce' }}");
 
   const surfaceVerdict = findStep(steps, "Enforce all real-project surface verdicts");
-  assert.match(surfaceVerdict.run ?? "", /real-project-surface-verdict\.mjs/);
+  assert.match(surfaceVerdict.run ?? "", /real-project-surface-verdict\.rs/);
   assert.match(surfaceVerdict.run ?? "", /--from-workflow-env/);
   assert.equal(
     surfaceVerdict.env?.TYPECHECK_DEPENDENCIES_MODE,

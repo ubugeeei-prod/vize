@@ -2,15 +2,27 @@
 //! ```cargo
 //! [package]
 //! edition = "2024"
+//!
+//! [dependencies]
+//! serde = { version = "1", features = ["derive"] }
+//! serde_json = "1"
 //! ```
 
-// tool-host: 5b3636aad1ecb421
-#[path = "../../rust/tool_host.rs"]
-mod tool_host;
+use std::{env, process::ExitCode};
 
-fn main() -> std::process::ExitCode {
-    tool_host::run(
-        tool_host::Runtime::Node,
-        "tools/davinci/consumer-migration-surfaces.mjs",
-    )
+#[path = "../../rust/artifact_command.rs"]
+mod artifact_command;
+#[path = "../../rust/common.rs"]
+mod common;
+
+fn main() -> ExitCode {
+    common::main_result(artifact_command::run_many(
+        env::args().nth(1).as_deref(),
+        &[
+            "davinci-road/plan/consumer-migration-surfaces.md",
+            "davinci-road/plan/consumer-migration-surfaces.tsv",
+        ],
+        "usage: rust-script tools/commands/davinci/consumer-migration-surfaces.rs --write | --check",
+        "davinci-road/plan/consumer-migration-surfaces.md and davinci-road/plan/consumer-migration-surfaces.tsv are up to date",
+    ))
 }

@@ -4,7 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { fuzzResultPolicy } from "../../tools/fuzz/enforce-result.mjs";
+import { fuzzResultPolicy } from "../../legacy-tools/fuzz/enforce-result.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const command = path.join(root, "tools/commands/ci/fuzz/enforce-result.rs");

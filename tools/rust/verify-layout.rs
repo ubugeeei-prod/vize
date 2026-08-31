@@ -28,21 +28,21 @@ fn main() -> ExitCode {
 fn verify() -> Result<usize, Vec<String>> {
     let root = repo_root().map_err(|error| vec![error])?;
     let commands = collect_command_scripts(&root).map_err(|error| vec![error.to_string()])?;
-    let host_hash = tool_host_hash(&root).map_err(|error| vec![error.to_string()])?;
     let mut errors = Vec::new();
 
     if root.join("tools/rust/legacy_command.rs").exists() {
         errors.push("tools/rust/legacy_command.rs must not come back".to_string());
     }
-
-    for command in &commands {
-        verify_command(&root, command, &host_hash, &mut errors);
+    if root.join("tools/rust/tool_host.rs").exists() {
+        errors.push("tools/rust/tool_host.rs must not come back".to_string());
     }
 
-    for script in collect_legacy_executables(&root).map_err(|error| vec![error.to_string()])? {
-        errors.push(format!(
-            "{script} is executable legacy tooling; move the command to tools/commands"
-        ));
+    for command in &commands {
+        verify_command(&root, command, &mut errors);
+    }
+
+    for script in collect_javascript_tools(&root).map_err(|error| vec![error.to_string()])? {
+        errors.push(format!("{script} must be ported to Rust Script"));
     }
 
     if errors.is_empty() {
@@ -52,7 +52,7 @@ fn verify() -> Result<usize, Vec<String>> {
     }
 }
 
-fn verify_command(root: &Path, command: &str, host_hash: &str, errors: &mut Vec<String>) {
+fn verify_command(root: &Path, command: &str, errors: &mut Vec<String>) {
     let path = root.join(command);
     let source = match fs::read_to_string(&path) {
         Ok(source) => source,
@@ -73,56 +73,11 @@ fn verify_command(root: &Path, command: &str, host_hash: &str, errors: &mut Vec<
         errors.push(format!("{command} must use product-neutral editor buckets"));
     }
     if source.contains("tool_host::run(") {
-        let required_salt = format!("tool-host: {host_hash}");
-        if !source.contains(&required_salt) {
-            errors.push(format!(
-                "{command} must include {required_salt} so rust-script cache invalidates with the shared host"
-            ));
-        }
-        verify_hosted_module(root, command, &source, errors);
+        errors.push(format!("{command} must not proxy to Node tooling"));
     }
-}
-
-fn verify_hosted_module(root: &Path, command: &str, source: &str, errors: &mut Vec<String>) {
-    if !source.contains("tool_host::Runtime::Node") {
-        errors.push(format!(
-            "{command} compatibility modules must run through Node"
-        ));
+    if source.contains("tool_host::Runtime::Node") {
+        errors.push(format!("{command} must not mention the Node runtime"));
     }
-    let Some(module) = first_tool_string(source) else {
-        errors.push(format!(
-            "{command} must name the compatibility module it hosts"
-        ));
-        return;
-    };
-    if !(module.ends_with(".mjs") || module.ends_with(".js") || module.ends_with(".ts")) {
-        errors.push(format!("{command} hosts unsupported module {module}"));
-    }
-    if module.contains("tools/moon/.mooncakes/") || module.contains("..") {
-        errors.push(format!("{command} hosts invalid module path {module}"));
-        return;
-    }
-    let module_path = root.join(module);
-    let module_source = match fs::read_to_string(&module_path) {
-        Ok(source) => source,
-        Err(error) => {
-            errors.push(format!("{command} hosts missing module {module}: {error}"));
-            return;
-        }
-    };
-    if module_source.starts_with("#!") {
-        errors.push(format!(
-            "{module} must not remain an executable command entrypoint"
-        ));
-    }
-}
-
-fn first_tool_string(source: &str) -> Option<&str> {
-    source
-        .split('"')
-        .skip(1)
-        .step_by(2)
-        .find(|value| value.starts_with("tools/"))
 }
 
 fn collect_command_scripts(root: &Path) -> io::Result<Vec<String>> {
@@ -137,18 +92,16 @@ fn collect_command_scripts(root: &Path) -> io::Result<Vec<String>> {
     Ok(commands)
 }
 
-fn collect_legacy_executables(root: &Path) -> io::Result<Vec<String>> {
+fn collect_javascript_tools(root: &Path) -> io::Result<Vec<String>> {
     let mut files = Vec::new();
     visit_files(&root.join("tools"), &mut files)?;
     let mut scripts = Vec::new();
     for path in files {
         let relative = normalize_relative(root, &path);
-        if skip_path(&relative) || !is_legacy_script(&path) {
+        if skip_path(&relative) || !is_javascript_tool(&path) {
             continue;
         }
-        if is_command_entrypoint(&path)? {
-            scripts.push(relative);
-        }
+        scripts.push(relative);
     }
     scripts.sort();
     Ok(scripts)
@@ -176,41 +129,11 @@ fn skip_path(path: &str) -> bool {
         || path.starts_with("tools/moon/.mooncakes/")
 }
 
-fn is_legacy_script(path: &Path) -> bool {
+fn is_javascript_tool(path: &Path) -> bool {
     matches!(
         path.extension().and_then(|ext| ext.to_str()),
-        Some("js" | "mjs" | "ts" | "sh")
+        Some("js" | "mjs" | "ts")
     )
-}
-
-fn is_command_entrypoint(path: &Path) -> io::Result<bool> {
-    Ok(fs::read_to_string(path)?.starts_with("#!") || is_executable(path)?)
-}
-
-fn tool_host_hash(root: &Path) -> io::Result<String> {
-    let bytes = fs::read(root.join("tools/rust/tool_host.rs"))?;
-    Ok(format!("{:016x}", fnv1a64(&bytes)))
-}
-
-fn fnv1a64(bytes: &[u8]) -> u64 {
-    let mut hash = 0xcbf29ce484222325_u64;
-    for byte in bytes {
-        hash ^= u64::from(*byte);
-        hash = hash.wrapping_mul(0x100000001b3);
-    }
-    hash
-}
-
-#[cfg(unix)]
-fn is_executable(path: &Path) -> io::Result<bool> {
-    use std::os::unix::fs::PermissionsExt;
-
-    Ok(fs::metadata(path)?.permissions().mode() & 0o111 != 0)
-}
-
-#[cfg(not(unix))]
-fn is_executable(_path: &Path) -> io::Result<bool> {
-    Ok(false)
 }
 
 fn repo_root() -> Result<PathBuf, String> {

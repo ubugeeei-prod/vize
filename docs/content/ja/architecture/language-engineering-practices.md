@@ -40,7 +40,7 @@ Vize は Vue ツールチェーンですが、コンパイラーと同じ障害�
 | セマンティック分析、lint、ファイル間分析            | ルールまたはアナライザー フィクスチャ、JSON またはエージェント出力スナップショット、および変更された診断に関するドキュメント。                    | `cargo test -p vize_patina`、`vp run --filter './tests' test:lint`、`node --test tests/tooling/snapshot-baselines.test.ts`                                 |
 | 仮想 TypeScript と型チェック                        | 最小限の SFC フィクスチャ、マッピングされた診断スナップショット、生成された仮想 TS レビュー、および公式の Vue または TypeScript パリティ ノート。 | `vp run --filter './tests' test:check:fixtures`、`cargo test -p vize_canon`、`vize check --show-virtual-ts <file>`                                         |
 | フォーマッタと LSP                                  | ゴールデン フォーマットの出力またはプロトコル スモーク カバレッジに加え、動作がユーザーに見える場合の集中的なエディタ統合チェック。               | `cargo test -p vize_glyph`、`cargo test -p vize_maestro`、`node --test tests/tooling/lsp-smoke.test.ts`                                                    |
-| ランタイム パッケージ、リリース、またはドキュメント | ガバナンス テスト、スモーク インストールまたはワークフロー カバレッジ、運用体制が変更されたときのリリース/準備ドキュメント。                      | `node --test tests/tooling/*.test.ts`、`node tools/npm/smoke-release-install.mjs --prepare-manifests --runtime-checks`、`vp run --workspace-root check:ci` |
+| ランタイム パッケージ、リリース、またはドキュメント | ガバナンス テスト、スモーク インストールまたはワークフロー カバレッジ、運用体制が変更されたときのリリース/準備ドキュメント。                      | `node --test tests/tooling/*.test.ts`、`rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks`、`vp run --workspace-root check:ci` |
 
 ## 保証レーン
 
@@ -52,7 +52,7 @@ Vize は Vue ツールチェーンですが、コンパイラーと同じ障害�
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | セキュリティ   | URL 処理、HTML または SSR 出力、ファイルシステム/構成の読み込み、ネイティブの読み込み、パッケージの公開、CI、または資格情報。                | `.github/workflows/check.yml`、`vp exec pnpm audit --prod --audit-level moderate`、`cargo audit --deny warnings` の `security-audit`、smoke-install ランタイム チェック、固定された GitHub Actions チェック、およびリスクのある入力または境界をカバーする焦点を絞った回帰。    |
 | パフォーマンス | パーサー、コンパイラー、リンター、フォーマッタ、型チェッカー、キャッシュ、プロジェクト グラフ トラバーサル、生成された出力、または CLI I/O。 | `.github/workflows/benchmark.yml`、`bench/compare-pr.mjs`、`bench/enforce-pr-budget.mjs`、`pr-benchmark-budget` ステータス、ローカル `bench:*` タスク、および回帰が必要な場合の `vize lint --profile`、`vize check --profile`、または `vize fmt --profile` 出力帰属。          |
-| ファジング     | バイト指向の解析、構文の回復、CSS 解析、JS/TS 式の解析、テンプレートの字句解析、または codegen の回復。                                      | `.github/workflows/fuzz.yml`、`tests/fuzz/Cargo.toml`、`tools/fuzz/seed_corpus.mjs`、`cargo +nightly fuzz run <target>`、アップロードされた `fuzz-reproducers-*` アーティファクト、およびクラッシュ、タイムアウト、または OOM 後の最小化された決定論的回帰が理解されています。 |
+| ファジング     | バイト指向の解析、構文の回復、CSS 解析、JS/TS 式の解析、テンプレートの字句解析、または codegen の回復。                                      | `.github/workflows/fuzz.yml`、`tests/fuzz/Cargo.toml`、`tools/commands/ci/fuzz/seed_corpus.rs`、`cargo +nightly fuzz run <target>`、アップロードされた `fuzz-reproducers-*` アーティファクト、およびクラッシュ、タイムアウト、または OOM 後の最小化された決定論的回帰が理解されています。 |
 
 ## ベースラインポリシー
 

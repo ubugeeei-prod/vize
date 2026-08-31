@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { assertInstalledMapperContract } from "../../tools/npm/smoke-release-runtime.mjs";
+import { assertInstalledMapperContract } from "../../legacy-tools/npm/smoke-release-runtime.mjs";
 
 function withInstalledMapper(run: (installDir: string, packageRoot: string) => void): void {
   const installDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-mapper-contract-"));

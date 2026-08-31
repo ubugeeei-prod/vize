@@ -6,12 +6,12 @@ import {
   bootstrapRequiredWorkflowRuns,
   createReleaseGateDispatchPlans,
   releaseGateRunQualifiers,
-} from "../../tools/github/release-preflight-bootstrap.mjs";
+} from "../../legacy-tools/github/release-preflight-bootstrap.mjs";
 import {
   requiredReleaseWorkflowEvidence,
   requiredReleaseWorkflows,
   selectRequiredWorkflowRuns,
-} from "../../tools/github/release-preflight-evidence.mjs";
+} from "../../legacy-tools/github/release-preflight-evidence.mjs";
 import { readRepoFile } from "./support/github-workflows.ts";
 import { releaseSha, successfulReleaseRun } from "./support/release-preflight.ts";
 

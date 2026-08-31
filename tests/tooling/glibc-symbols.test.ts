@@ -6,7 +6,7 @@ import {
   highestGlibcVersion,
   parseGlibcVersion,
   parseGlibcVersions,
-} from "../../tools/github/verify-glibc-symbols.mjs";
+} from "../../legacy-tools/github/verify-glibc-symbols.mjs";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 test("glibc symbol parser deduplicates and sorts required versions", () => {

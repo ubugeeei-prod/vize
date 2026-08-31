@@ -7,7 +7,7 @@ import {
   validateReleaseJobs,
   validateReleaseRun,
   verifyReleaseRunEvidence,
-} from "../../tools/github/npm-bootstrap-contract.mjs";
+} from "../../legacy-tools/github/npm-bootstrap-contract.mjs";
 import {
   artifactName,
   releaseArtifact,

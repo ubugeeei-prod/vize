@@ -1,7 +1,7 @@
 import os from "node:os";
 import path from "node:path";
 
-import { compareTypecheckDiagnostics } from "../../../tools/fixtures/typecheck-divergence.mjs";
+import { compareTypecheckDiagnostics } from "../../../legacy-tools/fixtures/typecheck-divergence.mjs";
 
 /** Workspace root the comparator normalizes fixture paths against. */
 export const cwd = path.join(os.tmpdir(), "vize-divergence-workspace");

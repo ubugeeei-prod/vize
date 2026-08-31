@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { isolateUniqueVueRuntimePackages } from "../../tools/fixtures/typecheck-baseline-isolation-unique.mjs";
+import { isolateUniqueVueRuntimePackages } from "../../legacy-tools/fixtures/typecheck-baseline-isolation-unique.mjs";
 
 /**
  * vue-class-component and vue-property-decorator live in Vize's

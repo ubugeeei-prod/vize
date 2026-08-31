@@ -8,8 +8,8 @@ import {
   toolArgs,
   typecheckSourceTsconfig,
   typecheckTsconfigPath,
-} from "../../tools/fixtures/tool-matrix-command.mjs";
-import { isolatedTsconfigOverlayPath } from "../../tools/fixtures/typecheck-baseline-outside-paths.mjs";
+} from "../../legacy-tools/fixtures/tool-matrix-command.mjs";
+import { isolatedTsconfigOverlayPath } from "../../legacy-tools/fixtures/typecheck-baseline-outside-paths.mjs";
 
 /**
  * Elk's root tsconfig is a Nuxt 4 solution (`files: []` + `references`). vue-tsc

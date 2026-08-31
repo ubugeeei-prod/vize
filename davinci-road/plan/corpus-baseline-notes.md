@@ -2,7 +2,7 @@
 
 > [!NOTE]
 > Companion to `tests/_fixtures/davinci-baseline.json` — the whole-corpus
-> output fingerprint that `tools/davinci/corpus-diff.mjs` (suite TS-11)
+> output fingerprint that `tools/commands/davinci/corpus-diff.rs` (suite TS-11)
 > gates every later Davinci phase against. This file records the hash
 > contract, the surface-list derivation, and every known source of
 > nondeterminism in current tool output, filed here per the P0-5 rule:
@@ -12,8 +12,8 @@
 
 ```sh
 cargo build --release -p vize
-node tools/davinci/corpus-baseline.mjs --clean-fixtures   # rewrite the committed baseline
-node tools/davinci/corpus-diff.mjs --clean-fixtures       # gate a fresh run against it
+rust-script tools/commands/davinci/corpus-baseline.rs --clean-fixtures   # rewrite the committed baseline
+rust-script tools/commands/davinci/corpus-diff.rs --clean-fixtures       # gate a fresh run against it
 ```
 
 **Both tools refuse to sweep contaminated fixtures.** A run only produces
@@ -29,7 +29,7 @@ baseline. Drifted submodules are never auto-repaired — the tool prints the
 `git submodule update` line and stops, because silently re-hydrating a
 fixture would change what the corpus measures.
 
-Both tools spawn `tools/fixtures/tool-matrix-report.mjs` across all shards
+Both tools spawn `tools/commands/fixtures/tool-matrix-report.rs` across all shards
 (4 parallel shard processes by default; the harness is serial inside a
 shard) and reduce each project's per-surface payload to a
 `{surface, project, file_count, content_hash}` row.
@@ -71,9 +71,9 @@ recursively) of the following fields of the harness run payload
 - The compiled artifacts themselves are covered byte-for-byte by
   `compilerArtifacts.sha256` — the path + content digest the harness
   computes over every emitted compile artifact
-  (`tools/fixtures/tool-matrix-run.mjs`, `inspectCompilerArtifacts`),
+  (`tools/commands/fixtures/tool-matrix-report.rs`, `inspectCompilerArtifacts`),
   taken before the temporary output directory is deleted.
-- `file_count` mirrors `tools/fixtures/tool-matrix-metrics.mjs`:
+- `file_count` mirrors `tools/commands/fixtures/tool-matrix-report.rs`:
   compiler `inputFileCount`, typechecker `fileCount` (requested +
   transitive authored + dependency files), linter file-entry count, formatter
   `checkedFileCount`.
@@ -130,9 +130,9 @@ on those lanes should surface as drift, not be masked.
 Recorded 2026-08-14 on the baseline machine (macOS arm64, Apple M2 Max,
 12 logical CPUs; release binary built from the P0-5 branch):
 
-- Sweep 1: `node tools/davinci/corpus-baseline.mjs` — wrote the committed
+- Sweep 1: `rust-script tools/commands/davinci/corpus-baseline.rs` — wrote the committed
   artifact (251 s wall for 134 projects x 4 surfaces, 4 shard processes).
-- Sweep 2: `node tools/davinci/corpus-diff.mjs --write-fresh <tmp>` —
+- Sweep 2: `rust-script tools/commands/davinci/corpus-diff.rs --write-fresh <tmp>` —
   the two artifact files are **not byte-identical**: they differ in
   exactly one of 536 rows, `typechecker/element-plus`
   (`0ed6b624d6ee…` vs `9ec7a085ab15…`); the other 535 rows and the whole
@@ -217,7 +217,7 @@ the current 142-project manifest `corpus-diff` fails its scope proof up
 front — `manifest_project_count 134 != manifest 142` plus the eight
 missing rows per surface — and will keep failing until the artifact is
 regenerated on the reference runner. That re-baseline is P0-6 work per the
-phase plan (P0-6 is still open): run `node tools/davinci/corpus-baseline.mjs`
+phase plan (P0-6 is still open): run `rust-script tools/commands/davinci/corpus-baseline.rs`
 once the new fixtures are checked out, and the row count moves to
 142 x 4 = 568. The failure is deliberate: a stale-scope baseline reports
 loudly instead of gating a subset of the corpus and calling it green.
@@ -274,7 +274,7 @@ is clean.
 Reference command:
 
 ```sh
-node tools/davinci/corpus-baseline.mjs --clean-fixtures --shards 2 --timeout-ms 600000 --out .vize/davinci-baseline-144.json
+rust-script tools/commands/davinci/corpus-baseline.rs --clean-fixtures --shards 2 --timeout-ms 600000 --out .vize/davinci-baseline-144.json
 ```
 
 Result: 576/576 comparisons, 144 projects x 4 surfaces, 156274 files.

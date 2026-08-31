@@ -8,11 +8,11 @@ import { fileURLToPath } from "node:url";
 import {
   summarizeTypecheckerCoverage,
   validateTypecheckerOutput,
-} from "../../../tools/fixtures/tool-matrix-typechecker.mjs";
+} from "../../../legacy-tools/fixtures/tool-matrix-typechecker.mjs";
 import {
   collectTypecheckerAuthoredPaths,
   collectVueInputPaths,
-} from "../../../tools/fixtures/tool-matrix-inputs.mjs";
+} from "../../../legacy-tools/fixtures/tool-matrix-inputs.mjs";
 import {
   type MutationDiagnosticMode,
   writeVize,
@@ -23,7 +23,7 @@ import {
 export { writeVueTsc };
 
 /**
- * Scaffolding shared by every `tools/fixtures/typecheck-divergence-report.mjs`
+ * Scaffolding shared by every `tools/commands/fixtures/typecheck-divergence-report.rs`
  * test. It lives here rather than in one test file so a second suite can drive
  * the same report without duplicating the matrix artifacts it validates.
  */

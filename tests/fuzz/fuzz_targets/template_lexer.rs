@@ -9,7 +9,7 @@
 // interpolations.
 //
 // The corpus is seeded from the `<template>` blocks of repository .vue
-// fixtures by `tools/fuzz/seed_corpus.mjs`.
+// fixtures by `tools/commands/ci/fuzz/seed_corpus.rs`.
 use libfuzzer_sys::fuzz_target;
 use vize_armature::{Callbacks, ErrorCode, QuoteType, Tokenizer};
 

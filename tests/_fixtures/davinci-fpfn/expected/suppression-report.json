@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "tool": "tools/davinci/suppression-telemetry.mjs",
+  "tool": "tools/commands/davinci/suppression-telemetry.rs",
   "source": {
     "kind": "fixtures",
     "label": "tests/_fixtures/davinci-fpfn"

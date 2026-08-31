@@ -7,7 +7,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { smokeWasmPackage } from "../../tools/npm/smoke-wasm-package.mjs";
+import { smokeWasmPackage } from "../../legacy-tools/npm/smoke-wasm-package.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const require = createRequire(import.meta.url);

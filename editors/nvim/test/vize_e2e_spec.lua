@@ -6,7 +6,7 @@
 -- completion compares exact sorted positive/negative projections; there is no
 -- substring or "contains" check anywhere here.
 --
--- `tools/nvim-vize/run-real-server.mjs` prepares the workspace and launches
+-- `tools/commands/editors/neovim/run-real-server.rs` prepares the workspace and launches
 -- this file; run it with `vp run --workspace-root test:nvim-extension:real-server`.
 --
 -- The session starts through `vim.lsp.start` rather than `require("vize").setup()`

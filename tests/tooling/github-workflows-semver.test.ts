@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { resolveSemverChangeMarker } from "../../tools/github/semver-change-marker.mjs";
+import { resolveSemverChangeMarker } from "../../legacy-tools/github/semver-change-marker.mjs";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 test("push SemVer checks preserve pull-request markers after squash merge", () => {

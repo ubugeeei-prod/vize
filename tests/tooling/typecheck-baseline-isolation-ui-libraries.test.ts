@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { isolateUniqueUiLibraryPackages } from "../../tools/fixtures/typecheck-baseline-isolation-unique.mjs";
+import { isolateUniqueUiLibraryPackages } from "../../legacy-tools/fixtures/typecheck-baseline-isolation-unique.mjs";
 
 /**
  * Vue UI libraries in Vize's `tests/package.json` still climb out of a

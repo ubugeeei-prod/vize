@@ -4,9 +4,9 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { applyIsolatedAliasOverlay } from "../../tools/fixtures/typecheck-baseline-outside-aliases.mjs";
-import { rewriteLocalVueRuntimePaths } from "../../tools/fixtures/typecheck-baseline-outside-vue-runtime-paths.mjs";
-import { materializeBaselineProject } from "../../tools/fixtures/typecheck-baseline-project.mjs";
+import { applyIsolatedAliasOverlay } from "../../legacy-tools/fixtures/typecheck-baseline-outside-aliases.mjs";
+import { rewriteLocalVueRuntimePaths } from "../../legacy-tools/fixtures/typecheck-baseline-outside-vue-runtime-paths.mjs";
+import { materializeBaselineProject } from "../../legacy-tools/fixtures/typecheck-baseline-project.mjs";
 
 /**
  * vue-tsc language-core still resolves `@vue/runtime-dom` from Vize's store

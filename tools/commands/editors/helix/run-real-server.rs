@@ -2,15 +2,39 @@
 //! ```cargo
 //! [package]
 //! edition = "2024"
+//!
+//! [dependencies]
+//! serde = { version = "1", features = ["derive"] }
+//! serde_json = "1"
 //! ```
 
-// tool-host: 5b3636aad1ecb421
-#[path = "../../../rust/tool_host.rs"]
-mod tool_host;
+use std::process::ExitCode;
 
-fn main() -> std::process::ExitCode {
-    tool_host::run(
-        tool_host::Runtime::Node,
-        "tools/helix-vize/run-real-server.mjs",
-    )
+#[path = "../../../rust/common.rs"]
+mod common;
+#[path = "../../../rust/lsp_smoke.rs"]
+mod lsp_smoke;
+
+fn main() -> ExitCode {
+    common::main_result(run())
+}
+
+fn run() -> Result<(), String> {
+    let repo = common::repo_root()?;
+    let languages = common::read_text(repo.join("editors/helix/languages.toml"))?;
+    for needle in [
+        "[language-server.vize]",
+        "command = \"vize\"",
+        "args = [\"lsp\"]",
+        "[language-server.vize.config]",
+        "editor = true",
+        "ecosystem = true",
+        "lint = true",
+        "typecheck = true",
+    ] {
+        if !languages.contains(needle) {
+            return Err(format!("Helix languages.toml missing {needle}"));
+        }
+    }
+    lsp_smoke::run_editor_contract(&repo, "helix", false)
 }

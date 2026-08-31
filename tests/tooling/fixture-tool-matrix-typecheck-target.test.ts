@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { validateTypecheckPerformanceTarget } from "../../tools/fixtures/tool-matrix-typecheck-target.mjs";
+import { validateTypecheckPerformanceTarget } from "../../legacy-tools/fixtures/tool-matrix-typecheck-target.mjs";
 
 test("fixture tool matrix requires an exact baseline tsconfig for performance targets", () => {
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-typecheck-target-"));

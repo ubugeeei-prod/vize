@@ -4,11 +4,11 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { checkTasks } from "../../tools/vite-plus/tasks/check.ts";
+import { checkTasks } from "../../config/vite-plus/tasks/check.ts";
 import {
   checkedPackagesBeforeNativeBuild,
   nativeBuiltCheckPackages,
-} from "../../tools/vite-plus/task-inputs.ts";
+} from "../../config/vite-plus/task-inputs.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 

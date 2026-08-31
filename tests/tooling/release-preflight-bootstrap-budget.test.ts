@@ -4,8 +4,8 @@ import { test } from "node:test";
 import {
   bootstrapRequiredWorkflowRuns,
   createReleaseGateDispatchPlans,
-} from "../../tools/github/release-preflight-bootstrap.mjs";
-import { requiredReleaseWorkflows } from "../../tools/github/release-preflight-evidence.mjs";
+} from "../../legacy-tools/github/release-preflight-bootstrap.mjs";
+import { requiredReleaseWorkflows } from "../../legacy-tools/github/release-preflight-evidence.mjs";
 import { releaseSha } from "./support/release-preflight.ts";
 
 test("release gate wait budget is bounded by the build matrix, not by a shard fallback", async () => {

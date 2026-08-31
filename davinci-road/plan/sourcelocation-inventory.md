@@ -1,7 +1,7 @@
 <!-- GENERATED FILE — do not edit by hand.
      Regenerate: rust-script tools/commands/davinci/sourcelocation-inventory.rs --write
      Verify:     rust-script tools/commands/davinci/sourcelocation-inventory.rs --check
-     Generator:  tools/davinci/sourcelocation-inventory.mjs -->
+     Generator:  tools/commands/davinci/sourcelocation-inventory.rs -->
 
 # `SourceLocation` consumer inventory
 
@@ -21,7 +21,7 @@ any read — or any deleted carrier — comes back.
 ## Resolution method (and its limits)
 
 - Comments and string literals are stripped first
-  (`tools/davinci/lib/rust-source.mjs`); member paths are then counted
+  (`tools/commands/davinci/sourcelocation-inventory.rs`); member paths are then counted
   **textually** on loc-shaped receivers only: chained `.loc.<member>`,
   `.loc().<member>`, `.location.<member>` accesses, and bare locals named
   `loc` / `location` / `*_loc` / `*_location`.

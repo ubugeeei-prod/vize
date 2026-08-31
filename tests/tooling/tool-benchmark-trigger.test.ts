@@ -62,7 +62,7 @@ test("Tool Benchmark ignores only known non-runtime pull request paths", () => {
     "!bench/check-gate-report.mjs",
     "!editors/**",
     "!tests/**",
-    "!tools/github/**",
+    "!tools/commands/ci/github/**",
     "!tools/moon/cmd/check_warning_budget/**",
     "!tools/moon/cmd/enforce_rust_source_coverage/**",
     "!tools/moon/cmd/github/**",

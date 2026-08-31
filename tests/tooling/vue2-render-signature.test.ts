@@ -10,7 +10,7 @@ import {
   resolveGlyphLaunch,
   selectGlyphCorpusProjects,
   withFormattedWorkspace,
-} from "../../tools/fixtures/glyph-corpus.mjs";
+} from "../../legacy-tools/fixtures/glyph-corpus.mjs";
 import type { SfcDialectRoute } from "./support/sfc-baseline-routes.ts";
 import {
   vue27RenderCodeSignature,

@@ -8,8 +8,8 @@ import { test } from "node:test";
 import {
   parseReleasePreflightMode,
   readPackageManifests,
-} from "../../tools/github/release-preflight.mjs";
-import { workspaceVersionFromCargoToml } from "../../tools/github/release-preflight-core.mjs";
+} from "../../legacy-tools/github/release-preflight.mjs";
+import { workspaceVersionFromCargoToml } from "../../legacy-tools/github/release-preflight-core.mjs";
 import { repoRoot } from "./_helpers/moonbit.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 

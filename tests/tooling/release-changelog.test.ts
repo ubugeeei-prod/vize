@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { buildGitCliffArgs } from "../../tools/release/regenerate-changelog.mjs";
+import { buildGitCliffArgs } from "../../legacy-tools/release/regenerate-changelog.mjs";
 
 test("changelog regeneration builds git-cliff args from supported flags", () => {
   assert.deepEqual(buildGitCliffArgs([]), ["--config", "cliff.toml", "--output", "CHANGELOG.md"]);

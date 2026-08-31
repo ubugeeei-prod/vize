@@ -114,7 +114,13 @@ test("GitHub workflows declare the expected cross-platform runner matrix", () =>
 
   const checkWorkflow = readRepoFile(".github", "workflows", "check.yml");
   const nativeWorkflow = readRepoFile(".github", "workflows", "native-smoke.yml");
-  const releasePlatforms = readRepoFile("tools", "github", "release-platforms.mjs");
+  const releasePlatforms = readRepoFile(
+    "tools",
+    "commands",
+    "ci",
+    "github",
+    "release-platforms.rs",
+  );
 
   // check.yml runs every job on the same Linux runner — we accept either the
   // GitHub-hosted label or any Blacksmith Ubuntu SKU so changing vCPU size

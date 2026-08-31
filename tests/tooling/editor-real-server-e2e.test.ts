@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { testAndBenchmarkTasks } from "../../tools/vite-plus/tasks/test-benchmark.ts";
+import { testAndBenchmarkTasks } from "../../config/vite-plus/tasks/test-benchmark.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
 // Guardrails for the #3457 real-server editor scenarios. A scenario nobody
@@ -204,13 +204,19 @@ test("check.yml keeps the editor real-server job in the required set", () => {
 });
 
 test("the packaged Neovim archive ships the real-server scenario", () => {
-  const assertion = readRepoFile("tools", "nvim-vize", "assert-nvim-package.mjs");
+  const assertion = readRepoFile(
+    "tools",
+    "commands",
+    "editors",
+    "neovim",
+    "assert-nvim-package.rs",
+  );
 
   assert.match(assertion, /"nvim\/test\/vize_e2e_expected\.lua"/);
   assert.match(assertion, /"nvim\/test\/vize_e2e_spec\.lua"/);
   assert.match(assertion, /"nvim\/test\/ref_surface_hover\.lua"/);
-  assert.match(assertion, /\^nvim\\\/test\\\/ref_surface_hover\\\.lua\$/);
-  assert.match(assertion, /\^nvim\\\/test\\\/vize_e2e_\(\?:expected\|spec\)\\\.lua\$/);
+  assert.match(assertion, /assert_allowed/);
+  assert.match(assertion, /"nvim\/test\/component_contract_hover\.lua"/);
 });
 
 test("the packaged Vim archive ships the real-server scenario", () => {

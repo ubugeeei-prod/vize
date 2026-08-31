@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { requiredReleaseWorkflowEvidence } from "../../../tools/github/release-preflight-evidence.mjs";
+import { requiredReleaseWorkflowEvidence } from "../../../legacy-tools/github/release-preflight-evidence.mjs";
 
 export const releaseSha = "a".repeat(40);
 

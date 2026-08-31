@@ -5,7 +5,7 @@
 > the FN oracle"). Every defect class the seeded-defect generator injects is
 > asserted by **identity, not count**: the manifest records each injection's
 > file, span, and expected rule id, and the `--assert` mode of
-> `tools/davinci/seed-defects.mjs` compares the exact diagnostic set against
+> `tools/commands/davinci/seed-defects.rs` compares the exact diagnostic set against
 > it. A measured miss lands here with a disposition (`fixed` /
 > `justified-with-witness` / `deferred-with-issue`) and is never left
 > ambient.
@@ -13,7 +13,7 @@
 ## Pilot scan scope (P0-13, measured 2026-08-14)
 
 Tool output quoted verbatim (`scope-proof` lines are printed by
-`tools/davinci/seed-defects.mjs`); the corpus-shard run is local/nightly,
+`tools/commands/davinci/seed-defects.rs`); the corpus-shard run is local/nightly,
 the committed miniature set runs in CI via
 `tests/tooling/davinci-fpfn-pilots.test.ts`.
 

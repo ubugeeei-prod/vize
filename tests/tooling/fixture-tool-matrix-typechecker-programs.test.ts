@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { validateTypecheckerOutput } from "../../tools/fixtures/tool-matrix-typechecker.mjs";
+import { validateTypecheckerOutput } from "../../legacy-tools/fixtures/tool-matrix-typechecker.mjs";
 
 function output(program: Record<string, unknown>) {
   return {

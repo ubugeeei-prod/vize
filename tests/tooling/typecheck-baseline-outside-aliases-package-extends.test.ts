@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { rewriteOutsideAliasPaths } from "../../tools/fixtures/typecheck-baseline-outside-aliases.mjs";
+import { rewriteOutsideAliasPaths } from "../../legacy-tools/fixtures/typecheck-baseline-outside-aliases.mjs";
 
 /**
  * Hash-alias overlay used to follow only relative `extends`. A package-name

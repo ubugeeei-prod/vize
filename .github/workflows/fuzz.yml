@@ -39,7 +39,6 @@ on:
       - "crates/vize_s1_to_s2/**"
       - "crates/vize_s1/**"
       - "tests/fuzz/**"
-      - "tools/fuzz/**"
       - "tools/commands/ci/fuzz/**"
       - "tools/rust/**"
       - ".github/workflows/fuzz.yml"

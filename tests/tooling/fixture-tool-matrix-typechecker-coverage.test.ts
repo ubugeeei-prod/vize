@@ -6,11 +6,11 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { runTool } from "../../tools/fixtures/tool-matrix-run.mjs";
+import { runTool } from "../../legacy-tools/fixtures/tool-matrix-run.mjs";
 import {
   summarizeTypecheckerCoverage,
   validateTypecheckerOutput,
-} from "../../tools/fixtures/tool-matrix-typechecker.mjs";
+} from "../../legacy-tools/fixtures/tool-matrix-typechecker.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const project = { id: "coverage", expectedVueFileCount: 1 };

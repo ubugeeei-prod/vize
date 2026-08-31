@@ -15,7 +15,7 @@
 // re-parses to the same document) must hold on every input.
 //
 // The corpus is seeded from the `<template>` blocks of repository .vue
-// fixtures by `tools/fuzz/seed_corpus.mjs`.
+// fixtures by `tools/commands/ci/fuzz/seed_corpus.rs`.
 use libfuzzer_sys::fuzz_target;
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_davinci::side_table::SideTable;

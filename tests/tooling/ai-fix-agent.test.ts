@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { ensureTool, parseCommandArguments } from "../../tools/ai-fix-agent/core.mjs";
+import { ensureTool, parseCommandArguments } from "../../legacy-tools/ai-fix-agent/core.mjs";
 
 test("parseCommandArguments splits a program and arguments without a shell", () => {
   assert.deepEqual(parseCommandArguments("codex exec --full-auto"), [

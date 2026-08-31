@@ -117,7 +117,7 @@ A automação de repositórios prefere pacotes de comandos MoonBit sob `tools/mo
 do pacote (`moon run --target native tools/moon/cmd/<name> -- <args>`), compartilham a
 da cadeia de ferramentas que já constrói o compilador e são cobertos por suítes `tests/tooling/*.test.ts` que os
 via `moon run` e afirmam a saída esperada completa. As tarefas raiz as invocam com o ajudante `moonScript`
-em `tools/vite-plus/task-commands.ts`, então cada consumidor mantém um nome de tarefa estável em vez de
+em `config/vite-plus/task-commands.ts`, então cada consumidor mantém um nome de tarefa estável em vez de
 um comando inline.
 
 Bons candidatos ao MoonBit são pequenos, puros e com pouca dependência: análise sintática de argumentos, transformações de
@@ -126,7 +126,7 @@ de JSON ou texto, inventários e verificações de aprovação/reprovação, cuj
 Mantenha um script em Node (`.mjs`) quando o MoonBit adicionaria atrito em vez de removê-lo:
 
 - Ele é importado como módulo por outro JavaScript ou por uma suíte `node --test` (por exemplo,
-  `tools/github/release-platforms.mjs`), então reescrevê-lo dividiria uma fonte em dois idiomas.
+  `tools/commands/ci/github/release-platforms.rs`), então reescrevê-lo dividiria uma fonte em dois idiomas.
   - Depende do ecossistema npm (bibliotecas globbing, ferramentas de pacotes, SDKs de ação do GitHub) ou de
     APIs exclusivas para nós que não têm equivalente ao MoonBit.
 - É grande ou exploratório o suficiente para que seu comportamento ainda não seja definido por um teste de saída completa; Não

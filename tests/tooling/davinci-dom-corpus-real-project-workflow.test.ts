@@ -15,10 +15,10 @@ import {
   parseOldErrorReasons,
   validateCorpusEvidence,
   verdictFor,
-} from "../../tools/fixtures/davinci-dom-corpus-workflow.mjs";
+} from "../../legacy-tools/fixtures/davinci-dom-corpus-workflow.mjs";
 import { findStep, readRealProjectMatrixWorkflow } from "./support/real-project-matrix-workflow.ts";
 
-const helperSource = readFileSync("tools/fixtures/davinci-dom-corpus-workflow.mjs", "utf8");
+const helperSource = readFileSync("tools/commands/fixtures/davinci-dom-corpus-workflow.rs", "utf8");
 
 test("real-project workflow carries a full-canonical S2 DOM corpus job", () => {
   const workflow = readRealProjectMatrixWorkflow();
@@ -41,15 +41,18 @@ test("real-project workflow carries a full-canonical S2 DOM corpus job", () => {
   assert.ok(steps.some((step) => step.uses === "./.github/actions/setup-rust-sticky-cache"));
 
   const hydrate = findStep(steps, "Select and hydrate full fixture corpus");
-  assert.equal(hydrate.run, "node tools/fixtures/davinci-dom-corpus-workflow.mjs hydrate");
+  assert.equal(
+    hydrate.run,
+    "rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs hydrate",
+  );
   for (const pattern of [
-    /git", \["ls-files", "--stage", "--", corpusRoot\]/,
-    /expectedGitlinks = 146/,
-    /artifactDir = "real-project-davinci-dom-corpus"/,
+    /run_git\(&\["ls-files", "--stage", "--", CORPUS_ROOT\]/,
+    /EXPECTED_GITLINKS: usize = 146/,
+    /ARTIFACT_DIR: &str = "real-project-davinci-dom-corpus"/,
     /selected-gitlinks\.txt/,
     /"submodule",\s+"update",\s+"--init",\s+"--checkout",\s+"--depth",\s+"1",\s+"--jobs",\s+"8"/,
     /"submodule",\s+"update",\s+"--init",\s+"--checkout",\s+"--force"/,
-    /"submodule", "status", "--", corpusRoot/,
+    /run_git\(&\["submodule", "status", "--", CORPUS_ROOT\]/,
   ]) {
     assert.match(helperSource, pattern);
   }
@@ -57,9 +60,12 @@ test("real-project workflow carries a full-canonical S2 DOM corpus job", () => {
   const corpus = findStep(steps, "Run S2 DOM differential corpus");
   assert.equal(corpus.id, "davinci_dom_corpus");
   assert.equal(corpus["continue-on-error"], true);
-  assert.equal(corpus.run, "node tools/fixtures/davinci-dom-corpus-workflow.mjs run");
-  assert.match(helperSource, /VIZE_DAVINCI_DIFFERENTIAL_CORPUS: corpusRoot/);
-  assert.match(helperSource, /"cargo",/);
+  assert.equal(
+    corpus.run,
+    "rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs run",
+  );
+  assert.match(helperSource, /VIZE_DAVINCI_DIFFERENTIAL_CORPUS", CORPUS_ROOT/);
+  assert.match(helperSource, /Command::new\("cargo"\)/);
   assert.match(helperSource, /"test",\s+"-p",\s+"vize_s1_to_s2"/);
   assert.match(helperSource, /"davinci-differential"/);
   assert.match(helperSource, /"davinci_dom_corpus"/);
@@ -70,11 +76,15 @@ test("real-project workflow carries a full-canonical S2 DOM corpus job", () => {
   assert.deepEqual(finalize.env, {
     VIZE_DAVINCI_DOM_CORPUS_OUTCOME: "${{ steps.davinci_dom_corpus.outcome }}",
   });
-  assert.equal(finalize.run, "node tools/fixtures/davinci-dom-corpus-workflow.mjs finalize");
+  assert.equal(
+    finalize.run,
+    "rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs finalize",
+  );
   assert.match(helperSource, /"record-only"/);
-  assert.match(helperSource, /expectedDomOutputComparisons = 144/);
+  assert.match(helperSource, /EXPECTED_DOM_OUTPUT_COMPARISONS: usize = 144/);
   assert.match(helperSource, /summary\.json/);
-  assert.match(helperSource, /davinci-differential corpus scope\|davinci DOM corpus sweep/);
+  assert.match(helperSource, /line\.contains\("davinci-differential corpus scope"\)/);
+  assert.match(helperSource, /line\.contains\("davinci DOM corpus sweep"\)/);
   assert.match(helperSource, /davinci DOM corpus old-lane error reasons/);
   assert.match(helperSource, /Davinci S2 DOM corpus failed/);
 

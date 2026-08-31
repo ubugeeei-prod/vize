@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { isolateUniqueVueVisualizationPackages } from "../../tools/fixtures/typecheck-baseline-isolation-unique.mjs";
+import { isolateUniqueVueVisualizationPackages } from "../../legacy-tools/fixtures/typecheck-baseline-isolation-unique.mjs";
 
 /**
  * TresJS and vue-chartjs live in Vize's `tests/package.json`. TypeScript can

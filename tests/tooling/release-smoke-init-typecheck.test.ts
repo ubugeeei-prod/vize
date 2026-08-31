@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import { test } from "node:test";
 
-import { isPathInsideOrEqual } from "../../tools/npm/smoke-release-init-typecheck.mjs";
+import { isPathInsideOrEqual } from "../../legacy-tools/npm/smoke-release-init-typecheck.mjs";
 
 test("init typecheck smoke rejects only package roots inside the repository", () => {
   assert.equal(

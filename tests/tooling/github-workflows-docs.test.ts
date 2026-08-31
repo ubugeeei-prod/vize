@@ -6,7 +6,7 @@ import {
   requiredReleaseWorkflowEvidence,
   requiredReleaseWorkflows,
   selectRequiredWorkflowRuns,
-} from "../../tools/github/release-preflight-evidence.mjs";
+} from "../../legacy-tools/github/release-preflight-evidence.mjs";
 import { readRepoFile } from "./support/github-workflows.ts";
 import { releaseSha, successfulReleaseRun } from "./support/release-preflight.ts";
 

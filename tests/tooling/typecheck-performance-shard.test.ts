@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { selectTypecheckPerformanceProjects } from "../../tools/fixtures/typecheck-performance-shard.mjs";
+import { selectTypecheckPerformanceProjects } from "../../legacy-tools/fixtures/typecheck-performance-shard.mjs";
 
 const registry = {
   projects: [

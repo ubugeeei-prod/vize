@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { reportedDiagnostics } from "../../tools/npm/smoke-release-init-project.mjs";
+import { reportedDiagnostics } from "../../legacy-tools/npm/smoke-release-init-project.mjs";
 
 test("reported diagnostics are normalized relative to the fresh project", () => {
   const diagnostics = ["error:1:1 [TS2322] Type mismatch."];

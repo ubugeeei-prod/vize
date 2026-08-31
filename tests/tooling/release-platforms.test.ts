@@ -1,13 +1,31 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
-import {
-  applyReleasePlatformCadence,
-  releasePlatformPlan,
-} from "../../tools/github/release-platforms.mjs";
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const toolPath = path.join(root, "tools", "commands", "ci", "github", "release-platforms.rs");
+
+function releasePlatformPlan(refName: string) {
+  const result = spawnSync("rust-script", [toolPath, "print", refName], {
+    cwd: root,
+    encoding: "utf8",
+  });
+  assert.equal(result.status, 0, result.stderr);
+  return JSON.parse(result.stdout);
+}
+
+function applyReleasePlatformCadence(refName: string, packageJsonPath: string) {
+  const result = spawnSync("rust-script", [toolPath, "apply-cadence", refName, packageJsonPath], {
+    cwd: root,
+    encoding: "utf8",
+  });
+  assert.equal(result.status, 0, result.stderr);
+  return { changed: result.stdout.startsWith("Applied "), skippedTargets: [] };
+}
 
 test("release platform plan includes slow targets on fifth minors", () => {
   const plan = releasePlatformPlan("v1.200.0");

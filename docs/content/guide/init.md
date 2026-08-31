@@ -225,11 +225,11 @@ This is checked in, applies to everyone on the project, and changes nothing on t
 | Editor  | Integration        |
 | ------- | ------------------ |
 | VS Code | `ubugeeei.vize`    |
-| Zed     | `tools/zed-vize`   |
-| Neovim  | `tools/nvim-vize`  |
-| Vim     | `tools/vim-vize`   |
-| Helix   | `tools/helix-vize` |
-| Emacs   | `tools/emacs-vize` |
+| Zed     | `editors/zed`      |
+| Neovim  | `editors/nvim`     |
+| Vim     | `editors/vim`      |
+| Helix   | `editors/helix`    |
+| Emacs   | `editors/emacs`    |
 
 See [VS Code and Other Editors](../integrations/vscode.md) for per-editor instructions.
 

@@ -117,7 +117,7 @@ vp run --workspace-root source:lengths
 正常包路径（`moon run --target native tools/moon/cmd/<name> -- <args>`），分享工具链
 已经构建了编译器，并被 `tests/tooling/*.test.ts` 套件覆盖
 它们通过 `moon run` 并断言完整的预期输出。根任务使用 `moonScript` 调用它们
-`tools/vite-plus/task-commands.ts` 中的助手，因此每个消费者都保持稳定的任务名称而不是
+`config/vite-plus/task-commands.ts` 中的助手，因此每个消费者都保持稳定的任务名称而不是
 内联命令。
 
 好的 MoonBit 候选者是小、纯粹且依赖轻：参数解析、JSON 或文本
@@ -126,7 +126,7 @@ vp run --workspace-root source:lengths
 当 MoonBit 会增加摩擦而不是删除它时，在 Node (`.mjs`) 中保留一个脚本：
 
 - 它由其他 JavaScript 或 `node --test` 套件作为模块导入（例如
-  `tools/github/release-platforms.mjs`），因此重写它会将一个源代码拆分为两种语言。
+  `tools/commands/ci/github/release-platforms.rs`），因此重写它会将一个源代码拆分为两种语言。
 - 这取决于 npm 生态系统（全局库、包工具、GitHub Action SDK）或
   仅节点 API，没有 MoonBit 等效项。
 - 它足够大或具有探索性，其行为尚未通过全输出测试来确定；不

@@ -6,12 +6,12 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { buildTasks } from "../../tools/vite-plus/tasks/build.ts";
-import { checkTasks } from "../../tools/vite-plus/tasks/check.ts";
-import { testAndBenchmarkTasks } from "../../tools/vite-plus/tasks/test-benchmark.ts";
-import { inTestbox, testboxTasks } from "../../tools/vite-plus/tasks/testbox.ts";
-import { shellQuote } from "../../tools/vite-plus/task-helpers.ts";
-import { testedPackages } from "../../tools/vite-plus/task-inputs.ts";
+import { buildTasks } from "../../config/vite-plus/tasks/build.ts";
+import { checkTasks } from "../../config/vite-plus/tasks/check.ts";
+import { testAndBenchmarkTasks } from "../../config/vite-plus/tasks/test-benchmark.ts";
+import { inTestbox, testboxTasks } from "../../config/vite-plus/tasks/testbox.ts";
+import { shellQuote } from "../../config/vite-plus/task-helpers.ts";
+import { testedPackages } from "../../config/vite-plus/task-inputs.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const pushCurrentBranchCommand = 'git push --set-upstream origin "$(git branch --show-current)"';

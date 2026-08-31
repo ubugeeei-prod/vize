@@ -8,7 +8,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { createFormatterChangeEvidence } from "../../tools/fixtures/tool-matrix-formatter.mjs";
+import { createFormatterChangeEvidence } from "../../legacy-tools/fixtures/tool-matrix-formatter.mjs";
 import {
   assertFormatterCheckWriteAgreement,
   collectFormatterWriteEvidence,
@@ -23,7 +23,7 @@ import {
   snapshotWorkspaceFiles,
   withFormattedWorkspace,
   writeGlyphCorpusPropertyEvidence,
-} from "../../tools/fixtures/glyph-corpus.mjs";
+} from "../../legacy-tools/fixtures/glyph-corpus.mjs";
 
 type CorpusProject = {
   id: string;

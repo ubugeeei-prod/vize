@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { testAndBenchmarkTasks } from "../../tools/vite-plus/tasks/test-benchmark.ts";
+import { testAndBenchmarkTasks } from "../../config/vite-plus/tasks/test-benchmark.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 

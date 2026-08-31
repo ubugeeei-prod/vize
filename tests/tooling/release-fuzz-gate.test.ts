@@ -9,7 +9,7 @@ import { parse } from "yaml";
 import {
   createReleaseGateDispatchPlans,
   releaseGateRunQualifiers,
-} from "../../tools/github/release-preflight-bootstrap.mjs";
+} from "../../legacy-tools/github/release-preflight-bootstrap.mjs";
 import { readRepoFile } from "./support/github-workflows.ts";
 import { releaseSha } from "./support/release-preflight.ts";
 

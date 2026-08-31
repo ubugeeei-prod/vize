@@ -1,9 +1,9 @@
 # Hand-corrections for the generated rule-parity matrix (Davinci P0-8).
 #
-# The generator (tools/davinci/rule-parity.mjs) applies these AFTER its
+# The generator (tools/commands/davinci/rule-parity.rs) applies these AFTER its
 # heuristic classification and marks overridden rows with `*` in
 # davinci-road/plan/rule-parity.md. Never edit the generated artifact —
-# record corrections here, then `node tools/davinci/rule-parity.mjs --write`.
+# record corrections here, then `rust-script tools/commands/davinci/rule-parity.rs --write`.
 #
 # Schema — one table per corrected rule, keyed by the exact rule name:
 #

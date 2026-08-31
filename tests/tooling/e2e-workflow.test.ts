@@ -83,7 +83,6 @@ test("PR readiness plans six isolated rows behind one stable aggregator", () => 
     "tests/_fixtures/_git/{elk,misskey,npmx.dev,nuxt-ui,reka-ui,vuefes-2025}",
     "tests/app/dev/{misskey,nuxt-ui}.spec.ts",
     "tests/app/dev/{misskey-hmr,nuxt-ui-dev-server,nuxt-ui-hmr,source-restore}.ts",
-    "tools/github/app-e2e-*.mjs",
     "tools/commands/ci/github/app-e2e-*.rs",
     "tools/rust/**",
   ]) {

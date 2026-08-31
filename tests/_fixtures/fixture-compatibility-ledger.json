@@ -722,8 +722,8 @@
         "membership": "ecosystem"
       },
       "evidence": {
-        "file": "tools/fixtures/tool-matrix-run.mjs",
-        "selector": "payload.compilerArtifacts = inspectCompilerArtifacts("
+        "file": "tools/commands/fixtures/tool-matrix-report.rs",
+        "selector": "\"compiler\" => payload[\"compilerArtifacts\"][\"inputFileCount\"].clone()"
       }
     },
     {
@@ -744,8 +744,8 @@
         "membership": "ecosystem"
       },
       "evidence": {
-        "file": "tools/fixtures/tool-matrix-run.mjs",
-        "selector": "validateLinterOutput(project, payload.parsed, result.status, expectedToolFiles);"
+        "file": "tools/commands/fixtures/tool-matrix-report.rs",
+        "selector": "\"linter\" => payload[\"parsed\"]"
       }
     },
     {
@@ -755,8 +755,8 @@
         "membership": "ecosystem"
       },
       "evidence": {
-        "file": "tools/fixtures/tool-matrix-run.mjs",
-        "selector": "payload.typecheckerCoverage = validateTypecheckerOutput("
+        "file": "tools/rust/davinci_corpus.rs",
+        "selector": "\"typechecker\": [\"exitCode\", \"stderr\", \"stdout\", \"typecheckerCoverage\"]"
       }
     },
     {
@@ -939,7 +939,7 @@
         "fixturePaths": ["tests/_fixtures/_git/elk"]
       },
       "evidence": {
-        "file": "tools/github/app-e2e-plan.mjs",
+        "file": "tools/commands/ci/github/app-e2e-plan.rs",
         "selector": "row(\"full\", \"vrt\", \"elk\""
       }
     },
@@ -950,7 +950,7 @@
         "fixturePaths": ["tests/_fixtures/_git/frontend-phpcon-do-website"]
       },
       "evidence": {
-        "file": "tools/github/app-e2e-plan.mjs",
+        "file": "tools/commands/ci/github/app-e2e-plan.rs",
         "selector": "test:vrt:frontend-phpcon"
       }
     },
@@ -961,7 +961,7 @@
         "fixturePaths": ["tests/_fixtures/_git/misskey"]
       },
       "evidence": {
-        "file": "tools/github/app-e2e-plan.mjs",
+        "file": "tools/commands/ci/github/app-e2e-plan.rs",
         "selector": "row(\"full\", \"vrt\", \"misskey\""
       }
     },
@@ -972,7 +972,7 @@
         "fixturePaths": ["tests/_fixtures/_git/npmx.dev"]
       },
       "evidence": {
-        "file": "tools/github/app-e2e-plan.mjs",
+        "file": "tools/commands/ci/github/app-e2e-plan.rs",
         "selector": "row(\"full\", \"vrt\", \"npmx\""
       }
     },
@@ -983,7 +983,7 @@
         "fixturePaths": ["tests/_fixtures/_git/vuefes-2025"]
       },
       "evidence": {
-        "file": "tools/github/app-e2e-plan.mjs",
+        "file": "tools/commands/ci/github/app-e2e-plan.rs",
         "selector": "row(\"full\", \"vrt\", \"vuefes\""
       }
     },

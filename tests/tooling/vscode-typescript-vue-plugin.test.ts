@@ -56,19 +56,19 @@ test("VS Code extension installs the guarded TypeScript Vue plugin", () => {
   );
 
   assert.match(
-    readFile("tools/vite-plus/tasks/build.ts"),
+    readFile("config/vite-plus/tasks/build.ts"),
     /rustToolFromVscodeExtension\(\s*"editors\/vscode\/sync-typescript-plugin"/,
   );
   assert.match(
-    readFile("tools/vite-plus/tasks/build.ts"),
+    readFile("config/vite-plus/tasks/build.ts"),
     /rustToolFromVscodeExtension\(\s*"editors\/vscode\/assert-vsix-package"/,
   );
   assert.match(
-    readFile("tools/vite-plus/tasks/test-benchmark.ts"),
+    readFile("config/vite-plus/tasks/test-benchmark.ts"),
     /rustToolFromVscodeExtension\(\s*"editors\/vscode\/sync-typescript-plugin"/,
   );
   assert.match(
-    readFile("tools/vite-plus/tasks/test-benchmark.ts"),
+    readFile("config/vite-plus/tasks/test-benchmark.ts"),
     /rustToolFromVscodeExtension\(\s*"editors\/vscode\/assert-vsix-package"/,
   );
 
@@ -77,6 +77,15 @@ test("VS Code extension installs the guarded TypeScript Vue plugin", () => {
     fs.existsSync(path.join(root, "editors/vscode/typescript-vue-plugin/index.cjs")),
     "plugin source is synchronized into node_modules/@vizejs/typescript-vue-plugin for VS Code",
   );
+});
+
+test("VSIX plugin injection resolves relative archive paths before changing directory", () => {
+  const source = readFile("tools/commands/editors/vscode/sync-typescript-plugin.rs");
+
+  assert.match(source, /let vsix_path = absolute_from_cwd\(vsix_path\)\?/);
+  assert.match(source, /fn absolute_from_cwd\(path: &Path\) -> Result<PathBuf, String>/);
+  assert.match(source, /\.current_dir\(&temp_dir\)/);
+  assert.match(source, /\.arg\(&vsix_path\)/);
 });
 
 test("TypeScript Vue plugin resolves existing relative .vue imports", () => {

@@ -4,7 +4,7 @@ import { Readable } from "node:stream";
 import { test } from "node:test";
 import { crc32 } from "node:zlib";
 
-import { downloadArtifactEntries } from "../../tools/github/release-preflight-artifact-entries.mjs";
+import { downloadArtifactEntries } from "../../legacy-tools/github/release-preflight-artifact-entries.mjs";
 
 const artifact = {
   name: "real-project-matrix-0",

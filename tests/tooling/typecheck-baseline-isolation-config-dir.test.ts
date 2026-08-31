@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { isolateFixtureTypePackages } from "../../tools/fixtures/typecheck-baseline-isolation.mjs";
+import { isolateFixtureTypePackages } from "../../legacy-tools/fixtures/typecheck-baseline-isolation.mjs";
 
 /**
  * TypeScript 5.5 expands `${configDir}` to the declaring tsconfig directory.

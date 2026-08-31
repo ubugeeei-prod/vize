@@ -20,7 +20,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { parseTomlLite } from "../../tools/davinci/toml-lite.mjs";
+import { parseTomlLite } from "../../legacy-tools/davinci/toml-lite.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const budgetsPath = path.join(repoRoot, "davinci-road", "plan", "budgets.toml");

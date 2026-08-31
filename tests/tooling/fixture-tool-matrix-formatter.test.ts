@@ -8,8 +8,8 @@ import { fileURLToPath } from "node:url";
 import {
   snapshotFormatterInputs,
   validateFormatterOutput,
-} from "../../tools/fixtures/tool-matrix-formatter.mjs";
-import { runTool } from "../../tools/fixtures/tool-matrix-run.mjs";
+} from "../../legacy-tools/fixtures/tool-matrix-formatter.mjs";
+import { runTool } from "../../legacy-tools/fixtures/tool-matrix-run.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const noFilesReport =

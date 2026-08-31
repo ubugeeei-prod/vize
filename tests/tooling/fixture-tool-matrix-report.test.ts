@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { validatedFileCount } from "../../tools/fixtures/tool-matrix-metrics.mjs";
+import { validatedFileCount } from "../../legacy-tools/fixtures/tool-matrix-metrics.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const toolPath = path.join(root, "tools", "commands", "fixtures", "tool-matrix-report.rs");
@@ -37,8 +37,8 @@ test("fixture tool matrix plans every registered project across all four require
     assert.match(report.evidence.commitSha, /^[0-9a-f]{40}$/);
     assert.deepEqual(Object.keys(report.evidence).sort(), ["commitSha", "machine", "runtime"]);
     assert.deepEqual(Object.keys(report.evidence.runtime).sort(), ["name", "version"]);
-    assert.equal(report.evidence.runtime.name, "node");
-    assert.equal(report.evidence.runtime.version, process.versions.node);
+    assert.equal(report.evidence.runtime.name, "rust-script");
+    assert.match(report.evidence.runtime.version, /^rustc \d+\.\d+\.\d+/);
     assert.deepEqual(Object.keys(report.evidence.machine).sort(), [
       "arch",
       "cpuModel",
@@ -53,7 +53,7 @@ test("fixture tool matrix plans every registered project across all four require
     assert.ok(report.evidence.machine.totalMemoryBytes > 0);
     const markdown = fs.readFileSync(path.join(outputDir, "summary.md"), "utf8");
     assert.match(markdown, new RegExp(`Commit: ${report.evidence.commitSha}`));
-    assert.match(markdown, /Runtime: node \d+\.\d+\.\d+/);
+    assert.match(markdown, /Runtime: rust-script rustc \d+\.\d+\.\d+/);
     assert.match(markdown, /Machine: [^/]+\/[^,]+, \d+ logical CPUs, \d+ bytes memory/);
     assert.match(markdown, /\bRequested\b/);
     assert.match(markdown, /\bTransitive Authored\b/);

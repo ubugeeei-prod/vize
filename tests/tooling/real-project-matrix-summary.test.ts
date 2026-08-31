@@ -34,7 +34,7 @@ test("real-project workflow gates every measured surface on one verdict", () => 
     VIZE_TYPECHECK_DIVERGENCE_OUTCOME: "${{ steps.typecheck_divergence.outcome }}",
   });
   for (const pattern of [
-    /real-project-surface-verdict\.mjs/,
+    /real-project-surface-verdict\.rs/,
     /--from-workflow-env/,
     /--output "\$FIXTURE_REPORT_DIR\/surface-verdict\.json"/,
   ]) {

@@ -4,8 +4,8 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { isolateUniqueLocalTypePackages } from "../../tools/fixtures/typecheck-baseline-isolation-unique.mjs";
-import { pluginPackageNamesFromConfigs } from "../../tools/fixtures/typecheck-baseline-isolation-plugins.mjs";
+import { isolateUniqueLocalTypePackages } from "../../legacy-tools/fixtures/typecheck-baseline-isolation-unique.mjs";
+import { pluginPackageNamesFromConfigs } from "../../legacy-tools/fixtures/typecheck-baseline-isolation-plugins.mjs";
 
 /**
  * Some Vue language-plugin configs use the TypeScript `{ name }` object shape

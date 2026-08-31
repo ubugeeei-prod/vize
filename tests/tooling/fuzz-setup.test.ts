@@ -180,17 +180,17 @@ test("fuzz workspace covers parser, lexer, and compiler harnesses", () => {
   assert.match(manifest, /features = \[\s*"native",?\s*\]/);
 });
 
-test("seed_corpus.mjs writes seeds for every declared fuzz target", () => {
-  const script = readRepoFile("tools/fuzz/seed_corpus.mjs");
+test("seed_corpus.rs writes seeds for every declared fuzz target", () => {
+  const script = readRepoFile("tools/commands/ci/fuzz/seed_corpus.rs");
   const manifest = readRepoFile(fuzzManifestPath);
   const targets = [...manifest.matchAll(/\[\[bin\]\]\s+name = "([^"]+)"/g)].map(([, name]) => name);
 
-  assert.match(script, /tests", "fuzz", "corpus"/);
+  assert.match(script, /tests\/fuzz\/corpus/);
   for (const target of targets) {
     assert.match(
       script,
-      new RegExp(`resetCorpus\\("${target}"\\)`),
-      `seed_corpus.mjs must seed corpus/${target}/`,
+      new RegExp(`reset_corpus\\(&corpus_root, "${target}"\\)`),
+      `seed_corpus.rs must seed corpus/${target}/`,
     );
   }
 });

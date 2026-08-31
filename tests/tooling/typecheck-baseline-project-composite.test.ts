@@ -6,7 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
-import { materializeBaselineProject } from "../../tools/fixtures/typecheck-baseline-project.mjs";
+import { materializeBaselineProject } from "../../legacy-tools/fixtures/typecheck-baseline-project.mjs";
 import { typecheckDependencySkip } from "./support/typecheck-dependency.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");

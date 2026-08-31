@@ -291,7 +291,7 @@ jobs:
           VIZE_SYNTAX_HIGHLIGHTER_OUTCOME: ${{ steps.syntax_highlighter.outcome }}
           VIZE_GLYPH_OUTCOME: ${{ steps.glyph.outcome }}
           VIZE_TYPECHECK_DIVERGENCE_OUTCOME: ${{ steps.typecheck_divergence.outcome }}
-        run: node tools/fixtures/real-project-surface-verdict.mjs --from-workflow-env --output "$FIXTURE_REPORT_DIR/surface-verdict.json"
+        run: rust-script tools/commands/fixtures/real-project-surface-verdict.rs --from-workflow-env --output "$FIXTURE_REPORT_DIR/surface-verdict.json"
 
       - name: Publish shard summary
         if: ${{ always() }}
@@ -329,16 +329,16 @@ jobs:
           key: davinci-dom-corpus
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Select and hydrate full fixture corpus
-        run: node tools/fixtures/davinci-dom-corpus-workflow.mjs hydrate
+        run: rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs hydrate
       - name: Run S2 DOM differential corpus
         id: davinci_dom_corpus
         continue-on-error: true
-        run: node tools/fixtures/davinci-dom-corpus-workflow.mjs run
+        run: rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs run
       - name: Finalize S2 DOM corpus evidence
         if: ${{ always() }}
         env:
           VIZE_DAVINCI_DOM_CORPUS_OUTCOME: ${{ steps.davinci_dom_corpus.outcome }}
-        run: node tools/fixtures/davinci-dom-corpus-workflow.mjs finalize
+        run: rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs finalize
       - name: Upload S2 DOM corpus evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

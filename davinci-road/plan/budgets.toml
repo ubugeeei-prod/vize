@@ -37,7 +37,7 @@ tolerance = 0.05
 # `benchmarks/davinci_harness/benches/selfcheck.rs`); the registry here and
 # the bench sources must reconcile exactly — a bench without a budget entry,
 # or an entry without a bench, fails `tests/tooling/davinci-budgets.test.ts`
-# and `tools/davinci/bench-compare.mjs`. New benches (the P0-3 atelier
+# and `tools/commands/davinci/bench-compare.rs`. New benches (the P0-3 atelier
 # core/dom/vapor/ssr stages) append their entries in the same shape.
 #
 # Fields, all mandatory:

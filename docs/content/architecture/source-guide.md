@@ -115,7 +115,7 @@ Repository automation prefers MoonBit command packages under `tools/moon/cmd/`. 
 normal package path (`moon run --target native tools/moon/cmd/<name> -- <args>`), share the toolchain
 that already builds the compiler, and are covered by `tests/tooling/*.test.ts` suites that exercise
 them via `moon run` and assert full expected output. Root tasks invoke them with the `moonScript`
-helper in `tools/vite-plus/task-commands.ts`, so each consumer stays a stable task name rather than
+helper in `config/vite-plus/task-commands.ts`, so each consumer stays a stable task name rather than
 an inline command.
 
 Good MoonBit candidates are small, pure, and dependency-light: argument parsing, JSON or text
@@ -124,7 +124,7 @@ transforms, inventories, and pass/fail checks whose correctness can be proved wi
 Keep a script in Node (`.mjs`) when MoonBit would add friction rather than remove it:
 
 - It is imported as a module by other JavaScript or by a `node --test` suite (for example
-  `tools/github/release-platforms.mjs`), so rewriting it would split one source across two languages.
+  `tools/commands/ci/github/release-platforms.rs`), so rewriting it would split one source across two languages.
 - It depends on the npm ecosystem (globbing libraries, package tooling, GitHub Action SDKs) or on
   Node-only APIs that have no MoonBit equivalent.
 - It is large or exploratory enough that its behavior is not yet pinned by a full-output test; do not

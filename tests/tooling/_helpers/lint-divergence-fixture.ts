@@ -1,7 +1,7 @@
 import os from "node:os";
 import path from "node:path";
 
-import { compareLintFindings } from "../../../tools/fixtures/lint-divergence.mjs";
+import { compareLintFindings } from "../../../legacy-tools/fixtures/lint-divergence.mjs";
 
 /** Workspace root the comparator normalizes fixture paths against. */
 export const cwd = path.join(os.tmpdir(), "vize-patina-divergence-workspace");

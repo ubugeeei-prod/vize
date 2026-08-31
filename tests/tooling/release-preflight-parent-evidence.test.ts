@@ -4,10 +4,10 @@ import { test } from "node:test";
 import {
   bootstrapRequiredWorkflowRuns,
   createReleaseGateDispatchPlans,
-} from "../../tools/github/release-preflight-bootstrap.mjs";
-import { isVersionMetadataOnlyRelease } from "../../tools/github/release-preflight-core.mjs";
-import { requiredReleaseWorkflows } from "../../tools/github/release-preflight-evidence.mjs";
-import { releaseEvidenceShas } from "../../tools/github/release-preflight.mjs";
+} from "../../legacy-tools/github/release-preflight-bootstrap.mjs";
+import { isVersionMetadataOnlyRelease } from "../../legacy-tools/github/release-preflight-core.mjs";
+import { requiredReleaseWorkflows } from "../../legacy-tools/github/release-preflight-evidence.mjs";
+import { releaseEvidenceShas } from "../../legacy-tools/github/release-preflight.mjs";
 
 /** The workspace lint budget is zero warnings, and `.sort()` needs a comparator. */
 const byCodeUnit = (left: string, right: string) => (left < right ? -1 : left > right ? 1 : 0);
@@ -36,7 +36,7 @@ test("version metadata paths are recognised and source paths are not", () => {
   for (const source of [
     "crates/vize_canon/src/lib.rs",
     "editors/vscode/test/suite/extension-host.cjs",
-    "tools/github/release-preflight.mjs",
+    "tools/commands/ci/github/release-preflight.rs",
     ".github/workflows/release.yml",
   ]) {
     assert.equal(

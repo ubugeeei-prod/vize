@@ -8,7 +8,7 @@ import { test } from "node:test";
 import {
   assertHydratedGitlinkFixtures,
   fixtureHydrationFailures,
-} from "../../tools/davinci/lib/corpus-hydration.mjs";
+} from "../../legacy-tools/davinci/lib/corpus-hydration.mjs";
 
 function git(cwd: string, args: string[]): string {
   return execFileSync("git", args, {

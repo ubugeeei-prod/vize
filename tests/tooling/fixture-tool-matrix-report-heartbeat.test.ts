@@ -125,9 +125,10 @@ setInterval(() => {}, 1000);`,
   ]);
   try {
     assert.equal(result.status, 1);
-    // This must stay below the 5s force-kill escalation and 10s force-settle fallback.
+    // This must stay below the old 5s force-kill escalation while allowing
+    // Rust Script startup and cache lookup overhead.
     assert.ok(
-      Date.now() - startedAt < 2_500,
+      Date.now() - startedAt < 4_000,
       "timeout handling must not wait for descendants that inherited stdio",
     );
     const report = JSON.parse(fs.readFileSync(path.join(outputDir, "summary.json"), "utf8"));

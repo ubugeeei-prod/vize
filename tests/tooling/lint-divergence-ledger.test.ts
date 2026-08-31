@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
 
-import { compareLintFindings } from "../../tools/fixtures/lint-divergence.mjs";
-import { readRuleMap } from "../../tools/fixtures/patina-rule-map.mjs";
+import { compareLintFindings } from "../../legacy-tools/fixtures/lint-divergence.mjs";
+import { readRuleMap } from "../../legacy-tools/fixtures/patina-rule-map.mjs";
 import {
   compare,
   cwd,

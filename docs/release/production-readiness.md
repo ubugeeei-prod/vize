@@ -39,7 +39,7 @@ A production-ready claim for any supported surface requires current evidence for
 - `vp run --workspace-root coverage:source`
 - `vp run --workspace-root coverage:source:branch`
 - `vp run --filter './tests' test:check:fixtures`
-- `node tools/npm/smoke-release-install.mjs --prepare-manifests --runtime-checks ...`
+- `rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks ...`
 - `cargo fmt --all -- --check`
 - `cargo clippy --workspace -- -D warnings`
 - `cargo test --workspace`
@@ -71,7 +71,8 @@ complete plan (files, scripts, dependencies, editor recommendation) and its idem
 installs exactly the dependency plan the run printed, and then drives the generated `vize:check`
 script through a clean, broken, and repaired program. It also asserts that a missing Corsa runtime
 fails with the package name and the package-manager-specific install command rather than reporting
-a clean project. Cells live in `tools/npm/smoke-release-init-shapes.mjs`.
+a clean project. The Rust Script smoke is backed by the `release-smoke-init-*` tooling tests so the
+matrix shape stays covered without a JavaScript command entrypoint.
 
 Covered today: npm, a Vite + Vue TypeScript project shape, and the host the smoke runs on. Still
 open under [#3956](https://github.com/ubugeeei-prod/vize/issues/3956): pnpm, yarn, Bun and Vite+;

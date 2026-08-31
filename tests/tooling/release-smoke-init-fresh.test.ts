@@ -7,9 +7,12 @@ import {
   managerEnv,
   projectEnv,
   runManager,
-} from "../../tools/npm/smoke-release-init-project.mjs";
-import { PACKAGE_MANAGERS } from "../../tools/npm/smoke-release-init-managers.mjs";
-import { FRESH_INIT_MATRIX, PROJECT_SHAPES } from "../../tools/npm/smoke-release-init-shapes.mjs";
+} from "../../legacy-tools/npm/smoke-release-init-project.mjs";
+import { PACKAGE_MANAGERS } from "../../legacy-tools/npm/smoke-release-init-managers.mjs";
+import {
+  FRESH_INIT_MATRIX,
+  PROJECT_SHAPES,
+} from "../../legacy-tools/npm/smoke-release-init-shapes.mjs";
 import { readRepoFile } from "./support/github-workflows.ts";
 import {
   COREPACK_MANAGER_SPECS,
@@ -228,7 +231,7 @@ function runtimePackageManagerActionSteps() {
 }
 
 test("the release runtime smoke runs the fresh-project matrix", () => {
-  const runtime = readRepoFile("tools", "npm", "smoke-release-runtime.mjs");
+  const runtime = readRepoFile("legacy-tools", "npm", "smoke-release-runtime.mjs");
   // The context keys the fresh-project driver needs, independent of the order
   // and line breaks the call site happens to use.
   const freshCall = /runFreshProjectInitChecks\(\{([^}]*)\}\)/u.exec(runtime);
@@ -243,14 +246,14 @@ test("the release runtime smoke runs the fresh-project matrix", () => {
     assert.ok(context.has(key), `runFreshProjectInitChecks must receive ${key}`);
   }
   assert.match(runtime, /from "\.\/smoke-release-init-fresh\.mjs"/u);
-  const installer = readRepoFile("tools", "npm", "smoke-release-install.mjs");
+  const installer = readRepoFile("legacy-tools", "npm", "smoke-release-install.mjs");
   assert.match(
     installer,
     /runRuntimeChecks\(installDir, installable, \{\s*allPackages: packages,/u,
     "fresh-project redirects must see pack-only optional platform tarballs",
   );
 
-  const project = readRepoFile("tools", "npm", "smoke-release-init-project.mjs");
+  const project = readRepoFile("legacy-tools", "npm", "smoke-release-init-project.mjs");
   // The isolation contract: outside the install tree, outside the checkout, and
   // no ancestor that could resolve `vize` for the project.
   assert.match(project, /is inside the install tree/u);

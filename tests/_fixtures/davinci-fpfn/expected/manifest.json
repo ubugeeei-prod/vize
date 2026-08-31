@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "tool": "tools/davinci/seed-defects.mjs",
+  "tool": "tools/commands/davinci/seed-defects.rs",
   "source": {
     "kind": "fixtures",
     "label": "tests/_fixtures/davinci-fpfn"

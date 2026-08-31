@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { readRuleMap, validateRuleMap } from "../../tools/fixtures/patina-rule-map.mjs";
+import { readRuleMap, validateRuleMap } from "../../legacy-tools/fixtures/patina-rule-map.mjs";
 
 test("the Patina scorecard exhaustively maps the pinned eslint-plugin-vue rule surface", () => {
   const ruleMap = validateRuleMap(readRuleMap());

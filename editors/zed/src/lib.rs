@@ -117,5 +117,5 @@ fn recommended_initialization_options() -> zed::serde_json::Value {
 }
 
 #[cfg(test)]
-#[path = "../../../tools/zed-vize/extension_unit_tests.rs"]
+#[path = "../../../tools/rust/zed_extension_unit_tests.rs"]
 mod tests;

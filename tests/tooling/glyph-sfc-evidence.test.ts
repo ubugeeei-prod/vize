@@ -8,7 +8,7 @@ import {
   createGlyphSfcEquivalenceEvidence,
   validateGlyphSfcEquivalenceEvidence,
   writeGlyphSfcEquivalenceEvidence,
-} from "../../tools/fixtures/glyph-sfc-evidence.mjs";
+} from "../../legacy-tools/fixtures/glyph-sfc-evidence.mjs";
 import {
   glyphSfcEvidenceInput as input,
   hash,

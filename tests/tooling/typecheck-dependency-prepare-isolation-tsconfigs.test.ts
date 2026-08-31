@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { isolationTsconfigPaths } from "../../tools/fixtures/typecheck-dependency-prepare.mjs";
+import { isolationTsconfigPaths } from "../../legacy-tools/fixtures/typecheck-dependency-prepare.mjs";
 
 /**
  * Vize's `--tsconfig` and vue-tsc's baseline config can differ (Nuxt Volt).

@@ -1,19 +1,72 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
-import {
-  createRealProjectSurfaceResultsFromWorkflow,
-  createRealProjectSurfaceVerdict,
-  realProjectSurfaceNames,
-} from "../../tools/fixtures/real-project-surface-verdict.mjs";
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const toolPath = path.join(
+  root,
+  "tools",
+  "commands",
+  "fixtures",
+  "real-project-surface-verdict.rs",
+);
+const realProjectSurfaceNames = [
+  "waiver-audit",
+  "typecheck-dependencies",
+  "core-tools",
+  "lsp",
+  "lint-divergence",
+  "syntax-highlighter",
+  "glyph",
+  "typecheck-divergence",
+];
 
 const successfulResults = realProjectSurfaceNames.map((name) => ({ name, outcome: "success" }));
 
+function runVerdict(
+  results: Array<{ name: string; outcome: string }>,
+  env: NodeJS.ProcessEnv = {},
+) {
+  const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-surface-verdict-"));
+  const output = path.join(outputDir, "surface-verdict.json");
+  const result = spawnSync(
+    "rust-script",
+    [
+      toolPath,
+      "--output",
+      output,
+      ...results.flatMap(({ name, outcome }) => ["--surface", `${name}=${outcome}`]),
+    ],
+    { cwd: root, encoding: "utf8", env: { ...process.env, ...env } },
+  );
+  const verdict = fs.existsSync(output) ? JSON.parse(fs.readFileSync(output, "utf8")) : null;
+  fs.rmSync(outputDir, { recursive: true, force: true });
+  return { result, verdict };
+}
+
+function runWorkflowVerdict(env: NodeJS.ProcessEnv) {
+  const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-surface-verdict-"));
+  const output = path.join(outputDir, "surface-verdict.json");
+  const result = spawnSync("rust-script", [toolPath, "--from-workflow-env", "--output", output], {
+    cwd: root,
+    encoding: "utf8",
+    env: { ...process.env, ...env },
+  });
+  const verdict = fs.existsSync(output) ? JSON.parse(fs.readFileSync(output, "utf8")) : null;
+  fs.rmSync(outputDir, { recursive: true, force: true });
+  return { result, verdict };
+}
+
 test("the real-project surface verdict accepts only a complete successful set", () => {
-  const verdict = createRealProjectSurfaceVerdict(successfulResults, {
+  const { result, verdict } = runVerdict(successfulResults, {
     GITHUB_SHA: "0123456789abcdef",
     FIXTURE_SHARD_INDEX: "7",
   });
+  assert.equal(result.status, 0, result.stderr);
   assert.equal(verdict.status, "success");
   assert.equal(verdict.sourceCommit, "0123456789abcdef");
   assert.equal(verdict.shardIndex, "7");
@@ -23,46 +76,41 @@ test("the real-project surface verdict accepts only a complete successful set", 
 
 for (const outcome of ["failure", "cancelled", "skipped"] as const) {
   test(`the real-project surface verdict fails closed on ${outcome}`, () => {
-    const verdict = createRealProjectSurfaceVerdict(
+    const { result, verdict } = runVerdict(
       successfulResults.map((result) =>
         result.name === "core-tools" ? { ...result, outcome } : result,
       ),
     );
+    assert.equal(result.status, 1);
     assert.equal(verdict.status, "failure");
     assert.deepEqual(verdict.failedSurfaceNames, ["core-tools"]);
   });
 }
 
 test("the real-project surface verdict rejects missing, duplicate, unknown, and empty outcomes", () => {
-  assert.throws(
-    () => createRealProjectSurfaceVerdict(successfulResults.slice(1)),
-    /missing real-project surface verdict.*waiver-audit/,
-  );
-  assert.throws(
-    () => createRealProjectSurfaceVerdict([...successfulResults, successfulResults[0]]),
-    /duplicate real-project surface/,
-  );
-  assert.throws(
-    () =>
-      createRealProjectSurfaceVerdict([
-        ...successfulResults.slice(1),
-        { name: "unknown", outcome: "success" },
-      ]),
-    /unknown real-project surface/,
-  );
-  assert.throws(
-    () =>
-      createRealProjectSurfaceVerdict(
-        successfulResults.map((result) =>
-          result.name === "glyph" ? { ...result, outcome: "" } : result,
-        ),
+  for (const [results, message] of [
+    [successfulResults.slice(1), /missing real-project surface verdict.*waiver-audit/],
+    [[...successfulResults, successfulResults[0]], /duplicate real-project surface/],
+    [
+      [...successfulResults.slice(1), { name: "unknown", outcome: "success" }],
+      /unknown real-project surface/,
+    ],
+    [
+      successfulResults.map((result) =>
+        result.name === "glyph" ? { ...result, outcome: "" } : result,
       ),
-    /invalid outcome for glyph/,
-  );
+      /invalid outcome for glyph/,
+    ],
+  ] as const) {
+    const { result, verdict } = runVerdict([...results]);
+    assert.equal(result.status, 1);
+    assert.equal(verdict, null);
+    assert.match(result.stderr, message);
+  }
 });
 
 test("workflow surface inputs preserve enforce modes and soften only record-only failures", () => {
-  const results = createRealProjectSurfaceResultsFromWorkflow({
+  const { result, verdict } = runWorkflowVerdict({
     VIZE_WAIVER_AUDIT_OUTCOME: "success",
     TYPECHECK_DEPENDENCIES_MODE: "record-only",
     VIZE_TYPECHECK_DEPENDENCIES_OUTCOME: "failure",
@@ -77,8 +125,9 @@ test("workflow surface inputs preserve enforce modes and soften only record-only
     TYPECHECK_DIVERGENCE_MODE: "record-only",
     VIZE_TYPECHECK_DIVERGENCE_OUTCOME: "failure",
   });
+  assert.equal(result.status, 1);
 
-  assert.deepEqual(results, [
+  assert.deepEqual(verdict.surfaces, [
     { name: "waiver-audit", outcome: "success" },
     { name: "typecheck-dependencies", outcome: "success" },
     { name: "core-tools", outcome: "success" },

@@ -1,5 +1,5 @@
 /**
- * The corpus runner behind `tools/fixtures/lint-divergence.mjs`.
+ * The corpus runner behind `tools/commands/fixtures/lint-divergence-report.rs`.
  *
  * `tests/tooling/lint-divergence*.test.ts` cover the comparator's classification.
  * This suite covers what stands between the comparator and a real repository —
@@ -18,13 +18,13 @@ import {
   resolveBaselineRuntime,
   retainEnabledFindings,
   selectComparableRules,
-} from "../../tools/fixtures/lint-divergence-baseline.mjs";
-import { renderMarkdown } from "../../tools/fixtures/lint-divergence-markdown.mjs";
+} from "../../legacy-tools/fixtures/lint-divergence-baseline.mjs";
+import { renderMarkdown } from "../../legacy-tools/fixtures/lint-divergence-markdown.mjs";
 import {
   reconcileCorpus,
   runLintDivergenceReport,
-} from "../../tools/fixtures/lint-divergence-report.mjs";
-import { readRuleMap } from "../../tools/fixtures/patina-rule-map.mjs";
+} from "../../legacy-tools/fixtures/lint-divergence-report.mjs";
+import { readRuleMap } from "../../legacy-tools/fixtures/patina-rule-map.mjs";
 
 const repoRoot = path.resolve(import.meta.dirname, "..", "..");
 const vizeBin = process.env.VIZE_TEST_BIN ?? process.env.VIZE_BIN ?? null;

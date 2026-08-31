@@ -6,7 +6,7 @@
 #
 # Run with: `cargo +nightly fuzz run <target>` from the tests/fuzz/ directory.
 # Targets are bootstrapped from `corpus/<target>/` (seeded from
-# repository fixtures by `tools/fuzz/seed_corpus.mjs`).
+# repository fixtures by `tools/commands/ci/fuzz/seed_corpus.rs`).
 [package]
 name = "vize_fuzz"
 version = "0.0.0"

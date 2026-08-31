@@ -6,7 +6,7 @@ import {
   assertRollbackContext,
   remoteTagState,
   rollbackUnpublishedTag,
-} from "../../tools/github/release-tag-rollback.mjs";
+} from "../../legacy-tools/github/release-tag-rollback.mjs";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 const tag = "v0.348.0";

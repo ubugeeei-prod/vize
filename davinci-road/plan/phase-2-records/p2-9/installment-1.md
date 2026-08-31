@@ -186,7 +186,7 @@ Davinci task has used, and the six-test publish gate run green is its
 enforcement. The worktree materializes no fixture submodules and
 `corpus-diff.mjs` re-materializes `node_modules` (not runnable
 read-only), so the all-clean sweep is deferred with the standing
-recipe: `node tools/davinci/corpus-diff.mjs --surface compiler
+recipe: `rust-script tools/commands/davinci/corpus-diff.rs --surface compiler
 --shards 2 --timeout-ms 600000` from clean fixtures.
 
 ### Other acceptance, clause by clause

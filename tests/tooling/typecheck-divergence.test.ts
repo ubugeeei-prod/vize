@@ -3,7 +3,7 @@ import { Buffer } from "node:buffer";
 import path from "node:path";
 import { test } from "node:test";
 
-import { compareTypecheckDiagnostics } from "../../tools/fixtures/typecheck-divergence.mjs";
+import { compareTypecheckDiagnostics } from "../../legacy-tools/fixtures/typecheck-divergence.mjs";
 import { compare, cwd } from "./_helpers/typecheck-divergence-fixture.ts";
 
 test("typecheck divergence classifies exact diagnostics deterministically", () => {

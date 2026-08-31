@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { nativeReleasePlatforms } from "../../tools/github/release-platforms.mjs";
 import { hostedOrBlacksmith, readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 test("release workflow explicitly installs matrix Rust targets", () => {
@@ -159,11 +158,16 @@ test("release workflow smoke installs npm tarballs before publishing", () => {
 });
 
 test("release workflow builds native targets on MoonBit-supported runners", () => {
-  const releasePlatforms = readRepoFile("tools", "github", "release-platforms.mjs");
-  const nativeHosts = new Map(nativeReleasePlatforms.map(({ host, target }) => [target, host]));
-  assert.notEqual(
-    nativeHosts.get("x86_64-apple-darwin"),
-    "macos-15-intel",
+  const releasePlatforms = readRepoFile(
+    "tools",
+    "commands",
+    "ci",
+    "github",
+    "release-platforms.rs",
+  );
+  assert.doesNotMatch(
+    releasePlatforms,
+    /host:\s*"macos-15-intel"[\s\S]*target:\s*"x86_64-apple-darwin"/,
     "MoonBit native scripts cannot run on macOS Intel runners",
   );
 
@@ -182,7 +186,13 @@ test("release workflow builds native targets on MoonBit-supported runners", () =
 });
 
 test("release workflow keeps the Windows ARM64 CLI cross build on a compatible hosted runner", () => {
-  const releasePlatforms = readRepoFile("tools", "github", "release-platforms.mjs");
+  const releasePlatforms = readRepoFile(
+    "tools",
+    "commands",
+    "ci",
+    "github",
+    "release-platforms.rs",
+  );
 
   assert.match(
     releasePlatforms,
@@ -289,7 +299,13 @@ test("release workflow runs GitHub helper scripts with the native target on ever
 test("release workflow configures Zig linkers for Linux musl CLI archives", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
   const buildCliJob = workflowJobBody(workflow, "build-cli");
-  const releasePlatforms = readRepoFile("tools", "github", "release-platforms.mjs");
+  const releasePlatforms = readRepoFile(
+    "tools",
+    "commands",
+    "ci",
+    "github",
+    "release-platforms.rs",
+  );
   const zigLinkerCommand = readRepoFile(
     "tools",
     "commands",

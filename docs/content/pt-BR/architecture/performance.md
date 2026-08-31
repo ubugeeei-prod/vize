@@ -98,7 +98,7 @@ O layout de structs e os discriminantes de enum do Rust são compactos. A repres
 
 ### Sem overhead de tempo de execução
 
-Diferente dos compiladores baseados em JavaScript que rodam na V8, o Vize compila diretamente para código nativo. Não há aquecimento JIT, nem coletor de lixo, nem contenção de loop de eventos. A CLI é distribuída como um executável nativo autocontido por plataforma — totalmente estático nos alvos Linux musl, o que a CI verifica (`tools/github/verify-musl-cli-binary.sh`), e ligado dinamicamente à biblioteca C do sistema nos alvos glibc, macOS e Windows. O plugin do Vite carrega o mesmo compilador como um addon nativo do Node (`@vizejs/native`), e não como um processo separado.
+Diferente dos compiladores baseados em JavaScript que rodam na V8, o Vize compila diretamente para código nativo. Não há aquecimento JIT, nem coletor de lixo, nem contenção de loop de eventos. A CLI é distribuída como um executável nativo autocontido por plataforma — totalmente estático nos alvos Linux musl, o que a CI verifica (`tools/commands/ci/github/verify-musl-cli-binary.rs`), e ligado dinamicamente à biblioteca C do sistema nos alvos glibc, macOS e Windows. O plugin do Vite carrega o mesmo compilador como um addon nativo do Node (`@vizejs/native`), e não como um processo separado.
 
 ## Escolhas de Arquitetura para Desempenho
 

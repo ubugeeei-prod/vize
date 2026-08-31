@@ -23,7 +23,7 @@ import {
   planAppE2eRows,
   readinessRows,
   validateAppE2eRows,
-} from "../../tools/github/app-e2e-plan.mjs";
+} from "../../legacy-tools/github/app-e2e-plan.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const readinessFixturePaths = ["elk", "misskey", "npmx.dev", "nuxt-ui", "reka-ui"].map(

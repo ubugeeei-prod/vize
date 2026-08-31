@@ -84,7 +84,7 @@ creed credible here. The mechanisms:
   phase gate. A defect class we claim to catch, we catch every time.
   Measured misses are triaged in the FN ledger
   ([plan/ledger-fn.md](plan/ledger-fn.md); pilot oracle:
-  `tools/davinci/seed-defects.mjs`, P0-13).
+  `tools/commands/davinci/seed-defects.rs`, P0-13).
 - **Suppression telemetry — the FP oracle.** Real projects carry
   suppressions (`eslint-disable`, waivers). Corpus runs track every vize
   diagnostic on lines users suppressed for the analogous upstream rule, and
@@ -92,7 +92,7 @@ creed credible here. The mechanisms:
   diagnostics — each is an FP candidate triaged to `fixed` or
   `justified-with-witness`, never left ambient. Candidates land in the FP
   ledger ([plan/ledger-fp.md](plan/ledger-fp.md); pilot oracle:
-  `tools/davinci/suppression-telemetry.mjs`, P0-13).
+  `tools/commands/davinci/suppression-telemetry.rs`, P0-13).
 - **Divergence is justified or it is a bug.** Charter #23 already bans silent
   divergence from vue-tsc/eslint behavior; under this creed, an unjustified
   divergence is _classified_ — it is either our FP/FN or theirs, and the

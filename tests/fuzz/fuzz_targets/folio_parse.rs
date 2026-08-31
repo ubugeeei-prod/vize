@@ -14,7 +14,7 @@
 // that prints identically (normalization by the first print).
 //
 // The corpus is seeded from the committed .folio fixtures by
-// `tools/fuzz/seed_corpus.mjs`.
+// `tools/commands/ci/fuzz/seed_corpus.rs`.
 use libfuzzer_sys::fuzz_target;
 use vize_davinci::folio::croquis::CroquisFolio;
 use vize_davinci::folio::repro::ReproFolio;

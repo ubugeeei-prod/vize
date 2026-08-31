@@ -20,8 +20,14 @@ fn main() -> ExitCode {
 }
 
 fn aggregate(args: Vec<String>) -> Result<String, String> {
-    let [profile, suite, run_required, plan_result, producer_result, planned_count] =
-        args.as_slice()
+    let [
+        profile,
+        suite,
+        run_required,
+        plan_result,
+        producer_result,
+        planned_count,
+    ] = args.as_slice()
     else {
         return Err("Usage: rust-script tools/commands/ci/github/app-e2e-aggregate.rs <profile> <suite> <run-required> <plan-result> <producer-result> <planned-count>".to_string());
     };

@@ -117,7 +117,7 @@ L’automatisation des dépôts préfère les packages de commandes MoonBit sous
 chemin normal du paquet (`moon run --target native tools/moon/cmd/<name> -- <args>`), partagent la chaîne d’outils
 qui construit déjà le compilateur, et sont couverts par `tests/tooling/*.test.ts` suites qui les
 via `moon run` et affirment la sortie attendue complète. Les tâches root les invoquent avec l’aide `moonScript`
-dans `tools/vite-plus/task-commands.ts`, de sorte que chaque consommateur garde un nom de tâche stable plutôt que
+dans `config/vite-plus/task-commands.ts`, de sorte que chaque consommateur garde un nom de tâche stable plutôt que
 une commande en ligne.
 
 Les bons candidats MoonBit sont petits, purs et peu dépendants : analyse d’arguments, transformations de
@@ -126,7 +126,7 @@ JSON ou texte, inventaires et vérifications de réussite/échec dont la correct
 Gardez un script dans Node (`.mjs`) lorsque MoonBit ajouterait de la friction plutôt que de la supprimer :
 
 - Il est importé sous forme de module par d’autres JavaScript ou par une suite `node --test` (par exemple
-  `tools/github/release-platforms.mjs`), donc la réécrire diviserait une source en deux langues.
+  `tools/commands/ci/github/release-platforms.rs`), donc la réécrire diviserait une source en deux langues.
   - Cela dépend de l’écosystème npm (bibliothèques globbing, outils de paquets, SDKs d’action GitHub) ou de
     API uniquement pour les nœuds qui n’ont pas d’équivalent MoonBit.
 - Il est suffisamment vaste ou exploratoire pour que son comportement ne soit pas encore déterminé par un test à sortie complète ; Ne le fais pas

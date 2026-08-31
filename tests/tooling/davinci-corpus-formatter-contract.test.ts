@@ -11,8 +11,8 @@ import {
   EXCLUDED_FIELDS,
   HASHED_FIELDS,
   SURFACES,
-} from "../../tools/davinci/lib/corpus-baseline-contract.mjs";
-import { reduceShards } from "../../tools/davinci/lib/corpus-baseline-run.mjs";
+} from "../../legacy-tools/davinci/lib/corpus-baseline-contract.mjs";
+import { reduceShards } from "../../legacy-tools/davinci/lib/corpus-baseline-run.mjs";
 
 const projectId = "synthetic-formatter";
 

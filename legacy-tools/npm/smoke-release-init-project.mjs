@@ -24,11 +24,11 @@ const ANSI_SGR = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, "gu");
 const EDITOR_REPORT = [
   "[vize init] editor integrations shipped with Vize:",
   "  VS Code: ubugeeei.vize (recommended in .vscode/extensions.json)",
-  "  Zed: tools/zed-vize",
-  "  Neovim: tools/nvim-vize",
-  "  Vim: tools/vim-vize",
-  "  Helix: tools/helix-vize",
-  "  Emacs: tools/emacs-vize",
+  "  Zed: editors/zed",
+  "  Neovim: editors/nvim",
+  "  Vim: editors/vim",
+  "  Helix: editors/helix",
+  "  Emacs: editors/emacs",
 ];
 
 export function managerBinary(manager) {

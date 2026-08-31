@@ -124,7 +124,7 @@ production-trial ready:
 - `vp run --workspace-root coverage:source:branch` for nightly branch coverage on core Rust
   compiler crates
 - `vp run --filter './tests' test:check:fixtures`
-- `node tools/npm/smoke-release-install.mjs --prepare-manifests --runtime-checks ...`
+- `rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks ...`
 - `node --test tests/tooling/release-readiness.test.ts tests/tooling/github-workflows.test.ts`
 
 Preview and experimental surfaces may ship only with release notes that call out their status and

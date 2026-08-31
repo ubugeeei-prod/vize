@@ -1,7 +1,7 @@
 <!-- GENERATED FILE — do not edit by hand.
      Regenerate: rust-script tools/commands/davinci/rule-parity.rs --write
      Verify:     rust-script tools/commands/davinci/rule-parity.rs --check
-     Generator:  tools/davinci/rule-parity.mjs
+     Generator:  tools/commands/davinci/rule-parity.rs
      Overrides:  davinci-road/plan/rule-parity-overrides.toml (hand-corrections; applied last) -->
 
 # Rule-parity matrix (SFC × JSX)

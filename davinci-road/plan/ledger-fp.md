@@ -10,7 +10,7 @@
 
 ## Suppression-telemetry pilot (P0-13, measured 2026-08-14)
 
-`tools/davinci/suppression-telemetry.mjs` lints byte-length-preserving
+`tools/commands/davinci/suppression-telemetry.rs` lints byte-length-preserving
 _defused_ copies (vize honors `eslint-disable` pragmas natively — verified
 live — so linting the raw sources would hide exactly the intersection under
 measurement) and filters candidates to rule names actually mapped to vize

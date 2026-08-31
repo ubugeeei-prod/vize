@@ -13,7 +13,16 @@ function readText(relativePath: string): string {
 test("VSIX package policy excludes workspace manifests from shipped files", () => {
   assert.match(readText("editors/vscode/.vscodeignore"), /^pnpm-workspace\.yaml$/m);
   assert.match(
-    readText("tools/vscode-vize/assert-vsix-package.mjs"),
-    /extension\\\/pnpm-\(\?:lock\|workspace\)\\\.yaml/,
+    readText("tools/commands/editors/vscode/assert-vsix-package.rs"),
+    /name == "extension\/pnpm-lock\.yaml"[\s\S]*name == "extension\/pnpm-workspace\.yaml"/,
   );
+});
+
+test("VSIX archive reader escapes unzip member globs", () => {
+  const reader = readText("tools/rust/editor_archive.rs");
+  const smoke = readText("tools/commands/editors/vscode/assert-vsix-package.rs");
+
+  assert.match(reader, /\.arg\(unzip_member_pattern\(name\)\)/);
+  assert.match(reader, /matches!\(character, '\[' \| '\]' \| '\*' \| '\?' \| '\\\\'\)/);
+  assert.match(smoke, /let vsix = absolute_from_cwd\(&vsix\)\?/);
 });

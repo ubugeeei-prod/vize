@@ -16,7 +16,7 @@ The durable witnesses are:
 - [`davinci-corpus-comparison-count.test.ts`](../../../../tests/tooling/davinci-corpus-comparison-count.test.ts)
   - asserts the current manifest yields 144 compiler comparisons, while the
     unique fixture-path count remains 142.
-- [`corpus-baseline-artifact.mjs`](../../../../tools/davinci/lib/corpus-baseline-artifact.mjs)
+- [`corpus-baseline-artifact.mjs`](../../../../tools/rust/davinci_corpus.rs)
   - exposes the shared expected-count helper used by corpus baseline and diff
     scope proof.
 - [`p2-11.md`](../p2-11.md)

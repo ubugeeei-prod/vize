@@ -6,7 +6,7 @@ import { parse } from "yaml";
 import {
   aggregateNeedsResults,
   PULL_REQUEST_SKIPPED_JOBS,
-} from "../../tools/github/require-needs-success.mjs";
+} from "../../legacy-tools/github/require-needs-success.mjs";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
 interface WorkflowStep {

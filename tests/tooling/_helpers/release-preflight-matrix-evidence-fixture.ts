@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import { requiredRealProjectMatrixShardCount } from "../../../tools/github/release-preflight-matrix-evidence.mjs";
+import { requiredRealProjectMatrixShardCount } from "../../../legacy-tools/github/release-preflight-matrix-evidence.mjs";
 import { releaseSha, successfulReleaseRun } from "../support/release-preflight.ts";
 
 export function realProjectArtifacts(run: ReturnType<typeof successfulReleaseRun>) {

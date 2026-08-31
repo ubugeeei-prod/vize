@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { isolateFixtureTypePackages } from "../../tools/fixtures/typecheck-baseline-isolation.mjs";
+import { isolateFixtureTypePackages } from "../../legacy-tools/fixtures/typecheck-baseline-isolation.mjs";
 
 /**
  * `references` walk the project graph; they do not merge programs. A leaf that

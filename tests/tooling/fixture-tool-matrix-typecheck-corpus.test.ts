@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { toolArgs, typecheckCorpusGlobs } from "../../tools/fixtures/tool-matrix-command.mjs";
+import {
+  toolArgs,
+  typecheckCorpusGlobs,
+} from "../../legacy-tools/fixtures/tool-matrix-command.mjs";
 
 const project = {
   vueGlobs: ["apps/**/*.vue", "playground/src/**/*.vue"],

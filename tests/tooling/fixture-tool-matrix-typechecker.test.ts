@@ -5,8 +5,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { runTool } from "../../tools/fixtures/tool-matrix-run.mjs";
-import { validateTypecheckerOutput } from "../../tools/fixtures/tool-matrix-typechecker.mjs";
+import { runTool } from "../../legacy-tools/fixtures/tool-matrix-run.mjs";
+import { validateTypecheckerOutput } from "../../legacy-tools/fixtures/tool-matrix-typechecker.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 

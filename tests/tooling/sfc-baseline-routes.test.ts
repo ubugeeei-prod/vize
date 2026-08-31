@@ -5,7 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { collectVueInputPaths } from "../../tools/fixtures/tool-matrix-inputs.mjs";
+import { collectVueInputPaths } from "../../legacy-tools/fixtures/tool-matrix-inputs.mjs";
 import { resolveSfcDialectPartition, validateRouteShapes } from "./support/sfc-baseline-routes.ts";
 import type { SfcDialectRoute } from "./support/sfc-baseline-routes.ts";
 

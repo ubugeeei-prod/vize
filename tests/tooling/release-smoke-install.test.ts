@@ -6,11 +6,11 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { preparePublishManifest } from "../../tools/npm/prepare-publish-manifest.mjs";
+import { preparePublishManifest } from "../../legacy-tools/npm/prepare-publish-manifest.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const smokeCommand = path.join(root, "tools/commands/release/npm/smoke-release-install.rs");
-const smokeModule = path.join(root, "tools/npm/smoke-release-install.mjs");
+const smokeModule = path.join(root, "legacy-tools/npm/smoke-release-install.mjs");
 
 test("release install smoke packs and installs local package tarballs", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-smoke-test-"));
@@ -206,12 +206,12 @@ test("release install smoke skips libc-incompatible tarballs", () => {
 test("release install smoke can run runtime checks for Vize packages", () => {
   const script = fs.readFileSync(smokeModule, "utf8");
   const runtimeScript = fs.readFileSync(
-    path.join(root, "tools/npm/smoke-release-runtime.mjs"),
+    path.join(root, "legacy-tools/npm/smoke-release-runtime.mjs"),
     "utf8",
   );
   const smokeSources = `${script}\n${runtimeScript}`;
   const initTypecheckScript = fs.readFileSync(
-    path.join(root, "tools/npm/smoke-release-init-typecheck.mjs"),
+    path.join(root, "legacy-tools/npm/smoke-release-init-typecheck.mjs"),
     "utf8",
   );
 

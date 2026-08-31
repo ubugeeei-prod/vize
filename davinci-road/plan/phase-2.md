@@ -20,7 +20,7 @@ Each item is a scope or design change forced by something phase 1 measured or la
 9. **Folio already exists; P2-4 extends it rather than defining it.** P0-10 landed `trait Folio { print / parse }` with `FolioMode::{Full, Display}` and mode-explicit round-trip laws (`crates/vize_davinci/src/folio.rs:81`), `CroquisFolio`, and `crates/vize_davinci/src/bin/davinci-opt.rs` whose usage is today `--roundtrip <file> [--stage croquis]` with `--roundtrip` **required**. `#[derive(Folio)]` must generate that trait's exact shape, and `--pipeline` extends that binary's argument parser (making `--roundtrip` and `--pipeline` alternatives rather than one mandatory flag).
 10. **Three provisional citations were wrong against the tree and are fixed here.** The timing observer's schema is P0-11's [`profile-export.schema.json`](./profile-export.schema.json) (TS-15), not "the P0-4 schema" — P0-4 is `budgets.toml`. The transform steps live in `crates/vize_atelier_core/src/steps/`, discovered ordinarily through the Rust module **`vize_atelier_core::steps`**, and the enter/exit sibling-mutation driver P2-9 replaces lives in `src/lane/`, discovered from `lane.rs`. Historically, before the ordinary-module-layout migration, those files lived in `src/transforms/` and `src/transform/` and were wired with `#[path]`; those are historical locations, not the current tree. `vize repro` does **not** exist — P2-13 adds a command module and a `crates/vize/src/cli.rs` variant, it does not extend one.
 11. **P2-11's flag is not a fallback, it is an unfinished deletion with an owner.** P1-13 recorded that phase 1 introduced no production fallback flag at all, and that the surviving old paths are unfinished deletions — enumerated in its gate with blockers. `VIZE_DAVINCI_DOM=legacy` is kept (charter #26 licenses it while the phase is live) but the exit gate names its deletion explicitly, and the differential lane, not the flag, is what carries the risk.
-12. **Matrix fixtures do not exist yet.** P2-15's oracle runs "over matrix fixtures"; `tools/davinci/matrix-gen.mjs` defaults to `tests/fixtures/davinci-matrix/`, which **is not in the tree** (P0-12 landed the generator, not the fixtures). Committing the generated plane is now a step of P2-15 rather than an assumption.
+12. **Matrix fixtures do not exist yet.** P2-15's oracle runs "over matrix fixtures"; `tools/commands/davinci/matrix-gen.rs` defaults to `tests/fixtures/davinci-matrix/`, which **is not in the tree** (P0-12 landed the generator, not the fixtures). Committing the generated plane is now a step of P2-15 rather than an assumption.
 
 ## Carried from phase 1
 
@@ -44,7 +44,7 @@ stacked integration [#4543](https://github.com/ubugeeei-prod/vize/pull/4543),
 not a standalone P2-18 PR; that is a recorded deviation from the re-cut's
 own-PR condition, not a rewrite of the original requirement above.
 
-**Corpus operations note** (applies to every TS-11 run in this phase): corpus sweeps re-materialize `node_modules` inside fixture projects and stale ones corrupt hashes, so a run starts from clean fixtures (`git submodule status` all-clean, no `node_modules`) — see `corpus-baseline-notes.md` "Re-record 2". The phase-1 exit gate's recorded recipe is `node tools/davinci/corpus-diff.mjs --shards 2 --timeout-ms 600000`; the default 4-shard parallelism brushes the per-run timeout on the typechecker lane (soybean-admin), which is why the shard count is halved and the timeout raised.
+**Corpus operations note** (applies to every TS-11 run in this phase): corpus sweeps re-materialize `node_modules` inside fixture projects and stale ones corrupt hashes, so a run starts from clean fixtures (`git submodule status` all-clean, no `node_modules`) — see `corpus-baseline-notes.md` "Re-record 2". The phase-1 exit gate's recorded recipe is `rust-script tools/commands/davinci/corpus-diff.rs --shards 2 --timeout-ms 600000`; the default 4-shard parallelism brushes the per-run timeout on the typechecker lane (soybean-admin), which is why the shard count is halved and the timeout raised.
 
 ## TODO index
 
@@ -166,7 +166,7 @@ probe counts.
 
 ## Exit gate (machine-checkable)
 
-- [ ] **DOM corpus byte-parity on the S2 path, waiver ledger empty** — `node tools/davinci/corpus-diff.mjs --surface compiler --shards 2 --timeout-ms 600000` from clean fixtures: zero gating drift with scope proof matching the project manifest (TS-11)
+- [ ] **DOM corpus byte-parity on the S2 path, waiver ledger empty** — `rust-script tools/commands/davinci/corpus-diff.rs --surface compiler --shards 2 --timeout-ms 600000` from clean fixtures: zero gating drift with scope proof matching the project manifest (TS-11)
 - [ ] **Legacy DOM lane and its flag deleted** — grep zero for `VIZE_DAVINCI_DOM` and for the old DOM codegen entry; the transform lane flag likewise (charter #26)
 - [ ] **Traversal budget gated at or below the recorded pre-S2 baseline** — `budgets.toml [traversal]` populated by P2-12a and enforced exactly on the fixture ladder in CI (TS-22), with the walk law pinned by an ordinary integration test in the default `cargo test --workspace` lane
 - [ ] **Verifier, metamorphic, totality-fuzz and S1-fidelity suites green and required** — TS-18, TS-21, TS-20, TS-19
@@ -174,7 +174,7 @@ probe counts.
 - [ ] **wasip2 and `no_std` lanes required for the four libraries (`vize_davinci`, S1, S2, S1→S2); S0/Carton excluded; boundary audit committed** — TS-24
 - [ ] **IR contract review signed off** — P2-17's checklist committed with the mechanical half landed as tests (review point: the judgement half)
 - [ ] **Phase-2 target pinned at phase start was met, or the miss is recorded with its blocker** — measured against `budgets.toml`'s P2 target table and the phase-start rev recorded by P2-12a. This line exists because P1-13 could not tick its equivalent; it may be ticked as a recorded miss only if the target was pinned before P2-9 merged
-- [ ] **Every bench added in this phase carries its measured alloc count** — `node tools/davinci/bench-compare.mjs` reports zero breaches and zero seeded-`0` entries (TS-10; a seeded `0` fails loudly since P1-13)
+- [ ] **Every bench added in this phase carries its measured alloc count** — `rust-script tools/commands/davinci/bench-compare.rs` reports zero breaches and zero seeded-`0` entries (TS-10; a seeded `0` fails loudly since P1-13)
 - [ ] **Differential lanes green and their retirement condition restated** — TS-25 zero divergence for P2-9, P2-11 and P2-16, with the phase-1 lanes' "for one release" life either honoured or explicitly re-dated
 - [ ] **Standing gates held throughout** — TS-1..9 unchanged, TS-12 matrices current, TS-13 assertion lint clean under its allowlist, TS-14 mutation scores held for the new crates, TS-15 profiler export validating, TS-26 counter law still pinned
 - [ ] **Corpus waiver ledger empty and the phase-boundary expansion audit done** — C-14, C-16

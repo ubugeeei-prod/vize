@@ -7,7 +7,7 @@ import {
   createCompatibilityContext,
   readCompatibilityLedger,
   validateCompatibilityLedger,
-} from "../../tools/fixtures/fixture-compatibility-ledger.mjs";
+} from "../../legacy-tools/fixtures/fixture-compatibility-ledger.mjs";
 import {
   assertCurrentP2_11Installment,
   assertP2_17P2_20ExitBlockers,

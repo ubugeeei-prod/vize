@@ -111,7 +111,7 @@ Rust's struct layout and enum discriminants are compact. The AST representation 
 Unlike JavaScript-based compilers that run in V8, Vize compiles directly to native code. There's no
 JIT warmup, no garbage collector, and no event loop contention. The CLI ships as a self-contained
 native executable per platform — fully static on the musl Linux targets, which CI verifies
-(`tools/github/verify-musl-cli-binary.sh`), and dynamically linked against the system C library on
+(`tools/commands/ci/github/verify-musl-cli-binary.rs`), and dynamically linked against the system C library on
 the glibc, macOS, and Windows targets. The Vite plugin loads the same compiler as a native Node
 addon (`@vizejs/native`) rather than as a separate process.
 

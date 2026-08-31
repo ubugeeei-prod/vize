@@ -7,7 +7,7 @@ import { test } from "node:test";
 import {
   selectGlyphCorpusProjects,
   writeGlyphCorpusPropertyEvidence,
-} from "../../tools/fixtures/glyph-corpus.mjs";
+} from "../../legacy-tools/fixtures/glyph-corpus.mjs";
 
 const validEntry = {
   property: "parse-preservation",

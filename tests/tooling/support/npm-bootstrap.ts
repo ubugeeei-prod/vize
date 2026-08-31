@@ -3,7 +3,7 @@ import {
   requiredSkippedReleaseJobs,
   requiredSuccessfulReleaseJobs,
   validateBootstrapRequest,
-} from "../../../tools/github/npm-bootstrap-contract.mjs";
+} from "../../../legacy-tools/github/npm-bootstrap-contract.mjs";
 
 export const tagName = "v1.2.3";
 export const tagSha = "a".repeat(40);

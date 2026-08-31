@@ -40,7 +40,7 @@ Vize 是一个 Vue 工具链，但它具有与编译器相同的故障模式：�
 | 语义分析、lint 和跨文件分析 | 规则或分析器装置、JSON 或代理输出快照以及更改诊断的文档。                                    | `cargo test -p vize_patina`、`vp run --filter './tests' test:lint`、`node --test tests/tooling/snapshot-baselines.test.ts`                                 |
 | 虚拟 TypeScript 和类型检查  | 最小的 SFC 夹具、映射的诊断快照、生成的虚拟 TS 审查以及官方 Vue 或 TypeScript 奇偶校验说明。 | `vp run --filter './tests' test:check:fixtures`、`cargo test -p vize_canon`、`vize check --show-virtual-ts <file>`                                         |
 | 格式化程序和 LSP            | 黄金格式输出或协议烟雾覆盖，加上用户可见行为时的集中编辑器集成检查。                         | `cargo test -p vize_glyph`、`cargo test -p vize_maestro`、`node --test tests/tooling/lsp-smoke.test.ts`                                                    |
-| 运行时打包、发布或文档      | 生产状况发生变化时进行治理测试、烟雾安装或工作流程覆盖以及发布/准备文档。                    | `node --test tests/tooling/*.test.ts`、`node tools/npm/smoke-release-install.mjs --prepare-manifests --runtime-checks`、`vp run --workspace-root check:ci` |
+| 运行时打包、发布或文档      | 生产状况发生变化时进行治理测试、烟雾安装或工作流程覆盖以及发布/准备文档。                    | `node --test tests/tooling/*.test.ts`、`rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks`、`vp run --workspace-root check:ci` |
 
 ## 保障通道
 
@@ -52,7 +52,7 @@ Vize 是一个 Vue 工具链，但它具有与编译器相同的故障模式：�
 | -------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 安全     | URL 处理、HTML 或 SSR 输出、文件系统/配置加载、本机加载、包发布、CI 或凭据。             | `security-audit`（`.github/workflows/check.yml`、`vp exec pnpm audit --prod --audit-level moderate`、`cargo audit --deny warnings`）、烟雾安装运行时检查、固定 GitHub Actions 检查以及涵盖风险输入或边界的任何集中回归。                      |
 | 性能     | 解析器、编译器、linter、格式化程序、类型检查器、缓存、项目图遍历、生成的输出或 CLI I/O。 | 回归需要时输出 `.github/workflows/benchmark.yml`、`bench/compare-pr.mjs`、`bench/enforce-pr-budget.mjs`、`pr-benchmark-budget` 状态、本地 `bench:*` 任务以及 `vize lint --profile`、`vize check --profile` 或 `vize fmt --profile` 输出归因。 |
-| 模糊测试 | 面向字节的解析、语法恢复、CSS 解析、JS/TS 表达式解析、模板词法分析或代码生成恢复。       | `.github/workflows/fuzz.yml`、`tests/fuzz/Cargo.toml`、`tools/fuzz/seed_corpus.mjs`、`cargo +nightly fuzz run <target>`、上传的 `fuzz-reproducers-*` 工件以及崩溃、超时或 OOM 后的最小化确定性回归已被了解。                                  |
+| 模糊测试 | 面向字节的解析、语法恢复、CSS 解析、JS/TS 表达式解析、模板词法分析或代码生成恢复。       | `.github/workflows/fuzz.yml`、`tests/fuzz/Cargo.toml`、`tools/commands/ci/fuzz/seed_corpus.rs`、`cargo +nightly fuzz run <target>`、上传的 `fuzz-reproducers-*` 工件以及崩溃、超时或 OOM 后的最小化确定性回归已被了解。                                  |
 
 ## 基线政策
 

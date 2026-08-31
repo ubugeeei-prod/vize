@@ -5,11 +5,11 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { cargoEvidenceCommand } from "../../tools/fixtures/glyph-corpus.mjs";
+import { cargoEvidenceCommand } from "../../legacy-tools/fixtures/glyph-corpus.mjs";
 import {
   evidenceSourceCommit,
   formatterEvidence,
-} from "../../tools/fixtures/glyph-sfc-evidence.mjs";
+} from "../../legacy-tools/fixtures/glyph-sfc-evidence.mjs";
 
 test("formatter and commit provenance are bound to exact local bytes", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-glyph-provenance-"));

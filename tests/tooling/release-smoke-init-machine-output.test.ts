@@ -4,7 +4,10 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { checkReport, projectLocalVizeBin } from "../../tools/npm/smoke-release-init-project.mjs";
+import {
+  checkReport,
+  projectLocalVizeBin,
+} from "../../legacy-tools/npm/smoke-release-init-project.mjs";
 
 function temporaryProject(name: string): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), `vize-fresh-machine-${name}-`));

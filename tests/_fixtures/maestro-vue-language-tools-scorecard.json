@@ -513,11 +513,11 @@
       "mustExclude": ["substring-only-assertions"],
       "evidence": [
         {
-          "file": "tools/zed-vize/run-real-server.mjs",
+          "file": "tools/rust/lsp_smoke.rs",
           "contains": [
-            "assert.deepEqual(diagnostics.diagnostics, expectedDiagnostics)",
-            "assert.deepEqual(formatting, expectedFormatting)",
-            "assert.deepEqual(rename, expectedRename(uri))"
+            "expected_diagnostics()",
+            "expected_formatting()",
+            "expected_rename(&uri)"
           ]
         },
         {
@@ -580,11 +580,17 @@
       "mustExclude": ["formatting-provider-when-not-configured"],
       "evidence": [
         {
-          "file": "tools/helix-vize/run-real-server.mjs",
+          "file": "tools/commands/editors/helix/run-real-server.rs",
           "contains": [
-            "assert.deepEqual(helixServer.config, helixRecommendedOptions)",
-            "documentFormattingProvider, undefined",
-            "assert.deepEqual(rename, expectedRename(uri))"
+            "\"typecheck = true\"",
+            "run_editor_contract(&repo, \"helix\", false)"
+          ]
+        },
+        {
+          "file": "tools/rust/lsp_smoke.rs",
+          "contains": [
+            "documentFormattingProvider",
+            "expected_rename(&uri)"
           ]
         },
         {

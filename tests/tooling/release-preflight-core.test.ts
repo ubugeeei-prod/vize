@@ -8,7 +8,7 @@ import {
   findReleaseBlockers,
   remoteTagCommit,
   workspaceVersionFromCargoToml,
-} from "../../tools/github/release-preflight-core.mjs";
+} from "../../legacy-tools/github/release-preflight-core.mjs";
 
 const sha = "a".repeat(40);
 const cargoToml = `[workspace]\n\n[workspace.package]\nversion = "1.2.3"\nedition = "2024"\n`;

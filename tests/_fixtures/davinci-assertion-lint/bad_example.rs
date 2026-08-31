@@ -1,4 +1,4 @@
-// Deliberately-bad fixture for tools/davinci/assertion-lint.mjs (Davinci
+// Deliberately-bad fixture for tools/commands/davinci/assertion-lint.rs (Davinci
 // P0-12 "lint the linter" self-test). Never compiled — this file exercises
 // the lint's detection, and tests/tooling/davinci-assertion-lint.test.ts
 // pins the exact finding set: lines marked FLAG must be reported with the

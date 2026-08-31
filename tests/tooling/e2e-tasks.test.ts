@@ -29,8 +29,8 @@ function shellWords(command: string, label: string): string[] {
 }
 
 test("workspace exposes app e2e task aliases with scoped cache inputs", () => {
-  const taskInputs = readRepoFile("tools/vite-plus/task-inputs.ts");
-  const taskGroups = readRepoFile("tools/vite-plus/tasks/test-benchmark.ts");
+  const taskInputs = readRepoFile("config/vite-plus/task-inputs.ts");
+  const taskGroups = readRepoFile("config/vite-plus/tasks/test-benchmark.ts");
   const testPackage = JSON.parse(readRepoFile("tests", "package.json")) as {
     scripts?: Record<string, string>;
   };

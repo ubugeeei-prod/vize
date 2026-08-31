@@ -1,5 +1,5 @@
 # Assertion-lint allowlist (Davinci P0-12) — consumed by
-# tools/davinci/assertion-lint.mjs, doctrine in davinci-road/assurance.md
+# tools/commands/davinci/assertion-lint.rs, doctrine in davinci-road/assurance.md
 # ("Strict oracles — no partial matching").
 #
 # Each [[allow]] group carries one justification and one expiry, and lists

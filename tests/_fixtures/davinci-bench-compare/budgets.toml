@@ -1,5 +1,5 @@
 # Synthetic budget registry for tests/tooling/davinci-budgets.test.ts.
-# Exercises tools/davinci/bench-compare.mjs against the committed report
+# Exercises tools/commands/davinci/bench-compare.rs against the committed report
 # pairs in this directory; the real registry is davinci-road/plan/budgets.toml.
 # Numbers are non-zero (recorded) so the wall and allocs gates are active;
 # the transform id carries the wider stage-window tolerance on purpose, and

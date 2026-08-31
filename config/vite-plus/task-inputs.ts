@@ -90,7 +90,7 @@ export const testedPackages = [
 
 export const floatingPromiseTestPatterns = ["tests/**/*.ts"];
 
-const taskConfigInputs = ["vite.config.ts", "tools/vite-plus/**"];
+const taskConfigInputs = ["vite.config.ts", "config/vite-plus/**"];
 
 /**
  * Cache inputs for the root task catalog.

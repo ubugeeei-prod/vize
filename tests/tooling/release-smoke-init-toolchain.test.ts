@@ -7,8 +7,8 @@ import { test } from "node:test";
 import {
   assertProjectLocalToolchain,
   writeFiles,
-} from "../../tools/npm/smoke-release-init-project.mjs";
-import { satisfiesVersionRange } from "../../tools/npm/smoke-release-semver.mjs";
+} from "../../legacy-tools/npm/smoke-release-init-project.mjs";
+import { satisfiesVersionRange } from "../../legacy-tools/npm/smoke-release-semver.mjs";
 
 test("fresh-project toolchain uses npm-compatible semver ranges", () => {
   assert.equal(satisfiesVersionRange("0.1.9", "^0.1.0"), true);

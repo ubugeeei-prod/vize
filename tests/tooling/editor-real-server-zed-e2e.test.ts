@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { testAndBenchmarkTasks } from "../../tools/vite-plus/tasks/test-benchmark.ts";
+import { testAndBenchmarkTasks } from "../../config/vite-plus/tasks/test-benchmark.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 function taskCommand(name: string): string {
@@ -43,7 +43,8 @@ test("CI validates Zed with the pinned official extension CLI before the real-se
 });
 
 test("the Zed real-server scenario pins complete extension-contract responses", () => {
-  const scenario = readRepoFile("tools", "zed-vize", "run-real-server.mjs");
+  const scenario = readRepoFile("tools", "commands", "editors", "zed", "run-real-server.rs");
+  const contract = readRepoFile("tools", "rust", "lsp_smoke.rs");
 
   for (const method of [
     "textDocument/completion",
@@ -53,24 +54,23 @@ test("the Zed real-server scenario pins complete extension-contract responses", 
     "textDocument/semanticTokens/full",
     "textDocument/rename",
   ]) {
-    assert.match(scenario, new RegExp(method.replace("/", "\\/")));
+    assert.match(contract, new RegExp(method.replace("/", "\\/")));
   }
 
-  assert.match(scenario, /assert\.deepEqual\(diagnostics\.diagnostics, expectedDiagnostics\)/);
-  assert.match(scenario, /assert\.deepEqual\(completion, expectedCompletion\)/);
-  assert.match(scenario, /assert\.deepEqual\(hover, expectedHover\)/);
-  assert.match(scenario, /assert\.deepEqual\(codeActions, expectedCodeActions\(uri\)\)/);
-  assert.match(scenario, /assert\.deepEqual\(formatting, expectedFormatting\)/);
-  assert.match(scenario, /assert\.deepEqual\(semanticTokens, expectedSemanticTokens\)/);
-  assert.match(scenario, /assert\.deepEqual\(rename, expectedRename\(uri\)\)/);
-  assert.doesNotMatch(scenario, /\.includes\(|\.contains\(/);
+  assert.match(contract, /assert_json_eq\([\s\S]*expected_diagnostics\(\)/);
+  assert.match(contract, /assert_json_eq\(&completion, expected_completion\(\)/);
+  assert.match(contract, /assert_json_eq\(&hover, expected_hover\(\)/);
+  assert.match(contract, /assert_json_eq\(&code_actions, expected_code_actions\(&uri\)/);
+  assert.match(contract, /assert_json_eq\(&response, expected_formatting\(\)/);
+  assert.match(contract, /assert_json_eq\([\s\S]*"semantic tokens"/);
+  assert.match(contract, /assert_json_eq\(&rename, expected_rename\(&uri\)/);
+  assert.doesNotMatch(contract, /\.includes\(|\.contains\(/);
 
   // These are the exact recommended defaults returned by the extension. The
   // scenario then opts into formatting through the same initialization option
   // available to Zed users, matching the established Neovim scenario.
-  assert.match(
-    scenario,
-    /editor: true,[\s\S]*ecosystem: true,[\s\S]*lint: true,[\s\S]*typecheck: true/,
-  );
-  assert.match(scenario, /\.\.\.zedRecommendedInitializationOptions,[\s\S]*formatting: true/);
+  assert.match(scenario, /run_editor_contract\(&common::repo_root\(\)\?, "zed", true\)/);
+  assert.match(contract, /"editor": true/);
+  assert.match(contract, /"typecheck": true/);
+  assert.match(contract, /options\["formatting"\] = json!\(true\)/);
 });

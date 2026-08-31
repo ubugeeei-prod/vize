@@ -117,7 +117,7 @@ vp run --workspace-root source:lengths
 通常のパッケージ パス (`moon run --target native tools/moon/cmd/<name> -- <args>`)、ツールチェーンを共有
 すでにコンパイラを構築しており、実行する `tests/tooling/*.test.ts` スイートでカバーされています。
 `moon run` 経由でそれらを生成し、期待される完全な出力をアサートします。ルートタスクは `moonScript` で呼び出します。
-`tools/vite-plus/task-commands.ts` のヘルパーにより、各コンシューマーはタスク名ではなく安定したタスク名を維持します。
+`config/vite-plus/task-commands.ts` のヘルパーにより、各コンシューマーはタスク名ではなく安定したタスク名を維持します。
 インラインコマンド。
 
 MoonBit の適切な候補は、引数の解析、JSON またはテキストなど、小さく、純粋で、依存関係が少ないものです。
@@ -126,7 +126,7 @@ MoonBit の適切な候補は、引数の解析、JSON またはテキストな�
 MoonBit が摩擦を削除するのではなく追加する場合は、ノード (`.mjs`) にスクリプトを保持します。
 
 - 他の JavaScript または `node --test` スイートによってモジュールとしてインポートされます (たとえば、
-  `tools/github/release-platforms.mjs`) なので、これを書き直すと 1 つのソースが 2 つの言語に分割されてしまいます。
+  `tools/commands/ci/github/release-platforms.rs`) なので、これを書き直すと 1 つのソースが 2 つの言語に分割されてしまいます。
 - npm エコシステム (グロビング ライブラリ、パッケージ ツール、GitHub Action SDK) または
   MoonBit に相当するものがないノード専用 API。
 - 十分に大規模であるか探索的であるため、その動作は完全な出力テストによってまだ特定されていません。しないでください
