@@ -86,6 +86,30 @@ const BATTERY: &[(&str, &str)] = &[
         "transition_article_dynamic_key",
         r#"<Transition :name="transitionName" mode="out-in"><article :key="path" class="docs-article"><h1>{{ pageTitle }}</h1><Content /></article></Transition>"#,
     ),
+    (
+        "base_transition_article_dynamic_key",
+        r#"<BaseTransition mode="out-in"><article :key="path" class="docs-article"><h1>{{ pageTitle }}</h1><Content /></article></BaseTransition>"#,
+    ),
+    (
+        "kebab_transition_article_dynamic_key",
+        r#"<transition mode="out-in"><article :key="path" class="docs-article"><h1>{{ pageTitle }}</h1><Content /></article></transition>"#,
+    ),
+    (
+        "transition_article_static_key",
+        r#"<Transition><article key="docs" class="docs-article"><h1>{{ pageTitle }}</h1></article></Transition>"#,
+    ),
+    (
+        "transition_article_without_key",
+        r#"<Transition><article class="docs-article"><h1>{{ pageTitle }}</h1></article></Transition>"#,
+    ),
+    (
+        "transition_article_dynamic_key_once",
+        r#"<Transition><article v-once :key="path" class="docs-article"><h1>{{ pageTitle }}</h1></article></Transition>"#,
+    ),
+    (
+        "transition_article_dynamic_key_memo",
+        r#"<Transition><article v-memo="[path]" :key="path" class="docs-article"><h1>{{ pageTitle }}</h1></article></Transition>"#,
+    ),
     ("teleport_ws", r##"<Teleport to="#app">  </Teleport>"##),
     ("keepalive_ws", "<KeepAlive>  </KeepAlive>"),
 ];
