@@ -9,7 +9,6 @@ import {
 import {
   defineTasks,
   localVp,
-  moonScript,
   noCacheTask,
   runInDirectory,
   runInPackages,
@@ -36,7 +35,7 @@ const ciPackageCheckCommand = [
 const localLintCommand = runTask("check");
 const directPackageCheckCommand = runPackageScriptDirectly("check", directCheckPackages);
 const rustClippyCommand = "cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports";
-const strictRepoCheckCommand = moonScript("check_warning_budget", "--", localVp, "check");
+const strictRepoCheckCommand = rustTool("ci/check-warning-budget", "--", localVp, "check");
 const ciVizeAppCheckCommand = [
   runInDirectory(
     "./examples/vite-musea",
