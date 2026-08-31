@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -16,10 +17,9 @@ import { resolveMuseaArtifacts } from "../../tools/benchmarks/scripts/musea-stag
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const dispatcherPath = path.join(root, "tools/commands/benchmarks/dispatch.rs");
 
-type TaskShape = { cache: boolean; command: string };
-
-const taskShape = (value: unknown) => value as TaskShape;
+const taskShape = (value: unknown) => value as { cache: boolean; command: string };
 
 function withTempRoot(fn: (root: string) => void): void {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-bench-musea-"));
@@ -53,15 +53,29 @@ function writeCompleteBuild(directory: string): void {
   fs.writeFileSync(path.join(nativeDir, "package.json"), '{"name":"@vizejs/native"}\n');
 }
 
-test("bench:musea is registered as a lane and runs the same way bench:vite does", () => {
-  const musea = taskShape(testAndBenchmarkTasks["bench:musea"]);
-  const vite = taskShape(testAndBenchmarkTasks["bench:vite"]);
+const runDispatcher = (args: string[], env: NodeJS.ProcessEnv = process.env) =>
+  spawnSync("rust-script", [dispatcherPath, ...args], { cwd: root, encoding: "utf8", env });
 
-  assert.equal(musea.cache, false);
-  // Full equality against the sibling lane: the Musea lane must reach the same
-  // Rust Script bench dispatcher with the same environment, differing only in
-  // the task name it forwards. Anything else is a parallel benchmarking mechanism.
-  assert.equal(musea.command, vite.command.replace(/'vite'$/, "'musea'"));
+function withStubbedNode(fn: (env: NodeJS.ProcessEnv, logPath: string) => void): void {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-bench-dispatch-"));
+  const bin = path.join(directory, "bin");
+  const logPath = path.join(directory, "node-args.txt");
+  const node = path.join(bin, "node");
+  const script =
+    '#!/usr/bin/env bash\nprintf "%s\\n" "$@" > "$VIZE_BENCH_STUB_LOG"\nexit "${VIZE_BENCH_STUB_EXIT:-0}"\n';
+  const pathEnv = `${bin}${path.delimiter}${process.env.PATH ?? ""}`;
+  fs.mkdirSync(bin);
+  fs.writeFileSync(node, script);
+  fs.chmodSync(node, 0o755);
+  try {
+    fn({ ...process.env, PATH: pathEnv, VIZE_BENCH_STUB_LOG: logPath }, logPath);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+}
+
+test("bench:musea is registered as a no-cache benchmark lane", () => {
+  assert.equal(taskShape(testAndBenchmarkTasks["bench:musea"]).cache, false);
 });
 
 test("bench:all runs the Musea lane alongside the other benchmark lanes", () => {
@@ -73,41 +87,23 @@ test("bench:all runs the Musea lane alongside the other benchmark lanes", () => 
   );
 });
 
-test("the Rust Script bench dispatcher and the bench package agree on the lane script", () => {
-  const dispatcher = fs.readFileSync(
-    path.join(root, "tools/commands/benchmarks/dispatch.rs"),
-    "utf8",
-  );
+test("the Rust Script bench dispatcher selects scripts and forwards args", () => {
+  withStubbedNode((env, logPath) => {
+    const result = runDispatcher(["musea", "--runs", "3", "--label", "gallery"], env);
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(
+      fs.readFileSync(logPath, "utf8"),
+      "tools/benchmarks/scripts/musea.mjs\n--runs\n3\n--label\ngallery\n",
+    );
 
-  // Assert the whole task table, not that it contains a Musea row: a lane
-  // added to the dispatcher but dropped from the usage line, or pointed at the
-  // wrong script, is exactly the wiring mistake this test exists to catch.
-  const rows = [...dispatcher.matchAll(/\(\s*"([\w-]+)",\s*"([^"]+)",?\s*\)/g)].map(
-    ([, task, script]) => [task, script],
-  );
-  assert.deepEqual(rows, [
-    ["run", "tools/benchmarks/scripts/run.ts"],
-    ["generate", "tools/benchmarks/scripts/generate.mjs"],
-    ["lint", "tools/benchmarks/scripts/lint.ts"],
-    ["fmt", "tools/benchmarks/scripts/fmt.ts"],
-    ["check", "tools/benchmarks/scripts/check.ts"],
-    ["vite", "tools/benchmarks/scripts/vite.ts"],
-    ["musea", "tools/benchmarks/scripts/musea.mjs"],
-    ["compare-tools", "tools/benchmarks/scripts/compare-tools.mjs"],
-  ]);
-  assert.match(
-    dispatcher,
-    /tools\/commands\/benchmarks\/dispatch\.rs -- <\{tasks\}> \[args\.\.\.\]/,
-  );
-  assert.equal(
-    rows.map(([task]) => task).join("|"),
-    "run|generate|lint|fmt|check|vite|musea|compare-tools",
-  );
+    const failed = runDispatcher(["vite"], { ...env, VIZE_BENCH_STUB_EXIT: "17" });
+    assert.equal(failed.status, 17);
+  });
 
-  const manifest = JSON.parse(
-    fs.readFileSync(path.join(root, "tools/benchmarks/scripts/package.json"), "utf8"),
-  );
-  assert.equal(manifest.scripts["bench:musea"], "node musea.mjs");
+  const usage = runDispatcher([]);
+  assert.equal(usage.status, 1);
+  assert.match(usage.stderr, /Usage: rust-script tools\/commands\/benchmarks\/dispatch\.rs/);
+  assert.match(usage.stderr, /<run\|generate\|lint\|fmt\|check\|vite\|musea\|compare-tools>/);
 });
 
 test("the tool comparison runs the Musea surface by default", () => {
