@@ -14,10 +14,11 @@
 //!
 //! Ops are numbered densely in page order as they are decided
 //! ([`lower::cx`]); [`Lowered::op_count`] equals
-//! `DisegnoFolio::of(&lowered.root.ops).op_count()` on every input —
+//! `S2Folio::of(&lowered.root.ops).op_count()` on every input —
 //! the law the side tables and the S2 verifier's `verify_table` key on.
 //!
 //! [`Diagnostic`]: vize_davinci::diagnostic::Diagnostic
+//! [`S2Folio`]: vize_s2::folio::S2Folio
 //! [`SurfaceError`]: vize_s1::SurfaceError
 
 use alloc::vec::Vec as StdVec;

@@ -194,7 +194,7 @@ pub fn run_transform<'a, O: PassObserver>(lowered: &mut Lowered<'a>, observer: &
         #[cfg(debug_assertions)]
         {
             verify.note(event);
-            let folio = vize_s2::folio::DisegnoFolio::of(&lowered.root.ops);
+            let folio = vize_s2::folio::S2Folio::of(&lowered.root.ops);
             verify.check(event, &folio);
             verify.check_table(event, &folio, &lowered.scopes);
             verify.check_table(event, &folio, &lowered.texts);

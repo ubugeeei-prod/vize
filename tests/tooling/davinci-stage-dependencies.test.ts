@@ -157,6 +157,18 @@ test("Davinci S1-to-S2 uses the physical crate package and directory", () => {
   assert.doesNotMatch(lockfile, /\bvize_ricalco\b/u);
 });
 
+test("Davinci S1-to-S2 source paths use the physical S2 folio type", () => {
+  const sourceDir = path.join(repoRoot, "crates", "vize_s1_to_s2", "src");
+  for (const fullPath of walkRustFiles(sourceDir)) {
+    const source = fs.readFileSync(fullPath, "utf8");
+    assert.doesNotMatch(
+      source,
+      /\bDisegnoFolio\b/u,
+      `${path.relative(sourceDir, fullPath)} must use S2Folio`,
+    );
+  }
+});
+
 test("Davinci DOM lane tests import lowering through the physical S1-to-S2 package", () => {
   const lowering = dependency(metadata, "vize_atelier_dom", "vize_s1_to_s2", "dev");
   assert.equal(lowering.rename, null);
