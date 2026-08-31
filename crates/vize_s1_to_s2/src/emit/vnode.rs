@@ -168,8 +168,14 @@ pub(super) fn emit_call(
     cx.buf.push(element.tag);
     cx.buf.push("\"");
     let has_children = !element.children.ops.is_empty();
-    let hoist_static_children = cx.hoist_static_vnodes
-        || (allow_hoist && (if_key.is_some() || !element.bindings.is_empty()));
+    let hoist_static_children = super::vnode_static::should_hoist_static_children(
+        cx,
+        element,
+        id,
+        allow_hoist,
+        if_key.is_some() && !for_item,
+        for_item,
+    );
     let has_memo = super::memo::has(&element.bindings);
     let memo_block = block && has_memo && !(if_key.is_some() && !for_item);
     let force_array_children = once

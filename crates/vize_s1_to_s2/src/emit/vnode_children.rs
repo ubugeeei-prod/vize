@@ -12,8 +12,7 @@ pub(super) fn emit_children(
     hoist_static_children: bool,
     cache_static_children: bool,
 ) -> Result<(), EmitError> {
-    let hoist_static_children = hoist_static_children || cx.hoist_static_vnodes;
-    cx.with_static_vnode_hoist(hoist_static_children, |cx| {
+    cx.with_static_vnode_hoist_exact(hoist_static_children, |cx| {
         emit_children_inner(
             cx,
             children,
