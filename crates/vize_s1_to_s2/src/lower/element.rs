@@ -110,7 +110,11 @@ fn enter_ns(parent: Namespace, tag: &str) -> Namespace {
 fn children_ns(own: Namespace, tag: &str) -> Namespace {
     match own {
         Namespace::Svg if matches!(tag, "foreignObject" | "desc" | "title") => Namespace::Html,
-        Namespace::MathMl if matches!(tag, "mi" | "mo" | "mn" | "ms" | "mtext") => Namespace::Html,
+        Namespace::MathMl
+            if matches!(tag, "annotation-xml" | "mi" | "mo" | "mn" | "ms" | "mtext") =>
+        {
+            Namespace::Html
+        }
         other => other,
     }
 }

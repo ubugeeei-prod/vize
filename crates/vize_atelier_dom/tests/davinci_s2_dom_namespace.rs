@@ -54,6 +54,18 @@ const BATTERY: &[(&str, &str)] = &[
         "v_if_static_mathml_child",
         r#"<div v-if="ok"><math><mi>x</mi></math></div>"#,
     ),
+    (
+        "mathml_same_namespace_dynamic_descendants",
+        r#"<div><math><mrow><msub :data-depth="depth"><mi>x</mi></msub></mrow></math></div>"#,
+    ),
+    (
+        "mathml_annotation_xml_html_boundary",
+        r#"<math><annotation-xml><div v-if="ok"><span>label</span></div></annotation-xml><mn>1</mn></math>"#,
+    ),
+    (
+        "component_slot_static_mathml_child",
+        r#"<Foo><math><mrow><mi>x</mi><mo>+</mo><mi>y</mi></mrow></math></Foo>"#,
+    ),
 ];
 
 #[test]
