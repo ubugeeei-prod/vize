@@ -62,6 +62,20 @@ pub(super) fn has_implicit_default(children: &Region<'_>) -> bool {
     children.ops.iter().any(|op| !is_whitespace_text(op))
 }
 
+pub(super) fn has_text_only_implicit_default(children: &Region<'_>) -> bool {
+    let mut has_content = false;
+    for op in children.ops.iter() {
+        if is_whitespace_text(op) {
+            continue;
+        }
+        has_content = true;
+        if !matches!(op, Op::Text(_) | Op::Interpolation(_)) {
+            return false;
+        }
+    }
+    has_content
+}
+
 pub(super) fn has_dynamic_names(facts: &SlotFacts) -> bool {
     facts
         .groups
@@ -189,15 +203,7 @@ fn collect_pieces(
     facts: &SlotFacts,
     buckets: &mut [StdVec<String>],
 ) -> Result<(), EmitError> {
-    let skip_ws = children
-        .ops
-        .iter()
-        .any(|op| !matches!(op, Op::Text(_) | Op::Interpolation(_)));
     for op in children.ops.iter() {
-        if skip_ws && is_whitespace_text(op) {
-            let _id = cx.walk.mint();
-            continue;
-        }
         match op {
             Op::Element(element) if is_slot_template(element) => {
                 let id = cx.walk.mint();
@@ -258,15 +264,7 @@ pub(super) fn emit_template_pieces(
         })?);
         return Ok(());
     }
-    let skip_ws = children
-        .ops
-        .iter()
-        .any(|op| !matches!(op, Op::Text(_) | Op::Interpolation(_)));
     for op in children.ops.iter() {
-        if skip_ws && is_whitespace_text(op) {
-            let _id = cx.walk.mint();
-            continue;
-        }
         bucket.push(capture_child(cx, op)?);
     }
     Ok(())

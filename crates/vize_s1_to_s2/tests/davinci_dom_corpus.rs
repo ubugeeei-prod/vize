@@ -50,11 +50,105 @@ struct Report {
     old_error_reasons: BTreeMap<String, u64>,
     unreadable: Vec<String>,
     old_error_samples: Vec<String>,
+    unexpected_old_error_skips: u64,
+    unexpected_old_error_samples: Vec<String>,
     s2_refusal_reasons: BTreeMap<&'static str, u64>,
     s2_refusal_samples: BTreeMap<&'static str, Vec<String>>,
     s2_refusals: Vec<String>,
     divergences: Vec<String>,
 }
+
+const OLD_LANE_INVALID_FIXTURES: &[(&str, &[&str])] = &[
+    (
+        "crater/resources/scripts/admin/views/settings/PreferencesSetting.vue",
+        &[
+            "ExtendPoint",
+            "InvalidEndTag",
+            "InvalidEndTag",
+            "InvalidEndTag",
+            "MissingEndTag",
+            "MissingEndTag",
+        ],
+    ),
+    (
+        "dashy/src/components/Widgets/MvgConnection.vue",
+        &["VIfSameKey"],
+    ),
+    (
+        "gogocode/packages/gogocode-vue-playground/packages/vue3/src/components/slots-unification/Comp-out.vue",
+        &["VSlotDuplicateSlotNames"],
+    ),
+    (
+        "habitica/website/client/src/components/modifyInventory.vue",
+        &[
+            "InvalidEndTag",
+            "InvalidEndTag",
+            "InvalidEndTag",
+            "InvalidEndTag",
+            "InvalidEndTag",
+            "InvalidEndTag",
+            "InvalidEndTag",
+            "InvalidEndTag",
+            "InvalidEndTag",
+            "InvalidEndTag",
+            "InvalidEndTag",
+            "InvalidEndTag",
+            "MissingEndTag",
+            "MissingEndTag",
+            "MissingEndTag",
+            "MissingEndTag",
+            "MissingEndTag",
+            "MissingEndTag",
+            "MissingEndTag",
+            "MissingEndTag",
+        ],
+    ),
+    (
+        "habitica/website/client/src/components/static/privacy.vue",
+        &["InvalidEndTag"],
+    ),
+    (
+        "heyui/src/components/carousel/carousel.vue",
+        &["VIfSameKey"],
+    ),
+    (
+        "heyui/src/components/table/table.vue",
+        &["VElseNoAdjacentIf"],
+    ),
+    ("tdesign/site/src/pages/design/fonts.vue", &["VIfSameKey"]),
+    (
+        "tdesign/site/src/pages/design/fonts_zh-CN.vue",
+        &["VIfSameKey"],
+    ),
+    (
+        "vue-manage-system/src/views/table/basetable.vue",
+        &["InvalidEndTag"],
+    ),
+    (
+        "vue2-elm/src/page/shop/shop.vue",
+        &["MissingWhitespaceBetweenAttributes"],
+    ),
+    (
+        "vuesax/docs/.vuepress/theme/Home.vue",
+        &["InvalidEndTag", "InvalidEndTag"],
+    ),
+    (
+        "vuesax/docs/.vuepress/theme/homePatreons.vue",
+        &["InvalidEndTag"],
+    ),
+    (
+        "vux/src/components/inline-x-number/index.vue",
+        &["MissingWhitespaceBetweenAttributes"],
+    ),
+    (
+        "vux/src/components/x-number/index.vue",
+        &["MissingWhitespaceBetweenAttributes"],
+    ),
+    (
+        "vux/src/demos/PopupPicker.vue",
+        &["MissingWhitespaceBetweenAttributes"],
+    ),
+];
 
 #[test]
 fn dom_emit_agrees_on_sfc_templates() {
@@ -148,7 +242,7 @@ fn compare_sfc_template(name: &str, source: &str, report: &mut Report) {
     let (_, errors, old) = vize_atelier_dom::compile_template(&old_allocator, &template.content);
     let blocking_errors: Vec<_> = errors
         .iter()
-        .filter(|error| !error.is_compatibility_notice())
+        .filter(|error| !error.is_recoverable())
         .collect();
     if !blocking_errors.is_empty() {
         report.old_error_skips += 1;
@@ -168,6 +262,18 @@ fn compare_sfc_template(name: &str, source: &str, report: &mut Report) {
                 "{name}: {} old-lane blocking errors: {blocking_errors:?}",
                 blocking_errors.len()
             ));
+        }
+        let actual_codes = blocking_errors
+            .iter()
+            .map(|error| format!("{:?}", error.code))
+            .collect::<Vec<_>>();
+        if !old_lane_skip_is_allowed(name, &actual_codes) {
+            report.unexpected_old_error_skips += 1;
+            if report.unexpected_old_error_samples.len() < 20 {
+                report.unexpected_old_error_samples.push(format!(
+                    "{name}: unexpected old-lane blocking errors: {blocking_errors:?}"
+                ));
+            }
         }
         return;
     }
@@ -251,21 +357,45 @@ fn assert_empty(label: &str, values: &[String]) {
 fn assert_clean_corpus(report: &Report) {
     assert!(
         report.unreadable_count == 0
-            && report.old_error_skips == 0
+            && report.unexpected_old_error_skips == 0
             && report.s2_refusal_count == 0
             && report.divergence_count == 0,
-        "corpus unreadable files ({}):\n{}\n\ncorpus old-lane error skips ({}) by reason {:?}:\n{}\n\ncorpus S2 refusals ({}) by reason {:?}:\n{}\n\ncorpus divergences ({}):\n{}",
+        "corpus unreadable files ({}):\n{}\n\ncorpus old-lane error skips ({}) by reason {:?}:\n{}\n\nunexpected old-lane error skips ({}):\n{}\n\ncorpus S2 refusals ({}) by reason {:?}:\n{}\n\ncorpus divergences ({}):\n{}",
         report.unreadable_count,
         report.unreadable.join("\n"),
         report.old_error_skips,
         report.old_error_reasons,
         report.old_error_samples.join("\n"),
+        report.unexpected_old_error_skips,
+        report.unexpected_old_error_samples.join("\n"),
         report.s2_refusal_count,
         report.s2_refusal_reasons,
         report.s2_refusals.join("\n"),
         report.divergence_count,
         report.divergences.join("\n"),
     );
+}
+
+fn old_lane_skip_is_allowed(name: &str, actual_codes: &[String]) -> bool {
+    let Some(path) = fixture_path(name) else {
+        return false;
+    };
+    let Some((_, expected_codes)) = OLD_LANE_INVALID_FIXTURES
+        .iter()
+        .find(|(allowed_path, _)| *allowed_path == path)
+    else {
+        return false;
+    };
+    let mut actual = actual_codes.iter().map(String::as_str).collect::<Vec<_>>();
+    actual.sort_unstable();
+    let mut expected = expected_codes.to_vec();
+    expected.sort_unstable();
+    actual == expected
+}
+
+fn fixture_path(name: &str) -> Option<&str> {
+    name.split_once("tests/_fixtures/_git/")
+        .map(|(_, path)| path)
 }
 
 #[test]
@@ -280,14 +410,18 @@ fn nested_anchor_and_button_recoveries_are_compared_not_skipped() {
             "nested_button",
             "<template><button><div><button>bbb</button></div></button></template>",
         ),
+        (
+            "duplicate_attribute",
+            r#"<template><div class="a" class="b">duplicate</div></template>"#,
+        ),
     ] {
         compare_sfc_template(name, source, &mut report);
     }
 
-    assert_eq!(report.templates, 2);
+    assert_eq!(report.templates, 3);
     assert_eq!(
         report.old_error_skips, 0,
-        "nested interactive-content recoveries should reach the DOM comparison lane: {:?}",
+        "recoverable old-lane diagnostics should reach the DOM comparison lane: {:?}",
         report.old_error_samples
     );
     assert_eq!(
@@ -295,7 +429,7 @@ fn nested_anchor_and_button_recoveries_are_compared_not_skipped() {
         "S2 should emit so any remaining mismatch is counted as a divergence: {:?}",
         report.s2_refusals
     );
-    assert_eq!(report.compared, 2);
+    assert_eq!(report.compared, 3);
 }
 
 #[test]
@@ -310,6 +444,7 @@ fn unrelated_invalid_end_tag_still_blocks_old_lane_comparison() {
     assert_eq!(report.templates, 1);
     assert_eq!(report.compared, 0);
     assert_eq!(report.old_error_skips, 1);
+    assert_eq!(report.unexpected_old_error_skips, 1);
     assert_eq!(
         report.old_error_codes,
         vec![ErrorCode::InvalidEndTag],
@@ -317,4 +452,20 @@ fn unrelated_invalid_end_tag_still_blocks_old_lane_comparison() {
         report.old_error_samples
     );
     assert_eq!(report.old_error_reasons.get("InvalidEndTag"), Some(&1));
+}
+
+#[test]
+fn canonical_invalid_fixture_allowlist_is_exact() {
+    assert!(old_lane_skip_is_allowed(
+        "/repo/tests/_fixtures/_git/vue-manage-system/src/views/table/basetable.vue",
+        &[String::from("InvalidEndTag")],
+    ));
+    assert!(!old_lane_skip_is_allowed(
+        "/repo/tests/_fixtures/_git/vue-manage-system/src/views/table/basetable.vue",
+        &[String::from("MissingEndTag")],
+    ));
+    assert!(!old_lane_skip_is_allowed(
+        "/repo/tests/_fixtures/_git/vue-manage-system/src/views/table/other.vue",
+        &[String::from("InvalidEndTag")],
+    ));
 }

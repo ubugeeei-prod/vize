@@ -71,7 +71,10 @@ pub(super) fn emit_fragment_element(
     if super::once::has(&element.bindings) {
         return super::once::emit_element(cx, element, None, false);
     }
-    if namespace::crosses_boundary(cx, element) {
+    if namespace::crosses_boundary(cx, element, direct_static_children_hoisted(cx, element, id)) {
+        return emit_nested_block(cx, element, id);
+    }
+    if has_dynamic_key_binding(element) {
         return emit_nested_block(cx, element, id);
     }
     super::memo::emit_cached(cx, &element.bindings, |cx| {
@@ -98,7 +101,10 @@ fn emit_nested(
     if super::once::has(&element.bindings) {
         return super::once::emit_element(cx, element, None, false);
     }
-    if namespace::crosses_boundary(cx, element) {
+    if namespace::crosses_boundary(cx, element, direct_static_children_hoisted(cx, element, id)) {
+        return emit_nested_block(cx, element, id);
+    }
+    if has_dynamic_key_binding(element) {
         return emit_nested_block(cx, element, id);
     }
     super::memo::emit_cached(cx, &element.bindings, |cx| {
@@ -296,6 +302,23 @@ fn has_cloak(bindings: &[BindingOp<'_>]) -> bool {
     bindings
         .iter()
         .any(|binding| matches!(binding, BindingOp::VueCloak(_)))
+}
+
+fn has_dynamic_key_binding(element: &ElementOp<'_>) -> bool {
+    element.bindings.iter().any(|binding| {
+        matches!(
+            binding,
+            BindingOp::Bind(bind) if super::props_bind::is_key_bind_name(bind)
+        )
+    })
+}
+
+fn direct_static_children_hoisted(
+    cx: &EmitCx<'_>,
+    element: &ElementOp<'_>,
+    id: Option<NodeId>,
+) -> bool {
+    super::vnode_static::should_hoist_static_children(cx, element, id, true, false, false)
 }
 
 pub(super) fn emit_array_child(

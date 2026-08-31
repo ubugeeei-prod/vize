@@ -11,6 +11,16 @@ export const artifactDir = "real-project-davinci-dom-corpus";
 export const corpusRoot = "tests/_fixtures/_git";
 export const expectedGitlinks = 146;
 export const expectedDomOutputComparisons = 144;
+export const expectedOldErrorSkips = 16;
+export const expectedOldErrorReasons = {
+  ExtendPoint: 1,
+  InvalidEndTag: 20,
+  MissingEndTag: 10,
+  MissingWhitespaceBetweenAttributes: 4,
+  VElseNoAdjacentIf: 1,
+  VIfSameKey: 4,
+  VSlotDuplicateSlotNames: 1,
+};
 
 const ansiEscapePattern = new RegExp(`${String.fromCharCode(27)}\\[[0-?]*[ -/]*[@-~]`, "g");
 
@@ -171,10 +181,15 @@ export function validateCorpusEvidence(artifact = artifactDir) {
   if (evidence.files === 0 || evidence.templates === 0 || evidence.compared === 0) {
     failures.push("corpus log proves no DOM-output comparisons");
   }
-  if (evidence.unreadable !== 0 || evidence.oldErrorSkips !== 0) {
-    const oldErrorReasons = formatReasonCounts(evidence.oldErrorReasons);
+  if (evidence.unreadable !== 0) {
+    failures.push(`corpus log unreadable inputs: unreadable=${evidence.unreadable}`);
+  }
+  if (
+    evidence.oldErrorSkips !== expectedOldErrorSkips ||
+    !sameReasonCounts(evidence.oldErrorReasons, expectedOldErrorReasons)
+  ) {
     failures.push(
-      `corpus log skipped inputs: unreadable=${evidence.unreadable} old_error_skips=${evidence.oldErrorSkips}${oldErrorReasons ? ` reasons=${oldErrorReasons}` : ""}`,
+      `corpus old-lane skip allowlist drift: old_error_skips=${evidence.oldErrorSkips}/${expectedOldErrorSkips} reasons=${formatReasonCounts(evidence.oldErrorReasons) || "none"} expected_reasons=${formatReasonCounts(expectedOldErrorReasons)}`,
     );
   }
   if (evidence.s2Refusals !== 0 || evidence.divergences !== 0) {
@@ -371,6 +386,10 @@ function formatReasonCounts(reasons) {
   return Object.entries(sortReasonCounts(reasons))
     .map(([reason, count]) => `${reason}=${count}`)
     .join(",");
+}
+
+function sameReasonCounts(left, right) {
+  return JSON.stringify(sortReasonCounts(left)) === JSON.stringify(sortReasonCounts(right));
 }
 
 async function main() {

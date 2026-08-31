@@ -9,6 +9,8 @@ import {
   corpusEvidenceLines,
   expectedDomOutputComparisons,
   expectedGitlinks,
+  expectedOldErrorReasons,
+  expectedOldErrorSkips,
   hydrateCorpus,
   parseCorpusEvidence,
   parseFixtureGitlinks,
@@ -118,6 +120,16 @@ test("S2 DOM corpus workflow helper extracts canonical evidence", () => {
   assert.equal(verdictFor("cancelled", "record-only"), "cancelled");
   assert.equal(expectedGitlinks, 146);
   assert.equal(expectedDomOutputComparisons, 144);
+  assert.equal(expectedOldErrorSkips, 16);
+  assert.deepEqual(expectedOldErrorReasons, {
+    ExtendPoint: 1,
+    InvalidEndTag: 20,
+    MissingEndTag: 10,
+    MissingWhitespaceBetweenAttributes: 4,
+    VElseNoAdjacentIf: 1,
+    VIfSameKey: 4,
+    VSlotDuplicateSlotNames: 1,
+  });
 });
 
 test("S2 DOM corpus workflow extracts old-lane skip reasons from corpus logs", () => {
@@ -250,7 +262,8 @@ test("S2 DOM corpus workflow validates closure evidence artifacts", () => {
       join(artifact, "dom-corpus.log"),
       [
         "\u001B[32mdavinci-differential corpus scope: root=tests/_fixtures/_git scope=canonical closure_evidence=true submodules=146\u001B[0m",
-        "davinci DOM corpus sweep: files=37448 unreadable=0 parsed=37448 templates=35000 compared=35000 old_error_skips=0 s2_refusals=0 divergences=0",
+        "davinci DOM corpus sweep: files=37448 unreadable=0 parsed=37448 templates=35000 compared=34984 old_error_skips=16 s2_refusals=0 divergences=0",
+        'davinci DOM corpus old-lane error reasons: {"ExtendPoint":1,"InvalidEndTag":20,"MissingEndTag":10,"MissingWhitespaceBetweenAttributes":4,"VElseNoAdjacentIf":1,"VIfSameKey":4,"VSlotDuplicateSlotNames":1}',
       ].join("\n"),
     );
 
@@ -267,9 +280,9 @@ test("S2 DOM corpus workflow validates closure evidence artifacts", () => {
       unreadable: 0,
       parsed: 37448,
       templates: 35000,
-      compared: 35000,
-      oldErrorSkips: 0,
-      oldErrorReasons: {},
+      compared: 34984,
+      oldErrorSkips: 16,
+      oldErrorReasons: expectedOldErrorReasons,
       s2Refusals: 0,
       divergences: 0,
     });
@@ -307,7 +320,8 @@ test("S2 DOM corpus workflow rejects stale or dirty evidence artifacts", () => {
       "corpus log is missing canonical closure evidence",
       "corpus log submodules 0 != 146",
       "corpus log proves no DOM-output comparisons",
-      "corpus log skipped inputs: unreadable=3 old_error_skips=2 reasons=InvalidEndTag=1,VIfSameKey=1",
+      "corpus log unreadable inputs: unreadable=3",
+      "corpus old-lane skip allowlist drift: old_error_skips=2/16 reasons=InvalidEndTag=1,VIfSameKey=1 expected_reasons=ExtendPoint=1,InvalidEndTag=20,MissingEndTag=10,MissingWhitespaceBetweenAttributes=4,VElseNoAdjacentIf=1,VIfSameKey=4,VSlotDuplicateSlotNames=1",
       "corpus log is not clean: s2_refusals=1 divergences=1",
     ]);
   } finally {

@@ -230,7 +230,7 @@ fn emit_template_literal_prefixes(
     cx.buf.push(&source[cursor..]);
 }
 
-fn is_global_key_name(name: &str) -> bool {
+pub(super) fn is_global_key_name(name: &str) -> bool {
     matches!(
         name,
         "Infinity"
