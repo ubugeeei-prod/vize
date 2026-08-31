@@ -1,5 +1,5 @@
 let
-  root = ./..;
+  root = ../..;
 in
 {
   perSystem =

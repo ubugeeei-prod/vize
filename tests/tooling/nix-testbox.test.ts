@@ -11,8 +11,8 @@ function readRepoFile(relativePath: string): string {
 }
 
 test("Nix isolates the pinned Blacksmith CLI from the default dev shell", () => {
-  const devShellModule = readRepoFile("nix/dev-shell.nix");
-  const blacksmithModule = readRepoFile("nix/blacksmith.nix");
+  const devShellModule = readRepoFile("tools/nix/dev-shell.nix");
+  const blacksmithModule = readRepoFile("tools/nix/blacksmith.nix");
   const contributing = readRepoFile("docs/content/contributing.md");
   const defaultShell = devShellModule.match(
     /devShell = pkgs\.mkShell \{([\s\S]*?)\n\s*\};\n\s*testboxDevShell/,
@@ -23,8 +23,10 @@ test("Nix isolates the pinned Blacksmith CLI from the default dev shell", () => 
   // Every artifact the flake pins, not just Blacksmith's: a moving `latest`
   // URL anywhere would let a fixed-output derivation change under the lock.
   const sourceUrls = fs
-    .readdirSync(path.join(repoRoot, "nix"))
-    .flatMap((entry) => [...readRepoFile(`nix/${entry}`).matchAll(/url = "([^"]+)";/g)])
+    .readdirSync(path.join(repoRoot, "tools/nix"))
+    .flatMap((entry) => [
+      ...readRepoFile(`tools/nix/${entry}`).matchAll(/url = "([^"]+)";/g),
+    ])
     .map((match) => match[1]);
 
   assert.ok(defaultShell, "default dev shell");

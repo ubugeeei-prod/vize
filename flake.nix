@@ -14,15 +14,15 @@
   outputs =
     inputs@{ flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = import ./nix/systems.nix;
+      systems = import ./tools/nix/systems.nix;
 
       imports = [
-        ./nix/blacksmith.nix
-        ./nix/dev-shell.nix
-        ./nix/moonbit.nix
-        ./nix/packages.nix
-        ./nix/pkgs.nix
-        ./nix/vp.nix
+        ./tools/nix/blacksmith.nix
+        ./tools/nix/dev-shell.nix
+        ./tools/nix/moonbit.nix
+        ./tools/nix/packages.nix
+        ./tools/nix/pkgs.nix
+        ./tools/nix/vp.nix
       ];
 
       perSystem =

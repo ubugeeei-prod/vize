@@ -91,7 +91,7 @@ craneLib.buildPackage (
       homepage = "https://vizejs.dev";
       inherit mainProgram;
       license = lib.getLicenseFromSpdxId license;
-      platforms = import (root + /nix/systems.nix);
+      platforms = import (root + /tools/nix/systems.nix);
     };
   }
 )
