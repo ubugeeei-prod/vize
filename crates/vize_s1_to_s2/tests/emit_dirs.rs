@@ -248,6 +248,23 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn a_dynamic_component_directive_keeps_need_patch() {
+    assert_eq!(
+        assembled(r#"<component :is="view" v-example />"#),
+        pin("\
+const { resolveDirective: _resolveDirective, resolveDynamicComponent: _resolveDynamicComponent, withDirectives: _withDirectives, openBlock: _openBlock, createBlock: _createBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _directive_example = _resolveDirective(\"example\")
+
+  return _withDirectives((_openBlock(), _createBlock(_resolveDynamicComponent(view), null, null, 512 /* NEED_PATCH */)), [
+    [_directive_example]
+  ])
+}")
+    );
+}
+
+#[test]
 fn native_v_model_keeps_the_model_entry_first() {
     assert_eq!(
         assembled(r#"<input v-example v-model="x">"#),

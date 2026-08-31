@@ -22,6 +22,14 @@ const BATTERY: &[(&str, &str)] = &[
     ("mods_value", r#"<div v-example.foo.bar="val"></div>"#),
     ("dyn_arg", r#"<div v-example:[dyn]="val"></div>"#),
     ("two", r#"<div v-pin v-foo></div>"#),
+    (
+        "dynamic_component_custom_directive_keeps_need_patch",
+        r#"<component :is="view" v-example />"#,
+    ),
+    (
+        "dynamic_component_custom_directive_static_props_keeps_need_patch",
+        r#"<component :is="copied ? 'CheckOutlined' : 'SnippetsOutlined'" key="copy" class="code-action" v-clipboard:copy="sourceCode" v-clipboard:success="handleCodeCopied" />"#,
+    ),
     ("kebab", r#"<div v-my-dir></div>"#),
     ("id", r#"<div id="x" v-example></div>"#),
     ("bind_id", r#"<div :id="id" v-example></div>"#),
