@@ -50,6 +50,9 @@ impl RequireVForKey {
         if element.is_tag("template") {
             return;
         }
+        if element.is_tag("slot") {
+            return;
+        }
         if element.has_key_binding() || has_object_bound_key(element) {
             return;
         }
@@ -211,6 +214,10 @@ impl Rule for RequireVForKey {
             return;
         }
 
+        if element.tag == "slot" {
+            return;
+        }
+
         // Check if element has :key or key attribute
         let has_key = element.props.iter().any(|prop| match prop {
             PropNode::Attribute(attr) => attr.name == "key",
@@ -276,6 +283,16 @@ mod tests {
         // Static key is unusual but technically valid
         let result = linter.lint_template(
             r#"<div v-for="item in items" key="static"></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_slot_outlet_v_for_without_key() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div><slot v-for="(item, index) in items" name="item" :item="item" :index="index" /></div>"#,
             "test.vue",
         );
         assert_eq!(result.error_count, 0);
