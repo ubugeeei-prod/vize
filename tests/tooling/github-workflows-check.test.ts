@@ -331,6 +331,7 @@ test("check workflow builds local native bindings before JS checks", () => {
 
   assert.match(buildJob, /vp run --filter '\.\/npm\/native' build:ci/);
   assert.match(buildJob, /vp run --filter '\.\/npm\/ui' check/);
+  assert.match(buildJob, /uses:\s*\.\/\.github\/actions\/setup-rust-script/);
   assert.match(buildJob, /vp run --workspace-root build:packages/);
   assert.match(buildJob, /name:\s*shared-js-build/);
 

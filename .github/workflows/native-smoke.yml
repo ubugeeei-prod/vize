@@ -147,21 +147,11 @@ jobs:
         uses: ./.github/actions/setup-runtime-package-managers
         with:
           node-version-file: ".node-version.ci"
-      # MSVC env vars (INCLUDE, LIB, etc.) must be set at job scope, not just
-      # inside the setup-moonbit composite action — `vp run … build` later in
-      # the job invokes moonbit's `cc` integration through `generate:rule-types`
-      # (vize's build script), and that subprocess needs the MSVC C headers to
-      # be visible. host-native-smoke gets away without this because it never
-      # builds the npm/cli package; fresh-install-smoke does.
       - name: Setup MSVC toolchain (Windows)
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
         with:
           arch: ${{ matrix.platform.msvc_arch }}
-      # MoonBit's native installer does not support Darwin x64. This matrix
-      # target does not invoke moon because npm/cli is packed directly below.
-      - uses: ./.github/actions/setup-moonbit
-        if: matrix.platform.target != 'darwin-x64'
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         if: runner.os == 'Linux'
@@ -210,15 +200,7 @@ jobs:
       - name: Build npm runtime packages
         shell: bash
         run: |
-          # Pack npm/cli directly instead of running its full `build` script,
-          # which would also re-invoke `generate:rule-types` (a moonbit script
-          # that shells out to `cl.exe`). The checked-in src/types/rules.ts is
-          # the source of truth and is regenerated/verified on the test-scripts
-          # job on Linux; the smoke matrix only needs the packed tarball, and
-          # moonbit's `cc` integration does not currently honor the inherited
-          # INCLUDE env on Windows even when ilammy/msvc-dev-cmd has set it,
-          # which would otherwise block this matrix on every Windows runner.
-          (cd npm/cli && vp pack)
+          vp run --filter './npm/cli' build
           vp run --filter './npm/builder/vite' build
       - name: Fresh install and runtime smoke published tarballs
         shell: bash

@@ -181,7 +181,7 @@ export const testAndBenchmarkTasks = defineTasks({
   "coverage:diff": task("cargo run -p vize_test_runner --bin coverage -- -vv", {
     input: cacheInputs.rust,
   }),
-  "generate:rule-types": task(moonScript("generate_rule_types"), {
+  "generate:rule-types": task(rustTool("generate/rule-types"), {
     input: cacheInputs.rust,
   }),
   "expected:generate": task(moonScript("generate_expected")),

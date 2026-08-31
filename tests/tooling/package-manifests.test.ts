@@ -494,7 +494,7 @@ test("workspace package builds do not nest pnpm run commands", () => {
   assert.doesNotMatch(museaPackage.scripts?.build ?? "", /\bpnpm run\b/);
 });
 
-test("vize package delegates rule type generation to the workspace MoonBit task", () => {
+test("vize package delegates rule type generation to the workspace task", () => {
   const vizePackage = JSON.parse(
     fs.readFileSync(path.join(root, "npm/cli/package.json"), "utf-8"),
   ) as {
