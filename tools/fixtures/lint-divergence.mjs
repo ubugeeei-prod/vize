@@ -16,13 +16,19 @@ import {
  * files and classify every finding, mirroring
  * [`compareTypecheckDiagnostics`](./typecheck-divergence.mjs) for the linter.
  *
- * Two linters agreeing on a *count* is not parity, so findings are matched on
- * the full location tuple — file, rule, severity and the whole
+ * Two linters agreeing on a *count* is not parity, so findings are normally
+ * matched on the full location tuple — file, rule, severity and the whole
  * `line`/`column`/`endLine`/`endColumn` range. Message wording is deliberately
  * excluded from that identity: the two implementations phrase the same finding
  * differently, and forcing byte equality there would bury real location
  * divergences under prose diffs. A matched pair whose wording differs is still
  * recorded, in `messageDifferences`, so the wording gap stays visible.
+ *
+ * A small set of mapped rules has a stable, rule-owned anchor difference where
+ * Patina and eslint-plugin-vue report the same semantic finding on different
+ * AST nodes. Those pairs are removed from false-positive/false-negative counts
+ * and recorded in `ruleLocationDivergences`, preserving both source ranges and
+ * messages so the location mismatch remains reviewable.
  *
  * Baseline findings are routed by the status their rule carries in the
  * checked-in rule map (`tests/_fixtures/patina-eslint-vue-rule-map.json`):
@@ -133,12 +139,14 @@ export function compareLintFindings({
     falsePositives,
     falseNegatives,
   );
+  const ruleLocationDivergences = pairRuleLocationDivergences(falsePositives, falseNegatives);
 
   const classified = {
     shared,
     messageDifferences,
     falsePositives,
     falseNegatives,
+    ruleLocationDivergences,
     unimplemented,
     intentionalDivergences,
     patinaOnlyRuleFindings,
@@ -151,6 +159,7 @@ export function compareLintFindings({
     sharedCount: shared.length,
     messageDifferenceCount: messageDifferences.length,
     documentedDivergenceCount: documented.length,
+    ruleLocationDivergenceCount: ruleLocationDivergences.length,
     falsePositiveCount: falsePositives.length,
     falseNegativeCount: falseNegatives.length,
     unimplementedCount: unimplemented.length,
@@ -255,6 +264,96 @@ function documentedSide(value, label) {
   return { severity: value.severity, ...span };
 }
 
+function pairRuleLocationDivergences(falsePositives, falseNegatives) {
+  const paired = [];
+  for (let positiveIndex = 0; positiveIndex < falsePositives.length;) {
+    const positive = falsePositives[positiveIndex];
+    const match = findRuleLocationDivergence(positive, falseNegatives);
+    if (match == null) {
+      positiveIndex += 1;
+      continue;
+    }
+    const [negative] = falseNegatives.splice(match.negativeIndex, 1);
+    falsePositives.splice(positiveIndex, 1);
+    paired.push(ruleLocationDivergence(positive, negative, match));
+  }
+  return paired.sort(compareRuleLocationDivergences);
+}
+
+function findRuleLocationDivergence(positive, falseNegatives) {
+  const rule = ruleLocationDivergenceRules[positive.ruleId];
+  if (rule == null) return null;
+  for (let negativeIndex = 0; negativeIndex < falseNegatives.length; negativeIndex += 1) {
+    const negative = falseNegatives[negativeIndex];
+    if (
+      positive.file !== negative.file ||
+      positive.ruleId !== negative.ruleId ||
+      positive.severity !== negative.severity
+    ) {
+      continue;
+    }
+    const subject = rule.subject(positive, negative);
+    if (subject == null) continue;
+    return { negativeIndex, reason: rule.reason, subject };
+  }
+  return null;
+}
+
+const ruleLocationDivergenceRules = {
+  "vue/no-unused-components": {
+    reason:
+      "patina reports the SFC/script anchor while eslint-plugin-vue reports the component registration property.",
+    subject(positive, negative) {
+      const positiveComponent = unusedComponentName(positive.message);
+      if (
+        positiveComponent == null ||
+        positiveComponent !== unusedComponentName(negative.message)
+      ) {
+        return null;
+      }
+      return `component:${positiveComponent}`;
+    },
+  },
+  "vue/require-v-for-key": {
+    reason:
+      "patina reports the v-for directive range while eslint-plugin-vue reports the owning element range.",
+    subject(positive, negative) {
+      return containsSpan(negative, positive) ? "missing-v-for-key" : null;
+    },
+  },
+};
+
+function ruleLocationDivergence(positive, negative, match) {
+  return {
+    file: positive.file,
+    ruleId: positive.ruleId,
+    upstreamRuleId: negative.upstreamRuleId,
+    severity: positive.severity,
+    subject: match.subject,
+    reason: match.reason,
+    patina: side(positive),
+    baseline: side(negative),
+  };
+}
+
+function side(value) {
+  return {
+    line: value.line,
+    column: value.column,
+    endLine: value.endLine,
+    endColumn: value.endColumn,
+    message: value.message,
+  };
+}
+
+function unusedComponentName(message) {
+  return (
+    message.match(/Component '([^']+)' is registered but never used(?: in template)?/u)?.[1] ??
+    message.match(/The "([^"]+)" component has been registered but not used\./u)?.[1] ??
+    null
+  );
+}
+
 function sameSpan(left, right) {
   return (
     left.line === right.line &&
@@ -262,6 +361,18 @@ function sameSpan(left, right) {
     left.endLine === right.endLine &&
     left.endColumn === right.endColumn
   );
+}
+
+function containsSpan(outer, inner) {
+  return compareSpanStart(outer, inner) <= 0 && compareSpanEnd(outer, inner) >= 0;
+}
+
+function compareSpanStart(left, right) {
+  return left.line - right.line || left.column - right.column;
+}
+
+function compareSpanEnd(left, right) {
+  return left.endLine - right.endLine || left.endColumn - right.endColumn;
 }
 
 function groupByIdentity(records) {
@@ -294,6 +405,20 @@ function compareShared(left, right) {
     byteOrder(left.ruleId, right.ruleId) ||
     byteOrder(left.patinaMessage, right.patinaMessage) ||
     byteOrder(left.baselineMessage, right.baselineMessage)
+  );
+}
+
+function compareRuleLocationDivergences(left, right) {
+  return (
+    byteOrder(left.file, right.file) ||
+    byteOrder(left.ruleId, right.ruleId) ||
+    byteOrder(left.subject, right.subject) ||
+    compareSpanStart(left.patina, right.patina) ||
+    compareSpanEnd(left.patina, right.patina) ||
+    compareSpanStart(left.baseline, right.baseline) ||
+    compareSpanEnd(left.baseline, right.baseline) ||
+    byteOrder(left.patina.message, right.patina.message) ||
+    byteOrder(left.baseline.message, right.baseline.message)
   );
 }
 

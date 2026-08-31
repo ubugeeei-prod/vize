@@ -167,18 +167,23 @@ test("the markdown breaks findings down by upstream rule", () => {
       droppedConfigMessageCount: 4,
     },
     divergence: {
-      summary: { ...emptySummary(), falsePositiveCount: 2 },
+      summary: { ...emptySummary(), falsePositiveCount: 2, ruleLocationDivergenceCount: 1 },
       falsePositives: [
         { ruleId: "vue/no-v-html", upstreamRuleId: "vue/no-v-html" },
         { ruleId: "vue/no-v-html", upstreamRuleId: "vue/no-v-html" },
       ],
       falseNegatives: [{ ruleId: "vue/attribute-order", upstreamRuleId: "vue/attributes-order" }],
+      ruleLocationDivergences: [
+        { ruleId: "vue/require-v-for-key", upstreamRuleId: "vue/require-v-for-key" },
+      ],
       unimplemented: [],
     },
   });
 
   assert.match(markdown, /\| `vue\/no-v-html` \| 2 \|/u);
   assert.match(markdown, /\| `vue\/attributes-order` \| 1 \|/u);
+  assert.match(markdown, /\| `vue\/require-v-for-key` \| 1 \|/u);
+  assert.match(markdown, /Rule location divergences: 1/u);
   assert.match(markdown, /dropped as foreign-rule directives: 4/u);
 });
 
@@ -318,6 +323,7 @@ function emptySummary() {
     sharedCount: 0,
     messageDifferenceCount: 0,
     documentedDivergenceCount: 0,
+    ruleLocationDivergenceCount: 0,
     falsePositiveCount: 0,
     falseNegativeCount: 0,
     unimplementedCount: 0,

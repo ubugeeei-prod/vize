@@ -25,6 +25,7 @@ export const ruleMap = {
   entries: {
     "vue/no-v-html": { status: "mapped", patinaRule: "vue/no-v-html" },
     "vue/require-v-for-key": { status: "mapped", patinaRule: "vue/require-v-for-key" },
+    "vue/no-unused-components": { status: "mapped", patinaRule: "vue/no-unused-components" },
     "vue/attributes-order": { status: "mapped", patinaRule: "vue/attribute-order" },
     "vue/no-undef-properties": { status: "unimplemented", issue: 3223 },
     "vue/max-attributes-per-line": {

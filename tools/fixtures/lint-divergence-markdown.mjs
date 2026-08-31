@@ -30,6 +30,7 @@ export function renderMarkdown(artifact) {
     `Shared: ${summary.sharedCount}`,
     `Message differences: ${summary.messageDifferenceCount}`,
     `Documented divergences: ${summary.documentedDivergenceCount}`,
+    `Rule location divergences: ${summary.ruleLocationDivergenceCount ?? 0}`,
     `False positives: ${summary.falsePositiveCount} (${summary.falsePositiveRatio})`,
     `False negatives: ${summary.falseNegativeCount} (${summary.falseNegativeRatio})`,
     `Unimplemented upstream findings: ${summary.unimplementedCount}`,
@@ -46,6 +47,9 @@ export function renderMarkdown(artifact) {
   }
   lines.push(...ruleTable("False positives", artifact.divergence.falsePositives));
   lines.push(...ruleTable("False negatives", artifact.divergence.falseNegatives));
+  lines.push(
+    ...ruleTable("Rule location divergences", artifact.divergence.ruleLocationDivergences ?? []),
+  );
   lines.push(...ruleTable("Unimplemented upstream rules", artifact.divergence.unimplemented));
   return `${lines.join("\n")}\n`;
 }

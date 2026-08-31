@@ -230,6 +230,7 @@ function sumTotals(artifacts) {
     "sharedCount",
     "messageDifferenceCount",
     "documentedDivergenceCount",
+    "ruleLocationDivergenceCount",
     "falsePositiveCount",
     "falseNegativeCount",
     "unimplementedCount",
@@ -240,7 +241,7 @@ function sumTotals(artifacts) {
   ];
   const totals = Object.fromEntries(keys.map((key) => [key, 0]));
   for (const artifact of artifacts) {
-    for (const key of keys) totals[key] += artifact.divergence.summary[key];
+    for (const key of keys) totals[key] += artifact.divergence.summary[key] ?? 0;
   }
   return totals;
 }

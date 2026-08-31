@@ -93,6 +93,7 @@ test("the divergence ledger keys on the full location tuple, not on counts", () 
     sharedCount: 1,
     messageDifferenceCount: 1,
     documentedDivergenceCount: 0,
+    ruleLocationDivergenceCount: 0,
     falsePositiveCount: 1,
     falseNegativeCount: 1,
     unimplementedCount: 0,

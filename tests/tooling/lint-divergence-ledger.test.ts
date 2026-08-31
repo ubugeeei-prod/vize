@@ -16,29 +16,29 @@ test("a ledger entry cancels exactly one false positive against one false negati
   const patina = [
     {
       file: "src/App.vue",
-      ruleId: "vue/require-v-for-key",
+      ruleId: "vue/no-v-html",
       severity: 2,
       ...span(4, 6, 4, 18),
-      message: "missing key",
+      message: "v-html",
     },
   ];
   const baseline = [
     eslintResult("src/App.vue", [
       {
-        ruleId: "vue/require-v-for-key",
+        ruleId: "vue/no-v-html",
         severity: 2,
         ...span(4, 6, 4, 30),
-        message: "Elements in iteration expect to have 'v-bind:key' directives.",
+        message: "`v-html` directive can lead to XSS attack.",
       },
     ]),
   ];
   const reason =
-    "patina highlights the v-for directive itself while eslint-plugin-vue highlights the whole start tag.";
+    "patina highlights the directive itself while eslint-plugin-vue highlights the whole attribute.";
   const ledger = [
     {
       project: "fixture",
       file: "src/App.vue",
-      ruleId: "vue/require-v-for-key",
+      ruleId: "vue/no-v-html",
       patina: { severity: "error", ...span(4, 6, 4, 18) },
       baseline: { severity: "error", ...span(4, 6, 4, 30) },
       issue: 3223,
@@ -56,7 +56,7 @@ test("a ledger entry cancels exactly one false positive against one false negati
   assert.deepEqual(documented.documentedDivergences, [
     {
       file: "src/App.vue",
-      ruleId: "vue/require-v-for-key",
+      ruleId: "vue/no-v-html",
       patina: { severity: "error", line: 4, column: 6, endLine: 4, endColumn: 18 },
       baseline: { severity: "error", line: 4, column: 6, endLine: 4, endColumn: 30 },
       issue: 3223,
