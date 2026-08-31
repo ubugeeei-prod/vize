@@ -190,8 +190,8 @@ pub fn assert_transformed_sound_caps(source: &str, caps: LegacyCaps, context: &s
 ///    so page-order ids resolve by construction.
 /// 2. **Verifier-clean at `Canonical` rigor** — the lowering builds
 ///    canonical `ui.if` shapes from birth and every span nests.
-/// 3. **Side tables resolve** — every scope key and every provenance
-///    node id names an op the artifact numbers.
+/// 3. **Side tables resolve** — every lowering side-table key and every
+///    provenance node id names an op the artifact numbers.
 /// 4. **Folio round-trip** — `parse(print(v)) == v` structurally and the
 ///    re-print is byte-identical (TS-16 applied to lowered output).
 pub fn assert_sound(source: &str, context: &str) {
@@ -217,6 +217,21 @@ pub fn assert_sound_caps(source: &str, caps: LegacyCaps, context: &str) {
             verify_table(folio, &lowered.scopes),
             Vec::<Violation>::new(),
             "a scope key dangles: {context}"
+        );
+        assert_eq!(
+            verify_table(folio, &lowered.texts),
+            Vec::<Violation>::new(),
+            "a recorded text-run key dangles: {context}"
+        );
+        assert_eq!(
+            verify_table(folio, &lowered.wrappers),
+            Vec::<Violation>::new(),
+            "a wrapper-key fact dangles: {context}"
+        );
+        assert_eq!(
+            verify_table(folio, &lowered.for_wrappers),
+            Vec::<Violation>::new(),
+            "a for-wrapper fact dangles: {context}"
         );
         let provenance_ids: SideTable<()> = lowered
             .provenance
