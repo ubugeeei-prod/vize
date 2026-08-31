@@ -5,6 +5,7 @@ import {
   moonScriptWithFreshRegistry,
   noCacheTask,
   runInPackages,
+  rustTool,
   runTask,
   runTasks,
 } from "../task-helpers.ts";
@@ -31,7 +32,7 @@ export const releaseTasks = defineTasks({
     `${runTask("build:vite-plugin")} && ${moonScript("publish_npm_package", "npm/builder/vite")}`,
   ),
   "publish:oxlint-plugin": noCacheTask(
-    `${runInPackages("build", ["./npm/oxlint"])} && ${moonScript("inject_native_optional_deps", "npm/oxlint/package.json", "npm/native/package.json")} && ${moonScript("publish_npm_package", "npm/oxlint")}`,
+    `${runInPackages("build", ["./npm/oxlint"])} && ${rustTool("release/npm/inject-native-optional-deps", "npm/oxlint/package.json", "npm/native/package.json")} && ${moonScript("publish_npm_package", "npm/oxlint")}`,
   ),
   "publish:npm": noCacheTask(
     runTasks("publish:wasm", "publish:native", "publish:vite-plugin", "publish:oxlint-plugin"),

@@ -1,52 +1,12 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import path from "node:path";
-import { tmpdir } from "node:os";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 
 import { runMoonScript } from "./_helpers/moonbit.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
-
-test("inject_native_optional_deps updates only native optional dependency pins", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-inject-native-"));
-  const targetPath = path.join(tempDir, "package.json");
-  const versionPath = path.join(tempDir, "version-package.json");
-
-  try {
-    writeFileSync(
-      targetPath,
-      `${JSON.stringify(
-        {
-          name: "@vizejs/example",
-          version: "0.0.1",
-          optionalDependencies: {
-            "@vizejs/native-linux-x64-gnu": "0.0.1",
-            "@vizejs/native-darwin-arm64": "0.0.1",
-            fsevents: "^2.3.3",
-          },
-        },
-        null,
-        2,
-      )}\n`,
-    );
-    writeFileSync(versionPath, `${JSON.stringify({ version: "1.2.3-beta.1" }, null, 2)}\n`);
-
-    const result = runMoonScript("inject_native_optional_deps", [targetPath, versionPath]);
-    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
-
-    const updated = JSON.parse(fs.readFileSync(targetPath, "utf8")) as {
-      optionalDependencies: Record<string, string>;
-    };
-    assert.deepEqual(updated.optionalDependencies, {
-      "@vizejs/native-linux-x64-gnu": "1.2.3-beta.1",
-      "@vizejs/native-darwin-arm64": "1.2.3-beta.1",
-      fsevents: "^2.3.3",
-    });
-  } finally {
-    rmSync(tempDir, { recursive: true, force: true });
-  }
-});
 
 test("publish_npm_package normalizes workspace and catalog dependency specs before publishing", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-normalize-"));
