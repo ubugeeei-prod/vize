@@ -79,6 +79,7 @@ mod static_cache;
 mod style;
 mod tpl;
 mod vfor;
+mod vfor_item;
 mod vif;
 mod vnode;
 mod vnode_children;
@@ -171,10 +172,11 @@ fn emit_for_op(
 fn emit_for_item_call(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
+    id: Option<NodeId>,
     stable: bool,
     key: Option<&str>,
 ) -> Result<(), EmitError> {
-    vnode::emit_for_item_element(cx, element, stable, key)
+    vfor_item::emit_element(cx, element, id, stable, key)
 }
 
 /// Per-emit numbering + helper buffer. Page-order ids re-derive the

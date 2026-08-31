@@ -35,7 +35,7 @@ pub(super) fn emit_element(
                 element,
                 /* block */ false,
                 key,
-                /* hoist */ (false, None),
+                /* hoist */ (false, None, super::props_static::PropHoistPosition::Nested),
                 for_item,
                 /* once */ true,
             );

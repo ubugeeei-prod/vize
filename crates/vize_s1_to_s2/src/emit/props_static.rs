@@ -14,16 +14,33 @@ use super::props::{Piece, bind_value_is_static_patchless, pieces, static_bind_ke
 use super::props_bind::{StaticBindKey, StaticBindKeyCasing};
 use super::props_value::bind_value;
 
-pub(super) fn root_should_hoist(cx: &EmitCx<'_>, id: Option<NodeId>) -> bool {
+#[derive(Clone, Copy)]
+pub(super) enum PropHoistPosition {
+    Root,
+    Nested,
+    ForItem,
+}
+
+pub(super) fn should_hoist(
+    cx: &EmitCx<'_>,
+    id: Option<NodeId>,
+    position: PropHoistPosition,
+) -> bool {
     let Some(fact) = id.and_then(|id| cx.facts.static_facts.get(id)) else {
         return false;
     };
     if !fact.props_hoistable {
         return false;
     }
-    match fact.level {
-        StaticLevel::FullyStatic | StaticLevel::HasDynamicText => true,
-        StaticLevel::NotStatic => fact.foreign || fact.nested_static,
+    match position {
+        PropHoistPosition::Root => match fact.level {
+            StaticLevel::FullyStatic | StaticLevel::HasDynamicText => true,
+            StaticLevel::NotStatic => fact.foreign || fact.nested_static,
+        },
+        PropHoistPosition::Nested => {
+            fact.level == StaticLevel::NotStatic && (fact.foreign || fact.nested_static)
+        }
+        PropHoistPosition::ForItem => true,
     }
 }
 

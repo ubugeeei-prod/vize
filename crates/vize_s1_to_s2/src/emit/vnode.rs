@@ -4,16 +4,15 @@ use vize_davinci::id::NodeId;
 use vize_s0::ensure_sufficient_stack;
 use vize_s2::op::{BindingOp, ElementOp, Op};
 
-use super::EmitCx;
-use super::EmitError;
-use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::children::children_need_text_flag;
 use super::directive;
 use super::flag::emit_patch_flag;
 use super::namespace;
 use super::props::{admit_element_bindings, apply_static_ref_patch, bind_patch, emit_bind_props};
+use super::props_static::PropHoistPosition;
 use super::vnode_children::emit_children;
+use super::{EmitCx, EmitError, UnsupportedReason as Reason};
 
 pub(super) fn emit_unique_element(
     cx: &mut EmitCx<'_>,
@@ -30,7 +29,15 @@ pub(super) fn emit_unique_element(
             cx.buf.push("(");
             cx.buf.push(Buf::open_block_alias());
             cx.buf.push("(), ");
-            emit_call(cx, element, true, None, (true, id), false, false)?;
+            emit_call(
+                cx,
+                element,
+                true,
+                None,
+                (true, id, PropHoistPosition::Root),
+                false,
+                false,
+            )?;
             cx.buf.push(")");
             Ok(())
         })
@@ -42,7 +49,7 @@ fn emit_block(
     element: &ElementOp<'_>,
     if_key: Option<&str>,
     for_item: bool,
-    allow_hoist: bool,
+    hoist: (bool, Option<NodeId>, PropHoistPosition),
 ) -> Result<(), EmitError> {
     directive::wrap_element(cx, element, |cx| {
         cx.buf.use_open_block();
@@ -50,15 +57,7 @@ fn emit_block(
         cx.buf.push("(");
         cx.buf.push(Buf::open_block_alias());
         cx.buf.push("(), ");
-        emit_call(
-            cx,
-            element,
-            true,
-            if_key,
-            (allow_hoist, None),
-            for_item,
-            false,
-        )?;
+        emit_call(cx, element, true, if_key, hoist, for_item, false)?;
         cx.buf.push(")");
         Ok(())
     })
@@ -73,34 +72,64 @@ pub(super) fn emit_fragment_element(
         return super::once::emit_element(cx, element, None, false);
     }
     if namespace::crosses_boundary(cx, element) {
-        return emit_nested_block(cx, element);
+        return emit_nested_block(cx, element, id);
     }
     super::memo::emit_cached(cx, &element.bindings, |cx| {
         directive::wrap_element(cx, element, |cx| {
             cx.buf.use_create_element_vnode();
-            emit_call(cx, element, false, None, (true, id), false, false)
+            emit_call(
+                cx,
+                element,
+                false,
+                None,
+                (true, id, PropHoistPosition::Root),
+                false,
+                false,
+            )
         })
     })
 }
 
-fn emit_nested(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) -> Result<(), EmitError> {
+fn emit_nested(
+    cx: &mut EmitCx<'_>,
+    element: &ElementOp<'_>,
+    id: Option<NodeId>,
+) -> Result<(), EmitError> {
     if super::once::has(&element.bindings) {
         return super::once::emit_element(cx, element, None, false);
     }
     if namespace::crosses_boundary(cx, element) {
-        return emit_nested_block(cx, element);
+        return emit_nested_block(cx, element, id);
     }
     super::memo::emit_cached(cx, &element.bindings, |cx| {
         directive::wrap_element(cx, element, |cx| {
             cx.buf.use_create_element_vnode();
-            emit_call(cx, element, false, None, (true, None), false, false)
+            emit_call(
+                cx,
+                element,
+                false,
+                None,
+                (true, id, PropHoistPosition::Nested),
+                false,
+                false,
+            )
         })
     })
 }
 
-fn emit_nested_block(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) -> Result<(), EmitError> {
+fn emit_nested_block(
+    cx: &mut EmitCx<'_>,
+    element: &ElementOp<'_>,
+    id: Option<NodeId>,
+) -> Result<(), EmitError> {
     super::memo::emit_cached(cx, &element.bindings, |cx| {
-        emit_block(cx, element, None, false, false)
+        emit_block(
+            cx,
+            element,
+            None,
+            false,
+            (true, id, PropHoistPosition::Nested),
+        )
     })
 }
 
@@ -109,27 +138,13 @@ pub(super) fn emit_if_branch_element(
     element: &ElementOp<'_>,
     key: &str,
 ) -> Result<(), EmitError> {
-    emit_block(cx, element, Some(key), false, true)
-}
-
-pub(super) fn emit_for_item_element(
-    cx: &mut EmitCx<'_>,
-    element: &ElementOp<'_>,
-    stable: bool,
-    key: Option<&str>,
-) -> Result<(), EmitError> {
-    if super::once::has(&element.bindings) {
-        return super::once::emit_element(cx, element, key, true);
-    }
-    super::memo::emit_cached(cx, &element.bindings, |cx| {
-        if stable {
-            return directive::wrap_element(cx, element, |cx| {
-                cx.buf.use_create_element_vnode();
-                emit_call(cx, element, false, key, (false, None), true, false)
-            });
-        }
-        emit_block(cx, element, key, true, false)
-    })
+    emit_block(
+        cx,
+        element,
+        Some(key),
+        false,
+        (true, None, PropHoistPosition::Nested),
+    )
 }
 
 pub(super) fn emit_call(
@@ -137,12 +152,12 @@ pub(super) fn emit_call(
     element: &ElementOp<'_>,
     block: bool,
     if_key: Option<&str>,
-    hoist: (bool, Option<NodeId>),
+    hoist: (bool, Option<NodeId>, PropHoistPosition),
     for_item: bool,
     once: bool,
 ) -> Result<(), EmitError> {
     admit_element_bindings(&element.attributes, &element.bindings)?;
-    let (allow_hoist, id) = hoist;
+    let (allow_hoist, id, prop_hoist) = hoist;
     let alias = if block {
         Buf::create_element_block_alias()
     } else {
@@ -153,10 +168,7 @@ pub(super) fn emit_call(
     cx.buf.push(element.tag);
     cx.buf.push("\"");
     let has_children = !element.children.ops.is_empty();
-    let has_runtime_directive = directive::has_runtime(&element.bindings);
-    let has_runtime_model = super::model::first_runtime_model(element).is_some();
-    let hoist_static_children =
-        allow_hoist && (if_key.is_some() || has_runtime_directive || has_runtime_model);
+    let hoist_static_children = allow_hoist && (if_key.is_some() || !element.bindings.is_empty());
     let has_memo = super::memo::has(&element.bindings);
     let memo_block = block && has_memo && !(if_key.is_some() && !for_item);
     let force_array_children = once
@@ -171,7 +183,8 @@ pub(super) fn emit_call(
         && cx.slot_param_depth == 0;
     let has_binds = has_prop_bindings(&element.bindings);
     let hoisted_props =
-        if allow_hoist && if_key.is_none() && super::props_static::root_should_hoist(cx, id) {
+        if allow_hoist && if_key.is_none() && super::props_static::should_hoist(cx, id, prop_hoist)
+        {
             super::props_static::root_hoist_props(&element.attributes, &element.bindings)?
         } else {
             None
@@ -307,7 +320,7 @@ pub(super) fn emit_array_child(
             if super::once::emit_hoisted_child(cx, element)? {
                 return Ok(());
             }
-            emit_nested(cx, element)
+            emit_nested(cx, element, id)
         }
         Op::Component(component) => {
             cx.walk.skip(component.bindings.len());

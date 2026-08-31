@@ -203,7 +203,7 @@ fn emit_plain_item(
     match for_op.region.ops.as_slice() {
         [Op::Element(element)] => {
             let key = item_key_js(&element.attributes, &element.bindings)?;
-            super::emit_for_item_call(cx, element, stable, key.as_deref())
+            super::emit_for_item_call(cx, element, id, stable, key.as_deref())
         }
         [Op::Component(component)] => {
             let key = item_key_js(&component.attributes, &component.bindings)?;

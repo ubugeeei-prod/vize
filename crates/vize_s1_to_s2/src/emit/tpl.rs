@@ -115,9 +115,9 @@ pub(super) fn emit_for_template_item(
                 &ops[0],
             ));
         };
-        let _id = cx.walk.mint();
+        let id = cx.walk.mint();
         cx.walk.skip(element.bindings.len());
-        return super::emit_for_item_call(cx, element, stable, key);
+        return super::emit_for_item_call(cx, element, id, stable, key);
     }
     emit_inner_fragment(cx, ops, key, ChildMode::GenerateNode)
 }
