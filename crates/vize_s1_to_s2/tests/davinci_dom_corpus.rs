@@ -47,6 +47,7 @@ struct Report {
     s2_refusal_count: u64,
     divergence_count: u64,
     old_error_codes: Vec<ErrorCode>,
+    old_error_reasons: BTreeMap<String, u64>,
     unreadable: Vec<String>,
     old_error_samples: Vec<String>,
     s2_refusal_reasons: BTreeMap<&'static str, u64>,
@@ -118,6 +119,10 @@ fn dom_emit_agrees_on_sfc_templates_body() {
         corpus.s2_refusal_reasons
     );
     eprintln!(
+        "davinci DOM corpus old-lane error reasons: {:?}",
+        corpus.old_error_reasons
+    );
+    eprintln!(
         "davinci DOM corpus refusal samples: {:?}",
         corpus.s2_refusal_samples
     );
@@ -147,6 +152,12 @@ fn compare_sfc_template(name: &str, source: &str, report: &mut Report) {
         .collect();
     if !blocking_errors.is_empty() {
         report.old_error_skips += 1;
+        for error in &blocking_errors {
+            *report
+                .old_error_reasons
+                .entry(format!("{:?}", error.code))
+                .or_default() += 1;
+        }
         if report.old_error_codes.len() < 20 {
             report
                 .old_error_codes
@@ -243,10 +254,11 @@ fn assert_clean_corpus(report: &Report) {
             && report.old_error_skips == 0
             && report.s2_refusal_count == 0
             && report.divergence_count == 0,
-        "corpus unreadable files ({}):\n{}\n\ncorpus old-lane error skips ({}):\n{}\n\ncorpus S2 refusals ({}) by reason {:?}:\n{}\n\ncorpus divergences ({}):\n{}",
+        "corpus unreadable files ({}):\n{}\n\ncorpus old-lane error skips ({}) by reason {:?}:\n{}\n\ncorpus S2 refusals ({}) by reason {:?}:\n{}\n\ncorpus divergences ({}):\n{}",
         report.unreadable_count,
         report.unreadable.join("\n"),
         report.old_error_skips,
+        report.old_error_reasons,
         report.old_error_samples.join("\n"),
         report.s2_refusal_count,
         report.s2_refusal_reasons,
@@ -304,4 +316,5 @@ fn unrelated_invalid_end_tag_still_blocks_old_lane_comparison() {
         "the hard invalid end tag must remain visible in skip evidence: {:?}",
         report.old_error_samples
     );
+    assert_eq!(report.old_error_reasons.get("InvalidEndTag"), Some(&1));
 }

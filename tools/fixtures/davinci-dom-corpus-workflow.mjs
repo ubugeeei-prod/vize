@@ -58,8 +58,32 @@ export function corpusEvidenceLines(logText) {
   return logText
     .split(/\r?\n/)
     .filter((line) =>
-      /davinci-differential corpus scope|davinci DOM corpus sweep/.test(stripAnsi(line)),
+      /davinci-differential corpus scope|davinci DOM corpus sweep|davinci DOM corpus old-lane error reasons/.test(
+        stripAnsi(line),
+      ),
     );
+}
+
+export function parseOldErrorReasons(logText) {
+  for (const line of corpusEvidenceLines(logText).map(stripAnsi)) {
+    const match = /old-lane error reasons: (\{.*\})/.exec(line);
+    if (!match) continue;
+    try {
+      return sortReasonCounts(JSON.parse(match[1]));
+    } catch {
+      return {};
+    }
+  }
+  const block =
+    /corpus old-lane error skips \(\d+\)(?: by reason \{.*\})?:\n([\s\S]*?)\n\ncorpus S2 refusals/.exec(
+      stripAnsi(logText),
+    );
+  if (!block) return {};
+  const reasons = {};
+  for (const code of block[1].matchAll(/code: ([A-Za-z0-9_]+)/g)) {
+    reasons[code[1]] = (reasons[code[1]] ?? 0) + 1;
+  }
+  return sortReasonCounts(reasons);
 }
 
 export function parseCorpusEvidence(logText) {
@@ -73,6 +97,7 @@ export function parseCorpusEvidence(logText) {
     templates: 0,
     compared: 0,
     oldErrorSkips: 0,
+    oldErrorReasons: {},
     s2Refusals: 0,
     divergences: 0,
   };
@@ -97,7 +122,19 @@ export function parseCorpusEvidence(logText) {
       evidence.oldErrorSkips = Number(sweep[6]);
       evidence.s2Refusals = Number(sweep[7]);
       evidence.divergences = Number(sweep[8]);
+      continue;
     }
+    const oldErrorReasons = /old-lane error reasons: (\{.*\})/.exec(line);
+    if (oldErrorReasons) {
+      try {
+        evidence.oldErrorReasons = sortReasonCounts(JSON.parse(oldErrorReasons[1]));
+      } catch {
+        evidence.oldErrorReasons = {};
+      }
+    }
+  }
+  if (Object.keys(evidence.oldErrorReasons).length === 0) {
+    evidence.oldErrorReasons = parseOldErrorReasons(logText);
   }
   return evidence;
 }
@@ -135,8 +172,9 @@ export function validateCorpusEvidence(artifact = artifactDir) {
     failures.push("corpus log proves no DOM-output comparisons");
   }
   if (evidence.unreadable !== 0 || evidence.oldErrorSkips !== 0) {
+    const oldErrorReasons = formatReasonCounts(evidence.oldErrorReasons);
     failures.push(
-      `corpus log skipped inputs: unreadable=${evidence.unreadable} old_error_skips=${evidence.oldErrorSkips}`,
+      `corpus log skipped inputs: unreadable=${evidence.unreadable} old_error_skips=${evidence.oldErrorSkips}${oldErrorReasons ? ` reasons=${oldErrorReasons}` : ""}`,
     );
   }
   if (evidence.s2Refusals !== 0 || evidence.divergences !== 0) {
@@ -305,6 +343,7 @@ async function appendCorpusSummary(mode, outcome, verdict, summaryPath) {
       `- gitlinks: \`${validation.selectedGitlinks}\``,
       `- submodule status rows: \`${validation.submoduleStatusRows}\``,
       `- compared templates: \`${validation.evidence.compared}\``,
+      `- old-lane error reasons: \`${formatReasonCounts(validation.evidence.oldErrorReasons) || "none"}\``,
       "",
       ...evidence,
       "",
@@ -318,6 +357,20 @@ function readOptional(path) {
   } catch {
     return "";
   }
+}
+
+function sortReasonCounts(reasons) {
+  return Object.fromEntries(
+    Object.entries(reasons)
+      .filter(([, count]) => Number.isFinite(count) && count > 0)
+      .sort(([left], [right]) => left.localeCompare(right)),
+  );
+}
+
+function formatReasonCounts(reasons) {
+  return Object.entries(sortReasonCounts(reasons))
+    .map(([reason, count]) => `${reason}=${count}`)
+    .join(",");
 }
 
 async function main() {

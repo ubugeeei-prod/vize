@@ -12,6 +12,7 @@ import {
   hydrateCorpus,
   parseCorpusEvidence,
   parseFixtureGitlinks,
+  parseOldErrorReasons,
   validateCorpusEvidence,
   verdictFor,
 } from "../../tools/fixtures/davinci-dom-corpus-workflow.mjs";
@@ -74,6 +75,7 @@ test("real-project workflow carries a full-canonical S2 DOM corpus job", () => {
   assert.match(helperSource, /expectedDomOutputComparisons = 144/);
   assert.match(helperSource, /summary\.json/);
   assert.match(helperSource, /davinci-differential corpus scope\|davinci DOM corpus sweep/);
+  assert.match(helperSource, /davinci DOM corpus old-lane error reasons/);
   assert.match(helperSource, /Davinci S2 DOM corpus failed/);
 
   const upload = findStep(steps, "Upload S2 DOM corpus evidence");
@@ -106,6 +108,45 @@ test("S2 DOM corpus workflow helper extracts canonical evidence", () => {
   assert.equal(verdictFor("cancelled", "record-only"), "cancelled");
   assert.equal(expectedGitlinks, 146);
   assert.equal(expectedDomOutputComparisons, 144);
+});
+
+test("S2 DOM corpus workflow extracts old-lane skip reasons from corpus logs", () => {
+  const log = [
+    "davinci-differential corpus scope: root=tests/_fixtures/_git scope=canonical closure_evidence=true submodules=146",
+    "davinci DOM corpus sweep: files=3 unreadable=0 parsed=3 templates=3 compared=1 old_error_skips=2 s2_refusals=0 divergences=0",
+    "corpus old-lane error skips (2):",
+    '/repo/tests/_fixtures/_git/a.vue: 2 old-lane blocking errors: [CompilerError { code: InvalidEndTag, message: "Invalid end tag.", loc: None }, CompilerError { code: MissingEndTag, message: "Element is missing end tag.", loc: None }]',
+    '/repo/tests/_fixtures/_git/b.vue: 1 old-lane blocking errors: [CompilerError { code: DuplicateAttribute, message: "Duplicate attribute.", loc: None }]',
+    "",
+    "corpus S2 refusals (0) by reason {}:",
+  ].join("\n");
+
+  assert.deepEqual(parseOldErrorReasons(log), {
+    DuplicateAttribute: 1,
+    InvalidEndTag: 1,
+    MissingEndTag: 1,
+  });
+  assert.deepEqual(parseCorpusEvidence(log).oldErrorReasons, {
+    DuplicateAttribute: 1,
+    InvalidEndTag: 1,
+    MissingEndTag: 1,
+  });
+});
+
+test("S2 DOM corpus workflow prefers explicit old-lane reason counts", () => {
+  const log = [
+    "davinci DOM corpus sweep: files=3 unreadable=0 parsed=3 templates=3 compared=1 old_error_skips=2 s2_refusals=0 divergences=0",
+    'davinci DOM corpus old-lane error reasons: {"InvalidEndTag": 2, "VIfSameKey": 1}',
+  ].join("\n");
+
+  assert.deepEqual(parseOldErrorReasons(log), {
+    InvalidEndTag: 2,
+    VIfSameKey: 1,
+  });
+  assert.deepEqual(parseCorpusEvidence(log).oldErrorReasons, {
+    InvalidEndTag: 2,
+    VIfSameKey: 1,
+  });
 });
 
 test("S2 DOM corpus workflow gitlink constant matches the checkout index", () => {
@@ -218,6 +259,7 @@ test("S2 DOM corpus workflow validates closure evidence artifacts", () => {
       templates: 35000,
       compared: 35000,
       oldErrorSkips: 0,
+      oldErrorReasons: {},
       s2Refusals: 0,
       divergences: 0,
     });
@@ -241,6 +283,11 @@ test("S2 DOM corpus workflow rejects stale or dirty evidence artifacts", () => {
       [
         "davinci-differential corpus scope: root=/tmp/tests/_fixtures/_git scope=smoke closure_evidence=false",
         "davinci DOM corpus sweep: files=1 unreadable=3 parsed=1 templates=1 compared=0 old_error_skips=2 s2_refusals=1 divergences=1",
+        "corpus old-lane error skips (2):",
+        '/repo/tests/_fixtures/_git/a.vue: 1 old-lane blocking errors: [CompilerError { code: InvalidEndTag, message: "Invalid end tag.", loc: None }]',
+        '/repo/tests/_fixtures/_git/b.vue: 1 old-lane blocking errors: [CompilerError { code: VIfSameKey, message: "v-if/v-else-if branches must use unique keys.", loc: None }]',
+        "",
+        "corpus S2 refusals (1) by reason {}:",
       ].join("\n"),
     );
 
@@ -250,7 +297,7 @@ test("S2 DOM corpus workflow rejects stale or dirty evidence artifacts", () => {
       "corpus log is missing canonical closure evidence",
       "corpus log submodules 0 != 146",
       "corpus log proves no DOM-output comparisons",
-      "corpus log skipped inputs: unreadable=3 old_error_skips=2",
+      "corpus log skipped inputs: unreadable=3 old_error_skips=2 reasons=InvalidEndTag=1,VIfSameKey=1",
       "corpus log is not clean: s2_refusals=1 divergences=1",
     ]);
   } finally {
