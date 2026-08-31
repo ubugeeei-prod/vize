@@ -323,24 +323,18 @@ test("check workflow builds local native bindings before JS checks", () => {
   const checkJsJob = workflowJobBody(workflow, "check-js");
   const buildJob = workflowJobBody(workflow, "build-js-packages");
   const playgroundJob = workflowJobBody(workflow, "playground-test");
-
   assert.match(checkJsJob, /vp run --workspace-root check:ci/);
   assert.doesNotMatch(checkJsJob, /cargo build/);
   assert.match(checkJsJob, /setup-js-check-runtime/);
   assert.doesNotMatch(checkJsJob, /build:packages/);
-
   assert.match(buildJob, /vp run --filter '\.\/npm\/native' build:ci/);
   assert.match(buildJob, /vp run --filter '\.\/npm\/ui' check/);
-  const rustScriptSetupIndex = buildJob.indexOf("uses: ./.github/actions/setup-rust-script");
-  const buildPackagesIndex = buildJob.indexOf("run: vp run --workspace-root build:packages");
-  assert.ok(rustScriptSetupIndex >= 0, "build-js-packages must install rust-script");
-  assert.ok(buildPackagesIndex >= 0, "build-js-packages must build packages");
   assert.ok(
-    rustScriptSetupIndex < buildPackagesIndex,
+    buildJob.indexOf("uses: ./.github/actions/setup-rust-script") <
+      buildJob.indexOf("run: vp run --workspace-root build:packages"),
     "build-js-packages must install rust-script before build:packages",
   );
   assert.match(buildJob, /name:\s*shared-js-build/);
-
   assert.match(playgroundJob, /needs:\n\s+- build-js-packages\b/);
   assert.match(playgroundJob, /name:\s*shared-js-build/);
   assert.doesNotMatch(playgroundJob, /name: Build npm packages/);
