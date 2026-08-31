@@ -255,6 +255,14 @@ test("pkg.pr.new workflow publishes built npm packages from the lockfile", () =>
 
   assert.match(job, /runs-on:\s*blacksmith-32vcpu-ubuntu-2404/);
   assert.match(job, /timeout-minutes:\s*30/);
+  const rustScriptInstallIndex = job.indexOf("name: Install rust-script");
+  const buildIndex = job.indexOf("run: vp run --workspace-root build:packages");
+  assert.ok(rustScriptInstallIndex >= 0, "pkg.pr.new workflow must install rust-script");
+  assert.ok(buildIndex >= 0, "pkg.pr.new workflow must build packages");
+  assert.ok(
+    rustScriptInstallIndex < buildIndex,
+    "rust-script must be installed before package builds",
+  );
   assert.match(job, /rustup toolchain install 1\.98\.0 --profile minimal --no-self-update/);
   assert.match(job, /rustup default 1\.98\.0/);
   assert.match(job, /cargo install rust-script --version 0\.34\.0 --locked/);
