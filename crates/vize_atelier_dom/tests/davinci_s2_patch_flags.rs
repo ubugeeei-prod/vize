@@ -1,7 +1,4 @@
-//! P2-11 patch-flag witness: the S2 DOM lane must compute the
-//! same per-node patch flags as the shipped lane, including dynamic
-//! prop arrays plus slot and fragment stability markers.
-
+//! P2-11 patch-flag witness for S2 DOM parity.
 #![allow(
     clippy::disallowed_macros,
     clippy::disallowed_types,
@@ -227,6 +224,11 @@ const CASES: &[Case] = &[
     Case {
         name: "component_object_bind",
         src: r#"<Foo v-bind="obj" />"#,
+        sites: &["16 /* FULL_PROPS */"],
+    },
+    Case {
+        name: "component_object_bind_static_literal_prop",
+        src: r#"<Foo v-bind="obj" :props-loading="true" />"#,
         sites: &["16 /* FULL_PROPS */"],
     },
     Case {

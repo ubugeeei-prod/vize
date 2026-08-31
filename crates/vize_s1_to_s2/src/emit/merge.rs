@@ -17,8 +17,9 @@ use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::on::{event_key_for, needs_hydration};
 use super::props::{
-    BindName, Patch, Piece, StaticBindKeyCasing, bind_name, bind_value, emit_props_object,
-    has_prop_modifier, is_emitted_key_bind, pieces, static_bind_key,
+    BindName, Patch, Piece, StaticBindKeyCasing, bind_name, bind_value,
+    bind_value_is_static_patchless, emit_props_object, has_prop_modifier, is_emitted_key_bind,
+    pieces, static_bind_key,
 };
 
 pub(super) fn has_object_spread(bindings: &[BindingOp<'_>]) -> bool {
@@ -71,7 +72,9 @@ pub(super) fn object_patch(
                         flag |= 512;
                         continue;
                     }
-                    if matches!(raw_name, "class" | "style" | "key") {
+                    if matches!(raw_name, "class" | "style" | "key")
+                        || bind_value_is_static_patchless(bind)
+                    {
                         continue;
                     }
                     let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve) else {
