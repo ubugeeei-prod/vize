@@ -20,6 +20,9 @@ pub(super) fn emit_children(
     {
         return emit_text_like(cx, ops);
     }
+    if !force_array && cache_static_children && super::hoist::cacheable_elements_array(ops) {
+        return super::hoist::emit_cached_elements_array(cx, ops);
+    }
     cx.buf.push("[");
     cx.buf.indent();
     let mut i = 0;

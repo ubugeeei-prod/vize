@@ -10,6 +10,8 @@ use vize_s0::{String, ToCompactString};
 use vize_s2::op::{Attribute, ElementOp, Op, Region};
 
 use super::EmitCx;
+use super::EmitError;
+use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::js::{escape_js_string, is_valid_js_identifier};
 
@@ -45,6 +47,52 @@ pub(super) fn emit_cached_element(
     cx.buf.push("] = ");
     cx.buf.push(cached_element_rhs(element, true).as_str());
     cx.buf.push(")");
+    Ok(())
+}
+
+pub(super) fn cacheable_elements_array(ops: &[Op<'_>]) -> bool {
+    !ops.is_empty()
+        && ops.iter().all(|op| match op {
+            Op::Element(element) => is_hoistable(element),
+            _ => false,
+        })
+}
+
+pub(super) fn emit_cached_elements_array(
+    cx: &mut EmitCx<'_>,
+    ops: &[Op<'_>],
+) -> Result<(), EmitError> {
+    let cache_index = cx.once_cache_index;
+    cx.once_cache_index += 1;
+    let cache_index = cache_index.to_compact_string();
+    cx.buf.push("[...(_cache[");
+    cx.buf.push(cache_index.as_str());
+    cx.buf.push("] || (_cache[");
+    cx.buf.push(cache_index.as_str());
+    cx.buf.push("] = [");
+    cx.buf.indent();
+
+    for (i, op) in ops.iter().enumerate() {
+        if i > 0 {
+            cx.buf.push(",");
+        }
+        cx.buf.newline();
+        let Op::Element(element) = op else {
+            return Err(EmitError::unsupported_op(Reason::ArrayChildTextRun, op));
+        };
+        let _id = cx.walk.mint();
+        cx.walk.skip(element.bindings.len());
+        walk_hoisted(cx, element);
+        cx.buf.use_create_element_vnode();
+        if hoist_needs_create_text(element) {
+            cx.buf.use_create_text();
+        }
+        cx.buf.push(cached_element_rhs(element, true).as_str());
+    }
+
+    cx.buf.deindent();
+    cx.buf.newline();
+    cx.buf.push("]))]");
     Ok(())
 }
 
