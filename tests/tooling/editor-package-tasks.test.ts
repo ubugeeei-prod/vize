@@ -10,9 +10,9 @@ test("CI packages editor extension artifacts through Rust Script wrappers", () =
     "package-editor-extensions",
     "action.yml",
   );
-  const buildTasks = readRepoFile("config", "vite-plus", "tasks", "build.ts");
-  const taskCommands = readRepoFile("config", "vite-plus", "task-commands.ts");
-  const testTasks = readRepoFile("config", "vite-plus", "tasks", "test-benchmark.ts");
+  const buildTasks = readRepoFile("tools", "config", "vite-plus", "tasks", "build.ts");
+  const taskCommands = readRepoFile("tools", "config", "vite-plus", "task-commands.ts");
+  const testTasks = readRepoFile("tools", "config", "vite-plus", "tasks", "test-benchmark.ts");
   const vscodePackage =
     /const assertVscodePackage = rustToolFromVscodeExtension\(\s*"editors\/vscode\/assert-vsix-package"/;
 

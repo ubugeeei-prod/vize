@@ -117,7 +117,7 @@ L’automatisation des dépôts préfère les packages de commandes MoonBit sous
 chemin normal du paquet (`moon run --target native tools/moon/cmd/<name> -- <args>`), partagent la chaîne d’outils
 qui construit déjà le compilateur, et sont couverts par `tests/tooling/*.test.ts` suites qui les
 via `moon run` et affirment la sortie attendue complète. Les tâches root les invoquent avec l’aide `moonScript`
-dans `config/vite-plus/task-commands.ts`, de sorte que chaque consommateur garde un nom de tâche stable plutôt que
+dans `tools/config/vite-plus/task-commands.ts`, de sorte que chaque consommateur garde un nom de tâche stable plutôt que
 une commande en ligne.
 
 Les bons candidats MoonBit sont petits, purs et peu dépendants : analyse d’arguments, transformations de

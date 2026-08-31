@@ -117,7 +117,7 @@ vp run --workspace-root source:lengths
 通常のパッケージ パス (`moon run --target native tools/moon/cmd/<name> -- <args>`)、ツールチェーンを共有
 すでにコンパイラを構築しており、実行する `tests/tooling/*.test.ts` スイートでカバーされています。
 `moon run` 経由でそれらを生成し、期待される完全な出力をアサートします。ルートタスクは `moonScript` で呼び出します。
-`config/vite-plus/task-commands.ts` のヘルパーにより、各コンシューマーはタスク名ではなく安定したタスク名を維持します。
+`tools/config/vite-plus/task-commands.ts` のヘルパーにより、各コンシューマーはタスク名ではなく安定したタスク名を維持します。
 インラインコマンド。
 
 MoonBit の適切な候補は、引数の解析、JSON またはテキストなど、小さく、純粋で、依存関係が少ないものです。

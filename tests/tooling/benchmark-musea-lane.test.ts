@@ -10,7 +10,7 @@ import { DEFAULT_MUSEA_FILE_COUNT, buildMuseaSurface } from "../../bench/compare
 import { MUSEA_CORPUS_FILE_COUNT } from "../../bench/musea-corpus.mjs";
 import { assertMuseaArtifactsUnchanged } from "../../bench/musea-artifacts.mjs";
 import { resolveMuseaArtifacts } from "../../bench/musea-stages.mjs";
-import { testAndBenchmarkTasks } from "../../config/vite-plus/tasks/test-benchmark.ts";
+import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 

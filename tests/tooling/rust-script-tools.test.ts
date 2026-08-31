@@ -35,6 +35,7 @@ test("tool tree does not carry JavaScript command sources", () => {
     .filter((file) => {
       const relative = normalize(path.relative(root, file));
       if (relative.startsWith("tools/commands/")) return false;
+      if (relative.startsWith("tools/config/vite-plus/")) return false;
       if (relative.startsWith("tools/rust/")) return false;
       if (relative.startsWith("tools/moon/.mooncakes/")) return false;
       return /\.(?:mjs|js|ts)$/.test(relative);
