@@ -65,7 +65,7 @@ pub struct Parser<'a> {
     /// Tags closed by HTML tree construction before their authored end tag was
     /// reached. Their later end tags are redundant recovery fallout, not a new
     /// parser failure.
-    implicitly_closed_tags: Vec<'a, &'a str>,
+    implicitly_closed_tags: Vec<'a, ImplicitlyClosedTag<'a>>,
     /// Root node
     root: Option<RootNode<'a>>,
     /// Current element being parsed
@@ -104,6 +104,12 @@ pub(super) struct ParserStackEntry<'a> {
     pub(super) insertion: StackInsertion,
     pub(super) implicit: bool,
     pub(super) fostered_before: Vec<'a, TemplateChildNode<'a>>,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub(super) struct ImplicitlyClosedTag<'a> {
+    pub(super) tag: &'a str,
+    pub(super) depth: usize,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

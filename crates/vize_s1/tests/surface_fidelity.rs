@@ -152,6 +152,61 @@ fn nested_interactive_content_keeps_fidelity_without_missing_close_holes() {
 }
 
 #[test]
+fn direct_nested_interactive_end_tag_closes_live_inner_before_redundant_outer() {
+    assert_direct_nested_interactive_close_order("<a><a>x</a></a>", "a", "</a", "</a>");
+    assert_direct_nested_interactive_close_order(
+        "<button><button>x</button></button>",
+        "button",
+        "</button",
+        "</button>",
+    );
+}
+
+fn assert_direct_nested_interactive_close_order(
+    source: &str,
+    tag: &str,
+    close_prefix: &str,
+    redundant_close: &str,
+) {
+    let allocator = Allocator::new();
+    let (tree, _errors) = parse(&allocator, source);
+    assert_eq!(rendered(&tree), source);
+    assert_eq!(check_fidelity(&tree), Ok(()));
+    assert_eq!(
+        hole_counts(&tree),
+        HoleCounts {
+            missing_tokens: 0,
+            missing_close_tags: 0,
+            unexpected_nodes: 1,
+        }
+    );
+    assert_eq!(tree.children.len(), 3);
+
+    let SurfaceChild::Element(outer) = &tree.children[0] else {
+        panic!("{source}: first child is the implicitly closed outer element");
+    };
+    assert_eq!(outer.tag(), tag);
+    assert!(outer.children.is_empty());
+    assert!(matches!(outer.close, ElementClose::Implicit));
+
+    let SurfaceChild::Element(inner) = &tree.children[1] else {
+        panic!("{source}: second child is the live inner element");
+    };
+    assert_eq!(inner.tag(), tag);
+    assert!(matches!(&inner.children[0], SurfaceChild::Text(text) if text.text == "x"));
+    let ElementClose::Present(close) = &inner.close else {
+        panic!("{source}: inner element must own the first authored end tag");
+    };
+    assert_eq!(close.lt_slash_name.text, close_prefix);
+    assert_eq!(close.gt.text, ">");
+
+    let SurfaceChild::Unexpected(token) = &tree.children[2] else {
+        panic!("{source}: redundant outer end tag is the only Unexpected hole");
+    };
+    assert_eq!(token.text, redundant_close);
+}
+
+#[test]
 fn nested_interactive_recovery_stays_in_html_namespace() {
     for source in [
         r#"<A><a href="/foo">inner</a></A>"#,

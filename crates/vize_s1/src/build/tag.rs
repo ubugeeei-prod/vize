@@ -1,9 +1,9 @@
 //! Open and close tags: the element half of the builder.
 
 use vize_relief::Namespace;
-use vize_s0::{Box, Vec, is_math_ml_tag, is_svg_tag, is_void_tag};
+use vize_s0::{Box, Vec, is_html_tag, is_math_ml_tag, is_svg_tag, is_void_tag};
 
-use super::{Builder, Frame};
+use super::{Builder, Frame, ImplicitlyClosedTag};
 use crate::event::{Event, EventKind};
 use crate::surface::{Attribute, CloseTag, Element, ElementClose, OpenTag, SurfaceChild, Token};
 
@@ -106,15 +106,16 @@ impl<'a> Builder<'a, '_> {
         let gt_pos = self.find_byte(b'>', e, self.src.len());
         let name = &self.src[s..e];
         self.flush_gap(lt_start);
-        if self.consume_implicitly_closed_tag(name) {
-            self.unexpected_close_tag(lt_start, gt_pos);
-            return;
-        }
-
         let matched = self
             .stack
             .iter()
             .rposition(|frame| frame.tag().eq_ignore_ascii_case(name));
+        if self.should_consume_implicitly_closed_tag(name, matched) {
+            self.implicitly_closed_tags.pop();
+            self.unexpected_close_tag(lt_start, gt_pos);
+            return;
+        }
+
         let Some(depth) = matched else {
             // Stray end tag: a typed `Unexpected` hole, whole extent.
             self.unexpected_close_tag(lt_start, gt_pos);
@@ -186,35 +187,40 @@ impl<'a> Builder<'a, '_> {
         if ns != Namespace::Html {
             return;
         }
-        if !matches!(tag, "a" | "button") {
+        if !is_interactive_html_tree_tag(tag) {
             return;
         }
-        let Some(depth) = self
-            .stack
-            .iter()
-            .rposition(|frame| frame.ns == Namespace::Html && frame.tag() == tag)
-        else {
+        let Some(depth) = self.stack.iter().rposition(|frame| {
+            frame.ns == Namespace::Html
+                && is_interactive_html_tree_tag(frame.tag())
+                && frame.tag().eq_ignore_ascii_case(tag)
+        }) else {
             return;
         };
         self.note_implicitly_closed_stack_entries_from(depth);
         self.implicitly_close_stack_element_at(depth);
     }
 
-    fn note_implicitly_closed_stack_entries_from(&mut self, depth: usize) {
-        for frame in self.stack.iter().skip(depth) {
-            self.implicitly_closed_tags.push(frame.tag());
+    fn note_implicitly_closed_stack_entries_from(&mut self, start_depth: usize) {
+        for (depth, frame) in self.stack.iter().enumerate().skip(start_depth) {
+            self.implicitly_closed_tags.push(ImplicitlyClosedTag {
+                tag: frame.tag(),
+                depth,
+            });
         }
     }
 
-    fn consume_implicitly_closed_tag(&mut self, tag: &str) -> bool {
+    fn should_consume_implicitly_closed_tag(&self, tag: &str, live_depth: Option<usize>) -> bool {
         let Some(closed) = self.implicitly_closed_tags.last() else {
             return false;
         };
-        if !closed.eq_ignore_ascii_case(tag) {
+        if !closed.tag.eq_ignore_ascii_case(tag) {
             return false;
         }
-        self.implicitly_closed_tags.pop();
-        true
+        match live_depth {
+            Some(depth) => depth < closed.depth,
+            None => true,
+        }
     }
 
     fn implicitly_close_stack_element_at(&mut self, depth: usize) {
@@ -235,6 +241,10 @@ impl<'a> Builder<'a, '_> {
             self.attach(element);
         }
     }
+}
+
+fn is_interactive_html_tree_tag(tag: &str) -> bool {
+    is_html_tag(tag) && (tag.eq_ignore_ascii_case("a") || tag.eq_ignore_ascii_case("button"))
 }
 
 fn children_ns(ns: Namespace, tag: &str) -> Namespace {

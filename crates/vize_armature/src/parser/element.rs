@@ -18,7 +18,7 @@ use vize_relief::{
     errors::{CompilerError, ErrorCode},
 };
 
-use super::Parser;
+use super::{ImplicitlyClosedTag, Parser};
 
 impl<'a> Parser<'a> {
     fn report_tree_construction_recovery(&mut self, loc: &SourceLocation, message: &str) {
@@ -36,18 +36,30 @@ impl<'a> Parser<'a> {
     }
 
     pub(super) fn note_implicitly_closed_stack_entries_from(&mut self, index: usize) {
-        for entry in self.stack.iter().skip(index) {
+        for (depth, entry) in self.stack.iter().enumerate().skip(index) {
             if !entry.implicit && is_html_tree_element(&entry.element) {
-                self.implicitly_closed_tags.push(entry.element.tag);
+                self.implicitly_closed_tags.push(ImplicitlyClosedTag {
+                    tag: entry.element.tag,
+                    depth,
+                });
             }
         }
     }
 
-    pub(super) fn consume_implicitly_closed_tag(&mut self, tag: &str) -> bool {
+    pub(super) fn consume_implicitly_closed_tag(
+        &mut self,
+        tag: &str,
+        live_depth: Option<usize>,
+    ) -> bool {
         let Some(closed) = self.implicitly_closed_tags.last() else {
             return false;
         };
-        if !closed.eq_ignore_ascii_case(tag) {
+        if !closed.tag.eq_ignore_ascii_case(tag) {
+            return false;
+        }
+        if let Some(depth) = live_depth
+            && depth >= closed.depth
+        {
             return false;
         }
         self.implicitly_closed_tags.pop();

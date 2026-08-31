@@ -238,10 +238,11 @@ impl<'a> Parser<'a> {
         }
 
         let loc = self.create_loc(start.saturating_sub(2), end + 1); // Include </ and >
+        let open_element_index = self.find_open_element_index(tag.as_str());
         // HTML tree construction closed these nodes before their authored end
-        // tags. They are still inner to the current open-element stack, so they
-        // must claim matching end tags before an unrelated same-named ancestor.
-        if self.consume_implicitly_closed_tag(tag.as_str()) {
+        // tags. They claim matching end tags unless a live descendant at the
+        // same or deeper original depth is still open.
+        if self.consume_implicitly_closed_tag(tag.as_str(), open_element_index) {
             self.report_tree_construction_recovery(
                 &loc,
                 "HTML tree construction ignored this end tag because the element was already closed before a nested start tag.",
@@ -250,7 +251,7 @@ impl<'a> Parser<'a> {
         }
 
         // Find matching open tag
-        if let Some(i) = self.find_open_element_index(tag.as_str()) {
+        if let Some(i) = open_element_index {
             self.close_stack_element_at(i, true);
             return;
         }

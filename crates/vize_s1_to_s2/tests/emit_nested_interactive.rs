@@ -42,6 +42,18 @@ fn nested_button_with_same_named_ancestor_matches_shipped_dom() {
 }
 
 #[test]
+fn direct_nested_anchor_matches_shipped_dom() {
+    let source = "<a><a>x</a></a>";
+    assert_eq!(emitted(source), shipped(source));
+}
+
+#[test]
+fn direct_nested_button_matches_shipped_dom() {
+    let source = "<button><button>x</button></button>";
+    assert_eq!(emitted(source), shipped(source));
+}
+
+#[test]
 fn foreign_anchor_children_stay_nested_and_match_shipped_dom() {
     let source = "<svg><a><a>x</a></a></svg>";
     assert_eq!(emitted(source), shipped(source));
