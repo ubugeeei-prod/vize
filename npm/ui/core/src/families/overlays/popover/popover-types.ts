@@ -4,7 +4,7 @@ import type {
   DismissableLayerFocusOutsideEvent,
   DismissableLayerInteractOutsideEvent,
   DismissableLayerPointerDownOutsideEvent,
-} from "../../../dismissable-layer.ts";
+} from "../dismissable-layer/dismissable-layer.ts";
 import type { FocusScopeAutoFocusEvent } from "../../../focus-scope.ts";
 import type {
   Placement,

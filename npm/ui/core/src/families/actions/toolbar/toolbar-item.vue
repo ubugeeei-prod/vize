@@ -2,7 +2,7 @@
 import { computed, onUnmounted, useTemplateRef, watch } from "vue";
 import type { ComputedRef } from "vue";
 
-import type { PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 import type { ToolbarItemExpose } from "./toolbar-contracts.ts";
 import { toolbarContext } from "./toolbar-context.ts";
 import type { ToolbarNavigationIntent } from "./toolbar-context.ts";

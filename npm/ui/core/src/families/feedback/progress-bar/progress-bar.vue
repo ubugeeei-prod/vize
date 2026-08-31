@@ -6,7 +6,7 @@ import {
   deriveDeterministicId,
   useDeterministicId,
 } from "../../foundations/id/deterministic-id.ts";
-import type { PrimitiveAs } from "../../../primitive.ts";
+import type { PrimitiveAs } from "../../foundations/primitive/primitive.ts";
 import {
   PROGRESS_BAR_DEFAULT_MAX,
   PROGRESS_BAR_DEFAULT_MIN,

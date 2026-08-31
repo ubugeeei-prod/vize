@@ -1,4 +1,4 @@
-import type { PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 /** Render state mirrored by {@link Avatar} through `data-state`. */
 export type AvatarState = "fallback" | "image";

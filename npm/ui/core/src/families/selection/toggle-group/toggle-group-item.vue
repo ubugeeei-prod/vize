@@ -9,7 +9,7 @@ import type {
   ToggleGroupItemSlotState,
   ToggleGroupItemState,
 } from "./toggle-group-types.ts";
-import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 type ToggleGroupKeyboardPhase = "keydown" | "keyup";
 type ToggleGroupKeyboardAction = "activate" | "prevent" | "ignore";

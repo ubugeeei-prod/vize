@@ -3,7 +3,7 @@
 import { Surface } from "./surface.ts";
 import type { ComponentPublicInstance } from "vue";
 import { defineComponent } from "vue";
-import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 import type {
   SurfaceAriaState,
   SurfaceAs,

@@ -1,8 +1,8 @@
 import type { ComputedRef, MaybeRefOrGetter } from "vue";
 
 import { createContext } from "../../../context.ts";
-import type { CollectionRegistration } from "../../../collection.ts";
-import type { CompositeItemProps } from "../../../composite-navigation.ts";
+import type { CollectionRegistration } from "../../foundations/collection/collection.ts";
+import type { CompositeItemProps } from "../../foundations/composite-navigation/composite-navigation.ts";
 import type {
   ListboxDirection,
   ListboxOrientation,

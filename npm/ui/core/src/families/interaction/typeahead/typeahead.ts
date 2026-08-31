@@ -14,7 +14,7 @@ import type {
   TypeaheadOptions,
   TypeaheadProps,
 } from "./typeahead-types.ts";
-import type { CollectionKey } from "../../../collection.ts";
+import type { CollectionKey } from "../../foundations/collection/collection.ts";
 
 const disposedDiagnostic = "VIZE_UI_TYPEAHEAD_DISPOSED";
 const setupDiagnostic = "VIZE_UI_TYPEAHEAD_SETUP";

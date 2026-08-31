@@ -1,4 +1,4 @@
-import type { CollectionItem } from "../../../collection.ts";
+import type { CollectionItem } from "../../foundations/collection/collection.ts";
 import type { StepperCollectionValue } from "./stepper-context.ts";
 import type { StepperItemState, StepperNavigationMode, StepperValue } from "./stepper-types.ts";
 

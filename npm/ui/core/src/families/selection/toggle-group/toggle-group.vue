@@ -25,7 +25,7 @@ import {
   normalizeToggleGroupValue,
   toggleGroupValueEquals,
 } from "./toggle-group-value.ts";
-import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 const {
   as = "div",

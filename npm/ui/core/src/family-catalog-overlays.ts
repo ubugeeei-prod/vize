@@ -7,6 +7,7 @@ import {
 import { dialogFamilyCatalog } from "./family-catalog-dialogs.ts";
 import { popoverFamilyCatalog } from "./family-catalog-popover.ts";
 
+const motionFamilyRoot = "src/families/overlays/motion/";
 const portalFamilyRoot = "src/families/overlays/portal/";
 const positionerFamilyRoot = "src/families/overlays/positioner/";
 const presenceFamilyRoot = "src/families/overlays/presence/";
@@ -18,17 +19,21 @@ export const overlayFamilyCatalog = [
     canonicalName: "motion",
     title: "Motion Tokens",
     packageSubpath: "./motion",
-    entryFile: "src/motion.ts",
+    entryFile: `${motionFamilyRoot}motion.ts`,
     sourceFiles: [
-      "src/motion.ts",
-      "src/motion.css",
-      "src/motion-adapters.ts",
-      "src/motion-tokens.ts",
-      "src/motion-types.ts",
+      `${motionFamilyRoot}motion.ts`,
+      `${motionFamilyRoot}motion.css`,
+      `${motionFamilyRoot}motion-adapters.ts`,
+      `${motionFamilyRoot}motion-tokens.ts`,
+      `${motionFamilyRoot}motion-types.ts`,
     ],
-    behaviorContract: "src/motion.behavior.md",
-    tests: ["src/motion.test.ts", "src/motion-stylesheet.test.ts", "src/motion-ssr.test.ts"],
-    typeTests: ["src/motion.types.test-d.ts"],
+    behaviorContract: `${motionFamilyRoot}motion.behavior.md`,
+    tests: [
+      `${motionFamilyRoot}motion.test.ts`,
+      `${motionFamilyRoot}motion-stylesheet.test.ts`,
+      `${motionFamilyRoot}motion-ssr.test.ts`,
+    ],
+    typeTests: [`${motionFamilyRoot}motion.types.test-d.ts`],
     rendererFixture: "MotionConsumer.vue",
     qualityGates: interactionQualityGates,
     bundleBudget: {

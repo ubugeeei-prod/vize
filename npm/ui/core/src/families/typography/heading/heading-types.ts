@@ -1,4 +1,4 @@
-import type { PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 /** Semantic native heading level used by {@link Heading}. */
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;

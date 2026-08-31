@@ -2,7 +2,7 @@
 import { computed, nextTick, onUnmounted, useTemplateRef, watch } from "vue";
 import type { ComputedRef } from "vue";
 
-import type { CollectionRegistration } from "../../../collection.ts";
+import type { CollectionRegistration } from "../../foundations/collection/collection.ts";
 import { tabsContext } from "./tabs-context.ts";
 import type {
   TabsActivationMode,

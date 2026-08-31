@@ -20,7 +20,7 @@ import type {
   BreadcrumbLinkExpose,
   BreadcrumbLinkSlotState,
 } from "./breadcrumb-types.ts";
-import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 const UNSAFE_HREF = /^(?:data|javascript|vbscript):/i;
 

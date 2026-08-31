@@ -6,6 +6,7 @@ import { test } from "vite-plus/test";
 
 import config from "../vite.config.ts";
 import { UI_FAMILY_CATALOG_SCHEMA_VERSION, uiFamilyCatalog } from "./family-catalog.ts";
+import { assertFamilyPaths, uiFamilyRoots } from "./family-layout-test-utils.ts";
 
 type PackageExport = string | { readonly import: string; readonly types: string };
 
@@ -131,86 +132,7 @@ test("stable catalog entries have every required artifact", async () => {
 });
 
 test("new family-owned SFC primitives keep implementation and tests together", () => {
-  const familyRoots = new Map([
-    ["alert", "src/families/feedback/alert/"],
-    ["alert-dialog", "src/families/overlays/alert-dialog/"],
-    ["announcer", "src/families/accessibility/announcer/"],
-    ["aspect-ratio", "src/families/layout/aspect-ratio/"],
-    ["avatar", "src/families/layout/avatar/"],
-    ["banner", "src/families/feedback/banner/"],
-    ["badge", "src/families/feedback/badge/"],
-    ["breadcrumb", "src/families/navigation/breadcrumb/"],
-    ["blockquote", "src/families/typography/blockquote/"],
-    ["block-ui", "src/families/feedback/block-ui/"],
-    ["button", "src/families/actions/button/"],
-    ["button-group", "src/families/actions/button-group/"],
-    ["callout", "src/families/feedback/callout/"],
-    ["card", "src/families/layout/card/"],
-    ["checkbox", "src/families/selection/checkbox/"],
-    ["cluster", "src/families/layout/cluster/"],
-    ["code", "src/families/typography/code/"],
-    ["container", "src/families/layout/container/"],
-    ["dialog", "src/families/overlays/dialog/"],
-    ["empty-state", "src/families/feedback/empty-state/"],
-    ["error-summary", "src/families/form/error-summary/"],
-    ["focus", "src/families/accessibility/focus/"],
-    ["focus-guards", "src/families/accessibility/focus-guards/"],
-    ["focus-scope", "src/families/accessibility/focus-scope/"],
-    ["grid", "src/families/layout/grid/"],
-    ["heading", "src/families/typography/heading/"],
-    ["hover", "src/families/interaction/hover/"],
-    ["icon", "src/families/layout/icon/"],
-    ["icon-button", "src/families/layout/icon/"],
-    ["inert-outside", "src/families/accessibility/inert-outside/"],
-    ["interaction-modality", "src/families/accessibility/interaction-modality/"],
-    ["kbd", "src/families/typography/kbd/"],
-    ["link", "src/families/navigation/link/"],
-    ["list", "src/families/layout/list/"],
-    ["listbox", "src/families/selection/listbox/"],
-    ["live-region", "src/families/accessibility/live-region/"],
-    ["locale", "src/families/i18n/locale/"],
-    ["long-press", "src/families/interaction/long-press/"],
-    ["fullscreen-button", "src/families/actions/fullscreen-button/"],
-    ["meter", "src/families/feedback/meter/"],
-    ["move", "src/families/interaction/move/"],
-    ["native-select", "src/families/selection/native-select/"],
-    ["pagination", "src/families/navigation/pagination/"],
-    ["pointer-grace", "src/families/interaction/pointer-grace/"],
-    ["portal", "src/families/overlays/portal/"],
-    ["positioner", "src/families/overlays/positioner/"],
-    ["popover", "src/families/overlays/popover/"],
-    ["press", "src/families/interaction/press/"],
-    ["presence", "src/families/overlays/presence/"],
-    ["print-button", "src/families/actions/print-button/"],
-    ["progress", "src/families/feedback/progress/"],
-    ["progress-bar", "src/families/feedback/progress-bar/"],
-    ["radio-group", "src/families/selection/radio-group/"],
-    ["rating", "src/families/form/rating/"],
-    ["share-button", "src/families/actions/share-button/"],
-    ["scroll-area", "src/families/layout/scroll-area/"],
-    ["scroll-lock", "src/families/accessibility/scroll-lock/"],
-    ["separator", "src/families/layout/separator/"],
-    ["skip-link", "src/families/navigation/skip-link/"],
-    ["skeleton", "src/families/feedback/skeleton/"],
-    ["spacer", "src/families/layout/spacer/"],
-    ["stack", "src/families/layout/stack/"],
-    ["stepper", "src/families/navigation/stepper/"],
-    ["spinner", "src/families/feedback/spinner/"],
-    ["status-light", "src/families/feedback/status-light/"],
-    ["surface", "src/families/layout/surface/"],
-    ["switch", "src/families/selection/switch/"],
-    ["table", "src/families/data/table/"],
-    ["tabs", "src/families/navigation/tabs/"],
-    ["text", "src/families/typography/text/"],
-    ["toggle", "src/families/selection/toggle/"],
-    ["toggle-group", "src/families/selection/toggle-group/"],
-    ["toolbar", "src/families/actions/toolbar/"],
-    ["tooltip", "src/families/overlays/tooltip/"],
-    ["transition", "src/families/overlays/transition/"],
-    ["visually-hidden", "src/families/accessibility/visually-hidden/"],
-  ]);
-
-  for (const [canonicalName, familyRoot] of familyRoots) {
+  for (const [canonicalName, familyRoot] of uiFamilyRoots) {
     const entry = stableEntries.find((candidate) => candidate.canonicalName === canonicalName);
 
     assert.ok(entry, `${canonicalName} must stay catalogued`);
@@ -273,6 +195,8 @@ test("selection families keep root compatibility barrels", async () => {
 test("overlay infrastructure families keep root compatibility barrels", async () => {
   await assertFamilyBarrels("overlays", [
     "alert-dialog",
+    "dismissable-layer",
+    "motion",
     "portal",
     "positioner",
     "presence",
@@ -282,6 +206,7 @@ test("overlay infrastructure families keep root compatibility barrels", async ()
 
 test("interaction families keep root compatibility barrels", async () => {
   await assertFamilyBarrels("interaction", [
+    "drag-and-drop",
     "history",
     "hover",
     "long-press",
@@ -289,8 +214,16 @@ test("interaction families keep root compatibility barrels", async () => {
     "move",
     "pointer-grace",
     "press",
+    "shortcut",
+    "sortable",
+    "spatial-navigation",
     "typeahead",
+    "virtualizer",
   ]);
+});
+
+test("foundation families keep root compatibility barrels", async () => {
+  await assertFamilyBarrels("foundations", ["collection", "composite-navigation", "primitive"]);
 });
 
 test("form families keep root compatibility barrels", async () => {
@@ -329,16 +262,4 @@ async function assertFamilyBarrels(area: string, names: readonly string[]): Prom
       `${name} must keep its historical source entry as a compatibility barrel`,
     );
   }
-}
-
-function assertFamilyPaths(
-  canonicalName: string,
-  familyRoot: string,
-  label: string,
-  files: readonly string[],
-): void {
-  assert.ok(
-    files.every((file) => file.startsWith(familyRoot)),
-    `${canonicalName} ${label} must stay beside the family source`,
-  );
 }

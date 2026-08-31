@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, useTemplateRef } from "vue";
 
-import type { PrimitiveAs } from "../../../primitive.ts";
+import type { PrimitiveAs } from "../../foundations/primitive/primitive.ts";
 import { resolveSpacerLayout } from "./spacer-runtime.ts";
 import type {
   SpacerAxis,

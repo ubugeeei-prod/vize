@@ -11,7 +11,9 @@ const fieldWiringFamilyRoot = "src/families/form/field-wiring/";
 const errorSummaryFamilyRoot = "src/families/form/error-summary/";
 const formFamilyRoot = "src/families/form/form/";
 const foundationFamilyRoot = "src/families/foundations/";
+const collectionFamilyRoot = `${foundationFamilyRoot}collection/`;
 const commandFamilyRoot = `${foundationFamilyRoot}command/`;
+const compositeNavigationFamilyRoot = `${foundationFamilyRoot}composite-navigation/`;
 const contextFamilyRoot = `${foundationFamilyRoot}context/`;
 const controllableStateFamilyRoot = `${foundationFamilyRoot}controllable-state/`;
 
@@ -20,19 +22,22 @@ export const foundationFamilyCatalog = [
     canonicalName: "collection",
     title: "Collection Registry",
     packageSubpath: "./collection",
-    entryFile: "src/collection.ts",
+    entryFile: `${collectionFamilyRoot}collection.ts`,
     sourceFiles: [
-      "src/collection.ts",
-      "src/collection-registry.ts",
-      "src/collection-keys.ts",
-      "src/collection-observer.ts",
-      "src/collection-order.ts",
-      "src/collection-text.ts",
-      "src/collection-types.ts",
+      `${collectionFamilyRoot}collection.ts`,
+      `${collectionFamilyRoot}collection-registry.ts`,
+      `${collectionFamilyRoot}collection-keys.ts`,
+      `${collectionFamilyRoot}collection-observer.ts`,
+      `${collectionFamilyRoot}collection-order.ts`,
+      `${collectionFamilyRoot}collection-text.ts`,
+      `${collectionFamilyRoot}collection-types.ts`,
     ],
-    behaviorContract: "src/collection.behavior.md",
-    tests: ["src/collection.test.ts", "src/collection-dom.test.ts"],
-    typeTests: ["src/collection.types.test-d.ts"],
+    behaviorContract: `${collectionFamilyRoot}collection.behavior.md`,
+    tests: [
+      `${collectionFamilyRoot}collection.test.ts`,
+      `${collectionFamilyRoot}collection-dom.test.ts`,
+    ],
+    typeTests: [`${collectionFamilyRoot}collection.types.test-d.ts`],
     qualityGates: stableQualityGates,
     bundleBudget: {
       exportName: "createCollectionRegistry",
@@ -73,21 +78,21 @@ export const foundationFamilyCatalog = [
     canonicalName: "composite-navigation",
     title: "Composite Navigation",
     packageSubpath: "./composite-navigation",
-    entryFile: "src/composite-navigation.ts",
+    entryFile: `${compositeNavigationFamilyRoot}composite-navigation.ts`,
     sourceFiles: [
-      "src/composite-navigation.ts",
-      "src/composite-navigation-dom.ts",
-      "src/composite-navigation-internal.ts",
-      "src/composite-navigation-types.ts",
+      `${compositeNavigationFamilyRoot}composite-navigation.ts`,
+      `${compositeNavigationFamilyRoot}composite-navigation-dom.ts`,
+      `${compositeNavigationFamilyRoot}composite-navigation-internal.ts`,
+      `${compositeNavigationFamilyRoot}composite-navigation-types.ts`,
     ],
-    behaviorContract: "src/composite-navigation.behavior.md",
+    behaviorContract: `${compositeNavigationFamilyRoot}composite-navigation.behavior.md`,
     tests: [
-      "src/composite-navigation.test.ts",
-      "src/composite-navigation-active-descendant.test.ts",
-      "src/composite-navigation-lifecycle.test.ts",
-      "src/composite-navigation-ssr.test.ts",
+      `${compositeNavigationFamilyRoot}composite-navigation.test.ts`,
+      `${compositeNavigationFamilyRoot}composite-navigation-active-descendant.test.ts`,
+      `${compositeNavigationFamilyRoot}composite-navigation-lifecycle.test.ts`,
+      `${compositeNavigationFamilyRoot}composite-navigation-ssr.test.ts`,
     ],
-    typeTests: ["src/composite-navigation.types.test-d.ts"],
+    typeTests: [`${compositeNavigationFamilyRoot}composite-navigation.types.test-d.ts`],
     rendererFixture: "CompositeNavigationConsumer.vue",
     qualityGates: interactionQualityGates,
     bundleBudget: {

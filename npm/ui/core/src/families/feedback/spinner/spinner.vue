@@ -3,7 +3,7 @@ import { computed, useTemplateRef } from "vue";
 import type { ComputedRef } from "vue";
 
 import { useDeterministicId } from "../../foundations/id/deterministic-id.ts";
-import type { PrimitiveAs } from "../../../primitive.ts";
+import type { PrimitiveAs } from "../../foundations/primitive/primitive.ts";
 import type {
   SpinnerAriaState,
   SpinnerElement,

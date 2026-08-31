@@ -2,7 +2,7 @@
 import { computed, useTemplateRef } from "vue";
 
 import { useControllableState } from "../../../controllable-state.ts";
-import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 import type { ToggleExpose, ToggleSlotState } from "./toggle-types.ts";
 
 type ToggleKeyboardPhase = "keydown" | "keyup";

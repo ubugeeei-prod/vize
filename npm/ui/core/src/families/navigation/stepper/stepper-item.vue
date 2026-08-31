@@ -2,7 +2,7 @@
 import { computed, nextTick, onUnmounted, shallowRef, useTemplateRef, watch } from "vue";
 import type { ComputedRef } from "vue";
 
-import type { CollectionRegistration } from "../../../collection.ts";
+import type { CollectionRegistration } from "../../foundations/collection/collection.ts";
 import { toDeterministicId } from "../../foundations/id/deterministic-id.ts";
 import { stepperContext, stepperItemContext } from "./stepper-context.ts";
 import type {

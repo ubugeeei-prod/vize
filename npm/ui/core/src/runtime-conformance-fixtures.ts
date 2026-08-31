@@ -15,7 +15,7 @@ import { layoutRuntimeFixtures } from "./runtime-conformance-layout-fixtures.ts"
 import { meterRuntimeFixture } from "./families/feedback/meter/runtime-conformance-meter-fixtures.ts";
 import { selectionRuntimeFixtures } from "./families/selection/runtime-conformance-selection-fixtures.ts";
 import { paginationRuntimeFixtures } from "./families/navigation/pagination/runtime-conformance-pagination-fixtures.ts";
-import PrimitiveElement from "./primitive-element.vue";
+import PrimitiveElement from "./families/foundations/primitive/primitive-element.vue";
 import { alertRuntimeFixture } from "./families/feedback/alert/runtime-conformance-alert-fixtures.ts";
 import { alertDialogRuntimeFixture } from "./families/overlays/alert-dialog/runtime-conformance-alert-dialog-fixtures.ts";
 import { badgeRuntimeFixture } from "./families/feedback/badge/runtime-conformance-badge-fixtures.ts";
@@ -196,7 +196,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   statusLightRuntimeFixture,
   {
     name: "primitive",
-    sourceFile: "primitive-element.vue",
+    sourceFile: "families/foundations/primitive/primitive-element.vue",
     render: () =>
       h(
         PrimitiveElement,

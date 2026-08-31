@@ -1,7 +1,7 @@
 import type {
   DismissableLayerDismissEvent,
   DismissableLayerEscapeKeyDownEvent,
-} from "../../../dismissable-layer.ts";
+} from "../dismissable-layer/dismissable-layer.ts";
 import type { Placement, PositionerStrategy, Rect } from "../positioner/positioner.ts";
 
 /** Open state mirrored to the Tooltip data contract. */

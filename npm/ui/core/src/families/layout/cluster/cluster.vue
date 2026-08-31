@@ -10,7 +10,7 @@ import type {
   ClusterSlotState,
   ClusterStyle,
 } from "./cluster-types.ts";
-import type { PrimitiveAs } from "../../../primitive.ts";
+import type { PrimitiveAs } from "../../foundations/primitive/primitive.ts";
 import { resolveClusterLayout } from "./cluster-runtime.ts";
 
 const {

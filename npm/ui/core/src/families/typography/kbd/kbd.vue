@@ -23,7 +23,7 @@ import type {
   KbdTone,
   KbdVariant,
 } from "./kbd-types.ts";
-import type { PrimitiveAs } from "../../../primitive.ts";
+import type { PrimitiveAs } from "../../foundations/primitive/primitive.ts";
 
 const {
   as = "kbd",

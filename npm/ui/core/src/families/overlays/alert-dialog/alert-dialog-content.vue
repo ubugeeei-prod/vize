@@ -9,7 +9,7 @@ import type {
   DismissableLayerFocusOutsideEvent,
   DismissableLayerInteractOutsideEvent,
   DismissableLayerPointerDownOutsideEvent,
-} from "../../../dismissable-layer.ts";
+} from "../dismissable-layer/dismissable-layer.ts";
 import DialogContent from "../dialog/dialog-content.vue";
 import { dialogContext } from "../dialog/dialog-context.ts";
 import type { DialogAutoFocusEvent } from "../dialog/dialog-types.ts";

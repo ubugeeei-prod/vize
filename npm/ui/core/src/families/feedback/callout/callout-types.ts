@@ -1,4 +1,4 @@
-import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 /** ARIA role used by the Callout root when it is not hidden from assistive technology. */
 export type CalloutRole = "alert" | "note" | "status";

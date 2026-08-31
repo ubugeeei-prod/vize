@@ -1,4 +1,4 @@
-import type { PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 /** Values accepted by `aria-current` for route-aware breadcrumb links. */
 export type BreadcrumbCurrent = "date" | "location" | "page" | "step" | "time" | true;

@@ -1,4 +1,4 @@
-import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 /** Native submission behavior for ShareButton when rendered as a button. */
 export type ShareButtonType = "button" | "reset" | "submit";

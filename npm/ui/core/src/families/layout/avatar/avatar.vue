@@ -57,7 +57,7 @@ import type {
   AvatarState,
   AvatarStatus,
 } from "./avatar-types.ts";
-import type { PrimitiveAs } from "../../../primitive.ts";
+import type { PrimitiveAs } from "../../foundations/primitive/primitive.ts";
 
 const IMAGE_SOURCE_SCHEME = /^([a-z][a-z\d+.-]*):/i;
 const DATA_IMAGE_SOURCE = /^data:image\/(?:avif|gif|jpeg|jpg|png|webp);base64,[a-z\d+/]+={0,2}$/i;

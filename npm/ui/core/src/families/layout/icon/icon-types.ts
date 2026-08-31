@@ -1,4 +1,4 @@
-import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 /** Accessibility state emitted by the SVG icon root. */
 export type IconAriaState = "decorative" | "img";

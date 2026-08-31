@@ -4,7 +4,7 @@ import { test } from "vite-plus/test";
 import { createSSRApp, defineComponent, h, nextTick } from "vue";
 import { renderToString } from "vue/server-renderer";
 
-import { createCollectionRegistry } from "../../../collection.ts";
+import { createCollectionRegistry } from "../../foundations/collection/collection.ts";
 import { useTypeahead } from "./typeahead.ts";
 
 const SsrProbe = defineComponent({

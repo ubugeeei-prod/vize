@@ -2,7 +2,7 @@
 import { computed, onUnmounted, useTemplateRef, watch } from "vue";
 import type { ComputedRef } from "vue";
 
-import type { CollectionRegistration } from "../../../collection.ts";
+import type { CollectionRegistration } from "../../foundations/collection/collection.ts";
 import { useDeterministicId } from "../../foundations/id/deterministic-id.ts";
 import { listboxContext } from "./listbox-context.ts";
 import type { ListboxItemExpose, ListboxItemSlotState, ListboxItemState } from "./listbox-types.ts";

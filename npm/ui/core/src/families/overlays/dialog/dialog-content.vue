@@ -2,14 +2,14 @@
 import { computed, onMounted, onUnmounted, shallowRef, useTemplateRef, watch } from "vue";
 import type { ComputedRef } from "vue";
 
-import { createDismissableLayer } from "../../../dismissable-layer.ts";
+import { createDismissableLayer } from "../dismissable-layer/dismissable-layer.ts";
 import type {
   DismissableLayerDismissEvent,
   DismissableLayerEscapeKeyDownEvent,
   DismissableLayerFocusOutsideEvent,
   DismissableLayerInteractOutsideEvent,
   DismissableLayerPointerDownOutsideEvent,
-} from "../../../dismissable-layer.ts";
+} from "../dismissable-layer/dismissable-layer.ts";
 import { dialogContext } from "./dialog-context.ts";
 import type { DialogAutoFocusEvent, DialogContentExpose, DialogRole } from "./dialog-types.ts";
 import type { DialogSlotState, DialogState } from "./dialog-types.ts";

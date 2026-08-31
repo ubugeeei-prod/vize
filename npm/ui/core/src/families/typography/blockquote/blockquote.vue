@@ -22,7 +22,7 @@ import type {
   BlockquoteSlotState,
   BlockquoteTone,
 } from "./blockquote-types.ts";
-import type { PrimitiveAs } from "../../../primitive.ts";
+import type { PrimitiveAs } from "../../foundations/primitive/primitive.ts";
 
 const {
   as = "blockquote",

@@ -1,0 +1,257 @@
+/*
+ * Motion design tokens, named easing curves, and shared recipes.
+ *
+ * Authored in the native CSS contract (nesting, cascade layers, logical
+ * properties) and down-compiled to the declared browser floor by the package
+ * build; see style-pipeline.behavior.md. Everything lives in `@layer vize.ui`
+ * and every token sits on a `:where()` zero-specificity selector, so consumer
+ * CSS outside the layer always wins: replacing a curve, duration, or recipe
+ * never requires forking a component.
+ *
+ * The TypeScript mirrors in motion-tokens.ts must stay value-identical with
+ * this file; src/families/overlays/motion/motion.test.ts proves the pairing on the packaged stylesheet.
+ */
+
+@layer vize.ui {
+  :where(:root, :host) {
+    /* Duration scale. */
+    --vize-ui-motion-duration-instant: 0ms;
+    --vize-ui-motion-duration-fast: 120ms;
+    --vize-ui-motion-duration-base: 200ms;
+    --vize-ui-motion-duration-slow: 320ms;
+    --vize-ui-motion-duration-deliberate: 480ms;
+
+    /* Delay scale. `stagger` is the per-item offset for list choreography. */
+    --vize-ui-motion-delay-none: 0ms;
+    --vize-ui-motion-delay-hint: 40ms;
+    --vize-ui-motion-delay-stagger: 24ms;
+
+    /* Named curves. */
+    --vize-ui-motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --vize-ui-motion-ease-decelerate: cubic-bezier(0.1, 0, 0, 1);
+    --vize-ui-motion-ease-accelerate: cubic-bezier(0.45, 0, 1, 1);
+    --vize-ui-motion-ease-emphasized: cubic-bezier(0.34, 1.3, 0.32, 1);
+    --vize-ui-motion-ease-linear: linear;
+
+    /* Recipe hooks: retune one phase everywhere without forking components. */
+    --vize-ui-motion-enter-duration: var(--vize-ui-motion-duration-base);
+    --vize-ui-motion-enter-easing: var(--vize-ui-motion-ease-decelerate);
+    --vize-ui-motion-exit-duration: var(--vize-ui-motion-duration-fast);
+    --vize-ui-motion-exit-easing: var(--vize-ui-motion-ease-accelerate);
+    --vize-ui-motion-move-duration: var(--vize-ui-motion-duration-base);
+    --vize-ui-motion-move-easing: var(--vize-ui-motion-ease-standard);
+    --vize-ui-motion-emphasis-duration: var(--vize-ui-motion-duration-deliberate);
+    --vize-ui-motion-emphasis-easing: var(--vize-ui-motion-ease-emphasized);
+    --vize-ui-motion-slide-distance: 8px;
+    --vize-ui-motion-scale-from: 0.96;
+  }
+
+  /*
+   * Enter and exit recipes. `data-vize-motion` holds space-separated recipe
+   * names; the enter/exit pair activates through the status attributes
+   * published by the presence and transition primitives, so completion events
+   * keep firing on the animated host itself.
+   */
+  :where([data-vize-motion~="fade"], [data-vize-motion~="scale"], [data-vize-motion~="slide"]) {
+    &:where([data-vize-presence="entering"], [data-vize-transition="entering"]) {
+      animation-duration: var(--vize-ui-motion-enter-duration);
+      animation-timing-function: var(--vize-ui-motion-enter-easing);
+      animation-fill-mode: both;
+    }
+
+    &:where([data-vize-presence="exiting"], [data-vize-transition="exiting"]) {
+      animation-duration: var(--vize-ui-motion-exit-duration);
+      animation-timing-function: var(--vize-ui-motion-exit-easing);
+      animation-fill-mode: both;
+    }
+  }
+
+  :where([data-vize-motion~="fade"]) {
+    &:where([data-vize-presence="entering"], [data-vize-transition="entering"]) {
+      animation-name: vize-ui-motion-fade-in;
+    }
+
+    &:where([data-vize-presence="exiting"], [data-vize-transition="exiting"]) {
+      animation-name: vize-ui-motion-fade-out;
+    }
+  }
+
+  :where([data-vize-motion~="scale"]) {
+    &:where([data-vize-presence="entering"], [data-vize-transition="entering"]) {
+      animation-name: vize-ui-motion-scale-in;
+    }
+
+    &:where([data-vize-presence="exiting"], [data-vize-transition="exiting"]) {
+      animation-name: vize-ui-motion-scale-out;
+    }
+  }
+
+  :where([data-vize-motion~="slide"]) {
+    &:where([data-vize-presence="entering"], [data-vize-transition="entering"]) {
+      animation-name: vize-ui-motion-slide-in;
+    }
+
+    &:where([data-vize-presence="exiting"], [data-vize-transition="exiting"]) {
+      animation-name: vize-ui-motion-slide-out;
+    }
+  }
+
+  /*
+   * First-render entry without a presence controller: the `enter` recipe uses
+   * `@starting-style` so newly inserted or newly displayed elements transition
+   * in. The at-rule is newer than the declared floor and ships verbatim;
+   * engines without it simply show the element at its final style.
+   */
+  :where([data-vize-motion~="enter"]) {
+    transition-property: opacity, translate, scale;
+    transition-duration: var(--vize-ui-motion-enter-duration);
+    transition-timing-function: var(--vize-ui-motion-enter-easing);
+
+    @starting-style {
+      opacity: 0;
+      translate: 0 var(--vize-ui-motion-slide-distance);
+    }
+  }
+
+  /*
+   * Scroll-driven reveal: progress follows the element's own viewport entry.
+   * `animation-timeline` is newer than the declared floor and ships verbatim;
+   * engines without it run the duration-less animation to its final state, so
+   * content is simply visible.
+   */
+  :where([data-vize-motion~="reveal"]) {
+    animation: vize-ui-motion-fade-in var(--vize-ui-motion-ease-standard) both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 100%;
+  }
+
+  /* Move recipe: layout and position shifts glide instead of teleporting. */
+  :where([data-vize-motion~="move"]) {
+    transition-property:
+      translate, transform, inset-block-start, inset-block-end, inset-inline-start, inset-inline-end;
+    transition-duration: var(--vize-ui-motion-move-duration);
+    transition-timing-function: var(--vize-ui-motion-move-easing);
+  }
+
+  /* Emphasis recipes: apply the attribute to run once, remove on animationend. */
+  :where([data-vize-motion~="pulse"]) {
+    animation: vize-ui-motion-pulse var(--vize-ui-motion-emphasis-duration)
+      var(--vize-ui-motion-emphasis-easing);
+  }
+
+  :where([data-vize-motion~="shake"]) {
+    animation: vize-ui-motion-shake var(--vize-ui-motion-duration-slow)
+      var(--vize-ui-motion-ease-standard);
+  }
+
+  /* Document-level view transitions inherit the shared duration and curve. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: var(--vize-ui-motion-duration-base);
+    animation-timing-function: var(--vize-ui-motion-ease-standard);
+  }
+
+  @keyframes vize-ui-motion-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes vize-ui-motion-fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes vize-ui-motion-scale-in {
+    from {
+      opacity: 0;
+      scale: var(--vize-ui-motion-scale-from);
+    }
+  }
+
+  @keyframes vize-ui-motion-scale-out {
+    to {
+      opacity: 0;
+      scale: var(--vize-ui-motion-scale-from);
+    }
+  }
+
+  @keyframes vize-ui-motion-slide-in {
+    from {
+      opacity: 0;
+      translate: 0 var(--vize-ui-motion-slide-distance);
+    }
+  }
+
+  @keyframes vize-ui-motion-slide-out {
+    to {
+      opacity: 0;
+      translate: 0 var(--vize-ui-motion-slide-distance);
+    }
+  }
+
+  @keyframes vize-ui-motion-pulse {
+    50% {
+      scale: 1.04;
+    }
+  }
+
+  @keyframes vize-ui-motion-shake {
+    20% {
+      translate: -4px 0;
+    }
+
+    40% {
+      translate: 4px 0;
+    }
+
+    60% {
+      translate: -2px 0;
+    }
+
+    80% {
+      translate: 2px 0;
+    }
+  }
+
+  /*
+   * Reduced motion: zero the scales so every token consumer — including the
+   * view-transition defaults above — completes immediately, and hard-stop the
+   * recipes for consumers that overrode a duration directly. The presence and
+   * transition primitives independently skip their enter/exit phases.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    :where(:root, :host) {
+      --vize-ui-motion-duration-instant: 0ms;
+      --vize-ui-motion-duration-fast: 0ms;
+      --vize-ui-motion-duration-base: 0ms;
+      --vize-ui-motion-duration-slow: 0ms;
+      --vize-ui-motion-duration-deliberate: 0ms;
+      --vize-ui-motion-delay-none: 0ms;
+      --vize-ui-motion-delay-hint: 0ms;
+      --vize-ui-motion-delay-stagger: 0ms;
+    }
+
+    :where([data-vize-motion]) {
+      animation-duration: 0ms;
+      transition-duration: 0ms;
+    }
+
+    /* Timeline-driven animations ignore durations, so reveal stands down. */
+    :where([data-vize-motion~="reveal"]) {
+      animation: none;
+    }
+  }
+
+  /*
+   * Forced colors: crossfades, scaling, and shakes read as flicker when the
+   * platform repaints everything in a reduced palette, so recipes stand down.
+   */
+  @media (forced-colors: active) {
+    :where([data-vize-motion]) {
+      animation-name: none;
+      transition-property: none;
+    }
+  }
+}

@@ -4,7 +4,7 @@ import { computed, useTemplateRef } from "vue";
 import { toDeterministicId } from "../../foundations/id/deterministic-id.ts";
 import { dialogContext } from "./dialog-context.ts";
 import type { DialogDescriptionExpose } from "./dialog-types.ts";
-import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 const { id = undefined, as = "p" } = defineProps<{
   /**

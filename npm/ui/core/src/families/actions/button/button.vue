@@ -3,7 +3,7 @@ import { computed, useTemplateRef } from "vue";
 
 import { getButtonKeyboardAction } from "./button-keyboard.ts";
 import type { ButtonKeyboardPhase } from "./button-keyboard.ts";
-import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 const {
   as = "button",

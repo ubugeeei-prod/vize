@@ -1,7 +1,7 @@
 import { onMounted, onUnmounted, watch } from "vue";
 import type { ShallowRef } from "vue";
 
-import type { DismissableLayerController } from "../../../dismissable-layer.ts";
+import type { DismissableLayerController } from "../dismissable-layer/dismissable-layer.ts";
 import type { FocusGuardsController } from "../../../focus-guards.ts";
 import type { FocusScopeController } from "../../../focus-scope.ts";
 import type { InertOutsideController } from "../../../inert-outside.ts";

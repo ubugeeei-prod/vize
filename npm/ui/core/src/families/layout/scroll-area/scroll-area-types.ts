@@ -1,4 +1,4 @@
-import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 /** Native element, custom element, or component accepted by the ScrollArea root. */
 export type ScrollAreaAs = PrimitiveAs;

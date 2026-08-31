@@ -12,7 +12,7 @@ import type {
 } from "../field-wiring/field-wiring-types.ts";
 import type { FieldRootExpose, FieldRootSlotState } from "./field-types.ts";
 import type { FormFieldError } from "../form/form-types.ts";
-import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 const {
   as = "div",

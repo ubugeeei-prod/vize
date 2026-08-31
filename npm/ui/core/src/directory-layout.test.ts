@@ -9,30 +9,20 @@ import { foundationFamilyCatalog } from "./family-catalog-foundations.ts";
 import { focusFamilyCatalog } from "./family-catalog-focus.ts";
 import { interactionFamilyCatalog } from "./family-catalog-interactions.ts";
 import { overlayFamilyCatalog } from "./family-catalog-overlays.ts";
+import {
+  assertFamilyPaths,
+  rehomedFlatFamilies,
+  rehomedFoundationUtilities,
+  rootCompatibilityBarrelGroups,
+} from "./family-layout-test-utils.ts";
 
 const sourceRoot = path.resolve("src");
 const familySfcPattern =
   /^families\/[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9]+(?:-[a-z0-9]+)*\.vue$/u;
 const rootDeterministicIdImportPattern =
   /from\s+["']\.\.\/\.\.\/\.\.\/deterministic-id(?:-provider)?\.(?:ts|vue)["']/u;
-const rehomedFoundationUtilities = ["context", "controllable-state"] as const;
-const foundationCompatibilityBarrels = [
-  ["command.ts", "./families/foundations/command/command.ts"],
-  ["context.ts", "./families/foundations/context/context.ts"],
-  ["controllable-state.ts", "./families/foundations/controllable-state/controllable-state.ts"],
-  ["deterministic-id.ts", "./families/foundations/id/deterministic-id.ts"],
-  ["id.ts", "./families/foundations/id/id.ts"],
-] as const;
-const formCompatibilityBarrels = [
-  ["error-summary.ts", "./families/form/error-summary/error-summary.ts"],
-] as const;
-const interactionCompatibilityBarrels = [
-  ["history.ts", "./families/interaction/history/history.ts"],
-  ["measure.ts", "./families/interaction/measure/measure.ts"],
-  ["typeahead.ts", "./families/interaction/typeahead/typeahead.ts"],
-] as const;
 
-const grandfatheredRootSfcFiles = ["primitive-element.vue"] as const;
+const grandfatheredRootSfcFiles = [] as const;
 
 test("new public SFCs live in family directories", () => {
   assert.deepEqual(rootSfcFiles(), grandfatheredRootSfcFiles);
@@ -66,29 +56,28 @@ test("rehomed foundation utilities are cataloged from family directories", () =>
   }
 });
 
-test("root foundation utilities stay compatibility-only barrels", () => {
-  for (const [filename, target] of foundationCompatibilityBarrels) {
-    const source = fs.readFileSync(path.join(sourceRoot, filename), "utf8").trim();
+test("rehomed flat families are cataloged from family directories", () => {
+  for (const { catalog, familyName, familyRoot } of rehomedFlatFamilies) {
+    const family = catalog.find((entry) => entry.canonicalName === familyName);
+    assert.ok(family, `${familyName} must remain cataloged`);
 
-    assert.equal(source, `export * from "${target}";`);
+    assertFamilyPaths(familyName, familyRoot, "entry", [family.entryFile]);
+    assertFamilyPaths(familyName, familyRoot, "behavior contract", [family.behaviorContract]);
+    assertFamilyPaths(familyName, familyRoot, "source files", family.sourceFiles);
+    assertFamilyPaths(familyName, familyRoot, "tests", family.tests);
+    assertFamilyPaths(familyName, familyRoot, "type tests", family.typeTests ?? []);
   }
 });
 
-test("root form utilities stay compatibility-only barrels", () => {
-  for (const [filename, target] of formCompatibilityBarrels) {
-    const source = fs.readFileSync(path.join(sourceRoot, filename), "utf8").trim();
+for (const { testName, barrels } of rootCompatibilityBarrelGroups) {
+  test(testName, () => {
+    for (const [filename, target] of barrels) {
+      const source = fs.readFileSync(path.join(sourceRoot, filename), "utf8").trim();
 
-    assert.equal(source, `export * from "${target}";`);
-  }
-});
-
-test("root interaction utilities stay compatibility-only barrels", () => {
-  for (const [filename, target] of interactionCompatibilityBarrels) {
-    const source = fs.readFileSync(path.join(sourceRoot, filename), "utf8").trim();
-
-    assert.equal(source, `export * from "${target}";`);
-  }
-});
+      assert.equal(source, `export * from "${target}";`);
+    }
+  });
+}
 
 test("rehomed measure family is cataloged from a family directory", () => {
   const family = interactionFamilyCatalog.find((entry) => entry.canonicalName === "measure");

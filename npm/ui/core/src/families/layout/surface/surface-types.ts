@@ -1,4 +1,4 @@
-import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 /** Common semantic native hosts documented for Surface examples. */
 export type SurfaceSemanticHost = "article" | "aside" | "div" | "section";

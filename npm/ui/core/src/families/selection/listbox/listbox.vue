@@ -2,9 +2,9 @@
 import { computed, useTemplateRef, watch } from "vue";
 import type { ComputedRef } from "vue";
 
-import { createCollectionRegistry } from "../../../collection.ts";
-import { createCompositeNavigation } from "../../../composite-navigation.ts";
-import type { CompositeNavigationCommand } from "../../../composite-navigation.ts";
+import { createCollectionRegistry } from "../../foundations/collection/collection.ts";
+import { createCompositeNavigation } from "../../foundations/composite-navigation/composite-navigation.ts";
+import type { CompositeNavigationCommand } from "../../foundations/composite-navigation/composite-navigation.ts";
 import { useControllableState } from "../../../controllable-state.ts";
 import { useDeterministicId } from "../../foundations/id/deterministic-id.ts";
 import { listboxContext } from "./listbox-context.ts";

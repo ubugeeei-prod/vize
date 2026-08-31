@@ -12,7 +12,7 @@ import type {
   GridSlotState,
   GridStyle,
 } from "./grid-types.ts";
-import type { PrimitiveAs } from "../../../primitive.ts";
+import type { PrimitiveAs } from "../../foundations/primitive/primitive.ts";
 import { resolveGridLayout } from "./grid-runtime.ts";
 
 const {

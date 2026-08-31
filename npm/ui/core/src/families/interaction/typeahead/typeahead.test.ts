@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { effectScope, ref } from "vue";
 import { test } from "vite-plus/test";
 
-import { createCollectionRegistry } from "../../../collection.ts";
+import { createCollectionRegistry } from "../../foundations/collection/collection.ts";
 import { createTypeahead, useTypeahead } from "./typeahead.ts";
 import type { TypeaheadMatch } from "./typeahead.ts";
 

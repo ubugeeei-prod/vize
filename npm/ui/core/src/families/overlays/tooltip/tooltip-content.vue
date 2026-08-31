@@ -2,11 +2,11 @@
 import { computed, onMounted, onUnmounted, useTemplateRef, watch } from "vue";
 import type { ComputedRef } from "vue";
 
-import { createDismissableLayer } from "../../../dismissable-layer.ts";
+import { createDismissableLayer } from "../dismissable-layer/dismissable-layer.ts";
 import type {
   DismissableLayerDismissEvent,
   DismissableLayerEscapeKeyDownEvent,
-} from "../../../dismissable-layer.ts";
+} from "../dismissable-layer/dismissable-layer.ts";
 import Portal from "../portal/portal.vue";
 import Positioner from "../positioner/positioner.vue";
 import type { Placement, PositionerStrategy, Rect } from "../positioner/positioner.ts";

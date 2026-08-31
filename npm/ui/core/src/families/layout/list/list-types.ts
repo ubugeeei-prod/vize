@@ -1,4 +1,4 @@
-import type { PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 /** Consumer marker tokens mirrored by {@link List} through `data-marker`. */
 export type ListMarker = "disc" | "decimal" | "none";

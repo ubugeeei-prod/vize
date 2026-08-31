@@ -2,14 +2,14 @@
 import { computed, shallowRef, useTemplateRef } from "vue";
 import type { ComputedRef } from "vue";
 
-import { createDismissableLayer } from "../../../dismissable-layer.ts";
+import { createDismissableLayer } from "../dismissable-layer/dismissable-layer.ts";
 import type {
   DismissableLayerDismissEvent,
   DismissableLayerEscapeKeyDownEvent,
   DismissableLayerFocusOutsideEvent,
   DismissableLayerInteractOutsideEvent,
   DismissableLayerPointerDownOutsideEvent,
-} from "../../../dismissable-layer.ts";
+} from "../dismissable-layer/dismissable-layer.ts";
 import { createFocusGuards } from "../../../focus-guards.ts";
 import { createFocusScope } from "../../../focus-scope.ts";
 import { createInertOutside } from "../../../inert-outside.ts";

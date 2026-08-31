@@ -8,7 +8,7 @@ import type {
   AspectRatioSlotState,
   AspectRatioStyle,
 } from "./aspect-ratio-types.ts";
-import type { PrimitiveAs } from "../../../primitive.ts";
+import type { PrimitiveAs } from "../../foundations/primitive/primitive.ts";
 
 const { as = "div", ratio = 1 } = defineProps<{
   /**

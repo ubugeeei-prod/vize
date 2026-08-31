@@ -1,4 +1,4 @@
-import type { PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 import type { PaginationRangeItem } from "./pagination-range.ts";
 
 /** State exposed by the Pagination root, list, and root slot. */

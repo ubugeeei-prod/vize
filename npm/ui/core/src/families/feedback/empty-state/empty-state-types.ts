@@ -1,4 +1,4 @@
-import type { PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 /** Consumer styling tones mirrored by {@link EmptyState} through `data-tone`. */
 export type EmptyStateTone = "danger" | "info" | "neutral" | "success" | "warning";

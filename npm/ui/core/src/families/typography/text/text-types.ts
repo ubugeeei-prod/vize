@@ -1,4 +1,4 @@
-import type { PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 /** Consumer sizing tokens mirrored by {@link Text} through `data-size`. */
 export type TextSize = "xs" | "sm" | "md" | "lg" | "xl";

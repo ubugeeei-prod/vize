@@ -1,4 +1,4 @@
-import type { PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 /** Styling variants mirrored by {@link Badge} through `data-variant`. */
 export type BadgeVariant = "count" | "label" | "status";

@@ -2,8 +2,8 @@
 import { computed, nextTick, useTemplateRef, watch } from "vue";
 import type { ComputedRef } from "vue";
 
-import { createCollectionRegistry } from "../../../collection.ts";
-import { useCompositeNavigation } from "../../../composite-navigation.ts";
+import { createCollectionRegistry } from "../../foundations/collection/collection.ts";
+import { useCompositeNavigation } from "../../foundations/composite-navigation/composite-navigation.ts";
 import { useControllableState } from "../../../controllable-state.ts";
 import {
   deriveDeterministicId,

@@ -1,4 +1,4 @@
-import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 /** Presence or health state mirrored by {@link StatusLight} through `data-state`. */
 export type StatusLightState = "away" | "busy" | "offline" | "online" | "unknown";

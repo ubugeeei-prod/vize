@@ -1,4 +1,4 @@
-import type { PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 /** Stable blocking state mirrored by {@link BlockUI} through `data-state`. */
 export type BlockUIState = "blocked" | "idle";

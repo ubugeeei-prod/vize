@@ -4,7 +4,7 @@ import type { ComputedRef } from "vue";
 
 import { fieldContext } from "./field-context.ts";
 import type { FieldErrorMessageExpose, FieldErrorMessageSlotState } from "./field-types.ts";
-import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 const { as = "p", forceMount = false } = defineProps<{
   /**

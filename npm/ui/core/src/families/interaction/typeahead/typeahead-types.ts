@@ -1,6 +1,6 @@
 import type { MaybeRefOrGetter, ShallowRef } from "vue";
 
-import type { CollectionKey, CollectionRegistry } from "../../../collection.ts";
+import type { CollectionKey, CollectionRegistry } from "../../foundations/collection/collection.ts";
 
 /** Immutable snapshot emitted when buffered text matches a collection item. */
 export interface TypeaheadMatch<Key extends CollectionKey> {

@@ -1,4 +1,4 @@
-import type { PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 /** Accessible grouping semantics emitted by {@link ButtonGroup}. */
 export type ButtonGroupRole = "group" | "toolbar";

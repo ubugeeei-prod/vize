@@ -2,7 +2,7 @@
 import { computed, nextTick, shallowRef, useTemplateRef, watch } from "vue";
 import type { ComputedRef, ShallowRef } from "vue";
 
-import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 import { buttonGroupContext } from "./button-group-context.ts";
 import type {
   ButtonGroupContextValue,

@@ -1,4 +1,4 @@
-import type { PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 /** Usage variants mirrored by {@link Card} through `data-variant`. */
 export type CardVariant = "card" | "panel" | "surface";

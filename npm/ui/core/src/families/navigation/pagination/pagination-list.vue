@@ -9,7 +9,7 @@ import type {
   PaginationState,
 } from "./pagination-types.ts";
 import type { PaginationRangeItem } from "./pagination-range.ts";
-import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 const { as = "ol" } = defineProps<{
   /**

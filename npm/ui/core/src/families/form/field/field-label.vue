@@ -3,7 +3,7 @@ import { computed, useTemplateRef } from "vue";
 
 import { fieldContext } from "./field-context.ts";
 import type { FieldLabelExpose, FieldLabelSlotState } from "./field-types.ts";
-import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 const { as = "label" } = defineProps<{
   /**

@@ -64,6 +64,7 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
       "src/families/form/slider/slider.vue",
       "src/families/form/textarea/textarea-control.vue",
       "src/families/foundations/id/deterministic-id-provider.vue",
+      "src/families/foundations/primitive/primitive-element.vue",
       "src/families/i18n/locale/locale-provider.vue",
       "src/families/layout/aspect-ratio/aspect-ratio.vue",
       "src/families/layout/avatar/avatar.vue",
@@ -138,7 +139,6 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
       "src/families/typography/heading/heading.vue",
       "src/families/typography/kbd/kbd.vue",
       "src/families/typography/text/text.vue",
-      "src/primitive-element.vue",
     ],
   );
   assert.deepEqual(
@@ -189,6 +189,7 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
       "families/form/slider/slider.vue",
       "families/form/textarea/textarea-control.vue",
       "families/foundations/id/deterministic-id-provider.vue",
+      "families/foundations/primitive/primitive-element.vue",
       "families/i18n/locale/locale-provider.vue",
       "families/layout/aspect-ratio/aspect-ratio.vue",
       "families/layout/avatar/avatar.vue",
@@ -263,7 +264,6 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
       "families/typography/heading/heading.vue",
       "families/typography/kbd/kbd.vue",
       "families/typography/text/text.vue",
-      "primitive-element.vue",
     ].map((basename) => ({
       filename: path.resolve("src", basename),
       preset: "opinionated" as const,

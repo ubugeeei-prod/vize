@@ -1,4 +1,4 @@
-import type { PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 import type { ToolbarItemSlotState, ToolbarSlotState } from "./toolbar-types.ts";
 
 /** Slots exposed by the root Toolbar component. */

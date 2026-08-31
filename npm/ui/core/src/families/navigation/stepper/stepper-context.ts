@@ -1,7 +1,10 @@
 import type { ComputedRef, MaybeRefOrGetter } from "vue";
 
-import type { CollectionRegistration, CollectionRegistry } from "../../../collection.ts";
-import type { CompositeNavigationController } from "../../../composite-navigation.ts";
+import type {
+  CollectionRegistration,
+  CollectionRegistry,
+} from "../../foundations/collection/collection.ts";
+import type { CompositeNavigationController } from "../../foundations/composite-navigation/composite-navigation.ts";
 import { createContext } from "../../../context.ts";
 import type {
   StepperDirection,

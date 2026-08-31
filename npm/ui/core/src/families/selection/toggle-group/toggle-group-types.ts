@@ -1,4 +1,4 @@
-import type { PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 /** Selection mode owned by the ToggleGroup root. */
 export type ToggleGroupType = "single" | "multiple";

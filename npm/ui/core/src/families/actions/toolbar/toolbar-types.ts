@@ -1,6 +1,6 @@
 import type { CSSProperties } from "vue";
 
-import type { PrimitiveAs } from "../../../primitive.ts";
+import type { PrimitiveAs } from "../../foundations/primitive/primitive.ts";
 
 /** Directional layout hint used by Toolbar arrow-key roving focus. */
 export type ToolbarOrientation = "horizontal" | "vertical";

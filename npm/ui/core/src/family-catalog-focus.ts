@@ -6,6 +6,8 @@ import {
 } from "./family-catalog-types.ts";
 
 const idFamilyRoot = "src/families/foundations/id/";
+const dismissableLayerFamilyRoot = "src/families/overlays/dismissable-layer/";
+const dragAndDropFamilyRoot = "src/families/interaction/drag-and-drop/";
 const historyFamilyRoot = "src/families/interaction/history/";
 
 export const focusFamilyCatalog = [
@@ -13,16 +15,19 @@ export const focusFamilyCatalog = [
     canonicalName: "dismissable-layer",
     title: "Dismissable Layer",
     packageSubpath: "./dismissable-layer",
-    entryFile: "src/dismissable-layer.ts",
+    entryFile: `${dismissableLayerFamilyRoot}dismissable-layer.ts`,
     sourceFiles: [
-      "src/dismissable-layer.ts",
-      "src/dismissable-layer-internal.ts",
-      "src/dismissable-layer-stack.ts",
-      "src/dismissable-layer-types.ts",
+      `${dismissableLayerFamilyRoot}dismissable-layer.ts`,
+      `${dismissableLayerFamilyRoot}dismissable-layer-internal.ts`,
+      `${dismissableLayerFamilyRoot}dismissable-layer-stack.ts`,
+      `${dismissableLayerFamilyRoot}dismissable-layer-types.ts`,
     ],
-    behaviorContract: "src/dismissable-layer.behavior.md",
-    tests: ["src/dismissable-layer.test.ts", "src/dismissable-layer-ssr.test.ts"],
-    typeTests: ["src/dismissable-layer.types.test-d.ts"],
+    behaviorContract: `${dismissableLayerFamilyRoot}dismissable-layer.behavior.md`,
+    tests: [
+      `${dismissableLayerFamilyRoot}dismissable-layer.test.ts`,
+      `${dismissableLayerFamilyRoot}dismissable-layer-ssr.test.ts`,
+    ],
+    typeTests: [`${dismissableLayerFamilyRoot}dismissable-layer.types.test-d.ts`],
     rendererFixture: "DismissableLayerConsumer.vue",
     qualityGates: interactionQualityGates,
     bundleBudget: {
@@ -45,28 +50,28 @@ export const focusFamilyCatalog = [
     canonicalName: "drag-and-drop",
     title: "Drag and Drop",
     packageSubpath: "./drag-and-drop",
-    entryFile: "src/drag-and-drop.ts",
+    entryFile: `${dragAndDropFamilyRoot}drag-and-drop.ts`,
     sourceFiles: [
-      "src/drag-and-drop.ts",
-      "src/drag-and-drop-announce.ts",
-      "src/drag-and-drop-autoscroll.ts",
-      "src/drag-and-drop-controller-types.ts",
-      "src/drag-and-drop-internal.ts",
-      "src/drag-and-drop-keyboard.ts",
-      "src/drag-and-drop-listeners.ts",
-      "src/drag-and-drop-session.ts",
-      "src/drag-and-drop-transfer.ts",
-      "src/drag-and-drop-types.ts",
+      `${dragAndDropFamilyRoot}drag-and-drop.ts`,
+      `${dragAndDropFamilyRoot}drag-and-drop-announce.ts`,
+      `${dragAndDropFamilyRoot}drag-and-drop-autoscroll.ts`,
+      `${dragAndDropFamilyRoot}drag-and-drop-controller-types.ts`,
+      `${dragAndDropFamilyRoot}drag-and-drop-internal.ts`,
+      `${dragAndDropFamilyRoot}drag-and-drop-keyboard.ts`,
+      `${dragAndDropFamilyRoot}drag-and-drop-listeners.ts`,
+      `${dragAndDropFamilyRoot}drag-and-drop-session.ts`,
+      `${dragAndDropFamilyRoot}drag-and-drop-transfer.ts`,
+      `${dragAndDropFamilyRoot}drag-and-drop-types.ts`,
     ],
-    behaviorContract: "src/drag-and-drop.behavior.md",
+    behaviorContract: `${dragAndDropFamilyRoot}drag-and-drop.behavior.md`,
     tests: [
-      "src/drag-and-drop.test.ts",
-      "src/drag-and-drop-keyboard.test.ts",
-      "src/drag-and-drop-legacy.test.ts",
-      "src/drag-and-drop-ssr.test.ts",
-      "src/drag-and-drop-transfer.test.ts",
+      `${dragAndDropFamilyRoot}drag-and-drop.test.ts`,
+      `${dragAndDropFamilyRoot}drag-and-drop-keyboard.test.ts`,
+      `${dragAndDropFamilyRoot}drag-and-drop-legacy.test.ts`,
+      `${dragAndDropFamilyRoot}drag-and-drop-ssr.test.ts`,
+      `${dragAndDropFamilyRoot}drag-and-drop-transfer.test.ts`,
     ],
-    typeTests: ["src/drag-and-drop.types.test-d.ts"],
+    typeTests: [`${dragAndDropFamilyRoot}drag-and-drop.types.test-d.ts`],
     rendererFixture: "DragAndDropConsumer.vue",
     qualityGates: interactionQualityGates,
     bundleBudget: {

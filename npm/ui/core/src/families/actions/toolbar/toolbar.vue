@@ -2,7 +2,7 @@
 import { computed, nextTick, shallowRef, useTemplateRef, watch } from "vue";
 import type { ComputedRef, ShallowRef } from "vue";
 
-import type { PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 import type { ToolbarExpose } from "./toolbar-contracts.ts";
 import { toolbarContext } from "./toolbar-context.ts";
 import type {

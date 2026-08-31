@@ -14,7 +14,7 @@
 import { computed, useTemplateRef } from "vue";
 
 import type { BreadcrumbItemExpose, BreadcrumbItemSlotState } from "./breadcrumb-types.ts";
-import type { PrimitiveAs, PrimitiveElement } from "../../../primitive.ts";
+import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
 const { as = "li", current = false } = defineProps<{
   /**

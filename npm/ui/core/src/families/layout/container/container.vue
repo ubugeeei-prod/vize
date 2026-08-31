@@ -9,7 +9,7 @@ import type {
   ContainerSlotState,
   ContainerStyle,
 } from "./container-types.ts";
-import type { PrimitiveAs } from "../../../primitive.ts";
+import type { PrimitiveAs } from "../../foundations/primitive/primitive.ts";
 import { resolveContainerLayout } from "./container-runtime.ts";
 
 const {
