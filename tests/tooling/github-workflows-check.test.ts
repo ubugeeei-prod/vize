@@ -289,7 +289,7 @@ test("check workflow blocks on Rust source and branch coverage budgets", () => {
   assert.equal(jobs["source-coverage"].env?.VIZE_NUXT_CONFIG_ITERATIONS, "100");
   assert.match(sourceJob, /tool:\s*cargo-llvm-cov/);
   assert.match(sourceJob, /vp install --frozen-lockfile --prefer-offline/);
-  assert.match(sourceJob, /vp run --workspace-root coverage:source/);
+  assert.match(sourceJob, /setup-rust-script[\s\S]*coverage:source/);
   assert.match(sourceJob, /Verify source coverage summary/);
   assert.match(sourceJob, /test -s target\/llvm-cov\/source-summary\.json/);
   assert.match(sourceJob, /source-summary\.json/);
@@ -299,7 +299,7 @@ test("check workflow blocks on Rust source and branch coverage budgets", () => {
   assert.match(branchJob, /toolchain:\s*nightly/);
   assert.match(branchJob, /tool:\s*cargo-llvm-cov/);
   assert.match(branchJob, /vp install --frozen-lockfile --prefer-offline/);
-  assert.match(branchJob, /vp run --workspace-root coverage:source:branch/);
+  assert.match(branchJob, /setup-rust-script[\s\S]*coverage:source:branch/);
   assert.match(branchJob, /Verify branch coverage summary/);
   assert.match(branchJob, /test -s target\/llvm-cov\/source-branch-summary\.json/);
   assert.match(branchJob, /source-branch-summary\.json/);
