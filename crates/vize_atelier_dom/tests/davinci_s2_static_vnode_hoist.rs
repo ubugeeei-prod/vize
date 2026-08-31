@@ -37,6 +37,18 @@ const BATTERY: &[(&str, &str)] = &[
         "v_for_item_root_hoists_static_child_vnodes",
         r#"<div v-for="item in items" :key="item.id"><span class="icon"></span>{{ item.name }}</div>"#,
     ),
+    (
+        "component_slot_dynamic_text_parent_keeps_icon_inline",
+        r#"<Panel><label :class="['flex', 'items-center', 'gap-2']"><div i-solar:magic-stick-bold-duotone></div>{{ t('settings.pages.modules.artistry.autonomous.title') }}</label><Checkbox></Checkbox></Panel>"#,
+    ),
+    (
+        "branch_child_dynamic_text_parent_keeps_icon_inline",
+        r#"<div v-if="isCorsError"><div class="flex items-center gap-2"><div i-solar:shield-warning-bold-duotone></div>{{ t('settings.pages.providers.provider.comfyui.settings.cors.title') }}</div></div>"#,
+    ),
+    (
+        "template_if_slot_keeps_upload_icon_hoist_after_parent_props",
+        r#"<InputFileCard><template #default="{ isDragging }"><template v-if="!isDragging"><div flex flex-col items-center><div i-solar:upload-square-line-duotone mb-4 text-5xl text="neutral-400 dark:neutral-500"></div><p font-medium text="neutral-600 dark:neutral-300">{{ t('settings.pages.card.upload') }}</p><p text="neutral-500 dark:neutral-400" mt-2 text-sm>{{ t('settings.pages.card.upload_desc') }}</p></div></template><template v-else><div flex flex-col items-center><div i-solar:upload-minimalistic-bold class="mb-2 text-5xl text-primary-500 dark:text-primary-400"></div><p font-medium text="primary-600 dark:primary-300">{{ t('settings.pages.card.drop_here') }}</p></div></template></template></InputFileCard>"#,
+    ),
 ];
 
 #[test]

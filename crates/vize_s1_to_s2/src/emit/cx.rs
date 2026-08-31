@@ -38,4 +38,16 @@ impl EmitCx<'_> {
         self.hoist_static_vnodes = previous;
         result
     }
+
+    pub(super) fn with_static_vnode_hoist_exact<T>(
+        &mut self,
+        enabled: bool,
+        write: impl FnOnce(&mut Self) -> Result<T, EmitError>,
+    ) -> Result<T, EmitError> {
+        let previous = self.hoist_static_vnodes;
+        self.hoist_static_vnodes = enabled;
+        let result = write(self);
+        self.hoist_static_vnodes = previous;
+        result
+    }
 }

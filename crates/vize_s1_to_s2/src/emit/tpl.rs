@@ -20,6 +20,7 @@ use super::children::{
 };
 use super::hoist::{emit_hoisted_element, is_hoistable};
 use super::js::escape_js_string;
+use super::props_static::PropHoistPosition;
 use super::vnode;
 use crate::lower::WrapperKey;
 
@@ -73,8 +74,9 @@ fn should_unwrap_if(ops: &[Op<'_>]) -> bool {
 fn unwrap_if(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<(), EmitError> {
     match branch.region.ops.as_slice() {
         [Op::Element(element)] => {
-            let _id = cx.walk.mint();
+            let id = cx.walk.mint();
             cx.walk.skip(element.bindings.len());
+            register_unwrapped_if_child_props_hoist(cx, element, id)?;
             super::emit_if_branch_call(cx, element, key)
         }
         [Op::Component(component)] => {
@@ -96,6 +98,22 @@ fn unwrap_if(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<()
             branch.span,
         )),
     }
+}
+
+fn register_unwrapped_if_child_props_hoist(
+    cx: &mut EmitCx<'_>,
+    element: &vize_s2::op::ElementOp<'_>,
+    id: Option<vize_davinci::id::NodeId>,
+) -> Result<(), EmitError> {
+    if !super::props_static::should_hoist(cx, id, PropHoistPosition::Nested) {
+        return Ok(());
+    }
+    if let Some(props) =
+        super::props_static::root_hoist_props(&element.attributes, &element.bindings)?
+    {
+        let _ = cx.buf.push_hoist(props);
+    }
+    Ok(())
 }
 
 pub(super) fn should_unwrap_for(ops: &[Op<'_>]) -> bool {
