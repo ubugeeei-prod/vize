@@ -265,6 +265,7 @@ test("pkg.pr.new workflow publishes built npm packages from the lockfile", () =>
   );
   assert.match(job, /rustup toolchain install 1\.98\.0 --profile minimal --no-self-update/);
   assert.match(job, /rustup default 1\.98\.0/);
+  assert.match(job, /grep -Eq '\(\^\|\[\[:space:\]\]\)0\\\.34\\\.0\(\[\[:space:\]\]\|\$\)'/);
   assert.match(job, /cargo install rust-script --version 0\.34\.0 --locked/);
   assert.match(job, /vp run --workspace-root build:packages/);
   assert.match(job, /vp exec pkg-pr-new publish --pnpm --packageManager=pnpm --comment=update/);

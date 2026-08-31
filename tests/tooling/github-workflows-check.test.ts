@@ -331,8 +331,14 @@ test("check workflow builds local native bindings before JS checks", () => {
 
   assert.match(buildJob, /vp run --filter '\.\/npm\/native' build:ci/);
   assert.match(buildJob, /vp run --filter '\.\/npm\/ui' check/);
-  assert.match(buildJob, /uses:\s*\.\/\.github\/actions\/setup-rust-script/);
-  assert.match(buildJob, /vp run --workspace-root build:packages/);
+  const rustScriptSetupIndex = buildJob.indexOf("uses: ./.github/actions/setup-rust-script");
+  const buildPackagesIndex = buildJob.indexOf("run: vp run --workspace-root build:packages");
+  assert.ok(rustScriptSetupIndex >= 0, "build-js-packages must install rust-script");
+  assert.ok(buildPackagesIndex >= 0, "build-js-packages must build packages");
+  assert.ok(
+    rustScriptSetupIndex < buildPackagesIndex,
+    "build-js-packages must install rust-script before build:packages",
+  );
   assert.match(buildJob, /name:\s*shared-js-build/);
 
   assert.match(playgroundJob, /needs:\n\s+- build-js-packages\b/);
