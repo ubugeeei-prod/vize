@@ -2,12 +2,17 @@
 //! key, and option modifiers (`withModifiers`, `withKeys`, `onClickOnce`, …).
 //! Object `v-on` lives in [`super::merge`].
 
-use oxc_ast::ast::{ChainElement, Expression};
-use vize_s0::{SmallVec, Span, String, camelize, capitalize};
-use vize_s2::expr::{ExprRef, JsExpr, OpaqueReason};
-use vize_s2::op::{DynamicName, OnOp};
+mod wrapped;
 
-use super::{EmitCx, EmitError, UnsupportedReason as Reason, buf::Buf};
+#[cfg(test)]
+mod tests;
+
+use vize_s0::{SmallVec, String, camelize, capitalize};
+use vize_s2::expr::{ExprRef, OpaqueReason};
+use vize_s2::op::{DynamicName, OnOp};
+pub(super) use wrapped::emit_wrapped_handler;
+
+use super::{EmitCx, EmitError, UnsupportedReason as Reason};
 
 // The checked modifier inventory in `tests/tooling/davinci-v-on-storage.test.ts`
 // selects two inline entries per classifier bucket. Authored directives remain
@@ -151,135 +156,6 @@ pub(super) fn emit_on_value(
     emit_wrapped_handler(cx, on, &classified, is_plain_element)
 }
 
-pub(super) fn emit_wrapped_handler(
-    cx: &mut EmitCx<'_>,
-    on: &OnOp<'_>,
-    classified: &Classified<'_>,
-    is_plain_element: bool,
-) -> Result<(), EmitError> {
-    if !classified.keys.is_empty() {
-        cx.buf.use_with_keys();
-        cx.buf.push(Buf::with_keys_alias());
-        cx.buf.push("(");
-    }
-    if !classified.event.is_empty() {
-        cx.buf.use_with_modifiers();
-        cx.buf.push(Buf::with_modifiers_alias());
-        cx.buf.push("(");
-    }
-    match on.handler {
-        Some(ExprRef::Js(js)) => emit_handler(cx, on, js, is_plain_element),
-        Some(ExprRef::Opaque(opaque)) if opaque.reason == OpaqueReason::MultiStatement => {
-            super::on_body::emit(cx, opaque.source);
-        }
-        None => cx.buf.push("() => {}"),
-        Some(expr) => {
-            return Err(EmitError::unsupported_at(
-                Reason::OnHandlerNotJs,
-                expr.span(),
-            ));
-        }
-    }
-    if !classified.event.is_empty() {
-        cx.buf.push(", ");
-        emit_mod_array(cx, &classified.event);
-        cx.buf.push(")");
-    }
-    if !classified.keys.is_empty() {
-        cx.buf.push(", ");
-        emit_mod_array(cx, &classified.keys);
-        cx.buf.push(")");
-    }
-    Ok(())
-}
-
-fn emit_mod_array(cx: &mut EmitCx<'_>, mods: &[&str]) {
-    cx.buf.push("[");
-    for (i, modifier) in mods.iter().enumerate() {
-        if i > 0 {
-            cx.buf.push(",");
-        }
-        cx.buf.push("\"");
-        cx.buf.push(modifier);
-        cx.buf.push("\"");
-    }
-    cx.buf.push("]");
-}
-
-pub(super) fn emit_handler(
-    cx: &mut EmitCx<'_>,
-    on: &OnOp<'_>,
-    js: &JsExpr<'_>,
-    is_plain_element: bool,
-) {
-    if is_handler_reference(js.ast) || super::on_body::preserves_raw_function_handler(js) {
-        emit_raw_handler(cx, on, js);
-        return;
-    }
-    if is_raw_function_handler(js.ast, is_plain_element) && !super::on_typed::is_typed_arrow(js.ast)
-    {
-        super::js::push_js_expr(cx, js);
-        return;
-    }
-    if js.source.contains(';') {
-        super::on_body::emit(cx, js.source);
-    } else {
-        cx.buf.push("$event => (");
-        super::js::push_js_expr(cx, js);
-        cx.buf.push(")");
-    }
-}
-
-fn emit_raw_handler(cx: &mut EmitCx<'_>, on: &OnOp<'_>, js: &JsExpr<'_>) {
-    if let Some((leading, trailing)) = authored_handler_padding(cx.source, on, js.source, js.span) {
-        cx.buf.push(leading);
-        cx.buf.push(js.source);
-        cx.buf.push(trailing);
-    } else {
-        cx.buf.push(js.source);
-    }
-}
-
-fn authored_handler_padding<'a>(
-    source: &'a str,
-    on: &OnOp<'_>,
-    value: &str,
-    value_span: Span,
-) -> Option<(&'a str, &'a str)> {
-    let attr_start = usize::try_from(on.span.start).ok()?;
-    let attr_end = usize::try_from(on.span.end).ok()?;
-    let value_start = usize::try_from(value_span.start).ok()?;
-    let value_end = usize::try_from(value_span.end).ok()?;
-    if attr_start > value_start
-        || value_start > value_end
-        || value_end > attr_end
-        || attr_end > source.len()
-        || source.get(value_start..value_end)? != value
-    {
-        return None;
-    }
-    let before = source.get(attr_start..value_start)?;
-    let quote_pos = before
-        .as_bytes()
-        .iter()
-        .rposition(|byte| matches!(*byte, b'\'' | b'"'))?;
-    let quote = before.as_bytes()[quote_pos];
-    let leading = before.get(quote_pos + 1..)?;
-    let after = source.get(value_end..attr_end)?;
-    let trailing_end = after
-        .as_bytes()
-        .iter()
-        .position(|byte| *byte == quote)
-        .unwrap_or(after.len());
-    let trailing = after.get(..trailing_end)?;
-    if leading.is_empty() && trailing.is_empty() {
-        return None;
-    }
-    (leading.bytes().all(|byte| byte.is_ascii_whitespace())
-        && trailing.bytes().all(|byte| byte.is_ascii_whitespace()))
-    .then_some((leading, trailing))
-}
-
 fn classify<'a>(on: &'a OnOp<'a>) -> Result<Classified<'a>, EmitError> {
     let name = static_on_name(on)?;
     Ok(classify_modifiers(name, on.modifiers.iter().copied()))
@@ -340,75 +216,5 @@ fn remapped_name<'a>(raw: &'a str, event: &[&str]) -> &'a str {
         "mouseup"
     } else {
         raw
-    }
-}
-
-fn is_handler_reference(expr: &Expression<'_>) -> bool {
-    match expr {
-        Expression::Identifier(_)
-        | Expression::StaticMemberExpression(_)
-        | Expression::ComputedMemberExpression(_)
-        | Expression::PrivateFieldExpression(_) => true,
-        Expression::ChainExpression(chain) => matches!(
-            chain.expression,
-            ChainElement::StaticMemberExpression(_) | ChainElement::ComputedMemberExpression(_)
-        ),
-        _ => false,
-    }
-}
-
-fn is_raw_function_handler(expr: &Expression<'_>, is_plain_element: bool) -> bool {
-    if matches!(expr, Expression::FunctionExpression(_)) {
-        return true;
-    }
-    match expr {
-        Expression::ArrowFunctionExpression(arrow) => {
-            !is_plain_element || !arrow.params.items.is_empty()
-        }
-        _ => false,
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::classify_modifiers;
-
-    #[test]
-    fn common_two_modifier_buckets_stay_inline() {
-        let classified = classify_modifiers(
-            "keyup",
-            ["capture", "once", "stop", "prevent", "enter", "escape"],
-        );
-
-        assert!(!classified.options.spilled());
-        assert!(!classified.event.spilled());
-        assert!(!classified.keys.spilled());
-    }
-
-    #[test]
-    fn authored_modifiers_spill_without_a_length_ceiling() {
-        let classified = classify_modifiers(
-            "keyup",
-            [
-                "capture", "once", "passive", "stop", "prevent", "self", "enter", "escape", "space",
-            ],
-        );
-
-        assert!(classified.options.spilled());
-        assert!(classified.event.spilled());
-        assert!(classified.keys.spilled());
-        assert_eq!(
-            classified.options.as_slice(),
-            ["capture", "once", "passive"]
-        );
-        assert_eq!(classified.event.as_slice(), ["stop", "prevent", "self"]);
-        assert_eq!(classified.keys.as_slice(), ["enter", "escape", "space"]);
-    }
-
-    #[cfg(target_pointer_width = "64")]
-    #[test]
-    fn inline_storage_stack_tradeoff_is_pinned() {
-        assert_eq!(core::mem::size_of::<super::Classified<'_>>(), 120);
-        assert_eq!(core::mem::size_of::<alloc::vec::Vec<&str>>() * 3, 72);
     }
 }

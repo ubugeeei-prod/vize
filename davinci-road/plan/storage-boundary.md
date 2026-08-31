@@ -21,8 +21,8 @@ or `collections` modules does not bypass the boundary.
 
 ## Retained `alloc::vec::Vec` inventory
 
-The four library trees in the reviewed inventory contain 58 production files,
-70 direct `alloc::vec::Vec` paths, and 238 bound `Vec`/`StdVec` uses. "Direct"
+The four library trees in the reviewed inventory contain 59 production files,
+71 direct `alloc::vec::Vec` paths, and 238 bound `Vec`/`StdVec` uses. "Direct"
 counts imports and fully-qualified paths; "bound" counts every type,
 constructor, and method path reached through a direct `Vec` import or alias.
 The executable ledger requires strict equality, so both growth and reduction
@@ -34,7 +34,7 @@ must update the file row and aggregate evidence in the same change.
 | analysis |     7 |            8 |         18 | Diagnostics, side tables, filters, and verifier results grow with the input; no inline bound is established.       |
 | lower    |    11 |           11 |         39 | Lowering worklists and owned results grow with source-tree shape. Bounded substructures may migrate independently. |
 | pass     |    13 |           13 |         51 | Facts, provenance, and traversal worklists grow with the number of operations.                                     |
-| emit     |    14 |           14 |         66 | Ordered output buffers and collected emission inputs grow with the document.                                       |
+| emit     |    15 |           15 |         66 | Ordered output buffers and collected emission inputs grow with the document.                                       |
 
 This is not an endorsement of every retained allocation. A focused change may
 replace a site with `SmallVec` after measuring a bound; that change lowers the
@@ -43,9 +43,9 @@ Mechanical conversion of source-sized buffers is not a goal because it can
 move large payloads onto the stack or add spill bookkeeping without reducing
 allocations.
 
-The `alloc::vec::Vec` import in `emit/on.rs` and the second import in
-`side_table.rs` are `#[cfg(test)]` size/test evidence. The scanner excludes the
-complete attributed item or module, so neither can inflate production totals.
+The second `alloc::vec::Vec` import in `side_table.rs` is `#[cfg(test)]`
+size/test evidence. The scanner excludes the complete attributed item or
+module, so it cannot inflate production totals.
 
 ## Exact owned-storage inventory by scope
 
@@ -71,9 +71,9 @@ or count and fails the gate instead of becoming a `no_std` escape from S0.
 | s2       | `vize_s0::String`       |    11 |           11 |         53 |
 | s2       | `vize_s0::Vec`          |     9 |            9 |         17 |
 | s2       | `vize_s0::SmallVec`     |     0 |            0 |          0 |
-| s1_to_s2 | `alloc::vec::Vec`       |    38 |           38 |        156 |
+| s1_to_s2 | `alloc::vec::Vec`       |    39 |           39 |        156 |
 | s1_to_s2 | `alloc::string::String` |     0 |            0 |          0 |
-| s1_to_s2 | `vize_s0::String`       |    55 |           57 |        238 |
+| s1_to_s2 | `vize_s0::String`       |    56 |           58 |        244 |
 | s1_to_s2 | `vize_s0::Vec`          |    14 |           14 |         56 |
 | s1_to_s2 | `vize_s0::SmallVec`     |     2 |            2 |          4 |
 

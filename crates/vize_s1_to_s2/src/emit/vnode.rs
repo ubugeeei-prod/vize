@@ -1,8 +1,10 @@
 //! Static native HTML element / children emission.
 
+mod array_child;
+
+pub(super) use array_child::emit_array_child;
 use vize_davinci::id::NodeId;
-use vize_s0::ensure_sufficient_stack;
-use vize_s2::op::{BindingOp, ElementOp, Op};
+use vize_s2::op::{BindingOp, ElementOp};
 
 use super::buf::Buf;
 use super::children::children_need_text_flag;
@@ -12,7 +14,7 @@ use super::namespace;
 use super::props::{admit_element_bindings, apply_static_ref_patch, bind_patch, emit_bind_props};
 use super::props_static::PropHoistPosition;
 use super::vnode_children::emit_children;
-use super::{EmitCx, EmitError, UnsupportedReason as Reason};
+use super::{EmitCx, EmitError};
 
 pub(super) fn emit_unique_element(
     cx: &mut EmitCx<'_>,
@@ -319,54 +321,4 @@ fn direct_static_children_hoisted(
     id: Option<NodeId>,
 ) -> bool {
     super::vnode_static::should_hoist_static_children(cx, element, id, true, false, false)
-}
-
-pub(super) fn emit_array_child(
-    cx: &mut EmitCx<'_>,
-    op: &Op<'_>,
-    hoist_static_children: bool,
-    cache_static_children: bool,
-) -> Result<(), EmitError> {
-    let hoist_static_children = hoist_static_children || cx.hoist_static_vnodes;
-    if hoist_static_children
-        && let Op::Element(element) = op
-        && super::hoist::is_hoistable(element)
-    {
-        return super::hoist::emit_hoisted_element(cx, element);
-    }
-    if cache_static_children
-        && let Op::Element(element) = op
-        && super::hoist::is_hoistable(element)
-    {
-        return super::hoist::emit_cached_element(cx, element);
-    }
-    let id = cx.walk.mint();
-    cx.with_static_vnode_hoist(hoist_static_children, |cx| {
-        ensure_sufficient_stack(|| match op {
-            Op::Element(element) if super::slots::is_slot_template(element) => {
-                cx.walk.skip(element.bindings.len());
-                super::tpl::emit_inline(cx, &element.children.ops)
-            }
-            Op::Element(element) => {
-                cx.walk.skip(element.bindings.len());
-                if super::once::emit_hoisted_child(cx, element)? {
-                    return Ok(());
-                }
-                emit_nested(cx, element, id)
-            }
-            Op::Component(component) => {
-                cx.walk.skip(component.bindings.len());
-                super::component::emit_nested(cx, component, id)
-            }
-            Op::If(if_op) => super::emit_if_op(cx, if_op, id),
-            Op::For(for_op) => super::emit_for_op(cx, for_op, id, None),
-            Op::Slot(slot) => {
-                cx.walk.skip(slot.bindings.len());
-                super::outlet::emit_outlet(cx, slot, None, false)
-            }
-            Op::Text(_) | Op::Interpolation(_) => {
-                Err(EmitError::unsupported_op(Reason::ArrayChildTextRun, op))
-            }
-        })
-    })
 }

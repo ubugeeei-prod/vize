@@ -5,13 +5,16 @@
 //! with later installments.
 
 mod cached_props;
+mod props;
+
 use alloc::vec::Vec as StdVec;
+pub(super) use props::{compact_props_object, push_attr_pair, unique_attrs};
 
 use vize_s0::{String, ToCompactString};
-use vize_s2::op::{Attribute, ElementOp, Op, Region};
+use vize_s2::op::{ElementOp, Op, Region};
 
 use super::buf::Buf;
-use super::js::{escape_js_string, is_valid_js_identifier};
+use super::js::escape_js_string;
 use super::{EmitCx, EmitError, UnsupportedReason as Reason};
 
 pub(super) fn emit_hoisted_element(
@@ -310,50 +313,4 @@ fn renderable_children<'a>(children: &'a Region<'a>) -> StdVec<&'a Op<'a>> {
     // S2 lowering has already applied legacy condense/drop decisions; every
     // remaining text op is renderable, including a single-space separator.
     children.ops.iter().collect()
-}
-
-/// First-occurrence static attrs as a single-line object, matching
-/// hoisted `JsChildNode::Object` emission.
-pub(super) fn compact_props_object<'a>(
-    attributes: impl Iterator<Item = &'a Attribute<'a>>,
-) -> String {
-    let unique = unique_attrs(attributes);
-    let mut out = String::from("{ ");
-    for (i, attr) in unique.iter().enumerate() {
-        if i > 0 {
-            out.push_str(", ");
-        }
-        push_attr_pair(&mut out, attr);
-    }
-    out.push_str(" }");
-    out
-}
-
-pub(super) fn unique_attrs<'a>(
-    attributes: impl Iterator<Item = &'a Attribute<'a>>,
-) -> StdVec<&'a Attribute<'a>> {
-    let mut unique: StdVec<&Attribute<'_>> = StdVec::new();
-    for attr in attributes {
-        if unique.iter().any(|seen| seen.name == attr.name) {
-            continue;
-        }
-        unique.push(attr);
-    }
-    unique
-}
-
-pub(super) fn push_attr_pair(out: &mut String, attr: &Attribute<'_>) {
-    let quoted = !is_valid_js_identifier(attr.name);
-    if quoted {
-        out.push('"');
-    }
-    out.push_str(attr.name);
-    if quoted {
-        out.push('"');
-    }
-    out.push_str(": \"");
-    if let Some(value) = attr.value {
-        out.push_str(escape_js_string(value).as_str());
-    }
-    out.push('"');
 }

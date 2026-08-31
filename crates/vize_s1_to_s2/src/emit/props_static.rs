@@ -1,7 +1,8 @@
 //! Inline static props for native element calls.
 
-use oxc_ast::ast::{Expression, IdentifierReference};
-use oxc_ast_visit::Visit;
+mod legacy_constant;
+
+use legacy_constant::legacy_global_constant_expr;
 use vize_davinci::id::NodeId;
 use vize_s0::String;
 use vize_s2::op::{Attribute, BindingOp, DynamicName};
@@ -217,31 +218,6 @@ fn component_hoist_prop<'a>(
             Ok(Some((HoistKey::StaticBind(key), dynamic_value)))
         }
         _ => Ok(None),
-    }
-}
-
-fn legacy_global_constant_expr(expr: &Expression<'_>, source: &str) -> bool {
-    if source.contains("_ctx.")
-        || source.contains("$setup.")
-        || source.contains("__props.")
-        || source.contains("$props.")
-    {
-        return false;
-    }
-    let mut walk = LegacyGlobalConstWalk { dynamic: false };
-    walk.visit_expression(expr);
-    !walk.dynamic
-}
-
-struct LegacyGlobalConstWalk {
-    dynamic: bool,
-}
-
-impl<'a> Visit<'a> for LegacyGlobalConstWalk {
-    fn visit_identifier_reference(&mut self, ident: &IdentifierReference<'a>) {
-        if !super::props_bind::is_global_key_name(ident.name.as_str()) {
-            self.dynamic = true;
-        }
     }
 }
 

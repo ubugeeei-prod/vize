@@ -5,12 +5,14 @@
 //! spread, Vue builtins, and `<component :is>`
 //! (`resolveDynamicComponent`).
 
+mod checks;
 mod preamble;
 
 use alloc::vec::Vec as StdVec;
+use checks::{admit, has_dynamic_key_binding};
 
 use vize_davinci::id::NodeId;
-use vize_s2::op::{BindingOp, ComponentOp, DynamicName};
+use vize_s2::op::{BindingOp, ComponentOp};
 
 use super::EmitCx;
 use super::EmitError;
@@ -23,7 +25,7 @@ use super::directive;
 use super::flag::emit_patch_flag;
 use super::hoist::compact_props_object;
 use super::js::asset_ident;
-use super::props::{admit_bindings, apply_static_ref_patch, bind_patch, emit_bind_props};
+use super::props::{apply_static_ref_patch, bind_patch, emit_bind_props};
 use super::props_static;
 use super::slots;
 
@@ -335,24 +337,4 @@ fn emit_call(
     }
     cx.buf.push(")");
     Ok(())
-}
-
-fn admit(cx: &EmitCx<'_>, component: &ComponentOp<'_>) -> Result<(), EmitError> {
-    if create_slots::needs_create_slots(cx, &component.children)
-        || slots::has_implicit_default(&component.children)
-    {
-        slots::admit_default(&component.children)?;
-    }
-    admit_bindings(&component.attributes, &component.bindings)
-}
-
-fn has_dynamic_key_binding(component: &ComponentOp<'_>) -> bool {
-    component.bindings.iter().any(|binding| {
-        matches!(
-            binding,
-            BindingOp::Bind(bind)
-                if bind.value.is_some()
-                    && matches!(bind.name, Some(DynamicName::Static("key")))
-        )
-    })
 }
