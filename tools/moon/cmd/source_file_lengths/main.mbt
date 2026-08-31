@@ -59,7 +59,7 @@ fn is_excluded_path(path : String) -> Bool {
   path.has_suffix(".lock") ||
   // Generated artifacts, trusted-publishing workflows, and single-file package
   // manifests cannot be split without breaking producer contracts or public paths.
-  (path.has_prefix("bench/results/") || path.has_prefix("tools/commands/") || path.has_prefix("tools/rust/") ||
+  (path.has_prefix("tools/benchmarks/results/") || path.has_prefix("tools/commands/") || path.has_prefix("tools/support/") ||
   path == "npm/cli/schemas/vize.config.schema.json" ||
   path == "npm/cli/src/types/generated.ts" || path == "davinci-road/plan/croquis-consumption.md" || path == "davinci-road/plan/corpus-coverage.md" ||
   (path == "package.json" || path.has_suffix("/package.json")) || path == ".github/workflows/release.yml") ||

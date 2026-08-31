@@ -51,7 +51,7 @@ Vize は Vue ツールチェーンですが、コンパイラーと同じ障害�
 | レーン         | 変更が                                                                                                                                       | に触れる場合に使用します。記録すべき証拠                                                                                                                                                                                                                                       |
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | セキュリティ   | URL 処理、HTML または SSR 出力、ファイルシステム/構成の読み込み、ネイティブの読み込み、パッケージの公開、CI、または資格情報。                | `.github/workflows/check.yml`、`vp exec pnpm audit --prod --audit-level moderate`、`cargo audit --deny warnings` の `security-audit`、smoke-install ランタイム チェック、固定された GitHub Actions チェック、およびリスクのある入力または境界をカバーする焦点を絞った回帰。    |
-| パフォーマンス | パーサー、コンパイラー、リンター、フォーマッタ、型チェッカー、キャッシュ、プロジェクト グラフ トラバーサル、生成された出力、または CLI I/O。 | `.github/workflows/benchmark.yml`、`bench/compare-pr.mjs`、`bench/enforce-pr-budget.mjs`、`pr-benchmark-budget` ステータス、ローカル `bench:*` タスク、および回帰が必要な場合の `vize lint --profile`、`vize check --profile`、または `vize fmt --profile` 出力帰属。          |
+| パフォーマンス | パーサー、コンパイラー、リンター、フォーマッタ、型チェッカー、キャッシュ、プロジェクト グラフ トラバーサル、生成された出力、または CLI I/O。 | `.github/workflows/benchmark.yml`、`tools/benchmarks/scripts/compare-pr.mjs`、`tools/benchmarks/scripts/enforce-pr-budget.mjs`、`pr-benchmark-budget` ステータス、ローカル `bench:*` タスク、および回帰が必要な場合の `vize lint --profile`、`vize check --profile`、または `vize fmt --profile` 出力帰属。          |
 | ファジング     | バイト指向の解析、構文の回復、CSS 解析、JS/TS 式の解析、テンプレートの字句解析、または codegen の回復。                                      | `.github/workflows/fuzz.yml`、`tests/fuzz/Cargo.toml`、`tools/commands/ci/fuzz/seed_corpus.rs`、`cargo +nightly fuzz run <target>`、アップロードされた `fuzz-reproducers-*` アーティファクト、およびクラッシュ、タイムアウト、または OOM 後の最小化された決定論的回帰が理解されています。 |
 
 ## ベースラインポリシー
@@ -92,7 +92,7 @@ Vize は、メモリに依存する代わりに、これらのプラクティス
 
 - `CONTRIBUTING.md` は、貢献者向けのクラス変更規律に名前を付けます。
 - `.github/PULL_REQUEST_TEMPLATE.md` は、行動の参照、リスク、検証証拠を求めます。
-- `bench/test-inventory.mjs` は、PR CI の現在のテスト資産インベントリをレポートします。
+- `tools/benchmarks/scripts/test-inventory.mjs` は、PR CI の現在のテスト資産インベントリをレポートします。
 - `.github/workflows/benchmark.yml` は、ベース CLI とヘッド CLI のパフォーマンスを比較し、PR 予算を適用します。
 - `.github/workflows/check.yml` は、実稼働 npm および Rust の `security-audit` ジョブを実行します
   依存関係に関する勧告。

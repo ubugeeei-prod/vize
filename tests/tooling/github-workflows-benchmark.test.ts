@@ -52,8 +52,8 @@ test("benchmark workflow comments from trusted code after a read-only benchmark 
     /BENCHMARK_BASE_SHA:\s*\$\{\{[^\n]*github\.event_name == 'workflow_dispatch' && inputs\.base_sha \|\| github\.event\.pull_request\.base\.sha\s*\}\}/,
   );
   assert.match(benchmarkJob, /name:\s*pr-benchmark/);
-  assert.doesNotMatch(benchmarkJob, /node base\/bench\/comment-pr\.mjs/);
-  assert.doesNotMatch(benchmarkJob, /node bench\/comment-pr\.mjs/);
+  assert.doesNotMatch(benchmarkJob, /node base\/tools\/benchmarks\/scripts\/comment-pr\.mjs/);
+  assert.doesNotMatch(benchmarkJob, /node tools\/benchmarks\/scripts\/comment-pr\.mjs/);
   assert.match(benchmarkJob, /--threshold "\$VIZE_BENCH_REGRESSION_THRESHOLD_PERCENT"/);
 
   assert.match(budgetJob, /needs:\n\s+- pr-benchmark\b/);
@@ -70,7 +70,7 @@ test("benchmark workflow comments from trusted code after a read-only benchmark 
   assert.doesNotMatch(budgetJob, /issues\/\$\{process\.env\.PR_NUMBER\}\/labels/);
   assert.match(
     budgetJob,
-    /node head\/bench\/enforce-pr-budget\.mjs[\s\S]*--json benchmark-results\.json[\s\S]*--labels-json "\$PR_LABELS_JSON"/,
+    /node head\/tools\/benchmarks\/scripts\/enforce-pr-budget\.mjs[\s\S]*--json benchmark-results\.json[\s\S]*--labels-json "\$PR_LABELS_JSON"/,
   );
   assert.match(
     budgetJob,
@@ -95,7 +95,7 @@ test("benchmark workflow comments from trusted code after a read-only benchmark 
   );
   assert.match(
     commentJob,
-    /node bench\/comment-pr\.mjs --body benchmark-summary\.md --comment-key "\$BENCHMARK_COMMENT_KEY"/,
+    /node tools\/benchmarks\/scripts\/comment-pr\.mjs --body benchmark-summary\.md --comment-key "\$BENCHMARK_COMMENT_KEY"/,
   );
 });
 
@@ -240,13 +240,13 @@ test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard",
   // Only runs on PRs and only when Rust or the bench harness changes.
   assert.match(workflow, /\n  pull_request:\n/);
   assert.match(workflow, /paths:\n\s+- "crates\/\*\*"/);
-  assert.match(workflow, /- "benchmarks\/\*\*"/);
+  assert.match(workflow, /- "tools\/benchmarks\/crates\/\*\*"/);
   assert.match(workflow, /- "Cargo\.lock"/);
   assert.match(workflow, /- "Cargo\.toml"/);
-  assert.match(workflow, /- "bench\/criterion-ab\.mjs"/);
-  assert.match(workflow, /- "bench\/criterion-impact\.mjs"/);
-  assert.match(workflow, /- "bench\/criterion-summary\.mjs"/);
-  assert.match(workflow, /- "bench\/dialect-guard\.mjs"/);
+  assert.match(workflow, /- "tools\/benchmarks\/scripts\/criterion-ab\.mjs"/);
+  assert.match(workflow, /- "tools\/benchmarks\/scripts\/criterion-impact\.mjs"/);
+  assert.match(workflow, /- "tools\/benchmarks\/scripts\/criterion-summary\.mjs"/);
+  assert.match(workflow, /- "tools\/benchmarks\/scripts\/dialect-guard\.mjs"/);
   assert.match(workflow, /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24:\s*true/);
 
   for (const [jobName, minutes] of [
@@ -299,7 +299,7 @@ test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard",
     /cargo install critcmp --version 0\.1\.8 --locked/,
   );
   const runStep = workflowStepBody(abJob, "Run criterion A/B");
-  assert.match(runStep, /node head\/bench\/criterion-ab\.mjs/);
+  assert.match(runStep, /node head\/tools\/benchmarks\/scripts\/criterion-ab\.mjs/);
   assert.match(runStep, /--target-dir "\$GITHUB_WORKSPACE\/head\/target"/);
   const impactPath = impactStep.match(/--out "([^"]+)"/)?.[1];
   const selectionPath = runStep.match(/--selection "([^"]+)"/)?.[1];
@@ -314,8 +314,8 @@ test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard",
     guardJob,
     /cargo build --profile ci-opt -p vize --features legacy --target-dir target\/on/,
   );
-  assert.match(guardJob, /node bench\/generate\.mjs "\$DIALECT_GUARD_FILE_COUNT"/);
-  assert.match(guardJob, /node bench\/dialect-guard\.mjs/);
+  assert.match(guardJob, /node tools\/benchmarks\/scripts\/generate\.mjs "\$DIALECT_GUARD_FILE_COUNT"/);
+  assert.match(guardJob, /node tools\/benchmarks\/scripts\/dialect-guard\.mjs/);
   assert.match(guardJob, /--off-bin target\/off\/ci-opt\/vize/);
   assert.match(guardJob, /--on-bin target\/on\/ci-opt\/vize/);
   assert.match(guardJob, /--threshold "\$DIALECT_GUARD_THRESHOLD_PERCENT"/);

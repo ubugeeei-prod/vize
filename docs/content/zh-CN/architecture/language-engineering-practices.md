@@ -51,7 +51,7 @@ Vize 是一个 Vue 工具链，但它具有与编译器相同的故障模式：�
 | 车道     | 当变化触及                                                                               | 时使用记录证据                                                                                                                                                                                                                                |
 | -------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 安全     | URL 处理、HTML 或 SSR 输出、文件系统/配置加载、本机加载、包发布、CI 或凭据。             | `security-audit`（`.github/workflows/check.yml`、`vp exec pnpm audit --prod --audit-level moderate`、`cargo audit --deny warnings`）、烟雾安装运行时检查、固定 GitHub Actions 检查以及涵盖风险输入或边界的任何集中回归。                      |
-| 性能     | 解析器、编译器、linter、格式化程序、类型检查器、缓存、项目图遍历、生成的输出或 CLI I/O。 | 回归需要时输出 `.github/workflows/benchmark.yml`、`bench/compare-pr.mjs`、`bench/enforce-pr-budget.mjs`、`pr-benchmark-budget` 状态、本地 `bench:*` 任务以及 `vize lint --profile`、`vize check --profile` 或 `vize fmt --profile` 输出归因。 |
+| 性能     | 解析器、编译器、linter、格式化程序、类型检查器、缓存、项目图遍历、生成的输出或 CLI I/O。 | 回归需要时输出 `.github/workflows/benchmark.yml`、`tools/benchmarks/scripts/compare-pr.mjs`、`tools/benchmarks/scripts/enforce-pr-budget.mjs`、`pr-benchmark-budget` 状态、本地 `bench:*` 任务以及 `vize lint --profile`、`vize check --profile` 或 `vize fmt --profile` 输出归因。 |
 | 模糊测试 | 面向字节的解析、语法恢复、CSS 解析、JS/TS 表达式解析、模板词法分析或代码生成恢复。       | `.github/workflows/fuzz.yml`、`tests/fuzz/Cargo.toml`、`tools/commands/ci/fuzz/seed_corpus.rs`、`cargo +nightly fuzz run <target>`、上传的 `fuzz-reproducers-*` 工件以及崩溃、超时或 OOM 后的最小化确定性回归已被了解。                                  |
 
 ## 基线政策
@@ -92,7 +92,7 @@ Vize 使这些实践保持可执行，而不是依赖于内存：
 
 - `CONTRIBUTING.md` 为贡献者命名变更类规则。
 - `.github/PULL_REQUEST_TEMPLATE.md` 要求提供行为参考、风险和验证证据。
-- `bench/test-inventory.mjs` 报告 PR CI 中当前的测试资产库存。
+- `tools/benchmarks/scripts/test-inventory.mjs` 报告 PR CI 中当前的测试资产库存。
 - `.github/workflows/benchmark.yml` 比较基础和头部 CLI 性能并执行 PR 预算。
 - `.github/workflows/check.yml` 为生产 npm 和 Rust 运行 `security-audit` 作业
   依赖性咨询。

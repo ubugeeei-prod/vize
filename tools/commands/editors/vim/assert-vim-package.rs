@@ -10,9 +10,9 @@
 
 use std::{collections::BTreeSet, env, path::PathBuf, process::ExitCode};
 
-#[path = "../../../rust/common.rs"]
+#[path = "../../../support/common.rs"]
 mod common;
-#[path = "../../../rust/editor_archive.rs"]
+#[path = "../../../support/editors/archive.rs"]
 mod editor_archive;
 
 fn main() -> ExitCode {

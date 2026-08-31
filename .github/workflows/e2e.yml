@@ -98,7 +98,7 @@ jobs:
               - 'tests/snapshots/build/__snapshots__/generic-*.snap'
               - 'tests/tooling/cli-lint-contract.test.ts'
               - 'tools/commands/ci/github/app-e2e-*.rs'
-              - 'tools/rust/**'
+              - 'tools/support/**'
               - 'tools/moon/**'
               - 'config/vite-plus/**'
               - 'tsconfig.json'

@@ -10,8 +10,8 @@ import {
   createArtFileSource,
   museaCorpusVariantCount,
   writeMuseaCorpus,
-} from "../../bench/musea-corpus.mjs";
-import { museaWorkDir, runMuseaStages } from "../../bench/musea.mjs";
+} from "../../tools/benchmarks/scripts/musea-corpus.mjs";
+import { museaWorkDir, runMuseaStages } from "../../tools/benchmarks/scripts/musea.mjs";
 
 function withTempRoot(fn: (root: string) => void): void {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-bench-musea-"));
@@ -210,7 +210,7 @@ test("the lane refuses to publish a median over two different workloads", async 
       assert.ok(error instanceof Error);
       assert.equal(
         error.message,
-        "bench/musea.mjs: drifting produced different output between passes (digest-0 -> digest-1); refusing to report a median over two workloads",
+        "tools/benchmarks/scripts/musea.mjs: drifting produced different output between passes (digest-0 -> digest-1); refusing to report a median over two workloads",
       );
       return true;
     },

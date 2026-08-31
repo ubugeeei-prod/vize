@@ -2,7 +2,7 @@
  * The README benchmark table and the generated Blacksmith snapshot are two
  * renderings of the same measurements, and they had drifted: the README
  * published the Vite row as `1.70s / 1.52s / 1.1x` and the Nuxt row as
- * `6.68s / 7.35s / 0.9x` while `bench/results/tool-benchmark-latest.json` --
+ * `6.68s / 7.35s / 0.9x` while `tools/benchmarks/results/tool-benchmark-latest.json` --
  * the artifact `docs/content/architecture/performance-blacksmith.md` is
  * rendered from -- held `1.66s / 732.5ms / 2.3x` and `6.79s / 6.42s / 1.1x`.
  * A reader got a different answer depending on which page they opened.
@@ -30,7 +30,7 @@ type Surface = {
 
 function readSnapshot(): Surface[] {
   return JSON.parse(
-    fs.readFileSync(path.join(repoRoot, "bench/results/tool-benchmark-latest.json"), "utf8"),
+    fs.readFileSync(path.join(repoRoot, "tools/benchmarks/results/tool-benchmark-latest.json"), "utf8"),
   ).surfaces as Surface[];
 }
 

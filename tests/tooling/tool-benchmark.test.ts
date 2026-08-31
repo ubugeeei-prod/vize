@@ -4,9 +4,9 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { buildFairnessNotes } from "../../bench/benchmark-notes.mjs";
-import { createSurface, renderDocument, renderMarkdown } from "../../bench/compare-tools.mjs";
-import { createNativeBatchSequenceVariants } from "../../bench/native-batch.mjs";
+import { buildFairnessNotes } from "../../tools/benchmarks/scripts/benchmark-notes.mjs";
+import { createSurface, renderDocument, renderMarkdown } from "../../tools/benchmarks/scripts/compare-tools.mjs";
+import { createNativeBatchSequenceVariants } from "../../tools/benchmarks/scripts/native-batch.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -99,9 +99,9 @@ const data = {
   commands: {
     workflowDispatch:
       "gh workflow run tool-benchmark.yml --ref <branch> -f file_count=15000 -f check_file_count=500 -f vite_file_count=1000 -f nuxt_file_count=500 -f musea_file_count=240 -f large_blocks=900 -f runs=3 -f warmups=1 -f commit_results=true",
-    generate: "node bench/generate.mjs 15000",
+    generate: "node tools/benchmarks/scripts/generate.mjs 15000",
     benchmark:
-      'node bench/compare-tools.mjs --input bench/__in__ --vize-bin target/release/vize --runs 3 --warmups 1 --check-file-count 500 --vite-file-count 1000 --nuxt-file-count 500 --musea-file-count 240 --large-blocks 900 --runner-label "blacksmith-32vcpu-ubuntu-2404" --out tool-benchmark-summary.md --json tool-benchmark-results.json --doc performance-blacksmith.md',
+      'node tools/benchmarks/scripts/compare-tools.mjs --input tools/benchmarks/scripts/__in__ --vize-bin target/release/vize --runs 3 --warmups 1 --check-file-count 500 --vite-file-count 1000 --nuxt-file-count 500 --musea-file-count 240 --large-blocks 900 --runner-label "blacksmith-32vcpu-ubuntu-2404" --out tool-benchmark-summary.md --json tool-benchmark-results.json --doc performance-blacksmith.md',
   },
   fairness: [
     "All tools run on the same generated Vue SFC corpus from the same checkout and lockfile.",
@@ -155,7 +155,7 @@ test("the Nuxt fairness note states the Vue-compilation share and where the modu
   const nuxtNotes = buildFairnessNotes(500).filter((note) => note.startsWith("Nuxt SPA build"));
 
   assert.deepEqual(nuxtNotes, [
-    "Nuxt SPA build timings exclude synthetic app generation and compare `nuxt build` with Nuxt's default compiler against the same app with `@vizejs/nuxt` installed. Vue SFC compilation is roughly 2% of that build (measured on the 500-file corpus in #3426), so this row cannot be moved by making the Vue compiler faster — it is dominated by Nitro, Rollup and Nuxt's own module graph work. `bench/nuxt-bridge-transform.mjs` isolates the part of this surface Vize does own, the Nuxt module's per-module bridge transform.",
+    "Nuxt SPA build timings exclude synthetic app generation and compare `nuxt build` with Nuxt's default compiler against the same app with `@vizejs/nuxt` installed. Vue SFC compilation is roughly 2% of that build (measured on the 500-file corpus in #3426), so this row cannot be moved by making the Vue compiler faster — it is dominated by Nitro, Rollup and Nuxt's own module graph work. `tools/benchmarks/scripts/nuxt-bridge-transform.mjs` isolates the part of this surface Vize does own, the Nuxt module's per-module bridge transform.",
   ]);
 
   const publishedDoc = fs.readFileSync(

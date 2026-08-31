@@ -15,9 +15,9 @@ use std::{
     process::ExitCode,
 };
 
-#[path = "../../rust/common.rs"]
+#[path = "../../support/common.rs"]
 mod common;
-#[path = "../../rust/davinci_fpfn.rs"]
+#[path = "../../support/davinci/fpfn.rs"]
 mod davinci_fpfn;
 
 use davinci_fpfn::{

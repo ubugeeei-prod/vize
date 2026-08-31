@@ -84,7 +84,7 @@ test("PR readiness plans six isolated rows behind one stable aggregator", () => 
     "tests/app/dev/{misskey,nuxt-ui}.spec.ts",
     "tests/app/dev/{misskey-hmr,nuxt-ui-dev-server,nuxt-ui-hmr,source-restore}.ts",
     "tools/commands/ci/github/app-e2e-*.rs",
-    "tools/rust/**",
+    "tools/support/**",
   ]) {
     assert.match(filters, new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }

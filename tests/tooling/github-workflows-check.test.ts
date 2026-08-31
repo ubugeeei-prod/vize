@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { buildComment } from "../../bench/comment-test-report.mjs";
+import { buildComment } from "../../tools/benchmarks/scripts/comment-test-report.mjs";
 import { readRepoFile, root, workflowJobBody } from "./support/github-workflows.ts";
 
 test("PR CI jobs cap runtime with explicit timeouts", () => {
@@ -143,7 +143,7 @@ test("check workflow comments a detailed PR test report for each head push", () 
 
   assert.match(
     reportJob,
-    /node bench\/test-inventory\.mjs --json test-inventory\.json --markdown "\$GITHUB_STEP_SUMMARY"/,
+    /node tools\/benchmarks\/scripts\/test-inventory\.mjs --json test-inventory\.json --markdown "\$GITHUB_STEP_SUMMARY"/,
   );
   assert.match(reportJob, /name:\s*test-inventory/);
 
@@ -165,7 +165,7 @@ test("check workflow comments a detailed PR test report for each head push", () 
   );
   assert.match(
     commentJob,
-    /node bench\/comment-test-report\.mjs --inventory test-inventory\.json --summary "\$GITHUB_STEP_SUMMARY"/,
+    /node tools\/benchmarks\/scripts\/comment-test-report\.mjs --inventory test-inventory\.json --summary "\$GITHUB_STEP_SUMMARY"/,
   );
 });
 
@@ -191,7 +191,7 @@ test("test inventory script counts JS, Rust, e2e, VRT, and fixture cases", () =>
   const inventoryPath = path.join(tempDir, "inventory.json");
 
   try {
-    execFileSync(process.execPath, ["bench/test-inventory.mjs", "--json", inventoryPath], {
+    execFileSync(process.execPath, ["tools/benchmarks/scripts/test-inventory.mjs", "--json", inventoryPath], {
       cwd: root,
       stdio: "pipe",
     });
