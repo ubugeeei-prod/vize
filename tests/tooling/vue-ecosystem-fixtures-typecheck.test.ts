@@ -68,8 +68,8 @@ test("typecheck baselines have complete budgets and bounded release coverage", (
 
 test("large typechecker fixtures have performance safeguards and bench wiring", () => {
   const registry = readRegistry();
-  const benchCheck = fs.readFileSync(
-    path.join(root, "tools", "benchmarks", "scripts", "check.ts"),
+  const typecheckBench = fs.readFileSync(
+    path.join(root, "tools", "benchmarks", "scripts", "typecheck-real-world.ts"),
     "utf8",
   );
 
@@ -82,9 +82,9 @@ test("large typechecker fixtures have performance safeguards and bench wiring", 
     assert.ok((project?.typecheckPerformance?.maxFalsePositiveRatio ?? Infinity) <= 0.02);
     assert.ok((project?.typecheckPerformance?.maxFalseNegativeRatio ?? Infinity) <= 0.02);
     assert.match(
-      benchCheck,
+      typecheckBench,
       new RegExp(`name:\\s*"${id}"`),
-      `${id} should be in tools/benchmarks/scripts/check.ts`,
+      `${id} should be in tools/benchmarks/scripts/typecheck-real-world.ts`,
     );
   }
   const baseline = registry.projects.find((project) => project.id === "elk")?.typecheckPerformance
