@@ -111,14 +111,6 @@ run_testbox_checks() {
 run_testbox_checks
 ```
 
-对于GitHub Actions的变更，请使用`actrun`在推送前对工作流程图进行lint或预览：
-
-```sh
-vp run actrun:lint
-vp run actrun:dry-run
-vp run actrun:job --job check-js
-```
-
 对于Blacksmith Testbox的工作变更，也要验证工作流程形状，用
 `node --test tests/tooling/github-workflows.test.ts`。
 
