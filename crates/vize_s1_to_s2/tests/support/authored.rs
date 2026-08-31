@@ -37,6 +37,12 @@ pub fn assert_authored_artifact(source: &str, lowered: &Lowered<'_>) {
         if let Some(key) = &wrapper.key {
             assert_wrapper_key(source, root, key);
         }
+        for attr in &wrapper.attributes {
+            assert_span(source, root, attr.span, "for wrapper attr");
+        }
+        if let Some(class) = &wrapper.class {
+            assert_span(source, root, class.span, "for wrapper class");
+        }
     }
 }
 

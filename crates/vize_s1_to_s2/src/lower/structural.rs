@@ -29,8 +29,10 @@ use super::text;
 
 mod wrapper;
 
-pub use wrapper::{ForWrapper, WrapperKey, WrapperKeys};
-pub(crate) use wrapper::{capture_wrapper_key, record_template_drops};
+pub use wrapper::{ForWrapper, WrapperAttr, WrapperClass, WrapperKey, WrapperKeys};
+pub(crate) use wrapper::{
+    capture_wrapper_attrs, capture_wrapper_key, record_template_drops, record_template_drops_except,
+};
 
 /// One scanned branch of a chain: its element, analysis, branch-attr
 /// index, and the gap children it consumes.

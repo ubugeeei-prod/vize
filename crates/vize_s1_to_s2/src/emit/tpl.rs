@@ -20,10 +20,10 @@ use super::children::{
     emit_raw_interpolation_or_refuse, emit_to_display_string, is_empty_interpolation,
 };
 use super::hoist::{emit_hoisted_element, is_hoistable};
-use super::js::escape_js_string;
+use super::js::{escape_js_string, is_valid_js_identifier};
 use super::props_static::PropHoistPosition;
 use super::vnode;
-use crate::lower::WrapperKey;
+use crate::lower::{WrapperAttr, WrapperClass, WrapperKey};
 
 #[derive(Clone, Copy)]
 enum ChildMode {
@@ -61,7 +61,14 @@ pub(super) fn emit_if_template_branch(
     if should_unwrap_if(&branch.region.ops) {
         return unwrap_if(cx, branch, key);
     }
-    emit_inner_fragment(cx, &branch.region.ops, Some(key), ChildMode::ForceArray)
+    emit_inner_fragment(
+        cx,
+        &branch.region.ops,
+        Some(key),
+        &[],
+        None,
+        ChildMode::ForceArray,
+    )
 }
 
 fn should_unwrap_if(ops: &[Op<'_>]) -> bool {
@@ -135,6 +142,8 @@ pub(super) fn emit_for_template_item(
     ops: &[Op<'_>],
     stable: bool,
     key: Option<&str>,
+    attributes: &[WrapperAttr],
+    class: Option<&WrapperClass>,
 ) -> Result<(), EmitError> {
     if should_unwrap_for(ops) {
         let Op::Element(element) = &ops[0] else {
@@ -154,11 +163,11 @@ pub(super) fn emit_for_template_item(
     if matches!(ops, [Op::Component(_)]) {
         let previous = cx.template_for_item_single_root;
         cx.template_for_item_single_root = true;
-        let result = emit_inner_fragment(cx, ops, key, ChildMode::GenerateNode);
+        let result = emit_inner_fragment(cx, ops, key, attributes, class, ChildMode::GenerateNode);
         cx.template_for_item_single_root = previous;
         return result;
     }
-    emit_inner_fragment(cx, ops, key, ChildMode::GenerateNode)
+    emit_inner_fragment(cx, ops, key, attributes, class, ChildMode::GenerateNode)
 }
 
 pub(super) fn emit_inline(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError> {
@@ -182,6 +191,8 @@ fn emit_inner_fragment(
     cx: &mut EmitCx<'_>,
     ops: &[Op<'_>],
     key: Option<&str>,
+    attributes: &[WrapperAttr],
+    class: Option<&WrapperClass>,
     mode: ChildMode,
 ) -> Result<(), EmitError> {
     cx.buf.use_open_block();
@@ -193,16 +204,107 @@ fn emit_inner_fragment(
     cx.buf.push(Buf::create_element_block_alias());
     cx.buf.push("(");
     cx.buf.push(Buf::fragment_alias());
-    if let Some(key) = key {
-        cx.buf.push(", { key: ");
-        cx.buf.push(key);
-        cx.buf.push(" }, ");
-    } else {
-        cx.buf.push(", null, ");
-    }
+    emit_fragment_props(cx, key, attributes, class);
     cx.with_static_vnode_hoist(true, |cx| emit_fragment_children(cx, ops, mode))?;
     cx.buf.push(", 64 /* STABLE_FRAGMENT */))");
     Ok(())
+}
+
+fn emit_fragment_props(
+    cx: &mut EmitCx<'_>,
+    key: Option<&str>,
+    attributes: &[WrapperAttr],
+    class: Option<&WrapperClass>,
+) {
+    if key.is_none() && attributes.is_empty() && class.is_none() {
+        cx.buf.push(", null, ");
+        return;
+    }
+    let multiline = class.is_some_and(|class| class.dynamic_source.is_some());
+    if multiline {
+        cx.buf.push(", {");
+        cx.buf.indent();
+    } else {
+        cx.buf.push(", { ");
+    }
+    let mut first = true;
+    if let Some(key) = key {
+        start_fragment_prop(cx, &mut first, multiline);
+        cx.buf.push("key: ");
+        cx.buf.push(key);
+    }
+    for attr in attributes {
+        start_fragment_prop(cx, &mut first, multiline);
+        push_static_key(cx, attr.name.as_str());
+        cx.buf.push(": \"");
+        cx.buf
+            .push(escape_js_string(attr.value.as_deref().unwrap_or("")).as_str());
+        cx.buf.push("\"");
+    }
+    if let Some(class) = class {
+        start_fragment_prop(cx, &mut first, multiline);
+        cx.buf.push("class: ");
+        emit_wrapper_class(cx, class);
+    }
+    if multiline {
+        cx.buf.deindent();
+        cx.buf.newline();
+        cx.buf.push("}, ");
+    } else {
+        cx.buf.push(" }, ");
+    }
+}
+
+fn start_fragment_prop(cx: &mut EmitCx<'_>, first: &mut bool, multiline: bool) {
+    if !*first {
+        cx.buf.push(",");
+        if !multiline {
+            cx.buf.push(" ");
+        }
+    }
+    if multiline {
+        cx.buf.newline();
+    }
+    *first = false;
+}
+
+fn emit_wrapper_class(cx: &mut EmitCx<'_>, class: &WrapperClass) {
+    match (&class.static_value, &class.dynamic_source) {
+        (Some(static_value), Some(dynamic_source)) => {
+            cx.buf.use_helper(super::helper::Helper::NormalizeClass);
+            cx.buf.push(super::helper::Helper::NormalizeClass.alias());
+            cx.buf.push("([\"");
+            cx.buf
+                .push(escape_js_string(static_value.as_str()).as_str());
+            cx.buf.push("\", ");
+            cx.buf.push(dynamic_source.as_str());
+            cx.buf.push("])");
+        }
+        (None, Some(dynamic_source)) => {
+            cx.buf.use_helper(super::helper::Helper::NormalizeClass);
+            cx.buf.push(super::helper::Helper::NormalizeClass.alias());
+            cx.buf.push("(");
+            cx.buf.push(dynamic_source.as_str());
+            cx.buf.push(")");
+        }
+        (Some(static_value), None) => {
+            cx.buf.push("\"");
+            cx.buf
+                .push(escape_js_string(static_value.as_str()).as_str());
+            cx.buf.push("\"");
+        }
+        (None, None) => cx.buf.push("\"\""),
+    }
+}
+
+fn push_static_key(cx: &mut EmitCx<'_>, key: &str) {
+    if is_valid_js_identifier(key) {
+        cx.buf.push(key);
+        return;
+    }
+    cx.buf.push("\"");
+    cx.buf.push(escape_js_string(key).as_str());
+    cx.buf.push("\"");
 }
 
 fn emit_fragment_children(

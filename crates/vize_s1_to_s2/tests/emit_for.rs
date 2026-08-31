@@ -202,6 +202,20 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn template_v_for_static_attrs_ride_the_fragment_props() {
+    assert_shipped_parity(
+        r#"<template v-for="item in list" data-kind="row"><Foo :key="item.id" /></template>"#,
+    );
+}
+
+#[test]
+fn template_v_for_dynamic_class_rides_the_fragment_props() {
+    assert_shipped_parity(
+        r#"<template v-for="(item, i) in list" :key="item.id" :class="`row-${i}`"><Foo :key="item.id" /></template>"#,
+    );
+}
+
+#[test]
 fn a_template_v_for_child_key_does_not_emit_on_the_unwrapped_root() {
     assert_shipped_parity(
         r#"<template v-for="(point, i) in points"><rect :key="i" :fill="color"><animate v-if="ok" /></rect></template>"#,

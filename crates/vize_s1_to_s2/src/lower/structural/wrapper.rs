@@ -62,6 +62,33 @@ pub struct WrapperKeys {
 pub struct ForWrapper {
     /// The wrapper's captured key, when it authored one.
     pub key: Option<WrapperKey>,
+    /// Static non-`class` attributes authored on the `<template v-for>` wrapper.
+    /// The shipped lane carries them on the generated fragment vnode.
+    pub attributes: StdVec<WrapperAttr>,
+    /// Static and dynamic `class` authored on the wrapper.
+    pub class: Option<WrapperClass>,
+}
+
+/// One static attribute authored on a lowered `<template v-for>`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WrapperAttr {
+    /// Attribute name, as authored.
+    pub name: String,
+    /// Attribute value; `None` represents a bare static attribute.
+    pub value: Option<String>,
+    /// The attribute's range.
+    pub span: Span,
+}
+
+/// `class` authored on a lowered `<template v-for>`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WrapperClass {
+    /// Static class text, when authored.
+    pub static_value: Option<String>,
+    /// Dynamic class expression source, when authored.
+    pub dynamic_source: Option<String>,
+    /// Representative class attribute range.
+    pub span: Span,
 }
 
 /// Facts cross compile boundaries with their artifact (P1-11).
@@ -70,6 +97,8 @@ const _: () = {
     assert_owned::<WrapperKey>();
     assert_owned::<WrapperKeys>();
     assert_owned::<ForWrapper>();
+    assert_owned::<WrapperAttr>();
+    assert_owned::<WrapperClass>();
 };
 
 /// 64-bit footprints, guarded like every fact-size assert.
@@ -77,7 +106,7 @@ const _: () = {
 const _: () = {
     assert!(core::mem::size_of::<WrapperKey>() == 40);
     assert!(core::mem::size_of::<WrapperKeys>() == 48);
-    assert!(core::mem::size_of::<ForWrapper>() == 40);
+    assert!(core::mem::size_of::<ForWrapper>() == 120);
 };
 
 /// The first key-ish attribute of a `<template v-if>` wrapper: a static
@@ -128,6 +157,71 @@ pub(crate) fn capture_wrapper_key<'a>(
     None
 }
 
+/// Static attributes that ride on a lowered `<template v-for>` fragment.
+pub(crate) fn capture_wrapper_attrs<'a>(
+    cx: &mut Cx<'a>,
+    element: &Element<'a>,
+    analyzed: &Analyzed<'a>,
+    captured_key: Option<usize>,
+) -> (StdVec<usize>, StdVec<WrapperAttr>, Option<WrapperClass>) {
+    let mut indexes = StdVec::new();
+    let mut attributes = StdVec::new();
+    let mut class = None;
+    for (index, attr) in element.open.attrs.iter().enumerate() {
+        if Some(index) == analyzed.branch.map(|(idx, _)| idx)
+            || Some(index) == analyzed.vfor
+            || Some(index) == captured_key
+        {
+            continue;
+        }
+        match &analyzed.forms[index] {
+            AttrForm::Static if attr.name.text == "class" => {
+                indexes.push(index);
+                let entry = class.get_or_insert_with(|| WrapperClass {
+                    static_value: None,
+                    dynamic_source: None,
+                    span: attr_span(cx, attr),
+                });
+                entry.static_value = Some(String::from(
+                    attr.value.as_ref().map_or("", |value| value.content.text),
+                ));
+            }
+            AttrForm::Static => {
+                indexes.push(index);
+                attributes.push(WrapperAttr {
+                    name: String::from(attr.name.text),
+                    value: attr
+                        .value
+                        .as_ref()
+                        .map(|value| String::from(value.content.text)),
+                    span: attr_span(cx, attr),
+                });
+            }
+            AttrForm::Directive(directive)
+                if directive.head == Head::Bind
+                    && directive.arg == Some(Arg::Static("class"))
+                    && directive.modifiers.is_empty() =>
+            {
+                let source = match attr_value_text(element, index) {
+                    Some(text) if text.trim().is_empty() => continue,
+                    Some(text) => String::from(text.trim()),
+                    None => String::from("class"),
+                };
+                indexes.push(index);
+                let entry = class.get_or_insert_with(|| WrapperClass {
+                    static_value: None,
+                    dynamic_source: None,
+                    span: attr_span(cx, attr),
+                });
+                entry.dynamic_source = Some(source);
+                entry.span = attr_span(cx, attr);
+            }
+            _ => {}
+        }
+    }
+    (indexes, attributes, class)
+}
+
 /// A `<template>` wrapper the lowering unwraps has no op to carry its
 /// remaining attributes; each is dropped under an `Info` diagnostic and
 /// a record — dropping is never silent. `captured` names the wrapper-key
@@ -139,10 +233,23 @@ pub(crate) fn record_template_drops<'a>(
     analyzed: &Analyzed<'a>,
     captured: Option<usize>,
 ) {
+    record_template_drops_except(cx, element, analyzed, captured, &[]);
+}
+
+/// Same as [`record_template_drops`], with additional attr indexes
+/// captured by a wrapper fact rather than dropped.
+pub(crate) fn record_template_drops_except<'a>(
+    cx: &mut Cx<'a>,
+    element: &Element<'a>,
+    analyzed: &Analyzed<'a>,
+    captured: Option<usize>,
+    extra_captured: &[usize],
+) {
     for (index, attr) in element.open.attrs.iter().enumerate() {
         if Some(index) == analyzed.branch.map(|(idx, _)| idx)
             || Some(index) == analyzed.vfor
             || Some(index) == captured
+            || extra_captured.contains(&index)
         {
             continue;
         }

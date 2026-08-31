@@ -28,6 +28,10 @@ pub(super) fn emit_for(
         Some(key) => Some(super::tpl::wrapper_key_js(key)?),
         None => None,
     };
+    let wrapper_attrs = wrapper
+        .map(|wrapper| wrapper.attributes.as_slice())
+        .unwrap_or(&[]);
+    let wrapper_class = wrapper.and_then(|wrapper| wrapper.class.as_ref());
     let from_template = wrapper.is_some();
     let item_memo = if from_template {
         None
@@ -133,7 +137,14 @@ pub(super) fn emit_for(
     let scope_mark = cx.push_scope(id);
     cx.in_v_for = true;
     let item = if from_template {
-        super::tpl::emit_for_template_item(cx, &for_op.region.ops, stable, wrapper_key.as_deref())
+        super::tpl::emit_for_template_item(
+            cx,
+            &for_op.region.ops,
+            stable,
+            wrapper_key.as_deref(),
+            wrapper_attrs,
+            wrapper_class,
+        )
     } else {
         emit_plain_item(cx, for_op, bind_len, stable)
     };

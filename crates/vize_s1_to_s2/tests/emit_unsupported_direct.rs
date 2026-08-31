@@ -168,6 +168,8 @@ fn template_dynamic_key_empty<'a>(a: &'a Allocator) -> (Lowered<'a>, S2Facts) {
                 source: VString::default(),
                 span: sp(),
             }),
+            attributes: StdVec::new(),
+            class: None,
         },
     );
     (lowered, S2Facts::default())

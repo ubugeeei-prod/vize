@@ -14,7 +14,10 @@ use vize_s2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
 use super::cx::{Cx, attr_slice, attr_span, element_span};
 use super::element::{Analyzed, attr_value_text, element_core};
 use super::expr::{desc, expr_at, opaque_at, simple_identifier, trimmed};
-use super::structural::{ForWrapper, capture_wrapper_key, lower_children, record_template_drops};
+use super::structural::{
+    ForWrapper, capture_wrapper_attrs, capture_wrapper_key, lower_children,
+    record_template_drops_except,
+};
 use super::vfor::{split_aliases, split_for};
 
 /// Build the `ui.for` for an element's `v-for` — or, when the directive
@@ -131,8 +134,17 @@ pub(crate) fn lower_for<'a>(
                 Some((index, key)) => (Some(index), Some(key)),
                 None => (None, None),
             };
-            record_template_drops(cx, element, analyzed, skip);
-            cx.attach_for_wrapper(node, ForWrapper { key });
+            let (attr_indexes, attributes, class) =
+                capture_wrapper_attrs(cx, element, analyzed, skip);
+            record_template_drops_except(cx, element, analyzed, skip, &attr_indexes);
+            cx.attach_for_wrapper(
+                node,
+                ForWrapper {
+                    key,
+                    attributes,
+                    class,
+                },
+            );
             lower_children(cx, &element.children, ns)
         } else {
             let op = element_core(cx, element, analyzed, ns);

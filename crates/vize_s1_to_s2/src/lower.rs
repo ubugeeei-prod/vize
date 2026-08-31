@@ -63,7 +63,7 @@ pub(crate) use expr::simple_identifier;
 // The wrapper-key channel (P2-9 series 5): captured `<template v-if>`
 // keys, folded into branch-key facts by the v-if pass.
 pub use css::{lower_style_block, lower_style_block_in};
-pub use structural::{ForWrapper, WrapperKey, WrapperKeys};
+pub use structural::{ForWrapper, WrapperAttr, WrapperClass, WrapperKey, WrapperKeys};
 // The one-rebuild rule (the same discipline): the text pass re-derives a
 // compound's source with exactly the spelling the lowering minted.
 pub use text::{TextPart, TextParts, rebuild_source};
