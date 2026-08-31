@@ -10,9 +10,9 @@
 
 use std::{env, process::ExitCode};
 
-#[path = "../../rust/artifact_command.rs"]
+#[path = "../../support/artifacts.rs"]
 mod artifact_command;
-#[path = "../../rust/common.rs"]
+#[path = "../../support/common.rs"]
 mod common;
 
 fn main() -> ExitCode {

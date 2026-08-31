@@ -10,6 +10,9 @@ use std::{
     process::ExitCode,
 };
 
+const LEGACY_COMMAND_MARKER: &str = concat!("legacy", "_command");
+const TOOL_HOST_MARKER: &str = "tool_host";
+
 fn main() -> ExitCode {
     match verify() {
         Ok(count) => {
@@ -30,11 +33,22 @@ fn verify() -> Result<usize, Vec<String>> {
     let commands = collect_command_scripts(&root).map_err(|error| vec![error.to_string()])?;
     let mut errors = Vec::new();
 
-    if root.join("tools/rust/legacy_command.rs").exists() {
-        errors.push("tools/rust/legacy_command.rs must not come back".to_string());
+    if root.join("tools/rust").exists() {
+        errors.push("tools/rust language bucket must not come back".to_string());
     }
-    if root.join("tools/rust/tool_host.rs").exists() {
-        errors.push("tools/rust/tool_host.rs must not come back".to_string());
+    if root
+        .join("tools/support")
+        .join(format!("{LEGACY_COMMAND_MARKER}.rs"))
+        .exists()
+    {
+        errors.push("legacy command runner source must not come back".to_string());
+    }
+    if root
+        .join("tools/support")
+        .join(format!("{TOOL_HOST_MARKER}.rs"))
+        .exists()
+    {
+        errors.push("tool host runner source must not come back".to_string());
     }
 
     for command in &commands {
@@ -64,7 +78,7 @@ fn verify_command(root: &Path, command: &str, errors: &mut Vec<String>) {
     if !source.starts_with("#!/usr/bin/env rust-script\n") {
         errors.push(format!("{command} must start with a rust-script shebang"));
     }
-    if source.contains("legacy_command") {
+    if source.contains(LEGACY_COMMAND_MARKER) {
         errors.push(format!(
             "{command} must not reference the legacy command runner"
         ));
@@ -72,10 +86,10 @@ fn verify_command(root: &Path, command: &str, errors: &mut Vec<String>) {
     if command.contains("-vize/") {
         errors.push(format!("{command} must use product-neutral editor buckets"));
     }
-    if source.contains("tool_host::run(") {
+    if source.contains(&format!("{TOOL_HOST_MARKER}::run(")) {
         errors.push(format!("{command} must not proxy to Node tooling"));
     }
-    if source.contains("tool_host::Runtime::Node") {
+    if source.contains(&format!("{TOOL_HOST_MARKER}::Runtime::Node")) {
         errors.push(format!("{command} must not mention the Node runtime"));
     }
 }
@@ -127,7 +141,7 @@ fn skip_path(path: &str) -> bool {
     path.starts_with("tools/commands/")
         || path.starts_with("tools/benchmarks/scripts/")
         || path.starts_with("tools/config/vite-plus/")
-        || path.starts_with("tools/rust/")
+        || path.starts_with("tools/support/")
         || path.starts_with("tools/moon/.mooncakes/")
 }
 

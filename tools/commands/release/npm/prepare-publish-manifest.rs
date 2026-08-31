@@ -8,9 +8,9 @@
 //! edition = "2024"
 //! ```
 
-#[path = "../../../rust/common.rs"]
+#[path = "../../../support/common.rs"]
 mod common;
-#[path = "../../../rust/npm_publish.rs"]
+#[path = "../../../support/release/npm_publish.rs"]
 mod npm_publish;
 
 use std::{env, path::PathBuf, process::ExitCode};

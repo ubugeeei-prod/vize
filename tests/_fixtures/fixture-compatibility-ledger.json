@@ -755,7 +755,7 @@
         "membership": "ecosystem"
       },
       "evidence": {
-        "file": "tools/rust/davinci_corpus.rs",
+        "file": "tools/support/davinci/corpus.rs",
         "selector": "\"typechecker\": [\"exitCode\", \"stderr\", \"stdout\", \"typecheckerCoverage\"]"
       }
     },
