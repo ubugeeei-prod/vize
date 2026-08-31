@@ -303,10 +303,9 @@ fn emit_bind_pair(
     let raw_name = props_bind::static_bind_name(bind)?;
     let key = props_bind::static_bind_key(bind, StaticBindKeyCasing::Preserve)?;
     let value = props_value::bind_value(bind)?;
+    let static_style = static_style_piece(pieces);
     let skip_normalize = skip_normalize
-        || (!is_plain_element
-            && raw_name == "style"
-            && super::props::bind_value_is_static_patchless(bind));
+        || style::bind_skips_normalize(raw_name, is_plain_element, static_style.is_some(), &value);
     emit_ref_for(cx, key.as_str());
     push_ident_key(cx, key.as_str());
     cx.buf.push(": ");
@@ -326,9 +325,7 @@ fn emit_bind_pair(
             }
         },
         "style" => match value.js() {
-            Some(js) => {
-                style::emit_style_value(cx, static_style_piece(pieces), bind, js, skip_normalize)
-            }
+            Some(js) => style::emit_style_value(cx, static_style, bind, js, skip_normalize),
             None => value.emit(cx),
         },
         _ => value.emit(cx),

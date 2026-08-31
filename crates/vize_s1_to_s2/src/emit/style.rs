@@ -1,11 +1,73 @@
 //! Static style-attribute serialization used by dynamic `:style` merges.
 
+use oxc_ast::ast::{ArrayExpressionElement, Expression, ObjectPropertyKind};
 use vize_s2::expr::JsExpr;
 use vize_s2::op::{Attribute, BindOp};
 
 use super::EmitCx;
 use super::buf::Buf;
 use super::js::{escape_js_string, js_expr_source};
+use super::props_value::BindValue;
+
+pub(super) fn bind_skips_normalize(
+    raw_name: &str,
+    is_plain_element: bool,
+    has_static_style: bool,
+    value: &BindValue<'_>,
+) -> bool {
+    if raw_name != "style" {
+        return false;
+    }
+    if !is_plain_element {
+        return static_bind_value(value);
+    }
+    !has_static_style && static_bind_value(value)
+}
+
+fn static_bind_value(value: &BindValue<'_>) -> bool {
+    value.js().is_some_and(|js| static_expression(js.ast))
+}
+
+fn static_expression(expr: &Expression<'_>) -> bool {
+    match unwrap_static_expression(expr) {
+        Expression::StringLiteral(_)
+        | Expression::BooleanLiteral(_)
+        | Expression::NullLiteral(_)
+        | Expression::NumericLiteral(_)
+        | Expression::BigIntLiteral(_)
+        | Expression::RegExpLiteral(_) => true,
+        Expression::TemplateLiteral(template) => template.expressions.is_empty(),
+        Expression::UnaryExpression(unary) => static_expression(&unary.argument),
+        Expression::ArrayExpression(array) => array.elements.iter().all(static_array_element),
+        Expression::ObjectExpression(object) => object.properties.iter().all(|property| {
+            let ObjectPropertyKind::ObjectProperty(property) = property else {
+                return false;
+            };
+            !property.computed && static_expression(&property.value)
+        }),
+        _ => false,
+    }
+}
+
+fn static_array_element(element: &ArrayExpressionElement<'_>) -> bool {
+    match element {
+        ArrayExpressionElement::SpreadElement(_) => false,
+        ArrayExpressionElement::Elision(_) => true,
+        _ => element.as_expression().is_some_and(static_expression),
+    }
+}
+
+fn unwrap_static_expression<'a>(mut expr: &'a Expression<'a>) -> &'a Expression<'a> {
+    loop {
+        match expr {
+            Expression::ParenthesizedExpression(paren) => expr = &paren.expression,
+            Expression::TSAsExpression(ts_as) => expr = &ts_as.expression,
+            Expression::TSNonNullExpression(ts_non_null) => expr = &ts_non_null.expression,
+            Expression::TSSatisfiesExpression(ts_satisfies) => expr = &ts_satisfies.expression,
+            _ => return expr,
+        }
+    }
+}
 
 pub(super) fn emit_style_value(
     cx: &mut EmitCx<'_>,
