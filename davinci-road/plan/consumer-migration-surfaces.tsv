@@ -1895,11 +1895,11 @@ typechecker	Typechecker	source	crates/vize_canon/src/package_route/stamp.rs	79	s
 typechecker	Typechecker	source	crates/vize_canon/src/script_parse.rs	1	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/script_parse.rs	1	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/script_parse.rs	1	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-typechecker	Typechecker	source	crates/vize_canon/src/sfc_typecheck/analysis.rs	7	s0	S0	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize_canon/src/sfc_typecheck/checks.rs	4	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/sfc_typecheck/analysis.rs	7	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	source	crates/vize_canon/src/sfc_typecheck/checks.rs	4	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/sfc_typecheck/checks.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	11
-typechecker	Typechecker	source	crates/vize_canon/src/sfc_typecheck/runner.rs	1	s0	S0	stage	vize_carton	compat	2
-typechecker	Typechecker	source	crates/vize_canon/src/sfc_typecheck/virtual_ts.rs	7	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/sfc_typecheck/runner.rs	1	s0	S0	stage	vize_s0	preferred	2
+typechecker	Typechecker	source	crates/vize_canon/src/sfc_typecheck/virtual_ts.rs	7	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/sfc_typecheck/virtual_ts.rs	7	old_ast	old AST/parser	old	vize_relief	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/sfc_typecheck/virtual_ts.rs	7	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/tests.rs	11	s0	S0	stage	vize_carton	compat	1

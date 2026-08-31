@@ -4,7 +4,7 @@
 //! The canonical implementation provides proper scope hierarchy and structured
 //! source mappings (VizeMapping).
 
-use vize_carton::String;
+use vize_s0::String;
 
 /// Generate virtual TypeScript using croquis scope information.
 ///

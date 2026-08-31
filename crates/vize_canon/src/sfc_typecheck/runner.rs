@@ -1,5 +1,5 @@
-use vize_carton::Allocator;
-use vize_carton::cstr;
+use vize_s0::Allocator;
+use vize_s0::cstr;
 
 use crate::script_parse::collect_script_parse_diagnostics;
 use crate::virtual_ts::generate_virtual_ts_with_offsets_legacy_vue2;
