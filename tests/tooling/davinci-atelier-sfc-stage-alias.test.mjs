@@ -14,6 +14,7 @@ const sfcPreferredS0Rows = [
   ["crates/vize_atelier_sfc/src/bundler/blocks.rs", "source", 2],
   ["crates/vize_atelier_sfc/src/bundler/css.rs", "source", 1],
   ["crates/vize_atelier_sfc/src/bundler/scope.rs", "source", 1],
+  ["crates/vize_atelier_sfc/src/compile/diagnostics.rs", "source", 1],
   ["crates/vize_atelier_sfc/src/compile/empty_component.rs", "source", 1],
   ["crates/vize_atelier_sfc/src/compile_template.rs", "source", 1],
   ["crates/vize_atelier_sfc/src/compile_template.rs", "test", 1],

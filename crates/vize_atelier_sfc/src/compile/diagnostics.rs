@@ -1,6 +1,6 @@
 //! Warning constructors emitted by the SFC compile pipeline.
 
-use vize_carton::{String, ToCompactString};
+use vize_s0::{String, ToCompactString};
 
 use crate::types::{SfcDescriptor, SfcError};
 
