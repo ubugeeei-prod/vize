@@ -235,9 +235,9 @@ test("Testbox warmup distinguishes origin failures from an unpushed branch", () 
 });
 
 test("the Nix shell exposes local and opt-in Testbox task aliases", () => {
-  const vpModule = fs.readFileSync(path.join(root, "nix/vp.nix"), "utf8");
-  const devShellModule = fs.readFileSync(path.join(root, "nix/dev-shell.nix"), "utf8");
-  const blacksmithModule = fs.readFileSync(path.join(root, "nix/blacksmith.nix"), "utf8");
+  const vpModule = fs.readFileSync(path.join(root, "tools/nix/vp.nix"), "utf8");
+  const devShellModule = fs.readFileSync(path.join(root, "tools/nix/dev-shell.nix"), "utf8");
+  const blacksmithModule = fs.readFileSync(path.join(root, "tools/nix/blacksmith.nix"), "utf8");
   const defaultShell = devShellModule.match(
     /devShell = pkgs\.mkShell \{([\s\S]*?)\n\s*\};\n\s*testboxDevShell/,
   )?.[1];

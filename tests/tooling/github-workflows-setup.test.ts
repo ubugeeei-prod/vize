@@ -146,9 +146,9 @@ test("setup-moonbit installs the same pinned toolchain the Nix shell builds", ()
     "`.moonbit-version` must hold one exact MoonBit release",
   );
 
-  // `nix/moonbit.nix` must derive the toolchain from the shared file rather
+  // `tools/nix/moonbit.nix` must derive the toolchain from the shared file rather
   // than repeating it, so a bump cannot land on only one of the two consumers.
-  const moonbitModule = readRepoFile("nix", "moonbit.nix");
+  const moonbitModule = readRepoFile("tools", "nix", "moonbit.nix");
   assert.match(moonbitModule, /moonbitVersion = builtins\.replaceStrings[\s\S]*?moonbit-version/);
   assert.doesNotMatch(moonbitModule, /moonbitVersion = "/);
 

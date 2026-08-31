@@ -1,6 +1,6 @@
 { inputs, ... }:
 let
-  root = ./..;
+  root = ../..;
 in
 {
   perSystem =
@@ -11,7 +11,7 @@ in
       ...
     }:
     let
-      # crane builds with the toolchain `nix/pkgs.nix` pins, not the one
+      # crane builds with the toolchain `tools/nix/pkgs.nix` pins, not the one
       # nixpkgs happens to carry, so the package and the dev shell compile with
       # the same rustc.
       craneLib = (inputs.crane.mkLib pkgs).overrideToolchain rustToolchain;
