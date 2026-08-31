@@ -183,7 +183,7 @@ pub(super) fn emit_inline<'a>(
     attributes: impl Iterator<Item = &'a Attribute<'a>>,
 ) {
     let unique = unique_attrs(attributes);
-    let multiline = unique.len() > 1 && !cx.in_v_for;
+    let multiline = unique.len() > 1;
     if multiline {
         cx.buf.push("{");
         cx.buf.indent();

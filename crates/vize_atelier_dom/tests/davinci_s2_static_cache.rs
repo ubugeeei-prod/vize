@@ -22,6 +22,14 @@ const BATTERY: &[(&str, &str)] = &[
         "cached_static_child_before_dynamic_sibling",
         r#"<div class="root"><button><span>x</span></button><i :id="foo"></i></div>"#,
     ),
+    (
+        "airi_loading_component_formats_nested_static_props_inside_for",
+        r#"<div flex flex-col gap-2><div v-for="file in files" :key="file.filename" max-w-full flex flex-col gap="1 sm:2"><div grid="~ cols-[85%_15%]" justify-between text="xs sm:sm neutral-600 dark:neutral-400"><div flex items-center gap-1>{{ file.filename }}</div></div></div></div>"#,
+    ),
+    (
+        "airi_loading_modules_formats_static_slot_child_props_inside_for",
+        r#"<ul><li v-for="[moduleName, module] in resources" :key="moduleName"><WindowRouterLink :to="`/settings/modules/${moduleName}`" label="settings"><div flex items-center gap-1><div flex items-center gap-1><span>{{ moduleName }}</span></div></div></WindowRouterLink></li></ul>"#,
+    ),
 ];
 
 #[test]
