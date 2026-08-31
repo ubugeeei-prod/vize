@@ -10,8 +10,8 @@ import {
   assertMuseaNativeLoaded,
   assertMuseaNativeSelection,
   resolveMuseaArtifacts,
-} from "../../bench/musea-artifacts.mjs";
-import { createMuseaStages } from "../../bench/musea-stages.mjs";
+} from "../../tools/benchmarks/scripts/musea-artifacts.mjs";
+import { createMuseaStages } from "../../tools/benchmarks/scripts/musea-stages.mjs";
 
 function digestOf(values: string[]): string {
   const hash = createHash("sha256");

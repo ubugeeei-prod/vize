@@ -33,6 +33,23 @@ fn every_battery_fixture_lowers_soundly() {
 }
 
 #[test]
+fn plain_lowering_soundness_covers_every_lowering_side_table() {
+    let source = r#"<template v-if="ok" key="branch">hi {{ name }}</template><template v-for="item in items" :key="item.id"><span>{{ item }}</span></template>"#;
+    with_lowered(source, |lowered, _folio| {
+        assert_eq!(
+            (
+                lowered.texts.len(),
+                lowered.wrappers.len(),
+                lowered.for_wrappers.len()
+            ),
+            (1, 1, 1),
+            "the canary must exercise every lowering-owned side table"
+        );
+    });
+    assert_sound(source, "lowering-side-table-canary");
+}
+
+#[test]
 fn every_truncation_of_every_fixture_lowers_soundly() {
     // The EOF-adversarial lane: each fixture cut at every char boundary,
     // from both ends — the recovery paths TS-19 hammers, continued into

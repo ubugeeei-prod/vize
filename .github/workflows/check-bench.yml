@@ -1,6 +1,6 @@
 name: Check Benchmark Gate
 
-# Fail-closed budget/report job for `vize check` (#3283): bench/check-gate.mjs
+# Fail-closed budget/report job for `vize check` (#3283): tools/benchmarks/scripts/check-gate.mjs
 # refuses to emit any timing unless the measured binary reports every planted
 # diagnostic in minimal plant projects and in a planted copy of the timed
 # corpus, and it records the exact vize/tsgo/vue-tsc/vue versions, entry
@@ -28,10 +28,10 @@ on:
     branches: [main]
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
-      - bench/check-gate.mjs
-      - bench/check-gate-env.mjs
-      - bench/check-gate-plants.mjs
-      - bench/check-gate-report.mjs
+      - tools/benchmarks/scripts/check-gate.mjs
+      - tools/benchmarks/scripts/check-gate-env.mjs
+      - tools/benchmarks/scripts/check-gate-plants.mjs
+      - tools/benchmarks/scripts/check-gate-report.mjs
       - .github/workflows/check-bench.yml
   schedule:
     # Weekly report cadence; the plants correctness gate itself runs on every
@@ -93,12 +93,12 @@ jobs:
           --config 'profile.ci-opt.codegen-units=16'
 
       - name: Generate benchmark corpus
-        run: node bench/generate.mjs "$VIZE_CHECK_BENCH_FILE_COUNT"
+        run: node tools/benchmarks/scripts/generate.mjs "$VIZE_CHECK_BENCH_FILE_COUNT"
 
       - name: Run the fail-closed check benchmark gate
         run: |
-          node bench/check-gate.mjs \
-            --input bench/__in__ \
+          node tools/benchmarks/scripts/check-gate.mjs \
+            --input tools/benchmarks/scripts/__in__ \
             --vize-bin target/ci-opt/vize \
             --check-file-count "$VIZE_CHECK_BENCH_FILE_COUNT" \
             --runs "$VIZE_CHECK_BENCH_RUNS" \

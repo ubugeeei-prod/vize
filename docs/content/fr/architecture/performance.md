@@ -16,7 +16,7 @@ Deux environnements de mesure apparaissent sur cette page, et chaque chiffre ci-
 duquel il provient.
 
 **Runner de référence.** Les comparaisons entre outils sont mesurées par le workflow Tool Benchmark
-et versionnées dans `bench/results/tool-benchmark-latest.json`. Cet artefact est la source citable,
+et versionnées dans `tools/benchmarks/results/tool-benchmark-latest.json`. Cet artefact est la source citable,
 et l'[instantané de benchmark Blacksmith](./performance-blacksmith) le publie intégralement.
 
 |                |                                                       |
@@ -27,8 +27,8 @@ et l'[instantané de benchmark Blacksmith](./performance-blacksmith) le publie i
 | **Versions**   | vize 0.303.0 · vue 3.6.0-beta.10 · Node v24.14.0      |
 
 **Poste de travail local.** Les tableaux du linter, du formateur et du vérificateur de types plus
-bas sont encore maintenus à la main à partir de benchmarks locaux (`bench/lint.ts`, `bench/fmt.ts`,
-`bench/check.ts`) et ont été mesurés ici. Ils ne sont pas encore reproductibles sur le runner de
+bas sont encore maintenus à la main à partir de benchmarks locaux (`tools/benchmarks/scripts/lint.ts`, `tools/benchmarks/scripts/fmt.ts`,
+`tools/benchmarks/scripts/check.ts`) et ont été mesurés ici. Ils ne sont pas encore reproductibles sur le runner de
 référence : lisez-les comme des indications.
 
 |             |                                           |
@@ -49,7 +49,7 @@ Compilation de **15 000 fichiers Vue SFC générés** (58,7 Mo au total) sur le 
 | **Tous les cœurs (32 vCPU)** | 6,08s             | 329,2ms | **18,5x**    |
 | **compiler-sfc 1T vs max**   | 17,15s            | 329,2ms | **52,1x**    |
 
-Source : la surface `compile` de l'instantané versionné `bench/results/tool-benchmark-latest.json`
+Source : la surface `compile` de l'instantané versionné `tools/benchmarks/results/tool-benchmark-latest.json`
 ([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) — le même
 artefact que publient `README.md` et l'[instantané de benchmark
 Blacksmith](./performance-blacksmith).
@@ -142,9 +142,9 @@ Le plugin Vite (`@vizejs/vite-plugin`) met en cache au niveau du fichier, en deu
 
 ## Mesuré : travail sur l'arène et les expressions
 
-Le travail sur les entrailles du compilateur décrit ci-dessus est mesuré par un harnais de micro-benchmarks par crate (`cargo bench --bench davinci`) sur une échelle fixe de six fixtures, `benchmarks/davinci_harness/fixtures/{small,medium,large,stress-deep,stress-wide,stress-interp}.vue`.
+Le travail sur les entrailles du compilateur décrit ci-dessus est mesuré par un harnais de micro-benchmarks par crate (`cargo bench --bench davinci`) sur une échelle fixe de six fixtures, `tools/benchmarks/crates/davinci_harness/fixtures/{small,medium,large,stress-deep,stress-wide,stress-interp}.vue`.
 
-**Comment lire ces chiffres.** Les comptes d'allocations sont déterministes et indépendants de la machine : ce sont donc des faits exacts, et ils servent de cliquet anti-régression. Les temps d'exécution ont été relevés sur une machine de développement partagée avec l'échantillonnage `--quick` et sont **seulement indicatifs** — les enregistrements sur le runner de référence (Blacksmith) restent à faire, ce qui explique que chaque entrée `wall_p50_ns` et `allocs` de `davinci-road/plan/budgets.toml` vaille encore `0`, c'est-à-dire « pas encore enregistré, informatif seulement ». Les fichiers de résultats de chaque exécution atterrissent dans `bench/results/davinci/` : ce sont des artefacts locaux, pas des références versionnées.
+**Comment lire ces chiffres.** Les comptes d'allocations sont déterministes et indépendants de la machine : ce sont donc des faits exacts, et ils servent de cliquet anti-régression. Les temps d'exécution ont été relevés sur une machine de développement partagée avec l'échantillonnage `--quick` et sont **seulement indicatifs** — les enregistrements sur le runner de référence (Blacksmith) restent à faire, ce qui explique que chaque entrée `wall_p50_ns` et `allocs` de `davinci-road/plan/budgets.toml` vaille encore `0`, c'est-à-dire « pas encore enregistré, informatif seulement ». Les fichiers de résultats de chaque exécution atterrissent dans `tools/benchmarks/results/davinci/` : ce sont des artefacts locaux, pas des références versionnées.
 
 Appels d'allocation par compilation, avant et après le travail sur les chaînes et l'arène (exacts, mêmes fixtures) :
 
@@ -218,7 +218,7 @@ Les lignes de contrôle de type couvrent deux moteurs TypeScript : vue-tsc exéc
 
 > **Note :** Le canon Vize est encore en phase de développement initial et la voie de diagnostic soutenue par Corsa rattrape encore la fidélité vue-tsc. Ces mesures reflètent l’implémentation native actuelle CLI-first avec un plan de secours de session de projet et évolueront à mesure que la couverture et la parité des diagnostics s’amélioreront.
 
-Faites `node bench/check.ts 500` après `cargo build --release -p vize` pour reproduire ce benchmark rapide.
+Faites `node tools/benchmarks/scripts/check.ts 500` après `cargo build --release -p vize` pour reproduire ce benchmark rapide.
 
 ### Profil de vérification de type
 
@@ -241,7 +241,7 @@ Corsa ne soit invoquée.
 
 ### Luminaire e2e très chargé en diagnostics
 
-`bench/check.ts` mesure aussi l’application `tests/_fixtures/_git/npmx.dev` lorsque le luminaire est présent. Cela capture le chemin de correspondance de diagnostic sur un véritable élément d’application :
+`tools/benchmarks/scripts/check.ts` mesure aussi l’application `tests/_fixtures/_git/npmx.dev` lorsque le luminaire est présent. Cela capture le chemin de correspondance de diagnostic sur un véritable élément d’application :
 
 | Calendrier           | Fichiers sources SFC | Fichiers virtuels | Diagnostic | Canon Vize |
 | -------------------- | -------------------- | ----------------- | ---------- | ---------- |
@@ -259,6 +259,6 @@ Version Vite avec **1 000 importations SFC Vue** (toutes importées en une seule
 
 > Note : `@vizejs/vite-plugin` remplace uniquement l’étape de compilation Vue SFC — la différence de performance vient entièrement de cette partie. La résolution des dépendances, la construction de graphes de modules, le regroupement (Rolldown) et tous les autres internes Vite sont identiques à `@vitejs/plugin-vue`. Pour la performance purement en compilation, voir la [Compiler benchmark](#benchmark-15000-sfc-files) ci-dessus. `@vizejs/vite-plugin` pré-compile avec enthousiasme `.vue` fichiers en utilisant une compilation multithread native, ce qui permet également un HMR plus rapide.
 
-Cette ligne est la surface `vite` de l'instantané commité `bench/results/tool-benchmark-latest.json` ([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) — le même artefact que celui publié par `README.md` et par l'[instantané de benchmark Blacksmith](/architecture/performance-blacksmith). `tests/tooling/docs-vite-benchmark-row.test.ts` la verrouille sur cet artefact, dans toutes les locales.
+Cette ligne est la surface `vite` de l'instantané commité `tools/benchmarks/results/tool-benchmark-latest.json` ([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) — le même artefact que celui publié par `README.md` et par l'[instantané de benchmark Blacksmith](/architecture/performance-blacksmith). `tests/tooling/docs-vite-benchmark-row.test.ts` la verrouille sur cet artefact, dans toutes les locales.
 
-Le chiffre publié ici jusqu'à présent — `957ms` / `479ms` / `2.0x` — provenait de `bench/vite.ts` avant #3392, qui mesurait Vize avec un cache de pré-compilation persistant laissé chaud par son propre échauffement, tandis que `@vitejs/plugin-vue` compilait à froid. Ce harnais rapporte désormais des lignes à froid et à chaud séparées sur la machine où il s'exécute : c'est un diagnostic local, pas une accélération publiable. Utilisez `vp run --workspace-root bench:vite` pour comparer un changement à lui-même.
+Le chiffre publié ici jusqu'à présent — `957ms` / `479ms` / `2.0x` — provenait de `tools/benchmarks/scripts/vite.ts` avant #3392, qui mesurait Vize avec un cache de pré-compilation persistant laissé chaud par son propre échauffement, tandis que `@vitejs/plugin-vue` compilait à froid. Ce harnais rapporte désormais des lignes à froid et à chaud séparées sur la machine où il s'exécute : c'est un diagnostic local, pas une accélération publiable. Utilisez `vp run --workspace-root bench:vite` pour comparer un changement à lui-même.

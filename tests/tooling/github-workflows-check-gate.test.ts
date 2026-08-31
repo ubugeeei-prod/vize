@@ -271,7 +271,7 @@ test("test-report collects the inventory before it enforces the gate", () => {
       {
         name: "Collect test inventory",
         uses: null,
-        run: 'node bench/test-inventory.mjs --json test-inventory.json --markdown "$GITHUB_STEP_SUMMARY"',
+        run: 'node tools/benchmarks/scripts/test-inventory.mjs --json test-inventory.json --markdown "$GITHUB_STEP_SUMMARY"',
         env: null,
       },
       { name: "Upload test inventory", uses: "actions/upload-artifact", run: null, env: null },

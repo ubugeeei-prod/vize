@@ -3,7 +3,7 @@
 //! Run with: cargo bench -p vize_armature --bench davinci
 //!
 //! Each case exports wall p50/p95, allocation calls, peak transient heap, and
-//! the RSS delta to `bench/results/davinci/<bench_id>.json` via
+//! the RSS delta to `tools/benchmarks/results/davinci/<bench_id>.json` via
 //! `davinci_harness`. Inputs are the root `<template>` block contents of the
 //! committed ladder fixtures, matching what the SFC pipeline hands armature.
 //! The tokenize cases drive the tokenizer with no-op callbacks, so they price

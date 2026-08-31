@@ -19,9 +19,9 @@
 use libfuzzer_sys::fuzz_target;
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_davinci::side_table::SideTable;
-use vize_s0::Allocator;
+use vize_s0::{Allocator, SourceRoot, Span};
 use vize_s1::parse;
-use vize_s1_to_s2::lower;
+use vize_s1_to_s2::{Lowered, lower};
 use vize_s2::folio::DisegnoFolio;
 use vize_s2::verify::{Rigor, verify, verify_table};
 
@@ -37,6 +37,7 @@ fuzz_target!(|data: &[u8]| {
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, source);
     let lowered = lower(&allocator, &tree, &errors);
+    assert_fact_spans_resolve(source, &lowered);
     let folio = DisegnoFolio::of(&lowered.root.ops);
     assert_eq!(u64::from(lowered.op_count), folio.op_count());
     assert_eq!(verify(&folio, Rigor::Canonical), vec![]);
@@ -54,3 +55,22 @@ fuzz_target!(|data: &[u8]| {
     let reparsed = DisegnoFolio::parse(printed.as_str()).expect("canonical print must re-parse");
     assert_eq!(reparsed, folio);
 });
+
+fn assert_fact_spans_resolve(source: &str, lowered: &Lowered<'_>) {
+    let root = SourceRoot::new(source).expect("the fuzz target rejects u32-overflowing sources");
+    for diagnostic in &lowered.diagnostics {
+        assert_span_resolves(root, diagnostic.span, "diagnostic");
+    }
+    for record in &lowered.provenance {
+        assert_span_resolves(root, record.span, "provenance");
+    }
+}
+
+fn assert_span_resolves(root: SourceRoot<'_>, span: Span, label: &str) {
+    assert!(
+        root.contains_span(span),
+        "{label} span @{}:{} is not a valid authored UTF-8 range",
+        span.start,
+        span.end
+    );
+}

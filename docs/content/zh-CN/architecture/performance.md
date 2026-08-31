@@ -15,7 +15,7 @@ Vize通过利用Rust的零成本抽象和原生多线程，相比标准基于Jav
 本页涉及两种测量环境，下面的每个数字都会说明它来自哪一种。
 
 **参考运行器。** 跨工具对比由 Tool Benchmark 工作流测量，并提交到
-`bench/results/tool-benchmark-latest.json`。该产物是可引用的来源，
+`tools/benchmarks/results/tool-benchmark-latest.json`。该产物是可引用的来源，
 [Blacksmith 基准快照](./performance-blacksmith) 完整发布了它。
 
 |          |                                                      |
@@ -26,7 +26,7 @@ Vize通过利用Rust的零成本抽象和原生多线程，相比标准基于Jav
 | **版本** | vize 0.303.0 · vue 3.6.0-beta.10 · Node v24.14.0     |
 
 **本地工作站。** 下面的 Linter、Formatter 和类型检查器表格仍由本地基准
-（`bench/lint.ts`、`bench/fmt.ts`、`bench/check.ts`）手工维护，并在此环境测得。
+（`tools/benchmarks/scripts/lint.ts`、`tools/benchmarks/scripts/fmt.ts`、`tools/benchmarks/scripts/check.ts`）手工维护，并在此环境测得。
 它们尚不能在参考运行器上复现，因此请将其视为方向性参考。
 
 |             |                                         |
@@ -47,7 +47,7 @@ Vize通过利用Rust的零成本抽象和原生多线程，相比标准基于Jav
 | **全部核心（32 vCPU）**    | 6.08s             | 329.2ms | **18.5x** |
 | **compiler-sfc 1T 对 max** | 17.15s            | 329.2ms | **52.1x** |
 
-来源：已提交快照 `bench/results/tool-benchmark-latest.json` 的 `compile` 表面
+来源：已提交快照 `tools/benchmarks/results/tool-benchmark-latest.json` 的 `compile` 表面
 （[run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)）——
 与 `README.md` 和 [Blacksmith 基准快照](./performance-blacksmith) 发布的是同一份产物。
 
@@ -140,9 +140,9 @@ Vite 插件（`@vizejs/vite-plugin`）按文件级缓存，分为键不同的两
 ## 实测：Arena 与表达式工作
 
 上述编译器内部工作由按 crate 的微基准框架（`cargo bench --bench davinci`）在固定的六个夹具阶梯
-`benchmarks/davinci_harness/fixtures/{small,medium,large,stress-deep,stress-wide,stress-interp}.vue` 上测量。
+`tools/benchmarks/crates/davinci_harness/fixtures/{small,medium,large,stress-deep,stress-wide,stress-interp}.vue` 上测量。
 
-**如何阅读这些数字。** 分配次数是确定性的且与机器无关，因此是精确事实，并被用作回归棘轮。墙钟时间是在共享的开发机上以 `--quick` 采样测得的，**仅具方向性** —— 参考运行器（Blacksmith）的记录仍待完成，这也是 `davinci-road/plan/budgets.toml` 中每一项 `wall_p50_ns` 和 `allocs` 仍为 `0`（意为“尚未记录，仅供参考”）的原因。每次运行的结果文件落在 `bench/results/davinci/`，属于本地产物，而非已提交的基线。
+**如何阅读这些数字。** 分配次数是确定性的且与机器无关，因此是精确事实，并被用作回归棘轮。墙钟时间是在共享的开发机上以 `--quick` 采样测得的，**仅具方向性** —— 参考运行器（Blacksmith）的记录仍待完成，这也是 `davinci-road/plan/budgets.toml` 中每一项 `wall_p50_ns` 和 `allocs` 仍为 `0`（意为“尚未记录，仅供参考”）的原因。每次运行的结果文件落在 `tools/benchmarks/results/davinci/`，属于本地产物，而非已提交的基线。
 
 字符串与 arena 工作前后，每次编译的分配调用次数（精确值，同一批夹具）：
 
@@ -216,7 +216,7 @@ Profile Report还包括严格的审计部分，检查工作时间的累积覆盖
 
 > **注：**Vize正能仍处于早期开发阶段，Corsa支持的诊断路径仍在追赶Vue-TSC的保真度。这些测量反映了当前以CLI为先的本地实现，采用项目会话备份，随着诊断覆盖和奇偶校验的提升，这些指标将发生变化。
 
-在`cargo build --release -p vize`后运行`node bench/check.ts 500`以复现这个快速基准测试。
+在`cargo build --release -p vize`后运行`node tools/benchmarks/scripts/check.ts 500`以复现这个快速基准测试。
 
 ### 类型检查员配置文件
 
@@ -239,7 +239,7 @@ Rust侧的 `virtual project` 阶段——每文件的 SFC 解析，Croquis 分�
 
 ### 重诊断的 e2e 灯具
 
-当灯具存在时，`bench/check.ts`还会测量`tests/_fixtures/_git/npmx.dev`应用。这会捕捉真实应用夹具上的诊断映射路径：
+当灯具存在时，`tools/benchmarks/scripts/check.ts`还会测量`tests/_fixtures/_git/npmx.dev`应用。这会捕捉真实应用夹具上的诊断映射路径：
 
 | 固定装置      | 来源SFC文件 | 虚拟文件 | 诊断  | 维兹正史 |
 | ------------- | ----------- | -------- | ----- | -------- |
@@ -257,6 +257,6 @@ Vite 构建，包含**1,000个Vue SFC导入**（全部导入于单一条目）�
 
 > 注：`@vizejs/vite-plugin`仅替代了Vue的SFC编译步骤——性能差异完全来自该步骤。依赖关系解析、模图构建、捆绑（Rolldown）及其他所有 Vite 内部结构与 `@vitejs/plugin-vue` 完全相同。关于纯编译性能，请参见上文的[编译器基准测试](#benchmark-15000-sfc-files)。`@vizejs/vite-plugin` 热切地利用原生多线程编译预编译`.vue`文件，这也使 HMR 更快。
 
-此行取自已提交的快照 `bench/results/tool-benchmark-latest.json` 的 `vite` 面 ([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) —— 与 `README.md` 和 [Blacksmith 基准快照](/architecture/performance-blacksmith) 发布的是同一份产物。`tests/tooling/docs-vite-benchmark-row.test.ts` 在所有语言版本中将其固定到该产物。
+此行取自已提交的快照 `tools/benchmarks/results/tool-benchmark-latest.json` 的 `vite` 面 ([run 30557718030](https://github.com/ubugeeei-prod/vize/actions/runs/30557718030)) —— 与 `README.md` 和 [Blacksmith 基准快照](/architecture/performance-blacksmith) 发布的是同一份产物。`tests/tooling/docs-vite-benchmark-row.test.ts` 在所有语言版本中将其固定到该产物。
 
-在此之前发布的数字 —— `957ms` / `479ms` / `2.0x` —— 来自 #3392 之前的 `bench/vite.ts`：它让 Vize 带着自身预热留下的持久预编译缓存运行，而 `@vitejs/plugin-vue` 从零开始编译。该测试工具现在会在其运行的机器上分别报告冷启动和热启动两行，因此它的输出是本地诊断值，而不是可发布的加速比。请使用 `vp run --workspace-root bench:vite` 来比较改动前后的自身表现。
+在此之前发布的数字 —— `957ms` / `479ms` / `2.0x` —— 来自 #3392 之前的 `tools/benchmarks/scripts/vite.ts`：它让 Vize 带着自身预热留下的持久预编译缓存运行，而 `@vitejs/plugin-vue` 从零开始编译。该测试工具现在会在其运行的机器上分别报告冷启动和热启动两行，因此它的输出是本地诊断值，而不是可发布的加速比。请使用 `vp run --workspace-root bench:vite` 来比较改动前后的自身表现。

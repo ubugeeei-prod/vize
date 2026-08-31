@@ -5,11 +5,14 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { DEFAULT_TASKS } from "../../bench/compare-tools.mjs";
-import { DEFAULT_MUSEA_FILE_COUNT, buildMuseaSurface } from "../../bench/compare-tools-musea.mjs";
-import { MUSEA_CORPUS_FILE_COUNT } from "../../bench/musea-corpus.mjs";
-import { assertMuseaArtifactsUnchanged } from "../../bench/musea-artifacts.mjs";
-import { resolveMuseaArtifacts } from "../../bench/musea-stages.mjs";
+import { DEFAULT_TASKS } from "../../tools/benchmarks/scripts/compare-tools.mjs";
+import {
+  DEFAULT_MUSEA_FILE_COUNT,
+  buildMuseaSurface,
+} from "../../tools/benchmarks/scripts/compare-tools-musea.mjs";
+import { MUSEA_CORPUS_FILE_COUNT } from "../../tools/benchmarks/scripts/musea-corpus.mjs";
+import { assertMuseaArtifactsUnchanged } from "../../tools/benchmarks/scripts/musea-artifacts.mjs";
+import { resolveMuseaArtifacts } from "../../tools/benchmarks/scripts/musea-stages.mjs";
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -82,14 +85,14 @@ test("the MoonBit bench dispatcher and the bench package agree on the lane scrip
       script,
     ]),
     [
-      ["run", "bench/run.ts"],
-      ["generate", "bench/generate.mjs"],
-      ["lint", "bench/lint.ts"],
-      ["fmt", "bench/fmt.ts"],
-      ["check", "bench/check.ts"],
-      ["vite", "bench/vite.ts"],
-      ["musea", "bench/musea.mjs"],
-      ["compare-tools", "bench/compare-tools.mjs"],
+      ["run", "tools/benchmarks/scripts/run.ts"],
+      ["generate", "tools/benchmarks/scripts/generate.mjs"],
+      ["lint", "tools/benchmarks/scripts/lint.ts"],
+      ["fmt", "tools/benchmarks/scripts/fmt.ts"],
+      ["check", "tools/benchmarks/scripts/check.ts"],
+      ["vite", "tools/benchmarks/scripts/vite.ts"],
+      ["musea", "tools/benchmarks/scripts/musea.mjs"],
+      ["compare-tools", "tools/benchmarks/scripts/compare-tools.mjs"],
     ],
   );
   assert.equal(
@@ -97,7 +100,9 @@ test("the MoonBit bench dispatcher and the bench package agree on the lane scrip
     "run|generate|lint|fmt|check|vite|musea|compare-tools",
   );
 
-  const manifest = JSON.parse(fs.readFileSync(path.join(root, "bench/package.json"), "utf8"));
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(root, "tools/benchmarks/scripts/package.json"), "utf8"),
+  );
   assert.equal(manifest.scripts["bench:musea"], "node musea.mjs");
 });
 

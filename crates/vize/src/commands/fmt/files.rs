@@ -310,9 +310,11 @@ mod tests {
     #[test]
     fn relative_glob_does_not_match_every_vue_file() {
         let cwd = std::env::current_dir().unwrap();
-        let pattern = FmtPattern::new("bench/__in__/*.vue", &cwd).unwrap();
+        let pattern = FmtPattern::new("tools/benchmarks/scripts/__in__/*.vue", &cwd).unwrap();
 
-        assert!(pattern.matches(Path::new("./bench/__in__/Component0000.vue")));
+        assert!(pattern.matches(Path::new(
+            "./tools/benchmarks/scripts/__in__/Component0000.vue"
+        )));
         assert!(!pattern.matches(Path::new("./examples/cli/src/App.vue")));
     }
 

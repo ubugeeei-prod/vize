@@ -1,14 +1,14 @@
 
 fn bench_script(task : String) -> String? {
   match task {
-    "run" => Some("bench/run.ts")
-    "generate" => Some("bench/generate.mjs")
-    "lint" => Some("bench/lint.ts")
-    "fmt" => Some("bench/fmt.ts")
-    "check" => Some("bench/check.ts")
-    "vite" => Some("bench/vite.ts")
-    "musea" => Some("bench/musea.mjs")
-    "compare-tools" => Some("bench/compare-tools.mjs")
+    "run" => Some("tools/benchmarks/scripts/run.ts")
+    "generate" => Some("tools/benchmarks/scripts/generate.mjs")
+    "lint" => Some("tools/benchmarks/scripts/lint.ts")
+    "fmt" => Some("tools/benchmarks/scripts/fmt.ts")
+    "check" => Some("tools/benchmarks/scripts/check.ts")
+    "vite" => Some("tools/benchmarks/scripts/vite.ts")
+    "musea" => Some("tools/benchmarks/scripts/musea.mjs")
+    "compare-tools" => Some("tools/benchmarks/scripts/compare-tools.mjs")
     _ => None
   }
 }

@@ -19,7 +19,7 @@ distribution and integration layers.
 | `npm/`    | JavaScript packages for Vite, Nuxt, editor extensions, Musea integrations, and published package wrappers         |
 | `docs/`   | User documentation, architecture notes, release notes, and the docs site theme                                    |
 | `tests/`  | Cross-package fixtures, real-world projects, tooling tests, and snapshot governance                               |
-| `bench/`  | Performance comparison scripts and PR benchmark budget enforcement                                                |
+| `tools/benchmarks/scripts/`  | Performance comparison scripts and PR benchmark budget enforcement                                                |
 | `tools/`  | Repository automation that is not part of the shipped product                                                     |
 
 When a change crosses directories, the owner is usually the layer that creates the user-visible

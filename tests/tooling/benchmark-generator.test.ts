@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { generateCorpus, SFC_TEMPLATES } from "../../bench/generate.mjs";
+import { generateCorpus, SFC_TEMPLATES } from "../../tools/benchmarks/scripts/generate.mjs";
 
 function withTempDir(fn) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-bench-generator-"));
@@ -129,7 +129,10 @@ test("bench pins the whole eslint-plugin-vue reference toolchain at exact versio
   // every `lang="ts"` block in the corpus is unreadable (#3410). All four are
   // exact versions so a reference run is reproducible.
   const benchPackage = JSON.parse(
-    fs.readFileSync(new URL("../../bench/package.json", import.meta.url), "utf8"),
+    fs.readFileSync(
+      new URL("../../tools/benchmarks/scripts/package.json", import.meta.url),
+      "utf8",
+    ),
   );
   const referencePins = [
     "@typescript-eslint/parser",
