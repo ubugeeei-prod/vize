@@ -206,10 +206,7 @@ fn component_hoist_prop<'a>(
                 return Ok(None);
             };
             let dynamic_value = !bind_value_is_static_patchless(bind);
-            if key.as_str() == "ref" {
-                return Ok(None);
-            }
-            if key.as_str() == "class" && dynamic_value {
+            if matches!(key.as_str(), "ref" | "class") {
                 return Ok(None);
             }
             let value = bind_value(bind)?;

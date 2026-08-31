@@ -176,7 +176,7 @@ test("repository JS check enforces the v1 alpha warning budget", () => {
 
   assert.match(
     command,
-    /moon run -q --target native tools\/moon\/cmd\/check_warning_budget -- -- \.\/node_modules\/\.bin\/vp check/,
+    /'rust-script' 'tools\/commands\/ci\/check-warning-budget\.rs' '--' '\.\/node_modules\/\.bin\/vp' 'check'/,
   );
 });
 
