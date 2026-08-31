@@ -340,7 +340,7 @@ Items consumers import from `vize_croquis` that are outside the product set abov
 | `runtime_erased_macro_names`                 | `vize_atelier_sfc`   |     3 |     5 |
 | `scoped_v_bind_name`                         | `vize_atelier_sfc`   |     1 |     1 |
 | `strip_js_comments`                          | `vize_canon`         |     3 |     4 |
-| `to_pascal_case`                             | `vize_canon`         |     2 |     2 |
+| `to_pascal_case`                             | `vize_canon`         |     1 |     1 |
 | `to_pascal_case`                             | `vize_patina`        |     2 |     3 |
 
 ## Cross-check: symbol-resolved vs naive grep

@@ -48,7 +48,7 @@ observational guard for planning only. It does not change rollout state.
 | Compiler                   |           928 |                   487 |               441 |             140 |     371 |             941 |      498 |           488 |           609 |
 | Linter                     |           331 |                   331 |                 0 |             290 |     287 |             671 |      237 |           375 |           539 |
 | Typechecker                |           880 |                   238 |               642 |             396 |     187 |             808 |      655 |           468 |           666 |
-| Typechecker content-mapper |             8 |                     8 |                 0 |               1 |       0 |               9 |        0 |             7 |            19 |
+| Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            20 |
 | Formatter                  |            38 |                    38 |                 0 |               0 |      21 |              40 |       19 |            30 |            65 |
 | LSP                        |           272 |                   272 |                 0 |             115 |      44 |             326 |      105 |           167 |           388 |
 
@@ -167,22 +167,21 @@ Additional test/dev rows are in the TSV: 185 omitted.
 
 Scope: content-mapper command plus Canon content-mapper protocol files. This is a lexical inventory, not a rollout gate.
 
-| surface          | total sites | source/manifest | test/dev |
-| ---------------- | ----------: | --------------: | -------: |
-| S0               |           8 |               8 |        0 |
-| Croquis analysis |           1 |               1 |        0 |
+| surface | total sites | source/manifest | test/dev |
+| ------- | ----------: | --------------: | -------: |
+| S0      |           9 |               9 |        0 |
 
 #### Top source and manifest files
 
-| file                                                                          | class  | surfaces                   | sites |
-| ----------------------------------------------------------------------------- | ------ | -------------------------- | ----: |
-| `crates/vize_canon/src/batch/virtual_project/content_mapper.rs:8`             | source | S0 2<br>Croquis analysis 1 |     3 |
-| `crates/vize_canon/src/batch/virtual_project/content_mapper_alias.rs:1`       | source | S0 1                       |     1 |
-| `crates/vize_canon/src/batch/virtual_project/content_mapper_directives.rs:12` | source | S0 1                       |     1 |
-| `crates/vize_canon/src/batch/virtual_project/content_mapper_protocol.rs:4`    | source | S0 1                       |     1 |
-| `crates/vize/src/commands/content_mapper.rs:18`                               | source | S0 1                       |     1 |
+| file                                                                             | class  | surfaces | sites |
+| -------------------------------------------------------------------------------- | ------ | -------- | ----: |
+| `crates/vize_canon/src/batch/virtual_project/content_mapper.rs:8`                | source | S0 2     |     2 |
+| `crates/vize_canon/src/batch/virtual_project/content_mapper_alias.rs:1`          | source | S0 1     |     1 |
+| `crates/vize_canon/src/batch/virtual_project/content_mapper_component_name.rs:3` | source | S0 1     |     1 |
+| `crates/vize_canon/src/batch/virtual_project/content_mapper_directives.rs:12`    | source | S0 1     |     1 |
+| `crates/vize_canon/src/batch/virtual_project/content_mapper_protocol.rs:4`       | source | S0 1     |     1 |
 
-Additional source/manifest rows are in the TSV: 2 omitted.
+Additional source/manifest rows are in the TSV: 3 omitted.
 
 #### Top test/dev files
 

@@ -299,7 +299,7 @@ void test("consumer migration scan keeps every rollout consumer and surface clas
     ["compiler", { stage: true, old: true, raw: true }],
     ["linter", { stage: true, old: true, raw: true }],
     ["typechecker", { stage: true, old: true, raw: true }],
-    ["typechecker-content-mapper", { stage: true, old: true, raw: false }],
+    ["typechecker-content-mapper", { stage: true, old: false, raw: false }],
     ["formatter", { stage: true, old: false, raw: true }],
     ["lsp", { stage: true, old: true, raw: true }],
   ]);
@@ -326,9 +326,9 @@ void test("content-mapper S0 surface stays on the preferred physical name", () =
     (consumer) => consumer.id === "typechecker-content-mapper",
   );
   assert.ok(contentMapper);
-  assert.equal(contentMapper.surfaceCounts.s0, 8);
+  assert.equal(contentMapper.surfaceCounts.s0, 9);
   assert.equal(contentMapper.nameKindCounts.compat, 0);
-  assert.equal(contentMapper.nameKindCounts.preferred, 8);
+  assert.equal(contentMapper.nameKindCounts.preferred, 9);
   assert.ok(
     contentMapper.sites
       .filter((site) => site.surfaceId === "s0")

@@ -5,11 +5,11 @@ use std::path::Path;
 
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_sfc::{SfcError, SfcParseOptions, parse_sfc};
-use vize_s0::{String as CompactString, ToCompactString, config::VueVersion};
+use vize_s0::{ToCompactString, config::VueVersion};
 
 use crate::batch::Diagnostic;
 use crate::batch::error::CorsaResult;
-use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping, to_safe_identifier};
+use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
 
 #[path = "content_mapper_alias.rs"]
 mod alias;
@@ -28,6 +28,10 @@ pub use protocol::{
 #[path = "content_mapper_directives.rs"]
 mod directives;
 use directives::template_diagnostic_directives;
+
+#[path = "content_mapper_component_name.rs"]
+mod component_name;
+use component_name::content_mapper_component_name;
 
 use super::build::{
     descriptor_uses_jsx_script, prepend_vue_jsx_reference, virtual_ts_options_for_descriptor,
@@ -179,20 +183,6 @@ pub fn generate_vue_content_mapper_transform_with_options(
             .collect(),
         text: code,
     })
-}
-
-fn content_mapper_component_name(path: &Path) -> CompactString {
-    let stem = path
-        .file_stem()
-        .and_then(|stem| stem.to_str())
-        .unwrap_or("VueComponent");
-    let pascal = vize_croquis::naming::to_pascal_case(stem);
-    let name = to_safe_identifier(pascal.as_str());
-    if name.as_str().bytes().all(|byte| byte == b'_') {
-        CompactString::from("VueComponent")
-    } else {
-        name
-    }
 }
 
 fn sfc_parse_diagnostic(source: &str, error: &SfcError) -> ContentMapperDiagnostic {

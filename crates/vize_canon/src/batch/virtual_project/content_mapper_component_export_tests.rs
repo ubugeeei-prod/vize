@@ -8,6 +8,8 @@ fn names_the_default_export_from_the_sfc_filename() {
     for (file_name, component_name) in [
         ("Child.vue", "Child"),
         ("user-card.vue", "UserCard"),
+        ("user_card.vue", "UserCard"),
+        ("component.name.vue", "Component_name"),
         ("123-widget.vue", "_123Widget"),
         ("日本語.vue", "VueComponent"),
     ] {

@@ -2439,10 +2439,10 @@ typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/
 typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/type_references.rs	9	s0	S0	stage	vize_s0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/type_references/tsconfig_types.rs	4	s0	S0	stage	vize_s0	preferred	2
 typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_alias.rs	1	s0	S0	stage	vize_s0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_component_name.rs	3	s0	S0	stage	vize_s0	preferred	1
 typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_directives.rs	12	s0	S0	stage	vize_s0	preferred	1
 typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_protocol.rs	4	s0	S0	stage	vize_s0	preferred	1
 typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper.rs	8	s0	S0	stage	vize_s0	preferred	2
-typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper.rs	8	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper.rs	18	s0	S0	stage	vize_s0	preferred	1
 typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper/project.rs	13	s0	S0	stage	vize_s0	preferred	1
 typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper/test_support.rs	6	s0	S0	stage	vize_s0	preferred	1
