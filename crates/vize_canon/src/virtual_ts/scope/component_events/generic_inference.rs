@@ -1,5 +1,5 @@
 use vize_carton::{FxHashSet, String, append, cstr};
-use vize_croquis::{Croquis, EventHandlerScopeData, Scope, ScopeData, analysis::ComponentUsage};
+use vize_croquis::{Croquis, EventHandlerScopeData, Scope, analysis::ComponentUsage};
 
 use crate::virtual_ts::{expressions::rewrite_reserved_template_prop, helpers::to_camel_case};
 
@@ -22,9 +22,7 @@ pub(super) fn generate_inferred_emit_args(
     ts: &mut String,
     ctx: &EmitInferenceContext<'_>,
 ) -> Option<String> {
-    if !is_local_vue_component_binding(ctx.summary, ctx.component_name) {
-        return None;
-    }
+    ctx.summary.binding_spans.get(ctx.component_name)?;
     let (usage_idx, usage) =
         find_component_usage_for_event(ctx.summary, ctx.component_name, ctx.data, ctx.scope)?;
     if !usage.props.iter().any(|prop| {
@@ -116,22 +114,6 @@ pub(super) fn generate_inferred_emit_args(
         ctx.prop_key,
     );
     Some(inferred_args)
-}
-
-fn is_local_vue_component_binding(summary: &Croquis, component_name: &str) -> bool {
-    let Some((binding_start, binding_end)) = summary.binding_spans.get(component_name) else {
-        return false;
-    };
-
-    summary.scopes.iter().any(|scope| {
-        scope.span.start <= *binding_start
-            && *binding_end <= scope.span.end
-            && matches!(
-                scope.data(),
-                ScopeData::ExternalModule(data)
-                    if !data.is_type_only && data.source.as_str().ends_with(".vue")
-            )
-    })
 }
 
 pub(super) fn find_component_usage_for_event<'a>(
