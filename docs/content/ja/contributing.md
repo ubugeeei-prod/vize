@@ -111,14 +111,6 @@ run_testbox_checks() {
 run_testbox_checks
 ```
 
-GitHub Actions の変更については、プッシュする前に `actrun` を使用してワークフロー グラフをリントまたはプレビューします。
-
-```sh
-vp run actrun:lint
-vp run actrun:dry-run
-vp run actrun:job --job check-js
-```
-
 Blacksmith Testbox のジョブ変更の場合は、ワークフローの形状も検証します。
 `node --test tests/tooling/github-workflows.test.ts`。
 

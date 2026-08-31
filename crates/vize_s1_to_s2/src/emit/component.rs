@@ -5,12 +5,14 @@
 //! spread, Vue builtins, and `<component :is>`
 //! (`resolveDynamicComponent`).
 
+mod checks;
 mod preamble;
 
 use alloc::vec::Vec as StdVec;
+use checks::{admit, has_dynamic_key_binding};
 
 use vize_davinci::id::NodeId;
-use vize_s2::op::{BindingOp, ComponentOp, DynamicName};
+use vize_s2::op::{BindingOp, ComponentOp};
 
 use super::EmitCx;
 use super::EmitError;
@@ -23,9 +25,8 @@ use super::directive;
 use super::flag::emit_patch_flag;
 use super::hoist::compact_props_object;
 use super::js::asset_ident;
-use super::props::{admit_bindings, apply_static_ref_patch, bind_patch, emit_bind_props};
+use super::props::{apply_static_ref_patch, bind_patch, emit_bind_props};
 use super::props_static;
-use super::props_static::PropHoistPosition;
 use super::slots;
 
 pub(super) use preamble::{collect_names, emit_resolves};
@@ -193,26 +194,37 @@ fn emit_call(
     let static_nested = builtin::has_static_nested(&component.children);
     let builtin_helper = builtin::helper(component.name).is_some();
     let hoistable_static_props = if skip_is {
-        has_hoist_attrs.then(|| compact_props_object(hoist_attrs.iter().copied()))
+        has_hoist_attrs.then(|| props_static::ComponentHoistProps {
+            source: compact_props_object(hoist_attrs.iter().copied()),
+            dynamic_values: false,
+            non_key: hoist_attrs.iter().any(|attr| attr.name != "key"),
+        })
     } else {
-        props_static::root_hoist_props(&component.attributes, &component.bindings)?
+        props_static::component_hoist_props(&component.attributes, &component.bindings)?
     };
     if for_item
         && !has_custom
-        && hoistable_static_props.is_some()
-        && props_static::should_hoist(cx, id, PropHoistPosition::ForItem)
+        && cx.slot_param_depth == 0
+        && let Some(props) = hoistable_static_props.as_ref()
+        && props.non_key
+        && (props_static::should_hoist(cx, id, props_static::PropHoistPosition::ForItem)
+            || (props.dynamic_values && !has_slots && !has_array))
     {
-        cx.buf.push_hoist(
-            hoistable_static_props
-                .clone()
-                .expect("checked hoisted props"),
-        );
+        cx.buf.push_hoist(props.source.clone());
     }
     let can_hoist_static_props = !has_custom
         && !for_item
         && if_key.is_none()
         && hoistable_static_props.is_some()
-        && props_static::should_hoist(cx, id, PropHoistPosition::Nested);
+        && cx.slot_param_depth == 0
+        && hoistable_static_props.as_ref().is_some_and(|props| {
+            props_static::should_hoist(cx, id, props_static::PropHoistPosition::Nested)
+                || (props.dynamic_values
+                    && !cx.in_v_for
+                    && (!cx.hoist_static_vnodes
+                        || !has_slots
+                        || slots::has_text_only_implicit_default(&component.children)))
+        });
     let hoisted_static_props = if can_hoist_static_props
         && ((!array && (facts.is_some() || create) && (!builtin_helper || static_nested))
             || (array && static_nested))
@@ -220,8 +232,10 @@ fn emit_call(
         Some(
             cx.buf.push_hoist(
                 hoistable_static_props
-                    .clone()
-                    .expect("checked hoisted props"),
+                    .as_ref()
+                    .expect("checked hoisted props")
+                    .source
+                    .clone(),
             ),
         )
     } else {
@@ -229,8 +243,11 @@ fn emit_call(
     };
     let unused_hoist = hoisted_static_props.is_none() && can_hoist_static_props && static_nested;
     if unused_hoist {
-        cx.buf
-            .push_hoist(hoistable_static_props.expect("checked hoisted props"));
+        cx.buf.push_hoist(
+            hoistable_static_props
+                .expect("checked hoisted props")
+                .source,
+        );
     }
     let mut patch = bind_patch(&component.bindings, true, if_key, for_item);
     if skip_is {
@@ -320,24 +337,4 @@ fn emit_call(
     }
     cx.buf.push(")");
     Ok(())
-}
-
-fn admit(cx: &EmitCx<'_>, component: &ComponentOp<'_>) -> Result<(), EmitError> {
-    if create_slots::needs_create_slots(cx, &component.children)
-        || slots::has_implicit_default(&component.children)
-    {
-        slots::admit_default(&component.children)?;
-    }
-    admit_bindings(&component.attributes, &component.bindings)
-}
-
-fn has_dynamic_key_binding(component: &ComponentOp<'_>) -> bool {
-    component.bindings.iter().any(|binding| {
-        matches!(
-            binding,
-            BindingOp::Bind(bind)
-                if bind.value.is_some()
-                    && matches!(bind.name, Some(DynamicName::Static("key")))
-        )
-    })
 }

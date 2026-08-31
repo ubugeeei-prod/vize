@@ -14,6 +14,10 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<div><select v-model="msg"><option value=""> Select </option><option v-for="item in items" :value="item">{{ item }}</option></select></div>"#,
     ),
     (
+        "nested_select_patchless_bound_options_hoist",
+        r#"<div><select v-model="user.role"><option :value="1">User</option><option :value="2">Admin</option></select></div>"#,
+    ),
+    (
         "v_if_static_child_and_text",
         r#"<div v-if="ok"><span></span> x</div>"#,
     ),

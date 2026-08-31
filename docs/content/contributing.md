@@ -109,14 +109,6 @@ run_testbox_checks() {
 run_testbox_checks
 ```
 
-For GitHub Actions changes, use `actrun` to lint or preview the workflow graph before pushing:
-
-```sh
-vp run actrun:lint
-vp run actrun:dry-run
-vp run actrun:job --job check-js
-```
-
 For Blacksmith Testbox job changes, also validate the workflow shape with
 `node --test tests/tooling/github-workflows.test.ts`.
 

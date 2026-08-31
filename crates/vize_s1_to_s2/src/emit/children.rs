@@ -1,5 +1,8 @@
 //! Text and interpolation children.
 
+mod slot_compound;
+
+use slot_compound::emit_slot_compound_parts;
 use vize_davinci::id::NodeId;
 use vize_s0::Span;
 use vize_s2::expr::{ExprRef, JsExpr, OpaqueReason};
@@ -167,6 +170,10 @@ pub(super) fn emit_create_text_vnode(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Res
 /// Slot default children emit one or more `_createTextVNode`s.
 pub(super) fn emit_slot_text_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
     let Op::Interpolation(interp) = op else {
+        if let Op::Text(text) = op {
+            emit_slot_plain_text_vnode(cx, text.content);
+            return Ok(());
+        }
         return emit_create_text_vnode(cx, core::slice::from_ref(op));
     };
     match interp.expression {
@@ -212,15 +219,8 @@ pub(super) fn emit_slot_text_run(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<
         return Err(EmitError::unsupported(Reason::EmptyTextRun));
     }
     let has_interp = ops.iter().any(|op| matches!(op, Op::Interpolation(_)));
-    let is_single_space =
-        !has_interp && ops.len() == 1 && matches!(&ops[0], Op::Text(text) if text.content == " ");
     cx.buf.use_create_text();
     cx.buf.push(Buf::create_text_alias());
-    if is_single_space {
-        let _id = cx.walk.mint();
-        cx.buf.push("()");
-        return Ok(());
-    }
     cx.buf.push("(");
     emit_slot_text_like(cx, ops)?;
     if has_interp {
@@ -228,6 +228,15 @@ pub(super) fn emit_slot_text_run(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<
     }
     cx.buf.push(")");
     Ok(())
+}
+
+fn emit_slot_plain_text_vnode(cx: &mut EmitCx<'_>, content: &str) {
+    let _id = cx.walk.mint();
+    cx.buf.use_create_text();
+    cx.buf.push(Buf::create_text_alias());
+    cx.buf.push("(\"");
+    cx.buf.push(escape_js_string(content).as_str());
+    cx.buf.push("\")");
 }
 
 fn emit_slot_text_like(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError> {
@@ -319,31 +328,4 @@ pub(super) fn emit_raw_interpolation_or_refuse(
             expression.span(),
         ))
     }
-}
-
-fn emit_slot_compound_parts(
-    cx: &mut EmitCx<'_>,
-    parts: &[TextPart],
-    span: Span,
-) -> Result<(), EmitError> {
-    if parts.is_empty() {
-        return Err(EmitError::unsupported_at(Reason::EmptyCompoundText, span));
-    }
-    for (i, part) in parts.iter().enumerate() {
-        if i > 0 {
-            cx.buf.push(",");
-            cx.buf.newline();
-        }
-        cx.buf.use_create_text();
-        cx.buf.push(Buf::create_text_alias());
-        cx.buf.push("(");
-        if part.dynamic {
-            emit_to_display_string(cx, part.text.as_str());
-            cx.buf.push(", 1 /* TEXT */");
-        } else {
-            emit_quoted_text(cx, part.text.as_str());
-        }
-        cx.buf.push(")");
-    }
-    Ok(())
 }

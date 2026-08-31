@@ -37,12 +37,15 @@ const vscodeExtensionLintIgnorePatterns = [
 /**
  * Oxfmt 0.61 formats Markdown tables containing translated prose and literal
  * pipe characters as if every pipe were a column separator. Keep authored
- * documentation, parser fixtures, and generated Playwright output byte-stable.
+ * documentation, parser/benchmark fixtures, and generated Playwright output
+ * byte-stable.
  */
 const formatterSensitiveContentIgnorePatterns = [
+  "benchmarks/davinci_harness/fixtures/**",
   "crates/**/tests/fixtures/**",
   "docs/content/**/*.md",
   "examples/vite-musea/playwright-report/**",
+  "tools/benchmarks/crates/davinci_harness/fixtures/**",
 ];
 
 /**

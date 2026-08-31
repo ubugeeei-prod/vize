@@ -28,7 +28,11 @@ pub(super) fn admit(on: &OnOp<'_>) -> Result<(), EmitError> {
     }
 }
 
-pub(super) fn emit_pair(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitError> {
+pub(super) fn emit_pair(
+    cx: &mut EmitCx<'_>,
+    on: &OnOp<'_>,
+    is_plain_element: bool,
+) -> Result<(), EmitError> {
     let js = dynamic_name(on)?;
     cx.buf.use_to_handler_key();
     cx.buf.push("[");
@@ -36,12 +40,16 @@ pub(super) fn emit_pair(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitEr
     cx.buf.push("(");
     emit_key_source(cx, js);
     cx.buf.push(")]: ");
-    emit_value(cx, on)
+    emit_value(cx, on, is_plain_element)
 }
 
-pub(super) fn emit_value(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitError> {
+pub(super) fn emit_value(
+    cx: &mut EmitCx<'_>,
+    on: &OnOp<'_>,
+    is_plain_element: bool,
+) -> Result<(), EmitError> {
     let classified = super::on::classify_dynamic_modifiers(on.modifiers.iter().copied());
-    super::on::emit_wrapped_handler(cx, on, &classified)
+    super::on::emit_wrapped_handler(cx, on, &classified, is_plain_element)
 }
 
 pub(super) fn forces_inline(on: &OnOp<'_>) -> bool {

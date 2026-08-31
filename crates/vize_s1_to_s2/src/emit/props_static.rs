@@ -1,5 +1,8 @@
 //! Inline static props for native element calls.
 
+mod legacy_constant;
+
+use legacy_constant::legacy_global_constant_expr;
 use vize_davinci::id::NodeId;
 use vize_s0::String;
 use vize_s2::op::{Attribute, BindingOp, DynamicName};
@@ -76,6 +79,55 @@ pub(super) fn root_hoist_props(
     Ok(Some(out))
 }
 
+pub(super) struct ComponentHoistProps {
+    pub(super) source: String,
+    pub(super) dynamic_values: bool,
+    pub(super) non_key: bool,
+}
+
+pub(super) fn component_hoist_props(
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+) -> Result<Option<ComponentHoistProps>, EmitError> {
+    let pieces = pieces(attributes, bindings, false)?;
+    let mut out = String::from("{ ");
+    let mut emitted = 0usize;
+    let mut dynamic_values = false;
+    let mut non_key = false;
+    for (index, piece) in pieces.iter().enumerate() {
+        let mut prop = String::default();
+        let Some((key, dynamic_value)) = component_hoist_prop(&mut prop, piece)? else {
+            return Ok(None);
+        };
+        if has_prior_component_hoist_key(&pieces[..index], key.as_str())? {
+            continue;
+        }
+        dynamic_values |= dynamic_value;
+        non_key |= key.as_str() != "key";
+        if emitted > 0 {
+            out.push_str(", ");
+        }
+        out.push_str(prop.as_str());
+        emitted += 1;
+    }
+    if emitted == 0 {
+        return Ok(None);
+    }
+    out.push_str(" }");
+    Ok(Some(ComponentHoistProps {
+        source: out,
+        dynamic_values,
+        non_key,
+    }))
+}
+
+pub(super) fn static_vnode_surface_can_hoist(
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+) -> bool {
+    attributes.iter().all(|attr| attr.name != "ref") && bindings.iter().all(root_binding_can_hoist)
+}
+
 fn can_root_hoist_props(attributes: &[Attribute<'_>], bindings: &[BindingOp<'_>]) -> bool {
     if attributes.is_empty() && bindings.is_empty() {
         return false;
@@ -132,9 +184,55 @@ fn static_hoist_prop<'a>(
     Ok(Some(key))
 }
 
+fn component_hoist_prop<'a>(
+    out: &mut String,
+    piece: &Piece<'a>,
+) -> Result<Option<(HoistKey<'a>, bool)>, EmitError> {
+    match piece {
+        Piece::Attr(attr) if attr.name != "ref" => {
+            push_attr_pair(out, attr);
+            Ok(Some((HoistKey::Borrowed(attr.name), false)))
+        }
+        Piece::Bind(bind) => {
+            let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve) else {
+                return Ok(None);
+            };
+            let dynamic_value = !bind_value_is_static_patchless(bind);
+            if key.as_str() == "ref" {
+                return Ok(None);
+            }
+            if key.as_str() == "class" && dynamic_value {
+                return Ok(None);
+            }
+            let value = bind_value(bind)?;
+            let Some(js) = value.js() else {
+                return Ok(None);
+            };
+            if dynamic_value && !legacy_global_constant_expr(js.ast, js.source) {
+                return Ok(None);
+            }
+            push_key(out, key.as_str());
+            out.push_str(": ");
+            let source = js_expr_source(js);
+            out.push_str(source.as_str());
+            Ok(Some((HoistKey::StaticBind(key), dynamic_value)))
+        }
+        _ => Ok(None),
+    }
+}
+
 fn has_prior_hoist_key(pieces: &[Piece<'_>], key: &str) -> Result<bool, EmitError> {
     for piece in pieces {
         if hoist_key(piece)?.is_some_and(|prior| prior.as_str() == key) {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+fn has_prior_component_hoist_key(pieces: &[Piece<'_>], key: &str) -> Result<bool, EmitError> {
+    for piece in pieces {
+        if component_hoist_key(piece)?.is_some_and(|prior| prior.as_str() == key) {
             return Ok(true);
         }
     }
@@ -147,6 +245,24 @@ fn hoist_key<'a>(piece: &Piece<'a>) -> Result<Option<HoistKey<'a>>, EmitError> {
         Piece::Bind(bind) if bind_value_is_static_patchless(bind) => {
             let key = static_bind_key(bind, StaticBindKeyCasing::Preserve)?;
             if matches!(key.as_str(), "ref" | "class") {
+                return Ok(None);
+            }
+            Ok(Some(HoistKey::StaticBind(key)))
+        }
+        _ => Ok(None),
+    }
+}
+
+fn component_hoist_key<'a>(piece: &Piece<'a>) -> Result<Option<HoistKey<'a>>, EmitError> {
+    match piece {
+        Piece::Attr(attr) if attr.name != "ref" => Ok(Some(HoistKey::Borrowed(attr.name))),
+        Piece::Bind(bind) => {
+            let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve) else {
+                return Ok(None);
+            };
+            if key.as_str() == "ref"
+                || (key.as_str() == "class" && !bind_value_is_static_patchless(bind))
+            {
                 return Ok(None);
             }
             Ok(Some(HoistKey::StaticBind(key)))

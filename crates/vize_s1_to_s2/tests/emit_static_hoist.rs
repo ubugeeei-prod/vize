@@ -84,6 +84,37 @@ fn static_bind_props_hoist_with_nested_dynamic_descendants() {
 }
 
 #[test]
+fn nested_event_and_model_children_match_legacy_block_shape() {
+    assert_shipped_parity(r#"<div><button @click="run">Run</button></div>"#);
+    assert_shipped_parity(
+        r#"<div class="password-input"><input v-model="password" :key="`password-${showPassword}`" /></div>"#,
+    );
+}
+
+#[test]
+fn html_parent_with_svg_child_keeps_legacy_parent_vnode_shape() {
+    assert_shipped_parity(
+        r#"<div><span class="menu-button" aria-label="Menu" @click="toggleMenu"><svg viewBox="0 0 24 24"><path d="M0 0h1" /></svg></span></div>"#,
+    );
+    assert_shipped_parity(
+        r#"<label><span class="mark"><svg v-if="checked" viewBox="0 0 24 24"><path d="M0 0h1" /></svg></span></label>"#,
+    );
+    assert_shipped_parity(
+        r#"<section><article class="chart-card"><h2>{{ title }}</h2><svg viewBox="0 0 100 40"><polyline :points="points" /></svg></article></section>"#,
+    );
+}
+
+#[test]
+fn cached_static_child_with_dynamic_text_uses_legacy_parent_block() {
+    assert_shipped_parity(
+        r#"<section><div class="cta"><svg viewBox="0 0 24 24"><path d="M0 0h1" /></svg>{{ label }}</div></section>"#,
+    );
+    assert_shipped_parity(
+        r#"<section><a href="/docs" class="cta"><svg viewBox="0 0 24 24"><path d="M0 0h1" /></svg>{{ label }}</a></section>"#,
+    );
+}
+
+#[test]
 fn v_for_item_props_hoist_is_registered_but_not_used() {
     assert_shipped_parity(r#"<div v-for="item in list" class="row">{{ item }}</div>"#);
     assert_shipped_parity(
@@ -94,4 +125,29 @@ fn v_for_item_props_hoist_is_registered_but_not_used() {
 #[test]
 fn v_for_component_item_props_hoist_is_registered_but_not_used() {
     assert_shipped_parity(r#"<Foo v-for="item in list" class="row"><span>{{ item }}</span></Foo>"#);
+    assert_shipped_parity(
+        r#"<NodeListInline v-for="document of filteredNodes" :key="document.id" :document="document" class="line-item" />"#,
+    );
+    assert_shipped_parity(
+        r#"<NodeCard v-for="document in filteredNodes" :key="document.id" :node="document" />"#,
+    );
+}
+
+#[test]
+fn component_slot_dynamic_static_name_props_use_legacy_hoist() {
+    assert_shipped_parity(
+        r#"<NuxtLink :to="`/dashboard/docs/${document.id}`" class="name">{{ document.name }}</NuxtLink>"#,
+    );
+    assert_shipped_parity(
+        r#"<NuxtLink :to="`/dashboard/docs/${node.id}`" class="name">{{ node.name }}</NuxtLink>"#,
+    );
+    assert_shipped_parity(
+        r#"<footer v-if="document"><NuxtLink :to="`/dashboard/docs/edit/${document.id}`" class="edit-link">{{ document.name }}</NuxtLink></footer>"#,
+    );
+    assert_shipped_parity(
+        r#"<TooltipRoot v-for="{ name } of contributors" :key="name"><span>{{ name }}</span></TooltipRoot>"#,
+    );
+    assert_shipped_parity(
+        r#"<NodeResourceInline v-for="diagram in diagrams" :key="diagram.id" :node="diagram" class="line-item" />"#,
+    );
 }
