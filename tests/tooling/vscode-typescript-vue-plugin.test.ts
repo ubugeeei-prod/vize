@@ -56,19 +56,19 @@ test("VS Code extension installs the guarded TypeScript Vue plugin", () => {
   );
 
   assert.match(
-    readFile("config/vite-plus/tasks/build.ts"),
+    readFile("tools/config/vite-plus/tasks/build.ts"),
     /rustToolFromVscodeExtension\(\s*"editors\/vscode\/sync-typescript-plugin"/,
   );
   assert.match(
-    readFile("config/vite-plus/tasks/build.ts"),
+    readFile("tools/config/vite-plus/tasks/build.ts"),
     /rustToolFromVscodeExtension\(\s*"editors\/vscode\/assert-vsix-package"/,
   );
   assert.match(
-    readFile("config/vite-plus/tasks/test-benchmark.ts"),
+    readFile("tools/config/vite-plus/tasks/test-benchmark.ts"),
     /rustToolFromVscodeExtension\(\s*"editors\/vscode\/sync-typescript-plugin"/,
   );
   assert.match(
-    readFile("config/vite-plus/tasks/test-benchmark.ts"),
+    readFile("tools/config/vite-plus/tasks/test-benchmark.ts"),
     /rustToolFromVscodeExtension\(\s*"editors\/vscode\/assert-vsix-package"/,
   );
 

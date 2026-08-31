@@ -26,7 +26,7 @@ export const rowsRequiringExecutedEvidence = new Set([
 const toolingTestCiEvidence: Evidence = {
   kind: "ci",
   label: "test-scripts runs tests/tooling with VIZE_TEST_REQUIRE_TSGO=1",
-  path: "config/vite-plus/tasks/test-benchmark.ts",
+  path: "tools/config/vite-plus/tasks/test-benchmark.ts",
   requiredText: [
     "VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 tests/tooling/*.test.ts tests/tooling/*.test.mjs",
   ],

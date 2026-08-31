@@ -115,7 +115,7 @@ Repository automation prefers MoonBit command packages under `tools/moon/cmd/`. 
 normal package path (`moon run --target native tools/moon/cmd/<name> -- <args>`), share the toolchain
 that already builds the compiler, and are covered by `tests/tooling/*.test.ts` suites that exercise
 them via `moon run` and assert full expected output. Root tasks invoke them with the `moonScript`
-helper in `config/vite-plus/task-commands.ts`, so each consumer stays a stable task name rather than
+helper in `tools/config/vite-plus/task-commands.ts`, so each consumer stays a stable task name rather than
 an inline command.
 
 Good MoonBit candidates are small, pure, and dependency-light: argument parsing, JSON or text
