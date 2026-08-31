@@ -62,6 +62,7 @@ mod namespace;
 mod on;
 mod on_body;
 mod on_dynamic;
+mod on_typed;
 mod once;
 mod outlet;
 mod outlet_props;

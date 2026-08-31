@@ -202,7 +202,9 @@ fn emit_mod_array(cx: &mut EmitCx<'_>, mods: &[&str]) {
 }
 
 pub(super) fn emit_handler(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {
-    if is_handler_reference(js.ast) || is_function(js.ast) {
+    if is_handler_reference(js.ast)
+        || (is_function(js.ast) && !super::on_typed::is_typed_arrow(js.ast))
+    {
         cx.buf.push(js.source);
         return;
     }
