@@ -185,9 +185,12 @@ test("title policy workflow mutates only issue and PR metadata", () => {
       };
     };
   };
-  const sparseCheckout = parsed.jobs?.["issue-pr-title-policy"]?.steps?.find((step) =>
-    step.uses?.startsWith("actions/checkout@"),
-  )?.with?.["sparse-checkout"];
+  const steps = parsed.jobs?.["issue-pr-title-policy"]?.steps ?? [];
+  const sparseCheckoutIndex = steps.findIndex((step) => step.uses?.startsWith("actions/checkout@"));
+  const rustScriptSetupIndex = steps.findIndex(
+    (step) => step.uses === "./.github/actions/setup-rust-script",
+  );
+  const sparseCheckout = steps[sparseCheckoutIndex]?.with?.["sparse-checkout"];
   const sparseCheckoutEntries =
     sparseCheckout
       ?.split(/\r?\n/)
@@ -200,17 +203,25 @@ test("title policy workflow mutates only issue and PR metadata", () => {
   assert.match(workflow, /pull-requests:\s*write/);
   assert.match(job, /timeout-minutes:\s*5/);
   assert.match(job, /ref:\s*\$\{\{\s*github\.event\.repository\.default_branch\s*\}\}/);
-  assert.deepEqual(
-    sparseCheckoutEntries.filter((entry) => entry === ".moonbit-version"),
-    [".moonbit-version"],
+  assert.deepEqual(sparseCheckoutEntries, [
+    ".github/actions/setup-rust-script",
+    "tools/commands/ci/github/issue-pr-title-policy.rs",
+    "tools/support/common.rs",
+  ]);
+  assert.match(job, /uses:\s*dtolnay\/rust-toolchain@[0-9a-f]{40}/);
+  assert.match(job, /uses:\s*\.\/\.github\/actions\/setup-rust-script/);
+  assert.match(job, /rust-script tools\/commands\/ci\/github\/issue-pr-title-policy\.rs/);
+  assert.doesNotMatch(job, /\.github\/actions\/setup-moonbit/);
+  assert.doesNotMatch(job, /tools\/moon\/cmd\/github\/issue_pr_title_policy/);
+  assert.doesNotMatch(
+    job,
+    /moon run --target native tools\/moon\/cmd\/github\/issue_pr_title_policy --/,
   );
-  assert.match(job, /\.github\/actions\/setup-moonbit/);
-  assert.match(job, /tools\/moon\/cmd\/github\/issue_pr_title_policy/);
-  assert.match(job, /uses:\s*\.\/\.github\/actions\/setup-moonbit/);
-  assert.match(job, /moon run --target native tools\/moon\/cmd\/github\/issue_pr_title_policy --/);
   assert.doesNotMatch(job, /\.github\/scripts\/issue-pr-title-policy\.mjs/);
   assert.doesNotMatch(job, /github\.event\.pull_request\.head/);
-  assert.ok(job.indexOf(".moonbit-version") < job.indexOf("uses: ./.github/actions/setup-moonbit"));
+  assert.ok(sparseCheckoutIndex >= 0, "title policy must use a sparse checkout");
+  assert.ok(rustScriptSetupIndex >= 0, "title policy must install rust-script");
+  assert.ok(sparseCheckoutIndex < rustScriptSetupIndex);
 });
 
 test("App E2E workflow keeps Blacksmith Testbox dispatch hydration separate", () => {
