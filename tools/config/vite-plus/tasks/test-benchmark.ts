@@ -63,6 +63,7 @@ const rustBranchCoverageMinimums = [
   "--min-branches",
   "40",
 ];
+const benchmarkDispatcher = (...args: string[]) => rustTool("benchmarks/dispatch", ...args);
 const rustSourceCoverageCommand = [
   "mkdir -p target/llvm-cov",
   [
@@ -191,19 +192,19 @@ export const testAndBenchmarkTasks = defineTasks({
   "snapshot:test": task("cargo insta test -p vize_atelier_sfc -- snapshot_tests"),
   "snapshot:review": noCacheTask("cargo insta review"),
   "snapshot:accept": noCacheTask("cargo insta accept"),
-  bench: noCacheTask(moonScript("bench", "run")),
-  "bench:quick": noCacheTask(moonScript("bench", "run", "1000")),
-  "bench:generate": noCacheTask(moonScript("bench", "generate", "15000")),
-  "bench:lint": noCacheTask(moonScript("bench", "lint")),
-  "bench:fmt": noCacheTask(moonScript("bench", "fmt")),
-  "bench:check": noCacheTask(moonScript("bench", "check")),
-  "bench:vite": noCacheTask(moonScript("bench", "vite")),
+  bench: noCacheTask(benchmarkDispatcher("run")),
+  "bench:quick": noCacheTask(benchmarkDispatcher("run", "1000")),
+  "bench:generate": noCacheTask(benchmarkDispatcher("generate", "15000")),
+  "bench:lint": noCacheTask(benchmarkDispatcher("lint")),
+  "bench:fmt": noCacheTask(benchmarkDispatcher("fmt")),
+  "bench:check": noCacheTask(benchmarkDispatcher("check")),
+  "bench:vite": noCacheTask(benchmarkDispatcher("vite")),
   // Published, not enforcing: reports what @vizejs/vite-plugin-musea and
   // @vizejs/musea-nuxt cost a gallery build, and carries no baseline of its
   // own so benchmark.yml's fixed-baseline schedule (#3586) stays the repo's
   // single drift gate. Needs build:native:test, build:vite-plugin and
   // build:nuxt-stack, and says so when they are missing.
-  "bench:musea": noCacheTask(moonScript("bench", "musea")),
+  "bench:musea": noCacheTask(benchmarkDispatcher("musea")),
   "bench:compare-tools": noCacheTask(
     "node tools/benchmarks/scripts/compare-tools.mjs --input tools/benchmarks/scripts/__in__ --out target/tool-benchmark-summary.md --json target/tool-benchmark-results.json --doc target/performance-blacksmith.md",
   ),
