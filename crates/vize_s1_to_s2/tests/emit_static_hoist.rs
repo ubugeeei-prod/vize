@@ -49,6 +49,20 @@ fn dynamic_parent_hoists_static_children_instead_of_render_cache() {
 }
 
 #[test]
+fn cached_static_child_formats_multikey_props_like_the_shipped_snapshot() {
+    assert_shipped_parity(
+        r#"<div class="root">{{ msg }}<span id="cta" class="pill"></span></div>"#,
+    );
+}
+
+#[test]
+fn cached_static_children_array_formats_multikey_props_like_the_shipped_snapshot() {
+    assert_shipped_parity(
+        r#"<div class="root"><span id="hero" class="title"></span><span data-panel="intro" aria-hidden="true"></span></div>"#,
+    );
+}
+
+#[test]
 fn static_bind_props_hoist_with_nested_dynamic_descendants() {
     assert_shipped_parity(
         r#"<div><section class="panel" :id="'fixed'"><span>{{ msg }}</span></section></div>"#,

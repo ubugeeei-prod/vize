@@ -4,6 +4,7 @@
 //! Named / scoped slots and nested hoist-out-of-dynamic-parents stay
 //! with later installments.
 
+mod cached_props;
 use alloc::vec::Vec as StdVec;
 
 use vize_s0::{String, ToCompactString};
@@ -199,7 +200,7 @@ fn append_cached_element_rhs(
     if element.attributes.is_empty() {
         out.push_str("null");
     } else {
-        out.push_str(compact_props_object(element.attributes.iter()).as_str());
+        cached_props::push_object(out, element.attributes.iter(), line_indent);
     }
     out.push_str(", ");
     let kids = meaningful(&element.children);
