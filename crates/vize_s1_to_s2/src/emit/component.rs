@@ -188,28 +188,37 @@ fn emit_call(
     let has_hoist_attrs = !hoist_attrs.is_empty();
     let static_nested = builtin::has_static_nested(&component.children);
     let builtin_helper = builtin::helper(component.name).is_some();
+    let hoistable_static_props = if skip_is {
+        has_hoist_attrs.then(|| compact_props_object(hoist_attrs.iter().copied()))
+    } else {
+        props_static::root_hoist_props(&component.attributes, &component.bindings)?
+    };
     if for_item
-        && !has_binds
         && !has_custom
-        && has_hoist_attrs
+        && hoistable_static_props.is_some()
         && props_static::should_hoist(cx, id, PropHoistPosition::ForItem)
     {
-        cx.buf
-            .push_hoist(compact_props_object(hoist_attrs.iter().copied()));
+        cx.buf.push_hoist(
+            hoistable_static_props
+                .clone()
+                .expect("checked hoisted props"),
+        );
     }
-    let can_hoist_static_props = !has_binds
-        && !has_custom
+    let can_hoist_static_props = !has_custom
         && !for_item
         && if_key.is_none()
-        && has_hoist_attrs
+        && hoistable_static_props.is_some()
         && props_static::should_hoist(cx, id, PropHoistPosition::Nested);
     let hoisted_static_props = if can_hoist_static_props
         && ((!array && (facts.is_some() || create) && (!builtin_helper || static_nested))
             || (array && static_nested))
     {
         Some(
-            cx.buf
-                .push_hoist(compact_props_object(hoist_attrs.iter().copied())),
+            cx.buf.push_hoist(
+                hoistable_static_props
+                    .clone()
+                    .expect("checked hoisted props"),
+            ),
         )
     } else {
         None
@@ -217,7 +226,7 @@ fn emit_call(
     let unused_hoist = hoisted_static_props.is_none() && can_hoist_static_props && static_nested;
     if unused_hoist {
         cx.buf
-            .push_hoist(compact_props_object(hoist_attrs.iter().copied()));
+            .push_hoist(hoistable_static_props.expect("checked hoisted props"));
     }
     let mut patch = bind_patch(&component.bindings, true, if_key, for_item);
     if skip_is {

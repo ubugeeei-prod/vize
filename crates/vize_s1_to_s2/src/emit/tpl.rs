@@ -161,7 +161,7 @@ fn emit_inner_fragment(
     } else {
         cx.buf.push(", null, ");
     }
-    emit_fragment_children(cx, ops, mode)?;
+    cx.with_static_vnode_hoist(true, |cx| emit_fragment_children(cx, ops, mode))?;
     cx.buf.push(", 64 /* STABLE_FRAGMENT */))");
     Ok(())
 }
