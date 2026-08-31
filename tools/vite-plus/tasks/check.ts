@@ -1,5 +1,6 @@
 import {
   cacheInputs,
+  checkedPackagesBeforeNativeBuild,
   checkedPackages,
   checkedPackagesViaVpRun,
   directCheckPackages,
@@ -21,7 +22,7 @@ import {
 } from "../task-helpers.ts";
 import { inTestbox } from "./testbox.ts";
 
-const ciPackageCheckCommand = runInPackages("check", checkedPackagesViaVpRun, {
+const ciPackageCheckCommand = runInPackages("check", checkedPackagesBeforeNativeBuild, {
   concurrencyLimit: 1,
 });
 const localLintCommand = runTask("check");

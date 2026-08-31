@@ -300,8 +300,8 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
-      - name: Verify declarations, build native package, and lint UI SFC packages
-        run: vp run --filter './npm/fresco-native' check:generated && vp run --filter './npm/fresco-native' check:types && vp run --filter './npm/native' build:ci && vp run --filter './npm/ui' lint:sfc
+      - name: Verify declarations, build native package, and check UI package
+        run: vp run --filter './npm/fresco-native' check:generated && vp run --filter './npm/fresco-native' check:types && vp run --filter './npm/native' build:ci && vp run --filter './npm/ui' check
       - name: Build JS packages
         run: vp run --workspace-root build:packages
       - name: Stage shared JS build artifacts

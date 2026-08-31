@@ -42,10 +42,17 @@ export const directCheckPackages = [
   "./playground",
 ] satisfies PackagePath[];
 
+export const nativeBuiltCheckPackages = ["./npm/ui"] satisfies PackagePath[];
+
 const directCheckPackageSet = new Set<PackagePath>(directCheckPackages);
+const nativeBuiltCheckPackageSet = new Set<PackagePath>(nativeBuiltCheckPackages);
 
 export const checkedPackagesViaVpRun = checkedPackages.filter(
   (pkg) => !directCheckPackageSet.has(pkg),
+);
+
+export const checkedPackagesBeforeNativeBuild = checkedPackagesViaVpRun.filter(
+  (pkg) => !nativeBuiltCheckPackageSet.has(pkg),
 );
 
 export const packedPackages = [

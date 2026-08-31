@@ -7,6 +7,10 @@ import { test } from "node:test";
 import { parse } from "yaml";
 
 import { buildComment } from "../../bench/comment-test-report.mjs";
+import {
+  checkedPackagesBeforeNativeBuild,
+  checkedPackagesViaVpRun,
+} from "../../tools/vite-plus/task-inputs.ts";
 import { readRepoFile, root, workflowJobBody } from "./support/github-workflows.ts";
 
 test("PR CI jobs cap runtime with explicit timeouts", () => {
@@ -331,12 +335,19 @@ test("check workflow keeps JS checks separate from native and packaging work", (
   assert.doesNotMatch(checkJsJob, /build:packages/);
 
   assert.match(buildJob, /vp run --filter '\.\/npm\/native' build:ci/);
+  assert.match(buildJob, /vp run --filter '\.\/npm\/ui' check/);
+  assert.doesNotMatch(buildJob, /vp run --filter '\.\/npm\/ui' lint:sfc/);
   assert.match(buildJob, /vp run --workspace-root build:packages/);
   assert.match(buildJob, /name:\s*shared-js-build/);
 
   assert.match(playgroundJob, /needs:\n\s+- build-js-packages\b/);
   assert.match(playgroundJob, /name:\s*shared-js-build/);
   assert.doesNotMatch(playgroundJob, /name: Build npm packages/);
+});
+
+test("native-dependent UI checks run after native CI build", () => {
+  assert.equal(checkedPackagesViaVpRun.includes("./npm/ui"), true);
+  assert.equal(checkedPackagesBeforeNativeBuild.includes("./npm/ui"), false);
 });
 
 test("check workflow uploads the VRT HTML report when snapshots fail", () => {
