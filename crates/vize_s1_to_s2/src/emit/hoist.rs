@@ -45,7 +45,8 @@ pub(super) fn emit_cached_element(
     cx.buf.push("] || (_cache[");
     cx.buf.push(cache_index.as_str());
     cx.buf.push("] = ");
-    cx.buf.push(cached_element_rhs(element, true).as_str());
+    cx.buf
+        .push(cached_element_rhs(element, true, cx.buf.indent_width()).as_str());
     cx.buf.push(")");
     Ok(())
 }
@@ -87,7 +88,8 @@ pub(super) fn emit_cached_elements_array(
         if hoist_needs_create_text(element) {
             cx.buf.use_create_text();
         }
-        cx.buf.push(cached_element_rhs(element, true).as_str());
+        cx.buf
+            .push(cached_element_rhs(element, true, cx.buf.indent_width()).as_str());
     }
 
     cx.buf.deindent();
@@ -176,8 +178,18 @@ fn hoist_element_rhs(element: &ElementOp<'_>, pure: bool) -> String {
     out
 }
 
-fn cached_element_rhs(element: &ElementOp<'_>, cached: bool) -> String {
+fn cached_element_rhs(element: &ElementOp<'_>, cached: bool, line_indent: usize) -> String {
     let mut out = String::default();
+    append_cached_element_rhs(&mut out, element, cached, line_indent);
+    out
+}
+
+fn append_cached_element_rhs(
+    out: &mut String,
+    element: &ElementOp<'_>,
+    cached: bool,
+    line_indent: usize,
+) {
     out.push_str(Buf::create_element_vnode_alias());
     out.push('(');
     out.push('"');
@@ -194,13 +206,12 @@ fn cached_element_rhs(element: &ElementOp<'_>, cached: bool) -> String {
     if kids.is_empty() {
         out.push_str("null");
     } else {
-        append_cached_kids(&mut out, &kids);
+        append_cached_kids(out, &kids, line_indent);
     }
     if cached {
         out.push_str(", -1 /* CACHED */");
     }
     out.push(')');
-    out
 }
 
 fn append_hoist_kids(out: &mut String, kids: &[&Op<'_>]) {
@@ -237,7 +248,7 @@ fn append_hoist_kids(out: &mut String, kids: &[&Op<'_>]) {
     out.push(']');
 }
 
-fn append_cached_kids(out: &mut String, kids: &[&Op<'_>]) {
+fn append_cached_kids(out: &mut String, kids: &[&Op<'_>], line_indent: usize) {
     if kids.iter().all(|op| matches!(op, Op::Text(_))) {
         out.push('"');
         for op in kids.iter() {
@@ -251,8 +262,10 @@ fn append_cached_kids(out: &mut String, kids: &[&Op<'_>]) {
     out.push('[');
     for (i, op) in kids.iter().enumerate() {
         if i > 0 {
-            out.push_str(", ");
+            out.push(',');
         }
+        out.push('\n');
+        push_spaces(out, line_indent + 2);
         match op {
             Op::Text(text) => {
                 out.push_str(Buf::create_text_alias());
@@ -263,12 +276,18 @@ fn append_cached_kids(out: &mut String, kids: &[&Op<'_>]) {
                 out.push(')');
             }
             Op::Element(element) => {
-                out.push_str(cached_element_rhs(element, false).as_str());
+                append_cached_element_rhs(out, element, false, line_indent + 2);
             }
             _ => {}
         }
     }
+    out.push('\n');
+    push_spaces(out, line_indent);
     out.push(']');
+}
+
+fn push_spaces(out: &mut String, width: usize) {
+    out.extend(core::iter::repeat_n(' ', width));
 }
 
 fn meaningful<'a>(children: &'a Region<'a>) -> StdVec<&'a Op<'a>> {

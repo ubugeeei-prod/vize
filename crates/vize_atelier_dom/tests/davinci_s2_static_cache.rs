@@ -9,10 +9,20 @@
 
 mod support;
 
-const BATTERY: &[(&str, &str)] = &[(
-    "hoisted_root_caches_static_children_array",
-    r#"<div class="root"><span>a</span><span>b</span></div>"#,
-)];
+const BATTERY: &[(&str, &str)] = &[
+    (
+        "hoisted_root_caches_static_children_array",
+        r#"<div class="root"><span>a</span><span>b</span></div>"#,
+    ),
+    (
+        "cached_static_child_keeps_nested_element_array_shape",
+        r#"<div class="root"><button><span>x</span></button></div>"#,
+    ),
+    (
+        "cached_static_child_before_dynamic_sibling",
+        r#"<div class="root"><button><span>x</span></button><i :id="foo"></i></div>"#,
+    ),
+];
 
 #[test]
 fn s2_static_child_cache_matches_the_shipped_dom_lane_byte_for_byte() {

@@ -45,6 +45,10 @@ impl Buf {
         }
     }
 
+    pub(super) fn indent_width(&self) -> usize {
+        self.indent as usize * 2
+    }
+
     pub(super) fn indent(&mut self) {
         self.indent += 1;
     }
