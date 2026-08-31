@@ -8,7 +8,7 @@ function p2_11Installment(number: number): URL {
   );
 }
 
-const P2_11_CURRENT = { number: 64, pr: 5531, sha: "589daf801" } as const;
+const P2_11_CURRENT = { number: 66, pr: 5533, sha: "d7040e03d" } as const;
 
 const p2_11TableRows = [
   [41, 5359, "5b5ac0924"],
@@ -35,6 +35,8 @@ const p2_11TableRows = [
   [62, 5515, "85fe7bf151"],
   [63, 5520, "526f400ef"],
   [64, 5531, "589daf801"],
+  [65, 5536, "7a98d785b"],
+  [66, 5533, "d7040e03d"],
 ] as const;
 
 const p2_11FileExpectations = [
@@ -118,6 +120,10 @@ const p2_11FileExpectations = [
   [63, /526f400ef/],
   [64, /Raw Handler Expressions/],
   [64, /589daf801/],
+  [65, /Dynamic Component Directive Patch Flags/],
+  [65, /7a98d785b/],
+  [66, /Template-Wrapper Component Props/],
+  [66, /d7040e03d/],
 ] as const;
 
 export function recordsTaskRow(source: string, id: string): string {

@@ -117,10 +117,11 @@ holds or improves — this phase should be a measurable win, not a wash.
 P2-9 is now complete: the hydrated corpus run compiled 41,580 files at zero
 divergence and measured the retained-`None` residual at 11.73%. P2-11 remains
 the active blocked series; P2-12b, P2-16, P2-17 and P2-20 are untouched
-because their dependency gates remain open. P2-11 has 64 landed installments
-through [#5531](https://github.com/ubugeeei-prod/vize/pull/5531). The latest
+because their dependency gates remain open. P2-11 has 66 landed installments
+through [#5533](https://github.com/ubugeeei-prod/vize/pull/5533). The latest
 increments pin nested interactive recovery identity through the S2 comparison
-lane and raw handler-expression parity, on top of event/model/slot residuals,
+lane, raw handler-expression parity, dynamic-component directive patch flags
+and template-wrapper component props, on top of event/model/slot residuals,
 expression-edge admission, the DOM corpus lane, and the late patch-site
 witnesses; the hydrated zero-divergence evidence run and production-lane switch
 are still open.
