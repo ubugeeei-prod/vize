@@ -61,6 +61,30 @@ const BATTERY: &[(&str, &str)] = &[
         "nested_trigger_icon_resolves_in_child_before_parent_order",
         r#"<DropdownMenu><DropdownMenuTrigger><Icon /></DropdownMenuTrigger></DropdownMenu>"#,
     ),
+    (
+        "conditional_component_text_slot_imports_text_before_comment",
+        r#"<Button v-if="primaryActionLabel">{{ primaryActionLabel }}</Button>"#,
+    ),
+    (
+        "slot_outlet_before_conditional_component_text_slots",
+        r#"<div><slot /><Button v-if="primaryActionLabel">{{ primaryActionLabel }}</Button><Button v-if="secondaryActionLabel">{{ secondaryActionLabel }}</Button></div>"#,
+    ),
+    (
+        "element_if_before_conditional_component_text_slots",
+        r#"<section><p v-if="detail">{{ detail }}</p><div v-if="primaryActionLabel || secondaryActionLabel || $slots.default"><slot /><Button v-if="primaryActionLabel">{{ primaryActionLabel }}</Button><Button v-if="secondaryActionLabel">{{ secondaryActionLabel }}</Button></div></section>"#,
+    ),
+    (
+        "static_text_before_if_imports_text_before_comment",
+        r#"<section><p>AIRI account</p><p v-if="detail">{{ detail }}</p><div v-if="primaryActionLabel || secondaryActionLabel || $slots.default"><slot /><Button v-if="primaryActionLabel">{{ primaryActionLabel }}</Button><Button v-if="secondaryActionLabel">{{ secondaryActionLabel }}</Button></div></section>"#,
+    ),
+    (
+        "compound_text_before_if_imports_text_before_comment",
+        r#"<div><span>{{ branch }}@{{ commit }}</span><Button v-if="ok">{{ label }}</Button></div>"#,
+    ),
+    (
+        "slot_fallback_component_resolves_before_owner_component",
+        r#"<DropdownMenuTrigger><slot name="trigger"><span>{{ label }}</span><Icon icon="x" /></slot></DropdownMenuTrigger><DropdownMenuItem><span>Item</span></DropdownMenuItem>"#,
+    ),
 ];
 
 #[test]

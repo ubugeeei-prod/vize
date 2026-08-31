@@ -39,6 +39,7 @@ fn collect_from<'a>(region: &Region<'a>, names: &mut StdVec<&'a str>) {
                     names.push(component.name);
                 }
             }
+            Op::Slot(slot) => collect_from(&slot.fallback, names),
             Op::If(if_op) => {
                 for branch in if_op.branches.iter() {
                     collect_from(&branch.region, names);

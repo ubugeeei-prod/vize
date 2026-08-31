@@ -108,36 +108,40 @@ pub use self::error::{EmitError, UnsupportedReason, UnsupportedRefusal};
 use self::fragment::emit_root;
 use self::helper::Helper;
 
-/// Transform visit order for helpers the shipped lane parks on
-/// `root.helpers` (`CreateElementVNode` on native elements,
-/// `ResolveComponent` on components, `RenderSlot` on outlets,
-/// `v-if` / `v-for` block helpers).
-fn prefer_transform_helpers(buf: &mut Buf, region: &Region<'_>) {
+fn prefer_helpers(buf: &mut Buf, facts: &S2Facts, walk: &mut PageWalk, region: &Region<'_>) {
     for op in region.ops.iter() {
+        let id = walk.mint();
         match op {
-            Op::Element(element) if sfc_style::is_carrier_element(element) => {}
+            Op::Element(element) if sfc_style::is_carrier_element(element) => {
+                walk.skip(element.bindings.len())
+            }
             Op::Element(element) => {
-                directive::prefer_helpers(buf, &element.bindings);
+                let bindings = &element.bindings;
+                directive::prefer_helpers(buf, bindings);
                 buf.prefer(Helper::CreateElementVNode);
-                prefer_transform_helpers(buf, &element.children);
+                walk.skip(bindings.len());
+                prefer_helpers(buf, facts, walk, &element.children);
             }
             Op::Component(component) => {
-                directive::prefer_helpers(buf, &component.bindings);
+                let bindings = &component.bindings;
+                directive::prefer_helpers(buf, bindings);
                 buf.prefer(Helper::ResolveComponent);
-                prefer_transform_helpers(buf, &component.children);
+                walk.skip(bindings.len());
+                prefer_helpers(buf, facts, walk, &component.children);
             }
             Op::Slot(slot) => {
                 buf.prefer(Helper::RenderSlot);
-                prefer_transform_helpers(buf, &slot.fallback);
+                walk.skip(slot.bindings.len());
+                prefer_helpers(buf, facts, walk, &slot.fallback);
             }
             Op::If(if_op) => {
                 buf.prefer(Helper::OpenBlock);
                 buf.prefer(Helper::CreateBlock);
                 buf.prefer(Helper::CreateElementBlock);
                 buf.prefer(Helper::Fragment);
-                // Let `emit_if` mark CreateComment where slot text can precede it.
+                buf.prefer(Helper::CreateComment);
                 for branch in if_op.branches.iter() {
-                    prefer_transform_helpers(buf, &branch.region);
+                    prefer_helpers(buf, facts, walk, &branch.region);
                 }
             }
             Op::For(for_op) => {
@@ -145,10 +149,18 @@ fn prefer_transform_helpers(buf: &mut Buf, region: &Region<'_>) {
                 buf.prefer(Helper::OpenBlock);
                 buf.prefer(Helper::CreateBlock);
                 buf.prefer(Helper::Fragment);
-                prefer_transform_helpers(buf, &for_op.region);
+                prefer_helpers(buf, facts, walk, &for_op.region);
             }
-            Op::Text(_) => {}
-            Op::Interpolation(_) => buf.prefer(Helper::ToDisplayString),
+            Op::Text(_) => buf.prefer(Helper::CreateText),
+            Op::Interpolation(_) => {
+                buf.prefer(Helper::ToDisplayString);
+                if id
+                    .and_then(|id| facts.text_facts.get(id))
+                    .is_some_and(|text| text.parts.iter().any(|part| !part.dynamic))
+                {
+                    buf.prefer(Helper::CreateText);
+                }
+            }
         }
     }
 }
@@ -282,7 +294,8 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
     if facts.legacy.filter_helper_precedes_components {
         cx.buf.prefer(Helper::ResolveFilter);
     }
-    prefer_transform_helpers(&mut cx.buf, &lowered.root);
+    let mut helper_walk = PageWalk::new();
+    prefer_helpers(&mut cx.buf, facts, &mut helper_walk, &lowered.root);
     fragment::prefer_root_fragment(&mut cx.buf, &lowered.root);
     cx.buf
         .push("function render(_ctx, _cache, $props, $setup, $data, $options) {");
