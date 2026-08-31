@@ -70,6 +70,7 @@ impl<'a> Parser<'a> {
             pending_text: None,
             stack: Vec::new_in(&allocator),
             flattened_tags: Vec::new_in(&allocator),
+            implicitly_closed_tags: Vec::new_in(&allocator),
             root: None,
             current_element: None,
             current_attr: None,

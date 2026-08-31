@@ -248,6 +248,14 @@ impl<'a> Parser<'a> {
         }
 
         let loc = self.create_loc(start.saturating_sub(2), end + 1); // Include </ and >
+        if self.consume_implicitly_closed_tag(tag.as_str()) {
+            self.report_tree_construction_recovery(
+                &loc,
+                "HTML tree construction ignored this end tag because the element was already closed before a nested start tag.",
+            );
+            return;
+        }
+
         self.errors
             .push(CompilerError::new(ErrorCode::InvalidEndTag, Some(loc)));
     }

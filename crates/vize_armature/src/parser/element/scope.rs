@@ -32,6 +32,7 @@ impl<'a> Parser<'a> {
                     &self.stack[index].element.loc.clone(),
                     "Nested anchor start tag closed the previous anchor before inserting the new one.",
                 );
+                self.note_implicitly_closed_stack_entries_from(index);
                 self.close_stack_element_at(index, false);
             }
             return;
@@ -45,6 +46,7 @@ impl<'a> Parser<'a> {
                     &self.stack[index].element.loc.clone(),
                     "Nested button start tag closed the previous button before inserting the new one.",
                 );
+                self.note_implicitly_closed_stack_entries_from(index);
                 self.close_stack_element_at(index, false);
             }
             return;

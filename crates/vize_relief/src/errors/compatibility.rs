@@ -7,10 +7,20 @@ impl CompilerError {
     /// so the standard-mode rewrite must stay silent outside compilation.
     #[must_use]
     pub fn is_compatibility_notice(&self) -> bool {
-        self.code == ErrorCode::ExtendPoint
-            && self
+        if self.code != ErrorCode::ExtendPoint {
+            return false;
+        }
+        self.message
+            .starts_with("Invalid self-closing syntax on non-void HTML element")
+            || self
                 .message
-                .starts_with("Invalid self-closing syntax on non-void HTML element")
+                .starts_with("Nested anchor start tag closed the previous anchor")
+            || self
+                .message
+                .starts_with("Nested button start tag closed the previous button")
+            || self
+                .message
+                .starts_with("HTML tree construction ignored this end tag because the element was already closed before a nested start tag")
     }
 }
 
@@ -38,5 +48,33 @@ mod tests {
         assert!(!duplicate.is_compatibility_notice());
         assert!(!strict.is_recoverable());
         assert!(!strict.is_compatibility_notice());
+    }
+
+    #[test]
+    fn nested_anchor_and_button_tree_recovery_are_compatibility_notices() {
+        for message in [
+            "Nested anchor start tag closed the previous anchor before inserting the new one.",
+            "Nested button start tag closed the previous button before inserting the new one.",
+            "HTML tree construction ignored this end tag because the element was already closed before a nested start tag.",
+        ] {
+            let notice = CompilerError::with_message(ErrorCode::ExtendPoint, message, None);
+            assert!(notice.is_recoverable(), "{message}");
+            assert!(notice.is_compatibility_notice(), "{message}");
+        }
+    }
+
+    #[test]
+    fn unrelated_tree_recovery_is_not_a_compatibility_notice() {
+        let deep = CompilerError::with_message(
+            ErrorCode::ExtendPoint,
+            "Element nesting is too deep.",
+            None,
+        );
+        let invalid = CompilerError::new(ErrorCode::InvalidEndTag, None);
+
+        assert!(!deep.is_recoverable());
+        assert!(!deep.is_compatibility_notice());
+        assert!(!invalid.is_recoverable());
+        assert!(!invalid.is_compatibility_notice());
     }
 }

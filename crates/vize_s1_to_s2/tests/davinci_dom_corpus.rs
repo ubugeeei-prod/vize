@@ -12,6 +12,7 @@
 
 use std::{collections::BTreeMap, fs};
 
+use vize_atelier_dom::errors::ErrorCode;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_s0::Allocator;
 use vize_s1_to_s2::{EmitError, emit_dom_source};
@@ -45,6 +46,7 @@ struct Report {
     old_error_skips: u64,
     s2_refusal_count: u64,
     divergence_count: u64,
+    old_error_codes: Vec<ErrorCode>,
     unreadable: Vec<String>,
     old_error_samples: Vec<String>,
     s2_refusal_reasons: BTreeMap<&'static str, u64>,
@@ -145,6 +147,11 @@ fn compare_sfc_template(name: &str, source: &str, report: &mut Report) {
         .collect();
     if !blocking_errors.is_empty() {
         report.old_error_skips += 1;
+        if report.old_error_codes.len() < 20 {
+            report
+                .old_error_codes
+                .extend(blocking_errors.iter().map(|error| error.code));
+        }
         if report.old_error_samples.len() < 20 {
             report.old_error_samples.push(format!(
                 "{name}: {} old-lane blocking errors: {blocking_errors:?}",
@@ -246,5 +253,55 @@ fn assert_clean_corpus(report: &Report) {
         report.s2_refusals.join("\n"),
         report.divergence_count,
         report.divergences.join("\n"),
+    );
+}
+
+#[test]
+fn nested_anchor_and_button_recoveries_are_compared_not_skipped() {
+    let mut report = Report::default();
+    for (name, source) in [
+        (
+            "nested_anchor",
+            r#"<template><a href="/"><div><a href="/foo">inner</a></div></a></template>"#,
+        ),
+        (
+            "nested_button",
+            "<template><button><div><button>bbb</button></div></button></template>",
+        ),
+    ] {
+        compare_sfc_template(name, source, &mut report);
+    }
+
+    assert_eq!(report.templates, 2);
+    assert_eq!(
+        report.old_error_skips, 0,
+        "nested interactive-content recoveries should reach the DOM comparison lane: {:?}",
+        report.old_error_samples
+    );
+    assert_eq!(
+        report.s2_refusal_count, 0,
+        "S2 should emit so any remaining mismatch is counted as a divergence: {:?}",
+        report.s2_refusals
+    );
+    assert_eq!(report.compared, 2);
+}
+
+#[test]
+fn unrelated_invalid_end_tag_still_blocks_old_lane_comparison() {
+    let mut report = Report::default();
+    compare_sfc_template(
+        "stray_span_end",
+        "<template><div></span></div></template>",
+        &mut report,
+    );
+
+    assert_eq!(report.templates, 1);
+    assert_eq!(report.compared, 0);
+    assert_eq!(report.old_error_skips, 1);
+    assert_eq!(
+        report.old_error_codes,
+        vec![ErrorCode::InvalidEndTag],
+        "the hard invalid end tag must remain visible in skip evidence: {:?}",
+        report.old_error_samples
     );
 }

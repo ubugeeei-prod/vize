@@ -34,6 +34,25 @@ impl<'a> Parser<'a> {
             .iter()
             .any(|candidate| tag.eq_ignore_ascii_case(candidate))
     }
+
+    pub(super) fn note_implicitly_closed_stack_entries_from(&mut self, index: usize) {
+        for entry in self.stack.iter().skip(index) {
+            if !entry.implicit && is_html_tree_element(&entry.element) {
+                self.implicitly_closed_tags.push(entry.element.tag);
+            }
+        }
+    }
+
+    pub(super) fn consume_implicitly_closed_tag(&mut self, tag: &str) -> bool {
+        let Some(closed) = self.implicitly_closed_tags.last() else {
+            return false;
+        };
+        if !closed.eq_ignore_ascii_case(tag) {
+            return false;
+        }
+        self.implicitly_closed_tags.pop();
+        true
+    }
 }
 
 pub(super) fn is_html_tree_element(element: &ElementNode<'_>) -> bool {
