@@ -153,7 +153,7 @@ fn parse_args(args: &[String]) -> Result<Args, String> {
                 let minimum = value
                     .parse::<f64>()
                     .map_err(|_| format!("Invalid minimum for {metric}: {value}"))?;
-                if !minimum.is_finite() {
+                if !(0.0..=100.0).contains(&minimum) {
                     return Err(format!("Invalid minimum for {metric}: {value}"));
                 }
                 thresholds.push(Threshold { metric, minimum });
@@ -303,5 +303,22 @@ mod tests {
 
         assert_eq!(args.thresholds[0].metric, "lines");
         assert_eq!(args.thresholds[1].metric, "branches");
+    }
+
+    #[test]
+    fn rejects_thresholds_outside_percentage_range() {
+        for value in ["-1", "101"] {
+            let result = parse_args(&[
+                "--json".to_string(),
+                "summary.json".to_string(),
+                "--min-lines".to_string(),
+                value.to_string(),
+            ]);
+            let Err(error) = result else {
+                panic!("accepted out-of-range minimum {value}");
+            };
+
+            assert_eq!(error, format!("Invalid minimum for lines: {value}"));
+        }
     }
 }

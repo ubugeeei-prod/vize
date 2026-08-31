@@ -99,10 +99,10 @@ test("branch coverage reports every metric before enforcing thresholds", () => {
   assert.match(command, /--branch(?:\s|$)/);
   assert.doesNotMatch(command, /--fail-under-/);
   assert.match(command, /tools\/commands\/ci\/source-coverage\.rs/);
-  assert.match(command, /'--min-lines' '55'/);
-  assert.match(command, /'--min-functions' '70'/);
-  assert.match(command, /'--min-regions' '55'/);
-  assert.match(command, /'--min-branches' '40'/);
+  assert.match(command, /(?:^|\s)['"]?--min-lines['"]?\s+['"]?55['"]?(?:\s|$)/);
+  assert.match(command, /(?:^|\s)['"]?--min-functions['"]?\s+['"]?70['"]?(?:\s|$)/);
+  assert.match(command, /(?:^|\s)['"]?--min-regions['"]?\s+['"]?55['"]?(?:\s|$)/);
+  assert.match(command, /(?:^|\s)['"]?--min-branches['"]?\s+['"]?40['"]?(?:\s|$)/);
   assert.ok(cleanIndex < reportIndex);
   assert.ok(reportIndex < enforcementIndex);
 });

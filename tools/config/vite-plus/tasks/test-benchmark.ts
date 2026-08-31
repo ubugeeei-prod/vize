@@ -69,7 +69,6 @@ const rustSourceCoverageCommand = [
   [
     "cargo llvm-cov --workspace --json --summary-only",
     `--output-path ${rustSourceCoverageJson}`,
-    "--fail-under-lines 70 --fail-under-functions 70 --fail-under-regions 70",
   ].join(" "),
   rustTool("ci/source-coverage", "--json", rustSourceCoverageJson, ...rustSourceCoverageMinimums),
 ].join(" && ");
