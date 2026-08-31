@@ -65,7 +65,7 @@ block-relative spans, against that block's text). Representative migrated
 sites:
 
 - `crates/vize_atelier_core/src/codegen/expression/generate.rs:39` — codegen reads the recorded expression text verbatim
-- `crates/vize_croquis/src/drawer/template/components.rs:47` — croquis captures component/expression text into
+- `crates/vize_croquis/src/drawer/template/components.rs:48` — croquis captures component/expression text into
   analysis products
 - `crates/vize_patina/src/rules/script/template_scan.rs:193` — lint rule matches against raw expression text
 - `crates/vize_atelier_vapor/src/steps/v_on.rs:46` — vapor transform re-wraps an expression from the covered
