@@ -6,9 +6,10 @@
 //! static nodes, because a `v-for` item must keep block tracking); text /
 //! multi child stays a `STABLE_FRAGMENT`.
 
+use vize_davinci::id::NodeId;
 use vize_s0::String;
 use vize_s2::expr::{ExprRef, OpaqueReason};
-use vize_s2::op::{IfBranch, Op};
+use vize_s2::op::{Attribute, BindingOp, IfBranch, Op};
 
 use super::EmitCx;
 use super::EmitError;
@@ -75,8 +76,10 @@ fn unwrap_if(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<()
     match branch.region.ops.as_slice() {
         [Op::Element(element)] => {
             let id = cx.walk.mint();
-            cx.walk.skip(element.bindings.len());
-            register_unwrapped_if_child_props_hoist(cx, element, id)?;
+            let attributes = &element.attributes;
+            let bindings = &element.bindings;
+            cx.walk.skip(bindings.len());
+            register_unwrapped_if_child_props_hoist(cx, attributes, bindings, id)?;
             super::emit_if_branch_call(cx, element, key)
         }
         [Op::Component(component)] => {
@@ -102,15 +105,14 @@ fn unwrap_if(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<()
 
 fn register_unwrapped_if_child_props_hoist(
     cx: &mut EmitCx<'_>,
-    element: &vize_s2::op::ElementOp<'_>,
-    id: Option<vize_davinci::id::NodeId>,
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+    id: Option<NodeId>,
 ) -> Result<(), EmitError> {
     if !super::props_static::should_hoist(cx, id, PropHoistPosition::Nested) {
         return Ok(());
     }
-    if let Some(props) =
-        super::props_static::root_hoist_props(&element.attributes, &element.bindings)?
-    {
+    if let Some(props) = super::props_static::root_hoist_props(attributes, bindings)? {
         let _ = cx.buf.push_hoist(props);
     }
     Ok(())

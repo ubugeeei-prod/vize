@@ -13,7 +13,6 @@ use super::props::{admit_element_bindings, apply_static_ref_patch, bind_patch, e
 use super::props_static::PropHoistPosition;
 use super::vnode_children::emit_children;
 use super::{EmitCx, EmitError, UnsupportedReason as Reason};
-use crate::pass::StaticLevel;
 
 pub(super) fn emit_unique_element(
     cx: &mut EmitCx<'_>,
@@ -169,7 +168,7 @@ pub(super) fn emit_call(
     cx.buf.push(element.tag);
     cx.buf.push("\"");
     let has_children = !element.children.ops.is_empty();
-    let hoist_static_children = should_hoist_static_children(
+    let hoist_static_children = super::vnode_static::should_hoist_static_children(
         cx,
         element,
         id,
@@ -278,26 +277,6 @@ pub(super) fn emit_call(
     }
     cx.buf.push(")");
     Ok(())
-}
-
-fn should_hoist_static_children(
-    cx: &EmitCx<'_>,
-    element: &ElementOp<'_>,
-    id: Option<NodeId>,
-    allow_hoist: bool,
-    branch_root: bool,
-    for_item: bool,
-) -> bool {
-    let requested =
-        cx.hoist_static_vnodes || (allow_hoist && (branch_root || !element.bindings.is_empty()));
-    if !requested {
-        return false;
-    }
-    if branch_root || for_item {
-        return true;
-    }
-    id.and_then(|id| cx.facts.static_facts.get(id))
-        .is_some_and(|fact| fact.level == StaticLevel::NotStatic)
 }
 
 fn has_prop_bindings(bindings: &[BindingOp<'_>]) -> bool {

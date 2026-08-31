@@ -87,6 +87,7 @@ mod vfor_item;
 mod vif;
 mod vnode;
 mod vnode_children;
+mod vnode_static;
 mod vtext;
 
 use alloc::vec::Vec as StdVec;
