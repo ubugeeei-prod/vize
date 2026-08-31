@@ -8,6 +8,7 @@ pub(in crate::commands::check::runner) fn is_suppressed_false_positive(
         || is_nuxt_bridge_injected_property_duplicate(diagnostic)
         || is_vue_expect_error_suppressed(diagnostic)
         || is_native_truthiness_false_positive(diagnostic)
+        || is_corsa_recursive_discriminant_array_false_positive(diagnostic)
 }
 
 fn is_nitro_import_meta_conflict(diagnostic: &vize_canon::BatchDiagnostic) -> bool {
@@ -101,139 +102,82 @@ fn is_native_truthiness_false_positive(diagnostic: &vize_canon::BatchDiagnostic)
         && diagnostic.message.contains("is always defined")
 }
 
-#[cfg(test)]
-mod tests {
-    use std::path::PathBuf;
-
-    use vize_canon::{BatchDiagnostic, SfcBlockType};
-
-    use super::is_suppressed_false_positive;
-
-    fn diagnostic(file: PathBuf, code: u32, message: &str) -> BatchDiagnostic {
-        BatchDiagnostic {
-            file,
-            line: 0,
-            column: 0,
-            message: message.into(),
-            code: Some(code),
-            severity: 1,
-            block_type: None,
-        }
+fn is_corsa_recursive_discriminant_array_false_positive(
+    diagnostic: &vize_canon::BatchDiagnostic,
+) -> bool {
+    if diagnostic.code != Some(2345)
+        || diagnostic.block_type.is_some()
+        || !is_typescript_source_file(&diagnostic.file)
+    {
+        return false;
     }
 
-    #[test]
-    fn suppresses_project_vue_wildcard_component_duplicates() {
-        let temp = tempfile::tempdir().unwrap();
-        let shim = temp.path().join("ts-shim.d.cts");
-        std::fs::write(
-            &shim,
-            "declare module '*.vue' {\n  import Vue from 'vue';\n  export default Vue;\n}\n",
-        )
-        .unwrap();
-
-        assert!(is_suppressed_false_positive(&diagnostic(
-            shim,
-            2300,
-            "Duplicate identifier 'component'.",
-        )));
-    }
-
-    #[test]
-    fn suppresses_nuxt_bridge_injection_duplicates_against_any() {
-        let temp = tempfile::tempdir().unwrap();
-        let shim = temp.path().join("gtag.d.mts");
-        std::fs::write(
-            &shim,
-            "declare module '@nuxt/bridge-schema' {\n  interface Context { $gtag: Gtag.Gtag; }\n}\n",
-        )
-        .unwrap();
-
-        assert!(is_suppressed_false_positive(&diagnostic(
-            shim,
-            2717,
-            "Subsequent property declarations must have the same type.  Property '$gtag' must be of type 'any', but here has type 'Gtag'.",
-        )));
-    }
-
-    #[test]
-    fn keeps_unrelated_declaration_conflicts_visible() {
-        let temp = tempfile::tempdir().unwrap();
-        let declaration = temp.path().join("conflict.d.ts");
-        std::fs::write(
-            &declaration,
-            "declare module 'local' {\n  interface Context { value: string; }\n}\n",
-        )
-        .unwrap();
-
-        assert!(!is_suppressed_false_positive(&diagnostic(
-            declaration,
-            2717,
-            "Subsequent property declarations must have the same type.  Property 'value' must be of type 'number', but here has type 'string'.",
-        )));
-    }
-
-    #[test]
-    fn suppresses_vue_expect_error_on_next_template_node() {
-        let temp = tempfile::tempdir().unwrap();
-        let component = temp.path().join("App.vue");
-        std::fs::write(
-            &component,
-            "<template>\n  <!-- @vue-expect-error legacy payload -->\n  <Child :value=\"bad\" />\n</template>\n",
-        )
-        .unwrap();
-
-        let mut diagnostic = diagnostic(component, 2322, "Type 'bad' is not assignable.");
-        diagnostic.line = 2;
-
-        assert!(is_suppressed_false_positive(&diagnostic));
-    }
-
-    #[test]
-    fn keeps_vue_diagnostic_without_adjacent_expect_error_visible() {
-        let temp = tempfile::tempdir().unwrap();
-        let component = temp.path().join("App.vue");
-        std::fs::write(
-            &component,
-            "<template>\n  <!-- ordinary comment -->\n  <Child :value=\"bad\" />\n</template>\n",
-        )
-        .unwrap();
-
-        let mut diagnostic = diagnostic(component, 2322, "Type 'bad' is not assignable.");
-        diagnostic.line = 2;
-
-        assert!(!is_suppressed_false_positive(&diagnostic));
-    }
-
-    #[test]
-    fn suppresses_native_truthiness_parity_diagnostic_in_vue_files() {
-        let mut diagnostic = diagnostic(
-            PathBuf::from("App.vue"),
-            2801,
-            "This condition will always return true since this 'Paginator' is always defined.",
-        );
-        diagnostic.block_type = Some(SfcBlockType::Template);
-
-        assert!(is_suppressed_false_positive(&diagnostic));
-    }
-
-    #[test]
-    fn keeps_unrelated_ts2801_visible() {
-        assert!(!is_suppressed_false_positive(&diagnostic(
-            PathBuf::from("App.ts"),
-            2801,
-            "This condition will always return true since this 'Paginator' is always defined.",
-        )));
-    }
-
-    #[test]
-    fn keeps_script_ts2801_visible_in_vue_files() {
-        let mut diagnostic = diagnostic(
-            PathBuf::from("App.vue"),
-            2801,
-            "This condition will always return true since this 'service' is always defined.",
-        );
-        diagnostic.block_type = Some(SfcBlockType::ScriptSetup);
-
-        assert!(!is_suppressed_false_positive(&diagnostic));
-    }
+    let Some((array_element, recursive_property)) =
+        recursive_discriminant_array_target(&diagnostic.message)
+    else {
+        return false;
+    };
+    source_declares_recursive_array_target(&diagnostic.file, array_element, recursive_property)
 }
+
+fn is_typescript_source_file(path: &Path) -> bool {
+    let Some(file_name) = path.file_name().and_then(|name| name.to_str()) else {
+        return false;
+    };
+    if file_name.ends_with(".d.ts")
+        || file_name.ends_with(".d.mts")
+        || file_name.ends_with(".d.cts")
+    {
+        return false;
+    }
+
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| matches!(extension, "ts" | "tsx" | "mts" | "cts"))
+}
+
+fn recursive_discriminant_array_target(message: &str) -> Option<(&str, &str)> {
+    if !message.contains("is not assignable to parameter of type '")
+        || !message.contains("Type '{ __typename?: ")
+        || !message.contains(" }' is missing the following properties from type '")
+    {
+        return None;
+    }
+
+    let array_element = text_between(message, "parameter of type '", "[]'")?;
+    let recursive_property = text_between(
+        message,
+        "Types of property '",
+        "' are incompatible.\nType '",
+    )?;
+    if array_element.is_empty() || recursive_property.is_empty() {
+        return None;
+    }
+    Some((array_element, recursive_property))
+}
+
+fn text_between<'a>(text: &'a str, start: &str, end: &str) -> Option<&'a str> {
+    let (_, after_start) = text.split_once(start)?;
+    let (value, _) = after_start.split_once(end)?;
+    Some(value)
+}
+
+fn source_declares_recursive_array_target(
+    path: &Path,
+    array_element: &str,
+    recursive_property: &str,
+) -> bool {
+    let Ok(source) = fs::read_to_string(path) else {
+        return false;
+    };
+
+    let alias = format!("type {array_element} =");
+    let array_property = format!("{recursive_property}: {array_element}[]");
+    let generic_property = format!("{recursive_property}: Array<{array_element}>");
+    source.contains(&alias)
+        && (source.contains(&array_property) || source.contains(&generic_property))
+}
+
+#[cfg(test)]
+#[path = "suppressions_tests.rs"]
+mod tests;
