@@ -5,10 +5,12 @@
 //! spread, Vue builtins, and `<component :is>`
 //! (`resolveDynamicComponent`).
 
+mod preamble;
+
 use alloc::vec::Vec as StdVec;
 
 use vize_davinci::id::NodeId;
-use vize_s2::op::{BindingOp, ComponentOp, Op, Region};
+use vize_s2::op::{BindingOp, ComponentOp};
 
 use super::EmitCx;
 use super::EmitError;
@@ -26,25 +28,7 @@ use super::props_static;
 use super::props_static::PropHoistPosition;
 use super::slots;
 
-pub(super) fn collect_names<'a>(root: &Region<'a>) -> StdVec<&'a str> {
-    let mut names = StdVec::new();
-    collect_from(root, &mut names);
-    names
-}
-
-pub(super) fn emit_resolves(cx: &mut EmitCx<'_>, names: &[&str]) {
-    cx.buf.use_resolve_component();
-    for name in names {
-        cx.buf.push("const ");
-        cx.buf.push(asset_ident("component", name).as_str());
-        cx.buf.push(" = ");
-        cx.buf.push(Buf::resolve_component_alias());
-        cx.buf.push("(\"");
-        cx.buf.push(name);
-        cx.buf.push("\")");
-        cx.buf.newline();
-    }
-}
+pub(super) use preamble::{collect_names, emit_resolves};
 
 pub(super) fn emit_root(
     cx: &mut EmitCx<'_>,
@@ -142,30 +126,6 @@ pub(super) fn emit_for_item(
         });
     }
     emit_block(cx, component, key, true, id)
-}
-
-fn collect_from<'a>(region: &Region<'a>, names: &mut StdVec<&'a str>) {
-    for op in region.ops.iter() {
-        match op {
-            Op::Element(element) => collect_from(&element.children, names),
-            Op::Component(component) => {
-                collect_from(&component.children, names);
-                if !builtin::is_reserved_name(component.name)
-                    && !builtin::is_dynamic_component(component)
-                    && !names.contains(&component.name)
-                {
-                    names.push(component.name);
-                }
-            }
-            Op::If(if_op) => {
-                for branch in if_op.branches.iter() {
-                    collect_from(&branch.region, names);
-                }
-            }
-            Op::For(for_op) => collect_from(&for_op.region, names),
-            _ => {}
-        }
-    }
 }
 
 fn emit_call(
@@ -304,16 +264,22 @@ fn emit_call(
     if array {
         if has_array {
             cx.buf.push(", ");
-            builtin::emit_array_children(cx, &component.children, if_key.is_some())?;
+            cx.with_static_vnode_hoist(true, |cx| {
+                builtin::emit_array_children(cx, &component.children, if_key.is_some())
+            })?;
         } else if emit_flag {
             cx.buf.push(", null");
         }
     } else if create {
         cx.buf.push(", ");
-        create_slots::emit_create_slots(cx, &component.children, spread)?;
+        cx.with_static_vnode_hoist(true, |cx| {
+            create_slots::emit_create_slots(cx, &component.children, spread)
+        })?;
     } else if let Some(facts) = facts {
         cx.buf.push(", ");
-        slots::emit_slots(cx, &component.children, facts, spread)?;
+        cx.with_static_vnode_hoist(true, |cx| {
+            slots::emit_slots(cx, &component.children, facts, spread)
+        })?;
     } else if let Some(spread) = spread {
         cx.buf.push(", ");
         cx.buf.push(spread);

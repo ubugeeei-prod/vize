@@ -22,15 +22,17 @@ pub(super) fn emit_element(
         if stable {
             return directive::wrap_element(cx, element, |cx| {
                 cx.buf.use_create_element_vnode();
-                vnode::emit_call(
-                    cx,
-                    element,
-                    false,
-                    key,
-                    (false, None, PropHoistPosition::Nested),
-                    true,
-                    false,
-                )
+                cx.with_static_vnode_hoist(true, |cx| {
+                    vnode::emit_call(
+                        cx,
+                        element,
+                        false,
+                        key,
+                        (false, None, PropHoistPosition::Nested),
+                        true,
+                        false,
+                    )
+                })
             });
         }
         emit_block(cx, element, key)
@@ -48,15 +50,17 @@ fn emit_block(
         cx.buf.push("(");
         cx.buf.push(Buf::open_block_alias());
         cx.buf.push("(), ");
-        vnode::emit_call(
-            cx,
-            element,
-            true,
-            key,
-            (false, None, PropHoistPosition::Nested),
-            true,
-            false,
-        )?;
+        cx.with_static_vnode_hoist(true, |cx| {
+            vnode::emit_call(
+                cx,
+                element,
+                true,
+                key,
+                (false, None, PropHoistPosition::Nested),
+                true,
+                false,
+            )
+        })?;
         cx.buf.push(")");
         Ok(())
     })

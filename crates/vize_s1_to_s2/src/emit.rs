@@ -45,6 +45,7 @@ mod children;
 mod component;
 mod create_slots;
 mod create_slots_walk;
+mod cx;
 mod directive;
 mod entity;
 mod error;
@@ -206,6 +207,9 @@ struct EmitCx<'facts> {
     /// Nested components inside a scoped `withCtx` treat forwarded
     /// outlets as `_: 2` + `DYNAMIC_SLOTS` (Vue `has_slot_params`).
     slot_param_depth: u32,
+    /// Legacy `hoist_static_vnodes` recursion state. Directive/component/branch
+    /// roots stay inline, but descendants may still become hoisted static VNodes.
+    hoist_static_vnodes: bool,
     /// The shipped lane caches static child vnodes only after transform
     /// produced at least one root hoist.
     static_cache: bool,
@@ -213,30 +217,6 @@ struct EmitCx<'facts> {
     /// depends on SVG/MathML boundaries staying block-local while same-namespace
     /// descendants remain inline VNodes.
     parent_ns: Namespace,
-}
-
-impl EmitCx<'_> {
-    fn scope_mark(&self) -> usize {
-        self.scope_names.len()
-    }
-
-    fn push_scope(&mut self, id: Option<NodeId>) -> usize {
-        let mark = self.scope_mark();
-        if let Some(facts) = id.and_then(|id| self.scopes.get(id)) {
-            for binding in facts.bindings.iter() {
-                self.scope_names.push(binding.name.clone());
-            }
-        }
-        mark
-    }
-
-    fn pop_scope(&mut self, mark: usize) {
-        self.scope_names.truncate(mark);
-    }
-
-    fn is_scope_name(&self, source: &str) -> bool {
-        self.scope_names.iter().any(|name| name.as_str() == source)
-    }
 }
 
 /// One DOM render module, split the way the shipped codegen splits it
@@ -288,6 +268,7 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
         in_v_for: false,
         skip_memo: false,
         slot_param_depth: 0,
+        hoist_static_vnodes: false,
         static_cache,
         parent_ns: Namespace::Html,
     };

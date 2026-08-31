@@ -25,6 +25,18 @@ const BATTERY: &[(&str, &str)] = &[
         "nested_v_show_static_child",
         r#"<div><span v-show="ok"><b>Downloading update</b></span></div>"#,
     ),
+    (
+        "airi_titlebar_dynamic_native_ancestor_hoists_static_grandchild",
+        r#"<div :class="root"><div flex drag-region><button @click="run"><span>{{ title }}</span></button><div w-full drag-region></div></div></div>"#,
+    ),
+    (
+        "airi_screen_capture_component_slot_hoists_static_break",
+        r#"<DialogDescription>{{ summary }}<ol><li>{{ step }}<br><span>{{ note }}</span></li></ol></DialogDescription>"#,
+    ),
+    (
+        "v_for_item_root_hoists_static_child_vnodes",
+        r#"<div v-for="item in items" :key="item.id"><span class="icon"></span>{{ item.name }}</div>"#,
+    ),
 ];
 
 #[test]

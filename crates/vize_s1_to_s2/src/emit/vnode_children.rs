@@ -12,6 +12,25 @@ pub(super) fn emit_children(
     hoist_static_children: bool,
     cache_static_children: bool,
 ) -> Result<(), EmitError> {
+    let hoist_static_children = hoist_static_children || cx.hoist_static_vnodes;
+    cx.with_static_vnode_hoist(hoist_static_children, |cx| {
+        emit_children_inner(
+            cx,
+            children,
+            force_array,
+            hoist_static_children,
+            cache_static_children,
+        )
+    })
+}
+
+fn emit_children_inner(
+    cx: &mut EmitCx<'_>,
+    children: &Region<'_>,
+    force_array: bool,
+    hoist_static_children: bool,
+    cache_static_children: bool,
+) -> Result<(), EmitError> {
     let ops = &children.ops;
     if !force_array
         && ops
@@ -20,7 +39,11 @@ pub(super) fn emit_children(
     {
         return emit_text_like(cx, ops);
     }
-    if !force_array && cache_static_children && super::hoist::cacheable_elements_array(ops) {
+    if !force_array
+        && !hoist_static_children
+        && cache_static_children
+        && super::hoist::cacheable_elements_array(ops)
+    {
         return super::hoist::emit_cached_elements_array(cx, ops);
     }
     cx.buf.push("[");

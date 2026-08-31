@@ -168,7 +168,8 @@ pub(super) fn emit_call(
     cx.buf.push(element.tag);
     cx.buf.push("\"");
     let has_children = !element.children.ops.is_empty();
-    let hoist_static_children = allow_hoist && (if_key.is_some() || !element.bindings.is_empty());
+    let hoist_static_children = cx.hoist_static_vnodes
+        || (allow_hoist && (if_key.is_some() || !element.bindings.is_empty()));
     let has_memo = super::memo::has(&element.bindings);
     let memo_block = block && has_memo && !(if_key.is_some() && !for_item);
     let force_array_children = once
@@ -297,6 +298,7 @@ pub(super) fn emit_array_child(
     hoist_static_children: bool,
     cache_static_children: bool,
 ) -> Result<(), EmitError> {
+    let hoist_static_children = hoist_static_children || cx.hoist_static_vnodes;
     if hoist_static_children
         && let Op::Element(element) = op
         && super::hoist::is_hoistable(element)
@@ -310,30 +312,32 @@ pub(super) fn emit_array_child(
         return super::hoist::emit_cached_element(cx, element);
     }
     let id = cx.walk.mint();
-    ensure_sufficient_stack(|| match op {
-        Op::Element(element) if super::slots::is_slot_template(element) => {
-            cx.walk.skip(element.bindings.len());
-            super::tpl::emit_inline(cx, &element.children.ops)
-        }
-        Op::Element(element) => {
-            cx.walk.skip(element.bindings.len());
-            if super::once::emit_hoisted_child(cx, element)? {
-                return Ok(());
+    cx.with_static_vnode_hoist(hoist_static_children, |cx| {
+        ensure_sufficient_stack(|| match op {
+            Op::Element(element) if super::slots::is_slot_template(element) => {
+                cx.walk.skip(element.bindings.len());
+                super::tpl::emit_inline(cx, &element.children.ops)
             }
-            emit_nested(cx, element, id)
-        }
-        Op::Component(component) => {
-            cx.walk.skip(component.bindings.len());
-            super::component::emit_nested(cx, component, id)
-        }
-        Op::If(if_op) => super::emit_if_op(cx, if_op, id),
-        Op::For(for_op) => super::emit_for_op(cx, for_op, id, None),
-        Op::Slot(slot) => {
-            cx.walk.skip(slot.bindings.len());
-            super::outlet::emit_outlet(cx, slot, None, false)
-        }
-        Op::Text(_) | Op::Interpolation(_) => {
-            Err(EmitError::unsupported_op(Reason::ArrayChildTextRun, op))
-        }
+            Op::Element(element) => {
+                cx.walk.skip(element.bindings.len());
+                if super::once::emit_hoisted_child(cx, element)? {
+                    return Ok(());
+                }
+                emit_nested(cx, element, id)
+            }
+            Op::Component(component) => {
+                cx.walk.skip(component.bindings.len());
+                super::component::emit_nested(cx, component, id)
+            }
+            Op::If(if_op) => super::emit_if_op(cx, if_op, id),
+            Op::For(for_op) => super::emit_for_op(cx, for_op, id, None),
+            Op::Slot(slot) => {
+                cx.walk.skip(slot.bindings.len());
+                super::outlet::emit_outlet(cx, slot, None, false)
+            }
+            Op::Text(_) | Op::Interpolation(_) => {
+                Err(EmitError::unsupported_op(Reason::ArrayChildTextRun, op))
+            }
+        })
     })
 }
