@@ -23,6 +23,10 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<div class="root"><button><span>x</span></button><i :id="foo"></i></div>"#,
     ),
     (
+        "static_slot_hoist_keeps_inline_space_text_child",
+        r#"<Variant><div><span>Project</span> <span>AIRI</span></div></Variant>"#,
+    ),
+    (
         "airi_loading_component_formats_nested_static_props_inside_for",
         r#"<div flex flex-col gap-2><div v-for="file in files" :key="file.filename" max-w-full flex flex-col gap="1 sm:2"><div grid="~ cols-[85%_15%]" justify-between text="xs sm:sm neutral-600 dark:neutral-400"><div flex items-center gap-1>{{ file.filename }}</div></div></div></div>"#,
     ),

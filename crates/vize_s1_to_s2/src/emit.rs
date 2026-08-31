@@ -53,6 +53,7 @@ mod filter;
 mod flag;
 mod fragment;
 mod helper;
+mod helper_preference;
 mod hoist;
 mod html;
 pub(crate) mod js;
@@ -96,7 +97,7 @@ use vize_davinci::pass::BudgetObserver;
 use vize_davinci::side_table::SideTable;
 use vize_s0::{Allocator, String};
 use vize_s1::parse;
-use vize_s2::op::{ElementOp, ForOp, IfOp, Namespace, Op, Region};
+use vize_s2::op::{ElementOp, ForOp, IfOp, Namespace};
 use vize_s2::scope::ScopeFacts;
 
 use crate::lower::{ForWrapper, LegacyCaps, Lowered, WrapperKeys, lower_with_caps};
@@ -107,63 +108,6 @@ use self::buf::Buf;
 pub use self::error::{EmitError, UnsupportedReason, UnsupportedRefusal};
 use self::fragment::emit_root;
 use self::helper::Helper;
-
-fn prefer_helpers(buf: &mut Buf, facts: &S2Facts, walk: &mut PageWalk, region: &Region<'_>) {
-    for op in region.ops.iter() {
-        let id = walk.mint();
-        match op {
-            Op::Element(element) if sfc_style::is_carrier_element(element) => {
-                walk.skip(element.bindings.len())
-            }
-            Op::Element(element) => {
-                let bindings = &element.bindings;
-                directive::prefer_helpers(buf, bindings);
-                buf.prefer(Helper::CreateElementVNode);
-                walk.skip(bindings.len());
-                prefer_helpers(buf, facts, walk, &element.children);
-            }
-            Op::Component(component) => {
-                let bindings = &component.bindings;
-                directive::prefer_helpers(buf, bindings);
-                buf.prefer(Helper::ResolveComponent);
-                walk.skip(bindings.len());
-                prefer_helpers(buf, facts, walk, &component.children);
-            }
-            Op::Slot(slot) => {
-                buf.prefer(Helper::RenderSlot);
-                walk.skip(slot.bindings.len());
-                prefer_helpers(buf, facts, walk, &slot.fallback);
-            }
-            Op::If(if_op) => {
-                buf.prefer(Helper::OpenBlock);
-                buf.prefer(Helper::CreateBlock);
-                buf.prefer(Helper::CreateElementBlock);
-                buf.prefer(Helper::Fragment);
-                buf.prefer(Helper::CreateComment);
-                for branch in if_op.branches.iter() {
-                    prefer_helpers(buf, facts, walk, &branch.region);
-                }
-            }
-            Op::For(for_op) => {
-                buf.prefer(Helper::RenderList);
-                buf.prefer(Helper::OpenBlock);
-                buf.prefer(Helper::CreateBlock);
-                buf.prefer(Helper::Fragment);
-                prefer_helpers(buf, facts, walk, &for_op.region);
-            }
-            Op::Text(_) => buf.prefer(Helper::CreateText),
-            Op::Interpolation(_) => {
-                buf.prefer(Helper::ToDisplayString);
-                if id
-                    .and_then(|id| facts.text_facts.get(id))
-                    .is_some_and(|text| text.parts.iter().any(|part| !part.dynamic))
-                {
-                    buf.prefer(Helper::CreateText);
-                }
-            }
-        }
-    }
-}
 
 fn emit_if_op(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>, id: Option<NodeId>) -> Result<(), EmitError> {
     vif::emit_if(cx, if_op, id)
@@ -295,7 +239,7 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
         cx.buf.prefer(Helper::ResolveFilter);
     }
     let mut helper_walk = PageWalk::new();
-    prefer_helpers(&mut cx.buf, facts, &mut helper_walk, &lowered.root);
+    helper_preference::prefer_helpers(&mut cx.buf, facts, &mut helper_walk, &lowered.root);
     fragment::prefer_root_fragment(&mut cx.buf, &lowered.root);
     cx.buf
         .push("function render(_ctx, _cache, $props, $setup, $data, $options) {");

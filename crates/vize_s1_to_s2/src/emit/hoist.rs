@@ -141,7 +141,7 @@ fn walk_hoisted(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) {
 }
 
 fn hoist_needs_create_text(element: &ElementOp<'_>) -> bool {
-    let kids = meaningful(&element.children);
+    let kids = renderable_children(&element.children);
     let has_text = kids.iter().any(|op| matches!(op, Op::Text(_)));
     let has_other = kids.iter().any(|op| !matches!(op, Op::Text(_)));
     (has_text && has_other)
@@ -161,7 +161,7 @@ fn hoist_element_rhs(element: &ElementOp<'_>, pure: bool) -> String {
     out.push('"');
     out.push_str(element.tag);
     out.push('"');
-    let kids = meaningful(&element.children);
+    let kids = renderable_children(&element.children);
     let has_attrs = !element.attributes.is_empty();
     if has_attrs || !kids.is_empty() {
         out.push_str(", ");
@@ -203,7 +203,7 @@ fn append_cached_element_rhs(
         cached_props::push_object(out, element.attributes.iter(), line_indent);
     }
     out.push_str(", ");
-    let kids = meaningful(&element.children);
+    let kids = renderable_children(&element.children);
     if kids.is_empty() {
         out.push_str("null");
     } else {
@@ -291,16 +291,10 @@ fn push_spaces(out: &mut String, width: usize) {
     out.extend(core::iter::repeat_n(' ', width));
 }
 
-fn meaningful<'a>(children: &'a Region<'a>) -> StdVec<&'a Op<'a>> {
-    children
-        .ops
-        .iter()
-        .filter(|op| !is_whitespace_text(op))
-        .collect()
-}
-
-fn is_whitespace_text(op: &Op<'_>) -> bool {
-    matches!(op, Op::Text(text) if text.content.chars().all(char::is_whitespace))
+fn renderable_children<'a>(children: &'a Region<'a>) -> StdVec<&'a Op<'a>> {
+    // S2 lowering has already applied legacy condense/drop decisions; every
+    // remaining text op is renderable, including a single-space separator.
+    children.ops.iter().collect()
 }
 
 /// First-occurrence static attrs as a single-line object, matching

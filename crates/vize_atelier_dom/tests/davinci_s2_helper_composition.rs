@@ -85,6 +85,26 @@ const BATTERY: &[(&str, &str)] = &[
         "slot_fallback_component_resolves_before_owner_component",
         r#"<DropdownMenuTrigger><slot name="trigger"><span>{{ label }}</span><Icon icon="x" /></slot></DropdownMenuTrigger><DropdownMenuItem><span>Item</span></DropdownMenuItem>"#,
     ),
+    (
+        "slot_outlet_and_static_child_keeps_root_element_vnode_before_slot",
+        r#"<div><slot /><span>{{ label }}</span></div>"#,
+    ),
+    (
+        "template_slot_carrier_imports_slot_before_element_vnode",
+        r#"<Collapsible :default="expand"><template #trigger="slotProps"><button :class="['w-full']"><slot name="title"><div>{{ title }}</div></slot></button></template><div :class="innerClass"><slot /></div></Collapsible>"#,
+    ),
+    (
+        "nested_template_slot_carrier_before_later_slot_outlet",
+        r#"<Section><FieldRange><template #label><div>{{ label }}</div></template></FieldRange><label><div><slot name="label">{{ fallback }}</slot></div><SelectTab /></label></Section>"#,
+    ),
+    (
+        "component_default_element_wraps_slot_outlet",
+        r#"<Section><label><div><slot name="label">{{ fallback }}</slot></div><SelectTab /></label></Section>"#,
+    ),
+    (
+        "earlier_root_component_template_slot_before_later_root_slot_outlet",
+        r#"<Section><FieldRange><template #label><div>{{ label }}</div></template></FieldRange></Section><Section><label><div><slot name="label">{{ fallback }}</slot></div><SelectTab /></label></Section>"#,
+    ),
 ];
 
 #[test]
