@@ -5,22 +5,22 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { commandExists } from "../../config/vite-plus/root-build-task-plugin.ts";
+import { commandExists } from "../../tools/config/vite-plus/root-build-task-plugin.ts";
 import {
   getTaskShellLocaleAssignments,
   normalizeTaskShellLocale,
   shellCommand,
   shellCommandForwardingArguments,
   withRustTaskEnvironment,
-} from "../../config/vite-plus/task-shell.ts";
+} from "../../tools/config/vite-plus/task-shell.ts";
 import {
   localVp,
   moonCommandForEnvironment,
   moonRegistryRefreshCommandForEnvironment,
   moonRegistryUpdateGuardForEnvironment,
-} from "../../config/vite-plus/task-commands.ts";
-import { checkTasks } from "../../config/vite-plus/tasks/check.ts";
-import { releaseTasks } from "../../config/vite-plus/tasks/release.ts";
+} from "../../tools/config/vite-plus/task-commands.ts";
+import { checkTasks } from "../../tools/config/vite-plus/tasks/check.ts";
+import { releaseTasks } from "../../tools/config/vite-plus/tasks/release.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
 test("macOS task shells fall back from C.UTF-8 to an installed UTF-8 locale", () => {

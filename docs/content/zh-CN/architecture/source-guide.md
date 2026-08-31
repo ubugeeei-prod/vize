@@ -117,7 +117,7 @@ vp run --workspace-root source:lengths
 正常包路径（`moon run --target native tools/moon/cmd/<name> -- <args>`），分享工具链
 已经构建了编译器，并被 `tests/tooling/*.test.ts` 套件覆盖
 它们通过 `moon run` 并断言完整的预期输出。根任务使用 `moonScript` 调用它们
-`config/vite-plus/task-commands.ts` 中的助手，因此每个消费者都保持稳定的任务名称而不是
+`tools/config/vite-plus/task-commands.ts` 中的助手，因此每个消费者都保持稳定的任务名称而不是
 内联命令。
 
 好的 MoonBit 候选者是小、纯粹且依赖轻：参数解析、JSON 或文本

@@ -125,6 +125,7 @@ fn visit_files(dir: &Path, files: &mut Vec<PathBuf>) -> io::Result<()> {
 
 fn skip_path(path: &str) -> bool {
     path.starts_with("tools/commands/")
+        || path.starts_with("tools/config/vite-plus/")
         || path.starts_with("tools/rust/")
         || path.starts_with("tools/moon/.mooncakes/")
 }
