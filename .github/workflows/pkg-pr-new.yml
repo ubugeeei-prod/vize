@@ -37,7 +37,15 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
 
-      - uses: ./.github/actions/setup-rust-script
+      - name: Install rust-script
+        run: |
+          set -euo pipefail
+          if command -v rust-script >/dev/null 2>&1; then
+            rust-script --version
+            exit 0
+          fi
+          cargo install rust-script --version 0.34.0 --locked
+          rust-script --version
 
       - name: Install package build dependencies
         run: moon run --target native tools/moon/cmd/github/vp_install -- --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/oxlint...' --filter './npm/builder/unplugin...' --filter './npm/fresco...' --filter './npm/mcp-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/rspack...' --filter './npm/framework/musea-nuxt...' --filter './npm/framework/nuxt-lint-config...' --filter './npm/framework/nuxt...' --filter './npm/ui...'
