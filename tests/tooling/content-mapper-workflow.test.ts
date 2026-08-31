@@ -75,7 +75,7 @@ const REQUIRED_TRIGGER_PATHS = [
   "pnpm-lock.yaml",
   "pnpm-workspace.yaml",
   "tools/commands/release/npm/**",
-  "tools/rust/**",
+  "tools/support/**",
   "tests/_fixtures/davinci-ts40-projection/**",
   "tests/tooling/davinci-ts40-projection.test.ts",
   "tests/tooling/support/davinci-ts40-projection.ts",
