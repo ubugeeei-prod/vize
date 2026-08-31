@@ -12,7 +12,7 @@ use oxc_span::SourceType;
 use parking_lot::{Mutex, RwLock};
 use tower_lsp::lsp_types::Url;
 use vize_canon::{PackageRouteResolver, PackageSourceOptions};
-use vize_s0::{FxHashMap, FxHashSet};
+use vize_s0::{FxHashMap, FxHashSet, cstr};
 
 use super::ServerState;
 pub(super) use dependents::open_typecheck_dependents;
@@ -268,12 +268,12 @@ fn resolve_relative_import(importer_dir: &Path, specifier: &str) -> Option<PathB
             .find(|candidate| candidate.exists())
             .map(|candidate| comparable_path(&candidate));
     }
-    if Path::new(specifier).extension().is_some() {
+    if has_script_extension(Path::new(specifier)) {
         return Some(comparable_path(&joined));
     }
     SCRIPT_EXTENSIONS
         .iter()
-        .map(|extension| joined.with_extension(extension))
+        .map(|extension| append_extension(&joined, extension))
         .chain(
             SCRIPT_EXTENSIONS
                 .iter()
@@ -281,6 +281,19 @@ fn resolve_relative_import(importer_dir: &Path, specifier: &str) -> Option<PathB
         )
         .find(|candidate| candidate.exists())
         .map(|candidate| comparable_path(&candidate))
+}
+
+fn has_script_extension(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| SCRIPT_EXTENSIONS.contains(&extension))
+}
+
+fn append_extension(path: &Path, extension: &str) -> PathBuf {
+    path.file_name().and_then(|name| name.to_str()).map_or_else(
+        || path.to_path_buf(),
+        |name| path.with_file_name(cstr!("{name}.{extension}")),
+    )
 }
 
 fn comparable_path(path: &Path) -> PathBuf {

@@ -78,6 +78,59 @@ fn async_collect_resolves_relative_vue_imports_in_script_setup() {
 }
 
 #[test]
+fn async_collect_resolves_relative_ts_imports_with_dotted_basenames() {
+    let Some(corsa_path) = resolve_test_tsgo_binary() else {
+        return;
+    };
+    let project = tempfile::TempDir::new().expect("temp project");
+    let root = project.path();
+    let src = root.join("src");
+    std::fs::create_dir_all(&src).expect("src dir");
+    super::editor_typecheck_fixture::write_vue_test_package(root);
+    std::fs::write(
+        root.join("tsconfig.json"),
+        r#"{"compilerOptions":{"strict":true,"moduleResolution":"bundler","module":"ESNext","target":"ESNext","noEmit":true},"include":["src/**/*"]}"#,
+    )
+    .expect("tsconfig");
+    std::fs::write(
+        src.join("x.use.ts"),
+        r#"export type ValidationRule = (v: unknown) => true | string;
+export const useX = () => 1;
+"#,
+    )
+    .expect("dotted module");
+    write_corsa_config(root, &corsa_path);
+
+    let vue_path = src.join("a.vue");
+    let source = r#"<script setup lang="ts">
+import { useX, type ValidationRule } from "./x.use";
+const r: ValidationRule = () => true;
+console.log(useX(), r);
+</script>
+
+<template><div /></template>
+"#;
+    std::fs::write(&vue_path, source).expect("vue source");
+    let uri = Url::from_file_path(&vue_path).expect("file uri");
+    let state = state_for_fixture(root, &uri, source);
+    state.load_workspace_config(root);
+
+    let diagnostics = crate::runtime::block_on(DiagnosticService::collect_async(&state, &uri));
+
+    assert!(
+        diagnostics.iter().all(|diagnostic| {
+            diagnostic.code != Some(tower_lsp::lsp_types::NumberOrString::Number(2307))
+                && !diagnostic.message.contains("Cannot find module './x.use'")
+        }),
+        "dotted basename imports must resolve in editor diagnostics: {diagnostics:#?}",
+    );
+    assert!(
+        diagnostics.is_empty(),
+        "expected clean editor diagnostics, got: {diagnostics:#?}",
+    );
+}
+
+#[test]
 #[cfg(unix)]
 fn async_collect_resolves_workspace_package_vue_exports() {
     assert_workspace_package_vue_export_resolves("./src/Widget.vue", None);

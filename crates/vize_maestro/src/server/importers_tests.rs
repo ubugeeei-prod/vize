@@ -98,6 +98,23 @@ fn index_resolves_explicit_script_dependencies_and_query_suffixes() {
 }
 
 #[test]
+fn index_resolves_extensionless_imports_with_dotted_basenames() {
+    let dir = tempfile::tempdir().unwrap();
+    let dependency = dir.path().join("x.use.ts");
+    let parent = dir.path().join("Parent.vue");
+    std::fs::write(&dependency, "export const useX = () => 1").unwrap();
+    std::fs::write(&parent, "<template />").unwrap();
+    let dependency_uri = Url::from_file_path(&dependency).unwrap();
+    let parent_uri = Url::from_file_path(&parent).unwrap();
+    let state = ServerState::new();
+    let source = "<script setup lang=\"ts\">import { useX } from './x.use'; useX()</script>";
+
+    state.update_virtual_docs(&parent_uri, source);
+
+    assert_eq!(open_importers(&state, &dependency_uri), vec![parent_uri]);
+}
+
+#[test]
 fn index_resolves_package_export_declaration_variants() {
     let dir = tempfile::tempdir().unwrap();
     let package = dir.path().join("node_modules/vue-router");

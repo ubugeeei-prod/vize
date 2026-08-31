@@ -276,6 +276,20 @@ fn resolves_relative_declarations_and_rejects_package_escape() {
     );
 }
 
+#[test]
+fn resolves_relative_imports_with_dotted_basenames() {
+    let workspace = tempdir().unwrap();
+    let source = workspace.path().join("src/App.vue");
+    let target = workspace.path().join("src/x.use.ts");
+    write(&source, "<script setup lang=\"ts\"></script>");
+    write(&target, "export const useX = () => 1;\n");
+
+    assert_eq!(
+        resolve_specifier(&file_url(&source), "./x.use"),
+        Some(target.canonicalize().unwrap()),
+    );
+}
+
 /// Native TypeScript answers a module-specifier definition with the whole
 /// target file span. The editor contract is the module identity at its origin,
 /// so the mapped answer must collapse back to a zero-width range.

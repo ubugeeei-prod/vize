@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Location, Position, Range, Url};
 use vize_canon::{PackageRouteResolver, PackageSourceOptions};
+use vize_s0::cstr;
 
 #[cfg(feature = "native")]
 use vize_canon::CorsaBridge;
@@ -181,10 +182,14 @@ fn resolve_file_candidate(candidate: &Path) -> Option<PathBuf> {
     if candidate.is_file() {
         return candidate.canonicalize().ok();
     }
+    let extension_mode = extension_mode(candidate);
     for extension in [
         "vue", "d.ts", "d.mts", "d.cts", "ts", "tsx", "mts", "cts", "js", "mjs", "cjs",
     ] {
-        let with_extension = candidate.with_extension(extension);
+        let with_extension = match extension_mode {
+            ExtensionMode::Replace => candidate.with_extension(extension),
+            ExtensionMode::Append => append_extension(candidate, extension),
+        };
         if with_extension.is_file() {
             return with_extension.canonicalize().ok();
         }
@@ -204,4 +209,35 @@ fn resolve_file_candidate(candidate: &Path) -> Option<PathBuf> {
         }
     }
     None
+}
+
+#[derive(Clone, Copy)]
+enum ExtensionMode {
+    Replace,
+    Append,
+}
+
+fn extension_mode(candidate: &Path) -> ExtensionMode {
+    let Some(extension) = candidate
+        .extension()
+        .and_then(|extension| extension.to_str())
+    else {
+        return ExtensionMode::Replace;
+    };
+    if [
+        "vue", "d.ts", "d.mts", "d.cts", "ts", "tsx", "mts", "cts", "js", "jsx", "mjs", "cjs",
+    ]
+    .contains(&extension)
+    {
+        ExtensionMode::Replace
+    } else {
+        ExtensionMode::Append
+    }
+}
+
+fn append_extension(path: &Path, extension: &str) -> PathBuf {
+    path.file_name().and_then(|name| name.to_str()).map_or_else(
+        || path.to_path_buf(),
+        |name| path.with_file_name(cstr!("{name}.{extension}")),
+    )
 }

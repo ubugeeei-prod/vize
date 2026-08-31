@@ -2,16 +2,18 @@
 
 use std::path::{Path, PathBuf};
 
+use vize_carton::cstr;
+
 pub(super) fn resolve_relative_script_import(dir: &Path, specifier: &str) -> Option<PathBuf> {
     let base = dir.join(specifier);
-    if base.extension().is_some() {
+    if has_known_script_extension(&base) {
         return known_script_path(&base).then(|| normalize_path(&base));
     }
 
     for ext in [
         "ts", "tsx", "mts", "cts", "d.ts", "d.mts", "d.cts", "js", "jsx", "mjs", "cjs",
     ] {
-        let candidate = base.with_extension(ext);
+        let candidate = append_extension(&base, ext);
         if candidate.exists() {
             return Some(normalize_path(&candidate));
         }
@@ -37,6 +39,17 @@ pub(super) fn resolve_relative_script_import(dir: &Path, specifier: &str) -> Opt
     None
 }
 
+fn has_known_script_extension(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| {
+            matches!(
+                extension,
+                "ts" | "tsx" | "mts" | "cts" | "js" | "jsx" | "mjs" | "cjs"
+            )
+        })
+}
+
 fn known_script_path(path: &Path) -> bool {
     let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
         return false;
@@ -50,6 +63,13 @@ fn known_script_path(path: &Path) -> bool {
             || name.ends_with(".jsx")
             || name.ends_with(".mjs")
             || name.ends_with(".cjs"))
+}
+
+fn append_extension(path: &Path, extension: &str) -> PathBuf {
+    path.file_name().and_then(|name| name.to_str()).map_or_else(
+        || path.to_path_buf(),
+        |name| path.with_file_name(cstr!("{name}.{extension}")),
+    )
 }
 
 pub(super) fn normalize_path(path: &Path) -> PathBuf {
@@ -97,6 +117,20 @@ mod tests {
         assert_eq!(
             resolve_relative_script_import(&src, "./schema").as_deref(),
             Some(schema.as_path())
+        );
+    }
+
+    #[test]
+    fn resolves_extensionless_imports_with_dotted_basenames() {
+        let project = tempfile::TempDir::new().expect("temp project");
+        let src = project.path().join("src");
+        std::fs::create_dir_all(&src).expect("src dir");
+        let target = src.join("x.use.ts");
+        std::fs::write(&target, "export const useX = () => 1;\n").expect("dotted module");
+
+        assert_eq!(
+            resolve_relative_script_import(&src, "./x.use").as_deref(),
+            Some(target.as_path())
         );
     }
 }
