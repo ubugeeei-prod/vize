@@ -9,6 +9,7 @@ use vize_carton::{CompactString, SmallVec, String, cstr};
 use vize_relief::{ElementNode, ExpressionNode, PropNode, SimpleExpressionNode, TemplateChildNode};
 
 use super::super::Drawer;
+use super::slot_names::slot_argument_name;
 
 impl Drawer {
     /// Collect props and events from element for component usage tracking.
@@ -235,11 +236,7 @@ fn directive_argument(arg: &ExpressionNode<'_>, source: &str) -> (CompactString,
 }
 
 fn push_slot_usage(usage: &mut ComponentUsage, dir: &vize_relief::DirectiveNode<'_>, source: &str) {
-    let (name, name_is_dynamic) = dir
-        .arg
-        .as_ref()
-        .map(|arg| directive_argument(arg, source))
-        .unwrap_or_else(|| (CompactString::const_new("default"), false));
+    let (name, name_is_static) = slot_argument_name(dir.arg.as_ref(), source);
     let scope_vars = dir
         .exp
         .as_ref()
@@ -249,7 +246,7 @@ fn push_slot_usage(usage: &mut ComponentUsage, dir: &vize_relief::DirectiveNode<
 
     usage.slots.push(SlotUsage {
         name,
-        name_is_dynamic,
+        name_is_dynamic: !name_is_static,
         has_scope: dir.exp.is_some(),
         scope_vars,
         start: dir.loc.span.start,

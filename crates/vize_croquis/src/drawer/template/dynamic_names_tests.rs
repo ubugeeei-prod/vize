@@ -172,6 +172,38 @@ fn dynamic_name_and_dynamic_value_are_independent() {
 }
 
 #[test]
+fn literal_template_slot_names_are_static() {
+    let source = concat!(
+        "<Child>",
+        "<template #[`item.name`]=\"{ item }\">{{ item.name }}</template>",
+        "<template #[`item.${suffix}`]=\"{ row }\">{{ row }}</template>",
+        "</Child>",
+    );
+    let allocator = Allocator::new();
+    let (root, errors) = parse(&allocator, source);
+    assert!(errors.is_empty(), "template errors: {errors:?}");
+
+    let mut drawer = Drawer::with_options(DrawerOptions::full());
+    drawer.draw_script_setup("const suffix = 'name';");
+    drawer.draw_template(&root);
+    let croquis = drawer.finish();
+    let usage = serde_json::to_value(&croquis.semantic_snapshot().component_usages).unwrap();
+
+    assert_eq!(usage[0]["slots"][0]["name"], "item.name");
+    assert_eq!(usage[0]["slots"][0]["nameIsDynamic"], false);
+    assert_eq!(usage[0]["slots"][1]["name"], "`item.${suffix}`");
+    assert_eq!(usage[0]["slots"][1]["nameIsDynamic"], true);
+
+    let arguments = croquis
+        .template_expressions
+        .iter()
+        .filter(|expression| expression.kind == TemplateExpressionKind::DynamicDirectiveArgument)
+        .map(|expression| expression.content.as_str())
+        .collect::<Vec<_>>();
+    assert_eq!(arguments, ["`item.${suffix}`"]);
+}
+
+#[test]
 fn runtime_directive_arguments_are_checked_as_expressions() {
     let source = concat!(
         "<Child :[known]=\"value\" @[missingEvent]=\"handler\">",

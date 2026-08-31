@@ -14,6 +14,7 @@ mod dynamic_names_tests;
 mod ids;
 #[cfg(test)]
 mod legacy_vue2_tests;
+mod slot_names;
 #[cfg(test)]
 mod slot_scope_tests;
 mod visit_element;

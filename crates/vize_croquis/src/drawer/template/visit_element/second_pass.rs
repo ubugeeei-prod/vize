@@ -8,6 +8,8 @@ use oxc_span::SourceType;
 use vize_carton::{CompactString, profile};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, JsExpression, PropNode};
 
+use super::super::slot_names::slot_argument_is_runtime_dynamic;
+
 impl Drawer {
     pub(super) fn process_element_conditional_directive(
         &mut self,
@@ -160,6 +162,9 @@ impl Drawer {
         }) else {
             return;
         };
+        if dir.name == "slot" && !slot_argument_is_runtime_dynamic(arg, &self.template_source) {
+            return;
+        }
 
         if self.options.collect_template_expressions {
             let loc = arg.loc();

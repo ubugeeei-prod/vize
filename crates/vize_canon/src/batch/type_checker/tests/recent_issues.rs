@@ -13,6 +13,7 @@ mod external_esm_module_augmentation;
 mod external_slot_payloads;
 mod global_component_callbacks;
 mod imported_component_ref_expose;
+mod literal_dynamic_slot_names;
 mod native_prop_anchors;
 mod open_slot_index_signature;
 mod optional_boolean_props;

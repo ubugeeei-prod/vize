@@ -6,6 +6,7 @@ use crate::drawer::helpers::{
 use vize_carton::{CompactString, SmallVec, profile, smallvec};
 use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
+use super::super::slot_names::slot_argument_name;
 use super::bounds::element_subtree_end;
 use super::scopes::ElementDirectiveState;
 use super::v_for_scope::{v_for_alias_declaration_offsets, v_for_source_offset};
@@ -81,21 +82,8 @@ impl Drawer {
                     };
                     state.conditional = Some((kind, condition));
                 } else if dir.name == "slot" && self.options.analyze_template_scopes {
-                    let slot_name = dir
-                        .arg
-                        .as_ref()
-                        .map(|arg| {
-                            CompactString::new(expression_content(arg, &self.template_source))
-                        })
-                        .unwrap_or_else(|| CompactString::const_new("default"));
-                    let slot_name_is_static = dir
-                        .arg
-                        .as_ref()
-                        .and_then(|arg| match arg {
-                            ExpressionNode::Simple(simple) => Some(simple.is_static),
-                            ExpressionNode::Compound(_) => None,
-                        })
-                        .unwrap_or(true);
+                    let (slot_name, slot_name_is_static) =
+                        slot_argument_name(dir.arg.as_ref(), &self.template_source);
 
                     let (prop_names, props_pattern, prop_offsets) = if let Some(ref exp) = dir.exp {
                         let content = expression_content(exp, &self.template_source);
