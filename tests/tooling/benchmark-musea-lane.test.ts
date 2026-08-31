@@ -59,9 +59,9 @@ test("bench:musea is registered as a lane and runs the same way bench:vite does"
 
   assert.equal(musea.cache, false);
   // Full equality against the sibling lane: the Musea lane must reach the same
-  // MoonBit bench dispatcher with the same environment, differing only in the
-  // task name it forwards. Anything else is a parallel benchmarking mechanism.
-  assert.equal(musea.command, vite.command.replace(/-- vite$/, "-- musea"));
+  // Rust Script bench dispatcher with the same environment, differing only in
+  // the task name it forwards. Anything else is a parallel benchmarking mechanism.
+  assert.equal(musea.command, vite.command.replace(/'vite'$/, "'musea'"));
 });
 
 test("bench:all runs the Musea lane alongside the other benchmark lanes", () => {
@@ -73,30 +73,34 @@ test("bench:all runs the Musea lane alongside the other benchmark lanes", () => 
   );
 });
 
-test("the MoonBit bench dispatcher and the bench package agree on the lane script", () => {
-  const dispatcher = fs.readFileSync(path.join(root, "tools/moon/cmd/bench/main.mbt"), "utf8");
+test("the Rust Script bench dispatcher and the bench package agree on the lane script", () => {
+  const dispatcher = fs.readFileSync(
+    path.join(root, "tools/commands/benchmarks/dispatch.rs"),
+    "utf8",
+  );
 
   // Assert the whole task table, not that it contains a Musea row: a lane
   // added to the dispatcher but dropped from the usage line, or pointed at the
   // wrong script, is exactly the wiring mistake this test exists to catch.
-  assert.deepEqual(
-    [...dispatcher.matchAll(/"([\w-]+)" => Some\("([^"]+)"\)/g)].map(([, task, script]) => [
-      task,
-      script,
-    ]),
-    [
-      ["run", "tools/benchmarks/scripts/run.ts"],
-      ["generate", "tools/benchmarks/scripts/generate.mjs"],
-      ["lint", "tools/benchmarks/scripts/lint.ts"],
-      ["fmt", "tools/benchmarks/scripts/fmt.ts"],
-      ["check", "tools/benchmarks/scripts/check.ts"],
-      ["vite", "tools/benchmarks/scripts/vite.ts"],
-      ["musea", "tools/benchmarks/scripts/musea.mjs"],
-      ["compare-tools", "tools/benchmarks/scripts/compare-tools.mjs"],
-    ],
+  const rows = [...dispatcher.matchAll(/\(\s*"([\w-]+)",\s*"([^"]+)",?\s*\)/g)].map(
+    ([, task, script]) => [task, script],
+  );
+  assert.deepEqual(rows, [
+    ["run", "tools/benchmarks/scripts/run.ts"],
+    ["generate", "tools/benchmarks/scripts/generate.mjs"],
+    ["lint", "tools/benchmarks/scripts/lint.ts"],
+    ["fmt", "tools/benchmarks/scripts/fmt.ts"],
+    ["check", "tools/benchmarks/scripts/check.ts"],
+    ["vite", "tools/benchmarks/scripts/vite.ts"],
+    ["musea", "tools/benchmarks/scripts/musea.mjs"],
+    ["compare-tools", "tools/benchmarks/scripts/compare-tools.mjs"],
+  ]);
+  assert.match(
+    dispatcher,
+    /tools\/commands\/benchmarks\/dispatch\.rs -- <\{tasks\}> \[args\.\.\.\]/,
   );
   assert.equal(
-    dispatcher.match(/-- <([^>]+)> \[args\.\.\.\]/)?.[1],
+    rows.map(([task]) => task).join("|"),
     "run|generate|lint|fmt|check|vite|musea|compare-tools",
   );
 
