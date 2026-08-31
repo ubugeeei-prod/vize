@@ -74,6 +74,8 @@ pub struct Lowered<'a> {
     /// The compile arena this artifact was lowered into. The legalizing
     /// pass allocates rewritten expressions and inserted listeners here.
     pub allocator: &'a Allocator,
+    /// The complete authored source that S0 spans are measured against.
+    pub source: &'a str,
     /// The root region's ops, in document order.
     pub root: Region<'a>,
     /// How many ops were numbered (page order: every region op and
@@ -178,6 +180,7 @@ pub fn lower_source_block_with_caps<'a>(
     let ops = structural::lower_children(&mut cx, &tree.children, Namespace::Html);
     Lowered {
         allocator,
+        source: block.root_source(),
         root: Region { ops },
         op_count: cx.op_count(),
         diagnostics: cx.diagnostics,

@@ -45,7 +45,7 @@ observational guard for planning only. It does not change rollout state.
 
 | consumer                   | stage/Davinci | preferred stage names | compat code names | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
-| Compiler                   |           928 |                   487 |               441 |             140 |     371 |             941 |      498 |           488 |           608 |
+| Compiler                   |           928 |                   487 |               441 |             140 |     371 |             941 |      498 |           488 |           609 |
 | Linter                     |           331 |                   331 |                 0 |             290 |     287 |             671 |      237 |           375 |           539 |
 | Typechecker                |           880 |                   238 |               642 |             396 |     187 |             808 |      655 |           468 |           666 |
 | Typechecker content-mapper |             8 |                     8 |                 0 |               1 |       0 |               9 |        0 |             7 |            19 |

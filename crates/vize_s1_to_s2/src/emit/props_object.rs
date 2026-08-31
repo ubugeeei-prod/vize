@@ -328,7 +328,7 @@ fn emit_bind_pair(
             Some(js) => style::emit_style_value(cx, static_style, bind, js, skip_normalize),
             None => value.emit(cx),
         },
-        _ => value.emit(cx),
+        _ => value.emit_authored(cx, bind),
     }
     Ok(())
 }

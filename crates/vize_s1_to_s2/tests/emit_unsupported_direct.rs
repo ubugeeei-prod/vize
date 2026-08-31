@@ -197,6 +197,7 @@ fn for_op<'a>(a: &'a Allocator, value: ExprRef<'a>, body: Region<'a>) -> Op<'a> 
 fn lowered<'a>(a: &'a Allocator, root: Region<'a>) -> Lowered<'a> {
     Lowered {
         allocator: a,
+        source: "",
         root,
         op_count: 0,
         diagnostics: StdVec::new(),

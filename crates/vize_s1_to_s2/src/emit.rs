@@ -145,6 +145,7 @@ fn emit_for_item_call(
 /// same arithmetic the S2 passes use so compound text facts resolve.
 struct EmitCx<'facts> {
     buf: Buf,
+    source: &'facts str,
     facts: &'facts S2Facts,
     scopes: &'facts SideTable<ScopeFacts>,
     wrappers: &'facts SideTable<WrapperKeys>,
@@ -156,8 +157,7 @@ struct EmitCx<'facts> {
     /// `v-once` / `v-memo` cache slots are numbered in render-order,
     /// sharing the function-level `_cache` array like the shipped lane.
     once_cache_index: u32,
-    /// Static children nested inside `v-once` follow the shipped lane's
-    /// one-shot hoist behavior without changing ordinary nested elements.
+    /// Static children nested inside `v-once` follow shipped one-shot hoists.
     once_depth: u32,
     /// Slot objects inside `v-for` carry `_: 2 /* DYNAMIC */`.
     in_v_for: bool,
@@ -218,6 +218,7 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
     let static_cache = static_cache::enabled(&lowered.root, facts);
     let mut cx = EmitCx {
         buf: Buf::new(),
+        source: lowered.source,
         facts,
         scopes: &lowered.scopes,
         wrappers: &lowered.wrappers,
