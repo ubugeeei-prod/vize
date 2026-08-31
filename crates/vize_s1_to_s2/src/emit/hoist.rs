@@ -10,11 +10,9 @@ use alloc::vec::Vec as StdVec;
 use vize_s0::{String, ToCompactString};
 use vize_s2::op::{Attribute, ElementOp, Op, Region};
 
-use super::EmitCx;
-use super::EmitError;
-use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::js::{escape_js_string, is_valid_js_identifier};
+use super::{EmitCx, EmitError, UnsupportedReason as Reason};
 
 pub(super) fn emit_hoisted_element(
     cx: &mut EmitCx<'_>,
@@ -113,7 +111,9 @@ pub(super) fn is_hoistable(element: &ElementOp<'_>) -> bool {
 }
 
 pub(super) fn is_static_element_tree(element: &ElementOp<'_>) -> bool {
-    element.bindings.is_empty() && element.children.ops.iter().all(is_static_tree_child)
+    !element.attributes.iter().any(|attr| attr.name == "ref")
+        && element.bindings.is_empty()
+        && element.children.ops.iter().all(is_static_tree_child)
 }
 
 fn is_static_tree_child(op: &Op<'_>) -> bool {

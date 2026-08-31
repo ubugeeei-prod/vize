@@ -56,9 +56,23 @@ fn cached_static_child_formats_multikey_props_like_the_shipped_snapshot() {
 }
 
 #[test]
+fn static_ref_child_stays_inline_when_static_cache_is_enabled() {
+    assert_shipped_parity(
+        r#"<aside class="seed"></aside><main><div ref="canvasContainerRef"></div></main>"#,
+    );
+}
+
+#[test]
 fn cached_static_children_array_formats_multikey_props_like_the_shipped_snapshot() {
     assert_shipped_parity(
         r#"<div class="root"><span id="hero" class="title"></span><span data-panel="intro" aria-hidden="true"></span></div>"#,
+    );
+}
+
+#[test]
+fn static_ref_child_stays_inline_under_dynamic_parent_hoist() {
+    assert_shipped_parity(
+        r#"<section @mousemove="track"><div ref="silhouette" class="silhouette"></div></section>"#,
     );
 }
 
