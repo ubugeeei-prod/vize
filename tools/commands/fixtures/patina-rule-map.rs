@@ -11,7 +11,7 @@
 use serde_json::Value;
 use std::{env, process::ExitCode};
 
-#[path = "../../rust/common.rs"]
+#[path = "../../support/common.rs"]
 mod common;
 
 const RULE_MAP_REL: &str = "tests/_fixtures/patina-eslint-vue-rule-map.json";

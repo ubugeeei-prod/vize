@@ -14,7 +14,7 @@ use std::{
     process::ExitCode,
 };
 
-#[path = "../../rust/common.rs"]
+#[path = "../../support/common.rs"]
 mod common;
 
 const CAPABILITY_VALUES: &[(&str, &[&str])] = &[

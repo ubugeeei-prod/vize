@@ -21,7 +21,7 @@ use std::{
     time::Instant,
 };
 
-#[path = "../../rust/common.rs"]
+#[path = "../../support/common.rs"]
 mod common;
 
 const DEFAULT_PRESET: &str = "ecosystem";

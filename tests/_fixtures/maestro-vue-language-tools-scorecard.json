@@ -513,7 +513,7 @@
       "mustExclude": ["substring-only-assertions"],
       "evidence": [
         {
-          "file": "tools/rust/lsp_smoke.rs",
+          "file": "tools/support/editors/lsp_smoke.rs",
           "contains": [
             "expected_diagnostics()",
             "expected_formatting()",
@@ -587,7 +587,7 @@
           ]
         },
         {
-          "file": "tools/rust/lsp_smoke.rs",
+          "file": "tools/support/editors/lsp_smoke.rs",
           "contains": [
             "documentFormattingProvider",
             "expected_rename(&uri)"

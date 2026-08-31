@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use serde_json::{Map, Value, json};
+use serde_json::{json, Map, Value};
 use std::{
     fs,
     io::{Read, Write},
@@ -8,7 +8,7 @@ use std::{
     process::{Child, ChildStdin, Command, Stdio},
 };
 
-#[path = "./editor_e2e.rs"]
+#[path = "./e2e.rs"]
 mod editor_e2e;
 
 pub struct LspSession {

@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use serde::Serialize;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::{
     collections::{BTreeMap, BTreeSet},
@@ -10,7 +10,7 @@ use std::{
     process::{Command, Stdio},
 };
 
-#[path = "./common.rs"]
+#[path = "../common.rs"]
 mod common;
 
 pub const SCHEMA: &str = "vize.davinciCorpusBaseline";

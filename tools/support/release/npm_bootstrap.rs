@@ -967,7 +967,11 @@ fn positive_safe_integer(value: &str) -> bool {
 }
 
 fn empty_label(value: &str) -> &str {
-    if value.is_empty() { "(empty)" } else { value }
+    if value.is_empty() {
+        "(empty)"
+    } else {
+        value
+    }
 }
 
 fn value_string(value: Option<&Value>) -> String {
