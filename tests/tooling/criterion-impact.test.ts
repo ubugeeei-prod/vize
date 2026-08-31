@@ -5,12 +5,15 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { CRITERION_SUITES, resolveSuiteSelection } from "../../bench/criterion-ab.mjs";
+import {
+  CRITERION_SUITES,
+  resolveSuiteSelection,
+} from "../../tools/benchmarks/scripts/criterion-ab.mjs";
 import {
   changedPathsBetween,
   parseNameStatusZ,
   selectCriterionSuites,
-} from "../../bench/criterion-impact.mjs";
+} from "../../tools/benchmarks/scripts/criterion-impact.mjs";
 
 const repoDir = "/repo";
 const suiteNames = CRITERION_SUITES.map((suite) => suite.package);
@@ -34,7 +37,7 @@ function metadata(dependencies: Record<string, string[]> = {}) {
     name,
     manifest_path:
       name === "vize_benchmarks"
-        ? `${repoDir}/benchmarks/vize/Cargo.toml`
+        ? `${repoDir}/tools/benchmarks/crates/vize/Cargo.toml`
         : `${repoDir}/crates/${name}/Cargo.toml`,
   }));
   const effectiveDependencies = { vize_benchmarks: ["vize"], ...dependencies };
@@ -122,7 +125,7 @@ test("Doctor TUI benchmarks carry explicit reference-runner latency budgets", ()
   });
 
   const direct = selectCriterionSuites({
-    changedPaths: ["benchmarks/vize/doctor_tui.rs"],
+    changedPaths: ["tools/benchmarks/crates/vize/doctor_tui.rs"],
     metadata: metadata(),
     repoDir,
   });
@@ -164,9 +167,9 @@ test("non-Rust CLI fixture changes skip unrelated Criterion suites", () => {
 test("lockfiles and shared benchmark infrastructure select the full inventory", () => {
   for (const changedPath of [
     "Cargo.lock",
-    "bench/criterion-ab.mjs",
-    "bench/criterion-baselines.mjs",
-    "bench/criterion-summary.mjs",
+    "tools/benchmarks/scripts/criterion-ab.mjs",
+    "tools/benchmarks/scripts/criterion-baselines.mjs",
+    "tools/benchmarks/scripts/criterion-summary.mjs",
   ]) {
     const result = selectCriterionSuites({
       changedPaths: [changedPath],
@@ -183,7 +186,7 @@ test("hosted fallback smoke-runs Criterion infrastructure-only changes", () => {
     changedPaths: [
       ".github/workflows/check.yml",
       ".github/workflows/criterion-bench.yml",
-      "bench/criterion-ab.mjs",
+      "tools/benchmarks/scripts/criterion-ab.mjs",
       "crates/vize_canon/tests/tier_l_incremental.rs",
       "tests/tooling/criterion-baselines.test.ts",
     ],
@@ -203,7 +206,7 @@ test("hosted fallback smoke-runs Criterion infrastructure-only changes", () => {
 
 test("hosted fallback preserves full Criterion coverage for Rust benchmark subjects", () => {
   const result = selectCriterionSuites({
-    changedPaths: ["Cargo.lock", "bench/criterion-ab.mjs"],
+    changedPaths: ["Cargo.lock", "tools/benchmarks/scripts/criterion-ab.mjs"],
     metadata: metadata(),
     repoDir,
     hostedFallback: true,

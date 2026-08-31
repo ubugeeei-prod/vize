@@ -390,7 +390,7 @@ test("documented install commands point at supported release artifacts", () => {
   };
   const vizeCrateToml = readRepoFile("crates/vize/Cargo.toml");
   const releaseWorkflow = readRepoFile(".github/workflows/release.yml");
-  const nixPackage = readRepoFile("package.nix");
+  const nixPackage = readRepoFile("tools/nix/package.nix");
   const publicDocs = [
     "README.md",
     "docs/content/getting-started.md",
@@ -407,7 +407,10 @@ test("documented install commands point at supported release artifacts", () => {
   assert.equal(vizeNpmPackage.bin?.vize, "bin/vize");
   assert.match(releaseWorkflow, /cli-artifacts\/\*\.tar\.gz/);
   assert.match(nixPackage, /binaries = \{\n\s*"vize" = "vize";\n\s*\};/);
-  assert.match(readRepoFile("nix/packages.nix"), /apps =\s+lib\.genAttrs[\s\S]*?getExe' vize name/);
+  assert.match(
+    readRepoFile("tools/nix/packages.nix"),
+    /apps =\s+lib\.genAttrs[\s\S]*?getExe' vize name/,
+  );
 
   if (/^publish = false$/m.test(vizeCrateToml)) {
     assert.deepEqual(unsupportedCargoInstallDocs, []);
@@ -582,7 +585,10 @@ test("workspace TypeScript package builds use vp pack", () => {
   assert.equal(oxlintPackage.engines?.node, "^22 || >= 24");
   const oxlintTest = "vp pack && vp test run src/file-state.test.ts && node src/test.ts";
   assert.equal(oxlintPackage.scripts?.test, `${oxlintTest} && node src/script-location.test.ts`);
-  const rootTasks = fs.readFileSync(path.join(root, "tools/config/vite-plus/tasks/build.ts"), "utf-8");
+  const rootTasks = fs.readFileSync(
+    path.join(root, "tools/config/vite-plus/tasks/build.ts"),
+    "utf-8",
+  );
   assert.match(rootTasks, /vscodeExtensionPackageBin\("vite-plus", "vp"\)[\s\S]*pack/);
 });
 

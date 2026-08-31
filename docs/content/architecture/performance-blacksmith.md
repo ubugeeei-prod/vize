@@ -16,7 +16,7 @@ Runner: `blacksmith-32vcpu-ubuntu-2404` (32 logical CPU, AMD EPYC, 32 vCPU / 128
 Input: 15,000 generated SFC files (58.7 MB). Median of 5 measured run(s) after 1 warmup run(s).
 Versions: vize `vize 0.303.0` · tsgo `Version 7.0.0-dev.20260602.1` · vue-tsc `Version 6.0.3` (typescript n/a) · vue `3.6.0-beta.10` · eslint `v10.4.1` · prettier `3.8.3` · node `v24.14.0`
 Binaries (sha256):
-Backend: native TypeScript engine ready at `/home/runner/_work/vize/vize/node_modules/.bin/tsgo`. Planted-diagnostic gating for the type-check rows lives in bench/check-gate.mjs (.github/workflows/check-bench.yml).
+Backend: native TypeScript engine ready at `/home/runner/_work/vize/vize/node_modules/.bin/tsgo`. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/check-bench.yml).
 Large SFC: 900 repeated template blocks (674.9 KB). Nuxt import set: 500 SFC files.
 
 | Surface                     |  Files | Existing tool          | Existing median | Vize 1T | Vize max |            Speedup |
@@ -58,16 +58,16 @@ Fairness notes:
 - Destructive formatter runs receive a fresh copy of the same input before each invocation.
 - SFC compile Vize max uses `compileSfcBatchWithResults` wall time so the primary number includes generated output crossing the JS/native boundary; the stats-only native `timeMs` is shown only in variant details. Explicit sequence variants run 1→max and max→1 in one Node process and measure the second call's full JavaScript wall time, including scoped pool creation.
 - Vite build timings exclude fixture copy/setup; the Vize max lane sets `precompileBatchSize` to the benchmark file count so Blacksmith max runs one native precompile batch instead of the memory-safe default chunks.
-- Nuxt SPA build timings exclude synthetic app generation and compare `nuxt build` with Nuxt's default compiler against the same app with `@vizejs/nuxt` installed. Vue SFC compilation is roughly 2% of that build (measured on the 500-file corpus in #3426), so this row cannot be moved by making the Vue compiler faster — it is dominated by Nitro, Rollup and Nuxt's own module graph work. `bench/nuxt-bridge-transform.mjs` isolates the part of this surface Vize does own, the Nuxt module's per-module bridge transform.
+- Nuxt SPA build timings exclude synthetic app generation and compare `nuxt build` with Nuxt's default compiler against the same app with `@vizejs/nuxt` installed. Vue SFC compilation is roughly 2% of that build (measured on the 500-file corpus in #3426), so this row cannot be moved by making the Vue compiler faster — it is dominated by Nitro, Rollup and Nuxt's own module graph work. `tools/benchmarks/scripts/nuxt-bridge-transform.mjs` isolates the part of this surface Vize does own, the Nuxt module's per-module bridge transform.
 - Single-thread lanes are shown where useful, and the primary speedup compares the incumbent default/single-thread lane with Vize's max runner lane.
-- Type-check rows span two TypeScript engines: vue-tsc runs the JavaScript compiler while Vize check runs native tsgo (Corsa). No cross-engine ratio is published for that surface — it is ranked within each engine class instead, so TypeScript's Go rewrite is never credited to the Vue layer; bench/check-gate.mjs publishes the same per-engine-class split with planted-diagnostic gating.
+- Type-check rows span two TypeScript engines: vue-tsc runs the JavaScript compiler while Vize check runs native tsgo (Corsa). No cross-engine ratio is published for that surface — it is ranked within each engine class instead, so TypeScript's Go rewrite is never credited to the Vue layer; tools/benchmarks/scripts/check-gate.mjs publishes the same per-engine-class split with planted-diagnostic gating.
 
 Commands:
 
 ```sh
 gh workflow run tool-benchmark.yml --ref <branch> -f file_count=15000 -f check_file_count=500 -f vite_file_count=1000 -f nuxt_file_count=500 -f large_blocks=900 -f runs=5 -f warmups=1 -f commit_results=true
-node bench/generate.mjs 15000
-node bench/compare-tools.mjs --input bench/__in__ --vize-bin target/release/vize --runs 5 --warmups 1 --check-file-count 500 --vite-file-count 1000 --nuxt-file-count 500 --large-blocks 900 --runner-label "blacksmith-32vcpu-ubuntu-2404" --out tool-benchmark-summary.md --json tool-benchmark-results.json --doc performance-blacksmith.md
+node tools/benchmarks/scripts/generate.mjs 15000
+node tools/benchmarks/scripts/compare-tools.mjs --input tools/benchmarks/scripts/__in__ --vize-bin target/release/vize --runs 5 --warmups 1 --check-file-count 500 --vite-file-count 1000 --nuxt-file-count 500 --large-blocks 900 --runner-label "blacksmith-32vcpu-ubuntu-2404" --out tool-benchmark-summary.md --json tool-benchmark-results.json --doc performance-blacksmith.md
 ```
 
 <details>

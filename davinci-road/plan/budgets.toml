@@ -15,7 +15,7 @@ schema_version = 1
 # the budget"). Fields define the measurement so CI runs are comparable.
 description = "End-to-end SFC compile over the 15k-file benchmark corpus"
 machine = "blacksmith-32vcpu-ubuntu-2404"
-source_snapshot = "bench/results/tool-benchmark-latest.json"
+source_snapshot = "tools/benchmarks/results/tool-benchmark-latest.json"
 statistic = "median"
 runs = 5
 cache_state = "cold"
@@ -32,9 +32,9 @@ tolerance = 0.05
 # davinci bench id (one line per bench: the entries are uniform four-field
 # records, and the registry grows with every new bench).
 # Bench ids are the exact strings the benches export to
-# `bench/results/davinci/<bench_id>.json` (see the `cstr!` id construction in
+# `tools/benchmarks/results/davinci/<bench_id>.json` (see the `cstr!` id construction in
 # `crates/*/benches/davinci.rs` and the literal id in
-# `benchmarks/davinci_harness/benches/selfcheck.rs`); the registry here and
+# `tools/benchmarks/crates/davinci_harness/benches/selfcheck.rs`); the registry here and
 # the bench sources must reconcile exactly — a bench without a budget entry,
 # or an entry without a bench, fails `tests/tooling/davinci-budgets.test.ts`
 # and `tools/commands/davinci/bench-compare.rs`. New benches (the P0-3 atelier

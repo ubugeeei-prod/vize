@@ -16,7 +16,7 @@ use std::{
     process::{Command, ExitCode, Stdio},
 };
 
-#[path = "../../rust/common.rs"]
+#[path = "../../support/common.rs"]
 mod common;
 
 const SCHEMA: &str = "vize.fixtureCompilerDiffReport";

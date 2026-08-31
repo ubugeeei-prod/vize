@@ -53,7 +53,7 @@ test("check workflow uploads Davinci allocation bench reports", () => {
       uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
       with: {
         name: "davinci-allocation-bench-reports",
-        path: "bench/results/davinci/*.json",
+        path: "tools/benchmarks/results/davinci/*.json",
         "if-no-files-found": "error",
         "retention-days": 14,
       },

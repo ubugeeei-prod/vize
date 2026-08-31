@@ -5,10 +5,16 @@ import {
   UNPINNED_FAST_LANE_THRESHOLD_PERCENT,
   laneThresholdPercent,
   makeTasks,
-} from "../../bench/compare-pr-lanes.mjs";
-import { confirmRegressions, summarizeBenchmarkRuns } from "../../bench/compare-pr-results.mjs";
-import { createBenchmarkBudget, renderMarkdown } from "../../bench/compare-pr.mjs";
-import { enforceBenchmarkBudget } from "../../bench/enforce-pr-budget.mjs";
+} from "../../tools/benchmarks/scripts/compare-pr-lanes.mjs";
+import {
+  confirmRegressions,
+  summarizeBenchmarkRuns,
+} from "../../tools/benchmarks/scripts/compare-pr-results.mjs";
+import {
+  createBenchmarkBudget,
+  renderMarkdown,
+} from "../../tools/benchmarks/scripts/compare-pr.mjs";
+import { enforceBenchmarkBudget } from "../../tools/benchmarks/scripts/enforce-pr-budget.mjs";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 const DEFAULT_THRESHOLD_PERCENT = 5;

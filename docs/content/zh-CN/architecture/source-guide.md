@@ -21,7 +21,7 @@ Vize 将大多数产品行为保留在 Rust 工作区中，JavaScript 包充当
 | `npm/`    | 用于 Vite、Nuxt、编辑器扩展、Musea 集成和已发布的包包装器的 JavaScript 包      |
 | `docs/`   | 用户文档、架构说明、发行说明和文档站点主题                                     |
 | `tests/`  | 跨包装置、实际项目、工具测试和快照治理                                         |
-| `bench/`  | 性能比较脚本和 PR 基准预算执行                                                 |
+| `tools/benchmarks/scripts/`  | 性能比较脚本和 PR 基准预算执行                                                 |
 | `tools/`  | 不属于已发货产品的存储库自动化                                                 |
 
 当更改跨越目录时，所有者通常是创建用户可见的层

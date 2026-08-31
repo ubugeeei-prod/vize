@@ -7,8 +7,8 @@
 //
 // Inputs
 //   --budgets  <path>  budgets file      (default davinci-road/plan/budgets.toml)
-//   --baseline <dir>   baseline reports  (default bench/results/davinci/baseline)
-//   --results  <dir>   current reports   (default bench/results/davinci)
+//   --baseline <dir>   baseline reports  (default tools/benchmarks/results/davinci/baseline)
+//   --results  <dir>   current reports   (default tools/benchmarks/results/davinci)
 //   --bench    <id>    select one bench  (repeatable; default is the full registry)
 //   Reports are the flat *.json files the harness exports (one per bench,
 //   named <bench_id>.json, shaped by davinci-bench.schema.json); the baseline
@@ -48,8 +48,8 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."
 function parseArgs(argv) {
   const options = {
     budgets: path.join(repoRoot, "davinci-road", "plan", "budgets.toml"),
-    baseline: path.join(repoRoot, "bench", "results", "davinci", "baseline"),
-    results: path.join(repoRoot, "bench", "results", "davinci"),
+    baseline: path.join(repoRoot, "tools", "benchmarks", "results", "davinci", "baseline"),
+    results: path.join(repoRoot, "tools", "benchmarks", "results", "davinci"),
     benches: [],
     updateBaseline: false,
   };

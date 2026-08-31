@@ -14,7 +14,7 @@ use std::{
     process::{Command, ExitCode, Stdio},
 };
 
-#[path = "../../../rust/common.rs"]
+#[path = "../../../support/common.rs"]
 mod common;
 
 const USAGE: &str = "Usage: rust-script tools/commands/editors/vscode/sync-typescript-plugin.rs <stage|inject> [vsix]";
