@@ -212,16 +212,18 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 
 **Deliverable:** `vize_atelier_dom` lowering S2 → codegen structure directly — the first strangler target, on the surface that holds the hard byte-parity bar.
 
-**Current series evidence (2026-08-30):** 60 installments have landed through
-[#5405](https://github.com/ubugeeei-prod/vize/pull/5405). The S2 DOM lane now
+**Current series evidence (2026-08-31):** 64 installments have landed through
+[#5531](https://github.com/ubugeeei-prod/vize/pull/5531). The S2 DOM lane now
 covers the late directive/object-spread set, event/model/slot residuals,
 structural `v-if`/`v-for` cases, expression-edge admission, keyed slot
 forwarding, component `v-once` wrappers, slot text fact alignment, and the
 corpus-runnable plus CI DOM lanes. The per-node patch-site witness program now
 covers the late directive/object-spread, `v-memo`, `v-once`, slot outlet and
-`createSlots` cases, while the 144 DOM-output comparisons contract remains
-pinned. The task remains blocked on the hydrated zero-divergence corpus evidence
-and production-lane switch; the old lane remains the production path. See the
+`createSlots` cases. Nested interactive recovery identity and raw
+handler-expression parity have reduced real-project witnesses, while the 144
+DOM-output comparisons contract remains pinned. The task remains blocked on the
+hydrated zero-divergence corpus evidence and production-lane switch; the old
+lane remains the production path. See the
 [series record](./phase-2-records/p2-11.md).
 
 **Steps:**
