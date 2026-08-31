@@ -6,7 +6,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-#[path = "./common.rs"]
+#[path = "../common.rs"]
 mod common;
 
 pub fn vscode_extension_path(repo_root: &Path) -> PathBuf {

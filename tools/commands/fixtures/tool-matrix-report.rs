@@ -13,7 +13,7 @@
 //! edition = "2024"
 //! ```
 
-#[path = "../../rust/common.rs"]
+#[path = "../../support/common.rs"]
 mod common;
 
 use serde::Serialize;

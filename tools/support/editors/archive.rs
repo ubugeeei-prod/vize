@@ -8,7 +8,7 @@ use std::{
     process::{Command, Stdio},
 };
 
-#[path = "./common.rs"]
+#[path = "../common.rs"]
 mod common;
 
 pub fn workspace_version(repo_root: &Path) -> Result<String, String> {

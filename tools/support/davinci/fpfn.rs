@@ -9,7 +9,7 @@ use std::{
     process::Command,
 };
 
-#[path = "./common.rs"]
+#[path = "../common.rs"]
 mod common;
 
 pub const CLASS_A: &str = "undefined-template-ref";
