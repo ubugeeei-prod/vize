@@ -49,6 +49,9 @@ fn format_with_preserved_top_level_comments(
                     .as_str()
                     .trim_end_matches('\n')
                     .trim_end_matches('\r');
+                if formatted.is_empty() {
+                    continue;
+                }
                 if emitted_any {
                     output.push_str(newline);
                 }
@@ -324,5 +327,22 @@ mod tests {
         // lightningcss emits a clean single-rule output.
         assert!(result.contains(".x"));
         assert!(result.contains("\"/* not a comment */\""));
+    }
+
+    #[test]
+    fn test_format_charset_before_top_level_comment_reaches_fixed_point() {
+        let source = concat!(
+            "@charset \"UTF-8\";\n",
+            "/* comment */\n",
+            ".a {\n",
+            "  color: red;\n",
+            "}",
+        );
+        let options = FormatOptions::default();
+        let result = format_style_content(source, &options).unwrap();
+        let again = format_style_content(result.as_str(), &options).unwrap();
+
+        assert_eq!(result, again);
+        assert!(result.as_str().starts_with("/* comment */\n.a {"));
     }
 }
