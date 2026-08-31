@@ -33,15 +33,21 @@ fn owned_folio_spans_resolve_for_optional_corpus() {
     );
     let mut checked = 0usize;
     for file in &sweep.files {
-        let Ok(source) = fs::read_to_string(file) else {
-            continue;
-        };
+        let source = fs::read_to_string(file).unwrap_or_else(|error| {
+            panic!("failed to read corpus file {}: {error}", file.display())
+        });
         let context = file.to_string_lossy();
         with_lowered(&source, |_lowered, folio| {
             assert_folio_spans_resolve(&source, folio, context.as_ref());
         });
         checked += 1;
     }
+    assert_eq!(
+        checked,
+        sweep.files.len(),
+        "corpus sweep did not check every .vue file under {}",
+        sweep.root.display()
+    );
     eprintln!(
         "davinci owned folio span corpus sweep: files={} checked={}",
         sweep.files.len(),
