@@ -137,27 +137,31 @@ pub(super) fn emit_style_value(
         if before {
             emit_static_style_object(cx, value);
             cx.buf.push(", ");
-            cx.buf.push(js_expr_source(js).as_str());
+            emit_bound_style_source(cx, bind, js);
         } else {
-            cx.buf.push(js_expr_source(js).as_str());
+            emit_bound_style_source(cx, bind, js);
             cx.buf.push(", ");
             emit_static_style_object(cx, value);
         }
         cx.buf.push("]");
     } else {
-        let source = js_expr_source(js);
-        if let Some((leading, trailing)) =
-            authored_value_padding(cx.source, bind, source.as_str(), js.span)
-        {
-            cx.buf.push(leading);
-            cx.buf.push(source.as_str());
-            cx.buf.push(trailing);
-        } else {
-            cx.buf.push(source.as_str());
-        }
+        emit_bound_style_source(cx, bind, js);
     }
     if wrap {
         cx.buf.push(")");
+    }
+}
+
+fn emit_bound_style_source(cx: &mut EmitCx<'_>, bind: &BindOp<'_>, js: &JsExpr<'_>) {
+    let source = js_expr_source(js);
+    if let Some((leading, trailing)) =
+        authored_value_padding(cx.source, bind, source.as_str(), js.span)
+    {
+        cx.buf.push(leading);
+        cx.buf.push(source.as_str());
+        cx.buf.push(trailing);
+    } else {
+        cx.buf.push(source.as_str());
     }
 }
 

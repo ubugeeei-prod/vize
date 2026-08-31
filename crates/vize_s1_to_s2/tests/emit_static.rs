@@ -23,6 +23,21 @@ fn assembled(source: &str) -> String {
     })
 }
 
+fn shipped(source: &str) -> String {
+    let allocator = Allocator::new();
+    let (_, errors, old) = vize_atelier_dom::compile_template(&allocator, source);
+    let blocking: Vec<_> = errors
+        .iter()
+        .filter(|error| !error.is_compatibility_notice())
+        .collect();
+    assert!(blocking.is_empty(), "{source:?}: {blocking:?}");
+    format!("{}\n{}", old.preamble, old.code)
+}
+
+fn assert_shipped_parity(source: &str) {
+    assert_eq!(assembled(source), shipped(source), "{source}");
+}
+
 #[test]
 fn empty_div_matches_the_shipped_snapshot() {
     assert_eq!(
@@ -192,6 +207,21 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn bounded_string_element_attrs_drop_the_legacy_props_patch_flag() {
+    assert_shipped_parity(r#"<a :href="'/#/' + lang + '/component/custom-theme'">{{ label }}</a>"#);
+    assert_shipped_parity(
+        r#"<span :title="'【' + site + '】' + name + ' 第' + index + '集'">{{ label }}</span>"#,
+    );
+}
+
+#[test]
+fn in_condition_element_attrs_keep_the_legacy_props_patch_flag() {
+    assert_shipped_parity(
+        r#"<span :title="'type' in value ? value.type : translate('schema.unknownType')">x</span>"#,
+    );
+}
+
+#[test]
 fn unparenthesized_in_conditionals_drop_legacy_class_and_style_patch_flags() {
     assert_eq!(
         assembled(r#"<div :class="'session' in row && row.session ? 'locked' : ''"></div>"#),
@@ -326,6 +356,31 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   ], 64 /* STABLE_FRAGMENT */))
 }"
         )
+    );
+}
+
+#[test]
+fn v_once_single_space_between_nodes_keeps_the_string_argument() {
+    assert_eq!(
+        assembled(r#"<div v-once><b>{{ title }}</b> <br><span v-html="html"></span></div>"#),
+        "\
+const { toDisplayString: _toDisplayString, createElementVNode: _createElementVNode, createTextVNode: _createTextVNode, setBlockTracking: _setBlockTracking } = Vue
+
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"br\")
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return _cache[0] || (
+    _setBlockTracking(-1, true),
+    (_cache[0] = _createElementVNode(\"div\", null, [
+      _createElementVNode(\"b\", null, _toDisplayString(title), 1 /* TEXT */),
+      _createTextVNode(\" \"),
+      _hoisted_1,
+      _createElementVNode(\"span\", { innerHTML: html }, null, 8 /* PROPS */, [\"innerHTML\"])
+    ])).cacheIndex = 0,
+    _setBlockTracking(1),
+    _cache[0]
+  )
+}"
     );
 }
 

@@ -20,6 +20,17 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<div :style="s" style="color: red"></div>"#,
     ),
     (
+        "multiline_dynamic_then_static",
+        r#"<div
+  :style="
+    open
+      ? { height: '240px' }
+      : undefined
+  "
+  style="height: 200px"
+></div>"#,
+    ),
+    (
         "object_literal",
         r#"<div style="color: red" :style="{ fontSize: x }"></div>"#,
     ),

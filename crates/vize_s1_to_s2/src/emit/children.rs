@@ -156,7 +156,7 @@ pub(super) fn emit_create_text_vnode(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Res
         !has_interp && ops.len() == 1 && matches!(&ops[0], Op::Text(text) if text.content == " ");
     cx.buf.use_create_text();
     cx.buf.push(Buf::create_text_alias());
-    if is_single_space {
+    if is_single_space && cx.once_depth == 0 {
         let _id = cx.walk.mint();
         cx.buf.push("()");
         return Ok(());

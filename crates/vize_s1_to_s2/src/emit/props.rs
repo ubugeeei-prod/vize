@@ -132,7 +132,10 @@ pub(super) fn bind_patch(
                             || bind_value_uses_legacy_patchless_runtime_expr(bind) => {}
                     "style" if !is_component => flag |= 4,
                     "key" => {}
-                    key if key.ends_with("Modifiers") || bind_value_is_static_patchless(bind) => {}
+                    key if key.ends_with("Modifiers")
+                        || bind_value_is_static_patchless(bind)
+                        || (!is_component
+                            && bind_value_uses_legacy_patchless_bounded_string_concat(bind)) => {}
                     _ => {
                         flag |= 8;
                         let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve) else {
@@ -236,6 +239,15 @@ fn bind_value_uses_legacy_patchless_runtime_expr(bind: &vize_s2::op::BindOp<'_>)
         Ok(value) => value
             .js()
             .is_some_and(|js| is_legacy_patchless_runtime_expr(js.ast)),
+        Err(_) => false,
+    }
+}
+
+fn bind_value_uses_legacy_patchless_bounded_string_concat(bind: &vize_s2::op::BindOp<'_>) -> bool {
+    match bind_value(bind) {
+        Ok(value) => value
+            .js()
+            .is_some_and(|js| is_legacy_bounded_string_concat(js.ast)),
         Err(_) => false,
     }
 }
