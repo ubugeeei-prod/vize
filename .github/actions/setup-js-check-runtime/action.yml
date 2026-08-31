@@ -9,6 +9,7 @@ runs:
     - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
       with:
         wild-version: "0.9.0"
+    - uses: ./.github/actions/setup-rust-script
     - uses: ./.github/actions/setup-rust-sticky-cache
       with:
         key: check-js

@@ -14,5 +14,6 @@ test("JS check runtime action installs the native build prerequisites", () => {
   assert.match(action, /setup-moonbit/);
   assert.match(action, /dtolnay\/rust-toolchain/);
   assert.match(action, /wild-linker\/action/);
+  assert.match(action, /setup-rust-script/);
   assert.match(action, /key:\s*check-js/);
 });
