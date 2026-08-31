@@ -103,7 +103,7 @@ s1_to_s2	pass	crates/vize_s1_to_s2/src/pass/vslot.rs	1	2	1	4	0	0	0	0
 s1_to_s2	pass	crates/vize_s1_to_s2/src/pass/vslot/consume.rs	1	8	1	6	0	0	0	0
 s1_to_s2	pass	crates/vize_s1_to_s2/src/pass/vslot/group.rs	1	6	1	11	0	0	0	0
 s1_to_s2	pass	crates/vize_s1_to_s2/src/pass/vslot/spell.rs	1	1	1	10	0	0	0	0
-s1	-	crates/vize_s1/src/build.rs	0	0	0	0	1	5	0	0
+s1	-	crates/vize_s1/src/build.rs	0	0	0	0	1	7	0	0
 s1	-	crates/vize_s1/src/build/tag.rs	0	0	0	0	1	4	0	0
 s1	-	crates/vize_s1/src/event.rs	0	0	0	0	1	2	0	0
 s1	-	crates/vize_s1/src/parse.rs	0	0	0	0	1	5	0	0

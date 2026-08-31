@@ -15,6 +15,7 @@
 mod attr;
 mod tag;
 
+use vize_relief::Namespace;
 use vize_s0::{Allocator, Box, Vec};
 
 use crate::event::{Event, EventKind};
@@ -38,6 +39,7 @@ enum RawKind {
 struct Frame<'a> {
     open: OpenTag<'a>,
     children: Vec<'a, SurfaceChild<'a>>,
+    ns: Namespace,
 }
 
 impl<'a> Frame<'a> {
@@ -60,6 +62,7 @@ pub(crate) fn build<'a>(
         cursor: 0,
         root: Vec::new_in(&allocator),
         stack: Vec::new_in(&allocator),
+        implicitly_closed_tags: Vec::new_in(&allocator),
     };
     b.run();
     // EOF: bytes the tokenizer consumed without reporting structure
@@ -89,6 +92,7 @@ struct Builder<'a, 'e> {
     cursor: usize,
     root: Vec<'a, SurfaceChild<'a>>,
     stack: Vec<'a, Frame<'a>>,
+    implicitly_closed_tags: Vec<'a, &'a str>,
 }
 
 impl<'a> Builder<'a, '_> {

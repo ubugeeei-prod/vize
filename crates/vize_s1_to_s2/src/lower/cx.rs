@@ -265,7 +265,7 @@ pub(crate) fn element_end(cx: &Cx<'_>, element: &Element<'_>) -> u32 {
     match &element.close {
         ElementClose::Present(CloseTag { gt, .. }) => cx.token_span(gt).end,
         ElementClose::NotExpected => cx.token_span(&element.open.gt).end,
-        ElementClose::Missing => element
+        ElementClose::Implicit | ElementClose::Missing => element
             .children
             .last()
             .map(|child| child_end(cx, child))

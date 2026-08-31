@@ -5,7 +5,8 @@
 //! token, `leading` then `text`; children in tree order; an element as
 //! open tag (`lt_name`, attributes as `name`/`eq`/`open_quote`/`content`/
 //! `close_quote`, `slash`, `gt`), then children, then its close tag.
-//! `Missing` tokens and `ElementClose::Missing` render zero bytes.
+//! `Missing` tokens, `ElementClose::Implicit`, and `ElementClose::Missing`
+//! render zero bytes.
 
 use crate::surface::{
     Attribute, CloseTag, Element, ElementClose, Interpolation, SurfaceChild, SurfaceTree, Token,
@@ -175,6 +176,6 @@ fn count_element(element: &Element<'_>, counts: &mut HoleCounts) {
             count_token(gt, counts);
         }
         ElementClose::Missing => counts.missing_close_tags += 1,
-        ElementClose::NotExpected => {}
+        ElementClose::Implicit | ElementClose::NotExpected => {}
     }
 }

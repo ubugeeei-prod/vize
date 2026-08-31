@@ -237,6 +237,18 @@ impl<'a> Parser<'a> {
             return;
         }
 
+        let loc = self.create_loc(start.saturating_sub(2), end + 1); // Include </ and >
+        // HTML tree construction closed these nodes before their authored end
+        // tags. They are still inner to the current open-element stack, so they
+        // must claim matching end tags before an unrelated same-named ancestor.
+        if self.consume_implicitly_closed_tag(tag.as_str()) {
+            self.report_tree_construction_recovery(
+                &loc,
+                "HTML tree construction ignored this end tag because the element was already closed before a nested start tag.",
+            );
+            return;
+        }
+
         // Find matching open tag
         if let Some(i) = self.find_open_element_index(tag.as_str()) {
             self.close_stack_element_at(i, true);
@@ -244,15 +256,6 @@ impl<'a> Parser<'a> {
         }
 
         if self.template_syntax.is_quirks() && (self.options.is_void_tag)(tag.as_str()) {
-            return;
-        }
-
-        let loc = self.create_loc(start.saturating_sub(2), end + 1); // Include </ and >
-        if self.consume_implicitly_closed_tag(tag.as_str()) {
-            self.report_tree_construction_recovery(
-                &loc,
-                "HTML tree construction ignored this end tag because the element was already closed before a nested start tag.",
-            );
             return;
         }
 

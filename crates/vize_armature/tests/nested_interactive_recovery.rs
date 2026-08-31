@@ -75,6 +75,26 @@ fn nested_interactive_recovery_consumes_descendant_end_tags() {
 }
 
 #[test]
+fn nested_interactive_recovery_does_not_close_same_named_ancestors() {
+    let allocator = Allocator::new();
+    for source in [
+        r#"<div><a href="/"><div><a href="/foo">inner</a></div></a></div>"#,
+        "<div><button><div><button>bbb</button></div></button></div>",
+    ] {
+        let (root, errors) = parse(&allocator, source);
+        assert!(
+            errors.iter().all(CompilerError::is_recoverable),
+            "{source}: redundant descendant end tags from nested interactive-content recovery must not pop same-named ancestors: {errors:?}"
+        );
+        assert_eq!(
+            root.children.len(),
+            1,
+            "{source}: the outer ancestor should stay open until its authored end tag"
+        );
+    }
+}
+
+#[test]
 fn nested_interactive_recovery_keeps_extra_end_tag_hard() {
     let allocator = Allocator::new();
     let (_, errors) = parse(

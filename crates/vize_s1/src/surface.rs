@@ -128,6 +128,12 @@ pub struct OpenTag<'a> {
 pub enum ElementClose<'a> {
     /// A real end tag.
     Present(CloseTag<'a>),
+    /// Closed by HTML tree construction before its authored end tag.
+    /// The later redundant end tag is retained as an [`Unexpected`] child so
+    /// rendering remains byte-for-byte faithful.
+    ///
+    /// [`Unexpected`]: SurfaceChild::Unexpected
+    Implicit,
     /// Required but absent: the element was still open when its parent
     /// closed or the input ended. A typed hole, zero-width.
     Missing,

@@ -130,6 +130,46 @@ fn self_closing_and_void_elements_expect_no_close() {
 }
 
 #[test]
+fn nested_interactive_content_keeps_fidelity_without_missing_close_holes() {
+    for source in [
+        r#"<div><a href="/"><div><a href="/foo">inner</a></div></a></div>"#,
+        "<div><button><div><button>bbb</button></div></button></div>",
+    ] {
+        let allocator = Allocator::new();
+        let (tree, _errors) = parse(&allocator, source);
+        assert_eq!(rendered(&tree), source);
+        assert_eq!(check_fidelity(&tree), Ok(()));
+        assert_eq!(
+            hole_counts(&tree),
+            HoleCounts {
+                missing_tokens: 0,
+                missing_close_tags: 0,
+                unexpected_nodes: 2,
+            },
+            "{source}: the redundant descendant and interactive end tags are kept as surface holes"
+        );
+    }
+}
+
+#[test]
+fn nested_interactive_recovery_stays_in_html_namespace() {
+    for source in [
+        r#"<A><a href="/foo">inner</a></A>"#,
+        "<svg><a><a>x</a></a></svg>",
+    ] {
+        let allocator = Allocator::new();
+        let (tree, _errors) = parse(&allocator, source);
+        assert_eq!(rendered(&tree), source);
+        assert_eq!(check_fidelity(&tree), Ok(()));
+        assert_eq!(
+            hole_counts(&tree),
+            HoleCounts::default(),
+            "{source}: component-like or foreign anchors must keep authored nesting"
+        );
+    }
+}
+
+#[test]
 fn interpolation_tokens_are_delimited() {
     let allocator = Allocator::new();
     let (tree, _errors) = parse(&allocator, "a{{ msg }}b");
