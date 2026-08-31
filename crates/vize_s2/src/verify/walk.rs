@@ -18,12 +18,12 @@ use alloc::vec::Vec;
 use vize_s0::{Span, cstr};
 
 use super::{Rigor, Violation, ViolationCode};
-use crate::folio::{DisegnoFolio, FolioAttribute, FolioBinding, FolioIf, FolioOp};
+use crate::folio::{FolioAttribute, FolioBinding, FolioIf, FolioOp, S2Folio};
 
 /// The immediate owner of a nested line: its keyword and its span.
 type Owner = Option<(&'static str, Span)>;
 
-pub(super) fn walk(folio: &DisegnoFolio, rigor: Rigor, out: &mut Vec<Violation>) {
+pub(super) fn walk(folio: &S2Folio, rigor: Rigor, out: &mut Vec<Violation>) {
     for op in &folio.ops {
         visit_op(op, None, rigor, out);
     }

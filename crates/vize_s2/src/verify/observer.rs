@@ -45,7 +45,7 @@ use vize_davinci::pass::{PassEvent, PassObserver};
 use vize_davinci::side_table::SideTable;
 use vize_s0::{Allocator, ArenaStamp};
 
-use crate::folio::DisegnoFolio;
+use crate::folio::S2Folio;
 
 #[cfg(debug_assertions)]
 use super::{Rigor, Violation, verify, verify_table};
@@ -109,7 +109,7 @@ impl VerifyObserver {
     /// In debug builds, panics with the aggregated page-order report
     /// naming `event`'s pass when any invariant is violated. Empty in
     /// release builds.
-    pub fn check(&self, event: &PassEvent<'_>, folio: &DisegnoFolio) {
+    pub fn check(&self, event: &PassEvent<'_>, folio: &S2Folio) {
         #[cfg(debug_assertions)]
         {
             fail(event, &verify(folio, self.rigor));
@@ -127,12 +127,7 @@ impl VerifyObserver {
     ///
     /// In debug builds, panics with the aggregated report naming
     /// `event`'s pass when a reference dangles. Empty in release builds.
-    pub fn check_table<T>(
-        &self,
-        event: &PassEvent<'_>,
-        folio: &DisegnoFolio,
-        table: &SideTable<T>,
-    ) {
+    pub fn check_table<T>(&self, event: &PassEvent<'_>, folio: &S2Folio, table: &SideTable<T>) {
         #[cfg(debug_assertions)]
         {
             fail(event, &verify_table(folio, table));

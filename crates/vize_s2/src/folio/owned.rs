@@ -4,7 +4,7 @@
 //! One mirror type per lifetime-carrying op type; the lifetime-free op
 //! types ([`Span`], [`Namespace`], [`OpaqueReason`](crate::expr::OpaqueReason))
 //! are reused directly, and the expression mirrors live in [`expr`].
-//! [`DisegnoFolio::of`] is the bridge, and its matches are exhaustive
+//! [`S2Folio::of`] is the bridge, and its matches are exhaustive
 //! with no `_` arm on purpose: a new op variant must break this file
 //! loudly (the same staleness discipline the canary test enforces).
 
@@ -12,7 +12,7 @@ use alloc::vec::Vec;
 
 use vize_s0::{Span, String};
 
-use super::DisegnoFolio;
+use super::S2Folio;
 use crate::op::{Attribute, DynamicName, Namespace, Op, Region};
 
 mod binding;
@@ -163,7 +163,7 @@ pub struct FolioSlot {
     pub span: Span,
 }
 
-impl DisegnoFolio {
+impl S2Folio {
     /// Mirror a live arena tree into the owned document model.
     #[must_use]
     pub fn of(ops: &[Op<'_>]) -> Self {

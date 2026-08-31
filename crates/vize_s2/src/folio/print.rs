@@ -1,4 +1,4 @@
-//! Canonical printer for [`DisegnoFolio`].
+//! Canonical printer for [`S2Folio`].
 //!
 //! `Full` mode is the injective, parseable form; `Display` elides every
 //! ` @start:end` span - line tails and the spans inside expression
@@ -11,7 +11,7 @@ use core::fmt::{Result, Write};
 
 use vize_s0::Span;
 
-use super::DisegnoFolio;
+use super::S2Folio;
 use super::owned::{FolioAttribute, FolioBinding, FolioExpr, FolioName, FolioOp};
 use crate::op::Namespace;
 use vize_davinci::folio::FolioMode;
@@ -20,7 +20,7 @@ mod binding;
 
 use binding::{print_attribute, print_binding};
 
-pub(super) fn print<W: Write>(folio: &DisegnoFolio, w: &mut W, mode: FolioMode) -> Result {
+pub(super) fn print<W: Write>(folio: &S2Folio, w: &mut W, mode: FolioMode) -> Result {
     writeln!(w, "[disegno]")?;
     writeln!(w, "ops={}", folio.op_count())?;
     writeln!(w)?;

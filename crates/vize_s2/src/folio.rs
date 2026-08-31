@@ -1,9 +1,9 @@
-//! The disegno folio: the S2 stage dump.
+//! The S2 folio: the stage dump.
 //!
-//! [`DisegnoFolio`] is an **owned document model** of an S2 op tree,
+//! [`S2Folio`] is an **owned document model** of an S2 op tree,
 //! printable and parseable under the `vize_davinci::folio` contract; the
 //! grammar is documented in `davinci-road/plan/folio-format.md` ("Disegno
-//! page"). [`DisegnoFolio::of`] mirrors a live arena tree into the owned
+//! page"). [`S2Folio::of`] mirrors a live arena tree into the owned
 //! model, because arena references cannot persist across a compile
 //! (P1-11's contract) and `parse` must construct values without an arena.
 //!
@@ -47,13 +47,17 @@ pub use owned::{
 /// The root region's ops, in document order. Everything else - the `ops=`
 /// count, section headers, indentation - is the printer's derived
 /// statement about this tree.
+#[doc(alias = "DisegnoFolio")]
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct DisegnoFolio {
+pub struct S2Folio {
     /// The root region's ops.
     pub ops: Vec<FolioOp>,
 }
 
-impl Folio for DisegnoFolio {
+/// Compatibility alias for the original S2 codename type.
+pub type DisegnoFolio = S2Folio;
+
+impl Folio for S2Folio {
     fn print<W: core::fmt::Write>(&self, w: &mut W, mode: FolioMode) -> core::fmt::Result {
         print::print(self, w, mode)
     }

@@ -19,7 +19,7 @@ use alloc::vec::Vec;
 use vize_davinci::folio::FolioError;
 use vize_s0::cstr;
 
-use super::DisegnoFolio;
+use super::S2Folio;
 use super::owned::{FolioBinding, FolioOp};
 
 mod binding_line;
@@ -46,7 +46,7 @@ struct Parser {
     seen_ops_field: bool,
 }
 
-pub(super) fn parse(input: &str) -> Result<DisegnoFolio, FolioError> {
+pub(super) fn parse(input: &str) -> Result<S2Folio, FolioError> {
     let mut parser = Parser {
         root: Vec::new(),
         stack: Vec::new(),
@@ -237,7 +237,7 @@ impl Parser {
         }
     }
 
-    fn finish(mut self) -> Result<DisegnoFolio, FolioError> {
+    fn finish(mut self) -> Result<S2Folio, FolioError> {
         if self.section == Section::BeforeHeader {
             return Err(err(0, cstr!("missing [disegno] header")));
         }
@@ -247,6 +247,6 @@ impl Parser {
         while !self.stack.is_empty() {
             self.close_top();
         }
-        Ok(DisegnoFolio { ops: self.root })
+        Ok(S2Folio { ops: self.root })
     }
 }
