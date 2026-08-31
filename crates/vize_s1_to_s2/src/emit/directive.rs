@@ -35,17 +35,9 @@ pub(super) fn has_runtime(bindings: &[BindingOp<'_>]) -> bool {
 }
 
 pub(super) fn prefer_helpers(buf: &mut Buf, bindings: &[BindingOp<'_>]) {
-    if has_runtime(bindings) {
-        buf.prefer(Helper::WithDirectives);
-    }
     if has_custom(bindings) {
+        buf.prefer(Helper::WithDirectives);
         buf.prefer(Helper::ResolveDirective);
-    }
-    if bindings
-        .iter()
-        .any(|binding| matches!(binding, BindingOp::VueShow(_)))
-    {
-        buf.prefer(Helper::VShow);
     }
 }
 
@@ -120,6 +112,9 @@ fn wrap(
     emit: impl FnOnce(&mut EmitCx<'_>) -> Result<(), EmitError>,
 ) -> Result<(), EmitError> {
     cx.buf.use_with_directives();
+    if native.is_none() && matches!(runtime, [RuntimeDirective::Show(_)]) {
+        cx.buf.use_v_show();
+    }
     cx.buf.push(Buf::with_directives_alias());
     cx.buf.push("(");
     emit(cx)?;

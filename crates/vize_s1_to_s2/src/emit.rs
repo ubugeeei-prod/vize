@@ -146,7 +146,8 @@ fn prefer_transform_helpers(buf: &mut Buf, region: &Region<'_>) {
                 buf.prefer(Helper::Fragment);
                 prefer_transform_helpers(buf, &for_op.region);
             }
-            Op::Text(_) | Op::Interpolation(_) => {}
+            Op::Text(_) => {}
+            Op::Interpolation(_) => buf.prefer(Helper::ToDisplayString),
         }
     }
 }

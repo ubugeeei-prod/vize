@@ -45,6 +45,22 @@ const BATTERY: &[(&str, &str)] = &[
         "component_if_component_then_text",
         r#"<Foo><Bar v-if="ok">x</Bar>hello</Foo>"#,
     ),
+    (
+        "text_slot_before_v_if_fallback",
+        r#"<Foo>hello<template v-if="ok"><span>x</span></template></Foo>"#,
+    ),
+    (
+        "v_show_sibling_before_v_for",
+        r#"<section><div v-show="visible"></div><p v-for="item in items">{{ item }}</p></section>"#,
+    ),
+    (
+        "v_show_component_slot",
+        r#"<Dialog v-show="open"><span>Body</span></Dialog>"#,
+    ),
+    (
+        "nested_trigger_icon_resolves_in_child_before_parent_order",
+        r#"<DropdownMenu><DropdownMenuTrigger><Icon /></DropdownMenuTrigger></DropdownMenu>"#,
+    ),
 ];
 
 #[test]
