@@ -17,7 +17,6 @@ import {
   runPackageScriptDirectly,
   runTask,
   runTasks,
-  shellCommand,
   task,
   vscodeExtensionPackageBin,
 } from "../task-helpers.ts";
@@ -47,15 +46,6 @@ const ciVizeAppCheckCommand = [
     "vp check src 'e2e/*.ts' 'e2e/vrt/*.ts' vite.config.ts vite.app.config.ts vite.test.config.ts vite.node.config.ts playwright.config.ts && vize lint --max-warnings 0",
   ),
 ].join(" && ");
-const localActrunCommand = [runTask("actrun:check"), runTask("actrun:benchmark")].join(" && ");
-const actrunWorkspaceFlag = (workflow: string) =>
-  `--workspace _build/actrun/workspace/${workflow}-$$`;
-const actrunWorkflowRunCommand = (workflow: string, ...args: string[]) =>
-  shellCommand(
-    `actrun workflow run .github/workflows/${workflow}.yml ${actrunWorkspaceFlag(workflow)} ${args.join(" ")}`,
-  );
-const actrunWorkflowRunForwardingCommand = (workflow: string) =>
-  `actrun workflow run .github/workflows/${workflow}.yml ${actrunWorkspaceFlag(workflow)} "$@"`;
 
 /**
  * Repository-wide formatting, linting, package checks, and CI aggregate tasks.
@@ -106,19 +96,5 @@ export const checkTasks = defineTasks({
   "lint:rust": task(rustClippyCommand, { input: cacheInputs.rust }),
   "lint:all": noCacheTask(runTasks("lint:rust", "check")),
   "fmt:check": noCacheTask(runTask("check")),
-  actrun: noCacheTask(localActrunCommand),
-  "actrun:check": noCacheTask(runTasks("actrun:lint", "actrun:dry-run", "actrun:check-js")),
-  "actrun:lint": noCacheTask("actrun lint .github/workflows/check.yml"),
-  "actrun:dry-run": noCacheTask(actrunWorkflowRunCommand("check", "--dry-run")),
-  "actrun:job": noCacheTask(actrunWorkflowRunForwardingCommand("check"), {
-    forwardArguments: true,
-  }),
-  "actrun:check-js": noCacheTask(runTask("actrun:job") + " --job check-js"),
-  "actrun:benchmark": noCacheTask(runTasks("actrun:benchmark:lint", "actrun:benchmark:dry-run")),
-  "actrun:benchmark:lint": noCacheTask("actrun lint .github/workflows/benchmark.yml"),
-  "actrun:benchmark:dry-run": noCacheTask(actrunWorkflowRunCommand("benchmark", "--dry-run")),
-  "actrun:benchmark:job": noCacheTask(actrunWorkflowRunForwardingCommand("benchmark"), {
-    forwardArguments: true,
-  }),
   ci: noCacheTask(runTasks("fmt:all", "clippy", "test", "check:ci")),
 });

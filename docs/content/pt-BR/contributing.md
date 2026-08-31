@@ -111,14 +111,6 @@ run_testbox_checks() {
 run_testbox_checks
 ```
 
-Para mudanças no GitHub Actions, use `actrun` para fazer lint ou visualizar o gráfico do fluxo de trabalho antes de empurrar:
-
-```sh
-vp run actrun:lint
-vp run actrun:dry-run
-vp run actrun:job --job check-js
-```
-
 Para alterações de tarefas do Blacksmith Testbox, também valide a forma do fluxo de trabalho com
 `node --test tests/tooling/github-workflows.test.ts`.
 

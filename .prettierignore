@@ -1,4 +1,0 @@
-# Bench fixtures are measurement data: byte-identical corpus extracts and
-# deterministic synthetic stress files, identity-pinned by exact-length tests.
-# Formatting them would break provenance and invalidate recorded baselines.
-benchmarks/davinci_harness/fixtures/
