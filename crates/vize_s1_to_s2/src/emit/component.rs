@@ -255,6 +255,9 @@ fn emit_call(
         if patch.dynamic_props.is_empty() {
             patch.flag &= !8;
         }
+        if directive::has_runtime(&component.bindings) && patch.flag & (2 | 4 | 8 | 16) == 0 {
+            patch.flag |= 512;
+        }
     }
     let mut flag = patch.flag;
     if array && children_need_text_flag(&component.children) {
