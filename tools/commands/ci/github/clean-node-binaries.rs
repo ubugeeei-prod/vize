@@ -42,7 +42,8 @@ fn clean_directory(directory: &Path) -> Result<(), String> {
         })?;
         let path = entry.path();
         if is_top_level_node_binary(&path) && path.is_file() {
-            let _ = fs::remove_file(path);
+            fs::remove_file(&path)
+                .map_err(|error| format!("failed to remove {}: {error}", path.display()))?;
         }
     }
     Ok(())

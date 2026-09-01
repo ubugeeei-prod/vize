@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { test } from "node:test";
 
 import { repoRoot } from "./_helpers/moonbit.ts";
-import { readRepoFile } from "./support/github-workflows.ts";
+import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 const commandPath = "tools/commands/ci/github/clean-node-binaries.rs";
 
@@ -45,7 +45,15 @@ test("github/clean-node-binaries removes only top-level .node files", () => {
 
 test("release workflow cleans native binaries with Rust Script", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
-
-  assert.match(workflow, /rust-script tools\/commands\/ci\/github\/clean-node-binaries\.rs/);
+  assert.match(
+    workflowJobBody(workflow, "build-native-all"),
+    /run: rust-script tools\/commands\/ci\/github\/clean-node-binaries\.rs npm\/native npm\/fresco-native$/m,
+  );
+  for (const jobName of ["smoke-release-packages", "release-npm-fresco-native"]) {
+    assert.match(
+      workflowJobBody(workflow, jobName),
+      /rust-script tools\/commands\/ci\/github\/clean-node-binaries\.rs npm\/fresco-native$/m,
+    );
+  }
   assert.doesNotMatch(workflow, /tools\/moon\/cmd\/github\/clean_node_binaries/);
 });
