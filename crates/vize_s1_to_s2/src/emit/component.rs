@@ -189,38 +189,16 @@ fn emit_call(
     {
         cx.buf.push_hoist(props.source.clone());
     }
-    let hoist_static_props_in_static_vnode_context =
-        cx.hoist_static_vnodes && slots::has_text_only_implicit_default(&component.children);
-    let hoist_static_props_in_loop_context = cx.in_v_for
-        && (slots::has_text_only_implicit_default(&component.children)
-            || hoistable_static_props
-                .as_ref()
-                .is_some_and(|props| props.all_static_binds));
-    let static_props_hoist_context = hoist_static_props_in_static_vnode_context
-        || hoist_static_props_in_loop_context
-        || cx.slot_param_depth > 0;
-    let can_hoist_static_props = !has_custom
-        && !for_item
-        && if_key.is_none()
-        && hoistable_static_props.is_some()
-        && hoistable_static_props.as_ref().is_some_and(|props| {
-            props_static::should_hoist(cx, id, props_static::PropHoistPosition::Nested)
-                || id.is_some_and(|id| {
-                    cx.template_for_item_root_id == Some(id)
-                        && props_static::props_hoistable(cx, Some(id))
-                        && !directive::has_runtime(&component.bindings)
-                })
-                || (!props.dynamic_values
-                    && props.valued_prop
-                    && static_props_hoist_context
-                    && !has_slots)
-                || (props.dynamic_values
-                    && cx.slot_param_depth == 0
-                    && !cx.in_v_for
-                    && (!cx.hoist_static_vnodes
-                        || !has_slots
-                        || slots::has_text_only_implicit_default(&component.children)))
-        });
+    let can_hoist_static_props = call_props::can_hoist_static_props(
+        cx,
+        component,
+        id,
+        if_key,
+        for_item,
+        has_custom,
+        has_slots,
+        hoistable_static_props.as_ref(),
+    );
     let foreign_static_props = id
         .and_then(|id| cx.facts.static_facts.get(id))
         .is_some_and(|fact| fact.foreign && fact.props_hoistable);

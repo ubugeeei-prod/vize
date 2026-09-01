@@ -1,5 +1,6 @@
 use alloc::vec::Vec as StdVec;
 
+use vize_davinci::id::NodeId;
 use vize_s0::String;
 use vize_s2::op::{Attribute, BindingOp, ComponentOp};
 
@@ -53,6 +54,42 @@ pub(super) fn hoistable_static_props(
         }));
     }
     props_static::component_hoist_props(&component.attributes, &component.bindings)
+}
+
+pub(super) fn can_hoist_static_props(
+    cx: &EmitCx<'_>,
+    component: &ComponentOp<'_>,
+    id: Option<NodeId>,
+    if_key: Option<&str>,
+    for_item: bool,
+    has_custom: bool,
+    has_slots: bool,
+    props: Option<&ComponentHoistProps>,
+) -> bool {
+    let Some(props) = props else {
+        return false;
+    };
+    if has_custom || for_item || if_key.is_some() {
+        return false;
+    }
+    let static_vnode_context =
+        cx.hoist_static_vnodes && slots::has_text_only_implicit_default(&component.children);
+    let loop_context = cx.in_v_for
+        && (slots::has_text_only_implicit_default(&component.children) || props.all_static_binds);
+    let hoist_context = static_vnode_context || loop_context || cx.slot_param_depth > 0;
+    props_static::should_hoist(cx, id, props_static::PropHoistPosition::Nested)
+        || id.is_some_and(|id| {
+            cx.template_for_item_root_id == Some(id)
+                && props_static::props_hoistable(cx, Some(id))
+                && !directive::has_runtime(&component.bindings)
+        })
+        || (!props.dynamic_values && props.valued_prop && hoist_context && !has_slots)
+        || (props.dynamic_values
+            && cx.slot_param_depth == 0
+            && !cx.in_v_for
+            && (!cx.hoist_static_vnodes
+                || !has_slots
+                || slots::has_text_only_implicit_default(&component.children)))
 }
 
 pub(super) fn emit_dynamic_props(cx: &mut EmitCx<'_>, names: &[String]) {

@@ -38,7 +38,7 @@ pub(super) fn is_static_bound_expr(expr: &Expression<'_>) -> bool {
             let ObjectPropertyKind::ObjectProperty(property) = property else {
                 return false;
             };
-            is_static_bound_expr(&property.value)
+            !property.computed && is_static_bound_expr(&property.value)
         }),
         Expression::CallExpression(call)
             if matches!(
