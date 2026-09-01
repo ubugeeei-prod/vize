@@ -5,10 +5,13 @@
 //! spread, Vue builtins, and `<component :is>`
 //! (`resolveDynamicComponent`).
 
+mod call_props;
 mod checks;
 mod preamble;
 
-use alloc::vec::Vec as StdVec;
+use call_props::{
+    emit_dynamic_props, has_rendered_attrs, has_rendered_binds, rendered_hoist_attrs,
+};
 use checks::{admit, has_dynamic_key_binding};
 
 use vize_davinci::id::NodeId;
@@ -23,7 +26,6 @@ use super::children::children_need_text_flag;
 use super::create_slots;
 use super::directive;
 use super::flag::emit_patch_flag;
-use super::hoist::compact_props_object;
 use super::js::asset_ident;
 use super::props::{
     BindPropsOptions, apply_static_ref_patch, bind_patch, emit_bind_props,
@@ -170,41 +172,17 @@ fn emit_call(
             .push(asset_ident("component", component.name).as_str());
     }
     let skip_is = builtin::is_dynamic_component(component);
-    let has_binds = component.bindings.iter().any(|binding| {
-        !(matches!(binding, BindingOp::SlotContent(_))
-            || slots::is_slots_spread(binding)
-            || directive::is_runtime(binding)
-            || super::memo::is_memo(binding)
-            || super::once::is_once(binding)
-            || matches!(binding, BindingOp::VueCloak(_))
-            || (skip_is && builtin::is_is_bind(binding)))
-    });
-    let has_attrs = component
-        .attributes
-        .iter()
-        .any(|attr| !skip_is || attr.name != "is");
+    let has_binds = has_rendered_binds(component, skip_is);
+    let has_attrs = has_rendered_attrs(component, skip_is);
     let has_custom = directive::has_custom(&component.bindings);
     let has_component_root_slot = component
         .bindings
         .iter()
         .any(|binding| matches!(binding, BindingOp::SlotContent(_)));
-    let hoist_attrs: StdVec<_> = component
-        .attributes
-        .iter()
-        .filter(|attr| !skip_is || attr.name != "is")
-        .collect();
-    let has_hoist_attrs = !hoist_attrs.is_empty();
+    let hoist_attrs = rendered_hoist_attrs(component, skip_is);
     let static_nested = builtin::has_static_nested(&component.children);
-    let hoistable_static_props = if skip_is {
-        has_hoist_attrs.then(|| props_static::ComponentHoistProps {
-            source: compact_props_object(hoist_attrs.iter().copied()),
-            dynamic_values: false,
-            non_key: hoist_attrs.iter().any(|attr| attr.name != "key"),
-            valued_prop: hoist_attrs.iter().any(|attr| attr.value.is_some()),
-        })
-    } else {
-        props_static::component_hoist_props(&component.attributes, &component.bindings)?
-    };
+    let hoistable_static_props =
+        call_props::hoistable_static_props(component, skip_is, &hoist_attrs)?;
     if for_item
         && !has_custom
         && let Some(props) = hoistable_static_props.as_ref()
@@ -366,18 +344,7 @@ fn emit_call(
     if emit_flag {
         emit_patch_flag(cx, flag);
     }
-    if !patch.dynamic_props.is_empty() {
-        cx.buf.push(", [");
-        for (i, name) in patch.dynamic_props.iter().enumerate() {
-            if i > 0 {
-                cx.buf.push(", ");
-            }
-            cx.buf.push("\"");
-            cx.buf.push(name.as_str());
-            cx.buf.push("\"");
-        }
-        cx.buf.push("]");
-    }
+    emit_dynamic_props(cx, &patch.dynamic_props);
     cx.buf.push(")");
     Ok(())
 }

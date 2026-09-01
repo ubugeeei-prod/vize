@@ -5,12 +5,18 @@
 //! holds them. The merge half (and the module-level decision record)
 //! stays in `lower/text.rs`.
 
+mod boundary;
+
 use alloc::vec::Vec as StdVec;
 
 use vize_s0::{String, StringBuilder};
 use vize_s1::SurfaceChild;
 
 use super::super::cx::Cx;
+use boundary::{
+    comment_separated_element_gap_with_newline, comments_reach_left_boundary,
+    comments_reach_right_boundary, trailing_comment_padding,
+};
 
 /// Whether `tag` suppresses condensing for its whole subtree: the
 /// shipped `is_pre_tag` (`tag == "pre"`).
@@ -21,7 +27,7 @@ pub(crate) fn suppresses_condense(tag: &str) -> bool {
 /// Vue's whitespace alphabet for the condense strategy — exactly
 /// `[ \t\n\f\r]` (`whitespace.rs:12-16`), never full-Unicode.
 #[inline]
-fn is_vue_ws(c: char) -> bool {
+pub(super) fn is_vue_ws(c: char) -> bool {
     matches!(c, ' ' | '\t' | '\n' | '\u{000C}' | '\r')
 }
 
@@ -271,99 +277,6 @@ pub(crate) fn plan_whitespace<'a>(
         }
     }
     plan
-}
-
-fn trailing_comment_padding(children: &[SurfaceChild<'_>], group_start: usize, lo: usize) -> bool {
-    if group_start <= lo {
-        return false;
-    }
-    let mut index = group_start - 1;
-    if !matches!(children.get(index), Some(SurfaceChild::Comment(_))) {
-        return false;
-    }
-    while index > lo && matches!(children.get(index - 1), Some(SurfaceChild::Comment(_))) {
-        index -= 1;
-    }
-    if index <= lo {
-        return false;
-    }
-    let left = index - 1;
-    if !matches!(
-        children.get(left),
-        Some(SurfaceChild::Text(token)) if token.text.chars().all(is_vue_ws)
-    ) {
-        return false;
-    }
-    left > lo && text_like(&children[left - 1])
-}
-
-fn comment_separated_element_gap_with_newline(
-    children: &[SurfaceChild<'_>],
-    group: &TextGroup,
-    lo: usize,
-    hi: usize,
-) -> bool {
-    if group.has_newline || group.end >= hi {
-        return false;
-    }
-    let mut index = group.end;
-    let mut saw_comment = false;
-    while index < hi && matches!(children.get(index), Some(SurfaceChild::Comment(_))) {
-        saw_comment = true;
-        index += 1;
-    }
-    if !saw_comment {
-        return false;
-    }
-    let mut has_newline = false;
-    let mut saw_whitespace = false;
-    while index < hi {
-        match children.get(index) {
-            Some(SurfaceChild::Text(token)) if token.text.chars().all(is_vue_ws) => {
-                saw_whitespace = true;
-                has_newline |= token.text.contains('\n') || token.text.contains('\r');
-                index += 1;
-            }
-            Some(SurfaceChild::Comment(_)) => index += 1,
-            _ => break,
-        }
-    }
-    if !saw_whitespace || !has_newline {
-        return false;
-    }
-    let prev_is_text = group.start > lo && text_like(&children[group.start - 1]);
-    let next_is_text = index < hi && text_like(&children[index]);
-    !prev_is_text && !next_is_text
-}
-
-fn comments_reach_left_boundary(
-    children: &[SurfaceChild<'_>],
-    mut index: usize,
-    lo: usize,
-) -> bool {
-    loop {
-        if !matches!(children.get(index), Some(SurfaceChild::Comment(_))) {
-            return false;
-        }
-        if index == lo {
-            return true;
-        }
-        index -= 1;
-    }
-}
-
-fn comments_reach_right_boundary(
-    children: &[SurfaceChild<'_>],
-    mut index: usize,
-    hi: usize,
-) -> bool {
-    while index < hi {
-        if !matches!(children.get(index), Some(SurfaceChild::Comment(_))) {
-            return false;
-        }
-        index += 1;
-    }
-    true
 }
 
 /// Whether `child` may extend a merge run starting at `end`: a text or

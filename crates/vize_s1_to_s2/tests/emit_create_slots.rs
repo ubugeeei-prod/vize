@@ -41,5 +41,7 @@ fn pin(visual: &str) -> String {
     visual.replace(")\n\n  return", ")\n  \n  return")
 }
 
+#[path = "emit_create_slots/conditional_and_looped.rs"]
 mod conditional_and_looped;
+#[path = "emit_create_slots/dynamic_entries.rs"]
 mod dynamic_entries;

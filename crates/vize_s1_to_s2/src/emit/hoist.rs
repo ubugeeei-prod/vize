@@ -5,17 +5,18 @@
 //! with later installments.
 
 mod cached_props;
+mod kids;
 mod props;
 
-use alloc::vec::Vec as StdVec;
 pub(super) use props::{compact_props_object, push_attr_pair, unique_attrs};
 
 use vize_s0::{String, ToCompactString};
-use vize_s2::op::{ElementOp, Op, Region};
+use vize_s2::op::{ElementOp, Op};
 
 use super::buf::Buf;
-use super::js::escape_js_string;
 use super::{EmitCx, EmitError, UnsupportedReason as Reason};
+pub(super) use kids::push_spaces;
+use kids::{append_cached_kids, append_hoist_kids, hoist_needs_create_text, renderable_children};
 
 pub(super) fn emit_hoisted_element(
     cx: &mut EmitCx<'_>,
@@ -142,17 +143,6 @@ fn walk_hoisted(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) {
     }
 }
 
-fn hoist_needs_create_text(element: &ElementOp<'_>) -> bool {
-    let kids = renderable_children(&element.children);
-    let has_text = kids.iter().any(|op| matches!(op, Op::Text(_)));
-    let has_other = kids.iter().any(|op| !matches!(op, Op::Text(_)));
-    (has_text && has_other)
-        || kids.iter().any(|op| match op {
-            Op::Element(child) => hoist_needs_create_text(child),
-            _ => false,
-        })
-}
-
 fn hoist_element_rhs(element: &ElementOp<'_>, pure: bool) -> String {
     let mut out = String::default();
     if pure {
@@ -239,119 +229,4 @@ fn cached_static_vnode_props(element: &ElementOp<'_>, line_indent: usize) -> Opt
     )
     .ok()
     .flatten()
-}
-
-fn append_hoist_kids(out: &mut String, kids: &[&Op<'_>]) {
-    if kids.iter().all(|op| matches!(op, Op::Text(_))) {
-        out.push('"');
-        for op in kids.iter() {
-            if let Op::Text(text) = op {
-                out.push_str(escape_js_string(text.content).as_str());
-            }
-        }
-        out.push('"');
-        return;
-    }
-    out.push('[');
-    for (i, op) in kids.iter().enumerate() {
-        if i > 0 {
-            out.push_str(", ");
-        }
-        match op {
-            Op::Text(text) => {
-                out.push_str(Buf::create_text_alias());
-                out.push('(');
-                out.push('"');
-                out.push_str(escape_js_string(text.content).as_str());
-                out.push('"');
-                out.push(')');
-            }
-            Op::Element(element) => {
-                out.push_str(hoist_descendant_element_rhs(element).as_str());
-            }
-            _ => {}
-        }
-    }
-    out.push(']');
-}
-
-fn hoist_descendant_element_rhs(element: &ElementOp<'_>) -> String {
-    let mut out = String::default();
-    out.push_str(Buf::create_element_vnode_alias());
-    out.push('(');
-    out.push('"');
-    out.push_str(element.tag);
-    out.push('"');
-    let kids = renderable_children(&element.children);
-    let props = static_vnode_props(element, false);
-    if props.is_some() || !kids.is_empty() {
-        out.push_str(", ");
-        if let Some(props) = props {
-            out.push_str(props.as_str());
-        } else {
-            out.push_str("null");
-        }
-    }
-    if !kids.is_empty() {
-        out.push_str(", ");
-        append_hoist_kids(&mut out, &kids);
-    }
-    out.push(')');
-    out
-}
-
-fn append_cached_kids(out: &mut String, kids: &[&Op<'_>], line_indent: usize) {
-    if kids.iter().all(|op| matches!(op, Op::Text(_))) {
-        out.push('"');
-        for op in kids.iter() {
-            if let Op::Text(text) = op {
-                out.push_str(escape_js_string(text.content).as_str());
-            }
-        }
-        out.push('"');
-        return;
-    }
-    out.push('[');
-    for (i, op) in kids.iter().enumerate() {
-        if i > 0 {
-            out.push(',');
-        }
-        out.push('\n');
-        push_spaces(out, line_indent + 2);
-        match op {
-            Op::Text(text) => {
-                push_cached_create_text_call(out, text.content);
-            }
-            Op::Element(element) => {
-                append_cached_element_rhs(out, element, false, line_indent + 2);
-            }
-            _ => {}
-        }
-    }
-    out.push('\n');
-    push_spaces(out, line_indent);
-    out.push(']');
-}
-
-fn push_cached_create_text_call(out: &mut String, content: &str) {
-    out.push_str(Buf::create_text_alias());
-    if content == " " {
-        out.push_str("()");
-        return;
-    }
-    out.push('(');
-    out.push('"');
-    out.push_str(escape_js_string(content).as_str());
-    out.push('"');
-    out.push(')');
-}
-
-fn push_spaces(out: &mut String, width: usize) {
-    out.extend(core::iter::repeat_n(' ', width));
-}
-
-fn renderable_children<'a>(children: &'a Region<'a>) -> StdVec<&'a Op<'a>> {
-    // S2 lowering has already applied legacy condense/drop decisions; every
-    // remaining text op is renderable, including a single-space separator.
-    children.ops.iter().collect()
 }

@@ -1,10 +1,11 @@
 //! Static native HTML element / children emission.
 
 mod array_child;
+mod checks;
 
 pub(super) use array_child::emit_array_child;
 use vize_davinci::id::NodeId;
-use vize_s2::op::{BindingOp, ElementOp, Op};
+use vize_s2::op::ElementOp;
 
 use super::buf::Buf;
 use super::children::children_need_text_flag;
@@ -17,6 +18,10 @@ use super::props::{
 use super::props_static::PropHoistPosition;
 use super::vnode_children::emit_children;
 use super::{EmitCx, EmitError};
+use checks::{
+    direct_static_children_hoisted, has_cloak, has_dynamic_key_binding, has_prop_bindings,
+    template_if_branch_root_has_direct_interpolation,
+};
 
 pub(super) fn emit_unique_element(
     cx: &mut EmitCx<'_>,
@@ -309,55 +314,4 @@ pub(super) fn emit_call(
     }
     cx.buf.push(")");
     Ok(())
-}
-
-fn has_prop_bindings(bindings: &[BindingOp<'_>]) -> bool {
-    bindings.iter().any(|binding| {
-        matches!(
-            binding,
-            BindingOp::Bind(_)
-                | BindingOp::On(_)
-                | BindingOp::Model(_)
-                | BindingOp::VueHtml(_)
-                | BindingOp::VueText(_)
-        )
-    })
-}
-
-fn has_cloak(bindings: &[BindingOp<'_>]) -> bool {
-    bindings
-        .iter()
-        .any(|binding| matches!(binding, BindingOp::VueCloak(_)))
-}
-
-fn template_if_branch_root_has_direct_interpolation(
-    cx: &EmitCx<'_>,
-    element: &ElementOp<'_>,
-    if_key: Option<&str>,
-) -> bool {
-    if if_key.is_none() || !cx.template_if_branch_root {
-        return false;
-    }
-    element
-        .children
-        .ops
-        .iter()
-        .any(|op| matches!(op, Op::Interpolation(_)))
-}
-
-fn has_dynamic_key_binding(element: &ElementOp<'_>) -> bool {
-    element.bindings.iter().any(|binding| {
-        matches!(
-            binding,
-            BindingOp::Bind(bind) if super::props_bind::is_key_bind_name(bind)
-        )
-    })
-}
-
-fn direct_static_children_hoisted(
-    cx: &EmitCx<'_>,
-    element: &ElementOp<'_>,
-    id: Option<NodeId>,
-) -> bool {
-    super::vnode_static::should_hoist_static_children(cx, element, id, true, false, false)
 }

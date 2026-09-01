@@ -32,5 +32,7 @@ fn pin(visual: &str) -> String {
     visual.replace(")\n\n  return", ")\n  \n  return")
 }
 
+#[path = "emit_model/component_variants.rs"]
 mod component_variants;
+#[path = "emit_model/native_and_basic_component.rs"]
 mod native_and_basic_component;

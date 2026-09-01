@@ -5,6 +5,8 @@
 //! two spread kinds mix. The `, true` is Vue's `handlerOnly` flag — the
 //! shipped `generate_von_object_exp` always emits it.
 
+mod args;
+
 use alloc::vec::Vec as StdVec;
 
 use vize_s0::{Span, String};
@@ -17,10 +19,11 @@ use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::on::{event_key_for, needs_hydration};
 use super::props::{
-    BindName, Patch, Piece, PropsObjectOptions, StaticBindKeyCasing, bind_name, bind_value,
+    BindName, Patch, PropsObjectOptions, StaticBindKeyCasing, bind_name, bind_value,
     bind_value_is_static_patchless, emit_props_object, has_prop_modifier, is_emitted_key_bind,
-    pieces, static_bind_key,
+    static_bind_key,
 };
+use args::{Arg, force_multiline_object_arg, key_and_bind_spread, lone_kind_spread, merge_args};
 
 pub(super) fn has_object_spread(bindings: &[BindingOp<'_>]) -> bool {
     bindings.iter().any(|binding| match binding {
@@ -194,214 +197,6 @@ pub(super) fn emit_spread_props(
         cx.buf.push(")");
     }
     Ok(())
-}
-
-/// Every arg is the same spread kind (all binds, or all ons). Vue keeps
-/// only the first of that kind when nothing else is present.
-fn lone_kind_spread<'a>(args: &'a [Arg<'a>]) -> Option<&'a Arg<'a>> {
-    if args.is_empty() {
-        return None;
-    }
-    let all_bind = args.iter().all(|arg| matches!(arg, Arg::BindSpread(_)));
-    let all_on = args.iter().all(|arg| matches!(arg, Arg::OnSpread(_)));
-    if all_bind || all_on {
-        args.first()
-    } else {
-        None
-    }
-}
-
-fn key_and_bind_spread(args: &[Arg<'_>]) -> bool {
-    matches!(
-        args,
-        [
-            Arg::Object {
-                if_key: Some(_),
-                pieces,
-                ..
-            },
-            Arg::BindSpread(_),
-        ] if pieces.is_empty()
-    )
-}
-
-enum Arg<'a> {
-    Object {
-        if_key: Option<&'a str>,
-        pieces: StdVec<Piece<'a>>,
-        suppressed_authored_key: bool,
-    },
-    BindSpread(&'a BindOp<'a>),
-    OnSpread(&'a OnOp<'a>),
-}
-
-impl Arg<'_> {
-    fn is_spread(&self) -> bool {
-        matches!(self, Self::BindSpread(_) | Self::OnSpread(_))
-    }
-}
-
-fn force_multiline_object_arg(
-    args: &[Arg<'_>],
-    index: usize,
-    pieces: &[Piece<'_>],
-    for_item: bool,
-) -> bool {
-    let after_spread = args[..index].iter().any(Arg::is_spread);
-    if !after_spread || pieces.is_empty() {
-        return pieces.len() == 1
-            && for_item
-            && args[index + 1..].iter().any(Arg::is_spread)
-            && has_object_with_props(&args[index + 1..]);
-    }
-    let has_later_spread = args[index + 1..].iter().any(Arg::is_spread);
-    if has_later_spread && single_static_attr_before_object_on(args, index, pieces, for_item) {
-        return false;
-    }
-    if for_item || has_later_spread {
-        return true;
-    }
-    if pieces.len() == 1 && has_branch_object_with_props_before_spread(&args[..index]) {
-        return true;
-    }
-    if pieces.len() == 1 && has_unsuppressed_key_only_branch_before_spread(&args[..index]) {
-        return true;
-    }
-    let has_branch_key = args.iter().any(|arg| {
-        matches!(
-            arg,
-            Arg::Object {
-                if_key: Some(_),
-                ..
-            }
-        )
-    });
-    pieces.iter().any(|piece| match piece {
-        Piece::On(_) => has_branch_key,
-        Piece::Attr(attr) if matches!(attr.name, "class" | "style") => has_branch_key,
-        _ => false,
-    })
-}
-
-fn has_branch_object_with_props_before_spread(args: &[Arg<'_>]) -> bool {
-    args.iter().any(|arg| {
-        matches!(
-            arg,
-            Arg::Object {
-                if_key: Some(_),
-                pieces,
-                ..
-            } if !pieces.is_empty()
-        )
-    })
-}
-
-fn has_unsuppressed_key_only_branch_before_spread(args: &[Arg<'_>]) -> bool {
-    args.iter().any(|arg| {
-        matches!(
-            arg,
-            Arg::Object {
-                if_key: Some(_),
-                pieces,
-                suppressed_authored_key: false,
-            } if pieces.is_empty()
-        )
-    })
-}
-
-fn has_object_with_props(args: &[Arg<'_>]) -> bool {
-    args.iter().any(|arg| {
-        matches!(
-            arg,
-            Arg::Object {
-                pieces,
-                ..
-            } if !pieces.is_empty()
-        )
-    })
-}
-
-fn single_static_attr_before_object_on(
-    args: &[Arg<'_>],
-    index: usize,
-    pieces: &[Piece<'_>],
-    for_item: bool,
-) -> bool {
-    !for_item
-        && matches!(pieces, [Piece::Attr(_)])
-        && args[index + 1..]
-            .iter()
-            .all(|arg| matches!(arg, Arg::OnSpread(_)))
-}
-
-fn merge_args<'a>(
-    attributes: &'a [Attribute<'a>],
-    bindings: &'a [BindingOp<'a>],
-    if_key: Option<&'a str>,
-    skip_is: bool,
-    suppress_key: bool,
-) -> Result<StdVec<Arg<'a>>, EmitError> {
-    let mut args = StdVec::new();
-    let mut current = StdVec::new();
-    let mut suppressed_authored_key = false;
-    for piece in pieces(attributes, bindings, skip_is)? {
-        if (if_key.is_some() || suppress_key) && piece_is_key(&piece) {
-            suppressed_authored_key = true;
-            continue;
-        }
-        match piece {
-            Piece::Bind(bind) if bind.name.is_none() => {
-                flush_object(&mut args, &mut current);
-                args.push(Arg::BindSpread(bind));
-            }
-            Piece::On(on) if on.name.is_none() => {
-                flush_object(&mut args, &mut current);
-                args.push(Arg::OnSpread(on));
-            }
-            other => current.push(other),
-        }
-    }
-    flush_object(&mut args, &mut current);
-    if if_key.is_some() {
-        match args.first_mut() {
-            Some(Arg::Object {
-                if_key: slot,
-                suppressed_authored_key: suppressed,
-                ..
-            }) => {
-                *slot = if_key;
-                *suppressed = suppressed_authored_key;
-            }
-            _ => args.insert(
-                0,
-                Arg::Object {
-                    if_key,
-                    pieces: StdVec::new(),
-                    suppressed_authored_key,
-                },
-            ),
-        }
-    }
-    Ok(args)
-}
-
-fn piece_is_key(piece: &Piece<'_>) -> bool {
-    match piece {
-        Piece::Attr(attr) => attr.name == "key",
-        Piece::Bind(bind) => super::props_bind::is_key_bind_name(bind),
-        _ => false,
-    }
-}
-
-fn flush_object<'a>(args: &mut StdVec<Arg<'a>>, current: &mut StdVec<Piece<'a>>) {
-    if current.is_empty() {
-        return;
-    }
-    args.push(Arg::Object {
-        if_key: None,
-        pieces: core::mem::take(current),
-        suppressed_authored_key: false,
-    });
 }
 
 fn emit_normalize_guard(cx: &mut EmitCx<'_>, bind: &BindOp<'_>) -> Result<(), EmitError> {
