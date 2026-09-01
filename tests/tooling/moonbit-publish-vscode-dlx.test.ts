@@ -8,10 +8,10 @@ import { test } from "node:test";
 import { runMoonScript } from "./_helpers/moonbit.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
-test("publish_vscode_extension allows pnpm dlx builds for vsce signing dependencies", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-vsix-pnpm-"));
+test("publish_vscode_extension allows corepack pnpm dlx builds for vsce signing dependencies", () => {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-vsix-corepack-"));
   const binDir = path.join(tempDir, "bin");
-  const argsLogPath = path.join(tempDir, "pnpm-args.log");
+  const argsLogPath = path.join(tempDir, "corepack-args.log");
   const vsixPath = path.join(tempDir, "vize.vsix");
   const packageJsonPath = path.join(tempDir, "package.json");
 
@@ -24,18 +24,18 @@ test("publish_vscode_extension allows pnpm dlx builds for vsce signing dependenc
     );
     writeFakeCommand(
       binDir,
-      "pnpm",
+      "corepack",
       [
         "const fs = require('node:fs');",
         "const args = process.argv.slice(2);",
-        "if (args[0] === 'dlx' && args[7] === 'vsce' && args[8] === 'show') {",
-        "  if (fs.existsSync(process.env.PNPM_ARGS_LOG)) {",
+        "if (args[0] === 'pnpm' && args[1] === 'dlx' && args[8] === 'vsce' && args[9] === 'show') {",
+        "  if (fs.existsSync(process.env.COREPACK_ARGS_LOG)) {",
         "    process.stdout.write(JSON.stringify({ versions: [{ version: '0.57.0' }] }));",
         "    process.exit(0);",
         "  }",
         "  process.exit(1);",
         "}",
-        "fs.writeFileSync(process.env.PNPM_ARGS_LOG, args.join('\\n'));",
+        "fs.writeFileSync(process.env.COREPACK_ARGS_LOG, args.join('\\n'));",
         "process.exit(0);",
       ].join("\n"),
     );
@@ -44,13 +44,14 @@ test("publish_vscode_extension allows pnpm dlx builds for vsce signing dependenc
       env: {
         NPM_TAG: "rc",
         PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
-        PNPM_ARGS_LOG: argsLogPath,
-        VSCE_DLX_BIN: "pnpm",
+        COREPACK_ARGS_LOG: argsLogPath,
+        VSCE_DLX_BIN: "corepack",
       },
     });
 
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
     assert.deepEqual(fs.readFileSync(argsLogPath, "utf8").trim().split("\n"), [
+      "pnpm",
       "dlx",
       "--allow-build",
       "@vscode/vsce-sign",

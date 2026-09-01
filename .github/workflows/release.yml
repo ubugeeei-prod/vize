@@ -179,7 +179,7 @@ jobs:
     permissions: { contents: read }
     env:
       PUBLISH_RESOLUTION_RETRY_LIMIT: "90"
-      VSCE_DLX_BIN: pnpm
+      VSCE_DLX_BIN: corepack
       VSCE_PAT: "${{ secrets.VSCE_PAT }}"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6

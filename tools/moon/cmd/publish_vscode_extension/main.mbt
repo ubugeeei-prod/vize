@@ -62,8 +62,12 @@ fn vsce_dlx_args(
   command : String,
   extra_args : Array[String],
 ) -> Array[String] {
-  let args = ["dlx"]
-  if dlx_bin == "pnpm" {
+  let args = []
+  if dlx_bin == "corepack" {
+    args.push("pnpm")
+  }
+  args.push("dlx")
+  if dlx_bin == "pnpm" || dlx_bin == "corepack" {
     args.push("--allow-build")
     args.push("@vscode/vsce-sign")
     args.push("--allow-build")

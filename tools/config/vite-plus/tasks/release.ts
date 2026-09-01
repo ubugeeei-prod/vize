@@ -39,7 +39,7 @@ export const releaseTasks = defineTasks({
   ),
   "publish:crates": noCacheTask(moonScript("publish_crates")),
   "publish:vscode-extension": noCacheTask(
-    `${installVscodeExtensionDependencies} && VSCE_DLX_BIN=pnpm ${moonScript("publish_vscode_extension", "editors/vscode/dist/vize.vsix")}`,
+    `${installVscodeExtensionDependencies} && VSCE_DLX_BIN=corepack ${moonScript("publish_vscode_extension", "editors/vscode/dist/vize.vsix")}`,
   ),
   publish: noCacheTask(runTasks("publish:npm", "publish:crates")),
 });
