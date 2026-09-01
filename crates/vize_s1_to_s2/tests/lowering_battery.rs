@@ -144,6 +144,35 @@ fn source_block_tokenizer_errors_are_file_absolute() {
 }
 
 #[test]
+fn tokenizer_error_diagnostics_snap_to_utf8_boundary() {
+    let source = std::str::from_utf8(
+        b"\n  <div>{{ props.title }}</div\x1d\"vm\xd7\xa3p=\n\xd7\xa3\0s_bme\">plate v-if=\"-vhow=\"\n  <te-plate v-if=\"vm\xd7\xa3p>\n",
+    )
+    .expect("reproducer is valid UTF-8");
+    let mid_char_offset = 40;
+    assert!(!source.is_char_boundary(mid_char_offset));
+
+    let allocator = Allocator::new();
+    let (tree, errors) = parse(&allocator, source);
+    assert!(
+        errors
+            .iter()
+            .any(|error| error.offset == mid_char_offset as u32),
+        "the committed reproducer must keep covering a tokenizer error inside a UTF-8 scalar"
+    );
+
+    let lowered = vize_s1_to_s2::lower(&allocator, &tree, &errors);
+    assert_authored_artifact(source, &lowered);
+    assert!(
+        lowered
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.span == Span::new(39, 39)),
+        "the mid-scalar tokenizer offset should snap down to the preceding char boundary"
+    );
+}
+
+#[test]
 fn the_battery_aggregates_are_pinned() {
     // The decision-surface census over the whole battery: ops minted,
     // diagnostics raised, provenance records written, scopes tagged.

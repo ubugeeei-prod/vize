@@ -172,10 +172,7 @@ pub fn lower_source_block_with_caps<'a>(
         cx.diagnostics.push(Diagnostic::new(
             Severity::Error,
             Stage::Surface,
-            Span::new(
-                block.start().saturating_add(error.offset),
-                block.start().saturating_add(error.offset),
-            ),
+            surface_error_span(block, error.offset),
             String::from(error.code.message()),
         ));
     }
@@ -193,6 +190,18 @@ pub fn lower_source_block_with_caps<'a>(
         for_wrappers: cx.for_wrappers,
         caps,
     }
+}
+
+fn surface_error_span(block: SourceBlock<'_>, offset: u32) -> Span {
+    let absolute = block.start().saturating_add(offset);
+    let hole = block.zero_width_at(absolute);
+    block.span_of(hole).unwrap_or_else(|| {
+        debug_assert!(
+            false,
+            "SourceBlock::zero_width_at returned a slice outside its block"
+        );
+        Span::new(block.start(), block.start())
+    })
 }
 
 impl fmt::Debug for Lowered<'_> {
