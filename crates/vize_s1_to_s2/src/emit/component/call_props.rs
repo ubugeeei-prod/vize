@@ -126,8 +126,12 @@ pub(super) fn can_hoist_static_props(
         || dynamic_forwarded_slot_hoist
         || dynamic_direct_static_slot_hoist
         || dynamic_mixed_static_slot_hoist;
+    let transition_direct_slot_outlet = matches!(component.name, "Transition" | "transition")
+        && has_slots
+        && has_direct_slot_outlet(&component.children);
     let transition_props_slot_hoist = transition_props_slot_hoist(component, has_slots);
-    Ok((!is_template_for_root
+    Ok((!transition_direct_slot_outlet
+        && !is_template_for_root
         && dynamic_props_hoistable
         && props_static::should_hoist(cx, id, props_static::PropHoistPosition::Nested))
         || (is_template_for_root
@@ -143,6 +147,7 @@ pub(super) fn can_hoist_static_props(
             && !has_runtime_directive
             && (hoist_context || transition_props_slot_hoist))
         || (props.dynamic_values
+            && !transition_direct_slot_outlet
             && cx.slot_param_depth == 0
             && !cx.in_v_for
             && dynamic_props_hoistable)
@@ -283,8 +288,9 @@ fn component_has_static_bind_props(component: &ComponentOp<'_>) -> Result<bool, 
 pub(super) fn transition_props_slot_hoist(component: &ComponentOp<'_>, has_slots: bool) -> bool {
     matches!(component.name, "Transition" | "transition")
         && has_slots
-        && !has_direct_slot_outlet(&component.children)
-        && has_element_with_direct_slot_outlet(&component.children)
+        && (children_are_forwarded_slot_outlets_only(&component.children)
+            || (!has_direct_slot_outlet(&component.children)
+                && has_element_with_direct_slot_outlet(&component.children)))
 }
 
 fn has_direct_slot_outlet(region: &Region<'_>) -> bool {
