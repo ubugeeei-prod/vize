@@ -93,6 +93,7 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
         },
         source_map: opts.source_map.unwrap_or(false),
         ssr: opts.ssr.unwrap_or(false),
+        prefix_identifiers: opts.prefix_identifiers.unwrap_or(is_module_mode),
         runtime_module_name: opts
             .runtime_module_name
             .clone()

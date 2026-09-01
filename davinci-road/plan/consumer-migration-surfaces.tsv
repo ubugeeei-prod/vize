@@ -59,6 +59,7 @@ compiler	Compiler	source	crates/vize_atelier_core/src/codegen/patch_flag/static_
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/patch_flag/static_literal.rs	11	raw_oxc	raw OXC	raw	oxc_allocator	raw	2
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/patch_flag/static_literal.rs	11	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/patch_flag/static_literal.rs	11	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/patch_flag/static_literal.rs	130	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/directives.rs	13	s0	S0	stage	vize_s0	preferred	3
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/dynamic_arg.rs	3	old_ast	old AST/parser	old	vize_relief	legacy	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/events.rs	11	s0	S0	stage	vize_s0	preferred	1
@@ -296,10 +297,12 @@ compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_once.rs	12	s
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_once.rs	12	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_outlets.rs	14	s0	S0	stage	vize_s0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_outlets.rs	14	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_patch_flags_legacy.rs	11	s0	S0	stage	vize_s0	preferred	2
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_patch_flags_legacy.rs	11	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_patch_flags_static.rs	5	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_patch_flags_static.rs	5	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_patch_flags.rs	10	s0	S0	stage	vize_s0	preferred	2
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_patch_flags.rs	10	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	2
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_patch_flags.rs	10	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_patch_flags.rs	10	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_recent_patch_flags.rs	12	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_recent_patch_flags.rs	12	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/davinci_s2_show.rs	13	s0	S0	stage	vize_s0	preferred	1

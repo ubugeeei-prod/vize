@@ -124,8 +124,7 @@ impl MaestroServer {
             self.client
                 .show_message(
                     MessageType::WARNING,
-                    "Vize: type checking is unavailable in this workspace. \
-                     Make sure tsconfig.json exists and the Corsa runtime is reachable.",
+                    crate::ide::diagnostics::TYPECHECK_UNAVAILABLE_NOTICE_MESSAGE,
                 )
                 .await;
         }

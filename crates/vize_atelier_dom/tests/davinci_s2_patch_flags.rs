@@ -8,11 +8,7 @@
 mod support;
 
 use vize_s0::Allocator;
-#[cfg(feature = "legacy")]
-use vize_s0::config::VueVersion;
 use vize_s1_to_s2::emit_dom_source;
-#[cfg(feature = "legacy")]
-use vize_s1_to_s2::{LegacyCaps, emit_dom_source_with_caps};
 
 struct Case {
     name: &'static str,
@@ -50,6 +46,36 @@ const CASES: &[Case] = &[
         name: "style",
         src: r#"<div :style="style"></div>"#,
         sites: &["4 /* STYLE */"],
+    },
+    Case {
+        name: "computed_key_style",
+        src: r#"<div :style="{ [prop]: 'red' }"></div>"#,
+        sites: &["4 /* STYLE */"],
+    },
+    Case {
+        name: "computed_key_class",
+        src: r#"<div :class="{ [prop]: true }"></div>"#,
+        sites: &["2 /* CLASS */"],
+    },
+    Case {
+        name: "id_and_computed_key_style",
+        src: r#"<div :id="id" :style="{ [prop]: 'red' }"></div>"#,
+        sites: &["12 /* STYLE, PROPS */, [\"id\"]"],
+    },
+    Case {
+        name: "component_computed_key_style",
+        src: r#"<Foo :style="{ [prop]: 'red' }" />"#,
+        sites: &["8 /* PROPS */, [\"style\"]"],
+    },
+    Case {
+        name: "computed_key_data",
+        src: r#"<div :data="{ [k]: 1 }"></div>"#,
+        sites: &["8 /* PROPS */, [\"data\"]"],
+    },
+    Case {
+        name: "static_object_style_stays_patchless",
+        src: r#"<div :style="{ color: 'red' }"></div>"#,
+        sites: &[],
     },
     Case {
         name: "prop",
@@ -283,68 +309,6 @@ fn s2_patch_flags_match_the_shipped_dom_lane_per_node() {
     assert!(
         mismatches.is_empty(),
         "patch flag mismatches:\n{}",
-        mismatches.join("\n")
-    );
-}
-
-#[test]
-#[cfg(feature = "legacy")]
-fn s2_vue2_filter_patch_flags_match_the_shipped_dom_lane_per_node() {
-    const FILTER_CASES: &[Case] = &[
-        Case {
-            name: "filter_text_child",
-            src: "<div>{{ 1 | double }}</div>",
-            sites: &["1 /* TEXT */"],
-        },
-        Case {
-            name: "filter_bind_prop",
-            src: r#"<div :id="1 | formatId"></div>"#,
-            sites: &["8 /* PROPS */, [\"id\"]"],
-        },
-        Case {
-            name: "filter_component_prop",
-            src: r#"<Foo :value="1 | formatId" />"#,
-            sites: &["8 /* PROPS */, [\"value\"]"],
-        },
-        Case {
-            name: "filter_default_slot",
-            src: "<Foo>{{ 1 | cap }}</Foo>",
-            sites: &["1 /* TEXT */", "1 /* STABLE */"],
-        },
-    ];
-    support::assert_s2_matches_prefixed_shipped_literals_with_dialect(
-        &FILTER_CASES
-            .iter()
-            .map(|case| (case.name, case.src))
-            .collect::<Vec<_>>(),
-        VueVersion::V2,
-    );
-
-    let mut mismatches = Vec::new();
-    for case in FILTER_CASES {
-        let expected: Vec<_> = case.sites.iter().map(|site| site.to_string()).collect();
-        let old = support::shipped_prefixed_with_dialect(case.src, VueVersion::V2);
-        let allocator = Allocator::new();
-        let new = emit_dom_source_with_caps(
-            &allocator,
-            case.src,
-            LegacyCaps::for_version(VueVersion::V2),
-        )
-        .unwrap_or_else(|error| panic!("{}: S2 emit refused: {error:?}", case.name))
-        .assembled();
-        let old_sites = support::patch_sites(&old);
-        let new_sites = support::patch_sites(&new);
-
-        if old_sites != expected || new_sites != expected {
-            mismatches.push(format!(
-                "{}: expected={expected:?} old={old_sites:?} new={new_sites:?}",
-                case.name
-            ));
-        }
-    }
-    assert!(
-        mismatches.is_empty(),
-        "Vue 2 filter patch flag mismatches:\n{}",
         mismatches.join("\n")
     );
 }

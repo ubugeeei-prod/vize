@@ -1,7 +1,7 @@
 <!-- GENERATED FILE - do not edit by hand.
      Regenerate: rust-script tools/commands/davinci/consumer-migration-surfaces.rs --write
      Verify:     rust-script tools/commands/davinci/consumer-migration-surfaces.rs --check
-     Generator:  tools/commands/davinci/consumer-migration-surfaces.rs -->
+     Generator:  tools/davinci/consumer-migration-surfaces.mjs -->
 
 # Consumer migration surfaces
 
@@ -45,7 +45,7 @@ observational guard for planning only. It does not change rollout state.
 
 | consumer                   | stage/Davinci | preferred stage names | compat code names | old AST/Croquis | raw OXC | source/manifest | test/dev | surface files | scanned files |
 | -------------------------- | ------------: | --------------------: | ----------------: | --------------: | ------: | --------------: | -------: | ------------: | ------------: |
-| Compiler                   |           928 |                   487 |               441 |             140 |     371 |             941 |      498 |           488 |           609 |
+| Compiler                   |           929 |                   488 |               441 |             140 |     372 |             941 |      500 |           489 |           611 |
 | Linter                     |           331 |                   331 |                 0 |             290 |     287 |             671 |      237 |           375 |           539 |
 | Typechecker                |           880 |                   238 |               642 |             396 |     187 |             808 |      655 |           468 |           666 |
 | Typechecker content-mapper |             9 |                     9 |                 0 |               0 |       0 |               9 |        0 |             8 |            20 |
@@ -61,13 +61,13 @@ Scope: build command plus atelier compiler crates. This is a lexical inventory, 
 | surface          | total sites | source/manifest | test/dev |
 | ---------------- | ----------: | --------------: | -------: |
 | Davinci          |          21 |               4 |       17 |
-| S0               |         847 |             479 |      368 |
+| S0               |         848 |             479 |      369 |
 | S1               |           5 |               1 |        4 |
 | S2               |          15 |               1 |       14 |
 | S1->S2           |          40 |               2 |       38 |
 | old AST/parser   |          75 |              55 |       20 |
 | Croquis analysis |          65 |              56 |        9 |
-| raw OXC          |         371 |             343 |       28 |
+| raw OXC          |         372 |             343 |       29 |
 
 #### Top source and manifest files
 
@@ -91,7 +91,7 @@ Additional source/manifest rows are in the TSV: 309 omitted.
 | `crates/vize_atelier_sfc/src/compile_script/props/tests.rs:4` | test/dev | S0 15                                         |    15 |
 | `crates/vize_atelier_core/tests/s2_support/compare.rs:10`     | test/dev | Davinci 2<br>S0 4<br>S1 1<br>S2 1<br>S1->S2 3 |    11 |
 
-Additional test/dev rows are in the TSV: 205 omitted.
+Additional test/dev rows are in the TSV: 207 omitted.
 
 ### Linter
 

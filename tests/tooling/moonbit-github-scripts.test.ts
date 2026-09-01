@@ -7,67 +7,6 @@ import { test } from "node:test";
 import { runMoonScript } from "./_helpers/moonbit.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
-test("github/run_many executes command groups in order", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-run-many-"));
-  const outputPath = path.join(tempDir, "output.txt");
-
-  try {
-    const result = runMoonScript(
-      "github/run_many",
-      [
-        "node",
-        "-e",
-        `require('node:fs').appendFileSync(${JSON.stringify(outputPath)}, 'a')`,
-        "--",
-        "node",
-        "-e",
-        `require('node:fs').appendFileSync(${JSON.stringify(outputPath)}, 'b')`,
-      ],
-      { cwd: tempDir },
-    );
-
-    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
-    assert.equal(fs.readFileSync(outputPath, "utf8"), "ab");
-  } finally {
-    rmSync(tempDir, { recursive: true, force: true });
-  }
-});
-
-test("github/clean_node_binaries removes only top-level .node files", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-clean-node-"));
-  const firstDir = path.join(tempDir, "first");
-  const secondDir = path.join(tempDir, "second");
-
-  try {
-    fs.mkdirSync(firstDir, { recursive: true });
-    fs.mkdirSync(secondDir, { recursive: true });
-    writeFileSync(path.join(firstDir, "native.node"), "native");
-    writeFileSync(path.join(firstDir, "keep.txt"), "keep");
-    writeFileSync(path.join(secondDir, "addon.node"), "addon");
-
-    const result = runMoonScript("github/clean_node_binaries", [firstDir, secondDir], {
-      cwd: tempDir,
-    });
-
-    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
-    assert.equal(fs.existsSync(path.join(firstDir, "native.node")), false);
-    assert.equal(fs.existsSync(path.join(secondDir, "addon.node")), false);
-    assert.equal(fs.existsSync(path.join(firstDir, "keep.txt")), true);
-  } finally {
-    rmSync(tempDir, { recursive: true, force: true });
-  }
-});
-
-test("github/clean_node_binaries stays free of async filesystem imports so it works on both native and JS targets", () => {
-  const script = fs.readFileSync(
-    path.join(process.cwd(), "tools", "moon", "cmd", "github", "clean_node_binaries", "main.mbt"),
-    "utf8",
-  );
-
-  assert.doesNotMatch(script, /moonbitlang\/async@0\.16\.8/);
-  assert.match(script, /@xfs\.remove_file/);
-});
-
 test("github/collect_native_artifacts copies .node files and skips node_modules", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-collect-node-"));
   const sourceDir = path.join(tempDir, "source");

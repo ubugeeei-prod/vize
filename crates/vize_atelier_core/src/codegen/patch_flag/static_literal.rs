@@ -106,7 +106,7 @@ fn is_static_oxc_expression(expr: &oxc_ast_types::Expression<'_>) -> bool {
         oxc_ast_types::Expression::ObjectExpression(obj) => {
             obj.properties.iter().all(|prop| match prop {
                 oxc_ast_types::ObjectPropertyKind::ObjectProperty(prop) => {
-                    is_static_oxc_expression(&prop.value)
+                    !prop.computed && is_static_oxc_expression(&prop.value)
                 }
                 oxc_ast_types::ObjectPropertyKind::SpreadProperty(_) => false,
             })
@@ -119,5 +119,28 @@ fn is_static_oxc_expression(expr: &oxc_ast_types::Expression<'_>) -> bool {
             })
         }
         _ => false,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_static_object_or_array_literal_in;
+
+    fn is_static(content: &str) -> bool {
+        is_static_object_or_array_literal_in(content, &oxc_allocator::Allocator::default())
+    }
+
+    #[test]
+    fn computed_object_keys_are_dynamic() {
+        assert!(!is_static("{ [prop]: 'red' }"));
+        assert!(!is_static("{ [prop]: true }"));
+        assert!(!is_static("{ [k]: 1 }"));
+    }
+
+    #[test]
+    fn static_object_and_array_literals_stay_static() {
+        assert!(is_static("{ color: 'red' }"));
+        assert!(is_static("['card']"));
+        assert!(is_static("{ top: '1px', left: '2px' }"));
     }
 }

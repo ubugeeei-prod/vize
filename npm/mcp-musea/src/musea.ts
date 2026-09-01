@@ -496,8 +496,6 @@ async function getComponentSourceDescriptor(
   if (!isProjectPath(ctx.projectRoot, componentPath)) {
     return {
       reference: resolved.info.component,
-      absolutePath: componentPath,
-      path: componentPath,
       exists: false,
       error: "Component source is outside the project root.",
     };

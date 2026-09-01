@@ -387,7 +387,7 @@ fn has_error_severity_diagnostic(diagnostics: &[Diagnostic]) -> bool {
 /// but the Corsa bridge is not available. Single point of truth so the
 /// wording stays consistent for tests and follow-up code-action work.
 #[cfg(feature = "native")]
-fn typecheck_unavailable_hint() -> Diagnostic {
+pub(super) fn typecheck_unavailable_hint() -> Diagnostic {
     Diagnostic {
         range: Range {
             start: tower_lsp::lsp_types::Position {
@@ -402,10 +402,7 @@ fn typecheck_unavailable_hint() -> Diagnostic {
         severity: Some(DiagnosticSeverity::HINT),
         code: Some(NumberOrString::String("typecheck-unavailable".to_string())),
         source: Some(super::sources::TYPE_CHECKER.to_string()),
-        message: "Type checking is unavailable in this workspace. \
-            Make sure `tsconfig.json` exists and the Corsa runtime is reachable; \
-            see https://vizejs.dev/guide/static-analysis."
-            .to_string(),
+        message: super::TYPECHECK_UNAVAILABLE_HINT_MESSAGE.to_string(),
         ..Default::default()
     }
 }

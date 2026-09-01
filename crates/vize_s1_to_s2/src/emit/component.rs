@@ -1,5 +1,4 @@
-//! Static-name component emission: vnode/block calls, slot objects,
-//! `createSlots`, Vue builtins, and `<component :is>`.
+//! Component emission, including slots, builtins, and dynamic components.
 
 mod call_props;
 mod checks;
@@ -177,10 +176,12 @@ fn emit_call(
         .any(|binding| matches!(binding, BindingOp::SlotContent(_)));
     let hoist_attrs = rendered_hoist_attrs(component, skip_is);
     let static_nested = builtin::has_static_nested(&component.children);
+    let builtin_helper = builtin::helper(component.name).is_some();
     let hoistable_static_props =
         call_props::hoistable_static_props(component, skip_is, &hoist_attrs)?;
     if for_item
         && !has_custom
+        && cx.slot_param_depth == 0
         && let Some(props) = hoistable_static_props.as_ref()
         && props.non_key
         && (props_static::should_hoist(cx, id, props_static::PropHoistPosition::ForItem)
@@ -188,8 +189,16 @@ fn emit_call(
     {
         cx.buf.push_hoist(props.source.clone());
     }
-    let static_props_hoist_context =
-        cx.hoist_static_vnodes || cx.slot_param_depth > 0 || cx.in_v_for;
+    let hoist_static_props_in_static_vnode_context =
+        cx.hoist_static_vnodes && slots::has_text_only_implicit_default(&component.children);
+    let hoist_static_props_in_loop_context = cx.in_v_for
+        && (slots::has_text_only_implicit_default(&component.children)
+            || hoistable_static_props
+                .as_ref()
+                .is_some_and(|props| props.all_static_binds));
+    let static_props_hoist_context = hoist_static_props_in_static_vnode_context
+        || hoist_static_props_in_loop_context
+        || cx.slot_param_depth > 0;
     let can_hoist_static_props = !has_custom
         && !for_item
         && if_key.is_none()
@@ -208,13 +217,17 @@ fn emit_call(
                 || (props.dynamic_values
                     && cx.slot_param_depth == 0
                     && !cx.in_v_for
-                    && (!has_slots || slots::has_text_only_implicit_default(&component.children)))
+                    && (!cx.hoist_static_vnodes
+                        || !has_slots
+                        || slots::has_text_only_implicit_default(&component.children)))
         });
     let foreign_static_props = id
         .and_then(|id| cx.facts.static_facts.get(id))
         .is_some_and(|fact| fact.foreign && fact.props_hoistable);
     let hoisted_static_props = if can_hoist_static_props
-        && ((!array && (facts.is_some() || create || foreign_static_props))
+        && ((!array
+            && (facts.is_some() || create || foreign_static_props)
+            && (!builtin_helper || static_nested))
             || (array && static_nested))
     {
         Some(

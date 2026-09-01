@@ -1,9 +1,0 @@
-import {
-  "vizejs/tools/lib" @tool,
-  "moonbitlang/x/fs" @xfs,
-  "moonbitlang/x/sys",
-}
-
-options(
-  "is-main": true,
-)

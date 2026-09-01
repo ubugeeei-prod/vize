@@ -18,6 +18,8 @@ mod compile;
 mod experimental_tests;
 mod namespace;
 pub mod options;
+#[cfg(test)]
+mod prefix_identifier_tests;
 pub mod steps;
 
 #[cfg(test)]

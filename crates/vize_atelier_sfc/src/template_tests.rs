@@ -203,3 +203,41 @@ const touches = ref(0)
         result.code
     );
 }
+
+/// Options-API SFCs compile through the DOM lane with
+/// `prefix_identifiers: true`. Compound dynamic keys must walk each
+/// identifier; otherwise the render function throws `ReferenceError`.
+#[test]
+fn test_compile_sfc_compound_dynamic_bind_and_on_keys_prefix_identifiers() {
+    let source = r#"
+<template>
+  <div :[prefix+suffix]="value" @[prefix+suffix]="handler"></div>
+</template>
+
+<script>
+export default {
+  data() {
+    return { prefix: 'data-', suffix: 'id', value: 42 }
+  },
+  methods: {
+    handler() {}
+  }
+}
+</script>
+"#;
+    let descriptor = parse_sfc(source, Default::default()).unwrap();
+    let result = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
+
+    assert!(
+        result.code.contains("[$data.prefix+$data.suffix || \"\"]"),
+        "bind key was not prefixed:\n{}",
+        result.code
+    );
+    assert!(
+        result
+            .code
+            .contains("_toHandlerKey($data.prefix+$data.suffix)"),
+        "on key was not prefixed:\n{}",
+        result.code
+    );
+}

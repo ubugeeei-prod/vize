@@ -1,19 +1,22 @@
 import fs from "node:fs";
+import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-import { repoRoot, runMoonScript } from "../_helpers/moonbit.ts";
 import { writeFakeCommand } from "./fake-command.ts";
 
+export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 export const repository = "ubugeeei/vize";
+const commandPath = "tools/commands/ci/github/issue-pr-title-policy.rs";
 
 export type PolicyRun = {
-  result: ReturnType<typeof runMoonScript>;
+  result: SpawnSyncReturns<string>;
   ghCalls: string[][];
 };
 
 /**
- * Runs the `issue_pr_title_policy` MoonBit command against a real event payload
+ * Runs the issue/PR title policy Rust Script command against a real event payload
  * with `gh` stubbed out. The stub records the exact argv of every invocation so
  * tests can assert the complete API call list, including "no call at all".
  */
@@ -34,15 +37,20 @@ export function runPolicy(payload: unknown, eventName: string): PolicyRun {
     ].join("\n"),
   );
 
-  const result = runMoonScript("github/issue_pr_title_policy", [], {
+  const env = {
+    ...process.env,
+    PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+    FAKE_GH_LOG: ghLogPath,
+    GITHUB_EVENT_NAME: eventName,
+    GITHUB_EVENT_PATH: eventPath,
+    GITHUB_REPOSITORY: repository,
+  };
+  delete env.NODE_TEST_CONTEXT;
+
+  const result = spawnSync("rust-script", [commandPath], {
     cwd: repoRoot,
-    env: {
-      PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
-      FAKE_GH_LOG: ghLogPath,
-      GITHUB_EVENT_NAME: eventName,
-      GITHUB_EVENT_PATH: eventPath,
-      GITHUB_REPOSITORY: repository,
-    },
+    env,
+    encoding: "utf8",
   });
 
   const ghCalls = fs.existsSync(ghLogPath)

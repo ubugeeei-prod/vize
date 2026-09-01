@@ -212,10 +212,11 @@ jobs:
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", cache: true, run-install: false }
       - uses: ./.github/actions/setup-moonbit
+      - uses: ./.github/actions/setup-rust-script
       - name: Install package build dependencies
         run: moon run --target native tools/moon/cmd/github/vp_install -- --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/oxlint...' --filter './npm/builder/unplugin...' --filter './npm/fresco...' --filter './npm/mcp-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/rspack...' --filter './npm/framework/musea-nuxt...' --filter './npm/framework/nuxt-lint-config...' --filter './npm/framework/nuxt...' --filter './npm/marquette...' --filter './npm/compose/core...' --filter './npm/ui...'
       - name: Build release npm packages
-        run: moon run --target native tools/moon/cmd/github/run_many -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build -- vp run --filter './npm/oxlint' build -- vp run --filter './npm/builder/unplugin' build -- vp run --filter './npm/fresco' build -- vp run --filter './npm/mcp-musea' build -- vp run --filter './npm/builder/vite-musea' build -- vp run --filter './npm/builder/vite-musea' build:gallery -- vp run --filter './npm/builder/rspack' build -- vp run --filter './npm/framework/musea-nuxt' build -- vp run --filter './npm/framework/nuxt-lint-config' build -- vp run --filter './npm/framework/nuxt' build -- vp run --filter './npm/marquette' build -- vp run --filter './npm/compose/core' build -- vp run --filter './npm/ui' build
+        run: rust-script tools/commands/ci/github/run-many.rs vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build -- vp run --filter './npm/oxlint' build -- vp run --filter './npm/builder/unplugin' build -- vp run --filter './npm/fresco' build -- vp run --filter './npm/mcp-musea' build -- vp run --filter './npm/builder/vite-musea' build -- vp run --filter './npm/builder/vite-musea' build:gallery -- vp run --filter './npm/builder/rspack' build -- vp run --filter './npm/framework/musea-nuxt' build -- vp run --filter './npm/framework/nuxt-lint-config' build -- vp run --filter './npm/framework/nuxt' build -- vp run --filter './npm/marquette' build -- vp run --filter './npm/compose/core' build -- vp run --filter './npm/ui' build
       - name: Upload vize CLI package artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -436,7 +437,7 @@ jobs:
         uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2
       - name: Clean native build outputs
         shell: bash
-        run: moon run --target native tools/moon/cmd/github/clean_node_binaries -- npm/native npm/fresco-native
+        run: rust-script tools/commands/ci/github/clean-node-binaries.rs npm/native npm/fresco-native
       - name: Build vize-native
         shell: bash
         run: moon run --target native tools/moon/cmd/github/build_napi_package -- npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }} && if [[ "$RUNNER_OS" == Linux && "${{ matrix.settings.target }}" == *-gnu ]]; then rust-script tools/commands/ci/github/verify-glibc-symbols.rs --max 2.36 npm/native/*.linux-*-gnu.node; fi
@@ -539,7 +540,7 @@ jobs:
           vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish
       - name: Prepare Fresco native package tarball
         run: |
-          moon run --target native tools/moon/cmd/github/clean_node_binaries -- npm/fresco-native
+          rust-script tools/commands/ci/github/clean-node-binaries.rs npm/fresco-native
           moon run --target native tools/moon/cmd/github/collect_native_artifacts -- npm/fresco-native/artifacts npm/fresco-native fresco-native
       - name: Smoke install release package tarballs
         run: |
@@ -638,7 +639,7 @@ jobs:
           pattern: fresco-bindings-*
           path: npm/fresco-native/artifacts
       - name: Clean bundled native binaries
-        run: moon run --target native tools/moon/cmd/github/clean_node_binaries -- npm/fresco-native
+        run: rust-script tools/commands/ci/github/clean-node-binaries.rs npm/fresco-native
       - name: Stage bundled native binaries
         run: moon run --target native tools/moon/cmd/github/collect_native_artifacts -- npm/fresco-native/artifacts npm/fresco-native fresco-native
       - name: Smoke install Fresco native package tarball

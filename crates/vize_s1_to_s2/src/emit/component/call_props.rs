@@ -49,6 +49,7 @@ pub(super) fn hoistable_static_props(
             dynamic_values: false,
             non_key: hoist_attrs.iter().any(|attr| attr.name != "key"),
             valued_prop: hoist_attrs.iter().any(|attr| attr.value.is_some()),
+            all_static_binds: false,
         }));
     }
     props_static::component_hoist_props(&component.attributes, &component.bindings)

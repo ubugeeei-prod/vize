@@ -390,7 +390,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
-      - uses: ./.github/actions/setup-moonbit
+      - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: coverage
@@ -405,7 +405,7 @@ jobs:
         run: npm install --global @pkl-community/pkl@0.27.2
 
       - name: Coverage report
-        run: moon run --target native tools/moon/cmd/github/write_coverage_summary --
+        run: rust-script tools/commands/ci/github/write-coverage-summary.rs
 
   source-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404

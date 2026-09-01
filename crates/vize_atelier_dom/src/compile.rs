@@ -309,6 +309,11 @@ fn compile_template_inner_with_sections<'a>(
         inline: options.inline,
         cache_handlers: options.cache_handlers,
         binding_metadata: options.binding_metadata,
+        // Compound dynamic `v-bind` / `v-on` keys (`:[prefix+suffix]`) only
+        // walk identifiers when this flag is set. Transform already receives
+        // it; omitting it here left SFC module-mode render functions with
+        // bare `prefix+suffix` and a runtime ReferenceError.
+        prefix_identifiers: options.prefix_identifiers,
         ..codegen_options
     };
     let codegen_result = profile!(

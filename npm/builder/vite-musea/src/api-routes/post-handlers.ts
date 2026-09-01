@@ -79,6 +79,10 @@ export async function handleGenerate(
       sendError("Missing required field: componentPath", 400);
       return;
     }
+    if (!reqComponentPath.endsWith(".vue")) {
+      sendError("componentPath must be a .vue file", 400);
+      return;
+    }
     const { generateArtFile: genArt } = await import("../autogen/index.js");
     const componentPath = resolveInside(ctx.config.root, reqComponentPath, "componentPath");
     const result = await genArt(componentPath, autogenOptions);

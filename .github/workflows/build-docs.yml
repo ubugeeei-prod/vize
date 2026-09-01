@@ -44,12 +44,13 @@ jobs:
           cache: true
           run-install: false
       - uses: ./.github/actions/setup-moonbit
+      - uses: ./.github/actions/setup-rust-script
 
       - name: Install JS dependencies
         run: moon run --target native tools/moon/cmd/github/vp_install -- --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'
 
       - name: Build @vizejs/vite-plugin
-        run: moon run --target native tools/moon/cmd/github/run_many -- vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build
+        run: rust-script tools/commands/ci/github/run-many.rs vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build
 
       - name: Build docs
         run: vp run --filter './docs' build
@@ -77,6 +78,7 @@ jobs:
           wild-version: "0.9.0"
 
       - uses: ./.github/actions/setup-moonbit
+      - uses: ./.github/actions/setup-rust-script
 
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
@@ -113,7 +115,7 @@ jobs:
         run: moon run --target native tools/moon/cmd/github/vp_install -- --filter './playground...' --filter './examples/vite-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'
 
       - name: Build npm packages
-        run: moon run --target native tools/moon/cmd/github/run_many -- vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build -- vp run --filter './npm/builder/vite-musea' build
+        run: rust-script tools/commands/ci/github/run-many.rs vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build -- vp run --filter './npm/builder/vite-musea' build
 
       - name: Build playground
         run: vp run --filter './playground' build

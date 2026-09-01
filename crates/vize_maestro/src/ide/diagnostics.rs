@@ -23,6 +23,8 @@ mod editor_typecheck_tests;
 mod line_index;
 mod service;
 mod severity;
+#[cfg(all(test, feature = "native"))]
+mod typecheck_unavailable_tests;
 mod vize_sfc_type;
 // `insta`'s snapshot macros expand through the disallowed `std::format!`; the
 // expansion is inside `insta`, so only an allow at the test module can silence
@@ -42,6 +44,15 @@ pub(in crate::ide) use line_index::LineIndex;
 pub(in crate::ide) use line_index::offset_to_line_col;
 #[cfg(feature = "native")]
 pub(in crate::ide) use service::{SourceMapping, VirtualTsResult};
+
+#[cfg(feature = "native")]
+pub(crate) const TYPECHECK_UNAVAILABLE_HINT_MESSAGE: &str = "Type checking is unavailable in this workspace. Make sure `tsconfig.json` exists. \
+     Install `typescript@^7` or configure `typeChecker.corsaPath`; \
+     see https://vizejs.dev/guide/static-analysis.";
+
+#[cfg(feature = "native")]
+pub(crate) const TYPECHECK_UNAVAILABLE_NOTICE_MESSAGE: &str = "Vize: type checking is unavailable in this workspace. Make sure tsconfig.json exists. \
+     Install `typescript@^7` or configure `typeChecker.corsaPath`.";
 
 /// Diagnostic source identifiers.
 pub mod sources {

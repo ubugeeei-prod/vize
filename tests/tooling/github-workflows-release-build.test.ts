@@ -213,7 +213,7 @@ test("release workflow bundles fresco-native binaries into the root package inst
 
   assert.match(
     frescoJob,
-    /Clean bundled native binaries[\s\S]*moon run --target native tools\/moon\/cmd\/github\/clean_node_binaries --/,
+    /Clean bundled native binaries[\s\S]*rust-script tools\/commands\/ci\/github\/clean-node-binaries\.rs npm\/fresco-native/,
   );
   assert.match(
     frescoJob,
