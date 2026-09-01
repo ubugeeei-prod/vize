@@ -71,11 +71,11 @@ pub(super) fn can_hoist_static_props(
         return false;
     }
     let text_only_default = slots::has_text_only_implicit_default(&component.children);
-    let loop_or_scoped_slot_hoist =
-        (cx.in_v_for || cx.slot_param_depth > 0) && (text_only_default || props.all_static_binds);
+    let has_runtime_directive = directive::has_runtime(&component.bindings);
+    let loop_or_scoped_slot_hoist = (cx.in_v_for || cx.slot_param_depth > 0)
+        && (text_only_default || (props.all_static_binds && !has_runtime_directive));
     let hoist_context = (cx.hoist_static_vnodes && text_only_default) || loop_or_scoped_slot_hoist;
     let is_template_for_root = id.is_some_and(|id| cx.template_for_item_root_id == Some(id));
-    let has_runtime_directive = directive::has_runtime(&component.bindings);
     let dynamic_props_hoistable = !props.dynamic_values || !has_slots || text_only_default;
     let transition_props_slot_hoist = matches!(component.name, "Transition" | "transition")
         && has_slots
@@ -97,7 +97,7 @@ pub(super) fn can_hoist_static_props(
         || (props.dynamic_values
             && cx.slot_param_depth == 0
             && !cx.in_v_for
-            && (!has_slots || text_only_default))
+            && dynamic_props_hoistable)
 }
 
 pub(super) fn emit_dynamic_props(cx: &mut EmitCx<'_>, names: &[String]) {

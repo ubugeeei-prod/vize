@@ -173,6 +173,7 @@ fn emit_call(
     let has_binds = has_rendered_binds(component, skip_is);
     let has_attrs = has_rendered_attrs(component, skip_is);
     let has_custom = directive::has_custom(&component.bindings);
+    let has_runtime = directive::has_runtime(&component.bindings);
     let has_component_root_slot = component
         .bindings
         .iter()
@@ -184,6 +185,7 @@ fn emit_call(
         call_props::hoistable_static_props(component, skip_is, &hoist_attrs)?;
     if for_item
         && !has_custom
+        && !has_runtime
         && cx.slot_param_depth == 0
         && let Some(props) = hoistable_static_props.as_ref()
         && props.non_key
@@ -245,7 +247,7 @@ fn emit_call(
         if patch.dynamic_props.is_empty() {
             patch.flag &= !8;
         }
-        if directive::has_runtime(&component.bindings) && patch.flag & (2 | 4 | 8 | 16) == 0 {
+        if has_runtime && patch.flag & (2 | 4 | 8 | 16) == 0 {
             patch.flag |= 512;
         }
     }
