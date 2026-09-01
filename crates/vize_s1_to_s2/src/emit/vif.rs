@@ -96,6 +96,13 @@ fn emit_condition(
             let source = super::js::js_expr_source(js);
             if let Some((leading, trailing)) =
                 authored_condition_padding(cx.source, branch_span, source.as_str(), js.span)
+                    .or_else(|| {
+                        authored_condition_quote_padding(cx.source, source.as_str(), js.span)
+                    })
+                    .or_else(|| {
+                        authored_condition_padding(cx.source, branch_span, js.source, js.span)
+                    })
+                    .or_else(|| authored_condition_quote_padding(cx.source, js.source, js.span))
             {
                 cx.buf.push(leading);
                 cx.buf.push(source.as_str());
@@ -161,6 +168,37 @@ fn authored_condition_padding<'a>(
         .iter()
         .position(|byte| *byte == quote)
         .unwrap_or(after.len());
+    let trailing = after.get(..trailing_end)?;
+    if leading.is_empty() && trailing.is_empty() {
+        return None;
+    }
+    (leading.bytes().all(|byte| byte.is_ascii_whitespace())
+        && trailing.bytes().all(|byte| byte.is_ascii_whitespace()))
+    .then_some((leading, trailing))
+}
+
+fn authored_condition_quote_padding<'a>(
+    source: &'a str,
+    value: &str,
+    value_span: Span,
+) -> Option<(&'a str, &'a str)> {
+    let value_start = usize::try_from(value_span.start).ok()?;
+    let value_end = usize::try_from(value_span.end).ok()?;
+    if value_start > value_end
+        || value_end > source.len()
+        || source.get(value_start..value_end)? != value
+    {
+        return None;
+    }
+    let before = source.get(..value_start)?;
+    let quote_pos = before
+        .as_bytes()
+        .iter()
+        .rposition(|byte| matches!(*byte, b'\'' | b'"'))?;
+    let quote = before.as_bytes()[quote_pos];
+    let leading = source.get(quote_pos + 1..value_start)?;
+    let after = source.get(value_end..)?;
+    let trailing_end = after.as_bytes().iter().position(|byte| *byte == quote)?;
     let trailing = after.get(..trailing_end)?;
     if leading.is_empty() && trailing.is_empty() {
         return None;

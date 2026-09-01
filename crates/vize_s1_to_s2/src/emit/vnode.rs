@@ -5,7 +5,7 @@ mod checks;
 
 pub(super) use array_child::emit_array_child;
 use vize_davinci::id::NodeId;
-use vize_s2::op::ElementOp;
+use vize_s2::op::{BindingOp, ElementOp, Op};
 
 use super::buf::Buf;
 use super::children::children_need_text_flag;
@@ -218,15 +218,15 @@ pub(super) fn emit_call(
     let conditional_v_for_dynamic_text = cx.conditional_v_for_item
         && matches!(prop_hoist, PropHoistPosition::Nested)
         && has_interpolation_descendant(element);
-    let hoisted_props = if allow_hoist
-        && if_key.is_none()
-        && !conditional_v_for_dynamic_text
-        && super::props_static::should_hoist(cx, id, prop_hoist)
-    {
-        super::props_static::root_hoist_props(&element.attributes, &element.bindings)?
-    } else {
-        None
-    };
+    let should_hoist_props = super::props_static::should_hoist(cx, id, prop_hoist)
+        || scoped_for_slot_component_slot_child_props(cx, element, prop_hoist);
+    let hoisted_props =
+        if allow_hoist && if_key.is_none() && !conditional_v_for_dynamic_text && should_hoist_props
+        {
+            super::props_static::root_hoist_props(&element.attributes, &element.bindings)?
+        } else {
+            None
+        };
     let hoist = hoisted_props.is_some();
     let patch = bind_patch(&element.bindings, false, if_key, for_item);
     let text_flag = !once && !memo_block && children_need_text_flag(&element.children);
@@ -328,4 +328,22 @@ pub(super) fn emit_call(
     }
     cx.buf.push(")");
     Ok(())
+}
+
+fn scoped_for_slot_component_slot_child_props(
+    cx: &EmitCx<'_>,
+    element: &ElementOp<'_>,
+    prop_hoist: PropHoistPosition,
+) -> bool {
+    matches!(prop_hoist, PropHoistPosition::Nested)
+        && cx.slot_param_depth > 0
+        && element.bindings.is_empty()
+        && matches!(
+            element.children.ops.as_slice(),
+            [Op::Component(component)]
+                if component
+                    .bindings
+                    .iter()
+                    .any(|binding| matches!(binding, BindingOp::SlotContent(_)))
+        )
 }

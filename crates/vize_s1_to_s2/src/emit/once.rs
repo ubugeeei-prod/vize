@@ -86,6 +86,29 @@ fn skip_or_hoist_component_children(cx: &mut EmitCx<'_>, component: &ComponentOp
                 cx.walk.skip(element.bindings.len());
                 let _alias = super::hoist::hoist_static_element(cx, element);
             }
+            Op::Element(element) if has(&element.bindings) => {
+                let _id = cx.walk.mint();
+                cx.walk.skip(element.bindings.len());
+                skip_or_hoist_once_element_children(cx, element);
+            }
+            _ => super::create_slots_walk::skip_ops(cx, core::slice::from_ref(op)),
+        }
+    }
+}
+
+fn skip_or_hoist_once_element_children(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) {
+    for op in element.children.ops.iter() {
+        match op {
+            Op::Element(child) if super::hoist::is_hoistable(child) => {
+                let _id = cx.walk.mint();
+                cx.walk.skip(child.bindings.len());
+                let _alias = super::hoist::hoist_static_element(cx, child);
+            }
+            Op::Element(child) => {
+                let _id = cx.walk.mint();
+                cx.walk.skip(child.bindings.len());
+                skip_or_hoist_once_element_children(cx, child);
+            }
             _ => super::create_slots_walk::skip_ops(cx, core::slice::from_ref(op)),
         }
     }

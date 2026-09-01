@@ -41,6 +41,7 @@ pub(super) fn key_and_bind_spread(args: &[Arg<'_>]) -> bool {
             Arg::Object {
                 if_key: Some(_),
                 pieces,
+                suppressed_authored_key: false,
                 ..
             },
             Arg::BindSpread(_),

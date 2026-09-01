@@ -1,6 +1,8 @@
 //! Static style-attribute serialization used by dynamic `:style` merges.
 
-use oxc_ast::ast::{ArrayExpressionElement, Expression, IdentifierReference, ObjectPropertyKind};
+use oxc_ast::ast::{
+    ArrayExpressionElement, Expression, IdentifierReference, ObjectPropertyKind, PropertyKey,
+};
 use oxc_ast_visit::Visit;
 use vize_s2::expr::JsExpr;
 use vize_s2::op::{Attribute, BindOp};
@@ -44,7 +46,8 @@ fn legacy_static_style_object_expr(expr: &Expression<'_>, source: &str) -> bool 
         let ObjectPropertyKind::ObjectProperty(property) = property else {
             return false;
         };
-        !property.computed && legacy_static_style_value(&property.value, source)
+        legacy_static_style_key(&property.key, property.computed)
+            && legacy_static_style_value(&property.value, source)
     })
 }
 
@@ -92,8 +95,20 @@ fn static_expression(expr: &Expression<'_>) -> bool {
             let ObjectPropertyKind::ObjectProperty(property) = property else {
                 return false;
             };
-            !property.computed && static_expression(&property.value)
+            legacy_static_style_key(&property.key, property.computed)
+                && static_expression(&property.value)
         }),
+        _ => false,
+    }
+}
+
+fn legacy_static_style_key(key: &PropertyKey<'_>, computed: bool) -> bool {
+    if !computed {
+        return true;
+    }
+    match key {
+        PropertyKey::StringLiteral(_) => true,
+        PropertyKey::TemplateLiteral(template) => template.expressions.is_empty(),
         _ => false,
     }
 }
@@ -110,9 +125,6 @@ fn unwrap_static_expression<'a>(mut expr: &'a Expression<'a>) -> &'a Expression<
     loop {
         match expr {
             Expression::ParenthesizedExpression(paren) => expr = &paren.expression,
-            Expression::TSAsExpression(ts_as) => expr = &ts_as.expression,
-            Expression::TSNonNullExpression(ts_non_null) => expr = &ts_non_null.expression,
-            Expression::TSSatisfiesExpression(ts_satisfies) => expr = &ts_satisfies.expression,
             _ => return expr,
         }
     }

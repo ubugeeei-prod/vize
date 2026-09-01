@@ -31,6 +31,7 @@ pub(super) fn is_static_bound_expr(expr: &Expression<'_>) -> bool {
         | Expression::NumericLiteral(_)
         | Expression::BigIntLiteral(_)
         | Expression::RegExpLiteral(_) => true,
+        Expression::Identifier(ident) => matches!(ident.name.as_str(), "NaN" | "Infinity"),
         Expression::TemplateLiteral(template) => template.expressions.is_empty(),
         Expression::UnaryExpression(unary) => is_static_bound_expr(&unary.argument),
         Expression::ArrayExpression(array) => array.elements.iter().all(static_array_element),

@@ -115,16 +115,7 @@ pub(super) fn is_hoistable(element: &ElementOp<'_>) -> bool {
 }
 
 pub(super) fn is_static_element_tree(element: &ElementOp<'_>) -> bool {
-    super::props_static::static_vnode_surface_can_hoist(&element.attributes, &element.bindings)
-        && element.children.ops.iter().all(is_static_tree_child)
-}
-
-fn is_static_tree_child(op: &Op<'_>) -> bool {
-    match op {
-        Op::Text(_) => true,
-        Op::Element(element) => is_static_element_tree(element),
-        _ => false,
-    }
+    super::vnode_static::can_whole_hoist_static_element(element)
 }
 
 fn walk_hoisted(cx: &mut EmitCx<'_>, element: &ElementOp<'_>) {

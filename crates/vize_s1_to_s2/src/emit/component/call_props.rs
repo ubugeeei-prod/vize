@@ -51,6 +51,9 @@ pub(super) fn hoistable_static_props(
     hoist_attrs: &[&Attribute<'_>],
 ) -> Result<Option<ComponentHoistProps>, EmitError> {
     if skip_is {
+        if has_rendered_binds(component, skip_is) {
+            return Ok(None);
+        }
         return Ok((!hoist_attrs.is_empty()).then(|| ComponentHoistProps {
             source: compact_props_object(hoist_attrs.iter().copied()),
             dynamic_values: false,
@@ -92,6 +95,8 @@ pub(super) fn can_hoist_static_props(
         has_slots && children_are_forwarded_slot_outlets_only(&component.children);
     let direct_static_slot_vnodes =
         has_slots && children_are_direct_static_vnode_hoists(&component.children);
+    let mixed_static_slot_vnode =
+        has_slots && children_are_mixed_text_and_static_vnode_hoists(&component.children);
     let dynamic_forwarded_slot_hoist = props.dynamic_values
         && forwarded_slot_only
         && !has_runtime_directive
@@ -99,6 +104,11 @@ pub(super) fn can_hoist_static_props(
         && cx.slot_param_depth == 0;
     let dynamic_direct_static_slot_hoist = props.dynamic_values
         && direct_static_slot_vnodes
+        && !has_runtime_directive
+        && !cx.in_v_for
+        && cx.slot_param_depth == 0;
+    let dynamic_mixed_static_slot_hoist = props.dynamic_values
+        && mixed_static_slot_vnode
         && !has_runtime_directive
         && !cx.in_v_for
         && cx.slot_param_depth == 0;
@@ -114,7 +124,8 @@ pub(super) fn can_hoist_static_props(
         || !has_slots
         || text_only_default
         || dynamic_forwarded_slot_hoist
-        || dynamic_direct_static_slot_hoist;
+        || dynamic_direct_static_slot_hoist
+        || dynamic_mixed_static_slot_hoist;
     let transition_props_slot_hoist = transition_props_slot_hoist(component, has_slots);
     Ok((!is_template_for_root
         && dynamic_props_hoistable
@@ -179,6 +190,21 @@ pub(super) fn children_are_direct_static_vnode_hoists(region: &Region<'_>) -> bo
             continue;
         }
         match op {
+            Op::Element(element) if super::super::hoist::is_hoistable(element) => found = true,
+            _ => return false,
+        }
+    }
+    found
+}
+
+fn children_are_mixed_text_and_static_vnode_hoists(region: &Region<'_>) -> bool {
+    let mut found = false;
+    for op in region.ops.iter() {
+        if slots::is_whitespace_text(op) {
+            continue;
+        }
+        match op {
+            Op::Text(_) => {}
             Op::Element(element) if super::super::hoist::is_hoistable(element) => found = true,
             _ => return false,
         }
@@ -257,11 +283,19 @@ fn component_has_static_bind_props(component: &ComponentOp<'_>) -> Result<bool, 
 pub(super) fn transition_props_slot_hoist(component: &ComponentOp<'_>, has_slots: bool) -> bool {
     matches!(component.name, "Transition" | "transition")
         && has_slots
-        && has_direct_slot_outlet(&component.children)
+        && !has_direct_slot_outlet(&component.children)
+        && has_element_with_direct_slot_outlet(&component.children)
 }
 
 fn has_direct_slot_outlet(region: &Region<'_>) -> bool {
     region.ops.iter().any(|op| matches!(op, Op::Slot(_)))
+}
+
+fn has_element_with_direct_slot_outlet(region: &Region<'_>) -> bool {
+    region
+        .ops
+        .iter()
+        .any(|op| matches!(op, Op::Element(element) if element.bindings.is_empty() && has_direct_slot_outlet(&element.children)))
 }
 
 pub(super) fn emit_dynamic_props(cx: &mut EmitCx<'_>, names: &[String]) {

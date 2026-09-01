@@ -148,8 +148,7 @@ pub(super) fn bind_patch(
                     "key" => {}
                     key if key.ends_with("Modifiers")
                         || bind_value_is_static_patchless(bind)
-                        || (!is_component
-                            && bind_value_uses_legacy_patchless_bounded_string_concat(bind)) => {}
+                        || bind_value_uses_legacy_patchless_bounded_string_concat(bind) => {}
                     _ => {
                         flag |= 8;
                         let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve) else {

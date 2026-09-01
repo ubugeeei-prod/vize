@@ -138,6 +138,11 @@ fn handler_expr_source<'a>(js: &JsExpr<'a>) -> super::super::js::RawJs<'a> {
         Expression::FunctionExpression(function) if function.body.is_some() => {
             super::super::js::RawJs::Borrowed(js.source)
         }
+        _ if js.source.contains("//")
+            && !super::super::on_body::ends_in_line_comment(js.source) =>
+        {
+            super::super::js::RawJs::Borrowed(js.source)
+        }
         _ => super::super::js::js_expr_source(js),
     }
 }

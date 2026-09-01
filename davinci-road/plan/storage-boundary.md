@@ -73,8 +73,8 @@ or count and fails the gate instead of becoming a `no_std` escape from S0.
 | s2       | `vize_s0::SmallVec`     |     0 |            0 |          0 |
 | s1_to_s2 | `alloc::vec::Vec`       |    47 |           47 |        167 |
 | s1_to_s2 | `alloc::string::String` |     0 |            0 |          0 |
-| s1_to_s2 | `vize_s0::String`       |    63 |           65 |        264 |
-| s1_to_s2 | `vize_s0::Vec`          |    15 |           15 |         67 |
+| s1_to_s2 | `vize_s0::String`       |    63 |           65 |        270 |
+| s1_to_s2 | `vize_s0::Vec`          |    15 |           16 |         67 |
 | s1_to_s2 | `vize_s0::SmallVec`     |     2 |            2 |          4 |
 
 `tests/tooling/davinci-storage-policy.test.ts` masks comments, literals, and
