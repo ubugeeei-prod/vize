@@ -61,6 +61,10 @@ const BATTERY: &[(&str, &str)] = &[
         "pure_static_vnode_hoist_drops_descendant_patchless_binds",
         r#"<Foo><button :style="{ transform: 'none' }"><span class="x" :style="{ color: 'red' }"></span></button></Foo>"#,
     ),
+    (
+        "template_if_component_slot_resets_branch_root_before_nested_if",
+        r#"<Foo><template v-if="show"><ClientOnly><template #fallback><span class="subtle">(-)</span></template><span v-if="pending">(<span class="spinner"></span>)</span><span v-else-if="total !== null"><span class="subtle">(</span>{{ total }}<span class="subtle">)</span></span><span v-else class="subtle">(-)</span></ClientOnly></template></Foo>"#,
+    ),
 ];
 
 #[test]

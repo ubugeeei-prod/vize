@@ -231,11 +231,11 @@ fn emit_call(
     let branch_unused_hoist = !has_component_root_slot
         && !has_custom
         && !for_item
-        && !cx.in_v_for
         && if_key.is_some()
         && cx.template_if_branch_root
         && hoistable_static_props.is_some()
-        && static_nested;
+        && (static_nested
+            || call_props::children_are_direct_static_vnode_hoists(&component.children));
     let unused_hoist = hoisted_static_props.is_none()
         && ((can_hoist_static_props && static_nested) || branch_unused_hoist);
     if unused_hoist {
@@ -303,7 +303,11 @@ fn emit_call(
     } else if emit_flag || has_slots || has_array || filler_default_props_placeholder {
         cx.buf.push(", null");
     }
-    children_arg::emit(
+    let previous_template_if_branch_root = cx.template_if_branch_root;
+    if previous_template_if_branch_root {
+        cx.template_if_branch_root = false;
+    }
+    let children_result = children_arg::emit(
         cx,
         component,
         children_arg::Args {
@@ -316,7 +320,9 @@ fn emit_call(
             keyed_branch: if_key.is_some(),
             transition_slot_root,
         },
-    )?;
+    );
+    cx.template_if_branch_root = previous_template_if_branch_root;
+    children_result?;
     if emit_flag {
         emit_patch_flag(cx, flag);
     }

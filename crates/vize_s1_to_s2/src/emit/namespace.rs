@@ -34,6 +34,7 @@ pub(super) fn crosses_boundary(
     element.namespace != cx.parent_ns
         || child_namespace_crosses(element)
         || structural_children_cross_boundary(
+            cx.source,
             element.namespace,
             &element.children,
             direct_static_children_hoisted,
@@ -41,16 +42,19 @@ pub(super) fn crosses_boundary(
 }
 
 fn structural_children_cross_boundary(
+    source: &str,
     ns: Namespace,
     children: &Region<'_>,
     direct_static_children_hoisted: bool,
 ) -> bool {
     children.ops.iter().any(|child| match child {
         Op::Element(element) => child_crosses_direct(ns, element, direct_static_children_hoisted),
-        Op::If(if_op) => if_op
-            .branches
-            .iter()
-            .any(|branch| ensure_sufficient_stack(|| children_cross_boundary(ns, &branch.region))),
+        Op::If(if_op) => if_op.branches.iter().any(|branch| {
+            ensure_sufficient_stack(|| {
+                !authored_template_branch(source, branch)
+                    && children_cross_boundary(ns, &branch.region)
+            })
+        }),
         Op::For(for_op) => ensure_sufficient_stack(|| children_cross_boundary(ns, &for_op.region)),
         Op::Component(_) | Op::Slot(_) | Op::Text(_) | Op::Interpolation(_) => false,
     })
@@ -90,6 +94,18 @@ fn child_namespace_crosses(element: &ElementOp<'_>) -> bool {
             .ops
             .iter()
             .any(|op| matches!(op, Op::Element(_) | Op::If(_) | Op::For(_)))
+}
+
+fn authored_template_branch(source: &str, branch: &vize_s2::op::IfBranch<'_>) -> bool {
+    let Ok(start) = usize::try_from(branch.span.start) else {
+        return false;
+    };
+    let Ok(end) = usize::try_from(branch.span.end) else {
+        return false;
+    };
+    source
+        .get(start..end)
+        .is_some_and(|source| source.trim_start().starts_with("<template"))
 }
 
 pub(super) fn with_child<T>(

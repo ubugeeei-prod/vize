@@ -40,6 +40,9 @@ pub(crate) struct Cx<'a> {
     /// How many `<pre>` ancestors the walk is inside; condensing is
     /// suppressed for those subtrees (`lower::text`).
     condense_depth: u32,
+    /// How many `v-pre` ancestors the walk is inside; interpolations are
+    /// inert authored text for those subtrees.
+    v_pre_depth: u32,
     pub diagnostics: Vec<Diagnostic>,
     pub provenance: Vec<ProvenanceRecord>,
     pub scopes: SideTable<ScopeFacts>,
@@ -63,6 +66,7 @@ impl<'a> Cx<'a> {
             exhausted: false,
             next_scope: 0,
             condense_depth: 0,
+            v_pre_depth: 0,
             diagnostics: Vec::new(),
             provenance: Vec::new(),
             scopes: SideTable::new(),
@@ -78,6 +82,11 @@ impl<'a> Cx<'a> {
         self.condense_depth > 0
     }
 
+    /// Whether the walk is inside a `v-pre` subtree.
+    pub(crate) fn v_pre_suppressed(&self) -> bool {
+        self.v_pre_depth > 0
+    }
+
     /// Enter/leave a condense-suppressing `<pre>` around its children.
     pub(crate) fn push_condense_suppression(&mut self) {
         self.condense_depth = self.condense_depth.saturating_add(1);
@@ -85,6 +94,15 @@ impl<'a> Cx<'a> {
 
     pub(crate) fn pop_condense_suppression(&mut self) {
         self.condense_depth = self.condense_depth.saturating_sub(1);
+    }
+
+    /// Enter/leave a `v-pre` subtree around its children.
+    pub(crate) fn push_v_pre_suppression(&mut self) {
+        self.v_pre_depth = self.v_pre_depth.saturating_add(1);
+    }
+
+    pub(crate) fn pop_v_pre_suppression(&mut self) {
+        self.v_pre_depth = self.v_pre_depth.saturating_sub(1);
     }
 
     /// Attach a merged run's recorded parts to its compound op, when the

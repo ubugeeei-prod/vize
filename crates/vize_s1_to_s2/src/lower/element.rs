@@ -83,6 +83,13 @@ impl Analyzed<'_> {
             |form| matches!(form, AttrForm::Directive(directive) if directive.head == Head::Slot),
         )
     }
+
+    /// Whether the element carries a `v-pre` spelling.
+    pub(crate) fn has_v_pre(&self) -> bool {
+        self.forms.iter().any(
+            |form| matches!(form, AttrForm::Directive(directive) if directive.head == Head::Pre),
+        )
+    }
 }
 
 /// The authored value text of an attribute, when it has a value node
@@ -201,8 +208,12 @@ pub(crate) fn element_core<'a>(
     // `<pre>` keeps its bytes: condensing is suppressed for the whole
     // subtree (`lower::text`, the shipped `is_pre_tag` configuration).
     let suppress = super::text::suppresses_condense(tag);
+    let suppress_v_pre = analyzed.has_v_pre();
     if suppress {
         cx.push_condense_suppression();
+    }
+    if suppress_v_pre {
+        cx.push_v_pre_suppression();
     }
     let children = Region {
         ops: if component || own_ns != Namespace::Html {
@@ -211,6 +222,9 @@ pub(crate) fn element_core<'a>(
             super::table::lower_element_children(cx, tag, &element.children, child_ns)
         },
     };
+    if suppress_v_pre {
+        cx.pop_v_pre_suppression();
+    }
     if suppress {
         cx.pop_condense_suppression();
     }

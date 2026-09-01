@@ -133,6 +133,10 @@ const BATTERY: &[(&str, &str)] = &[
         "named_mixed_props",
         r#"<slot name="header" foo="1" :bar="b"></slot>"#,
     ),
+    (
+        "dynamic_style_prop_normalizes",
+        r#"<slot :style="{ color }"></slot>"#,
+    ),
 ];
 
 #[test]

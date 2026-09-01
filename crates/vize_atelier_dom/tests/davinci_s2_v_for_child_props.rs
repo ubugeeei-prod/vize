@@ -47,6 +47,10 @@ const BATTERY: &[(&str, &str)] = &[
 </div>
 "#,
     ),
+    (
+        "document_global_key_for_item_registers_unused_hoist",
+        r#"<div><div v-for="document in docs" :key="document.id" class="pill"><img v-if="document.logoUrl" :src="document.logoUrl" />{{ document.title }}</div></div>"#,
+    ),
 ];
 
 #[test]

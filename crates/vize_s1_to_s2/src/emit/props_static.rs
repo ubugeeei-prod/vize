@@ -16,7 +16,8 @@ use super::hoist::{push_attr_pair, unique_attrs};
 use super::props::{Piece, pieces, static_bind_key};
 use super::props_bind::StaticBindKeyCasing;
 use hoist_pair::{
-    bind_value_is_legacy_static_prop, component_hoist_prop, has_prior_component_hoist_key,
+    bind_value_is_legacy_static_prop, component_hoist_prop, for_item_hoist_prop,
+    has_for_item_legacy_global_key, has_prior_component_hoist_key, has_prior_for_item_hoist_key,
     has_prior_hoist_key, multiline_props_object, static_hoist_prop,
 };
 
@@ -53,6 +54,10 @@ pub(super) fn should_hoist(
 pub(super) fn props_hoistable(cx: &EmitCx<'_>, id: Option<NodeId>) -> bool {
     id.and_then(|id| cx.facts.static_facts.get(id))
         .is_some_and(|fact| fact.props_hoistable)
+}
+
+pub(super) fn has_legacy_global_for_item_key(bindings: &[BindingOp<'_>]) -> bool {
+    bindings.iter().any(has_for_item_legacy_global_key)
 }
 
 pub(super) fn root_hoist_props(
@@ -162,6 +167,34 @@ pub(super) fn component_hoist_props(
         valued_prop,
         all_static_binds,
     }))
+}
+
+pub(super) fn for_item_hoist_props(
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+) -> Result<Option<String>, EmitError> {
+    let pieces = pieces(attributes, bindings, false)?;
+    let mut out = String::from("{ ");
+    let mut emitted = 0usize;
+    for (index, piece) in pieces.iter().enumerate() {
+        let mut prop = String::default();
+        let Some(key) = for_item_hoist_prop(&mut prop, piece)? else {
+            return Ok(None);
+        };
+        if has_prior_for_item_hoist_key(&pieces[..index], key.as_str())? {
+            continue;
+        }
+        if emitted > 0 {
+            out.push_str(", ");
+        }
+        out.push_str(prop.as_str());
+        emitted += 1;
+    }
+    if emitted == 0 {
+        return Ok(None);
+    }
+    out.push_str(" }");
+    Ok(Some(out))
 }
 
 pub(super) fn static_vnode_surface_can_hoist(

@@ -4,7 +4,7 @@
 //! first object `v-bind`, then first object `v-on`, then entry props.
 
 use vize_s0::camelize;
-use vize_s2::op::{BindOp, BindingOp, DynamicName, OnOp, SlotOp};
+use vize_s2::op::{BindOp, BindingOp, OnOp, SlotOp};
 
 use super::buf::Buf;
 use super::js::{escape_js_string, is_valid_js_identifier};
@@ -13,7 +13,7 @@ use super::props::{
 };
 use super::props_bind::is_emitted_key_bind;
 use super::{EmitCx, EmitError};
-use super::{UnsupportedReason as Reason, merge};
+use super::{UnsupportedReason as Reason, merge, style};
 
 pub(super) fn emit_props(
     cx: &mut EmitCx<'_>,
@@ -160,9 +160,17 @@ fn emit_props_object(
                     let key = static_bind_key(bind, StaticBindKeyCasing::Camelize)?;
                     push_key(cx, key.as_str());
                     cx.buf.push(": ");
-                    if matches!(bind.name, Some(DynamicName::Static("class"))) {
+                    if key.as_str() == "class" {
                         cx.buf.use_normalize_class();
                         cx.buf.push(Buf::normalize_class_alias());
+                        cx.buf.push("(");
+                        value.emit_authored(cx, bind);
+                        cx.buf.push(")");
+                    } else if key.as_str() == "style"
+                        && !style::bind_skips_normalize("style", false, false, &value)
+                    {
+                        cx.buf.use_normalize_style();
+                        cx.buf.push(Buf::normalize_style_alias());
                         cx.buf.push("(");
                         value.emit_authored(cx, bind);
                         cx.buf.push(")");

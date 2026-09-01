@@ -41,6 +41,10 @@ const BATTERY: &[(&str, &str)] = &[
         "unicode_identifier_suffix_does_not_reorder_helpers",
         r#"<div :class="classes" :style="é_normalizeStyle() ? styles : fallback"></div>"#,
     ),
+    (
+        "normalize_props_guard_precedes_later_merge_props",
+        r#"<Foo v-bind="props"><template #default="{ item }"><Bar v-bind="item.props" :class="item.class" /></template></Foo>"#,
+    ),
 ];
 
 #[test]

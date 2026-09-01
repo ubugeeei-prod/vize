@@ -204,7 +204,11 @@ fn emit_branch(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<
         [Op::Component(component)] => {
             let _id = cx.walk.mint();
             cx.walk.skip(component.bindings.len());
-            super::component::emit_if_branch(cx, component, key, _id)
+            let previous = cx.template_if_branch_root;
+            cx.template_if_branch_root = authored_template_branch(cx, branch);
+            let result = super::component::emit_if_branch(cx, component, key, _id);
+            cx.template_if_branch_root = previous;
+            result
         }
         [Op::Slot(slot)] => {
             let _id = cx.walk.mint();
@@ -220,4 +224,16 @@ fn emit_branch(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<
             branch.span,
         )),
     }
+}
+
+fn authored_template_branch(cx: &EmitCx<'_>, branch: &IfBranch<'_>) -> bool {
+    let Ok(start) = usize::try_from(branch.span.start) else {
+        return false;
+    };
+    let Ok(end) = usize::try_from(branch.span.end) else {
+        return false;
+    };
+    cx.source
+        .get(start..end)
+        .is_some_and(|source| source.trim_start().starts_with("<template"))
 }

@@ -212,3 +212,70 @@ pub(crate) fn lower_text_run<'a>(
     }
     i
 }
+
+/// Lower a contiguous text/interpolation run under `v-pre`.
+/// Interpolation delimiters render as authored text, while Vue's normal
+/// whitespace condense still applies unless an enclosing `<pre>` disabled it.
+pub(crate) fn lower_v_pre_text_run<'a>(
+    cx: &mut Cx<'a>,
+    children: &[SurfaceChild<'a>],
+    start: usize,
+    out: &mut vize_s0::Vec<'a, Op<'a>>,
+) -> usize {
+    let Some(mut end) = text_family_end(cx, &children[start]) else {
+        return start + 1;
+    };
+    let start_offset = text_family_start(cx, &children[start]).unwrap_or(end);
+    let mut i = start + 1;
+    while i < children.len() {
+        let Some(next_start) = text_family_start(cx, &children[i]) else {
+            break;
+        };
+        if next_start != end {
+            break;
+        }
+        let Some(next_end) = text_family_end(cx, &children[i]) else {
+            break;
+        };
+        end = next_end;
+        i += 1;
+    }
+
+    let span = Span::new(start_offset, end);
+    let raw = cx
+        .source
+        .get(span.start as usize..span.end as usize)
+        .unwrap_or_default();
+    let mut content = String::from(raw);
+    if !cx.condense_suppressed() {
+        collapse_fused(&mut content);
+    }
+    let mut interned = StringBuilder::with_capacity_in(content.len(), cx.allocator);
+    interned.push_str(content.as_str());
+    let node = cx.mint_op();
+    cx.record("lower.v-pre-text", node, raw, String::from("ui.text"), span);
+    out.push(Op::Text(Box::new_in(
+        TextOp {
+            content: interned.into_str(),
+            span,
+        },
+        &cx.allocator,
+    )));
+    i
+}
+
+fn text_family_start(cx: &Cx<'_>, child: &SurfaceChild<'_>) -> Option<u32> {
+    match child {
+        SurfaceChild::Text(token) => Some(cx.offset(token.text)),
+        SurfaceChild::Interpolation(node) => Some(cx.offset(node.open.text)),
+        _ => None,
+    }
+}
+
+fn text_family_end(cx: &Cx<'_>, child: &SurfaceChild<'_>) -> Option<u32> {
+    match child {
+        SurfaceChild::Text(token) => Some(cx.token_span(token).end),
+        SurfaceChild::Interpolation(node) => Some(cx.token_span(&node.close).end),
+        _ => None,
+    }
+}

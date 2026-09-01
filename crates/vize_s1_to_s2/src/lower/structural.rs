@@ -89,7 +89,11 @@ pub(crate) fn lower_children<'a>(
                 }
             }
             SurfaceChild::Text(_) | SurfaceChild::Interpolation(_) => {
-                i = text::lower_text_run(cx, children, &plan, i, &mut out);
+                i = if cx.v_pre_suppressed() {
+                    text::lower_v_pre_text_run(cx, children, i, &mut out)
+                } else {
+                    text::lower_text_run(cx, children, &plan, i, &mut out)
+                };
                 continue;
             }
             other => lower_leaf(cx, other, &mut out),

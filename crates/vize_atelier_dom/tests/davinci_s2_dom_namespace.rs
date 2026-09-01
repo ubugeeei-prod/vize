@@ -57,6 +57,14 @@ const BATTERY: &[(&str, &str)] = &[
         "component_slot_static_svg_child",
         r#"<Foo><svg><path d="M0 0h1v1z"/></svg></Foo>"#,
     ),
+    (
+        "nested_template_if_static_svg_keeps_parent_vnode",
+        r#"<button :class="x"><div><template v-if="ok"><svg><path /></svg></template></div></button>"#,
+    ),
+    (
+        "template_if_directive_button_static_svg_keeps_parent_vnode",
+        r#"<div v-if="root"><div><template v-if="ok"><button v-tip @click="go"><svg><path /></svg></button></template></div></div>"#,
+    ),
     ("mathml_static_tree", "<math><mi>x</mi></math>"),
     (
         "v_if_static_mathml_child",

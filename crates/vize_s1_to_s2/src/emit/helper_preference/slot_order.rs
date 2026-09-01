@@ -185,54 +185,43 @@ pub(super) fn op_is_direct_slot_carrier(op: &Op<'_>) -> bool {
 }
 
 fn op_precedes_slot_outlet_as_carrier(op: &Op<'_>) -> bool {
-    op_has_component_slot_template_carrier(op) && !op_has_slot_outlet(op)
+    op_has_direct_slot_carrier(op) && !op_has_slot_outlet(op)
 }
 
-fn has_slot_template_carrier(region: &Region<'_>) -> bool {
-    region.ops.iter().any(|op| match op {
+fn region_has_direct_slot_carrier(region: &Region<'_>) -> bool {
+    region.ops.iter().any(op_has_direct_slot_carrier)
+}
+
+fn op_has_direct_slot_carrier(op: &Op<'_>) -> bool {
+    match op {
         Op::Element(element) => slots::is_slot_template(element),
+        Op::Component(component) => {
+            component.bindings.iter().any(component_slot_content)
+                || component_tree_has_slot_carrier(&component.children)
+        }
         Op::If(if_op) => if_op
             .branches
             .iter()
-            .any(|branch| has_slot_template_carrier(&branch.region)),
-        Op::For(for_op) => has_slot_template_carrier(&for_op.region),
-        Op::Component(_) | Op::Text(_) | Op::Interpolation(_) | Op::Slot(_) => false,
-    })
-}
-
-fn op_has_component_slot_template_carrier(op: &Op<'_>) -> bool {
-    match op {
-        Op::Element(element) => {
-            slots::is_slot_template(element)
-                || element
-                    .children
-                    .ops
-                    .iter()
-                    .any(op_has_component_slot_template_carrier)
-        }
-        Op::Component(component) => {
-            component.bindings.iter().any(component_slot_content)
-                || has_slot_template_carrier(&component.children)
-                || component
-                    .children
-                    .ops
-                    .iter()
-                    .any(op_has_component_slot_template_carrier)
-        }
-        Op::If(if_op) => if_op.branches.iter().any(|branch| {
-            branch
-                .region
-                .ops
-                .iter()
-                .any(op_has_component_slot_template_carrier)
-        }),
-        Op::For(for_op) => for_op
-            .region
-            .ops
-            .iter()
-            .any(op_has_component_slot_template_carrier),
+            .any(|branch| region_has_direct_slot_carrier(&branch.region)),
+        Op::For(for_op) => region_has_direct_slot_carrier(&for_op.region),
         Op::Slot(_) | Op::Text(_) | Op::Interpolation(_) => false,
     }
+}
+
+fn component_tree_has_slot_carrier(region: &Region<'_>) -> bool {
+    region.ops.iter().any(|op| match op {
+        Op::Element(element) => slots::is_slot_template(element),
+        Op::Component(component) => {
+            component.bindings.iter().any(component_slot_content)
+                || component_tree_has_slot_carrier(&component.children)
+        }
+        Op::If(if_op) => if_op
+            .branches
+            .iter()
+            .any(|branch| component_tree_has_slot_carrier(&branch.region)),
+        Op::For(for_op) => component_tree_has_slot_carrier(&for_op.region),
+        Op::Slot(_) | Op::Text(_) | Op::Interpolation(_) => false,
+    })
 }
 
 pub(super) fn has_slot_outlet(region: &Region<'_>) -> bool {

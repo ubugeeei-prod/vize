@@ -67,7 +67,7 @@ mod run;
 
 pub(crate) use condense::{TextAction, plan_whitespace, suppresses_condense};
 use condense::{collapse_fused, extends_run};
-pub(crate) use run::lower_text_run;
+pub(crate) use run::{lower_text_run, lower_v_pre_text_run};
 
 /// One part of a merged run, owned (the fact crosses compile boundaries
 /// with its artifact, P1-11).
