@@ -72,18 +72,21 @@ pub(super) fn can_hoist_static_props(
     if has_custom || for_item || if_key.is_some() {
         return false;
     }
-    let static_vnode_context =
-        cx.hoist_static_vnodes && slots::has_text_only_implicit_default(&component.children);
-    let loop_context = cx.in_v_for
-        && (slots::has_text_only_implicit_default(&component.children) || props.all_static_binds);
-    let hoist_context = static_vnode_context || loop_context || cx.slot_param_depth > 0;
-    props_static::should_hoist(cx, id, props_static::PropHoistPosition::Nested)
-        || id.is_some_and(|id| {
-            cx.template_for_item_root_id == Some(id)
-                && props_static::props_hoistable(cx, Some(id))
-                && !directive::has_runtime(&component.bindings)
-        })
-        || (!props.dynamic_values && props.valued_prop && hoist_context && !has_slots)
+    let text_only_default = slots::has_text_only_implicit_default(&component.children);
+    let loop_or_scoped_slot_hoist =
+        (cx.in_v_for || cx.slot_param_depth > 0) && (text_only_default || props.all_static_binds);
+    let hoist_context = (cx.hoist_static_vnodes && text_only_default) || loop_or_scoped_slot_hoist;
+    let is_template_for_root = id.is_some_and(|id| cx.template_for_item_root_id == Some(id));
+    let has_runtime_directive = directive::has_runtime(&component.bindings);
+    (!is_template_for_root
+        && props_static::should_hoist(cx, id, props_static::PropHoistPosition::Nested))
+        || (is_template_for_root
+            && id.is_some_and(|id| {
+                cx.template_for_item_root_id == Some(id)
+                    && props_static::props_hoistable(cx, Some(id))
+                    && !has_runtime_directive
+            }))
+        || (!props.dynamic_values && props.valued_prop && hoist_context && !has_runtime_directive)
         || (props.dynamic_values
             && cx.slot_param_depth == 0
             && !cx.in_v_for
