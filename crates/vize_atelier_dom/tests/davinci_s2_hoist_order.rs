@@ -89,6 +89,18 @@ const BATTERY: &[(&str, &str)] = &[
         "nested_component_responsive_props_wait_before_parent_static_bind",
         r#"<section class="markdown"><template v-for="group in menuItems" :key="group.title"><div class="components-overview"><h2 class="ant-typography components-overview-group-title"><a-space align="center">{{ isZhCN ? group.title : group.enTitle }}<a-tag style="display: block">{{ group.children.length }}</a-tag></a-space></h2><a-row :gutter="[24, 24]"><template v-for="component in group.children" :key="component.title"><a-col :xs="24" :sm="12" :lg="8" :xl="6"><component :is="component.target ? 'a' : 'router-link'" v-bind="component.target ? { href: component.path, target: component.target } : { to: getLocalizedPathname(component.path, isZhCN) }"><a-card size="small" class="components-overview-card"><template #title><div class="components-overview-title">{{ component.title }}{{ isZhCN ? component.subtitle : '' }}</div></template><div class="components-overview-img"><img :src="isDark && component.coverDark ? component.coverDark : component.cover" :alt="component.title" /></div></a-card></component></a-col></template></a-row></div></template></section>"#,
     ),
+    (
+        "slot_component_static_attrs_stay_inline_after_prior_hoist",
+        r#"<a-menu><a-menu-item-group v-if="isZhCN" key="advanced" title="advanced"><a-menu-item key="surely-table"><a href="https://www.surelyvue.com" target="_blank" rel="noopener noreferrer" style="position: relative">Surely Table</a></a-menu-item></a-menu-item-group><template v-for="m in menus"><template v-if="m.children"><a-menu-item-group :key="m.order" :title="m.title"><template v-for="n in m.children"><a-menu-item v-if="n.path" :key="n.path"><router-link :to="n.path"><span>{{ n.title }}</span><span v-if="isZhCN" class="chinese">{{ n.subtitle }}</span></router-link><a-tag v-if="n.tag" color="green" style="margin-left: auto">{{ n.tag }}</a-tag></a-menu-item></template></a-menu-item-group></template></template></a-menu>"#,
+    ),
+    (
+        "slot_component_static_bind_props_stay_inline_after_prior_hoist",
+        r#"<a-row class="list-row" :gutter="24"><a-col v-for="item in renderData" :key="item.id" class="list-col" :xs="12" :sm="12" :md="12" :lg="6" :xl="6" :xxl="6"><CardWrap :loading="loading" :title="item.title" :description="item.description"><template #skeleton><a-skeleton :animation="true"><a-skeleton-line :widths="['50%', '100%']" :rows="4" /></a-skeleton></template></CardWrap></a-col></a-row>"#,
+    ),
+    (
+        "table_column_static_props_stay_inline_after_static_vnode",
+        r#"<b-table :data="data" :loading="loading" paginated backend-pagination :total="total" :per-page="perPage" @page-change="onPageChange" backend-sorting :default-sort="[sortField, sortOrder]" @sort="onSort"><b-table-column field="original_title" label="Title" sortable v-slot="props">{{ props.row.original_title }}</b-table-column><b-table-column field="vote_average" label="Vote Average" numeric sortable v-slot="props"><span class="tag" :class="type(props.row.vote_average)">{{ props.row.vote_average }}</span></b-table-column><b-table-column field="vote_count" label="Vote Count" numeric sortable v-slot="props">{{ props.row.vote_count }}</b-table-column></b-table>"#,
+    ),
 ];
 
 #[test]

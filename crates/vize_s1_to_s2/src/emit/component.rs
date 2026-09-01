@@ -193,7 +193,8 @@ fn emit_call(
     {
         cx.buf.push_hoist(props.source.clone());
     }
-    let static_props_hoist_blocked = has_custom || for_item || if_key.is_some();
+    let static_props_hoist_blocked =
+        has_custom || for_item || if_key.is_some() || has_component_root_slot;
     let can_hoist_static_props = call_props::can_hoist_static_props(
         cx,
         component,
@@ -226,6 +227,7 @@ fn emit_call(
     };
     let branch_unused_hoist = !has_custom
         && !for_item
+        && !cx.in_v_for
         && if_key.is_some()
         && cx.template_if_branch_root
         && hoistable_static_props.is_some()

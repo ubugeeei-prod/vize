@@ -101,6 +101,7 @@ pub(super) fn can_hoist_static_props(
             }))
         || (!props.dynamic_values
             && props.valued_prop
+            && !props.all_static_binds
             && !has_runtime_directive
             && (hoist_context || transition_props_slot_hoist))
         || (props.dynamic_values
