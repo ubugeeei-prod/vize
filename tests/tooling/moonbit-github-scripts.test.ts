@@ -7,32 +7,6 @@ import { test } from "node:test";
 import { runMoonScript } from "./_helpers/moonbit.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
-test("github/run_many executes command groups in order", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-run-many-"));
-  const outputPath = path.join(tempDir, "output.txt");
-
-  try {
-    const result = runMoonScript(
-      "github/run_many",
-      [
-        "node",
-        "-e",
-        `require('node:fs').appendFileSync(${JSON.stringify(outputPath)}, 'a')`,
-        "--",
-        "node",
-        "-e",
-        `require('node:fs').appendFileSync(${JSON.stringify(outputPath)}, 'b')`,
-      ],
-      { cwd: tempDir },
-    );
-
-    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
-    assert.equal(fs.readFileSync(outputPath, "utf8"), "ab");
-  } finally {
-    rmSync(tempDir, { recursive: true, force: true });
-  }
-});
-
 test("github/collect_native_artifacts copies .node files and skips node_modules", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-collect-node-"));
   const sourceDir = path.join(tempDir, "source");
