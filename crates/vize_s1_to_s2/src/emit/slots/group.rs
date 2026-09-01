@@ -1,9 +1,10 @@
 use alloc::vec::Vec as StdVec;
 
 use vize_s0::String;
-use vize_s2::op::{Op, Region};
+use vize_s2::op::{IfOp, Op, Region};
 
 use super::{capture_child, emit_template_pieces, is_slot_template};
+use crate::emit::create_slots_walk::{advance_after_op, first_slot_template};
 use crate::emit::{EmitCx, EmitError, UnsupportedReason as Reason};
 use crate::pass::walk::PageWalk;
 use crate::pass::{SlotCarrier, SlotFacts, SlotParams};
@@ -163,13 +164,42 @@ fn op_branch_key_count(cx: &EmitCx<'_>, op: &Op<'_>, walk: &mut PageWalk) -> u32
             walk.skip(component.bindings.len());
             region_branch_key_count(cx, &component.children, walk)
         }
-        Op::If(if_op) if crate::emit::create_slots_walk::is_slot_if(cx, id, if_op) => 0,
-        Op::If(if_op) => u32::try_from(if_op.branches.len()).unwrap_or(u32::MAX),
+        Op::If(if_op) if crate::emit::create_slots_walk::is_slot_if(cx, id, if_op) => {
+            slot_if_branch_key_count(cx, if_op, walk)
+        }
+        Op::If(if_op) => {
+            for branch in if_op.branches.iter() {
+                skip_ops_for_count(walk, &branch.region.ops);
+            }
+            u32::try_from(if_op.branches.len()).unwrap_or(u32::MAX)
+        }
         Op::For(for_op) => region_branch_key_count(cx, &for_op.region, walk),
         Op::Slot(slot) => {
             walk.skip(slot.bindings.len());
             region_branch_key_count(cx, &slot.fallback, walk)
         }
         Op::Text(_) | Op::Interpolation(_) => 0,
+    }
+}
+
+fn slot_if_branch_key_count(cx: &EmitCx<'_>, if_op: &IfOp<'_>, walk: &mut PageWalk) -> u32 {
+    if_op.branches.iter().fold(0u32, |count, branch| {
+        let Some((idx, element, _content)) = first_slot_template(&branch.region) else {
+            skip_ops_for_count(walk, &branch.region.ops);
+            return count;
+        };
+        skip_ops_for_count(walk, &branch.region.ops[..idx]);
+        let _id = walk.mint();
+        walk.skip(element.bindings.len());
+        let count = count.saturating_add(region_branch_key_count(cx, &element.children, walk));
+        skip_ops_for_count(walk, &branch.region.ops[idx + 1..]);
+        count
+    })
+}
+
+fn skip_ops_for_count(walk: &mut PageWalk, ops: &[Op<'_>]) {
+    for op in ops {
+        let _id = walk.mint();
+        advance_after_op(walk, op);
     }
 }

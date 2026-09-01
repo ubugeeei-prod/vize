@@ -92,6 +92,20 @@ fn create_slots_default_branch_keys_are_allocated_before_named_entries() {
 }
 
 #[test]
+fn branch_keys_inside_conditional_slot_entries_count_before_later_default_branches() {
+    assert_shipped_parity(
+        r#"<Foo><template #header><Bar><template v-if="meta" #meta><a v-if="downloadable">Download</a><a v-if="offline">Offline</a></template><template #controls><Qux v-if="controls" /></template></Bar></template><Loading v-if="loading" /></Foo>"#,
+    );
+}
+
+#[test]
+fn conditional_slot_entry_key_does_not_shift_nested_static_slot_branches() {
+    assert_shipped_parity(
+        r#"<Foo v-if="page"><Header><template #title><Badge v-if="badge" /></template><template #description><Mdc v-if="description" /></template><template #links><Button v-for="link in links" :key="link.label"><template v-if="link.avatar" #leading><Avatar /></template></Button></template></Header><Body><Content v-if="body" /><Separator v-if="surround" /></Body><template v-if="toc" #right><Toc><template #bottom><Separator v-if="toc" /><Links /><template v-if="prod"><Separator /><Ads /></template></template></Toc></template></Foo>"#,
+    );
+}
+
+#[test]
 fn dynamic_slot_template_branch_keys_do_not_leak_to_parent_slots() {
     assert_shipped_parity(
         r#"<Comp><template #a><Inner><template v-if="x" #input><div /></template></Inner></template><div v-if="y" /></Comp>"#,
