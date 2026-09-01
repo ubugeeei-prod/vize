@@ -53,6 +53,7 @@ fn has_direct_component_child(element: &ElementOp<'_>) -> bool {
 
 pub(super) fn can_whole_hoist_static_element(element: &ElementOp<'_>) -> bool {
     if element.namespace != Namespace::Html
+        && element.tag == "svg"
         && !element.bindings.is_empty()
         && element
             .children

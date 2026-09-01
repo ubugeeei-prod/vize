@@ -300,11 +300,7 @@ fn children_are_bare_forwarded_slot_outlets_only(region: &Region<'_>) -> bool {
             continue;
         }
         match op {
-            Op::Slot(slot)
-                if slot.attributes.is_empty()
-                    && slot.bindings.is_empty()
-                    && slot.fallback.ops.iter().all(slots::is_whitespace_text) =>
-            {
+            Op::Slot(slot) if slot.attributes.is_empty() && slot.bindings.is_empty() => {
                 found = true;
             }
             _ => return false,
