@@ -147,10 +147,13 @@ fn emit_call(
     }
     let has_array = array && slots::has_implicit_default(&component.children);
     let has_slots = !array && (facts.is_some() || create || spread.is_some());
+    let forwards_slot = super::outlet::has_forwarded_outlet(&component.children);
     let filler_default_props_placeholder =
         !array && !has_slots && slots::filler_default_needs_props_placeholder(&component.children);
     let dynamic_names = create || facts.is_some_and(slots::has_dynamic_names) || spread.is_some();
     let transition_slot_root = builtin::transition_slot_root(component.name);
+    let transition_props_slot_hoist =
+        matches!(component.name, "Transition" | "transition") && has_slots && forwards_slot;
     let alias = if block {
         Buf::create_block_alias()
     } else {
@@ -204,7 +207,7 @@ fn emit_call(
     let hoisted_static_props = if can_hoist_static_props
         && ((!array
             && (facts.is_some() || create || foreign_static_props)
-            && (!builtin_helper || static_nested || (transition_slot_root && has_slots)))
+            && (!builtin_helper || static_nested || transition_props_slot_hoist))
             || (array && static_nested))
     {
         Some(
@@ -259,7 +262,7 @@ fn emit_call(
     if (cx.in_v_for && has_slots)
         || dynamic_names
         || builtin::always_dynamic_slots(component.name)
-        || (cx.slot_param_depth > 0 && super::outlet::has_forwarded_outlet(&component.children))
+        || (cx.slot_param_depth > 0 && forwards_slot)
     {
         flag |= 1024;
     }
