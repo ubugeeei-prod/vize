@@ -31,7 +31,7 @@ const BATTERY: &[(&str, &str)] = &[
     ),
     (
         "hoisted_style_helper_precedes_body_class_helper",
-        r#"<div><Foo :style="{ color: tone }" /><span :class="classes"></span></div>"#,
+        r#"<div><Foo :style="{ color: tone }"></Foo><span :class="classes"></span></div>"#,
     ),
     (
         "alias_shaped_expression_text_does_not_reorder_helpers",
@@ -39,7 +39,7 @@ const BATTERY: &[(&str, &str)] = &[
     ),
     (
         "unicode_identifier_suffix_does_not_reorder_helpers",
-        r#"<div :class="classes" :style="é_normalizeStyle() ? styles : fallback" />"#,
+        r#"<div :class="classes" :style="é_normalizeStyle() ? styles : fallback"></div>"#,
     ),
 ];
 
