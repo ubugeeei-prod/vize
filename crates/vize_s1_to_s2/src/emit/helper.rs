@@ -1,8 +1,9 @@
 //! Vue helpers this installment can mention, ranked the way
 //! `vue_helper_import_rank` orders the shipped preamble. Same-rank
-//! helpers follow transform-first registration, then emit order
+//! helpers mostly follow transform-first registration, then emit order
 //! (`Buf::prefer` then first `use_*`), matching `root.helpers`
-//! then `used_helpers`.
+//! then `used_helpers`; ranks whose shipped order is driven by emitted
+//! helper calls are sorted by final alias use.
 
 #[derive(Clone, Copy)]
 pub(super) enum Helper {
