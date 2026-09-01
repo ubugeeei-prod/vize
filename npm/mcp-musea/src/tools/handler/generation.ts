@@ -14,6 +14,7 @@ import {
   resolveArtReference,
   resolveProjectPath,
 } from "../../musea.js";
+import { resolveProjectVueFile } from "../../vue-source-path.js";
 import {
   flattenTokenCategories,
   generateTokensMarkdown,
@@ -30,17 +31,15 @@ export async function handleGenerateVariants(
   if (!componentRelPath) {
     throw new McpError(ErrorCode.InvalidParams, "componentPath is required");
   }
-  if (!componentRelPath.endsWith(".vue")) {
-    throw new McpError(ErrorCode.InvalidParams, "componentPath must be a .vue file");
-  }
+
+  const absolutePath = resolveProjectVueFile(ctx.projectRoot, componentRelPath, "componentPath");
+
   if (!binding.analyzeSfc) {
     throw new McpError(ErrorCode.InternalError, "analyzeSfc not available in native binding");
   }
   if (!binding.generateVariants) {
     throw new McpError(ErrorCode.InternalError, "generateVariants not available in native binding");
   }
-
-  const absolutePath = resolveProjectPath(ctx.projectRoot, componentRelPath, "componentPath");
   const source = await fs.promises.readFile(absolutePath, "utf-8");
 
   const analysis = binding.analyzeSfc(source, { filename: absolutePath });

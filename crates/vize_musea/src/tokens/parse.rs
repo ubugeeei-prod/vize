@@ -43,12 +43,17 @@ fn merge_token_directory(target: &mut Value, dir: &Path) -> TokenResult<()> {
 
     for entry in entries {
         let path = entry.path();
-        let metadata = entry.metadata().map_err(io_error)?;
-        if metadata.is_dir() {
+        let file_type = entry.file_type().map_err(io_error)?;
+        // Skip symlinks so a tokens tree cannot read files outside the
+        // caller-supplied directory (e.g. tokens/leak.json -> ~/.aws/credentials).
+        if file_type.is_symlink() {
+            continue;
+        }
+        if file_type.is_dir() {
             merge_token_directory(target, &path)?;
             continue;
         }
-        if !metadata.is_file() || !is_token_file(&path) {
+        if !file_type.is_file() || !is_token_file(&path) {
             continue;
         }
 

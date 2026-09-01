@@ -13,7 +13,9 @@ import {
   isLoopbackAddress,
   isTrustedSourcePath,
   resolveInside,
+  resolveInsideVueFile,
   resolveTrustedSourcePath,
+  resolveTrustedVueSourcePath,
   resolveUrlPathInside,
   serializeScriptValue,
   validateDevApiRequest,
@@ -32,6 +34,41 @@ void test("resolveInside keeps filesystem reads under the allowed directory", ()
   assert.throws(() => resolveUrlPathInside(root, "/assets/../../outside.txt"), HttpError);
   assert.throws(() => resolveUrlPathInside(root, "/assets/%2e%2e/outside.txt"), HttpError);
   assert.throws(() => resolveUrlPathInside(root, "/assets/%5C..%5Coutside.txt"), HttpError);
+});
+
+void test("resolveInsideVueFile rejects non-vue paths and symlink targets", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "musea-vue-file-"));
+  try {
+    const vuePath = path.join(root, "Button.vue");
+    fs.writeFileSync(vuePath, "<template><button /></template>\n");
+    fs.writeFileSync(path.join(root, ".env"), "SECRET=1\n");
+    fs.symlinkSync(path.join(root, ".env"), path.join(root, "Evil.vue"));
+
+    assert.equal(resolveInsideVueFile(root, "Button.vue"), vuePath);
+    assert.throws(() => resolveInsideVueFile(root, ".env"), HttpError);
+    assert.throws(() => resolveInsideVueFile(root, "Evil.vue"), HttpError);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+void test("resolveTrustedVueSourcePath rejects a .vue symlink to a non-vue file", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "musea-trusted-vue-"));
+  try {
+    const vuePath = path.join(root, "Button.vue");
+    fs.writeFileSync(vuePath, "<template><button /></template>\n");
+    fs.writeFileSync(path.join(root, ".env"), "SECRET=1\n");
+    fs.symlinkSync(path.join(root, ".env"), path.join(root, "Evil.vue"));
+
+    assert.equal(resolveTrustedVueSourcePath(root, [], vuePath), vuePath);
+    assert.throws(() => resolveTrustedVueSourcePath(root, [], path.join(root, ".env")), HttpError);
+    assert.throws(
+      () => resolveTrustedVueSourcePath(root, [], path.join(root, "Evil.vue")),
+      HttpError,
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 void test("URL path decoding failures are reported as bad requests", () => {

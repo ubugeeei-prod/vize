@@ -11,7 +11,9 @@ export {
   isTrustedSourcePath,
   resolveInside,
   resolveInsideAny,
+  resolveInsideVueFile,
   resolveTrustedSourcePath,
+  resolveTrustedVueSourcePath,
   resolveUrlPathInside,
 } from "./trusted-path.js";
 

@@ -496,10 +496,26 @@ async function getComponentSourceDescriptor(
   if (!isProjectPath(ctx.projectRoot, componentPath)) {
     return {
       reference: resolved.info.component,
-      absolutePath: componentPath,
-      path: componentPath,
       exists: false,
       error: "Component source is outside the project root.",
+    };
+  }
+
+  let real: string;
+  try {
+    real = fs.realpathSync.native(componentPath);
+  } catch {
+    return {
+      reference: resolved.info.component,
+      exists: false,
+      error: "Component source not found.",
+    };
+  }
+  if (!real.endsWith(".vue")) {
+    return {
+      reference: resolved.info.component,
+      exists: false,
+      error: "Component source must be a .vue file.",
     };
   }
 
@@ -514,10 +530,8 @@ async function getComponentSourceDescriptor(
   } catch {
     return {
       reference: resolved.info.component,
-      absolutePath: componentPath,
-      path: toProjectPath(ctx.projectRoot, componentPath),
       exists: false,
-      error: `Component source not found: ${toProjectPath(ctx.projectRoot, componentPath)}`,
+      error: "Component source not found.",
     };
   }
 }
