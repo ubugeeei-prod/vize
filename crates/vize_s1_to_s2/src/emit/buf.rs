@@ -4,10 +4,10 @@ use alloc::vec::Vec as StdVec;
 
 use vize_s0::{String, ToCompactString};
 
-use self::call_position::helper_call_position;
 use super::helper::Helper;
 
 mod call_position;
+mod helper_order;
 
 /// Growing JS text plus the helpers the body mentioned.
 pub(super) struct Buf {
@@ -293,52 +293,6 @@ impl Buf {
 
     pub(super) fn hoist_root_props(&mut self, object: String) -> String {
         self.push_hoist(object)
-    }
-
-    fn ordered_helpers(&self) -> StdVec<Helper> {
-        let mut listed = StdVec::new();
-        let mut bits = 0u64;
-        let mut push = |helper: Helper| {
-            if self.used & helper.bit() == 0 || bits & helper.bit() != 0 {
-                return;
-            }
-            bits |= helper.bit();
-            listed.push(helper);
-        };
-        for helper in self.preferred.iter().copied() {
-            push(helper);
-        }
-        for helper in self.used_order.iter().copied() {
-            push(helper);
-        }
-        for helper in Helper::ALL {
-            push(helper);
-        }
-        listed.sort_by(|left, right| {
-            left.rank().cmp(&right.rank()).then_with(|| {
-                match (
-                    left.rank(),
-                    self.first_alias_position(*left),
-                    self.first_alias_position(*right),
-                ) {
-                    (2 | 5, Some(left_pos), Some(right_pos)) => left_pos.cmp(&right_pos),
-                    _ => core::cmp::Ordering::Equal,
-                }
-            })
-        });
-        listed
-    }
-
-    fn first_alias_position(&self, helper: Helper) -> Option<usize> {
-        let alias = helper.alias();
-        let mut offset = 0;
-        for hoist in self.hoists.iter() {
-            if let Some(position) = helper_call_position(hoist, alias) {
-                return Some(offset + position);
-            }
-            offset += hoist.len();
-        }
-        helper_call_position(self.code.as_str(), alias).map(|position| offset + position)
     }
 
     /// Function-mode preamble, helpers in import-rank order, then any
