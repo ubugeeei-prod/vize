@@ -37,6 +37,10 @@ const BATTERY: &[(&str, &str)] = &[
         "alias_shaped_expression_text_does_not_reorder_helpers",
         r#"<div :class="classes" :style="value === '_normalizeStyle()' ? styles : fallback"></div>"#,
     ),
+    (
+        "unicode_identifier_suffix_does_not_reorder_helpers",
+        r#"<div :class="classes" :style="é_normalizeStyle() ? styles : fallback" />"#,
+    ),
 ];
 
 #[test]

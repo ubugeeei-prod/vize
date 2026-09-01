@@ -56,7 +56,7 @@ fn helper_preamble_ignores_alias_shaped_authored_text() {
     buf.use_helper(Helper::NormalizeStyle);
     buf.use_helper(Helper::NormalizeClass);
     buf.push(
-        "['_normalizeStyle()', value._normalizeStyle(), /* _normalizeStyle() */ _normalizeClass(cls), _normalizeStyle(style)]",
+        "['_normalizeStyle()', value._normalizeStyle(), é_normalizeStyle(), /* _normalizeStyle() */ _normalizeClass(cls), _normalizeStyle(style)]",
     );
 
     assert_eq!(

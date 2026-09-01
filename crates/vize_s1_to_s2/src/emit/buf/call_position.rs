@@ -1,3 +1,5 @@
+use oxc_syntax::identifier::is_identifier_part;
+
 pub(super) fn helper_call_position(text: &str, alias: &str) -> Option<usize> {
     let bytes = text.as_bytes();
     let alias = alias.as_bytes();
@@ -18,10 +20,10 @@ pub(super) fn helper_call_position(text: &str, alias: &str) -> Option<usize> {
                     .map_or(bytes.len(), |end| position + 4 + end);
             }
             _ if bytes[position..].starts_with(alias)
-                && position
-                    .checked_sub(1)
-                    .and_then(|before| bytes.get(before))
-                    .is_none_or(|byte| !is_identifier(*byte) && *byte != b'.') =>
+                && text[..position]
+                    .chars()
+                    .next_back()
+                    .is_none_or(|ch| !is_identifier_part(ch) && ch != '.') =>
             {
                 let after = position + alias.len();
                 if bytes[after..]
@@ -50,8 +52,4 @@ fn quoted_end(bytes: &[u8], start: usize) -> usize {
         }
     }
     bytes.len()
-}
-
-fn is_identifier(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$')
 }
