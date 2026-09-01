@@ -163,6 +163,9 @@ struct EmitCx<'facts> {
     once_element_depth: u32,
     /// Slot objects inside `v-for` carry `_: 2 /* DYNAMIC */`.
     in_v_for: bool,
+    /// Emission is inside a `v-for` render-list item that was lowered from
+    /// a `v-if` branch, where descendant hoists stay inline like the shipped lane.
+    conditional_v_for_item: bool,
     /// The next array child is the single component child of a lowered
     /// `<template v-for>` item; its root props inherit the old item-root hoist.
     template_for_item_single_root: bool,
@@ -171,6 +174,8 @@ struct EmitCx<'facts> {
     template_for_item_root_id: Option<NodeId>,
     /// The current branch root was unwrapped from `<template v-if>`.
     template_if_branch_root: bool,
+    /// The current `v-for` branch root came from an authored `<template v-if>`.
+    template_if_for_branch_root: bool,
     /// A native root unwrapped from `<template v-for>` drops an authored
     /// child key unless the key was authored on the template wrapper.
     suppress_template_for_child_key: bool,
@@ -243,9 +248,11 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
         once_depth: 0,
         once_element_depth: 0,
         in_v_for: false,
+        conditional_v_for_item: false,
         template_for_item_single_root: false,
         template_for_item_root_id: None,
         template_if_branch_root: false,
+        template_if_for_branch_root: false,
         suppress_template_for_child_key: false,
         skip_memo: false,
         slot_param_depth: 0,

@@ -50,7 +50,7 @@ pub(super) fn comment_separated_element_gap_with_newline(
     }
     let mut has_newline = false;
     let mut saw_whitespace = false;
-    while index < hi {
+    while index < children.len() {
         match children.get(index) {
             Some(SurfaceChild::Text(token)) if token.text.chars().all(super::is_vue_ws) => {
                 saw_whitespace = true;

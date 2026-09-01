@@ -19,8 +19,9 @@ use super::props_static::PropHoistPosition;
 use super::vnode_children::emit_children;
 use super::{EmitCx, EmitError};
 use checks::{
-    direct_static_children_hoisted, has_cloak, has_direct_interpolation_child,
-    has_dynamic_key_binding, has_prop_bindings, template_if_branch_root_has_direct_interpolation,
+    direct_static_children_hoisted, has_cloak, has_dynamic_key_binding,
+    has_interpolation_descendant, has_prop_bindings,
+    template_if_branch_root_has_direct_interpolation,
 };
 
 pub(super) fn emit_unique_element(
@@ -214,12 +215,12 @@ pub(super) fn emit_call(
         && cx.slot_param_depth == 0
         && !template_if_branch_root_has_direct_interpolation(cx, element, if_key);
     let has_binds = has_prop_bindings(&element.bindings);
-    let nested_v_for_direct_text = cx.in_v_for
+    let conditional_v_for_dynamic_text = cx.conditional_v_for_item
         && matches!(prop_hoist, PropHoistPosition::Nested)
-        && has_direct_interpolation_child(element);
+        && has_interpolation_descendant(element);
     let hoisted_props = if allow_hoist
         && if_key.is_none()
-        && !nested_v_for_direct_text
+        && !conditional_v_for_dynamic_text
         && super::props_static::should_hoist(cx, id, prop_hoist)
     {
         super::props_static::root_hoist_props(&element.attributes, &element.bindings)?

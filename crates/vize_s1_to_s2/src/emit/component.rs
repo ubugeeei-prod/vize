@@ -2,6 +2,7 @@
 
 mod call_props;
 mod checks;
+mod children_arg;
 mod preamble;
 
 use call_props::{
@@ -302,41 +303,20 @@ fn emit_call(
     } else if emit_flag || has_slots || has_array || filler_default_props_placeholder {
         cx.buf.push(", null");
     }
-    if array {
-        if has_array {
-            cx.buf.push(", ");
-            cx.with_static_vnode_hoist(true, |cx| {
-                builtin::emit_array_children(cx, &component.children, if_key.is_some())
-            })?;
-        } else if emit_flag {
-            cx.buf.push(", null");
-        }
-    } else if create {
-        cx.buf.push(", ");
-        cx.with_static_vnode_hoist(true, |cx| {
-            create_slots::emit_create_slots(cx, &component.children, spread.as_ref())
-        })?;
-    } else if let Some(facts) = facts {
-        cx.buf.push(", ");
-        cx.with_static_vnode_hoist(true, |cx| {
-            let previous = cx.transition_slot_root;
-            cx.transition_slot_root = previous || transition_slot_root;
-            let result = slots::emit_slots(
-                cx,
-                &component.children,
-                facts,
-                spread.as_ref(),
-                &component.bindings,
-            );
-            cx.transition_slot_root = previous;
-            result
-        })?;
-    } else if let Some(spread) = spread {
-        cx.buf.push(", ");
-        cx.buf.push(spread.as_str());
-    } else if emit_flag {
-        cx.buf.push(", null");
-    }
+    children_arg::emit(
+        cx,
+        component,
+        children_arg::Args {
+            array,
+            has_array,
+            create,
+            facts,
+            spread: spread.as_ref(),
+            emit_flag,
+            keyed_branch: if_key.is_some(),
+            transition_slot_root,
+        },
+    )?;
     if emit_flag {
         emit_patch_flag(cx, flag);
     }

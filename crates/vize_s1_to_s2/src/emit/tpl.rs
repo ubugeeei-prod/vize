@@ -97,7 +97,11 @@ fn unwrap_if(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<()
         }
         [Op::For(for_op)] => {
             let id = cx.walk.mint();
-            super::emit_for_op(cx, for_op, id, Some(key))
+            let previous = cx.template_if_for_branch_root;
+            cx.template_if_for_branch_root = true;
+            let result = super::emit_for_op(cx, for_op, id, Some(key));
+            cx.template_if_for_branch_root = previous;
+            result
         }
         _ => Err(EmitError::unsupported_at(
             Reason::TemplateUnwrapShape,

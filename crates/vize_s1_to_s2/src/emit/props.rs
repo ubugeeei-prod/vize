@@ -288,7 +288,7 @@ pub(super) fn emit_bind_props(
             if_key,
             skip_normalize: false,
             empty_key_multiline: for_item
-                && (super::directive::has_custom(bindings) || once_layout || force_multiline),
+                && (super::directive::has_runtime(bindings) || once_layout || force_multiline),
             is_plain_element,
             for_item,
             suppress_once_cache_dynamic: once_cache_initializer,

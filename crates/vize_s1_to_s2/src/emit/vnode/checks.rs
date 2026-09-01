@@ -41,6 +41,29 @@ pub(super) fn has_direct_interpolation_child(element: &ElementOp<'_>) -> bool {
         .any(|op| matches!(op, Op::Interpolation(_)))
 }
 
+pub(super) fn has_interpolation_descendant(element: &ElementOp<'_>) -> bool {
+    region_has_interpolation_descendant(&element.children.ops)
+}
+
+fn op_has_interpolation_descendant(op: &Op<'_>) -> bool {
+    match op {
+        Op::Interpolation(_) => true,
+        Op::Element(element) => has_interpolation_descendant(element),
+        Op::Component(component) => region_has_interpolation_descendant(&component.children.ops),
+        Op::If(if_op) => if_op
+            .branches
+            .iter()
+            .any(|branch| region_has_interpolation_descendant(&branch.region.ops)),
+        Op::For(for_op) => region_has_interpolation_descendant(&for_op.region.ops),
+        Op::Slot(slot) => region_has_interpolation_descendant(&slot.fallback.ops),
+        Op::Text(_) => false,
+    }
+}
+
+fn region_has_interpolation_descendant(ops: &[Op<'_>]) -> bool {
+    ops.iter().any(op_has_interpolation_descendant)
+}
+
 pub(super) fn has_dynamic_key_binding(element: &ElementOp<'_>) -> bool {
     element.bindings.iter().any(|binding| {
         matches!(

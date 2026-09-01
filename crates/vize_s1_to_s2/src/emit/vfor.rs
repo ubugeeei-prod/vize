@@ -134,8 +134,12 @@ pub(super) fn emit_for(
     }
     cx.buf.push("return ");
     let prev_in_v_for = cx.in_v_for;
+    let prev_conditional_v_for_item = cx.conditional_v_for_item;
+    let from_template_if_branch = cx.template_if_for_branch_root;
     let scope_mark = cx.push_scope(id);
     cx.in_v_for = true;
+    cx.conditional_v_for_item =
+        prev_conditional_v_for_item || (fragment_key.is_some() && !from_template_if_branch);
     let item = if from_template {
         super::tpl::emit_for_template_item(
             cx,
@@ -148,6 +152,7 @@ pub(super) fn emit_for(
     } else {
         emit_plain_item(cx, for_op, bind_len, stable)
     };
+    cx.conditional_v_for_item = prev_conditional_v_for_item;
     cx.in_v_for = prev_in_v_for;
     cx.pop_scope(scope_mark);
     item?;
@@ -188,12 +193,15 @@ fn emit_memo_body(
     cx.buf.newline();
     cx.buf.push("const _item = ");
     let prev_in_v_for = cx.in_v_for;
+    let prev_conditional_v_for_item = cx.conditional_v_for_item;
     let prev_skip_memo = cx.skip_memo;
     let scope_mark = cx.push_scope(id);
     cx.in_v_for = true;
+    cx.conditional_v_for_item = prev_conditional_v_for_item;
     cx.skip_memo = true;
     let item = emit_plain_item(cx, for_op, bind_len, stable);
     cx.skip_memo = prev_skip_memo;
+    cx.conditional_v_for_item = prev_conditional_v_for_item;
     cx.in_v_for = prev_in_v_for;
     cx.pop_scope(scope_mark);
     item?;

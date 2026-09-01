@@ -77,6 +77,9 @@ pub(super) fn can_hoist_static_props(
     if blocked_by_context {
         return Ok(false);
     }
+    if cx.conditional_v_for_item {
+        return Ok(false);
+    }
     let text_only_default = slots::has_text_only_implicit_default(&component.children);
     let has_runtime_directive = directive::has_runtime(&component.bindings);
     let nested_slot_key = cx.slot_param_depth > 0

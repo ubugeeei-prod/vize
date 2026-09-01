@@ -129,6 +129,34 @@ const BATTERY: &[(&str, &str)] = &[
         "if_branch_component_root_slot_static_props_stay_inline",
         r#"<Panel v-if="open" label="fixed" v-slot="{ value }"><span class="value">{{ value }}</span></Panel>"#,
     ),
+    (
+        "for_native_dynamic_text_props_keep_legacy_hoist_order",
+        r#"<div v-for="project in projects" :key="project.name" class="card"><div class="card-content"><div class="content"><p>{{ project.name }}</p><p>{{ project.status }}</p>{{ project.description }}</div></div><footer class="card-footer"><a class="card-footer-item">Open</a></footer></div>"#,
+    ),
+    (
+        "for_direct_dynamic_text_props_keep_legacy_hoist_order",
+        r#"<div v-for="exchange in exchangeRates" :key="exchange.currency" v-tooltip="tooltip(exchange)" class="exchange-rate-row"><p class="value"><span class="input-currency">{{ inputCurrency }} =</span>{{ exchange.value }}</p></div>"#,
+    ),
+    (
+        "for_component_sibling_dynamic_text_props_keep_legacy_hoist_order",
+        r#"<div v-for="disk in disks" :key="disk.id" class="disk-row"><PercentageChart :title="disk.name" /><p class="info"><b>{{ label }}</b>: {{ disk.free }} out of {{ disk.size }}</p><p class="info"><b>{{ mountLabel }}</b>: {{ disk.mount }}</p></div>"#,
+    ),
+    (
+        "conditional_for_static_text_sibling_stays_inline",
+        r#"<section><p v-if="loading">loading</p><div v-for="group in groups" v-else :key="group.id" class="card"><p><strong>Leader: </strong><a v-if="group.leader">{{ group.leader }}</a></p></div></section>"#,
+    ),
+    (
+        "conditional_for_branch_static_child_and_component_props_stay_inline",
+        r#"<div><div v-for="block in blocks" v-if="block.enabled" :key="block.key"><div v-if="selected === block.key"><div class="selected-corner"></div><div v-html="icons.check"></div></div><strike class="gray-200">$60</strike></div></div>"#,
+    ),
+    (
+        "conditional_for_static_tail_child_stays_inline",
+        r#"<div><div v-for="category in categories" v-if="category.visible" :key="category.identifier"><Row :category="category" /><div class="fill-height"></div></div></div>"#,
+    ),
+    (
+        "nested_conditional_for_slot_carrier_props_stay_inline",
+        r#"<div><div v-for="row in rows" v-if="row.show" :key="row.id"><div v-for="item in row.items" :key="item.id"><Mount><span slot="popoverContent"><h4>{{ item.name }}</h4></span></Mount></div></div></div>"#,
+    ),
 ];
 
 #[test]

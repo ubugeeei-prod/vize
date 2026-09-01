@@ -6,7 +6,6 @@ use vize_s2::op::{BindingOp, ComponentOp, ElementOp, Op};
 
 use super::buf::Buf;
 use super::builtin;
-use super::directive;
 use super::hoist::is_hoistable;
 use super::js::asset_ident;
 use super::vnode;
@@ -27,24 +26,22 @@ pub(super) fn emit_element(
     for_item: bool,
 ) -> Result<(), EmitError> {
     emit_cached(cx, |cx| {
-        directive::wrap_element(cx, element, |cx| {
-            cx.buf.use_create_element_vnode();
-            let previous_once_element_depth = cx.once_element_depth;
-            cx.once_element_depth = 0;
-            cx.once_depth += 1;
-            let result = vnode::emit_call(
-                cx,
-                element,
-                /* block */ false,
-                key,
-                /* hoist */ (false, None, super::props_static::PropHoistPosition::Nested),
-                for_item,
-                /* once */ true,
-            );
-            cx.once_depth -= 1;
-            cx.once_element_depth = previous_once_element_depth;
-            result
-        })
+        cx.buf.use_create_element_vnode();
+        let previous_once_element_depth = cx.once_element_depth;
+        cx.once_element_depth = 0;
+        cx.once_depth += 1;
+        let result = vnode::emit_call(
+            cx,
+            element,
+            /* block */ false,
+            key,
+            /* hoist */ (false, None, super::props_static::PropHoistPosition::Nested),
+            for_item,
+            /* once */ true,
+        );
+        cx.once_depth -= 1;
+        cx.once_element_depth = previous_once_element_depth;
+        result
     })
 }
 
@@ -57,14 +54,12 @@ pub(super) fn emit_component(
 ) -> Result<(), EmitError> {
     skip_or_hoist_component_children(cx, component);
     emit_cached(cx, |cx| {
-        directive::wrap_component(cx, component, |cx| {
-            cx.buf.use_create_vnode();
-            cx.buf.push(Buf::create_vnode_alias());
-            cx.buf.push("(");
-            emit_component_target(cx, component)?;
-            cx.buf.push(")");
-            Ok(())
-        })
+        cx.buf.use_create_vnode();
+        cx.buf.push(Buf::create_vnode_alias());
+        cx.buf.push("(");
+        emit_component_target(cx, component)?;
+        cx.buf.push(")");
+        Ok(())
     })
 }
 

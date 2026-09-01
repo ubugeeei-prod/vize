@@ -80,6 +80,16 @@ const CASES: &[Case] = &[
         sites: &[],
     },
     Case {
+        name: "custom_directive_is_resolved_but_not_wrapped",
+        src: r#"<h3 v-once v-example="heading">{{ question }}</h3>"#,
+        sites: &["1 /* TEXT */"],
+    },
+    Case {
+        name: "component_custom_directive_is_resolved_but_not_wrapped",
+        src: r#"<Foo v-once v-example="heading" />"#,
+        sites: &[],
+    },
+    Case {
         name: "event_binding_is_omitted_from_cache_initializer",
         src: r###"<button v-once class="btn" @click="closeWithAction()">{{ $t("viewAchievements") }}</button>"###,
         sites: &["1 /* TEXT */"],
