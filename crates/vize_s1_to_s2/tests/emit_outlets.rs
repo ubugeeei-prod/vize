@@ -118,6 +118,13 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn fallback_dynamic_element_caches_static_sibling_children() {
+    assert_shipped_parity(
+        r#"<div v-if="pending"><Loading /></div><div v-else-if="resolved"><slot :result="result as T"></slot></div><div v-else><div :class="$style.error"><slot name="error" :error="error"><div><i class="icon"></i> {{ message }}</div><Button @click="retry"><i class="retry"></i> {{ retryText }}</Button></slot></div></div>"#,
+    );
+}
+
+#[test]
 fn named_event_props_use_component_listener_casing() {
     assert_eq!(
         assembled(r#"<slot @pick="choose"></slot>"#),

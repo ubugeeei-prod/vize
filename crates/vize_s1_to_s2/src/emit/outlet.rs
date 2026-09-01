@@ -170,11 +170,23 @@ fn emit_fallback_units(
             start_fallback_item(cx, compact, first);
             emit_hoisted_element(cx, element)
         }
-        Op::Element(_) | Op::Component(_) | Op::If(_) | Op::For(_) | Op::Slot(_) => {
+        Op::Element(_) => {
+            start_fallback_item(cx, compact, first);
+            emit_fallback_element(cx, op)
+        }
+        Op::Component(_) | Op::If(_) | Op::For(_) | Op::Slot(_) => {
             start_fallback_item(cx, compact, first);
             emit_array_child(cx, op, false, false)
         }
     }
+}
+
+fn emit_fallback_element(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
+    let previous = cx.static_cache;
+    cx.static_cache = true;
+    let result = emit_array_child(cx, op, false, false);
+    cx.static_cache = previous;
+    result
 }
 
 /// Slot fallback walks each S1 child (`generate_node`), so a merged
