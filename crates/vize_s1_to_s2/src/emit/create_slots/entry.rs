@@ -141,12 +141,9 @@ pub(super) fn emit_for_entry(
     cx.buf.indent();
     cx.buf.newline();
     cx.buf.push("return ");
-    let prev = cx.in_v_for;
-    cx.in_v_for = true;
     skip_ops(cx, &for_op.region.ops[..slot_idx]);
     let body = emit_slot_object(cx, slot_element, slot_content, None);
     skip_ops(cx, &for_op.region.ops[slot_idx + 1..]);
-    cx.in_v_for = prev;
     body?;
     cx.buf.deindent();
     cx.buf.newline();

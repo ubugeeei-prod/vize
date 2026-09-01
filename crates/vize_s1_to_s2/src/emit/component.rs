@@ -1,9 +1,5 @@
-//! Static-name component emission (`resolveComponent` / `createVNode` /
-//! `createBlock`) plus slot objects from [`SlotFacts`] (implicit
-//! default, named `<template>` groups, component-root `v-slot`) and
-//! `createSlots` for `v-if` / `v-for` slot templates, the `v-slots`
-//! spread, Vue builtins, and `<component :is>`
-//! (`resolveDynamicComponent`).
+//! Static-name component emission: vnode/block calls, slot objects,
+//! `createSlots`, Vue builtins, and `<component :is>`.
 
 mod call_props;
 mod checks;

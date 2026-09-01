@@ -78,6 +78,13 @@ fn non_slot_for_slot_outlet_siblings_leave_empty_create_slots_entries() {
 }
 
 #[test]
+fn component_slots_inside_dynamic_v_for_entries_stay_stable() {
+    assert_shipped_parity(
+        r#"<RecipeList><template v-for="(recipe, index) in recipes" #[`actions-${recipe.id}`] :key="'item-actions-decrease' + recipe.id"><Action><Button v-if="recipe" :disabled="off" @click.prevent="remove(recipe.id!)"><Icon color="grey">{{ icon }}</Icon></Button></Action><div>{{ quantities[index].value }}</div></template></RecipeList>"#,
+    );
+}
+
+#[test]
 fn create_slots_default_branch_keys_are_allocated_before_named_entries() {
     assert_shipped_parity(
         r#"<Foo><template #body><Bar v-if="bodyA" /><Baz v-if="bodyB" /></template><Qux v-if="mainA" /><Quux v-else-if="mainB" /><template v-if="footer" #footer><Footer /></template></Foo>"#,
