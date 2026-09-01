@@ -18,12 +18,23 @@ pub(super) use super::props_bind::{
     BindName, StaticBindKeyCasing, bind_name, emit_dynamic_bind_pair, has_prop_modifier,
     is_dynamic_bind_name, is_emitted_key_bind, js_value, static_bind_key,
 };
-pub(super) use super::props_object::{Piece, emit_props_object, pieces};
+pub(super) use super::props_object::{Piece, PropsObjectOptions, emit_props_object, pieces};
 pub(super) use super::props_value::bind_value;
 
 pub(super) struct Patch {
     pub flag: i32,
     pub dynamic_props: StdVec<String>,
+}
+
+#[derive(Clone, Copy, Default)]
+pub(super) struct BindPropsOptions<'a> {
+    pub if_key: Option<&'a str>,
+    pub skip_is: bool,
+    pub for_item: bool,
+    pub is_plain_element: bool,
+    pub once_layout: bool,
+    pub once_cache_initializer: bool,
+    pub force_multiline: bool,
 }
 
 pub(super) fn admit_element_bindings(
@@ -363,14 +374,17 @@ pub(super) fn emit_bind_props(
     cx: &mut EmitCx<'_>,
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
-    if_key: Option<&str>,
-    skip_is: bool,
-    for_item: bool,
-    is_plain_element: bool,
-    once_layout: bool,
-    once_cache_initializer: bool,
-    force_multiline: bool,
+    options: BindPropsOptions<'_>,
 ) -> Result<(), EmitError> {
+    let BindPropsOptions {
+        if_key,
+        skip_is,
+        for_item,
+        is_plain_element,
+        once_layout,
+        once_cache_initializer,
+        force_multiline,
+    } = options;
     if super::merge::has_object_spread(bindings) {
         return super::merge::emit_spread_props(
             cx,
@@ -392,13 +406,16 @@ pub(super) fn emit_bind_props(
     emit_props_object(
         cx,
         &pieces,
-        if_key,
-        false,
-        for_item && (super::directive::has_custom(bindings) || once_layout || force_multiline),
-        is_plain_element,
-        for_item,
-        once_cache_initializer,
-        once_layout || force_multiline,
+        PropsObjectOptions {
+            if_key,
+            skip_normalize: false,
+            empty_key_multiline: for_item
+                && (super::directive::has_custom(bindings) || once_layout || force_multiline),
+            is_plain_element,
+            for_item,
+            suppress_once_cache_dynamic: once_cache_initializer,
+            force_multiline: once_layout || force_multiline,
+        },
     )?;
     if normalize {
         cx.buf.push(")");

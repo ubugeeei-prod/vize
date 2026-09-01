@@ -10,17 +10,31 @@ use super::props_bind::{self, StaticBindKeyCasing};
 use super::{EmitCx, EmitError};
 use super::{on, props_value, style};
 
+#[derive(Clone, Copy, Default)]
+pub(super) struct PropsObjectOptions<'a> {
+    pub if_key: Option<&'a str>,
+    pub skip_normalize: bool,
+    pub empty_key_multiline: bool,
+    pub is_plain_element: bool,
+    pub for_item: bool,
+    pub suppress_once_cache_dynamic: bool,
+    pub force_multiline: bool,
+}
+
 pub(super) fn emit_props_object(
     cx: &mut EmitCx<'_>,
     pieces: &[Piece<'_>],
-    if_key: Option<&str>,
-    skip_normalize: bool,
-    empty_key_multiline: bool,
-    is_plain_element: bool,
-    for_item: bool,
-    suppress_once_cache_dynamic: bool,
-    force_multiline: bool,
+    options: PropsObjectOptions<'_>,
 ) -> Result<(), EmitError> {
+    let PropsObjectOptions {
+        if_key,
+        skip_normalize,
+        empty_key_multiline,
+        is_plain_element,
+        for_item,
+        suppress_once_cache_dynamic,
+        force_multiline,
+    } = options;
     let split_once_static_class = cx.once_depth > 0
         && pieces_have_static_attr(pieces, "class")
         && pieces_have_named(pieces, "class");

@@ -26,7 +26,8 @@ use super::flag::emit_patch_flag;
 use super::hoist::compact_props_object;
 use super::js::asset_ident;
 use super::props::{
-    apply_static_ref_patch, bind_patch, emit_bind_props, prune_legacy_patchless_dynamic_props,
+    BindPropsOptions, apply_static_ref_patch, bind_patch, emit_bind_props,
+    prune_legacy_patchless_dynamic_props,
 };
 use super::props_static;
 use super::slots;
@@ -312,13 +313,15 @@ fn emit_call(
             cx,
             &component.attributes,
             &component.bindings,
-            if_key,
-            skip_is,
-            for_item,
-            false,
-            false,
-            false,
-            for_item && if_key.is_some() && has_component_root_slot,
+            BindPropsOptions {
+                if_key,
+                skip_is,
+                for_item,
+                is_plain_element: false,
+                once_layout: false,
+                once_cache_initializer: false,
+                force_multiline: for_item && if_key.is_some() && has_component_root_slot,
+            },
         )?;
     } else if for_item && directive::has_custom(&component.bindings) {
         cx.buf.push(", { }");

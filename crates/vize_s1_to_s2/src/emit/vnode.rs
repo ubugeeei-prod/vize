@@ -11,7 +11,9 @@ use super::children::children_need_text_flag;
 use super::directive;
 use super::flag::emit_patch_flag;
 use super::namespace;
-use super::props::{admit_element_bindings, apply_static_ref_patch, bind_patch, emit_bind_props};
+use super::props::{
+    BindPropsOptions, admit_element_bindings, apply_static_ref_patch, bind_patch, emit_bind_props,
+};
 use super::props_static::PropHoistPosition;
 use super::vnode_children::emit_children;
 use super::{EmitCx, EmitError};
@@ -243,13 +245,15 @@ pub(super) fn emit_call(
             cx,
             &element.attributes,
             &element.bindings,
-            if_key,
-            false,
-            for_item,
-            true,
-            once_layout,
-            once,
-            false,
+            BindPropsOptions {
+                if_key,
+                skip_is: false,
+                for_item,
+                is_plain_element: true,
+                once_layout,
+                once_cache_initializer: once,
+                force_multiline: false,
+            },
         )?;
     } else if !element.attributes.is_empty() {
         cx.buf.push(", ");

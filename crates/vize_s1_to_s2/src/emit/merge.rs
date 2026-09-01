@@ -17,7 +17,7 @@ use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::on::{event_key_for, needs_hydration};
 use super::props::{
-    BindName, Patch, Piece, StaticBindKeyCasing, bind_name, bind_value,
+    BindName, Patch, Piece, PropsObjectOptions, StaticBindKeyCasing, bind_name, bind_value,
     bind_value_is_static_patchless, emit_props_object, has_prop_modifier, is_emitted_key_bind,
     pieces, static_bind_key,
 };
@@ -176,13 +176,15 @@ pub(super) fn emit_spread_props(
                 emit_props_object(
                     cx,
                     pieces,
-                    *if_key,
-                    true,
-                    for_item,
-                    is_plain_element,
-                    for_item,
-                    false,
-                    force_multiline,
+                    PropsObjectOptions {
+                        if_key: *if_key,
+                        skip_normalize: true,
+                        empty_key_multiline: for_item,
+                        is_plain_element,
+                        for_item,
+                        suppress_once_cache_dynamic: false,
+                        force_multiline,
+                    },
                 )?;
             }
         }
