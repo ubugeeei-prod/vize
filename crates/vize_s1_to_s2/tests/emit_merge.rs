@@ -42,7 +42,9 @@ fn assert_shipped_parity(source: &str) {
     assert_eq!(assembled(source), shipped(source), "{source}");
 }
 
-#[path = "emit_merge/object_binds.rs"]
-mod object_binds;
-#[path = "emit_merge/object_on_and_multiline.rs"]
-mod object_on_and_multiline;
+mod emit_merge {
+    use super::*;
+
+    mod object_binds;
+    mod object_on_and_multiline;
+}

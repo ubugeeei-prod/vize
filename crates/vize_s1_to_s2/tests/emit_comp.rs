@@ -42,7 +42,9 @@ fn assert_shipped_parity(source: &str) {
     assert_eq!(assembled(source), shipped(source), "{source}");
 }
 
-#[path = "emit_comp/basic_and_control_flow.rs"]
-mod basic_and_control_flow;
-#[path = "emit_comp/slots_and_dynamic.rs"]
-mod slots_and_dynamic;
+mod emit_comp {
+    use super::*;
+
+    mod basic_and_control_flow;
+    mod slots_and_dynamic;
+}

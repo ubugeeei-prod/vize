@@ -42,7 +42,9 @@ fn pin(visual: &str) -> String {
     visual.replace(")\n\n  return", ")\n  \n  return")
 }
 
-#[path = "emit_slots/element_children.rs"]
-mod element_children;
-#[path = "emit_slots/text_and_templates.rs"]
-mod text_and_templates;
+mod emit_slots {
+    use super::*;
+
+    mod element_children;
+    mod text_and_templates;
+}

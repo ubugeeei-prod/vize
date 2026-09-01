@@ -38,7 +38,9 @@ fn assert_shipped_parity(source: &str) {
     assert_eq!(assembled(source), shipped(source), "{source}");
 }
 
-#[path = "emit_static/static_props.rs"]
-mod static_props;
-#[path = "emit_static/text_and_once.rs"]
-mod text_and_once;
+mod emit_static {
+    use super::*;
+
+    mod static_props;
+    mod text_and_once;
+}
