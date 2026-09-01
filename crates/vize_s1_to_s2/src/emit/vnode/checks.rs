@@ -30,6 +30,10 @@ pub(super) fn template_if_branch_root_has_direct_interpolation(
     if if_key.is_none() || !cx.template_if_branch_root {
         return false;
     }
+    has_direct_interpolation_child(element)
+}
+
+pub(super) fn has_direct_interpolation_child(element: &ElementOp<'_>) -> bool {
     element
         .children
         .ops

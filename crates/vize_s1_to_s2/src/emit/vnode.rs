@@ -19,8 +19,8 @@ use super::props_static::PropHoistPosition;
 use super::vnode_children::emit_children;
 use super::{EmitCx, EmitError};
 use checks::{
-    direct_static_children_hoisted, has_cloak, has_dynamic_key_binding, has_prop_bindings,
-    template_if_branch_root_has_direct_interpolation,
+    direct_static_children_hoisted, has_cloak, has_direct_interpolation_child,
+    has_dynamic_key_binding, has_prop_bindings, template_if_branch_root_has_direct_interpolation,
 };
 
 pub(super) fn emit_unique_element(
@@ -214,13 +214,18 @@ pub(super) fn emit_call(
         && cx.slot_param_depth == 0
         && !template_if_branch_root_has_direct_interpolation(cx, element, if_key);
     let has_binds = has_prop_bindings(&element.bindings);
-    let hoisted_props =
-        if allow_hoist && if_key.is_none() && super::props_static::should_hoist(cx, id, prop_hoist)
-        {
-            super::props_static::root_hoist_props(&element.attributes, &element.bindings)?
-        } else {
-            None
-        };
+    let nested_v_for_direct_text = cx.in_v_for
+        && matches!(prop_hoist, PropHoistPosition::Nested)
+        && has_direct_interpolation_child(element);
+    let hoisted_props = if allow_hoist
+        && if_key.is_none()
+        && !nested_v_for_direct_text
+        && super::props_static::should_hoist(cx, id, prop_hoist)
+    {
+        super::props_static::root_hoist_props(&element.attributes, &element.bindings)?
+    } else {
+        None
+    };
     let hoist = hoisted_props.is_some();
     let patch = bind_patch(&element.bindings, false, if_key, for_item);
     let text_flag = !once && !memo_block && children_need_text_flag(&element.children);

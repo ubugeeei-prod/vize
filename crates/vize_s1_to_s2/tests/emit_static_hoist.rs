@@ -340,3 +340,10 @@ fn v_for_item_v_once_stays_in_the_legacy_plain_item_path() {
         r#"<span v-for="item in list" v-once :key="item.id">{{ item.name }}</span>"#,
     );
 }
+
+#[test]
+fn v_for_descendant_dynamic_text_props_stay_inline() {
+    assert_shipped_parity(
+        r#"<div v-for="group in itemsGroups" v-if="visible" :key="group.key" :class="group.key"><h2 class="d-flex align-items-center mb-3">{{ group.label }}<span class="badge badge-pill badge-default ml-2">{{ items[group.key].length }}</span></h2></div>"#,
+    );
+}
