@@ -120,3 +120,28 @@ fn helper_preamble_orders_codegen_only_directives_by_final_rank_two_use() {
         "const { withDirectives: _withDirectives, withModifiers: _withModifiers, withKeys: _withKeys } = Vue\n"
     );
 }
+
+#[test]
+fn helper_preamble_orders_create_slots_before_v_show_for_textful_directive_slots() {
+    let mut buf = Buf::new();
+    buf.use_helper(Helper::ResolveDirective);
+    buf.use_helper(Helper::CreateText);
+    buf.use_helper(Helper::VShow);
+    buf.use_helper(Helper::CreateSlots);
+    buf.push("_createSlots(slots, []); [_vShow, visible]");
+
+    assert_eq!(
+        buf.preamble(),
+        "const { resolveDirective: _resolveDirective, createTextVNode: _createTextVNode, createSlots: _createSlots, vShow: _vShow } = Vue\n"
+    );
+
+    let mut buf = Buf::new();
+    buf.use_helper(Helper::VShow);
+    buf.use_helper(Helper::CreateSlots);
+    buf.push("[_vShow, visible]; _createSlots(slots, [])");
+
+    assert_eq!(
+        buf.preamble(),
+        "const { vShow: _vShow, createSlots: _createSlots } = Vue\n"
+    );
+}

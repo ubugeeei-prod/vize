@@ -46,6 +46,13 @@ impl Buf {
             (2, None, Some(_), _, _) => Ordering::Greater,
             (2, None, None, Some(left_pos), Some(right_pos)) => left_pos.cmp(&right_pos),
             (5, _, _, Some(left_pos), Some(right_pos)) => left_pos.cmp(&right_pos),
+            (10, _, _, _, _)
+                if self.used & Helper::ResolveDirective.bit() != 0
+                    && self.used & Helper::CreateText.bit() != 0
+                    && create_slots_show_pair(left, right) =>
+            {
+                create_slots_before_v_show(left, right)
+            }
             _ => Ordering::Equal,
         }
     }
@@ -66,5 +73,20 @@ impl Buf {
             offset += hoist.len();
         }
         helper_call_position(self.code.as_str(), alias).map(|position| offset + position)
+    }
+}
+
+fn create_slots_show_pair(left: Helper, right: Helper) -> bool {
+    matches!(
+        (left, right),
+        (Helper::CreateSlots, Helper::VShow) | (Helper::VShow, Helper::CreateSlots)
+    )
+}
+
+fn create_slots_before_v_show(left: Helper, _right: Helper) -> Ordering {
+    if matches!(left, Helper::CreateSlots) {
+        Ordering::Less
+    } else {
+        Ordering::Greater
     }
 }
