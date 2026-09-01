@@ -79,6 +79,13 @@ pub(super) fn can_hoist_static_props(
     let nested_for_static_bind_props = (cx.in_v_for || cx.slot_param_depth > 0)
         && (has_slots || creates_slots)
         && has_nested_for_component_static_bind_props(&component.children)?;
+    let forwarded_slot_only =
+        has_slots && children_are_forwarded_slot_outlets_only(&component.children);
+    let dynamic_forwarded_slot_hoist = props.dynamic_values
+        && forwarded_slot_only
+        && !has_runtime_directive
+        && !cx.in_v_for
+        && cx.slot_param_depth == 0;
     let loop_or_scoped_slot_hoist = (cx.in_v_for || cx.slot_param_depth > 0)
         && (text_only_default
             || (props.all_static_binds
@@ -87,7 +94,8 @@ pub(super) fn can_hoist_static_props(
                 && !nested_for_static_bind_props));
     let hoist_context = (cx.hoist_static_vnodes && text_only_default) || loop_or_scoped_slot_hoist;
     let is_template_for_root = id.is_some_and(|id| cx.template_for_item_root_id == Some(id));
-    let dynamic_props_hoistable = !props.dynamic_values || !has_slots || text_only_default;
+    let dynamic_props_hoistable =
+        !props.dynamic_values || !has_slots || text_only_default || dynamic_forwarded_slot_hoist;
     let transition_props_slot_hoist = transition_props_slot_hoist(component, has_slots);
     Ok((!is_template_for_root
         && dynamic_props_hoistable
@@ -124,6 +132,20 @@ fn has_nested_component_key(region: &Region<'_>) -> bool {
         Op::Slot(slot) => has_nested_component_key(&slot.fallback),
         Op::Text(_) | Op::Interpolation(_) => false,
     })
+}
+
+fn children_are_forwarded_slot_outlets_only(region: &Region<'_>) -> bool {
+    let mut found = false;
+    for op in region.ops.iter() {
+        if slots::is_whitespace_text(op) {
+            continue;
+        }
+        match op {
+            Op::Slot(_) => found = true,
+            _ => return false,
+        }
+    }
+    found
 }
 
 fn has_component_key(component: &ComponentOp<'_>) -> bool {

@@ -81,7 +81,15 @@ pub(super) fn emit_fragment_element(
         return super::once::emit_element(cx, element, None, false);
     }
     if namespace::crosses_boundary(cx, element, direct_static_children_hoisted(cx, element, id)) {
-        return emit_nested_block(cx, element, id);
+        return super::memo::emit_cached(cx, &element.bindings, |cx| {
+            emit_block(
+                cx,
+                element,
+                None,
+                false,
+                (true, id, PropHoistPosition::Root),
+            )
+        });
     }
     if has_dynamic_key_binding(element) {
         return emit_nested_block(cx, element, id);

@@ -171,6 +171,27 @@ fn foreign_namespace_component_props_hoist_without_static_children() {
 }
 
 #[test]
+fn foreign_namespace_builtin_component_props_hoist_without_static_children() {
+    assert_shipped_parity(
+        r#"<svg><TransitionGroup name="fade"><path v-for="arrow in arrows" :key="arrow.id" :class="{ [arrow.type]: true }" :d="arrow.d" stroke-linecap="round" /></TransitionGroup></svg>"#,
+    );
+}
+
+#[test]
+fn foreign_namespace_fragment_root_props_use_legacy_hoist() {
+    assert_shipped_parity(
+        r#"<Foo /><svg absolute op0 width="0" height="0"><defs><clipPath id="avatar-mask" clipPathUnits="objectBoundingBox"><path d="M 0,0.5 C 0,0 0,0 0.5,0 S 1,0 1,0.5 1,1 0.5,1 0,1 0,0.5" /></clipPath></defs></svg>"#,
+    );
+}
+
+#[test]
+fn forwarded_slot_component_global_constant_props_use_legacy_hoist() {
+    assert_shipped_parity(
+        r#"<MkCondensedLine :minScale="2 / 3"><slot name="label"></slot></MkCondensedLine>"#,
+    );
+}
+
+#[test]
 fn static_option_with_undefined_value_hoists_like_legacy_global_constant() {
     assert_shipped_parity(
         r#"<select v-model="locale"><option :value="undefined"></option><option :value="'de-DE'">de-DE</option></select>"#,

@@ -211,7 +211,10 @@ fn emit_call(
     let hoisted_static_props = if can_hoist_static_props
         && ((!array
             && (facts.is_some() || create || foreign_static_props)
-            && (!builtin_helper || static_nested || transition_props_slot_hoist))
+            && (!builtin_helper
+                || static_nested
+                || transition_props_slot_hoist
+                || foreign_static_props))
             || (array && static_nested))
     {
         Some(
