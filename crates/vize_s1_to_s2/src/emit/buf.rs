@@ -313,8 +313,36 @@ impl Buf {
         for helper in Helper::ALL {
             push(helper);
         }
-        listed.sort_by_key(|helper| helper.rank());
+        listed.sort_by(|left, right| {
+            left.rank().cmp(&right.rank()).then_with(|| {
+                match (
+                    left.rank(),
+                    self.first_alias_position(*left),
+                    self.first_alias_position(*right),
+                ) {
+                    (2 | 5, Some(left_pos), Some(right_pos)) => left_pos.cmp(&right_pos),
+                    _ => core::cmp::Ordering::Equal,
+                }
+            })
+        });
         listed
+    }
+
+    fn first_alias_position(&self, helper: Helper) -> Option<usize> {
+        let alias = helper.alias();
+        let mut first = self.code.find(alias);
+        let mut offset = self.code.len();
+        for hoist in self.hoists.iter() {
+            if let Some(position) = hoist.find(alias) {
+                let absolute = offset + position;
+                first = match first {
+                    Some(current) if current <= absolute => Some(current),
+                    _ => Some(absolute),
+                };
+            }
+            offset += hoist.len();
+        }
+        first
     }
 
     /// Function-mode preamble, helpers in import-rank order, then any
@@ -346,5 +374,38 @@ impl Buf {
             }
         }
         preamble
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Buf, Helper};
+
+    #[test]
+    fn helper_preamble_uses_final_body_order_within_one_rank() {
+        let mut buf = Buf::new();
+        buf.use_helper(Helper::NormalizeStyle);
+        buf.use_helper(Helper::NormalizeClass);
+        buf.push("_normalizeClass(cls); _normalizeStyle(style)");
+
+        assert!(buf.preamble().starts_with(
+            "const { normalizeClass: _normalizeClass, normalizeStyle: _normalizeStyle"
+        ));
+    }
+
+    #[test]
+    fn helper_preamble_keeps_preferred_before_body_order() {
+        let mut buf = Buf::new();
+        buf.prefer(Helper::WithDirectives);
+        buf.use_helper(Helper::WithKeys);
+        buf.use_helper(Helper::WithDirectives);
+        buf.use_helper(Helper::WithModifiers);
+        buf.push("_withDirectives(node, [_withModifiers(handler), _withKeys(handler)])");
+
+        assert!(
+            buf.preamble().starts_with(
+                "const { withDirectives: _withDirectives, withModifiers: _withModifiers, withKeys: _withKeys"
+            )
+        );
     }
 }
