@@ -797,7 +797,10 @@ fn assert_required_workflow_jobs(
         ],
         _ => Vec::new(),
     };
-    let jobs = flatten_collection(jobs_response, "jobs");
+    let mut jobs = flatten_collection(jobs_response, "jobs");
+    if jobs.is_empty() && jobs_response.iter().all(Value::is_object) {
+        jobs.extend(jobs_response);
+    }
     for name in job_names {
         let matching = jobs
             .iter()
