@@ -14,15 +14,6 @@ pub(super) fn bind_value_uses_legacy_patchless_runtime_expr(bind: &BindOp<'_>) -
     }
 }
 
-pub(super) fn bind_value_uses_legacy_patchless_bounded_string_concat(bind: &BindOp<'_>) -> bool {
-    match bind_value(bind) {
-        Ok(value) => value
-            .js()
-            .is_some_and(|js| is_legacy_bounded_string_concat(js.ast)),
-        Err(_) => false,
-    }
-}
-
 pub(super) fn is_static_bound_expr(expr: &Expression<'_>) -> bool {
     match unwrap_expr(expr) {
         Expression::StringLiteral(_)
@@ -61,36 +52,7 @@ pub(super) fn is_legacy_static_global_constant(expr: &Expression<'_>) -> bool {
 }
 
 fn is_legacy_patchless_runtime_expr(expr: &Expression<'_>) -> bool {
-    is_legacy_bounded_string_concat(expr) || is_legacy_in_conditional(expr)
-}
-
-fn is_legacy_bounded_string_concat(expr: &Expression<'_>) -> bool {
-    let Expression::BinaryExpression(binary) = expr else {
-        return false;
-    };
-    binary.operator == BinaryOperator::Addition
-        && concat_left_edge_is_string(&binary.left)
-        && concat_right_edge_is_string(&binary.right)
-}
-
-fn concat_left_edge_is_string(expr: &Expression<'_>) -> bool {
-    match expr {
-        Expression::StringLiteral(_) => true,
-        Expression::BinaryExpression(binary) if binary.operator == BinaryOperator::Addition => {
-            concat_left_edge_is_string(&binary.left)
-        }
-        _ => false,
-    }
-}
-
-fn concat_right_edge_is_string(expr: &Expression<'_>) -> bool {
-    match expr {
-        Expression::StringLiteral(_) => true,
-        Expression::BinaryExpression(binary) if binary.operator == BinaryOperator::Addition => {
-            concat_right_edge_is_string(&binary.right)
-        }
-        _ => false,
-    }
+    is_legacy_in_conditional(expr)
 }
 
 fn is_legacy_in_conditional(expr: &Expression<'_>) -> bool {

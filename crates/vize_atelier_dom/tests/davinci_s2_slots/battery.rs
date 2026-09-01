@@ -255,11 +255,11 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<Foo v-slot="slotProps "><slot v-bind="slotProps" /></Foo>"#,
     ),
     (
-        "slotted_component_legacy_patchless_concat_prop",
+        "slotted_component_concatenated_string_prop",
         r#"<Foo><Bar :foo="'a' + i + 'b'"><Baz /></Bar></Foo>"#,
     ),
     (
-        "slotted_for_component_legacy_patchless_concat_prop",
+        "slotted_for_component_concatenated_string_prop",
         r#"<Foo><Bar v-for="(item, index) in items" :key="item.key" :label="'Label' + index" :prop="'items.' + index + '.value'" :rules="{ required: true }"><Baz /></Bar></Foo>"#,
     ),
     (

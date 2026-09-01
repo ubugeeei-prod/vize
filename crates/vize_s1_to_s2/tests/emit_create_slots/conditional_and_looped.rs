@@ -43,7 +43,7 @@ fn conditional_scoped_slot_template_preserves_authored_param_padding() {
 }
 
 #[test]
-fn slotted_component_legacy_patchless_concat_props_leave_dynamic_prop_list() {
+fn slotted_component_concatenated_string_props_keep_dynamic_prop_list() {
     assert_shipped_parity(r#"<Foo><Bar :foo="'a' + i + 'b'"><Baz /></Bar></Foo>"#);
     assert_shipped_parity(
         r#"<Foo><Bar v-for="(item, index) in items" :key="item.key" :label="'Label' + index" :prop="'items.' + index + '.value'" :rules="{ required: true }"><Baz /></Bar></Foo>"#,

@@ -2,7 +2,7 @@
 
 mod static_literal;
 
-use self::static_literal::{is_static_object_or_array_literal_node, is_string_literal};
+use self::static_literal::{is_static_literal, is_static_object_or_array_literal_node};
 use super::helpers::camelize;
 use crate::options::{BindingMetadata, BindingType};
 use crate::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
@@ -60,11 +60,7 @@ fn is_static_bound_expression(dir: &DirectiveNode<'_>) -> bool {
     }
 
     let content = simple.content.trim();
-    matches!(content, "true" | "false" | "null")
-        || is_string_literal(content)
-        || content.parse::<f64>().is_ok()
-        || is_static_object_or_array_literal_node(simple, content)
-        || (content.starts_with('`') && content.ends_with('`') && !content.contains("${"))
+    is_static_literal(content) || is_static_object_or_array_literal_node(simple, content)
 }
 
 /// Calculate patch flag and dynamic props for an element.

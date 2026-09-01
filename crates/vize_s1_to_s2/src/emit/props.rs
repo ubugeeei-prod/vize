@@ -16,10 +16,7 @@ use super::buf::Buf;
 use super::on::{admit_on, event_key_for, needs_hydration};
 pub(in crate::emit) use constness::handler_is_constant;
 pub(super) use constness::{bind_value_is_static_patchless, bind_value_text};
-use static_expr::{
-    bind_value_uses_legacy_patchless_bounded_string_concat,
-    bind_value_uses_legacy_patchless_runtime_expr,
-};
+use static_expr::bind_value_uses_legacy_patchless_runtime_expr;
 
 pub(super) use super::props_bind::{
     BindName, StaticBindKeyCasing, bind_name, emit_dynamic_bind_pair, has_prop_modifier,
@@ -162,8 +159,7 @@ pub(super) fn bind_patch(
                     "style" if !is_component => flag |= 4,
                     "key" => {}
                     key if key.ends_with("Modifiers")
-                        || bind_value_is_static_patchless(bind, is_ts)
-                        || bind_value_uses_legacy_patchless_bounded_string_concat(bind) => {}
+                        || bind_value_is_static_patchless(bind, is_ts) => {}
                     _ => {
                         flag |= 8;
                         let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve) else {

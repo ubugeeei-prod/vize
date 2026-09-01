@@ -139,7 +139,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn bounded_string_class_concats_drop_the_legacy_class_patch_flag() {
+fn bounded_string_class_concats_keep_the_class_patch_flag() {
     assert_eq!(
         assembled(r#"<div :class="'is-' + state + '-active'"></div>"#),
         "\
@@ -148,13 +148,13 @@ const { normalizeClass: _normalizeClass, openBlock: _openBlock, createElementBlo
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock(\"div\", {
     class: _normalizeClass('is-' + state + '-active')
-  }))
+  }, null, 2 /* CLASS */))
 }"
     );
 }
 
 #[test]
-fn bounded_string_style_concats_drop_the_legacy_style_patch_flag() {
+fn bounded_string_style_concats_keep_the_style_patch_flag() {
     assert_eq!(
         assembled(r#"<div :style="'width:' + size + 'px'"></div>"#),
         "\
@@ -163,13 +163,13 @@ const { normalizeStyle: _normalizeStyle, openBlock: _openBlock, createElementBlo
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock(\"div\", {
     style: _normalizeStyle('width:' + size + 'px')
-  }))
+  }, null, 4 /* STYLE */))
 }"
     );
 }
 
 #[test]
-fn bounded_string_element_attrs_drop_the_legacy_props_patch_flag() {
+fn bounded_string_element_attrs_keep_the_props_patch_flag() {
     assert_shipped_parity(r#"<a :href="'/#/' + lang + '/component/custom-theme'">{{ label }}</a>"#);
     assert_shipped_parity(
         r#"<span :title="'【' + site + '】' + name + ' 第' + index + '集'">{{ label }}</span>"#,
