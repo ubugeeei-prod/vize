@@ -45,6 +45,43 @@ fn read_package_json(path : String) -> Json? {
 }
 
 ///|
+fn configured_vsce_dlx_bin() -> String {
+  match @env.get_env_var("VSCE_DLX_BIN") {
+    Some(value) if value != "" => value
+    _ =>
+      match @env.get_env_var("VP_BIN") {
+        Some(value) if value != "" => value
+        _ => "vp"
+      }
+  }
+}
+
+///|
+fn vsce_dlx_args(
+  dlx_bin : String,
+  command : String,
+  extra_args : Array[String],
+) -> Array[String] {
+  let args = ["dlx"]
+  if dlx_bin == "pnpm" {
+    args.push("--allow-build")
+    args.push("@vscode/vsce-sign")
+    args.push("--allow-build")
+    args.push("keytar")
+    args.push("--package")
+  } else {
+    args.push("-p")
+  }
+  args.push("@vscode/vsce@^3.3.2")
+  args.push("vsce")
+  args.push(command)
+  for arg in extra_args {
+    args.push(arg)
+  }
+  args
+}
+
+///|
 fn extension_info_from_package_json(value : Json) -> ExtensionInfo? {
   guard value is Object(obj) else { return None }
   guard obj.get("publisher") is Some(String(publisher)) else { return None }
@@ -70,13 +107,14 @@ fn json_has_extension_version(value : Json, expected : String) -> Bool {
 
 ///|
 async fn extension_version_is_visible(
-  vp_bin : String,
+  dlx_bin : String,
   extension_id : String,
   version : String,
 ) -> Bool {
-  let (exit_code, stdout, _) = @process.collect_output(vp_bin, [
-    "dlx", "-p", "@vscode/vsce@^3.3.2", "vsce", "show", extension_id, "--json",
-  ])
+  let (exit_code, stdout, _) = @process.collect_output(
+    dlx_bin,
+    vsce_dlx_args(dlx_bin, "show", [extension_id, "--json"]),
+  )
   if exit_code != 0 {
     return false
   }
@@ -90,7 +128,7 @@ async fn extension_version_is_visible(
 
 ///|
 async fn wait_for_extension_visibility(
-  vp_bin : String,
+  dlx_bin : String,
   extension_id : String,
   version : String,
   max_attempts : Int,
@@ -98,7 +136,7 @@ async fn wait_for_extension_visibility(
 ) -> Bool {
   let mut attempt = 1
   while attempt <= max_attempts {
-    if extension_version_is_visible(vp_bin, extension_id, version) {
+    if extension_version_is_visible(dlx_bin, extension_id, version) {
       println(
         "\{extension_id} \{version} is visible in the VS Code Marketplace.",
       )
@@ -146,10 +184,7 @@ async fn run_app() -> Int {
       return 1
     }
   }
-  let vp_bin = match @env.get_env_var("VP_BIN") {
-    Some(value) if value != "" => value
-    _ => "vp"
-  }
+  let dlx_bin = configured_vsce_dlx_bin()
   let resolution_attempts = env_int_at_least(
     "PUBLISH_RESOLUTION_RETRY_LIMIT", 1, 24,
   )
@@ -157,7 +192,7 @@ async fn run_app() -> Int {
     "PUBLISH_RESOLUTION_RETRY_DELAY", 0, 10,
   )
   if extension_version_is_visible(
-      vp_bin,
+      dlx_bin,
       extension_info.extension_id,
       extension_info.version,
     ) {
@@ -172,11 +207,6 @@ async fn run_app() -> Int {
     _ => "latest"
   }
   let publish_args = [
-    "dlx",
-    "-p",
-    "@vscode/vsce@^3.3.2",
-    "vsce",
-    "publish",
     "--no-dependencies",
     "--packagePath",
     @tool.resolve_path(args[0]),
@@ -184,9 +214,9 @@ async fn run_app() -> Int {
   if tag != "latest" {
     publish_args.push("--pre-release")
   }
-  let exit_code = @process.run(vp_bin, publish_args)
+  let exit_code = @process.run(dlx_bin, vsce_dlx_args(dlx_bin, "publish", publish_args))
   if wait_for_extension_visibility(
-      vp_bin,
+      dlx_bin,
       extension_info.extension_id,
       extension_info.version,
       resolution_attempts,

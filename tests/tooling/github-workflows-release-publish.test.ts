@@ -273,6 +273,7 @@ test("release workflow requires VS Code Marketplace publication", () => {
   assert.ok(publishJobContract);
   assert.equal(publishJobContract["timeout-minutes"], 30);
   assert.equal(publishJobContract.env?.PUBLISH_RESOLUTION_RETRY_LIMIT, "90");
+  assert.equal(publishJobContract.env?.VSCE_DLX_BIN, "pnpm");
   assert.equal(parsed.env?.PUBLISH_RESOLUTION_RETRY_DELAY, 10);
 
   assert.match(publishJob, /environment:\s*vscode-marketplace/);
