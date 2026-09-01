@@ -81,8 +81,15 @@ pub(super) fn can_hoist_static_props(
         && has_nested_for_component_static_bind_props(&component.children)?;
     let forwarded_slot_only =
         has_slots && children_are_forwarded_slot_outlets_only(&component.children);
+    let direct_static_slot_vnodes =
+        has_slots && children_are_direct_static_vnode_hoists(&component.children);
     let dynamic_forwarded_slot_hoist = props.dynamic_values
         && forwarded_slot_only
+        && !has_runtime_directive
+        && !cx.in_v_for
+        && cx.slot_param_depth == 0;
+    let dynamic_direct_static_slot_hoist = props.dynamic_values
+        && direct_static_slot_vnodes
         && !has_runtime_directive
         && !cx.in_v_for
         && cx.slot_param_depth == 0;
@@ -94,8 +101,11 @@ pub(super) fn can_hoist_static_props(
                 && !nested_for_static_bind_props));
     let hoist_context = (cx.hoist_static_vnodes && text_only_default) || loop_or_scoped_slot_hoist;
     let is_template_for_root = id.is_some_and(|id| cx.template_for_item_root_id == Some(id));
-    let dynamic_props_hoistable =
-        !props.dynamic_values || !has_slots || text_only_default || dynamic_forwarded_slot_hoist;
+    let dynamic_props_hoistable = !props.dynamic_values
+        || !has_slots
+        || text_only_default
+        || dynamic_forwarded_slot_hoist
+        || dynamic_direct_static_slot_hoist;
     let transition_props_slot_hoist = transition_props_slot_hoist(component, has_slots);
     Ok((!is_template_for_root
         && dynamic_props_hoistable
@@ -115,7 +125,12 @@ pub(super) fn can_hoist_static_props(
         || (props.dynamic_values
             && cx.slot_param_depth == 0
             && !cx.in_v_for
-            && dynamic_props_hoistable))
+            && dynamic_props_hoistable)
+        || (!props.all_static_binds
+            && direct_static_slot_vnodes
+            && !has_runtime_directive
+            && cx.slot_param_depth == 0
+            && !cx.in_v_for))
 }
 
 fn has_nested_component_key(region: &Region<'_>) -> bool {
@@ -142,6 +157,20 @@ fn children_are_forwarded_slot_outlets_only(region: &Region<'_>) -> bool {
         }
         match op {
             Op::Slot(_) => found = true,
+            _ => return false,
+        }
+    }
+    found
+}
+
+pub(super) fn children_are_direct_static_vnode_hoists(region: &Region<'_>) -> bool {
+    let mut found = false;
+    for op in region.ops.iter() {
+        if slots::is_whitespace_text(op) {
+            continue;
+        }
+        match op {
+            Op::Element(element) if super::super::hoist::is_hoistable(element) => found = true,
             _ => return false,
         }
     }

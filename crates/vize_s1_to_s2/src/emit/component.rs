@@ -182,6 +182,8 @@ fn emit_call(
     let builtin_helper = builtin::helper(component.name).is_some();
     let hoistable_static_props =
         call_props::hoistable_static_props(component, skip_is, &hoist_attrs)?;
+    let direct_static_slot_vnodes =
+        call_props::children_are_direct_static_vnode_hoists(&component.children);
     if for_item
         && !has_component_root_slot
         && !has_custom
@@ -213,6 +215,7 @@ fn emit_call(
             && (facts.is_some() || create || foreign_static_props)
             && (!builtin_helper
                 || static_nested
+                || direct_static_slot_vnodes
                 || transition_props_slot_hoist
                 || foreign_static_props))
             || (array && static_nested))
