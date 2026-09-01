@@ -118,6 +118,10 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<Form v-if="show" action="/dump/post" method="post"><input type="text" name="name" id="name" value="John" /></Form>"#,
     ),
     (
+        "branch_child_component_static_props_follow_shipped_hoist_order",
+        r#"<div v-if="show"><BranchRatio :ratio="16 / 9"><img class="Image" src="x" alt="y"></BranchRatio></div>"#,
+    ),
+    (
         "for_component_root_slot_static_props_stay_inline",
         r#"<ListItem v-for="entry in entries" label="fixed" v-slot="{ value }">{{ value }}</ListItem>"#,
     ),

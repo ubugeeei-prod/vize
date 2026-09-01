@@ -28,6 +28,12 @@ pub(super) fn has_rendered_attrs(component: &ComponentOp<'_>, skip_is: bool) -> 
         .any(|attr| !skip_is || attr.name != "is")
 }
 
+pub(super) fn has_component_root_slot(bindings: &[BindingOp<'_>]) -> bool {
+    bindings
+        .iter()
+        .any(|binding| matches!(binding, BindingOp::SlotContent(_)))
+}
+
 pub(super) fn rendered_hoist_attrs<'a, 'b>(
     component: &'b ComponentOp<'a>,
     skip_is: bool,
