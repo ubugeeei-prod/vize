@@ -183,6 +183,7 @@ fn emit_call(
     let hoistable_static_props =
         call_props::hoistable_static_props(component, skip_is, &hoist_attrs)?;
     if for_item
+        && !has_component_root_slot
         && !has_custom
         && !has_runtime
         && cx.slot_param_depth == 0
@@ -225,7 +226,8 @@ fn emit_call(
     } else {
         None
     };
-    let branch_unused_hoist = !has_custom
+    let branch_unused_hoist = !has_component_root_slot
+        && !has_custom
         && !for_item
         && !cx.in_v_for
         && if_key.is_some()

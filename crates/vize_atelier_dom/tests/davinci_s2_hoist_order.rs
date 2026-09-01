@@ -101,6 +101,14 @@ const BATTERY: &[(&str, &str)] = &[
         "table_column_static_props_stay_inline_after_static_vnode",
         r#"<b-table :data="data" :loading="loading" paginated backend-pagination :total="total" :per-page="perPage" @page-change="onPageChange" backend-sorting :default-sort="[sortField, sortOrder]" @sort="onSort"><b-table-column field="original_title" label="Title" sortable v-slot="props">{{ props.row.original_title }}</b-table-column><b-table-column field="vote_average" label="Vote Average" numeric sortable v-slot="props"><span class="tag" :class="type(props.row.vote_average)">{{ props.row.vote_average }}</span></b-table-column><b-table-column field="vote_count" label="Vote Count" numeric sortable v-slot="props">{{ props.row.vote_count }}</b-table-column></b-table>"#,
     ),
+    (
+        "for_component_root_slot_static_props_stay_inline",
+        r#"<ListItem v-for="entry in entries" label="fixed" v-slot="{ value }">{{ value }}</ListItem>"#,
+    ),
+    (
+        "if_branch_component_root_slot_static_props_stay_inline",
+        r#"<Panel v-if="open" label="fixed" v-slot="{ value }"><span class="value">{{ value }}</span></Panel>"#,
+    ),
 ];
 
 #[test]
