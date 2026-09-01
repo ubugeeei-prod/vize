@@ -202,7 +202,7 @@ fn emit_call(
         has_slots,
         create,
         hoistable_static_props.as_ref(),
-    );
+    )?;
     let foreign_static_props = id
         .and_then(|id| cx.facts.static_facts.get(id))
         .is_some_and(|fact| fact.foreign && fact.props_hoistable);

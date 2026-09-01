@@ -85,6 +85,10 @@ const BATTERY: &[(&str, &str)] = &[
         "transition_forwarded_slot_static_props_wait_for_fallback_hoists",
         r#"<div class="container"><svg><path d="M0 0z" /></svg><Transition name="fade"><div v-if="open" class="content"><slot /></div></Transition></div>"#,
     ),
+    (
+        "nested_component_responsive_props_wait_before_parent_static_bind",
+        r#"<section class="markdown"><template v-for="group in menuItems" :key="group.title"><div class="components-overview"><h2 class="ant-typography components-overview-group-title"><a-space align="center">{{ isZhCN ? group.title : group.enTitle }}<a-tag style="display: block">{{ group.children.length }}</a-tag></a-space></h2><a-row :gutter="[24, 24]"><template v-for="component in group.children" :key="component.title"><a-col :xs="24" :sm="12" :lg="8" :xl="6"><component :is="component.target ? 'a' : 'router-link'" v-bind="component.target ? { href: component.path, target: component.target } : { to: getLocalizedPathname(component.path, isZhCN) }"><a-card size="small" class="components-overview-card"><template #title><div class="components-overview-title">{{ component.title }}{{ isZhCN ? component.subtitle : '' }}</div></template><div class="components-overview-img"><img :src="isDark && component.coverDark ? component.coverDark : component.cover" :alt="component.title" /></div></a-card></component></a-col></template></a-row></div></template></section>"#,
+    ),
 ];
 
 #[test]

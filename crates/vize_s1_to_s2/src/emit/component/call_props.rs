@@ -64,26 +64,32 @@ pub(super) fn can_hoist_static_props(
     has_slots: bool,
     creates_slots: bool,
     props: Option<&ComponentHoistProps>,
-) -> bool {
+) -> Result<bool, EmitError> {
     let Some(props) = props else {
-        return false;
+        return Ok(false);
     };
     if blocked_by_context {
-        return false;
+        return Ok(false);
     }
     let text_only_default = slots::has_text_only_implicit_default(&component.children);
     let has_runtime_directive = directive::has_runtime(&component.bindings);
     let nested_slot_key = cx.slot_param_depth > 0
         && (has_slots || creates_slots)
         && has_nested_component_key(&component.children);
+    let nested_for_static_bind_props = (cx.in_v_for || cx.slot_param_depth > 0)
+        && (has_slots || creates_slots)
+        && has_nested_for_component_static_bind_props(&component.children)?;
     let loop_or_scoped_slot_hoist = (cx.in_v_for || cx.slot_param_depth > 0)
         && (text_only_default
-            || (props.all_static_binds && !has_runtime_directive && !nested_slot_key));
+            || (props.all_static_binds
+                && !has_runtime_directive
+                && !nested_slot_key
+                && !nested_for_static_bind_props));
     let hoist_context = (cx.hoist_static_vnodes && text_only_default) || loop_or_scoped_slot_hoist;
     let is_template_for_root = id.is_some_and(|id| cx.template_for_item_root_id == Some(id));
     let dynamic_props_hoistable = !props.dynamic_values || !has_slots || text_only_default;
     let transition_props_slot_hoist = transition_props_slot_hoist(component, has_slots);
-    (!is_template_for_root
+    Ok((!is_template_for_root
         && dynamic_props_hoistable
         && props_static::should_hoist(cx, id, props_static::PropHoistPosition::Nested))
         || (is_template_for_root
@@ -100,7 +106,7 @@ pub(super) fn can_hoist_static_props(
         || (props.dynamic_values
             && cx.slot_param_depth == 0
             && !cx.in_v_for
-            && dynamic_props_hoistable)
+            && dynamic_props_hoistable))
 }
 
 fn has_nested_component_key(region: &Region<'_>) -> bool {
@@ -127,6 +133,64 @@ fn has_component_key(component: &ComponentOp<'_>) -> bool {
                 BindingOp::Bind(bind) if matches!(bind.name, Some(DynamicName::Static("key")))
             )
         })
+}
+
+fn has_nested_for_component_static_bind_props(region: &Region<'_>) -> Result<bool, EmitError> {
+    for op in &region.ops {
+        let found = match op {
+            Op::Element(element) => has_nested_for_component_static_bind_props(&element.children)?,
+            Op::Component(component) => {
+                has_nested_for_component_static_bind_props(&component.children)?
+            }
+            Op::If(if_op) => {
+                let mut found = false;
+                for branch in &if_op.branches {
+                    found |= has_nested_for_component_static_bind_props(&branch.region)?;
+                }
+                found
+            }
+            Op::For(for_op) => region_has_component_static_bind_props(&for_op.region)?,
+            Op::Slot(slot) => has_nested_for_component_static_bind_props(&slot.fallback)?,
+            Op::Text(_) | Op::Interpolation(_) => false,
+        };
+        if found {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+fn region_has_component_static_bind_props(region: &Region<'_>) -> Result<bool, EmitError> {
+    for op in &region.ops {
+        let found = match op {
+            Op::Element(element) => region_has_component_static_bind_props(&element.children)?,
+            Op::Component(component) => {
+                component_has_static_bind_props(component)?
+                    || region_has_component_static_bind_props(&component.children)?
+            }
+            Op::If(if_op) => {
+                let mut found = false;
+                for branch in &if_op.branches {
+                    found |= region_has_component_static_bind_props(&branch.region)?;
+                }
+                found
+            }
+            Op::For(for_op) => region_has_component_static_bind_props(&for_op.region)?,
+            Op::Slot(slot) => region_has_component_static_bind_props(&slot.fallback)?,
+            Op::Text(_) | Op::Interpolation(_) => false,
+        };
+        if found {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+fn component_has_static_bind_props(component: &ComponentOp<'_>) -> Result<bool, EmitError> {
+    Ok(
+        props_static::component_hoist_props(&component.attributes, &component.bindings)?
+            .is_some_and(|props| props.all_static_binds && props.valued_prop),
+    )
 }
 
 pub(super) fn transition_props_slot_hoist(component: &ComponentOp<'_>, has_slots: bool) -> bool {
