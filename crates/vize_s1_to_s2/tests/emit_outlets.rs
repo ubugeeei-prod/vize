@@ -102,6 +102,13 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn dynamic_slot_name_with_forwarded_outlet_keeps_forwarded_flag() {
+    assert_shipped_parity(
+        r#"<Foo><template #[target]><Bar><slot name="selectors" /></Bar></template></Foo>"#,
+    );
+}
+
+#[test]
 fn fallback_interp_expands_the_compound_into_sibling_children() {
     assert_eq!(
         assembled("<slot>hello {{ msg }}</slot>"),

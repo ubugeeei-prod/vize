@@ -204,7 +204,7 @@ pub(super) fn emit_slots(
         cx.buf.push(spread.as_str());
     } else {
         let forwarded = super::outlet::has_forwarded_outlet(children);
-        if forwarded && cx.slot_param_depth == 0 && !cx.in_v_for && !has_dynamic_names(facts) {
+        if forwarded && cx.slot_param_depth == 0 && !cx.in_v_for {
             cx.buf.push("_: 3 /* FORWARDED */");
         } else if cx.in_v_for || has_dynamic_names(facts) || (forwarded && cx.slot_param_depth > 0)
         {
