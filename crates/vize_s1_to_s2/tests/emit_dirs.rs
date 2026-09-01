@@ -119,6 +119,13 @@ fn a_custom_dir_with_event_modifier_keeps_shipped_helper_order() {
 }
 
 #[test]
+fn component_slot_key_event_before_v_show_keeps_shipped_helper_order() {
+    assert_shipped_parity(
+        r#"<div><Dropdown><template #trigger="props" v-if="ready"><slot name="trigger" v-bind="props"><Input @keyup.enter="first" /></slot></template><a v-show="ok" @click.prevent="second" @keydown.enter.prevent="third"></a></Dropdown></div>"#,
+    );
+}
+
+#[test]
 fn a_kebab_name_becomes_an_underscore_ident() {
     assert_eq!(
         assembled(r#"<div v-my-dir></div>"#),

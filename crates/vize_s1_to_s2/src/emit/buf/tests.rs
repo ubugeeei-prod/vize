@@ -106,3 +106,17 @@ fn helper_preamble_keeps_unpreferred_rank_two_in_first_use_order() {
         "const { withKeys: _withKeys, withModifiers: _withModifiers } = Vue\n"
     );
 }
+
+#[test]
+fn helper_preamble_orders_codegen_only_directives_by_final_rank_two_use() {
+    let mut buf = Buf::new();
+    buf.use_helper(Helper::WithKeys);
+    buf.use_helper(Helper::WithDirectives);
+    buf.use_helper(Helper::WithModifiers);
+    buf.push("_withDirectives(node, { onClick: _withModifiers(handler, [\"stop\"]), onKeydown: _withKeys(handler, [\"enter\"]) })");
+
+    assert_eq!(
+        buf.preamble(),
+        "const { withDirectives: _withDirectives, withModifiers: _withModifiers, withKeys: _withKeys } = Vue\n"
+    );
+}
