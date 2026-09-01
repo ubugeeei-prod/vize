@@ -14,7 +14,8 @@ use super::buf::Buf;
 use super::on::{admit_on, event_key_for, needs_hydration};
 use static_expr::{
     bind_value_uses_legacy_patchless_bounded_string_concat,
-    bind_value_uses_legacy_patchless_runtime_expr, is_static_bound_expr,
+    bind_value_uses_legacy_patchless_runtime_expr, is_legacy_static_global_constant,
+    is_static_bound_expr,
 };
 
 pub(super) use super::props_bind::{
@@ -242,7 +243,9 @@ pub(super) fn prune_legacy_patchless_dynamic_props(
 
 pub(super) fn bind_value_is_static_patchless(bind: &vize_s2::op::BindOp<'_>) -> bool {
     match bind_value(bind) {
-        Ok(value) => value.js().is_some_and(|js| is_static_bound_expr(js.ast)),
+        Ok(value) => value.js().is_some_and(|js| {
+            is_static_bound_expr(js.ast) || is_legacy_static_global_constant(js.ast)
+        }),
         Err(_) => false,
     }
 }

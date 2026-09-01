@@ -288,9 +288,29 @@ fn component_has_static_bind_props(component: &ComponentOp<'_>) -> Result<bool, 
 pub(super) fn transition_props_slot_hoist(component: &ComponentOp<'_>, has_slots: bool) -> bool {
     matches!(component.name, "Transition" | "transition")
         && has_slots
-        && (children_are_forwarded_slot_outlets_only(&component.children)
+        && (children_are_bare_forwarded_slot_outlets_only(&component.children)
             || (!has_direct_slot_outlet(&component.children)
                 && has_element_with_direct_slot_outlet(&component.children)))
+}
+
+fn children_are_bare_forwarded_slot_outlets_only(region: &Region<'_>) -> bool {
+    let mut found = false;
+    for op in region.ops.iter() {
+        if slots::is_whitespace_text(op) {
+            continue;
+        }
+        match op {
+            Op::Slot(slot)
+                if slot.attributes.is_empty()
+                    && slot.bindings.is_empty()
+                    && slot.fallback.ops.iter().all(slots::is_whitespace_text) =>
+            {
+                found = true;
+            }
+            _ => return false,
+        }
+    }
+    found
 }
 
 fn has_direct_slot_outlet(region: &Region<'_>) -> bool {
