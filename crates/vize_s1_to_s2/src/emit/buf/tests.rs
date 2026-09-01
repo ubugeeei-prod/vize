@@ -76,6 +76,33 @@ fn helper_preamble_keeps_preferred_before_body_order() {
 
     assert_eq!(
         buf.preamble(),
-        "const { withDirectives: _withDirectives, withModifiers: _withModifiers, withKeys: _withKeys } = Vue\n"
+        "const { withDirectives: _withDirectives, withKeys: _withKeys, withModifiers: _withModifiers } = Vue\n"
+    );
+}
+
+#[test]
+fn helper_preamble_keeps_preferred_directives_before_modifier_body_order() {
+    let mut buf = Buf::new();
+    buf.prefer(Helper::WithDirectives);
+    buf.use_helper(Helper::WithModifiers);
+    buf.use_helper(Helper::WithDirectives);
+    buf.push("_withModifiers(handler, [\"stop\"]); _withDirectives(node, [])");
+
+    assert_eq!(
+        buf.preamble(),
+        "const { withDirectives: _withDirectives, withModifiers: _withModifiers } = Vue\n"
+    );
+}
+
+#[test]
+fn helper_preamble_keeps_unpreferred_rank_two_in_first_use_order() {
+    let mut buf = Buf::new();
+    buf.use_helper(Helper::WithKeys);
+    buf.use_helper(Helper::WithModifiers);
+    buf.push("_withModifiers(handler, [\"stop\"]); _withKeys(handler, [\"enter\"])");
+
+    assert_eq!(
+        buf.preamble(),
+        "const { withKeys: _withKeys, withModifiers: _withModifiers } = Vue\n"
     );
 }

@@ -114,6 +114,11 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn a_custom_dir_with_event_modifier_keeps_shipped_helper_order() {
+    assert_shipped_parity(r#"<div v-example @click.stop="handler"></div>"#);
+}
+
+#[test]
 fn a_kebab_name_becomes_an_underscore_ident() {
     assert_eq!(
         assembled(r#"<div v-my-dir></div>"#),

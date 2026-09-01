@@ -36,12 +36,23 @@ impl Buf {
     fn order_same_rank_helper(&self, left: Helper, right: Helper) -> Ordering {
         match (
             left.rank(),
+            self.preferred_position(left),
+            self.preferred_position(right),
             self.first_alias_position(left),
             self.first_alias_position(right),
         ) {
-            (2 | 5, Some(left_pos), Some(right_pos)) => left_pos.cmp(&right_pos),
+            (2, Some(left_pos), Some(right_pos), _, _) => left_pos.cmp(&right_pos),
+            (2, Some(_), None, _, _) => Ordering::Less,
+            (2, None, Some(_), _, _) => Ordering::Greater,
+            (5, _, _, Some(left_pos), Some(right_pos)) => left_pos.cmp(&right_pos),
             _ => Ordering::Equal,
         }
+    }
+
+    fn preferred_position(&self, helper: Helper) -> Option<usize> {
+        self.preferred
+            .iter()
+            .position(|candidate| candidate.bit() == helper.bit())
     }
 
     fn first_alias_position(&self, helper: Helper) -> Option<usize> {
