@@ -201,7 +201,8 @@ fn lower_if_group<'a>(
             None => BranchKind::If,
         };
         let condition = match kind {
-            BranchKind::Else => None,
+            BranchKind::Else => attr_value_text(element, attr_idx)
+                .and_then(|text| (!text.trim().is_empty()).then(|| expr_at(cx, text))),
             BranchKind::If | BranchKind::ElseIf => {
                 let text = attr_value_text(element, attr_idx);
                 if text.map(str::trim).is_none_or(str::is_empty) {

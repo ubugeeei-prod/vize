@@ -1,7 +1,7 @@
 //! Static child vnode hoist gates for native element emission.
 
 use vize_davinci::id::NodeId;
-use vize_s2::op::{ElementOp, Op};
+use vize_s2::op::{ElementOp, Namespace, Op};
 
 use super::EmitCx;
 use crate::pass::StaticLevel;
@@ -52,6 +52,16 @@ fn has_direct_component_child(element: &ElementOp<'_>) -> bool {
 }
 
 pub(super) fn can_whole_hoist_static_element(element: &ElementOp<'_>) -> bool {
+    if element.namespace != Namespace::Html
+        && !element.bindings.is_empty()
+        && element
+            .children
+            .ops
+            .iter()
+            .any(|op| matches!(op, Op::Element(_)))
+    {
+        return false;
+    }
     super::props_static::static_vnode_surface_can_hoist(&element.attributes, &element.bindings)
         && element
             .children

@@ -53,6 +53,13 @@ pub(super) fn is_static_bound_expr(expr: &Expression<'_>) -> bool {
     }
 }
 
+pub(super) fn is_legacy_static_global_constant(expr: &Expression<'_>) -> bool {
+    matches!(
+        unwrap_expr(expr),
+        Expression::Identifier(ident) if matches!(ident.name.as_str(), "NaN" | "Infinity")
+    )
+}
+
 fn is_legacy_patchless_runtime_expr(expr: &Expression<'_>) -> bool {
     is_legacy_bounded_string_concat(expr) || is_legacy_in_conditional(expr)
 }
