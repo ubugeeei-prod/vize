@@ -341,3 +341,10 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }")
     );
 }
+
+#[test]
+fn custom_directive_with_native_model_and_event_modifiers_keeps_vue_helper_order() {
+    assert_shipped_parity(
+        r#"<div><input v-model="search" @keyup.enter="handleSubmit"><div v-markdown="label" @click.prevent.stop="selectItem(item)"></div></div>"#,
+    );
+}

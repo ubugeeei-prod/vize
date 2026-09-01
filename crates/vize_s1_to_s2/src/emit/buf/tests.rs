@@ -76,7 +76,7 @@ fn helper_preamble_keeps_preferred_before_body_order() {
 
     assert_eq!(
         buf.preamble(),
-        "const { withDirectives: _withDirectives, withKeys: _withKeys, withModifiers: _withModifiers } = Vue\n"
+        "const { withDirectives: _withDirectives, withModifiers: _withModifiers, withKeys: _withKeys } = Vue\n"
     );
 }
 
@@ -103,7 +103,7 @@ fn helper_preamble_keeps_unpreferred_rank_two_in_first_use_order() {
 
     assert_eq!(
         buf.preamble(),
-        "const { withKeys: _withKeys, withModifiers: _withModifiers } = Vue\n"
+        "const { withModifiers: _withModifiers, withKeys: _withKeys } = Vue\n"
     );
 }
 

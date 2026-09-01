@@ -44,11 +44,7 @@ impl Buf {
             (2, Some(left_pos), Some(right_pos), _, _) => left_pos.cmp(&right_pos),
             (2, Some(_), None, _, _) => Ordering::Less,
             (2, None, Some(_), _, _) => Ordering::Greater,
-            (2, None, None, Some(left_pos), Some(right_pos))
-                if self.has_codegen_only_with_directives() =>
-            {
-                left_pos.cmp(&right_pos)
-            }
+            (2, None, None, Some(left_pos), Some(right_pos)) => left_pos.cmp(&right_pos),
             (5, _, _, Some(left_pos), Some(right_pos)) => left_pos.cmp(&right_pos),
             _ => Ordering::Equal,
         }
@@ -58,11 +54,6 @@ impl Buf {
         self.preferred
             .iter()
             .position(|candidate| candidate.bit() == helper.bit())
-    }
-
-    fn has_codegen_only_with_directives(&self) -> bool {
-        self.used & Helper::WithDirectives.bit() != 0
-            && self.preferred_position(Helper::WithDirectives).is_none()
     }
 
     fn first_alias_position(&self, helper: Helper) -> Option<usize> {
