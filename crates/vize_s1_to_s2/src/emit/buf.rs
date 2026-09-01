@@ -4,7 +4,10 @@ use alloc::vec::Vec as StdVec;
 
 use vize_s0::{String, ToCompactString};
 
+use self::call_position::helper_call_position;
 use super::helper::Helper;
+
+mod call_position;
 
 /// Growing JS text plus the helpers the body mentioned.
 pub(super) struct Buf {
@@ -328,19 +331,14 @@ impl Buf {
 
     fn first_alias_position(&self, helper: Helper) -> Option<usize> {
         let alias = helper.alias();
-        let mut first = self.code.find(alias);
-        let mut offset = self.code.len();
+        let mut offset = 0;
         for hoist in self.hoists.iter() {
-            if let Some(position) = hoist.find(alias) {
-                let absolute = offset + position;
-                first = match first {
-                    Some(current) if current <= absolute => Some(current),
-                    _ => Some(absolute),
-                };
+            if let Some(position) = helper_call_position(hoist, alias) {
+                return Some(offset + position);
             }
             offset += hoist.len();
         }
-        first
+        helper_call_position(self.code.as_str(), alias).map(|position| offset + position)
     }
 
     /// Function-mode preamble, helpers in import-rank order, then any

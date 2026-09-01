@@ -33,6 +33,39 @@ fn helper_preamble_uses_final_hoist_order_within_one_rank() {
 }
 
 #[test]
+fn helper_preamble_uses_hoists_before_the_body() {
+    let mut buf = Buf::new();
+    buf.use_helper(Helper::NormalizeClass);
+    buf.use_helper(Helper::NormalizeStyle);
+    buf.push("_normalizeClass(cls)");
+    buf.push_hoist("_normalizeStyle(style)".into());
+
+    assert_eq!(
+        buf.preamble(),
+        concat!(
+            "const { normalizeStyle: _normalizeStyle, normalizeClass: _normalizeClass } = Vue\n",
+            "\n",
+            "const _hoisted_1 = _normalizeStyle(style)\n"
+        )
+    );
+}
+
+#[test]
+fn helper_preamble_ignores_alias_shaped_authored_text() {
+    let mut buf = Buf::new();
+    buf.use_helper(Helper::NormalizeStyle);
+    buf.use_helper(Helper::NormalizeClass);
+    buf.push(
+        "['_normalizeStyle()', value._normalizeStyle(), /* _normalizeStyle() */ _normalizeClass(cls), _normalizeStyle(style)]",
+    );
+
+    assert_eq!(
+        buf.preamble(),
+        "const { normalizeClass: _normalizeClass, normalizeStyle: _normalizeStyle } = Vue\n"
+    );
+}
+
+#[test]
 fn helper_preamble_keeps_preferred_before_body_order() {
     let mut buf = Buf::new();
     buf.prefer(Helper::WithDirectives);

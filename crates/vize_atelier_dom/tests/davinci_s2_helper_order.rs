@@ -29,6 +29,14 @@ const BATTERY: &[(&str, &str)] = &[
         "transition_group_component_list_keeps_dynamic_class_helper",
         r##"<transition-group tag="ul" name="flip-list"><b-list-group-item v-for="msg in messages" :key="`console-${msg[2]}`"><span :class="[`text-${msg[0]}`, 'text-monospace', 'small', 'd-block']" style="white-space: pre-wrap;">{{ msg[1] }}</span></b-list-group-item></transition-group>"##,
     ),
+    (
+        "hoisted_style_helper_precedes_body_class_helper",
+        r#"<div><Foo :style="{ color: tone }" /><span :class="classes" /></div>"#,
+    ),
+    (
+        "alias_shaped_expression_text_does_not_reorder_helpers",
+        r#"<div :class="classes" :style="value === '_normalizeStyle()' ? styles : fallback" />"#,
+    ),
 ];
 
 #[test]
