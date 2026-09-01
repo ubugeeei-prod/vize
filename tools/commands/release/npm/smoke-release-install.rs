@@ -667,15 +667,28 @@ fn run_init_typecheck_checks(install_dir: &Path, vize_bin: &Path) -> Result<(), 
         let project = install_dir.join(format!("init-smoke-{language}"));
         fs::create_dir_all(&project)
             .map_err(|error| format!("cannot create {}: {error}", project.display()))?;
+        let mut dev_dependencies = Map::new();
+        dev_dependencies.insert("vue".to_string(), json!("3.5.34"));
+        if language == "typescript" {
+            dev_dependencies.insert("typescript".to_string(), json!("6.0.3"));
+        }
+        common::write_json_pretty(
+            project.join("package.json"),
+            &json!({
+                "name": format!("vize-init-{language}-smoke"),
+                "private": true,
+                "type": "module",
+                "devDependencies": Value::Object(dev_dependencies),
+            }),
+        )?;
         run_command(
             env::var("NODE_BIN").unwrap_or_else(|_| "node".to_string()),
             &[
                 vize_bin.to_string_lossy().as_ref(),
                 "init",
+                "--yes",
                 "--typecheck",
                 "--no-install",
-                "--language",
-                language,
             ],
             None,
             &project,

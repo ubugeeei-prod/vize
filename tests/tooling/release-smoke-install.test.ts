@@ -210,6 +210,7 @@ test("release install smoke can run runtime checks for Vize packages", () => {
     "utf8",
   );
   const smokeSources = `${script}\n${runtimeScript}`;
+  const rustScript = fs.readFileSync(smokeCommand, "utf8");
   const initTypecheckScript = fs.readFileSync(
     path.join(root, "legacy-tools/npm/smoke-release-init-typecheck.mjs"),
     "utf8",
@@ -231,6 +232,8 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   assert.match(smokeSources, /"check"[\s\S]*"src\/App\.vue"/);
   assert.match(smokeSources, /"lint"[\s\S]*"src\/App\.vue"/);
   assert.match(smokeSources, /runInitTypecheckChecks\([\s\S]*RUNTIME_PEER_DEPENDENCIES\)/);
+  assert.match(rustScript, /project\.join\("package\.json"\)/);
+  assert.doesNotMatch(rustScript, /"--language"/);
   assert.match(runtimeScript, /VIZE_TEST_CONTENT_MAPPER_TSGO/);
   assert.match(runtimeScript, /runInstalledContentMapperChecks/);
   assert.match(runtimeScript, /content mapper project with spaces/);
@@ -238,7 +241,12 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   assert.match(runtimeScript, /tsconfig\.emit\.json/);
   assert.match(initTypecheckScript, /`init-smoke-\$\{language\}`/);
   assert.match(initTypecheckScript, /\["typescript", "javascript"\]/);
-  assert.match(initTypecheckScript, /"init"[\s\S]*"--typecheck"[\s\S]*"--no-install"/);
+  assert.match(initTypecheckScript, /devDependencies/);
+  assert.match(
+    initTypecheckScript,
+    /"init"[\s\S]*"--yes"[\s\S]*"--typecheck"[\s\S]*"--no-install"/,
+  );
+  assert.doesNotMatch(initTypecheckScript, /"--language"/);
   assert.match(initTypecheckScript, /"run", "--silent", "vize:check"/);
   for (const diagnostic of [
     "standalone source",
