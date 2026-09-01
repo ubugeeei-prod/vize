@@ -436,7 +436,7 @@ jobs:
         uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2
       - name: Clean native build outputs
         shell: bash
-        run: moon run --target native tools/moon/cmd/github/clean_node_binaries -- npm/native npm/fresco-native
+        run: rust-script tools/commands/ci/github/clean-node-binaries.rs npm/native npm/fresco-native
       - name: Build vize-native
         shell: bash
         run: moon run --target native tools/moon/cmd/github/build_napi_package -- npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }} && if [[ "$RUNNER_OS" == Linux && "${{ matrix.settings.target }}" == *-gnu ]]; then rust-script tools/commands/ci/github/verify-glibc-symbols.rs --max 2.36 npm/native/*.linux-*-gnu.node; fi
@@ -539,7 +539,7 @@ jobs:
           vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish
       - name: Prepare Fresco native package tarball
         run: |
-          moon run --target native tools/moon/cmd/github/clean_node_binaries -- npm/fresco-native
+          rust-script tools/commands/ci/github/clean-node-binaries.rs npm/fresco-native
           moon run --target native tools/moon/cmd/github/collect_native_artifacts -- npm/fresco-native/artifacts npm/fresco-native fresco-native
       - name: Smoke install release package tarballs
         run: |
@@ -638,7 +638,7 @@ jobs:
           pattern: fresco-bindings-*
           path: npm/fresco-native/artifacts
       - name: Clean bundled native binaries
-        run: moon run --target native tools/moon/cmd/github/clean_node_binaries -- npm/fresco-native
+        run: rust-script tools/commands/ci/github/clean-node-binaries.rs npm/fresco-native
       - name: Stage bundled native binaries
         run: moon run --target native tools/moon/cmd/github/collect_native_artifacts -- npm/fresco-native/artifacts npm/fresco-native fresco-native
       - name: Smoke install Fresco native package tarball
