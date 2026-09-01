@@ -1,5 +1,5 @@
 //! Tests for the Vue template parser.
-#![allow(clippy::disallowed_macros)]
+#![allow(clippy::disallowed_macros, clippy::field_reassign_with_default)]
 
 use super::{
     parse, parse_document, parse_document_with_options, parse_with_options,

@@ -60,16 +60,14 @@ pub(super) fn can_hoist_static_props(
     cx: &EmitCx<'_>,
     component: &ComponentOp<'_>,
     id: Option<NodeId>,
-    if_key: Option<&str>,
-    for_item: bool,
-    has_custom: bool,
+    blocked_by_context: bool,
     has_slots: bool,
     props: Option<&ComponentHoistProps>,
 ) -> bool {
     let Some(props) = props else {
         return false;
     };
-    if has_custom || for_item || if_key.is_some() {
+    if blocked_by_context {
         return false;
     }
     let text_only_default = slots::has_text_only_implicit_default(&component.children);

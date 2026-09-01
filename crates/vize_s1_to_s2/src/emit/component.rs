@@ -189,13 +189,12 @@ fn emit_call(
     {
         cx.buf.push_hoist(props.source.clone());
     }
+    let static_props_hoist_blocked = has_custom || for_item || if_key.is_some();
     let can_hoist_static_props = call_props::can_hoist_static_props(
         cx,
         component,
         id,
-        if_key,
-        for_item,
-        has_custom,
+        static_props_hoist_blocked,
         has_slots,
         hoistable_static_props.as_ref(),
     );
