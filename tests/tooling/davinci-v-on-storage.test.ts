@@ -160,7 +160,11 @@ function classify(spelling: string): Buckets {
 }
 
 test("the natural committed v-on corpus fits the two-entry inline buckets", () => {
-  const spellings = trackedNaturalSources().flatMap(({ source }) => modifiedOnSpellings(source));
+  const sources = trackedNaturalSources();
+  const spellings = sources.flatMap(({ source }) => modifiedOnSpellings(source));
+  const dynamicEntryFixture = sources.find(
+    ({ file }) => file === "crates/vize_s1_to_s2/tests/emit_create_slots/dynamic_entries.rs",
+  );
   const maxima = spellings.map(classify).reduce<Buckets>(
     (max, buckets) => ({
       options: Math.max(max.options, buckets.options),
@@ -170,6 +174,12 @@ test("the natural committed v-on corpus fits the two-entry inline buckets", () =
     { options: 0, event: 0, keys: 0 },
   );
 
+  assert.ok(dynamicEntryFixture, "the dynamic slot entry parity fixture remains tracked");
+  assert.ok(
+    modifiedOnSpellings(dynamicEntryFixture.source).includes("@click.prevent"),
+    "the Mealie-shaped dynamic slot fixture keeps its natural modified v-on spelling",
+  );
+  assert.deepEqual(classify("@click.prevent"), { options: 0, event: 1, keys: 0 });
   assert.equal(spellings.length, 198, "update the measured corpus evidence intentionally");
   assert.deepEqual(maxima, { options: 2, event: 2, keys: 2 });
 });
