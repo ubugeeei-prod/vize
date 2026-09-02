@@ -143,6 +143,7 @@ export const LINT_RULE_NAMES = [
   "vapor/no-vue-lifecycle-events",
   "vapor/prefer-static-class",
   "vapor/require-vapor-attribute",
+  "vue/a11y-img-alt",
   "vue/attribute-hyphenation",
   "vue/attribute-order",
   "vue/component-definition-name-casing",

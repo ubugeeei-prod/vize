@@ -81,12 +81,33 @@ impl Rule for A11yImgAlt {
 mod tests {
     use super::A11yImgAlt;
     use crate::linter::Linter;
+    use crate::preset::LintPreset;
     use crate::rule::RuleRegistry;
+
+    const RULE: &str = "vue/a11y-img-alt";
 
     fn create_linter() -> Linter {
         let mut registry = RuleRegistry::new();
         registry.register(Box::new(A11yImgAlt));
         Linter::with_registry(registry)
+    }
+
+    #[test]
+    fn opt_in_registry_owns_legacy_rule_and_default_presets_do_not() {
+        assert!(RuleRegistry::with_opt_in_rules().has_rule(RULE));
+        assert!(!RuleRegistry::with_preset(LintPreset::HappyPath).has_rule(RULE));
+        assert!(!RuleRegistry::with_preset(LintPreset::Ecosystem).has_rule(RULE));
+        assert!(!RuleRegistry::with_preset(LintPreset::Opinionated).has_rule(RULE));
+    }
+
+    #[test]
+    fn explicit_enablement_runs_legacy_rule() {
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec![RULE.into()]))
+            .lint_template(r#"<img src="/photo.jpg" />"#, "test.vue");
+
+        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.diagnostics[0].rule_name, RULE);
     }
 
     #[test]

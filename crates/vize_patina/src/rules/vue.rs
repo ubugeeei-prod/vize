@@ -238,6 +238,9 @@ pub(crate) fn register_security(registry: &mut crate::rule::RuleRegistry) {
 /// A documented rule still has to be instantiable here: config-enabling a
 /// name that no registry entry owns is a silent false negative (#4636).
 pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
+    if !registry.has_rule("vue/a11y-img-alt") {
+        registry.register(Box::new(A11yImgAlt));
+    }
     if !registry.has_rule("vue/no-undefined-refs") {
         registry.register(Box::new(NoUndefinedRefs));
     }
