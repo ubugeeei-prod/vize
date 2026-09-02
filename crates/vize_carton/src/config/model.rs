@@ -19,7 +19,10 @@ use vue::RawVueConfig;
 
 pub use compiler::{JsxCompat, JsxMode};
 pub(crate) use entries::RawConfigEntry;
-pub use entries::{ConfigEntryFiles, ConfigEntryIgnore, LinterConfigEntry, LinterConfigPlan};
+pub use entries::{
+    ConfigEntryFiles, ConfigEntryIgnore, LinterConfigEntry, LinterConfigPlan,
+    LinterConfigPlanWithRuleOptions, ResolvedLinterConfig,
+};
 
 use crate::String;
 use crate::dialect::VueDialect;

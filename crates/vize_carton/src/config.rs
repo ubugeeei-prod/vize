@@ -10,6 +10,7 @@ pub use loader::{
     load_compiler_jsx_mode, load_compiler_template_syntax, load_compiler_vapor,
     load_compiler_vue_version, load_config,
     load_config_and_linter_plan_with_lint_features_and_source,
+    load_config_and_linter_plan_with_rule_options_and_lint_features_and_source,
     load_config_and_linter_with_features_and_source,
     load_config_and_linter_with_lint_features_and_source, load_config_and_linter_with_source,
     load_config_entry_files_with_source, load_config_entry_ignores_with_source,
@@ -21,9 +22,10 @@ pub use model::{
     ArrowParens, AttributeSortOrder, ConfigEntryFiles, ConfigEntryIgnore, ConfigFeatureFlags,
     EndOfLine, FormatterConfig, GlobalTypeDeclaration, GlobalTypesConfig, JsxCompat, JsxMode,
     LanguageServerConfig, LanguageServerUnstableFlags, LintRuleOptions, LintRuleSeverity,
-    LinterConfig, LinterConfigEntry, LinterConfigPlan, LinterFeatureFlags, LspConfig,
-    NoRestrictedGlobalsOptions, NoRestrictedMembersOptions, ParseVueVersionError, QuoteProps,
-    RestrictedGlobal, RestrictedMember, TrailingComma, TypeCheckerConfig, VizeConfig, VueVersion,
+    LinterConfig, LinterConfigEntry, LinterConfigPlan, LinterConfigPlanWithRuleOptions,
+    LinterFeatureFlags, LspConfig, NoRestrictedGlobalsOptions, NoRestrictedMembersOptions,
+    ParseVueVersionError, QuoteProps, ResolvedLinterConfig, RestrictedGlobal, RestrictedMember,
+    TrailingComma, TypeCheckerConfig, VizeConfig, VueVersion,
 };
 pub use normalize::normalize_public_config_value;
 

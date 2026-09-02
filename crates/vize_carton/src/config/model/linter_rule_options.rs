@@ -71,6 +71,16 @@ impl LintRuleOptions {
             })
             .unwrap_or_default()
     }
+
+    /// Apply a later config layer to this option set.
+    pub fn merge_from(&mut self, overlay: &Self) {
+        if let Some(options) = &overlay.no_restricted_globals {
+            self.no_restricted_globals = Some(options.clone());
+        }
+        if let Some(options) = &overlay.no_restricted_members {
+            self.no_restricted_members = Some(options.clone());
+        }
+    }
 }
 
 /// Options for `script/no-restricted-globals`.

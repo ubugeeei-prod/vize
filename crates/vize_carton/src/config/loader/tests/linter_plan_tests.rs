@@ -1,5 +1,7 @@
 //! Linter-plan configuration regressions.
 
+use crate::config::load_config_and_linter_plan_with_rule_options_and_lint_features_and_source;
+
 use super::*;
 
 #[test]
@@ -51,4 +53,72 @@ fn preserves_scopes_and_resolves_rules_in_declaration_order() {
     assert_eq!(plan.global_ignores.len(), 1);
     assert_eq!(plan.global_ignores[0].base_path, None);
     assert_eq!(plan.global_ignores[0].pattern.as_str(), "generated/**");
+}
+
+#[test]
+fn preserves_scoped_rule_options_for_options_only_entries() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.json");
+    std::fs::write(
+        &config_path,
+        r#"{
+  "linter": {
+    "ruleOptions": {
+      "script/no-restricted-members": {
+        "members": [
+          {
+            "object": "window",
+            "property": "localStorage",
+            "message": "Use shared storage."
+          }
+        ]
+      }
+    }
+  },
+  "entries": [
+    {
+      "files": ["src/admin/**/*.vue"],
+      "linter": {
+        "ruleOptions": {
+          "script/no-restricted-members": {
+            "members": [
+              {
+                "object": "window",
+                "property": "sessionStorage",
+                "message": "Use admin storage."
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}"#,
+    )
+    .unwrap();
+
+    let (_, plan, _) = load_config_and_linter_plan_with_rule_options_and_lint_features_and_source(
+        Some(&config_path),
+    );
+    let base = plan.resolve_matching_entries(&[]);
+    let admin = plan.resolve_matching_entries(&[0]);
+
+    assert_eq!(plan.plan.entries.len(), 1);
+    assert_eq!(plan.entry_rule_options.len(), 1);
+    assert_eq!(
+        base.rule_options.restricted_members(),
+        [(
+            "window".into(),
+            "localStorage".into(),
+            Some("Use shared storage.".into())
+        )]
+    );
+    assert_eq!(
+        admin.rule_options.restricted_members(),
+        [(
+            "window".into(),
+            "sessionStorage".into(),
+            Some("Use admin storage.".into())
+        )]
+    );
 }

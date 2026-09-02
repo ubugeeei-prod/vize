@@ -4,7 +4,9 @@ use std::path::{Path, PathBuf};
 use vize_patina::{HelpLevel, LintPreset, Linter, Severity};
 use vize_s0::{
     FxHashMap, String,
-    config::{LintRuleOptions, LintRuleSeverity, LinterConfigPlan, LinterFeatureFlags},
+    config::{
+        LintRuleOptions, LintRuleSeverity, LinterConfigPlanWithRuleOptions, LinterFeatureFlags,
+    },
 };
 
 use super::LintArgs;
@@ -17,6 +19,7 @@ const SCRIPT_NO_RESTRICTED_MEMBERS: &str = "script/no-restricted-members";
 
 pub(super) struct ResolvedLinterRuleGroups {
     pub(super) configs: Vec<crate::config::LinterConfig>,
+    rule_options: Vec<LintRuleOptions>,
     pub(super) file_config_indices: Vec<usize>,
     pinia_available: Vec<bool>,
 }
@@ -28,13 +31,13 @@ impl ResolvedLinterRuleGroups {
         help_level: HelpLevel,
         args: &LintArgs,
         features: LinterFeatureFlags,
-        rule_options: &LintRuleOptions,
         configured_corsa_path: Option<PathBuf>,
     ) -> Vec<Linter> {
         self.configs
             .iter()
             .zip(&self.pinia_available)
-            .map(|(config, pinia_available)| {
+            .zip(&self.rule_options)
+            .map(|((config, pinia_available), rule_options)| {
                 let type_aware =
                     args.type_aware || args.strict_reactivity || config.type_aware_lint_enabled();
                 let mut additional_rules = config.enabled_rules();
@@ -95,14 +98,20 @@ fn severity_overrides(entries: Vec<(String, LintRuleSeverity)>) -> Vec<(String, 
 }
 
 pub(super) struct LinterRuleResolver {
-    plan: LinterConfigPlan,
+    plan: LinterConfigPlanWithRuleOptions,
     scopes: Vec<LintPlanScope>,
 }
 
 impl LinterRuleResolver {
-    pub(super) fn new(plan: LinterConfigPlan, config_dir: &Path, cwd: &Path) -> Self {
+    pub(super) fn new(
+        plan: impl Into<LinterConfigPlanWithRuleOptions>,
+        config_dir: &Path,
+        cwd: &Path,
+    ) -> Self {
+        let plan = plan.into();
         let config_dir = absolute_path(config_dir, cwd);
         let scopes = plan
+            .plan
             .entries
             .iter()
             .map(|entry| {
@@ -123,6 +132,7 @@ impl LinterRuleResolver {
         let mut signatures = FxHashMap::<(Vec<usize>, bool), usize>::default();
         let mut dependency_cache = FxHashMap::default();
         let mut configs = Vec::new();
+        let mut rule_options = Vec::new();
         let mut pinia_available = Vec::new();
         let mut file_config_indices = Vec::with_capacity(files.len());
         for file in files {
@@ -134,7 +144,9 @@ impl LinterRuleResolver {
                 Some(index) => *index,
                 None => {
                     let index = configs.len();
-                    configs.push(self.plan.resolve_matching_entries(&signature.0));
+                    let resolved = self.plan.resolve_matching_entries(&signature.0);
+                    configs.push(resolved.config);
+                    rule_options.push(resolved.rule_options);
                     pinia_available.push(signature.1);
                     signatures.insert(signature, index);
                     index
@@ -144,6 +156,7 @@ impl LinterRuleResolver {
         }
         ResolvedLinterRuleGroups {
             configs,
+            rule_options,
             file_config_indices,
             pinia_available,
         }

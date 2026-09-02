@@ -55,16 +55,15 @@ pub fn run(args: LintArgs) {
     let (loaded_config, linter_plan, linter_features) = if args.no_config {
         (
             crate::config::LoadedConfigWithFeatures::default(),
-            crate::config::LinterConfigPlan::default(),
+            crate::config::LinterConfigPlanWithRuleOptions::default(),
             crate::config::LinterFeatureFlags::default(),
         )
     } else {
-        crate::config::load_config_and_linter_plan_with_lint_features_and_source(
+        crate::config::load_config_and_linter_plan_with_rule_options_and_lint_features_and_source(
             args.config.as_deref(),
         )
     };
-    let linter_enabled = linter_plan.base.enabled;
-    let rule_options = linter_plan.rule_options.clone();
+    let linter_enabled = linter_plan.plan.base.enabled;
     let config_dir = loaded_config
         .source_path
         .as_deref()
@@ -79,7 +78,7 @@ pub fn run(args: LintArgs) {
         .type_checker
         .runtime_path()
         .map(|path| resolve_lint_config_path(config_dir, path));
-    let ignore_set = LintIgnoreSet::new(&linter_plan.global_ignores, config_dir);
+    let ignore_set = LintIgnoreSet::new(&linter_plan.plan.global_ignores, config_dir);
     let collect_start = Instant::now();
     let files = collect_lint_files(&args.patterns, ignore_set.as_ref());
     let collect_time = collect_start.elapsed();
@@ -96,7 +95,7 @@ pub fn run(args: LintArgs) {
     let preset_name: String = args
         .preset
         .as_deref()
-        .or(linter_plan.base.preset.as_deref())
+        .or(linter_plan.plan.base.preset.as_deref())
         .unwrap_or("ecosystem")
         .into();
     let preset = LintPreset::parse(preset_name.as_str()).unwrap_or_default();
@@ -107,7 +106,6 @@ pub fn run(args: LintArgs) {
         help_level,
         &args,
         linter_features,
-        &rule_options,
         configured_corsa_path,
     );
     let write_failures = AtomicUsize::new(0);

@@ -45,6 +45,30 @@ pub struct LinterConfigPlan {
     pub rule_options: LintRuleOptions,
 }
 
+/// A linter config resolved with the scoped `ruleOptions` that apply to it.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ResolvedLinterConfig {
+    pub config: LinterConfig,
+    pub rule_options: LintRuleOptions,
+}
+
+/// Linter settings plus entry-local rule options for CLI lint execution.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct LinterConfigPlanWithRuleOptions {
+    pub plan: LinterConfigPlan,
+    pub entry_rule_options: Vec<LintRuleOptions>,
+}
+
+impl From<LinterConfigPlan> for LinterConfigPlanWithRuleOptions {
+    fn from(plan: LinterConfigPlan) -> Self {
+        let entry_rule_options = vec![LintRuleOptions::default(); plan.entries.len()];
+        Self {
+            plan,
+            entry_rule_options,
+        }
+    }
+}
+
 impl LinterConfigPlan {
     /// Merge a set of matching entries in declaration order, with later rules winning.
     pub fn resolve_matching_entries(&self, matching_entries: &[usize]) -> LinterConfig {
@@ -61,5 +85,27 @@ impl LinterConfigPlan {
             }
         }
         resolved
+    }
+}
+
+impl LinterConfigPlanWithRuleOptions {
+    /// Merge matching linter rules and rule options in declaration order.
+    pub fn resolve_matching_entries(&self, matching_entries: &[usize]) -> ResolvedLinterConfig {
+        let mut rule_options = self.plan.rule_options.clone();
+        let mut matches = vec![false; self.plan.entries.len()];
+        for index in matching_entries {
+            if let Some(value) = matches.get_mut(*index) {
+                *value = true;
+            }
+        }
+        for (index, matches) in matches.into_iter().enumerate() {
+            if matches && let Some(options) = self.entry_rule_options.get(index) {
+                rule_options.merge_from(options);
+            }
+        }
+        ResolvedLinterConfig {
+            config: self.plan.resolve_matching_entries(matching_entries),
+            rule_options,
+        }
     }
 }
