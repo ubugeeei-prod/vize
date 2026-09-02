@@ -687,3 +687,72 @@ fn test_v_if_branch_component_dynamic_prop_keeps_props_patch_flag() {
     let full = full_output(&result.preamble, &result.code);
     insta::assert_snapshot!(full.as_str());
 }
+
+/// #5613: a scope-prefixed identifier (here `_ctx.n`) inside an attribute-bound
+/// template literal within a `v-for` used to come out mojibaked in the emitted
+/// `render()` source — the `v-for` alias is a codegen slot param, which routes the
+/// prefixed expression through the scope-prefix stripper, which cast raw UTF-8 bytes
+/// to Latin-1 `char`s.
+#[test]
+fn test_v_for_attribute_template_literal_preserves_non_ascii() {
+    let allocator = Allocator::new();
+    let options = DomCompilerOptions {
+        mode: CodegenMode::Function,
+        prefix_identifiers: true,
+        inline: false,
+        binding_metadata: None,
+        ..Default::default()
+    };
+
+    let (_, errors, result) = compile_template_with_options(
+        &allocator,
+        "<span v-for=\"i in 1\" :title=\"`\u{2795} ${n}`\"></span>",
+        options,
+    );
+
+    assert!(errors.is_empty(), "Errors: {:?}", errors);
+    let code = result.code.as_str();
+    assert!(
+        code.contains("`\u{2795} ${_ctx.n}`"),
+        "non-ASCII attribute-binding template literal must survive v-for codegen \
+         byte-for-byte:\n{code}"
+    );
+}
+
+/// #5613: same bug via the `<script setup>` binding path from the issue's repro —
+/// `n` is modeled as a setup const so it's `$setup.`-prefixed rather than `_ctx.`-prefixed,
+/// exercising the full script-setup → prefix → stripper pipeline end-to-end.
+#[test]
+fn test_v_for_script_setup_binding_template_literal_preserves_non_ascii() {
+    use vize_atelier_core::options::{BindingMetadata, BindingType};
+    use vize_s0::FxHashMap;
+
+    let allocator = Allocator::new();
+    let mut bindings = FxHashMap::default();
+    bindings.insert("n".into(), BindingType::SetupConst);
+    let options = DomCompilerOptions {
+        mode: CodegenMode::Function,
+        prefix_identifiers: true,
+        inline: false,
+        binding_metadata: Some(BindingMetadata {
+            bindings,
+            props_aliases: FxHashMap::default(),
+            is_script_setup: true,
+        }),
+        ..Default::default()
+    };
+
+    let (_, errors, result) = compile_template_with_options(
+        &allocator,
+        "<span v-for=\"i in 1\" :title=\"`\u{2795} ${n}`\"></span>",
+        options,
+    );
+
+    assert!(errors.is_empty(), "Errors: {:?}", errors);
+    let code = result.code.as_str();
+    assert!(
+        code.contains("`\u{2795} ${$setup.n}`"),
+        "non-ASCII attribute-binding template literal must survive v-for + script-setup \
+         codegen byte-for-byte:\n{code}"
+    );
+}

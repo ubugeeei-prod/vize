@@ -54,9 +54,40 @@ pub(crate) fn strip_scope_prefixes_for_slot_params(ctx: &CodegenContext, content
             continue;
         }
 
-        result.push(bytes[i] as char);
-        i += 1;
+        let ch = content[i..].chars().next().expect("valid UTF-8 boundary");
+        result.push(ch);
+        i += ch.len_utf8();
     }
 
     result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::strip_scope_prefixes_for_slot_params;
+    use crate::codegen::CodegenContext;
+    use crate::options::CodegenOptions;
+    use vize_s0::String;
+
+    // #5613: bytes outside a stripped prefix must be copied as UTF-8, not cast per byte.
+    #[test]
+    fn preserves_non_ascii_bytes_unrelated_to_the_stripped_scope_prefix() {
+        let mut ctx = CodegenContext::new(CodegenOptions::default());
+        ctx.add_slot_params(&[String::new("i")]);
+
+        let content = "`\u{2795} ${$setup.n}`";
+        let result = strip_scope_prefixes_for_slot_params(&ctx, content);
+
+        assert_eq!(result, content);
+    }
+
+    #[test]
+    fn still_strips_the_scope_prefix_for_an_actual_slot_param() {
+        let mut ctx = CodegenContext::new(CodegenOptions::default());
+        ctx.add_slot_params(&[String::new("i")]);
+
+        let result = strip_scope_prefixes_for_slot_params(&ctx, "$setup.i");
+
+        assert_eq!(result, "i");
+    }
 }
