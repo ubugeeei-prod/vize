@@ -13,6 +13,7 @@ use crate::lint_plan::matcher::GlobSequence;
 use crate::lint_plan::matcher::{LintPlanScope, absolute_path};
 
 const PINIA_PREFER_STORE_TO_REFS: &str = "ecosystem/pinia-prefer-store-to-refs";
+const SCRIPT_NO_RESTRICTED_MEMBERS: &str = "script/no-restricted-members";
 
 pub(super) struct ResolvedLinterRuleGroups {
     pub(super) configs: Vec<crate::config::LinterConfig>,
@@ -36,9 +37,23 @@ impl ResolvedLinterRuleGroups {
             .map(|(config, pinia_available)| {
                 let type_aware =
                     args.type_aware || args.strict_reactivity || config.type_aware_lint_enabled();
+                let mut additional_rules = config.enabled_rules();
+                let disabled_rules = resolved_disabled_rules(config, *pinia_available);
+                let restricted_globals = rule_options.restricted_globals();
+                let restricted_members = rule_options.restricted_members();
+                if !restricted_members.is_empty()
+                    && !disabled_rules
+                        .iter()
+                        .any(|rule| rule.as_str() == SCRIPT_NO_RESTRICTED_MEMBERS)
+                    && !additional_rules
+                        .iter()
+                        .any(|rule| rule.as_str() == SCRIPT_NO_RESTRICTED_MEMBERS)
+                {
+                    additional_rules.push(SCRIPT_NO_RESTRICTED_MEMBERS.into());
+                }
                 let mut linter = Linter::with_preset(preset)
-                    .with_additional_rules(config.enabled_rules())
-                    .with_disabled_rules(resolved_disabled_rules(config, *pinia_available))
+                    .with_additional_rules(additional_rules)
+                    .with_disabled_rules(disabled_rules)
                     .with_disabled_categories(config.disabled_categories())
                     .with_category_severity_overrides(severity_overrides(
                         config.category_severity_overrides(),
@@ -50,8 +65,8 @@ impl ResolvedLinterRuleGroups {
                     .with_type_aware_lint(type_aware)
                     .with_vue_version(features.vue_version)
                     .with_vapor_mode(features.vapor)
-                    .with_restricted_globals(rule_options.restricted_globals())
-                    .with_restricted_members(rule_options.restricted_members());
+                    .with_restricted_globals(restricted_globals)
+                    .with_restricted_members(restricted_members);
                 #[cfg(not(target_arch = "wasm32"))]
                 {
                     linter = linter.with_corsa_path(configured_corsa_path.clone());
