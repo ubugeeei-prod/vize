@@ -27,6 +27,7 @@ const S2_DOM_EMIT_COUNTS: [(&str, u32, u32); 6] = [
 
 #[test]
 fn observed_dom_emit_keeps_output_and_walk_budget() {
+    let fused_walk_target = phase_2_dom_walk_target();
     for fixture in &LADDER {
         let template =
             template_block(fixture.source).expect("every ladder fixture has a template block");
@@ -94,13 +95,22 @@ fn observed_dom_emit_keeps_output_and_walk_budget() {
             observed.budget.emit_visits,
             baseline.visits
         );
+        assert!(
+            observed.budget.total_walks() > fused_walk_target,
+            "{} total walks {} already meet the phase-2 fused DOM target {} before the build path has switched",
+            fixture.name,
+            observed.budget.total_walks(),
+            fused_walk_target
+        );
         println!(
-            "davinci.s2_dom.walk {} emit_walks={} emit_visits={} transform_walks={} transform_passes={} baseline_walks={} baseline_visits={}",
+            "davinci.s2_dom.walk {} emit_walks={} emit_visits={} transform_walks={} transform_passes={} total_walks={} fused_walk_target={} baseline_walks={} baseline_visits={}",
             fixture.name,
             observed.budget.emit_walks,
             observed.budget.emit_visits,
             observed.budget.transform.walks,
             observed.budget.transform.passes,
+            observed.budget.total_walks(),
+            fused_walk_target,
             baseline.walks,
             baseline.visits
         );
@@ -136,6 +146,22 @@ fn traversal_budget(fixture: &str) -> TraversalBudget {
         walks: required_u32(entry, &id, "walks"),
         visits: required_u32(entry, &id, "visits"),
     }
+}
+
+fn phase_2_dom_walk_target() -> u32 {
+    let repo = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("crate directory")
+        .parent()
+        .expect("repo root");
+    let text = std::fs::read_to_string(repo.join("davinci-road/plan/budgets.toml"))
+        .expect("budgets.toml reads");
+    let value: toml::Value = toml::from_str(&text).expect("budgets.toml parses");
+    let entry = value
+        .get("target")
+        .and_then(|target| target.get("phase-2"))
+        .expect("budgets.toml has [target.phase-2]");
+    required_u32(entry, "target.phase-2", "dom_walks_max")
 }
 
 fn required_u32(entry: &toml::Value, id: &str, field: &str) -> u32 {
