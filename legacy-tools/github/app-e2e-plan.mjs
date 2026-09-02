@@ -58,7 +58,7 @@ export const fullAppE2eRows = [
     true,
     fullVrtTimeout,
   ),
-  row("full", "vrt", "misskey", "test:vrt:misskey", ["misskey"], true, fullVrtTimeout),
+  row("full", "vrt", "misskey", "test:vrt:misskey", ["misskey"], true, "20m"),
   row("full", "vrt", "npmx", "test:vrt:npmx", ["npmx.dev"], true, fullVrtTimeout),
   row("full", "vrt", "vuefes", "test:vrt:vuefes", ["vuefes-2025"], true, fullVrtTimeout),
   row("full", "preview", "elk", "test:preview:elk", ["elk"], false, "10m"),

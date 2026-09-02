@@ -369,6 +369,28 @@
     "file": "components/badge/demo/index.vue",
     "messages": [
       {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Title' is a reserved HTML element name and cannot be used as a component name",
+        "line": 40,
+        "column": 5,
+        "endLine": 40,
+        "endColumn": 10,
+        "help": "Rename the component to avoid using reserved names"
+      },
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Link' is a reserved HTML element name and cannot be used as a component name",
+        "line": 42,
+        "column": 5,
+        "endLine": 42,
+        "endColumn": 9,
+        "help": "Rename the component to avoid using reserved names"
+      },
+      {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -380,7 +402,7 @@
         "help": "Add scoped attribute: <style scoped>"
       }
     ],
-    "errorCount": 0,
+    "errorCount": 2,
     "warningCount": 1
   },
   {
@@ -641,9 +663,9 @@
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Slot prop 'onChange' from slot 'headerRender' is defined but never used",
         "line": 22,
-        "column": 17,
+        "column": 56,
         "endLine": 22,
-        "endColumn": 25,
+        "endColumn": 64,
         "help": "Consider removing unused slot props or prefix with underscore"
       }
     ],
@@ -652,8 +674,20 @@
   },
   {
     "file": "components/calendar/demo/index.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Select' is a reserved HTML element name and cannot be used as a component name",
+        "line": 28,
+        "column": 5,
+        "endLine": 28,
+        "endColumn": 11,
+        "help": "Rename the component to avoid using reserved names"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -723,8 +757,20 @@
   },
   {
     "file": "components/card/demo/index.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Meta' is a reserved HTML element name and cannot be used as a component name",
+        "line": 43,
+        "column": 5,
+        "endLine": 43,
+        "endColumn": 9,
+        "help": "Rename the component to avoid using reserved names"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -1038,6 +1084,17 @@
         "help": "Remove the unused import or use the component in your template"
       },
       {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Search' is a reserved HTML element name and cannot be used as a component name",
+        "line": 47,
+        "column": 5,
+        "endLine": 47,
+        "endColumn": 11,
+        "help": "Rename the component to avoid using reserved names"
+      },
+      {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1049,7 +1106,7 @@
         "help": "Add scoped attribute: <style scoped>"
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 2
   },
   {
@@ -1144,45 +1201,140 @@
   },
   {
     "file": "components/collapse/demo/accordion.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 20,
+        "column": 15,
+        "endLine": 20,
+        "endColumn": 44,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/collapse/demo/basic.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 20,
+        "column": 15,
+        "endLine": 20,
+        "endColumn": 44,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/collapse/demo/borderless.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 20,
+        "column": 15,
+        "endLine": 20,
+        "endColumn": 44,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/collapse/demo/collapsible.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 21,
+        "column": 17,
+        "endLine": 21,
+        "endColumn": 46,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 26,
+        "column": 17,
+        "endLine": 26,
+        "endColumn": 46,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 2
   },
   {
     "file": "components/collapse/demo/custom.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 21,
+        "column": 5,
+        "endLine": 21,
+        "endColumn": 34,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/collapse/demo/extra.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 20,
+        "column": 15,
+        "endLine": 20,
+        "endColumn": 44,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/collapse/demo/ghost.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 20,
+        "column": 15,
+        "endLine": 20,
+        "endColumn": 44,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/collapse/demo/index.vue",
@@ -1192,15 +1344,39 @@
   },
   {
     "file": "components/collapse/demo/mix.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 20,
+        "column": 15,
+        "endLine": 20,
+        "endColumn": 44,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/collapse/demo/noarrow.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 19,
+        "column": 15,
+        "endLine": 19,
+        "endColumn": 44,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/comment/demo/basic.vue",
@@ -1293,6 +1469,39 @@
     "file": "components/config-provider/demo/direction.vue",
     "messages": [
       {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 109,
+        "column": 13,
+        "endLine": 109,
+        "endColumn": 48,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 110,
+        "column": 13,
+        "endLine": 110,
+        "endColumn": 48,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 111,
+        "column": 13,
+        "endLine": 111,
+        "endColumn": 46,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
         "ruleId": "a11y/anchor-has-content",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -1338,7 +1547,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 7
   },
   {
     "file": "components/config-provider/demo/index.vue",
@@ -1434,6 +1643,17 @@
     "file": "components/date-picker/demo/index.vue",
     "messages": [
       {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Time' is a reserved HTML element name and cannot be used as a component name",
+        "line": 60,
+        "column": 5,
+        "endLine": 60,
+        "endColumn": 9,
+        "help": "Rename the component to avoid using reserved names"
+      },
+      {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1445,7 +1665,7 @@
         "help": "Add scoped attribute: <style scoped>"
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 1
   },
   {
@@ -2515,9 +2735,32 @@
   },
   {
     "file": "components/form/demo/validate-other.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 132,
+        "column": 9,
+        "endLine": 132,
+        "endColumn": 44,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 146,
+        "column": 27,
+        "endLine": 146,
+        "endColumn": 63,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 2
   },
   {
     "file": "components/form/demo/validate-static.vue",
@@ -3010,21 +3253,57 @@
   },
   {
     "file": "components/layout/demo/custom-trigger.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 22,
+        "column": 15,
+        "endLine": 22,
+        "endColumn": 50,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/layout/demo/fixed-sider.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 25,
+        "column": 15,
+        "endLine": 25,
+        "endColumn": 50,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/layout/demo/fixed.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 24,
+        "column": 9,
+        "endLine": 24,
+        "endColumn": 44,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/layout/demo/index.vue",
@@ -3034,33 +3313,137 @@
   },
   {
     "file": "components/layout/demo/responsive.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 29,
+        "column": 15,
+        "endLine": 29,
+        "endColumn": 50,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/layout/demo/side.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 26,
+        "column": 15,
+        "endLine": 26,
+        "endColumn": 50,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/layout/demo/top-side-2.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 23,
+        "column": 9,
+        "endLine": 23,
+        "endColumn": 45,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 36,
+        "column": 11,
+        "endLine": 36,
+        "endColumn": 47,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 37,
+        "column": 11,
+        "endLine": 37,
+        "endColumn": 38,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 3
   },
   {
     "file": "components/layout/demo/top-side.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 23,
+        "column": 9,
+        "endLine": 23,
+        "endColumn": 45,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 42,
+        "column": 13,
+        "endLine": 42,
+        "endColumn": 49,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 43,
+        "column": 13,
+        "endLine": 43,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 3
   },
   {
     "file": "components/layout/demo/top.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 27,
+        "column": 9,
+        "endLine": 27,
+        "endColumn": 44,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/list/demo/basic.vue",
@@ -3258,9 +3641,21 @@
   },
   {
     "file": "components/menu/demo/horizontal.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 20,
+        "column": 11,
+        "endLine": 20,
+        "endColumn": 41,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/menu/demo/index.vue",
@@ -3270,21 +3665,79 @@
   },
   {
     "file": "components/menu/demo/inline-collapsed.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 30,
+        "column": 7,
+        "endLine": 30,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 31,
+        "column": 7,
+        "endLine": 31,
+        "endColumn": 48,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 2
   },
   {
     "file": "components/menu/demo/inline.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 21,
+        "column": 5,
+        "endLine": 21,
+        "endColumn": 32,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 22,
+        "column": 5,
+        "endLine": 22,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 2
   },
   {
     "file": "components/menu/demo/sider-current.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 22,
+        "column": 7,
+        "endLine": 22,
+        "endColumn": 48,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/menu/demo/submenu-theme.vue",
@@ -3317,10 +3770,32 @@
         "endLine": 27,
         "endColumn": 11,
         "help": "Use <p> elements or CSS margin/padding for spacing instead of multiple <br> tags."
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 29,
+        "column": 7,
+        "endLine": 29,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 30,
+        "column": 7,
+        "endLine": 30,
+        "endColumn": 48,
+        "help": "Use kebab-case for attribute names"
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 3
   },
   {
     "file": "components/menu/demo/theme.vue",
@@ -3335,16 +3810,61 @@
         "endLine": 28,
         "endColumn": 11,
         "help": "Use <p> elements or CSS margin/padding for spacing instead of multiple <br> tags."
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 30,
+        "column": 7,
+        "endLine": 30,
+        "endColumn": 34,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 31,
+        "column": 7,
+        "endLine": 31,
+        "endColumn": 42,
+        "help": "Use kebab-case for attribute names"
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 3
   },
   {
     "file": "components/menu/demo/vertical.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 21,
+        "column": 5,
+        "endLine": 21,
+        "endColumn": 32,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 22,
+        "column": 5,
+        "endLine": 22,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 2
   },
   {
     "file": "components/message/demo/custom-style.vue",
@@ -3725,9 +4245,21 @@
   },
   {
     "file": "components/pagination/demo/changer.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 22,
+        "column": 7,
+        "endLine": 22,
+        "endColumn": 34,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/pagination/demo/custom-changer.vue",
@@ -4230,8 +4762,20 @@
   },
   {
     "file": "components/qrcode/demo/index.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Base' is a reserved HTML element name and cannot be used as a component name",
+        "line": 31,
+        "column": 5,
+        "endLine": 31,
+        "endColumn": 9,
+        "help": "Rename the component to avoid using reserved names"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -4433,8 +4977,20 @@
   },
   {
     "file": "components/rate/demo/index.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Text' is a reserved HTML element name and cannot be used as a component name",
+        "line": 30,
+        "column": 5,
+        "endLine": 30,
+        "endColumn": 9,
+        "help": "Rename the component to avoid using reserved names"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -4691,6 +5247,28 @@
     "file": "components/select/demo/index.vue",
     "messages": [
       {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Optgroup' is a reserved HTML element name and cannot be used as a component name",
+        "line": 63,
+        "column": 5,
+        "endLine": 63,
+        "endColumn": 13,
+        "help": "Rename the component to avoid using reserved names"
+      },
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Search' is a reserved HTML element name and cannot be used as a component name",
+        "line": 65,
+        "column": 5,
+        "endLine": 65,
+        "endColumn": 11,
+        "help": "Rename the component to avoid using reserved names"
+      },
+      {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -4702,7 +5280,7 @@
         "help": "Add scoped attribute: <style scoped>"
       }
     ],
-    "errorCount": 0,
+    "errorCount": 2,
     "warningCount": 1
   },
   {
@@ -4868,8 +5446,20 @@
   },
   {
     "file": "components/slider/demo/index.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Mark' is a reserved HTML element name and cannot be used as a component name",
+        "line": 37,
+        "column": 5,
+        "endLine": 37,
+        "endColumn": 9,
+        "help": "Rename the component to avoid using reserved names"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -5136,8 +5726,20 @@
   },
   {
     "file": "components/space/demo/index.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Base' is a reserved HTML element name and cannot be used as a component name",
+        "line": 34,
+        "column": 5,
+        "endLine": 34,
+        "endColumn": 9,
+        "help": "Rename the component to avoid using reserved names"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -5286,8 +5888,31 @@
   },
   {
     "file": "components/steps/demo/index.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Nav' is a reserved HTML element name and cannot be used as a component name",
+        "line": 52,
+        "column": 5,
+        "endLine": 52,
+        "endColumn": 8,
+        "help": "Rename the component to avoid using reserved names"
+      },
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Progress' is a reserved HTML element name and cannot be used as a component name",
+        "line": 53,
+        "column": 5,
+        "endLine": 53,
+        "endColumn": 13,
+        "help": "Rename the component to avoid using reserved names"
+      }
+    ],
+    "errorCount": 2,
     "warningCount": 0
   },
   {
@@ -5705,8 +6330,31 @@
   },
   {
     "file": "components/table/demo/index.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Head' is a reserved HTML element name and cannot be used as a component name",
+        "line": 92,
+        "column": 5,
+        "endLine": 92,
+        "endColumn": 9,
+        "help": "Rename the component to avoid using reserved names"
+      },
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Summary' is a reserved HTML element name and cannot be used as a component name",
+        "line": 102,
+        "column": 5,
+        "endLine": 102,
+        "endColumn": 12,
+        "help": "Rename the component to avoid using reserved names"
+      }
+    ],
+    "errorCount": 2,
     "warningCount": 0
   },
   {
@@ -5968,63 +6616,183 @@
   },
   {
     "file": "components/tabs/demo/basic.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 19,
+        "column": 11,
+        "endLine": 19,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/tabs/demo/card-top.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 20,
+        "column": 13,
+        "endLine": 20,
+        "endColumn": 42,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/tabs/demo/card.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 20,
+        "column": 11,
+        "endLine": 20,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/tabs/demo/centered.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 20,
+        "column": 11,
+        "endLine": 20,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/tabs/demo/custom-add-trigger.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 24,
+        "column": 13,
+        "endLine": 24,
+        "endColumn": 42,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/tabs/demo/custom-tab-bar.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 20,
+        "column": 13,
+        "endLine": 20,
+        "endColumn": 42,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/tabs/demo/disabled.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 20,
+        "column": 11,
+        "endLine": 20,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/tabs/demo/editable-card.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 21,
+        "column": 11,
+        "endLine": 21,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/tabs/demo/extra.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 20,
+        "column": 11,
+        "endLine": 20,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/tabs/demo/icon.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 20,
+        "column": 11,
+        "endLine": 20,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/tabs/demo/index.vue",
@@ -6034,21 +6802,57 @@
   },
   {
     "file": "components/tabs/demo/position.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 26,
+        "column": 11,
+        "endLine": 26,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/tabs/demo/size.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 25,
+        "column": 13,
+        "endLine": 25,
+        "endColumn": 42,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/tabs/demo/slide.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 26,
+        "column": 7,
+        "endLine": 26,
+        "endColumn": 36,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/tag/demo/basic.vue",
@@ -6310,8 +7114,20 @@
   },
   {
     "file": "components/tour/demo/index.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Mask' is a reserved HTML element name and cannot be used as a component name",
+        "line": 28,
+        "column": 5,
+        "endLine": 28,
+        "endColumn": 9,
+        "help": "Rename the component to avoid using reserved names"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -6375,9 +7191,20 @@
         "endLine": 2,
         "endColumn": 6,
         "help": "Remove the unused import or use the component in your template"
+      },
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Search' is a reserved HTML element name and cannot be used as a component name",
+        "line": 37,
+        "column": 5,
+        "endLine": 37,
+        "endColumn": 11,
+        "help": "Rename the component to avoid using reserved names"
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 1
   },
   {
@@ -6419,9 +7246,9 @@
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Slot prop 'onItemSelect' from slot 'children' is defined but never used",
         "line": 28,
-        "column": 17,
+        "column": 55,
         "endLine": 28,
-        "endColumn": 29,
+        "endColumn": 67,
         "help": "Consider removing unused slot props or prefix with underscore"
       }
     ],
@@ -6454,9 +7281,21 @@
   },
   {
     "file": "components/tree-select/demo/highlight.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 22,
+        "column": 5,
+        "endLine": 22,
+        "endColumn": 38,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/tree-select/demo/index.vue",
@@ -6520,33 +7359,126 @@
   },
   {
     "file": "components/tree/demo/accordion.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 20,
+        "column": 5,
+        "endLine": 20,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/tree/demo/basic.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 20,
+        "column": 5,
+        "endLine": 20,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 21,
+        "column": 5,
+        "endLine": 21,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 22,
+        "column": 5,
+        "endLine": 22,
+        "endColumn": 38,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 3
   },
   {
     "file": "components/tree/demo/context-menu.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 20,
+        "column": 11,
+        "endLine": 20,
+        "endColumn": 46,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/tree/demo/customized-icon.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 20,
+        "column": 11,
+        "endLine": 20,
+        "endColumn": 46,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/tree/demo/directory.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 21,
+        "column": 5,
+        "endLine": 21,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 22,
+        "column": 5,
+        "endLine": 22,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 2
   },
   {
     "file": "components/tree/demo/draggable.vue",
@@ -6556,9 +7488,32 @@
   },
   {
     "file": "components/tree/demo/dynamic.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 21,
+        "column": 5,
+        "endLine": 21,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 22,
+        "column": 5,
+        "endLine": 22,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 2
   },
   {
     "file": "components/tree/demo/index.vue",
@@ -6573,9 +7528,20 @@
         "endLine": 2,
         "endColumn": 6,
         "help": "Remove the unused import or use the component in your template"
+      },
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Search' is a reserved HTML element name and cannot be used as a component name",
+        "line": 41,
+        "column": 5,
+        "endLine": 41,
+        "endColumn": 11,
+        "help": "Rename the component to avoid using reserved names"
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 1
   },
   {
@@ -6609,10 +7575,43 @@
         "endLine": 19,
         "endColumn": 11,
         "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 21,
+        "column": 5,
+        "endLine": 21,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 22,
+        "column": 5,
+        "endLine": 22,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 23,
+        "column": 5,
+        "endLine": 23,
+        "endColumn": 38,
+        "help": "Use kebab-case for attribute names"
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 4
   },
   {
     "file": "components/tree/demo/search.vue",
@@ -6622,15 +7621,61 @@
   },
   {
     "file": "components/tree/demo/switcher-icon.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 21,
+        "column": 5,
+        "endLine": 21,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 22,
+        "column": 5,
+        "endLine": 22,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 2
   },
   {
     "file": "components/tree/demo/virtual-scroll.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 20,
+        "column": 5,
+        "endLine": 20,
+        "endColumn": 40,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 21,
+        "column": 5,
+        "endLine": 21,
+        "endColumn": 38,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 2
   },
   {
     "file": "components/typography/demo/basic.vue",
@@ -6646,8 +7691,20 @@
   },
   {
     "file": "components/typography/demo/index.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Text' is a reserved HTML element name and cannot be used as a component name",
+        "line": 29,
+        "column": 5,
+        "endLine": 29,
+        "endColumn": 9,
+        "help": "Rename the component to avoid using reserved names"
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -6793,9 +7850,21 @@
   },
   {
     "file": "components/upload/demo/drag.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 24,
+        "column": 5,
+        "endLine": 24,
+        "endColumn": 32,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "components/upload/demo/fileList.vue",
@@ -7572,9 +8641,20 @@
         "endLine": 47,
         "endColumn": 65,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Menu' is a reserved HTML element name and cannot be used as a component name",
+        "line": 66,
+        "column": 9,
+        "endLine": 66,
+        "endColumn": 15,
+        "help": "Rename the component to avoid using reserved names"
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 2
   },
   {
@@ -7764,6 +8844,17 @@
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Menu' is a reserved HTML element name and cannot be used as a component name",
+        "line": 67,
+        "column": 5,
+        "endLine": 67,
+        "endColumn": 9,
+        "help": "Rename the component to avoid using reserved names"
+      },
+      {
         "ruleId": "vue/single-style-block",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -7775,7 +8866,7 @@
         "help": "Multiple style blocks of the same type can be merged for better organization"
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 3
   },
   {
@@ -7874,9 +8965,42 @@
         "endLine": 54,
         "endColumn": 67,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Header' is a reserved HTML element name and cannot be used as a component name",
+        "line": 153,
+        "column": 5,
+        "endLine": 153,
+        "endColumn": 11,
+        "help": "Rename the component to avoid using reserved names"
+      },
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Footer' is a reserved HTML element name and cannot be used as a component name",
+        "line": 154,
+        "column": 5,
+        "endLine": 154,
+        "endColumn": 11,
+        "help": "Rename the component to avoid using reserved names"
+      },
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Menu' is a reserved HTML element name and cannot be used as a component name",
+        "line": 155,
+        "column": 5,
+        "endLine": 155,
+        "endColumn": 9,
+        "help": "Rename the component to avoid using reserved names"
       }
     ],
-    "errorCount": 0,
+    "errorCount": 3,
     "warningCount": 8
   },
   {
@@ -7935,6 +9059,17 @@
     "file": "site/src/views/theme-editor/index.vue",
     "messages": [
       {
+        "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Header' is a reserved HTML element name and cannot be used as a component name",
+        "line": 77,
+        "column": 5,
+        "endLine": 77,
+        "endColumn": 11,
+        "help": "Rename the component to avoid using reserved names"
+      },
+      {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -7946,7 +9081,7 @@
         "help": "Add scoped attribute: <style scoped>"
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 1
   }
 ]

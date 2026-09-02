@@ -11,7 +11,7 @@ describe("npmx.dev inspector parity with Vue compiler", () => {
         target: "dom",
         changedFiles: 220,
         additions: 17_122,
-        removals: 23_036,
+        removals: 23_081,
         officialErrors: 0,
         vizeErrors: 0,
       },

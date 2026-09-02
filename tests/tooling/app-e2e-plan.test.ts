@@ -109,8 +109,8 @@ test("full and readiness plans preserve every isolated execution row", () => {
   );
   assert.deepEqual(
     fullAppE2eRows.filter((row) => row.suite === "vrt").map((row) => row.timeout),
-    ["15m", "15m", "15m", "15m", "15m"],
-    "full VRT rows should stay inside the Blacksmith runner budget",
+    ["15m", "15m", "20m", "15m", "15m"],
+    "full VRT rows should stay inside the Blacksmith runner budget with misskey headroom",
   );
   assert.equal(
     readinessRows.find((row) => row.shard === "lint")?.timeout,

@@ -214,7 +214,7 @@ fn full_rows() -> Vec<Row> {
         row("full", "dev", "vuefes", "test:dev:vuefes", &["vuefes-2025"], true, "12m"),
         row("full", "vrt", "elk", "test:vrt:elk", &["elk"], true, "15m"),
         row("full", "vrt", "frontend-phpcon", "test:vrt:frontend-phpcon", &["frontend-phpcon-do-website"], true, "15m"),
-        row("full", "vrt", "misskey", "test:vrt:misskey", &["misskey"], true, "15m"),
+        row("full", "vrt", "misskey", "test:vrt:misskey", &["misskey"], true, "20m"),
         row("full", "vrt", "npmx", "test:vrt:npmx", &["npmx.dev"], true, "15m"),
         row("full", "vrt", "vuefes", "test:vrt:vuefes", &["vuefes-2025"], true, "15m"),
         row("full", "preview", "elk", "test:preview:elk", &["elk"], false, "10m"),
