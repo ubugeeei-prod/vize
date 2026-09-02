@@ -223,6 +223,38 @@ customEventNameCasingOptionsDef: JsonSchema = new JsonSchema {
   additionalProperties = false
 }
 
+museaDesignTokenDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["path"] = new JsonSchema {
+      type = "string"
+      description = "Token path, for example color.primary"
+    }
+    ["value"] = new JsonSchema {
+      type = "string"
+      description = "Primitive CSS value to match, for example #3b82f6"
+    }
+    ["tier"] = new JsonSchema {
+      type = "string"
+      description = "Token tier shown in diagnostics"
+      default = "primitive"
+    }
+  }
+  required = new Listing { "path"; "value" }
+  additionalProperties = false
+}
+
+museaPreferDesignTokensOptionsDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["tokens"] = new JsonSchema {
+      type = "array"
+      items = new JsonSchema { `$ref` = "#/definitions/MuseaDesignToken" }
+    }
+  }
+  additionalProperties = false
+}
+
 lintRuleOptionsDef: JsonSchema = new JsonSchema {
   type = "object"
   properties {
@@ -234,6 +266,9 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
     }
     ["vue/component-name-in-template-casing"] = componentNameInTemplateCasingOptionsDef
     ["script/custom-event-name-casing"] = customEventNameCasingOptionsDef
+    ["musea/prefer-design-tokens"] = new JsonSchema {
+      `$ref` = "#/definitions/MuseaPreferDesignTokensOptions"
+    }
   }
   additionalProperties = false
 }

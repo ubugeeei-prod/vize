@@ -39,8 +39,9 @@ pub use linter::{LintRuleSeverity, LinterConfig};
 #[allow(unused_imports)]
 pub use linter_rule_options::{
     ComponentNameInTemplateCasingOptions, ConfigLintRuleOptions, CustomEventNameCasing,
-    CustomEventNameCasingOptions, LintRuleOptions, NoRestrictedGlobalsOptions,
-    NoRestrictedMembersOptions, RestrictedGlobal, RestrictedMember, TemplateComponentNameCasing,
+    CustomEventNameCasingOptions, LintRuleOptions, MuseaDesignToken,
+    MuseaPreferDesignTokensOptions, NoRestrictedGlobalsOptions, NoRestrictedMembersOptions,
+    RestrictedGlobal, RestrictedMember, TemplateComponentNameCasing,
 };
 pub use type_checker::TypeCheckerConfig;
 pub use vue::{ParseVueVersionError, VueVersion};

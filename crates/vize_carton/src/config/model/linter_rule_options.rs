@@ -1,11 +1,11 @@
 //! Typed per-rule lint options.
 //!
-//! A handful of script rules accept project-local configuration so teams can
-//! enforce their own architecture conventions (e.g. forbidding direct access to
-//! `process` or `window.localStorage`) through `vize lint` instead of running a
-//! sidecar ESLint. Options live under `linter.ruleOptions.<rule-name>` and are
-//! parsed into typed structs (no untyped `serde_json::Value`) so the schema is
-//! discoverable and option payload validation stays strict.
+//! A handful of lint rules accept project-local configuration so teams can
+//! enforce their own architecture and design-system conventions through
+//! `vize lint` instead of running a sidecar tool. Options live under
+//! `linter.ruleOptions.<rule-name>` and are parsed into typed structs (no
+//! untyped `serde_json::Value`) so the schema is discoverable and validation
+//! stays strict.
 
 use serde::{Deserialize, Serialize};
 
@@ -104,6 +104,9 @@ pub struct ConfigLintRuleOptions {
     /// Options for `script/custom-event-name-casing`.
     #[serde(rename = "script/custom-event-name-casing")]
     custom_event_name_casing: Option<CustomEventNameCasingOptions>,
+    /// Options for `musea/prefer-design-tokens`.
+    #[serde(rename = "musea/prefer-design-tokens")]
+    musea_prefer_design_tokens: Option<MuseaPreferDesignTokensOptions>,
 }
 
 impl ConfigLintRuleOptions {
@@ -128,6 +131,7 @@ impl ConfigLintRuleOptions {
         self.stable.is_empty()
             && self.component_name_in_template_casing.is_none()
             && self.custom_event_name_casing.is_none()
+            && self.musea_prefer_design_tokens.is_none()
     }
 
     /// Configured deny list for `script/no-restricted-globals`.
@@ -158,6 +162,22 @@ impl ConfigLintRuleOptions {
             .map(|options| options.casing)
     }
 
+    /// Configured design-token primitive values for
+    /// `musea/prefer-design-tokens` as `(value, path, tier)` tuples. Empty
+    /// when unconfigured.
+    pub fn musea_design_tokens(&self) -> Vec<(String, String, String)> {
+        self.musea_prefer_design_tokens
+            .as_ref()
+            .map(|options| {
+                options
+                    .tokens
+                    .iter()
+                    .map(|token| (token.value.clone(), token.path.clone(), token.tier.clone()))
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
     /// Apply a later config layer to this option set.
     pub fn merge_from(&mut self, overlay: &Self) {
         self.stable.merge_from(&overlay.stable);
@@ -166,6 +186,9 @@ impl ConfigLintRuleOptions {
         }
         if let Some(options) = &overlay.custom_event_name_casing {
             self.custom_event_name_casing = Some(*options);
+        }
+        if let Some(options) = &overlay.musea_prefer_design_tokens {
+            self.musea_prefer_design_tokens = Some(options.clone());
         }
     }
 }
@@ -218,132 +241,34 @@ pub struct RestrictedMember {
     pub message: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::{
-        ComponentNameInTemplateCasingOptions, ConfigLintRuleOptions, CustomEventNameCasing,
-        CustomEventNameCasingOptions, LintRuleOptions, RestrictedGlobal, RestrictedMember,
-        TemplateComponentNameCasing,
-    };
-
-    #[test]
-    fn empty_options_deserialize_to_default() {
-        let options = serde_json::from_str::<LintRuleOptions>("{}").unwrap();
-        assert_eq!(options, LintRuleOptions::default());
-        assert!(options.is_empty());
-    }
-
-    #[test]
-    fn deserializes_restricted_globals_with_and_without_message() {
-        let json = r#"{
-            "script/no-restricted-globals": {
-                "globals": [
-                    { "name": "process", "message": "Use a typed config helper." },
-                    { "name": "localStorage" }
-                ]
-            }
-        }"#;
-        let options = serde_json::from_str::<LintRuleOptions>(json).unwrap();
-        let globals = options.no_restricted_globals.unwrap().globals;
-        assert_eq!(
-            globals,
-            vec![
-                RestrictedGlobal {
-                    name: "process".into(),
-                    message: Some("Use a typed config helper.".into()),
-                },
-                RestrictedGlobal {
-                    name: "localStorage".into(),
-                    message: None,
-                },
-            ]
-        );
-        assert!(options.no_restricted_members.is_none());
-    }
-
-    #[test]
-    fn deserializes_restricted_members() {
-        let json = r#"{
-            "script/no-restricted-members": {
-                "members": [
-                    { "object": "window", "property": "localStorage", "message": "Use authStorage." },
-                    { "object": "globalThis", "property": "process" }
-                ]
-            }
-        }"#;
-        let options = serde_json::from_str::<LintRuleOptions>(json).unwrap();
-        let members = options.no_restricted_members.unwrap().members;
-        assert_eq!(
-            members,
-            vec![
-                RestrictedMember {
-                    object: "window".into(),
-                    property: "localStorage".into(),
-                    message: Some("Use authStorage.".into()),
-                },
-                RestrictedMember {
-                    object: "globalThis".into(),
-                    property: "process".into(),
-                    message: None,
-                },
-            ]
-        );
-        assert!(options.no_restricted_globals.is_none());
-    }
-
-    #[test]
-    fn deserializes_casing_options() {
-        let json = r#"{
-            "vue/component-name-in-template-casing": { "casing": "kebab-case" },
-            "script/custom-event-name-casing": { "casing": "camelCase" }
-        }"#;
-        let options = serde_json::from_str::<ConfigLintRuleOptions>(json).unwrap();
-        assert_eq!(
-            options.component_name_in_template_casing,
-            Some(ComponentNameInTemplateCasingOptions {
-                casing: TemplateComponentNameCasing::KebabCase
-            })
-        );
-        assert_eq!(
-            options.custom_event_name_casing,
-            Some(CustomEventNameCasingOptions {
-                casing: CustomEventNameCasing::CamelCase
-            })
-        );
-        assert_eq!(
-            options.component_name_in_template_casing(),
-            Some(TemplateComponentNameCasing::KebabCase)
-        );
-        assert_eq!(
-            options.custom_event_name_casing(),
-            Some(CustomEventNameCasing::CamelCase)
-        );
-    }
-
-    #[test]
-    fn stable_lint_rule_options_keep_legacy_shape() {
-        let json = r#"{
-            "script/no-restricted-globals": {
-                "globals": [{ "name": "process" }]
-            },
-            "vue/component-name-in-template-casing": { "casing": "kebab-case" }
-        }"#;
-        let options = serde_json::from_str::<ConfigLintRuleOptions>(json).unwrap();
-        assert_eq!(
-            options.stable_options().restricted_globals(),
-            [("process".into(), None)]
-        );
-        assert!(options.component_name_in_template_casing().is_some());
-    }
-
-    #[test]
-    fn unknown_fields_are_rejected() {
-        // Typed structs reject unknown keys inside an entry so config typos surface.
-        let json = r#"{
-            "script/no-restricted-globals": {
-                "globals": [{ "name": "process", "bogus": true }]
-            }
-        }"#;
-        assert!(serde_json::from_str::<LintRuleOptions>(json).is_err());
-    }
+/// Options for `musea/prefer-design-tokens`.
+///
+/// The rule is off unless tokens are configured and the rule is enabled by
+/// severity or implicitly by this non-empty token list. Each token maps one
+/// hardcoded CSS value to a design-token path.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
+pub struct MuseaPreferDesignTokensOptions {
+    /// Design tokens that should replace matching hardcoded CSS values.
+    pub tokens: Vec<MuseaDesignToken>,
 }
+
+/// A design token recognized by `musea/prefer-design-tokens`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct MuseaDesignToken {
+    /// Token path (e.g. `color.primary`).
+    pub path: String,
+    /// Primitive CSS value to match (e.g. `#3b82f6`).
+    pub value: String,
+    /// Token tier shown in diagnostics. Defaults to `primitive`.
+    #[serde(default = "default_musea_design_token_tier")]
+    pub tier: String,
+}
+
+fn default_musea_design_token_tier() -> String {
+    "primitive".into()
+}
+
+#[cfg(test)]
+mod tests;

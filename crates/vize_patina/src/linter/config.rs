@@ -12,6 +12,7 @@ use crate::{
         ecosystem_builtin_script_rule_names,
     },
     rule::RuleRegistry,
+    rules::musea::PreferDesignTokensConfig,
 };
 #[cfg(not(target_arch = "wasm32"))]
 use std::path::PathBuf;
@@ -80,6 +81,8 @@ pub struct Linter {
     pub(crate) css_rules: &'static [&'static str],
     /// Built-in `musea/*` rules enabled for this linter.
     pub(crate) musea_rules: &'static [&'static str],
+    /// Optional design-token data for `musea/prefer-design-tokens`.
+    pub(crate) musea_design_tokens: Option<PreferDesignTokensConfig>,
     /// Whether native type-aware lint rules may run.
     pub(crate) type_aware_enabled: bool,
     /// Lazily initialized native corsa session for type-aware lint.
@@ -110,6 +113,7 @@ impl Linter {
             script_rules: builtin_script_rule_names(preset),
             css_rules: builtin_css_rule_names(preset),
             musea_rules: &[],
+            musea_design_tokens: None,
             script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]
@@ -134,6 +138,7 @@ impl Linter {
             script_rules: builtin_script_rule_names(preset),
             css_rules: builtin_css_rule_names(preset),
             musea_rules: &[],
+            musea_design_tokens: None,
             script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]
@@ -158,6 +163,7 @@ impl Linter {
             script_rules: ecosystem_builtin_script_rule_names(),
             css_rules: builtin_css_rule_names(LintPreset::Ecosystem),
             musea_rules: &[],
+            musea_design_tokens: None,
             script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]
@@ -182,6 +188,7 @@ impl Linter {
             script_rules: &[],
             css_rules: &[],
             musea_rules: &[],
+            musea_design_tokens: None,
             script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]

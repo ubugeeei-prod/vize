@@ -1,5 +1,4 @@
 /// Generates secondary JSON Schema compatibility output from the primary Pkl definitions.
-///
 /// Usage: pkl eval -f json pkl/jsonschema/generate.pkl
 module vize.jsonschema.generate
 import "@json_schema/JsonSchema.pkl"
@@ -486,7 +485,6 @@ local configEntryDef: JsonSchema = new JsonSchema {
   }
   additionalProperties = false
 }
-
 output {
   value = new JsonSchema {
     `$schema` = "http://json-schema.org/draft-07/schema#"
@@ -503,6 +501,8 @@ output {
       ["RestrictedMember"] = ConfigArtifactDefinitions.restrictedMemberDef
       ["NoRestrictedGlobalsOptions"] = ConfigArtifactDefinitions.noRestrictedGlobalsOptionsDef
       ["NoRestrictedMembersOptions"] = ConfigArtifactDefinitions.noRestrictedMembersOptionsDef
+      ["MuseaDesignToken"] = ConfigArtifactDefinitions.museaDesignTokenDef
+      ["MuseaPreferDesignTokensOptions"] = ConfigArtifactDefinitions.museaPreferDesignTokensOptionsDef
       ["LintRuleOptions"] = ConfigArtifactDefinitions.lintRuleOptionsDef
       ["TypeCheckerConfig"] = typeCheckerConfigDef
       ["FormatterConfig"] = formatterConfigDef

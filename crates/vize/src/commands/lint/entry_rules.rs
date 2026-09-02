@@ -16,6 +16,7 @@ use crate::lint_plan::matcher::GlobSequence;
 use crate::lint_plan::matcher::{LintPlanScope, absolute_path};
 
 const PINIA_PREFER_STORE_TO_REFS: &str = "ecosystem/pinia-prefer-store-to-refs";
+const MUSEA_PREFER_DESIGN_TOKENS: &str = "musea/prefer-design-tokens";
 const SCRIPT_NO_RESTRICTED_MEMBERS: &str = "script/no-restricted-members";
 
 pub(super) struct ResolvedLinterRuleGroups {
@@ -45,6 +46,17 @@ impl ResolvedLinterRuleGroups {
                 let disabled_rules = resolved_disabled_rules(config, *pinia_available);
                 let restricted_globals = rule_options.restricted_globals();
                 let restricted_members = rule_options.restricted_members();
+                let musea_design_tokens = rule_options.musea_design_tokens();
+                if !musea_design_tokens.is_empty()
+                    && !disabled_rules
+                        .iter()
+                        .any(|rule| rule.as_str() == MUSEA_PREFER_DESIGN_TOKENS)
+                    && !additional_rules
+                        .iter()
+                        .any(|rule| rule.as_str() == MUSEA_PREFER_DESIGN_TOKENS)
+                {
+                    additional_rules.push(MUSEA_PREFER_DESIGN_TOKENS.into());
+                }
                 if !restricted_members.is_empty()
                     && !disabled_rules
                         .iter()
@@ -70,7 +82,8 @@ impl ResolvedLinterRuleGroups {
                     .with_vue_version(features.vue_version)
                     .with_vapor_mode(features.vapor)
                     .with_restricted_globals(restricted_globals)
-                    .with_restricted_members(restricted_members);
+                    .with_restricted_members(restricted_members)
+                    .with_musea_design_tokens(musea_design_tokens);
                 if let Some(casing) = rule_options.component_name_in_template_casing() {
                     linter =
                         linter.with_component_name_in_template_casing(component_casing(casing));

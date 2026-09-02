@@ -301,6 +301,38 @@
       },
       "additionalProperties": false
     },
+    "MuseaDesignToken": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "description": "Token path, for example color.primary",
+          "type": "string"
+        },
+        "value": {
+          "description": "Primitive CSS value to match, for example #3b82f6",
+          "type": "string"
+        },
+        "tier": {
+          "description": "Token tier shown in diagnostics",
+          "default": "primitive",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": ["path", "value"]
+    },
+    "MuseaPreferDesignTokensOptions": {
+      "type": "object",
+      "properties": {
+        "tokens": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MuseaDesignToken"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "LintRuleOptions": {
       "type": "object",
       "properties": {
@@ -331,6 +363,9 @@
             }
           },
           "additionalProperties": false
+        },
+        "musea/prefer-design-tokens": {
+          "$ref": "#/definitions/MuseaPreferDesignTokensOptions"
         }
       },
       "additionalProperties": false

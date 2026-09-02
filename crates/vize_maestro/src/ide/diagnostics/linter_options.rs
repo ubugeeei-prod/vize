@@ -1,3 +1,78 @@
+use tower_lsp::lsp_types::Url;
+use vize_patina::rules::musea::{MuseaLinter, PreferDesignTokensConfig};
+use vize_s0::{
+    String,
+    config::{ConfigLintRuleOptions, LinterConfig},
+};
+
+const MUSEA_PREFER_DESIGN_TOKENS: &str = "musea/prefer-design-tokens";
+const SCRIPT_NO_RESTRICTED_MEMBERS: &str = "script/no-restricted-members";
+
+pub(super) struct PatinaLintOptions {
+    pub(super) additional_rules: Vec<String>,
+    pub(super) disabled_rules: Vec<String>,
+    pub(super) restricted_globals: Vec<(String, Option<String>)>,
+    pub(super) restricted_members: Vec<(String, String, Option<String>)>,
+    pub(super) musea_design_tokens: Vec<(String, String, String)>,
+}
+
+pub(super) fn resolve_patina_options(
+    linter_config: &LinterConfig,
+    rule_options: &ConfigLintRuleOptions,
+) -> PatinaLintOptions {
+    let mut additional_rules = linter_config.enabled_rules();
+    let disabled_rules = linter_config.disabled_rules();
+    let restricted_members = rule_options.restricted_members();
+    let musea_design_tokens = rule_options.musea_design_tokens();
+
+    add_project_local_rule(
+        &mut additional_rules,
+        &disabled_rules,
+        SCRIPT_NO_RESTRICTED_MEMBERS,
+        !restricted_members.is_empty(),
+    );
+    add_project_local_rule(
+        &mut additional_rules,
+        &disabled_rules,
+        MUSEA_PREFER_DESIGN_TOKENS,
+        !musea_design_tokens.is_empty(),
+    );
+
+    PatinaLintOptions {
+        additional_rules,
+        disabled_rules,
+        restricted_globals: rule_options.restricted_globals(),
+        restricted_members,
+        musea_design_tokens,
+    }
+}
+
+pub(super) fn musea_linter_for_uri(
+    state: &crate::server::ServerState,
+    uri: &Url,
+) -> Option<MuseaLinter> {
+    let (linter_config, rule_options) = state.linter_settings_for_uri(uri);
+    if !linter_config.enabled {
+        return None;
+    }
+
+    let tokens = rule_options.musea_design_tokens();
+    if tokens.is_empty()
+        || linter_config
+            .disabled_rules()
+            .iter()
+            .any(|rule| rule.as_str() == MUSEA_PREFER_DESIGN_TOKENS)
+    {
+        return Some(MuseaLinter::new());
+    }
+
+    let mut config = PreferDesignTokensConfig::default();
+    for (value, path, tier) in tokens {
+        config.add_token(&value, &path, &tier);
+    }
+    Some(MuseaLinter::new().with_design_tokens(config))
+}
+
 pub(super) fn apply_rule_options(
     mut linter: vize_patina::Linter,
     options: &vize_s0::config::ConfigLintRuleOptions,
@@ -9,6 +84,22 @@ pub(super) fn apply_rule_options(
         linter = linter.with_custom_event_name_casing(event_name_casing(casing));
     }
     linter
+}
+
+fn add_project_local_rule(
+    additional_rules: &mut Vec<String>,
+    disabled_rules: &[String],
+    rule_name: &str,
+    configured: bool,
+) {
+    if configured
+        && !disabled_rules.iter().any(|rule| rule.as_str() == rule_name)
+        && !additional_rules
+            .iter()
+            .any(|rule| rule.as_str() == rule_name)
+    {
+        additional_rules.push(rule_name.into());
+    }
 }
 
 fn component_casing(

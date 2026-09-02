@@ -1,0 +1,175 @@
+use tower_lsp::lsp_types::{Diagnostic, NumberOrString, Url};
+
+use super::DiagnosticService;
+use crate::server::ServerState;
+
+#[test]
+fn collect_lints_configured_project_local_rule_options() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::create_dir_all(dir.path().join("src")).unwrap();
+    std::fs::write(
+        dir.path().join("vize.config.json"),
+        r##"{
+            "lsp": { "lint": true },
+            "linter": {
+                "preset": "incremental",
+                "ruleOptions": {
+                    "script/no-restricted-members": {
+                        "members": [
+                            {
+                                "object": "window",
+                                "property": "localStorage",
+                                "message": "Use appStorage."
+                            }
+                        ]
+                    },
+                    "musea/prefer-design-tokens": {
+                        "tokens": [
+                            {
+                                "path": "color.primary",
+                                "value": "#3b82f6"
+                            }
+                        ]
+                    }
+                }
+            }
+        }"##,
+    )
+    .unwrap();
+
+    let state = ServerState::new();
+    state.load_lsp_config(dir.path());
+
+    let app_uri = Url::from_file_path(dir.path().join("src/App.vue")).unwrap();
+    let app_source = r#"<script setup lang="ts">
+window.localStorage.getItem("token")
+</script>
+<template><main></main></template>
+"#;
+    state.documents.open(
+        app_uri.clone(),
+        app_source.to_string(),
+        1,
+        "vue".to_string(),
+    );
+
+    let art_uri = Url::from_file_path(dir.path().join("src/Button.art.vue")).unwrap();
+    let art_source = r##"<art title="Button" component="./Button.vue">
+  <variant name="default"><button class="button">Save</button></variant>
+</art>
+
+<style scoped>
+.button {
+  background: #3b82f6;
+}
+</style>
+"##;
+    state.documents.open(
+        art_uri.clone(),
+        art_source.to_string(),
+        1,
+        "vue".to_string(),
+    );
+
+    let inline_art_uri = Url::from_file_path(dir.path().join("src/InlineArt.vue")).unwrap();
+    let inline_art_source = r##"<template><main></main></template>
+<art title="Inline" component="./Inline.vue">
+<style scoped>
+.button {
+  color: #3b82f6;
+}
+</style>
+</art>
+"##;
+    state.documents.open(
+        inline_art_uri.clone(),
+        inline_art_source.to_string(),
+        1,
+        "vue".to_string(),
+    );
+
+    let app_codes = diagnostic_codes(&DiagnosticService::collect_lint_only(&state, &app_uri));
+    let art_codes = diagnostic_codes(&DiagnosticService::collect_lint_only(&state, &art_uri));
+    let inline_art_codes = diagnostic_codes(&DiagnosticService::collect_lint_only(
+        &state,
+        &inline_art_uri,
+    ));
+
+    assert_eq!(
+        app_codes,
+        ["script/no-restricted-members"],
+        "configured restricted members must run through the LSP lint path"
+    );
+    assert_eq!(
+        art_codes,
+        ["musea/prefer-design-tokens"],
+        "configured Musea design tokens must run through the Art LSP lint path"
+    );
+    assert_eq!(
+        inline_art_codes,
+        ["musea/prefer-design-tokens"],
+        "configured Musea design tokens must run through inline <art> blocks"
+    );
+}
+
+#[test]
+fn collect_musea_lint_respects_disabled_linter_config() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::create_dir_all(dir.path().join("src")).unwrap();
+    std::fs::write(
+        dir.path().join("vize.config.json"),
+        r##"{
+            "languageServer": { "lint": true },
+            "linter": {
+                "enabled": false,
+                "ruleOptions": {
+                    "musea/prefer-design-tokens": {
+                        "tokens": [
+                            {
+                                "path": "color.primary",
+                                "value": "#3b82f6"
+                            }
+                        ]
+                    }
+                }
+            }
+        }"##,
+    )
+    .unwrap();
+
+    let state = ServerState::new();
+    state.load_lsp_config(dir.path());
+
+    let art_uri = Url::from_file_path(dir.path().join("src/Button.art.vue")).unwrap();
+    let art_source = r##"<art title="Button" component="./Button.vue">
+  <variant name="default"><button class="button">Save</button></variant>
+</art>
+
+<style scoped>
+.button {
+  background: #3b82f6;
+}
+</style>
+"##;
+    state.documents.open(
+        art_uri.clone(),
+        art_source.to_string(),
+        1,
+        "vue".to_string(),
+    );
+
+    assert_eq!(
+        diagnostic_codes(&DiagnosticService::collect_lint_only(&state, &art_uri)),
+        Vec::<String>::new()
+    );
+}
+
+fn diagnostic_codes(diagnostics: &[Diagnostic]) -> Vec<String> {
+    diagnostics
+        .iter()
+        .filter_map(|diagnostic| match diagnostic.code.as_ref() {
+            Some(NumberOrString::String(code)) => Some(code.clone()),
+            _ => None,
+        })
+        .collect()
+}

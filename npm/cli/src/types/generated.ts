@@ -230,6 +230,7 @@ export interface LintRuleOptions {
   "script/custom-event-name-casing"?: {
     casing?: "camelCase" | "kebab-case";
   };
+  "musea/prefer-design-tokens"?: MuseaPreferDesignTokensOptions;
 }
 export interface NoRestrictedGlobalsOptions {
   globals?: RestrictedGlobal[];
@@ -245,6 +246,23 @@ export interface RestrictedMember {
   object: string;
   property: string;
   message?: string;
+}
+export interface MuseaPreferDesignTokensOptions {
+  tokens?: MuseaDesignToken[];
+}
+export interface MuseaDesignToken {
+  /**
+   * Token path, for example color.primary
+   */
+  path: string;
+  /**
+   * Primitive CSS value to match, for example #3b82f6
+   */
+  value: string;
+  /**
+   * Token tier shown in diagnostics
+   */
+  tier?: string;
 }
 export interface TypeCheckerConfig {
   /**

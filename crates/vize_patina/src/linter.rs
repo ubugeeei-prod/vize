@@ -13,6 +13,7 @@ mod config;
 mod corsa_session;
 pub(crate) mod css_rules;
 mod engine;
+mod musea_config;
 pub(crate) mod musea_rules;
 #[cfg(not(target_arch = "wasm32"))]
 mod native_type_aware;

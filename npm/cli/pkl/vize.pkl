@@ -96,11 +96,22 @@ class CustomEventNameCasingOptions {
   casing: CustomEventNameCasing = "camelCase"
 }
 
+class MuseaDesignToken {
+  path: String
+  value: String
+  tier: String? = null
+}
+
+class MuseaPreferDesignTokensOptions {
+  tokens: Listing<MuseaDesignToken>? = null
+}
+
 class LintRuleOptions {
   `script/no-restricted-globals`: NoRestrictedGlobalsOptions? = null
   `script/no-restricted-members`: NoRestrictedMembersOptions? = null
   `vue/component-name-in-template-casing`: ComponentNameInTemplateCasingOptions? = null
   `script/custom-event-name-casing`: CustomEventNameCasingOptions? = null
+  `musea/prefer-design-tokens`: MuseaPreferDesignTokensOptions? = null
 }
 
 class LinterConfig {

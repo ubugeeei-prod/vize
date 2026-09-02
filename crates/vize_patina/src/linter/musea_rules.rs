@@ -54,6 +54,11 @@ pub(crate) fn append_builtin_musea_diagnostics(
     musea_linter.check_valid_variant = rule_is_active(linter, RULE_VALID_VARIANT);
     musea_linter.check_unique_variant_names = rule_is_active(linter, RULE_UNIQUE_VARIANT_NAMES);
     musea_linter.check_no_empty_variant = rule_is_active(linter, RULE_NO_EMPTY_VARIANT);
+    if rule_is_active(linter, RULE_PREFER_DESIGN_TOKENS)
+        && let Some(config) = linter.musea_design_tokens.clone()
+    {
+        musea_linter = musea_linter.with_design_tokens(config);
+    }
 
     let musea_result = profile!("patina.musea_rule.lint_art_file", musea_linter.lint(source));
     let diagnostics = musea_result

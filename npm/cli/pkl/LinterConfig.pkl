@@ -52,12 +52,30 @@ class CustomEventNameCasingOptions {
   casing: CustomEventNameCasing = "camelCase"
 }
 
+/// A design token recognized by `musea/prefer-design-tokens`.
+class MuseaDesignToken {
+  /// Token path (e.g. `color.primary`).
+  path: String
+
+  /// Primitive CSS value to match (e.g. `#3b82f6`).
+  value: String
+
+  /// Token tier shown in diagnostics.
+  tier: String = "primitive"
+}
+
+/// Options for `musea/prefer-design-tokens`.
+class MuseaPreferDesignTokensOptions {
+  tokens: Listing<MuseaDesignToken>? = null
+}
+
 /// Typed per-rule options for rules that accept project-local configuration.
 class LintRuleOptions {
   `script/no-restricted-globals`: NoRestrictedGlobalsOptions? = null
   `script/no-restricted-members`: NoRestrictedMembersOptions? = null
   `vue/component-name-in-template-casing`: ComponentNameInTemplateCasingOptions? = null
   `script/custom-event-name-casing`: CustomEventNameCasingOptions? = null
+  `musea/prefer-design-tokens`: MuseaPreferDesignTokensOptions? = null
 }
 
 class LinterConfig {

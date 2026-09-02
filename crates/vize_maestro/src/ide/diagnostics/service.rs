@@ -65,7 +65,12 @@ impl DiagnosticService {
         let path = uri.path();
         if path.ends_with(".art.vue") {
             if features.lint {
-                diagnostics.extend(Self::collect_musea_diagnostics(uri, &content, &line_index));
+                diagnostics.extend(Self::collect_musea_diagnostics(
+                    state,
+                    uri,
+                    &content,
+                    &line_index,
+                ));
             }
             return diagnostics;
         }
@@ -193,8 +198,13 @@ impl DiagnosticService {
 
         // Also lint inline <art> blocks in regular .vue files
         if features.lint {
-            let inline_art_diags =
-                Self::collect_inline_art_diagnostics(uri, &content, &descriptor, &line_index);
+            let inline_art_diags = Self::collect_inline_art_diagnostics(
+                state,
+                uri,
+                &content,
+                &descriptor,
+                &line_index,
+            );
             tracing::info!(
                 "collect: inline art diagnostics: {}",
                 inline_art_diags.len()
@@ -213,9 +223,7 @@ impl DiagnosticService {
     /// `vize/musea`. It reproduces exactly the lint/musea diagnostics that the
     /// full pipeline would publish — including the parser-error short-circuit
     /// that gates them — while skipping the expensive SFC compile, ecosystem,
-    /// and (per-call, uncached) SFC type-check passes that hover discards. The
-    /// returned set is byte-for-byte the lint/musea subset of `collect`'s
-    /// output for every document shape (Art file, standalone HTML, SFC).
+    /// and uncached SFC type-check passes that hover discards.
     pub fn collect_lint_only(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {
         let Some(content) = state.documents.text(uri) else {
             return vec![];
@@ -235,7 +243,12 @@ impl DiagnosticService {
         // Art files (*.art.vue): Musea-specific lint only.
         let path = uri.path();
         if path.ends_with(".art.vue") {
-            diagnostics.extend(Self::collect_musea_diagnostics(uri, &content, &line_index));
+            diagnostics.extend(Self::collect_musea_diagnostics(
+                state,
+                uri,
+                &content,
+                &line_index,
+            ));
             return diagnostics;
         }
 
@@ -275,6 +288,7 @@ impl DiagnosticService {
             &line_index,
         ));
         diagnostics.extend(Self::collect_inline_art_diagnostics(
+            state,
             uri,
             &content,
             &descriptor,

@@ -1,6 +1,6 @@
 //! Linter-plan configuration regressions.
 
-use crate::config::load_config_and_linter_plan_with_rule_options_and_lint_features_and_source;
+use crate::config::load_config_and_linter_plan_with_config_rule_options_and_lint_features_and_source;
 
 use super::*;
 
@@ -10,7 +10,7 @@ fn preserves_scopes_and_resolves_rules_in_declaration_order() {
     let config_path = dir.path().join("vize.config.json");
     std::fs::write(
         &config_path,
-        r#"{
+        r##"{
   "basePath": "workspace",
   "ignores": ["generated/**"],
   "linter": { "rules": { "base": "error", "shared": "warn" } },
@@ -26,7 +26,7 @@ fn preserves_scopes_and_resolves_rules_in_declaration_order() {
       "linter": { "rules": { "last": "error", "shared": "off" } }
     }
   ]
-}"#,
+}"##,
     )
     .unwrap();
 
@@ -61,9 +61,14 @@ fn preserves_scoped_rule_options_for_options_only_entries() {
     let config_path = dir.path().join("vize.config.json");
     std::fs::write(
         &config_path,
-        r#"{
+        r##"{
   "linter": {
     "ruleOptions": {
+      "musea/prefer-design-tokens": {
+        "tokens": [
+          { "path": "color.primary", "value": "#3b82f6" }
+        ]
+      },
       "script/no-restricted-members": {
         "members": [
           {
@@ -80,6 +85,11 @@ fn preserves_scoped_rule_options_for_options_only_entries() {
       "files": ["src/admin/**/*.vue"],
       "linter": {
         "ruleOptions": {
+          "musea/prefer-design-tokens": {
+            "tokens": [
+              { "path": "color.admin", "value": "#2563eb", "tier": "semantic" }
+            ]
+          },
           "script/no-restricted-members": {
             "members": [
               {
@@ -93,13 +103,14 @@ fn preserves_scoped_rule_options_for_options_only_entries() {
       }
     }
   ]
-}"#,
+}"##,
     )
     .unwrap();
 
-    let (_, plan, _) = load_config_and_linter_plan_with_rule_options_and_lint_features_and_source(
-        Some(&config_path),
-    );
+    let (_, plan, _) =
+        load_config_and_linter_plan_with_config_rule_options_and_lint_features_and_source(Some(
+            &config_path,
+        ));
     let base = plan.resolve_matching_entries(&[]);
     let admin = plan.resolve_matching_entries(&[0]);
 
@@ -114,11 +125,19 @@ fn preserves_scoped_rule_options_for_options_only_entries() {
         )]
     );
     assert_eq!(
+        base.rule_options.musea_design_tokens(),
+        [("#3b82f6".into(), "color.primary".into(), "primitive".into())]
+    );
+    assert_eq!(
         admin.rule_options.restricted_members(),
         [(
             "window".into(),
             "sessionStorage".into(),
             Some("Use admin storage.".into())
         )]
+    );
+    assert_eq!(
+        admin.rule_options.musea_design_tokens(),
+        [("#2563eb".into(), "color.admin".into(), "semantic".into())]
     );
 }

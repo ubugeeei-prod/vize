@@ -140,3 +140,86 @@ fn lint_runs_explicit_musea_rules_for_art_files() {
         output_details(&configured_output)
     );
 }
+
+#[test]
+fn lint_runs_configured_musea_design_token_rule_for_art_styles() {
+    let project_root = tempfile::tempdir().unwrap();
+    write_project_file(
+        project_root.path(),
+        "vize.config.json",
+        r##"{
+  "linter": {
+    "preset": "incremental",
+    "ruleOptions": {
+      "musea/prefer-design-tokens": {
+        "tokens": [
+          {
+            "path": "color.primary",
+            "value": "#3b82f6"
+          }
+        ]
+      }
+    }
+  }
+}"##,
+    );
+    write_project_file(
+        project_root.path(),
+        "src/Button.art.vue",
+        r##"<art title="Button" component="./Button.vue">
+  <variant name="default"><button class="button">Save</button></variant>
+</art>
+
+<style scoped>
+.button {
+  background: #3b82f6;
+}
+</style>
+"##,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project_root.path())
+        .args([
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--format",
+            "json",
+            "--max-warnings",
+            "0",
+            "src/Button.art.vue",
+        ])
+        .output()
+        .unwrap();
+    assert!(!output.status.success(), "{}", output_details(&output));
+    let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap_or_else(|_| {
+        panic!(
+            "configured lint must emit JSON: {}",
+            output_details(&output)
+        )
+    });
+    assert_eq!(
+        json,
+        serde_json::json!([{
+            "file": "src/Button.art.vue",
+            "messages": [
+                {
+                    "ruleId": "musea/prefer-design-tokens",
+                    "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+                    "severity": 1,
+                    "message": "[vize:musea/prefer-design-tokens] Hardcoded value '#3b82f6' matches primitive token 'color.primary' — use var(--color-primary)",
+                    "line": 7,
+                    "column": 1,
+                    "endLine": 7,
+                    "endColumn": 23,
+                    "help": "Use var(--color-primary) for consistent theming and maintainability"
+                }
+            ],
+            "errorCount": 0,
+            "warningCount": 1
+        }]),
+        "{}",
+        output_details(&output)
+    );
+}
