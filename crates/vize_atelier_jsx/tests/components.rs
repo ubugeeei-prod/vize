@@ -6,8 +6,8 @@ use common::{
     as_element, as_text, find_directive, is_static, lower_all, lower_one, root_element,
     simple_content,
 };
-use vize_carton::Allocator;
 use vize_relief::{ElementType, TemplateChildNode};
+use vize_s0::Allocator;
 
 #[test]
 fn multiple_top_level_roots_are_each_lowered() {

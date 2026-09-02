@@ -266,7 +266,7 @@ forwarded slots changed, with `_: 1` and the no-patch-flag variants both going
 stale — but that check is not committed and does not run in CI (#3391).
 
 `v-slots` is therefore a compiler built-in
-(`vize_carton::BUILTIN_DIRECTIVES`), not a user directive: a component-level
+(`vize_s0::BUILTIN_DIRECTIVES`), not a user directive: a component-level
 `v-slots` in a `.vue` template now spreads too, rather than compiling to the
 `resolveDirective("slots")` lookup #3418 removed. A user directive named `slots`
 collides with it exactly as one named `show` or `model` would.

@@ -26,8 +26,8 @@ pub(crate) use style::{RawScopedStyle, ScopedStyleExpr};
 use oxc_ast::ast::{JSXElement, JSXElementName, JSXFragment};
 use oxc_semantic::Scoping;
 use oxc_span::Span;
-use vize_carton::{Allocator, Box, String, ToCompactString, Vec};
 use vize_relief::{RootNode, TemplateChildNode};
+use vize_s0::{Allocator, Box, String, ToCompactString, Vec};
 
 use crate::BabelIsCustomElement;
 use crate::compat::JsxCompatMode;

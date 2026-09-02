@@ -16,7 +16,7 @@ use vize_atelier_jsx::{
     BabelIsCustomElement, BabelJsxCustomizations, BabelJsxOptions, JsxCompatMode, JsxCompileConfig,
     JsxLang, compile_jsx_with_babel_customizations,
 };
-use vize_carton::{Allocator, FxHashSet};
+use vize_s0::{Allocator, FxHashSet};
 
 /// The relationship between Vize's default output and babel's for one case.
 ///

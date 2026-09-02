@@ -14,9 +14,9 @@ use oxc_ast::ast::{
     ArrayExpressionElement, Expression, JSXAttribute, JSXAttributeName, JSXAttributeValue,
 };
 use oxc_span::GetSpan;
-use vize_carton::ToCompactString;
 use vize_relief::SourceLocation;
 use vize_relief::{DirectiveNode, PropNode, SimpleExpressionNode};
+use vize_s0::ToCompactString;
 
 use super::Lowerer;
 use crate::diagnostics::JsxDiagnostic;

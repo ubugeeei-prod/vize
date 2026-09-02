@@ -5,7 +5,7 @@
 //! offsets and Vize's [`SourceLocation`] is a byte span too (Davinci P1-4
 //! retired the eager line/column fields), so the conversion is a direct
 //! offset carry-over; consumers that render line/column derive them from the
-//! offsets at their edge via `vize_carton::line_index`. This module is the
+//! offsets at their edge via `vize_s0::line_index`. This module is the
 //! single home for that conversion.
 
 use oxc_span::Span;

@@ -22,7 +22,7 @@ use oxc_ast::ast::{
 use oxc_ast_visit::{Visit, walk};
 use oxc_span::{GetSpan, Span};
 use oxc_syntax::scope::ScopeFlags;
-use vize_carton::String;
+use vize_s0::String;
 
 use self::signature::{destructured_prop_names, formal_parameters_range, type_parameters_range};
 
@@ -179,7 +179,7 @@ impl RootLowerer<'_, '_, '_, '_> {
                         // statement (which includes the trailing `;`).
                         let loc = self.lowerer.mapper().location(directive.expression.span);
                         self.lowerer.report(JsxDiagnostic::error_at(
-                            vize_carton::cstr!(
+                            vize_s0::cstr!(
                                 "conflicting JSX mode directives: \"{}\" follows \"{}\" in the \
                                  same component; a component can select only one output mode",
                                 mode.directive(),
@@ -193,7 +193,7 @@ impl RootLowerer<'_, '_, '_, '_> {
                 DirectiveKind::MalformedVue => {
                     let loc = self.lowerer.mapper().location(directive.expression.span);
                     self.lowerer.report(JsxDiagnostic::error_at(
-                        vize_carton::cstr!(
+                        vize_s0::cstr!(
                             "unknown JSX mode directive \"{raw}\": expected \"{}\" or \"{}\"",
                             JsxOutputMode::Vdom.directive(),
                             JsxOutputMode::Vapor.directive()

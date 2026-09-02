@@ -20,7 +20,7 @@
 //!
 //! ```
 //! use vize_atelier_jsx::{lower_source, JsxLang};
-//! use vize_carton::Allocator;
+//! use vize_s0::Allocator;
 //!
 //! let allocator = Allocator::new();
 //! let out = lower_source(
@@ -53,10 +53,10 @@ mod forwarded_slots;
 pub use analyze::analyze_program as analyze_jsx_program;
 
 use oxc_semantic::SemanticBuilder;
-use vize_carton::{Allocator, String};
 use vize_croquis::Croquis;
 use vize_croquis::croquis::BindingMetadata;
 use vize_relief::RootNode;
+use vize_s0::{Allocator, String};
 
 pub use compat::JsxCompatMode;
 pub use compile::{

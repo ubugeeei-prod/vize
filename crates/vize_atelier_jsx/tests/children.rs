@@ -3,8 +3,8 @@
 mod common;
 
 use common::{as_text, lower_one, root_element, simple_content};
-use vize_carton::Allocator;
 use vize_relief::TemplateChildNode;
+use vize_s0::Allocator;
 
 #[test]
 fn plain_text_child_is_lowered() {

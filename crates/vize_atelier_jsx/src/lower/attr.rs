@@ -15,10 +15,10 @@ use oxc_ast::ast::{
     JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXSpreadAttribute,
 };
 use oxc_span::{GetSpan, Span};
-use vize_carton::{Box, Vec, is_builtin_directive};
 use vize_relief::{
     AttributeNode, DirectiveNode, PropNode, SimpleExpressionNode, SourceLocation, TextNode,
 };
+use vize_s0::{Box, Vec, is_builtin_directive};
 
 use super::Lowerer;
 use super::expr::container_expr_span;

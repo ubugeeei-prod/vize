@@ -5,7 +5,7 @@
 //! everything else falls back to plain render exports.
 
 use vize_atelier_jsx::{JsxCompileConfig, JsxLang, compile_jsx};
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 #[test]
 fn module_code_renames_multiple_render_exports_to_component_names() {

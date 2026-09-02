@@ -18,7 +18,7 @@
 mod common;
 
 use vize_atelier_jsx::{JsxLang, VdomCompileOptions, compile_to_vdom, lower_source};
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 fn diagnostics(source: &str) -> Vec<String> {
     let bump = Allocator::new();

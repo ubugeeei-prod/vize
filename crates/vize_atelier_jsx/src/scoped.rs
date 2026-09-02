@@ -16,7 +16,7 @@
 //! Vapor backend (via post-generation template rewriting), mirroring the two SFC
 //! scope-injection paths.
 
-use vize_carton::String;
+use vize_s0::String;
 
 /// A JSX component's scoped style, after rewriting.
 #[derive(Debug, Clone)]

@@ -312,6 +312,14 @@ test("Atelier DOM compiler imports S0 storage through the stage alias", () => {
   });
 });
 
+test("Atelier JSX compiler imports S0 storage through the stage alias", () => {
+  assertS0AliasConsumer({
+    packageName: "vize_atelier_jsx",
+    label: "Atelier JSX compiler",
+    directory: path.join(repoRoot, "crates", "vize_atelier_jsx"),
+  });
+});
+
 test("Atelier core compiler macros import S0 storage through the stage alias", () => {
   const manifest = readRepoFile("crates", "vize_atelier_core", "Cargo.toml");
   assert.match(manifest, /^vize_s0 = \{ workspace = true \}$/m);

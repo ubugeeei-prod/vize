@@ -3,7 +3,7 @@
 mod common;
 
 use common::{as_attribute, as_directive, lower_one, lower_one_tsx, root_element, simple_content};
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 #[test]
 fn static_string_attribute() {

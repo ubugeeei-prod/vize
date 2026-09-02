@@ -3,8 +3,8 @@
 //! Every diagnostic carries a Vize byte range so it can be mapped back to the
 //! original `.jsx`/`.tsx` source by the compiler, type checker, and LSP.
 
-use vize_carton::String;
 use vize_relief::SourceLocation;
+use vize_s0::String;
 
 /// Severity of a JSX lowering diagnostic.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

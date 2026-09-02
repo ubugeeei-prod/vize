@@ -17,8 +17,8 @@
 
 use oxc_ast::ast::{Expression, JSXChild, JSXExpressionContainer};
 use oxc_span::{GetSpan, Span};
-use vize_carton::{Box, String};
 use vize_relief::{ElementNode, ExpressionNode, SimpleExpressionNode};
+use vize_s0::{Box, String};
 
 use super::Lowerer;
 use super::slot::is_whitespace_child;

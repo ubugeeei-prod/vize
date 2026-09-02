@@ -15,7 +15,7 @@
 mod common;
 
 use vize_atelier_jsx::{JsxLang, VdomCompileOptions, compile_to_vdom, lower_source};
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 use common::{find_directive, lower_one, root_element, simple_content};
 

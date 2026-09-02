@@ -2,8 +2,8 @@
 
 use oxc_ast::ast::{JSXAttributeItem, JSXElement, JSXElementName, JSXFragment};
 use oxc_span::{GetSpan, Span};
-use vize_carton::String;
 use vize_relief::{DirectiveNode, ElementNode, ElementType, PropNode};
+use vize_s0::String;
 
 use super::{Lowerer, name};
 
@@ -26,8 +26,8 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         let custom_element_tag =
             name::identifier_name(&opening.name).filter(|tag| self.is_babel_custom_element(tag));
         let bound_custom_element = custom_element_tag.is_some_and(|tag| {
-            !vize_carton::is_html_tag(tag)
-                && !vize_carton::is_svg_tag(tag)
+            !vize_s0::is_html_tag(tag)
+                && !vize_s0::is_svg_tag(tag)
                 && self.is_bound_jsx_identifier(&opening.name)
         });
         // A member-expression or bound predicate match is a value, so it becomes

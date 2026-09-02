@@ -28,7 +28,7 @@ fn module_code(compat: JsxCompatMode, mode: JsxOutputMode) -> String {
 }
 
 fn compile_module(source: &str, compat: JsxCompatMode, mode: JsxOutputMode) -> String {
-    let bump = vize_carton::Allocator::new();
+    let bump = vize_s0::Allocator::new();
     let config = JsxCompileConfig {
         default_mode: mode,
         compat,
@@ -39,7 +39,7 @@ fn compile_module(source: &str, compat: JsxCompatMode, mode: JsxOutputMode) -> S
 }
 
 fn diagnostics(compat: JsxCompatMode, mode: JsxOutputMode) -> Vec<String> {
-    let bump = vize_carton::Allocator::new();
+    let bump = vize_s0::Allocator::new();
     let config = JsxCompileConfig {
         default_mode: mode,
         compat,
@@ -53,7 +53,7 @@ fn diagnostics(compat: JsxCompatMode, mode: JsxOutputMode) -> Vec<String> {
 }
 
 fn compile_with_transform_on(source: &str, compat: JsxCompatMode, mode: JsxOutputMode) -> String {
-    let bump = vize_carton::Allocator::new();
+    let bump = vize_s0::Allocator::new();
     compile_jsx_with_babel_options(
         &bump,
         source,
@@ -82,7 +82,7 @@ fn compat_is_off_by_default() {
 fn default_config_output_equals_explicit_native() {
     // The switch must be inert unless asked for: `Default::default()` and an
     // explicit `Native` must produce the same module, byte for byte.
-    let bump = vize_carton::Allocator::new();
+    let bump = vize_s0::Allocator::new();
     let implicit = compile_jsx(&bump, SOURCE, JsxLang::Jsx, &JsxCompileConfig::default());
     assert_eq!(
         implicit.module_code().to_string(),
@@ -102,7 +102,7 @@ fn babel_compat_vdom_remains_error_free() {
 #[test]
 fn babel_compat_emits_true_for_a_valueless_attribute_only_when_opted_in() {
     let compile = |compat| {
-        let bump = vize_carton::Allocator::new();
+        let bump = vize_s0::Allocator::new();
         compile_jsx(
             &bump,
             "const A = () => <input disabled/>;",
@@ -176,7 +176,7 @@ fn babel_compat_keeps_lone_element_expressions_raw_without_a_text_flag() {
         "const A = () => <div>{t}</div>;\n",
         "const B = () => <div class={c} id={i}>{t}</div>;",
     );
-    let bump = vize_carton::Allocator::new();
+    let bump = vize_s0::Allocator::new();
     let implicit_native = compile_jsx(&bump, source, JsxLang::Jsx, &JsxCompileConfig::default())
         .module_code()
         .to_string();

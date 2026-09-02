@@ -10,7 +10,7 @@ mod common;
 
 use common::{as_directive, lower_one, root_element, simple_content, vdom_code};
 use vize_atelier_jsx::JsxLang;
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 #[test]
 fn event_modifier_codegen_snapshot() {

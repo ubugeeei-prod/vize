@@ -18,8 +18,8 @@ use vize_atelier_core::options::{CodegenMode, CodegenOptions, TransformOptions};
 // for bundlers, and the runtime `Function` (with-block) mode emits an empty
 // body under JSX's no-prefix closure model.
 use vize_atelier_core::CompilerError;
-use vize_carton::{Allocator, String};
 use vize_croquis::Croquis;
+use vize_s0::{Allocator, String};
 
 use crate::diagnostics::JsxDiagnostic;
 use crate::scoped::{ScopedStyle, build_scoped_style};

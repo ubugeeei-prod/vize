@@ -3,7 +3,7 @@
 mod common;
 
 use common::{find_directive, lower_one, root_element, simple_content};
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 #[test]
 fn v_model_directive() {

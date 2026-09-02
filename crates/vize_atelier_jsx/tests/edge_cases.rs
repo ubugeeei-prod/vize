@@ -3,8 +3,8 @@
 mod common;
 
 use common::{as_attribute, as_directive, as_element, lower_one, lower_one_tsx, simple_content};
-use vize_carton::Allocator;
 use vize_relief::{ElementType, ExpressionNode, TemplateChildNode};
+use vize_s0::Allocator;
 
 fn expr_text<'a>(expr: &'a ExpressionNode<'a>) -> &'a str {
     simple_content(expr)

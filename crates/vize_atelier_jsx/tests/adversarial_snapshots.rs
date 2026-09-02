@@ -13,11 +13,11 @@ use vize_atelier_jsx::{
     LowerOutput, VaporCompileOptions, VaporOutput, VdomCompileOptions, VdomOutput, compile_jsx,
     compile_to_vapor, compile_to_vdom, lower_source,
 };
-use vize_carton::Allocator;
 use vize_relief::{
     ExpressionNode, PropNode, RootNode, TemplateChildNode, TextCallContent,
     expressions::CompoundExpressionChild,
 };
+use vize_s0::Allocator;
 
 const STATEFUL_DESTRUCTURED_TSX: &str = r#"
 import { computed, ref } from "vue";

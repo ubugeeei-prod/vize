@@ -44,8 +44,8 @@
 
 use oxc_ast::ast::{ArrayExpression, Expression, JSXAttribute, JSXAttributeName};
 use oxc_span::{GetSpan, Span};
-use vize_carton::Vec;
 use vize_relief::PropNode;
+use vize_s0::Vec;
 
 use super::Lowerer;
 use super::v_model::{ModelArrayLowering, is_assignable_target};

@@ -2,7 +2,7 @@
 
 use oxc_ast::ast::JSXElementName;
 use oxc_span::Span;
-use vize_carton::String;
+use vize_s0::String;
 
 /// The XML namespace prefixes a JSX tag may legitimately carry.
 ///
@@ -71,7 +71,7 @@ pub(crate) fn is_component(name: &JSXElementName<'_>, babel_compat: bool) -> boo
 
 fn is_identifier_component(name: &str, babel_compat: bool) -> bool {
     if babel_compat {
-        !vize_carton::is_html_tag(name) && !vize_carton::is_svg_tag(name)
+        !vize_s0::is_html_tag(name) && !vize_s0::is_svg_tag(name)
     } else {
         !is_intrinsic(name)
     }

@@ -6,7 +6,7 @@ use vize_atelier_jsx::{
     BabelIsCustomElement, BabelJsxCustomizations, BabelJsxOptions, JsxCompatMode, JsxCompileConfig,
     JsxLang, JsxOutputMode, compile_jsx, compile_jsx_with_babel_customizations,
 };
-use vize_carton::{Allocator, FxHashSet, String};
+use vize_s0::{Allocator, FxHashSet, String};
 
 static PREDICATE_CALLS: AtomicUsize = AtomicUsize::new(0);
 

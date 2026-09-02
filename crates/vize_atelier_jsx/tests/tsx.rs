@@ -4,9 +4,9 @@ mod common;
 
 use common::{lower_one_tsx, root_element, simple_content};
 use vize_atelier_jsx::{JsxLang, lower_source};
-use vize_carton::Allocator;
 use vize_relief::ElementType;
 use vize_relief::TemplateChildNode;
+use vize_s0::Allocator;
 
 #[test]
 fn typed_arrow_component_lowers() {

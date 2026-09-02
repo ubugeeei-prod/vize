@@ -2,11 +2,11 @@
 
 use oxc_ast::ast::{JSXChild, JSXExpression, JSXExpressionContainer, JSXSpreadChild};
 use oxc_span::GetSpan;
-use vize_carton::{Box, Vec};
 use vize_relief::{
     CompoundExpressionChild, CompoundExpressionNode, ExpressionNode, InterpolationNode,
     TemplateChildNode, TextNode,
 };
+use vize_s0::{Box, Vec};
 
 use super::Lowerer;
 

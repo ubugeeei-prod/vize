@@ -4,7 +4,7 @@ mod common;
 
 use common::{lower_all, root_element};
 use vize_atelier_jsx::{JsxLang, lower_source};
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 #[test]
 fn valid_source_has_no_diagnostics() {
@@ -68,11 +68,11 @@ fn line_and_column_derive_from_the_span_offset() {
     let bump = Allocator::new();
     // `<div/>` begins at column 1 of line 2 (0-indexed: line 1, column 0).
     // Nodes store byte offsets only; line/column are derived at the edges
-    // that render them, via `vize_carton::line_index` (Davinci P1-4).
+    // that render them, via `vize_s0::line_index` (Davinci P1-4).
     let src = "x;\n<div/>;";
     let out = lower_all(&bump, src);
     let loc = &root_element(&out.roots[0].root).loc;
-    let (line, column) = vize_carton::line_index::offset_to_line_col(src, loc.span.start as usize);
+    let (line, column) = vize_s0::line_index::offset_to_line_col(src, loc.span.start as usize);
     assert_eq!(line, 1);
     assert_eq!(column, 0);
 }

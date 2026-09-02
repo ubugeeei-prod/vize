@@ -7,7 +7,7 @@
 //! while silently routing the rest to `attrs`.
 
 use vize_atelier_jsx::{JsxCompileConfig, JsxLang, compile_jsx};
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 fn module_code(source: &str, lang: JsxLang) -> std::string::String {
     let bump = Allocator::new();

@@ -7,8 +7,8 @@
 //! on the last line are preserved.
 
 use oxc_ast::ast::JSXText;
-use vize_carton::{Box, String};
 use vize_relief::{TemplateChildNode, TextNode};
+use vize_s0::{Box, String};
 
 use super::Lowerer;
 

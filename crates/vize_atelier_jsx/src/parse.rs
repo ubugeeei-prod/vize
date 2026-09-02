@@ -10,7 +10,7 @@ use oxc_parser::Parser;
 
 use std::borrow::Cow;
 
-use vize_carton::ToCompactString;
+use vize_s0::ToCompactString;
 
 use crate::diagnostics::JsxDiagnostic;
 use crate::lang::JsxLang;

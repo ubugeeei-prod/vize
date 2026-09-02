@@ -8,7 +8,7 @@ use vize_atelier_jsx::{
 };
 
 fn compile(
-    bump: &vize_carton::Allocator,
+    bump: &vize_s0::Allocator,
     source: &str,
     config: &JsxCompileConfig,
     pragma: Option<&str>,
@@ -39,7 +39,7 @@ fn pragma_is_empty_by_default_and_inert_outside_babel_vdom() {
             ..Default::default()
         },
     ] {
-        let bump = vize_carton::Allocator::new();
+        let bump = vize_s0::Allocator::new();
         let baseline = compile_jsx_with_babel_options(
             &bump,
             source,
@@ -56,7 +56,7 @@ fn pragma_is_empty_by_default_and_inert_outside_babel_vdom() {
         compat: JsxCompatMode::Babel,
         ..Default::default()
     };
-    let bump = vize_carton::Allocator::new();
+    let bump = vize_s0::Allocator::new();
     let baseline = compile(&bump, source, &config, None);
     for near_miss in [Some(""), Some("  \n")] {
         let output = compile(&bump, source, &config, near_miss);
@@ -71,7 +71,7 @@ fn babel_pragma_routes_every_vnode_shape_through_the_custom_factory() {
         "const A = () => <div><span/><Comp/></div>;",
         "const B = () => <>{ok ? <i/> : <b/>}</>;",
     );
-    let bump = vize_carton::Allocator::new();
+    let bump = vize_s0::Allocator::new();
     let output = compile(
         &bump,
         source,
@@ -121,7 +121,7 @@ fn babel_pragma_keeps_callee_precedence_for_non_identifier_expressions() {
             "(left || right // fallback\n)(",
         ),
     ] {
-        let bump = vize_carton::Allocator::new();
+        let bump = vize_s0::Allocator::new();
         let output = compile(
             &bump,
             "const A = () => <div>{ok ? <i/> : <b/>}</div>;",
@@ -147,7 +147,7 @@ fn babel_pragma_keeps_callee_precedence_for_non_identifier_expressions() {
 
 #[test]
 fn babel_pragma_removes_the_vue_import_when_no_other_helper_is_needed() {
-    let bump = vize_carton::Allocator::new();
+    let bump = vize_s0::Allocator::new();
     let output = compile(
         &bump,
         "const A = () => <div/>;",
@@ -165,7 +165,7 @@ fn babel_pragma_removes_the_vue_import_when_no_other_helper_is_needed() {
 
 #[test]
 fn babel_pragma_composes_with_transform_on_and_preserves_source_maps() {
-    let bump = vize_carton::Allocator::new();
+    let bump = vize_s0::Allocator::new();
     let output = compile_jsx_with_babel_pragma(
         &bump,
         "const A = () => <button on={{ click: handler }}/>;",
@@ -200,7 +200,7 @@ fn babel_pragma_composes_with_transform_on_and_preserves_source_maps() {
 
 #[test]
 fn babel_pragma_does_not_leak_into_a_vapor_component_override() {
-    let bump = vize_carton::Allocator::new();
+    let bump = vize_s0::Allocator::new();
     let output = compile(
         &bump,
         concat!(
@@ -222,7 +222,7 @@ fn babel_pragma_does_not_leak_into_a_vapor_component_override() {
 
 #[test]
 fn invalid_pragma_is_diagnosed_without_emitting_broken_javascript() {
-    let bump = vize_carton::Allocator::new();
+    let bump = vize_s0::Allocator::new();
     let output = compile(
         &bump,
         "const A = () => <div/>;",

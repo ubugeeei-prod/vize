@@ -7,8 +7,8 @@
 use vize_atelier_core::lane::transform_with_source_text;
 use vize_atelier_core::options::TransformOptions;
 use vize_atelier_ssr::{SsrCodegenContext, SsrCompilerOptions};
-use vize_carton::{Allocator, String};
 use vize_croquis::Croquis;
+use vize_s0::{Allocator, String};
 
 use crate::diagnostics::JsxDiagnostic;
 use crate::forwarded_slots::{SlotsForwardingBackend, reject_forwarded_slots};

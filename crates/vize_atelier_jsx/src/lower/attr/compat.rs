@@ -2,8 +2,8 @@
 
 use oxc_ast::ast::{JSXAttribute, JSXAttributeName, JSXAttributeValue};
 use oxc_span::{GetSpan, Span};
-use vize_carton::String;
 use vize_relief::{DirectiveNode, PropNode, SourceLocation};
+use vize_s0::String;
 
 use crate::lower::Lowerer;
 

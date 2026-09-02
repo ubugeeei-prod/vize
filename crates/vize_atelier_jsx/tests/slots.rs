@@ -10,9 +10,9 @@
 mod common;
 
 use vize_atelier_jsx::{JsxLang, lower_source};
-use vize_carton::Allocator;
 use vize_relief::ElementType;
 use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
+use vize_s0::Allocator;
 
 #[test]
 fn slot_codegen_snapshot() {

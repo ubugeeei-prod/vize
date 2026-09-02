@@ -9,7 +9,7 @@ use vize_atelier_jsx::{
     BabelJsxOptions, JsxCompatMode, JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx,
     compile_jsx_with_babel_object_slots,
 };
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 const LONE_IDENTIFIER_CHILD: &str = "const A = () => <B>{slots}</B>;";
 

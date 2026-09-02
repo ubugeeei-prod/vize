@@ -4,7 +4,7 @@ mod common;
 
 use common::{as_element, as_text, lower_all, lower_one, root_element, vapor_code, vdom_code};
 use vize_atelier_jsx::JsxLang;
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 #[test]
 fn top_level_fragment_lifts_children_to_root() {

@@ -1,4 +1,4 @@
-use vize_carton::{Allocator, String};
+use vize_s0::{Allocator, String};
 
 use super::{
     BabelJsxOptions, JsxCompileConfig, JsxCompileOutput,

@@ -18,9 +18,9 @@ use oxc_ast::ast::{
     Statement,
 };
 use oxc_span::{GetSpan, Span};
-use vize_carton::{Box, Vec};
 use vize_relief::ElementType;
 use vize_relief::{DirectiveNode, ElementNode, PropNode, TemplateChildNode, TextNode};
+use vize_s0::{Box, Vec};
 
 use super::Lowerer;
 use super::babel_slot::sole_expression_container;

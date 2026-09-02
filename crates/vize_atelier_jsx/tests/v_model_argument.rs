@@ -10,7 +10,7 @@ use vize_atelier_jsx::{
     JsxCompatMode, JsxCompileConfig, JsxLang, VdomCompileOptions, compile_jsx, compile_to_vdom,
     lower_source,
 };
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 const SOURCE: &str = "const A = () => <B v-model={[foo, bar]}/>;";
 const ELEMENT_ARG: &str = "const A = () => <input v-model:foo={val}/>;";

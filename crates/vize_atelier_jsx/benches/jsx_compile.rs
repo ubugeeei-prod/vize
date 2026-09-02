@@ -26,7 +26,7 @@ use vize_atelier_jsx::{
     JsxCompileConfig, JsxLang, VaporCompileOptions, VdomCompileOptions, analyze_jsx_program,
     compile_jsx, compile_to_vapor, compile_to_vdom, lower_source, parse_module,
 };
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 /// A minimal single-element component.
 const SMALL_JSX: &str = r#"const App = () => <div class="hero">{title}</div>;"#;

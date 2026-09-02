@@ -1,4 +1,4 @@
-use vize_carton::{FxHashSet, String, ToCompactString};
+use vize_s0::{FxHashSet, String, ToCompactString};
 
 use super::JsxComponent;
 use crate::JsxOutputMode;

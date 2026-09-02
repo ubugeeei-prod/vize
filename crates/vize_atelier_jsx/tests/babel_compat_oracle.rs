@@ -33,7 +33,7 @@
 //! `tests/tooling/babel-jsx-oracle.test.ts`.
 
 // The oracle fixtures deserialize into plain `serde` structs, so std `String`
-// is intentional here rather than the workspace `vize_carton::String`.
+// is intentional here rather than the workspace `vize_s0::String`.
 #![allow(clippy::disallowed_types)]
 
 mod babel_compat;

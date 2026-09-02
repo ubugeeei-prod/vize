@@ -1,6 +1,6 @@
 //! Deduplicating the per-component runtime-helper preambles of one module.
 
-use vize_carton::{FxHashSet, String};
+use vize_s0::{FxHashSet, String};
 
 /// Merge a sequence of per-component preambles into one deduplicated preamble.
 ///

@@ -10,8 +10,8 @@ mod render_exports;
 #[cfg(test)]
 mod tests;
 
-use vize_carton::{Allocator, String};
 use vize_croquis::Croquis;
+use vize_s0::{Allocator, String};
 
 use crate::compat::{JsxCompatMode, unsupported_with_vapor};
 use crate::diagnostics::JsxDiagnostic;

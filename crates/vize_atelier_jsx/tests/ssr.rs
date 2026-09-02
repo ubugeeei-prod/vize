@@ -4,9 +4,9 @@ mod common;
 
 use common::{snapshot_cases, snapshot_lang_cases};
 use vize_atelier_jsx::{JsxLang, JsxOutputMode, SsrCompileOptions, compile_to_ssr};
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
-fn ssr_code(source: &str, lang: JsxLang) -> vize_carton::String {
+fn ssr_code(source: &str, lang: JsxLang) -> vize_s0::String {
     let bump = Allocator::new();
     let out = compile_to_ssr(&bump, source, lang, SsrCompileOptions::default());
     assert!(
