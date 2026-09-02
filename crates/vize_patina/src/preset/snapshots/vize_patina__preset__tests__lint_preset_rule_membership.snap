@@ -625,6 +625,12 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/no-duplicate-attr-inheritance",
     "script/no-multiple-slot-args",
     "script/require-explicit-emits",
-    "script/no-unstable-nested-components"
+    "script/no-unstable-nested-components",
+    "musea/require-title",
+    "musea/require-component",
+    "musea/valid-variant",
+    "musea/unique-variant-names",
+    "musea/no-empty-variant",
+    "musea/prefer-design-tokens"
   ]
 }

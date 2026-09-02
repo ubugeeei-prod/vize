@@ -14,6 +14,7 @@ use crate::rule::RuleCategory;
 pub(super) fn rule_name_matches_config_category(rule_name: &str, config_category: &str) -> bool {
     match config_category {
         "style" => is_style_rule_name(rule_name),
+        "musea" => rule_name.starts_with("musea/"),
         "security" => is_security_rule_name(rule_name),
         "perf" => is_perf_rule_name(rule_name),
         _ => false,
@@ -32,6 +33,7 @@ pub(super) fn rule_matches_config_category(
                 || matches!(rule_category, RuleCategory::StronglyRecommended)
         }
         "a11y" => matches!(rule_category, RuleCategory::Accessibility),
+        "musea" => matches!(rule_category, RuleCategory::Musea),
         "security" | "perf" => rule_name_matches_config_category(rule_name, config_category),
         "suspicious" => {
             matches!(

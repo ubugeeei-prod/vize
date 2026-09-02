@@ -17,6 +17,8 @@ mod no_empty_variant;
 pub mod prefer_design_tokens;
 mod require_component;
 mod require_title;
+#[cfg(test)]
+mod tests;
 mod unique_variant_names;
 mod valid_variant;
 
@@ -291,6 +293,17 @@ impl Default for MuseaLinter {
     }
 }
 
+pub fn builtin_musea_rules() -> Vec<&'static MuseaRuleMeta> {
+    vec![
+        RequireTitle.meta(),
+        RequireComponent.meta(),
+        ValidVariant.meta(),
+        UniqueVariantNames.meta(),
+        NoEmptyVariant.meta(),
+        PreferDesignTokens::meta(),
+    ]
+}
+
 /// Check if a tag has an attribute (fast byte-level check)
 #[inline]
 fn has_attribute(tag: &[u8], attr: &[u8]) -> bool {
@@ -354,80 +367,4 @@ fn extract_name_attr_bytes(tag: &[u8]) -> Option<&[u8]> {
 #[inline]
 fn is_whitespace_only(bytes: &[u8]) -> bool {
     bytes.iter().all(|b| b.is_ascii_whitespace())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{MuseaLinter, extract_name_attr_bytes};
-
-    #[test]
-    fn test_lint_valid_art_file() {
-        let source = r#"
-<art title="Button" component="./Button.vue">
-  <variant name="default">
-    <Button>Click me</Button>
-  </variant>
-</art>
-"#;
-        let linter = MuseaLinter::new();
-        let result = linter.lint(source);
-        assert!(!result.has_errors());
-    }
-
-    #[test]
-    fn test_lint_missing_title() {
-        let source = r#"
-<art component="./Button.vue">
-  <variant name="default">
-    <Button>Click me</Button>
-  </variant>
-</art>
-"#;
-        let linter = MuseaLinter::new();
-        let result = linter.lint(source);
-        assert!(result.has_errors());
-    }
-
-    #[test]
-    fn test_lint_duplicate_variant_names() {
-        let source = r#"
-<art title="Button" component="./Button.vue">
-  <variant name="same">
-    <Button>One</Button>
-  </variant>
-  <variant name="same">
-    <Button>Two</Button>
-  </variant>
-</art>
-"#;
-        let linter = MuseaLinter::new();
-        let result = linter.lint(source);
-        assert!(result.has_errors());
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_lint_empty_variant() {
-        let source = r#"
-<art title="Button" component="./Button.vue">
-  <variant name="empty"></variant>
-</art>
-"#;
-        let linter = MuseaLinter::new();
-        let result = linter.lint(source);
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn test_extract_name_attr() {
-        assert_eq!(
-            extract_name_attr_bytes(b"<variant name=\"test\""),
-            Some(b"test".as_slice())
-        );
-        assert_eq!(
-            extract_name_attr_bytes(b"<variant name='test'"),
-            Some(b"test".as_slice())
-        );
-        assert_eq!(extract_name_attr_bytes(b"<variant "), None);
-    }
 }

@@ -328,6 +328,7 @@ fn opt_in_rule_names() -> Vec<&'static str> {
         .map(|rule| rule.meta().name)
         .collect();
     rules.extend_from_slice(crate::linter::script_rules::opt_in_script_rule_names());
+    rules.extend_from_slice(crate::linter::musea_rules::all_builtin_musea_rule_names());
     rules
 }
 

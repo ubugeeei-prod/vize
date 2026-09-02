@@ -49,3 +49,21 @@ fn patina_rule_metadata_limits_nuxt_link_rule_to_nuxt() {
     assert_eq!(prefer_nuxt_link.presets, vec!["nuxt"]);
     assert_eq!(prefer_nuxt_link.default_severity, "warning");
 }
+
+#[test]
+fn patina_rule_metadata_includes_musea_opt_in_rules() {
+    let rules = collect_patina_rule_metadata();
+    let require_title = rules
+        .iter()
+        .find(|rule| rule.name == "musea/require-title")
+        .expect("Musea require-title rule should be exposed");
+    let no_empty_variant = rules
+        .iter()
+        .find(|rule| rule.name == "musea/no-empty-variant")
+        .expect("Musea no-empty-variant rule should be exposed");
+
+    assert_eq!(require_title.category, "Musea");
+    assert_eq!(require_title.presets, Vec::<&'static str>::new());
+    assert_eq!(require_title.default_severity, "error");
+    assert_eq!(no_empty_variant.default_severity, "warning");
+}

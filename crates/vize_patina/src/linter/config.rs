@@ -78,6 +78,8 @@ pub struct Linter {
         FxHashMap<&'static str, Box<dyn crate::rules::script::ScriptRule>>,
     /// Built-in `css/*` rules enabled for this linter.
     pub(crate) css_rules: &'static [&'static str],
+    /// Built-in `musea/*` rules enabled for this linter.
+    pub(crate) musea_rules: &'static [&'static str],
     /// Whether native type-aware lint rules may run.
     pub(crate) type_aware_enabled: bool,
     /// Lazily initialized native corsa session for type-aware lint.
@@ -107,6 +109,7 @@ impl Linter {
             help_level: HelpLevel::default(),
             script_rules: builtin_script_rule_names(preset),
             css_rules: builtin_css_rule_names(preset),
+            musea_rules: &[],
             script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]
@@ -130,6 +133,7 @@ impl Linter {
             help_level: HelpLevel::default(),
             script_rules: builtin_script_rule_names(preset),
             css_rules: builtin_css_rule_names(preset),
+            musea_rules: &[],
             script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]
@@ -153,6 +157,7 @@ impl Linter {
             help_level: HelpLevel::default(),
             script_rules: ecosystem_builtin_script_rule_names(),
             css_rules: builtin_css_rule_names(LintPreset::Ecosystem),
+            musea_rules: &[],
             script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]
@@ -176,6 +181,7 @@ impl Linter {
             help_level: HelpLevel::default(),
             script_rules: &[],
             css_rules: &[],
+            musea_rules: &[],
             script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             #[cfg(not(target_arch = "wasm32"))]
@@ -196,60 +202,6 @@ impl Linter {
     #[inline]
     pub fn with_locale(mut self, locale: Locale) -> Self {
         self.locale = locale;
-        self
-    }
-
-    /// Set enabled rules (if None, all rules are enabled).
-    ///
-    /// Pass a list of rule names to enable only those rules.
-    /// Rules not in the list will be skipped during linting.
-    #[inline]
-    pub fn with_enabled_rules(mut self, rules: Option<Vec<String>>) -> Self {
-        if rules.is_some() {
-            if matches!(self.preset, Some(LintPreset::Incremental)) {
-                self.registry = RuleRegistry::with_preset(LintPreset::Opinionated);
-            }
-            self.registry.register_opt_in_rules();
-            self.script_rules = super::script_rules::all_builtin_script_rule_names();
-            self.css_rules = super::css_rules::all_builtin_css_rule_names();
-        }
-        if rules.as_ref().is_some_and(|rules| has_type_rule(rules)) {
-            self.type_aware_enabled = true;
-        }
-        self.enabled_rules = rules.map(|r| r.into_iter().collect());
-        self
-    }
-
-    /// Enable additional opt-in rules while preserving the active preset's rules.
-    #[inline]
-    pub fn with_additional_rules(mut self, rules: Vec<String>) -> Self {
-        if rules.is_empty() {
-            return self;
-        }
-
-        let mut enabled_rules = self.enabled_rules.take().unwrap_or_else(|| {
-            let mut names = self
-                .registry
-                .rule_names()
-                .iter()
-                .map(|name| String::from(*name))
-                .collect::<FxHashSet<_>>();
-            names.extend(self.script_rules.iter().map(|name| String::from(*name)));
-            names.extend(self.css_rules.iter().map(|name| String::from(*name)));
-            names
-        });
-
-        if matches!(self.preset, Some(LintPreset::Incremental)) {
-            self.registry = RuleRegistry::with_preset(LintPreset::Opinionated);
-        }
-        if has_type_rule(&rules) {
-            self.type_aware_enabled = true;
-        }
-        self.registry.register_opt_in_rules();
-        self.script_rules = super::script_rules::all_builtin_script_rule_names();
-        self.css_rules = super::css_rules::all_builtin_css_rule_names();
-        enabled_rules.extend(rules);
-        self.enabled_rules = Some(enabled_rules);
         self
     }
 
@@ -350,10 +302,6 @@ impl Default for Linter {
     }
 }
 
-fn has_type_rule(rules: &[String]) -> bool {
-    rules.iter().any(|rule| is_type_rule(rule.as_str()))
-}
-
-fn is_type_rule(rule_name: &str) -> bool {
+pub(super) fn is_type_rule(rule_name: &str) -> bool {
     rule_name.starts_with("type/")
 }

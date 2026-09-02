@@ -128,6 +128,7 @@ pub use markup::{
 pub use output::{OutputFormat, format_results, format_summary, rule_docs_path};
 pub use preset::LintPreset;
 pub use rule::{Rule, RuleCategory, RuleMeta, RuleRegistry};
+pub use rules::musea::builtin_musea_rules;
 pub use style::{ParsedStyleSheet, StyleDocument, StyleSyntax};
 pub use telegraph::{
     Emitter, FormatEmitter, JsonEmitter, LintTransmission, LspDiagnostic, LspEmitter, Telegraph,
