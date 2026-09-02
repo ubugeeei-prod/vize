@@ -30,6 +30,14 @@ impl Linter {
                 .map(String::from);
             self.disabled_rules.extend(script_rules);
 
+            let css_rules = self
+                .css_rules
+                .iter()
+                .copied()
+                .filter(|rule_name| rule_name_matches_config_category(rule_name, &category))
+                .map(String::from);
+            self.disabled_rules.extend(css_rules);
+
             let musea_rules = self
                 .musea_rules
                 .iter()
@@ -62,6 +70,14 @@ impl Linter {
                 .filter(|rule_name| rule_name_matches_config_category(rule_name, &category))
                 .map(|rule_name| (String::from(rule_name), severity));
             self.severity_overrides.extend(script_rules);
+
+            let css_rules = self
+                .css_rules
+                .iter()
+                .copied()
+                .filter(|rule_name| rule_name_matches_config_category(rule_name, &category))
+                .map(|rule_name| (String::from(rule_name), severity));
+            self.severity_overrides.extend(css_rules);
 
             let musea_rules = self
                 .musea_rules

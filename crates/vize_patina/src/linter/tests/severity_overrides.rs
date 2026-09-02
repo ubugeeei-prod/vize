@@ -37,6 +37,38 @@ fn css_rule_severity_override_recounts_sfc_result() {
     assert_eq!(result.diagnostics[0].severity, Severity::Error);
 }
 
+#[test]
+fn css_rule_category_severity_override_recounts_sfc_result() {
+    let source = r#"<style>
+.button { color: red !important; }
+</style>
+"#;
+    let result = Linter::with_preset(LintPreset::Ecosystem)
+        .with_enabled_rules(Some(vec!["css/no-important".into()]))
+        .with_category_severity_overrides(vec![("style".into(), Severity::Error)])
+        .lint_sfc(source, "Button.vue");
+
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+    assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+    assert_eq!(result.diagnostics[0].severity, Severity::Error);
+}
+
+#[test]
+fn disabled_category_disables_classified_css_rule() {
+    let source = r#"<style>
+.button { color: red !important; }
+</style>
+"#;
+    let result = Linter::with_preset(LintPreset::Ecosystem)
+        .with_enabled_rules(Some(vec!["css/no-important".into()]))
+        .with_disabled_categories(vec!["style".into()])
+        .lint_sfc(source, "Button.vue");
+
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_eq!(result.error_count, 0);
+    assert_eq!(result.warning_count, 0);
+}
+
 const NUXT_CONFIG_ORDER_SOURCE: &str = "export default { ssr: true, modules: [] }";
 
 #[test]
