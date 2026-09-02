@@ -42,6 +42,29 @@ fn preset_rule_membership_snapshot() {
 }
 
 #[test]
+fn script_preset_membership_matches_builtin_rule_metadata() {
+    for meta in crate::linter::script_rules::builtin_script_rules() {
+        for preset_name in meta.presets {
+            assert!(
+                LintPreset::parse(preset_name).is_some(),
+                "{} declares unknown preset {preset_name}",
+                meta.name
+            );
+        }
+
+        for preset in LintPreset::ALL {
+            assert_eq!(
+                super::builtin_script_rule_names(preset).contains(&meta.name),
+                meta.presets.contains(&preset.as_str()),
+                "{} has stale script-rule membership for {}",
+                meta.name,
+                preset.as_str()
+            );
+        }
+    }
+}
+
+#[test]
 fn happy_path_keeps_opinionated_rules_opt_in() {
     let happy_path = RuleRegistry::with_preset(LintPreset::HappyPath);
     let opinionated = RuleRegistry::with_preset(LintPreset::Opinionated);
@@ -112,6 +135,14 @@ fn happy_path_keeps_opinionated_rules_opt_in() {
             .contains(&"script/no-get-current-instance")
     );
     assert!(!super::builtin_script_rule_names(LintPreset::Nuxt).contains(&"script/no-next-tick"));
+    assert!(
+        !super::builtin_script_rule_names(LintPreset::Opinionated)
+            .contains(&"script/no-export-in-script-setup")
+    );
+    assert!(
+        !super::builtin_script_rule_names(LintPreset::Nuxt)
+            .contains(&"script/no-export-in-script-setup")
+    );
     assert!(
         super::builtin_script_rule_names(LintPreset::Nuxt).contains(&"nuxt/prefer-import-meta")
     );

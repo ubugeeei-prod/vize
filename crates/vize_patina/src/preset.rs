@@ -1,5 +1,7 @@
 //! Built-in lint presets for Patina.
 
+use std::sync::OnceLock;
+
 /// Named lint presets exposed across Rust, CLI, and bindings.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum LintPreset {
@@ -55,31 +57,41 @@ impl LintPreset {
     }
 }
 
-const ECOSYSTEM_SCRIPT_RULE_NAMES: &[&str] = &[
-    "ecosystem/pinia-prefer-store-to-refs",
-    "ecosystem/vue-router-prefer-named-push",
-    "ecosystem/vue-test-utils-no-html-snapshot",
-];
-const OPINIONATED_SCRIPT_RULE_NAMES: &[&str] =
-    &["script/no-options-api", "script/no-get-current-instance"];
-const NUXT_SCRIPT_RULE_NAMES: &[&str] = &[
-    "nuxt/prefer-import-meta",
-    "nuxt/no-page-meta-runtime-values",
-    "nuxt/no-nuxt-config-test-key",
-    "nuxt/nuxt-config-keys-order",
-];
+const NO_SCRIPT_RULE_NAMES: &[&str] = &[];
+static ECOSYSTEM_SCRIPT_RULE_NAMES: OnceLock<Vec<&'static str>> = OnceLock::new();
+static OPINIONATED_SCRIPT_RULE_NAMES: OnceLock<Vec<&'static str>> = OnceLock::new();
+static NUXT_SCRIPT_RULE_NAMES: OnceLock<Vec<&'static str>> = OnceLock::new();
 
-pub(crate) const fn builtin_script_rule_names(preset: LintPreset) -> &'static [&'static str] {
+pub(crate) fn builtin_script_rule_names(preset: LintPreset) -> &'static [&'static str] {
     match preset {
-        LintPreset::HappyPath | LintPreset::Essential | LintPreset::Incremental => &[],
-        LintPreset::Ecosystem => ECOSYSTEM_SCRIPT_RULE_NAMES,
-        LintPreset::Opinionated => OPINIONATED_SCRIPT_RULE_NAMES,
-        LintPreset::Nuxt => NUXT_SCRIPT_RULE_NAMES,
+        LintPreset::HappyPath | LintPreset::Essential | LintPreset::Incremental => {
+            NO_SCRIPT_RULE_NAMES
+        }
+        LintPreset::Ecosystem => script_rule_names_for_preset(
+            &ECOSYSTEM_SCRIPT_RULE_NAMES,
+            LintPreset::Ecosystem.as_str(),
+        ),
+        LintPreset::Opinionated => script_rule_names_for_preset(
+            &OPINIONATED_SCRIPT_RULE_NAMES,
+            LintPreset::Opinionated.as_str(),
+        ),
+        LintPreset::Nuxt => {
+            script_rule_names_for_preset(&NUXT_SCRIPT_RULE_NAMES, LintPreset::Nuxt.as_str())
+        }
     }
 }
 
-pub(crate) const fn ecosystem_builtin_script_rule_names() -> &'static [&'static str] {
-    ECOSYSTEM_SCRIPT_RULE_NAMES
+pub(crate) fn ecosystem_builtin_script_rule_names() -> &'static [&'static str] {
+    builtin_script_rule_names(LintPreset::Ecosystem)
+}
+
+fn script_rule_names_for_preset(
+    cache: &'static OnceLock<Vec<&'static str>>,
+    preset: &'static str,
+) -> &'static [&'static str] {
+    cache
+        .get_or_init(|| crate::linter::script_rules::builtin_script_rule_names_for_preset(preset))
+        .as_slice()
 }
 
 /// The opinionated `css/*` rule set, enabled by the strict presets.

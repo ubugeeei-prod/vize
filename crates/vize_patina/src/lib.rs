@@ -66,9 +66,11 @@
 //! - `vapor/prefer-static-class` - Prefer static class over dynamic binding
 //! - `vapor/no-inline-template` - Disallow deprecated inline-template
 //!
-//! Script rules (enabled by opinionated presets, or opt-in manually):
+//! Script rules enabled by the opinionated preset:
 //! - `script/no-options-api` - Disallow Options API patterns (Vapor is Composition-only)
 //! - `script/no-get-current-instance` - Disallow getCurrentInstance() (returns null in Vapor)
+//!
+//! Additional script rules remain manual opt-in:
 //! - `script/no-next-tick` - Disallow nextTick() scheduling in Vapor-oriented code
 //!
 //! ### Musea Rules (for *.art.vue files)

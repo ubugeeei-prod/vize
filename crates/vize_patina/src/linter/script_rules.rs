@@ -33,6 +33,14 @@ pub(crate) const fn all_builtin_script_rule_names() -> &'static [&'static str] {
     ALL_BUILTIN_SCRIPT_RULE_NAMES
 }
 
+pub(crate) fn builtin_script_rule_names_for_preset(preset: &str) -> Vec<&'static str> {
+    BUILTIN_SCRIPT_RULES
+        .iter()
+        .filter(|entry| entry.presets.contains(&preset))
+        .map(|entry| entry.rule_name)
+        .collect()
+}
+
 #[cfg(test)]
 #[inline]
 pub(crate) const fn opt_in_script_rule_names() -> &'static [&'static str] {

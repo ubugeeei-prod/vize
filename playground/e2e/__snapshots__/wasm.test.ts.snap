@@ -4,7 +4,6 @@ exports[`WASM Module > should expose lint rules with preset membership 1`] = `
 {
   "noGetCurrentInstance": [
     "opinionated",
-    "nuxt",
   ],
   "noInlineStyle": [
     "nuxt",

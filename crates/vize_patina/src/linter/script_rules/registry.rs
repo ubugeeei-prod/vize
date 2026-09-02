@@ -75,7 +75,7 @@ pub struct BuiltinScriptRuleMeta {
 }
 
 const OPINIONATED_ONLY_SCRIPT_PRESETS: &[&str] = &["opinionated"];
-const OPINIONATED_SCRIPT_PRESETS: &[&str] = &["opinionated", "nuxt"];
+const OPINIONATED_SCRIPT_PRESETS: &[&str] = &["opinionated"];
 const ECOSYSTEM_SCRIPT_PRESETS: &[&str] = &["ecosystem"];
 const NUXT_SCRIPT_PRESETS: &[&str] = &["nuxt"];
 const OPT_IN_SCRIPT_PRESETS: &[&str] = &[];
