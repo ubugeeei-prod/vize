@@ -7,7 +7,7 @@ use crate::{RootNode, RuntimeHelper, TemplateChildNode};
 
 use super::context::CodegenContext;
 use super::element::helpers::is_dynamic_component_tag;
-use super::helpers::to_valid_asset_identifier;
+use super::helpers::{escape_js_string, to_valid_asset_identifier};
 use vize_s0::{String, camelize, capitalize};
 
 /// Check if a root-level text node is ignorable whitespace.
@@ -157,13 +157,21 @@ pub(super) fn generate_assets(ctx: &mut CodegenContext, root: &RootNode<'_>) {
         ctx.push(&to_valid_asset_identifier("directive", directive));
         ctx.push(" = ");
         let binding_name = imported_directive_binding_name(directive);
-        let uses_imported_binding = ctx
+        let imported_binding_type = ctx
             .options
             .binding_metadata
             .as_ref()
-            .is_some_and(|m| m.bindings.contains_key(binding_name.as_str()));
-        if uses_imported_binding {
-            ctx.push(&binding_name);
+            .and_then(|m| m.bindings.get(binding_name.as_str()).copied());
+        if let Some(binding_type) = imported_binding_type {
+            if ctx.options.inline {
+                ctx.push(&binding_name);
+            } else {
+                let prefix = binding_type.non_inline_template_prefix();
+                ctx.push(prefix.trim_end_matches('.'));
+                ctx.push("[\"");
+                ctx.push(&escape_js_string(&binding_name));
+                ctx.push("\"]");
+            }
         } else {
             ctx.use_helper(RuntimeHelper::ResolveDirective);
             ctx.push(ctx.helper(RuntimeHelper::ResolveDirective));

@@ -242,6 +242,14 @@ fn template_references_setup_binding(template_code: &str, name: &str) -> bool {
         return true;
     }
 
+    let mut setup_bracket_access = String::with_capacity(name.len() + 11);
+    setup_bracket_access.push_str("$setup[\"");
+    setup_bracket_access.push_str(name);
+    setup_bracket_access.push_str("\"]");
+    if template_code.contains(setup_bracket_access.as_str()) {
+        return true;
+    }
+
     let mut ctx_access = String::with_capacity(name.len() + 5);
     ctx_access.push_str("_ctx.");
     ctx_access.push_str(name);

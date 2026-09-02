@@ -4,8 +4,11 @@
 //! Split out of `lib.rs` so that module stays inside the per-file
 //! source-length budget.
 
-use super::{SfcCompileOptions, compile_sfc, compile_sfc_with_template_syntax, parse_sfc};
-use vize_atelier_core::TemplateSyntaxMode;
+use super::{
+    SfcCompileOptions, SfcScriptOutputMode, compile_sfc, compile_sfc_for_adapter,
+    compile_sfc_with_template_syntax, parse_sfc,
+};
+use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 use vize_carton::config::VueVersion;
 
 #[test]
@@ -200,6 +203,77 @@ const touches = ref(0)
         result.code.contains(r#""onUpdate:modelValue":"#)
             && result.code.contains("local.value = $event"),
         "unexpected code:\n{}",
+        result.code
+    );
+}
+
+#[test]
+fn test_compile_sfc_separate_template_uses_setup_local_directive_binding() {
+    let local_source = r#"
+<template>
+  <div v-flip>{{ message }}</div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const message = ref('hello')
+const vFlip = {
+  mounted() {},
+}
+</script>
+"#;
+    assert_separate_template_local_directive_output(local_source);
+
+    let imported_source = r#"
+<template>
+  <div v-flip>{{ message }}</div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { vFlip } from './directives'
+
+const message = ref('hello')
+</script>
+"#;
+    assert_separate_template_local_directive_output(imported_source);
+}
+
+fn assert_separate_template_local_directive_output(source: &str) {
+    let descriptor = parse_sfc(source, Default::default()).unwrap();
+    let result = compile_sfc_for_adapter(
+        &descriptor,
+        SfcCompileOptions::default(),
+        TemplateSyntaxMode::Standard,
+        CustomElementMatcher::default(),
+        CodegenOptions::default(),
+        SfcScriptOutputMode::SeparateTemplate,
+    )
+    .unwrap();
+
+    assert!(
+        result
+            .code
+            .contains(r#"const _directive_flip = $setup["vFlip"]"#),
+        "local script-setup directives must resolve from the setup state in separate-template mode:\n{}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("const _directive_flip = vFlip"),
+        "separate-template render functions cannot close over setup locals:\n{}",
+        result.code
+    );
+
+    let returned = result
+        .code
+        .split("const __returned__ = {")
+        .nth(1)
+        .and_then(|tail| tail.split("Object.defineProperty").next())
+        .unwrap_or("");
+    assert!(
+        returned.contains("vFlip"),
+        "local directive binding must be returned to $setup:\n{}",
         result.code
     );
 }

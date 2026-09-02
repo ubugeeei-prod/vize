@@ -161,7 +161,16 @@ const accountRoutes: VisualRoute[] = [
   { name: "timeline-antenna", path: "/timeline/antenna/9testantenna001", account: true },
   { name: "clicker", path: "/clicker", account: true },
   { name: "bubble-game", path: "/bubble-game", account: true },
-  { name: "qr", path: "/qr", account: true },
+  {
+    name: "qr",
+    path: "/qr",
+    account: true,
+    ready: async (page) => {
+      await expect(page.getByText("@alice@localhost:3000", { exact: true })).toBeVisible({
+        timeout: 15_000,
+      });
+    },
+  },
   { name: "admin", path: "/admin", account: true },
   { name: "admin-overview", path: "/admin/overview", account: true },
   { name: "admin-users", path: "/admin/users", account: true },
