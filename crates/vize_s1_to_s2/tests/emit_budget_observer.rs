@@ -3,18 +3,26 @@
 
 #![allow(clippy::disallowed_macros, clippy::disallowed_types)]
 
+use std::path::Path;
+
 use davinci_harness::fixtures::{LADDER, template_block};
 use vize_s0::Allocator;
 use vize_s1_to_s2::{emit_dom_source, emit_dom_source_observed};
 
-/// fixture name -> P2-12a DOM template-node visits.
-const DOM_BASELINE_VISITS: [(&str, u32); 6] = [
-    ("small", 11),
-    ("medium", 62),
-    ("large", 86),
-    ("stress-deep", 134),
-    ("stress-wide", 3),
-    ("stress-interp", 1102),
+#[derive(Debug, Clone, Copy)]
+struct TraversalBudget {
+    walks: u32,
+    visits: u32,
+}
+
+/// fixture name -> current S2 DOM emit-only walks and op visits.
+const S2_DOM_EMIT_COUNTS: [(&str, u32, u32); 6] = [
+    ("small", 1, 5),
+    ("medium", 1, 33),
+    ("large", 1, 54),
+    ("stress-deep", 1, 72),
+    ("stress-wide", 1, 2),
+    ("stress-interp", 1, 201),
 ];
 
 #[test]
@@ -28,11 +36,8 @@ fn observed_dom_emit_keeps_output_and_walk_budget() {
             .unwrap_or_else(|error| panic!("{} observed emit failed: {error:?}", fixture.name));
         let plain = emit_dom_source(&plain_allocator, template)
             .unwrap_or_else(|error| panic!("{} plain emit failed: {error:?}", fixture.name));
-        let baseline_visits = DOM_BASELINE_VISITS
-            .iter()
-            .find(|(name, _)| *name == fixture.name)
-            .map(|(_, visits)| *visits)
-            .unwrap_or_else(|| panic!("{} has no pinned DOM baseline", fixture.name));
+        let baseline = traversal_budget(fixture.name);
+        let expected = s2_dom_emit_count(fixture.name);
 
         assert_eq!(
             observed.emit.assembled(),
@@ -60,27 +65,83 @@ fn observed_dom_emit_keeps_output_and_walk_budget() {
             "{} transform failures",
             fixture.name
         );
-        assert_eq!(observed.budget.emit_walks, 1, "{} emit walks", fixture.name);
+        assert_eq!(
+            observed.budget.emit_walks, expected.walks,
+            "{} S2 DOM emit walks",
+            fixture.name
+        );
+        assert_eq!(
+            observed.budget.emit_visits, expected.visits,
+            "{} S2 DOM emit visits",
+            fixture.name
+        );
         assert!(
             observed.budget.emit_visits > 0,
             "{} emit must visit at least one op",
             fixture.name
         );
         assert!(
-            observed.budget.emit_visits <= baseline_visits,
+            observed.budget.emit_walks <= baseline.walks,
+            "{} emit walks {} exceed P2-12a baseline {}",
+            fixture.name,
+            observed.budget.emit_walks,
+            baseline.walks
+        );
+        assert!(
+            observed.budget.emit_visits <= baseline.visits,
             "{} emit visits {} exceed P2-12a baseline {}",
             fixture.name,
             observed.budget.emit_visits,
-            baseline_visits
+            baseline.visits
         );
         println!(
-            "davinci.s2_dom.walk {} emit_walks={} emit_visits={} transform_walks={} transform_passes={} baseline_visits={}",
+            "davinci.s2_dom.walk {} emit_walks={} emit_visits={} transform_walks={} transform_passes={} baseline_walks={} baseline_visits={}",
             fixture.name,
             observed.budget.emit_walks,
             observed.budget.emit_visits,
             observed.budget.transform.walks,
             observed.budget.transform.passes,
-            baseline_visits
+            baseline.walks,
+            baseline.visits
         );
     }
+}
+
+fn s2_dom_emit_count(fixture: &str) -> TraversalBudget {
+    S2_DOM_EMIT_COUNTS
+        .iter()
+        .find(|(name, _, _)| *name == fixture)
+        .map(|(_, walks, visits)| TraversalBudget {
+            walks: *walks,
+            visits: *visits,
+        })
+        .unwrap_or_else(|| panic!("{fixture} has no pinned S2 DOM emit count"))
+}
+
+fn traversal_budget(fixture: &str) -> TraversalBudget {
+    let repo = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("crate directory")
+        .parent()
+        .expect("repo root");
+    let text = std::fs::read_to_string(repo.join("davinci-road/plan/budgets.toml"))
+        .expect("budgets.toml reads");
+    let value: toml::Value = toml::from_str(&text).expect("budgets.toml parses");
+    let id = format!("dom_{fixture}");
+    let entry = value
+        .get("traversal")
+        .and_then(|traversal| traversal.get(&id))
+        .unwrap_or_else(|| panic!("budgets.toml [traversal] is missing {id}"));
+    TraversalBudget {
+        walks: required_u32(entry, &id, "walks"),
+        visits: required_u32(entry, &id, "visits"),
+    }
+}
+
+fn required_u32(entry: &toml::Value, id: &str, field: &str) -> u32 {
+    entry
+        .get(field)
+        .and_then(toml::Value::as_integer)
+        .and_then(|value| u32::try_from(value).ok())
+        .unwrap_or_else(|| panic!("budgets.toml [traversal.{id}] has no u32 {field}"))
 }

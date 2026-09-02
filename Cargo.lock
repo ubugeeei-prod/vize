@@ -4052,6 +4052,7 @@ dependencies = [
  "oxc_semantic",
  "oxc_span",
  "oxc_syntax",
+ "toml",
  "vize_atelier_dom",
  "vize_atelier_sfc",
  "vize_carton",
