@@ -64,7 +64,7 @@ const completedTasks = [
   "P2-19",
 ];
 const activeTasks = ["P2-11"];
-const untouchedTasks = ["P2-12b", "P2-16", "P2-17", "P2-20"];
+const openDependencyTasks = ["P2-12b", "P2-16", "P2-17", "P2-20"];
 
 function taskIndex(source: string): Map<string, boolean> {
   const entries = [
@@ -125,12 +125,12 @@ test("Phase 2 current classification is exact, disjoint, and exhaustive", () => 
   const tasks = taskIndex(text.phase);
   const complete = currentGroup(text.phase, "Complete");
   const active = currentGroup(text.phase, "Active and blocked");
-  const untouched = currentGroup(text.phase, "Untouched and dependency-blocked");
-  const groups = [complete, active, untouched];
+  const openDependency = currentGroup(text.phase, "Open and dependency-blocked");
+  const groups = [complete, active, openDependency];
   assert.equal(tasks.size, 22);
   assert.deepEqual(complete.ids, completedTasks);
   assert.deepEqual(active.ids, activeTasks);
-  assert.deepEqual(untouched.ids, untouchedTasks);
+  assert.deepEqual(openDependency.ids, openDependencyTasks);
   for (const group of groups) assert.equal(group.total, tasks.size);
 
   for (let left = 0; left < groups.length; left += 1) {
@@ -156,7 +156,7 @@ test("Phase 2 current classification is exact, disjoint, and exhaustive", () => 
   }
 });
 
-test("dependency edges explain every untouched classification", () => {
+test("dependency edges explain every open dependency classification", () => {
   const taskIds = [...taskIndex(text.phase).keys()];
   const sources = new Map([
     ["P2-12b", text.tasks],
@@ -170,8 +170,8 @@ test("dependency edges explain every untouched classification", () => {
     ["P2-17", ["P2-11", "P2-12b", "P2-13"]],
     ["P2-20", taskIds.filter((id) => id !== "P2-20")],
   ]);
-  const open = new Set([...activeTasks, ...untouchedTasks]);
-  for (const id of untouchedTasks) {
+  const open = new Set([...activeTasks, ...openDependencyTasks]);
+  for (const id of openDependencyTasks) {
     const dependencies = dependencySet(sources.get(id)!, id, taskIds);
     assert.deepEqual(dependencies, expected.get(id), `${id} dependency set drifted`);
     assert.ok(dependencies.every((dependency) => taskIds.includes(dependency)));

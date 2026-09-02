@@ -43,6 +43,12 @@ synthesized attributes fuse cleanly, but anything needing lookahead (sibling
 `v-else`, slot collection) must stay region-local. Needs a phase-2 prototype
 measuring walk count and instruction locality against the phase-0 baselines.
 
+Prototype note (2026-09-02): the S2 DOM emitter now exposes
+`emit_dom_source_observed`, measuring the transform `BudgetObserver` plus the
+single code-producing emit walk over the ladder in `emit_budget_observer`.
+This does not answer the fusion policy yet: transform groups are still
+serialized and the production build path is not switched.
+
 ## Orphan analyses: productize or cut
 
 `RaceConditionTracker` and `ProvideInjectTracker` have zero consumers;

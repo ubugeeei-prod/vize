@@ -113,12 +113,13 @@ holds or improves — this phase should be a measurable win, not a wash.
   timing, remark emission) land with the pass manager itself, so the DevTool's
   data feed exists from the first S2 build.
 
-**Current execution ledger (2026-09-01):** [17 of 22 tasks are complete](./plan/phase-2.md#current-execution-ledger-2026-09-01).
+**Current execution ledger (2026-09-02):** [17 of 22 tasks are complete](./plan/phase-2.md#current-execution-ledger-2026-09-02).
 P2-9 is now complete: the hydrated corpus run compiled 41,580 files at zero
 divergence and measured the retained-`None` residual at 11.73%. P2-11 remains
-the active blocked series; P2-12b, P2-16, P2-17 and P2-20 are untouched
-because their dependency gates remain open. P2-11 has 83 landed installments
-through [#5586](https://github.com/ubugeeei-prod/vize/pull/5586). The latest
+the active blocked series; P2-12b, P2-16, P2-17 and P2-20 remain open because
+their dependency gates remain open. P2-12b has TS-22 groundwork for observed
+S2 DOM emit walks, but not the fused build-path switch. P2-11 has 83 landed
+installments through [#5586](https://github.com/ubugeeei-prod/vize/pull/5586). The latest
 increments pin nested interactive recovery identity, raw handler-expression
 parity, dynamic-component directive patch flags, template-wrapper component
 props, component class binds, residual component prop hoists, helper preamble

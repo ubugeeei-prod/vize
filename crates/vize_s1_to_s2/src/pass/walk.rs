@@ -24,6 +24,7 @@ use vize_s2::op::Op;
 #[derive(Clone)]
 pub(crate) struct PageWalk {
     next: u32,
+    visits: u32,
     exhausted: bool,
 }
 
@@ -31,6 +32,7 @@ impl PageWalk {
     pub(crate) fn new() -> Self {
         Self {
             next: 0,
+            visits: 0,
             exhausted: false,
         }
     }
@@ -38,6 +40,7 @@ impl PageWalk {
     /// The current op's page-order id; `None` once the id space is
     /// exhausted (mirroring `Cx::mint_op`'s saturation).
     pub(crate) fn mint(&mut self) -> Option<NodeId> {
+        self.visits = self.visits.saturating_add(1);
         if self.exhausted {
             return None;
         }
@@ -56,6 +59,12 @@ impl PageWalk {
     /// How many ids this walk has minted (the page's `ops=` count).
     pub(crate) fn minted(&self) -> u32 {
         self.next
+    }
+
+    /// How many real op visits this walk dispatched. Attached binding
+    /// skips preserve id arithmetic but are not node visits.
+    pub(crate) fn visits(&self) -> u32 {
+        self.visits
     }
 
     /// Skip `count` ids (an owner's attached bindings, numbered between

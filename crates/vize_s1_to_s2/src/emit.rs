@@ -39,6 +39,7 @@
 //! The old lane stays the shipped compile path; [`super::DOM_LANE_FLAG`]
 //! is named here and *read* in the atelier_dom witness.
 
+mod budget;
 mod buf;
 mod builtin;
 mod children;
@@ -94,17 +95,18 @@ mod vtext;
 use alloc::vec::Vec as StdVec;
 use vize_davinci::diagnostic::Severity;
 use vize_davinci::id::NodeId;
-use vize_davinci::pass::BudgetObserver;
 use vize_davinci::side_table::SideTable;
 use vize_s0::{Allocator, String};
-use vize_s1::parse;
 use vize_s2::op::{ElementOp, ForOp, IfOp, Namespace};
 use vize_s2::scope::ScopeFacts;
 
-use crate::lower::{ForWrapper, LegacyCaps, Lowered, WrapperKeys, lower_with_caps};
+use crate::lower::{ForWrapper, LegacyCaps, Lowered, WrapperKeys};
+use crate::pass::S2Facts;
 use crate::pass::walk::PageWalk;
-use crate::pass::{S2Facts, run_transform};
 
+pub use self::budget::{
+    DomEmitBudget, ObservedDomEmit, emit_dom_source_observed, emit_dom_source_with_caps_observed,
+};
 use self::buf::Buf;
 pub use self::error::{EmitError, UnsupportedReason, UnsupportedRefusal};
 use self::fragment::emit_root;
@@ -226,6 +228,13 @@ impl DomEmit {
 /// transformed) S2 artifact. `facts` is the transform product compounds
 /// compile from.
 pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitError> {
+    emit_dom_with_emit_budget(lowered, facts).map(|(emit, _)| emit)
+}
+
+fn emit_dom_with_emit_budget(
+    lowered: &Lowered<'_>,
+    facts: &S2Facts,
+) -> Result<(DomEmit, u32), EmitError> {
     if lowered
         .diagnostics
         .iter()
@@ -297,10 +306,10 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
     cx.buf.deindent();
     cx.buf.newline();
     cx.buf.push("}");
-    Ok(DomEmit {
-        preamble: cx.buf.preamble(),
-        code: cx.buf.code,
-    })
+    let emit_visits = cx.walk.visits();
+    let preamble = cx.buf.preamble();
+    let code = cx.buf.code;
+    Ok((DomEmit { preamble, code }, emit_visits))
 }
 
 /// Parse → lower → S2 transform → emit. The comparator's one-shot entry
@@ -318,9 +327,5 @@ pub fn emit_dom_source_with_caps<'a>(
     source: &'a str,
     caps: LegacyCaps,
 ) -> Result<DomEmit, EmitError> {
-    let (tree, errors) = parse(allocator, source);
-    let mut lowered = lower_with_caps(allocator, &tree, &errors, caps);
-    let mut budget = BudgetObserver::new();
-    let facts = run_transform(&mut lowered, &mut budget);
-    emit_dom(&lowered, &facts)
+    emit_dom_source_with_caps_observed(allocator, source, caps).map(|observed| observed.emit)
 }

@@ -63,8 +63,9 @@ pub mod pass;
 
 pub use dom::DOM_LANE_FLAG;
 pub use emit::{
-    DomEmit, EmitError, UnsupportedReason, UnsupportedRefusal, emit_dom, emit_dom_source,
-    emit_dom_source_with_caps,
+    DomEmit, DomEmitBudget, EmitError, ObservedDomEmit, UnsupportedReason, UnsupportedRefusal,
+    emit_dom, emit_dom_source, emit_dom_source_observed, emit_dom_source_with_caps,
+    emit_dom_source_with_caps_observed,
 };
 pub use lower::{
     LegacyCaps, Lowered, lower, lower_source_block, lower_source_block_with_caps,
