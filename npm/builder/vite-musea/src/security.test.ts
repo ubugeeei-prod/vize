@@ -7,11 +7,15 @@ import path from "node:path";
 import { Readable } from "node:stream";
 
 import {
+  assertArtVueSourcePath,
+  assertVueSourcePath,
   collectRequestBody,
   decodeUrlComponent,
   HttpError,
+  isArtVueSourcePath,
   isLoopbackAddress,
   isTrustedSourcePath,
+  isVueSourcePath,
   resolveInside,
   resolveTrustedSourcePath,
   resolveUrlPathInside,
@@ -208,6 +212,31 @@ void test("validateDevApiRequest requires same-origin JSON mutations with the se
   };
 
   assert.equal(validateDevApiRequest(remoteMutation, token)?.status, 403);
+});
+
+void test("isVueSourcePath rejects a .vue symlink whose realpath is not a Vue file", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-vue-realpath-"));
+  const root = path.join(tempDir, "root");
+
+  try {
+    await fs.promises.mkdir(root);
+    const secret = path.join(root, ".env");
+    const decoy = path.join(root, "Evil.vue");
+    await fs.promises.writeFile(secret, "SECRET=1\n");
+    await fs.promises.symlink(secret, decoy);
+
+    assert.equal(isVueSourcePath(decoy), false);
+    assert.equal(isArtVueSourcePath(decoy), false);
+    assert.throws(() => assertVueSourcePath(decoy, "componentPath"), HttpError);
+    assert.throws(() => assertArtVueSourcePath(decoy), HttpError);
+
+    const artDecoy = path.join(root, "Evil.art.vue");
+    await fs.promises.symlink(secret, artDecoy);
+    assert.equal(isArtVueSourcePath(artDecoy), false);
+    assert.throws(() => assertArtVueSourcePath(artDecoy), HttpError);
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
 });
 
 void test("serializeScriptValue cannot close the surrounding script tag", () => {

@@ -148,3 +148,31 @@ export function decodeUrlComponent(value: string, label = "path"): string {
     throw new HttpError(`${label} is not valid URL encoding`, 400);
   }
 }
+
+function hasSuffix(candidatePath: string, suffix: string): boolean {
+  return realpathNearest(candidatePath).toLowerCase().endsWith(suffix);
+}
+
+/**
+ * True when the realpath still looks like a Vue SFC. A planted
+ * `Evil.vue` → `.env` symlink must not be treated as component source.
+ */
+export function isVueSourcePath(candidatePath: string): boolean {
+  return hasSuffix(candidatePath, ".vue");
+}
+
+export function assertVueSourcePath(candidatePath: string, label = "path"): void {
+  if (!isVueSourcePath(candidatePath)) {
+    throw new HttpError(`${label} must be a .vue file`, 400);
+  }
+}
+
+export function isArtVueSourcePath(candidatePath: string): boolean {
+  return hasSuffix(candidatePath, ".art.vue");
+}
+
+export function assertArtVueSourcePath(candidatePath: string, label = "art path"): void {
+  if (!isArtVueSourcePath(candidatePath)) {
+    throw new HttpError(`${label} must be a .art.vue file`, 400);
+  }
+}

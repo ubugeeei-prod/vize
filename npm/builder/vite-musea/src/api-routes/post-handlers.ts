@@ -10,7 +10,7 @@ import path from "node:path";
 
 import type { ApiRoutesContext, SendJson, SendError } from "./index.js";
 import { generatePreviewModuleWithProps } from "../preview/index.js";
-import { HttpError, parseJsonBody, resolveInside } from "../security.js";
+import { assertVueSourcePath, HttpError, parseJsonBody, resolveInside } from "../security.js";
 import { toPascalCase } from "../utils.js";
 
 /** POST /api/preview-with-props */
@@ -79,12 +79,13 @@ export async function handleGenerate(
       sendError("Missing required field: componentPath", 400);
       return;
     }
-    if (!reqComponentPath.endsWith(".vue")) {
+    if (!reqComponentPath.toLowerCase().endsWith(".vue")) {
       sendError("componentPath must be a .vue file", 400);
       return;
     }
-    const { generateArtFile: genArt } = await import("../autogen/index.js");
     const componentPath = resolveInside(ctx.config.root, reqComponentPath, "componentPath");
+    assertVueSourcePath(componentPath, "componentPath");
+    const { generateArtFile: genArt } = await import("../autogen/index.js");
     const result = await genArt(componentPath, autogenOptions);
     sendJson({
       generated: true,

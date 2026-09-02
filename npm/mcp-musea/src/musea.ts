@@ -4,6 +4,7 @@ import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { formatGeneratedMarkdown } from "./markdown-template.js";
 import { buildPaletteTypescript } from "./palette-typescript.js";
 import type { ArtInfo, NativeBinding, ServerContext } from "./types.js";
+import { isVueSourcePath } from "./vue-source-path.js";
 
 type PaletteControl = {
   name: string;
@@ -499,6 +500,10 @@ async function getComponentSourceDescriptor(
       exists: false,
       error: "Component source is outside the project root.",
     };
+  }
+
+  if (!isVueSourcePath(componentPath)) {
+    return { reference: resolved.info.component, exists: false, error: "Component source must be a .vue file." };
   }
 
   try {

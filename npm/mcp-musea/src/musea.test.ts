@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 
 import { analyzeResolvedComponent, buildDocumentation, buildPalette } from "./musea.ts";
+import { isVueSourcePath } from "./vue-source-path.ts";
 import type { NativeBinding, ServerContext } from "./types.ts";
 
 test("buildPalette prints fallback TypeScript through the AST printer", async () => {
@@ -253,5 +254,80 @@ test("analyzeResolvedComponent omits out-of-project component source paths", asy
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
     fs.rmSync(outside, { recursive: true, force: true });
+  }
+});
+
+test("analyzeResolvedComponent refuses an art-declared .vue symlink to a secret file", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "musea-mcp-vue-symlink-"));
+
+  try {
+    const secretPath = path.join(root, ".env");
+    const decoyPath = path.join(root, "Evil.vue");
+    const artPath = path.join(root, "Card.art.vue");
+    fs.writeFileSync(secretPath, "SECRET=1\n");
+    fs.symlinkSync(secretPath, decoyPath);
+    fs.writeFileSync(artPath, "");
+
+    assert.equal(isVueSourcePath(decoyPath), false);
+
+    const ctx: ServerContext = {
+      projectRoot: root,
+      loadNative() {
+        throw new Error("native binding should not load");
+      },
+      scanArtFiles: async () => new Map(),
+      resolveTokensPath: async () => null,
+    };
+
+    const result = await analyzeResolvedComponent(
+      ctx,
+      {
+        parseArt() {
+          throw new Error("parseArt should not be called");
+        },
+        artToCsf() {
+          throw new Error("artToCsf should not be called");
+        },
+        parseDesignTokensFromPath() {
+          return [];
+        },
+        flattenDesignTokenCategories() {
+          return [];
+        },
+        generateDesignTokensMarkdown() {
+          return "";
+        },
+        analyzeSfc() {
+          throw new Error("analyzeSfc must not read a non-vue realpath");
+        },
+      } satisfies NativeBinding,
+      {
+        info: {
+          path: artPath,
+          title: "Card",
+          component: "./Evil.vue",
+          tags: [],
+          status: "ready",
+          variantCount: 0,
+          variantNames: [],
+        },
+        absolutePath: artPath,
+        relativePath: "Card.art.vue",
+        matchedBy: "path",
+        matchValue: "Card.art.vue",
+        score: 1,
+        reasons: [],
+        alternatives: [],
+      },
+    );
+
+    assert.equal(result.analysis, null);
+    assert.equal(result.source.exists, false);
+    assert.equal(result.source.absolutePath, undefined);
+    assert.equal(result.source.path, undefined);
+    assert.match(result.source.error ?? "", /must be a \.vue file/);
+    assert.doesNotMatch(JSON.stringify(result), /SECRET=1/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
   }
 });

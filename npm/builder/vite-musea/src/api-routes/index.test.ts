@@ -172,6 +172,33 @@ void test("createApiMiddleware blocks source writes outside the configured root"
   }
 });
 
+void test("createApiMiddleware refuses art source writes through a symlink", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-api-source-symlink-"));
+  const artPath = "src/Escape.art.vue";
+  const artFilePath = path.join(tempDir, artPath);
+  const secretPath = path.join(tempDir, ".env");
+
+  try {
+    await fs.promises.mkdir(path.dirname(artFilePath), { recursive: true });
+    await fs.promises.writeFile(secretPath, "SECRET=1\n");
+    await fs.promises.symlink(secretPath, artFilePath);
+
+    const ctx = createContext(tempDir, new Map([[artPath, createArt(artPath)]]));
+    const response = await invokeApi(ctx, {
+      method: "PUT",
+      url: `/arts/${encodeURIComponent(artPath)}/source`,
+      headers: authorizedJsonHeaders(ctx),
+      body: JSON.stringify({ source: "overwritten" }),
+    });
+
+    assert.equal(response.statusCode, 400);
+    assert.deepEqual(JSON.parse(response.body), { error: "art path must be a .art.vue file" });
+    assert.equal(await fs.promises.readFile(secretPath, "utf-8"), "SECRET=1\n");
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
 void test("createApiMiddleware returns 400 for malformed JSON mutation bodies", async () => {
   const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-api-json-"));
 

@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import { resolveTrustedSourcePath } from "./security.js";
+import { assertVueSourcePath, resolveTrustedSourcePath } from "./security.js";
 import type { ArtFileInfo } from "./types/index.js";
 
 export function allowedSourceRoots(root: string, scanRoots: string[] = []): string[] {
@@ -26,7 +26,16 @@ export function resolveComponentSourcePath(
         : null;
 
   const [projectRoot, ...extraRoots] = sourceRoots;
-  return componentPath
-    ? resolveTrustedSourcePath(projectRoot ?? ".", extraRoots, componentPath, "component path")
-    : null;
+  if (!componentPath) {
+    return null;
+  }
+
+  const resolved = resolveTrustedSourcePath(
+    projectRoot ?? ".",
+    extraRoots,
+    componentPath,
+    "component path",
+  );
+  assertVueSourcePath(resolved, "component path");
+  return resolved;
 }

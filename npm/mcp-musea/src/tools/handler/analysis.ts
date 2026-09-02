@@ -12,6 +12,7 @@ import {
   resolveArtReference,
   resolveProjectPath,
 } from "../../musea.js";
+import { assertVueSourcePath } from "../../vue-source-path.js";
 import type { ServerContext, ToolResult } from "./types.js";
 
 export async function handleAnalyzeComponent(
@@ -26,6 +27,7 @@ export async function handleAnalyzeComponent(
     }
 
     const absolutePath = resolveProjectPath(ctx.projectRoot, directPath, "path");
+    assertVueSourcePath(absolutePath, "path");
     const source = await fs.promises.readFile(absolutePath, "utf-8");
     const analysis = binding.analyzeSfc(source, { filename: absolutePath });
 

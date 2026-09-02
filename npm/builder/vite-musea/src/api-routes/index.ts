@@ -26,6 +26,7 @@ import {
 import { handleArtSource, handleArtPalette, handleArtAnalysis, handleArtDocs } from "./handlers.js";
 import { handlePreviewWithProps, handleGenerate, handleRunVrt } from "./post-handlers.js";
 import {
+  assertArtVueSourcePath,
   collectRequestBody,
   decodeUrlComponent,
   DEFAULT_API_BODY_LIMIT_BYTES,
@@ -134,6 +135,7 @@ export function createApiMiddleware(ctx: ApiRoutesContext) {
           }
 
           const safeArtPath = resolveInside(ctx.config.root, artPath, "art path");
+          assertArtVueSourcePath(safeArtPath);
           const body = await readBody();
           const { source } = parseJsonBody<{ source: string }>(body);
           if (typeof source !== "string") {
