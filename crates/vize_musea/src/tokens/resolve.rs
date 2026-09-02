@@ -1,5 +1,5 @@
 use serde_json::Value;
-use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString};
+use vize_s0::{FxHashMap, FxHashSet, String, ToCompactString};
 
 use super::types::{DesignToken, FlattenedToken, ResolvedTokens, TokenCategory, ValidationResult};
 
@@ -46,7 +46,7 @@ pub fn validate_reference(
     self_path: Option<&str>,
 ) -> ValidationResult {
     if !token_map.contains_key(reference) {
-        return invalid(vize_carton::cstr!(
+        return invalid(vize_s0::cstr!(
             "Reference target \"{reference}\" does not exist"
         ));
     }
@@ -60,7 +60,7 @@ pub fn validate_reference(
 
     while depth < MAX_RESOLVE_DEPTH {
         if !visited.insert(current.clone()) {
-            return invalid(vize_carton::cstr!(
+            return invalid(vize_s0::cstr!(
                 "Circular reference detected at \"{current}\""
             ));
         }

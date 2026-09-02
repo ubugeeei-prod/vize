@@ -12,14 +12,14 @@ use crate::types::{
     SourceLocation,
 };
 use memchr::{memchr, memmem};
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 /// Result type for parsing SFC blocks: (script_setup, script, styles)
 type SfcBlocksParseResult<'a> = Result<
     (
         Option<ArtScriptBlock<'a>>,
         Option<ArtScriptBlock<'a>>,
-        vize_carton::Vec<'a, ArtStyleBlock<'a>>,
+        vize_s0::Vec<'a, ArtStyleBlock<'a>>,
     ),
     ArtParseError,
 >;
@@ -32,7 +32,7 @@ type SfcBlocksParseResult<'a> = Result<
 /// # Example
 ///
 /// ```
-/// use vize_carton::Allocator;
+/// use vize_s0::Allocator;
 /// use vize_musea::parse::parse_art;
 /// use vize_musea::types::ArtParseOptions;
 ///
@@ -113,7 +113,7 @@ pub(crate) struct DefineArtMetadata<'a> {
     pub title: Option<&'a str>,
     pub description: Option<&'a str>,
     pub category: Option<&'a str>,
-    pub tags: vize_carton::Vec<'a, &'a str>,
+    pub tags: vize_s0::Vec<'a, &'a str>,
     pub status: Option<&'a str>,
     pub order: Option<u32>,
 }
@@ -126,7 +126,7 @@ impl<'a> DefineArtMetadata<'a> {
             title: None,
             description: None,
             category: None,
-            tags: vize_carton::Vec::new_in(&allocator),
+            tags: vize_s0::Vec::new_in(&allocator),
             status: None,
             order: None,
         }
@@ -139,7 +139,7 @@ fn parse_sfc_blocks<'a>(allocator: &'a Allocator, source: &'a str) -> SfcBlocksP
     let bytes = source.as_bytes();
     let mut script_setup: Option<ArtScriptBlock<'a>> = None;
     let mut script: Option<ArtScriptBlock<'a>> = None;
-    let mut styles = vize_carton::Vec::new_in(&allocator);
+    let mut styles = vize_s0::Vec::new_in(&allocator);
 
     // Use memmem finder for repeated searches (amortized O(n))
     let script_finder = memmem::Finder::new(b"<script");
@@ -451,7 +451,7 @@ pub(crate) fn calculate_location_fast(source: &str, start: u32, end: u32) -> Sou
 mod tests {
     use super::{extract_attr, has_attr, parse_art};
     use crate::types::{ArtParseError, ArtParseOptions};
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     #[test]
     fn test_parse_simple_art() {

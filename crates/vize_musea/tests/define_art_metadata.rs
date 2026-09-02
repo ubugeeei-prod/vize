@@ -1,5 +1,5 @@
-use vize_carton::Allocator;
 use vize_musea::{ArtParseOptions, ArtStatus, parse_art};
+use vize_s0::Allocator;
 
 fn parse<'a>(
     allocator: &'a Allocator,

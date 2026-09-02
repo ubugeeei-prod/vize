@@ -6,7 +6,7 @@
 #![allow(clippy::disallowed_macros)]
 
 use crate::types::ArtDescriptor;
-use vize_carton::{String, append, cstr};
+use vize_s0::{String, append, cstr};
 
 /// Output of Vue transformation.
 #[derive(Debug, Clone)]
@@ -316,7 +316,7 @@ mod tests {
     use super::{escape_template_literal, to_pascal_case, transform_to_vue};
     use crate::parse::parse_art;
     use crate::types::ArtParseOptions;
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     #[test]
     fn test_transform_to_vue_basic() {

@@ -6,7 +6,7 @@
 //! - Multiple values across variants (for select inference)
 
 use super::{ControlKind, PaletteOptions, RangeConfig, SelectOption};
-use vize_carton::{FxHashSet, String};
+use vize_s0::{FxHashSet, String};
 
 /// Infer control type from a single value.
 #[inline]

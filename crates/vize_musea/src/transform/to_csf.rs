@@ -7,7 +7,7 @@
 
 use super::to_csf_script::{ScriptSetupCsf, extract_script_setup_for_csf};
 use crate::types::{ArtDescriptor, ArtVariant, CsfOutput};
-use vize_carton::{String, ToCompactString, append, cstr};
+use vize_s0::{String, ToCompactString, append, cstr};
 
 const COMPONENT_BINDING: &str = "__museaComponent";
 const META_BINDING: &str = "__museaMeta";

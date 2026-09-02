@@ -5,7 +5,7 @@
 use super::{CatalogOutput, DocOptions};
 use crate::types::{ArtDescriptor, ArtStatus};
 use serde::{Deserialize, Serialize};
-use vize_carton::{FxHashMap, String, ToCompactString, append, cstr};
+use vize_s0::{FxHashMap, String, ToCompactString, append, cstr};
 
 /// Entry in a component catalog.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -362,16 +362,16 @@ mod tests {
     fn make_entry(title: &str, category: Option<&str>, tags: &[&str]) -> CatalogEntry {
         CatalogEntry {
             title: title.into(),
-            description: Some(vize_carton::cstr!("{} description", title)),
+            description: Some(vize_s0::cstr!("{} description", title)),
             category: category.map(|s| s.into()),
             tags: tags
                 .iter()
-                .map(|s| vize_carton::CompactString::from(*s))
+                .map(|s| vize_s0::CompactString::from(*s))
                 .collect(),
             status: ArtStatus::Ready,
             variant_count: 2,
-            doc_path: vize_carton::cstr!("{}.md", slugify(title)),
-            source_path: vize_carton::cstr!("{}.art.vue", slugify(title)),
+            doc_path: vize_s0::cstr!("{}.md", slugify(title)),
+            source_path: vize_s0::cstr!("{}.art.vue", slugify(title)),
             order: None,
         }
     }

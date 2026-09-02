@@ -1,7 +1,7 @@
 //! Shared classification for `defineArt` / `<art status>` values.
 
 use crate::types::ArtStatus;
-use vize_carton::{Allocator, cstr};
+use vize_s0::{Allocator, cstr};
 
 #[inline]
 pub(crate) fn classify_status(value: &str) -> ArtStatus {
@@ -42,7 +42,7 @@ pub(crate) fn unknown_status_warning<'a>(
 mod tests {
     use super::{classify_status, is_unknown_status, unknown_status_warning};
     use crate::types::ArtStatus;
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     #[test]
     fn classifies_known_and_unknown_status() {

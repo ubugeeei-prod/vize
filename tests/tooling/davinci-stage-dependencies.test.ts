@@ -244,6 +244,14 @@ test("Patina linter imports S0 storage through the stage alias", () => {
   });
 });
 
+test("Musea component gallery imports S0 storage through the stage alias", () => {
+  assertS0AliasConsumer({
+    packageName: "vize_musea",
+    label: "Musea component gallery",
+    directory: path.join(repoRoot, "crates", "vize_musea"),
+  });
+});
+
 test("Fresco TUI imports S0 storage through the stage alias", () => {
   assertS0AliasConsumer({
     packageName: "vize_fresco",

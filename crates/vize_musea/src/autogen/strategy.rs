@@ -7,7 +7,7 @@
 
 use super::types::{AutogenConfig, GeneratedVariant, PropDefinition};
 use serde_json::{Map, Value, json};
-use vize_carton::{FxHashSet, String, ToCompactString, cstr};
+use vize_s0::{FxHashSet, String, ToCompactString, cstr};
 
 /// Generate variants from prop definitions using the configured strategy.
 pub fn generate_variants(
@@ -368,7 +368,7 @@ mod tests {
         let mut props = Vec::new();
         for i in 0..30 {
             props.push(PropDefinition {
-                name: vize_carton::cstr!("prop_{i}"),
+                name: vize_s0::cstr!("prop_{i}"),
                 prop_type: "boolean".into(),
                 required: false,
                 default_value: Some(json!(false)),

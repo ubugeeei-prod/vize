@@ -7,7 +7,7 @@ use super::status::{classify_status, is_unknown_status, unknown_status_warning};
 use super::{BlockInfo, extract_attr, has_attr};
 use crate::types::{ArtMetadata, ArtParseError, ArtStatus};
 use memchr::{memchr, memmem};
-use vize_carton::Allocator;
+use vize_s0::Allocator;
 
 /// Find the `<art>` block in the source.
 /// Returns the block info with attributes and content.
@@ -69,7 +69,7 @@ pub(crate) fn parse_metadata<'a>(
     block: &BlockInfo<'a>,
     define_art: Option<&DefineArtMetadata<'a>>,
     filename: &str,
-) -> Result<(ArtMetadata<'a>, vize_carton::Vec<'a, &'a str>), ArtParseError> {
+) -> Result<(ArtMetadata<'a>, vize_s0::Vec<'a, &'a str>), ArtParseError> {
     let attrs = block.attrs_str;
 
     let title = extract_attr(attrs, "title")
@@ -86,7 +86,7 @@ pub(crate) fn parse_metadata<'a>(
         .or_else(|| define_art.and_then(|metadata| metadata.category));
 
     // Parse tags (comma-separated) into arena-allocated vec
-    let mut tags = vize_carton::Vec::new_in(&allocator);
+    let mut tags = vize_s0::Vec::new_in(&allocator);
     if let Some(tags_str) = extract_attr(attrs, "tags") {
         // Split by comma, trim each tag - no allocations, just slices
         for tag in tags_str.split(',') {
@@ -104,7 +104,7 @@ pub(crate) fn parse_metadata<'a>(
         .or_else(|| define_art.and_then(|metadata| metadata.status.map(classify_status)))
         .unwrap_or_default();
 
-    let mut warnings = vize_carton::Vec::new_in(&allocator);
+    let mut warnings = vize_s0::Vec::new_in(&allocator);
     if let Some(value) = extract_attr(attrs, "status").filter(|value| is_unknown_status(value)) {
         warnings.push(unknown_status_warning(allocator, filename, value));
     } else if attr_status.is_none()
@@ -152,7 +152,7 @@ fn parse_status(attrs: &str) -> Option<ArtStatus> {
 mod tests {
     use super::{find_art_block, parse_metadata, parse_status};
     use crate::types::ArtStatus;
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     #[test]
     fn test_find_art_block() {

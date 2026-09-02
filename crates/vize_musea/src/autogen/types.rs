@@ -3,7 +3,7 @@
 #![allow(clippy::disallowed_types)]
 
 use serde::{Deserialize, Serialize};
-use vize_carton::String;
+use vize_s0::String;
 
 /// Configuration for variant auto-generation.
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -4,7 +4,7 @@
 //! collected through a separate entry rather than a new descriptor field.
 
 use crate::parse::art_block::{find_art_block, parse_metadata};
-use vize_carton::{Allocator, Vec};
+use vize_s0::{Allocator, Vec};
 
 /// Return unknown-status warnings for `source`, or an empty list if the Art
 /// block is missing or metadata cannot be parsed.
@@ -25,7 +25,7 @@ pub fn parse_art_status_warnings<'a>(
 #[cfg(test)]
 mod tests {
     use super::parse_art_status_warnings;
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     #[test]
     fn unknown_status_returns_the_shared_warning() {

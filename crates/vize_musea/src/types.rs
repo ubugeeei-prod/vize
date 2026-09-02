@@ -6,7 +6,7 @@
 //! All types are designed for zero-copy parsing with arena allocation.
 
 use serde::{Deserialize, Serialize};
-use vize_carton::{Allocator, FxHashMap, String, ToCompactString, Vec as ArenaVec};
+use vize_s0::{Allocator, FxHashMap, String, ToCompactString, Vec as ArenaVec};
 
 /// Parsed Art file descriptor.
 ///

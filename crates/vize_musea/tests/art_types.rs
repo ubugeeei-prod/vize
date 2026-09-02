@@ -1,5 +1,5 @@
-use vize_carton::Allocator;
 use vize_musea::{ArtDescriptor, ArtStatus, ViewportConfig};
+use vize_s0::Allocator;
 
 #[test]
 fn art_descriptor_new_starts_empty() {

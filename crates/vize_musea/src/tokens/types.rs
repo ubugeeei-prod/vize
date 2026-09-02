@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use vize_carton::{FxHashMap, String};
+use vize_s0::{FxHashMap, String};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

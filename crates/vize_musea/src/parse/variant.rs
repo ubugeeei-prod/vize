@@ -5,7 +5,7 @@
 use super::{calculate_location_fast, extract_attr, has_attr};
 use crate::types::{ArtParseError, ArtVariant, ViewportConfig};
 use memchr::{memchr, memmem};
-use vize_carton::{Allocator, FxHashMap, ToCompactString};
+use vize_s0::{Allocator, FxHashMap, ToCompactString};
 
 /// Parse all `<variant>` blocks from art content.
 ///
@@ -231,7 +231,7 @@ fn count_lines_fast(bytes: &[u8], pos: usize) -> u32 {
 mod tests {
     use super::{parse_variants, parse_viewport};
     use crate::types::ArtParseError;
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     #[test]
     fn test_parse_single_variant() {

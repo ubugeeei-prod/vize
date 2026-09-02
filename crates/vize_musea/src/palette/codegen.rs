@@ -5,7 +5,7 @@
 use super::inference::infer_control_from_values;
 use super::{Palette, PaletteOptions, PaletteOutput, PropControl};
 use crate::types::ArtDescriptor;
-use vize_carton::{FxHashMap, String, ToCompactString, append, cstr};
+use vize_s0::{FxHashMap, String, ToCompactString, append, cstr};
 
 /// Generate palette configuration from an Art descriptor.
 ///

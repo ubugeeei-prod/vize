@@ -25,14 +25,14 @@
 //!
 //! This crate is optimized for high performance:
 //! - **Zero-copy parsing**: All strings are borrowed from source
-//! - **Arena allocation**: Uses `vize_carton::Allocator` for fast allocation
+//! - **Arena allocation**: Uses `vize_s0::Allocator` for fast allocation
 //! - **Minimal allocations**: Only allocates when absolutely necessary
 //! - **Fast byte-level parsing**: Uses `memchr` and `memmem` for O(n) search
 //!
 //! ## Usage
 //!
 //! ```rust
-//! use vize_carton::Allocator;
+//! use vize_s0::Allocator;
 //! use vize_musea::{parse_art, transform_to_csf};
 //! use vize_musea::types::ArtParseOptions;
 //!
@@ -93,8 +93,8 @@ pub use types::{
     ArtStyleBlockOwned, ArtVariant, ArtVariantOwned, CsfOutput, SourceLocation, ViewportConfig,
 };
 
-// Re-export vize_carton::Allocator for convenience
-pub use vize_carton::Allocator;
+// Re-export vize_s0::Allocator for convenience
+pub use vize_s0::Allocator;
 
 /// Start the Musea component gallery server.
 ///

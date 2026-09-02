@@ -9,7 +9,7 @@ description = "Musea - Component gallery and documentation for Vize Vue componen
 metadata.vize.stability = "experimental"
 
 [dependencies]
-vize_carton.workspace = true
+vize_s0.workspace = true
 vize_relief.workspace = true
 vize_atelier_sfc.workspace = true
 vize_croquis.workspace = true

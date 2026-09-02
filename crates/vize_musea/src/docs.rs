@@ -6,7 +6,7 @@
 //! # Example
 //!
 //! ```rust
-//! use vize_carton::Allocator;
+//! use vize_s0::Allocator;
 //! use vize_musea::{parse_art, ArtParseOptions};
 //! use vize_musea::docs::{generate_component_doc, DocOptions};
 //!
@@ -31,7 +31,7 @@ pub use catalog::{CatalogEntry, generate_catalog, generate_category_index, gener
 pub use markdown::{generate_component_doc, generate_variant_doc};
 
 use serde::{Deserialize, Serialize};
-use vize_carton::String;
+use vize_s0::String;
 
 /// Options for documentation generation.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -122,7 +122,7 @@ pub struct CatalogOutput {
 mod tests {
     use super::{CatalogEntry, DocOptions, generate_catalog, generate_component_doc};
     use crate::{ArtParseOptions, parse_art};
-    use vize_carton::Allocator;
+    use vize_s0::Allocator;
 
     #[test]
     fn test_generate_component_doc() {

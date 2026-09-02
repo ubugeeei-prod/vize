@@ -6,7 +6,7 @@
 //! # Example
 //!
 //! ```rust
-//! use vize_carton::Allocator;
+//! use vize_s0::Allocator;
 //! use vize_musea::{parse_art, ArtParseOptions};
 //! use vize_musea::palette::{generate_palette, PaletteOptions};
 //!
