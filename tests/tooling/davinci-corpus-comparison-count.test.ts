@@ -107,6 +107,11 @@ test("P2-11 DOM differential docs pin the hydrated full-corpus comparison count"
   assert.match(countSection, /`primevue`, `primevue-volt`, and `primevue-showcase`/u);
   assert.match(countSection, /\b142 DOM-output comparisons is stale\b/u);
   assert.match(countSection, /#5359/u);
-  assert.match(countSection, /hydrated zero-divergence corpus run\s+is still a blocker/u);
+  assert.match(countSection, /Real Project Matrix run `33531193323`/u);
+  assert.match(countSection, /files=42,668/u);
+  assert.match(countSection, /compared=42,279/u);
+  assert.match(countSection, /divergences=0/u);
+  assert.match(countSection, /production-lane switch remains open/u);
+  assert.doesNotMatch(countSection, /hydrated zero-divergence corpus run\s+is still a blocker/u);
   assert.doesNotMatch(countSection, /This is still a blocker/u);
 });

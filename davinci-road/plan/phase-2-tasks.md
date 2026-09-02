@@ -212,8 +212,8 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 
 **Deliverable:** `vize_atelier_dom` lowering S2 → codegen structure directly — the first strangler target, on the surface that holds the hard byte-parity bar.
 
-**Current series evidence (2026-08-31):** 67 installments have landed through
-[#5543](https://github.com/ubugeeei-prod/vize/pull/5543). The S2 DOM lane now
+**Current series evidence (2026-09-01):** 83 installments have landed through
+[#5586](https://github.com/ubugeeei-prod/vize/pull/5586). The S2 DOM lane now
 covers the late directive/object-spread set, event/model/slot residuals,
 structural `v-if`/`v-for` cases, expression-edge admission, keyed slot
 forwarding, component `v-once` wrappers, slot text fact alignment, and the
@@ -221,12 +221,14 @@ corpus-runnable plus CI DOM lanes. The per-node patch-site witness program now
 covers the late directive/object-spread, `v-memo`, `v-once`, slot outlet and
 `createSlots` cases. Nested interactive recovery identity, raw
 handler-expression parity, dynamic-component directive patch flags,
-template-wrapper component props and component class binds have reduced
+template-wrapper component props, component class binds, residual component
+prop hoists, helper preamble ordering, slot branch key reservations, foreign
+SVG hoists, `v-pre` inert text and final DOM corpus residuals have reduced
 real-project witnesses, while the 144 DOM-output comparisons contract remains
-pinned. The task remains
-blocked on the
-hydrated zero-divergence corpus evidence and production-lane switch; the old
-lane remains the production path. See the
+pinned. Real Project Matrix run `33531193323` recorded canonical hydrated
+zero-divergence evidence over 146 gitlinks, 42,668 files and 42,279 compared
+templates. The task remains blocked on the production-lane switch; the old lane
+remains the production path. See the
 [series record](./phase-2-records/p2-11.md).
 
 **Steps:**

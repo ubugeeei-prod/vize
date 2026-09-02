@@ -8,7 +8,7 @@ function p2_11Installment(number: number): URL {
   );
 }
 
-const P2_11_CURRENT = { number: 67, pr: 5543, sha: "da97fe2d70" } as const;
+const P2_11_CURRENT = { number: 83, pr: 5586, sha: "c17902442d" } as const;
 
 const p2_11TableRows = [
   [41, 5359, "5b5ac0924"],
@@ -38,6 +38,22 @@ const p2_11TableRows = [
   [65, 5536, "7a98d785b"],
   [66, 5533, "d7040e03d"],
   [67, 5543, "da97fe2d70"],
+  [68, 5552, "af800fd399"],
+  [69, 5562, "3145454f43"],
+  [70, 5563, "b06a3edc65"],
+  [71, 5564, "eada2aa7dd"],
+  [72, 5565, "07ac91d602"],
+  [73, 5566, "6f21c0432e"],
+  [74, 5567, "8a420bc402"],
+  [75, 5568, "86f40b34b0"],
+  [76, 5569, "66fbe814ba"],
+  [77, 5572, "d4f6d75936"],
+  [78, 5573, "466be4eeac"],
+  [79, 5576, "185d49ba9f"],
+  [80, 5582, "b6c6948a32"],
+  [81, 5583, "e65a078d37"],
+  [82, 5585, "7fad0210b5"],
+  [83, 5586, "c17902442d"],
 ] as const;
 
 const p2_11FileExpectations = [

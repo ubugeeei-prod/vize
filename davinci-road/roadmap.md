@@ -113,18 +113,19 @@ holds or improves — this phase should be a measurable win, not a wash.
   timing, remark emission) land with the pass manager itself, so the DevTool's
   data feed exists from the first S2 build.
 
-**Current execution ledger (2026-08-31):** [17 of 22 tasks are complete](./plan/phase-2.md#current-execution-ledger-2026-08-31).
+**Current execution ledger (2026-09-01):** [17 of 22 tasks are complete](./plan/phase-2.md#current-execution-ledger-2026-09-01).
 P2-9 is now complete: the hydrated corpus run compiled 41,580 files at zero
 divergence and measured the retained-`None` residual at 11.73%. P2-11 remains
 the active blocked series; P2-12b, P2-16, P2-17 and P2-20 are untouched
-because their dependency gates remain open. P2-11 has 67 landed installments
-through [#5543](https://github.com/ubugeeei-prod/vize/pull/5543). The latest
-increments pin nested interactive recovery identity through the S2 comparison
-lane, raw handler-expression parity, dynamic-component directive patch flags
-template-wrapper component props and component class binds, on top of
-event/model/slot residuals, expression-edge admission, the DOM corpus lane, and
-the late patch-site witnesses; the hydrated zero-divergence evidence run and
-production-lane switch are still open.
+because their dependency gates remain open. P2-11 has 83 landed installments
+through [#5586](https://github.com/ubugeeei-prod/vize/pull/5586). The latest
+increments pin nested interactive recovery identity, raw handler-expression
+parity, dynamic-component directive patch flags, template-wrapper component
+props, component class binds, residual component prop hoists, helper preamble
+ordering, slot branch key reservations, foreign SVG hoists, `v-pre` inert text
+and the final DOM corpus residuals. Real Project Matrix run `33531193323`
+recorded canonical hydrated zero-divergence evidence over 146 gitlinks, 42,668
+files and 42,279 compared templates; the production-lane switch is still open.
 The executable fixture inventory is 146 gitlinks / 142 ecosystem projects;
 fixture checkout hydration is deliberately not a project-count source.
 

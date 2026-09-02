@@ -282,7 +282,8 @@ test("P2-11 records current installments without presenting stale remainders", (
   for (const pr of [
     4933, 5011, 5178, 5183, 5198, 5200, 5203, 5205, 5207, 5210, 5212, 5214, 5359, 5360, 4862, 5363,
     5373, 5376, 5379, 5380, 5381, 5386, 5387, 5390, 5391, 5396, 5398, 5399, 5400, 5401, 5404, 5405,
-    5467, 5515, 5520, 5531, 5536, 5533, 5543,
+    5467, 5515, 5520, 5531, 5536, 5533, 5543, 5552, 5562, 5563, 5564, 5565, 5566, 5567, 5568, 5569,
+    5572, 5573, 5576, 5582, 5583, 5585, 5586,
   ]) {
     assert.match(text.p2_11, new RegExp(`#${pr}`, "u"));
   }
@@ -295,7 +296,6 @@ test("P2-11 records current installments without presenting stale remainders", (
   assert.doesNotMatch(text.p2_11, /\*\*malformed slot fact gaps\*\*/);
   assertP2_11InstallmentFiles();
 });
-
 test("suite registry debt and the TS-52 transport decision stay resolved", () => {
   const maximum = suiteMaximum(text.suites);
   assert.equal(maximum, 52);
