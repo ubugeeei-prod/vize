@@ -213,23 +213,6 @@ function workflowSteps(workflow: string, jobName: string) {
   return parsed.jobs?.[jobName]?.steps ?? [];
 }
 
-function runtimePackageManagerActionSteps() {
-  const parsed = parse(
-    readRepoFile(".github", "actions", "setup-runtime-package-managers", "action.yml"),
-  ) as {
-    runs?: {
-      steps?: Array<{
-        name?: string;
-        run?: string;
-        shell?: string;
-        uses?: string;
-        with?: Record<string, unknown>;
-      }>;
-    };
-  };
-  return parsed.runs?.steps ?? [];
-}
-
 test("the release runtime smoke runs the fresh-project matrix", () => {
   const runtime = readRepoFile("legacy-tools", "npm", "smoke-release-runtime.mjs");
   // The context keys the fresh-project driver needs, independent of the order
@@ -291,35 +274,7 @@ function assertRuntimeSmokePackageManagers(workflow: string, jobName: string) {
   );
 }
 
-function assertRuntimePackageManagerAction() {
-  const steps = runtimePackageManagerActionSteps();
-  const setupIndex = steps.findIndex((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
-  const shimsIndex = steps.findIndex((step) => step.name === "Enable package manager shims");
-  const bunIndex = steps.findIndex((step) => step.name === "Install Bun package manager");
-  assert.notEqual(setupIndex, -1, "runtime setup must install Node through setup-vp");
-  assert.notEqual(shimsIndex, -1, "runtime setup must expose pnpm/yarn Corepack shims");
-  assert.notEqual(bunIndex, -1, "runtime setup must install the bun matrix manager");
-  assert.ok(
-    setupIndex < shimsIndex && shimsIndex < bunIndex,
-    "runtime managers must be installed in Node/Corepack/Bun order",
-  );
-  assert.equal(
-    steps[setupIndex].uses,
-    "voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa",
-  );
-  assert.deepEqual(steps[setupIndex].with, {
-    "node-version-file": "${{ inputs.node-version-file }}",
-    cache: "${{ inputs.cache }}",
-    "run-install": false,
-  });
-  assert.equal(steps[shimsIndex].shell, "bash");
-  assert.equal(steps[shimsIndex].run, "corepack enable");
-  assert.equal(steps[bunIndex].uses, "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6");
-  assert.deepEqual(steps[bunIndex].with, { "bun-version": "1.3.14" });
-}
-
 test("fresh install runtime smokes expose every package manager they matrix", () => {
-  assertRuntimePackageManagerAction();
   assertRuntimeSmokePackageManagers("native-smoke.yml", "fresh-install-smoke");
   assertRuntimeSmokePackageManagers("release.yml", "smoke-release-packages");
 });

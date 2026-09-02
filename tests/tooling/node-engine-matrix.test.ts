@@ -8,6 +8,13 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 const supportedNodeMajors = [22, 24] as const;
 
 interface PackageJson {
+  devEngines?: {
+    runtime?: {
+      name?: string;
+      onFail?: string;
+      version?: string;
+    };
+  };
   engines?: Record<string, string>;
   name?: string;
   private?: boolean;
@@ -43,10 +50,15 @@ test("published npm packages declare Node engines covered by CI", () => {
 
 test("current and pinned Node runtimes are represented in the support matrix", () => {
   const currentMajor = Number.parseInt(process.versions.node.split(".")[0] ?? "", 10);
-  const pinnedMajor = Number.parseInt(
-    fs.readFileSync(path.join(root, ".node-version"), "utf8").trim().split(".")[0] ?? "",
-    10,
-  );
+  const rootPackage = JSON.parse(
+    fs.readFileSync(path.join(root, "package.json"), "utf8"),
+  ) as PackageJson;
+  const runtime = rootPackage.devEngines?.runtime;
+  assert.ok(runtime);
+  assert.equal(runtime?.name, "node");
+  assert.equal(runtime?.version, "24.14.0");
+  assert.equal(runtime?.onFail, "download");
+  const pinnedMajor = Number.parseInt(runtime.version?.split(".")[0] ?? "", 10);
 
   assert.ok(supportedNodeMajors.includes(currentMajor as (typeof supportedNodeMajors)[number]));
   assert.ok(supportedNodeMajors.includes(pinnedMajor as (typeof supportedNodeMajors)[number]));

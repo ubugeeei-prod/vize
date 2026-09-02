@@ -29,7 +29,7 @@ The bridge is optimized around Oxlint's per-rule execution model:
 
 ## Installation
 
-`oxlint-plugin-vize` targets Node 22 and Node 24+ (`^22 || >= 24`). In this repository, Vite+ reads `.node-version` for you, so the usual setup is:
+`oxlint-plugin-vize` targets Node 22 and Node 24+ (`^22 || >= 24`). In this repository, Vite+ reads `package.json#devEngines.runtime` for you, so the usual setup is:
 
 ```bash
 vp install

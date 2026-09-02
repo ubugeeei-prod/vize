@@ -41,5 +41,12 @@
     "@typescript/typescript-win32-arm64": "catalog:corsa-runtime",
     "@typescript/typescript-win32-x64": "catalog:corsa-runtime"
   },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "24.14.0",
+      "onFail": "download"
+    }
+  },
   "packageManager": "pnpm@12.1.0"
 }

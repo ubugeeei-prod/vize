@@ -13,7 +13,7 @@ title: 贡献
 
 ## 布置
 
-用`.node-version`的Node.js版本和`rust-toolchain.toml`的Rust版本。该
+使用 `package.json#devEngines.runtime` 的 Node.js 开发 runtime 和 `rust-toolchain.toml` 的 Rust 版本。该
 workspace 在 `Cargo.toml` 中声明了最低支持的 Rust 版本（MSRV）的 `1.95.0`
 （`[workspace.package].rust-version`）;贡献必须按该版本编译。
 

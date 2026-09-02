@@ -128,7 +128,7 @@ jobs:
 
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version-file: "head/.node-version"
+          node-version-file: "head/package.json"
           cache: true
           run-install: false
 

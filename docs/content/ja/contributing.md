@@ -13,8 +13,8 @@ PR を開くのではなく、調査結果を報告するためにここにい�
 
 ## 設定
 
-Node.js バージョンは `.node-version` から、Rust バージョンは `rust-toolchain.toml` から使用します。の
-ワークスペースは、`Cargo.toml` で `1.95.0` のサポートされる最小 Rust バージョン (MSRV) を宣言します
+Node.js の開発用 runtime は `package.json#devEngines.runtime` から、Rust バージョンは
+`rust-toolchain.toml` から使用します。ワークスペースは、`Cargo.toml` で `1.95.0` のサポートされる最小 Rust バージョン (MSRV) を宣言します
 (`[workspace.package].rust-version`);コントリビューションはそのバージョンでコンパイルする必要があります。
 
 デフォルトの Nix シェルには、再現可能なローカル ツールチェーンが含まれています。 Blacksmith テストボックスのサポートは

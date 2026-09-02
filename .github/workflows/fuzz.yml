@@ -137,11 +137,12 @@ jobs:
 
       # The runner image does not define this repository's Node floor, and
       # seed_corpus.mjs uses `fs.globSync` which is Node 22+. Pin to the repo's
-      # `.node-version` so the script runs on the same Node line as `vp` /
-      # `node-engine-compat`.
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      # `package.json#devEngines.runtime` so the script runs on the same Node
+      # line as `vp` / `node-engine-compat`.
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version-file: ".node-version"
+          node-version-file: "package.json"
+          run-install: false
 
       - name: Seed fuzz corpus from repository fixtures
         run: rust-script tools/commands/ci/fuzz/seed_corpus.rs

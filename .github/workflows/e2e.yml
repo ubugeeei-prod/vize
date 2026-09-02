@@ -63,7 +63,7 @@ jobs:
               - '.github/workflows/e2e.yml'
               - '.cargo/**'
               - '.gitmodules'
-              - '.node-version'
+              - 'package.json'
               - 'Cargo.lock'
               - 'Cargo.toml'
               - 'crates/**'
@@ -74,7 +74,6 @@ jobs:
               - 'npm/framework/nuxt-lint-config/**'
               - 'npm/builder/vite-musea/**'
               - 'npm/framework/musea-nuxt/**'
-              - 'package.json'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
               - 'rust-toolchain.toml'
@@ -221,7 +220,7 @@ jobs:
       - uses: ./.github/actions/hydrate-app-fixtures
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version-file: ".node-version"
+          node-version-file: "package.json"
           cache: true
           run-install: false
       - uses: ./.github/actions/setup-moonbit

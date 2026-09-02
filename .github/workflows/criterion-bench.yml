@@ -75,7 +75,7 @@ jobs:
       # script never runs under an unexpected runner-default Node version.
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version-file: "head/.node-version"
+          node-version-file: "head/package.json"
           cache: true
           run-install: false
 
@@ -165,7 +165,7 @@ jobs:
       # The corpus generator and guard driver are plain Node (no npm deps).
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version-file: ".node-version"
+          node-version-file: "package.json"
           cache: true
           run-install: false
 

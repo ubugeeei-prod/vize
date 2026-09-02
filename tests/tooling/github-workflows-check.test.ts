@@ -77,20 +77,6 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
   }
 });
 
-test("check workflow runs declared Node engine compatibility matrix", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
-  const job = workflowJobBody(workflow, "node-engine-compat");
-
-  assert.match(job, /node-version:\s*\["22", "24"\]/);
-  assert.match(job, /echo "\$\{\{\s*matrix\.node-version\s*\}\}" > \.node-version\.ci/);
-  assert.match(job, /node-version-file:\s*"\.node-version\.ci"/);
-  assert.match(
-    job,
-    /node --test tests\/tooling\/node-engine-matrix\.test\.ts tests\/tooling\/package-manifests\.test\.ts/,
-  );
-  assert.doesNotMatch(job, /vscode-typescript-vue-plugin\.test\.ts/);
-});
-
 test("check workflow only runs SemVer checks with an exact Git event baseline", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const job = workflowJobBody(workflow, "semver-checks");

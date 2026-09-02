@@ -41,7 +41,7 @@ jobs:
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           cache: true
-          node-version-file: ".node-version"
+          node-version-file: "package.json"
           run-install: false
       - uses: ./.github/actions/setup-moonbit
       - name: Install package build dependencies

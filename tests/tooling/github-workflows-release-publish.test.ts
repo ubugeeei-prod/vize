@@ -90,7 +90,7 @@ test("release workflow does not pin a separate hard-coded Node version for VS Co
   const workflow = readRepoFile(".github", "workflows", "release.yml");
 
   assert.doesNotMatch(workflow, /node-version:\s*"24\.14\.0"/);
-  assert.match(workflow, /node-version-file:\s*"\.node-version"/);
+  assert.match(workflow, /node-version-file:\s*"package\.json"/);
 });
 
 test("release workflow overwrites existing GitHub release assets when a tag is re-driven", () => {

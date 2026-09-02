@@ -11,7 +11,7 @@ const PLATFORM_MATRIX = [
 
 const RELEVANT_PATHS = [
   '".github/workflows/fresco.yml"',
-  '".node-version"',
+  '"package.json"',
   '"Cargo.lock"',
   '"Cargo.toml"',
   '"crates/vize_fresco/**"',
@@ -62,7 +62,7 @@ test("fresco JS lane checks, builds, and tests the package on all three platform
   assertLfCheckout(job);
   assert.match(job, /timeout-minutes:\s*20\b/);
   assert.match(job, /fail-fast:\s*false/);
-  assert.match(job, /node-version-file:\s*"\.node-version"/);
+  assert.match(job, /node-version-file:\s*"package\.json"/);
   assert.match(
     job,
     /vp install --frozen-lockfile --prefer-offline --filter '\.\/npm\/fresco\.\.\.'/,

@@ -59,7 +59,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version-file: ".node-version"
+          node-version-file: "package.json"
           cache: true
           run-install: false
       - uses: ./.github/actions/setup-js-check-runtime
@@ -139,7 +139,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version-file: ".node-version"
+          node-version-file: "package.json"
           cache: true
           run-install: false
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
@@ -165,11 +165,9 @@ jobs:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: Select Node compatibility version
-        run: echo "${{ matrix.node-version }}" > .node-version.ci
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version-file: ".node-version.ci"
+          node-version: ${{ matrix.node-version }}
           cache: true
           run-install: false
       - name: Install JS dependencies
@@ -186,7 +184,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version-file: ".node-version"
+          node-version-file: "package.json"
           cache: true
           run-install: false
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
@@ -215,7 +213,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version-file: ".node-version"
+          node-version-file: "package.json"
           cache: true
           run-install: false
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
@@ -243,7 +241,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version-file: ".node-version"
+          node-version-file: "package.json"
           cache: true
           run-install: false
       - uses: ./.github/actions/setup-moonbit
@@ -285,7 +283,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version-file: ".node-version"
+          node-version-file: "package.json"
           cache: true
           run-install: false
       - uses: ./.github/actions/setup-moonbit
@@ -330,7 +328,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version-file: ".node-version"
+          node-version-file: "package.json"
           cache: true
           run-install: false
       - uses: ./.github/actions/setup-moonbit
@@ -362,7 +360,7 @@ jobs:
           wild-version: "0.9.0"
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version-file: ".node-version"
+          node-version-file: "package.json"
           cache: true
           run-install: true
       - uses: ./.github/actions/setup-rust-sticky-cache
@@ -397,7 +395,7 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version-file: ".node-version"
+          node-version-file: "package.json"
           run-install: false
 
       # The fixture-coverage runner evaluates the SFC Pkl fixtures.
@@ -420,7 +418,7 @@ jobs:
 
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version-file: ".node-version"
+          node-version-file: "package.json"
           cache: true
           run-install: false
 
@@ -477,7 +475,7 @@ jobs:
 
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version-file: ".node-version"
+          node-version-file: "package.json"
           cache: true
           run-install: false
 
@@ -561,7 +559,7 @@ jobs:
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version-file: ".node-version"
+          node-version-file: "package.json"
           cache: true
           run-install: false
 

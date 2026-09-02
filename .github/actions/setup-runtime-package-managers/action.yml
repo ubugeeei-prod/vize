@@ -1,9 +1,13 @@
 name: Setup runtime package managers
 description: Install Vite+, Node.js, Corepack shims, and Bun for release runtime smokes.
 inputs:
+  node-version:
+    description: Node version passed directly to setup-vp.
+    required: false
   node-version-file:
     description: Node version file passed to setup-vp.
-    required: true
+    required: false
+    default: package.json
   cache:
     description: Whether setup-vp should cache dependencies.
     required: false
@@ -11,10 +15,18 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Setup Vite+ and Node.js
+    - name: Setup Vite+ and Node.js from version file
+      if: inputs.node-version == ''
       uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
       with:
         node-version-file: ${{ inputs.node-version-file }}
+        cache: ${{ inputs.cache }}
+        run-install: false
+    - name: Setup Vite+ and Node.js from matrix version
+      if: inputs.node-version != ''
+      uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      with:
+        node-version: ${{ inputs.node-version }}
         cache: ${{ inputs.cache }}
         run-install: false
     - name: Enable package manager shims

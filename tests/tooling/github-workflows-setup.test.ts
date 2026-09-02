@@ -242,8 +242,8 @@ test("native smoke workflow fresh-installs runtime tarballs across supported tar
     assert.match(job, new RegExp(`runner:\\s*${runner}[\\s\\S]*target:\\s*${target}`));
   }
   assert.match(job, /node-version:\s*\["22", "24"\]/);
-  assert.match(job, /echo "\$\{\{\s*matrix\.node-version\s*\}\}" > \.node-version\.ci/);
-  assert.match(job, /node-version-file:\s*"\.node-version\.ci"/);
+  assert.doesNotMatch(job, /\.node-version\.ci/);
+  assert.match(job, /node-version:\s*\$\{\{\s*matrix\.node-version\s*\}\}/);
   assert.match(job, /vp exec napi create-npm-dirs/);
   assert.match(job, /vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish/);
   assert.match(

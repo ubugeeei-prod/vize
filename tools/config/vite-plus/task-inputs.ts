@@ -102,9 +102,8 @@ const taskConfigInputs = ["vite.config.ts", "tools/config/vite-plus/**"];
  * surely as changing package source code.
  */
 export const cacheInputs = {
-  workspace: [".node-version", "package.json", ...taskConfigInputs, "pnpm-lock.yaml"],
+  workspace: ["package.json", ...taskConfigInputs, "pnpm-lock.yaml"],
   jsChecks: [
-    ".node-version",
     "package.json",
     ...taskConfigInputs,
     "pnpm-lock.yaml",
@@ -124,7 +123,6 @@ export const cacheInputs = {
     "playground/e2e/**",
   ],
   rust: [
-    ".node-version",
     "package.json",
     ...taskConfigInputs,
     "Cargo.toml",
@@ -134,7 +132,6 @@ export const cacheInputs = {
     "tools/**",
   ],
   e2e: [
-    ".node-version",
     "package.json",
     ...taskConfigInputs,
     "pnpm-lock.yaml",

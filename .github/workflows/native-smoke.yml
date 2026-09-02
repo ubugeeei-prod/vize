@@ -53,7 +53,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version-file: ".node-version"
+          node-version-file: "package.json"
           cache: true
           run-install: false
       - name: Setup MSVC toolchain (Windows)
@@ -140,13 +140,10 @@ jobs:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: Select Node compatibility version
-        shell: bash
-        run: echo "${{ matrix.node-version }}" > .node-version.ci
       - name: Setup runtime package managers
         uses: ./.github/actions/setup-runtime-package-managers
         with:
-          node-version-file: ".node-version.ci"
+          node-version: ${{ matrix.node-version }}
       - name: Setup MSVC toolchain (Windows)
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
