@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
 import { globSync, readFileSync, statSync } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
@@ -13,7 +14,7 @@ export function snapshotFormatterInputs(cwd, patterns) {
         globSync(pattern, { cwd, exclude: [".yarn/**", "**/node_modules/**"] }),
       ),
     ),
-  ].sort((left, right) => left.localeCompare(right));
+  ].sort(byteOrder);
   const digest = createHash("sha256");
   for (const inputPath of inputPaths) {
     const absolute = resolve(cwd, inputPath);
@@ -129,7 +130,7 @@ export function validateFormatterOutput(
 /** Build the canonical evidence shared by formatter check and write validation. */
 export function createFormatterChangeEvidence(checkedFileCount, changedPaths) {
   const digest = createHash("sha256");
-  for (const inputPath of [...changedPaths].sort((left, right) => left.localeCompare(right))) {
+  for (const inputPath of [...changedPaths].sort(byteOrder)) {
     digest.update(inputPath);
     digest.update("\0");
   }
@@ -163,6 +164,10 @@ export function validateFormatterChangeEvidence(evidence, label = "formatter cha
   if (!/^[0-9a-f]{64}$/.test(evidence.changedPathsSha256)) {
     throw new Error(`invalid ${label} changedPathsSha256`);
   }
+}
+
+function byteOrder(left, right) {
+  return Buffer.compare(Buffer.from(left), Buffer.from(right));
 }
 
 function parseCount(line, pattern, label) {
