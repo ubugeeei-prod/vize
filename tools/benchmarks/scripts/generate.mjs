@@ -774,10 +774,10 @@ export default [
 `;
   writeFileSync(join(benchDir, "eslint.config.mjs"), eslintConfig);
   writeLog("Generated eslint.config.mjs");
-
   // Generate vize.config.json so benchmark runs cover shared config loading.
   const vizeConfig = {
     linter: {
+      preset: "ecosystem",
       rules: {
         "vue/prop-name-casing": "off",
       },

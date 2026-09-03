@@ -34,6 +34,63 @@ fn output_details(output: &std::process::Output) -> vize_s0::String {
 }
 
 #[test]
+fn lint_without_config_uses_happy_path_instead_of_ecosystem() {
+    let project_root = temp_project_dir("default-happy-path");
+    write_project_file(
+        &project_root,
+        "src/App.vue",
+        r#"<template><RouterLink to="/settings">Settings</RouterLink></template>"#,
+    );
+
+    let default = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args(["lint", "--no-config", "--format", "json", "src/App.vue"])
+        .output()
+        .unwrap();
+    assert!(default.status.success(), "{}", output_details(&default));
+    let default_json: serde_json::Value =
+        serde_json::from_slice(&default.stdout).unwrap_or_else(|_| {
+            panic!(
+                "default happy-path lint must emit JSON: {}",
+                output_details(&default)
+            )
+        });
+    assert_eq!(
+        default_json[0]["messages"],
+        serde_json::json!([]),
+        "{}",
+        output_details(&default)
+    );
+
+    let ecosystem = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args([
+            "lint",
+            "--preset",
+            "ecosystem",
+            "--no-config",
+            "--format",
+            "json",
+            "src/App.vue",
+        ])
+        .output()
+        .unwrap();
+    assert!(
+        ecosystem.status.success(),
+        "explicit ecosystem should report the static RouterLink target: {}",
+        output_details(&ecosystem)
+    );
+    assert!(
+        String::from_utf8_lossy(&ecosystem.stdout)
+            .contains("ecosystem/vue-router-prefer-named-link"),
+        "{}",
+        output_details(&ecosystem)
+    );
+
+    let _ = fs::remove_dir_all(project_root);
+}
+
+#[test]
 fn lint_limits_nuxt_link_guidance_to_nuxt_preset() {
     let project_root = temp_project_dir("nuxt-link-preset-boundary");
     write_project_file(

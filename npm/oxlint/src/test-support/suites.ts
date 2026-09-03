@@ -10,6 +10,7 @@ await Promise.all([
   import("../cli/output.test.ts"),
   import("../cli/oxlint.test.ts"),
   import("../sfc-blocks.test.ts"),
+  import("../vite-plus-flat-config.test.ts"),
   import("../vite-plus-lint.test.ts"),
   import("../nuxt-preset.test.ts"),
 ]);

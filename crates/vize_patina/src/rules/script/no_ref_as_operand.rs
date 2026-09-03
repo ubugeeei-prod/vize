@@ -29,15 +29,16 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
     AssignmentExpression, BinaryExpression, BindingPattern, ConditionalExpression,
     DoWhileStatement, Expression, ForStatement, Function, IfStatement, LogicalExpression, Program,
-    Statement, UnaryExpression, UpdateExpression, VariableDeclaration, WhileStatement,
+    Statement, TemplateLiteral, UnaryExpression, UpdateExpression, VariableDeclaration,
+    WhileStatement,
 };
 use oxc_ast_visit::{
     Visit,
     walk::{
         walk_assignment_expression, walk_binary_expression, walk_conditional_expression,
         walk_do_while_statement, walk_for_statement, walk_function, walk_if_statement,
-        walk_logical_expression, walk_program, walk_unary_expression, walk_update_expression,
-        walk_while_statement,
+        walk_logical_expression, walk_program, walk_template_literal, walk_unary_expression,
+        walk_update_expression, walk_while_statement,
     },
 };
 use oxc_span::Span;
@@ -198,6 +199,13 @@ impl<'a> Visit<'a> for RefOperandVisitor<'_> {
     fn visit_conditional_expression(&mut self, it: &ConditionalExpression<'a>) {
         self.check_operand(&it.test);
         walk_conditional_expression(self, it);
+    }
+
+    fn visit_template_literal(&mut self, it: &TemplateLiteral<'a>) {
+        for expression in &it.expressions {
+            self.check_operand(expression);
+        }
+        walk_template_literal(self, it);
     }
 
     fn visit_if_statement(&mut self, it: &IfStatement<'a>) {

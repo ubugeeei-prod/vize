@@ -5,11 +5,21 @@ export type {
   OxlintRuleEntry,
   OxlintRuleSeverity,
   VizeRuleConfigOptions,
+  VizeRuleConfigPreset,
+  VizeRuleConfigPresetInput,
 } from "./configs.js";
 export { createVizeLintConfig, VIZE_JS_PLUGIN_SPECIFIER } from "./vite-plus.js";
+export {
+  createVizeLintFlatConfig,
+  defineVizeLintConfig,
+  flatConfigs,
+} from "./vite-plus-flat-config.js";
 export type {
   VitePlusLintPlugin,
   VizeLintConfig,
   VizeLintConfigOptions,
+  VizeLintConfigSettings,
   VizeLintPreset,
+  VizeLintPresetInput,
 } from "./vite-plus.js";
+export type { VizeLintConfigFragment, VizeLintFlatConfig } from "./vite-plus-flat-config.js";

@@ -72,8 +72,8 @@ picture.
 | uses Vite+ **and** runs `oxlint` directly       | both, generated from the same preset so they cannot drift apart          |
 | uses Vite+ but its Vite config cannot be edited | nothing — see [When Init Refuses To Edit](#when-init-refuses-to-edit)    |
 
-The `lint` block is emitted through `createVizeLintConfig()`, which returns the whole block rather
-than fragments, so the `jsPlugins` entry that loads the bridge cannot go missing:
+The `lint` block is emitted through `createVizeLintConfig()`, which returns a complete block so the
+`jsPlugins` entry that loads the bridge cannot go missing:
 
 ```ts
 // vite.config.ts
@@ -82,7 +82,7 @@ import { createVizeLintConfig } from "oxlint-plugin-vize";
 
 export default defineConfig({
   lint: createVizeLintConfig({
-    preset: "general-recommended",
+    preset: "happy-path",
     settings: {
       helpLevel: "short",
     },
@@ -102,11 +102,11 @@ export default defineConfig({
   jsPlugins: ["oxlint-plugin-vize"],
   settings: {
     vize: {
-      preset: "general-recommended",
+      preset: "happy-path",
       helpLevel: "short",
     },
   },
-  rules: configs.recommended,
+  rules: configs.happyPath,
 });
 ```
 
@@ -191,7 +191,7 @@ spread createVizeLintConfig() into it by hand
     export default defineConfig({
       lint: {
         ...createVizeLintConfig({
-          preset: "general-recommended",
+          preset: "happy-path",
           settings: {
             helpLevel: "short",
           },

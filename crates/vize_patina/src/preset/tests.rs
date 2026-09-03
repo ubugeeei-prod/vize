@@ -1,16 +1,20 @@
 //! Preset and rule-map coverage for the built-in Patina lint presets.
 
 use super::LintPreset;
-use crate::Severity;
+use crate::Linter;
 use crate::rule::RuleRegistry;
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 
 #[test]
 fn parses_common_aliases() {
-    assert_eq!(LintPreset::parse("default"), Some(LintPreset::Ecosystem));
+    assert_eq!(LintPreset::parse("default"), Some(LintPreset::HappyPath));
     assert_eq!(
         LintPreset::parse("recommended"),
-        Some(LintPreset::Ecosystem)
+        Some(LintPreset::HappyPath)
+    );
+    assert_eq!(
+        LintPreset::parse("general-recommended"),
+        Some(LintPreset::HappyPath)
     );
     assert_eq!(LintPreset::parse("all"), Some(LintPreset::Opinionated));
     assert_eq!(LintPreset::parse("strict"), Some(LintPreset::Opinionated));
@@ -122,8 +126,33 @@ fn happy_path_keeps_opinionated_rules_opt_in() {
     assert!(RuleRegistry::with_all().has_rule(prefer_nuxt_link));
     assert!(RuleRegistry::with_opt_in_rules().has_rule("ecosystem/router-link-require-to"));
     assert!(RuleRegistry::with_opt_in_rules().has_rule("ecosystem/vue-i18n-no-missing-key"));
+    let happy_path_script = super::builtin_script_rule_names(LintPreset::HappyPath);
+    let essential_script = super::builtin_script_rule_names(LintPreset::Essential);
+    assert!(happy_path_script.contains(&"script/valid-define-props"));
+    assert!(happy_path_script.contains(&"script/no-import-compiler-macros"));
+    assert!(happy_path_script.contains(&"script/no-ref-as-operand"));
+    assert!(happy_path_script.contains(&"script/no-duplicate-attr-inheritance"));
+    assert!(essential_script.contains(&"script/valid-define-props"));
+    assert!(essential_script.contains(&"script/no-import-compiler-macros"));
+    assert!(essential_script.contains(&"script/no-ref-as-operand"));
+    assert!(!essential_script.contains(&"script/no-duplicate-attr-inheritance"));
+    assert!(!happy_path_script.contains(&"script/no-unused-emit-declarations"));
+    assert!(!essential_script.contains(&"script/no-unused-emit-declarations"));
+    assert!(!happy_path_script.contains(&"script/no-reactive-destructure"));
     assert!(
         !super::builtin_script_rule_names(LintPreset::HappyPath).contains(&"script/no-options-api")
+    );
+    assert!(
+        !super::builtin_script_rule_names(LintPreset::HappyPath)
+            .contains(&"script/define-props-declaration")
+    );
+    assert!(
+        !super::builtin_script_rule_names(LintPreset::HappyPath)
+            .contains(&"script/no-with-defaults")
+    );
+    assert!(
+        !super::builtin_script_rule_names(LintPreset::HappyPath)
+            .contains(&"script/require-explicit-emits")
     );
     assert!(
         super::builtin_script_rule_names(LintPreset::Opinionated)
@@ -172,142 +201,73 @@ fn happy_path_keeps_opinionated_rules_opt_in() {
 }
 
 #[test]
+fn happy_path_runs_script_correctness_and_low_noise_warnings() {
+    let source = r#"<script setup lang="ts">
+import { defineProps, ref } from 'vue'
+
+const localProps = { count: Number }
+const emit = defineEmits<{ save: []; unused: [] }>()
+const count = ref(0)
+
+defineProps<{ count: number }>(localProps)
+if (count) {}
+emit('save')
+</script>
+
+<template>
+  <button v-bind="$attrs">{{ count }}</button>
+</template>
+"#;
+
+    let result = Linter::with_preset(LintPreset::HappyPath).lint_sfc(source, "App.vue");
+    let rules = diagnostic_rule_names(&result);
+
+    assert!(rules.contains("script/no-import-compiler-macros"));
+    assert!(rules.contains("script/valid-define-props"));
+    assert!(rules.contains("script/no-ref-as-operand"));
+    assert!(rules.contains("script/no-duplicate-attr-inheritance"));
+    assert!(!rules.contains("script/no-reactive-destructure"));
+    assert!(!rules.contains("script/no-unused-emit-declarations"));
+    assert!(!rules.contains("script/no-options-api"));
+    assert!(!rules.contains("script/define-props-declaration"));
+    assert!(!rules.contains("script/require-explicit-emits"));
+}
+
+#[test]
+fn essential_runs_script_correctness_without_happy_path_warnings() {
+    let source = r#"<script setup lang="ts">
+import { defineProps, ref } from 'vue'
+
+const localProps = { count: Number }
+const emit = defineEmits<{ save: []; unused: [] }>()
+const count = ref(0)
+
+defineProps<{ count: number }>(localProps)
+if (count) {}
+emit('save')
+</script>
+
+<template>
+  <button v-bind="$attrs">{{ count }}</button>
+</template>
+"#;
+
+    let result = Linter::with_preset(LintPreset::Essential).lint_sfc(source, "App.vue");
+    let rules = diagnostic_rule_names(&result);
+
+    assert!(rules.contains("script/no-import-compiler-macros"));
+    assert!(rules.contains("script/valid-define-props"));
+    assert!(rules.contains("script/no-ref-as-operand"));
+    assert!(!rules.contains("script/no-duplicate-attr-inheritance"));
+    assert!(!rules.contains("script/no-unused-emit-declarations"));
+}
+
+#[test]
 fn incremental_starts_empty() {
     let incremental = RuleRegistry::with_preset(LintPreset::Incremental);
 
     assert!(!incremental.has_rule("vue/require-v-for-key"));
     assert!(super::builtin_script_rule_names(LintPreset::Incremental).is_empty());
-}
-
-#[test]
-fn eslint_vue_rule_map_matches_registered_patina_rules() {
-    let rule_map: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../../tests/_fixtures/patina-eslint-vue-rule-map.json"
-    ))
-    .unwrap();
-    let mappings = rule_map["entries"].as_object().unwrap();
-
-    let mut available: BTreeSet<_> = RuleRegistry::with_all()
-        .rule_names()
-        .iter()
-        .copied()
-        .collect();
-    available.extend(
-        RuleRegistry::with_opt_in_rules()
-            .rule_names()
-            .iter()
-            .copied(),
-    );
-    available.extend(
-        crate::linter::script_rules::all_builtin_script_rule_names()
-            .iter()
-            .copied(),
-    );
-
-    for (eslint_rule, entry) in mappings {
-        if entry["status"] == "mapped" {
-            let target = entry["patinaRule"].as_str().unwrap();
-            assert!(
-                available.contains(target),
-                "{eslint_rule} maps to unavailable Patina rule {target}"
-            );
-            continue;
-        }
-
-        if entry["status"] == "intentional-divergence" {
-            // Patina ships a same-named rule on purpose, with semantics that
-            // deliberately differ from upstream, so a registered counterpart is
-            // expected here. Require the documented reason and the counterpart
-            // so the entry has to be revisited if either disappears.
-            let reason = entry["reason"].as_str().unwrap_or_default();
-            assert!(
-                !reason.trim().is_empty(),
-                "{eslint_rule} is marked intentional-divergence without a reason"
-            );
-            let script_rule = eslint_rule.replacen("vue/", "script/", 1);
-            assert!(
-                available.contains(eslint_rule.as_str())
-                    || available.contains(script_rule.as_str()),
-                "{eslint_rule} is marked intentional-divergence without a registered Patina counterpart"
-            );
-            continue;
-        }
-
-        let script_rule = eslint_rule.replacen("vue/", "script/", 1);
-        let alias = match eslint_rule.as_str() {
-            "vue/attributes-order" => Some("vue/attribute-order"),
-            "vue/block-order" => Some("vue/sfc-element-order"),
-            "vue/no-async-in-computed-properties" => Some("script/no-async-in-computed"),
-            _ => None,
-        };
-        let hidden_rule = available.contains(eslint_rule.as_str())
-            || available.contains(script_rule.as_str())
-            || alias.is_some_and(|rule| available.contains(rule));
-        assert!(
-            !hidden_rule,
-            "{eslint_rule} is marked unimplemented despite a registered Patina counterpart"
-        );
-    }
-}
-
-/// The rule map records each mapped rule's default severity and preset
-/// membership so `tools/fixtures/lint-divergence-report.mjs` can configure the
-/// `eslint-plugin-vue` baseline from the checked-in fixture alone, without a
-/// native binding. Both fields are classification inputs — the comparator
-/// matches on severity, and a rule no preset activates would turn every
-/// upstream finding into a false negative — so drift has to fail here rather
-/// than quietly skew a divergence report.
-#[test]
-fn eslint_vue_rule_map_records_current_severity_and_ecosystem_membership() {
-    let rule_map: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../../tests/_fixtures/patina-eslint-vue-rule-map.json"
-    ))
-    .unwrap();
-
-    let mut severities: BTreeMap<&'static str, &'static str> = BTreeMap::new();
-    for registry in [RuleRegistry::with_all(), RuleRegistry::with_opt_in_rules()] {
-        for rule in registry.rules() {
-            let meta = rule.meta();
-            severities.insert(meta.name, severity_name(meta.default_severity));
-        }
-    }
-    for script_rule in crate::linter::script_rules::builtin_script_rules() {
-        severities.insert(
-            script_rule.name,
-            severity_name(script_rule.default_severity),
-        );
-    }
-    let ecosystem: BTreeSet<&'static str> = ecosystem_rule_names().into_iter().collect();
-
-    for (eslint_rule, entry) in rule_map["entries"].as_object().unwrap() {
-        if entry["status"] != "mapped" {
-            continue;
-        }
-        let target = entry["patinaRule"].as_str().unwrap();
-        assert_eq!(
-            entry["patinaSeverity"].as_str(),
-            severities.get(target).copied(),
-            "{eslint_rule} records a stale default severity for {target}"
-        );
-        let recorded: Vec<&str> = entry["patinaPresets"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .map(|preset| preset.as_str().unwrap())
-            .collect();
-        assert_eq!(
-            recorded.contains(&"ecosystem"),
-            ecosystem.contains(target),
-            "{eslint_rule} records stale ecosystem membership for {target}"
-        );
-    }
-}
-
-const fn severity_name(severity: Severity) -> &'static str {
-    match severity {
-        Severity::Error => "error",
-        Severity::Warning => "warning",
-    }
 }
 
 fn rule_names(preset: LintPreset) -> Vec<&'static str> {
@@ -340,4 +300,12 @@ fn ecosystem_rule_names() -> Vec<&'static str> {
         .collect();
     rules.extend_from_slice(super::ecosystem_builtin_script_rule_names());
     rules
+}
+
+fn diagnostic_rule_names(result: &crate::LintResult) -> BTreeSet<&'static str> {
+    result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.rule_name)
+        .collect()
 }

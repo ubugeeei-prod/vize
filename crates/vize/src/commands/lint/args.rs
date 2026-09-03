@@ -41,7 +41,7 @@ pub struct LintArgs {
     #[arg(long, default_value = "full")]
     pub help_level: String,
 
-    /// Override the configured lint preset: ecosystem, happy-path, opinionated, essential, incremental, nuxt
+    /// Override the configured lint preset: happy-path, ecosystem, opinionated, essential, incremental, nuxt
     #[arg(long)]
     pub preset: Option<String>,
 

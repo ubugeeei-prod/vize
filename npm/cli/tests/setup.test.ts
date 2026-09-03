@@ -102,7 +102,8 @@ export default defineConfig({
     assert.equal(result.enabledVitePlusLint, true);
     assert.match(read(root, "vite.config.ts"), /from "@vizejs\/vite-plugin"/u);
     assert.match(read(root, "vite.config.ts"), /plugins: \[vue\(\)\]/u);
-    assert.match(read(root, "vite.config.ts"), /rules: vizePlusLintConfigs\.recommended/u);
+    assert.match(read(root, "vite.config.ts"), /createVizeLintConfig/u);
+    assert.match(read(root, "vite.config.ts"), /preset: "happy-path"/u);
     assert.match(read(root, "vize.config.ts"), /defineConfig/u);
     assert.equal(fs.existsSync(path.join(root, "oxlint.config.ts")), false);
 

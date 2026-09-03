@@ -14,7 +14,15 @@ fn run_lint(root: &Path, files: &[&str]) -> std::process::Output {
         .current_dir(root)
         .arg("lint")
         .args(files)
-        .args(["--no-config", "--format", "json", "--help-level", "none"])
+        .args([
+            "--no-config",
+            "--preset",
+            "ecosystem",
+            "--format",
+            "json",
+            "--help-level",
+            "none",
+        ])
         .output()
         .unwrap()
 }

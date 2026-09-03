@@ -63,7 +63,6 @@ const RESERVED_IDENTIFIERS: &[&str] = &[
     "_ctx",
     "_cache",
     "_setupState",
-    "_instance",
     "_hoisted_",
     "_createBlock",
     "_createVNode",
@@ -196,6 +195,13 @@ mod tests {
     fn test_valid_normal_identifier() {
         let linter = create_linter();
         let result = linter.lint("const props = defineProps()", 0);
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_private_instance_identifier() {
+        let linter = create_linter();
+        let result = linter.lint("const _instance = getCurrentInstance()", 0);
         assert_eq!(result.error_count, 0);
     }
 

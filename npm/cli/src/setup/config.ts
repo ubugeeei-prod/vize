@@ -79,11 +79,11 @@ export default defineConfig({
   jsPlugins: ["oxlint-plugin-vize"],
   settings: {
     vize: {
-      preset: "general-recommended",
+      preset: "happy-path",
       helpLevel: "short",
     },
   },
-  rules: configs.recommended,
+  rules: configs.happyPath,
 });
 `;
 

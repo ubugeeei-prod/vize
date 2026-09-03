@@ -6,6 +6,7 @@ import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import type { VizeLintConfig, VizeLintConfigOptions } from "../vite-plus.ts";
+import type { VizeLintConfigFragment, VizeLintFlatConfig } from "../vite-plus-flat-config.ts";
 
 /**
  * Test support for the Vite+ `lint` block contract.
@@ -53,10 +54,21 @@ interface OxlintJsonDiagnostic {
 export async function createVizeLintConfigFromDist(): Promise<
   (options?: VizeLintConfigOptions) => VizeLintConfig
 > {
-  const bundle = (await import(pathToFileURL(distEntry).href)) as {
-    createVizeLintConfig: (options?: VizeLintConfigOptions) => VizeLintConfig;
-  };
-  return bundle.createVizeLintConfig;
+  return (await loadVitePlusConfigHelpersFromDist()).createVizeLintConfig;
+}
+
+export interface VitePlusConfigHelpers {
+  createVizeLintConfig: (options?: VizeLintConfigOptions) => VizeLintConfig;
+  createVizeLintFlatConfig: (options?: VizeLintConfigOptions) => VizeLintFlatConfig;
+  defineVizeLintConfig: (
+    ...entries: readonly (VizeLintConfigFragment | VizeLintFlatConfig)[]
+  ) => VizeLintConfig;
+  flatConfigs: Record<string, VizeLintFlatConfig>;
+}
+
+export async function loadVitePlusConfigHelpersFromDist(): Promise<VitePlusConfigHelpers> {
+  const bundle = (await import(pathToFileURL(distEntry).href)) as VitePlusConfigHelpers;
+  return bundle;
 }
 
 /**

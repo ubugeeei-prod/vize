@@ -6,8 +6,8 @@
  * See `lint-target.ts` for why writing the wrong one of the two is silent.
  */
 
-/** Preset both Oxlint entry points run with. The bridge's own default. */
-export const INIT_LINT_PRESET = "general-recommended";
+/** User-facing preset alias both Oxlint entry points run with. */
+export const INIT_LINT_PRESET = "happy-path";
 
 /** `settings.vize.helpLevel` both Oxlint entry points run with. */
 export const INIT_LINT_HELP_LEVEL = "short";
@@ -87,7 +87,7 @@ export function renderTypecheckTsconfig(typescript: boolean): string {
 /**
  * Config for the `oxlint` binary.
  *
- * `.oxlintrc.json` cannot import `configs.recommended`, and the bridge only runs
+ * `.oxlintrc.json` cannot import `configs.happyPath`, and the bridge only runs
  * `vize/*` rules that appear in `rules`, so a JSON config would need every rule
  * id inlined and would rot on the next rule addition. `oxlint.config.ts` is
  * Oxlint's TypeScript config format and is auto-discovered (verified against
@@ -106,7 +106,7 @@ export default defineConfig({
       helpLevel: "${INIT_LINT_HELP_LEVEL}",
     },
   },
-  rules: configs.recommended,
+  rules: configs.happyPath,
 });
 `;
 
@@ -118,9 +118,9 @@ export const VITE_LINT_IMPORT =
  * The Vite+ `lint` block, the only Oxlint configuration `vp lint` and `vp check`
  * read.
  *
- * `createVizeLintConfig()` returns the whole block rather than fragments, which
- * is what makes the `jsPlugins` entry impossible to omit. Hand-assembling the
- * block is how a config ends up looking wired while reporting nothing.
+ * `createVizeLintConfig()` returns a complete block, which is what makes the
+ * `jsPlugins` entry impossible to omit. Hand-assembling the block is how a config
+ * ends up looking wired while reporting nothing.
  */
 export const VITE_LINT_BLOCK = `  lint: createVizeLintConfig({
     preset: "${INIT_LINT_PRESET}",

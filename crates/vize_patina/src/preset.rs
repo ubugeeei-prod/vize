@@ -6,6 +6,7 @@ use std::sync::OnceLock;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum LintPreset {
     /// General-purpose defaults that focus on the common Vue happy path.
+    #[default]
     HappyPath,
     /// Happy path rules plus stricter conventions and framework assumptions.
     Opinionated,
@@ -14,7 +15,6 @@ pub enum LintPreset {
     /// Starts with no built-in bundle so hosts can opt in rule-by-rule.
     Incremental,
     /// Broad defaults plus ecosystem integration rules, without opinionated conventions.
-    #[default]
     Ecosystem,
     /// Opinionated rules adjusted for Nuxt auto-import conventions.
     Nuxt,
@@ -45,8 +45,14 @@ impl LintPreset {
     #[inline]
     pub fn parse(value: &str) -> Option<Self> {
         match value {
-            "happy-path" | "happy_path" | "happy" => Some(Self::HappyPath),
-            "default" | "recommended" => Some(Self::Ecosystem),
+            "general-recommended"
+            | "general_recommended"
+            | "generalRecommended"
+            | "happy-path"
+            | "happy_path"
+            | "happy"
+            | "default"
+            | "recommended" => Some(Self::HappyPath),
             "opinionated" | "strict" | "all" => Some(Self::Opinionated),
             "essential" => Some(Self::Essential),
             "incremental" => Some(Self::Incremental),
@@ -59,14 +65,22 @@ impl LintPreset {
 
 const NO_SCRIPT_RULE_NAMES: &[&str] = &[];
 static ECOSYSTEM_SCRIPT_RULE_NAMES: OnceLock<Vec<&'static str>> = OnceLock::new();
+static ESSENTIAL_SCRIPT_RULE_NAMES: OnceLock<Vec<&'static str>> = OnceLock::new();
+static HAPPY_PATH_SCRIPT_RULE_NAMES: OnceLock<Vec<&'static str>> = OnceLock::new();
 static OPINIONATED_SCRIPT_RULE_NAMES: OnceLock<Vec<&'static str>> = OnceLock::new();
 static NUXT_SCRIPT_RULE_NAMES: OnceLock<Vec<&'static str>> = OnceLock::new();
 
 pub(crate) fn builtin_script_rule_names(preset: LintPreset) -> &'static [&'static str] {
     match preset {
-        LintPreset::HappyPath | LintPreset::Essential | LintPreset::Incremental => {
-            NO_SCRIPT_RULE_NAMES
-        }
+        LintPreset::HappyPath => script_rule_names_for_preset(
+            &HAPPY_PATH_SCRIPT_RULE_NAMES,
+            LintPreset::HappyPath.as_str(),
+        ),
+        LintPreset::Essential => script_rule_names_for_preset(
+            &ESSENTIAL_SCRIPT_RULE_NAMES,
+            LintPreset::Essential.as_str(),
+        ),
+        LintPreset::Incremental => NO_SCRIPT_RULE_NAMES,
         LintPreset::Ecosystem => script_rule_names_for_preset(
             &ECOSYSTEM_SCRIPT_RULE_NAMES,
             LintPreset::Ecosystem.as_str(),
@@ -111,7 +125,7 @@ const OPINIONATED_CSS_RULE_NAMES: &[&str] = &[
 /// Built-in `css/*` rules enabled by a preset.
 ///
 /// The `css/*` rules are opt-in: only the strict `opinionated`/`nuxt` presets
-/// enable them. The default `ecosystem` preset and the lighter presets enable
+/// enable them. The default `happy-path` preset and the lighter presets enable
 /// none, so existing users are unaffected. Hosts can still enable any `css/*`
 /// rule by name via `with_enabled_rules`/`with_additional_rules`.
 pub(crate) const fn builtin_css_rule_names(preset: LintPreset) -> &'static [&'static str] {
@@ -124,5 +138,7 @@ pub(crate) const fn builtin_css_rule_names(preset: LintPreset) -> &'static [&'st
     }
 }
 
+#[cfg(test)]
+mod eslint_vue_rule_map_tests;
 #[cfg(test)]
 mod tests;

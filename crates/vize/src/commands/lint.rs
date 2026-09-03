@@ -96,7 +96,7 @@ pub fn run(args: LintArgs) {
         .preset
         .as_deref()
         .or(linter_plan.plan.base.preset.as_deref())
-        .unwrap_or("ecosystem")
+        .unwrap_or("happy-path")
         .into();
     let preset = LintPreset::parse(preset_name.as_str()).unwrap_or_default();
     let resolved_rules =

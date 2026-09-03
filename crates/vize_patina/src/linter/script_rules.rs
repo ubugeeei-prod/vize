@@ -9,6 +9,7 @@ mod html_scripts;
 mod prefilter;
 mod registry;
 mod template_ast;
+mod template_context;
 
 use html_scripts::extract_inline_scripts;
 use prefilter::{
@@ -153,11 +154,15 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     // `<template>` source (`script/no-unused-emit-declarations`, where an
     // over-match only suppresses) or its parsed AST (rules that *create* a
     // finding from template evidence, where an over-match would be a false
-    // positive). The AST is parsed at most once, and only when some enabled
-    // rule asks for it.
+    // positive). The AST is parsed at most once.
     let template_allocator = vize_s0::Allocator::default();
-    let template_ast =
-        template_ast::parse_for_script_rules(linter, descriptor, &template_allocator);
+    let template_ast = template_context::descriptor_needs_template_ast(
+        linter,
+        descriptor,
+        result.filename.as_str(),
+    )
+    .then(|| template_ast::parse_for_script_rules(linter, descriptor, &template_allocator))
+    .flatten();
     let sfc_context = SfcScriptContext {
         template_source: descriptor
             .template

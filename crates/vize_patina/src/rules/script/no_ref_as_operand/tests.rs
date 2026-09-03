@@ -96,6 +96,14 @@ fn test_invalid_binary_operand() {
 }
 
 #[test]
+fn test_invalid_template_literal_interpolation() {
+    assert_eq!(
+        lint("const count = ref(0)\nconst text = `${count}`").error_count,
+        1
+    );
+}
+
+#[test]
 fn test_invalid_unary_operand() {
     assert_eq!(
         lint("const flag = ref(false)\nconst x = !flag").error_count,

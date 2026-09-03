@@ -18,16 +18,39 @@
         "endLine": 24,
         "endColumn": 132,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+        "line": 30,
+        "column": 5,
+        "endLine": 30,
+        "endColumn": 20,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/account/AccountBigAvatar.vue",
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+        "line": 14,
+        "column": 30,
+        "endLine": 14,
+        "endColumn": 45,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
       }
     ],
     "errorCount": 0,
     "warningCount": 1
-  },
-  {
-    "file": "app/components/account/AccountBigAvatar.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
   },
   {
     "file": "app/components/account/AccountBigCard.vue",
@@ -73,8 +96,20 @@
   },
   {
     "file": "app/components/account/AccountFollowButton.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-ref-as-operand",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-ref-as-operand] 'enable' is a ref and must be unwrapped with `.value` here.",
+        "line": 49,
+        "column": 29,
+        "endLine": 49,
+        "endColumn": 35,
+        "help": "A ref holds its value behind .value. Read it as <name>.value in this position; passing the ref itself (e.g. to watch) does not need .value."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -113,17 +148,6 @@
         "endLine": 135,
         "endColumn": 71,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 147,
-        "column": 15,
-        "endLine": 147,
-        "endColumn": 48,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
       },
       {
         "ruleId": "html/deprecated-attr",
@@ -179,7 +203,7 @@
       }
     ],
     "errorCount": 3,
-    "warningCount": 5
+    "warningCount": 4
   },
   {
     "file": "app/components/account/AccountHoverCard.vue",
@@ -213,65 +237,9 @@
   },
   {
     "file": "app/components/account/AccountMoreButton.vue",
-    "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 196,
-        "column": 21,
-        "endLine": 196,
-        "endColumn": 33,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      },
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 199,
-        "column": 21,
-        "endLine": 199,
-        "endColumn": 37,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      },
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 202,
-        "column": 21,
-        "endLine": 202,
-        "endColumn": 32,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      },
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 205,
-        "column": 21,
-        "endLine": 205,
-        "endColumn": 33,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      },
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 208,
-        "column": 21,
-        "endLine": 208,
-        "endColumn": 40,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 5
+    "warningCount": 0
   },
   {
     "file": "app/components/account/AccountMoved.vue",
@@ -499,6 +467,17 @@
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       },
       {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+        "line": 17,
+        "column": 5,
+        "endLine": 17,
+        "endColumn": 20,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      },
+      {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -511,7 +490,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 4
   },
   {
     "file": "app/components/common/CommonCropImage.vue",
@@ -544,10 +523,21 @@
         "endLine": 14,
         "endColumn": 49,
         "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+        "line": 15,
+        "column": 5,
+        "endLine": 15,
+        "endColumn": 20,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "app/components/common/CommonInputImage.vue",
@@ -724,9 +714,21 @@
   },
   {
     "file": "app/components/common/CommonTooltip.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+        "line": 14,
+        "column": 5,
+        "endLine": 14,
+        "endColumn": 20,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/common/CommonTrending.vue",
@@ -766,13 +768,36 @@
   },
   {
     "file": "app/components/common/dropdown/Dropdown.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+        "line": 25,
+        "column": 14,
+        "endLine": 25,
+        "endColumn": 29,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/common/dropdown/DropdownItem.vue",
     "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+        "line": 53,
+        "column": 5,
+        "endLine": 53,
+        "endColumn": 20,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      },
       {
         "ruleId": "type/require-typed-emits",
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
@@ -786,7 +811,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "app/components/content/ContentCode.vue",
@@ -832,9 +857,21 @@
   },
   {
     "file": "app/components/emoji/Emoji.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+        "line": 30,
+        "column": 23,
+        "endLine": 30,
+        "endColumn": 38,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/help/HelpPreview.vue",
@@ -963,21 +1000,9 @@
   },
   {
     "file": "app/components/list/Lists.vue",
-    "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 55,
-        "column": 9,
-        "endLine": 55,
-        "endColumn": 20,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/magickeys/MagickeysKeyboardShortcuts.vue",
@@ -1284,17 +1309,6 @@
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
       {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 76,
-        "column": 48,
-        "endLine": 76,
-        "endColumn": 68,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      },
-      {
         "ruleId": "vue/no-template-target-blank",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1329,7 +1343,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 7
+    "warningCount": 6
   },
   {
     "file": "app/components/nav/NavLogo.vue",
@@ -1351,21 +1365,9 @@
   },
   {
     "file": "app/components/nav/NavTitle.vue",
-    "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 28,
-        "column": 7,
-        "endLine": 28,
-        "endColumn": 17,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/nav/NavUser.vue",
@@ -1381,57 +1383,21 @@
   },
   {
     "file": "app/components/nav/button/Bookmark.vue",
-    "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 8,
-        "column": 13,
-        "endLine": 8,
-        "endColumn": 28,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/nav/button/Collection.vue",
-    "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 9,
-        "column": 5,
-        "endLine": 9,
-        "endColumn": 22,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/nav/button/Compose.vue",
-    "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 8,
-        "column": 13,
-        "endLine": 8,
-        "endColumn": 26,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/nav/button/Explore.vue",
@@ -1441,21 +1407,9 @@
   },
   {
     "file": "app/components/nav/button/Favorite.vue",
-    "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 8,
-        "column": 13,
-        "endLine": 8,
-        "endColumn": 29,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/nav/button/Federated.vue",
@@ -1465,57 +1419,21 @@
   },
   {
     "file": "app/components/nav/button/Hashtag.vue",
-    "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 8,
-        "column": 13,
-        "endLine": 8,
-        "endColumn": 27,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/nav/button/Home.vue",
-    "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 8,
-        "column": 13,
-        "endLine": 8,
-        "endColumn": 23,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/nav/button/List.vue",
-    "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 9,
-        "column": 5,
-        "endLine": 9,
-        "endColumn": 16,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/nav/button/Local.vue",
@@ -1525,21 +1443,9 @@
   },
   {
     "file": "app/components/nav/button/Mention.vue",
-    "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 9,
-        "column": 5,
-        "endLine": 9,
-        "endColumn": 24,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/nav/button/MoreMenu.vue",
@@ -1555,57 +1461,21 @@
   },
   {
     "file": "app/components/nav/button/ScheduledPosts.vue",
-    "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 8,
-        "column": 13,
-        "endLine": 8,
-        "endColumn": 34,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/nav/button/Search.vue",
-    "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 8,
-        "column": 13,
-        "endLine": 8,
-        "endColumn": 25,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/notification/NotificationCard.vue",
-    "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 151,
-        "column": 33,
-        "endLine": 151,
-        "endColumn": 54,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/notification/NotificationEnablePushNotification.client.vue",
@@ -2689,9 +2559,20 @@
         "endLine": 9,
         "endColumn": 27,
         "help": "Remove unused prop or use it in your template/script"
+      },
+      {
+        "ruleId": "script/no-ref-as-operand",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-ref-as-operand] 'filterPhrase' is a ref and must be unwrapped with `.value` here.",
+        "line": 21,
+        "column": 90,
+        "endLine": 21,
+        "endColumn": 102,
+        "help": "A ref holds its value behind .value. Read it as <name>.value in this position; passing the ref itself (e.g. to watch) does not need .value."
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 1
   },
   {
@@ -3846,6 +3727,17 @@
     "file": "app/pages/[[server]]/list/[list]/index/accounts.vue",
     "messages": [
       {
+        "ruleId": "script/no-ref-as-operand",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-ref-as-operand] 'index' is a ref and must be unwrapped with `.value` here.",
+        "line": 63,
+        "column": 9,
+        "endLine": 63,
+        "endColumn": 14,
+        "help": "A ref holds its value behind .value. Read it as <name>.value in this position; passing the ref itself (e.g. to watch) does not need .value."
+      },
+      {
         "ruleId": "html/deprecated-attr",
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
@@ -3901,7 +3793,7 @@
         "help": "Use CSS border instead."
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 5
   },
   {
@@ -4036,21 +3928,9 @@
   },
   {
     "file": "app/pages/home.vue",
-    "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-push",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-push] Prefer a named route object for router navigation",
-        "line": 10,
-        "column": 15,
-        "endLine": 10,
-        "endColumn": 22,
-        "help": "Use router.push({ name: 'route-name' }) or router.replace({ name: 'route-name' }) so typed routes can validate params and editor completions."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/pages/index.vue",
@@ -4060,21 +3940,9 @@
   },
   {
     "file": "app/pages/intent/post.vue",
-    "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-push",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-push] Prefer a named route object for router navigation",
-        "line": 18,
-        "column": 24,
-        "endLine": 18,
-        "endColumn": 31,
-        "help": "Use router.push({ name: 'route-name' }) or router.replace({ name: 'route-name' }) so typed routes can validate params and editor completions."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/pages/mutes.vue",
@@ -4084,21 +3952,9 @@
   },
   {
     "file": "app/pages/notifications.vue",
-    "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 87,
-        "column": 9,
-        "endLine": 87,
-        "endColumn": 37,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/pages/notifications/[filter].vue",
@@ -4120,21 +3976,9 @@
   },
   {
     "file": "app/pages/scheduled-posts.vue",
-    "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 16,
-        "column": 17,
-        "endLine": 16,
-        "endColumn": 37,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/pages/settings.vue",
@@ -4308,17 +4152,6 @@
     "file": "app/pages/share-target.vue",
     "messages": [
       {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 17,
-        "column": 17,
-        "endLine": 17,
-        "endColumn": 35,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      },
-      {
         "ruleId": "html/deprecated-attr",
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
@@ -4331,6 +4164,6 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   }
 ]

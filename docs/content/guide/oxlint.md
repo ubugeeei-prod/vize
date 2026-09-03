@@ -45,8 +45,9 @@ in use. It also refuses to write anything rather than fall back to a file your l
 
 ## Basic Usage With `vp lint`
 
-`createVizeLintConfig()` returns the whole Vite+ `lint` block, so the `jsPlugins` entry that loads
-the bridge cannot go missing:
+`createVizeLintConfig()` returns a complete Vite+ `lint` block, so the `jsPlugins` entry that loads
+the bridge cannot go missing. The default preset is `"happy-path"`/`"general-recommended"`: use it
+when you want a safe Vue baseline without taking a position on stronger style or framework choices.
 
 ```ts
 // vite.config.ts
@@ -55,7 +56,7 @@ import { createVizeLintConfig } from "oxlint-plugin-vize";
 
 export default defineConfig({
   lint: createVizeLintConfig({
-    preset: "essential",
+    preset: "happy-path",
     rules: {
       "no-console": "warn",
     },
@@ -66,19 +67,48 @@ export default defineConfig({
 });
 ```
 
-`preset` drives both the emitted rule map and `settings.vize.preset`. Keeping them in lockstep
-matters because the bridge silently drops any `vize/*` rule outside the active preset, so a rule
-listed under a mismatched preset reports nothing at all. `createVizeLintConfig` throws for that
-case, and for unknown `vize/*` ids, rather than leaving you with a config that looks enabled and
-stays silent.
+`preset` drives both the emitted rule map and `settings.vize.preset` when a single bundle is
+selected. Keeping them in lockstep matters because the bridge silently drops any `vize/*` rule
+outside the active preset, so a rule listed under a mismatched preset reports nothing at all.
+`createVizeLintConfig` throws for that case, and for unknown `vize/*` ids, rather than leaving you
+with a config that looks enabled and stays silent.
 
 - `preset: "incremental"` runs only the rules you list.
+- `preset: ["happy-path", "ecosystem"]` or `presets: ["happy-path", "ecosystem"]` unions multiple
+  bundles. The helper emits `settings.vize.preset: "incremental"` for those configs so the runtime
+  gate cannot suppress one bundle's rules while another bundle is active.
 - `preset: "all"` runs every bundle at once.
 - `plugins` keeps the rest of your built-in Oxlint plugins. They are merged with `vue`, never
   replaced, because narrowing the list would silently drop everything those plugins report. A
   `create-vue` project passes `["eslint", "typescript", "unicorn", "oxc"]`.
 - Spread the result (`{ ...createVizeLintConfig(), ignorePatterns: ["dist/**"] }`) to merge it into
   an existing `lint` block.
+
+For Flat Config-style composition in `vite.config.ts`, use spreadable fragments and collapse them
+back to Vite+'s object-shaped `lint` config:
+
+```ts
+// vite.config.ts
+import { defineConfig } from "vite-plus";
+import { defineVizeLintConfig, flatConfigs } from "oxlint-plugin-vize";
+
+export default defineConfig({
+  lint: defineVizeLintConfig(
+    ...flatConfigs.recommended,
+    ...flatConfigs.ecosystem,
+    {
+      ignorePatterns: ["dist/**"],
+      rules: {
+        "no-console": "warn",
+      },
+    },
+  ),
+});
+```
+
+The exported fragments include `flatConfigs.recommended`, `flatConfigs.happyPath`,
+`flatConfigs.essential`, `flatConfigs.ecosystem`, `flatConfigs.nuxt`, `flatConfigs.opinionated`,
+and `flatConfigs.all`, plus the same `*WithTypeAware` variants as `configs`.
 
 ## Basic Usage With `oxlint` And `oxlint-vize`
 
@@ -122,11 +152,13 @@ export default {
 Available preset exports include:
 
 - `configs.recommended`
+- `configs.happyPath`
 - `configs.essential`
 - `configs.opinionated`
 - `configs.nuxt`
 - `configs.all`
 - `configs.recommendedWithTypeAware`
+- `configs.happyPathWithTypeAware`
 - `configs.ecosystemWithTypeAware`
 - `configs.opinionatedWithTypeAware`
 
@@ -157,9 +189,11 @@ Settings are passed through `settings.vize`:
 ```
 
 - `locale` controls the diagnostic language.
-- `preset` accepts `"general-recommended"`, `"essential"`, `"ecosystem"`, `"incremental"`, `"opinionated"`, or `"nuxt"`.
+- `preset` accepts `"general-recommended"`/`"happy-path"`, `"essential"`, `"ecosystem"`, `"incremental"`, `"opinionated"`, `"nuxt"`, or `"all"`.
 - `preset` defaults to `"general-recommended"`.
 - `incremental` runs only the rules you explicitly configure.
+- `all` is accepted as a settings alias for `incremental`; use `configs.all` or
+  `createVizeLintConfig({ preset: "all" })` when you also want every rule emitted.
 - `helpLevel` accepts `"full"`, `"short"`, or `"none"`.
 - `typeAware: true` enables Corsa-backed `vize/type/*` rules during shared Patina passes.
 - `corsaPath` selects the Corsa or `tsgo` executable for type-aware linting.

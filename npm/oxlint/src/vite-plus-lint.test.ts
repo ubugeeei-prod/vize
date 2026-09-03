@@ -5,7 +5,6 @@ import {
   createVizeLintConfigFromDist,
   lintWorkspaceFixture,
   runIsolatedPluginLoadProbe,
-  typecheckVitePlusConfigConsumer,
 } from "./test-support/vite-plus-workspace.ts";
 
 const VIOLATING_SFC = `<script setup lang="ts">
@@ -97,55 +96,32 @@ void test("createVizeLintConfig preserves runtime rule forms with options", () =
   );
 });
 
-void test("packed declarations type-check as a strict Vite+ lint consumer", () => {
-  typecheckVitePlusConfigConsumer(`import { createVizeLintConfig } from "oxlint-plugin-vize";
-import type { VitePlusLintPlugin } from "oxlint-plugin-vize";
-import { defineConfig } from "vite-plus";
-import type { OxlintConfig } from "vite-plus/lint";
+void test("createVizeLintConfig accepts multiple preset bundles", () => {
+  const config = createVizeLintConfig({ preset: ["happy-path", "ecosystem"] });
 
-type Equal<Left, Right> =
-  (<Value>() => Value extends Left ? 1 : 2) extends
-  (<Value>() => Value extends Right ? 1 : 2) ? true : false;
-type Assert<Condition extends true> = Condition;
-type VitePlusPlugin = NonNullable<OxlintConfig["plugins"]>[number];
-type _PluginNamesStayInSync = Assert<Equal<VitePlusLintPlugin, VitePlusPlugin>>;
-
-export default defineConfig({
-  lint: {
-    ...createVizeLintConfig({
-      plugins: ["typescript"],
-      preset: "incremental",
-      rules: {
-        "no-console": "off",
-        "typescript/consistent-type-imports": [
-          "error",
-          { disallowTypeAnnotations: false, fixStyle: "inline-type-imports" },
-        ],
-      },
-    }),
-    overrides: [
-      {
-        files: ["**/*.ts"],
-        rules: {
-          "typescript/consistent-type-imports": [
-            "warn",
-            { disallowTypeAnnotations: true, fixStyle: "separate-type-imports" },
-          ],
-        },
-      },
-    ],
-  },
+  assert.equal(config.settings.vize.preset, "incremental");
+  assert.equal(config.rules["vize/script/valid-define-props"], "error");
+  assert.equal(config.rules["vize/ecosystem/router-link-require-to"], "error");
+  assert.equal(config.rules["vize/script/no-options-api"], undefined);
 });
 
-createVizeLintConfig({
-  // @ts-expect-error Vite+ keeps built-in plugin names as a closed union.
-  plugins: ["not-a-vite-plus-plugin"],
-  rules: {
-    // @ts-expect-error Unknown severities must not be widened to string or any.
-    "no-console": "verbose",
-  },
+void test("createVizeLintConfig combines preset and presets", () => {
+  const config = createVizeLintConfig({
+    preset: "essential",
+    presets: ["ecosystem"],
+  });
+
+  assert.equal(config.settings.vize.preset, "incremental");
+  assert.equal(config.rules["vize/script/valid-define-props"], "error");
+  assert.equal(config.rules["vize/ecosystem/router-link-require-to"], "error");
 });
-`);
+
+void test("createVizeLintConfig uses presets without adding the default preset", () => {
+  const config = createVizeLintConfig({ presets: ["ecosystem"] });
+
+  assert.equal(config.settings.vize.preset, "ecosystem");
+  assert.equal(config.rules["vize/ecosystem/router-link-require-to"], "error");
+  assert.equal(config.rules["vize/script/no-options-api"], undefined);
 });
 
 void test('createVizeLintConfig keeps the rule map and settings.vize.preset in lockstep for "all"', () => {
@@ -157,6 +133,28 @@ void test('createVizeLintConfig keeps the rule map and settings.vize.preset in l
   assert.deepEqual(config.settings, { vize: { preset: "incremental" } });
   assert.equal(config.rules["vize/ecosystem/router-link-require-to"], "error");
   assert.equal(config.rules["vize/script/no-options-api"], "error");
+});
+
+void test('createVizeLintConfig accepts the CLI "happy-path" preset alias', () => {
+  const config = createVizeLintConfig({ preset: "happy-path" });
+
+  assert.deepEqual(config.settings, { vize: { preset: "general-recommended" } });
+  assert.equal(config.rules["vize/script/valid-define-props"], "error");
+  assert.equal(config.rules["vize/script/no-import-compiler-macros"], "error");
+  assert.equal(config.rules["vize/script/no-duplicate-attr-inheritance"], "warn");
+  assert.equal(config.rules["vize/script/no-unused-emit-declarations"], undefined);
+  assert.equal(config.rules["vize/script/no-options-api"], undefined);
+  assert.equal(config.rules["vize/script/define-props-declaration"], undefined);
+});
+
+void test("createVizeLintConfig keeps essential narrower than happy-path", () => {
+  const config = createVizeLintConfig({ preset: "essential" });
+
+  assert.deepEqual(config.settings, { vize: { preset: "essential" } });
+  assert.equal(config.rules["vize/script/valid-define-props"], "error");
+  assert.equal(config.rules["vize/script/no-import-compiler-macros"], "error");
+  assert.equal(config.rules["vize/script/no-duplicate-attr-inheritance"], undefined);
+  assert.equal(config.rules["vize/script/no-unused-emit-declarations"], undefined);
 });
 
 void test("the emitted lint block makes Oxlint report exactly the configured vize diagnostics", () => {

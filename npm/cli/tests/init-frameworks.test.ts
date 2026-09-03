@@ -175,7 +175,7 @@ export default defineConfig({
 export default defineConfig({
   lint: {
     ...createVizeLintConfig({
-      preset: "general-recommended",
+      preset: "happy-path",
       settings: {
         helpLevel: "short",
       },

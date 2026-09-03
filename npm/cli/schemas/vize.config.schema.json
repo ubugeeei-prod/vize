@@ -195,7 +195,7 @@
         },
         "preset": {
           "description": "Built-in lint preset",
-          "default": "ecosystem",
+          "default": "happy-path",
           "type": "string",
           "enum": ["happy-path", "opinionated", "essential", "incremental", "ecosystem", "nuxt"]
         },

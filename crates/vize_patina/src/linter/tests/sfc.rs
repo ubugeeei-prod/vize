@@ -53,7 +53,7 @@ fn test_lint_sfc_opinionated_reports_css_rules() {
 
 #[test]
 fn test_lint_sfc_default_preset_keeps_css_rules_opt_in() {
-    // The default (ecosystem) preset must not enable css rules.
+    // The default happy-path preset must not enable css rules.
     let linter = Linter::new();
     let sfc = r#"<template><div/></template>
 <style>

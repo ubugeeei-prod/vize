@@ -1,5 +1,9 @@
 import { getPatinaRules } from "./binding.js";
-import { createVizeRuleConfig, type OxlintRuleConfig } from "./configs.js";
+import {
+  createVizeRuleConfig,
+  type OxlintRuleConfig,
+  type VizeRuleConfigPreset,
+} from "./configs.js";
 import type { PatinaPreset, PatinaRuleMeta, PatinaSettings } from "./model.js";
 
 /**
@@ -11,6 +15,7 @@ import type { PatinaPreset, PatinaRuleMeta, PatinaSettings } from "./model.js";
 export const VIZE_JS_PLUGIN_SPECIFIER = "oxlint-plugin-vize";
 
 const VIZE_RULE_PREFIX = "vize/";
+const DEFAULT_VIZE_LINT_PRESET = "general-recommended" satisfies PatinaPreset;
 
 /** Built-in plugin names accepted by Vite+'s Oxlint configuration. */
 export type VitePlusLintPlugin =
@@ -33,11 +38,13 @@ export type VitePlusLintPlugin =
 /**
  * Rule bundles `createVizeLintConfig` accepts.
  *
- * `"all"` and `"incremental"` both disable preset gating in the bridge, which is
- * what makes them usable: `"all"` needs every bundle's rules to run at once, and
- * `"incremental"` needs only the rules the caller lists to run.
+ * `"all"`, `"incremental"`, and multiple-preset selections disable preset
+ * gating in the bridge. That is what makes them usable: the runtime only accepts
+ * one preset, while those shapes need exactly the emitted rule map to run.
  */
-export type VizeLintPreset = PatinaPreset | "all";
+export type VizeLintPreset = PatinaPreset | "happy-path" | "all";
+export type VizeLintPresetInput = VizeLintPreset | readonly VizeLintPreset[];
+type NormalizedVizeLintPreset = PatinaPreset | "all";
 
 export interface VizeLintConfigOptions {
   /**
@@ -55,29 +62,40 @@ export interface VizeLintConfigOptions {
    */
   plugins?: readonly VitePlusLintPlugin[];
   /**
-   * Rule bundle to enable. Defaults to `"general-recommended"`, the bridge's own
-   * default. `"incremental"` emits no preset rules, so only `rules` run.
+   * Rule bundle or bundles to enable. Defaults to `"general-recommended"`, the
+   * bridge's own default. `"incremental"` emits no preset rules, so only `rules`
+   * run.
    */
-  preset?: VizeLintPreset;
+  preset?: VizeLintPresetInput;
+  /**
+   * Additional rule bundles to enable alongside `preset`. This is equivalent to
+   * passing an array to `preset`, but reads better when the base preset is kept
+   * separate from project-specific add-ons.
+   */
+  presets?: readonly VizeLintPreset[];
   /**
    * Extra Oxlint rules merged after the preset rules. Core Oxlint rule ids pass
    * through untouched; `vize/*` ids are validated against the rules the native
-   * bridge registers and against the resolved preset.
+   * bridge registers and, for a single gated preset, against the resolved preset.
    */
   rules?: OxlintRuleConfig;
   /**
    * Patina runtime settings forwarded through `settings.vize`. `preset` is
-   * intentionally absent: it is derived from `options.preset` so the rule map and
-   * the bridge's runtime gate can never disagree.
+   * intentionally absent: it is derived from `options.preset`/`options.presets`
+   * so the rule map and the bridge's runtime gate can never disagree.
    */
   settings?: Omit<PatinaSettings, "preset">;
 }
 
-export interface VizeLintConfig {
+export interface VizeLintConfigSettings extends Record<string, unknown> {
+  vize: PatinaSettings;
+}
+
+export interface VizeLintConfig extends Record<string, unknown> {
   jsPlugins: string[];
   plugins: VitePlusLintPlugin[];
   rules: OxlintRuleConfig;
-  settings: { vize: PatinaSettings };
+  settings: VizeLintConfigSettings;
 }
 
 /**
@@ -106,56 +124,103 @@ export interface VizeLintConfig {
  * - An unknown `vize/*` id only produces Oxlint's
  *   `Rule '...' not found in plugin 'vize'` error when Oxlint actually reads the
  *   config. A typo in a config Oxlint never reads reports nothing at all.
- * - A `vize/*` id that is outside the active preset is dropped by the bridge's
- *   runtime preset gate (`plugin.ts`), so it stays listed in `rules` and reports
- *   nothing. `preset: "incremental"` is the supported way to run an arbitrary
- *   subset.
+ * - A `vize/*` id that is outside a single active preset is dropped by the
+ *   bridge's runtime preset gate (`plugin.ts`), so it stays listed in `rules` and
+ *   reports nothing. `preset: "incremental"` is the supported way to run an
+ *   arbitrary subset.
  *
  * @throws {Error} When `options.rules` names a `vize/*` id the native bridge does
- *   not register, or one the resolved preset would silently suppress.
+ *   not register, or one a single resolved preset would silently suppress.
  */
 export function createVizeLintConfig(options: VizeLintConfigOptions = {}): VizeLintConfig {
-  const preset = options.preset ?? "general-recommended";
+  return buildVizeLintConfig(options, { forceIncrementalRuntime: false });
+}
+
+export function buildVizeLintConfig(
+  options: VizeLintConfigOptions,
+  buildOptions: { forceIncrementalRuntime: boolean },
+): VizeLintConfig {
+  const presets = resolveLintPresets(options);
+  const runtimePreset = buildOptions.forceIncrementalRuntime
+    ? "incremental"
+    : toRuntimePreset(presets);
   const extraRules = options.rules ?? {};
-  assertUsableVizeRules(extraRules, preset);
+  assertUsableVizeRules(extraRules, presets, runtimePreset);
 
   return {
     jsPlugins: [VIZE_JS_PLUGIN_SPECIFIER],
     plugins: [...new Set(["vue", ...(options.plugins ?? [])])],
     rules: {
-      ...createPresetRules(preset, options.includeTypeAware),
+      ...createPresetRules(presets, options.includeTypeAware),
       ...extraRules,
     },
     settings: {
       vize: {
         ...options.settings,
-        preset: toRuntimePreset(preset),
+        preset: runtimePreset,
       },
     },
   };
 }
 
 function createPresetRules(
-  preset: VizeLintPreset,
+  presets: readonly NormalizedVizeLintPreset[],
   includeTypeAware: boolean | undefined,
 ): OxlintRuleConfig {
-  // "incremental" means "run exactly what the caller listed", so it contributes
-  // no preset rules of its own.
-  return preset === "incremental" ? {} : createVizeRuleConfig({ includeTypeAware, preset });
+  const ruleConfigPresets = presets.filter(isRuleConfigPreset);
+  if (ruleConfigPresets.length === 0) {
+    return {};
+  }
+
+  return createVizeRuleConfig({ includeTypeAware, presets: ruleConfigPresets });
+}
+
+function resolveLintPresets(
+  options: Pick<VizeLintConfigOptions, "preset" | "presets">,
+): NormalizedVizeLintPreset[] {
+  const presetInput =
+    options.preset === undefined && options.presets === undefined
+      ? DEFAULT_VIZE_LINT_PRESET
+      : options.preset;
+  const requestedPresets = [...toPresetArray(presetInput ?? []), ...(options.presets ?? [])].map(
+    normalizeLintPreset,
+  );
+
+  return [...new Set(requestedPresets)];
+}
+
+function toPresetArray(preset: VizeLintPresetInput | readonly []): readonly VizeLintPreset[] {
+  return Array.isArray(preset) ? preset : [preset];
+}
+
+function normalizeLintPreset(preset: VizeLintPreset): NormalizedVizeLintPreset {
+  return preset === "happy-path" ? DEFAULT_VIZE_LINT_PRESET : preset;
+}
+
+function isRuleConfigPreset(preset: NormalizedVizeLintPreset): preset is VizeRuleConfigPreset {
+  return preset !== "incremental";
 }
 
 /**
- * Maps a rule bundle to the `settings.vize.preset` the bridge must run with.
+ * Maps rule bundles to the `settings.vize.preset` the bridge must run with.
  *
- * `"all"` becomes `"incremental"` because the bridge gates each rule on preset
- * membership; gating an all-bundles rule map by any single preset would suppress
- * the rules that only belong to the other bundles.
+ * `"all"` and multiple concrete presets become `"incremental"` because the
+ * bridge gates each rule on preset membership; gating a combined rule map by any
+ * single preset would suppress the rules that only belong to the other bundles.
  */
-function toRuntimePreset(preset: VizeLintPreset): PatinaPreset {
-  return preset === "all" ? "incremental" : preset;
+function toRuntimePreset(presets: readonly NormalizedVizeLintPreset[]): PatinaPreset {
+  if (presets.length === 1 && presets[0] !== "all") {
+    return presets[0];
+  }
+
+  return "incremental";
 }
 
-function assertUsableVizeRules(rules: OxlintRuleConfig, preset: VizeLintPreset): void {
+function assertUsableVizeRules(
+  rules: OxlintRuleConfig,
+  presets: readonly NormalizedVizeLintPreset[],
+  runtimePreset: PatinaPreset,
+): void {
   const ruleMetaById = new Map(
     getPatinaRules().map((ruleMeta) => [`${VIZE_RULE_PREFIX}${ruleMeta.name}`, ruleMeta]),
   );
@@ -171,13 +236,12 @@ function assertUsableVizeRules(rules: OxlintRuleConfig, preset: VizeLintPreset):
     );
   }
 
-  const runtimePreset = toRuntimePreset(preset);
   const suppressedIds = configuredIds.filter((ruleId) =>
     isSuppressedByPreset(ruleMetaById.get(ruleId) as PatinaRuleMeta, runtimePreset),
   );
   if (suppressedIds.length > 0) {
     throw new Error(
-      `Vize rule ${pluralizeIds(suppressedIds)} outside the "${preset}" preset: ${suppressedIds.join(", ")}. ` +
+      `Vize rule ${pluralizeIds(suppressedIds)} outside ${describePresetSelection(presets)}: ${suppressedIds.join(", ")}. ` +
         'Use preset: "incremental" to run an explicit rule subset, or pick the preset that owns these rules.',
     );
   }
@@ -193,6 +257,14 @@ function isSuppressedByPreset(ruleMeta: PatinaRuleMeta, runtimePreset: PatinaPre
     runtimePreset !== "incremental" &&
     !ruleMeta.presets.includes(runtimePreset)
   );
+}
+
+function describePresetSelection(presets: readonly NormalizedVizeLintPreset[]): string {
+  const names = presets.map((preset) =>
+    preset === DEFAULT_VIZE_LINT_PRESET ? "happy-path" : preset,
+  );
+  const label = names.length === 0 ? "empty" : names.join(", ");
+  return `the "${label}" ${names.length === 1 ? "preset" : "presets"}`;
 }
 
 function pluralizeIds(ids: readonly string[]): string {

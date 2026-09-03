@@ -437,8 +437,20 @@
   },
   {
     "file": "src/runtime/components/Form.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-ref-as-operand",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-ref-as-operand] 'errors' is a ref and must be unwrapped with `.value` here.",
+        "line": 201,
+        "column": 9,
+        "endLine": 201,
+        "endColumn": 15,
+        "help": "A ref holds its value behind .value. Read it as <name>.value in this position; passing the ref itself (e.g. to watch) does not need .value."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {

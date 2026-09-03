@@ -176,17 +176,6 @@
     "file": "app/components/AppHeader.vue",
     "messages": [
       {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 227,
-        "column": 11,
-        "endLine": 227,
-        "endColumn": 17,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -199,7 +188,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/AppLogo.vue",
@@ -3825,21 +3814,9 @@
   },
   {
     "file": "app/pages/noodles/[slug].vue",
-    "messages": [
-      {
-        "ruleId": "ecosystem/vue-router-prefer-named-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 79,
-        "column": 11,
-        "endLine": 79,
-        "endColumn": 24,
-        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/pages/noodles/index.vue",

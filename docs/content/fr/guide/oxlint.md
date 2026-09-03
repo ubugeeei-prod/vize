@@ -105,7 +105,7 @@ Les paramètres sont passés par `settings.vize`:
 ```
 
 - `locale` contrôle le langage de diagnostic.
-- `preset` accepte `"general-recommended"`, `"essential"`, `"ecosystem"`, `"incremental"`, `"opinionated"`ou `"nuxt"`.
+- `preset` accepte `"general-recommended"`/`"happy-path"`, `"essential"`, `"ecosystem"`, `"incremental"`, `"opinionated"`ou `"nuxt"`.
 - `preset` par défaut est `"general-recommended"`.
 - `incremental` exécute uniquement les règles que vous configurez explicitement.
 - `helpLevel` accepte `"full"`, `"short"`ou `"none"`.

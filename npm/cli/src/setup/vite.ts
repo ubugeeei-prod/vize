@@ -10,20 +10,14 @@ const VITE_CONFIG_FILES = [
   "vite.config.mjs",
 ] as const;
 
-const VITE_PLUS_LINT_IMPORT =
-  'import { configs as vizePlusLintConfigs } from "oxlint-plugin-vize";\n';
+const VITE_PLUS_LINT_IMPORT = 'import { createVizeLintConfig } from "oxlint-plugin-vize";\n';
 
-const VITE_PLUS_LINT_BLOCK = `  lint: {
-    plugins: ["vue"],
-    jsPlugins: ["oxlint-plugin-vize"],
+const VITE_PLUS_LINT_BLOCK = `  lint: createVizeLintConfig({
+    preset: "happy-path",
     settings: {
-      vize: {
-        preset: "general-recommended",
-        helpLevel: "short",
-      },
+      helpLevel: "short",
     },
-    rules: vizePlusLintConfigs.recommended,
-  },
+  }),
 `;
 
 export interface ViteMigrationPlan {
@@ -129,7 +123,7 @@ function canInjectVitePlusLint(source: string): boolean {
   if (
     !/from\s+["']vite-plus["']/u.test(source) ||
     /^\s*lint\s*:/mu.test(source) ||
-    /\bvizePlusLintConfigs\b/u.test(source)
+    /\bcreateVizeLintConfig\b/u.test(source)
   ) {
     return false;
   }

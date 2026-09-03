@@ -72,7 +72,7 @@ local linterConfigDef: JsonSchema = new JsonSchema {
       type = lintPresetEnum.type
       enum = lintPresetEnum.enum
       description = "Built-in lint preset"
-      default = "ecosystem"
+      default = "happy-path"
     }
     ["typeAware"] = new JsonSchema {
       type = "boolean"

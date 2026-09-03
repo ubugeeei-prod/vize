@@ -156,15 +156,14 @@ const items = ['a', 'b'];
 }
 
 #[test]
-fn test_ecosystem_template_rules_are_enabled_by_default() {
+fn test_ecosystem_template_rules_stay_explicit() {
     let source = r#"<template><RouterLink>Home</RouterLink><footer>Footer</footer></template>"#;
 
-    let happy_path = Linter::with_preset(LintPreset::HappyPath);
-    let happy_path_result = happy_path.lint_sfc(source, "test.vue");
-    assert_eq!(happy_path_result.error_count, 0);
-    assert_eq!(happy_path_result.warning_count, 0);
+    let default_result = Linter::new().lint_sfc(source, "test.vue");
+    assert_eq!(default_result.error_count, 0);
+    assert_eq!(default_result.warning_count, 0);
 
-    let result = Linter::new().lint_sfc(source, "test.vue");
+    let result = Linter::with_ecosystem().lint_sfc(source, "test.vue");
     assert_eq!(result.error_count, 1);
     assert_eq!(
         result.diagnostics[0].rule_name,
@@ -179,7 +178,7 @@ import { Link } from "@void/vue";
 </script>
 <template><Link>Home</Link></template>"#;
 
-    let result = Linter::new().lint_sfc(source, "test.vue");
+    let result = Linter::with_ecosystem().lint_sfc(source, "test.vue");
     assert_eq!(result.error_count, 1);
     assert_eq!(
         result.diagnostics[0].rule_name,
@@ -188,17 +187,16 @@ import { Link } from "@void/vue";
 }
 
 #[test]
-fn test_ecosystem_script_rules_are_enabled_by_default() {
+fn test_ecosystem_script_rules_stay_explicit() {
     let source = r#"<script setup lang="ts">
 router.push('/settings')
 </script>"#;
 
-    let happy_path = Linter::with_preset(LintPreset::HappyPath);
-    let happy_path_result = happy_path.lint_sfc(source, "test.vue");
-    assert_eq!(happy_path_result.error_count, 0);
-    assert_eq!(happy_path_result.warning_count, 0);
+    let default_result = Linter::new().lint_sfc(source, "test.vue");
+    assert_eq!(default_result.error_count, 0);
+    assert_eq!(default_result.warning_count, 0);
 
-    let result = Linter::new().lint_sfc(source, "test.vue");
+    let result = Linter::with_ecosystem().lint_sfc(source, "test.vue");
     assert_eq!(result.warning_count, 1);
     assert_eq!(
         result.diagnostics[0].rule_name,
@@ -446,7 +444,8 @@ const data = computed(async () => await fetch('/api'))
 
 #[test]
 fn test_lint_sfc_additional_opt_in_script_rule_preserves_preset_rules() {
-    let linter = Linter::new().with_additional_rules(vec!["script/no-async-in-computed".into()]);
+    let linter =
+        Linter::with_ecosystem().with_additional_rules(vec!["script/no-async-in-computed".into()]);
     let sfc = r#"<script setup>
 router.push('/settings')
 const data = computed(async () => await fetch('/api'))

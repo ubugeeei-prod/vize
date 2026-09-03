@@ -94,7 +94,7 @@ impl Linter {
     /// Default initial capacity for the arena (64KB).
     pub(crate) const DEFAULT_INITIAL_CAPACITY: usize = 64 * 1024;
 
-    /// Create a new linter with the default ecosystem preset.
+    /// Create a new linter with the default happy-path preset.
     #[inline]
     pub fn new() -> Self {
         let preset = LintPreset::default();

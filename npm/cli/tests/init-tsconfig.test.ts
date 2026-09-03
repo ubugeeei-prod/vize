@@ -107,7 +107,7 @@ export default defineConfig({
   },
   linter: {
     enabled: true,
-    preset: "general-recommended",
+    preset: "happy-path",
   },
   formatter: {
     singleAttributePerLine: false,

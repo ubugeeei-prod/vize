@@ -39,7 +39,7 @@ Options:
           [default: full]
 
       --preset <PRESET>
-          Override the configured lint preset: ecosystem, happy-path, opinionated, essential, incremental, nuxt
+          Override the configured lint preset: happy-path, ecosystem, opinionated, essential, incremental, nuxt
 
       --cross-file
           Enable opt-in cross-file lint checks for provide/inject, reactivity flow, and race risks

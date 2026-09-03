@@ -97,7 +97,10 @@ fn check_import(
 }
 
 fn is_vue_import(specifier: &str) -> bool {
-    specifier.contains("vue") || specifier.contains("@vue/")
+    specifier == "vue"
+        || specifier.starts_with("vue/")
+        || specifier.starts_with("vue.")
+        || specifier.starts_with("@vue/")
 }
 
 fn is_internal_import(specifier: &str) -> bool {
@@ -155,6 +158,15 @@ mod tests {
         // Importing from @vue/* packages (even if not recommended) is allowed
         // The prefer-import-from-vue rule handles that case
         let source = "import { ref } from '@vue/reactivity'";
+        let rule = NoInternalImports;
+        let mut result = ScriptLintResult::default();
+        rule.check(source, 0, &mut result);
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_relative_vue_sfc_import() {
+        let source = "import Button from '../src/shared/AppButton.vue'";
         let rule = NoInternalImports;
         let mut result = ScriptLintResult::default();
         rule.check(source, 0, &mut result);

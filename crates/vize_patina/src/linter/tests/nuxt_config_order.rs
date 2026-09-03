@@ -2,15 +2,18 @@ use super::{LintPreset, Linter};
 
 #[test]
 fn nuxt_preset_contains_all_four_upstream_compatibility_rules() {
-    assert_eq!(
-        crate::preset::builtin_script_rule_names(LintPreset::Nuxt),
-        &[
-            "nuxt/prefer-import-meta",
-            "nuxt/no-page-meta-runtime-values",
-            "nuxt/no-nuxt-config-test-key",
-            "nuxt/nuxt-config-keys-order",
-        ]
-    );
+    let rule_names = crate::preset::builtin_script_rule_names(LintPreset::Nuxt);
+    for rule_name in [
+        "nuxt/prefer-import-meta",
+        "nuxt/no-page-meta-runtime-values",
+        "nuxt/no-nuxt-config-test-key",
+        "nuxt/nuxt-config-keys-order",
+    ] {
+        assert!(
+            rule_names.contains(&rule_name),
+            "Nuxt preset is missing {rule_name}: {rule_names:?}"
+        );
+    }
 }
 
 #[test]

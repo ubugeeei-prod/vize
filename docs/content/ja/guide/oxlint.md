@@ -105,7 +105,7 @@ vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 ```
 
 - `locale` は診断言語を制御します。
-- `preset` は、`"general-recommended"`、`"essential"`、`"ecosystem"`、`"incremental"`、`"opinionated"`、または `"nuxt"` を受け入れます。
+- `preset` は、`"general-recommended"`/`"happy-path"`、`"essential"`、`"ecosystem"`、`"incremental"`、`"opinionated"`、または `"nuxt"` を受け入れます。
 - `preset` のデフォルトは `"general-recommended"` です。
 - `incremental` は、明示的に構成したルールのみを実行します。
 - `helpLevel` は、`"full"`、`"short"`、または `"none"` を受け入れます。

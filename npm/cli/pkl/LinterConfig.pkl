@@ -51,7 +51,7 @@ class LinterConfig {
   enabled: Boolean = true
 
   /// Built-in lint preset.
-  preset: LintPreset = "ecosystem"
+  preset: LintPreset = "happy-path"
 
   /// Enable native type-aware lint rules from the active lint configuration.
   typeAware: Boolean = false

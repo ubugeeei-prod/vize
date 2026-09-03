@@ -26,7 +26,7 @@ import vize from "@vizejs/vite-plugin";
 
 export default defineConfig({
   lint: createVizeLintConfig({
-    preset: "general-recommended",
+    preset: "happy-path",
     settings: {
       helpLevel: "short",
     },
@@ -43,7 +43,7 @@ export default defineConfig({
   },
   linter: {
     enabled: true,
-    preset: "general-recommended",
+    preset: "happy-path",
   },
   formatter: {
     singleAttributePerLine: false,
@@ -68,11 +68,11 @@ export default defineConfig({
   jsPlugins: ["oxlint-plugin-vize"],
   settings: {
     vize: {
-      preset: "general-recommended",
+      preset: "happy-path",
       helpLevel: "short",
     },
   },
-  rules: configs.recommended,
+  rules: configs.happyPath,
 });
 `;
 
