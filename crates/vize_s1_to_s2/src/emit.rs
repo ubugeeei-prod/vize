@@ -212,6 +212,8 @@ struct EmitCx<'facts> {
     /// `prefix_identifiers`: expressions go through [`prefix`] on their
     /// way out instead of being pushed verbatim.
     prefix_identifiers: bool,
+    /// The shipped lane's `is_ts`: expressions are type-erased first.
+    is_ts: bool,
     /// The transform scope and codegen slot params the prefixer consults.
     scope: prefix::PrefixScope<'facts>,
 }
@@ -237,6 +239,11 @@ fn emit_dom_with_emit_budget<'f>(
     facts: &'f S2Facts,
     options: &DomEmitOptions<'f>,
 ) -> Result<(DomEmit, u32), EmitError> {
+    if options.is_ts && !cfg!(feature = "typescript") {
+        return Err(EmitError::unsupported(
+            UnsupportedReason::TypeScriptLaneUnavailable,
+        ));
+    }
     if lowered
         .diagnostics
         .iter()
@@ -272,7 +279,12 @@ fn emit_dom_with_emit_budget<'f>(
         static_cache,
         parent_ns: Namespace::Html,
         prefix_identifiers: options.prefix_identifiers,
-        scope: prefix::PrefixScope::new(options.bindings),
+        is_ts: options.is_ts,
+        scope: prefix::PrefixScope::new(
+            options.bindings,
+            options.prefix_identifiers,
+            options.is_ts,
+        ),
     };
     let filters = &facts.legacy.filters;
     if facts.legacy.filter_helper_precedes_components {
@@ -284,12 +296,7 @@ fn emit_dom_with_emit_budget<'f>(
         for_wrappers: &lowered.for_wrappers,
         bindings: options.bindings,
     };
-    helper_preference::prefer_helpers(
-        &mut cx.buf,
-        &prefer_cx,
-        &mut helper_walk,
-        &lowered.root,
-    );
+    helper_preference::prefer_helpers(&mut cx.buf, &prefer_cx, &mut helper_walk, &lowered.root);
     fragment::prefer_root_fragment(&mut cx.buf, &lowered.root);
     cx.buf
         .push(options.mode.render_signature(options.bindings.is_some()));

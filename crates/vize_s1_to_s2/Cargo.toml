@@ -25,14 +25,25 @@ metadata.vize.stability = "experimental"
 # Arms the corpus-runnable TS-20 lane (`tests/davinci_lowering_corpus.rs`),
 # the P1-6/P1-7 differential-lane shape: committed battery with pinned
 # counts, plus `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening.
-davinci-differential = []
+davinci-differential = ["typescript"]
+
+# The `is_ts` lane erases types by running oxc's transformer, whose
+# `Transformer::new` takes a `&std::path::Path` — so it needs `std`. It stays
+# off by default so the TS-24 portability lane keeps building this library
+# for `wasm32-wasip2` with no `std` edge at all; consumers that compile
+# TypeScript templates turn it on. With the feature off an `is_ts` emit
+# refuses (`TypeScriptLaneUnavailable`) instead of silently emitting
+# un-erased TypeScript.
+typescript = ["dep:oxc_codegen", "dep:oxc_transformer"]
 
 [dependencies]
 htmlize = { workspace = true }
 oxc_ast = { workspace = true }
 oxc_ast_visit = { workspace = true }
+oxc_codegen = { workspace = true, optional = true }
 oxc_parser = { workspace = true }
 oxc_semantic = { workspace = true }
+oxc_transformer = { workspace = true, optional = true }
 oxc_span = { workspace = true }
 oxc_syntax = { workspace = true }
 vize_s0 = { workspace = true }

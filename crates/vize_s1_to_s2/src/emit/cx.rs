@@ -90,8 +90,11 @@ impl EmitCx<'_> {
 
     // ---- `prefix_identifiers` (P2-11 installment 85) ----
 
+    /// Whether the expression pipeline runs at all: the shipped
+    /// `process_expression` returns early unless one of `prefix_identifiers`
+    /// / `is_ts` is on, and every emit site that consults this mirrors it.
     pub(super) fn prefixing(&self) -> bool {
-        self.prefix_identifiers
+        self.prefix_identifiers || self.is_ts
     }
 
     /// `TransformContext::enter_v_for_scope` + `add_slot_params` for the

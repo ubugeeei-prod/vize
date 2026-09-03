@@ -51,7 +51,7 @@ fn has_direct_component_child(element: &ElementOp<'_>) -> bool {
         .any(|op| matches!(op, Op::Component(_)))
 }
 
-pub(super) fn can_whole_hoist_static_element(element: &ElementOp<'_>) -> bool {
+pub(super) fn can_whole_hoist_static_element(element: &ElementOp<'_>, is_ts: bool) -> bool {
     if element.namespace != Namespace::Html
         && element.tag == "svg"
         && !element.bindings.is_empty()
@@ -63,18 +63,21 @@ pub(super) fn can_whole_hoist_static_element(element: &ElementOp<'_>) -> bool {
     {
         return false;
     }
-    super::props_static::static_vnode_surface_can_hoist(&element.attributes, &element.bindings)
-        && element
-            .children
-            .ops
-            .iter()
-            .all(can_whole_hoist_static_child)
+    super::props_static::static_vnode_surface_can_hoist(
+        &element.attributes,
+        &element.bindings,
+        is_ts,
+    ) && element
+        .children
+        .ops
+        .iter()
+        .all(|op| can_whole_hoist_static_child(op, is_ts))
 }
 
-fn can_whole_hoist_static_child(op: &Op<'_>) -> bool {
+fn can_whole_hoist_static_child(op: &Op<'_>, is_ts: bool) -> bool {
     match op {
         Op::Text(_) => true,
-        Op::Element(element) => can_whole_hoist_static_element(element),
+        Op::Element(element) => can_whole_hoist_static_element(element, is_ts),
         _ => false,
     }
 }

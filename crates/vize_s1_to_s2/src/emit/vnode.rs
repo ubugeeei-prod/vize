@@ -223,12 +223,12 @@ pub(super) fn emit_call(
     let hoisted_props =
         if allow_hoist && if_key.is_none() && !conditional_v_for_dynamic_text && should_hoist_props
         {
-            super::props_static::root_hoist_props(&element.attributes, &element.bindings)?
+            super::props_static::root_hoist_props(&element.attributes, &element.bindings, cx.is_ts)?
         } else {
             None
         };
     let hoist = hoisted_props.is_some();
-    let patch = bind_patch(&element.bindings, false, if_key, for_item);
+    let patch = bind_patch(&element.bindings, false, if_key, for_item, cx.is_ts);
     let text_flag = !once && !memo_block && children_need_text_flag(&element.children);
     let mut flag = patch.flag;
     if text_flag {

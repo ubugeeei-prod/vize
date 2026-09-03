@@ -96,14 +96,7 @@ fn prefer_op_helpers(
             }
             walk.skip(bindings.len());
             let child_slot_context = slot_context || slot_template;
-            prefer_region_helpers(
-                buf,
-                cx,
-                walk,
-                &element.children,
-                child_slot_context,
-                false,
-            );
+            prefer_region_helpers(buf, cx, walk, &element.children, child_slot_context, false);
             if slot_context && !slot_template && !early_element_vnode {
                 buf.prefer(Helper::CreateElementVNode);
             }
@@ -121,26 +114,12 @@ fn prefer_op_helpers(
             if id.and_then(|id| cx.facts.slot_facts.get(id)).is_some() {
                 prefer_slot_helpers(buf, &component.children);
             }
-            prefer_region_helpers(
-                buf,
-                cx,
-                walk,
-                &component.children,
-                slot_context,
-                false,
-            );
+            prefer_region_helpers(buf, cx, walk, &component.children, slot_context, false);
         }
         Op::Slot(slot) => {
             buf.prefer(Helper::RenderSlot);
             walk.skip(slot.bindings.len());
-            prefer_region_helpers(
-                buf,
-                cx,
-                walk,
-                &slot.fallback,
-                slot_context,
-                false,
-            );
+            prefer_region_helpers(buf, cx, walk, &slot.fallback, slot_context, false);
         }
         Op::If(if_op) => {
             buf.prefer(Helper::OpenBlock);

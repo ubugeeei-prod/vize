@@ -50,7 +50,7 @@ pub(super) fn emit_if_template_branch(
     branch: &IfBranch<'_>,
     key: &str,
 ) -> Result<(), EmitError> {
-    if should_unwrap_if(&branch.region.ops) {
+    if should_unwrap_if(&branch.region.ops, cx.is_ts) {
         return unwrap_if(cx, branch, key);
     }
     emit_inner_fragment(
@@ -63,9 +63,9 @@ pub(super) fn emit_if_template_branch(
     )
 }
 
-fn should_unwrap_if(ops: &[Op<'_>]) -> bool {
+fn should_unwrap_if(ops: &[Op<'_>], is_ts: bool) -> bool {
     match ops {
-        [Op::Element(element)] => !is_hoistable(element),
+        [Op::Element(element)] => !is_hoistable(element, is_ts),
         [Op::Component(_)] | [Op::Slot(_)] | [Op::For(_)] => true,
         _ => false,
     }
@@ -123,7 +123,7 @@ fn register_unwrapped_if_child_props_hoist(
     if !super::props_static::should_hoist(cx, id, PropHoistPosition::Nested) {
         return Ok(());
     }
-    if let Some(props) = super::props_static::root_hoist_props(attributes, bindings)? {
+    if let Some(props) = super::props_static::root_hoist_props(attributes, bindings, cx.is_ts)? {
         let _ = cx.buf.push_hoist(props);
     }
     Ok(())

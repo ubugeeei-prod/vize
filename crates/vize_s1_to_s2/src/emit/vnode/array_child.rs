@@ -12,13 +12,13 @@ pub(in crate::emit) fn emit_array_child(
     let hoist_static_children = hoist_static_children || cx.hoist_static_vnodes;
     if hoist_static_children
         && let Op::Element(element) = op
-        && super::super::hoist::is_hoistable(element)
+        && super::super::hoist::is_hoistable(element, cx.is_ts)
     {
         return super::super::hoist::emit_hoisted_element(cx, element);
     }
     if cache_static_children
         && let Op::Element(element) = op
-        && super::super::hoist::is_hoistable(element)
+        && super::super::hoist::is_hoistable(element, cx.is_ts)
     {
         return super::super::hoist::emit_cached_element(cx, element);
     }

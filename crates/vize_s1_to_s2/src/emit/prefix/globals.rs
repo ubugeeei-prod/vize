@@ -98,3 +98,64 @@ mod tests {
         assert!(!is_simple_identifier(""));
     }
 }
+
+/// The root scope `vize_croquis::ScopeChain::new` seeds with
+/// `JS_UNIVERSAL_GLOBALS`. `TransformContext::is_in_scope` answers `true`
+/// for every one of them, so the shipped transform never prefixes them —
+/// a *wider* set than [`is_global_allowed`], and the difference is
+/// visible output (`Intl.DateTimeFormat()` stays bare). Only the
+/// transform-side decision consults this; the codegen visitor keeps to
+/// the allowlist, exactly as the shipped lane does.
+pub(super) fn is_scope_chain_global(name: &str) -> bool {
+    if is_global_allowed(name) {
+        return true;
+    }
+    matches!(name, |"AggregateError"| "ArrayBuffer"
+        | "AsyncFunction"
+        | "AsyncGenerator"
+        | "AsyncGeneratorFunction"
+        | "AsyncIterator"
+        | "Atomics"
+        | "BigInt64Array"
+        | "BigUint64Array"
+        | "DataView"
+        | "EvalError"
+        | "Float32Array"
+        | "Float64Array"
+        | "Generator"
+        | "GeneratorFunction"
+        | "Int16Array"
+        | "Int32Array"
+        | "Int8Array"
+        | "Intl"
+        | "Iterator"
+        | "RangeError"
+        | "ReferenceError"
+        | "SharedArrayBuffer"
+        | "SyntaxError"
+        | "TypeError"
+        | "URIError"
+        | "Uint16Array"
+        | "Uint32Array"
+        | "Uint8Array"
+        | "Uint8ClampedArray"
+        | "eval"
+        | "this")
+}
+
+#[cfg(test)]
+mod scope_chain_tests {
+    use super::{is_global_allowed, is_scope_chain_global};
+
+    #[test]
+    fn the_seeded_scope_is_wider_than_the_allowlist() {
+        assert!(is_scope_chain_global("Intl"));
+        assert!(is_scope_chain_global("TypeError"));
+        assert!(is_scope_chain_global("Uint8Array"));
+        assert!(!is_global_allowed("Intl"));
+        // Everything the allowlist admits is seeded too.
+        assert!(is_scope_chain_global("Math"));
+        assert!(is_scope_chain_global("$event"));
+        assert!(!is_scope_chain_global("Zork"));
+    }
+}

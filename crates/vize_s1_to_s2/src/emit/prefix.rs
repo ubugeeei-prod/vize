@@ -26,10 +26,21 @@ mod slot_defaults;
 mod splice;
 mod strip;
 mod targets;
+#[cfg(feature = "typescript")]
+mod typescript;
 
 pub(super) use globals::{is_global_allowed, is_simple_identifier};
 pub(super) use scope::{PrefixScope, ScopeMark};
 pub(super) use slot_defaults::prefix_slot_defaults;
+#[cfg(feature = "typescript")]
+pub(in crate::emit) use typescript::strip_typescript_from_expression;
+
+/// Without the `typescript` feature the emit refuses an `is_ts` request up
+/// front (`emit_dom_with_options`), so nothing reaches a stripper.
+#[cfg(not(feature = "typescript"))]
+pub(in crate::emit) fn strip_typescript_from_expression(content: &str) -> String {
+    String::from(content)
+}
 
 /// `is_event_handler_reference_expression`: the shipped codegen's prefix
 /// parse of a handler text, which reads `a; b` as the reference `a`.
@@ -151,6 +162,13 @@ pub(super) fn prefix_expression(
     js: Option<&JsExpr<'_>>,
     site: Site,
 ) -> Result<String, Refused> {
+    // `process_expression`: with `prefix_identifiers` off the TS lane only
+    // type-erases, and the node is still marked rewritten — so the codegen
+    // consumption runs either way.
+    if !scope.prefixes_identifiers() {
+        let stripped = strip_typescript_from_expression(content.text.as_str());
+        return Ok(consume(scope, stripped, site));
+    }
     let retained = content.retained(js);
     let rewritten = rewrite::rewrite_expression(content.text.as_str(), retained, scope, false);
     if rewritten.parse_error {
