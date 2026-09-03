@@ -96,7 +96,7 @@ test("Davinci stage crates are publishable with registry-resolvable dependencies
     const pkg = workspacePackage(metadata, packageName);
     assert.equal(pkg.publish, null, `${packageName} must be publishable for the production switch`);
     for (const dependency of pkg.dependencies) {
-      if (dependency.kind !== null || !publishedDavinciStages.has(dependency.name)) continue;
+      if (dependency.kind === "dev" || !publishedDavinciStages.has(dependency.name)) continue;
       assert.match(
         dependency.req,
         /^=\d+\.\d+\.\d+$/u,
