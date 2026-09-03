@@ -214,6 +214,9 @@ struct EmitCx<'facts> {
     prefix_identifiers: bool,
     /// The shipped lane's `is_ts`: expressions are type-erased first.
     is_ts: bool,
+    /// The shipped lane's `component_name`, for the self-reference flag
+    /// on `resolveComponent`.
+    component_name: Option<&'facts str>,
     /// The transform scope and codegen slot params the prefixer consults.
     scope: prefix::PrefixScope<'facts>,
 }
@@ -280,6 +283,7 @@ fn emit_dom_with_emit_budget<'f>(
         parent_ns: Namespace::Html,
         prefix_identifiers: options.prefix_identifiers,
         is_ts: options.is_ts,
+        component_name: options.component_name,
         scope: prefix::PrefixScope::new(
             options.bindings,
             options.prefix_identifiers,

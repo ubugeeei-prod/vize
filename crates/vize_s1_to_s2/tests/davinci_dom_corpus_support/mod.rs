@@ -77,6 +77,16 @@ pub fn compare_sweep_lane(sweep: &CorpusSweep, lane: Lane) -> Report {
     report
 }
 
+/// `extract_component_name`: the filename's stem, `anonymous` when the
+/// path has none.
+fn component_name_of(path: &str) -> std::string::String {
+    std::path::Path::new(path)
+        .file_stem()
+        .and_then(|stem| stem.to_str())
+        .unwrap_or("anonymous")
+        .to_owned()
+}
+
 pub fn compare_sfc_template(name: &str, source: &str, report: &mut Report) {
     compare_sfc_template_lane(name, source, report, Lane::Default)
 }
@@ -105,6 +115,8 @@ pub fn compare_sfc_template_lane(name: &str, source: &str, report: &mut Report, 
     let table = bindings.as_ref().map(binding_table);
     // `compile_template_block` derives `is_ts` from the script blocks' lang.
     let is_ts = matches!(lane, Lane::Bindings) && sfc_is_ts(&descriptor);
+    // `extract_component_name`: the SFC filename's stem.
+    let component_name = matches!(lane, Lane::Bindings).then(|| component_name_of(name));
 
     let old_allocator = Allocator::new();
     let (_, errors, old) = match lane {
@@ -124,6 +136,9 @@ pub fn compare_sfc_template_lane(name: &str, source: &str, report: &mut Report, 
                 mode: CodegenMode::Module,
                 prefix_identifiers: true,
                 is_ts,
+                component_name: component_name
+                    .as_ref()
+                    .map(|name| vize_s0::String::from(name.as_str())),
                 binding_metadata: bindings.clone(),
                 ..Default::default()
             },
@@ -194,6 +209,7 @@ pub fn compare_sfc_template_lane(name: &str, source: &str, report: &mut Report, 
                 mode: DomEmitMode::Module,
                 prefix_identifiers: true,
                 is_ts,
+                component_name: component_name.as_deref(),
                 bindings: table.as_ref(),
                 ..DomEmitOptions::DEFAULT
             },
