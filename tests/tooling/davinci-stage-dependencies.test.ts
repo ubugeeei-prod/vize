@@ -11,6 +11,7 @@ import {
   repoRoot,
   s2DomWitnessFiles,
   walkRustFiles,
+  workspaceDependencyDeclaration,
   workspacePackage,
 } from "./support/davinci-stage-dependencies.ts";
 
@@ -101,6 +102,11 @@ test("Davinci stage crates are publishable with registry-resolvable dependencies
         /^=\d+\.\d+\.\d+$/u,
         `${packageName} must give ${dependency.name} an exact registry fallback`,
       );
+      assert.equal(
+        dependency.req,
+        `=${workspacePackage(metadata, dependency.name).version}`,
+        `${packageName} must match ${dependency.name}'s published version`,
+      );
     }
   }
 });
@@ -124,20 +130,20 @@ test("Davinci fuzz harness imports stage packages through aliases", () => {
 test("Davinci S2 uses the physical crate directory", () => {
   const workspaceManifest = readRepoFile("Cargo.toml");
   assert.match(workspaceManifest, /^\s*"crates\/vize_s2",$/m);
-  assert.match(
-    workspaceManifest,
-    /^vize_s2 = \{ path = "crates\/vize_s2", version = "=\d+\.\d+\.\d+" \}$/m,
-  );
+  assert.deepEqual(workspaceDependencyDeclaration("vize_s2"), {
+    path: "crates/vize_s2",
+    version: "=0.390.0",
+  });
   assert.doesNotMatch(workspaceManifest, /crates\/vize_disegno/u);
 });
 
 test("Davinci S1-to-S2 uses the physical crate package and directory", () => {
   const workspaceManifest = readRepoFile("Cargo.toml");
   assert.match(workspaceManifest, /^\s*"crates\/vize_s1_to_s2",$/m);
-  assert.match(
-    workspaceManifest,
-    /^vize_s1_to_s2 = \{ path = "crates\/vize_s1_to_s2", version = "=\d+\.\d+\.\d+" \}$/m,
-  );
+  assert.deepEqual(workspaceDependencyDeclaration("vize_s1_to_s2"), {
+    path: "crates/vize_s1_to_s2",
+    version: "=0.390.0",
+  });
   assert.doesNotMatch(workspaceManifest, /crates\/vize_ricalco/u);
   assert.doesNotMatch(workspaceManifest, /^vize_ricalco = /m);
   assert.doesNotMatch(workspaceManifest, /package = "vize_ricalco"/u);
