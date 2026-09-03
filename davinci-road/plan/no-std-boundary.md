@@ -20,6 +20,25 @@ Every library has both `#![no_std]` and `extern crate alloc`. Its source can
 use `core`, `alloc`, and dependency APIs without importing the `std` prelude.
 The required wasm32-wasip2 lane builds all four libraries together.
 
+#### One opt-in exception: `vize_s1_to_s2`'s `typescript` feature
+
+The S2 DOM emitter compiles TypeScript templates the way the shipped lane
+does — by running each expression through oxc's transformer — and
+`Transformer::new` takes a `&std::path::Path`. That one API is the whole
+`std` edge, so it rides a feature that is **off by default**:
+
+```toml
+typescript = ["dep:oxc_codegen", "dep:oxc_transformer"]
+```
+
+With the feature off, nothing changes: the library links no `std`, and an
+`is_ts` emit refuses (`typescript_lane_unavailable`) rather than emitting
+un-erased TypeScript. With it on, `#![no_std]` still stands and
+`#[cfg(feature = "typescript")] extern crate std;` links `std` for that
+call alone. Both wasm32-wasip2 lane commands below leave the feature off,
+so the portability claim is proved without it; the witness batteries in
+`vize_atelier_dom` select it on their dev edge.
+
 ### S0 is deliberately outside the claim
 
 `vize_s0` is the workspace dependency alias for the package
@@ -50,7 +69,7 @@ visible. `cargo tree --edges normal --depth 1` gives this first-degree ledger:
 | `vize_davinci`            | `vize_s0`; `vize_davinci_derive`                               | S0 is the accepted std foundation; the proc macro runs on the host and emits `core`-compatible code |
 | S1 / `vize_s1`            | `vize_s0`; `vize_armature`; `vize_relief`                      | accepted std parser/tokenizer and AST construction edges                                            |
 | S2 / `vize_s2`            | `vize_s0`; `vize_davinci`; `oxc_ast`; `oxc_parser`; `oxc_span` | accepted std OXC expression parsing plus lower-layer edges                                          |
-| S1 → S2 / `vize_s1_to_s2` | `vize_s0`; `vize_davinci`; S1; S2; `oxc_ast`; `oxc_ast_visit`  | accepted conversion-layer closure; dependency direction remains downward                            |
+| S1 → S2 / `vize_s1_to_s2` | `vize_s0`; `vize_davinci`; S1; S2; `htmlize`; `oxc_ast`; `oxc_ast_visit`; `oxc_parser`; `oxc_semantic`; `oxc_span`; `oxc_syntax`; and, only under `typescript`, `oxc_codegen`; `oxc_transformer` | accepted conversion-layer closure; dependency direction remains downward. The two feature-gated OXC crates are the TS lane's type erasure and are absent from the default build |
 
 The aliases `vize_s0`, `vize_s1`, `vize_s2`, and `vize_s1_to_s2` are the
 primary architectural names. S1, S2, and S1→S2 package ids now match that
