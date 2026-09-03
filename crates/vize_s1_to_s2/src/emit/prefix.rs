@@ -12,6 +12,7 @@
 //! shipped lane is the bar, so the ports keep the shipped quirks (the
 //! second `$event =>` wrap, the two different strips, the prefix parse).
 
+mod aliases;
 mod codegen_visitor;
 mod collector;
 mod compat;
@@ -26,7 +27,7 @@ mod splice;
 mod strip;
 mod targets;
 
-pub(super) use globals::is_global_allowed;
+pub(super) use globals::{is_global_allowed, is_simple_identifier};
 pub(super) use scope::{PrefixScope, ScopeMark};
 pub(super) use slot_defaults::prefix_slot_defaults;
 
@@ -145,7 +146,7 @@ pub(super) struct Refused;
 
 /// `process_expression` then the codegen consumption for `site`.
 pub(super) fn prefix_expression(
-    scope: &PrefixScope,
+    scope: &PrefixScope<'_>,
     content: &Content<'_>,
     js: Option<&JsExpr<'_>>,
     site: Site,
@@ -159,7 +160,7 @@ pub(super) fn prefix_expression(
 }
 
 /// The codegen consumption alone (text the transform did not rewrite).
-pub(super) fn consume(scope: &PrefixScope, code: String, site: Site) -> String {
+pub(super) fn consume(scope: &PrefixScope<'_>, code: String, site: Site) -> String {
     match site {
         Site::Expression => {
             let code = if code.contains("//") {
@@ -180,7 +181,7 @@ pub(super) fn consume(scope: &PrefixScope, code: String, site: Site) -> String {
 
 /// `process_inline_handler` + `generate_event_handler`.
 pub(super) fn prefix_handler(
-    scope: &PrefixScope,
+    scope: &PrefixScope<'_>,
     content: &Content<'_>,
     js: Option<&JsExpr<'_>>,
 ) -> Result<String, Refused> {
@@ -193,7 +194,7 @@ pub(super) fn prefix_handler(
 }
 
 /// `emit_dynamic_directive_arg` under `prefix_identifiers`.
-pub(super) fn prefix_dynamic_arg(scope: &PrefixScope, js: &JsExpr<'_>) -> String {
+pub(super) fn prefix_dynamic_arg(scope: &PrefixScope<'_>, js: &JsExpr<'_>) -> String {
     let content = js.source;
     if let Some(local) = content
         .strip_prefix("_ctx.")

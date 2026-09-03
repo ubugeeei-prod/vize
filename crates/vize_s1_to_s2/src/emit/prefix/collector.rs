@@ -25,7 +25,7 @@ use super::globals::is_global_allowed;
 use super::scope::PrefixScope;
 
 pub(super) struct IdentifierCollector<'s, 'a> {
-    scope: &'s PrefixScope,
+    scope: &'s PrefixScope<'s>,
     /// The walked text; read by the inline-mode assignment scan once
     /// binding metadata lands.
     #[allow(dead_code)]
@@ -39,7 +39,7 @@ pub(super) struct IdentifierCollector<'s, 'a> {
 
 impl<'s, 'a> IdentifierCollector<'s, 'a> {
     /// The legacy wrapped-parse collector: spans count the synthetic `(`.
-    pub(super) fn new(scope: &'s PrefixScope, source: &'a str) -> Self {
+    pub(super) fn new(scope: &'s PrefixScope<'s>, source: &'a str) -> Self {
         Self {
             scope,
             source,
@@ -53,7 +53,11 @@ impl<'s, 'a> IdentifierCollector<'s, 'a> {
 
     /// The retained-AST collector over the bare content, whose AST spans
     /// are `offset` bytes before their position in `source`.
-    pub(super) fn new_unwrapped(scope: &'s PrefixScope, source: &'a str, offset: usize) -> Self {
+    pub(super) fn new_unwrapped(
+        scope: &'s PrefixScope<'s>,
+        source: &'a str,
+        offset: usize,
+    ) -> Self {
         Self {
             offset,
             ..Self::new(scope, source)

@@ -51,18 +51,48 @@ pub(super) fn collect_names<'a>(root: &'a Region<'a>) -> StdVec<&'a str> {
     names
 }
 
-pub(super) fn emit_resolves(cx: &mut EmitCx<'_>, names: &[&str]) {
-    cx.buf.use_resolve_directive();
+/// `generate_assets` over the directives: a `vFoo` script binding reads
+/// `$setup["vFoo"]` (its non-inline object), anything else resolves at
+/// runtime. Returns whether any line was written.
+pub(super) fn emit_resolves(cx: &mut EmitCx<'_>, names: &[&str]) -> bool {
     for name in names {
         cx.buf.push("const ");
         cx.buf.push(asset_ident("directive", name).as_str());
         cx.buf.push(" = ");
-        cx.buf.push(Buf::resolve_directive_alias());
-        cx.buf.push("(\"");
-        cx.buf.push(name);
-        cx.buf.push("\")");
+        let binding_name = imported_directive_binding_name(name);
+        match cx
+            .scope
+            .bindings()
+            .and_then(|table| table.kind(binding_name.as_str()))
+        {
+            Some(kind) => {
+                cx.buf
+                    .push(kind.non_inline_template_prefix().trim_end_matches('.'));
+                cx.buf.push("[\"");
+                cx.buf
+                    .push(super::js::escape_js_string(binding_name.as_str()).as_str());
+                cx.buf.push("\"]");
+            }
+            None => {
+                cx.buf.use_resolve_directive();
+                cx.buf.push(Buf::resolve_directive_alias());
+                cx.buf.push("(\"");
+                cx.buf.push(name);
+                cx.buf.push("\")");
+            }
+        }
         cx.buf.newline();
     }
+    !names.is_empty()
+}
+
+/// `imported_directive_binding_name`: `v` + PascalCase(camelize(name)).
+fn imported_directive_binding_name(name: &str) -> vize_s0::String {
+    let pascal = vize_s0::capitalize(&vize_s0::camelize(name));
+    let mut binding = vize_s0::String::with_capacity(1 + pascal.len());
+    binding.push('v');
+    binding.push_str(pascal.as_str());
+    binding
 }
 
 pub(super) fn wrap_element(

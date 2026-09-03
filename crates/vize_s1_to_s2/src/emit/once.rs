@@ -71,6 +71,7 @@ fn emit_component_target(
     } else if let Some(helper) = builtin::helper(component.name) {
         cx.buf.use_helper(helper);
         cx.buf.push(helper.alias());
+    } else if super::component::binding::push_tag(cx, component.name) {
     } else {
         cx.buf
             .push(asset_ident("component", component.name).as_str());

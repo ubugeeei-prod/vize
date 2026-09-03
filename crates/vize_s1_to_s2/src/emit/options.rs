@@ -7,6 +7,10 @@
 //! emitter silently assumes — it is production surface the series has
 //! not reached yet, and the witness for it does not exist.
 
+use alloc::vec::Vec as StdVec;
+
+use vize_s0::String;
+
 /// Which module form the render function is emitted in — the shipped
 /// lane's `CodegenMode`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -16,21 +20,173 @@ pub enum DomEmitMode {
     /// signature (the shipped default).
     #[default]
     Function,
-    /// `import { … } from "vue"` plus `export function render(_ctx, _cache)`.
-    /// The six-argument signature returns with binding metadata, which the
-    /// emitter does not carry yet.
+    /// `import { … } from "vue"` plus `export function render(_ctx, _cache)`;
+    /// the six-argument signature returns with binding metadata.
     Module,
 }
 
 impl DomEmitMode {
-    /// The render-function header the shipped lane writes for this mode
-    /// without binding metadata.
+    /// The render-function header the shipped lane writes for this mode.
     #[must_use]
-    pub(super) const fn render_signature(self) -> &'static str {
-        match self {
-            Self::Function => "function render(_ctx, _cache, $props, $setup, $data, $options) {",
-            Self::Module => "export function render(_ctx, _cache) {",
+    pub(super) const fn render_signature(self, with_bindings: bool) -> &'static str {
+        match (self, with_bindings) {
+            (Self::Function, _) => {
+                "function render(_ctx, _cache, $props, $setup, $data, $options) {"
+            }
+            (Self::Module, true) => {
+                "export function render(_ctx, _cache, $props, $setup, $data, $options) {"
+            }
+            (Self::Module, false) => "export function render(_ctx, _cache) {",
         }
+    }
+}
+
+/// The shipped lane's `BindingType`: how a template identifier resolves
+/// once script analysis has named it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BindingKind {
+    /// `let` in `<script setup>`.
+    SetupLet,
+    /// `const` in `<script setup>` that may hold a ref.
+    SetupMaybeRef,
+    /// `const` in `<script setup>` that is a ref.
+    SetupRef,
+    /// `reactive()` / `shallowReactive()` const.
+    SetupReactiveConst,
+    /// Non-reactive `const` (functions, classes, plain values).
+    SetupConst,
+    /// A declared prop.
+    Props,
+    /// A destructured prop with an alias.
+    PropsAliased,
+    /// `data()` member.
+    Data,
+    /// Options API member (computed, methods, inject).
+    Options,
+    /// A literal constant.
+    LiteralConst,
+    /// A universal JavaScript global.
+    JsGlobalUniversal,
+    /// A browser-only global.
+    JsGlobalBrowser,
+    /// A Node.js-only global.
+    JsGlobalNode,
+    /// A Deno-only global.
+    JsGlobalDeno,
+    /// A Bun-only global.
+    JsGlobalBun,
+    /// A Vue instance global (`$slots`, `$emit`, …).
+    VueGlobal,
+    /// Imported from another module.
+    ExternalModule,
+}
+
+impl BindingKind {
+    /// The member prefix the shipped lane writes in non-inline mode
+    /// (`BindingType::non_inline_template_prefix`).
+    #[must_use]
+    pub const fn non_inline_template_prefix(self) -> &'static str {
+        match self {
+            Self::SetupLet
+            | Self::SetupMaybeRef
+            | Self::SetupRef
+            | Self::SetupReactiveConst
+            | Self::SetupConst
+            | Self::LiteralConst
+            | Self::JsGlobalUniversal
+            | Self::JsGlobalBrowser
+            | Self::JsGlobalNode
+            | Self::JsGlobalDeno
+            | Self::JsGlobalBun
+            | Self::ExternalModule => "$setup.",
+            Self::Props | Self::PropsAliased => "$props.",
+            Self::Data => "$data.",
+            Self::Options => "$options.",
+            Self::VueGlobal => "_ctx.",
+        }
+    }
+
+    /// Props and aliased props.
+    #[must_use]
+    pub const fn is_props(self) -> bool {
+        matches!(self, Self::Props | Self::PropsAliased)
+    }
+}
+
+/// The shipped lane's `BindingMetadata`: names the script analysis
+/// resolved, with the destructured-prop aliases.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct BindingTable {
+    /// `(name, kind)` sorted by name for binary search.
+    names: StdVec<(String, BindingKind)>,
+    /// `(local, prop key)` for `const { key: local } = defineProps()`.
+    aliases: StdVec<(String, String)>,
+    /// Whether the bindings come from `<script setup>`.
+    is_script_setup: bool,
+}
+
+impl BindingTable {
+    /// Build a table; later duplicates of a name win, as a map insert would.
+    #[must_use]
+    pub fn new<'n>(
+        names: impl IntoIterator<Item = (&'n str, BindingKind)>,
+        aliases: impl IntoIterator<Item = (&'n str, &'n str)>,
+        is_script_setup: bool,
+    ) -> Self {
+        let mut table = Self {
+            names: StdVec::new(),
+            aliases: StdVec::new(),
+            is_script_setup,
+        };
+        for (name, kind) in names {
+            match table
+                .names
+                .binary_search_by(|(entry, _)| entry.as_str().cmp(name))
+            {
+                Ok(index) => table.names[index].1 = kind,
+                Err(index) => table.names.insert(index, (String::from(name), kind)),
+            }
+        }
+        for (local, key) in aliases {
+            match table
+                .aliases
+                .binary_search_by(|(entry, _)| entry.as_str().cmp(local))
+            {
+                Ok(index) => table.aliases[index].1 = String::from(key),
+                Err(index) => table
+                    .aliases
+                    .insert(index, (String::from(local), String::from(key))),
+            }
+        }
+        table
+    }
+
+    /// The kind recorded for `name`.
+    #[must_use]
+    pub fn kind(&self, name: &str) -> Option<BindingKind> {
+        self.names
+            .binary_search_by(|(entry, _)| entry.as_str().cmp(name))
+            .ok()
+            .map(|index| self.names[index].1)
+    }
+
+    /// Whether `name` is recorded at all.
+    #[must_use]
+    pub fn contains(&self, name: &str) -> bool {
+        self.kind(name).is_some()
+    }
+
+    /// The destructured-prop aliases as `(local, key)` pairs.
+    pub fn aliases(&self) -> impl Iterator<Item = (&str, &str)> {
+        self.aliases
+            .iter()
+            .map(|(local, key)| (local.as_str(), key.as_str()))
+    }
+
+    /// Whether the bindings come from `<script setup>`.
+    #[must_use]
+    pub const fn is_script_setup(&self) -> bool {
+        self.is_script_setup
     }
 }
 
@@ -46,8 +202,13 @@ pub struct DomEmitOptions<'a> {
     /// [`DomEmitMode::Function`] (`"Vue"` by default).
     pub runtime_global_name: &'a str,
     /// The shipped lane's `prefix_identifiers`: free identifiers become
-    /// `_ctx.` member accesses (`emit::prefix`), without binding metadata.
+    /// member accesses (`emit::prefix`).
     pub prefix_identifiers: bool,
+    /// The shipped lane's `binding_metadata`, honoured in non-inline mode:
+    /// prefixed identifiers resolve to `$setup.` / `$props.` / `$data.` /
+    /// `$options.`, components and directives resolve to `$setup` members,
+    /// and the render signature carries all six arguments.
+    pub bindings: Option<&'a BindingTable>,
 }
 
 impl DomEmitOptions<'static> {
@@ -58,6 +219,7 @@ impl DomEmitOptions<'static> {
         runtime_module_name: "vue",
         runtime_global_name: "Vue",
         prefix_identifiers: false,
+        bindings: None,
     };
 }
 
@@ -69,7 +231,7 @@ impl Default for DomEmitOptions<'static> {
 
 #[cfg(test)]
 mod tests {
-    use super::{DomEmitMode, DomEmitOptions};
+    use super::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
 
     #[test]
     fn default_options_project_the_shipped_codegen_defaults() {
@@ -80,6 +242,7 @@ mod tests {
                 runtime_module_name: "vue",
                 runtime_global_name: "Vue",
                 prefix_identifiers: false,
+                bindings: None,
             }
         );
     }
@@ -87,12 +250,57 @@ mod tests {
     #[test]
     fn render_signatures_match_the_shipped_lane_per_mode() {
         assert_eq!(
-            DomEmitMode::Function.render_signature(),
+            DomEmitMode::Function.render_signature(false),
             "function render(_ctx, _cache, $props, $setup, $data, $options) {"
         );
         assert_eq!(
-            DomEmitMode::Module.render_signature(),
+            DomEmitMode::Module.render_signature(false),
             "export function render(_ctx, _cache) {"
+        );
+        assert_eq!(
+            DomEmitMode::Module.render_signature(true),
+            "export function render(_ctx, _cache, $props, $setup, $data, $options) {"
+        );
+    }
+
+    #[test]
+    fn binding_table_lookups_and_alias_order() {
+        let table = BindingTable::new(
+            [
+                ("msg", BindingKind::SetupRef),
+                ("Comp", BindingKind::SetupConst),
+                ("msg", BindingKind::SetupLet),
+            ],
+            [("local", "prop-key")],
+            true,
+        );
+        assert_eq!(table.kind("msg"), Some(BindingKind::SetupLet));
+        assert_eq!(table.kind("Comp"), Some(BindingKind::SetupConst));
+        assert_eq!(table.kind("other"), None);
+        assert!(table.contains("Comp"));
+        assert_eq!(
+            table.aliases().collect::<alloc::vec::Vec<_>>(),
+            [("local", "prop-key")]
+        );
+        assert!(table.is_script_setup());
+    }
+
+    #[test]
+    fn non_inline_prefixes_match_the_shipped_binding_types() {
+        assert_eq!(
+            BindingKind::SetupRef.non_inline_template_prefix(),
+            "$setup."
+        );
+        assert_eq!(BindingKind::Props.non_inline_template_prefix(), "$props.");
+        assert_eq!(BindingKind::Data.non_inline_template_prefix(), "$data.");
+        assert_eq!(
+            BindingKind::Options.non_inline_template_prefix(),
+            "$options."
+        );
+        assert_eq!(BindingKind::VueGlobal.non_inline_template_prefix(), "_ctx.");
+        assert_eq!(
+            BindingKind::ExternalModule.non_inline_template_prefix(),
+            "$setup."
         );
     }
 }

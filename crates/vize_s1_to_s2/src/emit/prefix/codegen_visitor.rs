@@ -20,7 +20,7 @@ use super::scope::PrefixScope;
 use super::splice::splice_replacements;
 
 struct IdentifierVisitor<'s> {
-    scope: &'s PrefixScope,
+    scope: &'s PrefixScope<'s>,
     rewrites: StdVec<(usize, usize, String)>,
     local_vars: StdVec<String>,
     assignment_targets: StdVec<usize>,
@@ -119,8 +119,9 @@ impl Visit<'_> for IdentifierVisitor<'_> {
         }
         let start = (ident.span.start - self.offset) as usize;
         let end = (ident.span.end - self.offset) as usize;
-        let mut replacement = String::with_capacity(5 + name.len());
-        replacement.push_str("_ctx.");
+        let prefix = self.scope.codegen_prefix(name);
+        let mut replacement = String::with_capacity(prefix.len() + name.len());
+        replacement.push_str(prefix);
         replacement.push_str(name);
         self.rewrites.push((start, end, replacement));
     }
@@ -149,9 +150,11 @@ impl Visit<'_> for IdentifierVisitor<'_> {
             }
             let start = (prop.span.start - self.offset) as usize;
             let end = (prop.span.end - self.offset) as usize;
-            let mut replacement = String::with_capacity(name.len() * 2 + 7);
+            let prefix = self.scope.codegen_prefix(name);
+            let mut replacement = String::with_capacity(name.len() * 2 + prefix.len() + 2);
             replacement.push_str(name);
-            replacement.push_str(": _ctx.");
+            replacement.push_str(": ");
+            replacement.push_str(prefix);
             replacement.push_str(name);
             self.rewrites.push((start, end, replacement));
             return;
@@ -185,7 +188,7 @@ fn prefix_via_expr(
     expr: &oxc_ast::ast::Expression<'_>,
     offset: u32,
     content: &str,
-    scope: &PrefixScope,
+    scope: &PrefixScope<'_>,
 ) -> String {
     let mut visitor = IdentifierVisitor {
         scope,
@@ -195,12 +198,16 @@ fn prefix_via_expr(
         offset,
     };
     visitor.visit_expression(expr);
-    splice_replacements(content, visitor.rewrites)
+    super::aliases::rewrite_props_aliases(
+        splice_replacements(content, visitor.rewrites),
+        scope.bindings(),
+        &["$props"],
+    )
 }
 
 /// `prefix_identifiers_with_context`: wrapped expression parse, then a
 /// program parse, then the raw text.
-pub(super) fn prefix_identifiers_with_context(content: &str, scope: &PrefixScope) -> String {
+pub(super) fn prefix_identifiers_with_context(content: &str, scope: &PrefixScope<'_>) -> String {
     let source_type = SourceType::default().with_module(true);
     let allocator = Allocator::new();
     let mut wrapped = String::with_capacity(content.len() + 2);
@@ -225,7 +232,11 @@ pub(super) fn prefix_identifiers_with_context(content: &str, scope: &PrefixScope
         offset: 0,
     };
     visitor.visit_program(&parsed.program);
-    splice_replacements(content, visitor.rewrites)
+    super::aliases::rewrite_props_aliases(
+        splice_replacements(content, visitor.rewrites),
+        scope.bindings(),
+        &["$props"],
+    )
 }
 
 /// `prefix_identifiers_with_context_node`: the retained AST when the
@@ -233,7 +244,7 @@ pub(super) fn prefix_identifiers_with_context(content: &str, scope: &PrefixScope
 pub(super) fn prefix_identifiers_with_context_node(
     content: &str,
     retained: Option<Retained<'_, '_>>,
-    scope: &PrefixScope,
+    scope: &PrefixScope<'_>,
 ) -> String {
     if let Some(retained) = retained
         && retained.offset == 0

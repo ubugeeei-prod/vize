@@ -120,7 +120,7 @@ pub use self::entry::{
 pub use self::error::{EmitError, UnsupportedReason, UnsupportedRefusal};
 use self::fragment::emit_root;
 use self::helper::Helper;
-pub use self::options::{DomEmitMode, DomEmitOptions};
+pub use self::options::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
 
 fn emit_if_op(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>, id: Option<NodeId>) -> Result<(), EmitError> {
     vif::emit_if(cx, if_op, id)
@@ -213,7 +213,7 @@ struct EmitCx<'facts> {
     /// way out instead of being pushed verbatim.
     prefix_identifiers: bool,
     /// The transform scope and codegen slot params the prefixer consults.
-    scope: prefix::PrefixScope,
+    scope: prefix::PrefixScope<'facts>,
 }
 
 /// Emit a DOM render function from an already-lowered (and typically
@@ -224,18 +224,18 @@ pub fn emit_dom(lowered: &Lowered<'_>, facts: &S2Facts) -> Result<DomEmit, EmitE
 }
 
 /// [`emit_dom`] under explicit [`DomEmitOptions`].
-pub fn emit_dom_with_options(
-    lowered: &Lowered<'_>,
-    facts: &S2Facts,
-    options: &DomEmitOptions<'_>,
+pub fn emit_dom_with_options<'f>(
+    lowered: &'f Lowered<'_>,
+    facts: &'f S2Facts,
+    options: &DomEmitOptions<'f>,
 ) -> Result<DomEmit, EmitError> {
     emit_dom_with_emit_budget(lowered, facts, options).map(|(emit, _)| emit)
 }
 
-fn emit_dom_with_emit_budget(
-    lowered: &Lowered<'_>,
-    facts: &S2Facts,
-    options: &DomEmitOptions<'_>,
+fn emit_dom_with_emit_budget<'f>(
+    lowered: &'f Lowered<'_>,
+    facts: &'f S2Facts,
+    options: &DomEmitOptions<'f>,
 ) -> Result<(DomEmit, u32), EmitError> {
     if lowered
         .diagnostics
@@ -272,36 +272,43 @@ fn emit_dom_with_emit_budget(
         static_cache,
         parent_ns: Namespace::Html,
         prefix_identifiers: options.prefix_identifiers,
-        scope: prefix::PrefixScope::default(),
+        scope: prefix::PrefixScope::new(options.bindings),
     };
     let filters = &facts.legacy.filters;
     if facts.legacy.filter_helper_precedes_components {
         cx.buf.prefer(Helper::ResolveFilter);
     }
     let mut helper_walk = PageWalk::new();
+    let prefer_cx = helper_preference::PreferCx {
+        facts,
+        for_wrappers: &lowered.for_wrappers,
+        bindings: options.bindings,
+    };
     helper_preference::prefer_helpers(
         &mut cx.buf,
-        facts,
-        &lowered.for_wrappers,
+        &prefer_cx,
         &mut helper_walk,
         &lowered.root,
     );
     fragment::prefer_root_fragment(&mut cx.buf, &lowered.root);
-    cx.buf.push(options.mode.render_signature());
+    cx.buf
+        .push(options.mode.render_signature(options.bindings.is_some()));
     cx.buf.indent();
     cx.buf.newline();
     let names = component::collect_names(&lowered.root);
     let dirs = directive::collect_names(&lowered.root);
+    let mut resolved_assets = false;
     if !names.is_empty() {
-        component::emit_resolves(&mut cx, &names);
+        resolved_assets |= component::emit_resolves(&mut cx, &names);
     }
     if !dirs.is_empty() {
-        directive::emit_resolves(&mut cx, &dirs);
+        resolved_assets |= directive::emit_resolves(&mut cx, &dirs);
     }
     if !filters.is_empty() {
         filter::emit_resolves(&mut cx, filters);
+        resolved_assets = true;
     }
-    if !names.is_empty() || !dirs.is_empty() || !filters.is_empty() {
+    if resolved_assets {
         cx.buf.newline();
     }
     cx.buf.push("return ");

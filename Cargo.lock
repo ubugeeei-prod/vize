@@ -4053,6 +4053,7 @@ dependencies = [
  "oxc_span",
  "oxc_syntax",
  "toml",
+ "vize_atelier_core",
  "vize_atelier_dom",
  "vize_atelier_sfc",
  "vize_carton",

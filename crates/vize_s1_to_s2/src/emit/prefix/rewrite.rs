@@ -42,14 +42,14 @@ fn js_module() -> SourceType {
 pub(super) fn rewrite_expression(
     content: &str,
     retained: Option<Retained<'_, '_>>,
-    scope: &PrefixScope,
+    scope: &PrefixScope<'_>,
     as_params: bool,
 ) -> RewriteResult {
     if !as_params
         && let Some(retained) = retained
         && js_module_compatible(retained.ast, retained.source)
     {
-        return rewrite_retained(content, retained, scope);
+        return project_aliases(rewrite_retained(content, retained, scope), scope);
     }
     let overflows = expression_exceeds_max_depth(content);
     if overflows || !expression_has_balanced_delimiters(content) {
@@ -64,13 +64,29 @@ pub(super) fn rewrite_expression(
             parse_error: !parses_as_params(content),
         };
     }
-    rewrite_reparsed(content, scope)
+    project_aliases(rewrite_reparsed(content, scope), scope)
+}
+
+/// The transform's `rewrite_props_aliases` post-pass over both prop
+/// objects; a parse failure passes the raw text through untouched.
+fn project_aliases(result: RewriteResult, scope: &PrefixScope<'_>) -> RewriteResult {
+    if result.parse_error {
+        return result;
+    }
+    RewriteResult {
+        code: super::aliases::rewrite_props_aliases(
+            result.code,
+            scope.bindings(),
+            &["__props", "$props"],
+        ),
+        parse_error: false,
+    }
 }
 
 fn rewrite_retained(
     content: &str,
     retained: Retained<'_, '_>,
-    scope: &PrefixScope,
+    scope: &PrefixScope<'_>,
 ) -> RewriteResult {
     let mut collector = IdentifierCollector::new_unwrapped(scope, content, retained.offset);
     collector.visit_expression(retained.ast);
@@ -81,7 +97,7 @@ fn rewrite_retained(
     }
 }
 
-fn rewrite_reparsed(content: &str, scope: &PrefixScope) -> RewriteResult {
+fn rewrite_reparsed(content: &str, scope: &PrefixScope<'_>) -> RewriteResult {
     let allocator = Allocator::new();
     let mut wrapped = String::with_capacity(content.len() + 2);
     wrapped.push('(');

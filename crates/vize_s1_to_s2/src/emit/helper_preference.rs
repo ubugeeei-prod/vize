@@ -11,26 +11,42 @@ use crate::pass::walk::PageWalk;
 
 use super::buf::Buf;
 use super::helper::Helper;
+use super::options::BindingTable;
 use super::{builtin, directive, sfc_style, slots};
 use slot_order::{
     component_slot_content, direct_slot_carrier_precedes_slot_outlet, has_slot_outlet,
     op_is_direct_slot_carrier, prefer_slot_helpers,
 };
 
+/// What the preference walk reads besides the region it is walking.
+pub(super) struct PreferCx<'a> {
+    pub(super) facts: &'a S2Facts,
+    pub(super) for_wrappers: &'a SideTable<ForWrapper>,
+    /// The script bindings, when the emit carries them: a component tag
+    /// named there resolves to `$setup` and never marks `resolveComponent`
+    /// during the transform (`lane::element`, which matches the tag
+    /// verbatim — the camelize/PascalCase widening is codegen's alone).
+    pub(super) bindings: Option<&'a BindingTable>,
+}
+
+impl PreferCx<'_> {
+    fn tag_is_binding(&self, tag: &str) -> bool {
+        self.bindings.is_some_and(|table| table.contains(tag))
+    }
+}
+
 pub(super) fn prefer_helpers(
     buf: &mut Buf,
-    facts: &S2Facts,
-    for_wrappers: &SideTable<ForWrapper>,
+    cx: &PreferCx<'_>,
     walk: &mut PageWalk,
     region: &Region<'_>,
 ) {
-    prefer_region_helpers(buf, facts, for_wrappers, walk, region, false, false);
+    prefer_region_helpers(buf, cx, walk, region, false, false);
 }
 
 fn prefer_region_helpers(
     buf: &mut Buf,
-    facts: &S2Facts,
-    for_wrappers: &SideTable<ForWrapper>,
+    cx: &PreferCx<'_>,
     walk: &mut PageWalk,
     region: &Region<'_>,
     template_slot_context: bool,
@@ -45,8 +61,7 @@ fn prefer_region_helpers(
     for (index, op) in region.ops.iter().enumerate() {
         prefer_op_helpers(
             buf,
-            facts,
-            for_wrappers,
+            cx,
             walk,
             op,
             slot_context,
@@ -58,8 +73,7 @@ fn prefer_region_helpers(
 
 fn prefer_op_helpers(
     buf: &mut Buf,
-    facts: &S2Facts,
-    for_wrappers: &SideTable<ForWrapper>,
+    cx: &PreferCx<'_>,
     walk: &mut PageWalk,
     op: &Op<'_>,
     slot_context: bool,
@@ -84,8 +98,7 @@ fn prefer_op_helpers(
             let child_slot_context = slot_context || slot_template;
             prefer_region_helpers(
                 buf,
-                facts,
-                for_wrappers,
+                cx,
                 walk,
                 &element.children,
                 child_slot_context,
@@ -101,17 +114,16 @@ fn prefer_op_helpers(
                 buf.prefer(Helper::RenderSlot);
             }
             directive::prefer_helpers(buf, bindings);
-            if !builtin::is_dynamic_component(component) {
+            if !builtin::is_dynamic_component(component) && !cx.tag_is_binding(component.name) {
                 buf.prefer(Helper::ResolveComponent);
             }
             walk.skip(bindings.len());
-            if id.and_then(|id| facts.slot_facts.get(id)).is_some() {
+            if id.and_then(|id| cx.facts.slot_facts.get(id)).is_some() {
                 prefer_slot_helpers(buf, &component.children);
             }
             prefer_region_helpers(
                 buf,
-                facts,
-                for_wrappers,
+                cx,
                 walk,
                 &component.children,
                 slot_context,
@@ -123,8 +135,7 @@ fn prefer_op_helpers(
             walk.skip(slot.bindings.len());
             prefer_region_helpers(
                 buf,
-                facts,
-                for_wrappers,
+                cx,
                 walk,
                 &slot.fallback,
                 slot_context,
@@ -138,14 +149,7 @@ fn prefer_op_helpers(
             buf.prefer(Helper::Fragment);
             buf.prefer(Helper::CreateComment);
             for branch in if_op.branches.iter() {
-                prefer_if_branch_helpers(
-                    buf,
-                    facts,
-                    for_wrappers,
-                    walk,
-                    &branch.region,
-                    slot_context,
-                );
+                prefer_if_branch_helpers(buf, cx, walk, &branch.region, slot_context);
             }
         }
         Op::For(for_op) => {
@@ -154,12 +158,11 @@ fn prefer_op_helpers(
             buf.prefer(Helper::CreateBlock);
             buf.prefer(Helper::Fragment);
             let suppress_root_directives = id
-                .and_then(|id| for_wrappers.get(id))
+                .and_then(|id| cx.for_wrappers.get(id))
                 .is_some_and(|_| super::tpl::should_unwrap_for(&for_op.region.ops));
             prefer_region_helpers(
                 buf,
-                facts,
-                for_wrappers,
+                cx,
                 walk,
                 &for_op.region,
                 slot_context,
@@ -170,7 +173,7 @@ fn prefer_op_helpers(
         Op::Interpolation(_) => {
             buf.prefer(Helper::ToDisplayString);
             if id
-                .and_then(|id| facts.text_facts.get(id))
+                .and_then(|id| cx.facts.text_facts.get(id))
                 .is_some_and(|text| text.parts.iter().any(|part| !part.dynamic))
             {
                 buf.prefer(Helper::CreateText);
@@ -181,13 +184,12 @@ fn prefer_op_helpers(
 
 fn prefer_if_branch_helpers(
     buf: &mut Buf,
-    facts: &S2Facts,
-    for_wrappers: &SideTable<ForWrapper>,
+    cx: &PreferCx<'_>,
     walk: &mut PageWalk,
     region: &Region<'_>,
     slot_context: bool,
 ) {
     for op in region.ops.iter() {
-        prefer_op_helpers(buf, facts, for_wrappers, walk, op, slot_context, false);
+        prefer_op_helpers(buf, cx, walk, op, slot_context, false);
     }
 }

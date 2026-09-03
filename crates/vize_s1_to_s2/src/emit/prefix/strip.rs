@@ -24,7 +24,10 @@ pub(super) fn contains_slot_param_scope_prefix(content: &str) -> bool {
         .any(|prefix| content.contains(prefix))
 }
 
-pub(super) fn strip_scope_prefixes_for_slot_params(scope: &PrefixScope, content: &str) -> String {
+pub(super) fn strip_scope_prefixes_for_slot_params(
+    scope: &PrefixScope<'_>,
+    content: &str,
+) -> String {
     if !contains_slot_param_scope_prefix(content) {
         return String::from(content);
     }
@@ -64,7 +67,7 @@ pub(super) fn strip_scope_prefixes_for_slot_params(scope: &PrefixScope, content:
     result
 }
 
-pub(super) fn strip_ctx_prefix_for_slot_params(scope: &PrefixScope, content: &str) -> String {
+pub(super) fn strip_ctx_prefix_for_slot_params(scope: &PrefixScope<'_>, content: &str) -> String {
     let mut result = String::from(content);
     for param in scope.slot_params() {
         let mut prefixed = String::with_capacity(5 + param.len());
